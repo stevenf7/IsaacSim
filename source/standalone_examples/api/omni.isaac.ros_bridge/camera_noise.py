@@ -6,9 +6,10 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+import sys
+
 import carb
 from omni.isaac.kit import SimulationApp
-import sys
 
 CAMERA_STAGE_PATH = "/Camera"
 ROS_CAMERA_GRAPH_PATH = "/ROS_Camera"
@@ -18,18 +19,18 @@ BACKGROUND_USD_PATH = "/Isaac/Environments/Simple_Warehouse/warehouse_with_forkl
 CONFIG = {"renderer": "RayTracedLighting", "headless": False}
 
 simulation_app = SimulationApp(CONFIG)
+import numpy as np
 import omni
-from omni.isaac.core import SimulationContext
-from omni.isaac.core.utils import stage, extensions, nucleus
-from pxr import Gf, UsdGeom, Usd
-from omni.kit.viewport.utility import get_active_viewport
 import omni.graph.core as og
+import omni.replicator.core as rep
+import omni.syntheticdata._syntheticdata as sd
+import warp as wp
+from omni.isaac.core import SimulationContext
+from omni.isaac.core.utils import extensions, nucleus, stage
 from omni.isaac.core.utils.prims import set_targets
 from omni.isaac.core.utils.render_product import set_camera_prim_path
-import omni.replicator.core as rep
-import warp as wp
-import omni.syntheticdata._syntheticdata as sd
-import numpy as np
+from omni.kit.viewport.utility import get_active_viewport
+from pxr import Gf, Usd, UsdGeom
 
 # enable ROS bridge extension
 extensions.enable_extension("omni.isaac.ros_bridge")

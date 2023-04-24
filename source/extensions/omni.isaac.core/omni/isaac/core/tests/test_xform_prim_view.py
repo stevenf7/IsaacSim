@@ -7,19 +7,20 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import numpy as np
+import omni.kit.test
+from omni.isaac.core import World
+
+# Import extension python module we are testing with absolute import path, as if we are external user (other extension)
+from omni.isaac.core.prims.xform_prim_view import XFormPrimView
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.numpy.rotations import euler_angles_to_quats
+
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 from omni.isaac.core.utils.prims import define_prim
-import omni.kit.test
-
-# Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.core.prims import XFormPrimView
-from omni.isaac.core.utils.numpy.rotations import euler_angles_to_quats
-import numpy as np
-from omni.isaac.core.utils.stage import create_new_stage_async, add_reference_to_stage
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core import World
+from omni.isaac.core.utils.stage import add_reference_to_stage, create_new_stage_async
 from pxr import UsdGeom
 
 

@@ -7,18 +7,19 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-# NOTE:
-#   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
-#   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
-from omni.isaac.core.utils.prims import define_prim
+import numpy as np
 import omni.kit.test
 from omni.isaac.core import World
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.core.prims import RigidPrim
+from omni.isaac.core.prims.rigid_prim import RigidPrim
+
+# NOTE:
+#   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
+#   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
+from omni.isaac.core.utils.prims import define_prim
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
-from omni.isaac.core.utils.stage import update_stage_async, create_new_stage_async
-import numpy as np
+from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test

@@ -8,9 +8,10 @@
 #
 
 
-import sys
 import os.path
+import sys
 import typing
+
 import carb.settings
 import carb.tokens
 

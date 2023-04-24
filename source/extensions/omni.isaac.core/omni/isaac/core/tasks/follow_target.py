@@ -6,31 +6,32 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
+from collections import OrderedDict
 from typing import Optional
-from omni.isaac.core.tasks import BaseTask
-from omni.isaac.core.scenes.scene import Scene
+
+import numpy as np
 from omni.isaac.core.objects import DynamicCuboid, VisualCuboid
-from omni.isaac.core.prims import XFormPrim
+from omni.isaac.core.prims.xform_prim import XFormPrim
+from omni.isaac.core.scenes.scene import Scene
+from omni.isaac.core.tasks import BaseTask
 from omni.isaac.core.utils.prims import is_prim_path_valid
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
-from omni.isaac.core.utils.string import find_unique_string_name
 from omni.isaac.core.utils.stage import get_stage_units
-import numpy as np
-from collections import OrderedDict
+from omni.isaac.core.utils.string import find_unique_string_name
 
 
 class FollowTarget(ABC, BaseTask):
     """[summary]
 
-        Args:
-            name (str): [description]
-            target_prim_path (Optional[str], optional): [description]. Defaults to None.
-            target_name (Optional[str], optional): [description]. Defaults to None.
-            target_position (Optional[np.ndarray], optional): [description]. Defaults to None.
-            target_orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
-            offset (Optional[np.ndarray], optional): [description]. Defaults to None.
-        """
+    Args:
+        name (str): [description]
+        target_prim_path (Optional[str], optional): [description]. Defaults to None.
+        target_name (Optional[str], optional): [description]. Defaults to None.
+        target_position (Optional[np.ndarray], optional): [description]. Defaults to None.
+        target_orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
+        offset (Optional[np.ndarray], optional): [description]. Defaults to None.
+    """
 
     def __init__(
         self,
@@ -173,13 +174,11 @@ class FollowTarget(ABC, BaseTask):
         }
 
     def calculate_metrics(self) -> dict:
-        """[summary]
-        """
+        """[summary]"""
         raise NotImplementedError
 
     def is_done(self) -> bool:
-        """[summary]
-        """
+        """[summary]"""
         raise NotImplementedError
 
     def target_reached(self) -> bool:
@@ -212,8 +211,7 @@ class FollowTarget(ABC, BaseTask):
         return
 
     def post_reset(self) -> None:
-        """[summary]
-        """
+        """[summary]"""
         return
 
     def add_obstacle(self, position: np.ndarray = None):
@@ -277,8 +275,7 @@ class FollowTarget(ABC, BaseTask):
             return False
 
     def cleanup(self) -> None:
-        """[summary]
-        """
+        """[summary]"""
         obstacles_to_delete = list(self._obstacle_cubes.keys())
         for obstacle_to_delete in obstacles_to_delete:
             self.scene.remove_object(obstacle_to_delete)

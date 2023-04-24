@@ -7,13 +7,14 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import numpy as np
 from dataclasses import dataclass, field
+
+import numpy as np
 
 
 @dataclass
 class A1CtrlParams:
-    """ A collection of parameters used by the QP agent """
+    """A collection of parameters used by the QP agent"""
 
     _robot_mass: float = field(default=16.0)
     """The mass of the robot"""

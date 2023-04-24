@@ -6,6 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 import sys
+
 import carb
 from omni.isaac.kit import SimulationApp
 
@@ -18,13 +19,11 @@ CONFIG = {"renderer": "RayTracedLighting", "headless": False}
 # Example ROS2 bridge sample demonstrating the manual loading of Multiple Robot Navigation scenario
 simulation_app = SimulationApp(CONFIG)
 import omni
-from omni.isaac.core import SimulationContext
-from omni.isaac.core.utils import viewports, stage, extensions, prims, rotations, nucleus
-from pxr import Sdf
-
 import omni.graph.core as og
-
+from omni.isaac.core import SimulationContext
+from omni.isaac.core.utils import extensions, nucleus, prims, rotations, stage, viewports
 from omni.isaac.core.utils.extensions import enable_extension
+from pxr import Sdf
 
 # enable ROS2 bridge extension
 enable_extension("omni.isaac.ros2_bridge")

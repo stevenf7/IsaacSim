@@ -11,13 +11,13 @@ from omni.isaac.kit import SimulationApp
 simulation_app = SimulationApp()
 
 import os
-import omni.kit
+
 import numpy as np
+import omni.kit
+import omni.replicator.core as rep
+from omni.replicator.core import AnnotatorRegistry, Writer
 from PIL import Image
 from pxr import UsdGeom
-
-import omni.replicator.core as rep
-from omni.replicator.core import Writer, AnnotatorRegistry
 
 NUM_FRAMES = 5
 

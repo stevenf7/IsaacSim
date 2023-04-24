@@ -6,24 +6,26 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.core.tasks import BaseTask
-from omni.isaac.core.scenes.scene import Scene
-from omni.isaac.universal_robots import UR10
+import random
+
+import carb
 import numpy as np
-from omni.isaac.core.utils.stage import add_reference_to_stage, get_stage_units
+from omni.isaac.core.prims.rigid_prim import RigidPrim
+from omni.isaac.core.prims.xform_prim import XFormPrim
+from omni.isaac.core.scenes.scene import Scene
+from omni.isaac.core.tasks import BaseTask
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
-import carb
-from omni.isaac.core.prims import XFormPrim, RigidPrim
-import random
+from omni.isaac.core.utils.stage import add_reference_to_stage, get_stage_units
+from omni.isaac.universal_robots import UR10
 
 
 class BinFilling(BaseTask):
     """Task using UR10 robot to fill a bin with screws and showcase the surface gripper torque/ force limits.
 
-        Args:
-            name (str, optional): Task name identifier. Should be unique if added to the World. Defaults to "bin_filling".
-        """
+    Args:
+        name (str, optional): Task name identifier. Should be unique if added to the World. Defaults to "bin_filling".
+    """
 
     def __init__(self, name: str = "bin_filling") -> None:
         BaseTask.__init__(self, name=name, offset=None)
@@ -87,8 +89,8 @@ class BinFilling(BaseTask):
 
     def get_observations(self) -> dict:
         """Returns current observations from the task needed for the behavioral layer at each time step.
-           
-           Observations: 
+
+           Observations:
             - packing_bin
                 - position
                 - orientation
@@ -134,8 +136,7 @@ class BinFilling(BaseTask):
         return
 
     def post_reset(self) -> None:
-        """Executed after reseting the scene
-        """
+        """Executed after reseting the scene"""
         self._screws_to_add = 0
         self._screws = []
         return
@@ -162,8 +163,7 @@ class BinFilling(BaseTask):
         return
 
     def cleanup(self) -> None:
-        """Removed the added screws when resetting.
-        """
+        """Removed the added screws when resetting."""
         for i in range(len(self._screws)):
             self.scene.remove_object(self._screws[i].name)
         self._screws = []

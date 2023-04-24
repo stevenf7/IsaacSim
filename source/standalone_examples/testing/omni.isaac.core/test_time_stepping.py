@@ -7,8 +7,9 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import unittest
 import math
+import unittest
+
 from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": True})

@@ -7,12 +7,13 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import argparse
+
+import torch as th
 from env import JetBotEnv
 from stable_baselines3 import PPO
-from stable_baselines3.ppo import MlpPolicy
 from stable_baselines3.common.callbacks import CheckpointCallback
-import torch as th
-import argparse
+from stable_baselines3.ppo import MlpPolicy
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")

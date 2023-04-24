@@ -10,10 +10,10 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
-from omni.isaac.universal_robots.tasks import FollowTarget
-from omni.isaac.universal_robots import KinematicsSolver
-from omni.isaac.core import World
 import carb
+from omni.isaac.core import World
+from omni.isaac.universal_robots import KinematicsSolver
+from omni.isaac.universal_robots.tasks import FollowTarget
 
 my_world = World(stage_units_in_meters=1.0)
 my_task = FollowTarget(name="follow_target_task", attach_gripper=True)

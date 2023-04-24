@@ -6,21 +6,23 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+import random
 from typing import Optional
+
 import numpy as np
-from omni.isaac.core.objects import DynamicCuboid, DynamicSphere, DynamicCylinder, DynamicCone, DynamicCapsule
-from omni.isaac.core.materials import OmniGlass
+from omni.isaac.core.materials.omni_glass import OmniGlass
+from omni.isaac.core.objects import DynamicCapsule, DynamicCone, DynamicCuboid, DynamicCylinder, DynamicSphere
+
 from .collision_box import CollisionBox
 from .dynamic_asset_set import DynamicAssetSet
-import random
 
 
 class DynamicShapeSet(DynamicAssetSet):
-    """Container class to hold and manage dynamic shapes, providing an API to keep shapes in motion within a collision 
-       box, and to allow various properties of the shapes to be randomized. 
+    """Container class to hold and manage dynamic shapes, providing an API to keep shapes in motion within a collision
+       box, and to allow various properties of the shapes to be randomized.
 
     Args:
-        set_prim_path (str): prim path of the parent Prim to create, which contains all the shapes in the shape set 
+        set_prim_path (str): prim path of the parent Prim to create, which contains all the shapes in the shape set
                              as its children.
         set_name (str): name of the parent prim in the scene.
         asset_prim_path_base_prefix (str): prefix of what the shapes are called in the stage (prim path base name).
@@ -64,7 +66,7 @@ class DynamicShapeSet(DynamicAssetSet):
         """Creates a random dynamic shape (Cuboid, Sphere, Cylinder, Cone, or Capsule) and adds it to the scene.
 
         Args:
-            glass (bool, optional): flag to specify whether the created shape should have a glass material applied. 
+            glass (bool, optional): flag to specify whether the created shape should have a glass material applied.
                                     Defaults to False.
         """
 

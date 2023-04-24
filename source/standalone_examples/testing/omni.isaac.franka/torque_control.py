@@ -6,16 +6,16 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.kit import SimulationApp
 import numpy as np
+from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
-from omni.isaac.core.tasks import BaseTask
-from omni.isaac.franka import Franka
 from omni.isaac.core import World
-from omni.isaac.core.controllers import BaseController
+from omni.isaac.core.controllers.base_controller import BaseController
+from omni.isaac.core.tasks import BaseTask
 from omni.isaac.core.utils.types import ArticulationAction
+from omni.isaac.franka import Franka
 
 my_world = World(stage_units_in_meters=1.0)
 

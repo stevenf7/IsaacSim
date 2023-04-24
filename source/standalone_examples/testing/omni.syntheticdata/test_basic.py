@@ -12,11 +12,11 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": True})
 
+import omni.syntheticdata._syntheticdata as sd
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import get_current_stage
 from omni.kit.viewport.utility import get_active_viewport
 from omni.syntheticdata import sensors
-import omni.syntheticdata._syntheticdata as sd
-from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.syntheticdata.tests.utils import add_semantics
 
 viewport_api = get_active_viewport()

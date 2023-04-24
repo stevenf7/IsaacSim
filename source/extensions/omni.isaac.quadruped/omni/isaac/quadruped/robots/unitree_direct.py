@@ -7,24 +7,24 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.utils.prims import get_prim_at_path, define_prim
-from omni.isaac.sensor import _sensor
-from omni.isaac.core.utils.stage import get_current_stage, get_stage_units
-from omni.isaac.core.articulations import Articulation
-from omni.isaac.quadruped.utils.a1_classes import A1State, A1Measurement, A1Command
-from omni.isaac.sensor import ContactSensor
-from typing import Optional, List
 from collections import deque
-import numpy as np
+from typing import List, Optional
+
 import carb
+import numpy as np
+import omni
+from omni.isaac.core.articulations import Articulation
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
+from omni.isaac.core.utils.stage import get_current_stage, get_stage_units
+from omni.isaac.quadruped.utils.a1_classes import A1Command, A1Measurement, A1State
+from omni.isaac.sensor import ContactSensor, _sensor
 
 
 class UnitreeDirect(Articulation):
-    """ For unitree based quadrupeds (A1 or Go1)
-        This class only read command from an external torque and send the torque command to the articulation directly, 
-        perhaps a external ROS node generates the command
+    """For unitree based quadrupeds (A1 or Go1)
+    This class only read command from an external torque and send the torque command to the articulation directly,
+    perhaps a external ROS node generates the command
     """
 
     def __init__(
@@ -40,7 +40,7 @@ class UnitreeDirect(Articulation):
         """
         [Summary]
         initialize robot, set up sensors and controller
-        
+
         Args:
             prim_path {str} -- prim path of the robot on the stage
             name {str} -- name of the quadruped
@@ -49,7 +49,7 @@ class UnitreeDirect(Articulation):
             position {np.ndarray} -- position of the robot
             orientation {np.ndarray} -- orientation of the robot
             model {str} -- robot model (can be either A1 or Go1)
-        
+
         """
         self._stage = get_current_stage()
         self._prim_path = prim_path
@@ -137,7 +137,7 @@ class UnitreeDirect(Articulation):
 
     def set_state(self, state: A1State) -> None:
         """[Summary]
-        
+
         Set the kinematic state of the robot.
 
         Args:
@@ -171,7 +171,7 @@ class UnitreeDirect(Articulation):
 
     def update_contact_sensor_data(self) -> None:
         """[summary]
-        
+
         Updates processed contact sensor data from the robot feets, store them in member variable foot_force
         """
         # Order: FL, FR, BL, BR
@@ -189,7 +189,7 @@ class UnitreeDirect(Articulation):
 
     def update_imu_sensor_data(self):
         """[summary]
-        
+
         Updates processed imu sensor data from the robot body, store them in member variable base_lin and ang_vel
         """
         frame = self._imu_sensor.get_current_frame()
@@ -199,7 +199,7 @@ class UnitreeDirect(Articulation):
 
     def update(self):
         """[summary]
-        
+
         update robot sensor variables, state variables in A1Measurement
         """
 
@@ -240,13 +240,13 @@ class UnitreeDirect(Articulation):
 
     def advance(self):
         """[summary]
-        
+
         direct control the robot using desired_joint_torque
-        
+
         Argument:
         dt {float} -- Timestep update in the world.
         goal {List[int]} -- x velocity, y velocity, angular velocity, state switch
-        
+
         Returns:
         np.ndarray -- The desired joint torques for the robot.
         """
@@ -269,7 +269,7 @@ class UnitreeDirect(Articulation):
 
     def initialize(self, physics_sim_view=None) -> None:
         """[summary]
-        
+
         initialize dc interface, set up drive mode and initial robot state
         """
         super().initialize(physics_sim_view=physics_sim_view)
@@ -288,8 +288,8 @@ class UnitreeDirect(Articulation):
         return
 
     def set_command_torque(self, _desired_joint_torque) -> None:
-        """ Allow external nodes directly set robot command torque
-        
+        """Allow external nodes directly set robot command torque
+
         _desired_joint_torque should be a 12x1 vector of torques
 
         """

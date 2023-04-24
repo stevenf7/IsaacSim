@@ -7,16 +7,14 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.client import delete
-from pxr import UsdGeom, Gf, UsdPhysics
-import numpy as np
-import asyncio
 import uuid
-import omni.kit.app
+
+import numpy as np
+from omni.isaac.core.objects import cuboid
+from omni.isaac.core.prims.geometry_prim_view import GeometryPrimView
+from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.prims import delete_prim
-from omni.isaac.core.utils.rotations import matrix_to_euler_angles, euler_angles_to_quat
-from omni.isaac.core.objects import cuboid, sphere, capsule
-from omni.isaac.core.prims import XFormPrim, GeometryPrimView
+from omni.isaac.core.utils.rotations import euler_angles_to_quat, matrix_to_euler_angles
 
 
 def matrix_to_quat(rot_mat):
@@ -26,11 +24,11 @@ def matrix_to_quat(rot_mat):
 class Object:
     """
     An Object is a collection of prims that move and change their properties together.  A base Object has no prims
-    in it by default because the construct method is empty.  The Object Class is inherited by specific types of 
+    in it by default because the construct method is empty.  The Object Class is inherited by specific types of
     objects in objects.py and the construct function is implemented
 
-    Objects have a base translation and rotation.  All prims that form the object have a 
-        (fixed) translation and rotation that is relative to the base.  The base pose can 
+    Objects have a base translation and rotation.  All prims that form the object have a
+        (fixed) translation and rotation that is relative to the base.  The base pose can
         be updated with set_base_pose, and the world coordinate positions of every prim will
         be updated by their relative position to the base.
 
@@ -38,7 +36,7 @@ class Object:
         self.components: prims that for the object that the robot must avoid
         self.targets: possible targets to make a robot seek. Ex. the cubby object has possible targets
             in each cubby that are transformed along with the base. A random target can be retrieved with
-            self.get_random_target() 
+            self.get_random_target()
 
     Objects are made up of three primitives: capsules, spheres, and rectangular prisms
     TODO: allow meshes to be loaded for an object

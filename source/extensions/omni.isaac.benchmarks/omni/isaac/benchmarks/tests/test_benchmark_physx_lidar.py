@@ -9,12 +9,12 @@
 
 
 import omni.kit.test
-from pxr import Gf
-
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.core.utils.viewports import destroy_all_viewports
-from ..utils.helper import add_physx_lidar
+from pxr import Gf
+
 from ..utils.base_isaac_benchmark import BaseIsaacBenchmark
+from ..utils.helper import add_physx_lidar
 
 
 class TestBenchmarkLidar(BaseIsaacBenchmark):

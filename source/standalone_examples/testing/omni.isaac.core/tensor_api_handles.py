@@ -1,11 +1,11 @@
 from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": True})
+import omni.physx as _physx
 from omni.isaac.core import World
 from omni.isaac.core.robots import Robot
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import add_reference_to_stage
-import omni.physx as _physx
 
 my_world = World(stage_units_in_meters=1.0)
 my_world.scene.add_default_ground_plane()

@@ -7,41 +7,41 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni.kit.test
 import omni.kit.pipapi
+import omni.kit.test
 
 
 class TestPipArchive(omni.kit.test.AsyncTestCase):
     # import all packages to make sure dependencies were not missed
     async def test_import_all(self):
-        import scipy
-        import quaternion
-        import numba
-        import webbot
-        import selenium
-        import urllib3
-        import requests
-        import charset_normalizer
-        import construct
-        import llvmlite
-        import nest_asyncio
-        import jinja2
-        import markupsafe
-        import matplotlib
-        import pyparsing
-        import cycler
-        import kiwisolver
-        import packaging
-        import pint
-        import requests_oauthlib
-        import oauthlib
-        import yaml
-        import osqp
-        import qdldl
-        import nvsmi
         import bezier
         import boto3
+        import charset_normalizer
+        import construct
+        import cycler
+        import jinja2
+        import kiwisolver
+        import llvmlite
+        import markupsafe
+        import matplotlib
+        import nest_asyncio
+        import numba
+        import nvsmi
+        import oauthlib
+        import osqp
+        import packaging
+        import pint
+        import pyparsing
+        import qdldl
+        import quaternion
+        import requests
+        import requests_oauthlib
         import s3transfer
+        import scipy
+        import selenium
+        import urllib3
+        import webbot
+        import yaml
 
         self.assertIsNotNone(scipy)
         self.assertIsNotNone(quaternion)

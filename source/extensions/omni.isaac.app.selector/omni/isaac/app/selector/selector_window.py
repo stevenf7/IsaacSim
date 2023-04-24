@@ -7,30 +7,29 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import sys
 import os
 import subprocess
+import sys
 import textwrap
+from pathlib import Path
+from typing import List
 
 import carb.settings
 import carb.tokens
 import omni.kit.app
 
-from typing import List
-from pathlib import Path
-
-from .start_app import start_app
 from .settings import (
     APPS_SETTING,
-    EXPERIMENTAL_APPS_SETTING,
     AUTO_START_SETTING,
     DEFAULT_APP_SETTING,
-    SHOW_CONSOLE_SETTING,
-    PERSISTENT_SELECTOR_SETTING,
+    EXPERIMENTAL_APPS_SETTING,
     EXTRA_ARGS_SETTING,
     PERSISTENT_ROS_BRIDGE_SETTING,
+    PERSISTENT_SELECTOR_SETTING,
     ROS_BRIDGE_EXTENSIONS,
+    SHOW_CONSOLE_SETTING,
 )
+from .start_app import start_app
 
 CURRENT_PATH = Path(__file__).parent
 ICON_PATH = CURRENT_PATH.parent.parent.parent.parent.joinpath("icons")
@@ -57,7 +56,7 @@ selector_style = {
 
 class SelectorWindow:
     def __init__(self, ext_path: str, app_version: str) -> None:
-        """ create the window """
+        """create the window"""
 
         self._settings = carb.settings.get_settings()
         self._radio_collection = None
@@ -87,13 +86,13 @@ class SelectorWindow:
         self._build_compact_window()
 
     def _get_all_apps(self):
-        """ get the list of apps and experimental apps """
+        """get the list of apps and experimental apps"""
         all_apps: list[str] = self._settings.get(APPS_SETTING)
         all_apps.extend(self._settings.get(EXPERIMENTAL_APPS_SETTING))
         return all_apps
 
     def _start_app(self, app_id: str, app_version: str):
-        """ wrapper function to help collecting the right settings to be used in the class """
+        """wrapper function to help collecting the right settings to be used in the class"""
         all_additional_args = str.split(self._extra_args.get_value_as_string())
         all_additional_args.extend(
             [

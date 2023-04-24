@@ -9,7 +9,7 @@
 
 import omni
 from omni.isaac.core.utils.rotations import lookat_to_quatf
-from pxr import Gf, UsdGeom, Usd
+from pxr import Gf, Usd, UsdGeom
 
 
 class SpringDamperFollower:

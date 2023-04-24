@@ -7,14 +7,15 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import asyncio
+import threading
+import weakref
+
 import omni.ext
 import omni.kit.commands
 import omni.ui as ui
-import weakref
 from omni.isaac.onshape.scripts.style import UI_STYLES
 from omni.isaac.onshape.widgets.documents_widget import *
-import threading
-import asyncio
 
 
 class SortByItem(ui.AbstractItem):

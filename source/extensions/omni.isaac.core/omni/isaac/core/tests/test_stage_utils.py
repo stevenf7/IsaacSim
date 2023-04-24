@@ -7,12 +7,13 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni.kit.test
-from omni.isaac.core.utils.stage import clear_stage, add_reference_to_stage, update_stage_async, create_new_stage_async
-from omni.isaac.core.utils.prims import create_prim
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-import carb
 import asyncio
+
+import carb
+import omni.kit.test
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.prims import create_prim
+from omni.isaac.core.utils.stage import add_reference_to_stage, clear_stage, create_new_stage_async, update_stage_async
 
 
 class TestStage(omni.kit.test.AsyncTestCase):

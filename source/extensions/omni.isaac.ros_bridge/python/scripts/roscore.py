@@ -7,12 +7,13 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import subprocess
 import signal
-import psutil
+import subprocess
+import sys
+
 import carb
 import omni
-import sys
+import psutil
 
 
 def kill_child_processes(parent_pid, sig=signal.SIGTERM):

@@ -7,18 +7,20 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import asyncio
+import os
+
+import omni.kit
+import omni.kit.test
+
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
-import omni.kit.test
-import omni.kit
-import asyncio
+from omni.isaac.core.utils.stage import create_new_stage_async, is_stage_loading, update_stage_async
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.examples.replay_follow_target import ReplayFollowTarget
-from omni.isaac.core.utils.stage import create_new_stage_async, is_stage_loading, update_stage_async
-import os
 
 
 class TestReplayFollowTargetExampleExtension(omni.kit.test.AsyncTestCase):

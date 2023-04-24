@@ -51,8 +51,8 @@ for hz in hzs:
         configs.append({"hz": hz, "resolution": resolution})
 
 
-import sys
 import os
+import sys
 
 original_stdout = sys.stdout
 

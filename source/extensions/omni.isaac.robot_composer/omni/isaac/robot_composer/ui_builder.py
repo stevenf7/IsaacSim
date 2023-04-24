@@ -8,30 +8,24 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni.ui as ui
-import omni.timeline
-
-import omni.usd
-from pxr import Usd
-
-from omni.isaac.ui.element_wrappers import DropDown, FloatField, CollapsableFrame, Button, Frame, CheckBox, TextBlock
-from omni.isaac.core.utils.prims import get_prim_object_type
-from omni.isaac.ui.ui_utils import get_style
-
-from omni.isaac.core.articulations import Articulation
-from omni.isaac.core.utils.types import ArticulationAction
-from omni.isaac.core.prims import XFormPrim
-from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
-
-import omni.kit.commands
-
-import numpy as np
-import carb
-from omni.isaac.core.utils.stage import update_stage_async
-
 import asyncio
-
 from typing import List
+
+import carb
+import numpy as np
+import omni.kit.commands
+import omni.timeline
+import omni.ui as ui
+import omni.usd
+from omni.isaac.core.articulations import Articulation
+from omni.isaac.core.prims.xform_prim import XFormPrim
+from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
+from omni.isaac.core.utils.prims import get_prim_object_type
+from omni.isaac.core.utils.stage import update_stage_async
+from omni.isaac.core.utils.types import ArticulationAction
+from omni.isaac.ui.element_wrappers import Button, CheckBox, CollapsableFrame, DropDown, FloatField, Frame, TextBlock
+from omni.isaac.ui.ui_utils import get_style
+from pxr import Usd
 
 from .robot_composer import RobotComposer
 
@@ -48,7 +42,7 @@ class UIBuilder:
     ###################################################################################
 
     def on_menu_callback(self):
-        """Callback for when the UI is opened from the toolbar. 
+        """Callback for when the UI is opened from the toolbar.
         This is distinct from the creation of the UI in build_ui()
         because it can happen more than once if the user repeatedly
         closes and reopens the window.
@@ -81,7 +75,7 @@ class UIBuilder:
     def on_physics_step(self, step):
         """Callback for Physics Step.
         Physics steps only occur when the timeline is playing
-           
+
         Args:
             step (float): Size of physics step
         """
@@ -113,8 +107,8 @@ class UIBuilder:
 
     def build_ui(self):
         """
-        Build a custom UI tool to run your extension.  
-        This function will be called once when your extension is opened.  
+        Build a custom UI tool to run your extension.
+        This function will be called once when your extension is opened.
         Closing and reopening the extension from the toolbar will maintain the state of the UI.
         If the user hot reloads this extension, this function will be called again.
         """

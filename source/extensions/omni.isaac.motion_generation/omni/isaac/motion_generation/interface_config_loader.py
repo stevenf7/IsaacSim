@@ -1,8 +1,9 @@
-import os
 import json
+import os
+from typing import List
+
 import carb
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
-from typing import List
 
 """This InterfaceLoader makes it trivial to load a valid config for supported interface implementations
 For example, RMPflow has a collection of robot-specific config files stored in the motion_generation extension.
@@ -63,7 +64,7 @@ def load_supported_lula_kinematics_solver_config(robot_name: str, policy_config_
 
     Args:
         robot_name (str): name of robot
-    
+
     Returns:
         solver_config (dict): a dictionary whose keyword arguments are sufficient to load the lula kinematics solver.
             e.g. lula.LulaKinematicsSolver(**load_supported_lula_kinematics_solver_config("Franka"))
@@ -111,7 +112,7 @@ def load_supported_motion_policy_config(robot_name: str, policy_name: str, polic
         policy_name (str): name of MotionPolicy
         policy_config_dir (str): path to directory where a policy_map.json file is stored,
             defaults to ".../omni.isaac.motion_generation/motion_policy_configs"
-    
+
     Returns:
         policy_config (dict): a dictionary whose keyword arguments are sufficient to load the desired motion policy
             e.g. lula.motion_policies.RmpFlow(**load_supported_motion_policy_config("Franka","RMPflow"))

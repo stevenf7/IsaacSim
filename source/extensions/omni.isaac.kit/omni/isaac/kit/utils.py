@@ -10,8 +10,10 @@
 # The functions in this file are copies from omni.isaac.core to make the dependency structure cleaner.
 
 from __future__ import annotations
-import carb
+
 from typing import Any
+
+import carb
 
 
 def set_carb_setting(carb_settings: carb.settings.ISettings, setting: str, value: Any) -> None:
@@ -42,8 +44,8 @@ def open_stage(usd_path: str) -> bool:
     Args:
         usd_path (str): Path to open
     """
-    from pxr import Usd
     import omni.usd
+    from pxr import Usd
 
     if not Usd.Stage.IsSupportedFile(usd_path):
         raise ValueError("Only USD files can be loaded with this method")
@@ -71,8 +73,8 @@ def save_stage(usd_path: str) -> bool:
     Args:
         usd_path (str): Path to save the current stage to
     """
-    from pxr import Usd
     import omni.usd
+    from pxr import Usd
 
     if not Usd.Stage.IsSupportedFile(usd_path):
         raise ValueError("Only USD files can be saved with this method")
@@ -106,7 +108,7 @@ def set_livesync_stage(usd_path: str, enable: bool) -> bool:
 
 def is_stage_loading() -> bool:
     """
-        bool: Convenience function to see if any files are being loaded. True if loading, False otherwise
+    bool: Convenience function to see if any files are being loaded. True if loading, False otherwise
     """
     import omni.usd
 

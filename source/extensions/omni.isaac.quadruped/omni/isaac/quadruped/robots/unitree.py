@@ -7,21 +7,20 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+from collections import deque
+from typing import List, Optional
+
+import carb
+import numpy as np
 import omni
 import omni.kit.commands
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.utils.prims import get_prim_at_path, define_prim
-from omni.isaac.sensor import _sensor
-
-from omni.isaac.core.utils.stage import get_current_stage, get_stage_units
 from omni.isaac.core.articulations import Articulation
-from omni.isaac.quadruped.utils.a1_classes import A1State, A1Measurement, A1Command
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
+from omni.isaac.core.utils.stage import get_current_stage, get_stage_units
 from omni.isaac.quadruped.controllers import A1QPController
-from omni.isaac.sensor import ContactSensor, IMUSensor
-from typing import Optional, List
-from collections import deque
-import numpy as np
-import carb
+from omni.isaac.quadruped.utils.a1_classes import A1Command, A1Measurement, A1State
+from omni.isaac.sensor import ContactSensor, IMUSensor, _sensor
 
 
 class Unitree(Articulation):
@@ -40,9 +39,9 @@ class Unitree(Articulation):
     ) -> None:
         """
         [Summary]
-        
+
         initialize robot, set up sensors and controller
-        
+
         Args:
             prim_path {str} -- prim path of the robot on the stage
             name {str} -- name of the quadruped
@@ -52,7 +51,7 @@ class Unitree(Articulation):
             orientation {np.ndarray} -- orientation of the robot
             model {str} -- robot model (can be either A1 or Go1)
             way_points {np.ndarray} -- waypoint and heading of the robot
-        
+
         """
         self._stage = get_current_stage()
         self._prim_path = prim_path
@@ -145,7 +144,7 @@ class Unitree(Articulation):
 
     def set_state(self, state: A1State) -> None:
         """[Summary]
-        
+
         Set the kinematic state of the robot.
 
         Args:
@@ -179,7 +178,7 @@ class Unitree(Articulation):
 
     def update_contact_sensor_data(self) -> None:
         """[summary]
-        
+
         Updates processed contact sensor data from the robot feets, store them in member variable foot_force
         """
         # Order: FL, FR, BL, BR
@@ -197,7 +196,7 @@ class Unitree(Articulation):
 
     def update_imu_sensor_data(self) -> None:
         """[summary]
-        
+
         Updates processed imu sensor data from the robot body, store them in member variable base_lin and ang_vel
         """
         frame = self._imu_sensor.get_current_frame()
@@ -207,7 +206,7 @@ class Unitree(Articulation):
 
     def update(self) -> None:
         """[summary]
-        
+
         update robot sensor variables, state variables in A1Measurement
         """
 
@@ -247,9 +246,9 @@ class Unitree(Articulation):
 
     def advance(self, dt, goal, path_follow=False, auto_start=True) -> np.ndarray:
         """[summary]
-        
+
         compute desired torque and set articulation effort to robot joints
-        
+
         Argument:
         dt {float} -- Timestep update in the world.
         goal {List[int]} -- x velocity, y velocity, angular velocity, state switch

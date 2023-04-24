@@ -7,30 +7,32 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.isaac.core.controllers import BaseController
-from omni.isaac.core.utils.stage import get_stage_units
-from omni.isaac.core.utils.rotations import euler_angles_to_quat, quat_to_euler_angles
-import numpy as np
 import typing
-from omni.isaac.manipulators.controllers.pick_place_controller import PickPlaceController
+
+import numpy as np
+from omni.isaac.core.controllers.base_controller import BaseController
+from omni.isaac.core.utils.rotations import euler_angles_to_quat, quat_to_euler_angles
+from omni.isaac.core.utils.stage import get_stage_units
 from omni.isaac.franka.controllers.rmpflow_controller import RMPFlowController
-from .screw_controller import ScrewController
 from omni.isaac.franka.franka import Franka
+from omni.isaac.manipulators.controllers.pick_place_controller import PickPlaceController
+
 from .nut_vibra_table_controller import VibraFSM
+from .screw_controller import ScrewController
 
 
 class NutBoltController(BaseController):
-    """ 
-        A state machine to tie nuts onto bolts with a vibrating table feeding the nuts 
+    """
+    A state machine to tie nuts onto bolts with a vibrating table feeding the nuts
 
-        - State 0: Pick and Place from pickup location on vibration table to different bolts
-        - State 1: Screw nut onto bolt
+    - State 0: Pick and Place from pickup location on vibration table to different bolts
+    - State 1: Screw nut onto bolt
 
-        Args:
-            name (str): Name id of the controller
-            franka (Franka): Franka Robot
+    Args:
+        name (str): Name id of the controller
+        franka (Franka): Franka Robot
 
-        """
+    """
 
     def __init__(self, name: str, franka: Franka) -> None:
         BaseController.__init__(self, name=name)
@@ -84,8 +86,8 @@ class NutBoltController(BaseController):
         Args:
             initial_picking_position (np.ndarray): initial nut position at table feeder
             bolt_top (np.ndarray):  bolt target position
-            
-        # """
+
+        #"""
         _vibra_table_transforms = np.array([0.0, 0.0, 0.0])
         if self.is_paused():
             return _vibra_table_transforms
@@ -124,7 +126,7 @@ class NutBoltController(BaseController):
 
         Args:
             franka (Franka): Franka Robot
-            
+
         """
         BaseController.reset(self)
         self._event = 0
@@ -137,13 +139,11 @@ class NutBoltController(BaseController):
         return
 
     def pause(self) -> None:
-        """Pauses the state machine's time and phase.
-        """
+        """Pauses the state machine's time and phase."""
         self._pause = True
         return
 
     def resume(self) -> None:
-        """Resumes the state machine's time and phase.
-        """
+        """Resumes the state machine's time and phase."""
         self._pause = False
         return

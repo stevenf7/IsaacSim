@@ -6,19 +6,20 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import os
-import carb
-import unittest
 import glob
-import sys
-import subprocess
+import os
+import platform
 import shutil
 import stat
-import torch
-import platform
-import psutil
-import omni.kit
+import subprocess
+import sys
+import unittest
+
+import carb
 import numpy as np
+import omni.kit
+import psutil
+import torch
 
 
 def _is_windows():

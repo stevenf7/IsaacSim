@@ -8,8 +8,8 @@
 #
 
 from omni.isaac.examples.base_sample import BaseSample
+from omni.isaac.franka.controllers.stacking_controller import StackingController
 from omni.isaac.franka.tasks import Stacking
-from omni.isaac.franka.controllers import StackingController
 
 
 class SimpleStack(BaseSample):

@@ -6,33 +6,31 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import carb.input
-from pxr import Usd, UsdGeom
-import omni.kit.commands
-import omni.ext
-import omni.appwindow
-import omni.ui as ui
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-from omni.isaac.ui.menu import make_menu_item_description
-
 import asyncio
 import weakref
-from omni.isaac.motion_planning import _motion_planning
-from omni.isaac.dynamic_control import _dynamic_control
-from omni.isaac.core.utils.viewports import set_camera_view
+
+import carb.input
+import omni.appwindow
+import omni.ext
+import omni.kit.commands
 import omni.physx as _physx
+import omni.ui as ui
+from omni.isaac.core.utils.viewports import set_camera_view
+from omni.isaac.dynamic_control import _dynamic_control
+from omni.isaac.motion_planning import _motion_planning
+from omni.isaac.ui.menu import make_menu_item_description
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+from pxr import Usd, UsdGeom
 
-from .utils.scenario import Scenario
 from .utils.ghost_scenario import GhostScenario
-
+from .utils.scenario import Scenario
 
 EXTENSION_NAME = "Leonardo Preview"
 
 
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
-        """Initialize extension and UI elements
-        """
+        """Initialize extension and UI elements"""
         self._timeline = omni.timeline.get_timeline_interface()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
@@ -102,8 +100,7 @@ class Extension(omni.ext.IExt):
         asyncio.ensure_future(self._on_create_franka(task))
 
     async def _on_create_franka(self, task):
-        """Load any assets required by the scenario and create objects
-        """
+        """Load any assets required by the scenario and create objects"""
         done, pending = await asyncio.wait({task})
         if task not in done:
             await omni.kit.app.get_app().next_update_async()
@@ -141,8 +138,7 @@ class Extension(omni.ext.IExt):
             light_prim.SetActive(False)
 
     def _on_stop_tasks(self, *args):
-        """Stop all tasks being performed by the scenario
-        """
+        """Stop all tasks being performed by the scenario"""
         self._scenario.stop_tasks()
 
     def _on_simulation_step(self, step):
@@ -176,8 +172,7 @@ class Extension(omni.ext.IExt):
                 self._scenario = Scenario(self._dc, self._mp)
 
     def _on_toggle_obstacle(self, *args):
-        """Toggle obstacle visibility
-        """
+        """Toggle obstacle visibility"""
         for obstacle in self._scenario._obstacles:
             imageable = UsdGeom.Imageable(self._stage.GetPrimAtPath(obstacle.asset_path))
             visibility = imageable.ComputeVisibility(Usd.TimeCode.Default())
@@ -189,13 +184,11 @@ class Extension(omni.ext.IExt):
                 obstacle.suppress()
 
     def _on_perform_task(self, *args):
-        """Perform all tasks in the scenario
-        """
+        """Perform all tasks in the scenario"""
         self._scenario.perform_tasks()
 
     def _on_update_ui(self, step):
-        """Callback that updates UI elements every frame
-        """
+        """Callback that updates UI elements every frame"""
         if self._scenario.is_created():
             self._create_franka_btn.enabled = False
             self._perform_task_btn.enabled = False
@@ -221,8 +214,7 @@ class Extension(omni.ext.IExt):
             self._toggle_obstacle_btn.enabled = False
 
     def on_shutdown(self):
-        """Cleanup objects on extension shutdown
-        """
+        """Cleanup objects on extension shutdown"""
         self._timeline.stop()
         self._on_stop_tasks()
         self._scenario = None

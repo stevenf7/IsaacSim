@@ -7,21 +7,17 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import difflib as dl
+import weakref
+from typing import List, Optional
+
+import carb
 import omni.ext
 import omni.kit.commands
 import omni.ui
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 from omni.isaac.ui.menu import make_menu_item_description
-
-import carb
-
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from pxr import Sdf, Usd
-
-import difflib as dl
-import weakref
-
-from typing import List
-from typing import Optional
 
 
 class DiffUSD(omni.kit.commands.Command):

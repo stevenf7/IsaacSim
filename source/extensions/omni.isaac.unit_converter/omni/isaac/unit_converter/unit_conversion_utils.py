@@ -7,11 +7,12 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from pxr import Usd, UsdGeom, Gf, UsdPhysics, UsdLux, PhysxSchema
-import omni
-import carb
-from pathlib import PurePosixPath as PPath
 from functools import partial
+from pathlib import PurePosixPath as PPath
+
+import carb
+import omni
+from pxr import Gf, PhysxSchema, Usd, UsdGeom, UsdLux, UsdPhysics
 
 joint_positions_list = ["physics:localPos0", "physics:localPos1"]
 

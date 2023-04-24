@@ -7,16 +7,16 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 import sys
+
 from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
+import carb
 from omni.isaac.core import World
 from omni.isaac.core.robots import Robot
-from omni.isaac.core.utils.stage import add_reference_to_stage
 from omni.isaac.core.utils.nucleus import get_assets_root_path
-import carb
-
+from omni.isaac.core.utils.stage import add_reference_to_stage
 
 assets_root_path = get_assets_root_path()
 if assets_root_path is None:

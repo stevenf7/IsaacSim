@@ -6,11 +6,12 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+import gc
+from abc import abstractmethod
+
 from omni.isaac.core import World
 from omni.isaac.core.scenes.scene import Scene
 from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
-import gc
-from abc import abstractmethod
 
 
 class BaseSample(object):
@@ -34,8 +35,7 @@ class BaseSample(object):
         return
 
     async def load_world_async(self):
-        """Function called when clicking load buttton
-        """
+        """Function called when clicking load buttton"""
         if World.instance() is None:
             await create_new_stage_async()
             self._world = World(**self._world_settings)
@@ -52,8 +52,7 @@ class BaseSample(object):
         return
 
     async def reset_async(self):
-        """Function called when clicking reset buttton
-        """
+        """Function called when clicking reset buttton"""
         if self._world.is_tasks_scene_built() and len(self._current_tasks) > 0:
             self._world.remove_physics_callback("tasks_step")
         await self._world.play_async()
@@ -77,28 +76,27 @@ class BaseSample(object):
 
     @abstractmethod
     async def setup_post_load(self):
-        """called after first reset of the world when pressing load, 
-            intializing provate variables happen here.
+        """called after first reset of the world when pressing load,
+        intializing provate variables happen here.
         """
         return
 
     @abstractmethod
     async def setup_pre_reset(self):
-        """ called in reset button before resetting the world
-         to remove a physics callback for instance or a controller reset
+        """called in reset button before resetting the world
+        to remove a physics callback for instance or a controller reset
         """
         return
 
     @abstractmethod
     async def setup_post_reset(self):
-        """ called in reset button after resetting the world which includes one step with rendering
-        """
+        """called in reset button after resetting the world which includes one step with rendering"""
         return
 
     @abstractmethod
     async def setup_post_clear(self):
-        """called after clicking clear button 
-          or after creating a new stage and clearing the instance of the world with its callbacks
+        """called after clicking clear button
+        or after creating a new stage and clearing the instance of the world with its callbacks
         """
         return
 
@@ -114,13 +112,11 @@ class BaseSample(object):
         return
 
     def world_cleanup(self):
-        """Function called when extension shutdowns and starts again, (hot reloading feature)
-        """
+        """Function called when extension shutdowns and starts again, (hot reloading feature)"""
         return
 
     async def clear_async(self):
-        """Function called when clicking clear buttton
-        """
+        """Function called when clicking clear buttton"""
         await create_new_stage_async()
         if self._world is not None:
             self._world_cleanup()

@@ -1,11 +1,11 @@
 from math import radians
+
+import numpy as np
 import omni
-from pxr import UsdPhysics, UsdGeom, Gf, Usd, UsdShade
 import omni.graph.core as og
 from omni.isaac.dynamic_control import _dynamic_control
-from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper
-from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper_Properties
-import numpy as np
+from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper, Surface_Gripper_Properties
+from pxr import Gf, Usd, UsdGeom, UsdPhysics, UsdShade
 
 
 class SurfaceGripperInternalState:

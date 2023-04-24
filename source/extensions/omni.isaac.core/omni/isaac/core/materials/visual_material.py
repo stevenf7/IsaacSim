@@ -6,20 +6,21 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from pxr import Usd, UsdShade
 from typing import List
+
+from pxr import Usd, UsdShade
 
 
 class VisualMaterial(object):
     """[summary]
 
-        Args:
-            name (str): [description]
-            prim_path (str): [description]
-            prim (Usd.Prim): [description]
-            shaders_list (list[UsdShade.Shader]): [description]
-            material (UsdShade.Material): [description]
-        """
+    Args:
+        name (str): [description]
+        prim_path (str): [description]
+        prim (Usd.Prim): [description]
+        shaders_list (list[UsdShade.Shader]): [description]
+        material (UsdShade.Material): [description]
+    """
 
     def __init__(
         self,

@@ -8,7 +8,7 @@
 #
 from .collision_box import CollisionBox
 from .dynamic_asset_set import DynamicAssetSet
-from .dynamic_object_set import DynamicObjectSet
 from .dynamic_object import DynamicObject
+from .dynamic_object_set import DynamicObjectSet
 from .dynamic_shape_set import DynamicShapeSet
 from .flying_distractors import FlyingDistractors

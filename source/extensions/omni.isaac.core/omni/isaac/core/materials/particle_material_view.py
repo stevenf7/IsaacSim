@@ -6,26 +6,25 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import torch
-import numpy as np
 from typing import Optional, Tuple, Union
-from pxr import PhysxSchema
 
 # omniverse
 import carb
-import omni.kit.app
+import numpy as np
 
 # isaac-core
 import omni.kit.app
+import torch
 from omni.isaac.core.simulation_context.simulation_context import SimulationContext
-from omni.isaac.core.utils.prims import get_prim_at_path, find_matching_prim_paths, is_prim_path_valid
+from omni.isaac.core.utils.prims import find_matching_prim_paths, get_prim_at_path, is_prim_path_valid
+from pxr import PhysxSchema
 
 
 class ParticleMaterialView:
     """The view class to deal with particleMaterial prims.
-        Provides high level functions to deal with particle material (1 or more particle materials) 
-        as well as its attributes/ properties. This object wraps all matching materials found at the regex provided at the prim_paths_expr.
-        This object wraps all matching materials Prims found at the regex provided at the prim_paths_expr.
+    Provides high level functions to deal with particle material (1 or more particle materials)
+    as well as its attributes/ properties. This object wraps all matching materials found at the regex provided at the prim_paths_expr.
+    This object wraps all matching materials Prims found at the regex provided at the prim_paths_expr.
     """
 
     def __init__(
@@ -163,7 +162,7 @@ class ParticleMaterialView:
     def is_valid(self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None) -> bool:
         """
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -179,8 +178,7 @@ class ParticleMaterialView:
         return result
 
     def post_reset(self) -> None:
-        """Resets the particles to their initial states.
-        """
+        """Resets the particles to their initial states."""
         # TODO:
         return
 

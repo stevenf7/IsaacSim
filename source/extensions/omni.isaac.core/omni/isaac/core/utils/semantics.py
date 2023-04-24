@@ -7,8 +7,9 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+from typing import Dict, List, Tuple
+
 from pxr import Semantics, Usd
-from typing import List, Tuple, Dict
 
 
 def add_update_semantics(prim: Usd.Prim, semantic_label: str, type_label: str = "class", suffix="") -> None:
@@ -70,12 +71,12 @@ def remove_all_semantics(prim: Usd.Prim, recursive: bool = False) -> None:
 
 def get_semantics(prim: Usd.Prim) -> Dict[str, Tuple[str, str]]:
     """Returns semantics that are applied to a prim
-    
+
     Args:
         prim (Usd.Prim): Prim to return semantics for
 
     Returns:
-        Dict[str, Tuple[str,str]]: Dictionary containing the name of the applied semantic, and the type and data associated with that semantic. 
+        Dict[str, Tuple[str,str]]: Dictionary containing the name of the applied semantic, and the type and data associated with that semantic.
     """
     result = {}
     for prop in prim.GetProperties():

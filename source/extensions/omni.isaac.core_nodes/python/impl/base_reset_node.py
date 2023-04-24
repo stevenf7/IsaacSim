@@ -7,13 +7,13 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni.usd
 import carb.events
+import omni.usd
 
 
 class BaseResetNode:
     """
-        Base class for nodes that automatically reset when stop is pressed.
+    Base class for nodes that automatically reset when stop is pressed.
     """
 
     def __init__(self, initialize=False):

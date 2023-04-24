@@ -7,12 +7,13 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni
 import asyncio
+
 import carb
-from omni.isaac.core.utils.stage import open_stage_async
-from omni.isaac.core.utils.nucleus import get_assets_root_path
 import numpy as np
+import omni
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.stage import open_stage_async
 
 
 def create_joint_state(name, position, velocity=[], effort=[]):
@@ -109,7 +110,7 @@ async def bridge_rosmaster_connect():
 
 
 async def add_cube(path, size, offset):
-    from pxr import UsdPhysics, UsdGeom
+    from pxr import UsdGeom, UsdPhysics
 
     stage = omni.usd.get_context().get_stage()
     cubeGeom = UsdGeom.Cube.Define(stage, path)

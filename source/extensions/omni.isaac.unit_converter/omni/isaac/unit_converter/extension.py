@@ -7,31 +7,30 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from functools import partial
-import omni.ext
-from omni.kit.window.filepicker.dialog import FilePickerDialog
-import omni.ui as ui
+import os
 import weakref
+from functools import partial
+from pathlib import PurePath, PurePosixPath
+
+import omni.ext
+import omni.ui as ui
 from omni.client._omniclient import Result
-from pxr import Usd
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.ui.ui_utils import (
+    btn_builder,
     cb_builder,
     combo_cb_str_builder,
-    float_builder,
-    setup_ui_headers,
-    get_style,
-    btn_builder,
-    scrolling_frame_builder,
-    str_builder,
     combo_floatfield_slider_builder,
+    float_builder,
+    get_style,
+    scrolling_frame_builder,
+    setup_ui_headers,
+    str_builder,
 )
-
-
-from pathlib import PurePosixPath, PurePath
 from omni.isaac.unit_converter.unit_conversion_utils import set_stage_meters_per_unit
-import os
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+from omni.kit.window.filepicker.dialog import FilePickerDialog
+from pxr import Usd
 
 
 def join(base, name):

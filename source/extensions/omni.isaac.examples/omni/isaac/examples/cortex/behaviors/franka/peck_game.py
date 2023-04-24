@@ -28,13 +28,13 @@ separation between observability and choice of action to make an observable chan
 principle in decider network design for inducing reactivitiy.
 """
 
-import numpy as np
 import time
 
-from omni.isaac.cortex.df import DfLogicalState, DfNetwork, DfDecider, DfDecision, DfAction
-from omni.isaac.cortex.dfb import DfRobotApiContext, DfLift, DfCloseGripper, make_go_home
+import numpy as np
 import omni.isaac.cortex.math_util as math_util
-from omni.isaac.cortex.motion_commander import MotionCommand, ApproachParams, PosePq
+from omni.isaac.cortex.df import DfAction, DfDecider, DfDecision, DfLogicalState, DfNetwork
+from omni.isaac.cortex.dfb import DfCloseGripper, DfLift, DfRobotApiContext, make_go_home
+from omni.isaac.cortex.motion_commander import ApproachParams, MotionCommand, PosePq
 
 
 class PeckContext(DfRobotApiContext):

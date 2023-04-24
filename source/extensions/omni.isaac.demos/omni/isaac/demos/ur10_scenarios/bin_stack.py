@@ -7,23 +7,22 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import random
-import numpy as np
-
-from pxr import Gf, UsdGeom
-from enum import Enum
-import omni
-import carb
-from omni.isaac.dynamic_control import _dynamic_control
-from omni.isaac.utils._isaac_utils import math as math_utils
-from omni.isaac.demos.utils.world import World
-from omni.isaac.demos.utils.ur10 import UR10, default_config
-from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper_Properties
-
-from .scenario import set_translate, set_rotate, create_ur10, Scenario, create_background, create_objects, setup_physics
-from copy import copy
-
-import omni.physx
 from collections import deque
+from copy import copy
+from enum import Enum
+
+import carb
+import numpy as np
+import omni
+import omni.physx
+from omni.isaac.demos.utils.ur10 import UR10, default_config
+from omni.isaac.demos.utils.world import World
+from omni.isaac.dynamic_control import _dynamic_control
+from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper_Properties
+from omni.isaac.utils._isaac_utils import math as math_utils
+from pxr import Gf, UsdGeom
+
+from .scenario import Scenario, create_background, create_objects, create_ur10, set_rotate, set_translate, setup_physics
 
 
 class SM_events(Enum):
@@ -374,7 +373,7 @@ class PickAndPlaceStateMachine(object):
 
     def step(self, timestamp, start=False, reset=False):
         """
-            Steps the State machine, handling which event to call
+        Steps the State machine, handling which event to call
         """
         if self.current_state != self.previous_state:
             self.previous_state = self.current_state

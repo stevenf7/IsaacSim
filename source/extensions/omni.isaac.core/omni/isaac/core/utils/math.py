@@ -8,8 +8,9 @@
 #
 
 import copy
-import numpy as np
 from typing import Union
+
+import numpy as np
 
 
 def radians_to_degrees(rad_angles: np.ndarray) -> np.ndarray:
@@ -38,13 +39,13 @@ def cross(a: Union[np.ndarray, list], b: Union[np.ndarray, list]) -> list:
 
 
 def normalize(v):
-    """ Normalizes the vector inline (and also returns it). """
+    """Normalizes the vector inline (and also returns it)."""
     v /= np.linalg.norm(v)
     return v
 
 
 def normalized(v):
-    """ Returns a normalized copy of the provided vector. """
+    """Returns a normalized copy of the provided vector."""
     if v is None:
         return None
     return normalize(copy.deepcopy(v))

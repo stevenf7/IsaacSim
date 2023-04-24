@@ -6,12 +6,13 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-import omni.ext
 import gc
-import omni.kit.commands
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 import weakref
 from functools import partial
+
+import omni.ext
+import omni.kit.commands
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 
 
 class Extension(omni.ext.IExt):

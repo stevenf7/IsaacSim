@@ -1,20 +1,20 @@
 from typing import List
-import omni.usd
-from pxr import UsdGeom, Gf, Vt, Sdf, PhysxSchema, Usd, UsdUtils
-from omni.physx import get_physx_replicator_interface, get_physx_simulation_interface
 
-import numpy as np
 import carb
+import numpy as np
+import omni.usd
+from omni.physx import get_physx_replicator_interface, get_physx_simulation_interface
+from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdUtils, Vt
 
 
 class Cloner:
 
-    """ This class provides a set of simple APIs to make duplication of objects simple. 
-        Objects can be cloned using this class to create copies of the same object,
-        placed at user-specified locations in the scene.
+    """This class provides a set of simple APIs to make duplication of objects simple.
+    Objects can be cloned using this class to create copies of the same object,
+    placed at user-specified locations in the scene.
 
-        Note that the cloning process is performed in a for-loop, so performance should
-        be expected to follow linear scaling with an increase of clones.
+    Note that the cloning process is performed in a for-loop, so performance should
+    be expected to follow linear scaling with an increase of clones.
     """
 
     def __init__(self):
@@ -22,7 +22,7 @@ class Cloner:
         self._root_path = None
 
     def define_base_env(self, base_env_path: str):
-        """ Creates a USD Scope at base_env_path. This is designed to be the parent that holds all clones.
+        """Creates a USD Scope at base_env_path. This is designed to be the parent that holds all clones.
 
         Args:
             base_env_path (str): Path to create the USD Scope at.
@@ -33,7 +33,7 @@ class Cloner:
 
     def generate_paths(self, root_path: str, num_paths: int):
 
-        """ Generates a list of paths under the root path specified. 
+        """Generates a list of paths under the root path specified.
 
         Args:
             root_path (str): Base path where new paths will be created under.
@@ -47,7 +47,7 @@ class Cloner:
         return [f"{root_path}_{i}" for i in range(num_paths)]
 
     def _replicate_physics(self, source_prim_path: str, prim_paths: list, base_env_path: str, root_path: str):
-        """ Replicates physics properties directly in omni.physics to avoid performance bottlenecks when parsing physics. 
+        """Replicates physics properties directly in omni.physics to avoid performance bottlenecks when parsing physics.
 
         Args:
             source_prim_path (str): Path of source object.
@@ -97,8 +97,8 @@ class Cloner:
         root_path: str = None,
     ):
 
-        """ Clones a source prim at user-specified destination paths. 
-            Clones will be placed at user-specified positions and orientations. 
+        """Clones a source prim at user-specified destination paths.
+            Clones will be placed at user-specified positions and orientations.
 
         Args:
             source_prim_path (str): Path of source object.
@@ -107,7 +107,7 @@ class Cloner:
                                     Defaults to None. Clones will be placed at (0, 0, 0) if not specified.
             orientations (np.ndarray): Numpy array containing target orientations of clones. Dimension must equal length of prim_paths.
                                     Defaults to None. Clones will have identity orientation (1, 0, 0, 0) if not specified.
-            replicate_physics (bool): Uses omni.physics replication. This will replicate physics properties directly for paths beginning with root_path and skip physics parsing for anything under the base_env_path. 
+            replicate_physics (bool): Uses omni.physics replication. This will replicate physics properties directly for paths beginning with root_path and skip physics parsing for anything under the base_env_path.
             base_env_path (str): Path to namespace for all environments. Required if replicate_physics=True and define_base_env() not called.
             root_path (str): Prefix path for each environment. Required if replicate_physics=True and generate_paths() not called.
         Raises:
@@ -238,8 +238,8 @@ class Cloner:
     def filter_collisions(
         self, physicsscene_path: str, collision_root_path: str, prim_paths: List[str], global_paths: List[str] = []
     ):
-        """ Filters collisions between clones. Clones will not collide with each other, but can collide with objects specified in global_paths.
-        
+        """Filters collisions between clones. Clones will not collide with each other, but can collide with objects specified in global_paths.
+
         Args:
             physicsscene_path (str): Path to PhysicsScene object in stage.
             collision_root_path (str): Path to place collision groups under.

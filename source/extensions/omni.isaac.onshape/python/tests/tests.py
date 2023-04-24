@@ -7,28 +7,29 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import gc
+
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 from asyncio import sleep
 from math import inf
 
-import pxr
 import omni.kit.test
-import gc
+import pxr
 
 # Transition between 104 and 105, deprecation of namespace omni.usd.utils
 try:
-    from omni.usd.utils import get_world_transform_matrix, get_local_transform_matrix
+    from omni.usd.utils import get_local_transform_matrix, get_world_transform_matrix
 except:
-    from omni.usd import get_world_transform_matrix, get_local_transform_matrix
+    from omni.usd import get_local_transform_matrix, get_world_transform_matrix
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the World of module will make it auto-discoverable by omni.kit.test
 
-from pxr import UsdGeom, Usd, UsdPhysics
-from omni.isaac.onshape.widgets import documents_widget, elements_widget, assembly_widget, parts_widget
 from omni.isaac.onshape.scripts import usd_generator
+from omni.isaac.onshape.widgets import assembly_widget, documents_widget, elements_widget, parts_widget
+from pxr import Usd, UsdGeom, UsdPhysics
 
 test_documents = {
     "slider_mate_no_limits": {

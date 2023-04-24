@@ -7,6 +7,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .surface_gripper import SurfaceGripper
-from .extension import *
 from .commands import *
+from .extension import *
+from .surface_gripper import SurfaceGripper

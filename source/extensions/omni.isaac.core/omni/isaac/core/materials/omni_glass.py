@@ -7,31 +7,32 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.isaac.core.materials import VisualMaterial
-import omni.kit.app
-import carb
-from pxr import Gf, UsdShade, Sdf
 from typing import Optional
+
+import carb
 import numpy as np
-from omni.isaac.core.utils.prims import move_prim, get_prim_at_path, is_prim_path_valid
+import omni.kit.app
+from omni.isaac.core.materials.visual_material import VisualMaterial
+from omni.isaac.core.utils.prims import get_prim_at_path, is_prim_path_valid, move_prim
 from omni.kit.material.library import CreateAndBindMdlMaterialFromLibrary
+from pxr import Gf, Sdf, UsdShade
 
 
 class OmniGlass(VisualMaterial):
     """[summary]
 
-        Args:
-            prim_path (str): [description]
-            name (str, optional): [description]. Defaults to "omni_glass".
-            shader (Optional[UsdShade.Shader], optional): [description]. Defaults to None.
-            color (Optional[np.ndarray], optional): [description]. Defaults to None.
-            ior (Optional[float], optional): [description]. Defaults to None.
-            depth (Optional[float], optional): [description]. Defaults to None.
-            thin_walled (Optional[bool], optional): [description]. Defaults to None.
+    Args:
+        prim_path (str): [description]
+        name (str, optional): [description]. Defaults to "omni_glass".
+        shader (Optional[UsdShade.Shader], optional): [description]. Defaults to None.
+        color (Optional[np.ndarray], optional): [description]. Defaults to None.
+        ior (Optional[float], optional): [description]. Defaults to None.
+        depth (Optional[float], optional): [description]. Defaults to None.
+        thin_walled (Optional[bool], optional): [description]. Defaults to None.
 
-        Raises:
-            Exception: [description]
-        """
+    Raises:
+        Exception: [description]
+    """
 
     def __init__(
         self,

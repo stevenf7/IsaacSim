@@ -7,24 +7,24 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import os
-import gc
-import time
 import asyncio
+import gc
 import json
+import os
+import time
+from enum import Enum
+from functools import lru_cache
+
 import carb
 import carb.events
 import omni.kit.ui
-import omni.ui as ui
 import omni.replicator.core as rep
 import omni.timeline
+import omni.ui as ui
 from omni.kit.viewport.utility import get_active_viewport
 from omni.kit.window.extensions.utils import open_file_using_os_default
 from omni.replicator.core import orchestrator
 from pxr import Semantics
-
-from functools import lru_cache
-from enum import Enum
 
 PARAM_TOOLTIPS = {
     "rgb": "Produces an array of type np.uint8 with shape (width, height, 4), where the four channels correspond to R,G,B,A.",

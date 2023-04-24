@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 
 bin_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -14,20 +14,16 @@ bs.bootstrap(
     subdirs={"ovc": "python", "common": "lib"},
 )
 
-import asyncio
 import argparse
+import asyncio
 import json
-import shutil
-
-from datetime import datetime
-
 import re
-
+import shutil
 import zipfile
-
+from datetime import datetime
 from pprint import pprint
 
-from nvidia.sysutils import push_dir_pos, pop_dir_pos
+from nvidia.sysutils import pop_dir_pos, push_dir_pos
 
 description = "Syncs OV file meta to a directory"
 

@@ -11,19 +11,19 @@
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 
-import omni.kit.test
-import omni.kit.commands
+import asyncio
 import sys
+
 import carb
-import omni.kit.commands
+import numpy as np
 import omni.kit
+import omni.kit.commands
+import omni.kit.test
+import omni.replicator.core as rep
 import omni.usd
+from omni.isaac.core.objects import VisualCuboid
 from omni.isaac.core.utils.render_product import create_hydra_texture
 from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
-import omni.replicator.core as rep
-import numpy as np
-from omni.isaac.core.objects import VisualCuboid
-import asyncio
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test

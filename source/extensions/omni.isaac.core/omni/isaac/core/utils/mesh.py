@@ -9,12 +9,12 @@
 
 import numpy as np
 
-# omniverse
-from pxr import Usd, UsdGeom
-
 # isaacsim
 from omni.isaac.core.utils.stage import get_stage_units
 from omni.isaac.core.utils.transformations import get_relative_transform
+
+# omniverse
+from pxr import Usd, UsdGeom
 
 
 def get_mesh_vertices_relative_to(mesh_prim: UsdGeom.Mesh, coord_prim: Usd.Prim) -> np.ndarray:

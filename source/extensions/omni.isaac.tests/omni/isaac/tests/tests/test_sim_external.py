@@ -7,10 +7,11 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni.kit.test
 import os
+
 import carb
 import omni.kit.app
+import omni.kit.test
 
 
 class TestExternalDependencies(omni.kit.test.AsyncTestCase):

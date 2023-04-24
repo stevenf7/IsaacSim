@@ -6,15 +6,16 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from abc import abstractmethod, ABC
-from omni.isaac.core.tasks import BaseTask
-from omni.isaac.core.scenes.scene import Scene
-from omni.isaac.core.objects import DynamicCuboid
+from abc import ABC, abstractmethod
+from typing import List, Optional
+
 import numpy as np
+from omni.isaac.core.objects import DynamicCuboid
+from omni.isaac.core.scenes.scene import Scene
+from omni.isaac.core.tasks import BaseTask
 from omni.isaac.core.utils.prims import is_prim_path_valid
 from omni.isaac.core.utils.stage import get_stage_units
 from omni.isaac.core.utils.string import find_unique_string_name
-from typing import List, Optional
 
 
 class Stacking(ABC, BaseTask):
@@ -171,8 +172,7 @@ class Stacking(ABC, BaseTask):
         return
 
     def post_reset(self) -> None:
-        """[summary]
-        """
+        """[summary]"""
         from omni.isaac.manipulators.grippers.parallel_gripper import ParallelGripper
 
         if isinstance(self._robot.gripper, ParallelGripper):

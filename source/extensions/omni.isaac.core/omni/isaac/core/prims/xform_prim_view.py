@@ -6,68 +6,72 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Optional, Tuple, Union, List
-from pxr import Gf, Usd, UsdGeom, UsdShade
+from typing import List, Optional, Tuple, Union
+
+import carb
+import numpy as np
 import omni.kit.app
-from omni.isaac.core.utils.types import XFormPrimViewState
-from omni.isaac.core.materials import PreviewSurface, OmniGlass, OmniPBR, VisualMaterial
+import torch
+from omni.isaac.core.materials.omni_glass import OmniGlass
+from omni.isaac.core.materials.omni_pbr import OmniPBR
+from omni.isaac.core.materials.preview_surface import PreviewSurface
+from omni.isaac.core.materials.visual_material import VisualMaterial
 from omni.isaac.core.simulation_context.simulation_context import SimulationContext
 from omni.isaac.core.utils.prims import (
+    find_matching_prim_paths,
     get_prim_at_path,
+    get_prim_parent,
     is_prim_non_root_articulation_link,
     is_prim_path_valid,
-    find_matching_prim_paths,
-    get_prim_parent,
 )
-import numpy as np
-import carb
 from omni.isaac.core.utils.stage import get_current_stage
-import torch
+from omni.isaac.core.utils.types import XFormPrimViewState
+from pxr import Gf, Usd, UsdGeom, UsdShade
 
 
 class XFormPrimView(object):
-    """Provides high level functions to deal with an Xform prim view (1 or more XForm prims and its descendants) 
-        as well as its attributes/ properties.
-        This object wraps all matching XForms found at the regex provided at the prim_paths_expr.
+    """Provides high level functions to deal with an Xform prim view (1 or more XForm prims and its descendants)
+    as well as its attributes/ properties.
+    This object wraps all matching XForms found at the regex provided at the prim_paths_expr.
 
-        Note: each prim will have "xformOp:orient", "xformOp:translate" and "xformOp:scale" only post init,
-                unless it is a non-root articulation link.
+    Note: each prim will have "xformOp:orient", "xformOp:translate" and "xformOp:scale" only post init,
+            unless it is a non-root articulation link.
 
-        Args:
-            prim_paths_expr (str): prim paths regex to encapsulate all prims that match it.
-                                    example: "/World/Env[1-5]/Franka" will match /World/Env1/Franka, 
-                                    /World/Env2/Franka..etc.
-                                    (a non regex prim path can also be used to encapsulate one XForm).
-            name (str, optional): shortname to be used as a key by Scene class. 
-                                    Note: needs to be unique if the object is added to the Scene. 
-                                    Defaults to "xform_prim_view".
-            positions (Optional[Union[np.ndarray, torch.Tensor]], optional): 
-                                                            default positions in the world frame of the prim. 
-                                                            shape is (N, 3).
-                                                            Defaults to None, which means left unchanged.
-            translations (Optional[Union[np.ndarray, torch.Tensor]], optional): 
-                                                            default translations in the local frame of the prims
-                                                            (with respect to its parent prims). shape is (N, 3).
-                                                            Defaults to None, which means left unchanged.
-            orientations (Optional[Union[np.ndarray, torch.Tensor]], optional): 
-                                                            default quaternion orientations in the world/ local frame of the prim
-                                                            (depends if translation or position is specified).
-                                                            quaternion is scalar-first (w, x, y, z). shape is (N, 4).
-                                                            Defaults to None, which means left unchanged.
-            scales (Optional[Union[np.ndarray, torch.Tensor]], optional): local scales to be applied to 
-                                                            the prim's dimensions. shape is (N, 3).
-                                                            Defaults to None, which means left unchanged.
-            visibilities (Optional[Union[np.ndarray, torch.Tensor]], optional): set to false for an invisible prim in 
-                                                                                the stage while rendering. shape is (N,). 
-                                                                                Defaults to None.
-            reset_xform_properties (bool, optional): True if the prims don't have the right set of xform properties 
-                                                    (i.e: translate, orient and scale) ONLY and in that order.
-                                                    Set this parameter to False if the object were cloned using using 
-                                                    the cloner api in omni.isaac.cloner. Defaults to True.
+    Args:
+        prim_paths_expr (str): prim paths regex to encapsulate all prims that match it.
+                                example: "/World/Env[1-5]/Franka" will match /World/Env1/Franka,
+                                /World/Env2/Franka..etc.
+                                (a non regex prim path can also be used to encapsulate one XForm).
+        name (str, optional): shortname to be used as a key by Scene class.
+                                Note: needs to be unique if the object is added to the Scene.
+                                Defaults to "xform_prim_view".
+        positions (Optional[Union[np.ndarray, torch.Tensor]], optional):
+                                                        default positions in the world frame of the prim.
+                                                        shape is (N, 3).
+                                                        Defaults to None, which means left unchanged.
+        translations (Optional[Union[np.ndarray, torch.Tensor]], optional):
+                                                        default translations in the local frame of the prims
+                                                        (with respect to its parent prims). shape is (N, 3).
+                                                        Defaults to None, which means left unchanged.
+        orientations (Optional[Union[np.ndarray, torch.Tensor]], optional):
+                                                        default quaternion orientations in the world/ local frame of the prim
+                                                        (depends if translation or position is specified).
+                                                        quaternion is scalar-first (w, x, y, z). shape is (N, 4).
+                                                        Defaults to None, which means left unchanged.
+        scales (Optional[Union[np.ndarray, torch.Tensor]], optional): local scales to be applied to
+                                                        the prim's dimensions. shape is (N, 3).
+                                                        Defaults to None, which means left unchanged.
+        visibilities (Optional[Union[np.ndarray, torch.Tensor]], optional): set to false for an invisible prim in
+                                                                            the stage while rendering. shape is (N,).
+                                                                            Defaults to None.
+        reset_xform_properties (bool, optional): True if the prims don't have the right set of xform properties
+                                                (i.e: translate, orient and scale) ONLY and in that order.
+                                                Set this parameter to False if the object were cloned using using
+                                                the cloner api in omni.isaac.cloner. Defaults to True.
 
-        Raises:
-            Exception: if translations and positions defined at the same time.
-            Exception: No prim was matched using the prim_paths_expr provided.
+    Raises:
+        Exception: if translations and positions defined at the same time.
+        Exception: No prim was matched using the prim_paths_expr provided.
     """
 
     def __init__(
@@ -157,7 +161,7 @@ class XFormPrimView(object):
     @property
     def prims(self) -> List[Usd.Prim]:
         """
-        
+
         Returns:
             List[Usd.Prim]: List of USD Prim objects encapsulated in this view.
         """
@@ -165,7 +169,7 @@ class XFormPrimView(object):
 
     @property
     def is_non_root_articulation_link(self) -> bool:
-        """ 
+        """
         Returns:
             bool: True if the prim corresponds to a non root link in an articulation. Otherwise False.
         """
@@ -224,9 +228,9 @@ class XFormPrimView(object):
         """Sets the visibilities of the prims in stage.
 
         Args:
-            visibilities (Union[np.ndarray, torch.Tensor]): flag to set the visibilities of the usd prims in stage. 
+            visibilities (Union[np.ndarray, torch.Tensor]): flag to set the visibilities of the usd prims in stage.
                                                             Shape (M,). Where M <= size of the encapsulated prims in the view.
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Defaults to None (i.e: all prims in the view).
         """
@@ -248,13 +252,13 @@ class XFormPrimView(object):
         """Returns the current visibilities of the prims in stage.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: Shape (M,) with type bool, where each item holds True 
+            Union[np.ndarray, torch.Tensor]: Shape (M,) with type bool, where each item holds True
                                              if the prim is visible in stage. False otherwise.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -271,8 +275,7 @@ class XFormPrimView(object):
         return visibilities
 
     def post_reset(self) -> None:
-        """Resets the prims to its default state (positions and orientations).
-        """
+        """Resets the prims to its default state (positions and orientations)."""
         if not self._non_root_link:
             self.set_world_poses(self._default_state.positions, self._default_state.orientations)
         return
@@ -297,10 +300,10 @@ class XFormPrimView(object):
         Args:
             positions (Optional[np.ndarray], optional):  positions in the world frame of the prim. shape is (M, 3).
                                                        Defaults to None, which means left unchanged.
-            orientations (Optional[np.ndarray], optional): quaternion orientations in the world frame of the prim. 
+            orientations (Optional[np.ndarray], optional): quaternion orientations in the world frame of the prim.
                                                           quaternion is scalar-first (w, x, y, z). shape is (M, 4).
                                                           Defaults to None, which means left unchanged.
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -331,13 +334,13 @@ class XFormPrimView(object):
         Args:
             visual_materials (Union[VisualMaterial, List[VisualMaterial]]): visual materials to be applied to the prims. Currently supports
                                                                             PreviewSurface, OmniPBR and OmniGlass. If a list is provided then
-                                                                            its size has to be equal the view's size or indices size. 
+                                                                            its size has to be equal the view's size or indices size.
                                                                             If one material is provided it will be applied to all prims in the view.
-            weaker_than_descendants (Optional[Union[bool, List[bool]]], optional):  True if the material shouldn't override the descendants  
-                                                                                    materials, otherwise False. Defaults to False. 
+            weaker_than_descendants (Optional[Union[bool, List[bool]]], optional):  True if the material shouldn't override the descendants
+                                                                                    materials, otherwise False. Defaults to False.
                                                                                     If a list of visual materials is provided then a list
                                                                                     has to be provided with the same size for this arg as well.
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -401,7 +404,7 @@ class XFormPrimView(object):
         """
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -474,7 +477,7 @@ class XFormPrimView(object):
     def is_visual_material_applied(self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None) -> List[bool]:
         """
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -504,16 +507,16 @@ class XFormPrimView(object):
     def get_world_poses(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
     ) -> Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]:
-        """ Returns the poses (positions and orientations) of the prims in the view with respect to the world frame.
+        """Returns the poses (positions and orientations) of the prims in the view with respect to the world frame.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: first index is positions in the world frame of the prims. shape is (M, 3). 
+            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: first index is positions in the world frame of the prims. shape is (M, 3).
                                                                                      second index is quaternion orientations in the world frame of the prims.
                                                                                      quaternion is scalar-first (w, x, y, z). shape is (M, 4).
         """
@@ -547,10 +550,10 @@ class XFormPrimView(object):
         Args:
             positions (Optional[Union[np.ndarray, torch.Tensor]], optional): positions in the world frame of the prims. shape is (M, 3).
                                                                              Defaults to None, which means left unchanged.
-            orientations (Optional[Union[np.ndarray, torch.Tensor]], optional): quaternion orientations in the world frame of the prims. 
+            orientations (Optional[Union[np.ndarray, torch.Tensor]], optional): quaternion orientations in the world frame of the prims.
                                                                                 quaternion is scalar-first (w, x, y, z). shape is (M, 4).
                                                                                 Defaults to None, which means left unchanged.
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -589,14 +592,14 @@ class XFormPrimView(object):
         """Gets prim poses in the view with respect to the local's frame (the prim's parent frame).
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: 
-                                          first index is translations in the local frame of the prims. shape is (M, 3). 
+            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]:
+                                          first index is translations in the local frame of the prims. shape is (M, 3).
                                             second index is quaternion orientations in the local frame of the prims.
                                             quaternion is scalar-first (w, x, y, z). shape is (M, 4).
         """
@@ -627,15 +630,15 @@ class XFormPrimView(object):
         """Sets prim poses in the view with respect to the local frame (the prim's parent frame).
 
         Args:
-            translations (Optional[Union[np.ndarray, torch.Tensor]], optional): 
+            translations (Optional[Union[np.ndarray, torch.Tensor]], optional):
                                                           translations in the local frame of the prims
                                                           (with respect to its parent prim). shape is (M, 3).
                                                           Defaults to None, which means left unchanged.
-            orientations (Optional[Union[np.ndarray, torch.Tensor]], optional): 
-                                                          quaternion orientations in the local frame of the prims. 
+            orientations (Optional[Union[np.ndarray, torch.Tensor]], optional):
+                                                          quaternion orientations in the local frame of the prims.
                                                           quaternion is scalar-first (w, x, y, z). shape is (M, 4).
                                                           Defaults to None, which means left unchanged.
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -678,7 +681,7 @@ class XFormPrimView(object):
 
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -709,9 +712,9 @@ class XFormPrimView(object):
         """Sets prim scales in the view with respect to the local frame (the prim's parent frame).
 
         Args:
-            scales (Optional[Union[np.ndarray, torch.Tensor]]): scales to be applied to the prim's dimensions in the view. 
+            scales (Optional[Union[np.ndarray, torch.Tensor]]): scales to be applied to the prim's dimensions in the view.
                                                                 shape is (M, 3).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -735,7 +738,7 @@ class XFormPrimView(object):
         """Gets prim scales in the view with respect to the local frame (the parent's frame).
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -758,7 +761,7 @@ class XFormPrimView(object):
     def is_valid(self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None) -> bool:
         """
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).

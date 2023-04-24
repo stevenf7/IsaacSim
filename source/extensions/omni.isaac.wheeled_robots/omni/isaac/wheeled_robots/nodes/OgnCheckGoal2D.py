@@ -8,8 +8,8 @@
 
 import numpy as np
 import omni.graph.core as og
-from omni.isaac.core_nodes import BaseResetNode
 from omni.isaac.core.utils.rotations import quat_to_euler_angles
+from omni.isaac.core_nodes import BaseResetNode
 from omni.isaac.wheeled_robots.controllers.stanley_control import normalize_angle
 from omni.isaac.wheeled_robots.ogn.OgnCheckGoal2DDatabase import OgnCheckGoal2DDatabase
 

@@ -7,12 +7,13 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni
-from omni.client._omniclient import Result
-from pxr import UsdUtils, Sdf
-from omni.kit.widget.stage.stage_model import AssetType
 import asyncio
 import os
+
+import omni
+from omni.client._omniclient import Result
+from omni.kit.widget.stage.stage_model import AssetType
+from pxr import Sdf, UsdUtils
 
 
 def join(base, name):

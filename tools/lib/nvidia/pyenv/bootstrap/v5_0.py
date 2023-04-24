@@ -1,12 +1,10 @@
-import sys
+import hashlib
+import importlib
+import json
 import os
 import platform
-import importlib
 import subprocess
-import hashlib
-
-import json
-
+import sys
 from pprint import pprint
 
 _repoman = None

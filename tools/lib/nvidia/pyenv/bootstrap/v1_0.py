@@ -1,10 +1,8 @@
-import sys
+import importlib
+import json
 import os
 import platform
-import importlib
-
-import json
-
+import sys
 from pprint import pprint
 
 _repoman = None

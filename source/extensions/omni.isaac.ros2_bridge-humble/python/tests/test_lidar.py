@@ -7,23 +7,26 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import asyncio
+import copy
+import gc
+
+import carb
+
+# Import extension python module we are testing with absolute import path, as if we are external user (other extension)
+import omni.kit.commands
+
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 import omni.kit.usd
-import gc
-import carb
-import asyncio
-import copy
-
-# Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-import omni.kit.commands
-
-from .common import add_cube, add_carter_ros, get_qos_profile
 from omni.isaac.core.utils.nucleus import get_assets_root_path
-from pxr import Sdf
 from omni.isaac.core.utils.physics import simulate_async
+from pxr import Sdf
+
+from .common import add_carter_ros, add_cube, get_qos_profile
+
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestRos2Lidar(omni.kit.test.AsyncTestCase):
@@ -68,7 +71,6 @@ class TestRos2Lidar(omni.kit.test.AsyncTestCase):
 
     async def test_lidar(self):
         import rclpy
-
         from sensor_msgs.msg import LaserScan
 
         await add_carter_ros()

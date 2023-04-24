@@ -7,14 +7,15 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import carb
-import omni.ext
 from functools import partial
 
+import carb
+import omni.ext
 from omni.isaac import RangeSensorSchema
+from pxr import Sdf, UsdShade
+
 from .. import _range_sensor
 from .menu import RangeSensorMenu
-from pxr import UsdShade, Sdf
 
 
 class Extension(omni.ext.IExt):

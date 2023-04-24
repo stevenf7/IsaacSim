@@ -6,32 +6,31 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+import carb
+import numpy as np
+import omni.kit.app
+from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.manipulators.grippers.gripper import Gripper
-from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper
-from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper_Properties
-from omni.isaac.core.utils.types import ArticulationAction
-import numpy as np
-import carb
-import omni.kit.app
+from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper, Surface_Gripper_Properties
 
 
 class SurfaceGripper(Gripper):
-    """Provides high level functions to set/ get properties and actions of a surface gripper 
-        (a suction cup for example).
+    """Provides high level functions to set/ get properties and actions of a surface gripper
+    (a suction cup for example).
 
-        Args:
-            end_effector_prim_path (str): prim path of the Prim that corresponds to the gripper root/ end effector.
-            translate (float, optional): _description_. Defaults to 0.
-            direction (str, optional): _description_. Defaults to "x".
-            grip_threshold (float, optional): _description_. Defaults to 0.01.
-            force_limit (float, optional): _description_. Defaults to 1.0e6.
-            torque_limit (float, optional): _description_. Defaults to 1.0e4.
-            bend_angle (float, optional): _description_. Defaults to np.pi/24.
-            kp (float, optional): _description_. Defaults to 1.0e2.
-            kd (float, optional): _description_. Defaults to 1.0e2.
-            disable_gravity (bool, optional): _description_. Defaults to True.
-        """
+    Args:
+        end_effector_prim_path (str): prim path of the Prim that corresponds to the gripper root/ end effector.
+        translate (float, optional): _description_. Defaults to 0.
+        direction (str, optional): _description_. Defaults to "x".
+        grip_threshold (float, optional): _description_. Defaults to 0.01.
+        force_limit (float, optional): _description_. Defaults to 1.0e6.
+        torque_limit (float, optional): _description_. Defaults to 1.0e4.
+        bend_angle (float, optional): _description_. Defaults to np.pi/24.
+        kp (float, optional): _description_. Defaults to 1.0e2.
+        kd (float, optional): _description_. Defaults to 1.0e2.
+        disable_gravity (bool, optional): _description_. Defaults to True.
+    """
 
     def __init__(
         self,
@@ -102,8 +101,7 @@ class SurfaceGripper(Gripper):
         return
 
     def close(self) -> None:
-        """Applies actions to the articulation that closes the gripper (ex: to hold an object).
-        """
+        """Applies actions to the articulation that closes the gripper (ex: to hold an object)."""
         if not self.is_closed():
             self._virtual_gripper.close()
         if not self.is_closed():
@@ -111,8 +109,7 @@ class SurfaceGripper(Gripper):
         return
 
     def open(self) -> None:
-        """Applies actions to the articulation that opens the gripper (ex: to release an object held).
-        """
+        """Applies actions to the articulation that opens the gripper (ex: to release an object held)."""
         result = self._virtual_gripper.open()
         if not result:
             carb.log_warn("gripper didn't open successfully")

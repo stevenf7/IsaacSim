@@ -7,6 +7,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .ui_utils import *
-from .print_to_screen import ScreenPrinter
 from .element_wrappers import *
+from .print_to_screen import ScreenPrinter
+from .ui_utils import *

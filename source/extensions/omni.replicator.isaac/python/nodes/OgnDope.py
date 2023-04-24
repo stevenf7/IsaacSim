@@ -4,17 +4,15 @@ This is the implementation of the OGN node defined in OgnDope.ogn
 
 import numpy as np
 import omni.graph.core as og
-from omni.isaac.core.utils.transformations import tf_matrix_from_pose, pose_from_tf_matrix
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
-
-from omni.syntheticdata.scripts.helpers import get_bbox_3d_corners
-
+from omni.isaac.core.utils.transformations import pose_from_tf_matrix, tf_matrix_from_pose
 from omni.replicator.isaac.scripts.utils import get_image_space_points, get_semantics
+from omni.syntheticdata.scripts.helpers import get_bbox_3d_corners
 
 
 class OgnDope:
     """
-        Gets pose information of assets with semantic labels. Information is used to train a DOPE model. 
+    Gets pose information of assets with semantic labels. Information is used to train a DOPE model.
     """
 
     @staticmethod

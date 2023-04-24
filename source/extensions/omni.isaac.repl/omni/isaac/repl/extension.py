@@ -7,13 +7,14 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni.ext
-import carb
 import sys
+
+import carb
+import omni.ext
 from prompt_toolkit import print_formatted_text
-from ptpython.repl import embed
 from prompt_toolkit.contrib.telnet.server import TelnetServer
 from prompt_toolkit.eventloop.utils import get_event_loop
+from ptpython.repl import embed
 
 
 class Extension(omni.ext.IExt):

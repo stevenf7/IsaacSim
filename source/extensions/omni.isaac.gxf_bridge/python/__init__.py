@@ -7,5 +7,5 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .scripts.extension import *
 from .scripts.commands import *  # populates commands list
+from .scripts.extension import *

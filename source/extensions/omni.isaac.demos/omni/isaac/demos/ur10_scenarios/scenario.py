@@ -6,13 +6,14 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+import gc
+
 import carb
-from pxr import Usd, UsdGeom, Sdf, Gf, UsdPhysics, PhysxSchema
+import numpy as np
 import omni.usd
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import set_stage_up_axis
-import numpy as np
-import gc
+from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics
 
 
 def set_translate(prim, new_loc):
@@ -109,7 +110,7 @@ def setup_physics(stage):
 
 
 class Scenario:
-    """ Defines a block stacking scenario
+    """Defines a block stacking scenario
 
     Scenarios define the life cycle within kit and handle init, startup, shutdown etc.
     """

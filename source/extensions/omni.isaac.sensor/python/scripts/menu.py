@@ -7,14 +7,15 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import carb
-from omni.isaac.core.utils.prims import set_prim_visibility
-import omni.kit.commands
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-from omni.isaac.ui.menu import make_menu_item_description
-from pxr import Sdf, UsdGeom, Gf
-import weakref
 import sys
+import weakref
+
+import carb
+import omni.kit.commands
+from omni.isaac.core.utils.prims import set_prim_visibility
+from omni.isaac.ui.menu import make_menu_item_description
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+from pxr import Gf, Sdf, UsdGeom
 
 
 class IsaacSensorMenu:

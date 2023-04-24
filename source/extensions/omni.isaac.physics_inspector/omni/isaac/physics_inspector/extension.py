@@ -7,16 +7,17 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import collections
+import gc
+import weakref
+
+import carb
 import omni.ext
 import omni.ui as ui
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.dynamic_control import _dynamic_control as dc
-import gc
-import collections
-import carb
-import weakref
-from pxr import UsdPhysics, UsdGeom
+from omni.isaac.ui.menu import make_menu_item_description
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+from pxr import UsdGeom, UsdPhysics
 
 EXTENSION_NAME = "Inspect Physics"
 

@@ -7,18 +7,19 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni.kit.test
-import omni.kit.commands
 import carb
+import numpy as np
+import omni.kit.commands
+import omni.kit.test
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.physics import simulate_async
+from omni.isaac.core.utils.stage import open_stage_async
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.range_sensor import _range_sensor
 from omni.syntheticdata.tests.utils import add_semantics
-from pxr import UsdGeom, UsdLux, Sdf, Gf, UsdPhysics, PhysicsSchemaTools, Semantics
-import numpy as np
-from omni.isaac.core.utils.stage import open_stage_async
-from omni.isaac.core.utils.physics import simulate_async
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from pxr import Gf, PhysicsSchemaTools, Sdf, Semantics, UsdGeom, UsdLux, UsdPhysics
+
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestLidar(omni.kit.test.AsyncTestCase):

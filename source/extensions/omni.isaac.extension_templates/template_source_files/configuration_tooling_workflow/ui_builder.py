@@ -8,17 +8,14 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni.ui as ui
-import omni.timeline
-
-from omni.isaac.ui.element_wrappers import DropDown, FloatField, CollapsableFrame, TextBlock
-from omni.isaac.core.utils.prims import get_prim_object_type
-from omni.isaac.ui.ui_utils import get_style
-
-from omni.isaac.core.articulations import Articulation
-from omni.isaac.core.utils.types import ArticulationAction
-
 import numpy as np
+import omni.timeline
+import omni.ui as ui
+from omni.isaac.core.articulations import Articulation
+from omni.isaac.core.utils.prims import get_prim_object_type
+from omni.isaac.core.utils.types import ArticulationAction
+from omni.isaac.ui.element_wrappers import CollapsableFrame, DropDown, FloatField, TextBlock
+from omni.isaac.ui.ui_utils import get_style
 
 
 class UIBuilder:
@@ -40,7 +37,7 @@ class UIBuilder:
     ###################################################################################
 
     def on_menu_callback(self):
-        """Callback for when the UI is opened from the toolbar. 
+        """Callback for when the UI is opened from the toolbar.
         This is called directly after build_ui().
         """
         # Handles the case where the user loads their Articulation and
@@ -65,7 +62,7 @@ class UIBuilder:
     def on_physics_step(self, step):
         """Callback for Physics Step.
         Physics steps only occur when the timeline is playing
-           
+
         Args:
             step (float): Size of physics step
         """
@@ -92,7 +89,7 @@ class UIBuilder:
 
     def build_ui(self):
         """
-        Build a custom UI tool to run your extension.  
+        Build a custom UI tool to run your extension.
         This function will be called any time the UI window is closed and reopened.
         """
         selection_panel_frame = CollapsableFrame("Selection Panel", collapsed=False)
@@ -153,7 +150,7 @@ class UIBuilder:
 
     def _on_articulation_selection(self, selection: str):
         """
-        This function is called whenever a new selection is made in the 
+        This function is called whenever a new selection is made in the
         "Select Articulation" DropDown.  A new selection may also be
         made implicitly any time self._selection_menu.repopulate() is called
         since the Articulation they had selected may no longer be present on the stage.

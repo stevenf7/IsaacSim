@@ -16,15 +16,14 @@ an RGB rendered image, Tight 2D Bounding Boxes and Instance Segmentation masks.
 """
 
 
-import os
 import glob
-import torch
-import numpy as np
+import os
 import signal
 import sys
 
 import carb
-
+import numpy as np
+import torch
 from omni.isaac.kit import SimulationApp
 
 # Setup default variables
@@ -71,9 +70,9 @@ class RandomObjects(torch.utils.data.IterableDataset):
 
         enable_extension("omni.isaac.shapenet")
 
-        from omni.isaac.shapenet import utils
         import omni.replicator.core as rep
         import warp as wp
+        from omni.isaac.shapenet import utils
 
         self.rep = rep
         self.wp = wp
@@ -298,6 +297,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
 if __name__ == "__main__":
     "Typical usage"
     import argparse
+
     import matplotlib.pyplot as plt
 
     parser = argparse.ArgumentParser("Dataset test")
@@ -332,8 +332,8 @@ if __name__ == "__main__":
             exit()
 
     dataset = RandomObjects(args.root, args.categories, max_asset_size=args.max_asset_size)
-    from omni.isaac.synthetic_utils import visualization
     from omni.isaac.shapenet import utils
+    from omni.isaac.synthetic_utils import visualization
 
     categories = [utils.LABEL_TO_SYNSET.get(c, c) for c in args.categories]
 

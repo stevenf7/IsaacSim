@@ -7,16 +7,17 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-# python
-import numpy as np
 import typing
 
-# omniverse
-from pxr import UsdGeom, Gf
+# python
+import numpy as np
 import omni.physx
 
 # isaacsim
 from omni.isaac.core.utils.stage import get_current_stage
+
+# omniverse
+from pxr import Gf, UsdGeom
 
 
 def ray_cast(

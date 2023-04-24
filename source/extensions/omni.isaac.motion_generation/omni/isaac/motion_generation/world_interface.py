@@ -6,15 +6,15 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+from typing import List, Optional, Union
+
 import carb
-from typing import List, Union, Optional
 import omni.isaac.core.objects
-from omni.isaac.core.objects import cuboid, sphere, capsule, cylinder, cone, ground_plane
+from omni.isaac.core.objects import capsule, cone, cuboid, cylinder, ground_plane, sphere
 
 
 class WorldInterface:
-    """Interface for translating USD world to a generic world-aware algorithm such as a MotionPolicy
-    """
+    """Interface for translating USD world to a generic world-aware algorithm such as a MotionPolicy"""
 
     def __init__(self) -> None:
         pass
@@ -24,17 +24,17 @@ class WorldInterface:
 
         Args:
             updated_obstacles (list, optional): If provided, only the given obstacles will have their poses updated.
-                For motion policies that use obstacle poses relative to the robot base (e.g. Lula based policies), 
-                this list will be ignored if the robot base has moved because all object poses will have changed 
+                For motion policies that use obstacle poses relative to the robot base (e.g. Lula based policies),
+                this list will be ignored if the robot base has moved because all object poses will have changed
                 relative to the robot. Defaults to None.
-        
+
         Returns:
             None
         """
         pass
 
     def add_obstacle(self, obstacle: omni.isaac.core.objects, static: Optional[bool] = False) -> bool:
-        """Add an obstacle 
+        """Add an obstacle
 
         Args:
             obstacle (omni.isaac.core.objects): An obstacle from the package omni.isaac.core.obstacles
@@ -82,7 +82,7 @@ class WorldInterface:
 
         Args:
             cuboid (core.objects.cuboid): Wrapper object for handling rectangular prism Usd Prims.
-            static (bool, optional): If True, indicate that cuboid will never change pose, and may be ignored in internal 
+            static (bool, optional): If True, indicate that cuboid will never change pose, and may be ignored in internal
                 world updates. Defaults to False.
 
         Returns:
@@ -96,7 +96,7 @@ class WorldInterface:
 
         Args:
             sphere (core.objects.sphere): Wrapper object for handling sphere Usd Prims.
-            static (bool, optional): If True, indicate that sphere will never change pose, and may be ignored in internal 
+            static (bool, optional): If True, indicate that sphere will never change pose, and may be ignored in internal
                 world updates. Defaults to False.
 
         Returns:
@@ -110,7 +110,7 @@ class WorldInterface:
 
         Args:
             capsule (core.objects.capsule): Wrapper object for handling capsule Usd Prims.
-            static (bool, optional): If True, indicate that capsule will never change pose, and may be ignored in internal 
+            static (bool, optional): If True, indicate that capsule will never change pose, and may be ignored in internal
                 world updates. Defaults to False.
 
         Returns:
@@ -126,7 +126,7 @@ class WorldInterface:
 
         Args:
             cylinder (core.objects.cylinder): Wrapper object for handling rectangular prism Usd Prims.
-            static (bool, optional): If True, indicate that cuboid will never change pose, and may be ignored in internal 
+            static (bool, optional): If True, indicate that cuboid will never change pose, and may be ignored in internal
                 world updates. Defaults to False.
 
         Returns:
@@ -140,7 +140,7 @@ class WorldInterface:
 
         Args:
             cone (core.objects.cone): Wrapper object for handling cone Usd Prims.
-            static (bool, optional): If True, indicate that cone will never change pose, and may be ignored in internal 
+            static (bool, optional): If True, indicate that cone will never change pose, and may be ignored in internal
                 world updates. Defaults to False.
 
         Returns:
@@ -186,9 +186,9 @@ class WorldInterface:
         return False
 
     def remove_obstacle(self, obstacle: omni.isaac.core.objects) -> bool:
-        """Remove obstacle from collision avoidance. Obstacle cannot be re-enabled via enable_obstacle() after 
+        """Remove obstacle from collision avoidance. Obstacle cannot be re-enabled via enable_obstacle() after
         removal.
-        
+
         Args:
             obstacle (core.object): obstacle to be removed.
 
@@ -199,6 +199,5 @@ class WorldInterface:
         return False
 
     def reset(self) -> None:
-        """Reset all state inside the WorldInterface to its initial values
-        """
+        """Reset all state inside the WorldInterface to its initial values"""
         pass

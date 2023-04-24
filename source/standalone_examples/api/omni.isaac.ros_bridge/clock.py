@@ -7,17 +7,16 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import time
+
 import carb
 from omni.isaac.kit import SimulationApp
-
 
 # Example ROS bridge sample showing rospy and rosclock interaction
 simulation_app = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
 import omni
-from omni.isaac.core.utils.extensions import enable_extension
-from omni.isaac.core import SimulationContext
-
 import omni.graph.core as og
+from omni.isaac.core import SimulationContext
+from omni.isaac.core.utils.extensions import enable_extension
 
 # enable ROS bridge extension
 enable_extension("omni.isaac.ros_bridge")
@@ -33,9 +32,10 @@ if not rosgraph.is_master_online():
     carb.log_error("Please run roscore before executing this script")
     simulation_app.close()
     exit()
+import rospy
+
 # Note that this is not the system level rospy, but one compiled for omniverse
 from rosgraph_msgs.msg import Clock
-import rospy
 
 clock_topic = "sim_time"
 system_clock_topic = "system_time"

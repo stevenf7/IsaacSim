@@ -7,12 +7,12 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 
-import omni.ext
 import numpy as np
+import omni.ext
 import omni.graph.core as og
+from omni.isaac.core.objects import VisualCuboid
 from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.examples.base_sample import BaseSample
-from omni.isaac.core.objects import VisualCuboid
 
 
 class OmnigraphKeyboard(BaseSample):

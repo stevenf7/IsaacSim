@@ -1,10 +1,10 @@
-import omni.kit.test
-import carb
-from typing import Optional
-from omni.kit.testing.services import viewport_utils
-from omni.hydra.engine.stats import HydraEngineStats
-from typing import List, Optional, Tuple
 import time
+from typing import List, Optional, Tuple
+
+import carb
+import omni.kit.test
+from omni.hydra.engine.stats import HydraEngineStats
+from omni.kit.testing.services import viewport_utils
 
 
 class IsaacUpdateFrametimeCollector:

@@ -7,9 +7,9 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni.graph.core as og
 import numpy as np
-from omni.isaac.core.utils.prims import is_prim_path_valid, delete_prim
+import omni.graph.core as og
+from omni.isaac.core.utils.prims import delete_prim, is_prim_path_valid
 from omni.isaac.core.utils.string import find_unique_string_name
 
 
@@ -101,11 +101,9 @@ class ScreenPrinter:
         self._controller.edit(self.graph, {self._keys.SET_VALUES: (("inputs:textColor", self.nodes[1]), color4f)})
 
     def clear_text(self) -> None:
-        """Clear the text from the screen.
-        """
+        """Clear the text from the screen."""
         self.set_text("")
 
     def exit(self) -> None:
-        """Delete OmniGraph used by this ScreenPrinter.  After calling exit(), all subsequent function calls will fail.
-        """
+        """Delete OmniGraph used by this ScreenPrinter.  After calling exit(), all subsequent function calls will fail."""
         delete_prim(self._graph_path)

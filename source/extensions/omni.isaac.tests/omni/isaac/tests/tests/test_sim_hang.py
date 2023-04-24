@@ -6,20 +6,22 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import omni.kit.test
-import carb
 import asyncio
+
+import carb
+import numpy as np
+import omni.isaac.core.objects as objects
+import omni.kit.test
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.core.utils.stage import (
-    update_stage_async,
-    create_new_stage_async,
     add_reference_to_stage,
+    create_new_stage_async,
     open_stage_async,
+    update_stage_async,
 )
-import omni.isaac.core.objects as objects
-import numpy as np
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will
 # make it auto-discoverable by omni.kit.test
@@ -66,7 +68,7 @@ class TestHangBugs(omni.kit.test.AsyncTestCase):
         #     Set it to be invisible
         #     Delete it
 
-        from pxr import UsdGeom, Gf
+        from pxr import Gf, UsdGeom
 
         self._timeline = omni.timeline.get_timeline_interface()
         stage = omni.usd.get_context().get_stage()

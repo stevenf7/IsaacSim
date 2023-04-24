@@ -8,22 +8,22 @@
 #
 
 
-import omni.kit.test
-import carb
-import tempfile
-from pathlib import Path
+import json
 import os
-from omni.kit.testing.services import execution, settings, utils
-from omni.kit.testing.services.metrics import measurements, backend
-from omni.kit.testing.services.datarecorders import cpu, interface, memory
-from omni.kit.widget.viewport.capture import FileCapture
-from omni.isaac.core.utils.stage import is_stage_loading
+import tempfile
+import time
+from pathlib import Path
+
+import carb
+import omni.kit.test
 from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.utils.stage import open_stage_async
+from omni.isaac.core.utils.stage import is_stage_loading, open_stage_async
+from omni.kit.testing.services import execution, settings, utils
+from omni.kit.testing.services.datarecorders import cpu, interface, memory
+from omni.kit.testing.services.metrics import backend, measurements
+from omni.kit.widget.viewport.capture import FileCapture
 
 from .recorders import IsaacFrameTimeRecorder
-import json
-import time
 
 logger = utils.set_up_logging(__name__)
 

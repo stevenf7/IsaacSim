@@ -6,9 +6,10 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+import sys
+
 import carb
 from omni.isaac.kit import SimulationApp
-import sys
 
 CAMERA_STAGE_PATH = "/Camera"
 ROS_CAMERA_GRAPH_PATH = "/ROS_Camera"
@@ -20,15 +21,13 @@ CONFIG = {"renderer": "RayTracedLighting", "headless": False}
 # Example ROS bridge sample demonstrating the manual loading of stages and manual publishing of images
 simulation_app = SimulationApp(CONFIG)
 import omni
-from omni.isaac.core import SimulationContext
-from omni.isaac.core.utils import stage, extensions, nucleus
-from pxr import Gf, UsdGeom, Usd
-from omni.kit.viewport.utility import get_active_viewport
 import omni.graph.core as og
 import omni.replicator.core as rep
-
+from omni.isaac.core import SimulationContext
+from omni.isaac.core.utils import extensions, nucleus, stage
 from omni.isaac.core.utils.prims import set_targets
-
+from omni.kit.viewport.utility import get_active_viewport
+from pxr import Gf, Usd, UsdGeom
 
 # enable ROS bridge extension
 extensions.enable_extension("omni.isaac.ros_bridge")

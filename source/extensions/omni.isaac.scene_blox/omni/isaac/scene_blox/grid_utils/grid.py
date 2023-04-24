@@ -15,6 +15,7 @@ from typing import List, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
+
 from .config import GlobalRNG
 from .grid_constraints import GridConstraints
 from .tile_superposition import TileSuperposition

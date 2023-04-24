@@ -9,7 +9,7 @@
 
 import numpy as np
 import omni.usd
-from pxr import UsdPhysics, PhysxSchema
+from pxr import PhysxSchema, UsdPhysics
 
 """
 Environments have a set of Objects in them that can move or change over time.

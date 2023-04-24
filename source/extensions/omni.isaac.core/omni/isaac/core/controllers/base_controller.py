@@ -6,23 +6,24 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
+
 from omni.isaac.core.utils.types import ArticulationAction
 
 
 class BaseController(ABC):
     """[summary]
 
-        Args:
-            name (str): [description]
-        """
+    Args:
+        name (str): [description]
+    """
 
     def __init__(self, name: str) -> None:
         self._name = name
 
     @abstractmethod
     def forward(self, *args, **kwargs) -> ArticulationAction:
-        """A controller should take inputs and returns an ArticulationAction to be then passed to the 
+        """A controller should take inputs and returns an ArticulationAction to be then passed to the
            ArticulationController.
 
         Args:
@@ -37,6 +38,5 @@ class BaseController(ABC):
         raise NotImplementedError
 
     def reset(self) -> None:
-        """Resets state of the controller.
-        """
+        """Resets state of the controller."""
         return

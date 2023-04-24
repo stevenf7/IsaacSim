@@ -11,15 +11,15 @@
 
 # python
 import os
-import numpy as np
 from typing import List, Union
 
 # omniverse
 import carb
+import numpy as np
 import omni.kit
 
 # ocs2
-from ocs2.mobile_manipulator import mpc_interface, scalar_array, vector_array, TargetTrajectories
+from ocs2.mobile_manipulator import TargetTrajectories, mpc_interface, scalar_array, vector_array
 
 
 class EndEffectorPoseTrackingMpc:

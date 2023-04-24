@@ -1,9 +1,9 @@
-from typing import Dict, Callable
-import os, argparse
+import argparse
+import os
+from typing import Callable, Dict
 
-
-from omni.repo.build import setup_vscode_env, load_settings_from_config
-from omni.repo.man import get_and_validate_host_platform, get_repo_paths, get_all_known_configs
+from omni.repo.build import load_settings_from_config, setup_vscode_env
+from omni.repo.man import get_all_known_configs, get_and_validate_host_platform, get_repo_paths
 
 
 def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:

@@ -7,20 +7,21 @@ distribution of this software and related documentation without an express
 license agreement from NVIDIA CORPORATION is strictly prohibited.
 """
 
+import sys
+
 import carb
 from omni.isaac.kit import SimulationApp
-import sys
 
 # Example for creating a RTX lidar sensor and publishing PCL data
 simulation_app = SimulationApp({"headless": False})
 import omni
-from omni.isaac.core.utils.extensions import enable_extension
-from omni.isaac.core import SimulationContext
-from omni.isaac.core.utils import stage, nucleus
-from omni.isaac.core.utils.render_product import create_hydra_texture
 import omni.kit.viewport.utility
-from pxr import Gf
 import omni.replicator.core as rep
+from omni.isaac.core import SimulationContext
+from omni.isaac.core.utils import nucleus, stage
+from omni.isaac.core.utils.extensions import enable_extension
+from omni.isaac.core.utils.render_product import create_hydra_texture
+from pxr import Gf
 
 # enable ROS bridge extension
 enable_extension("omni.isaac.debug_draw")

@@ -8,6 +8,6 @@
 #
 # from omni.isaac.ur10.controllers.rmpflow_ik import RMPFlowIKSolver
 # from omni.isaac.ur10.controllers.rmpflow_pick_place import RMPFlowPickPlace
-from omni.isaac.universal_robots.controllers.rmpflow_controller import RMPFlowController
 from omni.isaac.universal_robots.controllers.pick_place_controller import PickPlaceController
+from omni.isaac.universal_robots.controllers.rmpflow_controller import RMPFlowController
 from omni.isaac.universal_robots.controllers.stacking_controller import StackingController

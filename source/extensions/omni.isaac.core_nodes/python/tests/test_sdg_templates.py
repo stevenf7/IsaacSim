@@ -8,16 +8,15 @@
 #
 
 
-import omni.kit.test
 import carb
-
+import omni.kit.test
+import omni.syntheticdata._syntheticdata as sd
 from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.render_product import create_hydra_texture
 from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.core_nodes.bindings import _omni_isaac_core_nodes
-from omni.isaac.core.utils.render_product import create_hydra_texture
 from omni.isaac.core_nodes.scripts.utils import submit_node_template_activation, submit_writer_attach
 from omni.syntheticdata import sensors
-import omni.syntheticdata._syntheticdata as sd
 
 
 class TestSDGTemplates(omni.kit.test.AsyncTestCase):

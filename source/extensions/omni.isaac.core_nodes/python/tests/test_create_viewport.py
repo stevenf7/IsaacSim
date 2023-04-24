@@ -8,15 +8,14 @@
 #
 
 
-import omni.kit.test
 import carb
-
-import omni.graph.core.tests as ogts
 import omni.graph.core as og
+import omni.graph.core.tests as ogts
+import omni.kit.test
+from omni.isaac.core.robots import Robot
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.core.utils.viewports import get_viewport_names
-from omni.isaac.core.robots import Robot
 
 
 class TestCreateViewport(ogts.OmniGraphTestCase):

@@ -8,27 +8,26 @@
 #
 
 import asyncio
-import sys
 import os.path
-import omni.ext
-import omni.ui as ui
-import carb.settings
-import omni.kit.commands
-import carb.imgui as _imgui
-import carb.tokens
-import webbrowser
+import sys
 import typing
+import webbrowser
 
-import omni.kit.app
-import omni.kit.ui
+import carb.imgui as _imgui
+import carb.settings
+import carb.tokens
 import omni.appwindow
+import omni.ext
+import omni.kit.app
+import omni.kit.commands
 import omni.kit.stage_templates as stage_templates
-from omni.kit.window.title import get_main_window_title
+import omni.kit.ui
+import omni.ui as ui
 from carb.input import KeyboardInput as Key
-from omni.client._omniclient import Result, CopyBehavior
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+from omni.client._omniclient import CopyBehavior, Result
 from omni.isaac.version import get_version
-
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+from omni.kit.window.title import get_main_window_title
 
 DOCS_URL = "https://docs.omniverse.nvidia.com"
 REFERENCE_GUIDE_URL = DOCS_URL + "/isaacsim"
@@ -129,7 +128,7 @@ class CreateSetupExtension(omni.ext.IExt):
 
     async def __new_stage(self):
 
-        from omni.kit.viewport.utility import next_viewport_frame_async, get_active_viewport
+        from omni.kit.viewport.utility import get_active_viewport, next_viewport_frame_async
 
         for i in range(10):
             await omni.kit.app.get_app().next_update_async()
@@ -146,9 +145,9 @@ class CreateSetupExtension(omni.ext.IExt):
 
     def _start_app(self, app_id, console=True, custom_args=None):
         """start another Kit app with the same settings"""
-        import sys
-        import subprocess
         import platform
+        import subprocess
+        import sys
 
         kit_exe_path = os.path.join(os.path.abspath(carb.tokens.get_tokens_interface().resolve("${kit}")), "kit")
         if sys.platform == "win32":
@@ -226,8 +225,8 @@ class CreateSetupExtension(omni.ext.IExt):
         return new_menu
 
     def _open_browser(self, path):
-        import subprocess
         import platform
+        import subprocess
 
         if platform.system().lower() == "windows":
             webbrowser.open(path)

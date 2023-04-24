@@ -9,14 +9,14 @@
 
 # python
 import typing
-import numpy as np
 
 # omniverse
 import carb
-from pxr import UsdGeom, Usd, Gf
+import numpy as np
 
 # isaacsim
 from omni.isaac.core.utils.prims import get_prim_at_path
+from pxr import Gf, Usd, UsdGeom
 
 
 def recompute_extents(

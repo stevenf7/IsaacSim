@@ -19,14 +19,14 @@ def main(args):
     simulation_app = SimulationApp()
 
     # Late import because of runtime modules
-    from omni.isaac.scene_blox.grid_utils.grid import Grid
-    from omni.isaac.scene_blox.grid_utils.grid_constraints import GridConstraints
-    from omni.isaac.scene_blox.grid_utils.tile import tile_loader
-    from omni.isaac.scene_blox.grid_utils.tile_superposition import TileSuperposition
     from omni.isaac.core import World
     from omni.isaac.core.utils.stage import close_stage
     from omni.isaac.scene_blox.generation.scene_generator import SceneGenerator
     from omni.isaac.scene_blox.grid_utils import config
+    from omni.isaac.scene_blox.grid_utils.grid import Grid
+    from omni.isaac.scene_blox.grid_utils.grid_constraints import GridConstraints
+    from omni.isaac.scene_blox.grid_utils.tile import tile_loader
+    from omni.isaac.scene_blox.grid_utils.tile_superposition import TileSuperposition
 
     tiles, weights = tile_loader(args.grid_config)
     constraints = None

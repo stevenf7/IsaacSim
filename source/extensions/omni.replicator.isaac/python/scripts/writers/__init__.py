@@ -6,5 +6,5 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-from .ycb_video_writer import *
 from .dope_writer import *
+from .ycb_video_writer import *

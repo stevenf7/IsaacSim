@@ -20,7 +20,7 @@ from omni.isaac.core.utils.types import ArticulationAction
 
 
 class Commander(ABC):
-    """ Abstract base class of a commander.
+    """Abstract base class of a commander.
 
     A commander governs the control of a particular subset of joints. Users implement behavior by
     sending commands to the commander using a custom command API defined by the deriving class.  The
@@ -47,7 +47,7 @@ class Commander(ABC):
     """
 
     def __init__(self, articulation_subset: ArticulationSubset):
-        """ All commanders command a subset of the robot's joints which is specified on
+        """All commanders command a subset of the robot's joints which is specified on
         construction.
 
         Args:
@@ -58,32 +58,29 @@ class Commander(ABC):
 
     @property
     def num_controlled_joints(self) -> int:
-        """ Returns the number of controlled joints as defined by the articulation subset.
-        """
+        """Returns the number of controlled joints as defined by the articulation subset."""
         return self.articulation_subset.num_joints
 
     @property
     def controlled_joints(self) -> Sequence[str]:
-        """ Returns the names of the controlled joints.
-        """
+        """Returns the names of the controlled joints."""
         return self.articulation_subset.joint_names
 
     @property
     def latest_action(self) -> ArticulationAction:
-        """ Returns the latest applied action.
-        """
+        """Returns the latest applied action."""
         return self.articulation_subset.get_applied_action()
 
     @property
     def command(self) -> Any:
-        """ Returns the latest received command.
-        
+        """Returns the latest received command.
+
         The type of this command is defined by the deriving class.
         """
         return self.latest_command
 
     def send(self, command: Any) -> None:
-        """ Send a command to this commander. The command is cached off in the member
+        """Send a command to this commander. The command is cached off in the member
         latest_command.
 
         The type of the command is defined by the deriving class.
@@ -91,27 +88,26 @@ class Commander(ABC):
         self.latest_command = command
 
     def clear(self) -> None:
-        """ Clear the latest command. Sets latest_command to None.
-        """
+        """Clear the latest command. Sets latest_command to None."""
         self.latest_command = None
 
     @abstractmethod
     def step(self, dt: float) -> None:
-        """ Steps the commander to process the latest command.
-        
+        """Steps the commander to process the latest command.
+
         Override this method to define how the underlying policy is processed.
         """
         raise NotImplementedError()
 
     def reset(self) -> None:
-        """ Reset the commander. By default it does nothing.
+        """Reset the commander. By default it does nothing.
 
         This method doesn't handle resetting the command.
         """
         pass
 
     def post_reset(self) -> None:
-        """ Clear the command and reset the commander. This method is called automatically at the
+        """Clear the command and reset the commander. This method is called automatically at the
         right time by the CortexWorld after the simulation is reset (hence the post_ prefix).
         """
         self.clear()

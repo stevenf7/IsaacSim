@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 
-from omni.isaac.cortex.df import DfNetwork, DfDecider, DfAction, DfDecision
+from omni.isaac.cortex.df import DfAction, DfDecider, DfDecision, DfNetwork
 from omni.isaac.cortex.dfb import DfRobotApiContext
 
 

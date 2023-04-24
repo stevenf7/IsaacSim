@@ -10,22 +10,23 @@
 
 # python
 from typing import Optional
-import numpy as np
 
-# omniverse
-from pxr import UsdGeom, Gf
+import numpy as np
+import omni.graph.core as og
 import omni.kit.commands
 import omni.usd
-import omni.graph.core as og
-from omni.isaac.quadruped.robots import Unitree
-from omni.isaac.core.utils.viewports import set_camera_view
-from omni.kit.viewport.utility import get_active_viewport, get_viewport_from_window_name
 from omni.isaac.core.utils.prims import set_targets
+from omni.isaac.core.utils.viewports import set_camera_view
+from omni.isaac.quadruped.robots import Unitree
+from omni.kit.viewport.utility import get_active_viewport, get_viewport_from_window_name
+
+# omniverse
+from pxr import Gf, UsdGeom
 
 
 class UnitreeVision(Unitree):
     """[Summary]
-    
+
     For unitree based quadrupeds (A1 or Go1) with camera
     """
 
@@ -43,9 +44,9 @@ class UnitreeVision(Unitree):
     ) -> None:
         """
         [Summary]
-        
+
         initialize robot, set up sensors and controller
-        
+
         Arguments:
             prim_path {str} -- prim path of the robot on the stage
             name {str} -- name of the quadruped
@@ -163,7 +164,7 @@ class UnitreeVision(Unitree):
     def dockViewports(self) -> None:
         """
         [Summary]
-    
+
         For instantiating and docking view ports
         """
         # first, set main viewport
@@ -180,7 +181,7 @@ class UnitreeVision(Unitree):
     def setCameraExeutionStep(self, step: np.uint) -> None:
         """
         [Summary]
-        
+
         Sets the execution step in the omni.isaac.core_nodes.IsaacSimulationGate node located in the camera sensor pipeline
 
         """
@@ -202,7 +203,7 @@ class UnitreeVision(Unitree):
     def update(self) -> None:
         """
         [Summary]
-        
+
         Update robot variables from the environment
 
         """
@@ -215,9 +216,9 @@ class UnitreeVision(Unitree):
 
     def advance(self, dt, goal, path_follow=False) -> np.ndarray:
         """[summary]
-        
+
         calls the unitree advance to compute torque
-        
+
         Argument:
         dt {float} -- Timestep update in the world.
         goal {List[int]} -- x velocity, y velocity, angular velocity, state switch

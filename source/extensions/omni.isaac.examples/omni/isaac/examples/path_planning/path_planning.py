@@ -8,8 +8,9 @@
 #
 
 from omni.isaac.examples.base_sample import BaseSample
-from .path_planning_task import FrankaPathPlanningTask
+
 from .path_planning_controller import FrankaRrtController
+from .path_planning_task import FrankaPathPlanningTask
 
 
 class PathPlanning(BaseSample):

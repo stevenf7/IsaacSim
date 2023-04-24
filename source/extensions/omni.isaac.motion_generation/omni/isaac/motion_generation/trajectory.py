@@ -5,8 +5,9 @@
 # and any modifications thereto.  Any use, reproduction, disclosure or
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
+from typing import List, Tuple
+
 import numpy as np
-from typing import Tuple, List
 
 
 class Trajectory:
@@ -43,7 +44,7 @@ class Trajectory:
         arm, but not in the gripper.
 
         Returns:
-            List[str]: Names of active joints.  The order of joints in this list determines the order in which a 
+            List[str]: Names of active joints.  The order of joints in this list determines the order in which a
                 Trajectory will return joint targets for the robot.
         """
         return []
@@ -57,8 +58,8 @@ class Trajectory:
             time (float): Time in trajectory at which to return joint targets.
 
         Returns:
-            Tuple[np.array,np.array]: 
+            Tuple[np.array,np.array]:
             joint position targets for the active robot joints\n
-            joint velocity targets for the active robot joints 
+            joint velocity targets for the active robot joints
         """
         pass

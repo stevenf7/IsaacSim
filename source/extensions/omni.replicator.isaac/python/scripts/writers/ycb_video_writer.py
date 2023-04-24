@@ -9,14 +9,15 @@ license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import io
 import os
-from pxr import Usd, UsdGeom
 from typing import Dict, List
+
 import numpy as np
-from scipy.io import savemat
-from PIL import Image
+from omni.isaac.core.utils.mesh import get_mesh_vertices_relative_to
 from omni.replicator.core import AnnotatorRegistry, BackendDispatch, Writer, WriterRegistry
 from omni.syntheticdata import SyntheticData
-from omni.isaac.core.utils.mesh import get_mesh_vertices_relative_to
+from PIL import Image
+from pxr import Usd, UsdGeom
+from scipy.io import savemat
 
 NodeTemplate, NodeConnectionTemplate = SyntheticData.NodeTemplate, SyntheticData.NodeConnectionTemplate
 
@@ -51,8 +52,8 @@ class YCBVideoWriter(Writer):
             Boolean value that indicates whether the pose annotator will be activated
             and the data will be written or not. Default: False.
         class_name_to_index_map:
-            Mapping between semantic label and index used in the YCB Video Dataset. This indices are used in the 
-            'cls_indexes' field of the generated meta.mat file, in addition to being used to color the semantic 
+            Mapping between semantic label and index used in the YCB Video Dataset. This indices are used in the
+            'cls_indexes' field of the generated meta.mat file, in addition to being used to color the semantic
             segmentation (where pixels are colored according to the grayscale class index).
         factor_depth:
             Depth scaling factor used in the YCB Video Dataset. Default: 10000.
@@ -381,8 +382,8 @@ class YCBVideoWriter(Writer):
 
     def _create_output_folders(self):
         """Creates an output directory structure (if necessary), similar to that used in the YCB Video Dataset. Note: A
-           single video directory is used to hold all the generated synthetic data, rather than several directories
-           (each representing a separate video file, as in the YCB Video Dataset).
+        single video directory is used to hold all the generated synthetic data, rather than several directories
+        (each representing a separate video file, as in the YCB Video Dataset).
         """
 
         if not os.path.exists(self._output_dir):
@@ -406,10 +407,10 @@ class YCBVideoWriter(Writer):
 
     def _create_train_text_file(self):
         """Creates a text file to specify the set of YCB Video Dataset samples to be used during training of a model.
-           Lines include the video basename corresponding to the video that the sample is from, and the image ID of the
-           sample. Training samples are written as if a single video is being used (see the note in
-           create_output_folders()). Additionally, it is assumed data is generated only for model training (rather than
-           for testing or validation).
+        Lines include the video basename corresponding to the video that the sample is from, and the image ID of the
+        sample. Training samples are written as if a single video is being used (see the note in
+        create_output_folders()). Additionally, it is assumed data is generated only for model training (rather than
+        for testing or validation).
         """
 
         train_filename = os.path.join(self.ycb_video_dir, "train.txt")

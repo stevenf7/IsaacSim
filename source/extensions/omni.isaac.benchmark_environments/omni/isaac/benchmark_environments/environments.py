@@ -262,7 +262,7 @@ class WindmillEnv(Environment):
 
             windmill_1_speed: rotational speed of windmill 1 in rad/sec (default: pi/15)
             windmill_2_speed: rotational speed of windmill 2 in rad/sec (default: pi/15)
-            
+
             windmill_1_translation: translational position of windmill 1 (default [35,0,50])
             windmill_2_translation: translational position of windmill 1 (default [40,0,50])
 
@@ -345,7 +345,7 @@ class WindowEnv(Environment):
                 translation targets in meters (default: .03)
             target_rotation_thresh:  threshold for how close the robot end effector must be to
                 rotation targets in radians (default: .1)
-            
+
             window_translation: translational position of window (default [45,-30, 50])
 
             env_rotation: axis rotation of environmnet at the world origin (default [0,0,0])
@@ -398,7 +398,7 @@ class GuillotineEnv(Environment):
                 translation targets in meters (default: .03)
             target_rotation_thresh:  threshold for how close the robot end effector must be to
                 rotation targets in radians (default: .1)
-            
+
             wall_height: height of wall the robot has to reach through (default: 100)
             windmill_speed: speed of windmill embedded in wall in rad/sec (default: pi/15)
             window_translation: translational position of window embedded in wall (default [50,0, wall_height/2])
@@ -502,7 +502,7 @@ class CageEnv(Environment):
             cage_width: width (along x axis) of cage (default .35 m)
             cage_length: length (along y axis) of cage (default .35 m)
 
-            num_pillars: number of pillars defining the "bars" of the cage.  The pillars will be evenly 
+            num_pillars: number of pillars defining the "bars" of the cage.  The pillars will be evenly
                 spaced by angle around the elipse defined by cage_width and cage_length
             pillar_thickness: thickness of pillars (default .1 m)
 

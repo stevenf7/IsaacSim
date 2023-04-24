@@ -7,16 +7,16 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+from pathlib import Path
+
 import carb
 import carb.settings
 import omni.client
+import omni.ext
 import omni.kit.app
 import omni.kit.ui
-import omni.ext
-from pathlib import Path
 from omni import ui
 from omni.isaac.version import get_version
-
 
 WINDOW_NAME = "About"
 DISCONNECTED = "** disconnected **"

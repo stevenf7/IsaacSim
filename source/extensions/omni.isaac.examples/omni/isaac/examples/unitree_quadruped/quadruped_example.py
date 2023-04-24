@@ -5,12 +5,12 @@
 # and any modifications thereto.  Any use, reproduction, disclosure or
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
+import carb
+import numpy as np
 import omni
+import omni.appwindow  # Contains handle to keyboard
 from omni.isaac.examples.base_sample import BaseSample
 from omni.isaac.quadruped.robots import Unitree
-import omni.appwindow  # Contains handle to keyboard
-import numpy as np
-import carb
 
 
 class QuadrupedExample(BaseSample):

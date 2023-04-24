@@ -7,22 +7,22 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from cmath import inf
-import sys
+import asyncio
 import os
 import subprocess
-import carb.settings
-import omni.ui as ui
-import omni.ext
-import omni.appwindow
-import asyncio
+import sys
+from cmath import inf
 
-from omni.kit.window.property.templates import LABEL_WIDTH, LABEL_HEIGHT
+import carb.settings
+import omni.appwindow
+import omni.ext
+import omni.ui as ui
 from omni.kit.window.extensions import SimpleCheckBox
 from omni.kit.window.filepicker import FilePickerDialog
+from omni.kit.window.property.templates import LABEL_HEIGHT, LABEL_WIDTH
 
-from .style import get_style, BUTTON_WIDTH, COLOR_X, COLOR_Y, COLOR_Z, COLOR_W
 from .callbacks import on_copy_to_clipboard, on_docs_link_clicked, on_open_folder_clicked, on_open_IDE_clicked
+from .style import BUTTON_WIDTH, COLOR_W, COLOR_X, COLOR_Y, COLOR_Z, get_style
 
 
 def btn_builder(label="", type="button", text="button", tooltip="", on_clicked_fn=None):

@@ -7,11 +7,13 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.isaac.motion_generation import ArticulationKinematicsSolver, LulaKinematicsSolver
-from omni.isaac.core.articulations import Articulation
-from typing import Optional
-from omni.isaac.core.utils.extensions import get_extension_path_from_name
 import os
+from typing import Optional
+
+from omni.isaac.core.articulations import Articulation
+from omni.isaac.core.utils.extensions import get_extension_path_from_name
+from omni.isaac.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
+from omni.isaac.motion_generation.lula.kinematics import LulaKinematicsSolver
 
 
 class KinematicsSolver(ArticulationKinematicsSolver):

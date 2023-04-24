@@ -13,11 +13,12 @@
 # for running state machines using the HierarchicalState tools.
 
 import time
+
 from .behavior_helpers import go_home
 
 
 class State(object):
-    """ Basic state interface.
+    """Basic state interface.
 
     Transitions are checked first each cycle and are handled in a single cycle. exit() is called on
     the previous state, and enter() is called on the new state (in that order). step() is then
@@ -43,7 +44,7 @@ class State(object):
 
 
 class HierarchicalState(State):
-    """ A hierarchical state encapculating a full state machine internally.
+    """A hierarchical state encapculating a full state machine internally.
 
     enter() resets the active state to the initial state and calls enter on it.
     step() steps the underlying state machine, performing any transitions necessary. See below for a
@@ -72,8 +73,7 @@ class HierarchicalState(State):
             self.active_state.enter()
 
     def step(self):
-        """ Step the underlying state machine until it can no longer transition.
-        """
+        """Step the underlying state machine until it can no longer transition."""
         if self.active_state is None:
             return
 
@@ -109,30 +109,27 @@ class HierarchicalState(State):
 
 
 class MultiHierarchicalState(State):
-    """ A multi-hierarchical state machine is a state machine which runs simultaneously multiple
+    """A multi-hierarchical state machine is a state machine which runs simultaneously multiple
     internal state machines. Does not do multithreading, but enters, steps, and exits each of the
     internal machines in lock step in the order they're provided on construction.
     """
 
     def __init__(self, init_states):
-        """ Construct to run the provided state machines give by their initial states.
-        """
+        """Construct to run the provided state machines give by their initial states."""
         self.internal_machines = [HierarchicalState(init_state=state) for state in init_states]
 
     def enter(self):
-        """ Enter into each of the internal state machines.
-        """
+        """Enter into each of the internal state machines."""
         for machine in self.internal_machines:
             machine.enter()
 
     def step(self):
-        """ Step each of the internal state machines.
-        """
+        """Step each of the internal state machines."""
         for machine in self.internal_machines:
             machine.step()
 
     def transition(self):
-        """ Transition to self and keep running as long as any of the internal machines are still
+        """Transition to self and keep running as long as any of the internal machines are still
         active.
         """
         for machine in self.internal_machines:
@@ -141,14 +138,13 @@ class MultiHierarchicalState(State):
         return None
 
     def exit(self):
-        """ Exit from each of the internal state machines.
-        """
+        """Exit from each of the internal state machines."""
         for machine in self.internal_machines:
             machine.exit()
 
 
 class RunState(HierarchicalState):
-    """ Creates a hierarchical state with just a single submachine, and provides a run method to run
+    """Creates a hierarchical state with just a single submachine, and provides a run method to run
     that machine until completion.
     """
 
@@ -159,7 +155,7 @@ class RunState(HierarchicalState):
         super().__init__(self.start_state)
 
     def run(self):
-        """ Steps the underlying state machine until there's no longer an active state.
+        """Steps the underlying state machine until there's no longer an active state.
 
         Steps at the specified rate.
         """
@@ -183,13 +179,12 @@ class RunState(HierarchicalState):
 
 
 def run_state_machine(state, rate, domain=None):
-    """ Convenience method for running a state machine. Equivalent to RunState(state, rate).run().
-    """
+    """Convenience method for running a state machine. Equivalent to RunState(state, rate).run()."""
     RunState(state, rate, domain).run()
 
 
 class Behavior(HierarchicalState):
-    """ A behavior is a state machine that's run to completion. At the end of the behavior, a
+    """A behavior is a state machine that's run to completion. At the end of the behavior, a
     provided terminal_transition() method is called to give the next state. If there is no provided
     terminal_transition method, returns None on termination.
 
@@ -205,7 +200,7 @@ class Behavior(HierarchicalState):
         super().__init__(init_state=self.behavior_machine)
 
     def transition(self):
-        """ Transition based on the underlying behavior state machine until that behavior terminates
+        """Transition based on the underlying behavior state machine until that behavior terminates
         as indicated by the transition returning None. Then transition based on the
         terminal_transition() method provided on construction if one exists, otherwise returns None.
         """
@@ -229,7 +224,7 @@ class Behavior(HierarchicalState):
 
 
 class NextStateTransition(object):
-    """ A simple terminal transition function (object) representing a transition to a pre-specified
+    """A simple terminal transition function (object) representing a transition to a pre-specified
     next state.
     """
 
@@ -241,14 +236,14 @@ class NextStateTransition(object):
 
 
 class ThinkAndRun(HierarchicalState):
-    """ Think and run state machines.
+    """Think and run state machines.
 
     Enables running multiple "thinking" state machines simultaneously preceeding the running of an
     actual robot execution state machine.
     """
 
     def __init__(self, think_machines, run_machine, max_time=5):
-        """ Create the think and run state machine from a collection of think machines and a run
+        """Create the think and run state machine from a collection of think machines and a run
         machine. Each think machine and run machine should be an initial state which will be entered
         into to start the behavior. On enter(), each of the think machine initial states are entered
         into. Those are all stepped until there are no more running think behaviors. One those think

@@ -7,5 +7,5 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.isaac.quadruped.controllers.qp_controller import A1QPController
 from omni.isaac.quadruped.controllers.a1_robot_control import A1RobotControl
+from omni.isaac.quadruped.controllers.qp_controller import A1QPController

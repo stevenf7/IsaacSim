@@ -7,13 +7,13 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.isaac.kit import SimulationApp
 import numpy as np
+from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
 from omni.isaac.core import World
-from omni.isaac.core.objects import VisualCuboid, DynamicCuboid
+from omni.isaac.core.objects import DynamicCuboid, VisualCuboid
 
 my_world = World(stage_units_in_meters=1.0)
 

@@ -7,18 +7,19 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import builtins
+
 # python
 import typing
-import builtins
 
 # omniverse
 import carb
 import omni.kit.app
-from pxr import Usd, UsdGeom, Sdf
-from omni.usd.commands import DeletePrimsCommand
 
 # isaacsim
 from omni.isaac.core.utils.constants import AXES_TOKEN
+from omni.usd.commands import DeletePrimsCommand
+from pxr import Sdf, Usd, UsdGeom
 
 
 def get_current_stage() -> Usd.Stage:
@@ -78,10 +79,10 @@ def clear_stage(predicate: typing.Optional[typing.Callable[[str], bool]] = None)
     # Note: Need to import this here to prevent circular dependencies.
     from omni.isaac.core.utils.prims import (
         get_all_matching_child_prims,
-        is_prim_ancestral,
-        is_prim_no_delete,
-        is_prim_hidden_in_stage,
         get_prim_path,
+        is_prim_ancestral,
+        is_prim_hidden_in_stage,
+        is_prim_no_delete,
     )
 
     def default_predicate(prim_path: str):

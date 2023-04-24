@@ -24,13 +24,14 @@ syntax, otherwise you will get an error like error: argument -ct/--camera_target
 
 import argparse
 import asyncio
-import carb
 import json
-import omni
 import os
-from pathlib import Path
 import time
 import urllib
+from pathlib import Path
+
+import carb
+import omni
 
 original_persistent_settings = {}
 settings_interface = None
@@ -87,8 +88,8 @@ async def capture_next_frame(app, capture_file_path: str):
     except ImportError as ie:
 
         try:
-            import omni.renderer_capture
             import omni.kit.viewport_legacy
+            import omni.renderer_capture
         except ImportError as ie:
             carb.log_error(f"*** screenshot: capture_next_frame: can't load {ie}")
 

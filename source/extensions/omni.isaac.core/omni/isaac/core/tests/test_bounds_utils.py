@@ -7,14 +7,14 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni.kit.test
-from omni.isaac.core.utils.rotations import euler_angles_to_quat, quat_to_euler_angles
-from scipy.spatial.transform import Rotation
 import numpy as np
-from pxr import UsdGeom, Usd, Gf
-from omni.isaac.core.utils.stage import get_current_stage
-from omni.isaac.core.utils.bounds import compute_aabb, compute_combined_aabb, create_bbox_cache, recompute_extents
 import omni.kit.commands
+import omni.kit.test
+from omni.isaac.core.utils.bounds import compute_aabb, compute_combined_aabb, create_bbox_cache, recompute_extents
+from omni.isaac.core.utils.rotations import euler_angles_to_quat, quat_to_euler_angles
+from omni.isaac.core.utils.stage import get_current_stage
+from pxr import Gf, Usd, UsdGeom
+from scipy.spatial.transform import Rotation
 
 
 class TestBounds(omni.kit.test.AsyncTestCase):

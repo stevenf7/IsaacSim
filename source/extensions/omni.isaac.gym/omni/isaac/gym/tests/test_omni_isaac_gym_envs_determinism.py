@@ -8,9 +8,9 @@
 
 import os
 import unittest
-import omni.kit
 
 import omni.isaac.gym.tests.utils as utils
+import omni.kit
 
 CHECK_ITERATIONS = 100
 NUM_RUNS = 3

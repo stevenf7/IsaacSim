@@ -7,49 +7,37 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from numpy.core.einsumfunc import _greedy_path
-from numpy.lib import ufunclike
-import omni
-import carb
-from carb._carb import Float3, Float4
-import pxr
-from pxr import UsdShade, Sdf, Gf, Vt, UsdGeom, UsdLux, Usd, Kind, UsdPhysics, PhysxSchema
-from pxr.Vt import IntArray, Vec3fArray, Vec2fArray, DoubleArray
-import random
-import os
-import shutil
-import re
-import tempfile
-import numpy as np
-import time
-import glob
-import copy
-import ctypes
-import sys
 import asyncio
+import ctypes
+import os
+import re
+
+import carb
+import numpy as np
+import omni
 import omni.client
+import pxr
+from carb._carb import Float3, Float4
 from omni.client._omniclient import Result
+from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdLux, UsdPhysics, UsdShade
+from pxr.Vt import DoubleArray, IntArray, Vec2fArray, Vec3fArray
 
 # Transition between 104 and 105, deprecation of namespace omni.usd.utils
 try:
-    from omni.usd.utils import get_world_transform_matrix, get_local_transform_matrix
+    from omni.usd.utils import get_local_transform_matrix, get_world_transform_matrix
 except:
     from omni.usd import get_world_transform_matrix, get_local_transform_matrix
 
+import base64
+import re
+import threading
+import unicodedata
+from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 
-import base64
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
-import threading
-
-from omni.isaac.onshape.widgets.color_name import ColorName
-from omni.isaac.onshape.widgets.visual_materials_widget import VisualMaterial
-from omni.isaac.onshape.widgets.assembly_widget import Mate
 from omni.isaac.onshape.scripts.preferences import OnshapeImporterPreferences
-
-
-import unicodedata
-import re
+from omni.isaac.onshape.widgets.assembly_widget import Mate
+from omni.isaac.onshape.widgets.visual_materials_widget import VisualMaterial
 
 
 def make_valid_filename(value):

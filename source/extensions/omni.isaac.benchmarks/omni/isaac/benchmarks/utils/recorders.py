@@ -1,7 +1,9 @@
-from typing import Optional
 from pathlib import Path
-from omni.kit.testing.services.metrics import measurements
+from typing import Optional
+
 from omni.kit.testing.services.datarecorders import frametime, interface
+from omni.kit.testing.services.metrics import measurements
+
 from .collectors import IsaacUpdateFrametimeCollector
 
 

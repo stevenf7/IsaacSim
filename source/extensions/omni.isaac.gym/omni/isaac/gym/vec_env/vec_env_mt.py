@@ -5,44 +5,44 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-from omni.isaac.gym.vec_env import VecEnvBase
-
 import abc
 import queue
 
+from omni.isaac.gym.vec_env import VecEnvBase
+
 
 class TaskStopException(Exception):
-    """ Exception class for signalling task termination. """
+    """Exception class for signalling task termination."""
 
     pass
 
 
 class TrainerMT(abc.ABC):
-    """ A base abstract trainer class for controlling starting and stopping of RL policy. """
+    """A base abstract trainer class for controlling starting and stopping of RL policy."""
 
     @abc.abstractmethod
     def run(self):
-        """ Runs RL loop in a new thread """
+        """Runs RL loop in a new thread"""
         pass
 
     @abc.abstractmethod
     def stop(self):
-        """ Stop RL thread """
+        """Stop RL thread"""
         pass
 
 
 class VecEnvMT(VecEnvBase):
-    """ This class provides a base interface for connecting RL policies with task implementations
-        in a multi-threaded fashion. RL policies using this class will run on a different thread
-        than the thread simulation runs on. This can be useful for interacting with the UI before,
-        during, and after running RL policies. Data sharing between threads happen through message
-        passing on multi-threaded queues.
+    """This class provides a base interface for connecting RL policies with task implementations
+    in a multi-threaded fashion. RL policies using this class will run on a different thread
+    than the thread simulation runs on. This can be useful for interacting with the UI before,
+    during, and after running RL policies. Data sharing between threads happen through message
+    passing on multi-threaded queues.
     """
 
     def initialize(self, action_queue, data_queue, timeout=30):
-        """ Initializes queues for sharing data across threads.
+        """Initializes queues for sharing data across threads.
 
-        Args: 
+        Args:
             action_queue (queue.Queue): Queue for passing actions from policy to task.
             data_queue (queue.Queue): Queue for passing data from task to policy.
             timeout (Optional[int]): Seconds to wait for data when queue is empty. An exception will
@@ -56,8 +56,8 @@ class VecEnvMT(VecEnvBase):
         self._timeout = timeout
 
     def get_actions(self, block=True):
-        """ Retrieves actions from policy by waiting for actions to be sent to the queue from the RL thread.
-        
+        """Retrieves actions from policy by waiting for actions to be sent to the queue from the RL thread.
+
         Args:
             block (Optional[bool]): Whether to block thread when waiting for data.
 
@@ -84,7 +84,7 @@ class VecEnvMT(VecEnvBase):
         return actions
 
     def send_actions(self, actions, block=True):
-        """ Sends actions from RL thread to simulation thread by adding actions to queue.
+        """Sends actions from RL thread to simulation thread by adding actions to queue.
 
         Args:
             actions (Union[np.ndarray, torch.Tensor]): actions buffer to be added to queue.
@@ -99,8 +99,8 @@ class VecEnvMT(VecEnvBase):
                 self._stop = True
 
     def get_data(self, block=True):
-        """ Retrieves data from task by waiting for data dictionary to be sent to the queue from the simulation thread.
-        
+        """Retrieves data from task by waiting for data dictionary to be sent to the queue from the simulation thread.
+
         Args:
             block (Optional[bool]): Whether to block thread when waiting for data.
 
@@ -130,7 +130,7 @@ class VecEnvMT(VecEnvBase):
         return data
 
     def send_data(self, data, block=True):
-        """ Sends data from task thread to RL thread by adding data to queue.
+        """Sends data from task thread to RL thread by adding data to queue.
 
         Args:
             data (dict): Dictionary containing task data.
@@ -145,7 +145,7 @@ class VecEnvMT(VecEnvBase):
                 self._stop = True
 
     def clear_queues(self):
-        """ Clears all queues. """
+        """Clears all queues."""
 
         while not self._action_queue.empty():
             self._action_queue.get_nowait()
@@ -155,7 +155,7 @@ class VecEnvMT(VecEnvBase):
             self._data_queue.task_done()
 
     def _collect_data(self, obs, rew, reset, extras, states):
-        """ Helper function to combine buffers into a single dictionary.
+        """Helper function to combine buffers into a single dictionary.
 
         Args:
             obs (Union[numpy.ndarray, torch.Tensor]): Buffer of observation data.
@@ -178,14 +178,14 @@ class VecEnvMT(VecEnvBase):
         return data
 
     def run(self, trainer):
-        """ Main loop for controlling simulation and task stepping.
-            This method is responsible for starting simulation, stepping task and simulation, 
-            collecting buffers from task, sending data to policy, and retrieving actions from policy.
-            It also deals with the case when the policy terminates on completion and continues
-            the simulation thread so that UI does not get affected.
+        """Main loop for controlling simulation and task stepping.
+        This method is responsible for starting simulation, stepping task and simulation,
+        collecting buffers from task, sending data to policy, and retrieving actions from policy.
+        It also deals with the case when the policy terminates on completion and continues
+        the simulation thread so that UI does not get affected.
 
-            Args:
-                trainer (TrainerMT): A Trainer object that implements APIs for starting and stopping RL thread.
+        Args:
+            trainer (TrainerMT): A Trainer object that implements APIs for starting and stopping RL thread.
 
         """
 

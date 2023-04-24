@@ -7,10 +7,11 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import os
+
 import omni.isaac.motion_generation as mg
 from omni.isaac.core.articulations import Articulation
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
-import os
 
 
 class RMPFlowController(mg.MotionPolicyController):
@@ -26,9 +27,10 @@ class RMPFlowController(mg.MotionPolicyController):
         self.articulation_rmp = mg.ArticulationMotionPolicy(robot_articulation, self.rmpflow, physics_dt)
 
         mg.MotionPolicyController.__init__(self, name=name, articulation_motion_policy=self.articulation_rmp)
-        self._default_position, self._default_orientation = (
-            self._articulation_motion_policy._robot_articulation.get_world_pose()
-        )
+        (
+            self._default_position,
+            self._default_orientation,
+        ) = self._articulation_motion_policy._robot_articulation.get_world_pose()
         self._motion_policy.set_robot_base_pose(
             robot_position=self._default_position, robot_orientation=self._default_orientation
         )

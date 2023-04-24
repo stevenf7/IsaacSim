@@ -11,14 +11,15 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
-from omni.isaac.sensor import IMUSensor
-from omni.isaac.core import World
 import sys
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+
 import carb
-from omni.isaac.wheeled_robots.robots import WheeledRobot
-from omni.isaac.wheeled_robots.controllers.differential_controller import DifferentialController
 import numpy as np
+from omni.isaac.core import World
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.sensor import IMUSensor
+from omni.isaac.wheeled_robots.controllers.differential_controller import DifferentialController
+from omni.isaac.wheeled_robots.robots import WheeledRobot
 
 my_world = World(stage_units_in_meters=1.0)
 my_world.scene.add_default_ground_plane()

@@ -7,10 +7,11 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import os
-from .simulation_app import SimulationApp
-from .app_framework import AppFramework
 import builtins
+import os
+
+from .app_framework import AppFramework
+from .simulation_app import SimulationApp
 
 builtins.ISAAC_LAUNCHED_FROM_JUPYTER = (
     os.getenv("ISAAC_JUPYTER_KERNEL") is not None

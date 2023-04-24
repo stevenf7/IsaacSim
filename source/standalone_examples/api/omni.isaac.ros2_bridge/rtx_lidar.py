@@ -6,11 +6,11 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import carb
-from omni.isaac.kit import SimulationApp
+import argparse
 import sys
 
-import argparse
+import carb
+from omni.isaac.kit import SimulationApp
 
 parser = argparse.ArgumentParser(description="Ros2 Bridge Sample")
 parser.add_argument(
@@ -24,13 +24,13 @@ args, unknown = parser.parse_known_args()
 # Example for creating a RTX lidar sensor and publishing PointCloud2 data
 simulation_app = SimulationApp({"headless": False})
 import omni
-from omni.isaac.core.utils.extensions import enable_extension
-from omni.isaac.core import SimulationContext
-from omni.isaac.core.utils import stage, nucleus
-from omni.isaac.core.utils.render_product import create_hydra_texture
 import omni.kit.viewport.utility
-from pxr import Gf
 import omni.replicator.core as rep
+from omni.isaac.core import SimulationContext
+from omni.isaac.core.utils import nucleus, stage
+from omni.isaac.core.utils.extensions import enable_extension
+from omni.isaac.core.utils.render_product import create_hydra_texture
+from pxr import Gf
 
 # enable ROS2 bridge extension
 enable_extension(args.ros2_bridge)

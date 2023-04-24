@@ -6,22 +6,20 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import omni.kit.test
+import numpy as np
+import omni.graph.core as og
 import omni.kit.commands
+import omni.kit.test
+import omni.physics.tensors
+import omni.physx
+import omni.replicator.isaac as dr
 import omni.timeline
 import omni.usd
-import omni.physx
-import omni.physics.tensors
-import omni.graph.core as og
-import omni.replicator.isaac as dr
-from omni.replicator.isaac import physics_view as physics
-
-from omni.isaac.core.objects import DynamicCuboid
-from omni.isaac.core.utils.stage import create_new_stage_async
 from omni.isaac.core import World
-from omni.isaac.core.prims import RigidPrimView
-
-import numpy as np
+from omni.isaac.core.objects import DynamicCuboid
+from omni.isaac.core.prims.rigid_prim_view import RigidPrimView
+from omni.isaac.core.utils.stage import create_new_stage_async
+from omni.replicator.isaac import physics_view as physics
 
 
 class TestOgnWritePhysicsRigidPrimView(omni.kit.test.AsyncTestCase):

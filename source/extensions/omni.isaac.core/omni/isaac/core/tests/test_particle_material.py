@@ -7,18 +7,20 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import omni.kit.test
+from omni.isaac.core import World
+from omni.isaac.core.materials.particle_material import ParticleMaterial
+from omni.isaac.core.tests.test_semantics import TestProperties
+
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 from omni.isaac.core.utils.prims import define_prim
-import omni.kit.test
-from omni.isaac.core import World
+from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from pxr import Gf, Usd, UsdGeom
-from omni.isaac.core.materials import ParticleMaterial
-from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
-from omni.isaac.core.tests.test_semantics import TestProperties
+
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestParticleMaterial(omni.kit.test.AsyncTestCase, TestProperties):

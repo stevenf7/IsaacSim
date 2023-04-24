@@ -9,6 +9,5 @@
 
 from . import syntheticdata as syntheticdata
 from . import visualization as visualization
-from .writers import *
-
 from .syntheticdata import SyntheticDataHelper
+from .writers import *

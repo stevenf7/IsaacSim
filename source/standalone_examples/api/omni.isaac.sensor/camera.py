@@ -10,13 +10,12 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
+import matplotlib.pyplot as plt
+import numpy as np
+import omni.isaac.core.utils.numpy.rotations as rot_utils
+from omni.isaac.core import World
 from omni.isaac.core.objects import DynamicCuboid
 from omni.isaac.sensor import Camera
-from omni.isaac.core import World
-import omni.isaac.core.utils.numpy.rotations as rot_utils
-import numpy as np
-import matplotlib.pyplot as plt
-
 
 my_world = World(stage_units_in_meters=1.0)
 

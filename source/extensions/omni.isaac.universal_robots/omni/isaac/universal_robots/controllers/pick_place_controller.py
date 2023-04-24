@@ -6,25 +6,26 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+from typing import List, Optional
+
+import numpy as np
+import omni.isaac.manipulators.controllers as manipulators_controllers
+from omni.isaac.core.articulations import Articulation
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.core.utils.types import ArticulationAction
-from omni.isaac.core.articulations import Articulation
 from omni.isaac.manipulators.grippers.surface_gripper import SurfaceGripper
-import omni.isaac.manipulators.controllers as manipulators_controllers
-from omni.isaac.universal_robots.controllers import RMPFlowController
-import numpy as np
-from typing import Optional, List
+from omni.isaac.universal_robots.controllers.rmpflow_controller import RMPFlowController
 
 
 class PickPlaceController(manipulators_controllers.PickPlaceController):
     """[summary]
 
-        Args:
-            name (str): [description]
-            surface_gripper (SurfaceGripper): [description]
-            robot_articulation(Articulation): [description]
-            events_dt (Optional[List[float]], optional): [description]. Defaults to None.
-        """
+    Args:
+        name (str): [description]
+        surface_gripper (SurfaceGripper): [description]
+        robot_articulation(Articulation): [description]
+        events_dt (Optional[List[float]], optional): [description]. Defaults to None.
+    """
 
     def __init__(
         self,

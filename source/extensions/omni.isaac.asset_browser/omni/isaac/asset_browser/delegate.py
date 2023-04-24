@@ -1,13 +1,14 @@
-import carb
-import omni.ui as ui
-import omni.kit.app
-from omni.kit.browser.core import create_drop_helper
-from omni.kit.browser.folder.core import FolderDetailDelegate
-from .model import AssetBrowserModel, AssetDetailItem
-
 import asyncio
 from pathlib import Path
 from typing import Optional
+
+import carb
+import omni.kit.app
+import omni.ui as ui
+from omni.kit.browser.core import create_drop_helper
+from omni.kit.browser.folder.core import FolderDetailDelegate
+
+from .model import AssetBrowserModel, AssetDetailItem
 
 CURRENT_PATH = Path(__file__).parent
 ICON_PATH = CURRENT_PATH.parent.parent.parent.parent.joinpath("icons")

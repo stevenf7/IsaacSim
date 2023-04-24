@@ -7,14 +7,14 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .test_kaya_gamepad import *
 from .test_bin_filling import *
 from .test_follow_target import *
+from .test_hello_world import *
+from .test_kaya_gamepad import *
+from .test_nut_bolt import *
 from .test_omnigraph_keyboard import *
+from .test_path_planning import *
+from .test_replay_follow_target import *
 from .test_robo_factory import *
 from .test_robo_party import *
 from .test_simple_stack import *
-from .test_hello_world import *
-from .test_replay_follow_target import *
-from .test_path_planning import *
-from .test_nut_bolt import *

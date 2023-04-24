@@ -8,19 +8,19 @@
 #
 
 import gc
-import omni.ext
-import omni.usd
-import omni.ui as ui
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-from omni.isaac.ui.menu import make_menu_item_description
-import omni.kit.utils
-import omni.kit.commands
-from pxr import Usd, UsdGeom, Sdf, UsdShade, Gf
 import weakref
-import carb
 
+import carb
+import omni.ext
+import omni.kit.commands
+import omni.kit.utils
+import omni.ui as ui
+import omni.usd
+from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.ui.style import get_style
-from omni.isaac.ui.ui_utils import combo_cb_str_builder, btn_builder, cb_builder, str_builder
+from omni.isaac.ui.ui_utils import btn_builder, cb_builder, combo_cb_str_builder, str_builder
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+from pxr import Gf, Sdf, Usd, UsdGeom, UsdShade
 
 EXTENSION_NAME = "Mesh Merge Tool"
 

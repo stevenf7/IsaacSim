@@ -7,12 +7,13 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.isaac.core.controllers import BaseController
-from omni.isaac.core.utils.types import ArticulationAction
-from omni.isaac.core.articulations import Articulation, ArticulationSubset
-import omni.isaac.core.objects
-import numpy as np
 from typing import Optional, Tuple
+
+import numpy as np
+import omni.isaac.core.objects
+from omni.isaac.core.articulations import Articulation, ArticulationSubset
+from omni.isaac.core.controllers.base_controller import BaseController
+from omni.isaac.core.utils.types import ArticulationAction
 
 
 class BaseBenchmarkController(BaseController):
@@ -37,7 +38,7 @@ class BaseBenchmarkController(BaseController):
     def set_robot_base_pose(
         self, robot_base_translation: np.ndarray, robot_base_orientation: Optional[np.ndarray] = None
     ) -> None:
-        """Inform the controller of the base pose of the robot Articulation.  robot_benchmark.py will call 
+        """Inform the controller of the base pose of the robot Articulation.  robot_benchmark.py will call
             set_robot_base_pose(*robot.get_world_pose()) with robot being the robot articulation.
 
         This function does not strictly need to be implemented unless the user intentionally adds a robot that is not placed at the
@@ -55,7 +56,7 @@ class BaseBenchmarkController(BaseController):
         it has hit the target.
 
         Returns:
-            Tuple[np.array,np.array]: 
+            Tuple[np.array,np.array]:
             Translation: 3D translation vector describing the robot end effector location
             Orientation: Quaternion orientation describing the robot end effector orientation
         """

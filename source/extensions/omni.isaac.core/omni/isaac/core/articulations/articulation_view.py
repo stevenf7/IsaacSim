@@ -6,58 +6,59 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import List, Optional, Tuple, Union
-import numpy as np
-import torch
-import omni.kit.app
 from collections import OrderedDict
-from omni.isaac.core.prims.xform_prim_view import XFormPrimView
-from omni.isaac.core.utils.types import JointsState, ArticulationActions
-from pxr import Usd, UsdGeom, UsdPhysics, PhysxSchema
+from typing import List, Optional, Tuple, Union
+
 import carb
-from omni.isaac.core.utils.prims import get_prim_parent, get_prim_at_path, set_prim_property, get_prim_property
+import numpy as np
+import omni.kit.app
+import torch
+from omni.isaac.core.prims.xform_prim_view import XFormPrimView
+from omni.isaac.core.utils.prims import get_prim_at_path, get_prim_parent, get_prim_property, set_prim_property
+from omni.isaac.core.utils.types import ArticulationActions, JointsState
+from pxr import PhysxSchema, Usd, UsdGeom, UsdPhysics
 
 
 class ArticulationView(XFormPrimView):
     """
-        Provides high level functions to deal with prims that has root articulation api applied to it (1 or more articulations) 
-        as well as its attributes/ properties.
-        This object wraps all matching articulations found at the regex provided at the prim_paths_expr.
+    Provides high level functions to deal with prims that has root articulation api applied to it (1 or more articulations)
+    as well as its attributes/ properties.
+    This object wraps all matching articulations found at the regex provided at the prim_paths_expr.
 
-        Note: - each prim will have "xformOp:orient", "xformOp:translate" and "xformOp:scale" only post init,
-                unless it is a non-root articulation link.
+    Note: - each prim will have "xformOp:orient", "xformOp:translate" and "xformOp:scale" only post init,
+            unless it is a non-root articulation link.
 
-        Args:
-            prim_paths_expr (str): prim paths regex to encapsulate all prims that match it.
-                                    example: "/World/Env[1-5]/Franka" will match /World/Env1/Franka, 
-                                    /World/Env2/Franka..etc.
-                                    (a non regex prim path can also be used to encapsulate one rigid prim).
-            name (str, optional): shortname to be used as a key by Scene class. 
-                                    Note: needs to be unique if the object is added to the Scene. 
-                                    Defaults to "articulation_prim_view".
-            positions (Optional[Union[np.ndarray, torch.Tensor]], optional): default positions in the world frame of the prims. 
-                                                                            shape is (N, 3). Defaults to None, which means left unchanged.
-            translations (Optional[Union[np.ndarray, torch.Tensor]], optional): 
-                                                            default translations in the local frame of the prims
-                                                            (with respect to its parent prims). shape is (N, 3).
-                                                            Defaults to None, which means left unchanged.
-            orientations (Optional[Union[np.ndarray, torch.Tensor]], optional): 
-                                                            default quaternion orientations in the world/ local frame of the prims
-                                                            (depends if translation or position is specified).
-                                                            quaternion is scalar-first (w, x, y, z). shape is (N, 4).
-            scales (Optional[Union[np.ndarray, torch.Tensor]], optional): local scales to be applied to 
-                                                            the prim's dimensions in the view. shape is (N, 3).
-                                                            Defaults to None, which means left unchanged.
-            visibilities (Optional[Union[np.ndarray, torch.Tensor]], optional): set to false for an invisible prim in 
-                                                                                the stage while rendering. shape is (N,). 
-                                                                                Defaults to None.
-            reset_xform_properties (bool, optional): True if the prims don't have the right set of xform properties 
-                                                    (i.e: translate, orient and scale) ONLY and in that order.
-                                                    Set this parameter to False if the object were cloned using using 
-                                                    the cloner api in omni.isaac.cloner. Defaults to True.
-            enable_dof_force_sensors (bool, optional): enables the solver computed dof force sensors on articulation joints. 
-                                                       Defaults to False.                                                   
-        """
+    Args:
+        prim_paths_expr (str): prim paths regex to encapsulate all prims that match it.
+                                example: "/World/Env[1-5]/Franka" will match /World/Env1/Franka,
+                                /World/Env2/Franka..etc.
+                                (a non regex prim path can also be used to encapsulate one rigid prim).
+        name (str, optional): shortname to be used as a key by Scene class.
+                                Note: needs to be unique if the object is added to the Scene.
+                                Defaults to "articulation_prim_view".
+        positions (Optional[Union[np.ndarray, torch.Tensor]], optional): default positions in the world frame of the prims.
+                                                                        shape is (N, 3). Defaults to None, which means left unchanged.
+        translations (Optional[Union[np.ndarray, torch.Tensor]], optional):
+                                                        default translations in the local frame of the prims
+                                                        (with respect to its parent prims). shape is (N, 3).
+                                                        Defaults to None, which means left unchanged.
+        orientations (Optional[Union[np.ndarray, torch.Tensor]], optional):
+                                                        default quaternion orientations in the world/ local frame of the prims
+                                                        (depends if translation or position is specified).
+                                                        quaternion is scalar-first (w, x, y, z). shape is (N, 4).
+        scales (Optional[Union[np.ndarray, torch.Tensor]], optional): local scales to be applied to
+                                                        the prim's dimensions in the view. shape is (N, 3).
+                                                        Defaults to None, which means left unchanged.
+        visibilities (Optional[Union[np.ndarray, torch.Tensor]], optional): set to false for an invisible prim in
+                                                                            the stage while rendering. shape is (N,).
+                                                                            Defaults to None.
+        reset_xform_properties (bool, optional): True if the prims don't have the right set of xform properties
+                                                (i.e: translate, orient and scale) ONLY and in that order.
+                                                Set this parameter to False if the object were cloned using using
+                                                the cloner api in omni.isaac.cloner. Defaults to True.
+        enable_dof_force_sensors (bool, optional): enables the solver computed dof force sensors on articulation joints.
+                                                   Defaults to False.
+    """
 
     def __init__(
         self,
@@ -283,8 +284,8 @@ class ArticulationView(XFormPrimView):
     def get_dof_limits(self) -> Union[np.ndarray, torch.Tensor]:
         """
         Returns:
-            Union[np.ndarray, torch.Tensor]: degrees of freedom position limits. 
-                                            shape is (N, num_dof, 2) where index 0 corresponds to the lower limit and index 1 corresponds to the upper limit. 
+            Union[np.ndarray, torch.Tensor]: degrees of freedom position limits.
+                                            shape is (N, num_dof, 2) where index 0 corresponds to the lower limit and index 1 corresponds to the upper limit.
         """
         if not self._is_initialized:
             carb.log_warn("ArticulationView needs to be initialized.")
@@ -301,11 +302,11 @@ class ArticulationView(XFormPrimView):
 
         Args:
             values (Union[np.ndarray, torch.Tensor]): friction coefficients for articulations in the view. shape (M, K).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints 
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
@@ -352,11 +353,11 @@ class ArticulationView(XFormPrimView):
         """Gets friction coefficients for articulation in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints 
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
@@ -403,11 +404,11 @@ class ArticulationView(XFormPrimView):
 
         Args:
             values (Union[np.ndarray, torch.Tensor]): armatures for articulations in the view. shape (M, K).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints 
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
@@ -448,11 +449,11 @@ class ArticulationView(XFormPrimView):
         """Gets armatures for articulation in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints 
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
@@ -509,13 +510,13 @@ class ArticulationView(XFormPrimView):
         Sets the joint position targets for the implicit pd controllers.
 
         Args:
-            positions (Optional[Union[np.ndarray, torch.Tensor]]): joint position targets for the implicit pd controller. 
+            positions (Optional[Union[np.ndarray, torch.Tensor]]): joint position targets for the implicit pd controller.
                                                                     shape is (M, K).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints 
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
@@ -547,13 +548,13 @@ class ArticulationView(XFormPrimView):
         """Sets the joint positions of articulations in the view.
 
         Args:
-            positions (Optional[Union[np.ndarray, torch.Tensor]]): joint positions of articulations in the view to be set to in the next frame. 
+            positions (Optional[Union[np.ndarray, torch.Tensor]]): joint positions of articulations in the view to be set to in the next frame.
                                                                     shape is (M, K).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints 
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
@@ -585,13 +586,13 @@ class ArticulationView(XFormPrimView):
         Sets the joint velocity targets for the implicit pd controllers.
 
         Args:
-            velocities (Optional[Union[np.ndarray, torch.Tensor]]): joint velocity targets for the implicit pd controller. 
+            velocities (Optional[Union[np.ndarray, torch.Tensor]]): joint velocity targets for the implicit pd controller.
                                                                     shape is (M, K).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints 
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
@@ -623,13 +624,13 @@ class ArticulationView(XFormPrimView):
         """Sets the joint velocities of articulations in the view.
 
         Args:
-            velocities (Optional[Union[np.ndarray, torch.Tensor]]): joint velocities of articulations in the view to be set to in the next frame. 
+            velocities (Optional[Union[np.ndarray, torch.Tensor]]): joint velocities of articulations in the view to be set to in the next frame.
                                                                     shape is (M, K).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints 
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
@@ -661,13 +662,13 @@ class ArticulationView(XFormPrimView):
         """Sets the joint efforts of articulations in the view.
 
         Args:
-            efforts (Optional[Union[np.ndarray, torch.Tensor]]): efforts of articulations in the view to be set to in the next frame. 
+            efforts (Optional[Union[np.ndarray, torch.Tensor]]): efforts of articulations in the view to be set to in the next frame.
                                                                     shape is (M, K).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints 
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
@@ -701,15 +702,15 @@ class ArticulationView(XFormPrimView):
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor]:
         """Gets the joint efforts of articulations in the view. The method will return the efforts set by the set_joint_efforts.
-        
+
         Args:
-            efforts (Optional[Union[np.ndarray, torch.Tensor]]): efforts of articulations in the view to be set to in the next frame. 
+            efforts (Optional[Union[np.ndarray, torch.Tensor]]): efforts of articulations in the view to be set to in the next frame.
                                                                     shape is (M, K).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints 
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
@@ -744,18 +745,18 @@ class ArticulationView(XFormPrimView):
         """Gets the joint positions of articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints 
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: joint positions of articulations in the view. 
+            Union[np.ndarray, torch.Tensor]: joint positions of articulations in the view.
                                                     shape is (M, K).
         """
         if not self._is_initialized:
@@ -784,18 +785,18 @@ class ArticulationView(XFormPrimView):
         """Gets the joint velocities of articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints 
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: joint velocities of articulations in the view. 
+            Union[np.ndarray, torch.Tensor]: joint velocities of articulations in the view.
                                                     shape is (M, K).
         """
         if not self._is_initialized:
@@ -818,12 +819,12 @@ class ArticulationView(XFormPrimView):
     def apply_action(
         self, control_actions: ArticulationActions, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None
     ) -> None:
-        """ Applies ArticulationActions which encapsulates joint position targets, velocity targets, efforts and joint indices in one object.
+        """Applies ArticulationActions which encapsulates joint position targets, velocity targets, efforts and joint indices in one object.
             Can be used instead of the seperate set_joint_position_targets..etc.
 
         Args:
             control_actions (ArticulationActions): actions to be applied for next physics step.
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -917,10 +918,10 @@ class ArticulationView(XFormPrimView):
         Args:
             positions (Optional[Union[np.ndarray, torch.Tensor]], optional): positions in the world frame of the prim. shape is (M, 3).
                                                                              Defaults to None, which means left unchanged.
-            orientations (Optional[Union[np.ndarray, torch.Tensor]], optional): quaternion orientations in the world frame of the prims. 
+            orientations (Optional[Union[np.ndarray, torch.Tensor]], optional): quaternion orientations in the world frame of the prims.
                                                                                 quaternion is scalar-first (w, x, y, z). shape is (M, 4).
                                                                                 Defaults to None, which means left unchanged.
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -951,15 +952,15 @@ class ArticulationView(XFormPrimView):
         """Gets the poses of the prims in the view with respect to the world's frame.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: 
-                                        first index is positions in the world frame of the prims. shape is (M, 3). 
+            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]:
+                                        first index is positions in the world frame of the prims. shape is (M, 3).
                                            second index is quaternion orientations in the world frame of the prims.
                                            quaternion is scalar-first (w, x, y, z). shape is (M, 4).
         """
@@ -982,16 +983,16 @@ class ArticulationView(XFormPrimView):
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
     ) -> Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]:
         """Gets prim poses in the view with respect to the local frame (the prim's parent frame).
-        
+
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
                                                                                     to query. Shape (M,).
                                                                                     Where M <= size of the encapsulated prims in the view.
                                                                                     Defaults to None (i.e: all prims in the view)
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: 
-                                                            first index is positions in the local frame of the prims. shape is (M, 3). 
+            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]:
+                                                            first index is positions in the local frame of the prims. shape is (M, 3).
                                                         second index is quaternion orientations in the local frame of the prims.
                                                         quaternion is scalar-first (w, x, y, z). shape is (M, 4).
         """
@@ -1026,15 +1027,15 @@ class ArticulationView(XFormPrimView):
         """Sets prim poses in the view with respect to the local frame (the prim's parent frame).
 
         Args:
-            translations (Optional[Union[np.ndarray, torch.Tensor]], optional): 
+            translations (Optional[Union[np.ndarray, torch.Tensor]], optional):
                                                           translations in the local frame of the prims
                                                           (with respect to its parent prim). shape is (M, 3).
                                                           Defaults to None, which means left unchanged.
-            orientations (Optional[Union[np.ndarray, torch.Tensor]], optional): 
-                                                          quaternion orientations in the local frame of the prims. 
+            orientations (Optional[Union[np.ndarray, torch.Tensor]], optional):
+                                                          quaternion orientations in the local frame of the prims.
                                                           quaternion is scalar-first (w, x, y, z). shape is (M, 4).
                                                           Defaults to None, which means left unchanged.
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -1082,7 +1083,7 @@ class ArticulationView(XFormPrimView):
 
         Args:
             velocities (Optional[Union[np.ndarray, torch.Tensor]]): linear and angular velocities respectively to set the rigid prims to. shape is (M, 6).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -1106,7 +1107,7 @@ class ArticulationView(XFormPrimView):
         """Gets the linear and angular velocities of prims in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
                                                                                     to query. Shape (M,).
                                                                                     Where M <= size of the encapsulated prims in the view.
                                                                                     Defaults to None (i.e: all prims in the view)
@@ -1142,7 +1143,7 @@ class ArticulationView(XFormPrimView):
 
         Args:
             velocities (Optional[Union[np.ndarray, torch.Tensor]]): linear velocities to set the rigid prims to. shape is (M, 3).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -1172,7 +1173,7 @@ class ArticulationView(XFormPrimView):
         """Gets the linear velocities of prims in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
                                                                                     to query. Shape (M,).
                                                                                     Where M <= size of the encapsulated prims in the view.
                                                                                     Defaults to None (i.e: all prims in the view)
@@ -1207,7 +1208,7 @@ class ArticulationView(XFormPrimView):
 
         Args:
             velocities (Optional[Union[np.ndarray, torch.Tensor]]): angular velocities to set the rigid prims to. shape is (M, 3).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -1237,7 +1238,7 @@ class ArticulationView(XFormPrimView):
         """Gets the angular velocities of prims in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
                                                                                     to query. Shape (M,).
                                                                                     Where M <= size of the encapsulated prims in the view.
                                                                                     Defaults to None (i.e: all prims in the view)
@@ -1311,8 +1312,7 @@ class ArticulationView(XFormPrimView):
             return None
 
     def post_reset(self) -> None:
-        """Resets the prims to its default state.
-        """
+        """Resets the prims to its default state."""
         XFormPrimView.post_reset(self)
         ArticulationView.set_joint_positions(self, self._default_joints_state.positions)
         ArticulationView.set_joint_velocities(self, self._default_joints_state.velocities)
@@ -1329,11 +1329,11 @@ class ArticulationView(XFormPrimView):
         Gets effort modes for articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints 
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
@@ -1374,11 +1374,11 @@ class ArticulationView(XFormPrimView):
 
         Args:
             mode (str): effort mode to be applied to prims in the view. force or acceleration.
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints 
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
@@ -1418,11 +1418,11 @@ class ArticulationView(XFormPrimView):
 
         Args:
             values (Union[np.ndarray, torch.Tensor]): maximum efforts for articulations in the view. shape (M, K).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints 
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
@@ -1471,11 +1471,11 @@ class ArticulationView(XFormPrimView):
         """Gets maximum efforts for articulation in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints 
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
@@ -1535,11 +1535,11 @@ class ArticulationView(XFormPrimView):
         Args:
             kps (Optional[Union[np.ndarray, torch.Tensor]], optional): stiffness of the drives. shape is (M, K). Defaults to None.
             kds (Optional[Union[np.ndarray, torch.Tensor]], optional): damping of the drives. shape is (M, K).. Defaults to None.
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints 
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
@@ -1644,11 +1644,11 @@ class ArticulationView(XFormPrimView):
         Gets stiffness and damping of articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints 
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
@@ -1722,15 +1722,15 @@ class ArticulationView(XFormPrimView):
         indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
     ) -> None:
-        """ Switches control mode between velocity, position or effort.
+        """Switches control mode between velocity, position or effort.
 
         Args:
             mode (str): control mode to switch the articulations specified to. mode can be velocity, position or effort.
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints 
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
@@ -1777,7 +1777,7 @@ class ArticulationView(XFormPrimView):
         Args:
             mode (str): control mode to switch the dof in articulations specified to. mode an be velocity, position or effort.
             dof_index (int): dof index to swith the control mode of.
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -1823,7 +1823,7 @@ class ArticulationView(XFormPrimView):
 
         Args:
             counts (Union[np.ndarray, torch.Tensor]): number of iterations for the solver. Shape (M,).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -1843,7 +1843,7 @@ class ArticulationView(XFormPrimView):
         """Gets the physics solver itertion counts for joint positions.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -1867,7 +1867,7 @@ class ArticulationView(XFormPrimView):
 
         Args:
             counts (Union[np.ndarray, torch.Tensor]): number of iterations for the solver. Shape (M,).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -1888,7 +1888,7 @@ class ArticulationView(XFormPrimView):
         Gets the physics solver itertion counts for joint velocities.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -1913,7 +1913,7 @@ class ArticulationView(XFormPrimView):
 
         Args:
             thresholds (Union[np.ndarray, torch.Tensor]): stabilization thresholds to be applied. Shape (M,).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -1933,7 +1933,7 @@ class ArticulationView(XFormPrimView):
         """Gets the stabilizaion thresholds.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -1952,11 +1952,11 @@ class ArticulationView(XFormPrimView):
     def set_enabled_self_collisions(
         self, flags: Union[np.ndarray, torch.Tensor], indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None
     ) -> None:
-        """ Sets the enable self collisions flag
+        """Sets the enable self collisions flag
 
         Args:
             flags (Union[np.ndarray, torch.Tensor]): true to enable self collision. otherwise false. shape (M,)
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -1977,7 +1977,7 @@ class ArticulationView(XFormPrimView):
         Gets the enable self collisions flag
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -1998,11 +1998,11 @@ class ArticulationView(XFormPrimView):
         thresholds: Union[np.ndarray, torch.Tensor],
         indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
     ) -> None:
-        """ Sets sleep thresholds for articulations in the view.
+        """Sets sleep thresholds for articulations in the view.
 
         Args:
             thresholds (Union[np.ndarray, torch.Tensor]): sleep thresholds to be applied. shape (M,).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -2022,7 +2022,7 @@ class ArticulationView(XFormPrimView):
         """Gets sleep thresholds for articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -2041,7 +2041,7 @@ class ArticulationView(XFormPrimView):
     def get_jacobian_shape(self) -> Union[np.ndarray, torch.Tensor]:
         """
         Returns:
-            Union[np.ndarray, torch.Tensor]: shape of jacobian for a single articulation. 
+            Union[np.ndarray, torch.Tensor]: shape of jacobian for a single articulation.
         """
         if not self._is_initialized:
             carb.log_warn("ArticulationView needs to be initialized.")
@@ -2052,7 +2052,7 @@ class ArticulationView(XFormPrimView):
     def get_mass_matrix_shape(self) -> Union[np.ndarray, torch.Tensor]:
         """
         Returns:
-            Union[np.ndarray, torch.Tensor]: shape of mass matrix for a single articulation. 
+            Union[np.ndarray, torch.Tensor]: shape of mass matrix for a single articulation.
         """
         if not self._is_initialized:
             carb.log_warn("ArticulationView needs to be initialized.")
@@ -2065,14 +2065,14 @@ class ArticulationView(XFormPrimView):
         """Gets the jacobians of articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: jacobians of articulations in the view. 
+            Union[np.ndarray, torch.Tensor]: jacobians of articulations in the view.
                                                     shape is (M, jacobian_shape).
         """
         if not self._is_initialized:
@@ -2097,14 +2097,14 @@ class ArticulationView(XFormPrimView):
         """Gets the mass matrices of articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: mass matrices of articulations in the view. 
+            Union[np.ndarray, torch.Tensor]: mass matrices of articulations in the view.
                                                     shape is (M, mass_matrix_shape).
         """
         if not self._is_initialized:
@@ -2132,18 +2132,18 @@ class ArticulationView(XFormPrimView):
         """Gets the coriolis and centrifugal forces of articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints 
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: Coriolis and centrifugal forces of articulations in the view. 
+            Union[np.ndarray, torch.Tensor]: Coriolis and centrifugal forces of articulations in the view.
                                                     shape is (M, K).
         """
         if not self._is_initialized:
@@ -2174,18 +2174,18 @@ class ArticulationView(XFormPrimView):
         """Gets the generalized gravity forces of articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints 
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: generalized gravity forces of articulations in the view. 
+            Union[np.ndarray, torch.Tensor]: generalized gravity forces of articulations in the view.
                                                     shape is (M, K).
         """
         if not self._is_initialized:
@@ -2214,18 +2214,18 @@ class ArticulationView(XFormPrimView):
         """Gets rigid body masses of articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            body_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): body indicies to specify which bodies 
+            body_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): body indicies to specify which bodies
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of bodies.
                                                                                  Defaults to None (i.e: all bodies).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: rigid body masses of articulations in the view. 
+            Union[np.ndarray, torch.Tensor]: rigid body masses of articulations in the view.
                                                     shape is (M, K).
         """
         if not self._is_initialized:
@@ -2252,18 +2252,18 @@ class ArticulationView(XFormPrimView):
         """Gets rigid body inverse masses of articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            body_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): body indicies to specify which bodies 
+            body_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): body indicies to specify which bodies
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of bodies.
                                                                                  Defaults to None (i.e: all bodies).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: rigid body inverse masses of articulations in the view. 
+            Union[np.ndarray, torch.Tensor]: rigid body inverse masses of articulations in the view.
                                                     shape is (M, K).
         """
         if not self._is_initialized:
@@ -2290,18 +2290,18 @@ class ArticulationView(XFormPrimView):
         """Gets rigid body center of mass of articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            body_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): body indicies to specify which bodies 
+            body_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): body indicies to specify which bodies
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of bodies.
                                                                                  Defaults to None (i.e: all bodies).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: rigid body center of mass positions and orientations of articulations in the view. 
+            Union[np.ndarray, torch.Tensor]: rigid body center of mass positions and orientations of articulations in the view.
                                                     position shape is (M, K, 3), orientation shape is (M, k, 4).
         """
         if not self._is_initialized:
@@ -2336,18 +2336,18 @@ class ArticulationView(XFormPrimView):
         """Gets rigid body inertias of articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            body_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): body indicies to specify which bodies 
+            body_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): body indicies to specify which bodies
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of bodies.
                                                                                  Defaults to None (i.e: all bodies).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: rigid body inertias of articulations in the view. 
+            Union[np.ndarray, torch.Tensor]: rigid body inertias of articulations in the view.
                                                     shape is (M, K, 9).
         """
         if not self._is_initialized:
@@ -2376,18 +2376,18 @@ class ArticulationView(XFormPrimView):
         """Gets rigid body inverse inertias of articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            body_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): body indicies to specify which bodies 
+            body_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): body indicies to specify which bodies
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of bodies.
                                                                                  Defaults to None (i.e: all bodies).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: rigid body inverse inertias of articulations in the view. 
+            Union[np.ndarray, torch.Tensor]: rigid body inverse inertias of articulations in the view.
                                                     shape is (M, K, 9).
         """
         if not self._is_initialized:
@@ -2417,11 +2417,11 @@ class ArticulationView(XFormPrimView):
 
         Args:
             values (Union[np.ndarray, torch.Tensor]): body masses for articulations in the view. shape (M, K).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            body_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): body indicies to specify which bodies 
+            body_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): body indicies to specify which bodies
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of bodies.
                                                                                  Defaults to None (i.e: all bodies).
@@ -2451,11 +2451,11 @@ class ArticulationView(XFormPrimView):
 
         Args:
             values (Union[np.ndarray, torch.Tensor]): body inertias for articulations in the view. shape (M, K, 9).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            body_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): body indicies to specify which bodies 
+            body_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): body indicies to specify which bodies
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of bodies.
                                                                                  Defaults to None (i.e: all bodies).
@@ -2487,11 +2487,11 @@ class ArticulationView(XFormPrimView):
         Args:
             positions (Union[np.ndarray, torch.Tensor]): body center of mass positions for articulations in the view. shape (M, K, 3).
             orientations (Union[np.ndarray, torch.Tensor]): body center of mass orientations for articulations in the view. shape (M, K, 4).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            body_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): body indicies to specify which bodies 
+            body_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): body indicies to specify which bodies
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of bodies.
                                                                                  Defaults to None (i.e: all bodies).
@@ -2527,14 +2527,14 @@ class ArticulationView(XFormPrimView):
         """Gets the stiffness of fixed tendons for articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: fixed tendon stiffnesses of articulations in the view. 
+            Union[np.ndarray, torch.Tensor]: fixed tendon stiffnesses of articulations in the view.
                                                     shape is (M, K).
         """
         if not self._is_initialized:
@@ -2559,14 +2559,14 @@ class ArticulationView(XFormPrimView):
         """Gets the dampings of fixed tendons for articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: fixed tendon dampings of articulations in the view. 
+            Union[np.ndarray, torch.Tensor]: fixed tendon dampings of articulations in the view.
                                                     shape is (M, K).
         """
         if not self._is_initialized:
@@ -2591,14 +2591,14 @@ class ArticulationView(XFormPrimView):
         """Gets the limit stiffness of fixed tendons for articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: fixed tendon stiffnesses of articulations in the view. 
+            Union[np.ndarray, torch.Tensor]: fixed tendon stiffnesses of articulations in the view.
                                                     shape is (M, K).
         """
         if not self._is_initialized:
@@ -2625,14 +2625,14 @@ class ArticulationView(XFormPrimView):
         """Gets the limits of fixed tendons for articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: fixed tendon stiffnesses of articulations in the view. 
+            Union[np.ndarray, torch.Tensor]: fixed tendon stiffnesses of articulations in the view.
                                                     shape is (M, K, 2).
         """
         if not self._is_initialized:
@@ -2657,14 +2657,14 @@ class ArticulationView(XFormPrimView):
         """Gets the rest length of fixed tendons for articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: fixed tendon stiffnesses of articulations in the view. 
+            Union[np.ndarray, torch.Tensor]: fixed tendon stiffnesses of articulations in the view.
                                                     shape is (M, K).
         """
         if not self._is_initialized:
@@ -2689,14 +2689,14 @@ class ArticulationView(XFormPrimView):
         """Gets the offsets of fixed tendons for articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: fixed tendon stiffnesses of articulations in the view. 
+            Union[np.ndarray, torch.Tensor]: fixed tendon stiffnesses of articulations in the view.
                                                     shape is (M, K).
         """
         if not self._is_initialized:
@@ -2734,7 +2734,7 @@ class ArticulationView(XFormPrimView):
             limits (Union[np.ndarray, torch.Tensor]): fixed tendon limits for articulations in the view. shape (M, K, 2).
             rest_lengths (Union[np.ndarray, torch.Tensor]): fixed tendon rest lengths for articulations in the view. shape (M, K).
             offsets (Union[np.ndarray, torch.Tensor]): fixed tendon offsets for articulations in the view. shape (M, K).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).

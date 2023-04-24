@@ -1,10 +1,10 @@
 from functools import partial
-from omni.kit.property.usd.custom_layout_helper import CustomLayoutFrame, CustomLayoutGroup, CustomLayoutProperty
-from omni.graph.ui import OmniGraphAttributeModel
-from omni.kit.property.usd.usd_property_widget import UsdPropertiesWidgetBuilder
-import omni.graph.core as og
 
+import omni.graph.core as og
 import omni.ui as ui
+from omni.graph.ui import OmniGraphAttributeModel
+from omni.kit.property.usd.custom_layout_helper import CustomLayoutFrame, CustomLayoutGroup, CustomLayoutProperty
+from omni.kit.property.usd.usd_property_widget import UsdPropertiesWidgetBuilder
 from omni.kit.widget.text_editor import TextEditor
 
 

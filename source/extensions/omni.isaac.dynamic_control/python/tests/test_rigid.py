@@ -8,13 +8,14 @@
 #
 
 
-import omni.kit.test
-from pxr import Gf, UsdPhysics, Sdf, PhysxSchema
-from omni.isaac.dynamic_control import _dynamic_control
-from omni.isaac.dynamic_control import utils as dc_utils
-from omni.isaac.dynamic_control import conversions as dc_conversions
-import numpy as np
 import asyncio
+
+import numpy as np
+import omni.kit.test
+from omni.isaac.dynamic_control import _dynamic_control
+from omni.isaac.dynamic_control import conversions as dc_conversions
+from omni.isaac.dynamic_control import utils as dc_utils
+from pxr import Gf, PhysxSchema, Sdf, UsdPhysics
 
 
 class TestRigidBody(omni.kit.test.AsyncTestCase):

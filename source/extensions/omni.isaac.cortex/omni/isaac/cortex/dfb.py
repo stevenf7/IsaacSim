@@ -13,31 +13,30 @@ behaviors useful in concrete cases, sometimes tailored to specific robots. Pragm
 think of this library as being cortex dependent while df.py is cortex independent.
 """
 
-from abc import ABC, abstractmethod
 import copy
-import numpy as np
 import time
+from abc import ABC, abstractmethod
 from typing import Optional
 
+import numpy as np
+import omni.isaac.cortex.math_util as math_util
 from omni.isaac.core.utils.math import normalized
-
 from omni.isaac.cortex.df import (
+    DfAction,
+    DfDecider,
+    DfDecision,
     DfLogicalState,
     DfNetwork,
-    DfDecider,
-    DfAction,
-    DfDecision,
     DfState,
     DfStateMachineDecider,
     DfStateSequence,
 )
-import omni.isaac.cortex.math_util as math_util
-from omni.isaac.cortex.motion_commander import MotionCommand, ApproachParams, PosePq
+from omni.isaac.cortex.motion_commander import ApproachParams, MotionCommand, PosePq
 from omni.isaac.cortex.robot import CortexRobot
 
 
 class DfRobotApiContext(DfLogicalState):
-    """ A simple context object that captures the API for exposing the robot's API.
+    """A simple context object that captures the API for exposing the robot's API.
 
     Args:
         robot: The robot providing API access to the decider network.
@@ -49,7 +48,7 @@ class DfRobotApiContext(DfLogicalState):
 
 
 class DfBasicContext(DfRobotApiContext):
-    """ A simple instantiation of the robot API context.
+    """A simple instantiation of the robot API context.
 
     Use this context only in cases where no logical state is needed. If the aim is to derive from
     the context to add logical state monitoring, use DfRobotApiContext directly which enforces the
@@ -61,12 +60,12 @@ class DfBasicContext(DfRobotApiContext):
 
 
 class DfDiagnosticsMonitor(ABC):
-    """ A utility class to simplify the monitoring of a context object.
+    """A utility class to simplify the monitoring of a context object.
 
     Monitors are called every cycle, typically at 60hz, which is too fast to easily read diagnostic
     information in real time on the screen. This class handles throttling the prints to a specific
-    time delta between prints. 
-    
+    time delta between prints.
+
     Deriving classes should implement print_diagnostics(context) to print out the desired diagnostic
     information. Then add the monitor(context) method as a logical state monitor function.
 
@@ -105,7 +104,7 @@ class DfDiagnosticsMonitor(ABC):
 
     @abstractmethod
     def print_diagnostics(self, context: DfLogicalState) -> None:
-        """ Override this method to print information about the context.
+        """Override this method to print information about the context.
 
         Args:
             context: The context containing the logical state information to be printed.
@@ -114,14 +113,14 @@ class DfDiagnosticsMonitor(ABC):
 
     @property
     def time_since_start(self) -> float:
-        """ The amount of time since the first call to this class's monitor.
+        """The amount of time since the first call to this class's monitor.
 
         Returns: The time interval.
         """
         return self.current_time - self.time_at_start
 
     def monitor(self, context: DfLogicalState) -> None:
-        """ The monitor method which should be added to the list of monitors.
+        """The monitor method which should be added to the list of monitors.
 
         This method ensures the diagnostics aren't printed more than the specified print_dt number
         of seconds apart.
@@ -141,7 +140,7 @@ class DfDiagnosticsMonitor(ABC):
 
 
 class DfGoTarget(DfAction):
-    """ A DfAction taking as input (params) a MotionCommand and passing it to the MotionCommander
+    """A DfAction taking as input (params) a MotionCommand and passing it to the MotionCommander
     API of the robot.
 
     The robot motion commander is accessed through the robot's arm field and the command is expected
@@ -166,14 +165,14 @@ class DfGoTarget(DfAction):
         return f"{super().__str__()}({self.set_target_only_on_entry})"
 
     def enter(self) -> None:
-        """ If set_target_only_on_entry is True, sends on the command once on entry. Otherwise, does
+        """If set_target_only_on_entry is True, sends on the command once on entry. Otherwise, does
         nothing.
         """
         if self.set_target_only_on_entry:
             self.context.robot.arm.send(self.params)
 
     def step(self) -> None:
-        """ If set_target_only_on_entry is False, sends the command every cycle. Otherwise, does
+        """If set_target_only_on_entry is False, sends the command every cycle. Otherwise, does
         nothing.
         """
         if not self.set_target_only_on_entry:
@@ -181,7 +180,7 @@ class DfGoTarget(DfAction):
 
 
 class DfApproachTarget(DfDecider):
-    """ Takes a target transform as input (passed parameter) and approaches it as specified on
+    """Takes a target transform as input (passed parameter) and approaches it as specified on
     construction.
 
     The approach parameters are defined in one of two ways:
@@ -226,10 +225,10 @@ class DfApproachTarget(DfDecider):
         return f"{super().__str__()}({self.approach_along_axis},{self.direction_length})"
 
     def decide(self) -> DfDecision:
-        """ Chooses the motion command parameters to send down to the DfGoTarget action.
+        """Chooses the motion command parameters to send down to the DfGoTarget action.
 
         This includes preventing the end-effector from twisting around awkwardly in longer range
-        cross body motions. 
+        cross body motions.
 
         Returns:
             The DfGoTarget decision with appropriate calculated parameters.
@@ -277,9 +276,9 @@ DfApproachGrasp = DfApproachTarget
 
 
 class DfApproachTargetLinearly(DfDecider):
-    """ A decider node for calculating interpolated targets to make the end-effector move straight
+    """A decider node for calculating interpolated targets to make the end-effector move straight
     toward a desired target.
-    
+
     Generally, a motion policy cares about reaching a given target only at the end, and lets other
     sub-policies take precedent en route. For instance, collision avoidance, arm posturing, and
     joint limit avoidance might be more important than moving straight toward a target in most
@@ -301,7 +300,7 @@ class DfApproachTargetLinearly(DfDecider):
         return f"{super().__str__()}({self.step_length})"
 
     def enter(self) -> None:
-        """ Records the current end-effector configuration and calculates how much to increment the
+        """Records the current end-effector configuration and calculates how much to increment the
         (0, 1) interpolation betwene that end-effector configuration and the target based on the
         linear distance between the end-effector and target origins so steps have the desired step_length.
         """
@@ -315,7 +314,7 @@ class DfApproachTargetLinearly(DfDecider):
         self.current_alpha = 0.0
 
     def decide(self) -> DfDecision:
-        """ Calculates the current interpolated target and sends it down to the child as
+        """Calculates the current interpolated target and sends it down to the child as
         MotionCommand parameters.
 
         Returns:
@@ -339,10 +338,10 @@ class DfApproachTargetLinearly(DfDecider):
 
 
 class DfLift(DfDecider):
-    """ Lifts the end-effector to a desired height.
-    
-    Uses DfGoTarget() internally, calculating the target based on the forward kinematics in enter(). 
-    
+    """Lifts the end-effector to a desired height.
+
+    Uses DfGoTarget() internally, calculating the target based on the forward kinematics in enter().
+
     Assumes the context has a MotionCommander in context.robot.arm.
 
     Args:
@@ -361,7 +360,7 @@ class DfLift(DfDecider):
         return f"{super().__str__()}({self.height}, {self.axis})"
 
     def enter(self) -> None:
-        """ Sets a specific target a specific distance from the current end-effector.
+        """Sets a specific target a specific distance from the current end-effector.
 
         The target position is the end-effector position shifted along the specified axis a distance
         of height meters. The rotation is unchanged.
@@ -370,14 +369,13 @@ class DfLift(DfDecider):
         self.target_pq.p[self.axis] += self.height
 
     def decide(self) -> DfDecision:
-        """ Passes the target to the DfGoTarget child as a MotionCommand parameter.
-        """
+        """Passes the target to the DfGoTarget child as a MotionCommand parameter."""
         return DfDecision("go_target", MotionCommand(self.target_pq))
 
 
 class DfMoveEndEffectorRel(DfDecider):
-    """ Moves the end-effector to a point relative to the end-effector's pose as measured on entry.
-    
+    """Moves the end-effector to a point relative to the end-effector's pose as measured on entry.
+
     Calculates the target as a world pose from the local information once during enter().
 
     Assumes the context has a MotionCommander in context.robot.arm.
@@ -395,7 +393,7 @@ class DfMoveEndEffectorRel(DfDecider):
         return f"{super().__str__()}({self.p_local})"
 
     def enter(self) -> None:
-        """ Calculate the target based on the current end-effector pose and the relative p_local
+        """Calculate the target based on the current end-effector pose and the relative p_local
         offset passed in on construction.
 
         The target orientation remains constant.
@@ -408,22 +406,21 @@ class DfMoveEndEffectorRel(DfDecider):
         self.target_pq = PosePq(target_p, target_q)
 
     def decide(self) -> DfDecision:
-        """ Sends the calculated target down to the child DfGoTarget node as a MotionCommand
+        """Sends the calculated target down to the child DfGoTarget node as a MotionCommand
         parameter.
         """
         return DfDecision("go_target", MotionCommand(self.target_pq))
 
 
 class DfOpenGripper(DfAction):
-    """ A simple gripper action that opens the gripper.
-    """
+    """A simple gripper action that opens the gripper."""
 
     def enter(self) -> None:
         self.context.robot.gripper.open()
 
 
 class DfCloseGripper(DfAction):
-    """ A simple gripper command to close the gripper to a specified width.
+    """A simple gripper command to close the gripper to a specified width.
 
     Supports sending this decider node the width parameter from a parent. If it comes from a parent
     node, that overrides any default width value set on entry.
@@ -441,7 +438,7 @@ class DfCloseGripper(DfAction):
 
 
 class DfMoveGripper(DfAction):
-    """ A gripper action to move the gripper to a specified width.
+    """A gripper action to move the gripper to a specified width.
 
     Supports sending this action node the width parameter from a parent decider node. If it comes
     from a parent node, that overrides any default width value set on entry.
@@ -456,7 +453,7 @@ class DfMoveGripper(DfAction):
         self.width = width
 
     def enter(self) -> None:
-        """ Move the gripper to the specified width.
+        """Move the gripper to the specified width.
 
         A parent decider width parameter sent to this node takes precedence over the default
         specified on construction.
@@ -472,15 +469,14 @@ class DfMoveGripper(DfAction):
 
 
 class GoHomeState(DfState):
-    """ State machine state that sends the robot to the home position.
+    """State machine state that sends the robot to the home position.
 
     Note that this state can be wrapped in a DfStateMachineDecider to turn it into a decider node.
     See make_go_home().
     """
 
     def enter(self) -> None:
-        """ On entry, calculate and send the home motion command.
-        """
+        """On entry, calculate and send the home motion command."""
         aji = self.context.robot.arm.aji  # Active joint indices
         home_config = self.context.robot.get_joints_default_state().positions[aji]
         self.target_T = self.context.robot.arm.get_fk_T(config=home_config)
@@ -490,7 +486,7 @@ class GoHomeState(DfState):
         self.context.robot.arm.send(command)
 
     def step(self) -> DfState:
-        """ Each step monitor the progress toward the home target. Self transition until the target
+        """Each step monitor the progress toward the home target. Self transition until the target
         is reached, then terminate.
         """
         eff_T = self.context.robot.arm.get_fk_T()
@@ -501,6 +497,5 @@ class GoHomeState(DfState):
 
 
 def make_go_home():
-    """ Make a decider node wrapping the GoHomeState.
-    """
+    """Make a decider node wrapping the GoHomeState."""
     return DfStateMachineDecider(GoHomeState())

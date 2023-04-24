@@ -6,43 +6,44 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+from typing import List, Optional, Tuple
+
 import carb
 import omni
-from typing import Optional, Tuple, List
-from pxr import Usd, UsdGeom, Gf, Sdf, UsdPhysics, PhysxSchema, UsdShade
+from omni.isaac.core.utils.carb import get_carb_setting, set_carb_setting
 from omni.isaac.core.utils.constants import AXES_INDICES
 from omni.isaac.core.utils.prims import get_prim_at_path, get_prim_path, is_prim_path_valid
-from omni.isaac.core.utils.carb import get_carb_setting, set_carb_setting
 from omni.isaac.core.utils.stage import get_current_stage, get_stage_units, traverse_stage
+from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics, UsdShade
 
 
 class PhysicsContext(object):
-    """Provides high level functions to deal with a physics scene and its settings. This will create a 
-           a PhysicsScene prim at the specified prim path in case there is no PhysicsScene present in the current
-           stage. 
-           If there is a PhysicsScene present, it will discard the prim_path specified and sets the
-           default settings on the current PhysicsScene found.
+    """Provides high level functions to deal with a physics scene and its settings. This will create a
+       a PhysicsScene prim at the specified prim path in case there is no PhysicsScene present in the current
+       stage.
+       If there is a PhysicsScene present, it will discard the prim_path specified and sets the
+       default settings on the current PhysicsScene found.
 
-        Args:
-            physics_dt (float, optional): specifies the physics_dt of the simulation. Defaults to 1.0 / 60.0.
-            prim_path (Optional[str], optional): specifies the prim path to create a PhysicsScene at, 
-                                                 only in the case where no PhysicsScene already defined. 
-                                                 Defaults to "/physicsScene".
-            set_defaults (bool, optional): set to True to use the defaults physics parameters
-                                            [physics_dt = 1.0/ 60.0,
-                                            gravity = -9.81 m / s
-                                            ccd_enabled,
-                                            stabilization_enabled,
-                                            gpu dynamics turned off,
-                                            broadcast type is MBP,
-                                            solver type is TGS]. Defaults to True.
-            backend (str, optional): specifies the backend to be used (numpy or torch). Defaults to numpy.
-            device (Optional[str], optional): specifies the device to be used if running on the gpu with torch backend.
+    Args:
+        physics_dt (float, optional): specifies the physics_dt of the simulation. Defaults to 1.0 / 60.0.
+        prim_path (Optional[str], optional): specifies the prim path to create a PhysicsScene at,
+                                             only in the case where no PhysicsScene already defined.
+                                             Defaults to "/physicsScene".
+        set_defaults (bool, optional): set to True to use the defaults physics parameters
+                                        [physics_dt = 1.0/ 60.0,
+                                        gravity = -9.81 m / s
+                                        ccd_enabled,
+                                        stabilization_enabled,
+                                        gpu dynamics turned off,
+                                        broadcast type is MBP,
+                                        solver type is TGS]. Defaults to True.
+        backend (str, optional): specifies the backend to be used (numpy or torch). Defaults to numpy.
+        device (Optional[str], optional): specifies the device to be used if running on the gpu with torch backend.
 
-        Raises:
-            Exception: If prim_path is not absolute.
-            Exception: if prim_path already exists and its type is not a PhysicsScene.
-        """
+    Raises:
+        Exception: If prim_path is not absolute.
+        Exception: if prim_path already exists and its type is not a PhysicsScene.
+    """
 
     def __init__(
         self,
@@ -661,7 +662,7 @@ class PhysicsContext(object):
         return self._physx_scene_api.GetFrictionCorrelationDistanceAttr().Get()
 
     def set_enable_scene_query_support(self, enable_scene_query_support: bool) -> None:
-        """ Sets the Enable Scene Query Support attribute in Physx Scene
+        """Sets the Enable Scene Query Support attribute in Physx Scene
 
         Args:
             enable_scene_query_support (bool): Whether to enable scene query support
@@ -678,7 +679,7 @@ class PhysicsContext(object):
         return
 
     def get_enable_scene_query_support(self) -> bool:
-        """ Retrieves the Enable Scene Query Support attribute in Physx Scene
+        """Retrieves the Enable Scene Query Support attribute in Physx Scene
 
         Raises:
             Exception: [description]

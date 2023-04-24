@@ -7,26 +7,24 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import asyncio
-from typing import List, Optional, Tuple, Union
 import copy
+from typing import List, Optional, Tuple, Union
 
 import carb
 import numpy as np
-import torch
+import omni.graph.core as og
 import omni.kit
 import omni.timeline
 import omni.usd
-
-import omni.graph.core as og
-
-from omni.isaac.core.utils.torch.rotations import get_euler_xyz as quat_to_euler_torch
+import torch
 from omni.isaac.core.utils.numpy.rotations import quats_to_euler_angles as quat_to_euler_numpy
-
+from omni.isaac.core.utils.torch.rotations import get_euler_xyz as quat_to_euler_torch
 from omni.replicator.core import distribution
 from omni.replicator.core.scripts.utils import ReplicatorItem, ReplicatorWrapper, utils
 from omni.replicator.isaac.scripts import context
-from .context import trigger_randomization
+
 from .attributes import TENDON_ATTRIBUTES
+from .context import trigger_randomization
 
 _simulation_context = None
 _rigid_prim_views = dict()
@@ -45,9 +43,9 @@ _articulation_views_reset_values = dict()
 def register_simulation_context(
     simulation_context: Union[omni.isaac.core.SimulationContext, omni.isaac.core.World]
 ) -> None:
-    """ 
-        Args:
-            simulation_context (Union[omni.isaac.core.SimulationContext, omni.isaac.core.World]): Registering the SimulationContext.
+    """
+    Args:
+        simulation_context (Union[omni.isaac.core.SimulationContext, omni.isaac.core.World]): Registering the SimulationContext.
     """
     global _simulation_context
     _simulation_context = simulation_context
@@ -58,9 +56,9 @@ def register_simulation_context(
 
 
 def register_rigid_prim_view(rigid_prim_view: omni.isaac.core.prims.RigidPrimView) -> None:
-    """ 
-        Args:
-            rigid_prim_view (omni.isaac.core.prims.RigidPrimView): Registering the RigidPrimView to be randomized.
+    """
+    Args:
+        rigid_prim_view (omni.isaac.core.prims.RigidPrimView): Registering the RigidPrimView to be randomized.
     """
     clone_tensor = rigid_prim_view._backend_utils.clone_tensor
     tensor_cat = rigid_prim_view._backend_utils.tensor_cat
@@ -100,9 +98,9 @@ def register_rigid_prim_view(rigid_prim_view: omni.isaac.core.prims.RigidPrimVie
 
 
 def register_articulation_view(articulation_view: omni.isaac.core.articulations.ArticulationView) -> None:
-    """ 
-        Args:
-            articulation_view (omni.isaac.core.articulations.ArticulationView): Registering the ArticulationView to be randomized.
+    """
+    Args:
+        articulation_view (omni.isaac.core.articulations.ArticulationView): Registering the ArticulationView to be randomized.
     """
     clone_tensor = articulation_view._backend_utils.clone_tensor
     tensor_cat = articulation_view._backend_utils.tensor_cat
@@ -185,9 +183,9 @@ def register_articulation_view(articulation_view: omni.isaac.core.articulations.
 
 
 def step_randomization(reset_inds: Optional[Union[list, np.ndarray, torch.Tensor]] = list()) -> None:
-    """ 
-        Args:
-            reset_inds (Optional[Union[list, np.ndarray, torch.Tensor]]): The indices corresonding to the prims to be reset in the views.
+    """
+    Args:
+        reset_inds (Optional[Union[list, np.ndarray, torch.Tensor]]): The indices corresonding to the prims to be reset in the views.
     """
     if torch.is_tensor(reset_inds):
         trigger_randomization(reset_inds.cpu().numpy())
@@ -249,29 +247,29 @@ def randomize_rigid_prim_view(
     contact_offset: ReplicatorItem = None,
     rest_offset: ReplicatorItem = None,
 ) -> None:
-    """ 
-        Args:
-            view_name (str): The name of a registered RigidPrimView.
-            operation (str): Can be "direct", "additive", or "scaling".
-                             "direct" means random values are directly written into the view.
-                             "additive" means random values are added to the default values.
-                             "scaling" means random values are multiplied to the default values.
-            num_buckets (int): Number of buckets to sample values from for material_properties randomization.
-            position (ReplicatorItem): Randomizes the position of the prims.
-            orientation (ReplicatorItem): Randomizes the orientation of the prims using euler angles (rad).
-            linear_velocity (ReplicatorItem): Randomizes the linear velocity of the prims.
-            angular_velocity (ReplicatorItem): Randomizes the angular velocity of the prims.
-            velocity (ReplicatorItem): Randomizes the linear and angular velocity of the prims.
-            force (ReplicatorItem): Applies a random force to the prims.
-            mass (ReplicatorItem): Randomizes the mass of the prims. CPU pipeline only.
-            inertia (ReplicatorItem): Randomizes the inertia of the prims. Takes in three values for the
-                                       replicator distribution, corresponding to the diagonal elements of 
-                                       the inertia matrix. CPU pipeline only.
-            material_properties (ReplicatorItem): Takes in three values for the replicator distriution,
-                                                  corresponding to static friction, dynamic friction,
-                                                  and restitution.
-            contact_offset (ReplicatorItem): Randomizes the contact offset of the prims.
-            rest_offset (ReplicatorItem): Randomizes the rest offset of the prims.
+    """
+    Args:
+        view_name (str): The name of a registered RigidPrimView.
+        operation (str): Can be "direct", "additive", or "scaling".
+                         "direct" means random values are directly written into the view.
+                         "additive" means random values are added to the default values.
+                         "scaling" means random values are multiplied to the default values.
+        num_buckets (int): Number of buckets to sample values from for material_properties randomization.
+        position (ReplicatorItem): Randomizes the position of the prims.
+        orientation (ReplicatorItem): Randomizes the orientation of the prims using euler angles (rad).
+        linear_velocity (ReplicatorItem): Randomizes the linear velocity of the prims.
+        angular_velocity (ReplicatorItem): Randomizes the angular velocity of the prims.
+        velocity (ReplicatorItem): Randomizes the linear and angular velocity of the prims.
+        force (ReplicatorItem): Applies a random force to the prims.
+        mass (ReplicatorItem): Randomizes the mass of the prims. CPU pipeline only.
+        inertia (ReplicatorItem): Randomizes the inertia of the prims. Takes in three values for the
+                                   replicator distribution, corresponding to the diagonal elements of
+                                   the inertia matrix. CPU pipeline only.
+        material_properties (ReplicatorItem): Takes in three values for the replicator distriution,
+                                              corresponding to static friction, dynamic friction,
+                                              and restitution.
+        contact_offset (ReplicatorItem): Randomizes the contact offset of the prims.
+        rest_offset (ReplicatorItem): Randomizes the rest offset of the prims.
     """
 
     # check whether randomization occurs within the correct context
@@ -345,58 +343,58 @@ def randomize_articulation_view(
     tendon_rest_lengths: ReplicatorItem = None,
     tendon_offsets: ReplicatorItem = None,
 ) -> None:
-    """ 
-        Args:
-            view_name (str): The name of a registered ArticulationView.
-            operation (str): Can be "direct", "additive", or "scaling".
-                             "direct" means random values are directly written into the view.
-                             "additive" means random values are added to the default values.
-                             "scaling" means random values are multiplied to the default values.
-            num_buckets (int): Number of buckets to sample values from for material_properties randomization.
-            stiffness (ReplicatorItem): Randomizes the stiffness of the joints in the articulation prims.
-            damping (ReplicatorItem): Randomizes the damping of the joints in the articulation prims.
-            joint_friction (ReplicatorItem): Randomizes the friction of the joints in the articulation prims.
-            position (ReplicatorItem): Randomizes the root position of the prims.
-            orientation (ReplicatorItem): Randomizes the root orientation of the prims using euler angles (rad).
-            linear_velocity (ReplicatorItem): Randomizes the root linear velocity of the prims.
-            angular_velocity (ReplicatorItem): Randomizes the root angular velocity of the prims.
-            velocity (ReplicatorItem): Randomizes the root linear and angular velocity of the prims.
-            joint_positions (ReplicatorItem): Randomizes the joint positions of the articulation prims.
-            joint_velocities (ReplicatorItem): Randomizes the joint velocities of the articulation prims.
-            lower_dof_limits (ReplicatorItem): Randomizes the lower joint limits of the articulation prims.
-            upper_dof_limits (ReplicatorItem): Randomizes the upper joint limits of the articulation prims.
-            max_efforts (ReplicatorItem): Randomizes the maximum joint efforts of the articulation prims.
-            joint_armatures (ReplicatorItem): Randomizes the joint armatures of the articulation prims.
-            joint_max_velocities (ReplicatorItem): Randomizes the maximum joint velocities of the articulation prims.
-            joint_efforts (ReplicatorItem): Randomizes the joint efforts of the articulation prims.
-            body_masses (ReplicatorItem): Randomizes the mass of each body in the articulation prims. The 
-                                          replicator distribution takes in K values, where K is the number of 
-                                          bodies in the articulation.
-            body_inertias (ReplicatorItem): Randomizes the inertia of each body in the articulation prims. The 
-                                            replicator distribution takes in K * 3 values, where K is the number of 
-                                            bodies in the articulation.
-            material_properties (ReplicatorItem): Randomizes the material properties of the bodies in the articulation.
-            tendon_stiffnesses (ReplicatorItem): Randomizes the stiffnesses of the fixed tendons in the articulation.
-                                                 The replicator distribution takes in T values, where T is the number
-                                                 of tendons in the articulation.
-            tendon_dampings (ReplicatorItem): Randomizes the dampings of the fixed tendons in the articulation.
-                                              The replicator distribution takes in T values, where T is the number
-                                              of tendons in the articulation.
-            tendon_limit_stiffnesses (ReplicatorItem): Randomizes the limit stiffnesses of the fixed tendons in 
-                                                       the articulation. The replicator distribution takes in T values, 
-                                                       where T is the number of tendons in the articulation.
-            tendon_lower_limits (ReplicatorItem): Randomizes the lower limits of the fixed tendons in 
-                                                  the articulation. The replicator distribution takes in T values, 
-                                                  where T is the number of tendons in the articulation.
-            tendon_upper_limits (ReplicatorItem): Randomizes the upper limits of the fixed tendons in 
-                                                  the articulation. The replicator distribution takes in T values, 
-                                                  where T is the number of tendons in the articulation.
-            tendon_rest_lengths (ReplicatorItem): Randomizes the rest lengths of the fixed tendons in 
-                                                  the articulation. The replicator distribution takes in T values, 
-                                                  where T is the number of tendons in the articulation.
-            tendon_offsets (ReplicatorItem): Randomizes the offsets of the fixed tendons in 
-                                             the articulation. The replicator distribution takes in T values, 
-                                             where T is the number of tendons in the articulation.
+    """
+    Args:
+        view_name (str): The name of a registered ArticulationView.
+        operation (str): Can be "direct", "additive", or "scaling".
+                         "direct" means random values are directly written into the view.
+                         "additive" means random values are added to the default values.
+                         "scaling" means random values are multiplied to the default values.
+        num_buckets (int): Number of buckets to sample values from for material_properties randomization.
+        stiffness (ReplicatorItem): Randomizes the stiffness of the joints in the articulation prims.
+        damping (ReplicatorItem): Randomizes the damping of the joints in the articulation prims.
+        joint_friction (ReplicatorItem): Randomizes the friction of the joints in the articulation prims.
+        position (ReplicatorItem): Randomizes the root position of the prims.
+        orientation (ReplicatorItem): Randomizes the root orientation of the prims using euler angles (rad).
+        linear_velocity (ReplicatorItem): Randomizes the root linear velocity of the prims.
+        angular_velocity (ReplicatorItem): Randomizes the root angular velocity of the prims.
+        velocity (ReplicatorItem): Randomizes the root linear and angular velocity of the prims.
+        joint_positions (ReplicatorItem): Randomizes the joint positions of the articulation prims.
+        joint_velocities (ReplicatorItem): Randomizes the joint velocities of the articulation prims.
+        lower_dof_limits (ReplicatorItem): Randomizes the lower joint limits of the articulation prims.
+        upper_dof_limits (ReplicatorItem): Randomizes the upper joint limits of the articulation prims.
+        max_efforts (ReplicatorItem): Randomizes the maximum joint efforts of the articulation prims.
+        joint_armatures (ReplicatorItem): Randomizes the joint armatures of the articulation prims.
+        joint_max_velocities (ReplicatorItem): Randomizes the maximum joint velocities of the articulation prims.
+        joint_efforts (ReplicatorItem): Randomizes the joint efforts of the articulation prims.
+        body_masses (ReplicatorItem): Randomizes the mass of each body in the articulation prims. The
+                                      replicator distribution takes in K values, where K is the number of
+                                      bodies in the articulation.
+        body_inertias (ReplicatorItem): Randomizes the inertia of each body in the articulation prims. The
+                                        replicator distribution takes in K * 3 values, where K is the number of
+                                        bodies in the articulation.
+        material_properties (ReplicatorItem): Randomizes the material properties of the bodies in the articulation.
+        tendon_stiffnesses (ReplicatorItem): Randomizes the stiffnesses of the fixed tendons in the articulation.
+                                             The replicator distribution takes in T values, where T is the number
+                                             of tendons in the articulation.
+        tendon_dampings (ReplicatorItem): Randomizes the dampings of the fixed tendons in the articulation.
+                                          The replicator distribution takes in T values, where T is the number
+                                          of tendons in the articulation.
+        tendon_limit_stiffnesses (ReplicatorItem): Randomizes the limit stiffnesses of the fixed tendons in
+                                                   the articulation. The replicator distribution takes in T values,
+                                                   where T is the number of tendons in the articulation.
+        tendon_lower_limits (ReplicatorItem): Randomizes the lower limits of the fixed tendons in
+                                              the articulation. The replicator distribution takes in T values,
+                                              where T is the number of tendons in the articulation.
+        tendon_upper_limits (ReplicatorItem): Randomizes the upper limits of the fixed tendons in
+                                              the articulation. The replicator distribution takes in T values,
+                                              where T is the number of tendons in the articulation.
+        tendon_rest_lengths (ReplicatorItem): Randomizes the rest lengths of the fixed tendons in
+                                              the articulation. The replicator distribution takes in T values,
+                                              where T is the number of tendons in the articulation.
+        tendon_offsets (ReplicatorItem): Randomizes the offsets of the fixed tendons in
+                                         the articulation. The replicator distribution takes in T values,
+                                         where T is the number of tendons in the articulation.
     """
     # check whether randomization occurs within the correct context
     upstream_node_name = ReplicatorItem.get_context().get_node_type().get_node_type()
@@ -496,13 +494,13 @@ def randomize_articulation_view(
 
 @ReplicatorWrapper
 def randomize_simulation_context(operation: str = "direct", gravity: ReplicatorItem = None):
-    """ 
-        Args:
-            operation (str): Can be "direct", "additive", or "scaling".
-                             "direct" means random values are directly written into the view.
-                             "additive" means random values are added to the default values.
-                             "scaling" means random values are multiplied to the default values.
-            gravity (ReplicatorItem): Randomizes the gravity vector of the simulation.
+    """
+    Args:
+        operation (str): Can be "direct", "additive", or "scaling".
+                         "direct" means random values are directly written into the view.
+                         "additive" means random values are added to the default values.
+                         "scaling" means random values are multiplied to the default values.
+        gravity (ReplicatorItem): Randomizes the gravity vector of the simulation.
     """
     # check whether randomization occurs within the correct context
     upstream_node_name = ReplicatorItem.get_context().get_node_type().get_node_type()

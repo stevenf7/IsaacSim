@@ -10,7 +10,6 @@ license agreement from NVIDIA CORPORATION is strictly prohibited.
 import os
 import sys
 
-
 if sys.platform == "win32":
     pass
 else:

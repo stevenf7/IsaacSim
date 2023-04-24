@@ -1,2 +1,1 @@
-from .impl import Extension
-from .impl import BaseResetNode, BaseWriterNode, WriterRequest
+from .impl import BaseResetNode, BaseWriterNode, Extension, WriterRequest

@@ -6,8 +6,8 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-from pxr import Gf
 import numpy as np
+from pxr import Gf
 from scipy.spatial.transform import Rotation as R
 
 from .object_interface import Object

@@ -13,9 +13,11 @@
 
 import csv
 import os
-from PIL import Image
-from .base import BaseWriter
+
 import carb
+from PIL import Image
+
+from .base import BaseWriter
 
 
 class KittiWriter(BaseWriter):

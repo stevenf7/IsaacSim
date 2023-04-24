@@ -7,12 +7,14 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import random
+
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 from omni.isaac.debug_draw import _debug_draw
-import random
+
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestDebugDraw(omni.kit.test.AsyncTestCase):

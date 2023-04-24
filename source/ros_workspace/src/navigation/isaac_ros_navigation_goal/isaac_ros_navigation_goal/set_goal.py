@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 
 from __future__ import absolute_import
-import rospy
-import actionlib
+
 import sys
+
+import actionlib
+import rospy
+from geometry_msgs.msg import PoseWithCovarianceStamped
+from goal_generators import GoalReader, RandomGoalGenerator
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from obstacle_map import GridMap
-from goal_generators import RandomGoalGenerator, GoalReader
-from geometry_msgs.msg import PoseWithCovarianceStamped
 
 
 class SetNavigationGoal:

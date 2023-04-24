@@ -7,41 +7,42 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from typing import Optional, Sequence
-from omni.isaac.core.prims.xform_prim_view import XFormPrimView
-from omni.isaac.core.prims._impl.single_prim_wrapper import _SinglePrimWrapper
-from omni.isaac.core.simulation_context.simulation_context import SimulationContext
-from omni.isaac.core.utils.prims import get_prim_at_path, is_prim_path_valid, define_prim
+
 import carb
+from omni.isaac.core.prims._impl.single_prim_wrapper import _SinglePrimWrapper
+from omni.isaac.core.prims.xform_prim_view import XFormPrimView
+from omni.isaac.core.simulation_context.simulation_context import SimulationContext
+from omni.isaac.core.utils.prims import define_prim, get_prim_at_path, is_prim_path_valid
 
 
 class XFormPrim(_SinglePrimWrapper):
     """Provides high level functions to deal with an Xform prim and its attributes/ properties.
-        If there is an Xform prim present at the path, it will use it. Otherwise, a new XForm prim at
-        the specified prim path will be created.
+    If there is an Xform prim present at the path, it will use it. Otherwise, a new XForm prim at
+    the specified prim path will be created.
 
-        Note: the prim will have "xformOp:orient", "xformOp:translate" and "xformOp:scale" only post init, 
-                unless it is a non-root articulation link.
+    Note: the prim will have "xformOp:orient", "xformOp:translate" and "xformOp:scale" only post init,
+            unless it is a non-root articulation link.
 
-        Args:
-            prim_path (str): prim path of the Prim to encapsulate or create.
-            name (str, optional): shortname to be used as a key by Scene class. 
-                                    Note: needs to be unique if the object is added to the Scene.
-                                    Defaults to "xform_prim".
-            position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
-                                                        Defaults to None, which means left unchanged.
-            translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
-                                                            (with respect to its parent prim). shape is (3, ).
-                                                            Defaults to None, which means left unchanged.
-            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world/ local frame of the prim
-                                                            (depends if translation or position is specified).
-                                                            quaternion is scalar-first (w, x, y, z). shape is (4, ).
-                                                            Defaults to None, which means left unchanged.
-            scale (Optional[Sequence[float]], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
+    Args:
+        prim_path (str): prim path of the Prim to encapsulate or create.
+        name (str, optional): shortname to be used as a key by Scene class.
+                                Note: needs to be unique if the object is added to the Scene.
+                                Defaults to "xform_prim".
+        position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
                                                     Defaults to None, which means left unchanged.
-            visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
+        translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
+                                                        (with respect to its parent prim). shape is (3, ).
+                                                        Defaults to None, which means left unchanged.
+        orientation (Optional[Sequence[float]], optional): quaternion orientation in the world/ local frame of the prim
+                                                        (depends if translation or position is specified).
+                                                        quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                                                        Defaults to None, which means left unchanged.
+        scale (Optional[Sequence[float]], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
+                                                Defaults to None, which means left unchanged.
+        visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
 
-        Raises:
-            Exception: if translation and position defined at the same time
+    Raises:
+        Exception: if translation and position defined at the same time
     """
 
     def __init__(

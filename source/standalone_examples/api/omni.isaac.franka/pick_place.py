@@ -10,10 +10,10 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
-from omni.isaac.franka.tasks import PickPlace
-from omni.isaac.franka.controllers import PickPlaceController
-from omni.isaac.core import World
 import numpy as np
+from omni.isaac.core import World
+from omni.isaac.franka.controllers.pick_place_controller import PickPlaceController
+from omni.isaac.franka.tasks import PickPlace
 
 my_world = World(stage_units_in_meters=1.0)
 my_task = PickPlace()

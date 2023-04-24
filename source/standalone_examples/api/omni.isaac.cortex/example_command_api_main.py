@@ -10,15 +10,14 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
-import numpy as np
 import time
 
+import numpy as np
 import omni
 from omni.isaac.core.objects import DynamicCuboid, VisualCuboid
-
+from omni.isaac.cortex.cortex_world import CortexWorld
 from omni.isaac.cortex.df import DfNetwork, DfState, DfStateMachineDecider, DfStateSequence
 from omni.isaac.cortex.dfb import DfBasicContext
-from omni.isaac.cortex.cortex_world import CortexWorld
 from omni.isaac.cortex.robot import add_franka_to_stage
 
 

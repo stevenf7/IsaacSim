@@ -7,41 +7,42 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from typing import Optional, Sequence
-from omni.isaac.core.prims.rigid_prim_view import RigidPrimView
-from omni.isaac.core.utils.types import DynamicState
-from omni.isaac.core.prims._impl.single_prim_wrapper import _SinglePrimWrapper
-from omni.isaac.core.simulation_context.simulation_context import SimulationContext
+
 import numpy as np
+from omni.isaac.core.prims._impl.single_prim_wrapper import _SinglePrimWrapper
+from omni.isaac.core.prims.rigid_prim_view import RigidPrimView
+from omni.isaac.core.simulation_context.simulation_context import SimulationContext
+from omni.isaac.core.utils.types import DynamicState
 
 
 class RigidPrim(_SinglePrimWrapper):
-    """ Provides high level functions to deal with a rigid body prim and its attributes/ properties.
-        If there is an prim present at the path, it will use it. Otherwise, a new XForm prim at
-        the specified prim path will be created.
-        Notes: if the prim does not already have a rigid body api applied to it before init, it will apply it.
+    """Provides high level functions to deal with a rigid body prim and its attributes/ properties.
+    If there is an prim present at the path, it will use it. Otherwise, a new XForm prim at
+    the specified prim path will be created.
+    Notes: if the prim does not already have a rigid body api applied to it before init, it will apply it.
 
-        Args:
-            prim_path (str): prim path of the Prim to encapsulate or create.
-            name (str, optional): shortname to be used as a key by Scene class. 
-                                  Note: needs to be unique if the object is added to the Scene. 
-                                  Defaults to "rigid_prim".
-            position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
-                                                       Defaults to None, which means left unchanged.
-            translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
-                                                          (with respect to its parent prim). shape is (3, ).
-                                                          Defaults to None, which means left unchanged.
-            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world/ local frame of the prim
-                                                          (depends if translation or position is specified).
-                                                          quaternion is scalar-first (w, x, y, z). shape is (4, ).
-                                                          Defaults to None, which means left unchanged.
-            scale (Optional[Sequence[float]], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
-                                                    Defaults to None, which means left unchanged.
-            visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
-            mass (Optional[float], optional): mass in kg. Defaults to None.
-            linear_velocity (Optional[np.ndarray], optional): linear velocity in the world frame. Defaults to None.
-            angular_velocity (Optional[np.ndarray], optional): angular velocity in the world frame. Defaults to None.
+    Args:
+        prim_path (str): prim path of the Prim to encapsulate or create.
+        name (str, optional): shortname to be used as a key by Scene class.
+                              Note: needs to be unique if the object is added to the Scene.
+                              Defaults to "rigid_prim".
+        position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
+                                                   Defaults to None, which means left unchanged.
+        translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
+                                                      (with respect to its parent prim). shape is (3, ).
+                                                      Defaults to None, which means left unchanged.
+        orientation (Optional[Sequence[float]], optional): quaternion orientation in the world/ local frame of the prim
+                                                      (depends if translation or position is specified).
+                                                      quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                                                      Defaults to None, which means left unchanged.
+        scale (Optional[Sequence[float]], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
+                                                Defaults to None, which means left unchanged.
+        visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
+        mass (Optional[float], optional): mass in kg. Defaults to None.
+        linear_velocity (Optional[np.ndarray], optional): linear velocity in the world frame. Defaults to None.
+        angular_velocity (Optional[np.ndarray], optional): angular velocity in the world frame. Defaults to None.
 
-        """
+    """
 
     def __init__(
         self,
@@ -174,7 +175,7 @@ class RigidPrim(_SinglePrimWrapper):
     def set_sleep_threshold(self, threshold: float) -> None:
         """
         Args:
-            threshold (float): Mass-normalized kinetic energy threshold below which 
+            threshold (float): Mass-normalized kinetic energy threshold below which
                                 an actor may go to sleep. Range: [0, inf)
                                 Defaults: 0.00005 * tolerancesSpeed* tolerancesSpeed
                                 Units: distance^2 / second^2.
@@ -186,7 +187,7 @@ class RigidPrim(_SinglePrimWrapper):
     def get_sleep_threshold(self) -> float:
         """
         Returns:
-            float: Mass-normalized kinetic energy threshold below which 
+            float: Mass-normalized kinetic energy threshold below which
                     an actor may go to sleep. Range: [0, inf)
                     Defaults: 0.00005 * tolerancesSpeed* tolerancesSpeed
                     Units: distance^2 / second^2.
@@ -194,15 +195,15 @@ class RigidPrim(_SinglePrimWrapper):
         return self._rigid_prim_view.get_sleep_thresholds()[0]
 
     def enable_rigid_body_physics(self) -> None:
-        """ enable rigid body physics (enabled by default):
-            Object will be moved by external forces such as gravity and collisions
+        """enable rigid body physics (enabled by default):
+        Object will be moved by external forces such as gravity and collisions
         """
         self._rigid_prim_view.enable_rigid_body_physics()
         return
 
     def disable_rigid_body_physics(self) -> None:
-        """ disable rigid body physics (enabled by default):
-            Object will not be moved by external forces such as gravity and collisions
+        """disable rigid body physics (enabled by default):
+        Object will not be moved by external forces such as gravity and collisions
         """
         self._rigid_prim_view.disable_rigid_body_physics()
         return
@@ -214,16 +215,16 @@ class RigidPrim(_SinglePrimWrapper):
         linear_velocity: Optional[np.ndarray] = None,
         angular_velocity: Optional[np.ndarray] = None,
     ) -> None:
-        """ Sets the default state of the prim, that will be used after each reset. 
-            
-            Args:
-                position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
+        """Sets the default state of the prim, that will be used after each reset.
+
+        Args:
+            position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
+                                Defaults to None, which means left unchanged.
+            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim.
+                                    quaternion is scalar-first (w, x, y, z). shape is (4, ).
                                     Defaults to None, which means left unchanged.
-                orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim. 
-                                        quaternion is scalar-first (w, x, y, z). shape is (4, ).
-                                        Defaults to None, which means left unchanged.
-                linear_velocity (np.ndarray): linear velocity to set the rigid prim to. Shape (3,).
-                angular_velocity (np.ndarray): angular velocity to set the rigid prim to. Shape (3,).
+            linear_velocity (np.ndarray): linear velocity to set the rigid prim to. Shape (3,).
+            angular_velocity (np.ndarray): angular velocity to set the rigid prim to. Shape (3,).
         """
         if position is not None:
             position = self._backend_utils.convert(position, device=self._device)
@@ -248,7 +249,7 @@ class RigidPrim(_SinglePrimWrapper):
     def get_default_state(self) -> DynamicState:
         """
         Returns:
-            DynamicState: returns the default state of the prim (position, orientation, linear_velocity and 
+            DynamicState: returns the default state of the prim (position, orientation, linear_velocity and
                           angular_velocity) that is used after each reset.
         """
         view_default_state = self._rigid_prim_view.get_default_state()
@@ -256,7 +257,7 @@ class RigidPrim(_SinglePrimWrapper):
         return default_state
 
     def get_current_dynamic_state(self) -> DynamicState:
-        """ 
+        """
         Returns:
             DynamicState: the dynamic state of the rigid body including position, orientation, linear_velocity and angular_velocity.
         """

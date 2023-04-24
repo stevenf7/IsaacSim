@@ -1,25 +1,25 @@
-from ...motion_generation.kinematics_interface import KinematicsSolver
-from .interface_helper import LulaInterfaceHelper
+from typing import List, Optional, Tuple
+
 import lula
 import numpy as np
-from typing import Tuple, List, Optional
-
 from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices
 from omni.isaac.core.utils.stage import get_stage_units
 
+from ...motion_generation.kinematics_interface import KinematicsSolver
 from . import utils as lula_utils
+from .interface_helper import LulaInterfaceHelper
 
 
 class LulaKinematicsSolver(KinematicsSolver):
-    """A Lula-based implementaion of the KinematicsSolver interface.  Lula uses a URDF file describing the robot and 
-    a custom yaml file that specifies the cspace of the robot and other parameters.  
+    """A Lula-based implementaion of the KinematicsSolver interface.  Lula uses a URDF file describing the robot and
+    a custom yaml file that specifies the cspace of the robot and other parameters.
 
     This class provides functions beyond the specified interface for getting and setting solver parameters.
 
     Args:
         robot_description_path (str): path to a robot description yaml file describing the cspace of the robot and other relevant parameters
         urdf_path (str): path to a URDF file describing the robot
-        robot_description (Optional[lula.RobotDescription]):  An initialized lula.RobotDescription object.  Other Lula-based classes such as RmpFlow may use 
+        robot_description (Optional[lula.RobotDescription]):  An initialized lula.RobotDescription object.  Other Lula-based classes such as RmpFlow may use
             a lula.RobotDescription object that they have already created to initialize a LulaKinematicsSolver.  When specified, the provided file paths are unused.
             Defaults to None.
     """
@@ -62,7 +62,7 @@ class LulaKinematicsSolver(KinematicsSolver):
     def compute_forward_kinematics(
         self, frame_name: str, joint_positions: np.array, position_only: Optional[bool] = False
     ) -> Tuple[np.array, np.array]:
-        """ Compute the position of a given frame in the robot relative to the USD stage global frame
+        """Compute the position of a given frame in the robot relative to the USD stage global frame
 
         Args:
             frame_name (str): Name of robot frame on which to calculate forward kinematics
@@ -71,7 +71,7 @@ class LulaKinematicsSolver(KinematicsSolver):
 
         Returns:
             Tuple[np.array,np.array]:
-            frame_positions: (3x1) vector describing the translation of the frame relative to the USD stage origin 
+            frame_positions: (3x1) vector describing the translation of the frame relative to the USD stage origin
 
             frame_rotation: (3x3) rotation matrix describing the rotation of the frame relative to the USD stage global frame
         """
@@ -104,9 +104,9 @@ class LulaKinematicsSolver(KinematicsSolver):
                 orientation_tolerance is well defined for values between 0 and pi.  Defaults to None.
 
         Returns:
-            Tuple[np.array,bool]: 
-            joint_positions: in the order specified by get_joint_names() which result in the target frame acheiving the desired position 
-            
+            Tuple[np.array,bool]:
+            joint_positions: in the order specified by get_joint_names() which result in the target frame acheiving the desired position
+
             success: True if the solver converged to a solution within the given tolerances
         """
 
@@ -148,7 +148,7 @@ class LulaKinematicsSolver(KinematicsSolver):
         return results.cspace_position, results.success
 
     def supports_collision_avoidance(self) -> bool:
-        """Lula Inverse Kinematics do not support collision avoidance with USD obstacles 
+        """Lula Inverse Kinematics do not support collision avoidance with USD obstacles
 
         Returns:
             bool: Always False
@@ -171,7 +171,7 @@ class LulaKinematicsSolver(KinematicsSolver):
 
         Args:
             tolerance (float): magnitude of rotation (in radians) separating the target orientation from the achieved orienatation.
-                orientation_tolerance is well defined for values between 0 and pi.  
+                orientation_tolerance is well defined for values between 0 and pi.
         """
 
         self._default_orientation_tolerance = tolerance
@@ -223,7 +223,7 @@ class LulaKinematicsSolver(KinematicsSolver):
 
         Returns:
             float: magnitude of rotation (in radians) separating the target orientation from the achieved orienatation.
-                orientation_tolerance is well defined for values between 0 and pi.  
+                orientation_tolerance is well defined for values between 0 and pi.
         """
         return self._default_orientation_tolerance
 
@@ -263,10 +263,10 @@ class LulaKinematicsSolver(KinematicsSolver):
         """Get the default upper and lower joint limits of the active joints.
 
         Returns:
-            Tuple[np.array, np.array]: 
-            default_lower_joint_position_limits : Default lower position limits of active joints 
+            Tuple[np.array, np.array]:
+            default_lower_joint_position_limits : Default lower position limits of active joints
 
-            default_upper_joint_position_limits : Default upper position limits of active joints 
+            default_upper_joint_position_limits : Default upper position limits of active joints
         """
         num_coords = self._kinematics.num_c_space_coords()
 

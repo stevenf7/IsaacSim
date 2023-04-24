@@ -6,28 +6,30 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+import random
 from typing import List, Optional
+
 import numpy as np
-from omni.isaac.core.materials import OmniGlass
-from .dynamic_object import DynamicObject
+from omni.isaac.core.materials.omni_glass import OmniGlass
+
 from .collision_box import CollisionBox
 from .dynamic_asset_set import DynamicAssetSet
-import random
+from .dynamic_object import DynamicObject
 
 
 class DynamicObjectSet(DynamicAssetSet):
-    """Container class to hold and manage dynamic objects, providing an API to keep objects in motion within a collision 
-       box, and to allow various properties of the assets to be randomized. Please note that this class assumes that 
+    """Container class to hold and manage dynamic objects, providing an API to keep objects in motion within a collision
+       box, and to allow various properties of the assets to be randomized. Please note that this class assumes that
        each referenced asset in usd_path_list has only a single mesh prim defining its geometry.
 
     Args:
-        set_prim_path (str): prim path of the parent Prim to create, which contains all the objects in the object set 
+        set_prim_path (str): prim path of the parent Prim to create, which contains all the objects in the object set
                              as its children.
         set_name (str): name of the parent prim in the scene.
-        usd_path_list (List[str]): list of possible USD reference paths that the prims of each dynamic object in the 
+        usd_path_list (List[str]): list of possible USD reference paths that the prims of each dynamic object in the
                                    dynamic object set refer to.
-        mesh_list (List[str]): list of prim path base names for underlying mesh prims. Each base name in mesh_list 
-                               corresponds to the mesh prim of the referenced asset in usd_path_list. 
+        mesh_list (List[str]): list of prim path base names for underlying mesh prims. Each base name in mesh_list
+                               corresponds to the mesh prim of the referenced asset in usd_path_list.
         asset_prim_path_base_prefix (str): prefix of what the objects are called in the stage (prim path base name).
         asset_name_prefix (str): prefix of the objects' names in the scene.
         num_assets (int): number of objects in the object set.
@@ -78,18 +80,18 @@ class DynamicObjectSet(DynamicAssetSet):
         self._create_random_dynamic_asset_set()
 
     def _create_mesh_map(self, usd_path_list, mesh_list):
-        """Gets a mapping from USD reference paths to the base name of the corresponding mesh prim in the referenced USD 
-           file. 
+        """Gets a mapping from USD reference paths to the base name of the corresponding mesh prim in the referenced USD
+           file.
 
         Args:
-            usd_path_list (List[str]): List of possible USD reference paths that the prims of each dynamic object in the 
+            usd_path_list (List[str]): List of possible USD reference paths that the prims of each dynamic object in the
                                        dynamic object set refer to.
-            mesh_list (List[str]): List of prim path base names for underlying mesh prims. Each base name in mesh_list 
-                                   corresponds to the mesh prim of the referenced asset in usd_path_list. 
+            mesh_list (List[str]): List of prim path base names for underlying mesh prims. Each base name in mesh_list
+                                   corresponds to the mesh prim of the referenced asset in usd_path_list.
 
         Returns:
-            Dict: Mapping from USD reference paths to the base name of the corresponding mesh prim in the referenced USD 
-                  file. 
+            Dict: Mapping from USD reference paths to the base name of the corresponding mesh prim in the referenced USD
+                  file.
         """
 
         mesh_map = {}
@@ -100,11 +102,11 @@ class DynamicObjectSet(DynamicAssetSet):
         return mesh_map
 
     def _create_random_dynamic_asset(self, glass=False):
-        """Creates a random dynamic object and adds it to the scene. The reference path of the object is randomly chosen 
-           from self.usd_path_list. 
+        """Creates a random dynamic object and adds it to the scene. The reference path of the object is randomly chosen
+           from self.usd_path_list.
 
         Args:
-            glass (bool, optional): flag to specify whether the created object should have a glass material applied. 
+            glass (bool, optional): flag to specify whether the created object should have a glass material applied.
                                     Defaults to False.
         """
 

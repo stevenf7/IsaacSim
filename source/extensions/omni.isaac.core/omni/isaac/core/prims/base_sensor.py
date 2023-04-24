@@ -6,8 +6,9 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.core.prims.xform_prim import XFormPrim
 from typing import Optional, Sequence
+
+from omni.isaac.core.prims.xform_prim import XFormPrim
 
 
 class BaseSensor(XFormPrim):

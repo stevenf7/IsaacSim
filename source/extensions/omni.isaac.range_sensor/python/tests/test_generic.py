@@ -7,13 +7,14 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni.kit.test
+import numpy as np
 import omni.kit.commands
+import omni.kit.test
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.range_sensor import _range_sensor
-from pxr import UsdGeom, UsdLux, Sdf, Gf, UsdPhysics
-import numpy as np
+from pxr import Gf, Sdf, UsdGeom, UsdLux, UsdPhysics
+
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestGeneric(omni.kit.test.AsyncTestCase):

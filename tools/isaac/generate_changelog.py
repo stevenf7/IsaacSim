@@ -1,7 +1,12 @@
-import re, datetime, os, glob, toml
-from typing import Tuple, List, Dict, Set, Callable
+import argparse
+import datetime
+import glob
+import os
+import re
 from pprint import pprint
-import os, argparse
+from typing import Callable, Dict, List, Set, Tuple
+
+import toml
 
 
 def parse_version(line: str):

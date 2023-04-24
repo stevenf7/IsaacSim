@@ -7,24 +7,24 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.isaac.kit import SimulationApp
-
 import os
+
 import carb
 import gym
+from omni.isaac.kit import SimulationApp
 
 
 class VecEnvBase(gym.Env):
-    """ This class provides a base interface for connecting RL policies with task implementations.
-        APIs provided in this interface follow the interface in gym.Env.
-        This class also provides utilities for initializing simulation apps, creating the World,
-        and registering a task.
+    """This class provides a base interface for connecting RL policies with task implementations.
+    APIs provided in this interface follow the interface in gym.Env.
+    This class also provides utilities for initializing simulation apps, creating the World,
+    and registering a task.
     """
 
     def __init__(
         self, headless: bool, sim_device: int = 0, enable_livestream: bool = False, enable_viewport: bool = False
     ) -> None:
-        """ Initializes RL and task parameters.
+        """Initializes RL and task parameters.
 
         Args:
             headless (bool): Whether to run training headless.
@@ -59,7 +59,7 @@ class VecEnvBase(gym.Env):
             enable_extension("omni.services.streaming.manager")
 
     def set_task(self, task, backend="numpy", sim_params=None, init_sim=True) -> None:
-        """ Creates a World object and adds Task to World. 
+        """Creates a World object and adds Task to World.
             Initializes and registers task to the environment interface.
             Triggers task start-up.
 
@@ -94,7 +94,7 @@ class VecEnvBase(gym.Env):
             self._world.reset()
 
     def render(self, mode="human") -> None:
-        """ Step the renderer.
+        """Step the renderer.
 
         Args:
             mode (str): Select mode of rendering based on OpenAI environments.
@@ -107,15 +107,14 @@ class VecEnvBase(gym.Env):
         return
 
     def close(self) -> None:
-        """ Closes simulation.
-        """
+        """Closes simulation."""
 
         # bypass USD warnings on stage close
         self._simulation_app.close()
         return
 
     def seed(self, seed=-1):
-        """ Sets a seed. Pass in -1 for a random seed.
+        """Sets a seed. Pass in -1 for a random seed.
 
         Args:
             seed (int): Seed to set. Defaults to -1.
@@ -128,7 +127,7 @@ class VecEnvBase(gym.Env):
         return set_seed(seed)
 
     def step(self, actions):
-        """ Basic implementation for stepping simulation. 
+        """Basic implementation for stepping simulation.
             Can be overriden by inherited Env classes
             to satisfy requirements of specific RL libraries. This method passes actions to task
             for processing, steps simulation, and computes observations, rewards, and resets.
@@ -154,7 +153,7 @@ class VecEnvBase(gym.Env):
         return observations, rewards, dones, info
 
     def reset(self):
-        """ Resets the task and updates observations. """
+        """Resets the task and updates observations."""
         self._task.reset()
         self._world.step(render=self._render)
         observations = self._task.get_observations()
@@ -163,7 +162,7 @@ class VecEnvBase(gym.Env):
 
     @property
     def num_envs(self):
-        """ Retrieves number of environments.
+        """Retrieves number of environments.
 
         Returns:
             num_envs(int): Number of environments.

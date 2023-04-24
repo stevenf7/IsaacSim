@@ -7,22 +7,23 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni.ext
-import omni.ui as ui
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-
-import gc
 import asyncio
-import weakref
-import omni.physx as _physx
-from .robot_benchmarking import RobotBenchmark
-from .benchmark_robots import BenchmarkRobotRegistry
-from omni.isaac.benchmark_environments.environments import EnvironmentCreator
-from omni.isaac.ui.menu import make_menu_item_description
-from omni.isaac.core.utils.viewports import set_camera_view
-import carb
-import os
+import gc
 import json
+import os
+import weakref
+
+import carb
+import omni.ext
+import omni.physx as _physx
+import omni.ui as ui
+from omni.isaac.benchmark_environments.environments import EnvironmentCreator
+from omni.isaac.core.utils.viewports import set_camera_view
+from omni.isaac.ui.menu import make_menu_item_description
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+
+from .benchmark_robots import BenchmarkRobotRegistry
+from .robot_benchmarking import RobotBenchmark
 
 EXTENSION_NAME = "Robot Benchmark"
 

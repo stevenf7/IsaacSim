@@ -6,8 +6,8 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.kit.menu.utils import MenuItemDescription
 import omni.ext
+from omni.kit.menu.utils import MenuItemDescription
 
 
 def make_menu_item_description(ext_id: str, name: str, onclick_fun, action_name: str = "") -> None:

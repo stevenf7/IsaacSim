@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.isaac.quadruped.robots.unitree import Unitree
-from omni.isaac.quadruped.robots.unitree_vision import UnitreeVision
-from omni.isaac.quadruped.robots.unitree_direct import UnitreeDirect
 from omni.isaac.quadruped.robots.anymal import Anymal
+from omni.isaac.quadruped.robots.unitree import Unitree
+from omni.isaac.quadruped.robots.unitree_direct import UnitreeDirect
+from omni.isaac.quadruped.robots.unitree_vision import UnitreeVision

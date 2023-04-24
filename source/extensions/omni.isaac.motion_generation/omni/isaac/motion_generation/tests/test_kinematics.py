@@ -6,28 +6,29 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-from omni.isaac.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
-import omni.kit.test
-import carb
 import asyncio
+import json
+import os
+
+import carb
+import numpy as np
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.motion_generation import interface_config_loader
-from omni.isaac.motion_generation.lula import LulaKinematicsSolver
-from omni.isaac.core.utils import distance_metrics
-from omni.isaac.core.utils.stage import update_stage_async, open_stage_async
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.prims import XFormPrim
-from omni.isaac.core.utils.types import ArticulationAction
+import omni.isaac.motion_generation.interface_config_loader as interface_config_loader
+import omni.kit.test
+from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.robots.robot import Robot
-from omni.isaac.core.world import World
-from omni.isaac.core.utils.viewports import set_camera_view
-import os
-import json
-import numpy as np
-from omni.isaac.core.utils.prims import is_prim_path_valid
+from omni.isaac.core.utils import distance_metrics
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices
+from omni.isaac.core.utils.prims import is_prim_path_valid
+from omni.isaac.core.utils.stage import open_stage_async, update_stage_async
+from omni.isaac.core.utils.types import ArticulationAction
+from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.core.world import World
+from omni.isaac.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
+from omni.isaac.motion_generation.lula.kinematics import LulaKinematicsSolver
+
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will
 # make it auto-discoverable by omni.kit.test

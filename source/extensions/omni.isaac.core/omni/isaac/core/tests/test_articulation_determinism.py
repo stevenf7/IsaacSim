@@ -6,16 +6,16 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import omni.kit.test
-import numpy as np
-import carb
-
-from omni.isaac.core.utils.stage import update_stage_async, open_stage_async
-from omni.isaac.core.utils.types import ArticulationAction
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.robots import Robot
-from omni.isaac.core import World, SimulationContext
 import asyncio
+
+import carb
+import numpy as np
+import omni.kit.test
+from omni.isaac.core import SimulationContext, World
+from omni.isaac.core.robots import Robot
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.stage import open_stage_async, update_stage_async
+from omni.isaac.core.utils.types import ArticulationAction
 
 
 class TestArticulationDeterminism(omni.kit.test.AsyncTestCase):

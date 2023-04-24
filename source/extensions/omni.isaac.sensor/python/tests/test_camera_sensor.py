@@ -7,17 +7,18 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni.kit.test
-import numpy as np
-from omni.isaac.core import World
-from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
-from omni.isaac.core.utils.semantics import add_update_semantics
-import omni.isaac.core.utils.numpy.rotations as rot_utils
-from omni.isaac.core.objects import DynamicCuboid
-from omni.isaac.core.prims import XFormPrim
-from omni.isaac.sensor import Camera
-import math
 import asyncio
+import math
+
+import numpy as np
+import omni.isaac.core.utils.numpy.rotations as rot_utils
+import omni.kit.test
+from omni.isaac.core import World
+from omni.isaac.core.objects import DynamicCuboid
+from omni.isaac.core.prims.xform_prim import XFormPrim
+from omni.isaac.core.utils.semantics import add_update_semantics
+from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
+from omni.isaac.sensor import Camera
 
 
 class TestCameraSensor(omni.kit.test.AsyncTestCase):
@@ -189,9 +190,14 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
             max_fov=560,
             polynomial=[1, 2, 3, 4, 5],
         )
-        nominal_width, nominal_height, optical_centre_x, optical_centre_y, max_fov, polynomial = (
-            self.camera.get_fisheye_polynomial_properties()
-        )
+        (
+            nominal_width,
+            nominal_height,
+            optical_centre_x,
+            optical_centre_y,
+            max_fov,
+            polynomial,
+        ) = self.camera.get_fisheye_polynomial_properties()
         self.assertTrue(math.isclose(nominal_width, 120, abs_tol=2))
         self.assertTrue(math.isclose(nominal_height, 240, abs_tol=2))
         self.assertTrue(math.isclose(optical_centre_x, 24, abs_tol=2))

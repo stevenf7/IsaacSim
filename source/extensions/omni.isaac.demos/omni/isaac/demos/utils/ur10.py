@@ -7,15 +7,15 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import time
-import omni
+
 import carb
 import numpy as np
-from pxr import Usd, UsdGeom, Gf, UsdPhysics, PhysxSchema
-from omni.isaac.motion_planning import _motion_planning
+import omni
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
 from omni.isaac.core.utils.rotations import lookat_to_quatf
-
+from omni.isaac.motion_planning import _motion_planning
 from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper
+from pxr import Gf, PhysxSchema, Usd, UsdGeom, UsdPhysics
 
 default_config = (-1.57, -1.57, -1.57, -1.57, 1.57, 0)
 

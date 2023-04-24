@@ -7,16 +7,17 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni
-import carb
-import weakref
 import gc
+import weakref
+
+import carb
+import omni
 
 try:
     # from onshape_client import Client
     # import onshape_client
-    from omni.isaac.onshape.onshape_client import Client
     import omni.isaac.onshape.onshape_client as onshape_client
+    from omni.isaac.onshape.onshape_client import Client
 except ImportError:
     carb.log_warn("onshape dependencies not found. attempting to install...")
     # the package name and module names are different, so install at runtime and ignore the import check.
@@ -35,16 +36,14 @@ except ImportError:
     from omni.isaac.onshape.onshape_client import Client
     import omni.isaac.onshape.onshape_client as onshape_client
 
-import omni.ui as ui
-from concurrent.futures import ThreadPoolExecutor
-
 import json
-
 import webbrowser
-from urllib.parse import urlparse, parse_qs
+from concurrent.futures import ThreadPoolExecutor
 from http.server import BaseHTTPRequestHandler, HTTPServer
-
 from threading import Lock
+from urllib.parse import parse_qs, urlparse
+
+import omni.ui as ui
 
 
 class TimeoutException(Exception):
@@ -52,14 +51,13 @@ class TimeoutException(Exception):
 
 
 from .scripts.definitions import (
-    USE_ONSHAPE_KEY,
     DEFAULT_ONSHAPE_KEY,
     DEFAULT_ONSHAPE_SECRET,
-    ONSHAPE_BASE_URL,
     ONSHAPE_AUTH_URL,
+    ONSHAPE_BASE_URL,
     ONSHAPE_TOKEN_URL,
+    USE_ONSHAPE_KEY,
 )
-
 
 # class ThreadWithException(threading.Thread):
 #     def __init__(self, bucket):

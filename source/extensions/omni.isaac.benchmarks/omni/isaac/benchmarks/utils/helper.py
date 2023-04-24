@@ -8,16 +8,15 @@
 
 
 import omni.graph.core as og
-from omni.kit.viewport.utility import get_num_viewports
-
 import omni.kit.commands
-from pxr import Gf, UsdGeom
 import omni.usd
+from omni.kit.viewport.utility import get_num_viewports
 from omni.usd.commands import DeletePrimsCommand
+from pxr import Gf, UsdGeom
 
 
 def delete_prim_and_children(prim_path: str):
-    """ deleting the prim at given path as well as all its children"""
+    """deleting the prim at given path as well as all its children"""
     DeletePrimsCommand([prim_path]).do()
 
 

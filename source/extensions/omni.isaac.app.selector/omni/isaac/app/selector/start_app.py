@@ -9,25 +9,25 @@
 
 import os
 import sys
-from .settings import DEFAULT_APP_SETTING, SHOW_CONSOLE_SETTING
+from typing import Any, Dict
 
-from typing import Dict, Any
 import carb.settings
 import carb.tokens
-
 import omni.kit.app
+
+from .settings import DEFAULT_APP_SETTING, SHOW_CONSOLE_SETTING
 
 
 def start_app(app_id: str, app_version: str, app_become_new_default=False, persistent_selector=False, extra_args=[]):
-    """ show the omniverse ui documentation as an external Application """
+    """show the omniverse ui documentation as an external Application"""
     _settings = carb.settings.get_settings()
 
     # update default
     if app_become_new_default:
         _settings.set(DEFAULT_APP_SETTING, app_id)
 
-    import subprocess
     import platform
+    import subprocess
 
     app_folder = _settings.get_as_string("/app/folder")
     if app_folder == "":

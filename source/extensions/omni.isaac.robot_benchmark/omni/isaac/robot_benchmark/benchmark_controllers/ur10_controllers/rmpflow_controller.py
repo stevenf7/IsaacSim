@@ -7,13 +7,13 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.isaac.universal_robots.controllers import RMPFlowController as UR10RMPFlowController
-from omni.isaac.robot_benchmark.benchmark_controllers.base_benchmark_controller import BaseBenchmarkController
-from omni.isaac.motion_generation import ArticulationKinematicsSolver
-
-from omni.isaac.core.articulations import Articulation
-import numpy as np
 from typing import Optional, Tuple
+
+import numpy as np
+from omni.isaac.core.articulations import Articulation
+from omni.isaac.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
+from omni.isaac.robot_benchmark.benchmark_controllers.base_benchmark_controller import BaseBenchmarkController
+from omni.isaac.universal_robots.controllers.rmpflow_controller import RMPFlowController as UR10RMPFlowController
 
 
 class RMPFlowBenchmarkController(UR10RMPFlowController, BaseBenchmarkController):

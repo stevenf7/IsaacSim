@@ -7,13 +7,14 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import math
-import omni
+
 import numpy as np
+import omni
 import omni.graph.core as og
-from omni.isaac.core_nodes import BaseResetNode
 from omni.isaac.core.utils.rotations import quat_to_euler_angles
+from omni.isaac.core_nodes import BaseResetNode
+from omni.isaac.wheeled_robots.controllers.stanley_control import State, normalize_angle, pid_control, stanley_control
 from omni.isaac.wheeled_robots.ogn.OgnStanleyControlPIDDatabase import OgnStanleyControlPIDDatabase
-from omni.isaac.wheeled_robots.controllers.stanley_control import State, pid_control, stanley_control, normalize_angle
 
 
 class OgnStanleyControlPIDInternalState(BaseResetNode):
@@ -216,8 +217,8 @@ def draw_path_setup(sp):  # use speed profile to create color array (copied from
 def draw_path(
     rx, ry, argb
 ):  # use color and path arrays to draw path along quintic curve (copied from simple_robot_controller in demo utils)
-    from omni.debugdraw import _debugDraw
     import carb
+    from omni.debugdraw import _debugDraw
     from pxr import UsdGeom
 
     stage = omni.usd.get_context().get_stage()

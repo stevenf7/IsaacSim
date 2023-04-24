@@ -90,11 +90,11 @@ from abc import ABC, abstractmethod
 from typing import Optional, Sequence
 
 from omni.isaac.cortex.df import DfLogicalState
-from omni.isaac.cortex.motion_commander import MotionCommander, CortexObstacleType
+from omni.isaac.cortex.motion_commander import CortexObstacleType, MotionCommander
 
 
 class ObstacleMonitor(ABC):
-    """ An obstacle monitor is a logical state monitor that handles monitoring obstacles and
+    """An obstacle monitor is a logical state monitor that handles monitoring obstacles and
     automatically suppressing or unsuppressing them as needed by user defined conditions.
 
     Obstacles all have an autotoggle feature which can be activated and deactivated using
@@ -118,7 +118,7 @@ class ObstacleMonitor(ABC):
         self.is_obstacles_enabled = True
 
     def set_motion_commander(self, motion_commander: MotionCommander) -> None:
-        """ Set the motion commander which will be used to enable and disable obstacles.
+        """Set the motion commander which will be used to enable and disable obstacles.
 
         Args:
             motion_commander: The motion commander to be used.
@@ -127,7 +127,7 @@ class ObstacleMonitor(ABC):
 
     @abstractmethod
     def is_obstacle_required(self) -> bool:
-        """ This is the main API method deriving classes should override.
+        """This is the main API method deriving classes should override.
 
         It should specify whether this obstacle monitor's obstacles are needed at any given time.
         It will be queried only when autotoggle is active.
@@ -138,52 +138,47 @@ class ObstacleMonitor(ABC):
         raise NotImplementedError()
 
     def reset(self) -> None:
-        """ Reset this obstacle monitor back to its initial state.
-        """
+        """Reset this obstacle monitor back to its initial state."""
         self.is_autotoggle_active = False
         self.disable_obstacles()
 
     def activate_autotoggle(self) -> None:
-        """ Turn on autotoggle. Starts the obstacle monitor automatically enabling or disabling the
+        """Turn on autotoggle. Starts the obstacle monitor automatically enabling or disabling the
         obstacle per the boolean return of is_obstacle_required().
         """
         self.is_autotoggle_active = True
 
     def deactivate_autotoggle(self) -> None:
-        """ Turn off autotoggle. Stops the obstacle monitor's activity. Disables all monitored
+        """Turn off autotoggle. Stops the obstacle monitor's activity. Disables all monitored
         obstacles if they're currently enabled.
         """
         self.is_autotoggle_active = False
         self.disable_obstacles_if_needed()
 
     def enable_obstacles(self) -> None:
-        """ Enable the collection of all obstacles.
-        """
+        """Enable the collection of all obstacles."""
         for obs in self.obstacles:
             self.motion_commander.enable_obstacle(obs)
         self.is_obstacles_enabled = True
 
     def enable_obstacles_if_needed(self) -> None:
-        """ Enable the collection of all obstacles if they aren't already enabled.
-        """
+        """Enable the collection of all obstacles if they aren't already enabled."""
         if not self.is_obstacles_enabled:
             self.enable_obstacles()
 
     def disable_obstacles(self) -> None:
-        """ Disable the collection of all obstacles.
-        """
+        """Disable the collection of all obstacles."""
         for obs in self.obstacles:
             self.motion_commander.disable_obstacle(obs)
         self.is_obstacles_enabled = False
 
     def disable_obstacles_if_needed(self) -> None:
-        """ Disable the collection of all obstacles if they aren't already disabled.
-        """
+        """Disable the collection of all obstacles if they aren't already disabled."""
         if self.is_obstacles_enabled:
             self.disable_obstacles()
 
     def step(self) -> None:
-        """ Step this obstacle monitor.
+        """Step this obstacle monitor.
 
         If autotoggle is active, enables the obstacles if they're required and disables them if
         they're not.
@@ -200,7 +195,7 @@ class ObstacleMonitor(ABC):
 
 
 class ObstacleMonitorContext(DfLogicalState):
-    """ Base class for an context object with obstacle monitors.
+    """Base class for an context object with obstacle monitors.
 
     Simplifies adding obstacle monitors as logical state monitors. Any obstacle monitor added is
     both tracked and automatically added as a logical state monitor. Provides a reset() base
@@ -217,14 +212,14 @@ class ObstacleMonitorContext(DfLogicalState):
         self.add_monitor(ObstacleMonitorContext._monitor_obstacles)
 
     def reset(self) -> None:
-        """ Reset all obstacle monitors. Deriving classes overriding this method should call
+        """Reset all obstacle monitors. Deriving classes overriding this method should call
         super().reset() to ensure the obstacle monitors are reset as well.
         """
         for obs_monitor in self.obstacle_monitors:
             obs_monitor.reset()
 
     def add_obstacle_monitors(self, obstacle_monitors: Sequence[ObstacleMonitor]) -> None:
-        """ Add a sequence of obstacle monitors. Their monitor methods will be automatically added
+        """Add a sequence of obstacle monitors. Their monitor methods will be automatically added
         as logical state monitors.
 
         The obstacle monitors' monitor methods will be called in the order provided.
@@ -234,7 +229,7 @@ class ObstacleMonitorContext(DfLogicalState):
         self.obstacle_monitors.extend(obstacle_monitors)
 
     def _monitor_obstacles(self) -> None:
-        """ An internal monitor method which calls each obstacle monitor's monitor function. This
+        """An internal monitor method which calls each obstacle monitor's monitor function. This
         method is added as a logical state monitor before any obstacle monitors are added. Obstacle
         monitors can be added any any point and all of their monitor methods will correctly be
         called from this monitor method.

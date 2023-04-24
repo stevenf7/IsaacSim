@@ -7,10 +7,10 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import numpy as np
 import omni.kit.test
 from omni.isaac.core.utils.rotations import euler_angles_to_quat, quat_to_euler_angles
 from scipy.spatial.transform import Rotation
-import numpy as np
 
 
 class TestRotations(omni.kit.test.AsyncTestCase):

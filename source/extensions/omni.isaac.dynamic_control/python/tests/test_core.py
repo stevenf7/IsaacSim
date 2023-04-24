@@ -7,13 +7,16 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import asyncio
+
+import carb
 import omni.kit.test
 import omni.usd
 from omni.isaac.dynamic_control import _dynamic_control
-from .common import get_assets_root_path
 from pxr import Sdf
-import carb
-import asyncio
+
+from .common import get_assets_root_path
+
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestCore(omni.kit.test.AsyncTestCase):

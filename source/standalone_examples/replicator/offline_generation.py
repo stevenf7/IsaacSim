@@ -8,8 +8,9 @@
 
 """Generate offline synthetic dataset
 """
-from omni.isaac.kit import SimulationApp
 import os
+
+from omni.isaac.kit import SimulationApp
 
 # Set rendering parameters and create an instance of kit
 CONFIG = {"renderer": "RayTracedLighting", "headless": True, "width": 1024, "height": 1024, "num_frames": 10}
@@ -22,22 +23,21 @@ CARDBOX_URL = "/Isaac/Environments/Simple_Warehouse/Props/SM_CardBoxD_04.usd"
 CONE_URL = "/Isaac/Environments/Simple_Warehouse/Props/S_TrafficCone.usd"
 SCOPE_NAME = "/MyScope"
 
-import carb
-import random
 import math
-import numpy as np
-from pxr import UsdGeom, Usd, Gf, UsdPhysics, PhysxSchema
+import random
 
+import carb
+import numpy as np
+import omni.replicator.core as rep
 import omni.usd
 from omni.isaac.core import World
+from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.utils import prims
-from omni.isaac.core.prims import RigidPrim
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.utils.stage import get_current_stage, open_stage
-from omni.isaac.core.utils.rotations import euler_angles_to_quat, quat_to_euler_angles, lookat_to_quatf
 from omni.isaac.core.utils.bounds import compute_combined_aabb, create_bbox_cache
-
-import omni.replicator.core as rep
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.rotations import euler_angles_to_quat, lookat_to_quatf, quat_to_euler_angles
+from omni.isaac.core.utils.stage import get_current_stage, open_stage
+from pxr import Gf, PhysxSchema, Usd, UsdGeom, UsdPhysics
 
 # Increase subframes if shadows/ghosting appears of moving objects
 # See known issues: https://docs.omniverse.nvidia.com/prod_extensions/prod_extensions/ext_replicator.html#known-issues

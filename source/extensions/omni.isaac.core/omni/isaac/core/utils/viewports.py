@@ -9,17 +9,17 @@
 
 # python
 from typing import Any, List
-import numpy as np
 
 # omniverse
 import carb
+import numpy as np
 import omni
-from pxr import UsdGeom, Usd, Gf, Sdf
 import omni.kit.app
+from omni.isaac.core.utils.prims import set_prim_hide_in_stage_window, set_prim_no_delete
 
 # isaacsim
 from omni.isaac.core.utils.stage import get_current_stage
-from omni.isaac.core.utils.prims import set_prim_hide_in_stage_window, set_prim_no_delete
+from pxr import Gf, Sdf, Usd, UsdGeom
 
 
 def set_camera_view(
@@ -33,8 +33,8 @@ def set_camera_view(
         camera_prim_path (str, optional): Path to camera prim being set. Defaults to "/OmniverseKit_Persp".
     """
     try:
-        from omni.kit.viewport.utility.camera_state import ViewportCameraState
         from omni.kit.viewport.utility import get_active_viewport
+        from omni.kit.viewport.utility.camera_state import ViewportCameraState
 
         if viewport_api is None:
             viewport_api = get_active_viewport()
@@ -98,7 +98,7 @@ def get_viewport_names(usd_context_name: str = None) -> List[str]:
 
 
 def get_id_from_index(index):
-    """Get the viewport id for a given index. 
+    """Get the viewport id for a given index.
     This function was added for backwards compatibility for VP2 as viewport IDs are not the same as the viewport index
 
     Args:

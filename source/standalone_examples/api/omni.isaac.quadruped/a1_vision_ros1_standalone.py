@@ -20,16 +20,15 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
+import carb
+import numpy as np
+import omni.appwindow  # Contains handle to keyboard
+import omni.graph.core as og
 from omni.isaac.core import World
-from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
-from omni.isaac.quadruped.robots import UnitreeVision
 from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.core.utils.nucleus import get_assets_root_path
-import omni.appwindow  # Contains handle to keyboard
-import numpy as np
-import carb
-
-import omni.graph.core as og
+from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
+from omni.isaac.quadruped.robots import UnitreeVision
 
 # enable ROS bridge extension
 enable_extension("omni.isaac.ros_bridge")
@@ -46,9 +45,9 @@ if not rosgraph.is_master_online():
     simulation_app.close()
     exit()
 
-from std_msgs.msg import Float32MultiArray
-import sensor_msgs.msg as sensor_msgs
 import rospy
+import sensor_msgs.msg as sensor_msgs
+from std_msgs.msg import Float32MultiArray
 
 
 class A1_stereo_vision(object):
@@ -62,7 +61,7 @@ class A1_stereo_vision(object):
         Argument:
         physics_dt {float} -- Physics downtime of the scene.
         render_dt {float} -- Render downtime of the scene.
-        
+
         """
         self._world = World(stage_units_in_meters=1.0, physics_dt=physics_dt, rendering_dt=render_dt)
 
@@ -152,7 +151,7 @@ class A1_stereo_vision(object):
         [Summary]
 
         Set unitree robot's default stance, set up keyboard listener and add physics callback
-        
+
         """
         self._a1.set_state(self._a1._default_a1_state)
         self._appwindow = omni.appwindow.get_default_app_window()
@@ -166,7 +165,7 @@ class A1_stereo_vision(object):
         [Summary]
 
         Physics call back, switch robot mode and call robot advance function to compute and apply joint torque
-        
+
         """
         if self._event_flag:
             self._a1._qp_controller.switch_mode()
@@ -222,7 +221,7 @@ class A1_stereo_vision(object):
         [Summary]
 
         Step simulation based on rendering downtime
-        
+
         """
         # change to sim running
         while simulation_app.is_running():
@@ -234,7 +233,7 @@ class A1_stereo_vision(object):
         [Summary]
 
         Keyboard subscriber callback to when kit is updated.
-        
+
         """  # reset event
         self._event_flag = False
         # when a key is pressedor released  the command is adjusted w.r.t the key-mapping
@@ -270,7 +269,7 @@ def main() -> None:
     [Summary]
 
     Instantiate ros node and start a1 runner
-    
+
     """
     rospy.init_node("isaac_a1", anonymous=False, disable_signals=True, log_level=rospy.ERROR)
     rospy.set_param("use_sim_time", True)

@@ -16,11 +16,9 @@ import json
 import threading
 
 import rospy
+from franka_gripper_commander import FrankaGripperCommander
 from sensor_msgs.msg import JointState
 from std_msgs.msg import String
-
-from franka_gripper_commander import FrankaGripperCommander
-
 
 pinch_width = 0.0265
 speed = 0.2

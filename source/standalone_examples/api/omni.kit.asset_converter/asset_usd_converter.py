@@ -8,8 +8,9 @@
 
 import argparse
 import asyncio
-import omni
 import os
+
+import omni
 from omni.isaac.kit import SimulationApp
 
 

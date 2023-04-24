@@ -1,35 +1,29 @@
-import omni.ui as ui
-from omni.isaac.ui.widgets import DynamicComboBoxModel
-from omni.kit.window.property.templates import LABEL_WIDTH, LABEL_HEIGHT
-from omni.isaac.core.utils.prims import get_prim_object_type
-from pxr import Usd
-
-from cmath import inf
 import sys
+from cmath import inf
 from typing import Callable, List
 
+import carb
+import omni.physx as _physx
+import omni.ui as ui
+from omni.isaac.core.utils.prims import get_prim_object_type
 from omni.isaac.ui.ui_utils import (
-    xyz_builder,
-    progress_bar_builder,
-    plot_builder,
-    xyz_plot_builder,
+    BUTTON_WIDTH,
     add_line_rect_flourish,
     format_tt,
+    get_style,
     on_copy_to_clipboard,
+    plot_builder,
+    progress_bar_builder,
+    xyz_builder,
+    xyz_plot_builder,
 )
-
-import omni.physx as _physx
-import carb
-from omni.usd import get_context
-
-import sys
-
+from omni.isaac.ui.widgets import DynamicComboBoxModel
 from omni.kit.window.filepicker import FilePickerDialog
-import omni.ui as ui
-from omni.isaac.ui.ui_utils import get_style, BUTTON_WIDTH
+from omni.kit.window.property.templates import LABEL_HEIGHT, LABEL_WIDTH
+from omni.usd import get_context
+from pxr import Usd
 
 from .base_ui_element_wrappers import UIWidgetWrapper
-
 
 ##########################################################################################
 #                                 UI Frame Wrappers
@@ -39,11 +33,11 @@ from .base_ui_element_wrappers import UIWidgetWrapper
 class Frame(UIWidgetWrapper):
     """Create a Frame UI element
 
-        Args:
-            enabled (bool, optional): Frame is enabled. Defaults to True.
-            visible (bool, optional): Frame is visible. Defaults to True.
-            build_fn (Callable, optional): A function that can be called to specify what should fill the Frame.
-                Function should take no arguments.  Return values will not be used. Defaults to None.
+    Args:
+        enabled (bool, optional): Frame is enabled. Defaults to True.
+        visible (bool, optional): Frame is visible. Defaults to True.
+        build_fn (Callable, optional): A function that can be called to specify what should fill the Frame.
+            Function should take no arguments.  Return values will not be used. Defaults to None.
     """
 
     def __init__(self, enabled: bool = True, visible: bool = True, build_fn: Callable = None):
@@ -97,13 +91,13 @@ class Frame(UIWidgetWrapper):
 class CollapsableFrame(Frame):
     """Create a CollapsableFrame UI element
 
-        Args:
-            title (str): Title of Collapsable Frame
-            collapsed (bool, optional): Frame is collapsed. Defaults to True.
-            enabled (bool, optional): Frame is enabled. Defaults to True.
-            visible (bool, optional): Frame is visible. Defaults to True.
-            build_fn (Callable, optional): A function that can be called to specify what should fill the Frame.
-                Function should take no arguments.  Return values will not be used. Defaults to None.
+    Args:
+        title (str): Title of Collapsable Frame
+        collapsed (bool, optional): Frame is collapsed. Defaults to True.
+        enabled (bool, optional): Frame is enabled. Defaults to True.
+        visible (bool, optional): Frame is visible. Defaults to True.
+        build_fn (Callable, optional): A function that can be called to specify what should fill the Frame.
+            Function should take no arguments.  Return values will not be used. Defaults to None.
     """
 
     def __init__(
@@ -160,13 +154,13 @@ class CollapsableFrame(Frame):
 class ScrollingFrame(Frame):
     """Create a ScrollingFrame UI element with a specified size.
 
-        Args:
-            num_lines (int, optional): Determines height of ScrollingFrame element in terms of the 
-                typical line height of UI elements. Defaults to 5.
-            enabled (bool, optional): Frame is enabled. Defaults to True.
-            visible (bool, optional): Frame is visible. Defaults to True.
-            build_fn (Callable, optional): A function that can be called to specify what should fill the Frame.
-                Function should take no arguments.  Return values will not be used. Defaults to None.
+    Args:
+        num_lines (int, optional): Determines height of ScrollingFrame element in terms of the
+            typical line height of UI elements. Defaults to 5.
+        enabled (bool, optional): Frame is enabled. Defaults to True.
+        visible (bool, optional): Frame is visible. Defaults to True.
+        build_fn (Callable, optional): A function that can be called to specify what should fill the Frame.
+            Function should take no arguments.  Return values will not be used. Defaults to None.
     """
 
     def __init__(self, num_lines=5, enabled: bool = True, visible: bool = True, build_fn: Callable = None):
@@ -175,7 +169,7 @@ class ScrollingFrame(Frame):
         UIWidgetWrapper.__init__(self, self.frame)
 
     def set_num_lines(self, num_lines: int):
-        """Set the height of the ScrollingFrame element in terms of the typical line height of 
+        """Set the height of the ScrollingFrame element in terms of the typical line height of
         other UI elements.
 
         Args:
@@ -513,10 +507,10 @@ class FloatField(UIWidgetWrapper):
 
 class StringField(UIWidgetWrapper):
     """Create StringField UI Element.
-    
+
     Starting at use_folder_picker, the arguments to the StringField all pertain to the folder_picker.
     If the folder_picker is not used, these arguments may all be ignored.
-    
+
 
     Args:
         label (str, optional): Label to the left of the UI element. Defaults to "".
@@ -531,7 +525,7 @@ class StringField(UIWidgetWrapper):
             as an argument and return a boolean.  When the user opens the file picker, every file in the directory they are
             viewing will be passed to item_filter_fn, and when True is returned, the file will be shown.  When False is
             returned, the file will not be shown.  This can be used to ensure that the user may only select valid file types.
-        bookmark_label (str, optional): Bookmark label to pass to the FilePicker.  This will create a bookmark when the 
+        bookmark_label (str, optional): Bookmark label to pass to the FilePicker.  This will create a bookmark when the
             file picker is used with the label specified here.
         bookmark_path (str, optional): Bookmark path to pass to the FilePicker.  This will create a bookmark when the file
             picker is used with the path specified here.
@@ -638,7 +632,7 @@ class StringField(UIWidgetWrapper):
 
         Args:
             item_filter_fn (Callable): Filter function that will be called to filter the files shown in the
-                picker.  This function should take a string file_path as the argument. The return value 
+                picker.  This function should take a string file_path as the argument. The return value
                 should be a bool, with True indicating the the file should be shown to the user in the file picker.
         """
         self._item_filter_fn = item_filter_fn
@@ -647,7 +641,7 @@ class StringField(UIWidgetWrapper):
         """Set this StringField to be read only
 
         Args:
-            read_only (bool): If True, StringField cannot be modified through the UI; it can still be 
+            read_only (bool): If True, StringField cannot be modified through the UI; it can still be
                 modified programmatically with set_value()
         """
         self.string_field.read_only = read_only
@@ -854,10 +848,10 @@ class StateButton(UIWidgetWrapper):
             state A. Function should have 0 arguments.  The return value will not be used.  Defaults to None.
         on_b_click_fn (Callable, optional): A function that should be called when the button is clicked while in
             state B. Function should have 0 arguments.  The return value will not be used.  Defaults to None.
-        physics_callback_fn (Callable, optional): A function that will be called on every physics step while the 
+        physics_callback_fn (Callable, optional): A function that will be called on every physics step while the
             button is in state B (a_text was pressed). The function should have one argument for physics step size (float).
             The return value will not be used. Defaults to None.
-	"""
+    """
 
     def __init__(
         self,
@@ -904,7 +898,7 @@ class StateButton(UIWidgetWrapper):
         in state B.
 
         Args:
-            physics_callback_fn (Callable): A function that will be called on every physics step while the 
+            physics_callback_fn (Callable): A function that will be called on every physics step while the
                 button is in state B (a_text was pressed). The function should have one argument for physics step size (float).
                 The return value will not be used.
         """
@@ -929,14 +923,12 @@ class StateButton(UIWidgetWrapper):
         self._on_b_click_fn = on_b_click_fn
 
     def reset(self):
-        """Reset StateButton to state A.
-        """
+        """Reset StateButton to state A."""
         self.state_button.text = self.a_text
         self._remove_physics_callback()
 
     def cleanup(self):
-        """Remove physics callback created by the StateButton if exists.
-        """
+        """Remove physics callback created by the StateButton if exists."""
         self._remove_physics_callback()
 
     def _create_physics_callback(self):
@@ -997,12 +989,12 @@ class StateButton(UIWidgetWrapper):
 class CheckBox(UIWidgetWrapper):
     """Create a CheckBox UI Element
 
-        Args:
-            label (str): Short descriptive text to the left of the CheckBox
-            default_value (bool, optional): If True, CheckBox will be checked. Defaults to False.
-            tooltip (str, optional): Text to appear when the mouse hovers over the CheckBox.  Defaults to "".
-            on_click_fn (_type_, optional): Callback function that will be called when the CheckBox is pressed.
-                Function should take a single bool argument.  The return value will not be used.  Defaults to None.
+    Args:
+        label (str): Short descriptive text to the left of the CheckBox
+        default_value (bool, optional): If True, CheckBox will be checked. Defaults to False.
+        tooltip (str, optional): Text to appear when the mouse hovers over the CheckBox.  Defaults to "".
+        on_click_fn (_type_, optional): Callback function that will be called when the CheckBox is pressed.
+            Function should take a single bool argument.  The return value will not be used.  Defaults to None.
     """
 
     def __init__(self, label: str, default_value: bool = False, tooltip="", on_click_fn=None):
@@ -1079,10 +1071,10 @@ class DropDown(UIWidgetWrapper):
         populate_fn (Callable, optional): A user-defined function that returns a list[str] of items
             that should populate the drop-down menu.  This Function should have 0 arguments. Defaults to None.
         on_selection_fn (Callable, optional): A user-defined callback function for when an element is selected
-            from the DropDown.  The function should take in a string argument of the selection. 
+            from the DropDown.  The function should take in a string argument of the selection.
             The return value will not be used.  Defaults to None.
         keep_old_selections (bool, optional): When the DropDown is repopulated with the user-defined populate_fn,
-            the default behavior is to reset the selection in the DropDown to be at index 0.  If the user 
+            the default behavior is to reset the selection in the DropDown to be at index 0.  If the user
             sets keep_old_selections=True, when the DropDown is repopulated and the old selection is still one of
             the options, the new selection will match the old selection.  Defaults to False.
     """
@@ -1233,11 +1225,11 @@ class DropDown(UIWidgetWrapper):
         self._on_selection_fn = on_selection_fn
 
     def set_keep_old_selection(self, val: bool):
-        """ Set keep_old_selection flag to determine behavior when repopulating the DropDown
+        """Set keep_old_selection flag to determine behavior when repopulating the DropDown
 
         Args:
             val (bool): When the DropDown is repopulated with the user-defined populate_fn,
-                the default behavior is to reset the selection in the DropDown to be at index 0.  If the user 
+                the default behavior is to reset the selection in the DropDown to be at index 0.  If the user
                 sets keep_old_selections=True, when the DropDown is repopulated and the old selection is still one of
                 the options, the new selection will match the old selection, and the on_selection_fn() will not be called.
         """
@@ -1247,10 +1239,10 @@ class DropDown(UIWidgetWrapper):
         """
         Set the populate_fn to find all objects of a specified type on the USD stage.  This is
         included as a convenience function to fulfill one common use-case for a DropDown menu.
-        This overrides the populate_fn set by the user.   
+        This overrides the populate_fn set by the user.
 
         Args:
-            object_type (str): A string name of the type of USD object matching the output of 
+            object_type (str): A string name of the type of USD object matching the output of
                 omni.isaac.core.utils.prims.get_prim_object_type(prim_path)
             repopulate (bool, optional): Repopulate the DropDown immediately. Defaults to True.
         """
@@ -1290,13 +1282,13 @@ class DropDown(UIWidgetWrapper):
 class ColorPicker(UIWidgetWrapper):
     """Create a ColorPicker UI element to allow user-selection of an RGBA color
 
-        Args:
-            label (str): Short descriptive text to the left of the ColorPicker
-            default_value (List[float], optional): RGBA color values between 0 and 1. Defaults to [1.0, 1.0, 1.0, 1.0].
-            tooltip (str, optional): Text to appear when the mouse hovers over the ColorPicker. Defaults to "".
-            on_color_picked_fn (Callable, optional): Function that will be called if the user picks a new color.
-                Function should expect a List[float] as an argument with four RGBA color values between 0 and 1.
-                The return value will not be used.
+    Args:
+        label (str): Short descriptive text to the left of the ColorPicker
+        default_value (List[float], optional): RGBA color values between 0 and 1. Defaults to [1.0, 1.0, 1.0, 1.0].
+        tooltip (str, optional): Text to appear when the mouse hovers over the ColorPicker. Defaults to "".
+        on_color_picked_fn (Callable, optional): Function that will be called if the user picks a new color.
+            Function should expect a List[float] as an argument with four RGBA color values between 0 and 1.
+            The return value will not be used.
     """
 
     def __init__(
@@ -1383,7 +1375,7 @@ class ColorPicker(UIWidgetWrapper):
 
 
 class TextBlock(UIWidgetWrapper):
-    """Create a text block that is only modifiable through code. The user may not set 
+    """Create a text block that is only modifiable through code. The user may not set
     the value of the text in the UI.
 
     Args:

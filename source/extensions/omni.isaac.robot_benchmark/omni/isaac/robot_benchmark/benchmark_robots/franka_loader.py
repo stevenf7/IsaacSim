@@ -7,8 +7,8 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.isaac.robot_benchmark.benchmark_controllers import franka_controllers
 from omni.isaac.franka import Franka
+from omni.isaac.robot_benchmark.benchmark_controllers import franka_controllers
 from omni.isaac.robot_benchmark.benchmark_robots.base_benchmark_robot_loader import BaseBenchmarkRobotLoader
 
 

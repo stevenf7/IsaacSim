@@ -8,32 +8,29 @@
 #
 
 
-import omni.kit.test
-import carb
+import asyncio
 
+import carb
+import numpy as np
+import omni.kit.test
+import yaml
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import open_stage_async
-
-
-from omni.isaac.wheeled_robots.robots import WheeledRobot
 from omni.isaac.core.utils.types import ArticulationAction
-
+from omni.isaac.core.utils.viewports import destroy_all_viewports, get_viewport_names, set_camera_view
+from omni.isaac.wheeled_robots.robots import WheeledRobot
 from omni.kit.viewport.utility import (
-    get_active_viewport,
     create_viewport_window,
-    get_viewport_from_window_name,
+    get_active_viewport,
     get_active_viewport_and_window,
     get_num_viewports,
+    get_viewport_from_window_name,
 )
-from omni.isaac.core.utils.viewports import set_camera_view, get_viewport_names, destroy_all_viewports
 from omni.kit.widget.viewport.capture import FileCapture
 
-import numpy as np
-from ..utils.logger import log_header, get_memory_stats
-from ..utils.helper import delete_prim_and_children
-import yaml
-import asyncio
 from ..utils.base_isaac_benchmark import BaseIsaacBenchmark
+from ..utils.helper import delete_prim_and_children
+from ..utils.logger import get_memory_stats, log_header
 
 
 class TestBenchmarkRobots(BaseIsaacBenchmark):

@@ -7,20 +7,21 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from typing import Optional
-from omni.isaac.dynamic_control import _dynamic_control
-from omni.isaac.core.utils.types import ArticulationAction
-from omni.isaac.core.controllers import ArticulationController
+
 import numpy as np
+from omni.isaac.core.controllers import ArticulationController
+from omni.isaac.core.utils.types import ArticulationAction
+from omni.isaac.dynamic_control import _dynamic_control
 
 
 class ArticulationGripper(object):
     """[summary]
 
-        Args:
-            gripper_dof_names (list): [description]
-            gripper_open_position (Optional[np.ndarray], optional): [description]. Defaults to None.
-            gripper_closed_position (Optional[np.ndarray], optional): [description]. Defaults to None.
-        """
+    Args:
+        gripper_dof_names (list): [description]
+        gripper_open_position (Optional[np.ndarray], optional): [description]. Defaults to None.
+        gripper_closed_position (Optional[np.ndarray], optional): [description]. Defaults to None.
+    """
 
     def __init__(
         self,

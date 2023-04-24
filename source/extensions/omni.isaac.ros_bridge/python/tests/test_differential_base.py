@@ -7,33 +7,35 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import asyncio
+import gc
+
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 from re import A, I
-import omni.kit.test
-import omni.kit.usd
-import gc
+
 import carb
-import asyncio
+import omni.graph.core as og
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.kit.commands
-
-from omni.isaac.core.utils.physics import simulate_async
-from .common import wait_for_rosmaster, add_carter_ros, add_carter, set_translate, set_rotate
+import omni.kit.test
+import omni.kit.usd
 from omni.isaac.core.utils.nucleus import get_assets_root_path
-from pxr import Sdf, Gf
-import omni.graph.core as og
+from omni.isaac.core.utils.physics import simulate_async
 from omni.isaac.core_nodes.scripts.utils import set_target_prims
+from pxr import Gf, Sdf
+
+from .common import add_carter, add_carter_ros, set_rotate, set_translate, wait_for_rosmaster
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
-        from omni.isaac.ros_bridge.scripts.roscore import Roscore
         import rospy
+        from omni.isaac.ros_bridge.scripts.roscore import Roscore
 
         await omni.usd.get_context().new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
@@ -78,13 +80,13 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_differential_base(self):
-        import rospy
         from copy import deepcopy
 
+        import rospy
+        import tf
         from geometry_msgs.msg import Twist
         from nav_msgs.msg import Odometry
         from pxr import UsdGeom
-        import tf
 
         await add_carter_ros()
         stage = omni.usd.get_context().get_stage()
@@ -255,9 +257,9 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
 
     # add carter and ROS topic from scratch
     async def test_differential_base_scratch(self):
-        import rospy
         from copy import deepcopy
 
+        import rospy
         from geometry_msgs.msg import Twist
         from nav_msgs.msg import Odometry
 

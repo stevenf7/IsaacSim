@@ -8,13 +8,13 @@
 #
 
 import omni
-import pxr
 import omni.graph.core as og
+import pxr
 from pxr import UsdPhysics
 
 
 class CreateConveyorBelt(omni.kit.commands.Command):
-    """Creates an Action graph containing the Conveyor Belt Node. Must be applied to a Rigid Body prim. 
+    """Creates an Action graph containing the Conveyor Belt Node. Must be applied to a Rigid Body prim.
     If the selected prim is not a rigid body, the node will attempt to apply the rigid body API to it.
 
     Typical usage example:

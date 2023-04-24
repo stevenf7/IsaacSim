@@ -6,11 +6,13 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.motion_generation import ArticulationKinematicsSolver, interface_config_loader, LulaKinematicsSolver
-from omni.isaac.core.articulations import Articulation
-from omni.isaac.core.utils.extensions import get_extension_path_from_name
 import os
 from typing import Optional
+
+from omni.isaac.core.articulations import Articulation
+from omni.isaac.core.utils.extensions import get_extension_path_from_name
+from omni.isaac.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
+from omni.isaac.motion_generation.lula.kinematics import LulaKinematicsSolver
 
 
 class KinematicsSolver(ArticulationKinematicsSolver):
@@ -20,7 +22,7 @@ class KinematicsSolver(ArticulationKinematicsSolver):
         robot_articulation (Articulation): An initialized Articulation object representing this UR10
         end_effector_frame_name (Optional[str]): The name of the UR10 end effector.  If None, an end effector link will
             be automatically selected.  Defaults to None.
-        attach_gripper (Optional[bool]): If True, a URDF will be loaded that includes a suction gripper.  Defaults to False. 
+        attach_gripper (Optional[bool]): If True, a URDF will be loaded that includes a suction gripper.  Defaults to False.
     """
 
     def __init__(

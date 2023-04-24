@@ -1,12 +1,10 @@
 # Array or tuple values are accessed as numpy arrays so you probably need this import
 import numpy
-
-import omni.timeline
 import omni.graph.core as og
-
+import omni.timeline
 from omni.isaac.core_nodes import BaseResetNode
-from omni.isaac.sensor import _sensor
 from omni.isaac.dynamic_control import _dynamic_control
+from omni.isaac.sensor import _sensor
 from omni.isaac.sensor.ogn.OgnIsaacReadContactSensorDatabase import OgnIsaacReadContactSensorDatabase
 
 
@@ -35,8 +33,8 @@ class OgnIsaacReadContactSensorInternalState(BaseResetNode):
 
 
 class OgnIsaacReadContactSensor:
-    """   
-         Node that returns Contact Sensor data
+    """
+    Node that returns Contact Sensor data
     """
 
     @staticmethod

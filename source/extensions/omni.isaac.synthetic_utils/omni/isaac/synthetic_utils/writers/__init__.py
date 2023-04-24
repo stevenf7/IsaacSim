@@ -8,5 +8,5 @@
 #
 
 from .base import BaseWriter
-from .numpy import NumpyWriter
 from .kitti import KittiWriter
+from .numpy import NumpyWriter

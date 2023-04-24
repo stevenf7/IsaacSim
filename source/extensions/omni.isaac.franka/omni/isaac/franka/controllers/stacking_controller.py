@@ -6,23 +6,24 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-import omni.isaac.manipulators.controllers as manipulators_controllers
-from omni.isaac.franka.controllers import PickPlaceController
-from omni.isaac.manipulators.grippers.parallel_gripper import ParallelGripper
-from omni.isaac.core.articulations import Articulation
 from typing import List
+
+import omni.isaac.manipulators.controllers as manipulators_controllers
+from omni.isaac.core.articulations import Articulation
+from omni.isaac.franka.controllers.pick_place_controller import PickPlaceController
+from omni.isaac.manipulators.grippers.parallel_gripper import ParallelGripper
 
 
 class StackingController(manipulators_controllers.StackingController):
     """[summary]
 
-        Args:
-            name (str): [description]
-            gripper (ParallelGripper): [description]
-            robot_prim_path (str): [description]
-            picking_order_cube_names (List[str]): [description]
-            robot_observation_name (str): [description]
-        """
+    Args:
+        name (str): [description]
+        gripper (ParallelGripper): [description]
+        robot_prim_path (str): [description]
+        picking_order_cube_names (List[str]): [description]
+        robot_observation_name (str): [description]
+    """
 
     def __init__(
         self,

@@ -11,13 +11,13 @@ from omni.isaac.kit import SimulationApp
 simulation_app = SimulationApp({"headless": True})
 
 import carb
+import numpy as np
 import omni
-from omni.isaac.sensor import _sensor
+import omni.kit.commands
 from omni.isaac.core import World
 from omni.isaac.core.objects import DynamicCuboid
-import omni.kit.commands
+from omni.isaac.sensor import _sensor
 from pxr import Gf
-import numpy as np
 
 timeline = omni.timeline.get_timeline_interface()
 cs = _sensor.acquire_contact_sensor_interface()

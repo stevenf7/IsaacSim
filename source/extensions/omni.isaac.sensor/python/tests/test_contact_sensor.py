@@ -7,31 +7,31 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import asyncio
+import sys
+
+import carb.tokens
+import numpy as np
+import omni
+import omni.graph.action
+import omni.graph.core as og
+import omni.isaac.IsaacSensorSchema as sensorSchema
+import omni.kit.commands
+
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-import omni
-import omni.kit.commands
-import carb.tokens
-import asyncio
-import numpy as np
-import omni.graph.core as og
-import omni.graph.action
-import sys
-
-from pxr import UsdGeom, Gf, UsdPhysics, PhysxSchema, Usd, PhysicsSchemaTools, Sdf
+from omni.isaac.core import World
+from omni.isaac.core.prims.rigid_prim import RigidPrim
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.physics import simulate_async
+from omni.isaac.core.utils.prims import add_reference_to_stage, delete_prim
+from omni.isaac.core_nodes.scripts.utils import set_target_prims
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.sensor import _sensor
-from omni.isaac.core.utils.physics import simulate_async
-from omni.isaac.core.utils.prims import delete_prim
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-import omni.isaac.IsaacSensorSchema as sensorSchema
-from omni.isaac.core.utils.prims import add_reference_to_stage
-from omni.isaac.core.prims.rigid_prim import RigidPrim
-from omni.isaac.core_nodes.scripts.utils import set_target_prims
-from omni.isaac.core import World
+from pxr import Gf, PhysicsSchemaTools, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 

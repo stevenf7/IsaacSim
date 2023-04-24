@@ -7,31 +7,32 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 from typing import Optional
+
 import torch
 
 
 class PytorchListener:
-    """ A Observer/Listener that keeps track of updated data sent by the writer. Is passed in the 
-        initialization of a PytorchWriter at which point it is pinged by the writer after any data is 
-        passed to the writer. """
+    """A Observer/Listener that keeps track of updated data sent by the writer. Is passed in the
+    initialization of a PytorchWriter at which point it is pinged by the writer after any data is
+    passed to the writer."""
 
     def __init__(self):
         self.data = {}
 
     def write_data(self, data: dict) -> None:
-        """ Updates the existing data in the listener with the new data provided.
-        
-            Args:
-                data (dict): new data retrieved from writer.
+        """Updates the existing data in the listener with the new data provided.
+
+        Args:
+            data (dict): new data retrieved from writer.
         """
 
         self.data.update(data)
 
     def get_rgb_data(self) -> Optional[torch.Tensor]:
-        """ Returns RGB data as a batched tensor from the current data stored.
-        
-            Returns:
-                images (Optional[torch.Tensor]): images in batched pytorch tensor form
+        """Returns RGB data as a batched tensor from the current data stored.
+
+        Returns:
+            images (Optional[torch.Tensor]): images in batched pytorch tensor form
         """
 
         if "pytorch_rgb" in self.data:

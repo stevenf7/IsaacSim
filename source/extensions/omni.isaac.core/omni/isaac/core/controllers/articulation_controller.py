@@ -6,18 +6,19 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Optional, Tuple, Union, List
+from typing import List, Optional, Tuple, Union
+
 import numpy as np
-from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core.utils.types import ArticulationAction, ArticulationActions
+from omni.isaac.dynamic_control import _dynamic_control
 
 
 class ArticulationController(object):
     """PD Controller of all degrees of freedom of an articulation, can apply position targets, velocity targets and efforts.
 
-        Checkout the required tutorials at 
-         https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html   
-        """
+    Checkout the required tutorials at
+     https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html
+    """
 
     def __init__(self) -> None:
         self._dof_controllers = list()

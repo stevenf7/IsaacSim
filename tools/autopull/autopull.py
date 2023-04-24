@@ -1,12 +1,12 @@
+import argparse
 import os
 import platform
-import argparse
+
 import packmanapi
 
 
 def get_host_platform() -> str:
-    """Get host platform string (platform-arch, E.g.: "windows-x86_64")
-    """
+    """Get host platform string (platform-arch, E.g.: "windows-x86_64")"""
     arch = platform.machine()
     if arch == "AMD64":
         arch = "x86_64"

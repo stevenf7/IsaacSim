@@ -7,13 +7,13 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.utils.stage import add_reference_to_stage
-import omni.kit.test
-from omni.isaac.core.utils.prims import get_all_matching_child_prims
-import omni.kit.commands
 import numpy as np
+import omni.kit.commands
+import omni.kit.test
 import torch
+from omni.isaac.core.prims.xform_prim import XFormPrim
+from omni.isaac.core.utils.prims import get_all_matching_child_prims
+from omni.isaac.core.utils.stage import add_reference_to_stage
 
 
 class TestPrims(omni.kit.test.AsyncTestCase):
@@ -66,10 +66,10 @@ class TestPrims(omni.kit.test.AsyncTestCase):
         )
 
     async def test_is_prim_non_root_articulation_link(self):
-        from omni.isaac.core.utils.stage import clear_stage
-        from omni.isaac.core.utils.prims import is_prim_non_root_articulation_link
-        from omni.isaac.core.utils.nucleus import get_assets_root_path
         from omni.isaac.core.objects import DynamicCuboid
+        from omni.isaac.core.utils.nucleus import get_assets_root_path
+        from omni.isaac.core.utils.prims import is_prim_non_root_articulation_link
+        from omni.isaac.core.utils.stage import clear_stage
 
         clear_stage()
         add_reference_to_stage(usd_path="", prim_path="/World/Franka")

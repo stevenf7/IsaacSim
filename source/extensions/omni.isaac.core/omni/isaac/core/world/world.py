@@ -8,67 +8,68 @@
 #
 
 # python
-from typing import Optional, List
+from typing import List, Optional
+
+from omni.isaac.core.loggers import DataLogger
+from omni.isaac.core.scenes.scene import Scene
+
+# isaac-core
+from omni.isaac.core.simulation_context import SimulationContext
+from omni.isaac.core.tasks import BaseTask
+from omni.isaac.core.utils.viewports import set_camera_view
+from omni.isaac.dynamic_control import _dynamic_control
 
 # omniverse
 from pxr import Usd
 
-# isaac-core
-from omni.isaac.core.simulation_context import SimulationContext
-from omni.isaac.core.scenes.scene import Scene
-from omni.isaac.core.tasks import BaseTask
-from omni.isaac.dynamic_control import _dynamic_control
-from omni.isaac.core.utils.viewports import set_camera_view
-from omni.isaac.core.loggers import DataLogger
-
 
 class World(SimulationContext):
-    """ This class inherits from SimulationContext which provides the following.
+    """This class inherits from SimulationContext which provides the following.
 
-        SimulationContext provide functions that take care of many time-related events such as
-        perform a physics or a render step for instance. Adding/ removing callback functions that 
-        gets triggered with certain events such as a physics step, timeline event 
-        (pause or play..etc), stage open/ close..etc.
+    SimulationContext provide functions that take care of many time-related events such as
+    perform a physics or a render step for instance. Adding/ removing callback functions that
+    gets triggered with certain events such as a physics step, timeline event
+    (pause or play..etc), stage open/ close..etc.
 
-        It also includes an instance of PhysicsContext which takes care of many physics related
-        settings such as setting physics dt, solver type..etc.
-        
-        In addition to what is provided from SimulationContext, this class allows the user to add a 
-        task to the world and it contains a scene object.
-        
-        To control the default reset state of different objects easily, the object could be added to
-        a Scene. Besides this, the object is bound to a short keyword that fascilitates objects retrievals,
-        like in a dict.
+    It also includes an instance of PhysicsContext which takes care of many physics related
+    settings such as setting physics dt, solver type..etc.
 
-        Checkout the required tutorials at 
-        https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html
+    In addition to what is provided from SimulationContext, this class allows the user to add a
+    task to the world and it contains a scene object.
 
-        Args:
-            physics_dt (Optional[float], optional): dt between physics steps. Defaults to None.
-            rendering_dt (Optional[float], optional): dt between rendering steps. Note: rendering means 
-                                                       rendering a frame of the current application and not 
-                                                       only rendering a frame to the viewports/ cameras. So UI
-                                                       elements of Isaac Sim will be refereshed with this dt 
-                                                       as well if running non-headless. 
-                                                       Defaults to None.
-            stage_units_in_meters (Optional[float], optional): The metric units of assets. This will affect gravity value..etc.
-                                                       Defaults to None.
-            physics_prim_path (Optional[str], optional): specifies the prim path to create a PhysicsScene at, 
-                                                 only in the case where no PhysicsScene already defined. 
-                                                 Defaults to "/physicsScene".
-            set_defaults (bool, optional): set to True to use the defaults settings
-                                            [physics_dt = 1.0/ 60.0,
-                                            stage units in meters = 0.01 (i.e in cms),
-                                            rendering_dt = 1.0 / 60.0,
-                                            gravity = -9.81 m / s
-                                            ccd_enabled,
-                                            stabilization_enabled,
-                                            gpu dynamics turned off,
-                                            broadcast type is MBP,
-                                            solver type is TGS]. Defaults to True.
-            backend (str, optional): specifies the backend to be used (numpy or torch). Defaults to numpy.
-            device (Optional[str], optional): specifies the device to be used if running on the gpu with torch backend.
-        """
+    To control the default reset state of different objects easily, the object could be added to
+    a Scene. Besides this, the object is bound to a short keyword that fascilitates objects retrievals,
+    like in a dict.
+
+    Checkout the required tutorials at
+    https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html
+
+    Args:
+        physics_dt (Optional[float], optional): dt between physics steps. Defaults to None.
+        rendering_dt (Optional[float], optional): dt between rendering steps. Note: rendering means
+                                                   rendering a frame of the current application and not
+                                                   only rendering a frame to the viewports/ cameras. So UI
+                                                   elements of Isaac Sim will be refereshed with this dt
+                                                   as well if running non-headless.
+                                                   Defaults to None.
+        stage_units_in_meters (Optional[float], optional): The metric units of assets. This will affect gravity value..etc.
+                                                   Defaults to None.
+        physics_prim_path (Optional[str], optional): specifies the prim path to create a PhysicsScene at,
+                                             only in the case where no PhysicsScene already defined.
+                                             Defaults to "/physicsScene".
+        set_defaults (bool, optional): set to True to use the defaults settings
+                                        [physics_dt = 1.0/ 60.0,
+                                        stage units in meters = 0.01 (i.e in cms),
+                                        rendering_dt = 1.0 / 60.0,
+                                        gravity = -9.81 m / s
+                                        ccd_enabled,
+                                        stabilization_enabled,
+                                        gpu dynamics turned off,
+                                        broadcast type is MBP,
+                                        solver type is TGS]. Defaults to True.
+        backend (str, optional): specifies the backend to be used (numpy or torch). Defaults to numpy.
+        device (Optional[str], optional): specifies the device to be used if running on the gpu with torch backend.
+    """
 
     _world_initialized = False
 
@@ -246,19 +247,18 @@ class World(SimulationContext):
     """
 
     def initialize_physics(self) -> None:
-        """_summary_
-        """
+        """_summary_"""
         SimulationContext.initialize_physics(self)
         self._scene._finalize(self.physics_sim_view)
         return
 
     def reset(self, soft: bool = False) -> None:
-        """ Resets the stage to its initial state and each object included in the Scene to its default state
-            as specified by .set_default_state and the __init__ funcs. 
+        """Resets the stage to its initial state and each object included in the Scene to its default state
+            as specified by .set_default_state and the __init__ funcs.
 
             Note:
-            - All tasks should be added before the first reset is called unless a .clear() was called. 
-            - All articulations should be added before the first reset is called unless a .clear() was called. 
+            - All tasks should be added before the first reset is called unless a .clear() was called.
+            - All articulations should be added before the first reset is called unless a .clear() was called.
             - This method takes care of initializing articulation handles with the first reset called.
             - This will do one step internally regardless
             - calls post_reset on each object in the Scene
@@ -268,7 +268,7 @@ class World(SimulationContext):
             the defaults are restored after .stop() is called.
 
         Args:
-            soft (bool, optional): if set to True simulation won't be stopped and start again. It only calls the reset on the scene objects. 
+            soft (bool, optional): if set to True simulation won't be stopped and start again. It only calls the reset on the scene objects.
         """
         if not self._task_scene_built:
             for task in self._current_tasks.values():
@@ -286,11 +286,11 @@ class World(SimulationContext):
 
     async def reset_async(self, soft: bool = False) -> None:
         """Resets the stage to its initial state and each object included in the Scene to its default state
-            as specified by .set_default_state and the __init__ funcs. 
+            as specified by .set_default_state and the __init__ funcs.
 
             Note:
-            - All tasks should be added before the first reset is called unless a .clear() was called. 
-            - All articulations should be added before the first reset is called unless a .clear() was called. 
+            - All tasks should be added before the first reset is called unless a .clear() was called.
+            - All articulations should be added before the first reset is called unless a .clear() was called.
             - This method takes care of initializing articulation handles with the first reset called.
             - This will do one step internally regardless
             - calls post_reset on each object in the Scene
@@ -300,7 +300,7 @@ class World(SimulationContext):
             the defaults are restored after .stop() is called.
 
         Args:
-            soft (bool, optional): if set to True simulation won't be stopped and start again. It only calls the reset on the scene objects. 
+            soft (bool, optional): if set to True simulation won't be stopped and start again. It only calls the reset on the scene objects.
         """
         if not self._task_scene_built:
             for task in self._current_tasks.values():
@@ -324,7 +324,7 @@ class World(SimulationContext):
 
         Args:
             render (bool, optional): Set to False to only do a physics simulation without rendering. Note:
-                                     app UI will be frozen (since its not rendering) in this case. 
+                                     app UI will be frozen (since its not rendering) in this case.
                                      Defaults to True.
 
         """
@@ -371,8 +371,7 @@ class World(SimulationContext):
         return
 
     def clear(self) -> None:
-        """Clears the stage leaving the PhysicsScene only if under /World.
-        """
+        """Clears the stage leaving the PhysicsScene only if under /World."""
         self.scene.clear(registry_only=False)
         self._current_tasks = dict()
         self._task_scene_built = False

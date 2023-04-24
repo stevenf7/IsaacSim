@@ -7,16 +7,15 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import asyncio
+import os
+import random
+import sys
+
 import omni.client
 import omni.kit
 import omni.usd
-
-import asyncio
-import os
-from pxr import UsdGeom, Gf, Tf
-
-import random
-import sys
+from pxr import Gf, Tf, UsdGeom
 
 from .globals import *
 

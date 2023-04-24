@@ -13,6 +13,7 @@ from __future__ import annotations
 from typing import Set, Tuple
 
 import yaml
+
 from .tile_superposition import TileSuperposition
 
 

@@ -1,6 +1,7 @@
+import carb.settings
 import omni.ext
 import omni.kit.ui
-import carb.settings
+
 from .window import AssetBrowserWindow
 
 ASSET_BROWSER_MENU_PATH = "Window/Browsers/Isaac Assets (Beta)"

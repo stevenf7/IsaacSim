@@ -6,20 +6,21 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Optional, Union, List
+from typing import List, Optional, Union
+
 import numpy as np
-from pxr import Usd
 import torch
+from pxr import Usd
 
 
 class DataFrame(object):
     """[summary]
 
-        Args:
-            current_time_step (int): [description]
-            current_time (float): [description]
-            data (dict): [description]
-        """
+    Args:
+        current_time_step (int): [description]
+        current_time (float): [description]
+        data (dict): [description]
+    """
 
     def __init__(self, current_time_step: int, current_time: float, data: dict) -> None:
         self.current_time_step = current_time_step
@@ -57,12 +58,12 @@ class DataFrame(object):
 class DOFInfo(object):
     """[summary]
 
-        Args:
-            prim_path (str): [description]
-            handle (int): [description]
-            prim (Usd.Prim): [description]
-            index (int): [description]
-        """
+    Args:
+        prim_path (str): [description]
+        handle (int): [description]
+        prim (Usd.Prim): [description]
+        index (int): [description]
+    """
 
     def __init__(self, prim_path: str, handle: int, prim: Usd.Prim, index: int) -> None:
         self.prim_path = prim_path
@@ -75,10 +76,10 @@ class DOFInfo(object):
 class XFormPrimState(object):
     """[summary]
 
-        Args:
-            position (np.ndarray): [description]
-            orientation (np.ndarray): [description]
-        """
+    Args:
+        position (np.ndarray): [description]
+        orientation (np.ndarray): [description]
+    """
 
     def __init__(self, position: np.ndarray, orientation: np.ndarray) -> None:
         self.position = position
@@ -88,10 +89,10 @@ class XFormPrimState(object):
 class XFormPrimViewState(object):
     """[summary]
 
-        Args:
-            positions (Union[np.ndarray, torch.Tensor]): positions with shape of (N, 3).
-            orientations (Union[np.ndarray, torch.Tensor]): quaternion representation of orientation (scalar first) with shape (N, 4).
-        """
+    Args:
+        positions (Union[np.ndarray, torch.Tensor]): positions with shape of (N, 3).
+        orientations (Union[np.ndarray, torch.Tensor]): quaternion representation of orientation (scalar first) with shape (N, 4).
+    """
 
     def __init__(
         self, positions: Union[np.ndarray, torch.Tensor], orientations: Union[np.ndarray, torch.Tensor]
@@ -103,10 +104,10 @@ class XFormPrimViewState(object):
 class DynamicState(object):
     """[summary]
 
-        Args:
-            position (np.ndarray): [description]
-            orientation (np.ndarray): [description]
-        """
+    Args:
+        position (np.ndarray): [description]
+        orientation (np.ndarray): [description]
+    """
 
     def __init__(
         self, position: np.ndarray, orientation: np.ndarray, linear_velocity: np.ndarray, angular_velocity: np.ndarray
@@ -120,10 +121,10 @@ class DynamicState(object):
 class DynamicsViewState(object):
     """[summary]
 
-        Args:
-            position (np.ndarray): [description]
-            orientation (np.ndarray): [description]
-        """
+    Args:
+        position (np.ndarray): [description]
+        orientation (np.ndarray): [description]
+    """
 
     def __init__(
         self,
@@ -141,11 +142,11 @@ class DynamicsViewState(object):
 class JointsState(object):
     """[summary]
 
-        Args:
-            positions (np.ndarray): [description]
-            velocities (np.ndarray): [description]
-            efforts (np.ndarray): [description]
-        """
+    Args:
+        positions (np.ndarray): [description]
+        velocities (np.ndarray): [description]
+        efforts (np.ndarray): [description]
+    """
 
     def __init__(self, positions: np.ndarray, velocities: np.ndarray, efforts: np.ndarray) -> None:
         self.positions = positions
@@ -156,11 +157,11 @@ class JointsState(object):
 class ArticulationAction(object):
     """[summary]
 
-        Args:
-            joint_positions (Optional[Union[List, np.ndarray]], optional): [description]. Defaults to None.
-            joint_velocities (Optional[Union[List, np.ndarray]], optional): [description]. Defaults to None.
-            joint_efforts (Optional[Union[List, np.ndarray]], optional): [description]. Defaults to None.
-        """
+    Args:
+        joint_positions (Optional[Union[List, np.ndarray]], optional): [description]. Defaults to None.
+        joint_velocities (Optional[Union[List, np.ndarray]], optional): [description]. Defaults to None.
+        joint_efforts (Optional[Union[List, np.ndarray]], optional): [description]. Defaults to None.
+    """
 
     def __init__(
         self,
@@ -260,11 +261,11 @@ class ArticulationAction(object):
 class ArticulationActions(object):
     """[summary]
 
-        Args:
-            joint_positions (Optional[Union[List, np.ndarray]], optional): [description]. Defaults to None.
-            joint_velocities (Optional[Union[List, np.ndarray]], optional): [description]. Defaults to None.
-            joint_efforts (Optional[Union[List, np.ndarray]], optional): [description]. Defaults to None.
-        """
+    Args:
+        joint_positions (Optional[Union[List, np.ndarray]], optional): [description]. Defaults to None.
+        joint_velocities (Optional[Union[List, np.ndarray]], optional): [description]. Defaults to None.
+        joint_efforts (Optional[Union[List, np.ndarray]], optional): [description]. Defaults to None.
+    """
 
     def __init__(
         self,

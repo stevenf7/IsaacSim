@@ -9,16 +9,16 @@
 """ Cortex-specific utilities and helper methods
 """
 
-import numpy as np
-from pxr import Usd
 from types import ModuleType
 from typing import Union
 
+import numpy as np
 from omni.isaac.core.utils.nucleus import get_assets_root_path
+from pxr import Usd
 
 
 def load_behavior_module(behavior_filepath: str, module_name: str = "behavior") -> ModuleType:
-    """ Load and return a behavior module.
+    """Load and return a behavior module.
 
     A behavior module is a python module with a make_decider_network() method. If that method is not
     found, a RuntimeError is raised.
@@ -45,7 +45,7 @@ def load_behavior_module(behavior_filepath: str, module_name: str = "behavior") 
 
 
 def get_assets_root_path_or_die() -> str:
-    """ Find the assets root path and check for errors.
+    """Find the assets root path and check for errors.
 
     Returns: The root path.
 

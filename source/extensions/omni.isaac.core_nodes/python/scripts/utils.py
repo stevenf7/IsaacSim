@@ -7,12 +7,13 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni
-from pxr import Usd
-from omni.isaac.core_nodes.impl.extension import cache_node_template_activation, cache_writer_attach
 import copy
+
+import omni
 import omni.replicator.core as rep
 from omni.isaac.core.utils.prims import set_targets
+from omni.isaac.core_nodes.impl.extension import cache_node_template_activation, cache_writer_attach
+from pxr import Usd
 
 
 def set_target_prims(primPath: str, targetPrimPaths: list, inputName: str = "inputs:targetPrim"):
@@ -32,13 +33,13 @@ def submit_node_template_activation(
 ) -> None:
     """Submit a request to activate a node template for the next update.
 
-            Args:
-                template_name : name of the activated node
-                attribute_names : list of node attribute names to retrieve the value
-                render_product_path_index : if the node template is associated to a render product, index of the associated render product in the render product path list
-                render_product_paths : render product path list to be used for specifying the render product of the node template and its dependencies to activate
+    Args:
+        template_name : name of the activated node
+        attribute_names : list of node attribute names to retrieve the value
+        render_product_path_index : if the node template is associated to a render product, index of the associated render product in the render product path list
+        render_product_paths : render product path list to be used for specifying the render product of the node template and its dependencies to activate
 
-            """
+    """
 
     cache_node_template_activation(
         template_name, render_product_path_index, copy.deepcopy(render_product_paths), copy.deepcopy(attributes), stage
@@ -48,10 +49,10 @@ def submit_node_template_activation(
 def submit_writer_attach(writer: rep.Writer, render_product_path: str) -> None:
     """Submit a request to attach a writer for the next update.
 
-            Args:
-                writer : writer object we want to attach
-                render_product_path to attach to writer
+    Args:
+        writer : writer object we want to attach
+        render_product_path to attach to writer
 
-            """
+    """
 
     cache_writer_attach(writer, render_product_path)

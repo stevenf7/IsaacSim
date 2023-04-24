@@ -7,20 +7,21 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import weakref
 import asyncio
 import gc
+import weakref
+
 import omni
+import omni.kit.commands
+import omni.physx as _physx
+import omni.timeline
 import omni.ui as ui
 import omni.usd
-import omni.timeline
-import omni.kit.commands
-from omni.kit.menu.utils import add_menu_items, remove_menu_items
 from omni.isaac.ui.menu import make_menu_item_description
+from omni.kit.menu.utils import add_menu_items, remove_menu_items
 from omni.usd import StageEventType
-import omni.physx as _physx
 
-from .global_variables import EXTENSION_TITLE, EXTENSION_DESCRIPTION
+from .global_variables import EXTENSION_DESCRIPTION, EXTENSION_TITLE
 from .ui_builder import UIBuilder
 
 """

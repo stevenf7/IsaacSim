@@ -4,7 +4,7 @@ kit = SimulationApp()
 
 import omni
 import omni.physx
-from pxr import UsdPhysics, PhysxSchema
+from pxr import PhysxSchema, UsdPhysics
 
 kit.update()
 

@@ -7,24 +7,24 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import gc
+
+import carb
+import gxf
+import gxf.accessor
+import gxf.core
+import gxf.std.vault
+
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-
-import gxf
-import gxf.std.vault
-import gxf.accessor
-import gxf.core
-
-from omni.isaac.dynamic_control import _dynamic_control
-
-from omni.isaac.core.utils.stage import open_stage_async
+import omni.kit.usd
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.physics import simulate_async
-import omni.kit.usd
-import carb
-import gc
+from omni.isaac.core.utils.stage import open_stage_async
+from omni.isaac.dynamic_control import _dynamic_control
+
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestGXFVehicle(omni.kit.test.AsyncTestCase):

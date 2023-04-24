@@ -7,5 +7,5 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .test_nucleus_utils import *
 from .test_assets import *
+from .test_nucleus_utils import *

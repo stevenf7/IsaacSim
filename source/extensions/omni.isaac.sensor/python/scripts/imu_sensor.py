@@ -6,16 +6,17 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.sensor import _sensor
-import omni.kit.commands
-from pxr import PhysxSchema
 from typing import Optional
-from omni.isaac.core.utils.prims import is_prim_path_valid, get_prim_at_path
-from omni.isaac.core.utils.stage import traverse_stage
-from omni.isaac.core.prims import BaseSensor
-import omni.isaac.IsaacSensorSchema as IsaacSensorSchema
-import numpy as np
+
 import carb
+import numpy as np
+import omni.isaac.IsaacSensorSchema as IsaacSensorSchema
+import omni.kit.commands
+from omni.isaac.core.prims.base_sensor import BaseSensor
+from omni.isaac.core.utils.prims import get_prim_at_path, is_prim_path_valid
+from omni.isaac.core.utils.stage import traverse_stage
+from omni.isaac.sensor import _sensor
+from pxr import PhysxSchema
 
 
 class IMUSensor(BaseSensor):

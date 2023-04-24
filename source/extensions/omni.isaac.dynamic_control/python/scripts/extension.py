@@ -7,9 +7,11 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import gc
+
 import omni.ext
 import omni.kit.commands
-import gc
+
 from .. import _dynamic_control
 
 EXTENSION_NAME = "Dynamic Control"

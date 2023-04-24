@@ -6,14 +6,14 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import os
 import argparse
+import os
 
 from omni.isaac.kit import SimulationApp
 
 
 def define_arguments():
-    """ Define command line arguments. """
+    """Define command line arguments."""
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", default="parameters/warehouse.yaml", help="Path to input parameter file")
@@ -66,10 +66,9 @@ if __name__ == "__main__":
 
     kit = SimulationApp(launch_config=config)
 
-    from omni.replicator.composer import Composer, Visualizer
-
     # from omni.replicator.composer import Composer
     import omni.replicator.core as rep
+    from omni.replicator.composer import Composer, Visualizer
 
     root_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..")
 

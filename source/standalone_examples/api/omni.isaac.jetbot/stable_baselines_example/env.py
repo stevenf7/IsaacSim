@@ -6,11 +6,12 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-import gym
-from gym import spaces
-import numpy as np
 import math
+
 import carb
+import gym
+import numpy as np
+from gym import spaces
 
 
 class JetBotEnv(gym.Env):
@@ -34,10 +35,10 @@ class JetBotEnv(gym.Env):
         self._max_episode_length = max_episode_length
         self._steps_after_reset = int(rendering_dt / physics_dt)
         from omni.isaac.core import World
-        from omni.isaac.wheeled_robots.robots import WheeledRobot
-        from omni.isaac.wheeled_robots.controllers.differential_controller import DifferentialController
         from omni.isaac.core.objects import VisualCuboid
         from omni.isaac.core.utils.nucleus import get_assets_root_path
+        from omni.isaac.wheeled_robots.controllers.differential_controller import DifferentialController
+        from omni.isaac.wheeled_robots.robots import WheeledRobot
 
         self._my_world = World(physics_dt=physics_dt, rendering_dt=rendering_dt, stage_units_in_meters=1.0)
         self._my_world.scene.add_default_ground_plane()

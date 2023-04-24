@@ -8,23 +8,20 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni.ui as ui
+import numpy as np
 import omni.timeline
-from omni.usd import StageEventType
-
-from omni.isaac.core.utils.prims import is_prim_path_valid
+import omni.ui as ui
 from omni.isaac.core.articulations import Articulation
+from omni.isaac.core.objects.cuboid import FixedCuboid
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.prims import is_prim_path_valid
 from omni.isaac.core.utils.stage import add_reference_to_stage, create_new_stage
 from omni.isaac.core.world import World
-
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.objects.cuboid import FixedCuboid
-import numpy as np
-
-from omni.isaac.ui.ui_utils import get_style
-
 from omni.isaac.ui.element_wrappers import CollapsableFrame, StateButton
 from omni.isaac.ui.element_wrappers.core_connectors import LoadButton, ResetButton
+from omni.isaac.ui.ui_utils import get_style
+from omni.usd import StageEventType
+
 from .scenario import ExampleScenario
 
 
@@ -46,7 +43,7 @@ class UIBuilder:
     ###################################################################################
 
     def on_menu_callback(self):
-        """Callback for when the UI is opened from the toolbar. 
+        """Callback for when the UI is opened from the toolbar.
         This is called directly after build_ui().
         """
         pass
@@ -68,7 +65,7 @@ class UIBuilder:
     def on_physics_step(self, step: float):
         """Callback for Physics Step.
         Physics steps only occur when the timeline is playing
-           
+
         Args:
             step (float): Size of physics step
         """
@@ -95,7 +92,7 @@ class UIBuilder:
 
     def build_ui(self):
         """
-        Build a custom UI tool to run your extension.  
+        Build a custom UI tool to run your extension.
         This function will be called any time the UI window is closed and reopened.
         """
         world_controls_frame = CollapsableFrame("World Controls", collapsed=False)
@@ -241,7 +238,7 @@ class UIBuilder:
 
         Pausing the timeline on b_text is not strictly necessary for this example to run.
         Clicking "STOP" will cancel the physics subscription that updates the scenario, which means that
-        the robot will stop getting new commands and the cube will stop updating without needing to 
+        the robot will stop getting new commands and the cube will stop updating without needing to
         pause at all.  The reason that the timeline is paused here is to prevent the robot being carried
         forward by momentum for a few frames after the physics subscription is canceled.  Pausing here makes
         this example prettier, but if curious, the user should observe what happens when this line is removed.

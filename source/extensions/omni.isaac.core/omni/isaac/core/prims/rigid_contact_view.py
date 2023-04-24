@@ -6,39 +6,38 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Optional, Union, List
-from pxr import PhysxSchema, UsdPhysics
+from typing import List, Optional, Union
 
-from omni.isaac.core.simulation_context.simulation_context import SimulationContext
-from omni.isaac.core.utils.prims import get_prim_at_path, find_matching_prim_paths
-
-import omni.kit.app
-import numpy as np
-import torch
 import carb
+import numpy as np
+import omni.kit.app
+import torch
+from omni.isaac.core.simulation_context.simulation_context import SimulationContext
+from omni.isaac.core.utils.prims import find_matching_prim_paths, get_prim_at_path
+from pxr import PhysxSchema, UsdPhysics
 
 
 class RigidContactView(object):
     """Provides high level functions to deal with rigid prims that track their contacts through filters
-        as well as its attributes/ properties.
-        This object wraps all matching Rigid Prims found at the regex provided at the prim_paths_expr.
+    as well as its attributes/ properties.
+    This object wraps all matching Rigid Prims found at the regex provided at the prim_paths_expr.
 
-        Note:  if the prim does not already have a rigid body api applied to it before init, it will NOT apply it.
+    Note:  if the prim does not already have a rigid body api applied to it before init, it will NOT apply it.
 
-        Args:
-            prim_paths_expr (str): prim paths regex to encapsulate all prims that match it.
-                                    example: "/World/Env[1-5]/Cube" will match /World/Env1/Cube, 
-                                    /World/Env2/Cube..etc.
-                                    (a non regex prim path can also be used to encapsulate one rigid prim).
-            name (str, optional): shortname to be used as a key by Scene class. 
-                                    Note: needs to be unique if the object is added to the Scene. 
-                                    Defaults to "rigid_contact_view".
-            prepare_contact_sensors (bool, Optional): if rigid prims in the view are not cloned from a prim in a prepared state, 
-                                                      (although slow for large number of prims) this ensures that 
-                                                      appropriate physics settings are applied on all the prim in the view.   
-            disable_stablization (bool, optional): disables the contact stablization parameter in the physics context 
-            apply_rigid_body_api (bool, optional): apply rigid body API to prims in prim_paths_expr and filter_paths_expr when prepare_contact_sensors=True 
-        """
+    Args:
+        prim_paths_expr (str): prim paths regex to encapsulate all prims that match it.
+                                example: "/World/Env[1-5]/Cube" will match /World/Env1/Cube,
+                                /World/Env2/Cube..etc.
+                                (a non regex prim path can also be used to encapsulate one rigid prim).
+        name (str, optional): shortname to be used as a key by Scene class.
+                                Note: needs to be unique if the object is added to the Scene.
+                                Defaults to "rigid_contact_view".
+        prepare_contact_sensors (bool, Optional): if rigid prims in the view are not cloned from a prim in a prepared state,
+                                                  (although slow for large number of prims) this ensures that
+                                                  appropriate physics settings are applied on all the prim in the view.
+        disable_stablization (bool, optional): disables the contact stablization parameter in the physics context
+        apply_rigid_body_api (bool, optional): apply rigid body API to prims in prim_paths_expr and filter_paths_expr when prepare_contact_sensors=True
+    """
 
     def __init__(
         self,
@@ -151,7 +150,7 @@ class RigidContactView(object):
         """Gets the overall net contact forces on the prims in the view with respect to the world's frame.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -177,11 +176,11 @@ class RigidContactView(object):
     def get_contact_force_matrix(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True, dt: float = 1.0
     ) -> Union[np.ndarray, torch.Tensor]:
-        """Gets the contact forces between the prims in the view and the filter prims. i.e., a matrix of dimension 
+        """Gets the contact forces between the prims in the view and the filter prims. i.e., a matrix of dimension
         (self.num_shapes, self.num_filters, 3) where filter_count is the determined according to the filter_paths_expr parameter.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).

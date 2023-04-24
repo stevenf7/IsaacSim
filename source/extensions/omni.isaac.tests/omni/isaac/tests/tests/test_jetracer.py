@@ -7,19 +7,19 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import carb
+import carb.tokens
+import numpy as np
+
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-
-import carb.tokens
-import carb
-import numpy as np
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.stage import open_stage_async
+from omni.isaac.dynamic_control import _dynamic_control
 from pxr import Usd
 
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.dynamic_control import _dynamic_control
-from omni.isaac.core.utils.stage import open_stage_async
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestJetRacer(omni.kit.test.AsyncTestCase):

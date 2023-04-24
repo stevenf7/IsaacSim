@@ -7,19 +7,26 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni.kit.test
-
-import omni.kit.usd
-import omni.kit.commands
-from omni.isaac.internal_tools.utils.file_utils import list_sub_files, filter_usd
-import carb
 import asyncio
 import os
-from pxr import UsdGeom, UsdUtils, Usd, Sdf
-from omni.physx import get_physx_interface
-from omni.isaac.internal_tools.utils.file_utils import list_references, is_external, has_missing_reference, isabs
+
+import carb
+import omni.kit.commands
+import omni.kit.test
+import omni.kit.usd
 import omni.kit.viewport.utility
 import omni.usd
+from omni.isaac.internal_tools.utils.file_utils import (
+    filter_usd,
+    has_missing_reference,
+    is_external,
+    isabs,
+    list_references,
+    list_sub_files,
+)
+from omni.physx import get_physx_interface
+from pxr import Sdf, Usd, UsdGeom, UsdUtils
+
 
 # This test is part of internal utils because it needs internal servers
 class TestAssets(omni.kit.test.AsyncTestCase):

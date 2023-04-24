@@ -7,27 +7,23 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import asyncio
 import os
 import weakref
-import asyncio
 
-from pxr import Usd, UsdGeom, Sdf
-
-import omni.ext
-import omni.ui as ui
 import omni.client
+import omni.ext
 import omni.kit.commands
-
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-from omni.isaac.ui.menu import make_menu_item_description
+import omni.ui as ui
 from omni.isaac.core.utils.prims import get_prim_at_path, get_prim_path, is_prim_path_valid
-from omni.kit.window.filepicker import FilePickerDialog
+from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.ui.ui_utils import btn_builder, get_style, setup_ui_headers
-
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+from omni.kit.window.filepicker import FilePickerDialog
+from pxr import Sdf, Usd, UsdGeom
 
 from .. import _partition
 from .widgets import *
-
 
 EXTENSION_NAME = "Isaac Partition"
 

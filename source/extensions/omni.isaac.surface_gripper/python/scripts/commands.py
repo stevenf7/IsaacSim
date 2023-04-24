@@ -7,12 +7,11 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni
-import pxr
-import omni.graph.core as og
-from pxr import UsdPhysics
 import carb
-from pxr import Usd, UsdGeom
+import omni
+import omni.graph.core as og
+import pxr
+from pxr import Usd, UsdGeom, UsdPhysics
 
 
 class CreateSurfaceGripper(omni.kit.commands.Command):

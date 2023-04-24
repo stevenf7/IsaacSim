@@ -8,8 +8,8 @@
 #
 
 from omni.isaac.examples.base_sample import BaseSample
+from omni.isaac.franka.controllers.rmpflow_controller import RMPFlowController
 from omni.isaac.franka.tasks import FollowTarget as FollowTargetTask
-from omni.isaac.franka.controllers import RMPFlowController
 
 
 class FollowTarget(BaseSample):

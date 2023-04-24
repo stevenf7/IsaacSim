@@ -7,17 +7,21 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni
-import carb, omni.ext, omni.kit.commands, omni.ui as ui, os, asyncio
+import asyncio
+import os
+import uuid
 from enum import Enum
+from math import degrees, radians
 from pathlib import Path
 
-import uuid
-from math import radians, degrees
-
+import carb
+import omni
+import omni.ext
+import omni.kit.commands
+import omni.ui as ui
 from omni.isaac.onshape.scripts.style import UI_STYLES
 
-from ..scripts.definitions import ONSHAPE_CHORD_TOLERANCE, ONSHAPE_ANGLE_TOLERANCE, ONSHAPE_MAX_CHORD
+from ..scripts.definitions import ONSHAPE_ANGLE_TOLERANCE, ONSHAPE_CHORD_TOLERANCE, ONSHAPE_MAX_CHORD
 
 # defaults = [1.0, 0.25, 0.02]
 defaults = [0.001, 15, 0.2]

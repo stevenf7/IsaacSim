@@ -7,11 +7,11 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import numpy as np
+import omni.kit.commands
 import omni.kit.test
 from omni.isaac.core.utils.physics import get_rigid_body_enabled, set_rigid_body_enabled
-import omni.kit.commands
 from pxr import UsdPhysics
-import numpy as np
 
 
 class TestPhysics(omni.kit.test.AsyncTestCase):

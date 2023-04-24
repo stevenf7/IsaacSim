@@ -10,10 +10,10 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
-from omni.isaac.universal_robots.tasks import Stacking
-from omni.isaac.universal_robots.controllers import StackingController
-from omni.isaac.core import World
 import numpy as np
+from omni.isaac.core import World
+from omni.isaac.universal_robots.controllers import StackingController
+from omni.isaac.universal_robots.tasks import Stacking
 
 my_world = World(stage_units_in_meters=1.0)
 my_task = Stacking()

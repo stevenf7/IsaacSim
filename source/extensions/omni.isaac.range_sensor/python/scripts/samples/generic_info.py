@@ -7,29 +7,28 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from re import I
-import omni
-import omni.ui as ui
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-from omni.isaac.ui.menu import make_menu_item_description
-from omni.isaac.range_sensor import _range_sensor
-from omni.isaac.core.utils.viewports import set_camera_view
-import omni.isaac.RangeSensorSchema as RangeSensorSchema
-from pxr import UsdGeom, UsdLux, Sdf, Gf, UsdPhysics
 import asyncio
-import weakref
-import numpy as np
 import time
+import weakref
+from re import I
 
+import numpy as np
+import omni
+import omni.isaac.RangeSensorSchema as RangeSensorSchema
+import omni.ui as ui
+from omni.isaac.core.utils.viewports import set_camera_view
+from omni.isaac.range_sensor import _range_sensor
+from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.ui.ui_utils import (
-    setup_ui_headers,
-    get_style,
     btn_builder,
     combo_cb_scrolling_frame_builder,
-    str_builder,
+    get_style,
+    setup_ui_headers,
     state_btn_builder,
+    str_builder,
 )
-
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+from pxr import Gf, Sdf, UsdGeom, UsdLux, UsdPhysics
 
 EXTENSION_NAME = "Generic Info"
 
@@ -249,9 +248,9 @@ class Extension(omni.ext.IExt):
         self._pattern_set = True
 
     def _test_streaming_data(self):
-        """ 
-            custom generated data for testing streaming data mode
-            data profile: zigzag left to right, slowly going up and down
+        """
+        custom generated data for testing streaming data mode
+        data profile: zigzag left to right, slowly going up and down
         """
         # send data in batch that are at least large enough to run a few rendering frames without running out of data.
         # if batch_size > (sampling rate/rendering rate), the sensor will process all of the batch and ask for the next batch right before it runs out.
@@ -288,9 +287,9 @@ class Extension(omni.ext.IExt):
 
     def _test_repeating_data(self):
         """
-            custom data to test repeating (non-streaming) mode
-            data profile: zigzag left and right, half of it scanning high in zenith, the other half scanning low
-            expected behavior: switch between the two sides scanning with no additional data being sent
+        custom data to test repeating (non-streaming) mode
+        data profile: zigzag left and right, half of it scanning high in zenith, the other half scanning low
+        expected behavior: switch between the two sides scanning with no additional data being sent
         """
         batch_size = int(1e6)  # size of each batch of data being processed
         half_batch = int(batch_size / 2)
@@ -346,8 +345,8 @@ class Extension(omni.ext.IExt):
         self._record_start = time.perf_counter()
 
     def _plot_pattern(self, data):
-        import PIL.ImageDraw as ImageDraw
         import PIL.Image as Image
+        import PIL.ImageDraw as ImageDraw
 
         # set up plot window
         window_length = 600

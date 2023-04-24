@@ -7,47 +7,48 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from typing import Optional, Sequence, Union, List
-from omni.isaac.core.materials import PhysicsMaterial
+from typing import List, Optional, Sequence, Union
+
+import numpy as np
+import torch
+from omni.isaac.core.materials.physics_material import PhysicsMaterial
 from omni.isaac.core.prims._impl.single_prim_wrapper import _SinglePrimWrapper
 from omni.isaac.core.prims.geometry_prim_view import GeometryPrimView
 from omni.isaac.core.simulation_context.simulation_context import SimulationContext
 from pxr import UsdGeom
-import numpy as np
-import torch
 
 
 class GeometryPrim(_SinglePrimWrapper):
     """Provides high level functions to deal with a Geom prim and its attributes/ properties.
-           The prim_path should correspond to type UsdGeom.Cube, UsdGeom.Capsule, UsdGeom.Cone, UsdGeom.Cylinder,
-           UsdGeom.Sphere or UsdGeom.Mesh.
+       The prim_path should correspond to type UsdGeom.Cube, UsdGeom.Capsule, UsdGeom.Cone, UsdGeom.Cylinder,
+       UsdGeom.Sphere or UsdGeom.Mesh.
 
-        Args:
-            prim_path (str): prim path of the Prim to encapsulate or create.
-            name (str, optional): shortname to be used as a key by Scene class.
-                                    Note: needs to be unique if the object is added to the Scene.
-                                    Defaults to "xform_prim".
-            position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
-                                                        Defaults to None, which means left unchanged.
-            translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
-                                                            (with respect to its parent prim). shape is (3, ).
-                                                            Defaults to None, which means left unchanged.
-            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world/ local frame of the prim
-                                                            (depends if translation or position is specified).
-                                                            quaternion is scalar-first (w, x, y, z). shape is (4, ).
-                                                            Defaults to None, which means left unchanged.
-            scale (Optional[Sequence[float]], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
+    Args:
+        prim_path (str): prim path of the Prim to encapsulate or create.
+        name (str, optional): shortname to be used as a key by Scene class.
+                                Note: needs to be unique if the object is added to the Scene.
+                                Defaults to "xform_prim".
+        position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
                                                     Defaults to None, which means left unchanged.
-            visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
-            collision (bool, optional): Set to True if the geometry should have a collider (i.e not only a visual geometry).
-                                        Defaults to False.
-            track_contact_forces (bool, Optional) : if enabled, the view will track the net contact forces on each geometry prim in the view. 
-                                                    Note that the collision flag should be set to True to report contact forces. Defaults to False.
-            prepare_contact_sensors (bool, Optional): applies contact reporter API to the prim if it already does not have one. Defaults to False.
-            disable_stablization (bool, optional): disables the contact stablization parameter in the physics context. Defaults to True.
-            contact_filter_prim_paths_expr (Optional[List[str]], Optional): a list of filter expressions which allows for tracking contact forces 
-                                                                    between the geometry prim and this subset through get_contact_force_matrix(). 
-        """
+        translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
+                                                        (with respect to its parent prim). shape is (3, ).
+                                                        Defaults to None, which means left unchanged.
+        orientation (Optional[Sequence[float]], optional): quaternion orientation in the world/ local frame of the prim
+                                                        (depends if translation or position is specified).
+                                                        quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                                                        Defaults to None, which means left unchanged.
+        scale (Optional[Sequence[float]], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
+                                                Defaults to None, which means left unchanged.
+        visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
+        collision (bool, optional): Set to True if the geometry should have a collider (i.e not only a visual geometry).
+                                    Defaults to False.
+        track_contact_forces (bool, Optional) : if enabled, the view will track the net contact forces on each geometry prim in the view.
+                                                Note that the collision flag should be set to True to report contact forces. Defaults to False.
+        prepare_contact_sensors (bool, Optional): applies contact reporter API to the prim if it already does not have one. Defaults to False.
+        disable_stablization (bool, optional): disables the contact stablization parameter in the physics context. Defaults to True.
+        contact_filter_prim_paths_expr (Optional[List[str]], Optional): a list of filter expressions which allows for tracking contact forces
+                                                                between the geometry prim and this subset through get_contact_force_matrix().
+    """
 
     def __init__(
         self,
@@ -237,7 +238,7 @@ class GeometryPrim(_SinglePrimWrapper):
 
     def get_net_contact_forces(self, dt: float = 1.0) -> Union[np.ndarray, torch.Tensor]:
         """
-        If contact forces of the prims in the view are tracked, this method returns the net contact forces on prims. 
+        If contact forces of the prims in the view are tracked, this method returns the net contact forces on prims.
         i.e., a matrix of dimension (1, 3)
 
         Args:
@@ -251,8 +252,8 @@ class GeometryPrim(_SinglePrimWrapper):
 
     def get_contact_force_matrix(self, dt: float = 1.0) -> Union[np.ndarray, torch.Tensor]:
         """
-        If the object is initialized with filter_paths_expr list, this method returns the contact forces between the prims 
-        in the view and the filter prims. i.e., a matrix of dimension (self._contact_view.num_filters, 3) 
+        If the object is initialized with filter_paths_expr list, this method returns the contact forces between the prims
+        in the view and the filter prims. i.e., a matrix of dimension (self._contact_view.num_filters, 3)
         where num_filters is the determined according to the filter_paths_expr parameter.
 
         Args:

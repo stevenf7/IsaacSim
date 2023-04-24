@@ -6,9 +6,9 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-from omni.isaac.kit import SimulationApp
-
 import argparse
+
+from omni.isaac.kit import SimulationApp
 
 parser = argparse.ArgumentParser("franka_examples")
 parser.add_argument(
@@ -22,14 +22,12 @@ args, _ = parser.parse_known_args()
 simulation_app = SimulationApp({"headless": False})
 
 import numpy as np
-
+from behaviors.franka.franka_behaviors import ContextStateMonitor, behaviors
 from omni.isaac.core.objects import DynamicCuboid, VisualCuboid
-from omni.isaac.cortex.cortex_world import CortexWorld, LogicalStateMonitor, Behavior
+from omni.isaac.cortex.cortex_utils import load_behavior_module
+from omni.isaac.cortex.cortex_world import Behavior, CortexWorld, LogicalStateMonitor
 from omni.isaac.cortex.robot import add_franka_to_stage
 from omni.isaac.cortex.tools import SteadyRate
-from omni.isaac.cortex.cortex_utils import load_behavior_module
-
-from behaviors.franka.franka_behaviors import behaviors, ContextStateMonitor
 
 
 class CubeSpec:

@@ -19,11 +19,10 @@ choose a new one if the target becomes blocked.
 """
 
 import numpy as np
-
-from omni.isaac.cortex.df import DfNetwork, DfState, DfStateSequence, DfTimedDeciderState, DfStateMachineDecider
-from omni.isaac.cortex.dfb import DfBasicContext, DfLift, DfCloseGripper
 import omni.isaac.cortex.math_util as math_util
-from omni.isaac.cortex.motion_commander import MotionCommand, ApproachParams, PosePq
+from omni.isaac.cortex.df import DfNetwork, DfState, DfStateMachineDecider, DfStateSequence, DfTimedDeciderState
+from omni.isaac.cortex.dfb import DfBasicContext, DfCloseGripper, DfLift
+from omni.isaac.cortex.motion_commander import ApproachParams, MotionCommand, PosePq
 
 
 def sample_target_p():

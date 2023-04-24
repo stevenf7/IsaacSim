@@ -12,9 +12,9 @@ from omni.isaac.kit import SimulationApp
 simulation_app = SimulationApp({"renderer": "RayTracedLighting", "headless": False})
 
 import omni
-from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.core import World
 from omni.isaac.core.objects import VisualCuboid
+from omni.isaac.core.utils.extensions import enable_extension
 
 # enable ROS bridge extension
 enable_extension("omni.isaac.ros_bridge")
@@ -31,11 +31,12 @@ if not rosgraph.is_master_online():
     simulation_app.close()
     exit()
 
+import time
+
 # Note that this is not the system level rospy, but one compiled for omniverse
 import numpy as np
 import rospy
 from std_msgs.msg import Empty
-import time
 
 
 class Subscriber:

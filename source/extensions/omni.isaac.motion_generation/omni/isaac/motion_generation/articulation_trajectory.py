@@ -5,13 +5,14 @@
 # and any modifications thereto.  Any use, reproduction, disclosure or
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
-import numpy as np
+from typing import List
 
-from .trajectory import Trajectory
+import carb
+import numpy as np
 from omni.isaac.core.articulations import Articulation, ArticulationSubset
 from omni.isaac.core.utils.types import ArticulationAction
-from typing import List
-import carb
+
+from .trajectory import Trajectory
 
 
 class ArticulationTrajectory:
@@ -59,7 +60,7 @@ class ArticulationTrajectory:
 
         Args:
             timestep (float, optional): Timestep used for sampling the provided Trajectory.
-                A vlue of 1/60, for example, returns ArticulationActions that represent the desired position/velocity of 
+                A vlue of 1/60, for example, returns ArticulationActions that represent the desired position/velocity of
                 the robot at 1/60 second intervals.  I.e. a one second trajectory with timestep=1/60 would result in 60 ArticulationActions.
                 When not provided, the framerate of Isaac Sim is used. Defaults to None.
 

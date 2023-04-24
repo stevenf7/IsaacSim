@@ -11,24 +11,24 @@
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 
-import omni.kit.test
-import omni.kit.commands
-
-import carb.tokens
 import asyncio
 import math
+
+import carb.tokens
 import numpy as np
-from pxr import Gf, UsdGeom
+import omni.kit.commands
+import omni.kit.test
 from omni.isaac.core import World
-from omni.isaac.core.prims import XFormPrim
+from omni.isaac.core.objects import DynamicCuboid
+from omni.isaac.core.objects.ground_plane import GroundPlane
+from omni.isaac.core.prims.xform_prim import XFormPrim
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.rotations import quat_to_euler_angles
+from omni.isaac.dynamic_control import _dynamic_control
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.sensor import _sensor
-from omni.isaac.dynamic_control import _dynamic_control
-from omni.isaac.core.utils.rotations import quat_to_euler_angles
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.objects import DynamicCuboid
-from omni.isaac.core.objects.ground_plane import GroundPlane
+from pxr import Gf, UsdGeom
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test

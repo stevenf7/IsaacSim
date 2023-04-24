@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from typing import Optional
+
 import numpy as np
 from omni.isaac.core import World
 from omni.isaac.core.objects import FixedCuboid
@@ -20,26 +21,26 @@ class CollisionBox(XFormPrim):
 
     Args:
         prim_path (str): top-level prim path (of the collision box) of the Prim to encapsulate or create.
-        name (str): shortname to be used as a key by Scene class. Note: needs to be unique if the object is added to the 
-                    Scene. 
+        name (str): shortname to be used as a key by Scene class. Note: needs to be unique if the object is added to the
+                    Scene.
         position (Optional[np.ndarray], optional): position in the world frame of the collision box. Shape is (3, ).
                                                    Defaults to None, which means left unchanged.
-        translation (Optional[np.ndarray], optional): translation in the local frame of the collision box (with respect 
-                                                      to its parent prim). Shape is (3, ). Defaults to None, which means 
+        translation (Optional[np.ndarray], optional): translation in the local frame of the collision box (with respect
+                                                      to its parent prim). Shape is (3, ). Defaults to None, which means
                                                       left unchanged.
-        orientation (Optional[np.ndarray], optional): quaternion orientation in the world/local frame of the collision 
-                                                      box (depends if translation or position is specified). Quaternion 
-                                                      is scalar-first (w, x, y, z). Shape is (4, ). Defaults to None, 
+        orientation (Optional[np.ndarray], optional): quaternion orientation in the world/local frame of the collision
+                                                      box (depends if translation or position is specified). Quaternion
+                                                      is scalar-first (w, x, y, z). Shape is (4, ). Defaults to None,
                                                       which means left unchanged.
-        scale (Optional[np.ndarray], optional): local scale to be applied to the collision box's dimensions. Shape is 
+        scale (Optional[np.ndarray], optional): local scale to be applied to the collision box's dimensions. Shape is
                                                 (3, ). Defaults to None, which means left unchanged.
-        width (float): width of the collision box interior in world units (if unrotated, corresponds to x direction). 
+        width (float): width of the collision box interior in world units (if unrotated, corresponds to x direction).
                        Defaults to 1.0.
-        height (float): height of the collision box interior in world units (if unrotated, corresponds to y direction). 
+        height (float): height of the collision box interior in world units (if unrotated, corresponds to y direction).
                         Defaults to 1.0.
-        depth (float): depth of the collision box interior in world units (if unrotated, corresponds to z direction). 
+        depth (float): depth of the collision box interior in world units (if unrotated, corresponds to z direction).
                        Defaults to 1.0.
-        thickness (float, optional): thickness of the collision box walls in world units. Defaults to 0.2. 
+        thickness (float, optional): thickness of the collision box walls in world units. Defaults to 0.2.
         visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to False.
     """
 
@@ -81,11 +82,11 @@ class CollisionBox(XFormPrim):
         """Create a face/wall of the Collision Box, which has collisions enabled.
 
         Args:
-            suffix (str): suffix used for the name of the face so it can be retrieved from the scene. The name of the 
+            suffix (str): suffix used for the name of the face so it can be retrieved from the scene. The name of the
                           face has the form "{collision_box_name}_{suffix}"
-            translation (np.ndarray): translation of the center of the face (wall) from the center of the Collision 
+            translation (np.ndarray): translation of the center of the face (wall) from the center of the Collision
                                       Box, in stage units. Shape is (3, ).
-            size (np.ndarray): dimensions of the face (wall) in the X, Y, and Z directions. Dimensions are in stage 
+            size (np.ndarray): dimensions of the face (wall) in the X, Y, and Z directions. Dimensions are in stage
                                units. Shape is (3, ).
         """
         face_name = f"{self.name}_{suffix}"
@@ -101,8 +102,8 @@ class CollisionBox(XFormPrim):
         self.world.scene.add(face_cuboid)
 
     def _create_collision_box(self):
-        """Create a Collision Box. The Collision Box consists of 6 faces/walls forming a static box-like volume. Each 
-           wall of the Collision Box has collisions enabled.
+        """Create a Collision Box. The Collision Box consists of 6 faces/walls forming a static box-like volume. Each
+        wall of the Collision Box has collisions enabled.
         """
 
         dx = self.width / 2.0 + self.thickness / 2.0
@@ -134,12 +135,12 @@ class CollisionBox(XFormPrim):
         self._create_face("back_wall", back_wall_center, back_wall_dimensions)
 
     def get_random_local_translation(self):
-        """Get a random translation within the Collision Box in local coordinates. Translations are within the 
-           volumetric region contained by the inner walls of the Collision Box. The local coordinate frame is considered 
-           to be the frame of the prim at self.prim_path (center of the Collision Box). 
+        """Get a random translation within the Collision Box in local coordinates. Translations are within the
+           volumetric region contained by the inner walls of the Collision Box. The local coordinate frame is considered
+           to be the frame of the prim at self.prim_path (center of the Collision Box).
 
         Returns:
-            np.ndarray: random translation within the Collision Box in the local frame of the Collision Box. Shape is 
+            np.ndarray: random translation within the Collision Box in the local frame of the Collision Box. Shape is
                         (3, ).
         """
 
@@ -154,7 +155,7 @@ class CollisionBox(XFormPrim):
         return translation
 
     def get_random_position(self):
-        """Get a random position within the Collision Box in world coordinates. Positions are within the volumetric 
+        """Get a random position within the Collision Box in world coordinates. Positions are within the volumetric
            region contained by the inner walls of the Collision Box.
 
         Returns:

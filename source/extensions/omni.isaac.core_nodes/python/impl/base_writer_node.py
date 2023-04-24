@@ -7,13 +7,15 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni.usd
-import carb.events
-from .base_reset_node import BaseResetNode
-from pxr import Usd
-import omni.replicator.core as rep
-from typing import List, Union
 import copy
+from typing import List, Union
+
+import carb.events
+import omni.replicator.core as rep
+import omni.usd
+from pxr import Usd
+
+from .base_reset_node import BaseResetNode
 
 
 class WriterRequest:
@@ -31,7 +33,7 @@ class WriterRequest:
 
 class BaseWriterNode(BaseResetNode):
     """
-        Base class for nodes that automatically reset when stop is pressed.
+    Base class for nodes that automatically reset when stop is pressed.
     """
 
     def __init__(self, initialize: bool = False):

@@ -7,32 +7,32 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import weakref
 import asyncio
 import gc
+import os
+import weakref
+
 import carb
 import omni
+import omni.kit.commands
+import omni.timeline
 import omni.ui as ui
 import omni.usd
-import omni.timeline
-import omni.kit.commands
-from omni.kit.menu.utils import add_menu_items, remove_menu_items
+from omni.isaac.ui.element_wrappers import CollapsableFrame, TextBlock
 from omni.isaac.ui.menu import make_menu_item_description
-
 from omni.isaac.ui.ui_utils import (
     add_line_rect_flourish,
     btn_builder,
-    state_btn_builder,
-    float_builder,
-    int_builder,
-    xyz_builder,
     color_picker_builder,
-    setup_ui_headers,
+    float_builder,
     get_style,
+    int_builder,
+    setup_ui_headers,
+    state_btn_builder,
     str_builder,
+    xyz_builder,
 )
-from omni.isaac.ui.element_wrappers import TextBlock, CollapsableFrame
-import os
+from omni.kit.menu.utils import add_menu_items, remove_menu_items
 
 from .template_generator import TemplateGenerator
 

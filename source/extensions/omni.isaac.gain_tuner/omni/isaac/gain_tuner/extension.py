@@ -7,37 +7,35 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import weakref
 import asyncio
 import gc
-import carb
 import random
+import weakref
+
+import carb
+import numpy as np
 import omni
-from omni.isaac.core.utils.types import ArticulationAction
-from pxr import Usd
-from omni.kit.window.property.templates import LABEL_WIDTH
+import omni.physx as _physx
+import omni.timeline
 import omni.ui as ui
 import omni.usd
-import omni.timeline
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-from omni.isaac.ui.menu import make_menu_item_description
-from omni.isaac.core.utils.stage import get_stage_units
-from omni.isaac.core.utils.prims import get_prim_object_type
 from omni.isaac.core.articulations import Articulation
-
-from omni.isaac.ui.widgets import DynamicComboBoxModel
-
+from omni.isaac.core.utils.prims import get_prim_object_type
+from omni.isaac.core.utils.stage import get_stage_units
+from omni.isaac.core.utils.types import ArticulationAction
+from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.ui.ui_utils import (
     add_line_rect_flourish,
     btn_builder,
     float_builder,
-    setup_ui_headers,
     get_style,
+    setup_ui_headers,
     state_btn_builder,
 )
-import omni.physx as _physx
-import numpy as np
-
+from omni.isaac.ui.widgets import DynamicComboBoxModel
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+from omni.kit.window.property.templates import LABEL_WIDTH
+from pxr import Usd
 
 EXTENSION_NAME = "Gain Tuner"
 
@@ -305,8 +303,7 @@ class Extension(omni.ext.IExt):
         self._toggle_gains_callbacks(True)
 
     def _reset_ui(self):
-        """Reset / Hide UI Elements.
-        """
+        """Reset / Hide UI Elements."""
         self._clear_selection_combobox()
 
         self._random_joint_positions = None
@@ -402,7 +399,7 @@ class Extension(omni.ext.IExt):
 
     def _on_physics_step(self, step):
         """Callback for Physics Step.
-           
+
         Args:
             step ([type]): [description]
         """
@@ -735,8 +732,7 @@ class Extension(omni.ext.IExt):
                                 self._models[f"gains_{i}_" + name + "_field"] = float_builder(**kwargs)
 
     def _update_gains_ui(self):
-        """Updates the DOF and Gains UI with updated values.
-        """
+        """Updates the DOF and Gains UI with updated values."""
         for i in range(self.num_dof):
             self.gains_frames[i].visible = True
             self.gains_frames[i].title = f"DOF {i}: {self.dof_names[i]}"

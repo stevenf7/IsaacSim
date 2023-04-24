@@ -9,14 +9,15 @@
 
 from __future__ import annotations  # This allows us to hint types that do not yet exist like omni.usd etc
 
-import os
-import sys
 import argparse
+import builtins
+import os
 import re
+import sys
+import warnings
+
 import carb
 import omni.kit.app
-import builtins
-import warnings
 
 
 class SimulationApp:
@@ -186,7 +187,7 @@ class SimulationApp:
         self._start_app()
 
         # once app starts, we can set settings
-        from .utils import set_carb_setting, open_stage, create_new_stage, set_livesync_stage
+        from .utils import create_new_stage, open_stage, set_carb_setting, set_livesync_stage
 
         self._carb_settings = carb.settings.get_settings()
         # apply render settings specified in config
@@ -363,7 +364,6 @@ class SimulationApp:
         #     if window and space:
         #         window.dock_in(space, location, ratio=ratio)
         #     return window
-
         # # Acquire the main docking station
         # main_dockspace = omni.ui.Workspace.get_window("DockSpace")
         # # Acquire the docking space for viewport

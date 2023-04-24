@@ -1,13 +1,15 @@
-import lula
+from typing import List, Optional, Union
+
 import carb
+import lula
 import numpy as np
-from typing import List, Union, Optional
-from omni.isaac.motion_generation.world_interface import WorldInterface
 from omni.isaac.core import objects
-from omni.isaac.core.utils.string import find_unique_string_name
-from omni.isaac.core.utils.prims import is_prim_path_valid, delete_prim
+from omni.isaac.core.utils.prims import delete_prim, is_prim_path_valid
 from omni.isaac.core.utils.stage import get_stage_units
-from .utils import get_prim_pose_in_meters_rel_robot_base, get_pose3
+from omni.isaac.core.utils.string import find_unique_string_name
+from omni.isaac.motion_generation.world_interface import WorldInterface
+
+from .utils import get_pose3, get_prim_pose_in_meters_rel_robot_base
 
 
 class LulaWorld(WorldInterface):
@@ -69,9 +71,9 @@ class LulaWorld(WorldInterface):
 
         Args:
             cuboid (core.objects.cuboid): Wrapper object for handling rectangular prism Usd Prims.
-            static (bool, optional): If True, indicate that cuboid will never change pose, and may be ignored in internal 
-                world updates. Since Lula specifies object positions relative to the robot's frame 
-                of reference, static obstacles will have their positions queried any time that 
+            static (bool, optional): If True, indicate that cuboid will never change pose, and may be ignored in internal
+                world updates. Since Lula specifies object positions relative to the robot's frame
+                of reference, static obstacles will have their positions queried any time that
                 set_robot_base_pose() is called.  Defaults to False.
 
 
@@ -114,9 +116,9 @@ class LulaWorld(WorldInterface):
 
         Args:
             sphere (core.objects.sphere): Wrapper object for handling sphere Usd Prims.
-            static (bool, optional): If True, indicate that sphere will never change pose, and may be ignored in internal 
-                world updates. Since Lula specifies object positions relative to the robot's frame 
-                of reference, static obstacles will have their positions queried any time that 
+            static (bool, optional): If True, indicate that sphere will never change pose, and may be ignored in internal
+                world updates. Since Lula specifies object positions relative to the robot's frame
+                of reference, static obstacles will have their positions queried any time that
                 set_robot_base_pose() is called.  Defaults to False.
 
 
@@ -155,9 +157,9 @@ class LulaWorld(WorldInterface):
 
         Args:
             capsule (core.objects.capsule): Wrapper object for handling capsule Usd Prims.
-            static (bool, optional): If True, indicate that capsule will never change pose, and may be ignored in internal 
-                world updates. Since Lula specifies object positions relative to the robot's frame 
-                of reference, static obstacles will have their positions queried any time that 
+            static (bool, optional): If True, indicate that capsule will never change pose, and may be ignored in internal
+                world updates. Since Lula specifies object positions relative to the robot's frame
+                of reference, static obstacles will have their positions queried any time that
                 set_robot_base_pose() is called.  Defaults to False.
 
         Returns:
@@ -196,7 +198,7 @@ class LulaWorld(WorldInterface):
     def add_ground_plane(
         self, ground_plane: objects.ground_plane.GroundPlane, plane_width: Optional[float] = 50.0
     ) -> bool:
-        """Add a ground_plane.  
+        """Add a ground_plane.
         Lula does not support ground planes directly, and instead internally creates a cuboid with an
         expansive face (dimensions 200x200 stage units) coplanar to the ground_plane.
 
@@ -275,9 +277,9 @@ class LulaWorld(WorldInterface):
         return True
 
     def remove_obstacle(self, obstacle: objects) -> bool:
-        """Remove obstacle from collision avoidance. Obstacle cannot be re-enabled via enable_obstacle() after 
+        """Remove obstacle from collision avoidance. Obstacle cannot be re-enabled via enable_obstacle() after
         removal.
-        
+
         Args:
             obstacle (core.objects): obstacle to be removed.
 
@@ -302,8 +304,7 @@ class LulaWorld(WorldInterface):
         return True
 
     def reset(self) -> None:
-        """reset the world to its initial state
-        """
+        """reset the world to its initial state"""
         self._world = lula.create_world()
         self._dynamic_obstacles = dict()
         self._static_obstacles = dict()

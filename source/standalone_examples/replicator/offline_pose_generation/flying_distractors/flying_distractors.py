@@ -6,17 +6,19 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+import itertools
+
 from omni.isaac.core import World
+
 from .dynamic_object_set import DynamicObjectSet
 from .dynamic_shape_set import DynamicShapeSet
-import itertools
 
 
 class FlyingDistractors:
     """Container class to hold and manage both dynamic shape sets and dynamic object sets simultaneously. This class
-       provides an API to keep assets in each asset set in motion within their respective collision boxes, to show/hide 
-       the assets of all the asset sets managed by this class, and to allow various properties of the assets of all the 
-       asset sets managed by this class to be randomized.
+    provides an API to keep assets in each asset set in motion within their respective collision boxes, to show/hide
+    the assets of all the asset sets managed by this class, and to allow various properties of the assets of all the
+    asset sets managed by this class to be randomized.
     """
 
     def __init__(self):
@@ -54,8 +56,8 @@ class FlyingDistractors:
                 object_xform.set_visibility(visible=visible)
 
     def reset_asset_positions(self):
-        """Reset the positions of all assets contained in the managed asset sets to be within its corresponding 
-           collision box.
+        """Reset the positions of all assets contained in the managed asset sets to be within its corresponding
+        collision box.
         """
 
         for asset_set in itertools.chain(self.shape_sets, self.object_sets):
@@ -72,8 +74,7 @@ class FlyingDistractors:
             asset_set.apply_force_to_assets(force_limit)
 
     def randomize_asset_glass_color(self):
-        """Randomize color of assets in the managed asset sets with glass material applied.
-        """
+        """Randomize color of assets in the managed asset sets with glass material applied."""
 
         for asset_set in itertools.chain(self.shape_sets, self.object_sets):
             asset_set.randomize_glass_color()

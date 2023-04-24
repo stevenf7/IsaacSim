@@ -7,24 +7,24 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import carb
+import numpy as np
 import omni.kit.test
 from omni.isaac.core.utils.viewports import (
-    get_intrinsics_matrix,
-    get_window_from_id,
-    get_id_from_index,
-    set_intrinsics_matrix,
-    get_viewport_names,
     destroy_all_viewports,
+    get_id_from_index,
+    get_intrinsics_matrix,
+    get_viewport_names,
+    get_window_from_id,
+    set_intrinsics_matrix,
 )
-import carb
-from pxr import Sdf
-import numpy as np
 from omni.kit.viewport.utility import (
-    get_active_viewport,
     create_viewport_window,
+    get_active_viewport,
     get_active_viewport_window,
     get_num_viewports,
 )
+from pxr import Sdf
 
 
 class TestViewports(omni.kit.test.AsyncTestCase):

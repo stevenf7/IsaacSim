@@ -6,16 +6,18 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import omni
-import carb
-
 import datetime
 import inspect
-import psutil, os, shutil
-import yaml
-import nvsmi
+import os
+import shutil
 import subprocess
 from typing import Tuple
+
+import carb
+import nvsmi
+import omni
+import psutil
+import yaml
 
 ### need to check copyrights: https://www.programcreek.com/python/?code=SummaLabs%2FDLS%2FDLS-master%2Fapp%2Fbackend%2Fenv%2Fhardware.py
 

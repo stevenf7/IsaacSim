@@ -7,72 +7,74 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-# python
-from typing import Callable, Optional
 import builtins
-import carb
 import gc
 
-# omniverse
-import omni.kit.app
-from pxr import Usd
-import omni.physics.tensors
-from omni.isaac.dynamic_control import _dynamic_control
+# python
+from typing import Callable, Optional
+
+import carb
 
 # isaac-core
 import omni.isaac.core.utils.numpy as np_utils
 import omni.isaac.core.utils.torch as torch_utils
+
+# omniverse
+import omni.kit.app
+import omni.physics.tensors
+from omni.isaac.core.physics_context import PhysicsContext
 from omni.isaac.core.utils.carb import get_carb_setting, set_carb_setting
-from omni.isaac.core.utils.viewports import set_camera_view
+from omni.isaac.core.utils.prims import get_prim_type_name, is_prim_ancestral, is_prim_no_delete
 from omni.isaac.core.utils.stage import (
+    clear_stage,
     create_new_stage,
     create_new_stage_async,
     get_current_stage,
     set_stage_units,
     set_stage_up_axis,
-    clear_stage,
     update_stage_async,
 )
-from omni.isaac.core.utils.prims import is_prim_ancestral, get_prim_type_name, is_prim_no_delete
-from omni.isaac.core.physics_context import PhysicsContext
+from omni.isaac.core.utils.viewports import set_camera_view
+from omni.isaac.dynamic_control import _dynamic_control
+from pxr import Usd
 
 
 class SimulationContext:
-    """ This class provide functions that take care of many time-related events such as
-        perform a physics or a render step for instance. Adding/ removing callback functions that 
-        gets triggered with certain events such as a physics step, timeline event 
-        (pause or play..etc), stage open/ close..etc.
+    """This class provide functions that take care of many time-related events such as
+    perform a physics or a render step for instance. Adding/ removing callback functions that
+    gets triggered with certain events such as a physics step, timeline event
+    (pause or play..etc), stage open/ close..etc.
 
-        It also includes an instance of PhysicsContext which takes care of many physics related
-        settings such as setting physics dt, solver type..etc.
+    It also includes an instance of PhysicsContext which takes care of many physics related
+    settings such as setting physics dt, solver type..etc.
 
-        Args:
-            physics_dt (Optional[float], optional): dt between physics steps. Defaults to None.
-            rendering_dt (Optional[float], optional):  dt between rendering steps. Note: rendering means 
-                                                       rendering a frame of the current application and not 
-                                                       only rendering a frame to the viewports/ cameras. So UI
-                                                       elements of Isaac Sim will be refereshed with this dt 
-                                                       as well if running non-headless. 
-                                                       Defaults to None.
-            stage_units_in_meters (Optional[float], optional): The metric units of assets. This will affect gravity value..etc.
-                                                      Defaults to None.
-            physics_prim_path (Optional[str], optional): specifies the prim path to create a PhysicsScene at, 
-                                                 only in the case where no PhysicsScene already defined. 
-                                                 Defaults to "/physicsScene".
-            set_defaults (bool, optional): set to True to use the defaults settings
-                                            [physics_dt = 1.0/ 60.0,
-                                            stage units in meters = 0.01 (i.e in cms),
-                                            rendering_dt = 1.0 / 60.0,
-                                            gravity = -9.81 m / s
-                                            ccd_enabled,
-                                            stabilization_enabled,
-                                            gpu dynamics turned off,
-                                            broadcast type is MBP,
-                                            solver type is TGS]. Defaults to True.
-            backend (str, optional): specifies the backend to be used (numpy or torch). Defaults to numpy.
-            device (Optional[str], optional): specifies the device to be used if running on the gpu with torch backend.
+    Args:
+        physics_dt (Optional[float], optional): dt between physics steps. Defaults to None.
+        rendering_dt (Optional[float], optional):  dt between rendering steps. Note: rendering means
+                                                   rendering a frame of the current application and not
+                                                   only rendering a frame to the viewports/ cameras. So UI
+                                                   elements of Isaac Sim will be refereshed with this dt
+                                                   as well if running non-headless.
+                                                   Defaults to None.
+        stage_units_in_meters (Optional[float], optional): The metric units of assets. This will affect gravity value..etc.
+                                                  Defaults to None.
+        physics_prim_path (Optional[str], optional): specifies the prim path to create a PhysicsScene at,
+                                             only in the case where no PhysicsScene already defined.
+                                             Defaults to "/physicsScene".
+        set_defaults (bool, optional): set to True to use the defaults settings
+                                        [physics_dt = 1.0/ 60.0,
+                                        stage units in meters = 0.01 (i.e in cms),
+                                        rendering_dt = 1.0 / 60.0,
+                                        gravity = -9.81 m / s
+                                        ccd_enabled,
+                                        stabilization_enabled,
+                                        gpu dynamics turned off,
+                                        broadcast type is MBP,
+                                        solver type is TGS]. Defaults to True.
+        backend (str, optional): specifies the backend to be used (numpy or torch). Defaults to numpy.
+        device (Optional[str], optional): specifies the device to be used if running on the gpu with torch backend.
 
-        """
+    """
 
     _instance = None
     _sim_context_initialized = False
@@ -194,8 +196,7 @@ class SimulationContext:
 
     @classmethod
     def clear_instance(cls):
-        """[summary]
-        """
+        """[summary]"""
         SimulationContext._instance = None
         SimulationContext._sim_context_initialized = False
         return
@@ -288,7 +289,7 @@ class SimulationContext:
     """
 
     def set_simulation_dt(self, physics_dt: Optional[float] = None, rendering_dt: Optional[float] = None) -> None:
-        """Specify the physics step and rendering step size to use when stepping and rendering. It is recommended that the two values are divisible. 
+        """Specify the physics step and rendering step size to use when stepping and rendering. It is recommended that the two values are divisible.
 
         Args:
             physics_dt (float): The physics time-step. None means it won't change the current setting. (default: None).
@@ -400,7 +401,7 @@ class SimulationContext:
         """Resets the physics simulation view.
 
         Args:
-            soft (bool, optional): if set to True simulation won't be stopped and start again. It only calls the reset on the scene objects. 
+            soft (bool, optional): if set to True simulation won't be stopped and start again. It only calls the reset on the scene objects.
         """
         if not soft:
             if not self.is_stopped():
@@ -415,7 +416,7 @@ class SimulationContext:
         """Resets the physics simulation view (asynchornous version).
 
         Args:
-            soft (bool, optional): if set to True simulation won't be stopped and start again. It only calls the reset on the scene objects. 
+            soft (bool, optional): if set to True simulation won't be stopped and start again. It only calls the reset on the scene objects.
         """
         if not soft:
             if not self.is_stopped():
@@ -479,8 +480,7 @@ class SimulationContext:
         return
 
     def render(self) -> None:
-        """Refreshes the Isaac Sim app rendering components including UI elements and view ports..etc.
-        """
+        """Refreshes the Isaac Sim app rendering components including UI elements and view ports..etc."""
         set_carb_setting(self._settings, "/app/player/playSimulations", False)
         self._app.update()
         set_carb_setting(self._settings, "/app/player/playSimulations", True)
@@ -626,8 +626,7 @@ class SimulationContext:
             return False
 
     def clear_physics_callbacks(self) -> None:
-        """[summary]
-        """
+        """[summary]"""
         self._physics_callback_functions = dict()
         self._physics_functions = dict()
         return
@@ -675,8 +674,7 @@ class SimulationContext:
             return False
 
     def clear_stage_callbacks(self) -> None:
-        """[summary]
-        """
+        """[summary]"""
         self._stage_callback_functions = dict()
         return
 
@@ -723,8 +721,7 @@ class SimulationContext:
             return False
 
     def clear_timeline_callbacks(self) -> None:
-        """[summary]
-        """
+        """[summary]"""
         self._timeline_callback_functions = dict()
         return
 
@@ -772,14 +769,12 @@ class SimulationContext:
             return False
 
     def clear_render_callbacks(self) -> None:
-        """[summary]
-        """
+        """[summary]"""
         self._render_callback_functions = dict()
         return
 
     def clear_all_callbacks(self) -> None:
-        """Clears all callbacks which were added using add_*_callback fn.
-        """
+        """Clears all callbacks which were added using add_*_callback fn."""
         self._physics_callback_functions = dict()
         self._physics_functions = dict()
         self._stage_callback_functions = dict()

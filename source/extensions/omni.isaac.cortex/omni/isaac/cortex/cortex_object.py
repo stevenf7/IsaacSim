@@ -6,19 +6,18 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import numpy as np
 import time
-from typing import Optional, Tuple, Sequence
+from typing import Optional, Sequence, Tuple
 
-from pxr import Gf, Usd
-
-from omni.isaac.core.utils.rotations import gf_quat_to_np_array
-from omni.isaac.core.prims import XFormPrim
+import numpy as np
 import omni.isaac.cortex.math_util as math_util
+from omni.isaac.core.prims.xform_prim import XFormPrim
+from omni.isaac.core.utils.rotations import gf_quat_to_np_array
+from pxr import Gf, Usd
 
 
 class CortexMeasuredPose(object):
-    """ Contains information about the measured pose of an object.
+    """Contains information about the measured pose of an object.
 
     This includes the time stamp of the measurement, the pose, and a timeout (time to live) defining
     how long we trust this measurement.
@@ -35,7 +34,7 @@ class CortexMeasuredPose(object):
         self.timeout = timeout
 
     def is_valid(self, time: float) -> bool:
-        """ Returns whether this measurement is still valid based on the time stamp and its timeout.
+        """Returns whether this measurement is still valid based on the time stamp and its timeout.
 
         Args:
             time: The current time.
@@ -47,9 +46,9 @@ class CortexMeasuredPose(object):
 
 
 class CortexObject(object):
-    """ A CortexObject is an object (derived from the core API XFormPrim) which may have measurement
+    """A CortexObject is an object (derived from the core API XFormPrim) which may have measurement
     information from perception.
-    
+
     It handles recording that measurement information and providing an API to both access it and
     sync it to the underlying object. Since perception modules differ dramatically in their
     performance characteristics, the specifics of how that measured pose is synchronized to the
@@ -71,41 +70,35 @@ class CortexObject(object):
 
     @property
     def name(self) -> str:
-        """ The name of the underlying object.
-        """
+        """The name of the underlying object."""
         return self.obj.name
 
     @property
     def prim(self) -> Usd.Prim:
-        """ The underlying USD prim representing this object.
-        """
+        """The underlying USD prim representing this object."""
         return self.obj.prim
 
     def set_world_pose(
         self, position: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
     ) -> None:
-        """ Set the object's world pose.
-        """
+        """Set the object's world pose."""
         self.obj.set_world_pose(position, orientation)
 
     def get_world_pose(self) -> Tuple[np.ndarray, np.ndarray]:
-        """ Get the object's world pose.
-        """
+        """Get the object's world pose."""
         return self.obj.get_world_pose()
 
     def get_transform(self) -> np.ndarray:
-        """ Returns the object's world pose (in meters) as a 4x4 homogeneous matrix.
-        """
+        """Returns the object's world pose (in meters) as a 4x4 homogeneous matrix."""
         position, orientation = self.get_world_pose()
         return math_util.pq2T(position, orientation)
 
     def get_T(self):
-        """ Convenience accessor for get_transform() using T naming convention.
-        """
+        """Convenience accessor for get_transform() using T naming convention."""
         return self.get_transform()
 
     def set_measured_pose(self, measured_pose: CortexMeasuredPose) -> None:
-        """ Set the measured pose of this object
+        """Set the measured pose of this object
 
         Args:
             measured_pose: The measurement information.
@@ -113,7 +106,7 @@ class CortexObject(object):
         self.measured_pose = measured_pose
 
     def has_measured_pose(self) -> bool:
-        """ Queries whether this object has a valid measured pose.
+        """Queries whether this object has a valid measured pose.
 
         A measured pose is valid if it's both available (has been set) and it's valid per the
         CortexMeasuredPose.is_valid() method.
@@ -123,8 +116,8 @@ class CortexObject(object):
         return self.measured_pose is not None and self.measured_pose.is_valid(time.time())
 
     def get_measured_pq(self) -> Tuple[np.ndarray, np.ndarray]:
-        """ Returns the measured pose as a (p,q) tuple in meters.
-        
+        """Returns the measured pose as a (p,q) tuple in meters.
+
         This method doesn't check whether the measured pose is available. Use has_measured_pose() to
         verify.
 
@@ -133,7 +126,7 @@ class CortexObject(object):
         return self.measured_pose.pq
 
     def get_measured_T(self) -> np.array:
-        """ Returns the measured pose as a 4x4 homogeneous matrix in units of meters.
+        """Returns the measured pose as a 4x4 homogeneous matrix in units of meters.
 
         This method doesn't check whether the measured pose is available. Use has_measured_pose() to
         verify.
@@ -144,8 +137,8 @@ class CortexObject(object):
         return math_util.pq2T(p, q)
 
     def sync_to_measured_pose(self, use_throttle: bool = True) -> None:
-        """ Syncs the pose of the underlying USD object to match the measured pose.
-        
+        """Syncs the pose of the underlying USD object to match the measured pose.
+
         If use_throttle is True (default) when this method will prevent two syncs from happening
         within sync_throttle_dt seconds of one another.  i.e. it throttles the rate to <
         1./sync_throttle_dt.
@@ -180,7 +173,7 @@ class CortexObject(object):
         self.time_at_last_sync = current_time
 
     def _sync_tensor_api_to_usd(self, p: np.ndarray, q: np.ndarray) -> None:
-        """ Internal method used to synchronize the tensor API to the USD for this object. The Isaac
+        """Internal method used to synchronize the tensor API to the USD for this object. The Isaac
         Sim core API goes through the tensor API, but the tensor API is only synced to USD when the
         object is active. If we receive a measured pose, we want to sync to USD regardless of
         whether the object is active so it's visualized correctly.

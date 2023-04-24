@@ -1,18 +1,17 @@
 from typing import List
 
-from omni.isaac.cloner import Cloner
-import omni.usd
-from pxr import Gf, UsdGeom
-
 import numpy as np
+import omni.usd
+from omni.isaac.cloner import Cloner
+from pxr import Gf, UsdGeom
 
 
 class GridCloner(Cloner):
 
-    """ This is a specialized Cloner class that will automatically generate clones in a grid fashion. """
+    """This is a specialized Cloner class that will automatically generate clones in a grid fashion."""
 
     def __init__(self, spacing: float, num_per_row: int = -1):
-        """ 
+        """
         Args:
             spacing (float): Spacing between clones.
             num_per_row (int): Number of clones to place in a row. Defaults to sqrt(num_clones).
@@ -33,7 +32,7 @@ class GridCloner(Cloner):
         root_path: str = None,
     ):
 
-        """ Creates clones in a grid fashion. Positions of clones are computed automatically.
+        """Creates clones in a grid fashion. Positions of clones are computed automatically.
 
         Args:
             source_prim_path (str): Path of source object.

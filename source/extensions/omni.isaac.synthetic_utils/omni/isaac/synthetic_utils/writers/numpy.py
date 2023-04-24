@@ -11,12 +11,14 @@
 """
 
 import copy
-import omni
 import os
+
 import numpy as np
-from PIL import Image
-from .base import BaseWriter
+import omni
 from omni.isaac.core.utils.viewports import get_viewport_names
+from PIL import Image
+
+from .base import BaseWriter
 
 
 class NumpyWriter(BaseWriter):

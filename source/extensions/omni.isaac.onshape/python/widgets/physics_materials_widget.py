@@ -7,26 +7,29 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import carb, omni.ext, omni.kit.commands, omni.ui as ui, os, asyncio
-from enum import Enum
-import pxr
-from pxr import UsdGeom, UsdShade, Sdf, Gf, Vt, UsdLux, Usd, Kind
-from pxr.Vt import IntArray, Vec3fArray, Vec2fArray, DoubleArray
-import io
-from PIL import Image, ImageChops
-import numpy as np
 import asyncio
+import base64
+import io
+import json
+import os
+import signal
 import threading
 import time
-import signal
-import json
-import omni
 import uuid
+from enum import Enum
 
-import base64
-
-from omni.isaac.onshape.scripts.style import UI_STYLES
+import carb
+import numpy as np
+import omni
+import omni.ext
+import omni.kit.commands
+import omni.ui as ui
+import pxr
 from omni.isaac.onshape.client import OnshapeClient
+from omni.isaac.onshape.scripts.style import UI_STYLES
+from PIL import Image, ImageChops
+from pxr import Gf, Kind, Sdf, Usd, UsdGeom, UsdLux, UsdShade, Vt
+from pxr.Vt import DoubleArray, IntArray, Vec2fArray, Vec3fArray
 
 
 class PhysicsMaterial(ui.AbstractItem):
