@@ -65,7 +65,7 @@ class BaseIsaacBenchmark(omni.kit.test.AsyncTestCase):
             # scene.SceneStatsRecorder(self.context), # This crashes on new stage.
             cpu.CPUStatsRecorder(self.context),
             memory.MemoryRecorder(self.context),
-            memory.GPUDetailedMemoryStatsRecorder(self.context),
+            # memory.GPUDetailedMemoryStatsRecorder(self.context), # This is causing a crash on new stage
             self.frametime_recorder,
         ]
         self.test_run = measurements.TestRun(
