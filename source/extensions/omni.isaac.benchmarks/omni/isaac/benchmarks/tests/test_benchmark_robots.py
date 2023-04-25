@@ -18,6 +18,7 @@ from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.utils.viewports import destroy_all_viewports, get_viewport_names, set_camera_view
+from omni.isaac.core.utils.render_product import create_hydra_texture, set_camera_prim_path, set_resolution
 from omni.isaac.wheeled_robots.robots import WheeledRobot
 from omni.kit.viewport.utility import (
     create_viewport_window,
@@ -36,12 +37,10 @@ from ..utils.logger import get_memory_stats, log_header
 class TestBenchmarkRobots(BaseIsaacBenchmark):
     async def setUp(self):
         await super().setUp()
-        destroy_all_viewports(destroy_main_viewport=False)
         pass
 
     async def tearDown(self):
         await super().tearDown()
-        destroy_all_viewports(destroy_main_viewport=False)
         pass
 
     # ----------------------------------------------------------------------
@@ -82,24 +81,7 @@ class TestBenchmarkRobots(BaseIsaacBenchmark):
                 lidar_prim.GetAttribute("enabled").Set(False)
 
             if enable_camera:
-                # add a viewport
-                if i == 0:
-                    viewport_name = "Viewport"
-                else:
-                    viewport_name = "Viewport " + str(i)
-                    create_viewport_window(name=viewport_name)
-                viewport_window = get_viewport_from_window_name(window_name=viewport_name)
-                stage = omni.usd.get_context().get_stage()
-                viewport_window.set_texture_resolution(camera_resolution)
-                # wait until the window is actually created
-                while viewport_name not in get_viewport_names():
-                    await omni.kit.app.get_app().next_update_async()
-                # wait until the scene is loaded in the given viewport
-                while omni.usd.get_context().get_stage_loading_status()[2] > 0:
-                    print("asset still loading, waiting to finish")
-                    await asyncio.sleep(1.0)
-                await omni.kit.app.get_app().next_update_async()
-                viewport_window.set_active_camera(robot_camera_prim_path)
+                texture, texture_path = create_hydra_texture(camera_resolution, robot_camera_prim_path)
             else:
                 viewport_api, active_window = get_active_viewport_and_window()
                 viewport_api.set_texture_resolution([1280, 720])
@@ -143,8 +125,8 @@ class TestBenchmarkRobots(BaseIsaacBenchmark):
     async def test_benchmark_5_robot(self):
         await self.benchmark_robots(5)
 
-    async def test_benchmark_10_robot(self):
-        await self.benchmark_robots(10)
+    # async def test_benchmark_10_robot(self):
+    #     await self.benchmark_robots(10)
 
     # async def test_benchmark_50_robot(self):
     #     await self.benchmark_robots(50)
@@ -164,8 +146,8 @@ class TestBenchmarkRobots(BaseIsaacBenchmark):
     async def test_benchmark_5_robot_camera(self):
         await self.benchmark_robots(5, False, True)
 
-    async def test_benchmark_10_robot_camera(self):
-        await self.benchmark_robots(10, False, True)
+    # async def test_benchmark_10_robot_camera(self):
+    #     await self.benchmark_robots(10, False, True)
 
     async def test_benchmark_1_robot_lidar_camera(self):
         await self.benchmark_robots(1, True, True)
@@ -173,5 +155,5 @@ class TestBenchmarkRobots(BaseIsaacBenchmark):
     async def test_benchmark_5_robot_lidar_camera(self):
         await self.benchmark_robots(5, True, True)
 
-    async def test_benchmark_10_robot_lidar_camera(self):
-        await self.benchmark_robots(10, True, True)
+    # async def test_benchmark_10_robot_lidar_camera(self):
+    #     await self.benchmark_robots(10, True, True)

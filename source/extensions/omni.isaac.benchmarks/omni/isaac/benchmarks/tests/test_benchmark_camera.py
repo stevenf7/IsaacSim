@@ -15,6 +15,7 @@ from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.core.utils.stage import is_stage_loading
 from omni.isaac.core.utils.viewports import destroy_all_viewports, get_viewport_names
 from omni.kit.viewport.utility import create_viewport_window, get_viewport_from_window_name
+from omni.isaac.core.utils.render_product import create_hydra_texture, set_camera_prim_path, set_resolution
 from pxr import Gf
 
 from ..utils.base_isaac_benchmark import BaseIsaacBenchmark
@@ -23,12 +24,10 @@ from ..utils.base_isaac_benchmark import BaseIsaacBenchmark
 class TestBenchmarkCamera(BaseIsaacBenchmark):
     async def setUp(self):
         await super().setUp()
-        destroy_all_viewports(destroy_main_viewport=False)
         pass
 
     async def tearDown(self):
         await super().tearDown()
-        destroy_all_viewports(destroy_main_viewport=False)
         pass
 
     async def benchmark_camera(self, n_camera, resolution):
@@ -53,25 +52,8 @@ class TestBenchmarkCamera(BaseIsaacBenchmark):
                 q = euler_angles_to_quat([90, 0, 90 + i * 360 / n_camera], degrees=True)
                 camera_prim.set_world_pose(np.array([-8, 13, 2.0]), q)
                 camera_translation = Gf.Vec3f()  # these positions are used for full_warehouse.usd
-            if i == 0:
-                viewport_name = "Viewport"
-            else:
-                viewport_name = "Viewport " + str(i)
-                create_viewport_window(name=viewport_name)
 
-            # create the viewports for each camera
-
-            viewport_window = get_viewport_from_window_name(window_name=viewport_name)
-            viewport_window.set_active_camera(camera_path)
-            viewport_window.set_texture_resolution(resolution)
-            await omni.kit.app.get_app().next_update_async()
-            # wait until the window is actually created
-            while viewport_name not in get_viewport_names():
-                await omni.kit.app.get_app().next_update_async()
-            if i > 0:
-                main_viewport = omni.ui.Workspace.get_window("Viewport")
-                new_viewport = omni.ui.Workspace.get_window(viewport_name)
-                new_viewport.dock_in(main_viewport, omni.ui.DockPosition.RIGHT, 1.0 / n_camera)
+            texture, texture_path = create_hydra_texture(resolution, camera_path)
             await omni.kit.app.get_app().next_update_async()
 
         # make sure scene is loaded in all viewports
