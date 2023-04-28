@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.5.0] - 2023-04-23
+
+### Added
+- Scene generation benchmark
+- SDG generation benchmark
 
 ## [0.4.1] - 2022-11-17
 
