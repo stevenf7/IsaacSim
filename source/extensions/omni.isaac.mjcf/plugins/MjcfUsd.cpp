@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -657,6 +657,173 @@ pxr::UsdPrim createPrimitiveGeom(pxr::UsdStageWeakPtr stage,
     return prim;
 }
 
+pxr::UsdPrim createPrimitiveGeom(pxr::UsdStageWeakPtr stage,
+                                 const std::string geomPath,
+                                 const MJCFSite* site,
+                                 const ImportConfig& config,
+                                 bool importMaterials)
+{
+    pxr::SdfPath path = pxr::SdfPath(geomPath);
+
+    if (site->type == MJCFSite::SPHERE)
+    {
+        pxr::UsdGeomSphere spherePrim = pxr::UsdGeomSphere::Define(stage, path);
+        pxr::VtVec3fArray extentArray(2);
+
+        spherePrim.ComputeExtent(site->size.x, &extentArray);
+        spherePrim.GetRadiusAttr().Set(double(site->size.x));
+        spherePrim.GetExtentAttr().Set(extentArray);
+    }
+    else if (site->type == MJCFSite::ELLIPSOID)
+    {
+        pxr::UsdGeomSphere ellipsePrim = pxr::UsdGeomSphere::Define(stage, path);
+        pxr::VtVec3fArray extentArray(2);
+
+        ellipsePrim.ComputeExtent(site->size.x, &extentArray);
+        ellipsePrim.GetExtentAttr().Set(extentArray);
+    }
+    else if (site->type == MJCFSite::CAPSULE)
+    {
+        pxr::UsdGeomCapsule capsulePrim = pxr::UsdGeomCapsule::Define(stage, path);
+        pxr::VtVec3fArray extentArray(4);
+        pxr::TfToken axis = pxr::TfToken("X");
+        float height;
+        if (site->hasFromTo)
+        {
+            Vec3 dif = site->to - site->from;
+            height = Length(dif);
+        }
+        else
+        {
+            // half length
+            height = 2.0f * site->size.y;
+        }
+
+        capsulePrim.GetRadiusAttr().Set(double(site->size.x));
+        capsulePrim.GetHeightAttr().Set(double(height));
+        capsulePrim.GetAxisAttr().Set(axis);
+        capsulePrim.ComputeExtent(double(height), double(site->size.x), axis, &extentArray);
+        capsulePrim.GetExtentAttr().Set(extentArray);
+    }
+    else if (site->type == MJCFSite::CYLINDER)
+    {
+        pxr::UsdGeomCylinder cylinderPrim = pxr::UsdGeomCylinder::Define(stage, path);
+        pxr::VtVec3fArray extentArray(2);
+        float height;
+        if (site->hasFromTo)
+        {
+            Vec3 dif = site->to - site->from;
+            height = Length(dif);
+        }
+        else
+        {
+            height = 2.0f * site->size.y;
+        }
+        pxr::TfToken axis = pxr::TfToken("X");
+        cylinderPrim.ComputeExtent(double(height), double(site->size.x), axis, &extentArray);
+        cylinderPrim.GetAxisAttr().Set(pxr::UsdGeomTokens->z);
+        cylinderPrim.GetExtentAttr().Set(extentArray);
+        cylinderPrim.GetHeightAttr().Set(double(height));
+        cylinderPrim.GetRadiusAttr().Set(double(site->size.x));
+    }
+    else if (site->type == MJCFSite::BOX)
+    {
+        pxr::UsdGeomCube boxPrim = pxr::UsdGeomCube::Define(stage, path);
+        pxr::VtVec3fArray extentArray(2);
+        extentArray[1] = pxr::GfVec3f(site->size.x, site->size.y, site->size.z);
+        extentArray[0] = -extentArray[1];
+        boxPrim.GetExtentAttr().Set(extentArray);
+    }
+
+    pxr::UsdPrim prim = stage->GetPrimAtPath(path);
+    if (prim)
+    {
+        // set the transformations first
+        pxr::GfMatrix4d mat;
+        mat.SetIdentity();
+        mat.SetTranslateOnly(pxr::GfVec3d(site->pos.x, site->pos.y, site->pos.z));
+        mat.SetRotateOnly(pxr::GfQuatd(site->quat.w, site->quat.x, site->quat.y, site->quat.z));
+
+        pxr::GfMatrix4d scale;
+        scale.SetIdentity();
+        scale.SetScale(pxr::GfVec3d(config.distanceScale, config.distanceScale, config.distanceScale));
+        if (site->type == MJCFSite::ELLIPSOID)
+        {
+            scale.SetScale(config.distanceScale * pxr::GfVec3d(site->size.x, site->size.y, site->size.z));
+        }
+        else if (site->type == MJCFSite::CAPSULE)
+        {
+            Vec3 cen;
+            Quat q;
+
+            if (site->hasFromTo)
+            {
+                Vec3 diff = site->to - site->from;
+                diff = Normalize(diff);
+                Vec3 rotVec = Cross(Vec3(1.0f, 0.0f, 0.0f), diff);
+                if (Length(rotVec) < 1e-5)
+                {
+                    rotVec = Vec3(0.0f, 1.0f, 0.0f); // default rotation about y-axis
+                }
+                else
+                {
+                    rotVec = Normalize(rotVec); // z axis
+                }
+
+                float angle = acos(diff.x);
+                cen = 0.5f * (site->from + site->to);
+                q = QuatFromAxisAngle(rotVec, angle);
+            }
+            else
+            {
+                cen = site->pos;
+                q = site->quat * QuatFromAxisAngle(Vec3(0.0f, 1.0f, 0.0f), -kPi * 0.5f);
+            }
+
+            mat.SetTranslateOnly(config.distanceScale * pxr::GfVec3d(cen.x, cen.y, cen.z));
+            mat.SetRotateOnly(pxr::GfQuatd(q.w, q.x, q.y, q.z));
+        }
+        else if (site->type == MJCFSite::CYLINDER)
+        {
+            Vec3 cen;
+            Quat q;
+            float hlen;
+            if (site->hasFromTo)
+            {
+                cen = 0.5f * (site->from + site->to);
+                Vec3 axis = site->to - site->from;
+                hlen = 0.5f * Length(axis);
+                q = GetRotationQuat(Vec3(0.0f, 0.0f, 1.0f), Normalize(axis));
+            }
+            else
+            {
+                cen = site->pos;
+                q = site->quat;
+                hlen = site->size.y;
+            }
+
+            mat.SetRotateOnly(pxr::GfQuatd(q.w, q.x, q.y, q.z));
+            mat.SetTranslateOnly(pxr::GfVec3d(cen.x, cen.y, cen.z));
+        }
+        else if (site->type == MJCFSite::BOX)
+        {
+            Vec3 s = site->size;
+            Vec3 cen = site->pos;
+            Quat q = site->quat;
+            scale.SetScale(config.distanceScale * pxr::GfVec3d(s.x, s.y, s.z));
+            mat.SetTranslateOnly(config.distanceScale * pxr::GfVec3d(cen.x, cen.y, cen.z));
+            mat.SetRotateOnly(pxr::GfQuatd(q.w, q.x, q.y, q.z));
+        }
+
+        pxr::UsdGeomXformable gprim = pxr::UsdGeomXformable(prim);
+        gprim.ClearXformOpOrder();
+        pxr::UsdGeomXformOp transOp = gprim.AddTransformOp();
+        transOp.Set(scale * mat, pxr::UsdTimeCode::Default());
+    }
+
+    return prim;
+}
+
 void applyCollisionGeom(pxr::UsdStageWeakPtr stage, pxr::UsdPrim prim, const MJCFGeom* geom)
 {
     pxr::UsdPhysicsCollisionAPI::Apply(prim);
@@ -905,7 +1072,7 @@ void createJointDrives(pxr::UsdPhysicsJoint jointPrim,
     if (actuator)
     {
         MJCFActuator::Type actuatorType = actuator->type;
-        if (actuatorType == MJCFActuator::MOTOR)
+        if (actuatorType == MJCFActuator::MOTOR || actuatorType == MJCFActuator::GENERAL)
         {
             // nothing special?
         }
@@ -917,9 +1084,11 @@ void createJointDrives(pxr::UsdPhysicsJoint jointPrim,
         {
             driveAPI.CreateStiffnessAttr().Set(actuator->kv);
         }
-    }
 
-    // TODO: add armature case
+        const Vec2& forcerange = actuator->forcerange;
+        float maxForce = std::max(abs(forcerange.x), abs(forcerange.y));
+        driveAPI.CreateMaxForceAttr().Set(maxForce);
+    }
 }
 }
 }

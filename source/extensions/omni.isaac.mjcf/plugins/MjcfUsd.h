@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -28,6 +28,9 @@
 #include <physxSchema/physxLimitAPI.h>
 #include <physxSchema/physxRigidBodyAPI.h>
 #include <physxSchema/physxSceneAPI.h>
+#include <physxSchema/physxTendonAttachmentAPI.h>
+#include <physxSchema/physxTendonAttachmentLeafAPI.h>
+#include <physxSchema/physxTendonAttachmentRootAPI.h>
 #include <physxSchema/physxTendonAxisAPI.h>
 #include <physxSchema/physxTendonAxisRootAPI.h>
 #include <usdPhysics/articulationRootAPI.h>
@@ -86,6 +89,11 @@ pxr::UsdPrim createPrimitiveGeom(pxr::UsdStageWeakPtr stage,
                                  const std::string geomPath,
                                  const MJCFGeom* geom,
                                  const std::map<std::string, MeshInfo>& simulationMeshCache,
+                                 const ImportConfig& config,
+                                 bool importMaterials);
+pxr::UsdPrim createPrimitiveGeom(pxr::UsdStageWeakPtr stage,
+                                 const std::string geomPath,
+                                 const MJCFSite* site,
                                  const ImportConfig& config,
                                  bool importMaterials);
 void applyCollisionGeom(pxr::UsdStageWeakPtr stage, pxr::UsdPrim prim, const MJCFGeom* geom);

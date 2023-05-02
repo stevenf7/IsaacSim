@@ -75,6 +75,7 @@ class Extension(omni.ext.IExt):
         self._config.set_self_collision(False)
         self._config.set_make_default_prim(True)
         self._config.set_create_physics_scene(True)
+        self._config.set_import_sites(True)
 
     def build_ui(self):
         with self._window.frame:
@@ -96,6 +97,17 @@ class Extension(omni.ext.IExt):
                             "Import Inertia Tensor",
                             tooltip="If True, inertia will be loaded from mjcf, if the mjcf does not specify inertia tensor, identity will be used and scaled by the scaling factor. If false physx will compute automatically",
                             on_clicked_fn=lambda m, config=self._config: config.set_import_inertia_tensor(m),
+                        )
+                        cb_builder(
+                            "Import Sites",
+                            tooltip="If True, sites will be imported from mjcf.",
+                            default_val=True,
+                            on_clicked_fn=lambda m, config=self._config: config.set_import_sites(m),
+                        )
+                        cb_builder(
+                            "Visualize Collision Geoms",
+                            tooltip="If True, collision geoms will also be imported as visual geoms",
+                            on_clicked_fn=lambda m, config=self._config: config.set_visualize_collision_geoms(m),
                         )
                         self._models["scale"] = float_builder(
                             "Stage Units Per Meter",
@@ -182,6 +194,17 @@ class Extension(omni.ext.IExt):
                         )
                         self._models["instanceable_usd_path"].add_value_changed_fn(
                             lambda m, config=self._config: config.set_instanceable_usd_path(m.get_value_as_string())
+                        )
+                        self._models["mesh_root_directory"] = str_builder(
+                            "Mesh Root Directory",
+                            tooltip="Root directory of meshes",
+                            default_val="",
+                            use_folder_picker=True,
+                            folder_dialog_title="Select Output File",
+                            folder_button_title="Select File",
+                        )
+                        self._models["mesh_root_directory"].add_value_changed_fn(
+                            lambda m, config=self._config: config.set_mesh_root_directory(m.get_value_as_string())
                         )
 
                 with ui.VStack(height=0):

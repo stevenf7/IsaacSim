@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.4.0] - 2023-03-27
+### Added
+- Support for sites and spatial tendons
+- Support for specifying mesh root directory
+
 ## [0.3.1] - 2023-01-06
 ### Fixed
 - onclick_fn warning when creating UI

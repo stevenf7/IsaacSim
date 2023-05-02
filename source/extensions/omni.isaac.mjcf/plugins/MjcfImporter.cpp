@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -18,7 +18,7 @@ namespace isaac
 namespace mjcf
 {
 
-MJCFImporter::MJCFImporter(const std::string fullPath)
+MJCFImporter::MJCFImporter(const std::string fullPath, ImportConfig& config)
 {
     defaultClassName = "main";
 
@@ -36,16 +36,20 @@ MJCFImporter::MJCFImporter(const std::string fullPath)
 
     {
         tinyxml2::XMLDocument includeDoc;
-        tinyxml2::XMLElement* includeRoot = LoadInclude(includeDoc, root->FirstChildElement("include"), baseDirPath);
-        if (includeRoot)
+        tinyxml2::XMLElement* includeElement = root->FirstChildElement("include");
+        tinyxml2::XMLElement* includeRoot = LoadInclude(includeDoc, includeElement, baseDirPath);
+        while (includeRoot)
         {
-            LoadGlobals(includeRoot, defaultClassName, baseDirPath, bodies, actuators, tendons, contacts,
-                        simulationMeshCache, meshes, materials, textures, compiler, classes, jointToActuatorIdx);
+            LoadGlobals(includeRoot, defaultClassName, baseDirPath, worldBody, bodies, actuators, tendons, contacts,
+                        simulationMeshCache, meshes, materials, textures, compiler, classes, jointToActuatorIdx, config);
+
+            includeElement = includeElement->NextSiblingElement("include");
+            includeRoot = LoadInclude(includeDoc, includeElement, baseDirPath);
         }
     }
 
-    LoadGlobals(root, defaultClassName, baseDirPath, bodies, actuators, tendons, contacts, simulationMeshCache, meshes,
-                materials, textures, compiler, classes, jointToActuatorIdx);
+    LoadGlobals(root, defaultClassName, baseDirPath, worldBody, bodies, actuators, tendons, contacts,
+                simulationMeshCache, meshes, materials, textures, compiler, classes, jointToActuatorIdx, config);
 
 
     for (int i = 0; i < int(bodies.size()); ++i)
@@ -54,7 +58,6 @@ MJCFImporter::MJCFImporter(const std::string fullPath)
     }
 
     computeKinematicHierarchy();
-
 
     if (!createContactGraph())
     {
@@ -71,6 +74,18 @@ MJCFImporter::~MJCFImporter()
     for (int i = 0; i < (int)bodies.size(); i++)
     {
         delete bodies[i];
+    }
+    for (int i = 0; i < (int)actuators.size(); i++)
+    {
+        delete actuators[i];
+    }
+    for (int i = 0; i < (int)tendons.size(); i++)
+    {
+        delete tendons[i];
+    }
+    for (int i = 0; i < (int)contacts.size(); i++)
+    {
+        delete contacts[i];
     }
 }
 
@@ -132,123 +147,425 @@ bool MJCFImporter::AddPhysicsEntities(pxr::UsdStageWeakPtr stage,
         CreatePhysicsBodyAndJoint(stage, bodies[i], rootPrimPath, trans, true, rootPrimPath, config, instanceableUSDPath);
     }
 
+    addWorldGeomsAndSites(stage, rootPrimPath, config);
+    AddContactFilters(stage);
+    AddTendons(stage, rootPrimPath);
+
+    return true;
+}
+
+bool MJCFImporter::addVisualGeom(pxr::UsdStageWeakPtr stage,
+                                 pxr::UsdPrim bodyPrim,
+                                 MJCFBody* body,
+                                 std::string bodyPath,
+                                 const ImportConfig& config,
+                                 bool createGeoms)
+{
+    bool hasVisualGeoms = false;
+    for (int i = 0; i < (int)body->geoms.size(); i++)
+    {
+        bool isVisual = body->geoms[i]->contype == 0 && body->geoms[i]->conaffinity == 0;
+        if (isVisual || !body->hasVisual || config.visualizeCollisionGeoms)
+        {
+            if (!config.makeInstanceable || createGeoms)
+            {
+                std::string geomPath = bodyPath + "/visuals/" + SanitizeUsdName(body->geoms[i]->name);
+                pxr::UsdPrim prim =
+                    createPrimitiveGeom(stage, geomPath, body->geoms[i], simulationMeshCache, config, true);
+
+                // parse material and texture
+                if (body->geoms[i]->material != "")
+                {
+                    if (materials.find(body->geoms[i]->material) != materials.end())
+                    {
+                        MJCFMaterial material = materials.find(body->geoms[i]->material)->second;
+                        MJCFTexture* texture = nullptr;
+                        if (material.texture != "")
+                        {
+                            if (textures.find(material.texture) == textures.end())
+                            {
+                                CARB_LOG_ERROR("Cannot find texture with name %s.\n", material.texture.c_str());
+                            }
+                            texture = &(textures.find(material.texture)->second);
+                        }
+                        Vec4 color = Vec4();
+                        createAndBindMaterial(stage, prim, &material, texture, color, false);
+                    }
+                    else
+                    {
+                        CARB_LOG_ERROR("Cannot find material with name %s.\n", body->geoms[i]->material.c_str());
+                    }
+                }
+                else if (body->geoms[i]->rgba.x != 0.2 || body->geoms[i]->rgba.y != 0.2 || body->geoms[i]->rgba.z != 0.2)
+                {
+                    // create material with color only
+                    createAndBindMaterial(stage, prim, nullptr, nullptr, body->geoms[i]->rgba, true);
+                }
+                geomPrimMap[body->geoms[i]->name] = prim;
+            }
+            // if (bodyPrim)
+            geomToBodyPrim[body->geoms[i]->name] = bodyPrim;
+            hasVisualGeoms = true;
+        }
+    }
+    return hasVisualGeoms;
+}
+
+void MJCFImporter::addVisualSites(
+    pxr::UsdStageWeakPtr stage, pxr::UsdPrim bodyPrim, MJCFBody* body, std::string bodyPath, const ImportConfig& config)
+{
+    for (int i = 0; i < (int)body->sites.size(); i++)
+    {
+        std::string sitePath = bodyPath + "/sites/" + SanitizeUsdName(body->sites[i]->name);
+        pxr::UsdPrim prim;
+        if (body->sites[i]->hasGeom)
+        {
+            prim = createPrimitiveGeom(stage, sitePath, body->sites[i], config, true);
+
+            // parse material and texture
+            if (body->sites[i]->material != "")
+            {
+                if (materials.find(body->sites[i]->material) != materials.end())
+                {
+                    MJCFMaterial material = materials.find(body->sites[i]->material)->second;
+                    MJCFTexture* texture = nullptr;
+                    if (material.texture != "")
+                    {
+                        if (textures.find(material.texture) == textures.end())
+                        {
+                            CARB_LOG_ERROR("Cannot find texture with name %s.\n", material.texture.c_str());
+                        }
+                        texture = &(textures.find(material.texture)->second);
+                    }
+                    Vec4 color = Vec4();
+                    createAndBindMaterial(stage, prim, &material, texture, color, false);
+                }
+                else
+                {
+                    CARB_LOG_ERROR("Cannot find material with name %s.\n", body->geoms[i]->material.c_str());
+                }
+            }
+            else if (body->sites[i]->rgba.x != 0.2 || body->sites[i]->rgba.y != 0.2 || body->sites[i]->rgba.z != 0.2)
+            {
+                // create material with color only
+                createAndBindMaterial(stage, prim, nullptr, nullptr, body->sites[i]->rgba, true);
+            }
+        }
+        else
+        {
+            prim = pxr::UsdGeomXform::Define(stage, pxr::SdfPath(sitePath)).GetPrim();
+        }
+        sitePrimMap[body->sites[i]->name] = prim;
+        siteToBodyPrim[body->sites[i]->name] = bodyPrim;
+    }
+}
+
+void MJCFImporter::addWorldGeomsAndSites(pxr::UsdStageWeakPtr stage, std::string rootPath, const ImportConfig& config)
+{
+    // we have to create a dummy link to place the site/geoms defined in world body
+    std::string bodyPath = rootPath + "/dummyLinkForWorld";
+    pxr::UsdPrim dummyLink = pxr::UsdGeomXform::Define(stage, pxr::SdfPath(bodyPath)).GetPrim();
+    pxr::UsdPhysicsRigidBodyAPI physicsAPI = pxr::UsdPhysicsRigidBodyAPI::Apply(dummyLink);
+    pxr::PhysxSchemaPhysxRigidBodyAPI::Apply(dummyLink);
+
+    // fix the dummy link to the root
+    std::string jointPath = bodyPath + "/fixedJoint";
+    pxr::UsdPhysicsJoint jointPrim = pxr::UsdPhysicsFixedJoint::Define(stage, pxr::SdfPath(jointPath));
+    pxr::SdfPathVector val0{ pxr::SdfPath(rootPath) };
+    pxr::SdfPathVector val1{ pxr::SdfPath(jointPath) };
+    jointPrim.CreateBody0Rel().SetTargets(val0);
+    jointPrim.CreateBody1Rel().SetTargets(val1);
+
+    bool hasVisualGeoms = addVisualGeom(stage, dummyLink, &worldBody, bodyPath, config, true);
+    addVisualSites(stage, dummyLink, &worldBody, bodyPath, config);
+}
+
+void MJCFImporter::AddContactFilters(pxr::UsdStageWeakPtr stage)
+{
     // adding collision filtering pairs
     for (int i = 0; i < (int)contactGraph.size(); i++)
     {
-        std::string& primPath = nameToUsdCollisionPrim[contactGraph[i].name];
+        std::string& primPath = nameToUsdCollisionPrim[contactGraph[i]->name];
         pxr::UsdPhysicsFilteredPairsAPI filteredPairsAPI =
             pxr::UsdPhysicsFilteredPairsAPI::Apply(stage->GetPrimAtPath(pxr::SdfPath(primPath)));
-        std::set<int> neighborhood = contactGraph[i].adjacentNodes;
+        std::set<int> neighborhood = contactGraph[i]->adjacentNodes;
         neighborhood.insert(i);
         for (int j = 0; j < (int)contactGraph.size(); j++)
         {
             if (neighborhood.find(j) == neighborhood.end())
             {
-                std::string& filteredPrimPath = nameToUsdCollisionPrim[contactGraph[j].name];
+                std::string& filteredPrimPath = nameToUsdCollisionPrim[contactGraph[j]->name];
                 filteredPairsAPI.CreateFilteredPairsRel().AddTarget(pxr::SdfPath(filteredPrimPath));
             }
         }
     }
+}
 
+void MJCFImporter::AddTendons(pxr::UsdStageWeakPtr stage, std::string rootPath)
+{
     // adding tendons
     for (const auto& t : tendons)
     {
-        if (t.type == MJCFTendon::FIXED)
+        if (t->type == MJCFTendon::FIXED)
         {
             // setting the joint with the lowest kinematic hierarchy number as the TendonAxisRoot
-            if (t.fixedJoints.size() != 0)
+            if (t->fixedJoints.size() != 0)
             {
-                MJCFTendon::FixedJoint rootJoint = t.fixedJoints[0];
-                for (int i = 0; i < (int)t.fixedJoints.size(); i++)
+                MJCFTendon::FixedJoint* rootJoint = t->fixedJoints[0];
+                for (int i = 0; i < (int)t->fixedJoints.size(); i++)
                 {
-                    if (jointToKinematicHierarchy[t.fixedJoints[i].joint] < jointToKinematicHierarchy[rootJoint.joint])
+                    if (jointToKinematicHierarchy[t->fixedJoints[i]->joint] < jointToKinematicHierarchy[rootJoint->joint])
                     {
-                        rootJoint = t.fixedJoints[i];
+                        rootJoint = t->fixedJoints[i];
                     }
                 }
 
                 // adding the TendonAxisRoot api to the root joint
-                pxr::VtArray<float> coef = { rootJoint.coef };
-                if (revoluteJointsMap.find(rootJoint.joint) != revoluteJointsMap.end())
+                pxr::VtArray<float> coef = { rootJoint->coef };
+                if (revoluteJointsMap.find(rootJoint->joint) != revoluteJointsMap.end())
                 {
-                    pxr::UsdPhysicsRevoluteJoint rootJointPrim = revoluteJointsMap[rootJoint.joint];
+                    pxr::UsdPhysicsRevoluteJoint rootJointPrim = revoluteJointsMap[rootJoint->joint];
                     pxr::PhysxSchemaPhysxTendonAxisRootAPI rootAPI = pxr::PhysxSchemaPhysxTendonAxisRootAPI::Apply(
-                        rootJointPrim.GetPrim(), pxr::TfToken(SanitizeUsdName(t.name)));
-                    if (t.limited)
+                        rootJointPrim.GetPrim(), pxr::TfToken(SanitizeUsdName(t->name)));
+                    if (t->limited)
                     {
-                        rootAPI.CreateLowerLimitAttr().Set(t.range[0]);
-                        rootAPI.CreateUpperLimitAttr().Set(t.range[1]);
+                        rootAPI.CreateLowerLimitAttr().Set(t->range[0]);
+                        rootAPI.CreateUpperLimitAttr().Set(t->range[1]);
                     }
-                    if (t.springlength >= 0)
+                    if (t->springlength >= 0)
                     {
-                        rootAPI.CreateRestLengthAttr().Set(t.springlength);
+                        rootAPI.CreateRestLengthAttr().Set(t->springlength);
                     }
-                    rootAPI.CreateStiffnessAttr().Set(t.stiffness);
-                    rootAPI.CreateDampingAttr().Set(t.damping);
+                    rootAPI.CreateStiffnessAttr().Set(t->stiffness);
+                    rootAPI.CreateDampingAttr().Set(t->damping);
                     rootAPI.CreateGearingAttr().Set(coef);
                 }
-                else if (prismaticJointsMap.find(rootJoint.joint) != prismaticJointsMap.end())
+                else if (prismaticJointsMap.find(rootJoint->joint) != prismaticJointsMap.end())
                 {
-                    pxr::UsdPhysicsPrismaticJoint rootJointPrim = prismaticJointsMap[rootJoint.joint];
+                    pxr::UsdPhysicsPrismaticJoint rootJointPrim = prismaticJointsMap[rootJoint->joint];
                     pxr::PhysxSchemaPhysxTendonAxisRootAPI rootAPI = pxr::PhysxSchemaPhysxTendonAxisRootAPI::Apply(
-                        rootJointPrim.GetPrim(), pxr::TfToken(SanitizeUsdName(t.name)));
-                    if (t.limited)
+                        rootJointPrim.GetPrim(), pxr::TfToken(SanitizeUsdName(t->name)));
+                    if (t->limited)
                     {
-                        rootAPI.CreateLowerLimitAttr().Set(t.range[0]);
-                        rootAPI.CreateUpperLimitAttr().Set(t.range[1]);
+                        rootAPI.CreateLowerLimitAttr().Set(t->range[0]);
+                        rootAPI.CreateUpperLimitAttr().Set(t->range[1]);
                     }
-                    rootAPI.CreateStiffnessAttr().Set(t.stiffness);
-                    rootAPI.CreateDampingAttr().Set(t.damping);
+                    rootAPI.CreateStiffnessAttr().Set(t->stiffness);
+                    rootAPI.CreateDampingAttr().Set(t->damping);
                     rootAPI.CreateGearingAttr().Set(coef);
                 }
                 else
                 {
                     CARB_LOG_ERROR(
-                        "Joint %s required for tendon %s cannot be found", rootJoint.joint.c_str(), t.name.c_str());
+                        "Joint %s required for tendon %s cannot be found", rootJoint->joint.c_str(), t->name.c_str());
                 }
 
                 // adding TendonAxis api to the other joints in the tendon
-                for (int i = 0; i < (int)t.fixedJoints.size(); i++)
+                for (int i = 0; i < (int)t->fixedJoints.size(); i++)
                 {
-                    if (t.fixedJoints[i].joint != rootJoint.joint)
+                    if (t->fixedJoints[i]->joint != rootJoint->joint)
                     {
-                        MJCFTendon::FixedJoint childJoint = t.fixedJoints[i];
-                        pxr::VtArray<float> coef = { childJoint.coef };
-                        if (revoluteJointsMap.find(childJoint.joint) != revoluteJointsMap.end())
+                        MJCFTendon::FixedJoint* childJoint = t->fixedJoints[i];
+                        pxr::VtArray<float> coef = { childJoint->coef };
+                        if (revoluteJointsMap.find(childJoint->joint) != revoluteJointsMap.end())
                         {
-                            pxr::UsdPhysicsRevoluteJoint childJointPrim = revoluteJointsMap[childJoint.joint];
+                            pxr::UsdPhysicsRevoluteJoint childJointPrim = revoluteJointsMap[childJoint->joint];
                             pxr::PhysxSchemaPhysxTendonAxisAPI axisAPI = pxr::PhysxSchemaPhysxTendonAxisAPI::Apply(
-                                childJointPrim.GetPrim(), pxr::TfToken(SanitizeUsdName(t.name)));
+                                childJointPrim.GetPrim(), pxr::TfToken(SanitizeUsdName(t->name)));
                             axisAPI.CreateGearingAttr().Set(coef);
                         }
-                        else if (prismaticJointsMap.find(childJoint.joint) != prismaticJointsMap.end())
+                        else if (prismaticJointsMap.find(childJoint->joint) != prismaticJointsMap.end())
                         {
-                            pxr::UsdPhysicsPrismaticJoint childJointPrim = prismaticJointsMap[childJoint.joint];
+                            pxr::UsdPhysicsPrismaticJoint childJointPrim = prismaticJointsMap[childJoint->joint];
                             pxr::PhysxSchemaPhysxTendonAxisAPI axisAPI = pxr::PhysxSchemaPhysxTendonAxisAPI::Apply(
-                                childJointPrim.GetPrim(), pxr::TfToken(SanitizeUsdName(t.name)));
+                                childJointPrim.GetPrim(), pxr::TfToken(SanitizeUsdName(t->name)));
                             axisAPI.CreateGearingAttr().Set(coef);
                         }
                         else
                         {
-                            CARB_LOG_ERROR("Joint %s required for tendon %s cannot be found", childJoint.joint.c_str(),
-                                           t.name.c_str());
+                            CARB_LOG_ERROR("Joint %s required for tendon %s cannot be found", childJoint->joint.c_str(),
+                                           t->name.c_str());
                         }
                     }
                 }
             }
             else
             {
-                CARB_LOG_ERROR("%s cannot be added since it has no specified joints to attach to.", t.name.c_str());
+                CARB_LOG_ERROR("%s cannot be added since it has no specified joints to attach to.", t->name.c_str());
+            }
+        }
+        else if (t->type == MJCFTendon::SPATIAL)
+        {
+            std::map<std::string, int> attachmentNames;
+            bool isFirstAttachment = true;
+
+            if (t->spatialAttachments.size() > 0)
+            {
+                for (auto it = t->spatialBranches.begin(); it != t->spatialBranches.end(); it++)
+                {
+                    std::vector<MJCFTendon::SpatialAttachment*> attachments = it->second;
+                    pxr::UsdPrim parentPrim;
+                    std::string parentName;
+                    for (int i = (int)attachments.size() - 1; i >= 0; --i)
+                    {
+                        MJCFTendon::SpatialAttachment* attachment = attachments[i];
+                        std::string name;
+                        pxr::UsdPrim linkPrim;
+                        bool hasLink = false;
+                        if (attachment->type == MJCFTendon::SpatialAttachment::GEOM)
+                        {
+                            name = attachment->geom;
+                            if (geomToBodyPrim.find(name) != geomToBodyPrim.end())
+                            {
+                                linkPrim = geomToBodyPrim[name];
+                                hasLink = true;
+                            }
+                        }
+                        else if (attachment->type == MJCFTendon::SpatialAttachment::SITE)
+                        {
+                            name = attachment->site;
+                            if (siteToBodyPrim.find(name) != siteToBodyPrim.end())
+                            {
+                                linkPrim = siteToBodyPrim[name];
+                                hasLink = true;
+                            }
+                        }
+                        if (!hasLink)
+                        {
+                            pxr::UsdPrim dummyLink = stage->GetPrimAtPath(pxr::SdfPath(rootPath + "/dummyLinkForWorld"));
+
+                            // check if they are part of the world sites/geoms
+                            if (attachment->type == MJCFTendon::SpatialAttachment::GEOM)
+                            {
+                                name = attachment->geom;
+                                linkPrim = dummyLink;
+                                geomToBodyPrim[name] = dummyLink;
+                                hasLink = true;
+                            }
+                            else if (attachment->type == MJCFTendon::SpatialAttachment::SITE)
+                            {
+                                name = attachment->site;
+                                linkPrim = dummyLink;
+                                siteToBodyPrim[name] = dummyLink;
+                                hasLink = true;
+                            }
+
+                            if (!hasLink)
+                            {
+                                // we shouldn't be here...
+                                CARB_LOG_ERROR(
+                                    "Error adding attachment %s. Failed to find attached link.\n", name.c_str());
+                            }
+                        }
+
+                        // create additional attachments if duplicates are found
+                        if (attachmentNames.find(name) != attachmentNames.end())
+                        {
+                            attachmentNames[name]++;
+                            name = name + "_" + std::to_string(attachmentNames[name] - 1);
+                        }
+                        else
+                        {
+                            attachmentNames[name] = 0;
+                        }
+
+                        // setting the first attachment link as the AttachmentRoot
+                        if (isFirstAttachment)
+                        {
+                            isFirstAttachment = false;
+                            parentPrim = linkPrim;
+                            parentName = name;
+                            auto rootApi =
+                                pxr::PhysxSchemaPhysxTendonAttachmentRootAPI::Apply(linkPrim, pxr::TfToken(name));
+                            pxr::GfVec3f localPos = GetLocalPos(*attachment);
+                            pxr::PhysxSchemaPhysxTendonAttachmentAPI(rootApi, pxr::TfToken(name))
+                                .CreateLocalPosAttr()
+                                .Set(localPos);
+                            rootApi.CreateStiffnessAttr().Set(t->stiffness);
+                            rootApi.CreateDampingAttr().Set(t->damping);
+                        }
+                        // last attachment point
+                        else if (i == 0)
+                        {
+                            auto leafApi =
+                                pxr::PhysxSchemaPhysxTendonAttachmentLeafAPI::Apply(linkPrim, pxr::TfToken(name));
+                            pxr::PhysxSchemaPhysxTendonAttachmentAPI(leafApi, pxr::TfToken(name))
+                                .CreateParentLinkRel()
+                                .AddTarget(parentPrim.GetPath());
+                            pxr::PhysxSchemaPhysxTendonAttachmentAPI(leafApi, pxr::TfToken(name))
+                                .CreateParentAttachmentAttr()
+                                .Set(pxr::TfToken(parentName));
+                            pxr::GfVec3f localPos = GetLocalPos(*attachment);
+                            pxr::PhysxSchemaPhysxTendonAttachmentAPI(leafApi, pxr::TfToken(name))
+                                .CreateLocalPosAttr()
+                                .Set(localPos);
+                        }
+                        // intermediate attachment point
+                        else
+                        {
+                            auto attachmentApi =
+                                pxr::PhysxSchemaPhysxTendonAttachmentAPI::Apply(linkPrim, pxr::TfToken(name));
+                            attachmentApi.CreateParentLinkRel().AddTarget(parentPrim.GetPath());
+                            attachmentApi.CreateParentAttachmentAttr().Set(pxr::TfToken(parentName));
+                            pxr::GfVec3f localPos = GetLocalPos(*attachment);
+                            attachmentApi.CreateLocalPosAttr().Set(localPos);
+                        }
+
+                        // set current body as parent
+                        parentName = name;
+                        parentPrim = linkPrim;
+                    }
+                }
+            }
+            else
+            {
+                CARB_LOG_ERROR(
+                    "Spatial tendon %s cannot be added since it has no attachments specified.", t->name.c_str());
             }
         }
         else
         {
-            CARB_LOG_ERROR("%s is not a fixed tendom. Only fixed tendons are currently supported.", t.name.c_str());
+            CARB_LOG_ERROR(
+                "Tendon %s is not a fixed or spatial tendon. Only fixed and spatial tendons are currently supported.",
+                t->name.c_str());
         }
     }
+}
 
-
-    return true;
+pxr::GfVec3f MJCFImporter::GetLocalPos(MJCFTendon::SpatialAttachment attachment)
+{
+    pxr::GfVec3f localPos;
+    if (attachment.type == MJCFTendon::SpatialAttachment::GEOM)
+    {
+        if (geomToBodyPrim.find(attachment.geom) != geomToBodyPrim.end())
+        {
+            const pxr::UsdPrim rootPrim = geomToBodyPrim[attachment.geom];
+            const pxr::UsdPrim geomPrim = geomPrimMap[attachment.geom];
+            pxr::GfVec3d geomTranslate = pxr::UsdGeomXformable(geomPrim)
+                                             .ComputeLocalToWorldTransform(pxr::UsdTimeCode::Default())
+                                             .ExtractTranslation();
+            pxr::GfVec3d linkTranslate = pxr::UsdGeomXformable(rootPrim)
+                                             .ComputeLocalToWorldTransform(pxr::UsdTimeCode::Default())
+                                             .ExtractTranslation();
+            localPos = pxr::GfVec3f(geomTranslate - linkTranslate);
+        }
+    }
+    else if (attachment.type == MJCFTendon::SpatialAttachment::SITE)
+    {
+        if (siteToBodyPrim.find(attachment.site) != siteToBodyPrim.end())
+        {
+            pxr::UsdPrim rootPrim = siteToBodyPrim[attachment.site];
+            pxr::UsdPrim sitePrim = sitePrimMap[attachment.site];
+            pxr::GfVec3d siteTranslate = pxr::UsdGeomXformable(sitePrim)
+                                             .ComputeLocalToWorldTransform(pxr::UsdTimeCode::Default())
+                                             .ExtractTranslation();
+            pxr::GfVec3d linkTranslate = pxr::UsdGeomXformable(rootPrim)
+                                             .ComputeLocalToWorldTransform(pxr::UsdTimeCode::Default())
+                                             .ExtractTranslation();
+            localPos = pxr::GfVec3f(siteTranslate - linkTranslate);
+        }
+    }
+    return localPos;
 }
 
 void MJCFImporter::CreateInstanceableMeshes(pxr::UsdStageRefPtr stage,
@@ -300,45 +617,7 @@ void MJCFImporter::CreateInstanceableMeshes(pxr::UsdStageRefPtr stage,
         }
 
         // Add visual geoms
-        for (int i = 0; i < (int)body->geoms.size(); i++)
-        {
-            bool isVisual = body->geoms[i]->contype == 0 && body->geoms[i]->conaffinity == 0;
-            if (isVisual || !body->hasVisual)
-            {
-                std::string geomPath = bodyPath + "/visuals/" + SanitizeUsdName(body->geoms[i]->name);
-                pxr::UsdPrim prim =
-                    createPrimitiveGeom(stage, geomPath, body->geoms[i], simulationMeshCache, config, true);
-
-                // parse material and texture
-                if (body->geoms[i]->material != "")
-                {
-                    if (materials.find(body->geoms[i]->material) != materials.end())
-                    {
-                        MJCFMaterial material = materials.find(body->geoms[i]->material)->second;
-                        MJCFTexture* texture = nullptr;
-                        if (material.texture != "")
-                        {
-                            if (textures.find(material.texture) == textures.end())
-                            {
-                                CARB_LOG_ERROR("Cannot find texture with name %s.\n", material.texture.c_str());
-                            }
-                            texture = &(textures.find(material.texture)->second);
-                        }
-                        Vec4 color = Vec4();
-                        createAndBindMaterial(stage, prim, &material, texture, color, false);
-                    }
-                    else
-                    {
-                        CARB_LOG_ERROR("Cannot find material with name %s.\n", body->geoms[i]->material.c_str());
-                    }
-                }
-                else if (body->geoms[i]->rgba.x != 0.2 || body->geoms[i]->rgba.y != 0.2 || body->geoms[i]->rgba.z != 0.2)
-                {
-                    // create material with color only
-                    createAndBindMaterial(stage, prim, nullptr, nullptr, body->geoms[i]->rgba, true);
-                }
-            }
-        }
+        addVisualGeom(stage, pxr::UsdPrim(), body, bodyPath, config, true);
 
         // Recursively create children's bodies
         for (int i = 0; i < (int)body->bodies.size(); i++)
@@ -448,51 +727,7 @@ void MJCFImporter::CreatePhysicsBodyAndJoint(pxr::UsdStageWeakPtr stage,
         }
 
         // Add visual geoms
-        bool hasVisualGeoms = false;
-        for (int i = 0; i < (int)body->geoms.size(); i++)
-        {
-            bool isVisual = body->geoms[i]->contype == 0 && body->geoms[i]->conaffinity == 0;
-            if (isVisual || !body->hasVisual)
-            {
-                if (!config.makeInstanceable)
-                {
-                    std::string geomPath = bodyPath + "/visuals/" + SanitizeUsdName(body->geoms[i]->name);
-                    pxr::UsdPrim prim =
-                        createPrimitiveGeom(stage, geomPath, body->geoms[i], simulationMeshCache, config, true);
-
-                    // parse material and texture
-                    if (body->geoms[i]->material != "")
-                    {
-                        if (materials.find(body->geoms[i]->material) != materials.end())
-                        {
-                            MJCFMaterial material = materials.find(body->geoms[i]->material)->second;
-                            MJCFTexture* texture = nullptr;
-                            if (material.texture != "")
-                            {
-                                if (textures.find(material.texture) == textures.end())
-                                {
-                                    CARB_LOG_ERROR("Cannot find texture with name %s.\n", material.texture.c_str());
-                                }
-                                texture = &(textures.find(material.texture)->second);
-                            }
-                            Vec4 color = Vec4();
-                            createAndBindMaterial(stage, prim, &material, texture, color, false);
-                        }
-                        else
-                        {
-                            CARB_LOG_ERROR("Cannot find material with name %s.\n", body->geoms[i]->material.c_str());
-                        }
-                    }
-                    else if (body->geoms[i]->rgba.x != 0.2 || body->geoms[i]->rgba.y != 0.2 ||
-                             body->geoms[i]->rgba.z != 0.2)
-                    {
-                        // create material with color only
-                        createAndBindMaterial(stage, prim, nullptr, nullptr, body->geoms[i]->rgba, true);
-                    }
-                }
-                hasVisualGeoms = true;
-            }
-        }
+        bool hasVisualGeoms = addVisualGeom(stage, bodyPrim.GetPrim(), body, bodyPath, config, false);
         if (config.makeInstanceable && hasVisualGeoms)
         {
             // make main visuals prim instanceable and reference meshes
@@ -500,6 +735,12 @@ void MJCFImporter::CreatePhysicsBodyAndJoint(pxr::UsdStageWeakPtr stage,
             pxr::UsdPrim visualsPrim = stage->DefinePrim(visualsPath);
             visualsPrim.GetReferences().AddReference(instanceableUsdPath, visualsPath);
             visualsPrim.SetInstanceable(true);
+        }
+
+        // Add sites
+        if (config.importSites)
+        {
+            addVisualSites(stage, bodyPrim.GetPrim(), body, bodyPath, config);
         }
 
         // Add joints
@@ -546,6 +787,15 @@ void MJCFImporter::CreatePhysicsBodyAndJoint(pxr::UsdStageWeakPtr stage,
                 MJCFJoint* joint = body->joints.front();
                 std::string jointPath = rootPrimPath + "/joints/" + SanitizeUsdName(joint->name);
 
+                auto actuatorIterator = jointToActuatorIdx.find(joint->name);
+                int actuatorIdx = actuatorIterator != jointToActuatorIdx.end() ? actuatorIterator->second : -1;
+                MJCFActuator* actuator = nullptr;
+                if (actuatorIdx != -1)
+                {
+                    actuatorIdx = actuatorIterator->second;
+                    actuator = actuators[actuatorIdx];
+                }
+
                 if (joint->type == MJCFJoint::HINGE)
                 {
                     pxr::UsdPhysicsRevoluteJoint jointPrim =
@@ -569,6 +819,8 @@ void MJCFImporter::CreatePhysicsBodyAndJoint(pxr::UsdStageWeakPtr stage,
                     physxLimitAPI.CreateDampingAttr().Set(joint->damping);
 
                     revoluteJointsMap[joint->name] = jointPrim;
+
+                    createJointDrives(jointPrim, joint, actuator, "X", config);
                 }
                 else if (joint->type == MJCFJoint::SLIDE)
                 {
@@ -593,6 +845,8 @@ void MJCFImporter::CreatePhysicsBodyAndJoint(pxr::UsdStageWeakPtr stage,
                     physxLimitAPI.CreateDampingAttr().Set(joint->damping);
 
                     prismaticJointsMap[joint->name] = jointPrim;
+
+                    createJointDrives(jointPrim, joint, actuator, "X", config);
                 }
                 else
                 {
@@ -635,7 +889,7 @@ void MJCFImporter::CreatePhysicsBodyAndJoint(pxr::UsdStageWeakPtr stage,
                     if (actuatorIdx != -1)
                     {
                         actuatorIdx = actuatorIterator->second;
-                        actuator = &(actuators[actuatorIdx]);
+                        actuator = actuators[actuatorIdx];
                     }
 
                     applyJointLimits(jointPrim, body->joints[jid], actuator, axisMap, jid, numJoints, config);
@@ -739,20 +993,26 @@ bool MJCFImporter::contactBodyExclusion(MJCFBody* body1, MJCFBody* body2)
     // handle current geoms first
     for (MJCFGeom* geom1 : body1->geoms)
     {
-        for (MJCFGeom* geom2 : body2->geoms)
+        if (geom1->conaffinity & geom1->contype)
         {
-            auto index1 = geomNameToIdx.find(geom1->name);
-            auto index2 = geomNameToIdx.find(geom2->name);
-            if (index1 == geomNameToIdx.end() || index2 == geomNameToIdx.end())
+            for (MJCFGeom* geom2 : body2->geoms)
             {
-                return false;
+                if (geom2->conaffinity & geom2->contype)
+                {
+                    auto index1 = geomNameToIdx.find(geom1->name);
+                    auto index2 = geomNameToIdx.find(geom2->name);
+                    if (index1 == geomNameToIdx.end() || index2 == geomNameToIdx.end())
+                    {
+                        return false;
+                    }
+
+                    int geomIndex1 = index1->second;
+                    int geomIndex2 = index2->second;
+
+                    contactGraph[geomIndex1]->adjacentNodes.erase(geomIndex2);
+                    contactGraph[geomIndex2]->adjacentNodes.erase(geomIndex1);
+                }
             }
-
-            int geomIndex1 = index1->second;
-            int geomIndex2 = index2->second;
-
-            contactGraph[geomIndex1].adjacentNodes.erase(geomIndex2);
-            contactGraph[geomIndex2].adjacentNodes.erase(geomIndex1);
         }
     }
     return true;
@@ -760,12 +1020,14 @@ bool MJCFImporter::contactBodyExclusion(MJCFBody* body1, MJCFBody* body2)
 
 bool MJCFImporter::createContactGraph()
 {
-    contactGraph = std::vector<ContactNode>{ collisionGeoms.size() };
+    contactGraph = std::vector<ContactNode*>();
 
     // initialize nodes with no contacts
     for (int i = 0; i < int(collisionGeoms.size()); ++i)
     {
-        contactGraph[i].name = collisionGeoms[i]->name;
+        ContactNode* node = new ContactNode();
+        node->name = collisionGeoms[i]->name;
+        contactGraph.push_back(node);
     }
 
     // First check pairwise compatability with contype/conaffinity
@@ -777,8 +1039,8 @@ bool MJCFImporter::createContactGraph()
             MJCFGeom* geom2 = collisionGeoms[j];
             if ((geom1->contype & geom2->conaffinity) || (geom2->contype && geom1->conaffinity))
             {
-                contactGraph[i].adjacentNodes.insert(j);
-                contactGraph[j].adjacentNodes.insert(i);
+                contactGraph[i]->adjacentNodes.insert(j);
+                contactGraph[j]->adjacentNodes.insert(i);
             }
         }
     }
@@ -786,10 +1048,10 @@ bool MJCFImporter::createContactGraph()
     // Handle contact specifications
     for (auto& contact : contacts)
     {
-        if (contact.type == MJCFContact::PAIR)
+        if (contact->type == MJCFContact::PAIR)
         {
-            auto index1 = geomNameToIdx.find(contact.geom1);
-            auto index2 = geomNameToIdx.find(contact.geom2);
+            auto index1 = geomNameToIdx.find(contact->geom1);
+            auto index2 = geomNameToIdx.find(contact->geom2);
             if (index1 == geomNameToIdx.end() || index2 == geomNameToIdx.end())
             {
                 return false;
@@ -798,14 +1060,14 @@ bool MJCFImporter::createContactGraph()
             int geomIndex1 = index1->second;
             int geomIndex2 = index2->second;
 
-            contactGraph[geomIndex1].adjacentNodes.insert(geomIndex2);
-            contactGraph[geomIndex2].adjacentNodes.insert(geomIndex1);
+            contactGraph[geomIndex1]->adjacentNodes.insert(geomIndex2);
+            contactGraph[geomIndex2]->adjacentNodes.insert(geomIndex1);
         }
-        else if (contact.type == MJCFContact::EXCLUDE)
+        else if (contact->type == MJCFContact::EXCLUDE)
         {
             // this is on the level of bodies, not geoms
-            auto body1 = nameToBody.find(contact.body1);
-            auto body2 = nameToBody.find(contact.body2);
+            auto body1 = nameToBody.find(contact->body1);
+            auto body2 = nameToBody.find(contact->body2);
             if (body1 == nameToBody.end() || body2 == nameToBody.end())
             {
                 return false;

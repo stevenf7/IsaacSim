@@ -1,4 +1,4 @@
-// Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -97,7 +97,8 @@ public:
         ELLIPSOID,
         CYLINDER,
         BOX,
-        MESH
+        MESH,
+        OTHER
     };
 
     float density;
@@ -158,6 +159,58 @@ public:
     }
 };
 
+class MJCFSite
+{
+public:
+    enum Type
+    {
+        CAPSULE,
+        SPHERE,
+        ELLIPSOID,
+        CYLINDER,
+        BOX
+    };
+
+    int group;
+
+    Vec3 friction; // Sliding Torsion Rolling
+
+    std::string material;
+    Vec4 rgba;
+    Vec3 from;
+    Vec3 to;
+    Vec3 size;
+    bool hasFromTo;
+
+    std::string name;
+    Vec3 pos;
+    Type type;
+    Quat quat;
+
+    bool hasGeom;
+
+    MJCFSite()
+    {
+        group = 0;
+
+        material = "";
+        rgba = Vec4(0.5f, 0.5f, 0.5f, 1.0f);
+
+        from = Vec3(0.0f, 0.0f, 0.0f);
+        to = Vec3(0.0f, 0.0f, 0.0f);
+        size = Vec3(0.005f, 0.005f, 0.005f);
+        hasFromTo = false;
+
+        name = "";
+
+        pos = Vec3(0.0f, 0.0f, 0.0f);
+        type = SPHERE;
+        quat = Quat();
+
+        hasGeom = true;
+    }
+};
+
 class MJCFInertial
 {
 public:
@@ -194,6 +247,7 @@ public:
     std::vector<MJCFGeom*> geoms;
     std::vector<MJCFJoint*> joints;
     std::vector<MJCFBody*> bodies;
+    std::vector<MJCFSite*> sites;
     bool hasVisual;
 
     MJCFBody()
@@ -228,6 +282,11 @@ public:
         for (int i = 0; i < (int)bodies.size(); i++)
         {
             delete bodies[i];
+        }
+
+        for (int i = 0; i < (int)sites.size(); i++)
+        {
+            delete sites[i];
         }
     }
 };
@@ -291,6 +350,7 @@ public:
         MOTOR,
         POSITION,
         VELOCITY,
+        GENERAL,
         DEFAULT
     };
 
@@ -343,6 +403,26 @@ public:
         float coef;
     };
 
+    struct SpatialAttachment
+    {
+        enum Type
+        {
+            GEOM,
+            SITE
+        };
+        std::string geom;
+        std::string sidesite = "";
+        std::string site;
+        Type type;
+        int branch;
+    };
+
+    struct SpatialPulley
+    {
+        float divisor = 0.0;
+        int branch;
+    };
+
     Type type;
 
     std::string name;
@@ -366,7 +446,13 @@ public:
     float stiffness;
     float damping;
 
-    std::vector<FixedJoint> fixedJoints;
+    // fixed
+    std::vector<FixedJoint*> fixedJoints;
+
+    // spatial
+    std::vector<SpatialAttachment*> spatialAttachments;
+    std::vector<SpatialPulley*> spatialPulleys;
+    std::map<int, std::vector<SpatialAttachment*>> spatialBranches;
 
     MJCFTendon()
     {
@@ -390,6 +476,25 @@ public:
         float springLength = 0.0f;
         float stiffness = 0.0f;
         float damping = 0.0f;
+    }
+
+    ~MJCFTendon()
+    {
+
+        for (int i = 0; i < (int)fixedJoints.size(); i++)
+        {
+            delete fixedJoints[i];
+        }
+
+        for (int i = 0; i < (int)spatialAttachments.size(); i++)
+        {
+            delete spatialAttachments[i];
+        }
+
+        for (int i = 0; i < (int)spatialPulleys.size(); i++)
+        {
+            delete spatialPulleys[i];
+        }
     }
 };
 
@@ -456,6 +561,9 @@ public:
     MJCFGeom dgeom;
     MJCFActuator dactuator;
     MJCFTendon dtendon;
+    MJCFMesh dmesh;
+    MJCFMaterial dmaterial;
+    MJCFSite dsite;
     std::string name;
 };
 
