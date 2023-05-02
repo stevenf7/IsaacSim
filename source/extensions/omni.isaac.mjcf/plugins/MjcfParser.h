@@ -1,4 +1,4 @@
-// Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -9,6 +9,8 @@
 #pragma once
 
 #include "MjcfTypes.h"
+
+#include <omni/isaac/mjcf/mjcf.h>
 
 #include <map>
 #include <tinyxml2.h>
@@ -27,6 +29,18 @@ void LoadGeom(tinyxml2::XMLElement* g,
               MJCFGeom& geom,
               std::string className,
               MJCFCompiler& compiler,
+              std::map<std::string, MJCFClass>& classes,
+              bool isDefault);
+void LoadSite(tinyxml2::XMLElement* s,
+              MJCFSite& site,
+              std::string className,
+              MJCFCompiler& compiler,
+              std::map<std::string, MJCFClass>& classes,
+              bool isDefault);
+void LoadMesh(tinyxml2::XMLElement* m,
+              MJCFMesh& mesh,
+              std::string className,
+              MJCFCompiler& compiler,
               std::map<std::string, MJCFClass>& classes);
 void LoadActuator(tinyxml2::XMLElement* g,
                   MJCFActuator& actuator,
@@ -37,7 +51,7 @@ void LoadContact(tinyxml2::XMLElement* g,
                  MJCFContact& contact,
                  MJCFContact::Type type,
                  std::map<std::string, MJCFClass>& classes);
-void LoadTendon(tinyxml2::XMLElement* g,
+void LoadTendon(tinyxml2::XMLElement* t,
                 MJCFTendon& tendon,
                 std::string className,
                 MJCFTendon::Type type,
@@ -46,7 +60,8 @@ void LoadJoint(tinyxml2::XMLElement* g,
                MJCFJoint& joint,
                std::string className,
                MJCFCompiler& compiler,
-               std::map<std::string, MJCFClass>& classes);
+               std::map<std::string, MJCFClass>& classes,
+               bool isDefault);
 void LoadDefault(tinyxml2::XMLElement* e,
                  const std::string className,
                  MJCFClass& cl,
@@ -57,7 +72,8 @@ void LoadBody(tinyxml2::XMLElement* g,
               MJCFBody& body,
               std::string className,
               MJCFCompiler& compiler,
-              std::map<std::string, MJCFClass>& classes);
+              std::map<std::string, MJCFClass>& classes,
+              std::string baseDirPath);
 tinyxml2::XMLElement* LoadFile(tinyxml2::XMLDocument& doc, const std::string filePath);
 void LoadAssets(tinyxml2::XMLElement* a,
                 std::string baseDirPath,
@@ -65,21 +81,26 @@ void LoadAssets(tinyxml2::XMLElement* a,
                 std::map<std::string, MeshInfo>& simulationMeshCache,
                 std::map<std::string, MJCFMesh>& meshes,
                 std::map<std::string, MJCFMaterial>& materials,
-                std::map<std::string, MJCFTexture>& textures);
+                std::map<std::string, MJCFTexture>& textures,
+                std::string className,
+                std::map<std::string, MJCFClass>& classes,
+                ImportConfig& config);
 void LoadGlobals(tinyxml2::XMLElement* root,
                  std::string& defaultClassName,
                  std::string baseDirPath,
+                 MJCFBody& worldBody,
                  std::vector<MJCFBody*>& bodies,
-                 std::vector<MJCFActuator>& actuators,
-                 std::vector<MJCFTendon>& tendons,
-                 std::vector<MJCFContact>& contacts,
+                 std::vector<MJCFActuator*>& actuators,
+                 std::vector<MJCFTendon*>& tendons,
+                 std::vector<MJCFContact*>& contacts,
                  std::map<std::string, MeshInfo>& simulationMeshCache,
                  std::map<std::string, MJCFMesh>& meshes,
                  std::map<std::string, MJCFMaterial>& materials,
                  std::map<std::string, MJCFTexture>& textures,
                  MJCFCompiler& compiler,
                  std::map<std::string, MJCFClass>& classes,
-                 std::map<std::string, int>& jointToActuatorIdx);
+                 std::map<std::string, int>& jointToActuatorIdx,
+                 ImportConfig& config);
 
 }
 }

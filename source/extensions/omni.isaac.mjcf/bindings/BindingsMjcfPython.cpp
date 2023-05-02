@@ -1,4 +1,4 @@
-// Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -86,6 +86,7 @@ PYBIND11_MODULE(_mjcf, m)
                        "Creates an instanceable version of the asset. All meshes will be placed in a separate USD file")
         .def_readwrite(
             "instanceable_usd_path", &ImportConfig::instanceableMeshUsdPath, "USD file to store instanceable mehses in")
+        .def_readwrite("mesh_root_directory", &ImportConfig::meshRootDirectory, "base directory")
 
         // setters for each property
         .def("set_merge_fixed_joints", [](ImportConfig& config, const bool value) { config.mergeFixedJoints = value; })
@@ -115,7 +116,12 @@ PYBIND11_MODULE(_mjcf, m)
         .def("set_override_inertia", [](ImportConfig& config, const bool value) { config.overrideInertia = value; })
         .def("set_make_instanceable", [](ImportConfig& config, const bool value) { config.makeInstanceable = value; })
         .def("set_instanceable_usd_path",
-             [](ImportConfig& config, const std::string value) { config.instanceableMeshUsdPath = value; });
+             [](ImportConfig& config, const std::string value) { config.instanceableMeshUsdPath = value; })
+        .def("set_mesh_root_directory",
+             [](ImportConfig& config, const std::string value) { config.meshRootDirectory = value; })
+        .def("set_visualize_collision_geoms",
+             [](ImportConfig& config, const bool value) { config.visualizeCollisionGeoms = value; })
+        .def("set_import_sites", [](ImportConfig& config, const bool value) { config.importSites = value; });
 
     defineInterfaceClass<Mjcf>(m, "Mjcf", "acquire_mjcf_interface", "release_mjcf_interface")
         .def("create_asset_mjcf", wrapInterfaceFunction(&Mjcf::createAssetFromMJCF), py::arg("fileName"),

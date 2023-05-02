@@ -1,4 +1,4 @@
-// Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -21,6 +21,11 @@ namespace isaac
 {
 namespace mjcf
 {
+
+int bodyIdxCount = 0;
+int geomIdxCount = 0;
+int siteIdxCount = 0;
+int jointIdxCount = 0;
 
 tinyxml2::XMLElement* LoadInclude(tinyxml2::XMLDocument& doc, const tinyxml2::XMLElement* c, const std::string baseDirPath)
 {
@@ -75,8 +80,6 @@ void LoadCompiler(tinyxml2::XMLElement* c, MJCFCompiler& compiler)
         }
 
         getIfExist(c, "meshdir", compiler.meshDir);
-
-        // load assets
     }
 }
 
@@ -95,7 +98,8 @@ void LoadGeom(tinyxml2::XMLElement* g,
               MJCFGeom& geom,
               std::string className,
               MJCFCompiler& compiler,
-              std::map<std::string, MJCFClass>& classes)
+              std::map<std::string, MJCFClass>& classes,
+              bool isDefault)
 {
     if (!g)
     {
@@ -125,6 +129,12 @@ void LoadGeom(tinyxml2::XMLElement* g,
     getIfExist(g, "density", geom.density);
     getIfExist(g, "mesh", geom.mesh);
 
+    if (geom.name == "" && !isDefault)
+    {
+        geom.name = "_geom_" + std::to_string(geomIdxCount);
+        geomIdxCount++;
+    }
+
     if (g->Attribute("fromto"))
     {
         geom.hasFromTo = true;
@@ -146,12 +156,10 @@ void LoadGeom(tinyxml2::XMLElement* g,
     }
     else if (type == "ellipsoid")
     {
-        std::cout << "Ellipsoid is not natively supported, tesellated mesh will be used" << std::endl;
         geom.type = MJCFGeom::ELLIPSOID;
     }
     else if (type == "cylinder")
     {
-        std::cout << "Cylinder is not natively supported, tesellated mesh will be used" << std::endl;
         geom.type = MJCFGeom::CYLINDER;
     }
     else if (type == "box")
@@ -164,6 +172,7 @@ void LoadGeom(tinyxml2::XMLElement* g,
     }
     else if (type != "")
     {
+        geom.type = MJCFGeom::OTHER;
         std::cout << "Geom type " << type << " not yet supported!" << std::endl;
     }
 
@@ -172,6 +181,94 @@ void LoadGeom(tinyxml2::XMLElement* g,
         // Convert to quat
         geom.quat = Quat(geom.zaxis);
     }
+}
+
+void LoadSite(tinyxml2::XMLElement* s,
+              MJCFSite& site,
+              std::string className,
+              MJCFCompiler& compiler,
+              std::map<std::string, MJCFClass>& classes,
+              bool isDefault)
+{
+    if (!s)
+    {
+        return;
+    }
+    if (s->Attribute("class"))
+        className = s->Attribute("class");
+    site = classes[className].dsite;
+
+    getIfExist(s, "material", site.material);
+    getIfExist(s, "rgba", site.rgba);
+    getIfExist(s, "fromto", site.from, site.to);
+    getIfExist(s, "size", site.size);
+    getIfExist(s, "name", site.name);
+    getIfExist(s, "pos", site.pos);
+    getEulerIfExist(s, "euler", site.quat, compiler.eulerseq, compiler.angleInRad);
+    getAngleAxisIfExist(s, "axisangle", site.quat, compiler.angleInRad);
+    getIfExist(s, "quat", site.quat);
+
+    if (site.name == "" && !isDefault)
+    {
+        site.name = "_site_" + std::to_string(siteIdxCount);
+        siteIdxCount++;
+    }
+
+    if (s->Attribute("fromto") || classes[className].dsite.hasFromTo)
+    {
+        site.hasFromTo = true;
+    }
+
+    if ((!s->Attribute("size") && !classes[className].dsite.hasGeom) && !site.hasFromTo)
+    {
+        site.hasGeom = false;
+    }
+
+    std::string type = "";
+    getIfExist(s, "type", type);
+    if (type == "capsule")
+    {
+        site.type = MJCFSite::CAPSULE;
+    }
+    else if (type == "sphere")
+    {
+        site.type = MJCFSite::SPHERE;
+    }
+    else if (type == "ellipsoid")
+    {
+        site.type = MJCFSite::ELLIPSOID;
+    }
+    else if (type == "cylinder")
+    {
+        site.type = MJCFSite::CYLINDER;
+    }
+    else if (type == "box")
+    {
+        site.type = MJCFSite::BOX;
+    }
+    else if (type != "")
+    {
+        std::cout << "Site type " << type << " not yet supported!" << std::endl;
+    }
+}
+
+void LoadMesh(tinyxml2::XMLElement* m,
+              MJCFMesh& mesh,
+              std::string className,
+              MJCFCompiler& compiler,
+              std::map<std::string, MJCFClass>& classes)
+{
+    if (!m)
+    {
+        return;
+    }
+    if (m->Attribute("class"))
+        className = m->Attribute("class");
+    mesh = classes[className].dmesh;
+
+    getIfExist(m, "name", mesh.name);
+    getIfExist(m, "file", mesh.filename);
+    getIfExist(m, "scale", mesh.scale);
 }
 
 void LoadActuator(tinyxml2::XMLElement* g,
@@ -229,72 +326,129 @@ void LoadContact(tinyxml2::XMLElement* g,
     contact.type = type;
 }
 
-void LoadTendon(tinyxml2::XMLElement* g,
+void LoadTendon(tinyxml2::XMLElement* t,
                 MJCFTendon& tendon,
                 std::string className,
                 MJCFTendon::Type type,
                 std::map<std::string, MJCFClass>& classes)
 {
-    if (!g)
+    if (!t)
     {
         return;
     }
-    if (g->Attribute("class"))
-        className = g->Attribute("class");
+    if (t->Attribute("class"))
+        className = t->Attribute("class");
     tendon = classes[className].dtendon;
-    if (MJCFTendon::SPATIAL == type)
-    {
-        CARB_LOG_WARN("*** Spatial tendons are not yet supported.");
-    }
 
     tendon.type = type;
 
     // parse tendon parameters:
-    getIfExist(g, "name", tendon.name);
-    getIfExist(g, "limited", tendon.limited);
-    getIfExist(g, "range", tendon.range);
-    getIfExist(g, "solimplimit", tendon.solimplimit);
-    getIfExist(g, "solreflimit", tendon.solreflimit);
-    getIfExist(g, "solimpfriction", tendon.solimpfriction);
-    getIfExist(g, "solreffriction", tendon.solreffriction);
-    getIfExist(g, "margin", tendon.margin);
-    getIfExist(g, "frictionloss", tendon.frictionloss);
-    getIfExist(g, "width", tendon.width);
-    getIfExist(g, "material", tendon.material);
-    getIfExist(g, "rgba", tendon.rgba);
-    getIfExist(g, "springlength", tendon.springlength);
+    getIfExist(t, "name", tendon.name);
+    getIfExist(t, "limited", tendon.limited);
+    getIfExist(t, "range", tendon.range);
+    getIfExist(t, "solimplimit", tendon.solimplimit);
+    getIfExist(t, "solreflimit", tendon.solreflimit);
+    getIfExist(t, "solimpfriction", tendon.solimpfriction);
+    getIfExist(t, "solreffriction", tendon.solreffriction);
+    getIfExist(t, "margin", tendon.margin);
+    getIfExist(t, "frictionloss", tendon.frictionloss);
+    getIfExist(t, "width", tendon.width);
+    getIfExist(t, "material", tendon.material);
+    getIfExist(t, "rgba", tendon.rgba);
+    getIfExist(t, "springlength", tendon.springlength);
     if (tendon.springlength < 0.0f)
     {
-        CARB_LOG_WARN("*** Automatic tendon springlength calculation is not supported (negative springlengths are,.");
+        CARB_LOG_WARN("*** Automatic tendon springlength calculation is not supported (negative springlengths).");
     }
-    getIfExist(g, "stiffness", tendon.stiffness);
-    getIfExist(g, "damping", tendon.damping);
+    getIfExist(t, "stiffness", tendon.stiffness);
+    getIfExist(t, "damping", tendon.damping);
 
     // and then go through the joints in the fixed tendon:
-    tinyxml2::XMLElement* j = g->FirstChildElement("joint");
-    while (j)
+    if (type == MJCFTendon::FIXED)
     {
-        // parse fixed joint:
-        if (!j->Attribute("joint"))
+        tinyxml2::XMLElement* j = t->FirstChildElement("joint");
+        while (j)
         {
-            CARB_LOG_FATAL("*** Fixed tendon joint must have a joint attribute.");
-        }
-        if (!j->Attribute("coef"))
-        {
-            CARB_LOG_FATAL("*** Fixed tendon joint must have a coef attribute.");
-        }
-        MJCFTendon::FixedJoint jnt;
-        getIfExist(j, "joint", jnt.joint);
-        getIfExist(j, "coef", jnt.coef);
+            // parse fixed joint:
+            if (!j->Attribute("joint"))
+            {
+                CARB_LOG_FATAL("*** Fixed tendon joint must have a joint attribute.");
+            }
+            if (!j->Attribute("coef"))
+            {
+                CARB_LOG_FATAL("*** Fixed tendon joint must have a coef attribute.");
+            }
+            MJCFTendon::FixedJoint* jnt = new MJCFTendon::FixedJoint();
+            getIfExist(j, "joint", jnt->joint);
+            getIfExist(j, "coef", jnt->coef);
 
-        // if coef nonzero, add:
-        if (0.0f != jnt.coef)
-        {
-            tendon.fixedJoints.push_back(jnt);
-        }
+            // if coef nonzero, add:
+            if (0.0f != jnt->coef)
+            {
+                tendon.fixedJoints.push_back(jnt);
+            }
 
-        // scan for next joint in tendon:
-        j = j->NextSiblingElement("joint");
+            // scan for next joint in tendon:
+            j = j->NextSiblingElement("joint");
+        }
+    }
+
+    // attributes for spatial teondon
+    if (type == MJCFTendon::SPATIAL)
+    {
+        tinyxml2::XMLElement* x = t->FirstChildElement();
+        while (x)
+        {
+            int branch = 0;
+            if (std::string(x->Value()).compare("geom") == 0)
+            {
+                MJCFTendon::SpatialAttachment* attachment = new MJCFTendon::SpatialAttachment();
+                attachment->type = MJCFTendon::SpatialAttachment::GEOM;
+                getIfExist(x, "geom", attachment->geom);
+                getIfExist(x, "sidesite", attachment->sidesite);
+                attachment->branch = branch;
+                if (attachment->geom != "")
+                {
+                    tendon.spatialAttachments.push_back(attachment);
+                    tendon.spatialBranches[branch].push_back(attachment);
+                }
+                else
+                    CARB_LOG_FATAL("*** Spatial tendon geom must be specified.");
+            }
+            else if (std::string(x->Value()).compare("site") == 0)
+            {
+                MJCFTendon::SpatialAttachment* attachment = new MJCFTendon::SpatialAttachment();
+                attachment->type = MJCFTendon::SpatialAttachment::SITE;
+                getIfExist(x, "site", attachment->site);
+                attachment->branch = branch;
+                if (attachment->site != "")
+                {
+                    tendon.spatialAttachments.push_back(attachment);
+                    tendon.spatialBranches[branch].push_back(attachment);
+                }
+                else
+                    CARB_LOG_FATAL("*** Spatial tendon site must be specified.");
+            }
+            else if (std::string(x->Value()).compare("pulley") == 0)
+            {
+                MJCFTendon::SpatialPulley* pulley = new MJCFTendon::SpatialPulley();
+                getIfExist(x, "divisor", pulley->divisor);
+                if (pulley->divisor > 0.0)
+                {
+                    branch++;
+                    pulley->branch = branch;
+                    tendon.spatialPulleys.push_back(pulley);
+                }
+                else
+                    CARB_LOG_FATAL("*** Spatial tendon pulley divisor must be specified.");
+            }
+            else
+            {
+                CARB_LOG_WARN("Found unknown tag %s in tendon.\n", x->Value());
+            }
+
+            x = x->NextSiblingElement();
+        }
     }
 }
 
@@ -303,7 +457,8 @@ void LoadJoint(tinyxml2::XMLElement* g,
                MJCFJoint& joint,
                std::string className,
                MJCFCompiler& compiler,
-               std::map<std::string, MJCFClass>& classes)
+               std::map<std::string, MJCFClass>& classes,
+               bool isDefault)
 {
     if (!g)
     {
@@ -343,6 +498,12 @@ void LoadJoint(tinyxml2::XMLElement* g,
     }
     getIfExist(g, "stiffness", joint.stiffness);
     joint.axis = Normalize(joint.axis);
+
+    if (joint.name == "" && !isDefault)
+    {
+        joint.name = "_joint_" + std::to_string(jointIdxCount);
+        jointIdxCount++;
+    }
 }
 
 
@@ -352,14 +513,17 @@ void LoadDefault(tinyxml2::XMLElement* e,
                  MJCFCompiler& compiler,
                  std::map<std::string, MJCFClass>& classes)
 {
-    LoadJoint(e->FirstChildElement("joint"), cl.djoint, className, compiler, classes);
-    LoadGeom(e->FirstChildElement("geom"), cl.dgeom, className, compiler, classes);
+    LoadJoint(e->FirstChildElement("joint"), cl.djoint, className, compiler, classes, true);
+    LoadGeom(e->FirstChildElement("geom"), cl.dgeom, className, compiler, classes, true);
+    LoadSite(e->FirstChildElement("site"), cl.dsite, className, compiler, classes, true);
     LoadTendon(e->FirstChildElement("tendon"), cl.dtendon, className, MJCFTendon::DEFAULT, classes);
+    LoadMesh(e->FirstChildElement("mesh"), cl.dmesh, className, compiler, classes);
 
     // A defaults class should have one general actuator element, so only one of these should be sucessful
     LoadActuator(e->FirstChildElement("motor"), cl.dactuator, className, MJCFActuator::MOTOR, classes);
     LoadActuator(e->FirstChildElement("position"), cl.dactuator, className, MJCFActuator::POSITION, classes);
     LoadActuator(e->FirstChildElement("velocity"), cl.dactuator, className, MJCFActuator::VELOCITY, classes);
+    LoadActuator(e->FirstChildElement("general"), cl.dactuator, className, MJCFActuator::GENERAL, classes);
 
     tinyxml2::XMLElement* d = e->FirstChildElement("default");
     while (d)
@@ -384,7 +548,8 @@ void LoadBody(tinyxml2::XMLElement* g,
               MJCFBody& body,
               std::string className,
               MJCFCompiler& compiler,
-              std::map<std::string, MJCFClass>& classes)
+              std::map<std::string, MJCFClass>& classes,
+              std::string baseDirPath)
 {
     if (!g)
     {
@@ -401,6 +566,12 @@ void LoadBody(tinyxml2::XMLElement* g,
     getAngleAxisIfExist(g, "axisangle", body.quat, compiler.angleInRad);
     getIfExist(g, "quat", body.quat);
 
+    if (body.name == "")
+    {
+        body.name = "_body_" + std::to_string(bodyIdxCount);
+        bodyIdxCount++;
+    }
+
     // Load interial
     tinyxml2::XMLElement* c = g->FirstChildElement("inertial");
     if (c)
@@ -414,8 +585,17 @@ void LoadBody(tinyxml2::XMLElement* g,
     while (c)
     {
         body.geoms.push_back(new MJCFGeom());
-        LoadGeom(c, *body.geoms.back(), className, compiler, classes);
+        LoadGeom(c, *body.geoms.back(), className, compiler, classes, false);
         c = c->NextSiblingElement("geom");
+    }
+
+    // Load sites
+    c = g->FirstChildElement("site");
+    while (c)
+    {
+        body.sites.push_back(new MJCFSite());
+        LoadSite(c, *body.sites.back(), className, compiler, classes, false);
+        c = c->NextSiblingElement("site");
     }
 
     // Load joints
@@ -423,8 +603,27 @@ void LoadBody(tinyxml2::XMLElement* g,
     while (c)
     {
         body.joints.push_back(new MJCFJoint());
-        LoadJoint(c, *body.joints.back(), className, compiler, classes);
+        LoadJoint(c, *body.joints.back(), className, compiler, classes, false);
         c = c->NextSiblingElement("joint");
+    }
+
+    // Load imports
+    c = g->FirstChildElement("include");
+    while (c)
+    {
+        tinyxml2::XMLDocument includeDoc;
+        tinyxml2::XMLElement* includeRoot = LoadInclude(includeDoc, c, baseDirPath);
+        if (includeRoot)
+        {
+            tinyxml2::XMLElement* d = includeRoot->FirstChildElement("body");
+            while (d)
+            {
+                bodies.push_back(new MJCFBody());
+                LoadBody(d, bodies, *bodies.back(), className, compiler, classes, baseDirPath);
+                d = d->NextSiblingElement("body");
+            }
+        }
+        c = c->NextSiblingElement("include");
     }
 
     // Load child bodies
@@ -432,7 +631,7 @@ void LoadBody(tinyxml2::XMLElement* g,
     while (c)
     {
         body.bodies.push_back(new MJCFBody());
-        LoadBody(c, bodies, *body.bodies.back(), className, compiler, classes);
+        LoadBody(c, bodies, *body.bodies.back(), className, compiler, classes, baseDirPath);
         c = c->NextSiblingElement("body");
     }
 }
@@ -460,25 +659,36 @@ void LoadAssets(tinyxml2::XMLElement* a,
                 std::map<std::string, MeshInfo>& simulationMeshCache,
                 std::map<std::string, MJCFMesh>& meshes,
                 std::map<std::string, MJCFMaterial>& materials,
-                std::map<std::string, MJCFTexture>& textures)
+                std::map<std::string, MJCFTexture>& textures,
+                std::string className,
+                std::map<std::string, MJCFClass>& classes,
+                ImportConfig& config)
 {
     tinyxml2::XMLElement* m = a->FirstChildElement("mesh");
     while (m)
     {
-        std::string meshName;
-        std::string meshFile;
-        Vec3 meshScale = Vec3(1.0f);
-
-        getIfExist(m, "name", meshName);
-        getIfExist(m, "file", meshFile);
-        getIfExist(m, "scale", meshScale);
-
-        std::string meshPath = baseDirPath + compiler.meshDir + "/" + meshFile;
-
         MJCFMesh mMesh = MJCFMesh();
-        mMesh.name = meshName;
-        mMesh.filename = meshFile;
-        mMesh.scale = meshScale;
+        LoadMesh(m, mMesh, className, compiler, classes);
+
+        std::string meshName = mMesh.name;
+        std::string meshFile = mMesh.filename;
+        Vec3 meshScale = mMesh.scale;
+
+        if (config.meshRootDirectory != "")
+            baseDirPath = config.meshRootDirectory;
+        std::string meshPath = baseDirPath + compiler.meshDir + "/" + meshFile;
+        if (meshName == "")
+        {
+            if (meshFile != "")
+            {
+                size_t lastindex = meshFile.find_last_of(".");
+                meshName = meshFile.substr(0, lastindex);
+            }
+            else
+            {
+                CARB_LOG_ERROR("*** Mesh missing name and file attributes!\n");
+            }
+        }
 
         meshes[meshName] = mMesh;
 
@@ -538,7 +748,7 @@ void LoadAssets(tinyxml2::XMLElement* a,
         getIfExist(mat, "texture", texture);
         getIfExist(mat, "rgba", rgba);
 
-        MJCFMaterial material = MJCFMaterial();
+        MJCFMaterial material;
         material.name = matName;
         material.texture = texture;
         material.specular = matSpecular;
@@ -581,19 +791,27 @@ void LoadAssets(tinyxml2::XMLElement* a,
 void LoadGlobals(tinyxml2::XMLElement* root,
                  std::string& defaultClassName,
                  std::string baseDirPath,
+                 MJCFBody& worldBody,
                  std::vector<MJCFBody*>& bodies,
-                 std::vector<MJCFActuator>& actuators,
-                 std::vector<MJCFTendon>& tendons,
-                 std::vector<MJCFContact>& contacts,
+                 std::vector<MJCFActuator*>& actuators,
+                 std::vector<MJCFTendon*>& tendons,
+                 std::vector<MJCFContact*>& contacts,
                  std::map<std::string, MeshInfo>& simulationMeshCache,
                  std::map<std::string, MJCFMesh>& meshes,
                  std::map<std::string, MJCFMaterial>& materials,
                  std::map<std::string, MJCFTexture>& textures,
                  MJCFCompiler& compiler,
                  std::map<std::string, MJCFClass>& classes,
-                 std::map<std::string, int>& jointToActuatorIdx)
+                 std::map<std::string, int>& jointToActuatorIdx,
+                 ImportConfig& config)
 {
     LoadCompiler(root->FirstChildElement("compiler"), compiler);
+
+    // reset counters
+    bodyIdxCount = 0;
+    geomIdxCount = 0;
+    siteIdxCount = 0;
+    jointIdxCount = 0;
 
     // Deal with defaults
     tinyxml2::XMLElement* d = root->FirstChildElement("default");
@@ -629,11 +847,13 @@ void LoadGlobals(tinyxml2::XMLElement* root,
             tinyxml2::XMLElement* includeRoot = LoadInclude(includeDoc, a->FirstChildElement("include"), baseDirPath);
             if (includeRoot)
             {
-                LoadAssets(includeRoot, baseDirPath, compiler, simulationMeshCache, meshes, materials, textures);
+                LoadAssets(includeRoot, baseDirPath, compiler, simulationMeshCache, meshes, materials, textures,
+                           defaultClassName, classes, config);
             }
         }
 
-        LoadAssets(a, baseDirPath, compiler, simulationMeshCache, meshes, materials, textures);
+        LoadAssets(a, baseDirPath, compiler, simulationMeshCache, meshes, materials, textures, defaultClassName,
+                   classes, config);
     }
 
     tinyxml2::XMLElement* wb = root->FirstChildElement("worldbody");
@@ -648,7 +868,7 @@ void LoadGlobals(tinyxml2::XMLElement* root,
                 while (c)
                 {
                     bodies.push_back(new MJCFBody());
-                    LoadBody(c, bodies, *bodies.back(), defaultClassName, compiler, classes);
+                    LoadBody(c, bodies, *bodies.back(), defaultClassName, compiler, classes, baseDirPath);
                     c = c->NextSiblingElement("body");
                 }
             }
@@ -658,8 +878,30 @@ void LoadGlobals(tinyxml2::XMLElement* root,
         while (c)
         {
             bodies.push_back(new MJCFBody());
-            LoadBody(c, bodies, *bodies.back(), defaultClassName, compiler, classes);
+            LoadBody(c, bodies, *bodies.back(), defaultClassName, compiler, classes, baseDirPath);
             c = c->NextSiblingElement("body");
+        }
+
+        worldBody = MJCFBody();
+        // load sites and geoms
+        tinyxml2::XMLElement* g = wb->FirstChildElement("geom");
+        while (g)
+        {
+            worldBody.geoms.push_back(new MJCFGeom());
+            LoadGeom(g, *worldBody.geoms.back(), defaultClassName, compiler, classes, true);
+            if (worldBody.geoms.back()->type == MJCFGeom::OTHER)
+            {
+                // don't know how to deal with it - remove it from list
+                worldBody.geoms.pop_back();
+            }
+            g = g->NextSiblingElement("geom");
+        }
+        tinyxml2::XMLElement* s = wb->FirstChildElement("site");
+        while (s)
+        {
+            worldBody.sites.push_back(new MJCFSite());
+            LoadSite(wb->FirstChildElement("site"), *worldBody.sites.back(), defaultClassName, compiler, classes, true);
+            s = s->NextSiblingElement("site");
         }
     }
 
@@ -683,15 +925,19 @@ void LoadGlobals(tinyxml2::XMLElement* root,
             {
                 type = MJCFActuator::VELOCITY;
             }
+            else if (elementName == "general")
+            {
+                type = MJCFActuator::GENERAL;
+            }
             else
             {
                 CARB_LOG_ERROR("*** Only motor, position, velocity actuators supported");
                 continue;
             }
 
-            MJCFActuator actuator;
-            LoadActuator(c, actuator, defaultClassName, type, classes);
-            jointToActuatorIdx[actuator.joint] = int(actuators.size());
+            MJCFActuator* actuator = new MJCFActuator();
+            LoadActuator(c, *actuator, defaultClassName, type, classes);
+            jointToActuatorIdx[actuator->joint] = int(actuators.size());
             actuators.push_back(actuator);
             c = c->NextSiblingElement();
         }
@@ -706,8 +952,8 @@ void LoadGlobals(tinyxml2::XMLElement* root,
             tinyxml2::XMLElement* c = tc->FirstChildElement("fixed");
             while (c)
             {
-                MJCFTendon tendon;
-                LoadTendon(c, tendon, defaultClassName, MJCFTendon::FIXED, classes);
+                MJCFTendon* tendon = new MJCFTendon();
+                LoadTendon(c, *tendon, defaultClassName, MJCFTendon::FIXED, classes);
                 tendons.push_back(tendon);
                 c = c->NextSiblingElement("fixed");
             }
@@ -717,8 +963,8 @@ void LoadGlobals(tinyxml2::XMLElement* root,
             tinyxml2::XMLElement* c = tc->FirstChildElement("spatial");
             while (c)
             {
-                MJCFTendon tendon;
-                LoadTendon(c, tendon, defaultClassName, MJCFTendon::SPATIAL, classes);
+                MJCFTendon* tendon = new MJCFTendon();
+                LoadTendon(c, *tendon, defaultClassName, MJCFTendon::SPATIAL, classes);
                 tendons.push_back(tendon);
                 c = c->NextSiblingElement("spatial");
             }
@@ -747,8 +993,8 @@ void LoadGlobals(tinyxml2::XMLElement* root,
                 continue;
             }
 
-            MJCFContact contact;
-            LoadContact(c, contact, type, classes);
+            MJCFContact* contact = new MJCFContact();
+            LoadContact(c, *contact, type, classes);
             contacts.push_back(contact);
             c = c->NextSiblingElement();
         }

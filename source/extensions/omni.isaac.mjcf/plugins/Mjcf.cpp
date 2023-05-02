@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -43,7 +43,7 @@ void createAssetFromMJCF(const char* fileName,
                          omni::isaac::mjcf::ImportConfig& config,
                          const std::string& stage_identifier = "")
 {
-    omni::isaac::mjcf::MJCFImporter mjcf(fileName);
+    omni::isaac::mjcf::MJCFImporter mjcf(fileName, config);
     if (!mjcf.isLoaded)
     {
         printf("cannot load mjcf xml file\n");

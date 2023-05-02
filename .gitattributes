@@ -9,6 +9,7 @@
 # Make sure shell scripts have LF line endings, even when checked out on a Windows client with autocrlf=true
 *.sh text eol=lf
 *.usd filter=lfs diff=lfs merge=lfs -text
+*.usda filter=lfs diff=lfs merge=lfs -text
 *.dae filter=lfs diff=lfs merge=lfs -text
 *.step filter=lfs diff=lfs merge=lfs -text
 *.stp filter=lfs diff=lfs merge=lfs -text
