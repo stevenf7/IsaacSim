@@ -35,12 +35,6 @@ class BaseIsaacBenchmark(omni.kit.test.AsyncTestCase):
             carb.log_error("Could not find Isaac Sim assets folder")
             return
         self.settings = carb.settings.get_settings()
-        try:
-            from omni.kit.testing.metrics_uploader.extension import MetricsUploaderExtension
-
-            self.uploader_instance = MetricsUploaderExtension().get_instance()
-        except:
-            self.uploader_instance = None
         await omni.usd.get_context().new_stage_async()
         for _ in range(100):
             await omni.kit.app.get_app().next_update_async()
@@ -73,12 +67,11 @@ class BaseIsaacBenchmark(omni.kit.test.AsyncTestCase):
         )  # the name is set by the test itself, set it to a default here.
 
         logger.info(f"Execution type = {type(self._execution_env).__name__}")
-        if self.uploader_instance:
-            self._metrics_output_folder = self.uploader_instance.metrics_output
-        else:
+        self._metrics_output_folder = self.settings.get("/exts/omni.isaac.benchmarks/metrics/metrics_output_folder")
+        if not self._metrics_output_folder:
             self._metrics_output_folder = tempfile.gettempdir()
 
-        self.outputs_dir: Path = Path(tempfile.gettempdir()) / "isaac_sim_benchmark_outputs"
+        self.outputs_dir: Path = Path(self._metrics_output_folder) / "isaac_sim_benchmark_outputs"
 
         logger.info(f"Local folder location = {self.outputs_dir}")
         logger.info(f"Starting")

@@ -49,7 +49,8 @@ use_online_index = true
 
 [settings]
 exts."omni.isaac.benchmarks".metrics.nvdataflow_default_test_suite_name = "Isaac Sim Benchmarks"
-
+# uncomment and set this to output metrics to a specific folder
+# exts."omni.isaac.benchmarks".metrics.metrics_output_folder=""
 [[test]]
 
 # these are not cached
@@ -59,5 +60,5 @@ dependencies = [
     "omni.kit.nvdf.telemetry",
 #    "omni.kit.usdstats"
 ]
-timeout=1200
-args = ["--/app/fastShutdown=0", "--/exts/omni.kit.test/testExtDefaultTimeout=1200"]
+timeout=2000
+args = ["--/app/fastShutdown=0"]
