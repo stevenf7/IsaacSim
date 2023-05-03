@@ -107,7 +107,8 @@ public:
     int contype;
     float margin;
 
-    Vec3 friction; // Sliding Torsion Rolling
+    // sliding, torsion, rolling frictions
+    Vec3 friction;
 
     std::string material;
     Vec4 rgba;
@@ -173,7 +174,8 @@ public:
 
     int group;
 
-    Vec3 friction; // Sliding Torsion Rolling
+    // sliding, torsion, rolling frictions
+    Vec3 friction;
 
     std::string material;
     Vec4 rgba;
@@ -472,7 +474,6 @@ public:
         material = "";
         rgba = Vec4(0.5f, 0.5f, 0.5f, 1.0f);
 
-        // was previously commented out
         float springLength = 0.0f;
         float stiffness = 0.0f;
         float damping = 0.0f;
@@ -554,9 +555,11 @@ public:
     }
 };
 
+
 class MJCFClass
 {
 public:
+    // a class that defines default values for the following entities
     MJCFJoint djoint;
     MJCFGeom dgeom;
     MJCFActuator dactuator;

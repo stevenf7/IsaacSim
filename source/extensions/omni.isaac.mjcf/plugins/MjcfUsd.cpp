@@ -125,7 +125,7 @@ void createMaterial(pxr::UsdStageWeakPtr usdStage,
     std::string prefix_path;
     prefix_path = pxr::SdfPath(path).GetParentPath().GetParentPath().GetString(); // Robot root
 
-    // For each material, store the face indices and create GeomSubsets
+    // for each material, store the face indices and create GeomSubsets
     usdStage->DefinePrim(pxr::SdfPath(prefix_path + "/Looks"), pxr::TfToken("Scope"));
     for (auto const& mat : materialMap)
     {
@@ -258,7 +258,6 @@ pxr::UsdGeomMesh createMesh(pxr::UsdStageWeakPtr stage, const pxr::SdfPath path,
             int materialIdx = mesh->m_materialAssignments[m].material;
             materialMap[materialIdx].push_back(static_cast<int>(i));
         }
-        // printf("faceVertexOffset %d %d %d %d\n", indexOffset, points.size(), vertexOffset, faceVertexCounts.size());
         vertexOffset = vertexOffset + meshPrim.faceVertexCounts.size();
     }
 
@@ -282,7 +281,7 @@ pxr::UsdGeomMesh createMesh(pxr::UsdStageWeakPtr stage, const pxr::SdfPath path,
 
     pxr::UsdGeomMesh usdMesh = createMesh(stage, path, points, normals, indices, vertexCounts);
 
-    // Texture UV
+    // texture UV
     for (size_t j = 0; j < uvs.size(); j++)
     {
         pxr::TfToken stName;
@@ -315,7 +314,7 @@ pxr::UsdGeomMesh createMesh(pxr::UsdStageWeakPtr stage,
                             const std::vector<int>& vertexCounts)
 {
     pxr::UsdGeomMesh mesh = pxr::UsdGeomMesh::Define(stage, path);
-    // Fill in VtArrays
+    // fill in VtArrays
     pxr::VtArray<int> vertexCountsVt;
     vertexCountsVt.assign(vertexCounts.begin(), vertexCounts.end());
     pxr::VtArray<int> vertexIndicesVt;
@@ -862,14 +861,6 @@ pxr::UsdPhysicsJoint createFixedJoint(pxr::UsdStageWeakPtr stage,
     pxr::GfQuatf localRot1 = pxr::GfQuatf(
         poseJointToChildBody.q.w, poseJointToChildBody.q.x, poseJointToChildBody.q.y, poseJointToChildBody.q.z);
 
-    /*    printf(
-            "localpos0: [%f %f %f] localrot0: [%f %f %f %f] localpos1: [%f %f %f] localrot1: [%f %f %f %f]\n",
-            localPos0[0], localPos0[1], localPos0[2],
-            localRot0.GetReal(), localRot0.GetImaginary()[0], localRot0.GetImaginary()[1], localRot0.GetImaginary()[2],
-            localPos1[0], localPos1[1], localPos1[2],
-            localRot1.GetReal(), localRot1.GetImaginary()[0], localRot1.GetImaginary()[1],
-       localRot1.GetImaginary()[2]);*/
-
     pxr::SdfPathVector val0{ pxr::SdfPath(parentBodyPath) };
     pxr::SdfPathVector val1{ pxr::SdfPath(bodyPath) };
 
@@ -1074,7 +1065,7 @@ void createJointDrives(pxr::UsdPhysicsJoint jointPrim,
         MJCFActuator::Type actuatorType = actuator->type;
         if (actuatorType == MJCFActuator::MOTOR || actuatorType == MJCFActuator::GENERAL)
         {
-            // nothing special?
+            // nothing special
         }
         else if (actuatorType == MJCFActuator::POSITION)
         {
