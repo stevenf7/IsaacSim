@@ -60,5 +60,5 @@ dependencies = [
     "omni.kit.nvdf.telemetry",
 #    "omni.kit.usdstats"
 ]
-timeout=2000
+timeout=4000
 args = ["--/app/fastShutdown=0"]

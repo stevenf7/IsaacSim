@@ -18,6 +18,8 @@ from pxr import Gf, UsdGeom
 from ..utils.base_isaac_benchmark import BaseIsaacBenchmark
 from ..utils.helper import add_ros_camera
 
+TEST_NUM_APP_UPDATES = 60 * 10
+
 
 class TestBenchmarkRos1Camera(BaseIsaacBenchmark):
     async def setUp(self):
@@ -90,7 +92,7 @@ class TestBenchmarkRos1Camera(BaseIsaacBenchmark):
             self.set_phase("benchmark")
             self.start_collecting_frametime()
 
-            while self.get_num_frames() < 120:
+            while self.get_num_frames() < TEST_NUM_APP_UPDATES:
                 await omni.kit.app.get_app().next_update_async()
 
             self.stop_collecting_frametime()
