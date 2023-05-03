@@ -34,6 +34,8 @@ MJCFImporter::MJCFImporter(const std::string fullPath, ImportConfig& config)
         return;
     }
 
+
+    // if the mjcf file contains <include file="....">, load the included file as well
     {
         tinyxml2::XMLDocument includeDoc;
         tinyxml2::XMLElement* includeElement = root->FirstChildElement("include");
@@ -65,7 +67,7 @@ MJCFImporter::MJCFImporter(const std::string fullPath, ImportConfig& config)
             "*** Could not create contact graph to compute collision groups! Are contacts specified properly?\n");
     }
 
-    // if we got here, we win
+    // loading is complete if it reaches here
     this->isLoaded = true;
 }
 
@@ -262,7 +264,7 @@ void MJCFImporter::addVisualSites(
 
 void MJCFImporter::addWorldGeomsAndSites(pxr::UsdStageWeakPtr stage, std::string rootPath, const ImportConfig& config)
 {
-    // we have to create a dummy link to place the site/geoms defined in world body
+    // we have to create a dummy link to place the sites/geoms defined in the world body
     std::string bodyPath = rootPath + "/dummyLinkForWorld";
     pxr::UsdPrim dummyLink = pxr::UsdGeomXform::Define(stage, pxr::SdfPath(bodyPath)).GetPrim();
     pxr::UsdPhysicsRigidBodyAPI physicsAPI = pxr::UsdPhysicsRigidBodyAPI::Apply(dummyLink);
@@ -589,7 +591,7 @@ void MJCFImporter::CreateInstanceableMeshes(pxr::UsdStageRefPtr stage,
 
         std::string bodyPath = rootPrimPath + "/" + SanitizeUsdName(body->name);
 
-        // Add collision geoms first to detect whether visuals are available
+        // add collision geoms first to detect whether visuals are available
         for (int i = 0; i < (int)body->geoms.size(); i++)
         {
             bool isVisual = body->geoms[i]->contype == 0 && body->geoms[i]->conaffinity == 0;
@@ -616,10 +618,10 @@ void MJCFImporter::CreateInstanceableMeshes(pxr::UsdStageRefPtr stage,
             }
         }
 
-        // Add visual geoms
+        // add visual geoms
         addVisualGeom(stage, pxr::UsdPrim(), body, bodyPath, config, true);
 
-        // Recursively create children's bodies
+        // recursively create children's bodies
         for (int i = 0; i < (int)body->bodies.size(); i++)
         {
             CreateInstanceableMeshes(stage, body->bodies[i], rootPrimPath, false, config);
@@ -663,7 +665,7 @@ void MJCFImporter::CreatePhysicsBodyAndJoint(pxr::UsdStageWeakPtr stage,
         std::string bodyPath = rootPrimPath + "/" + SanitizeUsdName(body->name);
         pxr::UsdGeomXformable bodyPrim = createBody(stage, bodyPath, myTrans, config);
 
-        // Add Rigid Body
+        // add Rigid Body
         if (bodyPrim)
         {
             applyRigidBody(bodyPrim, body, config);
@@ -685,7 +687,7 @@ void MJCFImporter::CreatePhysicsBodyAndJoint(pxr::UsdStageWeakPtr stage,
             applyArticulationAPI(stage, bodyPrim, config);
         }
 
-        // Add collision geoms first to detect whether visuals are available
+        // add collision geoms first to detect whether visuals are available
         bool hasCollisionGeoms = false;
         for (int i = 0; i < (int)body->geoms.size(); i++)
         {
@@ -726,7 +728,7 @@ void MJCFImporter::CreatePhysicsBodyAndJoint(pxr::UsdStageWeakPtr stage,
             collisionsPrim.SetInstanceable(true);
         }
 
-        // Add visual geoms
+        // add visual geoms
         bool hasVisualGeoms = addVisualGeom(stage, bodyPrim.GetPrim(), body, bodyPath, config, false);
         if (config.makeInstanceable && hasVisualGeoms)
         {
@@ -737,27 +739,29 @@ void MJCFImporter::CreatePhysicsBodyAndJoint(pxr::UsdStageWeakPtr stage,
             visualsPrim.SetInstanceable(true);
         }
 
-        // Add sites
+        // add sites
         if (config.importSites)
         {
             addVisualSites(stage, bodyPrim.GetPrim(), body, bodyPath, config);
         }
 
-        // Add joints
-        // Create joint linked to parent
+        // add joints
+        // create joint linked to parent
         if (!isRoot)
         {
-            Transform origin; // JointSpec transform
+            // jointSpec transform
+            Transform origin;
             if (body->joints.size() > 0)
             {
-                origin.p = body->joints[0]->pos; // Origin at last joint (deepest)
+                // origin at last joint (deepest)
+                origin.p = body->joints[0]->pos;
             }
             else
             {
                 origin.p = Vec3(0.0f, 0.0f, 0.0f);
             }
 
-            // Compute joint frame and map joint axes to D6 axes
+            // compute joint frame and map joint axes to D6 axes
             int axisMap[3] = { 0, 1, 2 };
             computeJointFrame(origin, axisMap, body);
 
@@ -770,7 +774,6 @@ void MJCFImporter::CreatePhysicsBodyAndJoint(pxr::UsdStageWeakPtr stage,
             Transform cpose = (Inverse(mtran)) * origin;
 
             std::string jointPath = rootPrimPath + "/joints/" + SanitizeUsdName(body->name);
-            // pxr::UsdPhysicsJoint jointPrim;
 
             int numJoints = (int)body->joints.size();
             if (numJoints == 0)
@@ -862,10 +865,10 @@ void MJCFImporter::CreatePhysicsBodyAndJoint(pxr::UsdStageWeakPtr stage,
                 applyPhysxJoint(jointPrim, body->joints[0]);
 
                 // TODO: this needs to be updated to support all joint types and combinations
-                // Set joint limits
+                // set joint limits
                 for (int jid = 0; jid < (int)body->joints.size(); jid++)
                 {
-                    // All locked
+                    // all locked
                     for (int k = 0; k < 6; ++k)
                     {
                         body->joints[jid]->velocityLimits[k] = 100.f;
@@ -897,7 +900,7 @@ void MJCFImporter::CreatePhysicsBodyAndJoint(pxr::UsdStageWeakPtr stage,
             }
         }
 
-        // Recursively create children's bodies
+        // recursively create children's bodies
         for (int i = 0; i < (int)body->bodies.size(); i++)
         {
             CreatePhysicsBodyAndJoint(

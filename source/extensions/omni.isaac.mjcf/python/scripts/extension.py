@@ -264,7 +264,6 @@ class Extension(omni.ext.IExt):
                 basename = path[path.rfind("\\") + 1]
 
             full_path = os.path.abspath(os.path.join(self.root_path, self.filename))
-            # print(full_path)
             dest_path = "{}/{}/{}.usd".format(base_path, basename, basename)
             current_stage = omni.usd.get_context().get_stage()
             prim_path = omni.usd.get_stage_next_free_path(current_stage, "/" + basename, False)

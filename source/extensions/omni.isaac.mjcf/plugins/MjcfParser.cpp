@@ -178,7 +178,7 @@ void LoadGeom(tinyxml2::XMLElement* g,
 
     if (geom.hasZAxis)
     {
-        // Convert to quat
+        // convert to quat
         geom.quat = Quat(geom.zaxis);
     }
 }
@@ -519,17 +519,17 @@ void LoadDefault(tinyxml2::XMLElement* e,
     LoadTendon(e->FirstChildElement("tendon"), cl.dtendon, className, MJCFTendon::DEFAULT, classes);
     LoadMesh(e->FirstChildElement("mesh"), cl.dmesh, className, compiler, classes);
 
-    // A defaults class should have one general actuator element, so only one of these should be sucessful
+    // a defaults class should have one general actuator element, so only one of these should be sucessful
     LoadActuator(e->FirstChildElement("motor"), cl.dactuator, className, MJCFActuator::MOTOR, classes);
     LoadActuator(e->FirstChildElement("position"), cl.dactuator, className, MJCFActuator::POSITION, classes);
     LoadActuator(e->FirstChildElement("velocity"), cl.dactuator, className, MJCFActuator::VELOCITY, classes);
     LoadActuator(e->FirstChildElement("general"), cl.dactuator, className, MJCFActuator::GENERAL, classes);
 
     tinyxml2::XMLElement* d = e->FirstChildElement("default");
+    // while there is child default
     while (d)
     {
-        // While there is child default
-        // Must have name
+        // must have a name
         if (!d->Attribute("class"))
         {
             std::cout << "Non-top level class must have name" << std::endl;
@@ -572,7 +572,7 @@ void LoadBody(tinyxml2::XMLElement* g,
         bodyIdxCount++;
     }
 
-    // Load interial
+    // load interial
     tinyxml2::XMLElement* c = g->FirstChildElement("inertial");
     if (c)
     {
@@ -580,7 +580,7 @@ void LoadBody(tinyxml2::XMLElement* g,
         LoadInertial(c, *body.inertial);
     }
 
-    // Load geoms
+    // load geoms
     c = g->FirstChildElement("geom");
     while (c)
     {
@@ -589,7 +589,7 @@ void LoadBody(tinyxml2::XMLElement* g,
         c = c->NextSiblingElement("geom");
     }
 
-    // Load sites
+    // load sites
     c = g->FirstChildElement("site");
     while (c)
     {
@@ -598,7 +598,7 @@ void LoadBody(tinyxml2::XMLElement* g,
         c = c->NextSiblingElement("site");
     }
 
-    // Load joints
+    // load joints
     c = g->FirstChildElement("joint");
     while (c)
     {
@@ -607,7 +607,7 @@ void LoadBody(tinyxml2::XMLElement* g,
         c = c->NextSiblingElement("joint");
     }
 
-    // Load imports
+    // load imports
     c = g->FirstChildElement("include");
     while (c)
     {
@@ -626,7 +626,7 @@ void LoadBody(tinyxml2::XMLElement* g,
         c = c->NextSiblingElement("include");
     }
 
-    // Load child bodies
+    // load child bodies
     c = g->FirstChildElement("body");
     while (c)
     {
@@ -805,6 +805,8 @@ void LoadGlobals(tinyxml2::XMLElement* root,
                  std::map<std::string, int>& jointToActuatorIdx,
                  ImportConfig& config)
 {
+    // parses attributes for the MJCF compiler, which defines settings such as
+    // angle units (rad/deg), mesh directory path, etc.
     LoadCompiler(root->FirstChildElement("compiler"), compiler);
 
     // reset counters
@@ -813,13 +815,12 @@ void LoadGlobals(tinyxml2::XMLElement* root,
     siteIdxCount = 0;
     jointIdxCount = 0;
 
-    // Deal with defaults
+    // deal with defaults
     tinyxml2::XMLElement* d = root->FirstChildElement("default");
     if (!d)
     {
-        // No default, set the defaultClassName to default if it does not exist yet
-        // preist@: Added this condition to avoid overwriting default class parameters
-        // parsed in a prior call
+        // if no default, set the defaultClassName to default if it does not exist yet.
+        // added this condition to avoid overwriting default class parameters parsed in a prior call
         if (classes.find(defaultClassName) == classes.end())
         {
             classes[defaultClassName] = MJCFClass();
@@ -827,7 +828,7 @@ void LoadGlobals(tinyxml2::XMLElement* root,
     }
     else
     {
-        // Only handle one top level default
+        // only handle one top level default
         if (d->Attribute("class"))
             defaultClassName = d->Attribute("class");
         classes[defaultClassName] = MJCFClass();
@@ -856,6 +857,7 @@ void LoadGlobals(tinyxml2::XMLElement* root,
                    classes, config);
     }
 
+    // finds the origin of the world frame within which the rest of the kinematic tree is defined
     tinyxml2::XMLElement* wb = root->FirstChildElement("worldbody");
     if (wb)
     {
@@ -948,7 +950,7 @@ void LoadGlobals(tinyxml2::XMLElement* root,
     if (tc)
     {
         {
-            // do fixed tendons first
+            // parse fixed tendons first
             tinyxml2::XMLElement* c = tc->FirstChildElement("fixed");
             while (c)
             {
@@ -959,7 +961,7 @@ void LoadGlobals(tinyxml2::XMLElement* root,
             }
         }
         {
-            // do spatial tendons next
+            // parse spatial tendons next
             tinyxml2::XMLElement* c = tc->FirstChildElement("spatial");
             while (c)
             {

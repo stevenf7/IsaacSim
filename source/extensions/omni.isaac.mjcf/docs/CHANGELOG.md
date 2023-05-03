@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.1] - 2023-05-02
+### Added
+- High level code overview in README.md
+
 ## [0.4.0] - 2023-03-27
 ### Added
 - Support for sites and spatial tendons

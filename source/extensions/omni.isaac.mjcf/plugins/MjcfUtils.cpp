@@ -1,4 +1,4 @@
-// Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -172,7 +172,7 @@ void getEulerIfExist(tinyxml2::XMLElement* e, const char* aname, Quat& q, std::s
             b = kPi * b / 180.0f;
             c = kPi * c / 180.0f;
         }
-        // Mujoco xyz rotation is an intrinsic rotation about x, then rotated y, then twice rotated z
+        // mujoco xyz rotation is an intrinsic rotation about x, then rotated y, then twice rotated z
         q = euler_xyz2quat(a, b, c);
     }
 }
@@ -186,7 +186,7 @@ void getAngleAxisIfExist(tinyxml2::XMLElement* e, const char* aname, Quat& q, bo
         float angle;
         sscanf(st, "%f %f %f %f", &axis.x, &axis.y, &axis.z, &angle);
 
-        // Convert to quat
+        // convert to quat
         if (!angleInRad)
         {
             angle = kPi * angle / 180.0f;
