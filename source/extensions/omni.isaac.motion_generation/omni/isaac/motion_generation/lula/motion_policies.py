@@ -534,7 +534,7 @@ class RmpFlowSmoothed(RmpFlow):
 
     def _eval_speed_scaled_accel(self, joint_positions, joint_velocities):
         qdd_eval = self._evaluate_acceleration(joint_positions, joint_velocities / (self.speed_scalar))
-        qdd_eval *= self.speed_scalar ** 2
+        qdd_eval *= self.speed_scalar**2
 
         return qdd_eval
 

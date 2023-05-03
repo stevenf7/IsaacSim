@@ -857,7 +857,7 @@ class BinStack(Scenario):
             tf.p = [-random.random() * 0.15 - 0.05, 1.50, -0.15]
             z = random.random() * 0.02 - 0.01
             w = random.random() * 0.02 - 0.01
-            norm = np.sqrt(z ** 2 + w ** 2)
+            norm = np.sqrt(z**2 + w**2)
             tf.r = [0, 0, z / norm, w / norm]
             if random.random() > 0.5:
                 tf.r = math_utils.mul(tf.r, [0, 1, 0, 0])

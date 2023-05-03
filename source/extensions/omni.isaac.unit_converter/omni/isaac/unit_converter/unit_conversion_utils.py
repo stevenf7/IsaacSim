@@ -153,7 +153,7 @@ def scale_joint(joint_prim, scale, make_delta=False, ignore_prim=False):
     for prop in [joint_prim.GetAttribute(p) for p in joint_attribute_list if joint_prim.GetAttribute(p)]:
         set_prop(joint_prim, prop, scale, make_delta)
     for prop in [joint_prim.GetAttribute(p) for p in joint_force_attribute_list if joint_prim.GetAttribute(p)]:
-        set_prop(joint_prim, prop, scale ** 2, make_delta)
+        set_prop(joint_prim, prop, scale**2, make_delta)
     if UsdPhysics.PrismaticJoint(joint_prim):
         for prop in [
             joint_prim.GetAttribute(p)
@@ -170,13 +170,13 @@ def scale_mass(prim, scale, make_delta=False):
     mass_prim = UsdPhysics.MassAPI(prim)
     density = mass_prim.GetDensityAttr()
     if density.Get():
-        set_prop(prim, density, scale ** -3, make_delta)
+        set_prop(prim, density, scale**-3, make_delta)
     com = mass_prim.GetCenterOfMassAttr()
     if com.Get():
         set_prop(prim, com, scale, make_delta)
     inertia = mass_prim.GetDiagonalInertiaAttr()
     if inertia.Get().GetLength():
-        set_prop(prim, inertia, scale ** 2, make_delta)
+        set_prop(prim, inertia, scale**2, make_delta)
 
 
 def scale_collision(prim, scale, make_delta=False):
@@ -229,7 +229,7 @@ def scale_rigid_body(rb_prim, scale, make_delta=False):
         for p in ["physxRigidBody:stabilizationThreshold", "physxArticulation:stabilizationThreshold"]
         if rb_prim.GetAttribute(p).Get()
     ]:
-        set_prop(rb_prim, stabilization, scale ** 2, make_delta)
+        set_prop(rb_prim, stabilization, scale**2, make_delta)
 
 
 def scale_scene(prim, scale, make_delta=False):

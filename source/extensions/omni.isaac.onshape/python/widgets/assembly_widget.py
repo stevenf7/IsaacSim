@@ -96,9 +96,7 @@ class Mate(object):
         # Axis is actually alwayz Z
         # print(details)
         if self.type == "REVOLUTE":
-            self.axis = (
-                "Z"
-            )  # [ d["message"]["value"] for d in details["parameters"] if d["message"]["parameterId"] == "rotationType"][0]
+            self.axis = "Z"  # [ d["message"]["value"] for d in details["parameters"] if d["message"]["parameterId"] == "rotationType"][0]
             value = [
                 d["message"]["value"]
                 for d in details["message"]["parameters"]
@@ -128,9 +126,7 @@ class Mate(object):
 
         # Axis is actually alwayz Z
         elif self.type == "SLIDER":
-            self.axis = (
-                "Z"
-            )  # [ d["message"]["value"] for d in details["parameters"] if d["message"]["parameterId"] == "rotationType"][0]
+            self.axis = "Z"  # [ d["message"]["value"] for d in details["parameters"] if d["message"]["parameterId"] == "rotationType"][0]
             value = [
                 d["message"]["value"]
                 for d in details["message"]["parameters"]

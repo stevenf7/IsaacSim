@@ -335,7 +335,7 @@ class LulaKinematicsSolver(KinematicsSolver):
         # convert from lula IK orientation tolerance to radian magnitude tolerance
         # This function is the inverse of _rad_tol_to_lula_orientation_tol
 
-        return np.arccos(1 - tol ** 2 / 2)
+        return np.arccos(1 - tol**2 / 2)
 
     def _rad_tol_to_lula_orientation_tol(self, tol):
         # convert from radian magnitude tolerance to lula IK orientation tolerance

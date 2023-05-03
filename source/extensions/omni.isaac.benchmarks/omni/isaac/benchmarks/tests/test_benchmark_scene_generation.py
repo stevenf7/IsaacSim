@@ -8,17 +8,16 @@
 #
 
 
-import omni.kit.test
 import os
 import random
 import time
 from itertools import cycle
+
 import carb
-from pxr import UsdGeom, UsdLux
-from omni.isaac.core.utils.stage import add_reference_to_stage
-from omni.isaac.core.utils.stage import create_new_stage_async
-from omni.isaac.core.utils.stage import open_stage_async
+import omni.kit.test
 from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.stage import add_reference_to_stage, create_new_stage_async, open_stage_async
+from pxr import UsdGeom, UsdLux
 
 from ..utils.base_isaac_benchmark import BaseIsaacBenchmark
 

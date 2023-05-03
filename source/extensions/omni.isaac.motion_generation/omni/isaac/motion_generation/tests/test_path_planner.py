@@ -106,9 +106,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         self._planner_visualizer = PathPlannerVisualizer(self._robot, self._planner)
 
         self.PRINT_GOLDEN_VALUES = False
-        self.TEST_FOR_DETERMINISM = (
-            False
-        )  # Right now RRT paths are not deterministic across different machines.  Later this will be fixed, and determinism will be tested
+        self.TEST_FOR_DETERMINISM = False  # Right now RRT paths are not deterministic across different machines.  Later this will be fixed, and determinism will be tested
 
     # After running each test
     async def tearDown(self):

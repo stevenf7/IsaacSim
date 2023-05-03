@@ -61,7 +61,7 @@ def random_bin_spawn_transform():
 
     z = random.random() * 0.02 - 0.01
     w = random.random() * 0.02 - 0.01
-    norm = np.sqrt(z ** 2 + w ** 2)
+    norm = np.sqrt(z**2 + w**2)
     quat = math_util.Quaternion([w / norm, 0, 0, z / norm])
     if random.random() > 0.5:
         print("<flip>")
