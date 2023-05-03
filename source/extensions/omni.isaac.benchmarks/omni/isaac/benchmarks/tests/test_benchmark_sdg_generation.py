@@ -8,15 +8,14 @@
 #
 
 
-import omni.kit.test
 import os
-import time
 import shutil
-from omni.isaac.core.utils.stage import create_new_stage_async
-from omni.isaac.core.utils.stage import open_stage_async
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+import time
 
+import omni.kit.test
 import omni.replicator.core as rep
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.stage import create_new_stage_async, open_stage_async
 
 from ..utils.base_isaac_benchmark import BaseIsaacBenchmark
 

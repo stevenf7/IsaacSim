@@ -87,13 +87,13 @@ def get_hardware_stats() -> Tuple[float, float, float, float, float, float]:
     # RAM used for kit.exe.
     process = psutil.Process(os.getpid())
     # Physical Memory Working Set
-    rss_mb = process.memory_info().rss / (1024 ** 2)  # MB
+    rss_mb = process.memory_info().rss / (1024**2)  # MB
     rss = round(rss_mb / 1024, 3)  # GB
     # Virtual Memory Private Bytes
-    vms_mb = process.memory_info().vms / (1024 ** 2)  # MB
+    vms_mb = process.memory_info().vms / (1024**2)  # MB
     vms = round(vms_mb / 1024, 3)  # GB
     # Unique Set Size
-    uss_mb = process.memory_full_info().uss / (1024 ** 2)  # MB
+    uss_mb = process.memory_full_info().uss / (1024**2)  # MB
     uss = round(uss_mb / 1024, 3)  # GB
 
     # GPU from profiler window.

@@ -11,11 +11,11 @@
 import numpy as np
 import omni.kit.test
 from omni.isaac.core.prims.xform_prim import XFormPrim
+from omni.isaac.core.utils.render_product import create_hydra_texture, set_camera_prim_path, set_resolution
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.core.utils.stage import is_stage_loading
 from omni.isaac.core.utils.viewports import destroy_all_viewports, get_viewport_names
 from omni.kit.viewport.utility import create_viewport_window, get_viewport_from_window_name
-from omni.isaac.core.utils.render_product import create_hydra_texture, set_camera_prim_path, set_resolution
 from pxr import Gf
 
 from ..utils.base_isaac_benchmark import BaseIsaacBenchmark

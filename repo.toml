@@ -658,7 +658,7 @@ etm_emails = ["hmazhar@nvidia.com"]
 
 [repo_format]
 
-cpp_file_exclude_patterns = [
+cpp.files.exclude = [
     "source/ros_workspace/src/cortex_control/**",
     "source/ros_workspace/src/cortex_control_franka/**",
     "source/extensions/omni.isaac.ros_bridge/isaac_ros_messages/**",
@@ -666,22 +666,18 @@ cpp_file_exclude_patterns = [
     "source/extensions/omni.isaac.ros2_bridge-humble/isaac_ros2_messages/**"
 ]
 
-py_exclude = """
-(
-  /(
-      \\.eggs
-    | \\.git
-    | \\.cache
-    | \\.venv
-    | _build
-    | _install
-    | _repo
-    | _compiler
-    | _vendor
-    | tools/packman
-  )/
-)
-"""
+python.files.exclude = [
+    ".vscode/*", 
+    "_build/*", 
+    "_compiler/*", 
+    "_repo/*", 
+    ".git/*", 
+    ".eggs/*", 
+    ".venv/*",
+    "tools/packman/*",
+    "schemas/*"
+]
+
 
 ########################################################################################################################
 # Omnigraph Documentation Building

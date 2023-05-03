@@ -145,7 +145,11 @@ project_ext_bindings {
 }
 
 -- This is a WAR so that we can copy the correctly named icons
-prebuildcommands { "mkdir -p " .. "%{root}/_build/%{platform}/%{config}/exts/omni.isaac.ros2_bridge/ogn" }
+filter { "configurations:debug" }
+    os.mkdir (root.."/_build/"..os.target().."-x86_64/".."debug".."/exts/omni.isaac.ros2_bridge/ogn")
+filter { "configurations:release" }
+    os.mkdir (root.."/_build/"..os.target().."-x86_64/".."release".."/exts/omni.isaac.ros2_bridge/ogn")
+filter {}
 repo_build.prebuild_link {
     { "python/scripts", ext.target_dir.."/omni/isaac/ros2_bridge/scripts" },
     { "python/tests", ext.target_dir.."/omni/isaac/ros2_bridge/tests" },

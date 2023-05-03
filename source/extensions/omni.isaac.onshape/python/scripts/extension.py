@@ -409,6 +409,8 @@ class OnshapeImporter(omni.ext.IExt):
     def on_visibility_change(self, a):
         self.show_window(self._menu, a)
 
-    def deregister_actions(self,):
+    def deregister_actions(
+        self,
+    ):
         action_registry = omni.kit.actions.core.get_action_registry()
         action_registry.deregister_all_actions_for_extension(self.ext_id)

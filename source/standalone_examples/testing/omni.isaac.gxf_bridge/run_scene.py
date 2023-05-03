@@ -9,11 +9,11 @@
 import argparse
 import os
 import sys
-import yaml
-import numpy as np
 from typing import List
 
 import carb
+import numpy as np
+import yaml
 from omni.isaac.kit import SimulationApp
 
 GXF_BRIDGE_EXTENSION_NAME = "omni.isaac.gxf_bridge"
@@ -97,7 +97,7 @@ def main():
     import omni.kit.commands
     from omni.isaac.core import SimulationContext
     from omni.isaac.core.prims import XFormPrim
-    from omni.isaac.core.utils import extensions, prims, rotations, nucleus
+    from omni.isaac.core.utils import extensions, nucleus, prims, rotations
     from omni.isaac.core.utils.stage import add_reference_to_stage, traverse_stage
     from pxr import Gf
 

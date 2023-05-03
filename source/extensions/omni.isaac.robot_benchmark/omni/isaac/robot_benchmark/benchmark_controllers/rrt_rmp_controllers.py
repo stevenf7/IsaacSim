@@ -297,7 +297,7 @@ class RrtRmpCarrotController(RrtRmpController):
         if dist_to_p > goal_dist:
             t = proj_x_to_p
         else:
-            t = proj_x_to_p + np.sqrt(goal_dist ** 2 - dist_to_p ** 2) * p_hat
+            t = proj_x_to_p + np.sqrt(goal_dist**2 - dist_to_p**2) * p_hat
 
         # clip result onto line segment
         t_dist = np.dot((t - p1), p_hat)

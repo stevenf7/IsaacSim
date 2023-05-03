@@ -8,8 +8,10 @@
 #
 
 import asyncio
+import filecmp
 import os
 
+import carb
 import numpy as np
 import omni.kit.commands
 
@@ -18,10 +20,6 @@ import omni.kit.commands
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 import pxr
-import asyncio
-import numpy as np
-import carb
-import filecmp
 from pxr import Gf, PhysicsSchemaTools, Sdf, UsdGeom, UsdPhysics, UsdShade
 
 
