@@ -298,7 +298,6 @@ group "exts"
     include ("source/extensions/omni.isaac.gym")
     include ("source/extensions/omni.isaac.internal_tools")
     include ("source/extensions/omni.isaac.sensor")
-    include ("source/extensions/omni.isaac.isaac_sensor")
     include ("source/extensions/omni.isaac.kit")
     include ("source/extensions/omni.isaac.lula")
     include ("source/extensions/omni.isaac.lula_test_widget")
