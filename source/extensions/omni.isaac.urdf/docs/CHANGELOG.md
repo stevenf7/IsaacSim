@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.10] - 2023-05-04
+### Added
+- Code overview and limitations in README.
+
 ## [0.5.9] - 2023-02-28
 ### Fixed
 - Appearance of carb warnings when setting the joint damping and stiffness to 0 for `NONE` drive type
