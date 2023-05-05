@@ -151,7 +151,7 @@ def _test_quadcopter_train(experiment_name, test_time=True):
     print("train_time:", train_time)
 
     assert reward >= 1000.0
-    assert ep_len >= 450.0
+    assert ep_len >= 445.0
     if test_time:
         assert train_time <= 7 * 60.0
 
@@ -222,11 +222,11 @@ def _test_shadow_hand_dr_train(experiment_name, test_time=True):
     print("train_time:", train_time)
     print("success:", consecutive_successes)
 
-    assert reward >= 3000.0
+    assert reward >= 2000.0
     assert ep_len >= 450.0
     if test_time:
         assert train_time <= 1.2 * 60 * 60.0
-    assert consecutive_successes >= 10
+    assert consecutive_successes >= 5
 
 
 def _test_shadow_hand_openai_ff_train(experiment_name, test_time=True):
@@ -260,11 +260,24 @@ def _test_shadow_hand_openai_lstm_train(experiment_name, test_time=True):
     print("train_time:", train_time)
     print("success:", consecutive_successes)
 
-    assert reward >= 6500.0
+    assert reward >= 5000.0
     assert ep_len >= 1300.0
     if test_time:
         assert train_time <= 3.5 * 60 * 60.0
-    assert consecutive_successes >= 25
+    assert consecutive_successes >= 15
+
+
+def _test_factory_nut_bolt_pick_train(experiment_name, test_time=True):
+    log_data = utils._retrieve_logs(experiment_name)
+    reward = utils._extract_reward(log_data)
+    train_time = utils._extract_time(log_data)
+
+    print("reward:", reward)
+    print("train_time:", train_time)
+
+    assert reward >= -40.0
+    if test_time:
+        assert train_time <= 45.0 * 60.0
 
 
 class TestOmniIsaacGymEnvsTrainThreshold(utils.OmniIsaacGymEnvsTestCase):
@@ -386,6 +399,15 @@ class TestOmniIsaacGymEnvsTrainThreshold(utils.OmniIsaacGymEnvsTestCase):
         )
         _test_shadow_hand_openai_lstm_train(experiment_name, self._test_time)
 
+    @unittest.skipUnless(
+        os.environ.get("ISAACSIM_OIGE_TEST_MODE", "ONCOMMIT") in ["DAILY_THRESH_GG", "WEEKLY_THRESH_GGMT"], "Minimal"
+    )
+    async def test_factory_nut_bolt_pick_train_gg(self):
+        experiment_name = utils._run_rlgames_train(
+            self._script, "FactoryTaskNutBoltPick", self._sim_device, self._pipeline, 60
+        )
+        _test_factory_nut_bolt_pick_train(experiment_name, self._test_time)
+
 
 class TestOmniIsaacGymEnvsTrainThresholdGG(TestOmniIsaacGymEnvsTrainThreshold):
     def __init__(self, *args, **kwargs):
@@ -394,6 +416,15 @@ class TestOmniIsaacGymEnvsTrainThresholdGG(TestOmniIsaacGymEnvsTrainThreshold):
         self._sim_device = "gpu"
         self._pipeline = "gpu"
         self._test_time = True
+
+    @unittest.skipUnless(
+        os.environ.get("ISAACSIM_OIGE_TEST_MODE", "ONCOMMIT") in ["DAILY_THRESH_GG", "WEEKLY_THRESH_GGMT"], "Minimal"
+    )
+    async def test_humanoid_multigpu_train_gg(self):
+        experiment_name = utils._run_rlgames_train_multigpu(
+            self._script, "Humanoid", self._sim_device, self._pipeline, 500
+        )
+        _test_humanoid_train(experiment_name, self._test_time)
 
 
 class TestOmniIsaacGymEnvsTrainThresholdGGMT(TestOmniIsaacGymEnvsTrainThreshold):

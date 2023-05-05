@@ -6,6 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+import sys
 import unittest
 
 import omni.isaac.gym.tests.utils as utils
@@ -58,6 +59,15 @@ class TestOmniIsaacGymEnvsLaunchCC(utils.OmniIsaacGymEnvsTestCase):
     async def test_shadow_hand_openai_lstm_train_cc(self):
         experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "ShadowHandOpenAI_LSTM", "cpu", "cpu", 5)
 
+    async def test_factory_nut_bolt_pick_train_cc(self):
+        experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "FactoryTaskNutBoltPick", "cpu", "cpu", 5)
+
+    async def test_ant_sac_train_cc(self):
+        experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "AntSAC", "cpu", "cpu", 5)
+
+    async def test_humanoid_sac_train_cc(self):
+        experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "HumanoidSAC", "cpu", "cpu", 5)
+
 
 class TestOmniIsaacGymEnvsLaunchGC(utils.OmniIsaacGymEnvsTestCase):
     async def test_cartpole_train_gc(self):
@@ -104,6 +114,15 @@ class TestOmniIsaacGymEnvsLaunchGC(utils.OmniIsaacGymEnvsTestCase):
 
     async def test_shadow_hand_openai_lstm_train_gc(self):
         experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "ShadowHandOpenAI_LSTM", "gpu", "cpu", 5)
+
+    async def test_factory_nut_bolt_pick_train_gc(self):
+        experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "FactoryTaskNutBoltPick", "gpu", "cpu", 5)
+
+    async def test_ant_sac_train_gc(self):
+        experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "AntSAC", "gpu", "cpu", 5)
+
+    async def test_humanoid_sac_train_gc(self):
+        experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "HumanoidSAC", "gpu", "cpu", 5)
 
 
 class TestOmniIsaacGymEnvsLaunchGG(utils.OmniIsaacGymEnvsTestCase):
@@ -152,6 +171,19 @@ class TestOmniIsaacGymEnvsLaunchGG(utils.OmniIsaacGymEnvsTestCase):
     async def test_shadow_hand_openai_lstm_train_gg(self):
         experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "ShadowHandOpenAI_LSTM", "gpu", "gpu", 5)
 
+    async def test_factory_nut_bolt_pick_train_gg(self):
+        experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "FactoryTaskNutBoltPick", "gpu", "gpu", 5)
+
+    async def test_ant_sac_train_gg(self):
+        experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "AntSAC", "gpu", "gpu", 5)
+
+    async def test_humanoid_sac_train_gg(self):
+        experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "HumanoidSAC", "gpu", "gpu", 5)
+
+    @unittest.skipUnless(sys.platform == "linux", "Multi-GPU")
+    async def test_humanoid_multigpu_train_gg(self):
+        experiment_name = utils._run_rlgames_train_multigpu(utils.RLGAMES_SCRIPT, "Humanoid", "gpu", "gpu", 5)
+
 
 class TestOmniIsaacGymEnvsLaunchCCMT(utils.OmniIsaacGymEnvsTestCase):
     async def test_cartpole_train_mt_cc(self):
@@ -198,6 +230,15 @@ class TestOmniIsaacGymEnvsLaunchCCMT(utils.OmniIsaacGymEnvsTestCase):
 
     async def test_shadow_hand_openai_lstm_train_mt_cc(self):
         experiment_name = utils._run_rlgames_train(utils.RLGAMES_MT_SCRIPT, "ShadowHandOpenAI_LSTM", "cpu", "cpu", 5)
+
+    async def test_factory_nut_bolt_pick_train_mt_cc(self):
+        experiment_name = utils._run_rlgames_train(utils.RLGAMES_MT_SCRIPT, "FactoryTaskNutBoltPick", "cpu", "cpu", 5)
+
+    async def test_ant_sac_train_mt_cc(self):
+        experiment_name = utils._run_rlgames_train(utils.RLGAMES_MT_SCRIPT, "AntSAC", "cpu", "cpu", 5)
+
+    async def test_humanoid_sac_train_mt_cc(self):
+        experiment_name = utils._run_rlgames_train(utils.RLGAMES_MT_SCRIPT, "HumanoidSAC", "cpu", "cpu", 5)
 
 
 class TestOmniIsaacGymEnvsLaunchGCMT(utils.OmniIsaacGymEnvsTestCase):
@@ -246,6 +287,15 @@ class TestOmniIsaacGymEnvsLaunchGCMT(utils.OmniIsaacGymEnvsTestCase):
     async def test_shadow_hand_openai_lstm_train_mt_gc(self):
         experiment_name = utils._run_rlgames_train(utils.RLGAMES_MT_SCRIPT, "ShadowHandOpenAI_LSTM", "gpu", "cpu", 5)
 
+    async def test_factory_nut_bolt_pick_train_mt_gc(self):
+        experiment_name = utils._run_rlgames_train(utils.RLGAMES_MT_SCRIPT, "FactoryTaskNutBoltPick", "gpu", "cpu", 5)
+
+    async def test_ant_sac_train_mt_gc(self):
+        experiment_name = utils._run_rlgames_train(utils.RLGAMES_MT_SCRIPT, "AntSAC", "gpu", "cpu", 5)
+
+    async def test_humanoid_sac_train_mt_gc(self):
+        experiment_name = utils._run_rlgames_train(utils.RLGAMES_MT_SCRIPT, "HumanoidSAC", "gpu", "cpu", 5)
+
 
 class TestOmniIsaacGymEnvsLaunchGGMT(utils.OmniIsaacGymEnvsTestCase):
     async def test_cartpole_train_mt_gg(self):
@@ -292,3 +342,12 @@ class TestOmniIsaacGymEnvsLaunchGGMT(utils.OmniIsaacGymEnvsTestCase):
 
     async def test_shadow_hand_openai_lstm_train_mt_gg(self):
         experiment_name = utils._run_rlgames_train(utils.RLGAMES_MT_SCRIPT, "ShadowHandOpenAI_LSTM", "gpu", "gpu", 5)
+
+    async def test_factory_nut_bolt_pick_train_mt_gg(self):
+        experiment_name = utils._run_rlgames_train(utils.RLGAMES_MT_SCRIPT, "FactoryTaskNutBoltPick", "gpu", "gpu", 5)
+
+    async def test_ant_sac_train_mt_gg(self):
+        experiment_name = utils._run_rlgames_train(utils.RLGAMES_MT_SCRIPT, "AntSAC", "gpu", "gpu", 5)
+
+    async def test_humanoid_sac_train_mt_gg(self):
+        experiment_name = utils._run_rlgames_train(utils.RLGAMES_MT_SCRIPT, "HumanoidSAC", "gpu", "gpu", 5)
