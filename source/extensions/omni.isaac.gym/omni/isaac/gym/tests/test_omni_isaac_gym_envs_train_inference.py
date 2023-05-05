@@ -8,6 +8,7 @@
 
 import unittest
 
+import numpy as np
 import omni.isaac.gym.tests.utils as utils
 import omni.kit
 
@@ -58,6 +59,9 @@ class TestOmniIsaacGymEnvsTestGG(utils.OmniIsaacGymEnvsTestCase):
     async def test_shadow_hand_openai_lstm_test_gg(self):
         utils._run_rlgames_test(utils.RLGAMES_SCRIPT, "ShadowHandOpenAI_LSTM", "gpu", "gpu")
 
+    async def test_factory_nut_bolt_pick_test_gg(self):
+        utils._run_rlgames_test(utils.RLGAMES_SCRIPT, "FactoryTaskNutBoltPick", "gpu", "gpu")
+
 
 class TestOmniIsaacGymEnvsTestGGMT(utils.OmniIsaacGymEnvsTestCase):
     async def test_cartpole_test_gg(self):
@@ -105,6 +109,9 @@ class TestOmniIsaacGymEnvsTestGGMT(utils.OmniIsaacGymEnvsTestCase):
     async def test_shadow_hand_openai_lstm_test_gg(self):
         utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "ShadowHandOpenAI_LSTM", "gpu", "gpu")
 
+    async def test_factory_nut_bolt_pick_test_gg(self):
+        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "FactoryTaskNutBoltPick", "gpu", "gpu")
+
 
 class TestOmniIsaacGymEnvsTestPreTrainedGG(utils.OmniIsaacGymEnvsTestCase):
     async def test_cartpole_test_gg(self):
@@ -143,6 +150,15 @@ class TestOmniIsaacGymEnvsTestPreTrainedGG(utils.OmniIsaacGymEnvsTestCase):
     async def test_shadow_hand_test_gg(self):
         utils._run_rlgames_test(utils.RLGAMES_SCRIPT, "ShadowHand", "gpu", "gpu", pretrained=True)
 
+    async def test_shadow_hand_openai_lstm_test_gg(self):
+        utils._run_rlgames_test(utils.RLGAMES_SCRIPT, "ShadowHandOpenAI_LSTM", "gpu", "gpu", pretrained=True)
+
+    async def test_shadow_hand_openai_ff_test_gg(self):
+        utils._run_rlgames_test(utils.RLGAMES_SCRIPT, "ShadowHandOpenAI_FF", "gpu", "gpu", pretrained=True)
+
+    async def test_factory_nut_bolt_pick_test_gg(self):
+        utils._run_rlgames_test(utils.RLGAMES_SCRIPT, "FactoryTaskNutBoltPick", "gpu", "gpu", pretrained=True)
+
 
 class TestOmniIsaacGymEnvsTestPreTrainedGGMT(utils.OmniIsaacGymEnvsTestCase):
     async def test_cartpole_test_gg(self):
@@ -180,3 +196,275 @@ class TestOmniIsaacGymEnvsTestPreTrainedGGMT(utils.OmniIsaacGymEnvsTestCase):
 
     async def test_shadow_hand_test_gg(self):
         utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "ShadowHand", "gpu", "gpu", pretrained=True)
+
+    async def test_shadow_hand_openai_lstm_test_gg(self):
+        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "ShadowHandOpenAI_LSTM", "gpu", "gpu", pretrained=True)
+
+    async def test_shadow_hand_openai_ff_test_gg(self):
+        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "ShadowHandOpenAI_FF", "gpu", "gpu", pretrained=True)
+
+    async def test_factory_nut_bolt_pick_test_gg(self):
+        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "FactoryTaskNutBoltPick", "gpu", "gpu", pretrained=True)
+
+
+class TestOmniIsaacGymEnvsTestPreTrainedAutomatedGG(utils.OmniIsaacGymEnvsTestCase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.reward_threshold = {
+            "AllegroHand": 6000.0,
+            "Ant": 6500.0,
+            "Anymal": 65.0,
+            "AnymalTerrain": 12.0,
+            "BallBalance": 350.0,
+            "Cartpole": 495.0,
+            "Crazyflie": 1200.0,
+            "FrankaCabinet": 2500.0,
+            "Humanoid": 7500.0,
+            "Ingenuity": 2500.0,
+            "Quadcopter": 1200.0,
+            "ShadowHand": 10000.0,
+            "ShadowHandOpenAI_LSTM": 10000.0,
+            "ShadowHandOpenAI_FF": 8500.0,
+            "FactoryTaskNutBoltPick": -25.0,
+        }
+        self.steps_threshold = {
+            "AllegroHand": 590.0,
+            "Ant": 990.0,
+            "Anymal": 2990.0,
+            "AnymalTerrain": 490.0,
+            "BallBalance": 590.0,
+            "Cartpole": 490.0,
+            "Crazyflie": 690.0,
+            "FrankaCabinet": 490.0,
+            "Humanoid": 990.0,
+            "Ingenuity": 990.0,
+            "Quadcopter": 490.0,
+            "ShadowHand": 590.0,
+            "ShadowHandOpenAI_LSTM": 1490.0,
+            "ShadowHandOpenAI_FF": 540.0,
+            "FactoryTaskNutBoltPick": 90.0,
+        }
+
+    async def evaluate_test(self, task, reward, steps):
+        if reward is None or steps is None:
+            self.assertTrue(False, "No reward logging found.")
+        elif len(reward) == 0 or len(steps) == 0:
+            self.assertTrue(False, "No reward logging found.")
+
+        max_reward = np.max(reward)
+        max_steps = np.max(steps)
+        print("max reward:", max_reward)
+        print("max steps:", max_steps)
+        self.assertTrue(max_reward > self.reward_threshold[task])
+        self.assertTrue(max_steps >= self.steps_threshold[task])
+
+    async def test_cartpole_test_gg(self):
+        for num_envs in [1, 25]:
+            rewards, steps = utils._run_rlgames_test(
+                utils.RLGAMES_SCRIPT,
+                "Cartpole",
+                "gpu",
+                "gpu",
+                pretrained=True,
+                num_prints=10,
+                headless=True,
+                num_envs=num_envs,
+            )
+            await self.evaluate_test("Cartpole", rewards, steps)
+
+    async def test_ant_test_gg(self):
+        for num_envs in [1, 25]:
+            rewards, steps = utils._run_rlgames_test(
+                utils.RLGAMES_SCRIPT,
+                "Ant",
+                "gpu",
+                "gpu",
+                pretrained=True,
+                num_prints=25,
+                headless=True,
+                num_envs=num_envs,
+            )
+            await self.evaluate_test("Ant", rewards, steps)
+
+    async def test_humanoid_test_gg(self):
+        for num_envs in [1, 25]:
+            rewards, steps = utils._run_rlgames_test(
+                utils.RLGAMES_SCRIPT,
+                "Humanoid",
+                "gpu",
+                "gpu",
+                pretrained=True,
+                num_prints=25,
+                headless=True,
+                num_envs=num_envs,
+            )
+            await self.evaluate_test("Humanoid", rewards, steps)
+
+    async def test_anymal_test_gg(self):
+        for num_envs in [1, 25]:
+            rewards, steps = utils._run_rlgames_test(
+                utils.RLGAMES_SCRIPT,
+                "Anymal",
+                "gpu",
+                "gpu",
+                pretrained=True,
+                num_prints=10,
+                headless=True,
+                num_envs=num_envs,
+            )
+            await self.evaluate_test("Anymal", rewards, steps)
+
+    async def test_anymal_terrain_test_gg(self):
+        for num_envs in [1, 25]:
+            rewards, steps = utils._run_rlgames_test(
+                utils.RLGAMES_SCRIPT,
+                "AnymalTerrain",
+                "gpu",
+                "gpu",
+                pretrained=True,
+                num_prints=25,
+                headless=True,
+                num_envs=num_envs,
+            )
+            await self.evaluate_test("AnymalTerrain", rewards, steps)
+
+    async def test_ball_balance_test_gg(self):
+        for num_envs in [1, 25]:
+            rewards, steps = utils._run_rlgames_test(
+                utils.RLGAMES_SCRIPT,
+                "BallBalance",
+                "gpu",
+                "gpu",
+                pretrained=True,
+                num_prints=10,
+                headless=True,
+                num_envs=num_envs,
+            )
+            await self.evaluate_test("BallBalance", rewards, steps)
+
+    async def test_franka_cabinet_test_gg(self):
+        for num_envs, num_prints in zip([1, 25], [10, 10]):
+            rewards, steps = utils._run_rlgames_test(
+                utils.RLGAMES_SCRIPT,
+                "FrankaCabinet",
+                "gpu",
+                "gpu",
+                pretrained=True,
+                num_prints=num_prints,
+                headless=True,
+                num_envs=num_envs,
+            )
+            await self.evaluate_test("FrankaCabinet", rewards, steps)
+
+    async def test_ingenuity_test_gg(self):
+        for num_envs in [1, 25]:
+            rewards, steps = utils._run_rlgames_test(
+                utils.RLGAMES_SCRIPT,
+                "Ingenuity",
+                "gpu",
+                "gpu",
+                pretrained=True,
+                num_prints=10,
+                headless=True,
+                num_envs=num_envs,
+            )
+            await self.evaluate_test("Ingenuity", rewards, steps)
+
+    async def test_quadcopter_test_gg(self):
+        for num_envs in [1, 25]:
+            rewards, steps = utils._run_rlgames_test(
+                utils.RLGAMES_SCRIPT,
+                "Quadcopter",
+                "gpu",
+                "gpu",
+                pretrained=True,
+                num_prints=10,
+                headless=True,
+                num_envs=num_envs,
+            )
+            await self.evaluate_test("Quadcopter", rewards, steps)
+
+    async def test_crazyflie_test_gg(self):
+        for num_envs in [1, 25]:
+            rewards, steps = utils._run_rlgames_test(
+                utils.RLGAMES_SCRIPT,
+                "Crazyflie",
+                "gpu",
+                "gpu",
+                pretrained=True,
+                num_prints=10,
+                headless=True,
+                num_envs=num_envs,
+            )
+            await self.evaluate_test("Crazyflie", rewards, steps)
+
+    async def test_allegro_hand_test_gg(self):
+        for num_envs, num_prints in zip([1, 25], [20, 50]):
+            rewards, steps = utils._run_rlgames_test(
+                utils.RLGAMES_SCRIPT,
+                "AllegroHand",
+                "gpu",
+                "gpu",
+                pretrained=True,
+                num_prints=num_prints,
+                headless=True,
+                num_envs=num_envs,
+            )
+            await self.evaluate_test("AllegroHand", rewards, steps)
+
+    async def test_shadow_hand_test_gg(self):
+        for num_envs in [1, 25]:
+            rewards, steps = utils._run_rlgames_test(
+                utils.RLGAMES_SCRIPT,
+                "ShadowHand",
+                "gpu",
+                "gpu",
+                pretrained=True,
+                num_prints=25,
+                headless=True,
+                num_envs=num_envs,
+            )
+            await self.evaluate_test("ShadowHand", rewards, steps)
+
+    async def test_shadow_hand_openai_lstm_test_gg(self):
+        for num_envs, num_prints in zip([1, 25], [10, 50]):
+            rewards, steps = utils._run_rlgames_test(
+                utils.RLGAMES_SCRIPT,
+                "ShadowHandOpenAI_LSTM",
+                "gpu",
+                "gpu",
+                pretrained=True,
+                num_prints=num_prints,
+                headless=True,
+                num_envs=num_envs,
+            )
+            await self.evaluate_test("ShadowHandOpenAI_LSTM", rewards, steps)
+
+    async def test_shadow_hand_openai_ff_test_gg(self):
+        for num_envs, num_prints in zip([1, 25], [20, 50]):
+            rewards, steps = utils._run_rlgames_test(
+                utils.RLGAMES_SCRIPT,
+                "ShadowHandOpenAI_FF",
+                "gpu",
+                "gpu",
+                pretrained=True,
+                num_prints=num_prints,
+                headless=True,
+                num_envs=num_envs,
+            )
+            await self.evaluate_test("ShadowHandOpenAI_FF", rewards, steps)
+
+    async def test_factory_nut_bolt_pick_test_gg(self):
+        for num_envs in [1]:
+            rewards, steps = utils._run_rlgames_test(
+                utils.RLGAMES_SCRIPT,
+                "FactoryTaskNutBoltPick",
+                "gpu",
+                "gpu",
+                pretrained=True,
+                num_prints=10,
+                headless=True,
+                num_envs=num_envs,
+            )
+            await self.evaluate_test("FactoryTaskNutBoltPick", rewards, steps)

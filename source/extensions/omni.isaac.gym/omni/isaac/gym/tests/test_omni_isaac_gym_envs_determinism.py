@@ -157,6 +157,10 @@ class TestOmniIsaacGymEnvsDeterminismGG(utils.OmniIsaacGymEnvsTestCase):
         self.assertTrue(_check_determinism("FrankaCabinet", "gpu", "gpu"))
 
     @unittest.skipUnless(os.environ.get("ISAACSIM_OIGE_TEST_MODE", "ONCOMMIT") == "WEEKLY_DETERMINISM_GG", "Minimal")
+    async def test_factory_pick_determinism_gg(self):
+        self.assertTrue(_check_determinism("FactoryTaskNutBoltPick", "gpu", "gpu"))
+
+    @unittest.skipUnless(os.environ.get("ISAACSIM_OIGE_TEST_MODE", "ONCOMMIT") == "WEEKLY_DETERMINISM_GG", "Minimal")
     async def test_ingenuity_determinism_gg(self):
         self.assertTrue(_check_determinism("Ingenuity", "gpu", "gpu"))
 

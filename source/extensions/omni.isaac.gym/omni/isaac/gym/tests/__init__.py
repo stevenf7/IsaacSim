@@ -21,6 +21,10 @@ elif mode == "DAILY_LAUNCH":
     )
 elif mode in ["DAILY_THRESH_GG", "DAILY_THRESH_AH_GG", "DAILY_THRESH_SH_GG"]:
     from omni.isaac.gym.tests.test_omni_isaac_gym_envs_threshold import TestOmniIsaacGymEnvsTrainThresholdGG
+elif mode == "DAILY_INFERENCE":
+    from omni.isaac.gym.tests.test_omni_isaac_gym_envs_train_inference import (
+        TestOmniIsaacGymEnvsTestPreTrainedAutomatedGG,
+    )
 
 elif mode in ["WEEKLY_THRESH_SH_DR_GG", "WEEKLY_THRESH_SH_OPENAIFF_GG", "WEEKLY_THRESH_SH_OPENAILSTM_GG"]:
     from omni.isaac.gym.tests.test_omni_isaac_gym_envs_threshold import TestOmniIsaacGymEnvsTrainThresholdGG
@@ -57,6 +61,7 @@ elif mode in ["WEEKLY_DETERMINISM_SH_GG", "WEEKLY_DETERMINISM_GG"]:
 # from omni.isaac.gym.tests.test_omni_isaac_gym_envs_train_inference import TestOmniIsaacGymEnvsTestGGMT
 # from omni.isaac.gym.tests.test_omni_isaac_gym_envs_train_inference import TestOmniIsaacGymEnvsTestPreTrainedGG
 # from omni.isaac.gym.tests.test_omni_isaac_gym_envs_train_inference import TestOmniIsaacGymEnvsTestPreTrainedGGMT
+# from omni.isaac.gym.tests.test_omni_isaac_gym_envs_train_inference import TestOmniIsaacGymEnvsTestPreTrainedAutomatedGG
 
 # from omni.isaac.gym.tests.test_omni_isaac_gym_envs_determinism import TestOmniIsaacGymEnvsDeterminismCC
 # from omni.isaac.gym.tests.test_omni_isaac_gym_envs_determinism import TestOmniIsaacGymEnvsDeterminismGC

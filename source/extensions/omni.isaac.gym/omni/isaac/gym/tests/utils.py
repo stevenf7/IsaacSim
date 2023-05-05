@@ -20,6 +20,7 @@ import numpy as np
 import omni.kit
 import psutil
 import torch
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 
 
 def _is_windows():
@@ -65,6 +66,48 @@ def _run_rlgames_train(script, task, sim_device, pipeline, max_iterations=0, dr=
         cmd.append(f"task.domain_randomization.randomize=True")
     if max_iterations > 0:
         cmd.append(f"max_iterations={max_iterations}")
+    if task == "AntSAC":
+        cmd.append("train=AntSAC")
+    elif task == "HumanoidSAC":
+        cmd.append("train=HumanoidSAC")
+
+    experiment_name = f"{task}_{sim_device}_{pipeline}"
+    if script == RLGAMES_MT_SCRIPT:
+        experiment_name += "_mt"
+        cmd.append("mt_timeout=900")
+    if dr:
+        experiment_name += "_dr"
+    cmd.append(f"experiment={experiment_name}")
+
+    subprocess.check_call(cmd)
+
+    return experiment_name
+
+
+def _run_rlgames_train_multigpu(script, task, sim_device, pipeline, max_iterations=0, dr=False):
+    os.chdir(os.path.join(REPO_PATH, "omniisaacgymenvs"))
+    cmd = [
+        PYTHON_EXE,
+        "-m",
+        "torch.distributed.run",
+        "--nnodes=1",
+        "--nproc_per_node=2",
+        f"scripts/{script}.py",
+        "headless=True",
+        f"task={task}",
+        f"sim_device={sim_device}",
+        f"pipeline={pipeline}",
+        "seed=42",
+        "multi_gpu=True",
+    ]
+    if dr:
+        cmd.append(f"task.domain_randomization.randomize=True")
+    if max_iterations > 0:
+        cmd.append(f"max_iterations={max_iterations}")
+    if task == "AntSAC":
+        cmd.append("train=AntSAC")
+    elif task == "HumanoidSAC":
+        cmd.append("train=HumanoidSAC")
 
     experiment_name = f"{task}_{sim_device}_{pipeline}"
     if script == RLGAMES_MT_SCRIPT:
@@ -87,20 +130,33 @@ def _kill_process(p):
     gone, still_alive = psutil.wait_procs(children, timeout=5)
 
 
-def _run_rlgames_test(script, task, sim_device, pipeline, time=180, dr=False, pretrained=False):
+def _run_rlgames_test(
+    script, task, sim_device, pipeline, num_envs=25, time=90, num_prints=10, dr=False, pretrained=False, headless=False
+):
+    # headless=False
     os.chdir(os.path.join(REPO_PATH, "omniisaacgymenvs"))
     cmd = [
         PYTHON_EXE,
         f"scripts/{script}.py",
-        f"num_envs=25",
+        f"num_envs={num_envs}",
         f"task={task}",
         f"sim_device={sim_device}",
         f"pipeline={pipeline}",
         "seed=42",
         "test=True",
+        f"headless={headless}",
+        "train.params.config.score_to_win=1000000",
     ]
     if dr:
         cmd.append(f"task.domain_randomization.randomize=True")
+    # force a reset to print reward
+    if headless:
+        if task == "Ingenuity":
+            cmd.append("task.env.maxEpisodeLength=1000")
+        elif task == "AnymalTerrain":
+            cmd.append("task.env.learn.episodeLength_s=10")
+    if task in ["ShadowHandOpenAI_FF", "ShadowHandOpenAI_LSTM"]:
+        cmd.append("task.domain_randomization.randomize=False")
 
     experiment_name = f"{task}_{sim_device}_{pipeline}"
     if script == RLGAMES_MT_SCRIPT:
@@ -123,18 +179,47 @@ def _run_rlgames_test(script, task, sim_device, pipeline, time=180, dr=False, pr
             "Ingenuity": "ingenuity",
             "Quadcopter": "quadcopter",
             "ShadowHand": "shadow_hand",
+            "ShadowHandOpenAI_LSTM": "shadow_hand_openai_lstm",
+            "ShadowHandOpenAI_FF": "shadow_hand_openai_ff",
+            "FactoryTaskNutBoltPick": "factory_task_nut_bolt_pick",
         }
+        asset_root_path = get_assets_root_path()
         cmd.append(
-            f"checkpoint=http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.2.1/Isaac/Samples/OmniIsaacGymEnvs/Checkpoints/{checkpoints_dict[task]}.pth"
+            f"checkpoint={asset_root_path}/Isaac/Samples/OmniIsaacGymEnvs/Checkpoints/{checkpoints_dict[task]}.pth"
         )
     else:
         cmd.append(f"checkpoint=runs/{experiment_name}/nn/{experiment_name}.pth")
 
-    process = subprocess.Popen(cmd, shell=False)
-    try:
-        process.wait(time)
-    except subprocess.TimeoutExpired:
+    # automated tests
+    if headless:
+        rewards = []
+        steps = []
+        process = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        while True:
+            line = process.stdout.readline().decode("utf-8")
+            print(line, end="")
+            if "reward:" in line and "steps:" in line:
+                output = line.split(" ")
+                if len(output) == 4:
+                    try:
+                        rew = float(output[1])
+                        step = float(output[3])
+                        rewards.append(rew)
+                        steps.append(step)
+                    except ValueError:
+                        pass
+            if len(rewards) == num_prints:
+                break
         _kill_process(process)
+
+        return rewards, steps
+    # manual run test (with viewer)
+    else:
+        process = subprocess.Popen(cmd, shell=False)
+        try:
+            process.wait(time)
+        except subprocess.TimeoutExpired:
+            _kill_process(process)
 
 
 def _extract_feature(log_data, feature):
@@ -189,7 +274,7 @@ def _setup_OIGE():
     # clone and install OIGE
     if not os.path.exists(REPO_PATH):
         Repo.clone_from(git_url, REPO_PATH, branch="dev")
-    subprocess.check_call([PYTHON_EXE, "-m", "pip", "install", "-e", REPO_PATH])
+    subprocess.check_call([PYTHON_EXE, "-m", "pip", "install", "--ignore-installed", "-e", REPO_PATH])
 
 
 # base class to use for Gym test cases

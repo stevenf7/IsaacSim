@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.4.0] - 2023-03-15
+### Added
+- Add automated inferencing tests
+- Add missing SAC and Factory tests
+- Add multi-GPU tests
+
+### Fixed
+- Fix Windows tests pip install error
+
 ## [0.3.3] - 2023-03-01
 ### Fixed
 - Separate headless rendering support to new app file
