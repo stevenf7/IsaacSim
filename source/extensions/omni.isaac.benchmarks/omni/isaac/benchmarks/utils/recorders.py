@@ -1,7 +1,8 @@
+import platform
 from pathlib import Path
 from typing import Optional
 
-from omni.kit.testing.services.datarecorders import frametime, interface
+from omni.kit.testing.services.datarecorders import cpu, frametime, interface, memory
 from omni.kit.testing.services.metrics import measurements
 
 from .collectors import IsaacUpdateFrametimeCollector
@@ -75,3 +76,80 @@ class IsaacFrameTimeRecorder(interface.MeasurementDataRecorder):
         )
         measurements_out = [m1, m2, m3, m4, m5, m6, m7, m8, m9, m10]
         return interface.MeasurementData(measurements=measurements_out)
+
+
+class IsaacMemoryRecorder(memory.MemoryRecorder):
+    def __init__(
+        self,
+        context: Optional[interface.InputContext] = None,
+        root_dir: Optional[Path] = None,
+        benchmark_settings: Optional["BenchmarkSettings"] = None,
+    ):
+        self.context = context
+        self.root_dir = root_dir
+        self.benchmark_settings = benchmark_settings
+        super().__init__(context, root_dir, benchmark_settings)
+
+    async def get_data(self) -> interface.MeasurementData:
+
+        (
+            cpu_load,
+            rss,
+            vms,
+            uss,
+            pb,
+            tracked_gpu_memory,
+            dedicated_gpu_memory,
+        ) = self.get_hardware_stats()
+
+        m1 = measurements.SingleMeasurement(name=f"{self.context.phase} System Memory RSS", value=rss, unit="GB")
+        m2 = measurements.SingleMeasurement(name=f"{self.context.phase} System Memory VMS", value=vms, unit="GB")
+        m3 = measurements.SingleMeasurement(name=f"{self.context.phase} System Memory USS", value=uss, unit="GB")
+        m4 = measurements.SingleMeasurement(
+            name=f"{self.context.phase} GPU Memory Tracked", value=tracked_gpu_memory, unit="GB"
+        )
+        m5 = measurements.SingleMeasurement(
+            name=f"{self.context.phase} GPU Memory Dedicated", value=dedicated_gpu_memory, unit="GB"
+        )
+        measurements_out = [m1, m2, m3, m4, m5]
+
+        # Only capture System Memory PB for Windows.
+        if platform.system() == "Windows":
+            measurements_out.append(
+                measurements.SingleMeasurement(name=f"{self.context.phase} System Memory PB", value=pb, unit="GB")
+            )
+
+        return interface.MeasurementData(measurements=measurements_out)
+
+
+class IsaacCPUStatsRecorder(cpu.CPUStatsRecorder):
+    def __init__(
+        self,
+        context: Optional[interface.InputContext] = None,
+        root_dir: Optional[Path] = None,
+        benchmark_settings: Optional["BenchmarkSettings"] = None,
+    ):
+        self.context = context
+        self.root_dir = root_dir
+        self.benchmark_settings = benchmark_settings
+        super().__init__(context, root_dir, benchmark_settings)
+
+    async def get_data(self) -> interface.MeasurementData:
+
+        (
+            cpu_iowait_pct,
+            cpu_system_pct,
+            cpu_user_pct,
+            cpu_idle_pct,
+        ) = cpu.get_cpu_usage_in_pct(self.cpu_iowait, self.cpu_system, self.cpu_user, self.cpu_idle)
+
+        m1 = measurements.SingleMeasurement(
+            name=f"{self.context.phase} System CPU iowait", value=cpu_iowait_pct, unit="%"
+        )
+        m2 = measurements.SingleMeasurement(
+            name=f"{self.context.phase} System CPU system", value=cpu_system_pct, unit="%"
+        )
+        m3 = measurements.SingleMeasurement(name=f"{self.context.phase} System CPU user", value=cpu_user_pct, unit="%")
+        m4 = measurements.SingleMeasurement(name=f"{self.context.phase} System CPU idle", value=cpu_idle_pct, unit="%")
+
+        return interface.MeasurementData(measurements=[m1, m2, m3, m4])

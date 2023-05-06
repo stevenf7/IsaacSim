@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.6.0] - 2023-05/05
+
+### Added
+- phase label to cpu/memory metrics
+
 ## [0.5.0] - 2023-04-23
 
 ### Added
