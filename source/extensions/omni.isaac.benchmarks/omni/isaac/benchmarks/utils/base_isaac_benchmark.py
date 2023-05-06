@@ -23,7 +23,7 @@ from omni.kit.testing.services.datarecorders import cpu, interface, memory
 from omni.kit.testing.services.metrics import backend, measurements
 from omni.kit.widget.viewport.capture import FileCapture
 
-from .recorders import IsaacFrameTimeRecorder
+from .recorders import IsaacCPUStatsRecorder, IsaacFrameTimeRecorder, IsaacMemoryRecorder
 
 logger = utils.set_up_logging(__name__)
 
@@ -57,8 +57,8 @@ class BaseIsaacBenchmark(omni.kit.test.AsyncTestCase):
         self.frametime_recorder = IsaacFrameTimeRecorder(self.context)
         self.recorders = [
             # scene.SceneStatsRecorder(self.context), # This crashes on new stage.
-            cpu.CPUStatsRecorder(self.context),
-            memory.MemoryRecorder(self.context),
+            IsaacMemoryRecorder(self.context),
+            IsaacCPUStatsRecorder(self.context),
             # memory.GPUDetailedMemoryStatsRecorder(self.context), # This is causing a crash on new stage
             self.frametime_recorder,
         ]
