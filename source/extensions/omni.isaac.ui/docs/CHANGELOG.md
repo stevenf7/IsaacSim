@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.9.0] - 2023-05-03
+### Added
+- Added UIElementWrapper XYPlot with significantly more useful plotting utility than the base omni.ui.Plot
+
 ## [0.8.0] - 2023-03-13
 ### Fixed
 - Added missing imports in element_wrappers __init__.py

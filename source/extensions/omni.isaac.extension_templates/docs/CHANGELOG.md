@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.2.0] - 2023-05-03
+### Added
+- Added limitations to special characters that are considered acceptible in an extension title
+- Added XYPlot to "UI Component Library Template"
+
+### Fixed
+- Extension templates now use the extension name to generate python module paths to prevent clashing python modules.
+    Previously, all modules were named "scripts" and you could not enable multiple extension templates at once.
+
 ## [1.1.0] - 2023-03-17
 ### Added
 - Added "Status Frame" to Extension Template Generator to give feedback to the user to guide their usage.   

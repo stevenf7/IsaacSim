@@ -23,6 +23,7 @@ from omni.isaac.ui.element_wrappers import (
     StateButton,
     StringField,
     TextBlock,
+    XYPlot,
 )
 from omni.isaac.ui.ui_utils import get_style
 
@@ -97,6 +98,9 @@ class UIBuilder:
 
         # Create a UI frame with different selection widgets
         self._create_selection_widgets_frame()
+
+        # Create a UI frame with different plotting tools
+        self._create_plotting_frame()
 
     def _create_status_report_frame(self):
         self._status_report_frame = CollapsableFrame("Status Report", collapsed=False)
@@ -212,6 +216,36 @@ class UIBuilder:
                     on_color_picked_fn=self._on_color_picked,
                 )
                 self.wrapped_ui_elements.append(color_picker)
+
+    def _create_plotting_frame(self):
+        self._plotting_frame = CollapsableFrame("Plotting Tools", collapsed=False)
+
+        with self._plotting_frame:
+            with ui.VStack(style=get_style(), spacing=5, height=0):
+                import numpy as np
+
+                x = np.arange(-1, 6.01, 0.01)
+                y = np.sin((x - 0.5) * np.pi)
+                plot = XYPlot(
+                    "XY Plot",
+                    tooltip="Press mouse over the plot for data label",
+                    x_data=[x[:300], x[100:400], x[200:]],
+                    y_data=[y[:300], y[100:400], y[200:]],
+                    x_min=None,  # Use default behavior to fit plotted data to entire frame
+                    x_max=None,
+                    y_min=-1.5,
+                    y_max=1.5,
+                    x_label="X [rad]",
+                    y_label="Y",
+                    plot_height=10,
+                    legends=["Line 1", "Line 2", "Line 3"],
+                    show_legend=True,
+                    plot_colors=[
+                        [255, 0, 0],
+                        [0, 255, 0],
+                        [0, 100, 200],
+                    ],  # List of [r,g,b] values; not necessary to specify
+                )
 
     ######################################################################################
     # Functions Below This Point Are Callback Functions Attached to UI Element Wrappers

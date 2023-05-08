@@ -105,6 +105,11 @@ UI Element Wrappers
   :undoc-members:
   :member-order: bysource
 
+.. autoclass:: omni.isaac.ui.element_wrappers.ui_widget_wrappers.XYPlot
+  :members:
+  :undoc-members:
+  :member-order: bysource
+
 Specialized UI Element Wrappers
 ================================
 

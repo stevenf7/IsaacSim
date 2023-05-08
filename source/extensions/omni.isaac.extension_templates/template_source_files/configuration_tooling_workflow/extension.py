@@ -9,7 +9,6 @@
 
 import asyncio
 import gc
-import weakref
 
 import omni
 import omni.kit.commands
@@ -17,7 +16,7 @@ import omni.physx as _physx
 import omni.timeline
 import omni.ui as ui
 import omni.usd
-from omni.isaac.ui.menu import make_menu_item_description
+from omni.isaac.ui.menu import MenuItemDescription
 from omni.kit.menu.utils import add_menu_items, remove_menu_items
 from omni.usd import StageEventType
 
@@ -47,7 +46,7 @@ class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         """Initialize extension and UI elements"""
 
-        # Events
+        self.ext_id = ext_id
         self._usd_context = omni.usd.get_context()
 
         # Build Window
@@ -56,11 +55,15 @@ class Extension(omni.ext.IExt):
         )
         self._window.set_visibility_changed_fn(self._on_window)
 
-        # UI
-        self._models = {}
-        self._ext_id = ext_id
+        action_registry = omni.kit.actions.core.get_action_registry()
+        action_registry.register_action(
+            ext_id,
+            f"CreateUIExtension:{EXTENSION_TITLE}",
+            self._menu_callback,
+            description=f"Add {EXTENSION_TITLE} Extension to UI toolbar",
+        )
         self._menu_items = [
-            make_menu_item_description(ext_id, EXTENSION_TITLE, lambda a=weakref.proxy(self): a._menu_callback())
+            MenuItemDescription(name=EXTENSION_TITLE, onclick_action=(ext_id, f"CreateUIExtension:{EXTENSION_TITLE}"))
         ]
 
         add_menu_items(self._menu_items, EXTENSION_TITLE)
@@ -78,6 +81,10 @@ class Extension(omni.ext.IExt):
     def on_shutdown(self):
         self._models = {}
         remove_menu_items(self._menu_items, EXTENSION_TITLE)
+
+        action_registry = omni.kit.actions.core.get_action_registry()
+        action_registry.deregister_action(self.ext_id, f"CreateUIExtension:{EXTENSION_TITLE}")
+
         if self._window:
             self._window = None
         self.ui_builder.cleanup()

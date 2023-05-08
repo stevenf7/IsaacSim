@@ -12,4 +12,5 @@ from .ui_widget_wrappers import (
     StateButton,
     StringField,
     TextBlock,
+    XYPlot,
 )
