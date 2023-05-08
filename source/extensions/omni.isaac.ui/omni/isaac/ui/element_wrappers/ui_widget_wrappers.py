@@ -1,21 +1,22 @@
 import sys
 from cmath import inf
-from typing import Callable, List
+from collections.abc import Iterable
+from typing import Callable, List, Tuple, Union
 
 import carb
+import numpy as np
 import omni.physx as _physx
 import omni.ui as ui
 from omni.isaac.core.utils.prims import get_prim_object_type
 from omni.isaac.ui.ui_utils import (
     BUTTON_WIDTH,
+    LABEL_HEIGHT,
+    LABEL_WIDTH,
     add_line_rect_flourish,
+    add_separator,
     format_tt,
     get_style,
     on_copy_to_clipboard,
-    plot_builder,
-    progress_bar_builder,
-    xyz_builder,
-    xyz_plot_builder,
 )
 from omni.isaac.ui.widgets import DynamicComboBoxModel
 from omni.kit.window.filepicker import FilePickerDialog
@@ -1473,3 +1474,978 @@ class TextBlock(UIWidgetWrapper):
                                 alignment=ui.Alignment.RIGHT_TOP,
                             )
         return containing_frame
+
+
+class XYPlot(UIWidgetWrapper):
+    def __init__(
+        self,
+        label: str,
+        tooltip: str = "",
+        x_data: Union[List[List], List] = [],
+        y_data: Union[List[List], List] = [],
+        x_min: float = None,
+        x_max: float = None,
+        y_min: float = None,
+        y_max: float = None,
+        x_label: str = "X",
+        y_label: str = "Y",
+        plot_height: int = 10,
+        show_legend: bool = False,
+        legends: List[str] = None,
+        plot_colors: List[List[int]] = None,
+    ):
+        """Create an XY plot UI Widget with axis scaling, legends, and support for multiple plots.
+        Overlapping data is most accurately plotted when centered in the frame with reasonable axis scaling.
+        Pressing down the mouse gives the x and y values of each function at an x coordinate.
+
+        Args:
+            label (str): Short descriptve text to the left of the plot
+            tooltip (str, optional): Tooltip to appear when hovering the mouse over the plot label. Defaults to "".
+            x_data (Union[List[List],List], optional): A possibly ragged list of lists where each ith inner list is the x coordinates for plot i.
+                For a single plot, the data may be provided as a list of floats.  x_data must have exactly the same shape as y_data.  Defaults to [].
+            y_data (Union[List[List],List], optional): A possibly ragged list of lists where each ith inner list is the y coordinates for plot i.
+                For a single plot, the data may be provided as a list of floats.  y_data must have exactly the same shape as x_data.  Defaults to [].
+            x_min (float, optional): Minimum value of x shown on the plot. If not specified, the minimum value found in x_data will be uesd. Defaults to None.
+            x_max (float, optional): Maximum value of x shown on the plot.  If not specified, the maximum value found in x_data will be used. Defaults to None.
+            y_min (float, optional): Minimum value of y shown on the plot. If not specified, the minimum value found in y_data will be uesd. Defaults to None.
+            y_max (float, optional): Maximum value of y shown on the plot.  If not specified, the maximum value found in y_data will be used. Defaults to None.
+            x_label (str, optional): Label of X axis. Defaults to "X".
+            y_label (str, optional): Label of Y axis. Defaults to "Y".
+            plot_height (int, optional): Height of the plot, proportional to the height of a line of text. Defaults to 10.
+            show_legend (bool, optional): Show a legend on the plot. Defaults to False.
+            legends (List[str], optional): Legend for the plotted data.  If not specified, names 'F_i(x)' will be automatically generated. Defaults to None.
+            plot_colors (List[List], optional): Colors of the plotted data.  The ith entry in plot_colors is considered to be a list of [r,g,b] values in [0,255] for the ith plot color.
+                If not specified, colors will be automatically generated.  Defaults to None.
+        """
+        self._has_built = False
+
+        self._x_min = x_min
+        self._x_max = x_max
+
+        self._y_min = y_min
+        self._y_max = y_max
+
+        self._x_axis_float_fields = []
+        self._y_axis_float_fields = []
+
+        # These will be immediately resolved in set_data
+        self._no_data = None
+        self._is_plot_visible = None
+
+        # Check assertions around data shape, reshape data; set class variables: self._no_data, self._is_plot_visible
+        self.set_data(x_data, y_data)
+
+        self._show_legend = show_legend
+        self._legends = legends
+
+        self._label = label
+        self._tooltip = tooltip
+        self._x_label = x_label
+        self._y_label = y_label
+        self._plot_num_lines = plot_height
+
+        self._data_colors = None
+        if plot_colors is not None:
+            self.set_plot_colors(plot_colors)
+
+        self._num_points_per_plot = 3000
+
+        plot_frame = self._create_ui_widget()
+        super().__init__(plot_frame)
+
+    def get_x_data(self) -> List[List[float]]:
+        """x_data in the plot
+
+        Returns:
+            List[List[float]]: A possibly ragged list of lists where each ith inner list is the x coordinates for plot i.
+        """
+        return self._x_data
+
+    def get_y_data(self) -> List[List[float]]:
+        """y_data in the plot
+
+        Returns:
+            List[List[float]]: A possibly ragged list of lists where each ith inner list is the y coordinates for plot i.
+        """
+        return self._y_data
+
+    def get_x_min(self) -> float:
+        """Get the minimum value of x shown in the plot.
+
+        Returns:
+            float: Minimum value of x shown in the plot.
+        """
+        if self._x_min is not None:
+            return float(self._x_min)
+        elif self._x_data is not None:
+            return
+        else:
+            return None
+
+    def get_y_min(self) -> float:
+        """Get the minimum value of y shown in the plot.
+
+        Returns:
+            float: Minimum value of y shown in the plot.
+        """
+        if self._y_min is not None:
+            return float(self._y_min)
+        elif self._y_data is not None:
+            return self._get_ragged_data_min(self._y_data)
+        else:
+            return None
+
+    def get_x_max(self) -> float:
+        """Get the maximum value of x shown in the plot.
+
+        Returns:
+            float: Maximum value of x shown in the plot.
+        """
+        if self._x_max is not None:
+            return float(self._x_max)
+        elif self._x_data is not None:
+            return self._get_ragged_data_max(self._x_data)
+        else:
+            return None
+
+    def get_y_max(self) -> float:
+        """Get the maximum value of y shown in the plot.
+
+        Returns:
+            float: Maximum value of y shown in the plot.
+        """
+        if self._y_max is not None:
+            return float(self._y_max)
+        elif self._y_data is not None:
+            return self._get_ragged_data_max(self._y_data)
+        else:
+            return None
+
+    def get_legends(self) -> List[str]:
+        """Get the legends for the plotted data.
+
+        Returns:
+            List[str]: Legends for the plotted data
+        """
+        legends = []
+        if self._legends is not None:
+            for legend in self._legends:
+                legends.append(legend)
+
+        i = len(legends)
+        while i < len(self.get_x_data()):
+            legends.append(f"F_{i}(x)")
+            i += 1
+
+        if len(legends) > len(self._x_data):
+            return legends[: len(self._x_data)]
+
+        return legends
+
+    def get_plot_height(self) -> int:
+        """Get the height of the plot, proportional to the height of a line of text
+
+        Returns:
+            int: Height of the plot
+        """
+        return self._plot_num_lines
+
+    def get_plot_colors(self) -> List[List[int]]:
+        """Get the colors of the data in the plot
+
+        Returns:
+            List[List[int]]: List of lists where each inner list has length 3 corresponding to r,g,b values.
+        """
+        if self._data_colors is None:
+            return [self._convert_hex_to_rgb(data_color) for data_color in self._get_distinct_colors(len(self._x_data))]
+        else:
+            return [self._convert_hex_to_rgb(data_color) for data_color in self._data_colors]
+
+    def set_plot_color_by_index(self, index: int, r: int, g: int, b: int):
+        """Set the color of a specific plot.
+
+        Args:
+            index (int): Index of the plot corresponding to the rows of x_data and y_data.
+            r (int): Value for red in [0,255]
+            g (int): Value for green in [0,255]
+            b (int): Value for blue in [0,255]
+        """
+        if index >= len(self._x_data):
+            carb.log_error("Index out of bounds for color on plot")
+            return
+        self._data_colors = self._get_data_colors(len(self._x_data))
+
+        self._data_colors[index] = self._convert_rgb_to_hex(r, g, b)
+
+        if self._has_built:
+            self._plot_frames[index].rebuild()
+            self._legend_frame.rebuild()
+
+    def set_plot_colors(self, plot_colors: List[List[int]]):
+        """Set the colors for every plot
+
+        Args:
+            plot_colors (List[List[int]]): A list of lists where each index corresponds to the rows of x_data and y_data.  Each inner list must
+                contain [r,g,b] color values in [0,255]
+        """
+        if self._data_colors is None:
+            self._data_colors = [self._convert_rgb_to_hex(r, g, b) for (r, g, b) in plot_colors]
+        else:
+            for i in range(len(plot_colors)):
+                if i <= len(self._data_colors):
+                    self._data_colors[i] = self._convert_rgb_to_hex(*plot_colors[i])
+                else:
+                    self._data_colors.append(self._convert_rgb_to_hex(*plot_colors[i]))
+
+        if self._has_built:
+            for plot in self._plot_frames:
+                plot.rebuild()
+            self._legend_frame.rebuild()
+
+    def set_x_min(self, x_min: float):
+        """Set the minimum value of x shown on the plot.
+        If this value is not less than x_max, x_max will be updated to x_min + 1.
+
+        Args:
+            x_min (float): Minimum value of x shown on the plot.
+        """
+        self._x_min = x_min
+
+        if self._has_built:
+            self._x_min_float_drag.model.set_value(x_min)
+
+    def set_y_min(self, y_min: float):
+        """Set the minimum value of y shown on the plot.
+        If this value is not less than y_max, y_max will be updated to y_min + 1.
+
+        Args:
+            y_min (float): Minimum value of y shown on the plot.
+        """
+        self._y_min = y_min
+
+        if self._has_built:
+            self._y_min_float_drag.model.set_value(y_min)
+
+    def set_x_max(self, x_max: float):
+        """Set maximum value of x shown on the plot.
+        If this value is not greater than x_min, x_min will be updated to x_max - 1.
+
+        Args:
+            x_max (float): Maximum value of x shown on the plot.
+        """
+        self._x_max = x_max
+
+        if self._has_built:
+            self._x_max_float_drag.model.set_value(x_max)
+
+    def set_y_max(self, y_max: float):
+        """Set maximum value of y shown on the plot.
+        If this value is not greater than y_min, y_min will be updated to y_max - 1.
+
+        Args:
+            y_max (float): Maximum value of y shown on the plot.
+        """
+        self._y_max = y_max
+
+        if self._has_built:
+            self._y_max_float_drag.model.set_value(y_max)
+
+    def set_legend_by_index(self, idx: int, legend: str):
+        """Set the legend for a specific plot whose index corresponds to the rows of x_data and y_data
+
+        Args:
+            idx (int): Index of legend to set.
+            legend (str): Legend
+        """
+        if idx >= len(self._x_data) or idx < -len(self._x_data):
+            carb.log_error("Legend index out of bounds")
+        legends = self.get_legends()
+        legends[idx] = legend
+
+        self._legends = legends
+        if self._has_built:
+            self._legend_frame.invalidate_raster()
+            self._legend_frame.rebuild()
+
+    def set_legends(self, legends: List[str]):
+        """Set legends for each plot.
+
+        Args:
+            legends (List[str]): List of legends for each plot.
+        """
+        if len(legends) != len(self._x_data):
+            carb.log_error("Number of legends must match the number of plots")
+        self._legends = legends
+        if self._has_built:
+            self._legend_frame.invalidate_raster()
+            self._legend_frame.rebuild()
+
+    def set_plot_height(self, plot_height: int):
+        """Set the height of the plot.
+
+        Args:
+            plot_height (int): Height of the plot, proportional to the height of a line of text.
+        """
+        self._plot_num_lines = plot_height
+        if self._has_built:
+            self.container_frame.rebuild()
+
+    def set_show_legend(self, show_legend: bool):
+        """Hide or show the legend for this Widget
+
+        Args:
+            show_legend (bool): If True, show a legend for the Widget.
+        """
+        self._show_legend = show_legend
+        if self._has_built:
+            self._show_legend_cb.model.set_value(show_legend)
+
+    def set_data(self, x_data: Union[List[List], List], y_data: Union[List[List], List]):
+        """Set the data to plot
+
+        Args:
+            x_data (Union[List[List],List]): A possibly ragged list of lists where each ith inner list is the x coordinates for plot i.
+                For a single plot, the data may be provided as a list of floats.  x_data must have exactly the same shape as y_data.
+            y_data (Union[List[List],List]): A possibly ragged list of lists where each ith inner list is the y coordinates for plot i.
+                For a single plot, the data may be provided as a list of floats.  y_data must have exactly the same shape as x_data.
+        """
+        if len(x_data) != len(y_data):
+            carb.log_error(f"x_data and y_data arguments must have the same shape.")
+
+        self._no_data = True
+
+        if len(x_data) == 0:
+            self._x_data = [[]]
+            self._y_data = [[]]
+            self._is_plot_visible = []
+            return
+
+        if not isinstance(x_data[0], Iterable) and not isinstance(y_data[0], Iterable):
+            if len(x_data) > 1:
+                self._no_data = False
+            x_data = [x_data]
+            y_data = [y_data]
+
+        for i in range(len(x_data)):
+            if len(x_data[i]) != len(y_data[i]):
+                carb.log_error(f"x_data and y_data arguments must have the same shape.  Mismatch found at index {i}")
+            if len(x_data[i]) > 1:
+                self._no_data = False
+
+        self._x_data = x_data
+        self._y_data = y_data
+
+        self._is_plot_visible = [True] * len(self._x_data)
+
+        if self._has_built:
+            self.container_frame.rebuild()
+
+    def set_plot_visible_by_index(self, index: int, visible: bool):
+        """Hide or show a specific plot
+
+        Args:
+            index (int): Index of plot to show
+            visible (bool):If True, show the plot, otherwise hide it.
+        """
+        if index >= len(self._x_data):
+            carb.log_error("Index out of bounds for plot.")
+            return
+
+        self._is_plot_visible[index] = visible
+
+        if self._has_built:
+            if len(self._show_plot_cbs) == 0:
+                self._plot_frames[index].visible = visible
+            else:
+                self._show_plot_cbs[index].model.set_value(visible)
+
+    def _get_data_colors(self, num_colors) -> List[int]:
+        # Get hex colors to use in the plot
+
+        if self._data_colors is None:
+            return self._get_distinct_colors(num_colors)
+        elif len(self._data_colors) < num_colors:
+            return self._data_colors + self._get_distinct_colors(num_colors - len(self._data_colors))
+        else:
+            return self._data_colors
+
+    def _get_ragged_data_min(self, data) -> float:
+        # Get the minimum value in a set of ragged data
+
+        data_min = None
+
+        for row in data:
+            if len(row) > 0:
+                m = np.min(row)
+                if data_min is None or m < data_min:
+                    data_min = m
+
+        return data_min
+
+    def _get_ragged_data_max(self, data) -> float:
+        # Get the maximum value in a set of ragged data
+
+        data_max = None
+
+        for row in data:
+            if len(row) > 0:
+                m = np.max(row)
+                if data_max is None or m > data_max:
+                    data_max = m
+
+        return data_max
+
+    def _get_interpolated_data(self, x_min=None, x_max=None):
+        """Get all data necessary for plotting
+
+        Returns:
+            x_fracs (np.array): (N x 2) corresponding to the fraction of x values that are covered by the min and max
+                x values for each plot
+            y_vals (np.array): (N x ?) a list of y values corresponding to each plot.  The shape may be ragged
+            x_min (float): minimum value of x to be shown in the plot
+            x_max (float): maximum value of x to be shown in the plot
+        """
+
+        if self._no_data:
+            # There is no data at all
+            return [[0, 1]], [[]], 0, 1
+
+        if x_min is None:
+            x_min = self._get_ragged_data_min(self._x_data)
+        if x_max is None:
+            x_max = self._get_ragged_data_max(self._x_data)
+
+        spacing = (x_max - x_min) / self._num_points_per_plot
+        x_val_range = np.arange(x_min, x_max + spacing - 0.00001, spacing)
+
+        y_vals = []
+        x_fracs = []
+
+        for i in range(len(self._y_data)):
+            y_vals.append([])
+            for j in range(len(self._y_data[i]) - 1):
+                y_low = self._y_data[i][j]
+                y_high = self._y_data[i][j + 1]
+                inds = np.where((x_val_range >= self._x_data[i][j]) & (x_val_range < self._x_data[i][j + 1]))[0]
+                if len(inds) == 0:
+                    continue
+                x_frac = (x_val_range[inds] - self._x_data[i][j]) / (self._x_data[i][j + 1] - self._x_data[i][j])
+                interp_fun = lambda x: y_low + x_frac * (y_high - y_low)
+                y_vals[-1].extend(interp_fun(x_val_range[inds]))
+
+            if len(self._x_data[i]) <= 1:
+                x_fracs.append([0.0, 1.0])
+                continue
+
+            inds = np.where((x_val_range >= self._x_data[i][0]) & (x_val_range <= self._x_data[i][-1]))[0]
+            if len(inds) > 0:
+                x_fracs.append(
+                    [
+                        (x_val_range[inds[0]] - x_min) / (x_max - x_min),
+                        (x_val_range[inds[-1]] - x_min) / (x_max - x_min),
+                    ]
+                )
+            elif self._x_data[i][0] > x_val_range[-1]:
+                x_fracs.append([1.0, 1.0])
+            else:
+                x_fracs.append([0.0, 0.0])
+
+        return x_fracs, y_vals, x_min, x_max
+
+    def _convert_rgb_to_hex(self, r, g, b) -> int:
+        # convert an rgb color to a hex value
+        return 0xFF * 16**6 + b * 16**4 + g * 16**2 + r
+
+    def _convert_hex_to_rgb(self, hex_color) -> Tuple[int]:
+        def residue(number):
+            mask = 0xFFFFFF00
+            number = number - (number & mask)
+            return number
+
+        r = residue(hex_color)
+        g = residue(int(hex_color / 16**2))
+        b = residue(int(hex_color / 16**4))
+        return r, g, b
+
+    def _get_distinct_colors(self, num_colors) -> List[int]:
+        """
+        This function returns a list of distinct colors for plotting.
+
+        Args:
+            num_colors (int): the number of colors to generate
+
+        Returns:
+            List[int]: a list of distinct colors in hexadecimal format 0xFFBBGGRR
+        """
+        import colorsys
+
+        colors = []
+
+        hues = [0, 0.25, 0.5, 0.9]
+        sorted_hues = [0, 0.25, 0.5, 0.9]
+        while len(hues) < num_colors:
+            ind = np.argmax(np.diff(sorted_hues))
+            hues.append((sorted_hues[ind] + sorted_hues[ind + 1]) / 2)
+            sorted_hues.append(hues[-1])
+            sorted_hues.sort()
+
+        for i in range(num_colors):
+            hue = hues[i]
+            saturation = 0.8
+            value = 1
+            rgb = colorsys.hsv_to_rgb(hue, saturation, value)
+            r, g, b = [int(255 * x) for x in rgb]
+            color_hex = self._convert_rgb_to_hex(r, g, b)
+            colors.append(color_hex)
+
+        return colors
+
+    def _get_fn_y_value(self, idx, x_value, decimals) -> float:
+        # Get value of each plot evaluated at x_value.  This may require linear interpolation
+        x_data = self._x_data[idx]
+        y_data = self._y_data[idx]
+
+        if x_value == x_data[-1]:
+            return np.round(y_data[-1], decimals=decimals)
+
+        for i in range(len(x_data) - 1):
+            if x_value >= x_data[i] and x_value < x_data[i + 1]:
+                frac = (x_value - x_data[i]) / (x_data[i + 1] - x_data[i])
+                return np.round(y_data[i] + frac * (y_data[i + 1] - y_data[i]), decimals=decimals)
+
+        return ""
+
+    def _mouse_moved_on_plot(self, x, y, *args):
+        # Show a tooltip with x,y and function values
+        if self._no_data == True:
+            # There is no data in the plots, so do nothing
+            return
+
+        tt_frame = self._tooltip_frame
+        width = tt_frame.computed_width - 14
+        height = tt_frame.computed_height - 8
+        x_pos = tt_frame.screen_position_x + 8
+        y_pos = tt_frame.screen_position_y + 5
+
+        tt_frame.tooltip_offset_x = 0
+        tt_frame.tooltip_offset_y = 0
+
+        x_min = self.get_x_min()
+        x_max = self.get_x_max()
+        y_max = self.get_y_max()
+        y_min = self.get_y_min()
+
+        num_decimals_x = int(max(0, np.log10(5 / (self._x_max - self._x_min)) + 2))
+        num_decimals_y = int(max(0, np.log10(5 / (y_max - y_min)) + 2))
+
+        x_value = np.round((x_max - x_min) * (x - x_pos) / width + x_min, decimals=num_decimals_x)
+        y_value = np.round(y_max - (y_max - y_min) * (y - y_pos) / height, decimals=num_decimals_y)
+        tt_string = f"x = {x_value},"
+        tt_string += f"y = {y_value}\n\n"
+        legends = self.get_legends()
+        for i in range(len(self._interpolated_y_data)):
+            if not self._plot_frames[i].visible:
+                continue
+            tt_string += legends[i] + " : "
+            tt_string += f"{self._get_fn_y_value(i,x_value,num_decimals_y)}\n"
+        tt_frame.set_tooltip(tt_string)
+
+    def _on_mouse_released(self, *args):
+        # Hide the tooltip off screen
+        self._tooltip_frame.tooltip = " "
+        self._tooltip_frame.tooltip_offset_x = -2000
+        self._tooltip_frame.tooltip_offset_y = -2000
+
+    def _create_ui_widget(self):
+        containing_frame = ui.Frame(build_fn=self._build_widget)
+
+        return containing_frame
+
+    def _build_widget(self):
+        self._plot_frames = []
+        self._plots = []
+
+        self._color_widgets = []
+        self._show_plot_cbs = []
+
+        LINE_HEIGHT = 23
+
+        label = self._label
+        tooltip = self._tooltip
+        x_label = self._x_label
+        y_label = self._y_label
+        plot_num_lines = self._plot_num_lines
+
+        plot_height = plot_num_lines * LINE_HEIGHT
+
+        x_fracs, y_data, x_min, x_max = self._get_interpolated_data(self._x_min, self._x_max)
+        self._x_min = x_min
+        self._x_max = x_max
+        self._interpolated_y_data = y_data
+        self._x_fracs = x_fracs
+
+        self._data_colors = self._get_data_colors(len(y_data))
+
+        def on_show_legend(model):
+            if model.get_value_as_bool():
+                self._show_legend = True
+                self._legend_frame.visible = True
+                self._legend_frame.rebuild()
+            else:
+                self._show_legend = False
+                self._legend_frame.visible = False
+
+        def on_color_widget_set_plot_color(idx):
+            plot_frame = self._plot_frames[idx]
+            color_widget = self._color_widgets[idx]
+
+            rgb_color = []
+            for item in color_widget.model.get_item_children():
+                val = color_widget.model.get_item_value_model(item).get_value_as_float()
+                rgb_color.append(int(255 * val))
+            hex_color = self._convert_rgb_to_hex(*rgb_color[:3])
+            self._data_colors[idx] = hex_color
+
+            plot_frame.rebuild()
+
+        def build_legend_frame():
+            def toggle_plot_visibility(show, i):
+                self._is_plot_visible[i] = show
+                if i < len(self._plot_frames):
+                    self._plot_frames[i].visible = show
+
+            legends = self.get_legends()
+            self._color_widgets = []
+            self._show_plot_cbs = []
+            with ui.HStack(spacing=3):
+                ui.Spacer()
+                for i in range(len(self._x_data)):
+                    label_frame_width = LABEL_HEIGHT * len(legends[i]) / 3 + 8
+                    ui.Label(legends[i], width=label_frame_width, alignment=ui.Alignment.RIGHT)
+
+                    color_widget = ui.ColorWidget(width=10)
+                    color_widget.model.add_end_edit_fn(lambda *args, idx=i: on_color_widget_set_plot_color(idx))
+                    self._color_widgets.append(color_widget)
+
+                    color = list(self._convert_hex_to_rgb(self._data_colors[i]))
+                    color.append(255)
+                    color = np.array(color) / 255.0
+                    for j, item in enumerate(color_widget.model.get_item_children()):
+                        val = color_widget.model.get_item_value_model(item).set_value(color[j])
+
+                    model = ui.SimpleBoolModel()
+                    model.set_value(self._is_plot_visible[i])
+                    show_plot_cb = ui.CheckBox(model=model)
+                    self._show_plot_cbs.append(show_plot_cb)
+                    model.add_value_changed_fn(
+                        lambda model, idx=i: toggle_plot_visibility(model.get_value_as_bool(), idx)
+                    )
+
+        def set_x_axis_values(low, high):
+            assert high >= low
+
+            if high == low:
+                high = low + 0.0001
+
+            num_fields = len(self._x_axis_float_fields)
+            spacing = (high - low) / num_fields
+            num_decimals = int(max(0, np.log10(5 / (high - low)) + 2))
+
+            self._x_max_float_drag.step = (high - low) / 20
+            self._x_min_float_drag.step = (high - low) / 20
+            for i, float_field in enumerate(self._x_axis_float_fields):
+                float_field.model.set_value(np.round(low + spacing / 2 + spacing * i, decimals=num_decimals))
+
+        def set_y_axis_values(low, high):
+            assert high >= low
+
+            if high == low:
+                high = low + 0.0001
+
+            num_fields = len(self._y_axis_float_fields)
+            spacing = (high - low) / num_fields
+            num_decimals = int(max(0, np.log10(5 / (high - low)) + 2))
+            self._y_min_float_drag.step = (high - low) / 20
+            self._y_max_float_drag.step = (high - low) / 20
+            for i, float_field in enumerate(self._y_axis_float_fields):
+                float_field.model.set_value(np.round(high - spacing / 2 - spacing * i, decimals=num_decimals))
+
+        def build_x_axis_frame():
+            self._x_axis_float_fields = []
+
+            def update_x_min(model):
+                self._x_min = model.as_float
+                if self._x_min >= self._x_max:
+                    self._x_max = self._x_min + 1.0
+                    self._x_max_float_drag.model.set_value(self._x_max)
+                self._x_fracs, self._interpolated_y_data, _, _ = self._get_interpolated_data(
+                    x_min=self._x_min, x_max=self._x_max
+                )
+
+                for i, plot_frame in enumerate(self._plot_frames):
+                    plot_frame.set_build_fn(
+                        build_fn=lambda x_fracs=self._x_fracs[i], y_data=self._interpolated_y_data[
+                            i
+                        ], color_idx=i: build_plot(x_fracs, y_data, color_idx)
+                    )
+
+                set_x_axis_values(self._x_min, self._x_max)
+
+            def update_x_max(model):
+                self._x_max = model.as_float
+                if self._x_max <= self._x_min:
+                    self._x_min = self._x_max - 1.0
+                    self._x_min_float_drag.model.set_value(self._x_min)
+                self._x_fracs, self._interpolated_y_data, _, _ = self._get_interpolated_data(
+                    x_min=self._x_min, x_max=self._x_max
+                )
+
+                for i, plot_frame in enumerate(self._plot_frames):
+                    plot_frame.set_build_fn(
+                        build_fn=lambda x_fracs=self._x_fracs[i], y_data=self._interpolated_y_data[
+                            i
+                        ], color_idx=i: build_plot(x_fracs, y_data, color_idx)
+                    )
+
+                set_x_axis_values(self._x_min, self._x_max)
+
+            with ui.VStack(spacing=0):
+                with ui.ZStack():
+                    ui.FloatDrag(
+                        enabled=False
+                    )  # This fills in the whole x axis label area with the right color.  The number will get covered up.
+
+                    with ui.HStack():
+                        ui.Spacer(
+                            width=6
+                        )  # There is blank space between the plotted line and the sides of the plot's colored rectangle
+                        for i in range(plot_num_lines):
+                            float_field = ui.FloatDrag(enabled=False, alignment=ui.Alignment.CENTER)
+                            self._x_axis_float_fields.append(float_field)
+                        ui.Spacer(width=6)
+
+                ui.Spacer(height=3)
+
+                with ui.HStack():
+                    # Add fields for controlling min and max x values on plot
+                    self._x_min_float_drag = ui.FloatDrag(
+                        name="Field", alignment=ui.Alignment.LEFT_TOP, tooltip="X Min"
+                    )
+                    x_min_model = self._x_min_float_drag.model
+                    x_min_model.set_value(self._x_min)
+
+                    ui.Label(x_label, alignment=ui.Alignment.CENTER_TOP, height=LABEL_HEIGHT)
+
+                    self._x_max_float_drag = ui.FloatDrag(
+                        name="Field", alignment=ui.Alignment.LEFT_BOTTOM, tooltip="X Max"
+                    )
+                    x_max_model = self._x_max_float_drag.model
+                    x_max_model.set_value(self._x_max)
+
+                    x_min_model.add_value_changed_fn(update_x_min)
+                    x_max_model.add_value_changed_fn(update_x_max)
+
+            set_x_axis_values(x_min, x_max)
+
+        def build_y_axis_frame():
+            # Add fields for controlling min and max y values on plot
+            def update_y_min(model):
+                self._y_min = model.as_float
+
+                if self._y_min >= self._y_max:
+                    self._y_max = self._y_min + 1.0
+                    self._y_max_float_drag.model.set_value(self._y_max)
+
+                for plot in self._plots:
+                    plot.scale_min = model.as_float
+
+                set_y_axis_values(self._y_min, self._y_max)
+
+            def update_y_max(model):
+                self._y_max = model.as_float
+                if self._y_max <= self._y_min:
+                    self._y_min = self._y_max - 1.0
+                    self._y_min_float_drag.model.set_value(self._y_min)
+
+                for plot in self._plots:
+                    plot.scale_max = model.as_float
+
+                set_y_axis_values(self._y_min, self._y_max)
+
+            y_max = self.get_y_max()
+            y_min = self.get_y_min()
+
+            if y_min is None:
+                y_min = 0.0
+            self._y_min = y_min
+
+            if y_max is None:
+                y_max = y_min + 1.0
+            self._y_max = y_max
+
+            with ui.VStack():
+                with ui.HStack(spacing=2):
+                    # Make it wide enough to contain the text on one line with a minimum size of 60 pixels
+                    label_frame_width = max(LABEL_HEIGHT * len(y_label) / 3 + 3, 60)
+
+                    with ui.Frame(width=label_frame_width, height=plot_height):
+
+                        # Make a frame with y axis max, min and label that has width label_frame_width
+                        with ui.VStack():
+                            self._y_max_float_drag = ui.FloatDrag(
+                                name="Field",
+                                width=label_frame_width,
+                                height=LABEL_HEIGHT,
+                                alignment=ui.Alignment.CENTER,
+                                tooltip="Y Max",
+                            )
+                            y_max_model = self._y_max_float_drag.model
+
+                            y_max_model.set_value(y_max)
+
+                            with ui.HStack():
+                                ui.Spacer()
+                                ui.Label(y_label, word_wrap=True, alignment=ui.Alignment.LEFT_CENTER)
+                                ui.Spacer()
+
+                            self._y_min_float_drag = ui.FloatDrag(
+                                name="Field",
+                                width=label_frame_width,
+                                height=LABEL_HEIGHT,
+                                alignment=ui.Alignment.CENTER,
+                                tooltip="Y Min",
+                            )
+                            y_min_model = self._y_min_float_drag.model
+                            y_min_model.set_value(y_min)
+
+                            y_min_model.add_value_changed_fn(update_y_min)
+                            y_max_model.add_value_changed_fn(update_y_max)
+
+                    # Make axis markers
+                    self._y_axis_float_fields = []
+                    with ui.Frame(height=plot_height):
+                        with ui.ZStack():
+                            ui.FloatDrag(
+                                enabled=False
+                            )  # This fills in the whole y axis label area with the right color.  The number will get covered up.
+
+                            with ui.VStack(spacing=0):
+                                ui.Spacer(
+                                    height=3
+                                )  # There is blank space between the plotted line and the edges of the plot's colored rectangle
+                                for i in range(plot_num_lines):
+                                    float_field = ui.FloatDrag(enabled=False, alignment=ui.Alignment.CENTER)
+                                    self._y_axis_float_fields.append(float_field)
+                                ui.Spacer(height=3)
+
+                # Fill "Show Legend" Frame
+                with ui.HStack():
+                    ui.Label(" Show\nLegend")
+                    model = ui.SimpleBoolModel()
+                    model.set_value(self._show_legend)
+                    ui.Spacer(width=3)
+
+                    with ui.VStack():
+                        ui.Spacer()
+                        self._show_legend_cb = ui.CheckBox(model=model, alignment=ui.Alignment.CENTER)
+                        ui.Spacer()
+
+                    ui.Spacer()
+                    model.add_value_changed_fn(on_show_legend)
+
+            set_y_axis_values(y_min, y_max)
+
+        def build_plot(x_fracs, y_data, color_idx):
+            """Build the frame for a plot
+
+            Args:
+                x_fracs (np.array (2,)): Fraction of available space that the plot should cover
+                y_data (np.array): data with which to fill the plot
+            """
+
+            color = self._data_colors[color_idx]
+            visible = self._is_plot_visible[color_idx]
+            with ui.HStack():
+                # ui.Frame is the only omni.ui object that seems to consistently obey the given spacing rules
+                # So each plot is on a Frame between two other invisible frames to get the placement right
+                w = self._base_plot.computed_width
+                if w == 0:
+                    return
+
+                # Plots have 6 pixel margins on them, so the fraction of the figure occupied needs to be modified
+                x_low = max(0.0, x_fracs[0] - 6 / w)
+                x_high = min(1.0, x_fracs[1] + 6 / w)
+                y_min = self.get_y_min()
+                y_max = self.get_y_max()
+                if y_min is None:
+                    y_min = 0.0
+                if y_max is None:
+                    y_max = 1.0
+
+                f = ui.Frame(width=ui.Fraction(x_low))
+                with ui.Frame(width=ui.Fraction(x_high - x_low)):
+                    plot = ui.Plot(
+                        ui.Type.LINE,
+                        y_min,
+                        y_max,
+                        *y_data,
+                        height=plot_height,
+                        style={"color": color, "background_color": 0x0},
+                    )
+                    self._plots.append(plot)
+                ui.Frame(width=ui.Fraction(1 - x_high))
+
+        with ui.VStack(spacing=3):
+            with ui.HStack():
+                # Write the leftmost label for what this plot is
+                ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_TOP, tooltip=format_tt(tooltip))
+
+                with ui.HStack(spacing=0):
+                    # Make the y axis label
+                    y_axis_frame = ui.Frame(build_fn=build_y_axis_frame, width=ui.Fraction(0.25))
+
+                    # VStack the plot on top of the X axis label
+                    with ui.VStack(spacing=0):
+
+                        # ZStacking everything that goes on the actual data plot
+                        with ui.ZStack():
+                            ui.Rectangle(height=plot_height)
+                            self._base_plot = ui.Plot(ui.Type.LINE, 0.0, 1.0, 0.0, style={"background_color": 0x0})
+                            for i in range(len(y_data)):
+                                plot_frame = Frame(
+                                    build_fn=lambda x_fracs=x_fracs[i], y_data=y_data[i], color_idx=i: build_plot(
+                                        x_fracs, y_data, color_idx
+                                    )
+                                )
+                                plot_frame.visible = self._is_plot_visible[i]
+                                self._plot_frames.append(plot_frame)
+
+                            # Create an invisible frame on top that will give a helpful tooltip
+                            self._tooltip_frame = ui.Plot(
+                                mouse_moved_fn=self._mouse_moved_on_plot,
+                                style={"color": 0xFFFFFFFF, "background_color": 0x0},
+                            )
+                            self._tooltip_frame.set_mouse_pressed_fn(self._mouse_moved_on_plot)
+                            self._tooltip_frame.set_mouse_released_fn(self._on_mouse_released)
+                            self._tooltip_frame.set_computed_content_size_changed_fn(
+                                lambda *args: [plot.rebuild() for plot in self._plot_frames]
+                            )
+                            # Make the tooltip invisible
+                            self._on_mouse_released()
+
+                        # Create the x axis label
+                        x_axis_frame = Frame(build_fn=build_x_axis_frame).frame
+                        x_axis_frame.rebuild()
+
+                ui.Spacer(width=20)
+
+            with ui.HStack():
+                ui.Spacer(width=LABEL_WIDTH)
+                self._legend_frame = ui.Frame(build_fn=build_legend_frame)
+                self._legend_frame.rebuild()
+                self._legend_frame.visible = self._show_legend
+                ui.Spacer(width=20)
+
+            add_separator()
+
+        self._has_built = True

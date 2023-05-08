@@ -64,19 +64,38 @@ class TemplateGenerator:
         source_dir = os.path.join(self._extension_path, "template_source_files", "common")
         new_paths = self._copy_directory_contents(source_dir, file_path)
 
+        python_package_name = self._get_python_package_name(extension_title)
+
         replace_keywords = {
             "{EXTENSION_TITLE}": extension_title,
             "{EXTENSION_DESCRIPTION}": extension_description,
             "{CURRENT_DATE}": datetime.now().strftime("%Y-%m-%d"),
             "{EXTENSION_REPOSITORY}": "",
+            "{PYTHON_PACKAGE_NAME}": python_package_name,
         }
         self._replace_keywords(replace_keywords, new_paths)
+
+    def _get_python_package_name(self, extension_name):
+        # Convert all special characters in extension_name to underscores to make a valid python package name
+        package_name = ""
+        for c in extension_name:
+            if c.isalnum():
+                package_name += c
+            else:
+                package_name += "_"
+
+        # Add the tag _python to the end of the path to make it more likely to be a unique module name
+        package_name += "_python"
+
+        return package_name
 
     def generate_configuration_tooling_template(self, file_path, extension_title, extension_description):
         self._write_common_data(file_path, extension_title, extension_description)
 
+        python_package_name = self._get_python_package_name(extension_title)
+
         source_dir = os.path.join(self._extension_path, "template_source_files", "configuration_tooling_workflow")
-        target_dir = os.path.join(file_path, "scripts")
+        target_dir = os.path.join(file_path, python_package_name)
 
         new_paths = self._copy_directory_contents(source_dir, target_dir)
 
@@ -85,13 +104,15 @@ class TemplateGenerator:
             "{EXTENSION_DESCRIPTION}": '"' + extension_description + '"',
         }
 
-        self._replace_keywords(replace_keywords, new_paths)
+        self._replace_keywords(replace_keywords, [os.path.join(target_dir, "global_variables.py")])
 
     def generate_loaded_scenario_template(self, file_path, extension_title, extension_description):
         self._write_common_data(file_path, extension_title, extension_description)
 
+        python_package_name = self._get_python_package_name(extension_title)
+
         source_dir = os.path.join(self._extension_path, "template_source_files", "loaded_scenario_workflow")
-        target_dir = os.path.join(file_path, "scripts")
+        target_dir = os.path.join(file_path, python_package_name)
 
         new_paths = self._copy_directory_contents(source_dir, target_dir)
 
@@ -100,13 +121,15 @@ class TemplateGenerator:
             "{EXTENSION_DESCRIPTION}": '"' + extension_description + '"',
         }
 
-        self._replace_keywords(replace_keywords, new_paths)
+        self._replace_keywords(replace_keywords, [os.path.join(target_dir, "global_variables.py")])
 
     def generate_component_library_template(self, file_path, extension_title, extension_description):
         self._write_common_data(file_path, extension_title, extension_description)
 
+        python_package_name = self._get_python_package_name(extension_title)
+
         source_dir = os.path.join(self._extension_path, "template_source_files", "ui_component_library")
-        target_dir = os.path.join(file_path, "scripts")
+        target_dir = os.path.join(file_path, python_package_name)
 
         new_paths = self._copy_directory_contents(source_dir, target_dir)
 
@@ -115,4 +138,4 @@ class TemplateGenerator:
             "{EXTENSION_DESCRIPTION}": '"' + extension_description + '"',
         }
 
-        self._replace_keywords(replace_keywords, new_paths)
+        self._replace_keywords(replace_keywords, [os.path.join(target_dir, "global_variables.py")])

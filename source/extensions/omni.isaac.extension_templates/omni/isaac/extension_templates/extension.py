@@ -268,13 +268,18 @@ class Extension(omni.ext.IExt):
                     path = self._models["component_library_path"].get_value_as_string()
                     title = self._models["component_library_title"].get_value_as_string()
 
-                    if path != "" and path[-1] != os.sep and title.strip(" ") != "":
+                    if (
+                        path != ""
+                        and path[-1] != os.sep
+                        and title.strip(" ") != ""
+                        and not ("-" in title or "\\" in title or '"' in title)
+                    ):
                         self._models["component_library_generate"].enabled = True
                         self.write_status("Ready to Generate UI Component Library Extension Template")
                     else:
                         self._models["component_library_generate"].enabled = False
                         self.write_status(
-                            "Cannot Generate Extension Template Without a Title and Valid Path.  The Path must not end in a '/'."
+                            "Cannot Generate Extension Template Without a Valid Title and Valid Path.  The Path must not end in a '/'. The Title must not contain double quotes: \", dashes: -, or backslashes: \\."
                         )
 
                 self._models["component_library_path"] = str_builder(

@@ -40,6 +40,9 @@ class UIBuilder:
         """Callback for when the UI is opened from the toolbar.
         This is called directly after build_ui().
         """
+        # Reset internal state when UI window is closed and reopened
+        self._invalidate_articulation()
+
         # Handles the case where the user loads their Articulation and
         # presses play before opening this extension
         if self._timeline.is_playing():
