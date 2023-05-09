@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.48.0] - 2023-04-18
+- Add function get_transform_with_normalized_rotation to utils.transformation.py 
+- Function returns transformation matrix after removing scale factor 
+
 ## [1.47.0] - 2023-03-31
 ### Changed
 - Update asset paths to 2023.1.0

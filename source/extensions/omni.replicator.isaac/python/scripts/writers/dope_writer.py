@@ -143,7 +143,7 @@ class DOPEWriter(Writer):
                 "class": class_name,
                 "visibility": object["visibility"].astype(np.float),
                 "location": object["location"].astype(np.float),
-                "quaternion_xyzw": object["rotation"].astype(np.float),
+                "quaternion_wxyz": object["rotation"].astype(np.float),
                 "projected_cuboid": object["projected_cuboid"].astype(np.float),
             }
 

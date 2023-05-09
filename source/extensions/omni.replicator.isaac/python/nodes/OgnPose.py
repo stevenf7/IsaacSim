@@ -11,7 +11,7 @@ import json
 import numpy as np
 import omni.graph.core as og
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
-from omni.isaac.core.utils.transformations import tf_matrix_from_pose
+from omni.isaac.core.utils.transformations import tf_matrix_from_pose, get_transform_with_normalized_rotation
 from omni.replicator.isaac.scripts.utils import get_image_space_points
 
 
@@ -53,7 +53,8 @@ class OgnPose:
         semantic_token_map = db.inputs.sdIMSemanticTokenMap
 
         prims_to_world_row_major = db.inputs.sdIMSemanticWorldTransform.view(np.float32).reshape((num_semantics, 4, 4))
-        prims_to_world_row_major[:, :-1, :-1] = prims_to_world_row_major[:, :-1, :-1] * 100.0
+        for i in range(num_semantics):
+            prims_to_world_row_major[i] = get_transform_with_normalized_rotation(prims_to_world_row_major[i])
 
         coord_types = [("x_min", "<i4"), ("y_min", "<i4"), ("x_max", "<i4"), ("y_max", "<i4")]
         desired_data_dtype = np.dtype(coord_types)
