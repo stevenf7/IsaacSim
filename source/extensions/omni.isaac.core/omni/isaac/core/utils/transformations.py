@@ -177,3 +177,24 @@ def get_world_pose_from_relative(
     world_position, world_orientation = pose_from_tf_matrix(relative_pose_to_world)
 
     return world_position, world_orientation
+
+
+def get_transform_with_normalized_rotation(transform: np.ndarray) -> np.ndarray:
+    """Get the transform after normalizing rotation component.
+
+    Args:
+        transform (np.ndarray): transformation matrix with shape (4, 4).
+
+    Returns:
+        np.ndarray: transformation matrix with normalized rotation with shape (4, 4).
+    """
+    transform_without_scale = np.copy(transform.astype(float))
+
+    rotation_matrix = transform[:3, :3]
+
+    column_magnitudes = np.linalg.norm(rotation_matrix, axis=0)
+    normalized_rotation = rotation_matrix / column_magnitudes
+
+    transform_without_scale[:3, :3] = normalized_rotation
+
+    return transform_without_scale
