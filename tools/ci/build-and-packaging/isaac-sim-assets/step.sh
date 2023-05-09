@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
-"$SCRIPT_DIR/../../../packman/packman" install connect-samples-launcher 445-linux-x86_64 -l $SCRIPT_DIR/../../../../_build/_omnicli
+"$SCRIPT_DIR/../../../packman/packman" install connect-samples-launcher 643-linux-x86_64 -l $SCRIPT_DIR/../../../../_build/_omnicli
 OMNICLI="$SCRIPT_DIR/../../../../_build/_omnicli/omnicli.sh"
 
 echo Removing _assets_temp...
@@ -13,8 +13,8 @@ echo "##teamcity[progressMessage 'Downloading /NVIDIA/Materials/vMaterials_2/...
 $OMNICLI copy omniverse://isaac-dev.ov.nvidia.com/NVIDIA/Materials/vMaterials_2 $SCRIPT_DIR/../../../../_assets_temp/NVIDIA/Materials/vMaterials_2
 echo "##teamcity[progressMessage 'Downloading /NVIDIA/Assets/AnimGraph/...']"
 $OMNICLI copy omniverse://isaac-dev.ov.nvidia.com/NVIDIA/Assets/AnimGraph $SCRIPT_DIR/../../../../_assets_temp/NVIDIA/Assets/AnimGraph
-# echo "##teamcity[progressMessage 'Downloading /NVIDIA/Assets/ArchVis/...']"
-# $OMNICLI copy omniverse://isaac-dev.ov.nvidia.com/NVIDIA/Assets/ArchVis $SCRIPT_DIR/../../../../_assets_temp/NVIDIA/Assets/ArchVis
+echo "##teamcity[progressMessage 'Downloading /NVIDIA/Assets/ArchVis/...']"
+$OMNICLI copy omniverse://isaac-dev.ov.nvidia.com/NVIDIA/Assets/ArchVis $SCRIPT_DIR/../../../../_assets_temp/NVIDIA/Assets/ArchVis
 echo "##teamcity[progressMessage 'Downloading /NVIDIA/Assets/Audio2Face/...']"
 $OMNICLI copy omniverse://isaac-dev.ov.nvidia.com/NVIDIA/Assets/Audio2Face $SCRIPT_DIR/../../../../_assets_temp/NVIDIA/Assets/Audio2Face
 echo "##teamcity[progressMessage 'Downloading /NVIDIA/Assets/Characters/...']"
@@ -40,6 +40,8 @@ echo "##teamcity[progressMessage 'Downloading /Isaac/Robots/...']"
 $OMNICLI copy omniverse://isaac-dev.ov.nvidia.com/Isaac/Robots $SCRIPT_DIR/../../../../_assets_temp/Isaac/Robots
 echo "##teamcity[progressMessage 'Downloading /Isaac/Samples/...']"
 $OMNICLI copy omniverse://isaac-dev.ov.nvidia.com/Isaac/Samples $SCRIPT_DIR/../../../../_assets_temp/Isaac/Samples
+echo "##teamcity[progressMessage 'Downloading /Isaac/Sensors/...']"
+$OMNICLI copy omniverse://isaac-dev.ov.nvidia.com/Isaac/Sensors $SCRIPT_DIR/../../../../_assets_temp/Isaac/Sensors
 
 # Packaging assets
 echo "##teamcity[progressMessage 'Packaging isaac-sim-assets...']"
