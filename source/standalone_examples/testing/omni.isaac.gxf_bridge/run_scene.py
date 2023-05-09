@@ -139,13 +139,18 @@ def main():
                 value = type_attr.Get()
                 if "omni.isaac.gxf_bridge.GXFYAML" in value:
                     gxf_yaml_node_present = True
-                    graph = yaml.safe_load_all(stage_prim.GetAttribute("inputs:yaml").Get())
+                    graph = list(yaml.safe_load_all(stage_prim.GetAttribute("inputs:yaml").Get()))
                     if set_yaml_addr_port(graph, args.tcp_server_addr, args.tcp_server_port):
                         stage_prim.GetAttribute("inputs:yaml").Get()
                         carb.log_info(
                             f"Set TcpServer component address to {args.tcp_server_addr}, port to {args.tcp_server_port}."
                         )
                     stage_prim.GetAttribute("inputs:yaml").Set(yaml.dump_all(graph))
+                    if not os.path.exists("tmp"):
+                        os.mkdir("tmp")
+                    combined_yaml_path = os.path.join("tmp", "combined_graph.yaml")
+                    with open(combined_yaml_path, "w") as cgy:
+                        cgy.write(yaml.dump_all(graph))
                     break
         if not gxf_yaml_node_present:
             carb.log_error("No GXF graph YAMLs provided as arguments, and no GXF YAML node found in loaded scene.")
