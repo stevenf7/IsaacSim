@@ -274,3 +274,43 @@ Docker manually, the process goes roughly as follows on Ubuntu systems:
 - sudo usermod -aG docker ${USER} # Then log out and back in
 
 > NOTE: Docker on Windows System for Linux (WSL) is unsupported and likely will not work.
+
+## Building Isaac Sim container
+
+- Execute `./build.sh -r` (Linux) (needs VPN)
+- Execute `./container_build.sh` (Linux) (may need to disconnect VPN if you have errors)
+
+To run the container and start Isaac Sim as a headless app:
+
+```bash
+docker run --name isaac-sim --entrypoint bash -it --gpus all -e "ACCEPT_EULA=Y" --rm --network=host \
+  -v ~/docker/isaac-sim/cache/kit:/isaac-sim/kit/cache/Kit:rw \
+  -v ~/docker/isaac-sim/cache/ov:/root/.cache/ov:rw \
+  -v ~/docker/isaac-sim/cache/pip:/root/.cache/pip:rw \
+  -v ~/docker/isaac-sim/cache/glcache:/root/.cache/nvidia/GLCache:rw \
+  -v ~/docker/isaac-sim/cache/computecache:/root/.nv/ComputeCache:rw \
+  -v ~/docker/isaac-sim/logs:/root/.nvidia-omniverse/logs:rw \
+  -v ~/docker/isaac-sim/data:/root/.local/share/ov/data:rw \
+  -v ~/docker/isaac-sim/documents:/root/Documents:rw \
+  isaac-sim:<version_tag> \
+  ./isaac-sim.headless.native.sh --/persistent/isaac/asset_root/default="omniverse://isaac-dev.ov.nvidia.com" --allow-root
+```
+
+To run the container and start Isaac Sim as a windowed app:
+
+```bash
+xhost +
+docker run --name isaac-sim --entrypoint bash -it --gpus all -e "ACCEPT_EULA=Y" --rm --network=host \
+  -v $HOME/.Xauthority:/root/.Xauthority \
+  -e DISPLAY \
+  -v ~/docker/isaac-sim/cache/kit:/isaac-sim/kit/cache/Kit:rw \
+  -v ~/docker/isaac-sim/cache/ov:/root/.cache/ov:rw \
+  -v ~/docker/isaac-sim/cache/pip:/root/.cache/pip:rw \
+  -v ~/docker/isaac-sim/cache/glcache:/root/.cache/nvidia/GLCache:rw \
+  -v ~/docker/isaac-sim/cache/computecache:/root/.nv/ComputeCache:rw \
+  -v ~/docker/isaac-sim/logs:/root/.nvidia-omniverse/logs:rw \
+  -v ~/docker/isaac-sim/data:/root/.local/share/ov/data:rw \
+  -v ~/docker/isaac-sim/documents:/root/Documents:rw \
+  isaac-sim:<version_tag> \
+  ./isaac-sim.sh --/persistent/isaac/asset_root/default="omniverse://isaac-dev.ov.nvidia.com" --allow-root
+```
