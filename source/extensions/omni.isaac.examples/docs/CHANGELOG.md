@@ -1,6 +1,9 @@
 # Changelog
+## [1.6.1] - 2023-05-09
+### Fixed
+- Fix for Nut and Bolt Demo Windows Bug
 
-## [1.5.6] - 2023-03-23
+## [1.6.0] - 2023-03-23
 ### Added
 - Cortex Samples
 ## [1.5.6] - 2023-02-24

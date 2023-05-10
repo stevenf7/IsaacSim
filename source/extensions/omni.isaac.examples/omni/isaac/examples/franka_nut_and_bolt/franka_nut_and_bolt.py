@@ -95,7 +95,7 @@ class FrankaNutAndBolt(BaseSample):
             "pipe": self.asset_folder + "SubUSDs/Pipe/Pipe.usd",
         }
 
-        self._num_bolts = 6
+        self._num_bolts = 15
         self._num_nuts = 6
         self._sim_dt = 1.0 / self._time_steps_per_second
         self._fsm_update_dt = 1.0 / self._fsm_update_rate
