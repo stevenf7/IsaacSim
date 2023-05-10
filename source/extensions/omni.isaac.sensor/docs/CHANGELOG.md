@@ -1,4 +1,10 @@
 # Changelog
+
+
+## [5.6.4] - 2023-05-09
+### Fixed
+- Missing connection for IsaacComputeRTXLidarPointCloud node
+
 ## [5.6.3] - 2023-03-13
 ### Fixed
 - Fix issue where lidar flatscan node as accessing data before it was ready

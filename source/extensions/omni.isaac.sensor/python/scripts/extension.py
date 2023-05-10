@@ -121,7 +121,11 @@ class Extension(omni.ext.IExt):
                             attributes_mapping={"outputs:renderProductPath": "inputs:renderProductPath"},
                         ),
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "RtxSensorCpu" + "ExportRaw", attributes_mapping={"outputs:cpuPointer": "inputs:cpuPointer"}
+                            "RtxSensorCpu" + "ExportRaw",
+                            attributes_mapping={
+                                "outputs:cpuPointer": "inputs:cpuPointer",
+                                "outputs:exec": "inputs:execIn",
+                            },
                         ),
                     ],
                     # {
