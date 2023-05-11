@@ -1,0 +1,105 @@
+#displayed application name
+name = "Isaac Sim Assets Pack 2"
+#displayed application name in smaller card and library view
+shortName = "Isaac Sim Assets Pack 2"
+version = "${version}"
+#boolean for if this version is the latest version
+latest = true
+#unique identifier for component, all lower case, persists between versions
+slug = "isaac_sim-assets-2"
+
+#displayed before application name in launcher
+productArea = "Omniverse Content"
+#category of content
+#["File Management", "Connectors", "Apps", "Experiences", "Extensions"]
+category = "Content"
+
+# A filter of release types
+# 3 filter types [ "alpha", "beta", "release "]
+channel = "beta"
+
+# Set true if you want this package to show in enterprise launcher
+enterpriseStatus = false
+
+#values for filtering content, not implemented yet
+tags = [
+  "Isaac Sim",
+  "Autonomous Machines",
+  "Robotics",
+  "Manufacturing",
+  "Synthetic Data Generation",
+  "Simulation"
+]
+
+#enum of "app", "connectors" and "experience" for now
+# ["collaboration", "connector", "app", "experience", "extension"]
+kind = "content-pack"
+#string array, each line is a new line, keep lines under 256 char and keep lines under 4
+description = [
+    "This content pack replicates the Isaac Sim assets found in the following publicly available Omniverse Nucleus folder; **NVIDIA -> Assets -> Isaac**. This content pack is designed for storage on a local system.",
+    "Total content pack size: ~50GB (zipped)"
+]
+
+extensionDependencies = [ "n/a" ]
+
+# required for `content-pack` `kind`
+gallery = [
+    "https://launcher-prod.s3.us-east-2.amazonaws.com/isaac_sim/2022.1.1/image.png",
+]
+
+
+format = "usd"
+
+[contractLicenseAgreement]
+title = "NVIDIA Omniverse Content Pack 2"
+url = "https://docs.omniverse.nvidia.com/app_isaacsim/common/NVIDIA_Omniverse_License_Agreement.html"
+
+[assetSpecs]
+# represents the number of meshes for this content
+meshes = 3207
+# defines the short description for meshes
+meshDetail = "USD files"
+# represents the number of textures for this content
+textures = 1325
+# defines the short description for textures
+textureDetail = "Bitmap textures"
+# represents the number of materials for this content
+materials = 158
+
+animations = 0
+rigged = false
+
+[developer]
+#name of developer
+name = 'NVIDIA'
+# hyperlink on developer name (can be left as empty string)
+url = 'https://www.nvidia.com'
+[publisher]
+#name of publisher
+name = 'NVIDIA'
+# hyperlink on publisher name (can be left as empty string)
+url = 'https://www.nvidia.com'
+
+
+# #array of links for more info on product
+[[links]]
+title = "Documentation"
+url = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html"
+[[links]]
+title = "Forums"
+url = "https://forums.developer.nvidia.com/c/omniverse/simulation/69"
+# [[links]]
+# title = "Omniverse"
+# url = "https://www.nvidia.com/en-us/omniverse/?activetab=explore-omniverse-2"
+# [[links]]
+# title = "Release Notes"
+# url = "https://docs.omniverse.nvidia.com/con_connect/con_connect/iclone.html#release-notes"
+# [[links]]
+# title = "Documentation"
+# url = "https://docs.omniverse.nvidia.com/"
+# [[links]]
+# title = "Tutorials"
+# url = "https://www.nvidia.com/en-us/on-demand/"
+# [[links]]
+# title = "Forums"
+# url = "https://forums.developer.nvidia.com/c/omniverse/300"

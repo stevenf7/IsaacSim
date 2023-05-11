@@ -67,7 +67,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         repo_folders = config["repo"]["folders"]
         root = repo_folders["root"]
 
-        tool_config = config["publish_assets_launcher"]
+        tool_config = config["publish_assets_launcher_1"]
         git_url = tool_config["git_url"]
         template_path = tool_config["template_path"]
         branch_prefix = tool_config["branch_prefix"]
@@ -82,7 +82,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         # publish first
         if not options.test_run:
             packages, labels = omni.repo.man.publish.get_packages_and_labels(
-                "isaac-sim-assets*", repo_folders["packages"], None
+                "isaac-sim-assets-1*", repo_folders["packages"], None
             )
             if len(packages) == 0:
                 logger.error("No packages found.")
