@@ -37,7 +37,8 @@ kind = "content-pack"
 #string array, each line is a new line, keep lines under 256 char and keep lines under 4
 description = [
     "This content pack replicates the Isaac Sim assets found in the following publicly available Omniverse Nucleus folder; **NVIDIA -> Assets -> Isaac**. This content pack is designed for storage on a local system.",
-    "Total content pack size: ~50GB (zipped)"
+    "This is pack 2 of 2.",
+    "Total content pack size: ~35GB (zipped)"
 ]
 
 extensionDependencies = [ "n/a" ]
@@ -51,7 +52,7 @@ gallery = [
 format = "usd"
 
 [contractLicenseAgreement]
-title = "NVIDIA Omniverse Content Pack 2"
+title = "NVIDIA Omniverse Content Pack"
 url = "https://docs.omniverse.nvidia.com/app_isaacsim/common/NVIDIA_Omniverse_License_Agreement.html"
 
 [assetSpecs]

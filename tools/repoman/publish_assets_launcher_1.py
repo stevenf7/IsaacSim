@@ -35,6 +35,7 @@ def parse_version(full_version: Version):
     else:
         parsed_version.major, parsed_version.minor, parsed_version.patch = full_version.split(".", maxsplit=2)
         parsed_version.core = full_version
+    parsed_version.core = "100.2.1"  # Temp hack to test launcher publish
     return parsed_version
 
 
