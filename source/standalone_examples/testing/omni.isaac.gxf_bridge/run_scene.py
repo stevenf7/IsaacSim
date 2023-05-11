@@ -54,8 +54,12 @@ def main():
         "Play scene with GXF application.", formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument("--headless", action="store_false", help="Run sim in headless mode.")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("-n", "--num_frames", type=int, default=60, help="Number of frames to run simulation for.")
+    group.add_argument(
+        "--run_indefinitely", action="store_true", help="True to run simulation indefinitely, False otherwise."
+    )
     parser.add_argument("-r", "--rate", type=int, default=60, help="Frame rate (Hz)")
-    parser.add_argument("-n", "--num_frames", type=int, default=60, help="Number of frames to run simulation for.")
     parser.add_argument("--use_default_atlas", action="store_true", help="Use default atlas entity/component.")
     parser.add_argument(
         "--use_default_clock", action="store_true", help="Use default scheduler entity/clock component."
@@ -214,11 +218,14 @@ def main():
     # Need to initialize physics getting any articulation..etc
     simulation_context.initialize_physics()
 
-    # Run for specified number of frames
-    frame = 0
-    while frame < args.num_frames and simulation_app.is_running():
-        simulation_context.step(render=True)
-        frame = frame + 1
+    if args.run_indefinitely:
+        while simulation_app.is_running():
+            simulation_context.step(render=True)
+    else:
+        frame = 0
+        while frame < args.num_frames and simulation_app.is_running():
+            simulation_context.step(render=True)
+            frame = frame + 1
 
     # Bring down the GXF application and close the simulation
     if args.yaml_path:
