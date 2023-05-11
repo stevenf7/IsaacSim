@@ -1,12 +1,12 @@
 #displayed application name
-name = "Isaac Sim Assets"
+name = "Isaac Sim Assets Pack 1"
 #displayed application name in smaller card and library view
-shortName = "Isaac Sim Assets"
+shortName = "Isaac Sim Assets Pack 1"
 version = "${version}"
 #boolean for if this version is the latest version
 latest = true
 #unique identifier for component, all lower case, persists between versions
-slug = "isaac_sim-assets"
+slug = "isaac_sim-assets-1"
 
 #displayed before application name in launcher
 productArea = "Omniverse Content"
@@ -51,7 +51,7 @@ gallery = [
 format = "usd"
 
 [contractLicenseAgreement]
-title = "NVIDIA Omniverse Content Pack"
+title = "NVIDIA Omniverse Content Pack 1"
 url = "https://docs.omniverse.nvidia.com/app_isaacsim/common/NVIDIA_Omniverse_License_Agreement.html"
 
 [assetSpecs]

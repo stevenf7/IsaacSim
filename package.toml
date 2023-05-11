@@ -174,8 +174,12 @@ files = [
 # assets package
 ########################################################################################################################
 
-[isaac-sim-assets]
+[isaac-sim-assets-1]
 files = [
-    ["_assets_temp/**",""],
+    ["_assets-1_temp/**",""],
 ]
 
+[isaac-sim-assets-2]
+files = [
+    ["_assets-2_temp/**",""],
+]

@@ -1,15 +1,15 @@
-name = "Isaac Sim Assets"
-slug = "isaac_sim-assets"
+name = "Isaac Sim Assets Pack 2"
+slug = "isaac_sim-assets-2"
 kind = "content-pack"
 version = "${version}"
 
 [[package.windows-x86_64.packman]]
-name = "Isaac Sim Assets"
+name = "Isaac Sim Assets Pack 2"
 url = "${package_url_windows}"
 location = "$${base}"
 
 [[package.linux-x86_64.packman]]
-name = "Isaac Sim Assets"
+name = "Isaac Sim Assets Pack 2"
 url = "${package_url_linux}"
 location = "$${base}"
 
