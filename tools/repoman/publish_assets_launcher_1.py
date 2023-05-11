@@ -133,6 +133,8 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
 
             version = open(f"{root}/VERSION").readline().strip()
             parsed_version = parse_version(version)
+            version = f"{parsed_version.core}-{parsed_version.prerelease}"  # Temp hack to test launcher publish
+
             if len(parsed_version.pretag) == 0:
                 branch_name = f"{branch_prefix}-{parsed_version.core}"
             else:
