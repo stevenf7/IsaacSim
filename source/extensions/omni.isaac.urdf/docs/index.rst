@@ -20,6 +20,7 @@ Below is a sample demonstrating how to import the Carter URDF included with this
     import_config.convex_decomp = False
     import_config.import_inertia_tensor = True
     import_config.fix_base = False
+    import_config.collision_from_visuals = False
 
     # Get path to extension data:
     ext_manager = omni.kit.app.get_app().get_extension_manager()

@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -577,6 +577,62 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         await asyncio.sleep(1.0)
+        # nothing crashes
+        self._timeline.stop()
+
+        pass
+
+    # test collision from visuals
+    async def test_collision_from_visuals(self):
+
+        # import a urdf file without collision
+        urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_collision_from_visuals.urdf")
+        stage = omni.usd.get_context().get_stage()
+        status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
+
+        import_config.set_collision_from_visuals(True)
+
+        omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config)
+        await omni.kit.app.get_app().next_update_async()
+
+        # ensure the import completed.
+        prim = stage.GetPrimAtPath("/test_collision_from_visuals")
+        self.assertNotEqual(prim.GetPath(), Sdf.Path.emptyPath)
+
+        # ensure the base_link collision prim exists and has the collision API applied.
+        base_link = stage.GetPrimAtPath("/test_collision_from_visuals/base_link/collisions")
+        self.assertNotEqual(base_link.GetPath(), Sdf.Path.emptyPath)
+        self.assertTrue(base_link.GetAttribute("physics:collisionEnabled").Get())
+
+        # ensure the link_1 collision prim exists and has the collision API applied.
+        link_1 = stage.GetPrimAtPath("/test_collision_from_visuals/link_1/collisions")
+        self.assertNotEqual(link_1.GetPath(), Sdf.Path.emptyPath)
+        self.assertTrue(link_1.GetAttribute("physics:collisionEnabled").Get())
+
+        # ensure the link_2 collision prim exists and has the collision API applied.
+        link_2 = stage.GetPrimAtPath("/test_collision_from_visuals/link_2/collisions")
+        self.assertNotEqual(link_2.GetPath(), Sdf.Path.emptyPath)
+        self.assertTrue(link_2.GetAttribute("physics:collisionEnabled").Get())
+
+        # ensure the palm_link collision prim exists and has the collision API applied.
+        palm_link = stage.GetPrimAtPath("/test_collision_from_visuals/palm_link/collisions")
+        self.assertNotEqual(palm_link.GetPath(), Sdf.Path.emptyPath)
+        self.assertTrue(palm_link.GetAttribute("physics:collisionEnabled").Get())
+
+        # ensure the finger_link_1 collision prim exists and has the collision API applied.
+        finger_link_1 = stage.GetPrimAtPath("/test_collision_from_visuals/finger_link_1/collisions")
+        self.assertNotEqual(finger_link_1.GetPath(), Sdf.Path.emptyPath)
+        self.assertTrue(finger_link_1.GetAttribute("physics:collisionEnabled").Get())
+
+        # ensure the finger_link_2 collision prim exists and has the collision API applied.
+        finger_link_2 = stage.GetPrimAtPath("/test_collision_from_visuals/finger_link_2/collisions")
+        self.assertNotEqual(finger_link_2.GetPath(), Sdf.Path.emptyPath)
+        self.assertTrue(finger_link_2.GetAttribute("physics:collisionEnabled").Get())
+
+        # Start Simulation and wait
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await asyncio.sleep(2.0)
         # nothing crashes
         self._timeline.stop()
 

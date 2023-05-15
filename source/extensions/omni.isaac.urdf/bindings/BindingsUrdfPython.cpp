@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -117,6 +117,8 @@ PYBIND11_MODULE(_urdf, m)
                        "Creates an instanceable version of the asset. All meshes will be placed in a separate USD file")
         .def_readwrite(
             "instanceable_usd_path", &ImportConfig::instanceableMeshUsdPath, "USD file to store instanceable mehses in")
+        .def_readwrite("collision_from_visuals", &ImportConfig::collisionFromVisuals,
+                       "Generate convex collision from the visual meshes.")
         // setters for each property
         .def("set_merge_fixed_joints", [](ImportConfig& config, const bool value) { config.mergeFixedJoints = value; })
         .def("set_convex_decomp", [](ImportConfig& config, const bool value) { config.convexDecomp = value; })
@@ -144,7 +146,9 @@ PYBIND11_MODULE(_urdf, m)
         .def("set_make_default_prim", [](ImportConfig& config, const bool value) { config.makeDefaultPrim = value; })
         .def("set_make_instanceable", [](ImportConfig& config, const bool value) { config.makeInstanceable = value; })
         .def("set_instanceable_usd_path",
-             [](ImportConfig& config, const std::string value) { config.instanceableMeshUsdPath = value; });
+             [](ImportConfig& config, const std::string value) { config.instanceableMeshUsdPath = value; })
+        .def("set_collision_from_visuals",
+             [](ImportConfig& config, const bool value) { config.collisionFromVisuals = value; });
 
     py::class_<Vec3>(m, "Position", "")
         .def_readwrite("x", &Vec3::x, "")

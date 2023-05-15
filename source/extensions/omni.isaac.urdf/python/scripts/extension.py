@@ -90,6 +90,7 @@ class Extension(omni.ext.IExt):
         self._config.set_up_vector(0, 0, 1)
         self._config.set_make_default_prim(True)
         self._config.set_create_physics_scene(True)
+        self._config.set_collision_from_visuals(False)
 
     def build_ui(self):
         with self._window.frame:
@@ -228,6 +229,11 @@ class Extension(omni.ext.IExt):
                     "Self Collision",
                     tooltip="Enables self collision between adjacent links.",
                     on_clicked_fn=lambda m, config=self._config: config.set_self_collision(m),
+                )
+                cb_builder(
+                    "Collision From Visuals",
+                    tooltip="Creates collision geometry from visual geometry.",
+                    on_clicked_fn=lambda m, config=self._config: config.set_collision_from_visuals(m),
                 )
                 cb_builder(
                     "Create Physics Scene",

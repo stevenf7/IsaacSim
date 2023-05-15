@@ -66,6 +66,11 @@ omni::isaac::urdf::UrdfRobot parseUrdf(const std::string& assetRoot,
             collapseFixedJoints(robot);
         }
 
+        if (importConfig.collisionFromVisuals)
+        {
+            addVisualMeshToCollision(robot);
+        }
+
         for (auto& joint : robot.joints)
         {
             joint.second.drive.targetType = importConfig.defaultDriveType;
