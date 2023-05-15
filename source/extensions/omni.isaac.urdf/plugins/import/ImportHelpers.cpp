@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -336,6 +336,24 @@ std::string GetNewSdfPathString(pxr::UsdStageWeakPtr stage, std::string path, in
 	}
 #endif
     return path;
+}
+
+bool addVisualMeshToCollision(UrdfRobot& robot)
+{
+    for (auto& link : robot.links)
+    {
+        if (!link.second.visuals.empty() && link.second.collisions.empty())
+        {
+            for (auto& visual : link.second.visuals)
+            {
+                UrdfCollision collision{ visual.name, visual.origin, visual.geometry };
+
+                link.second.collisions.push_back(collision);
+            }
+        }
+    }
+
+    return true;
 }
 }
 }

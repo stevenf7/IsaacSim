@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -35,6 +35,8 @@ std::string resolveXrefPath(const std::string& assetRoot, const std::string& urd
 bool IsUsdFile(const std::string& filename);
 // Make a path name that is not already used.
 std::string GetNewSdfPathString(pxr::UsdStageWeakPtr stage, std::string path, int nameClashNum = -1);
+bool addVisualMeshToCollision(UrdfRobot& robot);
+
 
 }
 }
