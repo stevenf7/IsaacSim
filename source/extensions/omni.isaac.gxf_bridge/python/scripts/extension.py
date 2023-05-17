@@ -29,7 +29,7 @@ class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         self._settings = carb.settings.get_settings()
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        self._reb_extension_path = ext_manager.get_extension_path(ext_id)
+        self._gxf_extension_path = ext_manager.get_extension_path(ext_id)
 
         self._window = omni.ui.Window(
             EXTENSION_NAME, width=600, height=400, visible=True, dockPreference=omni.ui.DockPreference.LEFT_BOTTOM
@@ -51,7 +51,7 @@ class Extension(omni.ext.IExt):
                             omni.ui.Label("Graph Path ", width=0)
                             self._scene_loader["gxf_graph"] = omni.ui.StringField().model
                             self._scene_loader["gxf_graph"].set_value(
-                                self._reb_extension_path + "/data/config/tcp_server.yaml"
+                                self._gxf_extension_path + "/data/config/tcp_server.yaml"
                             )
                         self._scene_loader["create_gxf"] = omni.ui.Button(
                             "Create Application", height=0, clicked_fn=self._on_create_destroy_gxf_app_fn
@@ -88,11 +88,11 @@ class Extension(omni.ext.IExt):
 
             result, status = omni.kit.commands.execute(
                 "RobotEngineBridgeGxfCreateApplication",
-                base_path=self._reb_extension_path + "/lib",
+                base_path=self._gxf_extension_path + "/lib",
                 manifest_file="manifest.yaml",
                 graph_files=[
                     self._scene_loader["gxf_graph"].get_value_as_string(),
-                    self._reb_extension_path + "/data/config/isaac_sim_allocator.yaml",
+                    self._gxf_extension_path + "/data/config/isaac_sim_allocator.yaml",
                 ],
             )
 
