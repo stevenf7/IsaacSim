@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.5.11] - 2023-03-06
+## [0.5.11] - 2023-05-06
 ### Added
 -  Collision geometry from visual meshes.
 
