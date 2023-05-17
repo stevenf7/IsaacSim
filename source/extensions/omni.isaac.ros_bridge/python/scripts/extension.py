@@ -19,7 +19,7 @@ import omni.syntheticdata._syntheticdata as sd
 from .. import _ros_bridge
 
 BRIDGE_NAME = "omni.isaac.ros_bridge"
-ROS_PREFIX = "ROS1"
+BRIDGE_PREFIX = "ROS1"
 
 
 class Extension(omni.ext.IExt):
@@ -28,7 +28,7 @@ class Extension(omni.ext.IExt):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         for b in ["omni.isaac.ros_bridge", "omni.isaac.ros2_bridge", "omni.isaac.ros2_bridge-humble"]:
             if b != BRIDGE_NAME and ext_manager.is_extension_enabled(b):
-                carb.log_error(f"{ROS_PREFIX} bridge extension cannot be enabled if {b} is enabled")
+                carb.log_error(f"{BRIDGE_PREFIX} bridge extension cannot be enabled if {b} is enabled")
                 ext_manager.set_extension_enabled(BRIDGE_NAME, False)
                 return
 
@@ -58,8 +58,8 @@ class Extension(omni.ext.IExt):
         rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
 
         rep.writers.register_node_writer(
-            name=f"{rv}{ROS_PREFIX}PublishImage",
-            node_type_id=f"{BRIDGE_NAME}.{ROS_PREFIX}PublishImage",
+            name=f"{rv}{BRIDGE_PREFIX}PublishImage",
+            node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
             annotators=[
                 f"{rv}IsaacConvertRGBAToRGB",
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
@@ -72,8 +72,8 @@ class Extension(omni.ext.IExt):
         ##### Publish Depth
         rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.DistanceToImagePlane.name)
         rep.writers.register_node_writer(
-            name=f"{rv}{ROS_PREFIX}PublishImage",
-            node_type_id=f"{BRIDGE_NAME}.{ROS_PREFIX}PublishImage",
+            name=f"{rv}{BRIDGE_PREFIX}PublishImage",
+            node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
             annotators=[
                 "distance_to_image_plane",
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
@@ -87,8 +87,8 @@ class Extension(omni.ext.IExt):
 
         # publish depth pcl
         rep.writers.register_node_writer(
-            name=f"{rv}{ROS_PREFIX}PublishPointCloud",
-            node_type_id=f"{BRIDGE_NAME}.{ROS_PREFIX}PublishPointCloud",
+            name=f"{rv}{BRIDGE_PREFIX}PublishPointCloud",
+            node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
             annotators=[
                 f"{rv}IsaacConvertDepthToPointCloud",
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
@@ -99,8 +99,8 @@ class Extension(omni.ext.IExt):
         )
         # instance
         rep.writers.register_node_writer(
-            name=f"{ROS_PREFIX}PublishInstanceSegmentation",
-            node_type_id=f"{BRIDGE_NAME}.{ROS_PREFIX}PublishImage",
+            name=f"{BRIDGE_PREFIX}PublishInstanceSegmentation",
+            node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
             annotators=[
                 "instance_segmentation",
                 "InstanceSegmentationIsaacSimulationGate",
@@ -113,8 +113,8 @@ class Extension(omni.ext.IExt):
         )
         # Semantic
         rep.writers.register_node_writer(
-            name=f"{ROS_PREFIX}PublishSemanticSegmentation",
-            node_type_id=f"{BRIDGE_NAME}.{ROS_PREFIX}PublishImage",
+            name=f"{BRIDGE_PREFIX}PublishSemanticSegmentation",
+            node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
             annotators=[
                 "semantic_segmentation",
                 "SemanticSegmentationIsaacSimulationGate",
@@ -127,8 +127,8 @@ class Extension(omni.ext.IExt):
         )
         # Bbox2d tight
         rep.writers.register_node_writer(
-            name=f"{ROS_PREFIX}PublishBoundingBox2DTight",
-            node_type_id=f"{BRIDGE_NAME}.{ROS_PREFIX}PublishBbox2D",
+            name=f"{BRIDGE_PREFIX}PublishBoundingBox2DTight",
+            node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishBbox2D",
             annotators=[
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                     "bounding_box_2d_tight", attributes_mapping={"input:semanticTypes": ["class"]}
@@ -143,8 +143,8 @@ class Extension(omni.ext.IExt):
 
         # bbox2d Loose
         rep.writers.register_node_writer(
-            name=f"{ROS_PREFIX}PublishBoundingBox2DLoose",
-            node_type_id=f"{BRIDGE_NAME}.{ROS_PREFIX}PublishBbox2D",
+            name=f"{BRIDGE_PREFIX}PublishBoundingBox2DLoose",
+            node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishBbox2D",
             annotators=[
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                     "bounding_box_2d_loose",
@@ -159,8 +159,8 @@ class Extension(omni.ext.IExt):
         )
         # bbox3d Loose
         rep.writers.register_node_writer(
-            name=f"{ROS_PREFIX}PublishBoundingBox3D",
-            node_type_id=f"{BRIDGE_NAME}.{ROS_PREFIX}PublishBbox3D",
+            name=f"{BRIDGE_PREFIX}PublishBoundingBox3D",
+            node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishBbox3D",
             annotators=[
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                     "bounding_box_3d",
@@ -175,8 +175,8 @@ class Extension(omni.ext.IExt):
         )
         # camera info
         rep.writers.register_node_writer(
-            name=f"{ROS_PREFIX}PublishCameraInfo",
-            node_type_id=f"{BRIDGE_NAME}.{ROS_PREFIX}PublishCameraInfo",
+            name=f"{BRIDGE_PREFIX}PublishCameraInfo",
+            node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishCameraInfo",
             annotators=[
                 "IsaacReadCameraInfo",
                 "PostProcessDispatchIsaacSimulationGate",
@@ -196,8 +196,8 @@ class Extension(omni.ext.IExt):
         }
         for annotator, annotator_name in label_names.items():
             rep.writers.register_node_writer(
-                name=f"{annotator_name}{ROS_PREFIX}PublishSemanticLabels",
-                node_type_id=f"{BRIDGE_NAME}.{ROS_PREFIX}PublishSemanticLabels",
+                name=f"{annotator_name}{BRIDGE_PREFIX}PublishSemanticLabels",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishSemanticLabels",
                 annotators=[
                     annotator,
                     f"{annotator_name}IsaacSimulationGate",
@@ -210,8 +210,8 @@ class Extension(omni.ext.IExt):
 
         # RTX lidar PCL publisher
         rep.writers.register_node_writer(
-            name=f"RtxLidar{ROS_PREFIX}PublishPointCloud",
-            node_type_id=f"{BRIDGE_NAME}.{ROS_PREFIX}PublishPointCloud",
+            name=f"RtxLidar{BRIDGE_PREFIX}PublishPointCloud",
+            node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
             annotators=[
                 "RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud",
                 "PostProcessDispatchIsaacSimulationGate",
@@ -224,8 +224,8 @@ class Extension(omni.ext.IExt):
 
         # RTX Radar PCL publisher
         rep.writers.register_node_writer(
-            name=f"RtxRadar{ROS_PREFIX}PublishPointCloud",
-            node_type_id=f"{BRIDGE_NAME}.{ROS_PREFIX}PublishPointCloud",
+            name=f"RtxRadar{BRIDGE_PREFIX}PublishPointCloud",
+            node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
             annotators=[
                 "RtxSensorCpu" + "IsaacComputeRTXRadarPointCloud",
                 "PostProcessDispatchIsaacSimulationGate",
@@ -238,8 +238,8 @@ class Extension(omni.ext.IExt):
 
         # RTX lidar LaserScan publisher
         rep.writers.register_node_writer(
-            name=f"RtxLidar{ROS_PREFIX}PublishLaserScan",
-            node_type_id=f"{BRIDGE_NAME}.{ROS_PREFIX}PublishLaserScan",
+            name=f"RtxLidar{BRIDGE_PREFIX}PublishLaserScan",
+            node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishLaserScan",
             annotators=[
                 "RtxSensorCpu" + "IsaacComputeRTXLidarFlatScan",
                 "PostProcessDispatchIsaacSimulationGate",
