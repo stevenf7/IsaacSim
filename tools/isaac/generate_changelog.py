@@ -3,6 +3,7 @@ import datetime
 import glob
 import os
 import re
+from distutils.version import LooseVersion
 from pprint import pprint
 from typing import Callable, Dict, List, Set, Tuple
 
@@ -29,6 +30,8 @@ def parse_version(line: str):
 
 def validate_changelog(change: str):
     i = 0
+    prev_version = None
+    prev_date = None
     for line in change.splitlines():
         i += 1
         # line should not begin with space
@@ -51,6 +54,16 @@ def validate_changelog(change: str):
         if res is not None:
             version, date = res
             if version is not None and date is not None:
+                if prev_version is not None and prev_date is not None:
+                    if LooseVersion(version) > LooseVersion(prev_version):
+                        print(f"Version decresed: {version} vs {prev_version}")
+                        return False
+                    if date > prev_date:
+                        print(f"date decresed: {date} vs {prev_date}")
+                        return False
+                else:
+                    prev_version = version
+                    prev_date = date
                 pass
             else:
                 print("Version or date is None: ")
@@ -248,6 +261,6 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
                 if options.validate:
                     validate(changelog_path)
 
-                generate_extension_diff_report(name, changelog_path, datetime.date(2022, 12, 16), datetime.date.today())
+                generate_extension_diff_report(name, changelog_path, datetime.date(2023, 3, 15), datetime.date.today())
 
     return run_repo_tool

@@ -16,8 +16,7 @@
 
 ### Changed
 - Breaking Change: Removed UIFrameWrapper and replaced with CollapsableFrame UIElementWrapper instance
-- Breaking Change: UIElementWrapper get_ui_element() function replaced with .container_frame property that
-    gives the user a UI frame that contains everything in the UIElementWrapper (label,buttons,fields,etc.)
+- Breaking Change: UIElementWrapper get_ui_element() function replaced with .container_frame property that gives the user a UI frame that contains everything in the UIElementWrapper (label,buttons,fields,etc.)
 
 ### Fixed
 - FloatField UIElementWrapper was giving an error when no joint limits were being set
