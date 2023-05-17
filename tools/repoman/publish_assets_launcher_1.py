@@ -35,7 +35,7 @@ def parse_version(full_version: Version):
     else:
         parsed_version.major, parsed_version.minor, parsed_version.patch = full_version.split(".", maxsplit=2)
         parsed_version.core = full_version
-    parsed_version.core = "100.2.1"  # Temp hack to test launcher publish
+    # parsed_version.core = "100.2.1"  # Temp hack to test launcher publish
     return parsed_version
 
 
@@ -133,7 +133,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
 
             version = open(f"{root}/VERSION").readline().strip()
             parsed_version = parse_version(version)
-            version = f"{parsed_version.core}-{parsed_version.prerelease}"  # Temp hack to test launcher publish
+            # version = f"{parsed_version.core}-{parsed_version.prerelease}"  # Temp hack to test launcher publish
 
             if len(parsed_version.pretag) == 0:
                 branch_name = f"{branch_prefix}-{parsed_version.core}"
