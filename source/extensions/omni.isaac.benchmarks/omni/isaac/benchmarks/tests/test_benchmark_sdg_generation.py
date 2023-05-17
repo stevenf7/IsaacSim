@@ -74,7 +74,7 @@ class TestBenchmarkSDGGeneration(BaseIsaacBenchmark):
     # ----------------------------------------------------------------------
     async def benchmark_sdg_generation(self, num_render_products, resolution, num_frames, annotators="rgb"):
         # Set the test name
-        self.test_run.test_name = f"sdg_generation_{num_render_products}_{resolution[0]}x{resolution[1]}_rps_{num_frames}_frames_{annotators}_annot"
+        self.test_run.test_name = f"sdg_generation_{num_render_products}_cameras_{resolution[0]}_{resolution[1]}_resolution_{num_frames}_frames_{annotators}_annotators"
 
         # Create a fresh stage
         await create_new_stage_async()

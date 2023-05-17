@@ -1,6 +1,11 @@
 # Changelog
 
-## [0.6.0] - 2023-05/05
+## [0.6.1] - 2023-05-16
+
+### Added
+- made SDG benchmark names more descriptive
+
+## [0.6.0] - 2023-05-05
 
 ### Added
 - phase label to cpu/memory metrics
