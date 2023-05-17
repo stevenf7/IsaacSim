@@ -30,7 +30,7 @@ class TestGXFPython(omni.kit.test.AsyncTestCase):
         self._stage = self._usd_context.get_stage()
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.gxf_bridge")
-        self._reb_extension_path = ext_manager.get_extension_path(ext_id)
+        self._gxf_extension_path = ext_manager.get_extension_path(ext_id)
         await omni.kit.app.get_app().next_update_async()
         pass
 
@@ -45,9 +45,9 @@ class TestGXFPython(omni.kit.test.AsyncTestCase):
         context = gxf.core.context_create()
         self.assertIsNotNone(context)
         gxf.core.load_extensions(
-            context, manifest_filenames=["manifest.yaml"], base_directory=f"{self._reb_extension_path}/lib/"
+            context, manifest_filenames=["manifest.yaml"], base_directory=f"{self._gxf_extension_path}/lib/"
         )
-        gxf.core.graph_load_file(context, f"{self._reb_extension_path}/data/test/test_core.yaml")
+        gxf.core.graph_load_file(context, f"{self._gxf_extension_path}/data/test/test_core.yaml")
         gxf.core.graph_activate(context)
         gxf.core.graph_run(context)
         gxf.core.graph_deactivate(context)
@@ -57,9 +57,9 @@ class TestGXFPython(omni.kit.test.AsyncTestCase):
         context = gxf.core.context_create()
         self.assertIsNotNone(context)
         gxf.core.load_extensions(
-            context, manifest_filenames=["manifest.yaml"], base_directory=f"{self._reb_extension_path}/lib/"
+            context, manifest_filenames=["manifest.yaml"], base_directory=f"{self._gxf_extension_path}/lib/"
         )
-        gxf.core.graph_load_file(context, f"{self._reb_extension_path}/data/test/test_std_tensor.yaml")
+        gxf.core.graph_load_file(context, f"{self._gxf_extension_path}/data/test/test_std_tensor.yaml")
 
         eid = gxf.core.entity_find(context, "rx")
         cids = gxf.core.component_find(context, eid, component_name="vault")
@@ -95,9 +95,9 @@ class TestGXFPython(omni.kit.test.AsyncTestCase):
         context = gxf.core.context_create()
         self.assertIsNotNone(context)
         gxf.core.load_extensions(
-            context, manifest_filenames=["manifest.yaml"], base_directory=f"{self._reb_extension_path}/lib/"
+            context, manifest_filenames=["manifest.yaml"], base_directory=f"{self._gxf_extension_path}/lib/"
         )
-        gxf.core.graph_load_file(context, f"{self._reb_extension_path}/data/test/test_std_vault.yaml")
+        gxf.core.graph_load_file(context, f"{self._gxf_extension_path}/data/test/test_std_vault.yaml")
 
         eid = gxf.core.entity_find(context, "rx")
         cids = gxf.core.component_find(context, eid, component_name="vault")
