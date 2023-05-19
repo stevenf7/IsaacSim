@@ -241,7 +241,6 @@ void UrdfImporter::addInstanceableMeshes(pxr::UsdStageRefPtr stage,
 {
     std::map<std::string, std::string> linkMatPrimPaths;
     std::map<pxr::TfToken, std::string> linkMaterialList;
-    std::vector<UrdfCollision> linkCollisionList;
 
     // Add visuals
     for (size_t i = 0; i < link.visuals.size(); i++)
@@ -271,7 +270,7 @@ void UrdfImporter::addInstanceableMeshes(pxr::UsdStageRefPtr stage,
 
         pxr::UsdPrim prim = addMesh(stage, link.visuals[i].geometry, assetRoot_, urdfPath_, meshName,
                                     link.visuals[i].origin, loadMaterial, config.distanceScale, false, linkMaterialList,
-                                    subdivisionschemes[static_cast<int>(config.subdivisionScheme)], true);
+                                    subdivisionschemes[(int)config.subdivisionScheme], true);
 
         if (prim)
         {
@@ -318,13 +317,6 @@ void UrdfImporter::addInstanceableMeshes(pxr::UsdStageRefPtr stage,
                     }
                 }
             }
-
-            if (link.collisions.empty() && config.collisionFromVisuals)
-            {
-                UrdfCollision collision{ link.visuals[i].name, link.visuals[i].origin, link.visuals[i].geometry };
-
-                linkCollisionList.push_back(collision);
-            }
         }
         else
         {
@@ -333,33 +325,32 @@ void UrdfImporter::addInstanceableMeshes(pxr::UsdStageRefPtr stage,
     }
     // Add collisions
     CARB_LOG_INFO("Add collisions: %s", link.name.c_str());
-    linkCollisionList.insert(linkCollisionList.begin(), link.collisions.begin(), link.collisions.end());
-    for (size_t i = 0; i < linkCollisionList.size(); i++)
+    for (size_t i = 0; i < link.collisions.size(); i++)
     {
         std::string meshName;
         std::string name = "mesh_" + std::to_string(i);
-        if (!linkCollisionList[i].name.empty())
+        if (link.collisions[i].name.size() > 0)
         {
-            name = linkCollisionList[i].name;
+            name = link.collisions[i].name;
         }
         meshName = robotBasePath + link.name + "/collisions/" + name;
 
-        pxr::UsdPrim prim = addMesh(stage, linkCollisionList[i].geometry, assetRoot_, urdfPath_, meshName,
-                                    linkCollisionList[i].origin, false, config.distanceScale, false, materialsList,
-                                    subdivisionschemes[static_cast<int>(config.subdivisionScheme)]);
+        pxr::UsdPrim prim = addMesh(stage, link.collisions[i].geometry, assetRoot_, urdfPath_, meshName,
+                                    link.collisions[i].origin, false, config.distanceScale, false, materialsList,
+                                    subdivisionschemes[(int)config.subdivisionScheme]);
         // Enable collisions on prim
         if (prim)
         {
             pxr::UsdPhysicsCollisionAPI::Apply(prim);
-            if (linkCollisionList[i].geometry.type == UrdfGeometryType::SPHERE)
+            if (link.collisions[i].geometry.type == UrdfGeometryType::SPHERE)
             {
                 pxr::UsdPhysicsCollisionAPI::Apply(prim);
             }
-            else if (linkCollisionList[i].geometry.type == UrdfGeometryType::BOX)
+            else if (link.collisions[i].geometry.type == UrdfGeometryType::BOX)
             {
                 pxr::UsdPhysicsCollisionAPI::Apply(prim);
             }
-            else if (linkCollisionList[i].geometry.type == UrdfGeometryType::CYLINDER)
+            else if (link.collisions[i].geometry.type == UrdfGeometryType::CYLINDER)
             {
                 pxr::UsdPhysicsCollisionAPI::Apply(prim);
             }
@@ -431,11 +422,8 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
         return;
     }
 
-    // track collisions.
-    std::vector<UrdfCollision> linkCollisionList;
-
     // Add visuals
-    if (config.makeInstanceable && !link.visuals.empty())
+    if (config.makeInstanceable && link.visuals.size() > 0)
     {
         pxr::SdfPath visualPrimPath = pxr::SdfPath(robotBasePath + link.name + "/visuals");
         pxr::UsdPrim visualPrim = stage->DefinePrim(visualPrimPath);
@@ -450,7 +438,7 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
             if (link.visuals.size() > 1)
             {
                 std::string name = "mesh_" + std::to_string(i);
-                if (!link.visuals[i].name.empty())
+                if (link.visuals[i].name.size() > 0)
                 {
                     name = link.visuals[i].name;
                 }
@@ -477,7 +465,7 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
 
             pxr::UsdPrim prim = addMesh(stage, link.visuals[i].geometry, assetRoot_, urdfPath_, meshName,
                                         link.visuals[i].origin, loadMaterial, config.distanceScale, false,
-                                        materialsList, subdivisionschemes[static_cast<int>(config.subdivisionScheme)]);
+                                        materialsList, subdivisionschemes[(int)config.subdivisionScheme]);
 
             if (prim)
             {
@@ -519,17 +507,6 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
                         }
                     }
                 }
-
-                if (link.collisions.empty() && config.collisionFromVisuals)
-                {
-                    UrdfCollision collision{};
-
-                    collision.name = link.visuals[i].name;
-                    collision.origin = link.visuals[i].origin;
-                    collision.geometry = link.visuals[i].geometry;
-
-                    linkCollisionList.push_back(collision);
-                }
             }
             else
             {
@@ -539,7 +516,7 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
     }
     // Add collisions
     CARB_LOG_INFO("Add collisions: %s", link.name.c_str());
-    if (config.makeInstanceable && !link.collisions.empty())
+    if (config.makeInstanceable && link.collisions.size() > 0)
     {
         pxr::SdfPath collisionPrimPath = pxr::SdfPath(robotBasePath + link.name + "/collisions");
         pxr::UsdPrim collisionPrim = stage->DefinePrim(collisionPrimPath);
@@ -548,17 +525,16 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
     }
     else
     {
-        linkCollisionList.insert(linkCollisionList.begin(), link.collisions.begin(), link.collisions.end());
-        for (size_t i = 0; i < linkCollisionList.size(); i++)
+        for (size_t i = 0; i < link.collisions.size(); i++)
         {
 
             std::string meshName;
-            if (linkCollisionList.size() > 1 || config.makeInstanceable)
+            if (link.collisions.size() > 1 || config.makeInstanceable)
             {
                 std::string name = "mesh_" + std::to_string(i);
-                if (!linkCollisionList[i].name.empty())
+                if (link.collisions[i].name.size() > 0)
                 {
-                    name = linkCollisionList[i].name;
+                    name = link.collisions[i].name;
                 }
                 meshName = robotBasePath + link.name + "/collisions/" + name;
             }
@@ -567,22 +543,22 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
                 meshName = robotBasePath + link.name + "/collisions";
             }
 
-            pxr::UsdPrim prim = addMesh(stage, linkCollisionList[i].geometry, assetRoot_, urdfPath_, meshName,
-                                        linkCollisionList[i].origin, false, config.distanceScale, false, materialsList,
-                                        subdivisionschemes[static_cast<int>(config.subdivisionScheme)]);
+            pxr::UsdPrim prim = addMesh(stage, link.collisions[i].geometry, assetRoot_, urdfPath_, meshName,
+                                        link.collisions[i].origin, false, config.distanceScale, false, materialsList,
+                                        subdivisionschemes[(int)config.subdivisionScheme]);
             // Enable collisions on prim
             if (prim)
             {
                 pxr::UsdPhysicsCollisionAPI::Apply(prim);
-                if (linkCollisionList[i].geometry.type == UrdfGeometryType::SPHERE)
+                if (link.collisions[i].geometry.type == UrdfGeometryType::SPHERE)
                 {
                     pxr::UsdPhysicsCollisionAPI::Apply(prim);
                 }
-                else if (linkCollisionList[i].geometry.type == UrdfGeometryType::BOX)
+                else if (link.collisions[i].geometry.type == UrdfGeometryType::BOX)
                 {
                     pxr::UsdPhysicsCollisionAPI::Apply(prim);
                 }
-                else if (linkCollisionList[i].geometry.type == UrdfGeometryType::CYLINDER)
+                else if (link.collisions[i].geometry.type == UrdfGeometryType::CYLINDER)
                 {
                     pxr::UsdPhysicsCollisionAPI::Apply(prim);
                 }
