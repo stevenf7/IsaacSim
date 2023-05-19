@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.7.0] - 2023-05-18
+
+### Changed
+- Use camera class for camera scaling benchmark
+
 ## [0.6.1] - 2023-05-16
 
 ### Added

@@ -11,11 +11,9 @@
 import numpy as np
 import omni.kit.test
 from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.utils.render_product import create_hydra_texture, set_camera_prim_path, set_resolution
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.core.utils.stage import is_stage_loading
-from omni.isaac.core.utils.viewports import destroy_all_viewports, get_viewport_names
-from omni.kit.viewport.utility import create_viewport_window, get_viewport_from_window_name
+from omni.isaac.sensor import Camera
 from pxr import Gf
 
 from ..utils.base_isaac_benchmark import BaseIsaacBenchmark
@@ -43,20 +41,20 @@ class TestBenchmarkCamera(BaseIsaacBenchmark):
 
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()
+        cameras = []
 
         for i in range(n_camera):
-            camera_path = "/Cameras/Camera_" + str(i)
-            # add the cameras on stage if not already exist
-            camera_prim = stage.GetPrimAtPath(camera_path)
-            if not camera_prim.IsValid():
-                stage.DefinePrim(camera_path, "Camera")
-                camera_prim = XFormPrim(camera_path)
-                q = euler_angles_to_quat([90, 0, 90 + i * 360 / n_camera], degrees=True)
-                camera_prim.set_world_pose(np.array([-8, 13, 2.0]), q)
-                camera_translation = Gf.Vec3f()  # these positions are used for full_warehouse.usd
+            cameras.append(
+                Camera(
+                    prim_path="/Cameras/Camera_" + str(i),
+                    position=np.array([-8, 13, 2.0]),
+                    resolution=resolution,
+                    orientation=euler_angles_to_quat([90, 0, 90 + i * 360 / n_camera], degrees=True),
+                )
+            )
 
-            texture, texture_path = create_hydra_texture(resolution, camera_path)
             await omni.kit.app.get_app().next_update_async()
+            cameras[i].initialize()
 
         # make sure scene is loaded in all viewports
         while is_stage_loading():
@@ -78,6 +76,7 @@ class TestBenchmarkCamera(BaseIsaacBenchmark):
         await self.store_measurements()
 
         timeline.stop()
+        cameras = None
 
     # ----------------------------------------------------------------------
     async def test_benchmark_1_camera_720p(self):
