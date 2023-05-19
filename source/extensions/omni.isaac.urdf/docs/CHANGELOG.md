@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.12] - 2023-05-16
+### Fixed
+-  Removed duplicated code to copy collision geometry from the mesh visuals.
+
 ## [0.5.11] - 2023-05-06
 ### Added
 -  Collision geometry from visual meshes.
