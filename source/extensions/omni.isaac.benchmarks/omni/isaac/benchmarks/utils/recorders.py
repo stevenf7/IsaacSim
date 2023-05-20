@@ -114,10 +114,10 @@ class IsaacMemoryRecorder(memory.MemoryRecorder):
         measurements_out = [m1, m2, m3, m4, m5]
 
         # Only capture System Memory PB for Windows.
-        if platform.system() == "Windows":
-            measurements_out.append(
-                measurements.SingleMeasurement(name=f"{self.context.phase} System Memory PB", value=pb, unit="GB")
-            )
+        # if platform.system() == "Windows":
+        #     measurements_out.append(
+        #         measurements.SingleMeasurement(name=f"{self.context.phase} System Memory PB", value=pb, unit="GB")
+        #     )
 
         return interface.MeasurementData(measurements=measurements_out)
 
