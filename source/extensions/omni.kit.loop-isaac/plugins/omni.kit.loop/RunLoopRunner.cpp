@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -263,7 +263,19 @@ public:
     virtual void onRemoveRunLoop(const char* name, RunLoop* loop, bool bBlock) override
     {
         bool bRequestedQuit = false;
-
+        // If the main thread is quitting, stop all threads
+        if (std::string(name) == kRunLoopDefault)
+        {
+            {
+                std::unique_lock<std::mutex> lock(m_mutex);
+                for (auto& l : m_runLoops)
+                {
+                    l.second->quit = true;
+                }
+            }
+            bRequestedQuit = true;
+        }
+        else
         {
             std::unique_lock<std::mutex> lock(m_mutex);
             auto it = m_runLoops.find(name);

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.1] - 2023-05-19
+### Fixed
+- Crash on exit due to threading race condition
+
 ## [1.0.0] - 2022-09-29
 ### Changed
 -   set_runner_dt to set_manual_step_size
