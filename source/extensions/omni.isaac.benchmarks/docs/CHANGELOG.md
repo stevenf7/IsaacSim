@@ -5,6 +5,9 @@
 ### Changed
 - Use camera class for camera scaling benchmark
 
+### Removed
+- PB metric from windows benchmarks
+
 ## [0.6.1] - 2023-05-16
 
 ### Added
