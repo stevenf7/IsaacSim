@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.1] - 2023-05-19
+### Fixed
+- Import order issue due to code formatting
+
 ## [1.2.0] - 2023-03-08
 ### Changed
 - moved standalone script to Isaac standalone examples

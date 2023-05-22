@@ -8,8 +8,10 @@
 #
 
 import carb
+from omni.isaac.robot_benchmark.benchmark_robots.franka_loader import BenchmarkFrankaLoader
+from omni.isaac.robot_benchmark.benchmark_robots.ur10_loader import BenchmarkUR10Loader
 
-from . import BaseBenchmarkRobotLoader, BenchmarkFrankaLoader, BenchmarkUR10Loader
+from . import BaseBenchmarkRobotLoader
 
 
 class BenchmarkRobotRegistry:
