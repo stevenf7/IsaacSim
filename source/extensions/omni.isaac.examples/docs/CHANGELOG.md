@@ -1,4 +1,10 @@
 # Changelog
+
+
+## [1.6.2] - 2023-05-19
+### Fixed
+- Missing cortex dependency
+
 ## [1.6.1] - 2023-05-09
 ### Fixed
 - Fix for Nut and Bolt Demo Windows Bug

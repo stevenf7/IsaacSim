@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.6.1"
+version = "1.6.2"
 category = "Simulation"
 title = "Isaac Sim Samples"
 description = "Sample extensions for Isaac Sim"
@@ -33,6 +33,7 @@ writeTarget.kit = true
 "omni.graph.core" = {}
 "omni.isaac.quadruped" = {}
 "omni.isaac.wheeled_robots" = {}
+"omni.isaac.cortex" = {}
 
 [[python.module]]
 name = "omni.isaac.examples.tests"
