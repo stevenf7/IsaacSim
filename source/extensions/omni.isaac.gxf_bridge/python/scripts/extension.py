@@ -14,6 +14,7 @@ import weakref
 import carb
 import omni.ext
 import omni.kit.menu
+import omni.replicator.core as rep
 import omni.syntheticdata._syntheticdata as sd
 import omni.ui
 from omni.isaac.ui.menu import make_menu_item_description
@@ -23,6 +24,8 @@ from omni.syntheticdata import sensors
 from .. import _gxf_bridge
 
 EXTENSION_NAME = "GXF Bridge"
+BRIDGE_NAME = "omni.isaac.gxf_bridge"
+BRIDGE_PREFIX = "GXF"
 
 
 class Extension(omni.ext.IExt):
@@ -109,86 +112,59 @@ class Extension(omni.ext.IExt):
         ##### Publish RGB
         rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
         template_name = rv + "GXFPublishImage"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,  # node template stage
-                    "omni.isaac.gxf_bridge.GXFPublishImage",  # node template type
-                    [
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            rv + "IsaacConvertRGBAToRGB",
-                            attributes_mapping={
-                                "outputs:execOut": "inputs:execIn",
-                                "outputs:data": "inputs:data",
-                                "outputs:width": "inputs:width",
-                                "outputs:height": "inputs:height",
-                                "outputs:encoding": "inputs:encoding",
-                            },
-                        ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "IsaacReadCameraInfo",
-                            attributes_mapping={
-                                "outputs:focalLength": "inputs:focalLength",
-                                "outputs:horizontalAperture": "inputs:horizontalAperture",
-                                "outputs:verticalAperture": "inputs:verticalAperture",
-                                "outputs:horizontalOffset": "inputs:horizontalOffset",
-                                "outputs:verticalOffset": "inputs:verticalOffset",
-                                "outputs:projectionType": "inputs:projectionType",
-                                "outputs:cameraFisheyeParams": "inputs:cameraFisheyeParams",
-                            },
-                        ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
-                        ),
-                    ],
+        rep.writers.register_node_writer(
+            name=f"{rv}{BRIDGE_PREFIX}PublishImage",
+            node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
+            annotators=[
+                f"{rv}IsaacConvertRGBAToRGB",
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    "IsaacReadCameraInfo",
+                    attributes_mapping={
+                        "outputs:focalLength": "inputs:focalLength",
+                        "outputs:horizontalAperture": "inputs:horizontalAperture",
+                        "outputs:verticalAperture": "inputs:verticalAperture",
+                        "outputs:horizontalOffset": "inputs:horizontalOffset",
+                        "outputs:verticalOffset": "inputs:verticalOffset",
+                        "outputs:projectionType": "inputs:projectionType",
+                        "outputs:cameraFisheyeParams": "inputs:cameraFisheyeParams",
+                    },
                 ),
-                template_name=template_name,
-            )
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
+                ),
+                f"{rv}IsaacSimulationGate",
+            ],
+            category=BRIDGE_NAME,
+        )
 
-            self.registered_template.append(template)
         ##### Publish Depth
         rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.DistanceToImagePlane.name)
-        template_name = rv + "GXFPublishImage"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,  # node template stage
-                    "omni.isaac.gxf_bridge.GXFPublishImage",  # node template type
-                    [
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            rv + "ExportRawArray",
-                            attributes_mapping={
-                                "outputs:data": "inputs:data",
-                                "outputs:width": "inputs:width",
-                                "outputs:height": "inputs:height",
-                            },
-                        ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "IsaacReadCameraInfo",
-                            attributes_mapping={
-                                "outputs:focalLength": "inputs:focalLength",
-                                "outputs:horizontalAperture": "inputs:horizontalAperture",
-                                "outputs:verticalAperture": "inputs:verticalAperture",
-                                "outputs:horizontalOffset": "inputs:horizontalOffset",
-                                "outputs:verticalOffset": "inputs:verticalOffset",
-                                "outputs:projectionType": "inputs:projectionType",
-                                "outputs:cameraFisheyeParams": "inputs:cameraFisheyeParams",
-                            },
-                        ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            rv + "IsaacSimulationGate", attributes_mapping={"outputs:execOut": "inputs:execIn"}
-                        ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
-                        ),
-                    ],
-                    attributes={"inputs:encoding": "f32"},
+        rep.writers.register_node_writer(
+            name=f"{rv}{BRIDGE_PREFIX}PublishImage",
+            node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
+            annotators=[
+                "distance_to_image_plane",
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    "IsaacReadCameraInfo",
+                    attributes_mapping={
+                        "outputs:focalLength": "inputs:focalLength",
+                        "outputs:horizontalAperture": "inputs:horizontalAperture",
+                        "outputs:verticalAperture": "inputs:verticalAperture",
+                        "outputs:horizontalOffset": "inputs:horizontalOffset",
+                        "outputs:verticalOffset": "inputs:verticalOffset",
+                        "outputs:projectionType": "inputs:projectionType",
+                        "outputs:cameraFisheyeParams": "inputs:cameraFisheyeParams",
+                    },
                 ),
-                template_name=template_name,
-            )
-
-            self.registered_template.append(template)
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
+                ),
+                f"{rv}IsaacSimulationGate",
+            ],
+            encoding="f32",
+            category=BRIDGE_NAME,
+        )
 
     def unregister_nodes(self):
-        for template in self.registered_template:
-            sensors.get_synthetic_data().unregister_node_template(template)
+        for writer in rep.WriterRegistry.get_writers(category=BRIDGE_NAME):
+            rep.writers.unregister_writer(writer)
