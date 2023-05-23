@@ -12,33 +12,34 @@ from dataclasses import dataclass
 import carb
 import omni
 import omni.graph.core as og
+import omni.replicator.core as rep
 import omni.syntheticdata
 import omni.syntheticdata._syntheticdata as sd
-from omni.isaac.core_nodes.scripts.utils import submit_node_template_activation
-from omni.isaac.gxf_bridge.ogn.OgnGXFCameraHelperDatabase import OgnGXFCameraHelperDatabase
+from omni.isaac.core_nodes import BaseWriterNode
 from omni.kit.viewport.utility import get_viewport_from_window_name
-from omni.replicator.core import AnnotatorRegistry
-from omni.syntheticdata import helpers, sensors
 from pxr import Usd
 
 
+class OgnGXFCameraHelperInternalState(BaseWriterNode):
+    def __init__(self):
+        self.viewport = None
+        self.viewport_name = ""
+        self.resetSimulationTimeOnStop = False
+        super().__init__(initialize=False)
+
+    def post_attach(self, writer, render_product):
+        try:
+            omni.syntheticdata.SyntheticData.Get().set_node_attributes(
+                "IsaacReadSimulationTime", {"inputs:resetOnStop": self.resetSimulationTimeOnStop}, render_product
+            )
+        except:
+            pass
+
+
 class OgnGXFCameraHelper:
-    @dataclass
-    class State:
-        initialized: bool = False
-        graph = None
-        viewport = None
-        viewport_name = ""
-        nodes = []
-        publisher = None
-
     @staticmethod
-    def initialize(graph_context, node):
-        pass
-
-    @staticmethod
-    def internal_state() -> State:
-        return OgnGXFCameraHelper.State()
+    def internal_state():
+        return OgnGXFCameraHelperInternalState()
 
     @staticmethod
     def compute(db) -> bool:
@@ -69,150 +70,41 @@ class OgnGXFCameraHelper:
                         carb.log_warn("Render product no created yet, retrying on next call")
                         db.internal_state.initialized = False
                         return False
-
+                db.internal_state.resetSimulationTimeOnStop = db.inputs.resetSimulationTimeOnStop
+                writer = None
                 try:
                     if sensor_type == "rgb":
                         rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
-                        submit_node_template_activation(
-                            rv + "GXFPublishImage",
-                            0,
-                            [render_product_path],
-                            attributes={
-                                "inputs:context": db.inputs.context,
-                                "inputs:outputEntity": db.inputs.outputEntity,
-                                "inputs:outputComponent": db.inputs.outputComponent,
-                                "inputs:poseFrame": db.inputs.poseFrame,
-                                "inputs:stereoOffset": db.inputs.stereoOffset,
-                            },
+                        writer = rep.writers.get(rv + "GXFPublishImage")
+                        writer.initialize(
+                            context=db.inputs.context,
+                            outputEntity=db.inputs.outputEntity,
+                            outputComponent=db.inputs.outputComponent,
+                            poseFrame=db.inputs.poseFrame,
+                            stereoOffset=db.inputs.stereoOffset,
                         )
                     elif sensor_type == "depth":
                         rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
                             sd.SensorType.DistanceToImagePlane.name
                         )
-                        submit_node_template_activation(
-                            rv + "GXFPublishImage",
-                            0,
-                            [render_product_path],
-                            attributes={
-                                "inputs:context": db.inputs.context,
-                                "inputs:outputEntity": db.inputs.outputEntity,
-                                "inputs:outputComponent": db.inputs.outputComponent,
-                                "inputs:poseFrame": db.inputs.poseFrame,
-                                "inputs:stereoOffset": db.inputs.stereoOffset,
-                            },
+                        writer = rep.writers.get(rv + "GXFPublishImage")
+                        writer.initialize(
+                            context=db.inputs.context,
+                            outputEntity=db.inputs.outputEntity,
+                            outputComponent=db.inputs.outputComponent,
+                            poseFrame=db.inputs.poseFrame,
+                            stereoOffset=db.inputs.stereoOffset,
                         )
-
-                    # elif sensor_type == "instance_segmentation":
-
-                    #     submit_node_template_activation(
-                    #         "GXFPublishInstanceSegmentation",
-                    #         0,
-                    #         [render_product_path],
-                    #         attributes={
-                    #             "inputs:frameId": db.inputs.frameId,
-                    #             "inputs:nodeNamespace": db.inputs.nodeNamespace,
-                    #             "inputs:queueSize": db.inputs.queueSize,
-                    #             "inputs:topicName": db.inputs.topicName,
-                    #         },
-                    #     )
-
-                    # elif sensor_type == "semantic_segmentation":
-
-                    #     submit_node_template_activation(
-                    #         "GXFPublishSemanticSegmentation",
-                    #         0,
-                    #         [render_product_path],
-                    #         attributes={
-                    #             "inputs:frameId": db.inputs.frameId,
-                    #             "inputs:nodeNamespace": db.inputs.nodeNamespace,
-                    #             "inputs:queueSize": db.inputs.queueSize,
-                    #             "inputs:topicName": db.inputs.topicName,
-                    #         },
-                    #     )
-
-                    # elif sensor_type == "bbox_2d_tight":
-
-                    #     submit_node_template_activation(
-                    #         "GXFPublishBoundingBox2DTight",
-                    #         0,
-                    #         [render_product_path],
-                    #         attributes={
-                    #             "inputs:frameId": db.inputs.frameId,
-                    #             "inputs:nodeNamespace": db.inputs.nodeNamespace,
-                    #             "inputs:queueSize": db.inputs.queueSize,
-                    #             "inputs:topicName": db.inputs.topicName,
-                    #         },
-                    #     )
-                    # elif sensor_type == "bbox_2d_loose":
-
-                    #     submit_node_template_activation(
-                    #         "GXFPublishBoundingBox2DTight",
-                    #         0,
-                    #         [render_product_path],
-                    #         attributes={
-                    #             "inputs:frameId": db.inputs.frameId,
-                    #             "inputs:nodeNamespace": db.inputs.nodeNamespace,
-                    #             "inputs:queueSize": db.inputs.queueSize,
-                    #             "inputs:topicName": db.inputs.topicName,
-                    #         },
-                    #     )
-                    # elif sensor_type == "bbox_3d":
-
-                    #     submit_node_template_activation(
-                    #         "GXFPublishBoundingBox3D",
-                    #         0,
-                    #         [render_product_path],
-                    #         attributes={
-                    #             "inputs:frameId": db.inputs.frameId,
-                    #             "inputs:nodeNamespace": db.inputs.nodeNamespace,
-                    #             "inputs:queueSize": db.inputs.queueSize,
-                    #             "inputs:topicName": db.inputs.topicName,
-                    #         },
-                    #     )
-                    # elif sensor_type == "camera_info":
-                    #     submit_node_template_activation(
-                    #         "IsaacReadCameraInfo",
-                    #         0,
-                    #         [render_product_path],
-                    #         attributes={"inputs:viewport": db.internal_state.viewport_name},
-                    #     )
-                    #     submit_node_template_activation(
-                    #         "GXFPublishCameraInfo",
-                    #         0,
-                    #         [render_product_path],
-                    #         attributes={
-                    #             "inputs:frameId": db.inputs.frameId,
-                    #             "inputs:nodeNamespace": db.inputs.nodeNamespace,
-                    #             "inputs:queueSize": db.inputs.queueSize,
-                    #             "inputs:topicName": db.inputs.topicName,
-                    #             "inputs:stereoOffset": db.inputs.stereoOffset,
-                    #         },
-                    #     )
 
                     else:
                         carb.log_error("type is not supported")
                         db.internal_state.initialized = False
                         return False
 
-                    # type_dict = {
-                    #     "instance_segmentation": "InstanceSegmentation",
-                    #     "semantic_segmentation": "SemanticSegmentation",
-                    #     "bbox_2d_tight": "BoundingBox2DTight",
-                    #     "bbox_2d_loose": "BoundingBox2DLoose",
-                    #     "bbox_3d": "BoundingBox3D",
-                    # }
-                    # if sensor_type in type_dict:
-                    #     if db.inputs.enableSemanticLabels:
-                    #         submit_node_template_activation(
-                    #             type_dict[sensor_type] + "GXFPublishSemanticLabels",
-                    #             0,
-                    #             [render_product_path],
-                    #             attributes={
-                    #                 "inputs:nodeNamespace": db.inputs.nodeNamespace,
-                    #                 "inputs:queueSize": db.inputs.queueSize,
-                    #                 "inputs:topicName": db.inputs.semanticLabelsTopicName,
-                    #             },
-                    #         )
+                    if writer is not None:
+                        db.internal_state.append_writer(writer)
+
+                    db.internal_state.attach_writers(render_product_path)
                     return True
                 except Exception as e:
                     print(traceback.format_exc())
@@ -224,20 +116,11 @@ class OgnGXFCameraHelper:
 
     @staticmethod
     def release(node):
-        pass
-        # # handle deletion of created nodes here
-        # try:
-        #     state = OgnGXFCameraHelperDatabase.per_node_internal_state(node)
-        # except Exception as e:
-        #     state = None
-        #     pass
+        try:
+            state = OgnGXFCameraHelperInternalState.per_node_internal_state(node)
+        except Exception:
+            state = None
+            pass
 
-        # keys = og.Controller.Keys
-        # if state is not None and state.graph is not None and state.nodes is not None:
-        #     stage = omni.usd.get_context().get_stage()
-        #     with Usd.EditContext(stage, stage.GetSessionLayer()):
-        #         try:
-        #             og.Controller.edit(state.graph, {keys.DELETE_NODES: state.nodes})
-        #         except Exception as e:
-        #             print(e)
-        #             pass
+        if state is not None:
+            state.reset()

@@ -1,6 +1,11 @@
 # Changelog
 
-## [0.10.2] - 2023-03-22
+## [0.11.0] - 2023-03-22
+### Changed
+- Use writer backend for gxf publishers
+- Add support for camera helper to reset time on stop for cameras
+
+## [0.10.3] - 2023-03-22
 ### Fixed
 - GXFPublishTimestamp directly sets GXF clock to avoid race condition with other publishing nodes.
 ### Changed
