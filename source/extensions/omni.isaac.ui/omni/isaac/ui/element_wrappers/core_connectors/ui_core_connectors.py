@@ -19,8 +19,9 @@ class LoadButton(UIWidgetWrapper):
     The setup_scene_fn() is called with the guarantee that a World has been created.  In this function,
     the user is meant to add the asssets they want to the USD stage.  These assets then must also be added to
     the World. World is a singleton class.  And example setup_scene_fn implementation would include:
-        world = World.instance() # Get the unique instance of the World
-        world.scene.add(usd_object) # Add the user-loaded usd object to the scene
+
+        - world = World.instance() # Get the unique instance of the World
+        - world.scene.add(usd_object) # Add the user-loaded usd object to the scene
 
     The setup_post_load() function is called with the gurantees that the World has been created, the
     setup_scene_fn() has already been called, all objects that the user added to the World have been properly

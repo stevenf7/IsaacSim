@@ -25,7 +25,9 @@ call "%~dp0..\..\..\..\repo.bat" docs --config release --warn-as-error=0
 @REM if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: Packaging docs
-call "%~dp0..\..\..\..\repo.bat" package -m docs
+@REM switch dir as a WAR for win package issue
+call chdir "%~dp0..\..\..\..\"
+call ".\repo.bat" package -m docs
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: publish artifacts to teamcity
