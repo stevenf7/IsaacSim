@@ -38,21 +38,23 @@ class TestUI(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         pass
 
-    async def test_clipboard(self):
-        import pyperclip
+    # TODO: Disabling this test as it hangs on TC on shutdown
+    # async def test_clipboard(self):
+    #     import pyperclip
 
-        on_copy_to_clipboard("test")
-        try:
-            self.assertEqual(pyperclip.paste(), "test")
-        except pyperclip.PyperclipException:
-            carb.log_warn(pyperclip.EXCEPT_MSG)
-            return
+    #     on_copy_to_clipboard("test")
+    #     try:
+    #         self.assertEqual(pyperclip.paste(), "test")
+    #     except pyperclip.PyperclipException:
+    #         carb.log_warn(pyperclip.EXCEPT_MSG)
+    #         return
 
     async def test_ide(self):
         import os
 
         on_open_IDE_clicked(os.path.dirname(__file__), __file__)
 
+    # TODO: this test causes TC to hang on exit, disabling
     async def test_docs(self):
         # on_open_folder_clicked(os.path.dirname(__file__)) # TODO: this test fails on TC due to permissions
         on_docs_link_clicked("https://docs.omniverse.nvidia.com")
