@@ -84,7 +84,6 @@ vscode.python_env.PATH= [
   "$root/_build/$platform/$config/kit/plugins/carb_gfx",
   "$root/_build/$platform/$config/kit/plugins/rtx",
   "$root/_build/$platform/$config/kit/plugins/gpu.foundation",
-  "$root/_build/$platform/$config/kit/extensions/extensions-bundled/bin",
 
 ]
 
@@ -147,6 +146,7 @@ registries = [
 [repo_docs]
 
 enabled = true
+config = "release"
 
 # the name of you project.  should be a single word. used to name files.
 project = "isaac_sim"
@@ -158,25 +158,36 @@ long_name = "Isaac Sim"
 copyright_start = 2018
 
 # Use python from kit sdk
-python_path =  "${root}/_build/${platform}/${config}/python${shell_ext}"
+# python_path =  "${root}/_build/${platform}/${config}/python${shell_ext}"
 
 # Move api docs to build directory
 # docs_dst = "${root}/_build/${platform}/${config}/docs"
 
 # Add all extensions to docs sys.path
 python_paths = [
+  "${root}/_build/${platform}/${config}/exts/*",
+  "${root}/_build/${platform}/${config}/kit/exts/*",
+  "${root}/_build/${platform}/${config}/kit/extscore/*",
+  "${root}/_build/${platform}/${config}/kit/kernel/py",
+  "${root}/_build/${platform}/${config}/kit/plugins/bindings-python/",
+  "${root}/_build/${platform}/${config}/kit/extscore/omni.kit.pip_archive/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.isaac.core_archive/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.isaac.ml_archive/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.isaac.lula/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.isaac.ocs2/pip_prebundle",
-  "${root}/_build/${platform}/${config}/exts/*",
-#  "${root}/_build/${platform}/${config}/extscache/*",
-#  "${root}/_build/${platform}/${config}/kit/exts/*",
-#  "${root}/_build/${platform}/${config}/kit/extscore/*",
-#  "${root}/_build/${platform}/${config}/kit/extsPhysics/*",
-#  "${root}/_build/${platform}/${config}/kit/extensions/extensions-bundled",
 ]
 library_paths = [
+  "$root/_build/$platform/$config",
+  "$root/_build/$platform/$config/exts/omni.usd.schema.isaac/bin",
+  "$root/_build/$platform/$config/exts/omni.isaac.motion_planning/bin",
+  "$root/_build/$platform/$config/kit",
+  "$root/_build/$platform/$config/kit/kernel/plugins",
+  "$root/_build/$platform/$config/kit/libs/iray",
+  "$root/_build/$platform/$config/kit/plugins",
+  "$root/_build/$platform/$config/kit/plugins/bindings-python",
+  "$root/_build/$platform/$config/kit/plugins/carb_gfx",
+  "$root/_build/$platform/$config/kit/plugins/rtx",
+  "$root/_build/$platform/$config/kit/plugins/gpu.foundation",
   "$root/_build/$platform/$config/kit/exts/*/bin",
   "$root/_build/$platform/$config/kit/extscore/*/bin",
   "$root/_build/$platform/$config/kit/extscore/*/bin/deps",
@@ -190,7 +201,7 @@ sphinx_conf_py_extra = """
     html_static_path = [
         "docs/media/NVIDIA-LogoBlack.svg",
     ]
-    autodoc_mock_imports = ["pxr.PhysxSchema", "pxr.PhysicsSchemaTools",  "omni.physx", "omni.physics", "omni.replicator.core"]
+    autodoc_mock_imports = ["pxr.PhysxSchema", "pxr.PhysicsSchemaTools",  "omni.physx", "omni.physics", "omni.replicator.core", "warp", "torch"]
 
 """
 
@@ -722,7 +733,6 @@ python_analysis_extra_mapping=[
   "$root/_build/$platform/$config/kit/exts/*",
   "$root/_build/$platform/$config/kit/extscore/*",
   "$root/_build/$platform/$config/kit/extsPhysics/*",
-  "$root/_build/$platform/$config/kit/extensions/extensions-bundled",
 ]
 
 [repo_generate_changelog]

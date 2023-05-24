@@ -29,24 +29,28 @@ repo_build.set_prebuild_file('_build/generated/prebuild.toml')
 
 --
 function write_version_file(config)
-    local cmd
     if os.target() == "windows" then
         local dir = root.."/_build/windows-x86_64/"..config
+        if os.isdir(dir) then
+            local file = io.open(root.."/VERSION", "r")
+            local ver_str = file:read("*a")
+            file:close()
 
-        local file = io.open(root.."/VERSION", "r")
-        local ver_str = file:read("*a")
-        file:close()
+            file = io.open(dir.."/SHORT_VERSION", "w")
+            file:write(ver_str)
+            file:close()
 
-        file = io.open(dir.."/SHORT_VERSION", "w")
-        file:write(ver_str)
-        file:close()
-
-        cmd = "repo.bat build_number -o "..dir.."/VERSION"
+            local cmd = "repo.bat build_number -o "..dir.."/VERSION"
+            os.execute(get_current_lua_file_dir().."/"..cmd)
+        end
     else
         local dir = root.."/_build/linux-x86_64/"..config
-        cmd = "./repo.sh build_number -o "..dir.."/VERSION"
+        if os.isdir(dir) then
+            local cmd = "./repo.sh build_number -o "..dir.."/VERSION"
+            os.execute(get_current_lua_file_dir().."/"..cmd)
+        end
     end
-    os.execute(get_current_lua_file_dir().."/"..cmd)
+    
 end
 
 -- Starting from here we define a structure of actual solution to be generated. Starting with solution name.

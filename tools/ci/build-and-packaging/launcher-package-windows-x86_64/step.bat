@@ -13,19 +13,21 @@ call "%~dp0..\..\..\..\repo.bat" docs --config release --warn-as-error=0
 @REM if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: create launcher package
-call "%~dp0..\..\..\..\repo.bat" package -m isaac-sim-standalone -c release
+@REM switch dir as a WAR for win package issue
+call chdir "%~dp0..\..\..\..\"
+call ".\repo.bat" package -m isaac-sim-standalone -c release
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: create internal package
-@REM call "%~dp0..\..\..\..\repo.bat" package -m isaac-sim-internal -c release
+@REM call ".\repo.bat" package -m isaac-sim-internal -c release
 @REM if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: Package test runner for TC
-call "%~dp0..\..\..\..\repo.bat" package -m test_runner
+call ".\repo.bat" package -m test_runner
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: Packaging docs
-@REM call "%~dp0..\..\..\..\repo.bat" package -m docs
+@REM call ".\repo.bat" package -m docs
 @REM if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: publish artifacts to teamcity
