@@ -82,7 +82,7 @@ class TestBenchmarkSDGGeneration(BaseIsaacBenchmark):
 
         # <----------------------------
         # Perform the loading benchmark
-        self.set_phase("load stage")
+        self.set_phase("loading")
         self.start_collecting_frametime()
         await omni.kit.app.get_app().next_update_async()
 
@@ -97,7 +97,7 @@ class TestBenchmarkSDGGeneration(BaseIsaacBenchmark):
 
         # <----------------------------
         # Perform clean stage benchmark
-        self.set_phase("run clean stage")
+        self.set_phase("baseline")
         self.start_collecting_frametime()
 
         # Run for a few frames to check the clean stage stats
@@ -110,7 +110,7 @@ class TestBenchmarkSDGGeneration(BaseIsaacBenchmark):
 
         # <----------------------------
         # Perform application play benchmark
-        self.set_phase("setup sdg")
+        self.set_phase("baseline_sdg")
         self.start_collecting_frametime()
 
         render_products = []
@@ -139,7 +139,7 @@ class TestBenchmarkSDGGeneration(BaseIsaacBenchmark):
 
         # <----------------------------
         # Perform load saved stage benchmark
-        self.set_phase("run sdg")
+        self.set_phase("benchmark")
         self.start_collecting_frametime()
 
         await rep.orchestrator.run_until_complete_async(num_frames=num_frames)
@@ -150,7 +150,7 @@ class TestBenchmarkSDGGeneration(BaseIsaacBenchmark):
 
         # <----------------------------
         # Perform load saved stage benchmark
-        self.set_phase("detach sdg")
+        self.set_phase("baseline_cleanup")
         self.start_collecting_frametime()
 
         writer.detach()
