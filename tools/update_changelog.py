@@ -33,7 +33,6 @@ extensions = [
     "omni.isaac.extension_templates",
     "omni.isaac.examples",
     "omni.isaac.diff_usd",
-    "omni.isaac.demos",
     "omni.isaac.conveyor",
     "omni.isaac.assets_check",
     "omni.isaac.articulation_inspector",
