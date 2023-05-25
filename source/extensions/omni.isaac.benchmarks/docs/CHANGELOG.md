@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.7.1] - 2023-05-25
+
+### Changed
+- SDG benchmark segment names
+
 ## [0.7.0] - 2023-05-18
 
 ### Changed
