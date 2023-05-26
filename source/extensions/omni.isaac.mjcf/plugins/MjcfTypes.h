@@ -44,7 +44,9 @@ public:
     enum Type
     {
         HINGE,
-        SLIDE
+        SLIDE,
+        BALL,
+        FREE,
     };
 
     std::string name;
@@ -98,6 +100,7 @@ public:
         CYLINDER,
         BOX,
         MESH,
+        PLANE,
         OTHER
     };
 
@@ -128,7 +131,6 @@ public:
     std::string mesh;
 
     bool hasFromTo;
-    bool hasZAxis;
 
     MJCFGeom()
     {
@@ -156,7 +158,6 @@ public:
 
         quat = Quat();
         hasFromTo = false;
-        hasZAxis = false;
     }
 };
 
@@ -188,6 +189,7 @@ public:
     Vec3 pos;
     Type type;
     Quat quat;
+    Vec3 zaxis;
 
     bool hasGeom;
 
@@ -208,7 +210,6 @@ public:
         pos = Vec3(0.0f, 0.0f, 0.0f);
         type = SPHERE;
         quat = Quat();
-
         hasGeom = true;
     }
 };
@@ -219,12 +220,17 @@ public:
     float mass;
     Vec3 pos;
     Vec3 diaginertia;
+    Quat principalAxes;
+    bool hasFullInertia;
+
 
     MJCFInertial()
     {
         mass = -1.0f;
         pos = Vec3(0.0f, 0.0f, 0.0f);
         diaginertia = Vec3(0.0f, 0.0f, 0.0f);
+        principalAxes = Quat();
+        hasFullInertia = false;
     }
 };
 
@@ -245,6 +251,7 @@ public:
     std::string name;
     Vec3 pos;
     Quat quat;
+    Vec3 zaxis;
     MJCFInertial* inertial;
     std::vector<MJCFGeom*> geoms;
     std::vector<MJCFJoint*> joints;
@@ -302,6 +309,7 @@ public:
     bool coordinateInLocal;
     std::string eulerseq;
     std::string meshDir;
+    std::string textureDir;
 
     MJCFCompiler()
     {
@@ -530,7 +538,7 @@ public:
         filename = "";
         gridsize = "";
         gridlayout = "";
-        type = "";
+        type = "cube";
     }
 };
 
@@ -543,6 +551,7 @@ public:
     float roughness;
     float shininess;
     Vec4 rgba;
+    bool project_uvw;
 
     MJCFMaterial()
     {
@@ -552,6 +561,7 @@ public:
         roughness = 0.5f;
         shininess = 0.0f; // metallic
         rgba = Vec4(0.2f, 0.2f, 0.2f, 1.0f);
+        project_uvw = true;
     }
 };
 

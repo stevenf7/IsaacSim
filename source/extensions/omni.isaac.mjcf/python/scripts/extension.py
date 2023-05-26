@@ -65,7 +65,7 @@ class Extension(omni.ext.IExt):
         # Set defaults
         # self._config.set_merge_fixed_joints(False)
         # self._config.set_convex_decomp(False)
-        self._config.set_fix_base(True)
+        self._config.set_fix_base(False)
         self._config.set_import_inertia_tensor(False)
         self._config.set_distance_scale(1.0)
         self._config.set_density(0.0)
@@ -76,6 +76,7 @@ class Extension(omni.ext.IExt):
         self._config.set_make_default_prim(True)
         self._config.set_create_physics_scene(True)
         self._config.set_import_sites(True)
+        self._config.set_visualize_collision_geoms(True)
 
     def build_ui(self):
         with self._window.frame:
@@ -90,7 +91,7 @@ class Extension(omni.ext.IExt):
                         cb_builder(
                             "Fix Base Link",
                             tooltip="If true, enables the fix base property on the root of the articulation.",
-                            default_val=True,
+                            default_val=False,
                             on_clicked_fn=lambda m, config=self._config: config.set_fix_base(m),
                         )
                         cb_builder(
@@ -107,6 +108,7 @@ class Extension(omni.ext.IExt):
                         cb_builder(
                             "Visualize Collision Geoms",
                             tooltip="If True, collision geoms will also be imported as visual geoms",
+                            default_val=True,
                             on_clicked_fn=lambda m, config=self._config: config.set_visualize_collision_geoms(m),
                         )
                         self._models["scale"] = float_builder(
@@ -263,10 +265,15 @@ class Extension(omni.ext.IExt):
                 base_path = path[: path.rfind("\\")]
                 basename = path[path.rfind("\\") + 1]
 
+            # sanitize basename
+            if basename[0].isdigit():
+                basename = "_" + basename
+
             full_path = os.path.abspath(os.path.join(self.root_path, self.filename))
             dest_path = "{}/{}/{}.usd".format(base_path, basename, basename)
             current_stage = omni.usd.get_context().get_stage()
             prim_path = omni.usd.get_stage_next_free_path(current_stage, "/" + basename, False)
+
             omni.kit.commands.execute(
                 "MJCFCreateAsset",
                 mjcf_path=full_path,

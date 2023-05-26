@@ -12,8 +12,10 @@
 
 #include <omni/isaac/mjcf/mjcf.h>
 
+#include <PxPhysicsAPI.h>
 #include <map>
 #include <tinyxml2.h>
+
 
 namespace omni
 {
@@ -62,6 +64,12 @@ void LoadJoint(tinyxml2::XMLElement* g,
                MJCFCompiler& compiler,
                std::map<std::string, MJCFClass>& classes,
                bool isDefault);
+void LoadFreeJoint(tinyxml2::XMLElement* g,
+                   MJCFJoint& joint,
+                   std::string className,
+                   MJCFCompiler& compiler,
+                   std::map<std::string, MJCFClass>& classes,
+                   bool isDefault);
 void LoadDefault(tinyxml2::XMLElement* e,
                  const std::string className,
                  MJCFClass& cl,

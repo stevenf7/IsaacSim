@@ -33,6 +33,7 @@
 #include <physxSchema/physxTendonAttachmentRootAPI.h>
 #include <physxSchema/physxTendonAxisAPI.h>
 #include <physxSchema/physxTendonAxisRootAPI.h>
+#include <physxSchema/plane.h>
 #include <usdPhysics/articulationRootAPI.h>
 #include <usdPhysics/collisionAPI.h>
 #include <usdPhysics/driveAPI.h>
@@ -56,6 +57,7 @@ namespace isaac
 {
 namespace mjcf
 {
+pxr::SdfPath getNextFreePath(pxr::UsdStageWeakPtr stage, const pxr::SdfPath& primPath);
 
 void setStageMetadata(pxr::UsdStageWeakPtr stage, const omni::isaac::mjcf::ImportConfig config);
 void createRoot(pxr::UsdStageWeakPtr stage,
@@ -90,7 +92,9 @@ pxr::UsdPrim createPrimitiveGeom(pxr::UsdStageWeakPtr stage,
                                  const MJCFGeom* geom,
                                  const std::map<std::string, MeshInfo>& simulationMeshCache,
                                  const ImportConfig& config,
-                                 bool importMaterials);
+                                 bool importMaterials,
+                                 const std::string rootPrimPath,
+                                 bool collisionGeom);
 pxr::UsdPrim createPrimitiveGeom(pxr::UsdStageWeakPtr stage,
                                  const std::string geomPath,
                                  const MJCFSite* site,
