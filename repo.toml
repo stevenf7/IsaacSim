@@ -75,7 +75,6 @@ vscode.python_env.PATH= [
   "$$$${PATH}",
   "$root/_build/$platform/$config",
   "$root/_build/$platform/$config/exts/omni.usd.schema.isaac/bin",
-  "$root/_build/$platform/$config/exts/omni.isaac.motion_planning/bin",
   "$root/_build/$platform/$config/kit",
   "$root/_build/$platform/$config/kit/kernel/plugins",
   "$root/_build/$platform/$config/kit/libs/iray",
@@ -179,7 +178,6 @@ python_paths = [
 library_paths = [
   "$root/_build/$platform/$config",
   "$root/_build/$platform/$config/exts/omni.usd.schema.isaac/bin",
-  "$root/_build/$platform/$config/exts/omni.isaac.motion_planning/bin",
   "$root/_build/$platform/$config/kit",
   "$root/_build/$platform/$config/kit/kernel/plugins",
   "$root/_build/$platform/$config/kit/libs/iray",
@@ -224,7 +222,6 @@ sphinx_exclude_patterns = [
     "**/omni.kit.property.isaac",
     "**/omni.usd.schema.isaac",     #TODO?
     "**/omni.isaac.window.about",
-    "**/omni.isaac.motion_planning",
     "**/omni.isaac.statistics_logging",
     "**/omni.isaac.version",
     "**/omni.isaac.unit_converter",
@@ -628,7 +625,6 @@ exts.include = [
     "omni.isaac.ml_archive",
     "omni.isaac.version",
     "omni.isaac.motion_generation",
-    "omni.isaac.motion_planning",
     "omni.isaac.lula",
     "omni.isaac.onshape",
     "omni.isaac.diff_usd",
