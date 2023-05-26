@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.11.1] - 2023-03-26
+### Fixed
+- Error in gxf camera helper due to non existent class member
+
 ## [0.11.0] - 2023-03-22
 ### Changed
 - Use writer backend for gxf publishers

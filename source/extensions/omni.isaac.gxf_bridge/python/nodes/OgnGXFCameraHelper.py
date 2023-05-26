@@ -110,8 +110,6 @@ class OgnGXFCameraHelper:
                     print(traceback.format_exc())
                     pass
         else:
-            if db.internal_state.graph:
-                pass
             return True
 
     @staticmethod
