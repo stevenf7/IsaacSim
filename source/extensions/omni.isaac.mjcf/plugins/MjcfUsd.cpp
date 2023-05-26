@@ -13,7 +13,7 @@
 
 #include <omni/isaac/utils/Path.h>
 
-#include <OmniClient.h>
+// #include <OmniClient.h>
 
 namespace omni
 {
@@ -21,6 +21,24 @@ namespace isaac
 {
 namespace mjcf
 {
+
+pxr::SdfPath getNextFreePath(pxr::UsdStageWeakPtr stage, const pxr::SdfPath& primPath)
+{
+    auto uniquePath = primPath;
+    auto prim = stage->GetPrimAtPath(uniquePath);
+    const std::string& name = uniquePath.GetName();
+
+    int startIndex = 1;
+    while (prim)
+    {
+        uniquePath = primPath.ReplaceName(pxr::TfToken(name + "_" + std::to_string(startIndex)));
+        prim = stage->GetPrimAtPath(uniquePath);
+        startIndex++;
+    }
+
+    return uniquePath;
+}
+
 
 std::string makeValidUSDIdentifier(const std::string& name)
 {
@@ -133,14 +151,16 @@ void createMaterial(pxr::UsdStageWeakPtr usdStage,
 
         pxr::UsdPrim prim;
         pxr::UsdShadeMaterial matPrim;
-        std::string mat_path(prefix_path + "/Looks/" + makeValidUSDIdentifier("material_" + material.name));
+        std::string mat_path(prefix_path + "/Looks/" +
+                             makeValidUSDIdentifier("material_" + SanitizeUsdName(material.name)));
 
         prim = usdStage->GetPrimAtPath(pxr::SdfPath(mat_path));
         int counter = 0;
         while (prim)
         {
-            mat_path = std::string(prefix_path + "/Looks/" +
-                                   makeValidUSDIdentifier("material_" + material.name + "_" + std::to_string(++counter)));
+            mat_path = std::string(
+                prefix_path + "/Looks/" +
+                makeValidUSDIdentifier("material_" + SanitizeUsdName(material.name) + "_" + std::to_string(++counter)));
             prim = usdStage->GetPrimAtPath(pxr::SdfPath(mat_path));
         }
 
@@ -214,7 +234,7 @@ void createMaterial(pxr::UsdStageWeakPtr usdStage,
         if (materialMap.size() > 1)
         {
             auto geomSubset = pxr::UsdGeomSubset::Define(
-                usdStage, pxr::SdfPath(usdMesh.GetPath().GetString() + "/material_" + material.name));
+                usdStage, pxr::SdfPath(usdMesh.GetPath().GetString() + "/material_" + SanitizeUsdName(material.name)));
             geomSubset.CreateElementTypeAttr(pxr::VtValue(pxr::TfToken("face")));
             geomSubset.CreateFamilyNameAttr(pxr::VtValue(pxr::TfToken("materialBind")));
             geomSubset.CreateIndicesAttr(pxr::VtValue(mat.second));
@@ -379,6 +399,13 @@ void applyRigidBody(pxr::UsdGeomXformable bodyPrim, const MJCFBody* body, const 
             massAPI.CreateDiagonalInertiaAttr().Set(
                 config.distanceScale * config.distanceScale *
                 pxr::GfVec3f(body->inertial->diaginertia.x, body->inertial->diaginertia.y, body->inertial->diaginertia.z));
+
+            if (body->inertial->hasFullInertia == true)
+            {
+                massAPI.CreatePrincipalAxesAttr().Set(
+                    pxr::GfQuatf(body->inertial->principalAxes.w, body->inertial->principalAxes.x,
+                                 body->inertial->principalAxes.y, body->inertial->principalAxes.z));
+            }
         }
     }
     else
@@ -401,7 +428,7 @@ void createAndBindMaterial(pxr::UsdStageWeakPtr stage,
     stage->DefinePrim(pxr::SdfPath(prefix_path + "/Looks"), pxr::TfToken("Scope"));
 
     pxr::UsdShadeMaterial matPrim;
-    std::string materialName = material ? material->name : "rgba";
+    std::string materialName = SanitizeUsdName(material ? material->name : "rgba");
     std::string mat_path(prefix_path + "/Looks/" + makeValidUSDIdentifier("material_" + materialName));
     pxr::UsdPrim tmpPrim = stage->GetPrimAtPath(pxr::SdfPath(mat_path));
     int counter = 0;
@@ -441,30 +468,59 @@ void createAndBindMaterial(pxr::UsdStageWeakPtr stage,
             .Set(material->roughness);
     }
 
-
     if (texture)
     {
         if (texture->type == "2d")
         {
-            if (!stage->GetRootLayer()->IsAnonymous())
+            // ensures there is a texture filename to copy
+            if (texture->filename != "")
             {
-                auto texture_path = copyTexture(stage->GetRootLayer()->GetIdentifier(), texture->filename);
-                int basename_idx = (int)texture_path.rfind('/');
-                std::string filename = texture_path.substr(basename_idx + 1);
-                std::string texture_relative_path = "materials/" + filename;
-                pbrShader.CreateInput(pxr::TfToken("diffuse_texture"), pxr::SdfValueTypeNames->Asset)
-                    .Set(pxr::SdfAssetPath(texture_relative_path));
+                if (!stage->GetRootLayer()->IsAnonymous())
+                {
+                    auto texture_path = copyTexture(stage->GetRootLayer()->GetIdentifier(), texture->filename);
+                    int basename_idx = (int)texture_path.rfind('/');
+                    std::string filename = texture_path.substr(basename_idx + 1);
+                    std::string texture_relative_path = "materials/" + filename;
+                    pbrShader.CreateInput(pxr::TfToken("diffuse_texture"), pxr::SdfValueTypeNames->Asset)
+                        .Set(pxr::SdfAssetPath(texture_relative_path));
+                    if (material->project_uvw == true)
+                    {
+                        pbrShader.CreateInput(pxr::TfToken("project_uvw"), pxr::SdfValueTypeNames->Bool).Set(true);
+                    }
+                }
+                else
+                {
+                    CARB_LOG_WARN(
+                        "Material %s has an image texture, but it won't be imported since the asset is being loaded on memory. Please import it into a destination folder to get all textures.",
+                        material->name.c_str());
+                }
             }
-            else
+        }
+        else if (texture->type == "cube")
+        {
+            // ensures there is a texture filename to copy
+            if (texture->filename != "")
             {
-                CARB_LOG_WARN(
-                    "Material %s has an image texture, but it won't be imported since the asset is being loaded on memory. Please import it into a destination folder to get all textures.",
-                    material->name.c_str());
+                if (!stage->GetRootLayer()->IsAnonymous())
+                {
+                    auto texture_path = copyTexture(stage->GetRootLayer()->GetIdentifier(), texture->filename);
+                    int basename_idx = (int)texture_path.rfind('/');
+                    std::string filename = texture_path.substr(basename_idx + 1);
+                    std::string texture_relative_path = "materials/" + filename;
+                    pbrShader.CreateInput(pxr::TfToken("diffuse_texture"), pxr::SdfValueTypeNames->Asset)
+                        .Set(pxr::SdfAssetPath(texture_relative_path));
+                }
+                else
+                {
+                    CARB_LOG_WARN(
+                        "Material %s has an image texture, but it won't be imported since the asset is being loaded on memory. Please import it into a destination folder to get all textures.",
+                        material->name.c_str());
+                }
             }
         }
         else
         {
-            CARB_LOG_WARN("Only '2d' texture types are supported.\n");
+            CARB_LOG_WARN("Only '2d' and 'cube' texture types are supported.\n");
         }
     }
 
@@ -475,16 +531,196 @@ void createAndBindMaterial(pxr::UsdStageWeakPtr stage,
     }
 }
 
+
+pxr::GfVec3f evalSphereCoord(float u, float v)
+{
+    float theta = u * 2.0 * kPi;
+    float phi = (v - 0.5) * kPi;
+    float cos_phi = cos(phi);
+
+    float x = cos_phi * cos(theta);
+    float y = cos_phi * sin(theta);
+    float z = sin(phi);
+
+    return pxr::GfVec3f(x, y, z);
+}
+
+
+int calcSphereIndex(int i, int j, int num_v_verts, int num_u_verts, std::vector<pxr::GfVec3f>& points)
+{
+    if (j == 0)
+    {
+        return 0;
+    }
+    else if (j == num_v_verts - 1)
+    {
+        return points.size() - 1;
+    }
+    else
+    {
+        i = (i < num_u_verts) ? i : 0;
+        return (j - 1) * num_u_verts + i + 1;
+    }
+}
+
+
+pxr::UsdGeomMesh createSphereMesh(pxr::UsdStageWeakPtr stage, const pxr::SdfPath path, float scale)
+{
+    int u_patches = 32;
+    int v_patches = 16;
+
+    int num_u_verts_scale = 1;
+    int num_v_verts_scale = 1;
+
+    u_patches = u_patches * num_u_verts_scale;
+    v_patches = v_patches * num_v_verts_scale;
+    u_patches = (u_patches > 3) ? u_patches : 3;
+    v_patches = (v_patches > 3) ? v_patches : 2;
+
+    float u_delta = 1.0 / (float)u_patches;
+    float v_delta = 1.0 / (float)v_patches;
+
+    int num_u_verts = u_patches;
+    int num_v_verts = v_patches + 1;
+
+    std::vector<pxr::GfVec3f> points;
+    std::vector<pxr::GfVec3f> normals;
+    std::vector<int> face_indices;
+    std::vector<int> face_vertex_counts;
+
+    pxr::GfVec3f bottom_point = pxr::GfVec3f(0.0f, 0.0f, -1.0f);
+    points.push_back(bottom_point);
+
+    for (int j = 0; j < num_v_verts - 1; j++)
+    {
+        float v = (float)j * v_delta;
+        for (int i = 0; i < num_u_verts; i++)
+        {
+            float u = (float)i * u_delta;
+            pxr::GfVec3f point = evalSphereCoord(u, v);
+            points.push_back(point);
+        }
+    }
+
+    pxr::GfVec3f top_point = pxr::GfVec3f(0.0f, 0.0f, 1.0f);
+    points.push_back(top_point);
+
+    // generate body
+    for (int j = 0; j < v_patches; j++)
+    {
+        for (int i = 0; i < u_patches; i++)
+        {
+            // index 0 is the bottom hat point
+            int vindex00 = calcSphereIndex(i, j, num_v_verts, num_u_verts, points);
+            int vindex10 = calcSphereIndex(i + 1, j, num_v_verts, num_u_verts, points);
+            int vindex11 = calcSphereIndex(i + 1, j + 1, num_v_verts, num_u_verts, points);
+            int vindex01 = calcSphereIndex(i, j + 1, num_v_verts, num_u_verts, points);
+
+            pxr::GfVec3f p0 = points[vindex00];
+            pxr::GfVec3f p1 = points[vindex10];
+            pxr::GfVec3f p2 = points[vindex11];
+            pxr::GfVec3f p3 = points[vindex01];
+
+            if (vindex11 == vindex01)
+            {
+                face_indices.push_back(vindex00);
+                face_indices.push_back(vindex10);
+                face_indices.push_back(vindex01);
+                face_vertex_counts.push_back(3);
+                normals.push_back(p0);
+                normals.push_back(p1);
+                normals.push_back(p3);
+            }
+            else if (vindex00 == vindex10)
+            {
+                face_indices.push_back(vindex00);
+                face_indices.push_back(vindex11);
+                face_indices.push_back(vindex01);
+                face_vertex_counts.push_back(3);
+                normals.push_back(p0);
+                normals.push_back(p2);
+                normals.push_back(p3);
+            }
+            else
+            {
+                face_indices.push_back(vindex00);
+                face_indices.push_back(vindex10);
+                face_indices.push_back(vindex11);
+                face_indices.push_back(vindex01);
+                face_vertex_counts.push_back(4);
+                normals.push_back(p0);
+                normals.push_back(p1);
+                normals.push_back(p2);
+                normals.push_back(p3);
+            }
+        }
+    }
+
+    pxr::UsdGeomMesh usdMesh = createMesh(stage, path, points, normals, face_indices, face_vertex_counts);
+    return usdMesh;
+}
+
+
 pxr::UsdPrim createPrimitiveGeom(pxr::UsdStageWeakPtr stage,
                                  const std::string geomPath,
                                  const MJCFGeom* geom,
                                  const std::map<std::string, MeshInfo>& simulationMeshCache,
                                  const ImportConfig& config,
-                                 bool importMaterials)
+                                 bool importMaterials,
+                                 const std::string rootPrimPath,
+                                 bool collisionGeom)
 {
     pxr::SdfPath path = pxr::SdfPath(geomPath);
 
-    if (geom->type == MJCFGeom::SPHERE)
+
+    if (geom->type == MJCFGeom::PLANE)
+    {
+        // add visual plane
+        pxr::UsdGeomMesh groundPlane = pxr::UsdGeomMesh::Define(stage, path);
+        groundPlane.CreateDisplayColorAttr().Set(pxr::VtArray<pxr::GfVec3f>({ pxr::GfVec3f(0.5f, 0.5f, 0.5f) }));
+        pxr::VtIntArray faceVertexCounts({ 4 });
+        pxr::VtIntArray faceVertexIndices({ 0, 1, 2, 3 });
+
+        pxr::GfVec3f normalsBase[] = { pxr::GfVec3f(0.0f, 0.0f, 1.0f), pxr::GfVec3f(0.0f, 0.0f, 1.0f),
+                                       pxr::GfVec3f(0.0f, 0.0f, 1.0f), pxr::GfVec3f(0.0f, 0.0f, 1.0f) };
+        const size_t normalCount = sizeof(normalsBase) / sizeof(normalsBase[0]);
+        pxr::VtVec3fArray normals;
+        normals.resize(normalCount);
+        for (uint32_t i = 0; i < normalCount; i++)
+        {
+            const pxr::GfVec3f& pointSrc = normalsBase[i];
+            pxr::GfVec3f& pointDst = normals[i];
+            pointDst[0] = pointSrc[0];
+            pointDst[1] = pointSrc[1];
+            pointDst[2] = pointSrc[2];
+        }
+
+        float planeSize[] = { geom->size.x, geom->size.y };
+        pxr::GfVec3f pointsBase[] = {
+            pxr::GfVec3f(-planeSize[0], -planeSize[1], 0.0f) * config.distanceScale,
+            pxr::GfVec3f(-planeSize[0], planeSize[1], 0.0f) * config.distanceScale,
+            pxr::GfVec3f(planeSize[0], planeSize[1], 0.0f) * config.distanceScale,
+            pxr::GfVec3f(planeSize[0], -planeSize[1], 0.0f) * config.distanceScale,
+        };
+
+        const size_t pointCount = sizeof(pointsBase) / sizeof(pointsBase[0]);
+        pxr::VtVec3fArray points;
+        points.resize(pointCount);
+        for (uint32_t i = 0; i < pointCount; i++)
+        {
+            const pxr::GfVec3f& pointSrc = pointsBase[i];
+            pxr::GfVec3f& pointDst = points[i];
+            pointDst[0] = pointSrc[0];
+            pointDst[1] = pointSrc[1];
+            pointDst[2] = pointSrc[2];
+        }
+
+        groundPlane.CreateFaceVertexCountsAttr().Set(faceVertexCounts);
+        groundPlane.CreateFaceVertexIndicesAttr().Set(faceVertexIndices);
+        groundPlane.CreateNormalsAttr().Set(normals);
+        groundPlane.CreatePointsAttr().Set(points);
+    }
+    else if (geom->type == MJCFGeom::SPHERE)
     {
         pxr::UsdGeomSphere spherePrim = pxr::UsdGeomSphere::Define(stage, path);
         pxr::VtVec3fArray extentArray(2);
@@ -495,11 +731,20 @@ pxr::UsdPrim createPrimitiveGeom(pxr::UsdStageWeakPtr stage,
     }
     else if (geom->type == MJCFGeom::ELLIPSOID)
     {
-        pxr::UsdGeomSphere ellipsePrim = pxr::UsdGeomSphere::Define(stage, path);
-        pxr::VtVec3fArray extentArray(2);
+        if (collisionGeom)
+        {
+            // use mesh for collision, or else collision mesh does not work properly
+            createSphereMesh(stage, path, config.distanceScale);
+        }
+        else
+        {
+            // use shape prim for visual
+            pxr::UsdGeomSphere ellipsePrim = pxr::UsdGeomSphere::Define(stage, path);
+            pxr::VtVec3fArray extentArray(2);
 
-        ellipsePrim.ComputeExtent(geom->size.x, &extentArray);
-        ellipsePrim.GetExtentAttr().Set(extentArray);
+            ellipsePrim.ComputeExtent(geom->size.x, &extentArray);
+            ellipsePrim.GetExtentAttr().Set(extentArray);
+        }
     }
     else if (geom->type == MJCFGeom::CAPSULE)
     {
@@ -575,6 +820,15 @@ pxr::UsdPrim createPrimitiveGeom(pxr::UsdStageWeakPtr stage,
         {
             scale.SetScale(config.distanceScale * pxr::GfVec3d(geom->size.x, geom->size.y, geom->size.z));
         }
+        else if (geom->type == MJCFGeom::SPHERE)
+        {
+            Vec3 s = geom->size;
+            Vec3 cen = geom->pos;
+            Quat q = geom->quat;
+            // scale.SetIdentity();
+            mat.SetTranslateOnly(config.distanceScale * pxr::GfVec3d(cen.x, cen.y, cen.z));
+            mat.SetRotateOnly(pxr::GfQuatd(q.w, q.x, q.y, q.z));
+        }
         else if (geom->type == MJCFGeom::CAPSULE)
         {
             Vec3 cen;
@@ -627,7 +881,7 @@ pxr::UsdPrim createPrimitiveGeom(pxr::UsdStageWeakPtr stage,
             }
 
             mat.SetRotateOnly(pxr::GfQuatd(q.w, q.x, q.y, q.z));
-            mat.SetTranslateOnly(pxr::GfVec3d(cen.x, cen.y, cen.z));
+            mat.SetTranslateOnly(config.distanceScale * pxr::GfVec3d(cen.x, cen.y, cen.z));
         }
         else if (geom->type == MJCFGeom::BOX)
         {
@@ -639,6 +893,14 @@ pxr::UsdPrim createPrimitiveGeom(pxr::UsdStageWeakPtr stage,
             mat.SetRotateOnly(pxr::GfQuatd(q.w, q.x, q.y, q.z));
         }
         else if (geom->type == MJCFGeom::MESH)
+        {
+            Vec3 cen = geom->pos;
+            Quat q = geom->quat;
+            scale.SetIdentity();
+            mat.SetTranslateOnly(config.distanceScale * pxr::GfVec3d(cen.x, cen.y, cen.z));
+            mat.SetRotateOnly(pxr::GfQuatd(q.w, q.x, q.y, q.z));
+        }
+        else if (geom->type == MJCFGeom::PLANE)
         {
             Vec3 cen = geom->pos;
             Quat q = geom->quat;
@@ -825,22 +1087,30 @@ pxr::UsdPrim createPrimitiveGeom(pxr::UsdStageWeakPtr stage,
 
 void applyCollisionGeom(pxr::UsdStageWeakPtr stage, pxr::UsdPrim prim, const MJCFGeom* geom)
 {
-    pxr::UsdPhysicsCollisionAPI::Apply(prim);
-    pxr::UsdPhysicsMeshCollisionAPI physicsMeshAPI = pxr::UsdPhysicsMeshCollisionAPI::Apply(prim);
-    if (geom->type == MJCFGeom::SPHERE)
+
+    if (geom->type == MJCFGeom::PLANE)
     {
-        physicsMeshAPI.CreateApproximationAttr().Set(pxr::UsdPhysicsTokens.Get()->boundingSphere);
-    }
-    else if (geom->type == MJCFGeom::BOX)
-    {
-        physicsMeshAPI.CreateApproximationAttr().Set(pxr::UsdPhysicsTokens.Get()->boundingCube);
     }
     else
     {
-        physicsMeshAPI.CreateApproximationAttr().Set(pxr::UsdPhysicsTokens.Get()->convexHull);
+        pxr::UsdPhysicsCollisionAPI::Apply(prim);
+        pxr::UsdPhysicsMeshCollisionAPI physicsMeshAPI = pxr::UsdPhysicsMeshCollisionAPI::Apply(prim);
+        if (geom->type == MJCFGeom::SPHERE)
+        {
+            physicsMeshAPI.CreateApproximationAttr().Set(pxr::UsdPhysicsTokens.Get()->boundingSphere);
+        }
+        else if (geom->type == MJCFGeom::BOX)
+        {
+            physicsMeshAPI.CreateApproximationAttr().Set(pxr::UsdPhysicsTokens.Get()->boundingCube);
+        }
+        else
+        {
+            physicsMeshAPI.CreateApproximationAttr().Set(pxr::UsdPhysicsTokens.Get()->convexHull);
+        }
+        pxr::UsdGeomMesh(prim).CreatePurposeAttr().Set(pxr::UsdGeomTokens->guide);
     }
-    pxr::UsdGeomMesh(prim).CreatePurposeAttr().Set(pxr::UsdGeomTokens->guide);
 }
+
 
 pxr::UsdPhysicsJoint createFixedJoint(pxr::UsdStageWeakPtr stage,
                                       const std::string jointPath,

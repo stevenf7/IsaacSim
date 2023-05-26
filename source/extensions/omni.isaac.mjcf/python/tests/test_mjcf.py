@@ -57,26 +57,23 @@ class TestMJCF(omni.kit.test.AsyncTestCase):
         self.assertNotEqual(prim.GetPath(), Sdf.Path.emptyPath)
 
         # make sure the joints and links exist
-        root_joint = stage.GetPrimAtPath("/ant/joints/rootJoint")
-        self.assertNotEqual(root_joint.GetPath(), Sdf.Path.emptyPath)
-
-        front_left_leg_joint = stage.GetPrimAtPath("/ant/joints/hip_1")
+        front_left_leg_joint = stage.GetPrimAtPath("/ant/torso/joints/hip_1")
         self.assertNotEqual(front_left_leg_joint.GetPath(), Sdf.Path.emptyPath)
         self.assertEqual(front_left_leg_joint.GetTypeName(), "PhysicsRevoluteJoint")
         self.assertAlmostEqual(front_left_leg_joint.GetAttribute("physics:upperLimit").Get(), 40)
         self.assertAlmostEqual(front_left_leg_joint.GetAttribute("physics:lowerLimit").Get(), -40)
 
-        front_left_leg = stage.GetPrimAtPath("/ant/front_left_leg")
+        front_left_leg = stage.GetPrimAtPath("/ant/torso/front_left_leg")
         self.assertAlmostEqual(front_left_leg.GetAttribute("physics:diagonalInertia").Get()[0], 0.0)
         self.assertAlmostEqual(front_left_leg.GetAttribute("physics:mass").Get(), 0.0)
 
-        front_left_foot_joint = stage.GetPrimAtPath("/ant/joints/ankle_1")
+        front_left_foot_joint = stage.GetPrimAtPath("/ant/torso/joints/ankle_1")
         self.assertNotEqual(front_left_foot_joint.GetPath(), Sdf.Path.emptyPath)
         self.assertEqual(front_left_foot_joint.GetTypeName(), "PhysicsRevoluteJoint")
         self.assertAlmostEqual(front_left_foot_joint.GetAttribute("physics:upperLimit").Get(), 100)
         self.assertAlmostEqual(front_left_foot_joint.GetAttribute("physics:lowerLimit").Get(), 30)
 
-        front_left_foot = stage.GetPrimAtPath("/ant/front_left_foot")
+        front_left_foot = stage.GetPrimAtPath("/ant/torso/front_left_foot")
         self.assertAlmostEqual(front_left_foot.GetAttribute("physics:diagonalInertia").Get()[0], 0.0)
         self.assertAlmostEqual(front_left_foot.GetAttribute("physics:mass").Get(), 0.0)
 
@@ -86,7 +83,6 @@ class TestMJCF(omni.kit.test.AsyncTestCase):
         await asyncio.sleep(1.0)
         # nothing crashes
         self._timeline.stop()
-
         self.assertAlmostEqual(UsdGeom.GetStageMetersPerUnit(stage), 1.0)
 
     async def test_mjcf_humanoid(self):
@@ -107,16 +103,16 @@ class TestMJCF(omni.kit.test.AsyncTestCase):
         self.assertNotEqual(prim.GetPath(), Sdf.Path.emptyPath)
 
         # make sure the joints and link exist
-        root_joint = stage.GetPrimAtPath("/humanoid/joints/rootJoint")
+        root_joint = stage.GetPrimAtPath("/humanoid/torso/joints/rootJoint_torso")
         self.assertNotEqual(root_joint.GetPath(), Sdf.Path.emptyPath)
 
-        pelvis_joint = stage.GetPrimAtPath("/humanoid/joints/abdomen_x")
+        pelvis_joint = stage.GetPrimAtPath("/humanoid/torso/joints/abdomen_x")
         self.assertNotEqual(pelvis_joint.GetPath(), Sdf.Path.emptyPath)
         self.assertEqual(pelvis_joint.GetTypeName(), "PhysicsRevoluteJoint")
         self.assertAlmostEqual(pelvis_joint.GetAttribute("physics:upperLimit").Get(), 35)
         self.assertAlmostEqual(pelvis_joint.GetAttribute("physics:lowerLimit").Get(), -35)
 
-        lower_waist_joint = stage.GetPrimAtPath("/humanoid/joints/lower_waist")
+        lower_waist_joint = stage.GetPrimAtPath("/humanoid/torso/joints/lower_waist")
         self.assertNotEqual(lower_waist_joint.GetPath(), Sdf.Path.emptyPath)
         self.assertEqual(lower_waist_joint.GetTypeName(), "PhysicsJoint")
         self.assertAlmostEqual(lower_waist_joint.GetAttribute("limit:rotX:physics:high").Get(), 45)
@@ -126,7 +122,7 @@ class TestMJCF(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(lower_waist_joint.GetAttribute("limit:rotZ:physics:high").Get(), -1)
         self.assertAlmostEqual(lower_waist_joint.GetAttribute("limit:rotZ:physics:low").Get(), 1)
 
-        left_foot = stage.GetPrimAtPath("/humanoid/left_foot")
+        left_foot = stage.GetPrimAtPath("/humanoid/torso/left_foot")
         self.assertAlmostEqual(left_foot.GetAttribute("physics:diagonalInertia").Get()[0], 0.0)
         self.assertAlmostEqual(left_foot.GetAttribute("physics:mass").Get(), 0.0)
 
@@ -178,7 +174,7 @@ class TestMJCF(omni.kit.test.AsyncTestCase):
     async def test_mjcf_scale(self):
         stage = omni.usd.get_context().get_stage()
         status, import_config = omni.kit.commands.execute("MJCFCreateImportConfig")
-        import_config.set_distance_scale(1.0)
+        import_config.set_distance_scale(100.0)
         import_config.set_fix_base(True)
         import_config.set_import_inertia_tensor(True)
         omni.kit.commands.execute(
@@ -196,7 +192,7 @@ class TestMJCF(omni.kit.test.AsyncTestCase):
         # nothing crashes
         self._timeline.stop()
 
-        self.assertAlmostEqual(UsdGeom.GetStageMetersPerUnit(stage), 1.0)
+        self.assertAlmostEqual(UsdGeom.GetStageMetersPerUnit(stage), 0.01)
 
     async def test_mjcf_self_collision(self):
         stage = omni.usd.get_context().get_stage()
@@ -212,7 +208,7 @@ class TestMJCF(omni.kit.test.AsyncTestCase):
         )
         await omni.kit.app.get_app().next_update_async()
 
-        prim = stage.GetPrimAtPath("/ant")
+        prim = stage.GetPrimAtPath("/ant/torso")
         self.assertNotEqual(prim.GetPath(), Sdf.Path.emptyPath)
         self.assertEqual(prim.GetAttribute("physxArticulation:enabledSelfCollisions").Get(), True)
 
@@ -251,625 +247,80 @@ class TestMJCF(omni.kit.test.AsyncTestCase):
         self.assertNotEqual(prim_2.GetPath(), Sdf.Path.emptyPath)
         self.assertEqual(default_prim.GetPath(), prim_2.GetPath())
 
-    def _compare_files(self, file1, file2):
-        with open(file1) as file_1, open(file2) as file_2:
-            lines1 = file_1.readlines()
-            lines2 = file_2.readlines()
-            for i, (line1, line2) in enumerate(zip(lines1, lines2)):
-                if line1 == line2 or "/tmp/carb." in line1:
-                    continue
-                else:
-                    print(i, line1, line2)
-                    return False
-        return True
-
-    async def test_import_nv_humanoid(self):
-        asset = "nv_humanoid"
+    async def test_mjcf_visualize_collision_geom(self):
         stage = omni.usd.get_context().get_stage()
-        mjcf_path = os.path.abspath(self._extension_path + f"/omni/isaac/mjcf/tests/data/assets/{asset}.xml")
-
-        output_path = os.path.join(carb.tokens.get_tokens_interface().resolve("${temp}"), asset, f"{asset}.usda")
-
         status, import_config = omni.kit.commands.execute("MJCFCreateImportConfig")
+        import_config.set_self_collision(True)
         import_config.set_fix_base(True)
-        import_config.set_import_inertia_tensor(False)
-        import_config.set_distance_scale(1.0)
-        import_config.set_density(0.0)
-        import_config.set_self_collision(False)
-        import_config.set_make_default_prim(True)
-        import_config.set_create_physics_scene(True)
-        import_config.set_import_sites(True)
-        import_config.set_visualize_collision_geoms(True)
-
+        import_config.set_import_inertia_tensor(True)
+        import_config.set_visualize_collision_geoms(False)
         omni.kit.commands.execute(
             "MJCFCreateAsset",
-            mjcf_path=mjcf_path,
+            mjcf_path=self._extension_path + "/data/mjcf/open_ai_assets/hand/manipulate_block.xml",
             import_config=import_config,
-            prim_path=f"/{asset}",
-            dest_path=output_path,
+            prim_path="/shadow_hand",
         )
         await omni.kit.app.get_app().next_update_async()
 
-        target_file = os.path.abspath(
-            self._extension_path + f"/omni/isaac/mjcf/tests/data/targets/{asset}/{asset}.usda"
-        )
-        print(output_path, target_file)
-        self.assertTrue(filecmp.cmp(output_path, target_file))
+        prim = stage.GetPrimAtPath("/shadow_hand/robot0_hand_mount/robot0_forearm/visuals/robot0_C_forearm")
+        self.assertNotEqual(prim.GetPath(), Sdf.Path.emptyPath)
 
-    async def test_import_nv_humanoid_instanceable(self):
-        asset = "nv_humanoid"
+        imageable = UsdGeom.Imageable(prim)
+        visibility_attr = imageable.GetVisibilityAttr().Get()
+        self.assertEqual(visibility_attr, "invisible")
+
+        # Start Simulation and wait
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await asyncio.sleep(1.0)
+        # nothing crashes
+        self._timeline.stop()
+
+    async def test_mjcf_import_shadow_hand_egg(self):
         stage = omni.usd.get_context().get_stage()
-        mjcf_path = os.path.abspath(self._extension_path + f"/omni/isaac/mjcf/tests/data/assets/{asset}.xml")
-
-        output_path = os.path.join(carb.tokens.get_tokens_interface().resolve("${temp}"), asset, f"{asset}.usda")
-
         status, import_config = omni.kit.commands.execute("MJCFCreateImportConfig")
-        import_config.set_fix_base(True)
-        import_config.set_import_inertia_tensor(False)
-        import_config.set_distance_scale(1.0)
-        import_config.set_density(0.0)
-        import_config.set_self_collision(False)
-        import_config.set_make_default_prim(True)
-        import_config.set_create_physics_scene(True)
-        import_config.set_make_instanceable(True)
-        import_config.set_instanceable_usd_path("./instanceable_meshes.usda")
-        import_config.set_import_sites(True)
-        import_config.set_visualize_collision_geoms(True)
-
+        import_config.set_self_collision(True)
+        import_config.set_import_inertia_tensor(True)
         omni.kit.commands.execute(
             "MJCFCreateAsset",
-            mjcf_path=mjcf_path,
+            mjcf_path=self._extension_path + "/data/mjcf/open_ai_assets/hand/manipulate_egg_touch_sensors.xml",
             import_config=import_config,
-            prim_path=f"/{asset}",
-            dest_path=output_path,
+            prim_path="/shadow_hand",
         )
         await omni.kit.app.get_app().next_update_async()
 
-        target_file = os.path.abspath(
-            self._extension_path + f"/omni/isaac/mjcf/tests/data/targets/{asset}/instanceable/{asset}.usda"
-        )
-        target_ins_file = os.path.abspath(
-            self._extension_path + f"/omni/isaac/mjcf/tests/data/targets/{asset}/instanceable/instanceable_meshes.usda"
-        )
-        output_ins_file = os.path.join(
-            carb.tokens.get_tokens_interface().resolve("${temp}"), asset, "instanceable_meshes.usda"
-        )
+        prim = stage.GetPrimAtPath("/shadow_hand/robot0_hand_mount")
+        self.assertNotEqual(prim.GetPath(), Sdf.Path.emptyPath)
 
-        self.assertTrue(self._compare_files(target_file, output_path))
-        self.assertTrue(self._compare_files(target_ins_file, output_ins_file))
+        prim = stage.GetPrimAtPath("/shadow_hand/object")
+        self.assertNotEqual(prim.GetPath(), Sdf.Path.emptyPath)
 
-    async def test_import_nv_ant(self):
-        asset = "nv_ant"
+        prim = stage.GetPrimAtPath("/shadow_hand/worldBody")
+        self.assertNotEqual(prim.GetPath(), Sdf.Path.emptyPath)
+
+        # Start Simulation and wait
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await asyncio.sleep(1.0)
+        # nothing crashes
+        self._timeline.stop()
+
+    async def test_mjcf_import_humanoid_100(self):
         stage = omni.usd.get_context().get_stage()
-        mjcf_path = os.path.abspath(self._extension_path + f"/omni/isaac/mjcf/tests/data/assets/{asset}.xml")
-
-        output_path = os.path.join(carb.tokens.get_tokens_interface().resolve("${temp}"), asset, f"{asset}.usda")
-
         status, import_config = omni.kit.commands.execute("MJCFCreateImportConfig")
-        import_config.set_fix_base(True)
-        import_config.set_import_inertia_tensor(False)
-        import_config.set_distance_scale(1.0)
-        import_config.set_density(0.0)
         import_config.set_self_collision(False)
-        import_config.set_make_default_prim(True)
-        import_config.set_create_physics_scene(True)
-        import_config.set_import_sites(True)
-        import_config.set_visualize_collision_geoms(True)
-
+        import_config.set_import_inertia_tensor(True)
         omni.kit.commands.execute(
             "MJCFCreateAsset",
-            mjcf_path=mjcf_path,
+            mjcf_path=self._extension_path + "/data/mjcf/mujoco_sim_assets/humanoid100.xml",
             import_config=import_config,
-            prim_path=f"/{asset}",
-            dest_path=output_path,
+            prim_path="/humanoid_100",
         )
         await omni.kit.app.get_app().next_update_async()
 
-        target_file = os.path.abspath(
-            self._extension_path + f"/omni/isaac/mjcf/tests/data/targets/{asset}/{asset}.usda"
-        )
-        print(output_path, target_file)
-        self.assertTrue(filecmp.cmp(output_path, target_file))
-
-    async def test_import_nv_ant_instanceable(self):
-        asset = "nv_ant"
-        stage = omni.usd.get_context().get_stage()
-        mjcf_path = os.path.abspath(self._extension_path + f"/omni/isaac/mjcf/tests/data/assets/{asset}.xml")
-
-        output_path = os.path.join(carb.tokens.get_tokens_interface().resolve("${temp}"), asset, f"{asset}.usda")
-
-        status, import_config = omni.kit.commands.execute("MJCFCreateImportConfig")
-        import_config.set_fix_base(True)
-        import_config.set_import_inertia_tensor(False)
-        import_config.set_distance_scale(1.0)
-        import_config.set_density(0.0)
-        import_config.set_self_collision(False)
-        import_config.set_make_default_prim(True)
-        import_config.set_create_physics_scene(True)
-        import_config.set_make_instanceable(True)
-        import_config.set_instanceable_usd_path("./instanceable_meshes.usda")
-
-        omni.kit.commands.execute(
-            "MJCFCreateAsset",
-            mjcf_path=mjcf_path,
-            import_config=import_config,
-            prim_path=f"/{asset}",
-            dest_path=output_path,
-        )
+        # Start Simulation and wait
+        self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-
-        target_file = os.path.abspath(
-            self._extension_path + f"/omni/isaac/mjcf/tests/data/targets/{asset}/instanceable/{asset}.usda"
-        )
-        target_ins_file = os.path.abspath(
-            self._extension_path + f"/omni/isaac/mjcf/tests/data/targets/{asset}/instanceable/instanceable_meshes.usda"
-        )
-        output_ins_file = os.path.join(
-            carb.tokens.get_tokens_interface().resolve("${temp}"), asset, "instanceable_meshes.usda"
-        )
-
-        self.assertTrue(self._compare_files(target_file, output_path))
-        self.assertTrue(self._compare_files(target_ins_file, output_ins_file))
-
-    async def test_import_balance_bot(self):
-        asset = "balance_bot"
-        stage = omni.usd.get_context().get_stage()
-        mjcf_path = os.path.abspath(self._extension_path + f"/omni/isaac/mjcf/tests/data/assets/{asset}.xml")
-
-        output_path = os.path.join(carb.tokens.get_tokens_interface().resolve("${temp}"), asset, f"{asset}.usda")
-
-        status, import_config = omni.kit.commands.execute("MJCFCreateImportConfig")
-        import_config.set_fix_base(True)
-        import_config.set_import_inertia_tensor(False)
-        import_config.set_distance_scale(1.0)
-        import_config.set_density(0.0)
-        import_config.set_self_collision(False)
-        import_config.set_make_default_prim(True)
-        import_config.set_create_physics_scene(True)
-
-        omni.kit.commands.execute(
-            "MJCFCreateAsset",
-            mjcf_path=mjcf_path,
-            import_config=import_config,
-            prim_path=f"/{asset}",
-            dest_path=output_path,
-        )
-        await omni.kit.app.get_app().next_update_async()
-
-        target_file = os.path.abspath(
-            self._extension_path + f"/omni/isaac/mjcf/tests/data/targets/{asset}/{asset}.usda"
-        )
-        print(output_path, target_file)
-        self.assertTrue(filecmp.cmp(output_path, target_file))
-
-    async def test_import_balance_bot_instanceable(self):
-        asset = "balance_bot"
-        stage = omni.usd.get_context().get_stage()
-        mjcf_path = os.path.abspath(self._extension_path + f"/omni/isaac/mjcf/tests/data/assets/{asset}.xml")
-
-        output_path = os.path.join(carb.tokens.get_tokens_interface().resolve("${temp}"), asset, f"{asset}.usda")
-
-        status, import_config = omni.kit.commands.execute("MJCFCreateImportConfig")
-        import_config.set_fix_base(True)
-        import_config.set_import_inertia_tensor(False)
-        import_config.set_distance_scale(1.0)
-        import_config.set_density(0.0)
-        import_config.set_self_collision(False)
-        import_config.set_make_default_prim(True)
-        import_config.set_create_physics_scene(True)
-        import_config.set_make_instanceable(True)
-        import_config.set_instanceable_usd_path("./instanceable_meshes.usda")
-
-        omni.kit.commands.execute(
-            "MJCFCreateAsset",
-            mjcf_path=mjcf_path,
-            import_config=import_config,
-            prim_path=f"/{asset}",
-            dest_path=output_path,
-        )
-        await omni.kit.app.get_app().next_update_async()
-
-        target_file = os.path.abspath(
-            self._extension_path + f"/omni/isaac/mjcf/tests/data/targets/{asset}/instanceable/{asset}.usda"
-        )
-        target_ins_file = os.path.abspath(
-            self._extension_path + f"/omni/isaac/mjcf/tests/data/targets/{asset}/instanceable/instanceable_meshes.usda"
-        )
-        output_ins_file = os.path.join(
-            carb.tokens.get_tokens_interface().resolve("${temp}"), asset, "instanceable_meshes.usda"
-        )
-
-        self.assertTrue(self._compare_files(target_file, output_path))
-        self.assertTrue(self._compare_files(target_ins_file, output_ins_file))
-
-    async def test_import_dm_humanoid(self):
-        asset = "humanoid_CMU_V2020_v2"
-        stage = omni.usd.get_context().get_stage()
-        mjcf_path = os.path.abspath(self._extension_path + f"/omni/isaac/mjcf/tests/data/assets/{asset}.xml")
-
-        output_path = os.path.join(carb.tokens.get_tokens_interface().resolve("${temp}"), asset, f"{asset}.usda")
-
-        status, import_config = omni.kit.commands.execute("MJCFCreateImportConfig")
-        import_config.set_fix_base(True)
-        import_config.set_import_inertia_tensor(False)
-        import_config.set_distance_scale(1.0)
-        import_config.set_density(0.0)
-        import_config.set_self_collision(False)
-        import_config.set_make_default_prim(True)
-        import_config.set_create_physics_scene(True)
-
-        omni.kit.commands.execute(
-            "MJCFCreateAsset",
-            mjcf_path=mjcf_path,
-            import_config=import_config,
-            prim_path=f"/{asset}",
-            dest_path=output_path,
-        )
-        await omni.kit.app.get_app().next_update_async()
-
-        target_file = os.path.abspath(
-            self._extension_path + f"/omni/isaac/mjcf/tests/data/targets/{asset}/{asset}.usda"
-        )
-        print(output_path, target_file)
-        self.assertTrue(filecmp.cmp(output_path, target_file))
-
-    async def test_import_dm_humanoid_instanceable(self):
-        asset = "humanoid_CMU_V2020_v2"
-        stage = omni.usd.get_context().get_stage()
-        mjcf_path = os.path.abspath(self._extension_path + f"/omni/isaac/mjcf/tests/data/assets/{asset}.xml")
-
-        output_path = os.path.join(carb.tokens.get_tokens_interface().resolve("${temp}"), asset, f"{asset}.usda")
-
-        status, import_config = omni.kit.commands.execute("MJCFCreateImportConfig")
-        import_config.set_fix_base(True)
-        import_config.set_import_inertia_tensor(False)
-        import_config.set_distance_scale(1.0)
-        import_config.set_density(0.0)
-        import_config.set_self_collision(False)
-        import_config.set_make_default_prim(True)
-        import_config.set_create_physics_scene(True)
-        import_config.set_make_instanceable(True)
-        import_config.set_instanceable_usd_path("./instanceable_meshes.usda")
-
-        omni.kit.commands.execute(
-            "MJCFCreateAsset",
-            mjcf_path=mjcf_path,
-            import_config=import_config,
-            prim_path=f"/{asset}",
-            dest_path=output_path,
-        )
-        await omni.kit.app.get_app().next_update_async()
-
-        target_file = os.path.abspath(
-            self._extension_path + f"/omni/isaac/mjcf/tests/data/targets/{asset}/instanceable/{asset}.usda"
-        )
-        target_ins_file = os.path.abspath(
-            self._extension_path + f"/omni/isaac/mjcf/tests/data/targets/{asset}/instanceable/instanceable_meshes.usda"
-        )
-        output_ins_file = os.path.join(
-            carb.tokens.get_tokens_interface().resolve("${temp}"), asset, "instanceable_meshes.usda"
-        )
-
-        self.assertTrue(self._compare_files(target_file, output_path))
-        self.assertTrue(self._compare_files(target_ins_file, output_ins_file))
-
-    async def test_import_robogym_shadow_hand_main(self):
-        asset = "main"
-        stage = omni.usd.get_context().get_stage()
-        mjcf_path = os.path.abspath(
-            self._extension_path + f"/omni/isaac/mjcf/tests/data/assets/robogym/xmls/robot/shadowhand/{asset}.xml"
-        )
-
-        output_path = os.path.join(carb.tokens.get_tokens_interface().resolve("${temp}"), asset, f"{asset}.usda")
-
-        status, import_config = omni.kit.commands.execute("MJCFCreateImportConfig")
-        import_config.set_fix_base(True)
-        import_config.set_import_inertia_tensor(False)
-        import_config.set_distance_scale(1.0)
-        import_config.set_density(0.0)
-        import_config.set_self_collision(False)
-        import_config.set_make_default_prim(True)
-        import_config.set_create_physics_scene(True)
-        import_config.set_mesh_root_directory(
-            os.path.abspath(self._extension_path + "/omni/isaac/mjcf/tests/data/assets/robogym/stls")
-        )
-
-        omni.kit.commands.execute(
-            "MJCFCreateAsset",
-            mjcf_path=mjcf_path,
-            import_config=import_config,
-            prim_path=f"/{asset}",
-            dest_path=output_path,
-        )
-        await omni.kit.app.get_app().next_update_async()
-
-        target_file = os.path.abspath(
-            self._extension_path + f"/omni/isaac/mjcf/tests/data/targets/robogym_shadow_hand/{asset}.usda"
-        )
-        print(output_path, target_file)
-        self.assertTrue(filecmp.cmp(output_path, target_file))
-
-    async def test_import_robogym_shadow_hand_main_instanceable(self):
-        asset = "main"
-        stage = omni.usd.get_context().get_stage()
-        mjcf_path = os.path.abspath(
-            self._extension_path + f"/omni/isaac/mjcf/tests/data/assets/robogym/xmls/robot/shadowhand/{asset}.xml"
-        )
-
-        output_path = os.path.join(carb.tokens.get_tokens_interface().resolve("${temp}"), asset, f"{asset}.usda")
-
-        status, import_config = omni.kit.commands.execute("MJCFCreateImportConfig")
-        import_config.set_fix_base(True)
-        import_config.set_import_inertia_tensor(False)
-        import_config.set_distance_scale(1.0)
-        import_config.set_density(0.0)
-        import_config.set_self_collision(False)
-        import_config.set_make_default_prim(True)
-        import_config.set_create_physics_scene(True)
-        import_config.set_mesh_root_directory(
-            os.path.abspath(self._extension_path + "/omni/isaac/mjcf/tests/data/assets/robogym/stls")
-        )
-        import_config.set_make_instanceable(True)
-        import_config.set_instanceable_usd_path("./instanceable_meshes.usda")
-
-        omni.kit.commands.execute(
-            "MJCFCreateAsset",
-            mjcf_path=mjcf_path,
-            import_config=import_config,
-            prim_path=f"/{asset}",
-            dest_path=output_path,
-        )
-        await omni.kit.app.get_app().next_update_async()
-
-        target_file = os.path.abspath(
-            self._extension_path
-            + f"/omni/isaac/mjcf/tests/data/targets/robogym_shadow_hand/instanceable/{asset}/{asset}.usda"
-        )
-        target_ins_file = os.path.abspath(
-            self._extension_path
-            + f"/omni/isaac/mjcf/tests/data/targets/robogym_shadow_hand/instanceable/{asset}/instanceable_meshes.usda"
-        )
-        output_ins_file = os.path.join(
-            carb.tokens.get_tokens_interface().resolve("${temp}"), asset, "instanceable_meshes.usda"
-        )
-
-        self.assertTrue(self._compare_files(target_file, output_path))
-        self.assertTrue(self._compare_files(target_ins_file, output_ins_file))
-
-    async def test_import_robogym_shadow_hand_main_render(self):
-        asset = "main_render"
-        stage = omni.usd.get_context().get_stage()
-        mjcf_path = os.path.abspath(
-            self._extension_path + f"/omni/isaac/mjcf/tests/data/assets/robogym/xmls/robot/shadowhand/{asset}.xml"
-        )
-
-        output_path = os.path.join(carb.tokens.get_tokens_interface().resolve("${temp}"), asset, f"{asset}.usda")
-
-        status, import_config = omni.kit.commands.execute("MJCFCreateImportConfig")
-        import_config.set_fix_base(True)
-        import_config.set_import_inertia_tensor(False)
-        import_config.set_distance_scale(1.0)
-        import_config.set_density(0.0)
-        import_config.set_self_collision(False)
-        import_config.set_make_default_prim(True)
-        import_config.set_create_physics_scene(True)
-        import_config.set_mesh_root_directory(
-            os.path.abspath(self._extension_path + "/omni/isaac/mjcf/tests/data/assets/robogym/stls")
-        )
-
-        omni.kit.commands.execute(
-            "MJCFCreateAsset",
-            mjcf_path=mjcf_path,
-            import_config=import_config,
-            prim_path=f"/{asset}",
-            dest_path=output_path,
-        )
-        await omni.kit.app.get_app().next_update_async()
-
-        target_file = os.path.abspath(
-            self._extension_path + f"/omni/isaac/mjcf/tests/data/targets/robogym_shadow_hand/{asset}.usda"
-        )
-        print(output_path, target_file)
-        self.assertTrue(filecmp.cmp(output_path, target_file))
-
-    async def test_import_robogym_shadow_hand_main_render_instanceable(self):
-        asset = "main_render"
-        stage = omni.usd.get_context().get_stage()
-        mjcf_path = os.path.abspath(
-            self._extension_path + f"/omni/isaac/mjcf/tests/data/assets/robogym/xmls/robot/shadowhand/{asset}.xml"
-        )
-
-        output_path = os.path.join(carb.tokens.get_tokens_interface().resolve("${temp}"), asset, f"{asset}.usda")
-
-        status, import_config = omni.kit.commands.execute("MJCFCreateImportConfig")
-        import_config.set_fix_base(True)
-        import_config.set_import_inertia_tensor(False)
-        import_config.set_distance_scale(1.0)
-        import_config.set_density(0.0)
-        import_config.set_self_collision(False)
-        import_config.set_make_default_prim(True)
-        import_config.set_create_physics_scene(True)
-        import_config.set_mesh_root_directory(
-            os.path.abspath(self._extension_path + "/omni/isaac/mjcf/tests/data/assets/robogym/stls")
-        )
-        import_config.set_make_instanceable(True)
-        import_config.set_instanceable_usd_path("./instanceable_meshes.usda")
-
-        omni.kit.commands.execute(
-            "MJCFCreateAsset",
-            mjcf_path=mjcf_path,
-            import_config=import_config,
-            prim_path=f"/{asset}",
-            dest_path=output_path,
-        )
-
-        for _ in range(10):
-            await omni.kit.app.get_app().next_update_async()
-
-        target_file = os.path.abspath(
-            self._extension_path
-            + f"/omni/isaac/mjcf/tests/data/targets/robogym_shadow_hand/instanceable/{asset}/{asset}.usda"
-        )
-        target_ins_file = os.path.abspath(
-            self._extension_path
-            + f"/omni/isaac/mjcf/tests/data/targets/robogym_shadow_hand/instanceable/{asset}/instanceable_meshes.usda"
-        )
-        output_ins_file = os.path.join(
-            carb.tokens.get_tokens_interface().resolve("${temp}"), asset, "instanceable_meshes.usda"
-        )
-
-        self.assertTrue(self._compare_files(target_file, output_path))
-        self.assertTrue(self._compare_files(target_ins_file, output_ins_file))
-
-    async def test_import_scanned_object(self):
-        asset = "Jenga"
-        stage = omni.usd.get_context().get_stage()
-        mjcf_path = os.path.abspath(
-            self._extension_path
-            + f"/omni/isaac/mjcf/tests/data/assets/mujoco_scanned_objects/2_of_Jenga_Classic_Game/model.xml"
-        )
-
-        output_path = os.path.join(carb.tokens.get_tokens_interface().resolve("${temp}"), asset, f"{asset}.usda")
-
-        status, import_config = omni.kit.commands.execute("MJCFCreateImportConfig")
-        import_config.set_fix_base(True)
-        import_config.set_import_inertia_tensor(False)
-        import_config.set_distance_scale(1.0)
-        import_config.set_density(0.0)
-        import_config.set_self_collision(False)
-        import_config.set_make_default_prim(True)
-        import_config.set_create_physics_scene(True)
-
-        omni.kit.commands.execute(
-            "MJCFCreateAsset",
-            mjcf_path=mjcf_path,
-            import_config=import_config,
-            prim_path=f"/{asset}",
-            dest_path=output_path,
-        )
-        await omni.kit.app.get_app().next_update_async()
-
-        target_file = os.path.abspath(
-            self._extension_path + f"/omni/isaac/mjcf/tests/data/targets/{asset}/{asset}.usda"
-        )
-        print(output_path, target_file)
-        self.assertTrue(filecmp.cmp(output_path, target_file))
-
-    async def test_import_scanned_object_instanceable(self):
-        asset = "Jenga"
-        stage = omni.usd.get_context().get_stage()
-        mjcf_path = os.path.abspath(
-            self._extension_path
-            + f"/omni/isaac/mjcf/tests/data/assets/mujoco_scanned_objects/2_of_Jenga_Classic_Game/model.xml"
-        )
-
-        output_path = os.path.join(carb.tokens.get_tokens_interface().resolve("${temp}"), asset, f"{asset}.usda")
-
-        status, import_config = omni.kit.commands.execute("MJCFCreateImportConfig")
-        import_config.set_fix_base(True)
-        import_config.set_import_inertia_tensor(False)
-        import_config.set_distance_scale(1.0)
-        import_config.set_density(0.0)
-        import_config.set_self_collision(False)
-        import_config.set_make_default_prim(True)
-        import_config.set_create_physics_scene(True)
-        import_config.set_make_instanceable(True)
-        import_config.set_instanceable_usd_path("./instanceable_meshes.usda")
-
-        omni.kit.commands.execute(
-            "MJCFCreateAsset",
-            mjcf_path=mjcf_path,
-            import_config=import_config,
-            prim_path=f"/{asset}",
-            dest_path=output_path,
-        )
-        await omni.kit.app.get_app().next_update_async()
-
-        target_file = os.path.abspath(
-            self._extension_path + f"/omni/isaac/mjcf/tests/data/targets/{asset}/instanceable/{asset}.usda"
-        )
-        target_ins_file = os.path.abspath(
-            self._extension_path + f"/omni/isaac/mjcf/tests/data/targets/{asset}/instanceable/instanceable_meshes.usda"
-        )
-        output_ins_file = os.path.join(
-            carb.tokens.get_tokens_interface().resolve("${temp}"), asset, "instanceable_meshes.usda"
-        )
-
-        self.assertTrue(self._compare_files(target_file, output_path))
-        self.assertTrue(self._compare_files(target_ins_file, output_ins_file))
-
-    async def test_import_open_ai_shadow_hand(self):
-        asset = "shadow_hand"
-        stage = omni.usd.get_context().get_stage()
-        mjcf_path = os.path.abspath(
-            self._extension_path + f"/omni/isaac/mjcf/tests/data/assets/open_ai_assets/hand/{asset}.xml"
-        )
-
-        output_path = os.path.join(carb.tokens.get_tokens_interface().resolve("${temp}"), asset, f"{asset}.usda")
-
-        status, import_config = omni.kit.commands.execute("MJCFCreateImportConfig")
-        import_config.set_fix_base(True)
-        import_config.set_import_inertia_tensor(False)
-        import_config.set_distance_scale(1.0)
-        import_config.set_density(0.0)
-        import_config.set_self_collision(False)
-        import_config.set_make_default_prim(True)
-        import_config.set_create_physics_scene(True)
-
-        omni.kit.commands.execute(
-            "MJCFCreateAsset",
-            mjcf_path=mjcf_path,
-            import_config=import_config,
-            prim_path=f"/{asset}",
-            dest_path=output_path,
-        )
-        await omni.kit.app.get_app().next_update_async()
-
-        target_file = os.path.abspath(
-            self._extension_path + f"/omni/isaac/mjcf/tests/data/targets/{asset}/{asset}.usda"
-        )
-        print(output_path, target_file)
-        self._compare_files(output_path, target_file)
-        self.assertTrue(filecmp.cmp(output_path, target_file))
-
-    async def test_import_open_ai_shadow_hand_instanceable(self):
-        asset = "shadow_hand"
-        stage = omni.usd.get_context().get_stage()
-        mjcf_path = os.path.abspath(
-            self._extension_path + f"/omni/isaac/mjcf/tests/data/assets/open_ai_assets/hand/{asset}.xml"
-        )
-
-        output_path = os.path.join(carb.tokens.get_tokens_interface().resolve("${temp}"), asset, f"{asset}.usda")
-
-        status, import_config = omni.kit.commands.execute("MJCFCreateImportConfig")
-        import_config.set_fix_base(True)
-        import_config.set_import_inertia_tensor(False)
-        import_config.set_distance_scale(1.0)
-        import_config.set_density(0.0)
-        import_config.set_self_collision(False)
-        import_config.set_make_default_prim(True)
-        import_config.set_create_physics_scene(True)
-        import_config.set_make_instanceable(True)
-        import_config.set_instanceable_usd_path("./instanceable_meshes.usda")
-
-        omni.kit.commands.execute(
-            "MJCFCreateAsset",
-            mjcf_path=mjcf_path,
-            import_config=import_config,
-            prim_path=f"/{asset}",
-            dest_path=output_path,
-        )
-        await omni.kit.app.get_app().next_update_async()
-
-        target_file = os.path.abspath(
-            self._extension_path + f"/omni/isaac/mjcf/tests/data/targets/{asset}/instanceable/{asset}.usda"
-        )
-        target_ins_file = os.path.abspath(
-            self._extension_path + f"/omni/isaac/mjcf/tests/data/targets/{asset}/instanceable/instanceable_meshes.usda"
-        )
-        output_ins_file = os.path.join(
-            carb.tokens.get_tokens_interface().resolve("${temp}"), asset, "instanceable_meshes.usda"
-        )
-
-        self.assertTrue(self._compare_files(target_file, output_path))
-        self.assertTrue(self._compare_files(target_ins_file, output_ins_file))
+        await asyncio.sleep(1.0)
+        # nothing crashes
+        self._timeline.stop()

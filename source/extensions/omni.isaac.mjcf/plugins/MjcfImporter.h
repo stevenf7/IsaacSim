@@ -22,6 +22,7 @@
 
 #include <omni/isaac/math/core/maths.h>
 #include <omni/isaac/mjcf/mjcf.h>
+#include <pxr/usd/usdGeom/imageable.h>
 
 #include <iostream>
 #include <iterator>
@@ -56,6 +57,8 @@ public:
 
     std::map<std::string, pxr::UsdPhysicsRevoluteJoint> revoluteJointsMap;
     std::map<std::string, pxr::UsdPhysicsPrismaticJoint> prismaticJointsMap;
+    std::map<std::string, pxr::UsdPhysicsJoint> d6JointsMap;
+
     std::map<std::string, pxr::UsdPrim> geomPrimMap;
     std::map<std::string, pxr::UsdPrim> sitePrimMap;
     std::map<std::string, pxr::UsdPrim> siteToBodyPrim;
@@ -99,7 +102,7 @@ public:
 
     void CreatePhysicsBodyAndJoint(pxr::UsdStageWeakPtr stage,
                                    MJCFBody* body,
-                                   const std::string rootPrimPath,
+                                   std::string rootPrimPath,
                                    const Transform trans,
                                    const bool isRoot,
                                    const std::string parentBodyPath,
@@ -113,13 +116,17 @@ public:
 
     void computeKinematicHierarchy();
 
-    void addWorldGeomsAndSites(pxr::UsdStageWeakPtr stage, std::string rootPath, const ImportConfig& config);
+    void addWorldGeomsAndSites(pxr::UsdStageWeakPtr stage,
+                               std::string rootPath,
+                               const ImportConfig& config,
+                               const std::string instanceableUsdPath);
     bool addVisualGeom(pxr::UsdStageWeakPtr stage,
                        pxr::UsdPrim bodyPrim,
                        MJCFBody* body,
                        std::string bodyPath,
                        const ImportConfig& config,
-                       bool createGeoms);
+                       bool createGeoms,
+                       const std::string rootPrimPath);
     void addVisualSites(pxr::UsdStageWeakPtr stage,
                         pxr::UsdPrim bodyPrim,
                         MJCFBody* body,

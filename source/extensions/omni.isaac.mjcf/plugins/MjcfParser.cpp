@@ -15,6 +15,8 @@
 
 #include <carb/logging/Log.h>
 
+using namespace physx;
+
 namespace omni
 {
 namespace isaac
@@ -52,11 +54,15 @@ void LoadCompiler(tinyxml2::XMLElement* c, MJCFCompiler& compiler)
 
         if ((s = GetAttr(c, "eulerseq")) != "")
         {
-            if (s != "xyz")
+            for (int i = s.length() - 1; i >= 0; i--)
             {
-                std::cout << "Euler sequence other than xyz is not supported now..." << std::endl;
-                exit(0);
+                char axis = s[i];
+                if (axis == 'X' || axis == 'Y' || axis == 'Z')
+                {
+                    CARB_LOG_ERROR("The MJCF importer currently only supports intrinsic euler rotations!");
+                }
             }
+            compiler.eulerseq = s;
         }
 
         if ((s = GetAttr(c, "angle")) != "")
@@ -74,14 +80,15 @@ void LoadCompiler(tinyxml2::XMLElement* c, MJCFCompiler& compiler)
             compiler.coordinateInLocal = (s == "local");
             if (!compiler.coordinateInLocal)
             {
-                std::cout << "Don't know how to handle global coordinate yet!" << std::endl;
-                exit(0);
+                CARB_LOG_ERROR("The global coordinate is no longer supported by MuJoCo!");
             }
         }
 
         getIfExist(c, "meshdir", compiler.meshDir);
+        getIfExist(c, "texturedir", compiler.textureDir);
     }
 }
+
 
 void LoadInertial(tinyxml2::XMLElement* i, MJCFInertial& inertial)
 {
@@ -92,7 +99,32 @@ void LoadInertial(tinyxml2::XMLElement* i, MJCFInertial& inertial)
     getIfExist(i, "mass", inertial.mass);
     getIfExist(i, "pos", inertial.pos);
     getIfExist(i, "diaginertia", inertial.diaginertia);
+
+    float fullInertia[6];
+    const char* st = i->Attribute("fullinertia");
+    if (st)
+    {
+        sscanf(st, "%f %f %f %f %f %f", &fullInertia[0], &fullInertia[1], &fullInertia[2], &fullInertia[3],
+               &fullInertia[4], &fullInertia[5]);
+        inertial.hasFullInertia = true;
+
+        PxMat33 inertiaMatrix;
+        inertiaMatrix.column0 = { fullInertia[0], fullInertia[3], fullInertia[4] };
+        inertiaMatrix.column1 = { fullInertia[3], fullInertia[1], fullInertia[5] };
+        inertiaMatrix.column2 = { fullInertia[4], fullInertia[5], fullInertia[2] };
+        PxQuat principalAxes;
+        PxVec3 diagInertia = Diagonalize(inertiaMatrix, principalAxes);
+
+        inertial.diaginertia.x = diagInertia.x;
+        inertial.diaginertia.y = diagInertia.y;
+        inertial.diaginertia.z = diagInertia.z;
+        inertial.principalAxes.w = principalAxes.w;
+        inertial.principalAxes.x = principalAxes.x;
+        inertial.principalAxes.y = principalAxes.y;
+        inertial.principalAxes.z = principalAxes.z;
+    }
 }
+
 
 void LoadGeom(tinyxml2::XMLElement* g,
               MJCFGeom& geom,
@@ -119,12 +151,12 @@ void LoadGeom(tinyxml2::XMLElement* g,
     getIfExist(g, "solimp", geom.solimp);
     getIfExist(g, "solref", geom.solref);
     getIfExist(g, "fromto", geom.from, geom.to);
-    getIfExist(g, "zaxis", geom.zaxis);
     getIfExist(g, "size", geom.size);
     getIfExist(g, "name", geom.name);
     getIfExist(g, "pos", geom.pos);
     getEulerIfExist(g, "euler", geom.quat, compiler.eulerseq, compiler.angleInRad);
     getAngleAxisIfExist(g, "axisangle", geom.quat, compiler.angleInRad);
+    getZAxisIfExist(g, "zaxis", geom.quat);
     getIfExist(g, "quat", geom.quat);
     getIfExist(g, "density", geom.density);
     getIfExist(g, "mesh", geom.mesh);
@@ -138,10 +170,6 @@ void LoadGeom(tinyxml2::XMLElement* g,
     if (g->Attribute("fromto"))
     {
         geom.hasFromTo = true;
-    }
-    if (g->Attribute("zaxis"))
-    {
-        geom.hasZAxis = true;
     }
 
     std::string type = "";
@@ -170,16 +198,19 @@ void LoadGeom(tinyxml2::XMLElement* g,
     {
         geom.type = MJCFGeom::MESH;
     }
+    else if (type == "plane")
+    {
+        geom.type = MJCFGeom::PLANE;
+    }
     else if (type != "")
     {
         geom.type = MJCFGeom::OTHER;
         std::cout << "Geom type " << type << " not yet supported!" << std::endl;
     }
 
-    if (geom.hasZAxis)
+    if (!isDefault && geom.name == "")
     {
-        // convert to quat
-        geom.quat = Quat(geom.zaxis);
+        geom.name = type;
     }
 }
 
@@ -206,6 +237,7 @@ void LoadSite(tinyxml2::XMLElement* s,
     getIfExist(s, "pos", site.pos);
     getEulerIfExist(s, "euler", site.quat, compiler.eulerseq, compiler.angleInRad);
     getAngleAxisIfExist(s, "axisangle", site.quat, compiler.angleInRad);
+    getZAxisIfExist(s, "zaxis", site.quat);
     getIfExist(s, "quat", site.quat);
 
     if (site.name == "" && !isDefault)
@@ -249,6 +281,11 @@ void LoadSite(tinyxml2::XMLElement* s,
     else if (type != "")
     {
         std::cout << "Site type " << type << " not yet supported!" << std::endl;
+    }
+
+    if (!isDefault && site.name == "")
+    {
+        site.name = type;
     }
 }
 
@@ -478,6 +515,14 @@ void LoadJoint(tinyxml2::XMLElement* g,
     {
         joint.type = MJCFJoint::SLIDE;
     }
+    else if (type == "ball")
+    {
+        joint.type = MJCFJoint::BALL;
+    }
+    else if (type == "free")
+    {
+        joint.type = MJCFJoint::FREE;
+    }
     else if (type != "")
     {
         std::cout << "JointSpec type " << type << " not yet supported!" << std::endl;
@@ -499,6 +544,32 @@ void LoadJoint(tinyxml2::XMLElement* g,
     getIfExist(g, "stiffness", joint.stiffness);
     joint.axis = Normalize(joint.axis);
 
+    if (joint.name == "" && !isDefault)
+    {
+        joint.name = "_joint_" + std::to_string(jointIdxCount);
+        jointIdxCount++;
+    }
+}
+
+
+void LoadFreeJoint(tinyxml2::XMLElement* g,
+                   MJCFJoint& joint,
+                   std::string className,
+                   MJCFCompiler& compiler,
+                   std::map<std::string, MJCFClass>& classes,
+                   bool isDefault)
+{
+    if (!g)
+    {
+        return;
+    }
+    if (g->Attribute("class"))
+        className = g->Attribute("class");
+    joint = classes[className].djoint;
+
+    joint.type = MJCFJoint::FREE;
+
+    getIfExist(g, "name", joint.name);
     if (joint.name == "" && !isDefault)
     {
         joint.name = "_joint_" + std::to_string(jointIdxCount);
@@ -532,8 +603,7 @@ void LoadDefault(tinyxml2::XMLElement* e,
         // must have a name
         if (!d->Attribute("class"))
         {
-            std::cout << "Non-top level class must have name" << std::endl;
-            exit(0);
+            CARB_LOG_ERROR("Non-top level class must have name");
         }
 
         std::string name = d->Attribute("class");
@@ -564,6 +634,7 @@ void LoadBody(tinyxml2::XMLElement* g,
     getIfExist(g, "pos", body.pos);
     getEulerIfExist(g, "euler", body.quat, compiler.eulerseq, compiler.angleInRad);
     getAngleAxisIfExist(g, "axisangle", body.quat, compiler.angleInRad);
+    getZAxisIfExist(g, "zaxis", body.quat);
     getIfExist(g, "quat", body.quat);
 
     if (body.name == "")
@@ -605,6 +676,14 @@ void LoadBody(tinyxml2::XMLElement* g,
         body.joints.push_back(new MJCFJoint());
         LoadJoint(c, *body.joints.back(), className, compiler, classes, false);
         c = c->NextSiblingElement("joint");
+    }
+
+    // load freejoint
+    c = g->FirstChildElement("freejoint");
+    if (c)
+    {
+        body.joints.push_back(new MJCFJoint());
+        LoadFreeJoint(c, *body.joints.back(), className, compiler, classes, false);
     }
 
     // load imports
@@ -772,7 +851,7 @@ void LoadAssets(tinyxml2::XMLElement* a,
 
         if (texFile != "")
         {
-            texFile = baseDirPath + texFile;
+            texFile = baseDirPath + compiler.textureDir + "/" + texFile;
         }
 
         MJCFTexture texture = MJCFTexture();
@@ -934,6 +1013,7 @@ void LoadGlobals(tinyxml2::XMLElement* root,
             else
             {
                 CARB_LOG_ERROR("*** Only motor, position, velocity actuators supported");
+                c = c->NextSiblingElement();
                 continue;
             }
 
@@ -992,6 +1072,7 @@ void LoadGlobals(tinyxml2::XMLElement* root,
             else
             {
                 CARB_LOG_ERROR("*** Invalid contact specification");
+                c = c->NextSiblingElement();
                 continue;
             }
 

@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.5.0] - 2023-05-09
+### Added
+- Support for ball and free joint
+- Support for `<freejoint>` tag
+- Support for plane geom type
+- Support for intrinsic Euler sequences
+
+### Changed
+- Default value for fix_base is now false
+- Root bodies no longer have their translation automatically set to the origin
+- Visualize collision geom option now sets collision geom's visibility to invisible
+- Change prim hierarchy to support multiple world body level prims 
+
+### Fixed
+- Fix support for full inertia matrix
+- Fix collision geom for ellipsoid prim
+- Fix zaxis orientation parsing
+- Fix 2D texture by enabling UVW projection
+
+
 ## [0.4.1] - 2023-05-02
 ### Added
 - High level code overview in README.md
@@ -14,7 +34,6 @@
 - onclick_fn warning when creating UI
 
 ## [0.3.0] - 2022-10-13
-
 ### Added
 - Added material and texture support
 
