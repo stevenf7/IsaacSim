@@ -56,5 +56,8 @@
 	},
 	"FestoCobot":{
 		"RMPflow": "./Festo/Cobot/rmpflow/config.json"
+	},
+	"Techman_TM12":{
+		"RMPflow": "./Techman/rmpflow/config.json"
 	}
 }

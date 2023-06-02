@@ -249,7 +249,10 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         robot_name = "Rizon4"
         robot_prim_path = "/A02L_MP"
 
-        await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name)
+        obstacle_position = np.array([0.8, 0.3, 0.8])
+        target_position = np.array([0.78, 0.1, 0.55])
+
+        await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name, target_position, obstacle_position)
 
     async def test_rmpflow_rs007l(self):
         assets_root_path = get_assets_root_path()
@@ -308,6 +311,17 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
         obstacle_position = np.array([0.8, 0.3, 0.8])
         target_position = np.array([0.78, 0.1, 0.55])
+
+        await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name, target_position, obstacle_position)
+
+    async def test_rmpflow_tm12(self):
+        assets_root_path = get_assets_root_path()
+        usd_path = assets_root_path + "/Isaac/Robots/Techman/TM12/tm12.usd"
+        robot_name = "Techman_TM12"
+        robot_prim_path = "/tm12"
+
+        obstacle_position = np.array([0.8, 0.25, 0.8])
+        target_position = np.array([0.78, 0.4, 0.55])
 
         await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name, target_position, obstacle_position)
 

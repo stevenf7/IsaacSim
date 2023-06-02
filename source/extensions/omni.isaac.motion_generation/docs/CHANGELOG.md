@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.7.0] - 2023-06-02
+### Added
+- Add RMPflow config for Techman TM12 robot
+
 ## [4.6.0] - 2023-04-17
 ### Added
 - Added support for timestamped Lula c-space trajectory generation with corresponding test cases.
