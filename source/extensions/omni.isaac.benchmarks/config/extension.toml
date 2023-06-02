@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.7.1"
+version = "0.7.2"
 category = "Simulation"
 title = "Benchmark"
 description = "This extension provides benchmarking utilities"
@@ -62,3 +62,8 @@ dependencies = [
 ]
 timeout=4000
 args = ["--/app/fastShutdown=1"] # we can use fast shutdown because metrics are not uploaded
+
+stdoutFailPatterns.exclude = [
+    "*NGX EvaluateFeature failed*", # Ada multi gpu doesn't support this yet
+    "*Failed to evaluate DLSS feature*", # Ada multi gpu doesn't support this yet
+]
