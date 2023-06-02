@@ -98,6 +98,16 @@
             "timeStamp": {
                 "type": "double",
                 "description": "Time for frame being published"
+            },
+            "physicalDistortionModel": {
+                "type": "token",
+                "description": "physical distortion model used for approximation, empty if not specified on camera prim",
+                "optional": true
+            },
+            "physicalDistortionCoefficients": {
+                "type": "float[]",
+                "description": "physical distortion model used for approximation, empty if not specified on camera prim",
+                "optional": true
             }
         },
         "outputs": {

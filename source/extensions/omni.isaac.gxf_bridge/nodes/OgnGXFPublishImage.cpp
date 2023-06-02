@@ -85,13 +85,10 @@ private:
         const size_t src_stride = width * message.frame->video_frame_info().color_planes[0].bytes_per_pixel;
         cudaMemcpy2D(
             message.frame->pointer(), dst_stride, &dataAsCPU[0], src_stride, src_stride, height, cudaMemcpyHostToHost);
-        message.intrinsics->dimensions.x = width;
-        message.intrinsics->dimensions.y = height;
-        message.intrinsics->focal_length.x = width * db.inputs.focalLength() / db.inputs.horizontalAperture();
-        message.intrinsics->focal_length.y = height * db.inputs.focalLength() / db.inputs.verticalAperture();
-        message.intrinsics->principal_point.x = width / 2.f;
-        message.intrinsics->principal_point.y = height / 2.f;
-        message.intrinsics->skew_value = 0.f;
+        state.setIntrinsicsCamera(
+            message.intrinsics, width, height, db.inputs.focalLength(), db.inputs.horizontalAperture(),
+            db.inputs.verticalAperture(), db.tokenToString(db.inputs.projectionType()), db.inputs.cameraFisheyeParams(),
+            db.tokenToString(db.inputs.physicalDistortionModel()), db.inputs.physicalDistortionCoefficients());
         for (int i = 0; i < 3; ++i)
         {
             message.extrinsics->rotation[3 * i] = 1.f;
@@ -122,9 +119,11 @@ private:
         state.setMetadata(time, message.timestamp);
         const std::string frame_name = db.inputs.poseFrame();
         message.pose_frame_uid->uid = state.findFrameUid(frame_name.c_str());
-        state.setIntrinsics(message.intrinsics_info, message.distortion_info, width, height, db.inputs.focalLength(),
-                            db.inputs.horizontalAperture(), db.inputs.verticalAperture(),
-                            db.tokenToString(db.inputs.projectionType()), db.inputs.cameraFisheyeParams());
+        state.setIntrinsicsCameraImage(
+            message.intrinsics_info, message.distortion_info, width, height, db.inputs.focalLength(),
+            db.inputs.horizontalAperture(), db.inputs.verticalAperture(), db.tokenToString(db.inputs.projectionType()),
+            db.inputs.cameraFisheyeParams(), db.tokenToString(db.inputs.physicalDistortionModel()),
+            db.inputs.physicalDistortionCoefficients());
 
         const size_t totalBytes = height * width * sizeof(T) * channels;
         memcpy(static_cast<T*>(message.image_tensor_view.element_wise_begin()), &dataAsCPU[0], totalBytes);
@@ -144,15 +143,17 @@ private:
         msgTimestamp->acqtime = static_cast<int64_t>(time_seconds * 1e9);
     }
 
-    void setIntrinsics(const nvidia::gxf::Handle<::isaac::geometry::PinholeD>& intrinsics,
-                       const nvidia::gxf::Handle<::isaac::geometry::CameraDistortionInfo>& distIntrinsics,
-                       const int width,
-                       const int height,
-                       float focalLength,
-                       float horizontalAperture,
-                       float verticalAperture,
-                       const std::string projectionType,
-                       const omni::graph::core::ogn::const_array<float>& cameraFisheyeParams)
+    void setIntrinsicsCameraImage(const nvidia::gxf::Handle<::isaac::geometry::PinholeD>& intrinsics,
+                                  const nvidia::gxf::Handle<::isaac::geometry::CameraDistortionInfo>& distIntrinsics,
+                                  const int width,
+                                  const int height,
+                                  float focalLength,
+                                  float horizontalAperture,
+                                  float verticalAperture,
+                                  const std::string projectionType,
+                                  const omni::graph::core::ogn::const_array<float>& cameraFisheyeParams,
+                                  const std::string physicalDistortionModel,
+                                  const omni::graph::core::ogn::const_array<float>& physicalDistortionCoefficients)
     {
         intrinsics->dimensions[0] = height; // rows
         intrinsics->dimensions[1] = width; // columns
@@ -160,25 +161,94 @@ private:
         intrinsics->focal[1] = width * focalLength / horizontalAperture;
         intrinsics->center[0] = height * 0.5;
         intrinsics->center[1] = width * 0.5;
-        if (cameraFisheyeParams.size() == 19)
+        if (physicalDistortionModel.find("rationalPolynomial") != std::string::npos &&
+            physicalDistortionCoefficients.size() == 8)
         {
-            auto data = cameraFisheyeParams.data();
+
+            distIntrinsics->model = ::isaac::geometry::DistortionModel::kPolynomial;
+            auto data = physicalDistortionCoefficients.data();
             const std::array<double, ::isaac::geometry::CameraDistortionInfo::kMaxNumCoefficients> distortionCoefficients{
-                data[5], data[6], data[7], data[8], data[9]
+                data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7]
             };
             distIntrinsics->distortion_coefficients = distortionCoefficients;
         }
         else
         {
-            const std::array<double, ::isaac::geometry::CameraDistortionInfo::kMaxNumCoefficients> distortionCoefficients{
-                0, 0, 0, 0, 0
-            };
-            distIntrinsics->distortion_coefficients = distortionCoefficients;
-        }
+            if (cameraFisheyeParams.size() == 19)
+            {
+                auto data = cameraFisheyeParams.data();
+                const std::array<double, ::isaac::geometry::CameraDistortionInfo::kMaxNumCoefficients> distortionCoefficients{
+                    data[5], data[6], data[7], data[8], data[9]
+                };
+                distIntrinsics->distortion_coefficients = distortionCoefficients;
+            }
+            else
+            {
+                const std::array<double, ::isaac::geometry::CameraDistortionInfo::kMaxNumCoefficients> distortionCoefficients{
+                    0, 0, 0, 0, 0
+                };
+                distIntrinsics->distortion_coefficients = distortionCoefficients;
+            }
 
-        distIntrinsics->model =
-            (projectionType.find("fisheye") != std::string::npos ? ::isaac::geometry::DistortionModel::kFisheye :
-                                                                   ::isaac::geometry::DistortionModel::kPerspective);
+            distIntrinsics->model = (projectionType.find("fisheye") != std::string::npos ?
+                                         ::isaac::geometry::DistortionModel::kFisheye :
+                                         ::isaac::geometry::DistortionModel::kPerspective);
+        }
+    }
+
+    void setIntrinsicsCamera(const nvidia::gxf::Handle<nvidia::gxf::CameraModel>& intrinsics,
+                             const int width,
+                             const int height,
+                             float focalLength,
+                             float horizontalAperture,
+                             float verticalAperture,
+                             const std::string projectionType,
+                             const omni::graph::core::ogn::const_array<float>& cameraFisheyeParams,
+                             const std::string physicalDistortionModel,
+                             const omni::graph::core::ogn::const_array<float>& physicalDistortionCoefficients)
+    {
+        intrinsics->dimensions.x = height; // rows
+        intrinsics->dimensions.y = width; // columns
+        intrinsics->focal_length.x = height * focalLength / verticalAperture;
+        intrinsics->focal_length.y = width * focalLength / horizontalAperture;
+        intrinsics->principal_point.x = height * 0.5;
+        intrinsics->principal_point.y = width * 0.5;
+        intrinsics->skew_value = 0.0;
+
+        if (physicalDistortionModel.find("rationalPolynomial") != std::string::npos &&
+            physicalDistortionCoefficients.size() == intrinsics->kMaxDistortionCoefficients)
+        {
+            intrinsics->distortion_type = nvidia::gxf::DistortionType::Polynomial;
+            for (int i = 0; i < intrinsics->kMaxDistortionCoefficients; i++)
+            {
+                intrinsics->distortion_coefficients[i] = physicalDistortionCoefficients[i];
+            }
+        }
+        else
+        {
+            if (cameraFisheyeParams.size() == 19)
+            {
+                for (int i = 0; i < 5; i++)
+                {
+                    intrinsics->distortion_coefficients[i] = cameraFisheyeParams[i + 5];
+                }
+                for (int i = 5; i < intrinsics->kMaxDistortionCoefficients; i++)
+                {
+                    intrinsics->distortion_coefficients[i] = 0.0;
+                }
+            }
+            else
+            {
+                for (int i = 0; i < intrinsics->kMaxDistortionCoefficients; i++)
+                {
+                    intrinsics->distortion_coefficients[i] = 0.0;
+                }
+            }
+
+            intrinsics->distortion_type =
+                (projectionType.find("fisheye") != std::string::npos ? nvidia::gxf::DistortionType::FisheyeEquidistant :
+                                                                       nvidia::gxf::DistortionType::Perspective);
+        }
     }
 };
 

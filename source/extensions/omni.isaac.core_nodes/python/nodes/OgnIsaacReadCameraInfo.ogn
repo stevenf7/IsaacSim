@@ -55,6 +55,14 @@
             "cameraFisheyeParams": {
                 "type": "float[]",
                 "description": "Camera fisheye projection parameters"
+            },
+            "physicalDistortionModel": {
+                "type": "token",
+                "description": "physical distortion model used for approximation, empty if not specified on camera prim"
+            },
+            "physicalDistortionCoefficients": {
+                "type": "float[]",
+                "description": "physical distortion model used for approximation, empty if not specified on camera prim"
             }
         },
         "tests": [

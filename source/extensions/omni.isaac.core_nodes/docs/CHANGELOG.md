@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.24.0] - 2023-05-31
+
+### Added
+- Support for custom distortion type/values on a camera  to read camera info node
+
 ## [0.23.2] - 2023-03-12
 
 ### Fixed

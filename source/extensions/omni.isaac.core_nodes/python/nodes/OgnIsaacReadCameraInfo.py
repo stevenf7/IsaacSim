@@ -83,4 +83,12 @@ class OgnIsaacReadCameraInfo:
             db.outputs.cameraFisheyeParams[17] = camera.GetAttribute("fisheyeResolutionBudget").Get()
             db.outputs.cameraFisheyeParams[18] = camera.GetAttribute("fisheyeFrontFaceResolutionScale").Get()
 
+        physical_distortion = camera.GetAttribute("physicalDistortionModel").Get()
+        if physical_distortion is not None:
+            db.outputs.physicalDistortionModel = physical_distortion
+
+        physical_distortion_coefs = camera.GetAttribute("physicalDistortionCoefficients").Get()
+        if physical_distortion_coefs is not None:
+            db.outputs.physicalDistortionCoefficients = physical_distortion_coefs
+
         return True

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.12.0] - 2023-05-31
+### Added
+- Support for passing rational polynomial model to gxf image publisher
+
 ## [0.11.1] - 2023-03-26
 ### Fixed
 - Error in gxf camera helper due to non existent class member
