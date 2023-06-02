@@ -127,6 +127,8 @@ class Extension(omni.ext.IExt):
                         "outputs:verticalOffset": "inputs:verticalOffset",
                         "outputs:projectionType": "inputs:projectionType",
                         "outputs:cameraFisheyeParams": "inputs:cameraFisheyeParams",
+                        "outputs:physicalDistortionModel": "inputs:physicalDistortionModel",
+                        "outputs:physicalDistortionCoefficients": "inputs:physicalDistortionCoefficients",
                     },
                 ),
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
@@ -154,6 +156,8 @@ class Extension(omni.ext.IExt):
                         "outputs:verticalOffset": "inputs:verticalOffset",
                         "outputs:projectionType": "inputs:projectionType",
                         "outputs:cameraFisheyeParams": "inputs:cameraFisheyeParams",
+                        "outputs:physicalDistortionModel": "inputs:physicalDistortionModel",
+                        "outputs:physicalDistortionCoefficients": "inputs:physicalDistortionCoefficients",
                     },
                 ),
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
