@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.7.2] - 2023-06-01
+
+### Fixed
+- Don't fail on error messages due to missing features on gpu
+
 ## [0.7.1] - 2023-05-25
 
 ### Changed
