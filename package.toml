@@ -113,7 +113,7 @@ files = [
     # Isaac Sim: This doesn't exist in non launcher versions of kit sdk package
     ["kit/extscore/omni.kit.pip_archive/pip_prebundle/numpy/.libs"],
     ["exts/omni.isaac.core_archive/pip_prebundle/scipy/.libs"],
-    ["../../docs/isaac_sim/latest/**", "docs/py/"] # windows ext api docs
+    # ["../../docs/isaac_sim/latest/**", "docs/py/"] # windows ext api docs
 ]
 files_exclude = [
     ["standalone_examples/cortex/**"], # Cortex not shipped on windows
