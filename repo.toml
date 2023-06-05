@@ -434,6 +434,15 @@ tests_per_process = 1
 include = ["omni.isaac.sim.post.install${shell_ext}"]
 timeout = 960
 
+[repo_test.suites.warmuptests]
+kind = "glob_and_exec"
+path = "${test_root}"
+tests_per_process = 1
+
+[[repo_test.suites.warmuptests.group]]
+include = ["omni.isaac.sim.warmup${shell_ext}"]
+timeout = 960
+
 [repo_test.suites.pythontests]
 kind = "glob_and_exec"
 path = "${test_root}/tests"
