@@ -1,4 +1,4 @@
-# Copyright (c) 2020-2023, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -9,43 +9,13 @@
 import argparse
 import os
 import sys
-from typing import List
+import time
 
 import carb
 import numpy as np
 import yaml
+from isaac_amr import *
 from omni.isaac.kit import SimulationApp
-
-GXF_BRIDGE_EXTENSION_NAME = "omni.isaac.gxf_bridge"
-
-DEFAULT_ATLAS_YAML = "default_atlas.yaml"
-DEFAULT_CLOCK_YAML = "default_clock.yaml"
-DEFAULT_ALLOCATOR_YAML = "isaac_sim_allocator.yaml"
-
-ROBOT_ASSET_PATHS = {"carter_v2_3": "/Projects/isaac_amr_envoy/GXF/Robots/carter_v2_3_gxf.usd"}
-ROBOT_PRIM_PATHS = {"carter_v2_3": "/carter_v2_3"}
-
-
-def set_yaml_addr_port(yaml: List[dict], address: str, port: int) -> bool:
-    """Sets TCP server port & address in provided YAML documents.
-
-    Args:
-        yaml(List[dict]): List of dictionaries representing YAML documents.
-        address (str): address to set server to.
-        port (str): port to set server to.
-
-    Returns:
-        bool: True if successful; False otherwise.
-    """
-    for entity in yaml:
-        if entity is None:
-            continue
-        for component in entity["components"]:
-            if component["type"] == "nvidia::gxf::TcpServer":
-                component["parameters"]["address"] = address
-                component["parameters"]["port"] = port
-                return True
-    return False
 
 
 def main():
@@ -99,6 +69,7 @@ def main():
 
     import omni
     import omni.kit.commands
+    import omni.replicator.core as rep
     from omni.isaac.core import SimulationContext
     from omni.isaac.core.prims import XFormPrim
     from omni.isaac.core.utils import extensions, nucleus, prims, rotations
@@ -117,6 +88,17 @@ def main():
 
     omni.usd.get_context().open_stage(assets_root_path + args.scene, None)
 
+    # Wait two frames so that stage starts loading
+    simulation_app.update()
+    simulation_app.update()
+
+    print("Loading stage...")
+    from omni.isaac.core.utils.stage import is_stage_loading
+
+    while is_stage_loading():
+        simulation_app.update()
+    print("Loading Complete")
+
     # Start simulation context
     simulation_context = SimulationContext(
         physics_dt=1.0 / args.rate, rendering_dt=1.0 / args.rate, stage_units_in_meters=1.0
@@ -132,7 +114,7 @@ def main():
     # Get path to directory containing this script
     app_folder = carb.tokens.get_tokens_interface().resolve("${app}/../")
     package_path = os.path.abspath(app_folder)
-    script_path = os.path.join(package_path, "standalone_examples", "testing", GXF_BRIDGE_EXTENSION_NAME)
+    script_path = os.path.join(package_path, "tools", "isaac_amr")
 
     if not args.yaml_path:
         # Iterate over prims in the stage to see if a GXF YAML node is present
@@ -215,16 +197,27 @@ def main():
             orientation=rotations.gf_rotation_to_np_array(Gf.Rotation(Gf.Vec3d(0, 0, 1), args.initial_yaw)),
         )
 
+    # Create new render product
+    render_product = rep.create.render_product(robot_prim_path + "/chassis_link/carter_perspective", (3840, 2160))
+    writer = rep.WriterRegistry.get("BasicWriter")
+    writer.initialize(output_dir="_output/demo_003", rgb=True)
+    writer.attach([render_product])
+
+    simulation_app.update()
+    simulation_app.update()
     # Need to initialize physics getting any articulation..etc
     simulation_context.initialize_physics()
+    simulation_context.play()
 
     if args.run_indefinitely:
         while simulation_app.is_running():
-            simulation_context.step(render=True)
+            simulation_app.update()
+            time.sleep(0.1)
     else:
         frame = 0
         while frame < args.num_frames and simulation_app.is_running():
-            simulation_context.step(render=True)
+            simulation_app.update()
+            time.sleep(0.1)
             frame = frame + 1
 
     # Bring down the GXF application and close the simulation
