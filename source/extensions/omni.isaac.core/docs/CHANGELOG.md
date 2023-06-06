@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.49.0] - 2023-05-31
+### Added
+- Added OBB functions compute_obb and compute_obb_corners to utils.bounds
+- Added OBB tests
+
 ## [1.48.0] - 2023-04-18
 ### Changed
 - Add function get_transform_with_normalized_rotation to utils.transformation.py 

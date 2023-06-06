@@ -115,3 +115,65 @@ def compute_combined_aabb(bbox_cache: UsdGeom.BBoxCache, prim_paths: typing.List
         total_bounds = Gf.BBox3d.Combine(total_bounds, Gf.BBox3d(bounds.ComputeAlignedRange()))
     range = total_bounds.GetRange()
     return np.array([*range.GetMin(), *range.GetMax()])
+
+
+def compute_obb(bbox_cache: UsdGeom.BBoxCache, prim_path: str) -> typing.Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Computes the Oriented Bounding Box (OBB) of a prim
+
+    Args:
+        bbox_cache (UsdGeom.BBoxCache): USD Bounding Box Cache object to use for computation
+        prim_path (str): Prim path to compute OBB for
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing the following OBB information:
+            - The centroid of the OBB as a NumPy array.
+            - The axes of the OBB as a 2D NumPy array, where each row represents a different axis.
+            - The half extent of the OBB as a NumPy array.
+
+    # NOTE: The rotation matrix incorporates any scale factors applied to the object.
+    # The `half_extent` values do not include these scaling effects.
+
+    """
+    # Compute the BBox3d for the prim
+    prim = get_prim_at_path(prim_path)
+    bound = bbox_cache.ComputeWorldBound(prim)
+
+    # Compute the translated centroid of the world bound
+    centroid = bound.ComputeCentroid()
+
+    # Compute the axis vectors of the OBB
+    # NOTE: The rotation matrix incorporates the scale factors applied to the object
+    rotation_matrix = bound.GetMatrix().ExtractRotationMatrix()
+    x_axis = rotation_matrix.GetRow(0)
+    y_axis = rotation_matrix.GetRow(1)
+    z_axis = rotation_matrix.GetRow(2)
+
+    # Compute the half-lengths of the OBB along each axis
+    # NOTE the size/extent values do not include any scaling effects
+    half_extent = bound.GetRange().GetSize() * 0.5
+
+    return np.array([*centroid]), np.array([[*x_axis], [*y_axis], [*z_axis]]), np.array(half_extent)
+
+
+def compute_obb_corners(bbox_cache: UsdGeom.BBoxCache, prim_path: str) -> np.ndarray:
+    """Computes the corners of the Oriented Bounding Box (OBB) of a prim
+
+    Args:
+        bbox_cache (UsdGeom.BBoxCache): Bounding Box Cache object to use for computation
+        prim_path (str): Prim path to compute OBB for
+
+    Returns:
+        np.ndarray: NumPy array of shape (8, 3) containing each corner location of the OBB
+    """
+    centroid, axis, half_extent = compute_obb(bbox_cache, prim_path)
+    corners = [
+        centroid - axis[0] * half_extent[0] - axis[1] * half_extent[1] - axis[2] * half_extent[2],
+        centroid - axis[0] * half_extent[0] - axis[1] * half_extent[1] + axis[2] * half_extent[2],
+        centroid - axis[0] * half_extent[0] + axis[1] * half_extent[1] - axis[2] * half_extent[2],
+        centroid - axis[0] * half_extent[0] + axis[1] * half_extent[1] + axis[2] * half_extent[2],
+        centroid + axis[0] * half_extent[0] - axis[1] * half_extent[1] - axis[2] * half_extent[2],
+        centroid + axis[0] * half_extent[0] - axis[1] * half_extent[1] + axis[2] * half_extent[2],
+        centroid + axis[0] * half_extent[0] + axis[1] * half_extent[1] - axis[2] * half_extent[2],
+        centroid + axis[0] * half_extent[0] + axis[1] * half_extent[1] + axis[2] * half_extent[2],
+    ]
+    return np.array(corners)
