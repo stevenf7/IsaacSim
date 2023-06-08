@@ -91,11 +91,10 @@ private:
             db.tokenToString(db.inputs.physicalDistortionModel()), db.inputs.physicalDistortionCoefficients());
         for (int i = 0; i < 3; ++i)
         {
-            message.extrinsics->rotation[3 * i] = 1.f;
             message.extrinsics->translation[i] = db.inputs.stereoOffset()[i];
-            for (int j = 1; j < 3; ++j)
+            for (int j = 0; j < 3; ++j)
             {
-                message.extrinsics->rotation[3 * i + j] = 0.f;
+                message.extrinsics->rotation[3 * i + j] = i == j ? 1 : 0;
             }
         }
         const gxf_result_t result = state.publish(db.inputs.outputEntity(), db.inputs.outputComponent(), message.entity);
@@ -207,12 +206,12 @@ private:
                              const std::string physicalDistortionModel,
                              const omni::graph::core::ogn::const_array<float>& physicalDistortionCoefficients)
     {
-        intrinsics->dimensions.x = height; // rows
-        intrinsics->dimensions.y = width; // columns
-        intrinsics->focal_length.x = height * focalLength / verticalAperture;
-        intrinsics->focal_length.y = width * focalLength / horizontalAperture;
-        intrinsics->principal_point.x = height * 0.5;
-        intrinsics->principal_point.y = width * 0.5;
+        intrinsics->dimensions.x = width; // columns
+        intrinsics->dimensions.y = height; // rows
+        intrinsics->focal_length.x = width * focalLength / horizontalAperture;
+        intrinsics->focal_length.y = height * focalLength / verticalAperture;
+        intrinsics->principal_point.x = width * 0.5;
+        intrinsics->principal_point.y = height * 0.5;
         intrinsics->skew_value = 0.0;
 
         if (physicalDistortionModel.find("rationalPolynomial") != std::string::npos &&

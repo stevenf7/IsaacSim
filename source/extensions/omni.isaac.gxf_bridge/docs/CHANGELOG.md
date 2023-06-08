@@ -1,4 +1,8 @@
 # Changelog
+## [0.12.1] - 2023-06-07
+### Fixed
+- Incorrect dimension assignment in gxf image publisher
+- Incorrect extrinsic rotation matrix definition in gxf image publisher
 
 ## [0.12.0] - 2023-05-31
 ### Added
