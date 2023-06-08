@@ -73,7 +73,6 @@ packages = [
     "osqp==0.6.2.post5",                    # SWIPAT filed under: https://nvbugs/3577752
     "qdldl==0.1.5.post0",                   # SWIPAT filed under: https://nvbugs/3577749
     "nvsmi==0.4.2",                         # SWIPAT filed under: https://nvbugs/3639810
-    "bezier==2020.5.19",                    # SWIPAT filed under: https://nvbugs/3193213
     "boto3==1.17.1",                        # SWIPAT filed under: https://nvbugs/3738079
     "s3transfer==0.3.7",                    # SWIPAT filed under: https://nvbugs/3738087
 ]

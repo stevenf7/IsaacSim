@@ -7,20 +7,35 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-
 from typing import Tuple
 
-# bezier is used in leg trajectory generation
-import bezier
 import numpy as np
-
-# use osqp to solve QP
-import osqp
+import osqp  # used for solving QP
 import scipy.sparse as sp
 from omni.isaac.quadruped.utils.a1_ctrl_params import A1CtrlParams
 from omni.isaac.quadruped.utils.a1_ctrl_states import A1CtrlStates
 from omni.isaac.quadruped.utils.a1_desired_states import A1DesiredStates
 from omni.isaac.quadruped.utils.rot_utils import skew
+
+
+def _eval_quartic_bezier(nodes: np.ndarray, s: float) -> np.ndarray:
+    """[summary]
+
+    Evaluate a Bezier curve of degree 4 in N dimensions, where N is determined by the number of columns in `nodes`.
+
+    Args:
+        nodes {np.ndarray} -- 2D array containing 5 rows, each corresponding to one of the 5 nodes (points in N
+            dimensions) defining the curve.
+        s {float} -- s parameter ("time value") at which to evaluate the curve.
+    """
+    oms = 1.0 - s
+    return (
+        oms**4 * nodes[0, :]
+        + 4 * s * oms**3 * nodes[1, :]
+        + 6 * s**2 * oms**2 * nodes[2, :]
+        + 4 * s**3 * oms * nodes[3, :]
+        + s**4 * nodes[4, :]
+    )
 
 
 class A1RobotControl:
@@ -236,76 +251,35 @@ class A1RobotControl:
             input_states._foot_pos_target_rel[i, 1] += delta_y
 
     def _get_from_bezier_curve(
-        self, foot_pos_start: np.ndarray, foot_pos_final: np.ndarray, bezier_time: float
+        self, foot_pos_start: np.ndarray, foot_pos_final: np.ndarray, bezier_time: np.ndarray
     ) -> np.ndarray:
         """[summary]
 
-        generate swing foot position target from a bezier curve
+        generate swing foot position target from a quartic bezier curve
 
         Args:
             foot_pos_start {np.ndarray} -- The curve start point
             foot_pos_final {np.ndarray} -- The curve end point
-            bezier_time {float} -- The curve interpolation time, should be within [0,1].
-
-
+            bezier_time {np.ndarray} -- The curve interpolation time for each of the four legs; each should be
+                within [0,1].
         """
-        bezier_degree = 4
-        bezier_s = np.linspace(0, 1, bezier_degree + 1)
-        bezier_nodes = np.zeros([2, bezier_degree + 1])
-
-        bezier_nodes[0, :] = bezier_s
-
-        foot_pos_target = np.zeros([4, 3])
-        foot_pos_target_x = foot_pos_target[:, 0]
-        foot_pos_target_y = foot_pos_target[:, 1]
-        foot_pos_target_z = foot_pos_target[:, 2]
+        foot_pos_target = np.empty([4, 3])
 
         for i in range(4):
-            bezier_x = np.array(
+            bezier_nodes = np.array(
                 [
-                    foot_pos_start[i, 0],
-                    foot_pos_start[i, 0],
-                    foot_pos_final[i, 0],
-                    foot_pos_final[i, 0],
-                    foot_pos_final[i, 0],
+                    foot_pos_start[i, :],
+                    foot_pos_start[i, :],
+                    foot_pos_final[i, :],
+                    foot_pos_final[i, :],
+                    foot_pos_final[i, :],
                 ]
             )
-            bezier_nodes[1, :] = bezier_x
-            bezier_curve = bezier.Curve(bezier_nodes, bezier_degree)
-            foot_pos_target_x[i] = bezier_curve.evaluate(bezier_time[i])[1, 0]
-
-        for i in range(4):
-            bezier_y = np.array(
-                [
-                    foot_pos_start[i, 1],
-                    foot_pos_start[i, 1],
-                    foot_pos_final[i, 1],
-                    foot_pos_final[i, 1],
-                    foot_pos_final[i, 1],
-                ]
-            )
-            bezier_nodes[1, :] = bezier_y
-            bezier_curve = bezier.Curve(bezier_nodes, bezier_degree)
-            foot_pos_target_y[i] = bezier_curve.evaluate(bezier_time[i])[1, 0]
-
-        for i in range(4):
-            bezier_z = np.array(
-                [
-                    foot_pos_start[i, 2],
-                    foot_pos_start[i, 2],
-                    foot_pos_final[i, 2],
-                    foot_pos_final[i, 2],
-                    foot_pos_final[i, 2],
-                ]
-            )
-            foot_clearance1 = 0.0
-            foot_clearance2 = 0.5
-            bezier_z[1] += foot_clearance1
-            bezier_z[2] += foot_clearance2
-
-            bezier_nodes[1, :] = bezier_z
-            bezier_curve = bezier.Curve(bezier_nodes, bezier_degree)
-            foot_pos_target_z[i] = bezier_curve.evaluate(bezier_time[i])[1, 0]
+            z_foot_clearance1 = 0.0
+            z_foot_clearance2 = 0.5
+            bezier_nodes[1, 2] += z_foot_clearance1
+            bezier_nodes[2, 2] += z_foot_clearance2
+            foot_pos_target[i, :] = _eval_quartic_bezier(bezier_nodes, bezier_time[i])
 
         return foot_pos_target
 
