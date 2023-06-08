@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.1] - 2023-06-07
+
+### Changed
+- Eliminated dependency on "bezier" python package. Behavior is unchanged.
+
 ## [1.3.0] - 2023-02-01
 
 ### Removed
