@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.8.2] - 2023-06-07
+
+### Fixed
+- Issue where fullscreen and hide UI didn't work
+
 ## [0.8.1] - 2023-02-14
 
 ### Changed
