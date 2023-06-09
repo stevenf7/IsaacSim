@@ -39,6 +39,7 @@ class PathPlanning(BaseSample):
         self._franka_task = list(self._world.get_current_tasks().values())[0]
         self._task_params = self._franka_task.get_params()
         my_franka = self._world.scene.get_object(self._task_params["robot_name"]["value"])
+        my_franka.disable_gravity()
         self._controller = FrankaRrtController(name="franka_rrt_controller", robot_articulation=my_franka)
         self._articulation_controller = my_franka.get_articulation_controller()
         return
@@ -56,8 +57,6 @@ class PathPlanning(BaseSample):
             self._controller.add_obstacle(wall)
 
     def _on_follow_target_simulation_step(self, step_size):
-        if self._franka_task.target_reached():
-            return
         observations = self._world.get_observations()
         actions = self._controller.forward(
             target_end_effector_position=observations[self._task_params["target_name"]["value"]]["position"],

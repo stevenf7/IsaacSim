@@ -314,20 +314,4 @@ class FrankaPathPlanningTask(PathPlanningTask):
         return self._franka
 
     def get_custom_gains(self) -> Tuple[np.array, np.array]:
-        return (
-            6 * np.array([1.0e08, 1.0e08, 1.0e08, 1.0e08, 1.0e08, 1.0e08, 1.0e08, 1.0e07, 1.0e07]),
-            10
-            * np.array(
-                [
-                    10000000.0,
-                    10000000.0,
-                    10000000.0,
-                    10000000.0,
-                    10000000.0,
-                    10000000.0,
-                    10000000.0,
-                    1000000.0,
-                    1000000.0,
-                ]
-            ),
-        )
+        return (1e15 * np.ones(9), 1e13 * np.ones(9))

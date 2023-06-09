@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.8.0] - 2023-06-09
+### Updated
+- Update RRT tests to use LulaTrajectoryGenerator to ensure that the robot Articulation more closely follows the ideal RRT path.
+
 ## [4.7.0] - 2023-06-02
 ### Added
 - Add RMPflow config for Techman TM12 robot
