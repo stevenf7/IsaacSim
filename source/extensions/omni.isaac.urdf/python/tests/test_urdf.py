@@ -308,6 +308,22 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         print(shader)
         self.assertTrue(Gf.IsClose(shader.GetInput("diffuse_color_constant").Get(), Gf.Vec3f(0.8, 0.0, 0), 1e-5))
 
+    async def test_urdf_material(self):
+
+        urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_material.urdf")
+
+        stage = omni.usd.get_context().get_stage()
+
+        status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
+        omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config)
+
+        mesh = stage.GetPrimAtPath("/test_material/base/visuals")
+        self.assertTrue(UsdShade.MaterialBindingAPI(mesh) is not None)
+        mat, rel = UsdShade.MaterialBindingAPI(mesh).ComputeBoundMaterial()
+        shader = UsdShade.Shader(stage.GetPrimAtPath(mat.GetPath().pathString + "/Shader"))
+        print(shader)
+        self.assertTrue(Gf.IsClose(shader.GetInput("diffuse_color_constant").Get(), Gf.Vec3f(1.0, 0.0, 0.0), 1e-5))
+
     async def test_urdf_mtl_stl(self):
 
         urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_mtl_stl.urdf")

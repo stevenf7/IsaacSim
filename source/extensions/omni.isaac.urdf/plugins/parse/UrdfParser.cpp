@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -739,7 +739,7 @@ bool parseMaterial(const XMLElement& element, UrdfMaterial& material)
     if (materialElement)
     {
         auto name = materialElement->Attribute("name");
-        if (strlen(name) > 0)
+        if (name && strlen(name) > 0)
         {
             material.name = makeValidUSDIdentifier(name);
         }
