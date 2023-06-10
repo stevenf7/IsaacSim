@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.13] - 2023-06-07
+### Fixed
+-  Crash when name was not provided for a material, added check for null pointer and unit test
+
 ## [0.5.12] - 2023-05-16
 ### Fixed
 -  Removed duplicated code to copy collision geometry from the mesh visuals.
