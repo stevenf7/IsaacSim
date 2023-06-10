@@ -7,6 +7,10 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 from omni.isaac.examples.path_planning.path_planning import PathPlanning
-from omni.isaac.examples.path_planning.path_planning_controller import PathPlannerController
-from omni.isaac.examples.path_planning.path_planning_extension import PathPlanningExtension
+from omni.isaac.examples.path_planning.path_planning_controller import (
+    PathPlannerController,
+)
+from omni.isaac.examples.path_planning.path_planning_extension import (
+    PathPlanningExtension,
+)
 from omni.isaac.examples.path_planning.path_planning_task import PathPlanningTask

@@ -19,19 +19,16 @@ from omni.isaac.core.objects.ground_plane import GroundPlane
 from omni.isaac.core.robots import Robot
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.numpy.rotations import euler_angles_to_quats
-from omni.isaac.core.utils.stage import (
-    add_reference_to_stage,
-    create_new_stage_async,
-    open_stage_async,
-    update_stage_async,
-)
+from omni.isaac.core.utils.stage import add_reference_to_stage, create_new_stage_async, update_stage_async
 from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.core.world import World
+from omni.isaac.motion_generation import ArticulationTrajectory
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
 from omni.isaac.motion_generation.lula.kinematics import LulaKinematicsSolver
 from omni.isaac.motion_generation.lula.path_planners import RRT
+from omni.isaac.motion_generation.lula.trajectory_generator import LulaCSpaceTrajectoryGenerator
 from omni.isaac.motion_generation.path_planner_visualizer import PathPlannerVisualizer
 
 
@@ -84,6 +81,10 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         rrt.set_max_iterations(10000)
         rrt.set_param("step_size", 0.01)
         self._planner = rrt
+
+        self._cspace_trajectory_planner = LulaCSpaceTrajectoryGenerator(
+            rrt_config["robot_description_path"], rrt_config["urdf_path"]
+        )
 
         # Start Simulation and wait
         self._timeline.play()
@@ -195,13 +196,14 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
 
         self._planner.update_world()
 
-        # Generate waypoints no more than .5 radians (l1 norm) from each other
-        actions = self._planner_visualizer.compute_plan_as_articulation_actions(max_cspace_dist=0.01)
+        actions = self._planner.compute_path(
+            self._planner_visualizer.get_active_joints_subset().get_joint_positions(), []
+        )
 
         if self.PRINT_GOLDEN_VALUES:
             print("Number of actions: ", len(actions))
             print("Final action: ", end="")
-            [print(actions[-1].joint_positions[i], ",", end="") for i in range(len(actions[-1].joint_positions))]
+            [print(actions[-1], ",", end="") for i in range(len(actions[-1]))]
 
         LOGGED_PATH_LEN = 11
         LOGGED_FINAL_POSITION = np.array(
@@ -225,13 +227,14 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
             )
             await self.assertAlmostEqual(
                 LOGGED_FINAL_POSITION,
-                actions[-1].joint_positions,
-                f"The final position in the path doesn't match the logged position: {LOGGED_FINAL_POSITION} != {actions[-1].joint_positions}",
+                actions[-1],
+                f"The final position in the path doesn't match the logged position: {LOGGED_FINAL_POSITION} != {actions[-1]}",
             )
         else:
             self.assertTrue(len(actions) > 0, f"{len(actions)}")
 
-        await self.follow_plan(actions, target_pose)
+        # await self._test_traj_gen_with_rrt(actions,.1)
+        await self.follow_plan(actions, 0.01)
 
     async def test_rrt_franka_moving_base(self):
         target_pose = np.array([1.4, -0.1, 0.5])
@@ -256,8 +259,9 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
 
         self._planner.update_world()
 
-        # Generate waypoints no more than .5 radians (l1 norm) from each other
-        actions = self._planner_visualizer.compute_plan_as_articulation_actions(max_cspace_dist=0.01)
+        actions = self._planner.compute_path(
+            self._planner_visualizer.get_active_joints_subset().get_joint_positions(), []
+        )
 
         if self.PRINT_GOLDEN_VALUES:
             print("Number of actions: ", len(actions))
@@ -292,7 +296,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         else:
             self.assertTrue(len(actions) > 0, f"{len(actions)}")
 
-        await self.follow_plan(actions, target_pose)
+        await self.follow_plan(actions, 0.01)
 
     async def test_rrt_franka_cspace_target(self):
         cspace_target = np.array(
@@ -340,8 +344,9 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
 
         self._planner.update_world()
 
-        # Generate waypoints no more than .5 radians (l1 norm) from each other
-        actions = self._planner_visualizer.compute_plan_as_articulation_actions(max_cspace_dist=0.01)
+        actions = self._planner.compute_path(
+            self._planner_visualizer.get_active_joints_subset().get_joint_positions(), []
+        )
 
         if self.PRINT_GOLDEN_VALUES:
             print("Number of actions: ", len(actions))
@@ -376,33 +381,93 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         else:
             self.assertTrue(len(actions) > 0, f"{len(actions)}")
 
-        await self.follow_plan(actions, target_pose)
+        await self.follow_plan(actions, 0.01)
 
-    async def follow_plan(self, actions, target_pose, max_frames_per_waypoint=5):
-        for frame in range(len(actions)):
-            self._robot.get_articulation_controller().apply_action(actions[frame])
+    async def _test_traj_gen_with_rrt(self, rrt_plan, interpolation_max_dist, path_dist_thresh=0.01):
+        # Pure Math RRT interpolation vs Generated Terajectory
 
-            for i in range(max_frames_per_waypoint):
-                await omni.kit.app.get_app().next_update_async()
-                diff = self._robot.get_joint_positions() - actions[frame].joint_positions
+        interpolated_plan = self._planner_visualizer.interpolate_path(rrt_plan, interpolation_max_dist)
+        trajectory = self._cspace_trajectory_planner.compute_c_space_trajectory(interpolated_plan)
+        self.assertTrue(trajectory is not None, "Failed to Generate Trajectory connecting RRT waypoints!")
 
-                # print(np.around(diff.astype(np.float),decimals=3))
-                # print(np.amax(abs(diff)))
-                if np.linalg.norm(diff) < 0.01:
-                    break
+        discretized_trajectory = np.array(
+            [
+                trajectory.get_joint_targets(t)[0]
+                for t in np.arange(trajectory.start_time, trajectory.end_time, self._physics_dt)
+            ]
+        )
+        min_path_dists = np.min(
+            np.linalg.norm(interpolated_plan[:, None, :] - discretized_trajectory[None, :, :], axis=2), axis=1
+        )
 
-            # Check that the robot hit the waypoint
-            diff = self._robot.get_joint_positions() - actions[frame].joint_positions
-            self.assertTrue(np.linalg.norm(diff) < 0.01, f"np.linalg.norm(diff) = {np.linalg.norm(diff)}")
+        print("Min Path Dists: [")
+        for path_dist in min_path_dists:
+            print(np.round(path_dist, decimals=3), ",", end="")
+        print("\n]")
 
-        for i in range(20):  # extra time to converge very tightly at final position
-            await omni.kit.app.get_app().next_update_async()
+        self.assertTrue(np.all(min_path_dists < path_dist_thresh))
 
-        # Check the the end effector position reached the target
-        ee_position = self._articulation_kinematics_solver.compute_end_effector_pose()[0]
+    async def follow_plan(self, plan, interpolation_max_dist, path_dist_thresh=0.01):
+        # acceleration_limits =  1*np.array([15.0, 7.5, 10.0, 12.5, 15.0, 20.0, 20.0])
+        # jerk_limits = 1.*np.array([7500.0, 3750.0, 5000.0, 6250.0, 7500.0, 10000.0, 10000.0])
+
+        # self._cspace_trajectory_planner.set_c_space_acceleration_limits(acceleration_limits)
+        # self._cspace_trajectory_planner.set_c_space_jerk_limits(jerk_limits)
+
+        self._robot.get_articulation_controller().set_max_efforts(1e20 * np.ones(9))
+        self._robot.get_articulation_controller().set_gains(1e15 * np.ones(9), 1e14 * np.ones(9))
+
+        interpolated_plan = self._planner_visualizer.interpolate_path(plan, interpolation_max_dist)
+        trajectory = self._cspace_trajectory_planner.compute_c_space_trajectory(interpolated_plan)
+        self.assertTrue(trajectory is not None, "Failed to Generate Trajectory connecting RRT waypoints!")
+
+        print("Trajectory Timespan: ", trajectory.end_time - trajectory.start_time)
+        print("Plan length:", len(interpolated_plan))
+
+        discretized_trajectory = np.array(
+            [
+                trajectory.get_joint_targets(t)[0]
+                for t in np.arange(trajectory.start_time, trajectory.end_time, self._physics_dt)
+            ]
+        )
+        articulation_sequence = ArticulationTrajectory(self._robot, trajectory, self._physics_dt).get_action_sequence()
+
+        robot_poses = []
+        for action in articulation_sequence:
+            robot_poses.append(self._planner_visualizer.get_active_joints_subset().get_joint_positions())
+            self._robot.apply_action(action)
+            await update_stage_async()
+
+        robot_poses.append(self._planner_visualizer.get_active_joints_subset().get_joint_positions())
+        robot_poses = np.array(robot_poses)
+
+        # Distance of Ideal RRT Path to real robot path
+        rrt_path_dists = np.min(np.linalg.norm(interpolated_plan[:, None, :] - robot_poses[None, :, :], axis=2), axis=1)
+
+        # Distance of Generated Trajectory to real robot path
+        traj_path_dists = np.min(
+            np.linalg.norm(discretized_trajectory[:, None, :] - robot_poses[None, :, :], axis=2), axis=1
+        )
+
+        # Distance of Generated Trajectory to Ideal RRT Path
+        traj_to_rrt_path_dists = np.min(
+            np.linalg.norm(interpolated_plan[:, None, :] - discretized_trajectory[None, :, :], axis=2), axis=1
+        )
+
+        print("Max Distance To RRT Path:", np.max(rrt_path_dists))
+        print("Max Distance To Generated Path:", np.max(traj_path_dists))
+        print("Max Distance From Generated Path To RRT Path:", np.max(traj_to_rrt_path_dists))
+
         self.assertTrue(
-            np.linalg.norm(ee_position - target_pose) < 0.01,
-            "Not close enough to target with distance: " + str(np.linalg.norm(ee_position - target_pose)),
+            np.all(rrt_path_dists < path_dist_thresh),
+            "Robot trajectory was too far from ideal RRT trajectory to be trusted",
+        )
+        self.assertTrue(
+            np.all(traj_path_dists < path_dist_thresh), "Robot trajectory was too far from the commanded trajectory"
+        )
+        self.assertTrue(
+            np.all(traj_to_rrt_path_dists < path_dist_thresh),
+            "Generated Trajectory was too far from ideal RRT trajectory to be used",
         )
 
     async def assertAlmostEqual(self, a, b, dbg_msg=""):
