@@ -206,12 +206,17 @@ private:
                              const std::string physicalDistortionModel,
                              const omni::graph::core::ogn::const_array<float>& physicalDistortionCoefficients)
     {
-        intrinsics->dimensions.x = width; // columns
-        intrinsics->dimensions.y = height; // rows
-        intrinsics->focal_length.x = width * focalLength / horizontalAperture;
-        intrinsics->focal_length.y = height * focalLength / verticalAperture;
-        intrinsics->principal_point.x = width * 0.5;
-        intrinsics->principal_point.y = height * 0.5;
+        auto fthetaWidth = cameraFisheyeParams[0];
+        auto fthetaHeight = cameraFisheyeParams[1];
+        auto fthetaCx = cameraFisheyeParams[2];
+        auto fthetaCy = cameraFisheyeParams[3];
+
+        intrinsics->dimensions.x = fthetaWidth;
+        intrinsics->dimensions.y = fthetaHeight;
+        intrinsics->focal_length.x = fthetaWidth * focalLength / horizontalAperture;
+        intrinsics->focal_length.y = fthetaHeight * focalLength / verticalAperture;
+        intrinsics->principal_point.x = fthetaCx;
+        intrinsics->principal_point.y = fthetaCy;
         intrinsics->skew_value = 0.0;
 
         if (physicalDistortionModel.find("rationalPolynomial") != std::string::npos &&
