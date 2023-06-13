@@ -1,4 +1,4 @@
-<project toolsVersion="5.0">
+<project toolsVersion="5.6">
   <dependency name="kit_sdk_debug" linkPath="../_build/kit_debug" tags="debug">
     <source path="/path/to/kit/kit" />
   </dependency>

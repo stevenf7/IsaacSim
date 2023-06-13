@@ -44,7 +44,7 @@
             },
             "type": {
                 "type": "token",
-                "description": "",
+                "description": "type",
                 "metadata": {
                     "allowedTokens": {
                         "rgb": "rgb",

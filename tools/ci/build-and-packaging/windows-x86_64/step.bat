@@ -5,7 +5,10 @@
 ::if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: Full rebuild
-call "%~dp0..\..\..\..\build.bat" -x
+call "%~dp0..\..\..\..\build.bat" -x -d
+if %errorlevel% neq 0 ( exit /b %errorlevel% )
+
+call "%~dp0..\..\..\..\build.bat" -x -r
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: Docs

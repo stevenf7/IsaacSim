@@ -30,27 +30,27 @@
             },
             "focalLength":{
                 "type":"float",
-                "description": ""
+                "description": "focal length"
             },
             "horizontalAperture":{
                 "type":"float",
-                "description": ""
+                "description": "horizontal aperture"
             },
             "verticalAperture":{
                 "type":"float",
-                "description": ""
+                "description": "vertical aperture"
             },
             "horizontalOffset":{
                 "type":"float",
-                "description": ""
+                "description": "horizontal offset"
             },
             "verticalOffset":{
                 "type":"float",
-                "description": ""
+                "description": "vertical offset"
             },
             "projectionType":{
                 "type":"token",
-                "description": ""
+                "description": "projection type"
             },
             "cameraFisheyeParams": {
                 "type": "float[]",

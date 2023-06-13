@@ -5,9 +5,9 @@
 [repo]
 logging = "warn"
 extra_tool_paths = [
-	"${root}/_build/$platform/release/kit/dev"
+	"${root}/_build/$platform/release/kit/dev",
+	"${root}/_build/$platform/debug/kit/dev"
 ]
-
 
 ########################################################################################################################
 # Override VERSION File
