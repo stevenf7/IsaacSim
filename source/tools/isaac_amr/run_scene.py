@@ -205,12 +205,12 @@ def main():
     if args.run_indefinitely:
         while simulation_app.is_running():
             simulation_app.update()
-            time.sleep(0.1)
+            time.sleep(0.01)
     else:
         frame = 0
         while frame < args.num_frames and simulation_app.is_running():
             simulation_app.update()
-            time.sleep(0.1)
+            time.sleep(0.01)
             frame = frame + 1
 
     # Bring down the GXF application and close the simulation
