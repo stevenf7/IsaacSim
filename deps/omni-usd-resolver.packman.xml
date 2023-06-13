@@ -1,4 +1,4 @@
-<project toolsVersion="5.0">
+<project toolsVersion="5.6">
   <import path="../_build/target-deps/omni_usd_resolver/deps/redist.packman.xml">
     <filter include="omni_client_library" />
   </import>

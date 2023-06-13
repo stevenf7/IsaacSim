@@ -18,9 +18,7 @@ from omni.isaac.core.controllers.base_controller import BaseController
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.motion_generation import ArticulationTrajectory
 from omni.isaac.motion_generation.lula import RRT
-from omni.isaac.motion_generation.lula.trajectory_generator import (
-    LulaCSpaceTrajectoryGenerator,
-)
+from omni.isaac.motion_generation.lula.trajectory_generator import LulaCSpaceTrajectoryGenerator
 from omni.isaac.motion_generation.path_planner_visualizer import PathPlannerVisualizer
 from omni.isaac.motion_generation.path_planning_interface import PathPlanner
 

@@ -12,7 +12,7 @@ TASKING_THREAD_CNT=$(($TASKING_THREAD_CNT/2))
     --ext-folder "$SCRIPT_DIR/apps" \
     --/app/settings/persistent=0 \
     --/app/settings/loadUserConfig=0 \
-    --/app/quitAfter=15000 \
+    --/app/quitAfter=1000 \
     --/persistent/ext/omni.isaac.selector/auto_start=true \
     --/persistent/ext/omni.isaac.selector/show_console=true \
     --/persistent/ext/omni.isaac.selector/persistent_selector=true \

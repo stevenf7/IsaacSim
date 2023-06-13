@@ -16,7 +16,7 @@ popd
 echo "Installing Python packages..."
 ${SCRIPT_DIR}/python.sh -m pip install -r ${SCRIPT_DIR}/requirements.txt
 echo "Installing Icon"
-${SCRIPT_DIR}/python.sh ${SCRIPT_DIR}/icon/install_icon.py
+${SCRIPT_DIR}/python.sh ${SCRIPT_DIR}/data/icon/install_icon.py
 
 # Warm up cache
 # Run command below to skip warm up

@@ -1,4 +1,4 @@
-<project toolsVersion="5.0">
+<project toolsVersion="5.6">
     <dependency name="nv_ros" linkPath="../_build/target-deps/nv_ros">
         <package name="nv_ros" version="noetic_20230118_a13e035-linux64_release" platforms="linux-x86_64"/>
     </dependency>
