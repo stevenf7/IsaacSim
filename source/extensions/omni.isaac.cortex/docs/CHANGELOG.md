@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.4] - 2023-06-12
+
+### Fixed
+- omni.isaac.kit dependency
+
 ## [0.3.3] - 2023-03-23
 
 ### Added

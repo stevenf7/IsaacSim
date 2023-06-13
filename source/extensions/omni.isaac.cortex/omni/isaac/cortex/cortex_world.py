@@ -50,6 +50,8 @@ Example usage:
 See standalone_examples/api/omni.isaac.cortex/franka_examples_main.py for details.
 """
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 from typing import Optional
@@ -59,7 +61,6 @@ from omni.isaac.core.articulations import Articulation
 from omni.isaac.core.simulation_context import SimulationContext
 from omni.isaac.cortex.df import DfBehavior, DfLogicalState, DfNetwork
 from omni.isaac.cortex.tools import SteadyRate
-from omni.isaac.kit import SimulationApp
 
 
 class LogicalStateMonitor:
