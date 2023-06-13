@@ -21,7 +21,7 @@ from omni.isaac.core.utils.viewports import get_viewport_names
 class TestCreateViewport(ogts.OmniGraphTestCase):
     async def setUp(self):
         """Set up  test environment, to be torn down when done"""
-        await ogts.setup_test_environment()
+        await omni.usd.get_context().new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
         # add franka robot for test
         assets_root_path = get_assets_root_path()

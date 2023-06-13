@@ -1,4 +1,4 @@
-# Copyright (c) 2020-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2020-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -62,7 +62,7 @@ class OgnIsaacReadCameraInfo:
 
         db.outputs.projectionType = projection_type
         db.outputs.cameraFisheyeParams = [0.0] * 19
-        if projection_type is not "pinhole":
+        if projection_type != "pinhole":
             db.outputs.cameraFisheyeParams[0] = camera.GetAttribute("fthetaWidth").Get()
             db.outputs.cameraFisheyeParams[1] = camera.GetAttribute("fthetaHeight").Get()
             db.outputs.cameraFisheyeParams[2] = camera.GetAttribute("fthetaCx").Get()

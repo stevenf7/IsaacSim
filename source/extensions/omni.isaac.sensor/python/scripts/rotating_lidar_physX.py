@@ -1,4 +1,4 @@
-# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2021-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -282,14 +282,14 @@ class RotatingLidarPhysX(BaseSensor):
             self.prim.GetAttribute("highLod").Set(high_lod)
 
         if self.prim.GetAttribute("drawPoints").Get() is None:
-            self._lidar_prim.CreateDrawPointsAttr().Set(draw_points)
+            RangeSensorSchema.RangeSensor(self._lidar_prim).CreateDrawPointsAttr().Set(draw_points)
         else:
-            self.prim.GetAttribute("drawPoints").Set(draw_points)
+            RangeSensorSchema.RangeSensor(self.prim).GetAttribute("drawPoints").Set(draw_points)
 
         if self.prim.GetAttribute("drawLines").Get() is None:
-            self._lidar_prim.CreateDrawLinesAttr().Set(draw_lines)
+            RangeSensorSchema.RangeSensor(self._lidar_prim).CreateDrawLinesAttr().Set(draw_lines)
         else:
-            self.prim.GetAttribute("drawLines").Set(draw_lines)
+            RangeSensorSchema.RangeSensor(self.prim).GetAttribute("drawLines").Set(draw_lines)
         return
 
     def disable_visualization(self) -> None:

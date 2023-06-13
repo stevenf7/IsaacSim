@@ -387,13 +387,6 @@ Mesh* ImportMeshAssimp(const char* path)
             mat.hasEmissive = true;
         }
 
-        aiTextureType textures[5] = { aiTextureType_DIFFUSE, aiTextureType_HEIGHT, aiTextureType_REFLECTION,
-                                      aiTextureType_EMISSIVE, aiTextureType_SHININESS };
-        const char* props[5] = {
-            "diffuse_texture",       "normalmap_texture",           "metallic_texture",
-            "emissive_mask_texture", "reflectionroughness_texture",
-        };
-
         aiString path;
         if (assimpMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &path) == aiReturn_SUCCESS)
         {
@@ -425,7 +418,6 @@ Mesh* ImportMeshAssimp(const char* path)
     const aiNode* root = scene->mRootNode;
     nodeStack.push_back(std::make_pair(root, root->mTransformation));
 
-    int n = 0;
     while (!nodeStack.empty())
     {
         auto nodeAndTransform = nodeStack.back();
@@ -466,7 +458,7 @@ Mesh* ImportMesh(const char* path)
 
 Mesh* ImportMeshFromBin(const char* path)
 {
-    double start = GetSeconds();
+    // double start = GetSeconds();
 
     FILE* f = fopen(path, "rb");
 
@@ -492,7 +484,7 @@ Mesh* ImportMeshFromBin(const char* path)
 
         fclose(f);
 
-        double end = GetSeconds();
+        // double end = GetSeconds();
 
         //    printf("Imported mesh %s in %f ms\n", path, (end - start) * 1000.0f);
 
@@ -1055,19 +1047,18 @@ void ExportToObj(const char* path, const Mesh& m)
 
 Mesh* ImportMeshFromStl(const char* path)
 {
-    double start = GetSeconds();
+    // double start = GetSeconds();
 
     FILE* f = fopen(path, "rb");
 
     if (f)
     {
-        size_t len;
 
         char header[80];
-        len = fread(header, 80, 1, f);
+        fread(header, 80, 1, f);
 
         int numTriangles;
-        len = fread(&numTriangles, sizeof(int), 1, f);
+        fread(&numTriangles, sizeof(int), 1, f);
 
         Mesh* m = new Mesh();
         m->m_positions.resize(numTriangles * 3);
@@ -1084,11 +1075,11 @@ Mesh* ImportMeshFromStl(const char* path)
             Point3 v0, v1, v2;
             uint16_t attributeByteCount;
 
-            len = fread(&n, sizeof(Vector3), 1, f);
-            len = fread(&v0, sizeof(Point3), 1, f);
-            len = fread(&v1, sizeof(Point3), 1, f);
-            len = fread(&v2, sizeof(Point3), 1, f);
-            len = fread(&attributeByteCount, sizeof(uint16_t), 1, f);
+            fread(&n, sizeof(Vector3), 1, f);
+            fread(&v0, sizeof(Point3), 1, f);
+            fread(&v1, sizeof(Point3), 1, f);
+            fread(&v2, sizeof(Point3), 1, f);
+            fread(&attributeByteCount, sizeof(uint16_t), 1, f);
 
             *(normalPtr++) = n;
             *(normalPtr++) = n;
@@ -1103,7 +1094,7 @@ Mesh* ImportMeshFromStl(const char* path)
 
         fclose(f);
 
-        double end = GetSeconds();
+        // double end = GetSeconds();
 
         // printf("Imported mesh %s in %f ms\n", path, (end - start) * 1000.0f);
 

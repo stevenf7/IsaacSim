@@ -200,8 +200,8 @@ class VecEnvMT(VecEnvBase):
                 if self._world.is_playing():
                     frames_stopped = 0
                     # initialize sim on first step
-                    if self._world.get_physics_context()._use_flatcache:
-                        self._world.get_physics_context().enable_flatcache(True)
+                    if self._world.get_physics_context()._use_fabric:
+                        self._world.get_physics_context().enable_fabric(True)
                     if self._world.current_time_step_index == 0:
                         self._world.reset(soft=False)
                     actions = self.get_actions()
@@ -218,8 +218,8 @@ class VecEnvMT(VecEnvBase):
                     if not self._render:
                         self._simulation_app.close()
                         return
-                    if self._world.get_physics_context()._use_flatcache:
-                        self._world.get_physics_context().enable_flatcache(False)
+                    if self._world.get_physics_context()._use_fabric:
+                        self._world.get_physics_context().enable_fabric(False)
                     if trainer:
                         # this means simulation was stopped from UI - send stop signal to RL thread
                         if not self._stop and frames_stopped == 0:

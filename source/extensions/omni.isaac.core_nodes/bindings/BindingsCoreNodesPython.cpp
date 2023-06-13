@@ -30,9 +30,14 @@ PYBIND11_MODULE(_omni_isaac_core_nodes, m)
         .def("get_sim_time", wrapInterfaceFunction(&CoreNodes::getSimTime))
         .def("get_sim_time_monotonic", wrapInterfaceFunction(&CoreNodes::getSimTimeMonotonic))
         .def("get_system_time", wrapInterfaceFunction(&CoreNodes::getSystemTime))
+        .def("get_sim_time_at_time", wrapInterfaceFunction(&CoreNodes::getSimTimeAtTime))
+        .def("get_sim_time_monotonic_at_time", wrapInterfaceFunction(&CoreNodes::getSimTimeMonotonicAtTime))
+        .def("get_system_time_at_time", wrapInterfaceFunction(&CoreNodes::getSystemTimeAtTime))
+        // TODO105 kill these 3 or replace with _at_time versions
         .def("get_sim_time_at_swh_frame", wrapInterfaceFunction(&CoreNodes::getSimTimeAtSwhFrame))
         .def("get_sim_time_monotonic_at_swh_frame", wrapInterfaceFunction(&CoreNodes::getSimTimeMonotonicAtSwhFrame))
-        .def("get_system_time_at_swh_frame", wrapInterfaceFunction(&CoreNodes::getSystemTimeAtSwhFrame));
+        .def("get_system_time_at_swh_frame", wrapInterfaceFunction(&CoreNodes::getSystemTimeAtSwhFrame))
+        ;
 
 
 }

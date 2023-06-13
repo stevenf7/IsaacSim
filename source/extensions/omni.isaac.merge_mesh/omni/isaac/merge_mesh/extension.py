@@ -196,7 +196,7 @@ class Extension(omni.ext.IExt):
             carb.log_warn("Cannot merge, no mesh selected")
             return
         curr_prim = stage.GetPrimAtPath(curr_prim_path)
-        prim_transform = omni.usd.utils.get_world_transform_matrix(curr_prim, Usd.TimeCode.Default())
+        prim_transform = omni.usd.get_world_transform_matrix(curr_prim, Usd.TimeCode.Default())
         count = 0
         meshes = []
         for child_prim in Usd.PrimRange(curr_prim, Usd.TraverseInstanceProxies()):
@@ -211,7 +211,7 @@ class Extension(omni.ext.IExt):
                 usdMesh = UsdGeom.Mesh(child_prim)
                 mesh = {}
                 mesh["points"] = usdMesh.GetPointsAttr().Get()
-                world_mtx = omni.usd.utils.get_world_transform_matrix(child_prim, Usd.TimeCode.Default())
+                world_mtx = omni.usd.get_world_transform_matrix(child_prim, Usd.TimeCode.Default())
                 if self.parent_xform.get_value_as_bool():
                     world_mtx = prim_transform * world_mtx * prim_transform.GetInverse()
                 else:

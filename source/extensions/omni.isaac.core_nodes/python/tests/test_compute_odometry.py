@@ -45,7 +45,7 @@ async def add_cube(stage, path, size, offset, physics=True, mass=0.0) -> Usd.Pri
 # class TestComputeOdometry(ogts.OmniGraphTestCase):
 #     async def setUp(self):
 #         """Set up  test environment, to be torn down when done"""
-#         await ogts.setup_test_environment()
+#         await omni.usd.get_context().new_stage_async()
 #         await omni.kit.stage_templates.new_stage_async()
 #         self._stage = omni.usd.get_context().get_stage()
 #         self._timeline = omni.timeline.get_timeline_interface()

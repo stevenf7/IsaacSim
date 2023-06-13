@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -110,7 +110,7 @@ class Sensor:
         return True  # return True to continue the query
 
     def check_for_overlap(self):
-        self.parent_pose = omni.usd.utils.get_world_transform_matrix(self.parent)
+        self.parent_pose = omni.usd.get_world_transform_matrix(self.parent)
         extent = self.parent.GetPropertyAtPath(str(self.parent.GetPath()) + ".xformOp:scale").Get()
         origin = self.parent_pose.ExtractTranslation()
         rot = self.parent_pose.ExtractRotation().GetQuat()

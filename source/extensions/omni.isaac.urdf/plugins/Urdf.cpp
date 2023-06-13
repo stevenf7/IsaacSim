@@ -24,7 +24,7 @@
 #include <omni/kit/IApp.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/usd/UsdContext.h>
-#include <pybind11/pybind11/pybind11.h>
+#include <pybind11/pybind11.h>
 
 #include <fstream>
 #include <memory>

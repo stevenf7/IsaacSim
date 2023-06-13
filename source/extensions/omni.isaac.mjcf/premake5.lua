@@ -11,10 +11,9 @@ project_ext_plugin(ext, "omni.isaac.mjcf.plugin")
     add_files("iface", "%{root}/include/omni/isaac/math/**")
 
 
+    include_physx()
     includedirs {
         "%{root}/include/pch",
-        "%{root}/_build/target-deps/physx/include",
-        "%{root}/_build/target-deps/pxshared/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
@@ -26,14 +25,11 @@ project_ext_plugin(ext, "omni.isaac.mjcf.plugin")
 
     libdirs {   
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-        "%{root}/_build/target-deps/client_library/%{cfg.buildcfg}",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
-
         "%{root}/_build/target-deps/tinyxml2/lib",
         "%{root}/_build/target-deps/assimp/lib64",
-        "%{kit_sdk_bin_dir}/plugins",
         "%{root}/_build/target-deps/omni_client_library/%{cfg.buildcfg}",
-        "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin"
+        "%{kit_sdk_bin_dir}/exts/omni.usd.core/bin"
     }
 
     links { 
@@ -44,7 +40,7 @@ project_ext_plugin(ext, "omni.isaac.mjcf.plugin")
     if os.target() == "linux" then
         includedirs {
             "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
-            "%{root}/_build/target-deps/python/include/python3.7m",
+            "%{root}/_build/target-deps/python/include/python3.10",
         }
         libdirs {
             "%{root}/_build/target-deps/assimp/lib64",

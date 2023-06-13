@@ -5,6 +5,7 @@ newoption {
 }
 
 -- Shared build scripts from repo_build package
+no_compile_commands_file = false
 repo_build = require("omni/repo/build")
 
 -- Repo root
@@ -59,13 +60,18 @@ workspace "isaac-sim"
 
     -- Project selected by default to run
     startproject ""
-
-    carbSDKPath = "%{root}/_build/target-deps/carb_sdk_plugins"
+    -- note: kit_sdk_bin_dir = ./_build/linux-x86_64/release/kit
+    targetDepsDir = "%{root}/_build/target-deps"
+    hostDepsDir = "%{root}/_build/host-deps"
+    carbSDKPath = targetDepsDir.."/carb_sdk_plugins"
     carbSDKInclude = carbSDKPath.."/include"
     carbSDKLibs = carbSDKPath.."/_build/"..platform.."/%{config}"
 
     nvccPath = path.getabsolute("_build/target-deps/cuda/bin/nvcc");
-    nvccHostCompilerVS =  path.getabsolute("_build/host-deps/msvc/VC");
+
+    filter { "system:windows" }
+        nvccHostCompilerVS =  path.getabsolute("_build/host-deps/msvc/VC");
+    filter {}
 
     -- Set location for solution file
     location (workspace_dir)
@@ -76,15 +82,19 @@ workspace "isaac-sim"
     -- Setup include paths. Add kit SDK include paths too.
     includedirs {
         "include",
-        "_build/target-deps",
-        "_build/target-deps/carb_sdk_plugins/include",
-        "%{kit_sdk}/include",
-        "%{kit_sdk}/_build/target-deps/",
-        "%{kit_dev_dir}/include",
+        targetDepsDir,
+        targetDepsDir.."/pybind11/include",
+        carbSDKInclude,
+        kit_sdk.."/include",
+        kit_sdk.."/_build/target-deps/",
+        kit_dev_dir.."/include",
     }
 
     -- Carbonite carb lib
-    libdirs { "%{root}/_build/target-deps/carb_sdk_plugins/_build/%{platform}/%{config}" }
+    libdirs { 
+        carbSDKLibs,
+        carbSDKLibs.."/scripting-python-3.10" 
+    }
 
     -- Location for intermediate  files
     objdir ("_build/intermediate/%{platform}/%{prj.name}")
@@ -123,6 +133,7 @@ workspace "isaac-sim"
     -- Windows platform settings
     filter { "system:windows" }
         platforms { "x86_64" }
+        toolset "v142"
 
         -- Add .editorconfig to all projects so that VS 2017 automatically picks it up
         files {".editorconfig"}
@@ -133,7 +144,14 @@ workspace "isaac-sim"
 
         -- All of our source strings and executable strings are utf8
         buildoptions {"/utf-8", "/bigobj"}
-        buildoptions {"/permissive-"}
+        buildoptions {"/permissive-", "/Zc:externC-"}        
+        -- The /Zc:inline option strips out the "arch_ctor_<name>" symbols, so disable it.
+        -- See https://groups.google.com/g/usd-interest/c/nWm7u3B6CQk/m/OvIkOIyAAwAJ
+        -- NOTE: This will give warnings for this project. According to premake docs, the removeunreferencedcodedata
+        -- command should be used instead, but it doesn't appear until premake5.0.0-alpha16 and even then it doesn't
+        -- work correctly. https://premake.github.io/docs/removeunreferencedcodedata/
+        buildoptions { "/Zc:inline-" }
+
 
 
     -- Linux platform settings
@@ -148,9 +166,6 @@ workspace "isaac-sim"
 
         enablewarnings { "all" }
 
-    filter { "platforms:x86_64" }
-        architecture "x86_64"
-
     -- Debug configuration settings
     filter { "configurations:debug" }
         defines { "_DEBUG" }
@@ -163,30 +178,7 @@ workspace "isaac-sim"
 
     filter {}
 
-function create_app_shortcut(app_name, config)
-    if os.target() == "windows" then
-        local bat_file_path = root.."/_build/windows-x86_64/"..config.."/appshortcuts/"..app_name..".bat"
-        local app_path = "_build/windows-x86_64/"..config.."/"..app_name..".bat"
-        f = io.open(bat_file_path, 'w')
-        f:write(string.format([[
-@echo off
-setlocal
-call "%%~dp0/%s" %%*
-        ]], app_path))
-    else
-        local sh_file_path = root.."/_build/linux-x86_64/"..config.."/appshortcuts/"..app_name..".sh"
-        local app_path = "_build/linux-x86_64/"..config.."/"..app_name..".sh"
-        f = io.open(sh_file_path, 'w')
-        f:write(string.format([[
-#!/bin/bash
-set -e
-SCRIPT_DIR=$(dirname ${BASH_SOURCE})
-exec "$SCRIPT_DIR/%s" $@
-        ]], app_path))
-        f:close()
-        os.chmod(sh_file_path, 755)
-    end
-end
+
 
 -- Helper to create bat/sh files to run local kit files
 function define_local_experience(app_name, kit_file, extra_args)
@@ -198,10 +190,6 @@ function define_local_experience(app_name, kit_file, extra_args)
                         ..extra_args
     })
 
-    -- disable appshortcuts
-    -- for _, config in ipairs(ALL_CONFIGS) do
-    --     create_app_shortcut(app_name, config)
-    -- end
 end
 
 -- same as above but writes to tests folder
@@ -280,7 +268,7 @@ group "exts"
     include ("source/extensions/omni.isaac.articulation_inspector")
     include ("source/extensions/omni.isaac.assets_check")
     include ("source/extensions/omni.isaac.benchmark_environments")
-    include ("source/extensions/omni.isaac.benchmarks")
+    --include ("source/extensions/omni.isaac.benchmarks") depends on ros_bridge
     include ("source/extensions/omni.isaac.cloner")
     include ("source/extensions/omni.isaac.robot_description_editor")
     include ("source/extensions/omni.isaac.core")
@@ -319,7 +307,6 @@ group "exts"
     include ("source/extensions/omni.isaac.robot_composer")
     include ("source/extensions/omni.isaac.shapenet")
     include ("source/extensions/omni.isaac.statistics_logging")
-    include ("source/extensions/omni.isaac.splash")
     include ("source/extensions/omni.isaac.surface_gripper")
     include ("source/extensions/omni.isaac.synthetic_recorder")
     include ("source/extensions/omni.isaac.synthetic_utils")
@@ -341,16 +328,18 @@ group "exts"
     include ("source/extensions/omni.replicator.isaac")
     include ("source/extensions/omni.isaac.ros2_bridge")
     include ("source/extensions/omni.isaac.scene_blox")
+    include ("source/extensions/omni.pip.compute")
+
 
 
     -- Linux Only
     if os.target() == "linux" then
+        include ("source/extensions/omni.isaac.benchmarks")
         include ("source/extensions/omni.isaac.repl")
-        include ("source/extensions/omni.isaac.cortex_sync")
+        -- include ("source/extensions/omni.isaac.cortex_sync")
         include ("source/extensions/omni.isaac.ocs2")
         include ("source/extensions/omni.isaac.gxf_bridge")
         include ("source/extensions/omni.isaac.ros_bridge")
-
         include ("source/extensions/omni.isaac.ros2_bridge-humble")
     end
 
@@ -366,6 +355,8 @@ if os.target() == "linux" then
         { "source/ros_workspace", "_build/%{platform}/%{config}/ros_workspace" },
         { "source/scripts/python/linux-x86_64/icon", "_build/%{platform}/%{config}/data/icon" },
     }
+    -- Not strictly necessary, but convenient for tab complete.
+    os.execute("ln -s `pwd`/_build/linux-x86_64/%{config}/isaac-sim.sh _build/linux-x86_64/%{config}/isaac-sim")
     -- For docker tests
     repo_build.prebuild_copy {
         {"source/scripts/docker/tests/*",  "_build/%{platform}/%{config}/dockertests"},
@@ -432,9 +423,9 @@ group "python_samples"
     -- omni.isaac.urdf
     python_sample_test("tests-nativepython-omni.isaac.urdf.urdf_import", "standalone_examples/api/omni.isaac.urdf/urdf_import.py")
     -- omni.isaac.ros_bridge
-    python_sample_test("tests-nativepython-omni.isaac.ros_bridge.clock", "standalone_examples/api/omni.isaac.ros_bridge/clock.py")
-    python_sample_test("tests-nativepython-omni.isaac.ros_bridge.contact", "standalone_examples/api/omni.isaac.ros_bridge/contact.py")
-    python_sample_test("tests-nativepython-omni.isaac.ros_bridge.carter_stereo", "standalone_examples/api/omni.isaac.ros_bridge/carter_stereo.py", "--test")
+--TODO105    python_sample_test("tests-nativepython-omni.isaac.ros_bridge.clock", "standalone_examples/api/omni.isaac.ros_bridge/clock.py")
+--TODO105    python_sample_test("tests-nativepython-omni.isaac.ros_bridge.contact", "standalone_examples/api/omni.isaac.ros_bridge/contact.py")
+--TODO105    python_sample_test("tests-nativepython-omni.isaac.ros_bridge.carter_stereo", "standalone_examples/api/omni.isaac.ros_bridge/carter_stereo.py", "--test")
     -- Replicator data samples:
     python_sample_test("tests-nativepython-replicator.offline_generation", "standalone_examples/replicator/offline_generation.py")
     python_sample_test("tests-nativepython-replicator.offline_pose_generation", "standalone_examples/replicator/offline_pose_generation/offline_pose_generation.py")
@@ -461,8 +452,8 @@ group "python_samples"
     python_sample_test("tests-internalnativepython-omni.isaac.core.test_delete_in_contact", "standalone_examples/testing/omni.isaac.core/test_delete_in_contact.py")
     python_sample_test("tests-internalnativepython-omni.isaac.core.test_articulation_determinism", "standalone_examples/testing/omni.isaac.core/test_articulation_determinism.py")
     python_sample_test("tests-internalnativepython-omni.isaac.dynamic_control.test_zero_step", "standalone_examples/testing/omni.isaac.dynamic_control/test_zero_step.py")
-    python_sample_test("tests-internalnativepython-omni.isaac.ros2_bridge.enable_extension", "standalone_examples/testing/omni.isaac.ros2_bridge/enable_extension.py")
-    python_sample_test("tests-internalnativepython-omni.isaac.ros2_bridge.test_carter_camera_multi_robot_nav", "standalone_examples/testing/omni.isaac.ros2_bridge/test_carter_camera_multi_robot_nav.py")
+--TODO105    python_sample_test("tests-internalnativepython-omni.isaac.ros2_bridge.enable_extension", "standalone_examples/testing/omni.isaac.ros2_bridge/enable_extension.py")
+--TODO105    python_sample_test("tests-internalnativepython-omni.isaac.ros2_bridge.test_carter_camera_multi_robot_nav", "standalone_examples/testing/omni.isaac.ros2_bridge/test_carter_camera_multi_robot_nav.py")
     python_sample_test("tests-internalnativepython-omni.isaac.statistics_logging.test_memory_leak", "standalone_examples/testing/omni.isaac.statistics_logging/test_memory_leak.py")
     python_sample_test("tests-internalnativepython-omni.isaac.kit.test_extra_args", "standalone_examples/testing/omni.isaac.kit/test_extra_args.py", '--/persistent/isaac/asset_root/default="omniverse://ov-test-this-is-working"')
     python_sample_test("tests-internalnativepython-omni.isaac.kit.test_ogn", "standalone_examples/testing/omni.isaac.kit/test_ogn.py")
@@ -470,13 +461,14 @@ group "python_samples"
     python_sample_test("tests-internalnativepython-omni.isaac.kit.test_fetch_results", "standalone_examples/testing/omni.isaac.kit/test_fetch_results.py")
     python_sample_test("tests-internalnativepython-omni.isaac.kit.test_unsaved_on_exit", "standalone_examples/testing/omni.isaac.kit/test_unsaved_on_exit.py")
     python_sample_test("tests-internalnativepython-omni.isaac.kit.test_external", "standalone_examples/testing/omni.isaac.kit/test_external.py", '--enable omni.kit.scripting')
-    python_sample_test("tests-internalnativepython-omni.isaac.ros_bridge.test_carter_lidar", "standalone_examples/testing/omni.isaac.ros_bridge/test_carter_lidar.py")
+--TODO105    python_sample_test("tests-internalnativepython-omni.isaac.ros_bridge.test_carter_lidar", "standalone_examples/testing/omni.isaac.ros_bridge/test_carter_lidar.py")
     python_sample_test("tests-internalnativepython-omni.isaac.cortex.bringup", "standalone_examples/testing/omni.isaac.cortex/cortex_bringup_test.py")
     python_sample_test("tests-internalnativepython-omni.isaac.core.tensor_api_handles", "standalone_examples/testing/omni.isaac.core/tensor_api_handles.py")
     python_sample_test("tests-internalnativepython-omni.isaac.gym.test_gym_headless_app", "standalone_examples/testing/omni.isaac.gym/test_gym_headless_app.py")
     python_sample_test("tests-internalnativepython-omni.isaac.synthetic_utils.visualize_groundtruth", "standalone_examples/testing/omni.isaac.synthetic_utils/visualize_groundtruth.py")
     python_sample_test("tests-internalnativepython-omni.isaac.sensor.contact_sensor", "standalone_examples/testing/omni.isaac.sensor/contact_sensor_test.py")
     python_sample_test("tests-internalnativepython-python_sh.import_torch", "standalone_examples/testing/python_sh/import_torch.py")
+    python_sample_test("tests-internalnativepython-python_sh.import_scipy", "standalone_examples/testing/python_sh/import_scipy.py")
     python_sample_test("tests-internalnativepython-python_sh.path_length", "standalone_examples/testing/python_sh/path_length.py")
     python_sample_test("tests-internalnativepython-python_sh.import_sys", "standalone_examples/testing/python_sh/import_sys.py")
     python_sample_test("tests-internalnativepython-omni.syntheticdata.test_basic", "standalone_examples/testing/omni.syntheticdata/test_basic.py")

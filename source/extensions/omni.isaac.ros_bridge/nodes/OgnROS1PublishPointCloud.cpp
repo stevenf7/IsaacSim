@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -12,7 +12,9 @@
 // clang-format on
 
 #include "omni/isaac/utils/UsdUtilities.h"
+#define BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include "pcl_ros/point_cloud.h"
+#undef BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include "sensor_msgs/PointCloud2.h"
 
 #include <omni/isaac/ros/RosNode.h>
@@ -23,11 +25,6 @@
 class OgnROS1PublishPointCloud : public RosNode
 {
 public:
-    // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
-    // {
-    //     auto& state = OgnROS1PublishPointCloudDatabase::sInternalState<OgnROS1PublishPointCloud>(nodeObj);
-    // }
-
     static bool compute(OgnROS1PublishPointCloudDatabase& db)
     {
         auto& state = db.internalState<OgnROS1PublishPointCloud>();

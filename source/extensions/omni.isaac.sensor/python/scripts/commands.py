@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2022, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -43,8 +43,8 @@ class IsaacSensorCreatePrim(omni.kit.commands.Command):
 
         self._prim_path = get_next_free_path(self._path, self._parent)
         self._prim = self._schema_type.Define(self._stage, self._prim_path)
-        self._prim.CreateEnabledAttr(True)
-        self._prim.CreateVisualizeAttr(self._visualize)
+        IsaacSensorSchema.IsaacBaseSensor(self._prim).CreateEnabledAttr(True)
+        IsaacSensorSchema.IsaacBaseSensor(self._prim).CreateVisualizeAttr(self._visualize)
         reset_and_set_xform_ops(self._prim.GetPrim(), self._translation, self._orientation)
 
         return self._prim

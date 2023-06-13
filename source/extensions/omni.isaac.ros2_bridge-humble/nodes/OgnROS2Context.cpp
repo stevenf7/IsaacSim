@@ -98,7 +98,7 @@ public:
             // CARB_LOG_WARN("GEN CONTEXT %" PRIu64 "\n", state.mHandle);
 
             db.outputs.context() = state.mHandle;
-            rcl_init_options_fini(&initOptions);
+            auto temp __attribute__((unused)) = rcl_init_options_fini(&initOptions);
             return true;
         }
         return true;

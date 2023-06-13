@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2022, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -23,7 +23,7 @@ from omni.isaac.core.utils.stage import open_stage_async
 class TestArticulationControllerNode(ogts.OmniGraphTestCase):
     async def setUp(self):
         """Set up  test environment, to be torn down when done"""
-        await ogts.setup_test_environment()
+        await omni.usd.get_context().new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
         # add franka robot for test
         assets_root_path = get_assets_root_path()
@@ -63,11 +63,11 @@ class TestArticulationControllerNode(ogts.OmniGraphTestCase):
                 ],
                 og.Controller.Keys.CONNECT: [
                     ("OnPlaybackTick.outputs:tick", "ArticulationController.inputs:execIn"),
-                    ("Joint1Name.inputs:value", "JointNameArray.inputs:a"),
-                    ("Joint2Name.inputs:value", "JointNameArray.inputs:b"),
+                    ("Joint1Name.outputs:value", "JointNameArray.inputs:a"),
+                    ("Joint2Name.outputs:value", "JointNameArray.inputs:b"),
                     ("JointNameArray.outputs:array", "ArticulationController.inputs:jointNames"),
-                    ("Joint1Position.inputs:value", "JointCommandArray.inputs:a"),
-                    ("Joint2Position.inputs:value", "JointCommandArray.inputs:b"),
+                    ("Joint1Position.outputs:value", "JointCommandArray.inputs:a"),
+                    ("Joint2Position.outputs:value", "JointCommandArray.inputs:b"),
                     ("JointCommandArray.outputs:array", "ArticulationController.inputs:positionCommand"),
                 ],
             },

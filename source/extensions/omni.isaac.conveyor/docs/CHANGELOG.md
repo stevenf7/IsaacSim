@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.3.10] - 2023-06-13
+### Changed
+- Update to kit 105.1, build system update, omni.usd.utils -> omni.usd, usdPhysics -> pxr/usd/usdPhysics
 
 ## [0.3.9] - 2023-02-15
 ### Fixed

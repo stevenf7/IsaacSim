@@ -1,4 +1,4 @@
-# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2021-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -40,7 +40,8 @@ from pxr import Gf
 class TestMotionPolicy(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
-        self._physics_dt = 1 / 60  # duration of physics frame in seconds
+        self._physics_fps = 60
+        self._physics_dt = 1 / self._physics_fps  # duration of physics frame in seconds
 
         self._timeline = omni.timeline.get_timeline_interface()
 
@@ -54,10 +55,12 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
             self._policy_map = json.load(policy_map)
 
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
-        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(1 / self._physics_dt))
-        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(1 / self._physics_dt))
+        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", self._physics_fps)
+        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", self._physics_fps)
+        omni.timeline.get_timeline_interface().set_target_framerate(self._physics_fps)
 
         await create_new_stage_async()
+        omni.usd.get_context().get_stage().SetTimeCodesPerSecond(self._physics_fps)
 
         await update_stage_async()
 
@@ -75,16 +78,27 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         World.clear_instance()
         pass
 
-    async def _set_determinism_settings(self, robot):
-        World()
+    async def _prepare_stage(self, robot):
+        # Set settings to ensure deterministic behavior
+        # Initialize the robot
+        # Play the timeline
 
-        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
-        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(1 / self._physics_dt))
-        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(1 / self._physics_dt))
+        self._timeline.stop()
 
+        world = World()
+
+        await world.initialize_simulation_context_async()
+
+        self._timeline.play()
+        await update_stage_async()
+
+        robot.initialize()
         robot.disable_gravity()
         robot.set_solver_position_iteration_count(64)
         robot.set_solver_velocity_iteration_count(64)
+
+        self._robot.post_reset()
+        await update_stage_async()
 
     async def test_rmpflow_cspace_target(self):
         usd_path = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
@@ -97,13 +111,8 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         rmp_flow_motion_policy = RmpFlow(**rmp_flow_motion_policy_config)
         self._motion_policy = rmp_flow_motion_policy
 
-        # Start Simulation and wait
-        self._timeline.play()
-        await update_stage_async()
-
         self._robot = Robot(robot_prim_path)
-        self._robot.initialize()
-        await self.reset_robot(self._robot)
+        await self._prepare_stage(self._robot)
 
         self._articulation_policy = ArticulationMotionPolicy(self._robot, self._motion_policy, self._physics_dt)
 
@@ -334,19 +343,15 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         obstacle_pos=np.array([0.3, 0.1, 0.5]),
     ):
         (result, error) = await open_stage_async(usd_path)
+        omni.usd.get_context().get_stage().SetTimeCodesPerSecond(self._physics_fps)
 
         rmp_config = interface_config_loader.load_supported_motion_policy_config(robot_name, "RMPflow")
         self._motion_policy = RmpFlow(**rmp_config)
 
         robot_prim_path = prim_path
 
-        # Start Simulation and wait
-        self._timeline.play()
-        await update_stage_async()
-
         self._robot = Robot(robot_prim_path)
-        self._robot.initialize()
-        await self.reset_robot(self._robot)
+        await self._prepare_stage(self._robot)
 
         self._articulation_policy = ArticulationMotionPolicy(self._robot, self._motion_policy, self._physics_dt)
 
@@ -369,13 +374,8 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
         robot_prim_path = "/panda"
 
-        # Start Simulation and wait
-        self._timeline.play()
-        await update_stage_async()
-
         self._robot = Robot(robot_prim_path)
-        self._robot.initialize()
-        await self.reset_robot(self._robot)
+        await self._prepare_stage(self._robot)
 
         self._articulation_policy = ArticulationMotionPolicy(self._robot, self._motion_policy, self._physics_dt)
 
@@ -456,13 +456,8 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         rmp_flow_motion_policy = RmpFlow(**rmp_flow_motion_policy_config)
         self._motion_policy = rmp_flow_motion_policy
 
-        # Start Simulation and wait
-        self._timeline.play()
-        await update_stage_async()
-
         self._robot = Robot(robot_prim_path)
-        self._robot.initialize()
-        await self.reset_robot(self._robot)
+        await self._prepare_stage(self._robot)
 
         self._articulation_policy = ArticulationMotionPolicy(self._robot, self._motion_policy, self._physics_dt)
 
@@ -521,8 +516,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         self._timeline.play()
         await update_stage_async()
 
-        self._robot.initialize()
-        await self.reset_robot(self._robot)
+        await self._prepare_stage(self._robot)
 
         action = self._articulation_policy.get_next_articulation_action()
 
@@ -540,13 +534,10 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         rmp_flow_motion_policy.set_ignore_state_updates(False)
         self._motion_policy = rmp_flow_motion_policy
 
-        # Start Simulation and wait
-        self._timeline.play()
-        await update_stage_async()
-
         self._robot = Robot(robot_prim_path)
-        self._robot.initialize()
-        await self.reset_robot(self._robot)
+        await self._prepare_stage(self._robot)
+
+        self._robot.post_reset()
 
         self._articulation_policy = ArticulationMotionPolicy(self._robot, self._motion_policy, self._physics_dt)
 
@@ -597,7 +588,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
         timeout = 10
 
-        await self.reset_robot(self._robot)
+        await self._prepare_stage(self._robot)
 
         target_pos = np.array([0.5, 0.0, 0.5])
         obstacle_pos = np.array([0.5, 0.0, 0.65])
@@ -638,13 +629,8 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         rmp_flow_motion_policy.set_ignore_state_updates(True)
         self._motion_policy = rmp_flow_motion_policy
 
-        # Start Simulation and wait
-        self._timeline.play()
-        await update_stage_async()
-
         self._robot = Robot(robot_prim_path)
-        self._robot.initialize()
-        await self.reset_robot(self._robot)
+        await self._prepare_stage(self._robot)
 
         self._articulation_policy = ArticulationMotionPolicy(self._robot, self._motion_policy, self._physics_dt)
 
@@ -655,7 +641,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
             2: It is sufficient to confirm that the world state is updated correctly in
                 test_rmpflow_on_franka_velocity_control().
         """
-        await self.reset_robot(self._robot)
+        await self._prepare_stage(self._robot)
         timeout = 10
 
         target_pos = np.array([0.5, 0.0, 0.5])
@@ -699,20 +685,11 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
         robot_prim_path = "/panda"
 
-        # Start Simulation and wait
-        self._timeline.play()
-        await update_stage_async()
-
         self._robot = Robot(robot_prim_path)
-        self._robot.initialize()
-        await self.reset_robot(self._robot)
+        await self._prepare_stage(self._robot)
 
         self._articulation_policy = ArticulationMotionPolicy(self._robot, self._motion_policy, self._physics_dt)
 
-        self._robot = Robot(robot_prim_path)
-        self._robot.initialize()
-
-        await self.reset_robot(self._robot)
         timeout = 10
 
         target_pos = np.array([0.5, 0.0, 0.5])
@@ -749,13 +726,8 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         rmp_flow_motion_policy.set_ignore_state_updates(False)
         self._motion_policy = rmp_flow_motion_policy
 
-        # Start Simulation and wait
-        self._timeline.play()
-        await update_stage_async()
-
         self._robot = Robot(robot_prim_path)
-        self._robot.initialize()
-        await self.reset_robot(self._robot)
+        await self._prepare_stage(self._robot)
 
         self._articulation_policy = ArticulationMotionPolicy(self._robot, self._motion_policy, self._physics_dt)
 
@@ -772,7 +744,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         }
         await self.verify_policy_outputs(self._robot, ground_truths, dbg=False)
 
-        await self.reset_robot(self._robot)
+        await self._prepare_stage(self._robot)
         timeout = 10
 
         target_pos = np.array([0.5, 0.0, 0.7])
@@ -812,13 +784,8 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         rmp_flow_motion_policy.set_ignore_state_updates(True)
         self._motion_policy = rmp_flow_motion_policy
 
-        # Start Simulation and wait
-        self._timeline.play()
-        await update_stage_async()
-
         self._robot = Robot(robot_prim_path)
-        self._robot.initialize()
-        await self.reset_robot(self._robot)
+        await self._prepare_stage(self._robot)
 
         self._articulation_policy = ArticulationMotionPolicy(self._robot, self._motion_policy, self._physics_dt)
 
@@ -829,7 +796,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
             2: It is sufficient to confirm that the world state is updated correctly in
                 test_rmpflow_on_franka_velocity_control().
         """
-        await self.reset_robot(self._robot)
+        await self._prepare_stage(self._robot)
         timeout = 10
 
         target_pos = np.array([0.5, 0.0, 0.7])
@@ -907,18 +874,6 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
                 return True, frame * self._physics_dt
         return False, timeout
 
-    async def reset_robot(self, robot):
-        """
-        To make motion_generation outputs more deterministic, this method may be used to
-        teleport the robot to specified position targets, setting velocity to 0
-
-        This prevents changes in dynamic_control from affecting motion_generation tests
-        """
-        robot.post_reset()
-        await self._set_determinism_settings(robot)
-        await update_stage_async()
-        pass
-
     async def verify_policy_outputs(self, robot, ground_truths, dbg=False):
         """
         The ground truths are obtained by running this method in dbg mode
@@ -947,7 +902,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
         await update_stage_async()
 
-        await self.reset_robot(robot)
+        await self._prepare_stage(robot)
         await update_stage_async()
 
         self._motion_policy.set_end_effector_target(None)

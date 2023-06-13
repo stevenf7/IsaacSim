@@ -20,29 +20,24 @@ project_ext_plugin(ext, "omni.isaac.core_nodes.plugin")
 
     add_ogn_dependencies(ogn, {"python/nodes"})
 
+    include_physx()
+
     includedirs {
         "%{root}/include/pch",
-        "%{root}/_build/target-deps/physx/include",
-        "%{root}/_build/target-deps/pxshared/include",
-        "%{root}/_build/target-deps/carbonite/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
-        "%{root}/_build/target-deps/usd_ext/%{cfg.buildcfg}/include", 
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
-        "%{root}/_build/target-deps/python/include/python3.7m",
+        "%{root}/_build/target-deps/python/include/python3.10",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/omni_physics/include",
-        "%{kit_sdk_bin_dir}/extscore/omni.syntheticdata/include",
-        "%{kit_sdk_bin_dir}/extscore/usdrt.scenegraph/include",
-        "%{root}/_build/kit_%{config}/_exts/omni.syntheticdata/include"
+        "%{kit_sdk_bin_dir}/exts/omni.syntheticdata/include",
+        "%{kit_sdk_bin_dir}/exts/usdrt.scenegraph/include",
      }
      libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-        "%{root}/_build/target-deps/usd_ext/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/usd_audio_schema/%{cfg.buildcfg}/lib",
-        "%{kit_sdk_bin_dir}/plugins",
-        "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin"
+        "%{kit_sdk_bin_dir}/exts/omni.usd.core/bin"
     }
 
      links {
@@ -67,6 +62,10 @@ project_ext_bindings {
     add_files("bindings", "bindings")
     add_files("python", "python/*.py")
     add_files("python/tests", "python/tests/*.py")
+
+    includedirs {
+        "%{root}/_build/target-deps/rtx_plugins/include",
+     }
 
     -- Add the standard dependencies all OGN projects have
 repo_build.prebuild_copy {

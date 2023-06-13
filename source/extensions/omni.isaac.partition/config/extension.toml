@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.4"
+version = "1.0.5"
 category = "Utility"
 title = "Isaac Sim Partition Generator"
 description = "Generates Partitioned Sub-Levels"

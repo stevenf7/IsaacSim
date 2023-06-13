@@ -1,3 +1,11 @@
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto.  Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+
 """
 Support required by the Carbonite extension loader
 """
@@ -109,6 +117,54 @@ class Extension(omni.ext.IExt):
             self.registered_template.append(template)
 
         ##### Time
+        # TODO105 : ASYNCRENDERING VALIDATION
+        template_name = "IsaacReadTimesAOV"
+        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
+            template = sensors.get_synthetic_data().register_node_template(
+                omni.syntheticdata.SyntheticData.NodeTemplate(
+                    omni.syntheticdata.SyntheticDataStage.POST_RENDER,
+                    "omni.isaac.core_nodes.IsaacReadTimes",
+                    [
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            omni.syntheticdata.SyntheticData._rendererTemplateName,
+                            attributes_mapping={
+                                "outputs:rp": "inputs:renderResults",
+                                "outputs:exec": "inputs:execIn",
+                                "outputs:gpu": "inputs:gpu",
+                            },
+                        ),
+                    ],
+                ),
+                template_name=template_name,
+            )
+            self.registered_template.append(template)
+
+        template_name = "IsaacReadTimes"
+        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
+            template = sensors.get_synthetic_data().register_node_template(
+                omni.syntheticdata.SyntheticData.NodeTemplate(
+                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
+                    "omni.isaac.core_nodes.IsaacReadTimes",
+                    [
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            "PostProcessDispatch",
+                            attributes_mapping={
+                                "outputs:renderResults": "inputs:renderResults",
+                                "outputs:exec": "inputs:execIn",
+                            },
+                        ),
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            "IsaacReadTimesAOV",
+                            attributes_mapping={
+                                "outputs:execOut": "inputs:execIn",
+                            },
+                        ),
+                    ],
+                ),
+                template_name=template_name,
+            )
+            self.registered_template.append(template)
+
         template_name = "IsaacReadSimulationTime"
         if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
             template = sensors.get_synthetic_data().register_node_template(
@@ -117,8 +173,10 @@ class Extension(omni.ext.IExt):
                     "omni.isaac.core_nodes.IsaacReadSimulationTime",
                     [
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "PostProcessDispatch",
-                            attributes_mapping={"outputs:swhFrameNumber": "inputs:swhFrameNumber"},
+                            "IsaacReadTimes",
+                            attributes_mapping={
+                                "outputs:swhFrameNumber": "inputs:swhFrameNumber",
+                            },
                         )
                     ],
                 ),
@@ -145,14 +203,26 @@ class Extension(omni.ext.IExt):
                     )
                     self.registered_template.append(template)
         # These gates connect to annotators
+        # instance_segmentation = anotator name?
+        # InstanceSegmentation = sensor type
+        # InstanceSegmentationSD = rendervar
         sensor_names = {
-            "instance_segmentation": "InstanceSegmentation",
-            "semantic_segmentation": "SemanticSegmentation",
-            "bounding_box_2d_tight": "BoundingBox2DTight",
-            "bounding_box_2d_loose": "BoundingBox2DLoose",
-            "bounding_box_3d": "BoundingBox3D",
+            "instance_segmentation": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
+                "InstanceSegmentation"
+            ),
+            "semantic_segmentation": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
+                "SemanticSegmentation"
+            ),
+            "bounding_box_2d_tight": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
+                "BoundingBox2DTight"
+            ),
+            "bounding_box_2d_loose": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
+                "BoundingBox2DLoose"
+            ),
+            "bounding_box_3d": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("BoundingBox3D"),
             "PostProcessDispatch": "PostProcessDispatch",
         }
+        # TODO105 why postProcessDispatch?
         for name in sensor_names.items():
             template_name = name[1] + "IsaacSimulationGate"
             if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:

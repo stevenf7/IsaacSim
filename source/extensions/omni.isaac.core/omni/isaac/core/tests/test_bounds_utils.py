@@ -1,4 +1,4 @@
-# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2021-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -7,7 +7,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import numpy as np
 import omni.kit.commands
 import omni.kit.test
 from omni.isaac.core.utils.bounds import (
@@ -18,10 +17,8 @@ from omni.isaac.core.utils.bounds import (
     create_bbox_cache,
     recompute_extents,
 )
-from omni.isaac.core.utils.rotations import euler_angles_to_quat, quat_to_euler_angles
 from omni.isaac.core.utils.stage import get_current_stage
-from pxr import Gf, Usd, UsdGeom
-from scipy.spatial.transform import Rotation
+from pxr import UsdGeom
 
 
 class TestBounds(omni.kit.test.AsyncTestCase):
@@ -100,17 +97,17 @@ class TestBounds(omni.kit.test.AsyncTestCase):
         aabb = compute_aabb(cache, "/nested_cube")
         self.assertListEqual(aabb.tolist(), [38.5, 138.5, 238.5, 161.5, 261.5, 361.5])
         aabb = compute_aabb(cache, "/nested_cube/nested_cube")
-        self.assertListEqual(aabb.tolist(), [199.0, 399.0, 599.0, 201.0, 401.0, 601.0])
+        self.assertListEqual(aabb.tolist(), [138.5, 338.5, 538.5, 261.5, 461.5, 661.5])
         aabb = compute_aabb(cache, "/nested_cube/nested_cube/nested_cube")
-        self.assertListEqual(aabb.tolist(), [299.0, 599.0, 899.0, 301.0, 601.0, 901.0])
+        self.assertListEqual(aabb.tolist(), [238.5, 538.5, 838.5, 361.5, 661.5, 961.5])
         recompute_extents(cubeA, include_children=True)
         cache = create_bbox_cache()
 
-        aabb = compute_aabb(cache, "/nested_cube")
-        self.assertListEqual(aabb.tolist(), [38.5, 138.5, 238.5, 161.5, 261.5, 361.5])
-        aabb = compute_aabb(cache, "/nested_cube/nested_cube")
-        self.assertListEqual(aabb.tolist(), [138.5, 338.5, 538.5, 261.5, 461.5, 661.5])
-        aabb = compute_aabb(cache, "/nested_cube/nested_cube/nested_cube")
+        aabb = compute_aabb(cache, "/nested_cube", include_children=True)
+        self.assertListEqual(aabb.tolist(), [38.5, 138.5, 238.5, 361.5, 661.5, 961.5])
+        aabb = compute_aabb(cache, "/nested_cube/nested_cube", include_children=True)
+        self.assertListEqual(aabb.tolist(), [138.5, 338.5, 538.5, 361.5, 661.5, 961.5])
+        aabb = compute_aabb(cache, "/nested_cube/nested_cube/nested_cube", include_children=True)
         self.assertListEqual(aabb.tolist(), [238.5, 538.5, 838.5, 361.5, 661.5, 961.5])
 
         # This should not fail

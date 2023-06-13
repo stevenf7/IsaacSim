@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.6.3] - 2023-06-13
+### Fixed
+- Added omni.isaac.kit dependency needed for cortex pipeline
 
 ## [1.6.2] - 2023-05-19
 ### Fixed

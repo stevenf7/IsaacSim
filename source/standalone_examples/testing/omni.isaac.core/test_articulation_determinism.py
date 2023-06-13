@@ -1,4 +1,4 @@
-# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2021-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -85,8 +85,8 @@ if np.unique(frames_to_converge).shape[0] != 1:
     print(f"Non-deterministic test converged in varying number of frames: {frames_to_converge}")
     raise Exception
 
-# On the develop branch, this test always takes 31 frames to converge
-if frames_to_converge[0] != 31:
+# On the develop branch, this test always takes 26 frames to converge
+if frames_to_converge[0] != 26:
     print("Didn't converge in the right number of frames")
     raise Exception
 

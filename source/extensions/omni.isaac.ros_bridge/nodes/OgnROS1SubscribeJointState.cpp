@@ -16,8 +16,8 @@
 
 #include <carb/Framework.h>
 #include <carb/Types.h>
-#include <carb/flatcache/FlatCache.h>
 
+#include <omni/fabric/FabricUSD.h>
 #include <omni/isaac/ros/RosNode.h>
 
 #include <OgnROS1SubscribeJointStateDatabase.h>

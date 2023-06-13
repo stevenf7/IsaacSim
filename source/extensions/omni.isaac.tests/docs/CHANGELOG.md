@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.10.1] - 2023-06-12
+### Changed
+- Update to kit 105.1, omni.usd.utils renamed omni.usd
+
+
 ## [1.10.0] 2023-02-24
 ### Added
 - Joint effort test, with pure usd joints and articulation joints

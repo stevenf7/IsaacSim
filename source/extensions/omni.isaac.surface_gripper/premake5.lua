@@ -30,24 +30,25 @@ project_ext_bindings ({
     src = "bindings",
     target_subdir = "omni/isaac/surface_gripper"})
     
+    include_physx()
     includedirs {
         "%{root}/include/pch",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
-        "%{root}/_build/target-deps/carb_gfx_plugins/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
-        "%{root}/_build/target-deps/physx/include",
-        "%{root}/_build/target-deps/pxshared/include",
     }
 
-    libdirs {   
-        "%{root}/_build/target-deps/python/libs", 
+    libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/nv_usd/release/lib"
     }
     links {"arch", "gf", "sdf", "tf", "vt", "pcp", "usd", "usdGeom", "usdUtils"}
 
+    filter { "system:windows", "platforms:x86_64" }
+        link_boost_for_windows({"boost_python310"})
+    filter {}
+
     filter { "system:linux", "platforms:x86_64" }
-        links {"tbb", "boost_python37" }
+        links {"tbb", "boost_python310" }
     filter {}
 
     filter { "configurations:debug" }

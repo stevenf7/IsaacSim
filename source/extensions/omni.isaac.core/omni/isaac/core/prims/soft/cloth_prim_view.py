@@ -104,6 +104,7 @@ class ClothPrimView(XFormPrimView):
         )
         self._cloth_auto_apis = [None] * self._count
         self._cloth_apis = [None] * self._count
+        self._particle_apis = [None] * self._count
         self._mass_apis = [None] * self._count
 
         if particle_masses is not None:
@@ -218,6 +219,14 @@ class ClothPrimView(XFormPrimView):
             else:
                 cloth_api = PhysxSchema.PhysxParticleClothAPI.Apply(self._prims[index])
             self._cloth_apis[index] = cloth_api
+
+    def _apply_particle_api(self, index):
+        if self._cloth_apis[index] is None:
+            if self._prims[index].HasAPI(PhysxSchema.PhysxParticleAPI):
+                particle_api = PhysxSchema.PhysxParticleAPI(self._prims[index])
+            else:
+                particle_api = PhysxSchema.PhysxParticleAPI.Apply(self._prims[index])
+            self._particle_apis[index] = particle_api
 
     def set_world_positions(
         self,
@@ -655,11 +664,11 @@ class ClothPrimView(XFormPrimView):
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         idx_count = 0
         for i in indices:
-            self._apply_cloth_api(i.tolist())
+            self._apply_particle_api(i.tolist())
             if "physxParticle:selfCollision" not in self._prims[i.tolist()].GetPropertyNames():
-                self._cloth_apis[i.tolist()].CreateSelfCollisionAttr().Set(self_collisions[idx_count].tolist())
+                self._particle_apis[i.tolist()].CreateSelfCollisionAttr().Set(self_collisions[idx_count].tolist())
             else:
-                self._cloth_apis[i.tolist()].GetSelfCollisionAttr().Set(self_collisions[idx_count].tolist())
+                self._particle_apis[i.tolist()].GetSelfCollisionAttr().Set(self_collisions[idx_count].tolist())
             idx_count += 1
 
     def set_particle_groups(
@@ -678,11 +687,11 @@ class ClothPrimView(XFormPrimView):
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         idx_count = 0
         for i in indices:
-            self._apply_cloth_api(i.tolist())
+            self._apply_particle_api(i.tolist())
             if "physxParticle:particleGroup" not in self._prims[i.tolist()].GetPropertyNames():
-                self._cloth_apis[i.tolist()].CreateParticleGroupAttr().Set(particle_groups[idx_count].tolist())
+                self._particle_apis[i.tolist()].CreateParticleGroupAttr().Set(particle_groups[idx_count].tolist())
             else:
-                self._cloth_apis[i.tolist()].GetParticleGroupAttr().Set(particle_groups[idx_count].tolist())
+                self._particle_apis[i.tolist()].GetParticleGroupAttr().Set(particle_groups[idx_count].tolist())
             idx_count += 1
 
     def set_cloths_dampings(
@@ -938,11 +947,11 @@ class ClothPrimView(XFormPrimView):
         self_collisions = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="bool", device=self._device)
         write_idx = 0
         for i in indices:
-            self._apply_cloth_api(i.tolist())
+            self._apply_particle_api(i.tolist())
             if "physxParticle:selfCollision" not in self._prims[i.tolist()].GetPropertyNames():
                 carb.log_error(f"selfCollision is not defined on the cloth prim: {self.name}.")
             else:
-                self_collisions[write_idx] = self._cloth_apis[i.tolist()].GetSelfCollisionAttr().Get()
+                self_collisions[write_idx] = self._particle_apis[i.tolist()].GetSelfCollisionAttr().Get()
             write_idx += 1
         return self_collisions
 
@@ -992,10 +1001,10 @@ class ClothPrimView(XFormPrimView):
         )
         write_idx = 0
         for i in indices:
-            self._apply_cloth_api(i.tolist())
+            self._apply_particle_api(i.tolist())
             if "physxParticle:particleGroup" not in self._prims[i.tolist()].GetPropertyNames():
                 carb.log_error(f"particleGroup is not defined on the cloth prim: {self.name}.")
             else:
-                particle_groups[write_idx] = self._cloth_apis[i.tolist()].GetParticleGroupAttr().Get()
+                particle_groups[write_idx] = self._particle_apis[i.tolist()].GetParticleGroupAttr().Get()
             write_idx += 1
         return particle_groups

@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -269,7 +269,7 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
         result, path_b = omni.kit.commands.execute("CreateMeshPrimCommand", prim_type="Cube")
         prim_b = stage.GetPrimAtPath(path_b)
         # Get the transform of the first cube
-        pose = omni.usd.utils.get_world_transform_matrix(prim_a)
+        pose = omni.usd.get_world_transform_matrix(prim_a)
         # Clear the transform on the second cube
         xform = UsdGeom.Xformable(prim_b)
         xform.ClearXformOpOrder()
@@ -309,7 +309,7 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
         for s in selected_prims:
             curr_prim = stage.GetPrimAtPath(s)
             print("Selected", s)
-            pose = omni.usd.utils.get_world_transform_matrix(curr_prim, timecode)
+            pose = omni.usd.get_world_transform_matrix(curr_prim, timecode)
             print("Matrix Form:", pose)
             print("Translation: ", pose.ExtractTranslation())
             q = pose.ExtractRotation().GetQuaternion()

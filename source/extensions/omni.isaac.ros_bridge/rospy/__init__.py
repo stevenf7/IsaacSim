@@ -18,10 +18,10 @@ class Extension(omni.ext.IExt):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         self._ros_extension_path = ext_manager.get_extension_path(ext_id)
         sys.path.append(
-            os.path.join(os.path.dirname(self._ros_extension_path + "/noetic/lib/python3.7/site-packages/"))
+            os.path.join(os.path.dirname(self._ros_extension_path + "/noetic/local/lib/python3.10/dist-packages/"))
         )
 
     def on_shutdown(self):
         sys.path.remove(
-            os.path.join(os.path.dirname(self._ros_extension_path + "/noetic/lib/python3.7/site-packages/"))
+            os.path.join(os.path.dirname(self._ros_extension_path + "/noetic/local/lib/python3.10/dist-packages/"))
         )

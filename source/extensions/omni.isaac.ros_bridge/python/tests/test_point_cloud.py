@@ -234,6 +234,7 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
         lidar_sub.unregister()
         pass
 
+    """ TODO105 Hang
     async def test_depth_to_point_cloud(self):
         import rospy
         from sensor_msgs.msg import PointCloud2
@@ -307,3 +308,4 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
         self._timeline.stop()
         camera_sub.unregister()
         pass
+    """

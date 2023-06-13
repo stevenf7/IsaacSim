@@ -1,3 +1,11 @@
+# Copyright (c) 2023, NVIDIA CORPORATION.  All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto.  Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+
 import json
 import math
 import os
@@ -72,14 +80,14 @@ class LidarRtx(BaseSensor):
                 file_index = 0
                 file_path = os.path.join(
                     get_extension_path_from_name("omni.isaac.sensor"),
-                    "../omni.sensors.nv.lidar/data/Temp_Config_" + str(file_index) + ".json",
+                    "../../data/lidar/Temp_Config_" + str(file_index) + ".json",
                 )
                 file_name = "Temp_Config_" + str(file_index)
                 while os.path.isfile(file_name):
                     file_index += 1
                     file_name = os.path.join(
                         get_extension_path_from_name("omni.isaac.sensor"),
-                        "../omni.sensors.nv.lidar/data/Temp_Config_" + str(file_index) + ".json",
+                        "../../data/lidar/Temp_Config_" + str(file_index) + ".json",
                     )
                 config_file_name = "Temp_Config_" + str(file_index)
                 self._temp_data_file_path = file_path
@@ -252,11 +260,12 @@ class LidarRtx(BaseSensor):
             )
         return BaseSensor.set_local_pose(self, translation, orientation)
 
+    # TODO105 : ASYNCRENDERING VALIDATION
     def _data_acquisition_callback(self, event: carb.events.IEvent):
         self._current_frame["rendering_frame"] = (
             og.Controller()
             .node("/Render/PostProcess/SDGPipeline/PostProcessDispatcher")
-            .get_attribute("outputs:swhFrameNumber")
+            .get_attribute("outputs:referenceTimeNumerator")
             .get()
         )
         self._current_frame["rendering_time"] = self._core_nodes_interface.get_sim_time_at_swh_frame(

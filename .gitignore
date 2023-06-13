@@ -12,6 +12,7 @@ website/
 Makefile
 *.swp
 *.swo
+exts.deps.generated.kit
 
 # byte-compiled python files
 *.py[cod]

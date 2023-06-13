@@ -1,4 +1,4 @@
-# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2021-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -26,6 +26,7 @@ class TestJointEffort(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(60))
         await omni.usd.get_context().new_stage_async()
         self._stage = omni.usd.get_context().get_stage()
+        self._stage.SetTimeCodesPerSecond(60)
         pass
 
     async def tearDown(self):
@@ -92,10 +93,10 @@ class TestJointEffort(omni.kit.test.AsyncTestCase):
         # run a fixed number of steps, check acceleration
         for frame in range(30):
             await omni.kit.app.get_app().next_update_async()
-        position_1 = np.array(omni.usd.utils.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2]
+        position_1 = np.array(omni.usd.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2]
         for frame in range(30):
             await omni.kit.app.get_app().next_update_async()
-        position_2 = np.array(omni.usd.utils.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2]
+        position_2 = np.array(omni.usd.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2]
         joint_force_1 = np.abs(position_2 - position_1)
         self.assertAlmostEqual(joint_force_1, 1, delta=0.1)
         self._timeline.stop()
@@ -109,10 +110,10 @@ class TestJointEffort(omni.kit.test.AsyncTestCase):
         # run a fixed number of steps, check acceleration
         for frame in range(30):
             await omni.kit.app.get_app().next_update_async()
-        position_1 = np.array(omni.usd.utils.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2]
+        position_1 = np.array(omni.usd.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2]
         for frame in range(30):
             await omni.kit.app.get_app().next_update_async()
-        position_2 = np.array(omni.usd.utils.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2]
+        position_2 = np.array(omni.usd.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2]
         joint_force_2 = np.abs(position_2 - position_1)
         self.assertAlmostEqual(joint_force_2, joint_force_1 * 3, delta=0.1)
         self._timeline.stop()
@@ -135,20 +136,20 @@ class TestJointEffort(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
             # print(
             #     [
-            #         np.array(omni.usd.utils.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2],
+            #         np.array(omni.usd.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2],
             #         self._core_nodes_interface.get_sim_time(),
             #     ]
             # )
-        position_1 = np.array(omni.usd.utils.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2]
+        position_1 = np.array(omni.usd.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2]
         for frame in range(30):
             await omni.kit.app.get_app().next_update_async()
             # print(
             #     [
-            #         np.array(omni.usd.utils.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2],
+            #         np.array(omni.usd.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2],
             #         self._core_nodes_interface.get_sim_time(),
             #     ]
             # )
-        position_2 = np.array(omni.usd.utils.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2]
+        position_2 = np.array(omni.usd.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2]
         joint_force_3 = np.abs(position_2 - position_1)
         self.assertAlmostEqual(joint_force_3, joint_force_1, delta=0.1)
         self._timeline.stop()
@@ -164,12 +165,12 @@ class TestJointEffort(omni.kit.test.AsyncTestCase):
         # # run a fixed number of steps, check acceleration
         # for frame in range(30):
         #     await omni.kit.app.get_app().next_update_async()
-        #     print([np.array(omni.usd.utils.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2], self._core_nodes_interface.get_sim_time()])
-        # position_1 = np.array(omni.usd.utils.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2]
+        #     print([np.array(omni.usd.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2], self._core_nodes_interface.get_sim_time()])
+        # position_1 = np.array(omni.usd.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2]
         # for frame in range(30):
         #     await omni.kit.app.get_app().next_update_async()
-        #     print([np.array(omni.usd.utils.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2], self._core_nodes_interface.get_sim_time()])
-        # position_2 = np.array(omni.usd.utils.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2]
+        #     print([np.array(omni.usd.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2], self._core_nodes_interface.get_sim_time()])
+        # position_2 = np.array(omni.usd.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2]
         # joint_force_4 = np.abs(position_2 - position_1)
         # self.assertAlmostEqual(joint_force_4, joint_force_3, delta=0.1)
         # self._timeline.stop()
@@ -233,10 +234,10 @@ class TestJointEffort(omni.kit.test.AsyncTestCase):
         # run a fixed number of steps, check acceleration
         for frame in range(30):
             await omni.kit.app.get_app().next_update_async()
-        position_1 = np.array(omni.usd.utils.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2]
+        position_1 = np.array(omni.usd.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2]
         for frame in range(30):
             await omni.kit.app.get_app().next_update_async()
-        position_2 = np.array(omni.usd.utils.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2]
+        position_2 = np.array(omni.usd.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2]
         joint_force_1 = np.abs(position_2 - position_1)
         self.assertAlmostEqual(joint_force_1, 1, delta=0.1)
         self._timeline.stop()
@@ -254,10 +255,10 @@ class TestJointEffort(omni.kit.test.AsyncTestCase):
         # run a fixed number of steps, check acceleration
         for frame in range(30):
             await omni.kit.app.get_app().next_update_async()
-        position_1 = np.array(omni.usd.utils.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2]
+        position_1 = np.array(omni.usd.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2]
         for frame in range(30):
             await omni.kit.app.get_app().next_update_async()
-        position_2 = np.array(omni.usd.utils.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2]
+        position_2 = np.array(omni.usd.get_world_transform_matrix(cube2Prim).ExtractTranslation())[2]
         joint_force_2 = np.abs(position_2 - position_1)
         self.assertAlmostEqual(joint_force_2, joint_force_1, delta=0.1)
         self._timeline.stop()

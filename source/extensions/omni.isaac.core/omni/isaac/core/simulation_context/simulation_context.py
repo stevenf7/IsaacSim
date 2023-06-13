@@ -317,6 +317,8 @@ class SimulationContext:
         # TODO Is there a better way to do this or atleast reset this to the original values on close
         set_carb_setting(self._settings, "/app/runLoops/main/rateLimitEnabled", True)
         set_carb_setting(self._settings, "/app/runLoops/main/rateLimitFrequency", rendering_hz)
+        get_current_stage().SetTimeCodesPerSecond(rendering_hz)
+        self._timeline.set_target_framerate(rendering_hz)
         self._rendering_dt = rendering_dt
         # the custom isaac loop runner is available by default when running as a native python script with SimulationApp
         # other apps need to enable it before startup in their respective .kit files.
@@ -549,6 +551,7 @@ class SimulationContext:
         self._timeline.play()
         if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
             self.get_physics_context().warm_start()
+            self.render()
         return
 
     async def pause_async(self) -> None:

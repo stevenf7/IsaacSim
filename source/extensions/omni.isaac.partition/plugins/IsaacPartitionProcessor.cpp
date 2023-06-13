@@ -214,8 +214,6 @@ public:
             {
                 UsdGeomBBoxCache cacheBBox(UsdTimeCode::Default(), { UsdGeomTokens->default_ }, true, true);
 
-                const auto viewPoint = mCamFrustum.ComputeLookAtPoint();
-
                 const auto& primRange = stage->TraverseAll();
                 for (auto iter = primRange.begin(); iter != primRange.end(); ++iter)
                 {

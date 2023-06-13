@@ -12,25 +12,20 @@ project_ext_plugin(ext, "omni.isaac.conveyor.plugin")
     add_files("ogn", ogn.nodes_path)
 
     
+    include_physx()
     includedirs {
         "%{root}/include/pch",
         target_deps.."/rtx_plugins/include",
-        target_deps.."/physx/include",
-        target_deps.."/pxshared/include",
-        target_deps.."/carbonite/include",
         target_deps.."/nv_usd/%{cfg.buildcfg}/include",
         target_deps.."/nv_usd/%{cfg.buildcfg}/include/boost",
-        target_deps.."/usd_ext/%{cfg.buildcfg}/include", 
         target_deps.."/usd_ext_physics/%{cfg.buildcfg}/include",
         target_deps.."/omni_physics/include",
         target_deps.."/omni_client_library/include"
     }
     libdirs {
         target_deps.."/nv_usd/%{cfg.buildcfg}/lib",
-        target_deps.."/usd_ext/%{cfg.buildcfg}/lib",
         target_deps.."/usd_ext_physics/%{cfg.buildcfg}/lib",
-        "%{kit_sdk_bin_dir}/plugins",
-        "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin"
+        "%{kit_sdk_bin_dir}/exts/omni.usd.core/bin"
     }
 
     -- Linux-specific compile information
@@ -39,7 +34,7 @@ project_ext_plugin(ext, "omni.isaac.conveyor.plugin")
     removeflags { "FatalCompileWarnings", "UndefinedIdentifiers" }
     includedirs {
         target_deps.."/nv_usd/%{config}/include/boost",
-        target_deps.."/python/include/python3.7m"
+        target_deps.."/python/include/python3.10"
     }
     filter {}
     

@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.6.2"
+version = "1.6.3"
 category = "Simulation"
 title = "Isaac Sim Samples"
 description = "Sample extensions for Isaac Sim"
@@ -30,9 +30,10 @@ writeTarget.kit = true
 "omni.graph.action" = {} 
 "omni.graph.nodes" = {}
 "omni.graph.core" = {}
-"omni.isaac.quadruped" = {}
+#"omni.isaac.quadruped" = {}
 "omni.isaac.wheeled_robots" = {}
 "omni.isaac.cortex" = {}
+"omni.isaac.kit" = {}
 
 [[python.module]]
 name = "omni.isaac.examples.tests"
@@ -74,8 +75,8 @@ name = "omni.isaac.examples.replay_follow_target"
 [[python.module]]
 name = "omni.isaac.examples.surface_gripper"
 
-[[python.module]]
-name = "omni.isaac.examples.unitree_quadruped"
+#[[python.module]]
+#name = "omni.isaac.examples.unitree_quadruped"
 
 [[python.module]]
 name = "omni.isaac.examples.user_examples"

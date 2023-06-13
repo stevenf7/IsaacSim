@@ -36,19 +36,19 @@
 #include <physxSchema/physxCollisionAPI.h>
 #include <physxSchema/physxJointAPI.h>
 #include <physxSchema/physxSceneAPI.h>
-#include <usdPhysics/articulationRootAPI.h>
-#include <usdPhysics/collisionAPI.h>
-#include <usdPhysics/driveAPI.h>
-#include <usdPhysics/fixedJoint.h>
-#include <usdPhysics/joint.h>
-#include <usdPhysics/limitAPI.h>
-#include <usdPhysics/massAPI.h>
-#include <usdPhysics/meshCollisionAPI.h>
-#include <usdPhysics/prismaticJoint.h>
-#include <usdPhysics/revoluteJoint.h>
-#include <usdPhysics/rigidBodyAPI.h>
-#include <usdPhysics/scene.h>
-#include <usdPhysics/sphericalJoint.h>
+#include <pxr/usd/usdPhysics/articulationRootAPI.h>
+#include <pxr/usd/usdPhysics/collisionAPI.h>
+#include <pxr/usd/usdPhysics/driveAPI.h>
+#include <pxr/usd/usdPhysics/fixedJoint.h>
+#include <pxr/usd/usdPhysics/joint.h>
+#include <pxr/usd/usdPhysics/limitAPI.h>
+#include <pxr/usd/usdPhysics/massAPI.h>
+#include <pxr/usd/usdPhysics/meshCollisionAPI.h>
+#include <pxr/usd/usdPhysics/prismaticJoint.h>
+#include <pxr/usd/usdPhysics/revoluteJoint.h>
+#include <pxr/usd/usdPhysics/rigidBodyAPI.h>
+#include <pxr/usd/usdPhysics/scene.h>
+#include <pxr/usd/usdPhysics/sphericalJoint.h>
 namespace omni
 {
 namespace isaac
@@ -626,7 +626,6 @@ void AddSingleJoint(const UrdfJoint& joint,
         pxr::UsdPhysicsDriveAPI driveAPI = pxr::UsdPhysicsDriveAPI::Apply(jointPrim.GetPrim(), pxr::TfToken("linear"));
         pxr::PhysxSchemaJointStateAPI::Apply(jointPrim.GetPrim(), pxr::TfToken("linear"));
         // convert kg*m/s^2 to kg * cm /s^2
-        // extra factor of 60 is due to internal physx force drive setting change.
         driveAPI.CreateMaxForceAttr().Set(joint.limit.effort > 0.0f ? joint.limit.effort * distanceScale : FLT_MAX);
 
         // change drive type

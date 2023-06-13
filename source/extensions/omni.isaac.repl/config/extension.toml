@@ -20,7 +20,6 @@ target.platform  = ["linux-*"]
 "omni.kit.test" = {}
 
 [[python.module]]
-name = "prompt_toolkit"
 path = "pip_prebundle"
 
 [[python.module]]

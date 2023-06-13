@@ -1,4 +1,4 @@
-# Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2022-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -77,7 +77,7 @@ while simulation_app.is_running():
             my_controller.reset()
         # print(imu_sensor.get_current_frame())
         if i >= 0 and i < 1000:
-            print(my_lidar.get_current_frame())
+            # print(my_lidar.get_current_frame())
             # forward
             my_carter.apply_wheel_actions(my_controller.forward(command=[0.05, 0]))
         elif i >= 1000 and i < 1265:

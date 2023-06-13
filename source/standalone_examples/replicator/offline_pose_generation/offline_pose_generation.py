@@ -1,4 +1,4 @@
-# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2021-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -422,7 +422,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
                 name="PoseSync",
                 input_rendervars=[
                     NodeConnectionTemplate(
-                        "PostProcessDispatch", attributes_mapping={"outputs:swhFrameNumber": "inputs:syncValue"}
+                        "PostProcessDispatch", attributes_mapping={"outputs:referenceTimeNumerator": "inputs:syncValue"}
                     ),
                     NodeConnectionTemplate(
                         "SemanticBoundingBox2DExtentTightSDExportRawArray",
@@ -469,7 +469,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
                 name="DopeSync",
                 input_rendervars=[
                     NodeConnectionTemplate(
-                        "PostProcessDispatch", attributes_mapping={"outputs:swhFrameNumber": "inputs:syncValue"}
+                        "PostProcessDispatch", attributes_mapping={"outputs:referenceTimeNumerator": "inputs:syncValue"}
                     ),
                     NodeConnectionTemplate("CameraParams", attributes_mapping={"outputs:exec": "inputs:execIn"}),
                     NodeConnectionTemplate("InstanceMapping", attributes_mapping={"outputs:exec": "inputs:execIn"}),

@@ -47,6 +47,7 @@ gxf_result_t GxfContext::create()
         mContext = std::make_shared<gxf_context_t>(contextPtr);
         return GXF_SUCCESS;
     }
+    return GXF_FAILURE;
 }
 
 gxf_result_t GxfContext::destroy()

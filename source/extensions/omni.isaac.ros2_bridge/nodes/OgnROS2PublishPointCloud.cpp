@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -6,6 +6,11 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
+
+#ifdef _WIN32
+#    pragma warning(push)
+#    pragma warning(disable : 4996)
+#endif
 
 // clang-format off
 #include <UsdPCH.h>
@@ -126,3 +131,7 @@ private:
 };
 
 REGISTER_OGN_NODE()
+
+#ifdef _WIN32
+#    pragma warning(pop)
+#endif

@@ -1,5 +1,11 @@
 # Changelog
 
+
+## [0.5.1] - 2023-06-12
+### Changed
+- Update to kit 105.1, update build system
+- use pxr::UsdGeomPlane instead of pxr::PhysxSchemaPlane
+
 ## [0.5.0] - 2023-05-09
 ### Added
 - Support for ball and free joint

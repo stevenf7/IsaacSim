@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.2.1"
+version = "1.4.1"
 category = "Simulation"
 title = "Isaac Sim Lula"
 description = "Extension that provides lula python interface"
@@ -21,7 +21,6 @@ writeTarget.platform = true # pip prebundle makes this extension os specific
 "omni.kit.pip_archive" = {}
 
 [[python.module]]
-name = "lula"
 path = "pip_prebundle"
 
 [[python.module]]

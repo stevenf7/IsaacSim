@@ -24,6 +24,7 @@
 #include <carb/renderer/Renderer.h>
 #include <carb/settings/ISettings.h>
 
+#include <isaacSensorSchema/isaacBaseSensor.h>
 #include <omni/isaac/debug_draw/PrimitiveDrawingHelper.h>
 #include <omni/kit/KitUtils.h>
 #include <omni/kit/syntheticdata/SyntheticData.h>
@@ -164,25 +165,22 @@ public:
     {
         std::unique_ptr<RangeSensorComponent> component;
 
-        if (prim.IsA<pxr::RangeSensorSchemaLidar>())
+        if (prim.IsA<pxr::RangeSensorLidar>())
         {
             component = std::make_unique<LidarSensor>(mDebugDrawPtr, mPhysxPtr, mSyntheticDataPtr);
-            component->initialize(pxr::RangeSensorSchemaLidar(prim), mStage);
         }
-        else if (prim.IsA<pxr::RangeSensorSchemaUltrasonicArray>())
+        else if (prim.IsA<pxr::RangeSensorUltrasonicArray>())
         {
             component = std::make_unique<UltrasonicSensor>(mDebugDrawPtr, mPhysxPtr, mTasking);
-            component->initialize(pxr::RangeSensorSchemaUltrasonicArray(prim), mStage);
         }
-        else if (prim.IsA<pxr::RangeSensorSchemaGeneric>())
+        else if (prim.IsA<pxr::RangeSensorGeneric>())
         {
             component = std::make_unique<GenericSensor>(mDebugDrawPtr, mPhysxPtr);
-            component->initialize(pxr::RangeSensorSchemaGeneric(prim), mStage);
         }
-
 
         if (component)
         {
+            component->initialize(pxr::RangeSensorRangeSensor(prim), mStage);
             CARB_LOG_INFO("Create: Range Sensor %s with type: %s", prim.GetPath().GetString().c_str(),
                           component->getPrim().GetPrim().GetTypeName().GetString().c_str());
             mComponents[prim.GetPath().GetString()] = std::move(component);

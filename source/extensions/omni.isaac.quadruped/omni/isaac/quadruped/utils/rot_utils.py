@@ -1,4 +1,4 @@
-# Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2022-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -9,11 +9,11 @@
 
 
 # python
-import numba as nb
+# import numba as nb
 import numpy as np
 
 
-@nb.jit(nopython=True)
+# @nb.jit(nopython=True)
 def get_rotation_matrix_from_quaternion(quat: np.ndarray) -> np.ndarray:
     """Convert a quaternion to a rotation matrix.
 
@@ -34,7 +34,7 @@ def get_rotation_matrix_from_quaternion(quat: np.ndarray) -> np.ndarray:
     return rot
 
 
-@nb.jit(nopython=True)
+# @nb.jit(nopython=True)
 def get_xyz_euler_from_quaternion(quat: np.ndarray) -> np.ndarray:
     """Convert a quaternion to XYZ euler angles.
 
@@ -68,7 +68,7 @@ def get_xyz_euler_from_quaternion(quat: np.ndarray) -> np.ndarray:
     return result
 
 
-@nb.jit(nopython=True)
+# @nb.jit(nopython=True)
 def get_quaternion_from_euler(euler: np.ndarray, order: str = "XYZ") -> np.ndarray:
     """Convert an euler angle to a quaternion based on specified euler angle order.
 
@@ -163,13 +163,13 @@ def get_quaternion_from_euler(euler: np.ndarray, order: str = "XYZ") -> np.ndarr
         raise ValueError("Input euler angle order is meaningless.")
 
 
-@nb.jit(nopython=True)
+# @nb.jit(nopython=True)
 def get_rotation_matrix_from_euler(euler: np.ndarray, order: str = "XYZ") -> np.ndarray:
     quat = get_quaternion_from_euler(euler, order)
     return get_rotation_matrix_from_quaternion(quat)
 
 
-@nb.jit(nopython=True)
+# @nb.jit(nopython=True)
 def quat_multiplication(q: np.ndarray, p: np.ndarray) -> np.ndarray:
     """Compute the product of two quaternions.
 
@@ -191,7 +191,7 @@ def quat_multiplication(q: np.ndarray, p: np.ndarray) -> np.ndarray:
     return quat
 
 
-@nb.jit(nopython=True)
+# @nb.jit(nopython=True)
 def skew(vector: np.ndarray) -> np.ndarray:
     """Convert vector to skew symmetric matrix.
 

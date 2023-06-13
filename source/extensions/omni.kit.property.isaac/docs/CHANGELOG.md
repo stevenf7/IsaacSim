@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.1] - 2023-06-12
+
+### Changed
+- Update to kit 105.1
+- python 3.11 super().__init__ added
+
 ## [0.2.0] - 2023-01-21
 
 ### Added

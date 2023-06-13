@@ -7,8 +7,6 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
-#pragma once
-
 #include "MjcfUsd.h"
 
 #include <omni/isaac/utils/Path.h>
@@ -313,8 +311,9 @@ pxr::UsdGeomMesh createMesh(pxr::UsdStageWeakPtr stage, const pxr::SdfPath path,
         {
             stName = pxr::TfToken("st_" + std::to_string(j));
         }
-        auto Primvar =
-            usdMesh.CreatePrimvar(stName, pxr::SdfValueTypeNames->TexCoord2fArray, pxr::UsdGeomTokens->faceVarying);
+        pxr::UsdGeomPrimvarsAPI primvarsAPI(usdMesh);
+        pxr::UsdGeomPrimvar Primvar =
+            primvarsAPI.CreatePrimvar(stName, pxr::SdfValueTypeNames->TexCoord2fArray, pxr::UsdGeomTokens->faceVarying);
         Primvar.Set(uvs[j]);
     }
 
@@ -865,19 +864,16 @@ pxr::UsdPrim createPrimitiveGeom(pxr::UsdStageWeakPtr stage,
         {
             Vec3 cen;
             Quat q;
-            float hlen;
             if (geom->hasFromTo)
             {
                 cen = 0.5f * (geom->from + geom->to);
                 Vec3 axis = geom->to - geom->from;
-                hlen = 0.5f * Length(axis);
                 q = GetRotationQuat(Vec3(0.0f, 0.0f, 1.0f), Normalize(axis));
             }
             else
             {
                 cen = geom->pos;
                 q = geom->quat;
-                hlen = geom->size.y;
             }
 
             mat.SetRotateOnly(pxr::GfQuatd(q.w, q.x, q.y, q.z));
@@ -1048,19 +1044,16 @@ pxr::UsdPrim createPrimitiveGeom(pxr::UsdStageWeakPtr stage,
         {
             Vec3 cen;
             Quat q;
-            float hlen;
             if (site->hasFromTo)
             {
                 cen = 0.5f * (site->from + site->to);
                 Vec3 axis = site->to - site->from;
-                hlen = 0.5f * Length(axis);
                 q = GetRotationQuat(Vec3(0.0f, 0.0f, 1.0f), Normalize(axis));
             }
             else
             {
                 cen = site->pos;
                 q = site->quat;
-                hlen = site->size.y;
             }
 
             mat.SetRotateOnly(pxr::GfQuatd(q.w, q.x, q.y, q.z));

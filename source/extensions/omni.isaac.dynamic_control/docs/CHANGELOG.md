@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.4] - 2023-06-12
+### Changed
+- Update to kit 105.1, update build system
+- set_time_codes_per_second in set_physics_frequency
+
 ## [1.2.3] - 2023-01-21
 ### Fixed
 - Fix when multiple objects shared the same prim name using the isaac:nameOverride attribute for get_name

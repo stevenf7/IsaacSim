@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -14,7 +14,6 @@
 #include <carb/Defines.h>
 #include <carb/Types.h>
 #include <carb/events/EventsUtils.h>
-#include <carb/flatcache/FlatCache.h>
 #include <carb/logging/Logger.h>
 
 #include <omni/isaac/core_nodes/CoreNodes.h>

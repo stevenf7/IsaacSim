@@ -1,3 +1,11 @@
+# Copyright (c) 2023, NVIDIA CORPORATION.  All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto.  Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+
 """
 This is the implementation of the OGN node defined in OgnDope.ogn
 """
@@ -172,7 +180,6 @@ class OgnDope:
         db.outputs.idToLabels = serialized_index_to_labels
 
         db.outputs.exec = og.ExecutionAttributeState.ENABLED
-        db.outputs.swhFrameNumber = db.inputs.swhFrameNumber
         db.outputs.bufferSize = 0
         db.outputs.height = db.inputs.height
         db.outputs.width = db.inputs.width

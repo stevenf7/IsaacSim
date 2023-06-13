@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -34,7 +34,8 @@ class TestKayaGamepadSample(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
         carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
-        await create_new_stage_async()
+        omni.usd.get_context().get_stage().SetTimeCodesPerSecond(self._physics_rate)
+        omni.timeline.get_timeline_interface().set_target_framerate(self._physics_rate)
         await update_stage_async()
         self._sample = KayaGamepad()
         World.clear_instance()

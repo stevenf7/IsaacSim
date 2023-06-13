@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.5.13] - 2023-06-13
+### Fixed
+- Kit 105.1 update
+- Accessing primvars is accessed through the PrimvarsAPI instead of usd convenience functions
+
 ## [0.5.13] - 2023-06-07
 ### Fixed
 -  Crash when name was not provided for a material, added check for null pointer and unit test

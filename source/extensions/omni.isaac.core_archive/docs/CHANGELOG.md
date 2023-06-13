@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.2.0] - 2023-05-15
+### Removed 
+- boto3, s3transfer to omni.pip.compute
+
+## [2.1.0] - 2023-05-08
+### Removed
+- scipy, pyyaml to omni.pip.compute
+- botocore, urllib3, charset-normalizer as they are already in omni.kit.pip_archive
+
 ## [2.0.1] - 2022-12-13
 ### Changed
 - make extension os specific

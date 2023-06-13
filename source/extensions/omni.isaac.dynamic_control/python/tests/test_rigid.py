@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -175,7 +175,7 @@ class TestRigidBody(omni.kit.test.AsyncTestCase):
         rigid_prim = UsdPhysics.RigidBodyAPI(prim)
         await dc_utils.simulate(1.0)
         dc_pose = self._dc.get_rigid_body_pose(handle)
-        usd_pose = dc_conversions.create_transform_from_mat(omni.usd.utils.get_world_transform_matrix(prim))
+        usd_pose = dc_conversions.create_transform_from_mat(omni.usd.get_world_transform_matrix(prim))
 
         self.assertTrue(
             np.allclose([dc_pose.p.x, dc_pose.p.y, dc_pose.p.z], [usd_pose.p.x, usd_pose.p.y, usd_pose.p.z], atol=1e-2)

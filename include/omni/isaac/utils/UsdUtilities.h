@@ -51,23 +51,23 @@ inline pxr::UsdAttribute getCameraAttributeFromRenderProduct(const std::string& 
 template <class T>
 void safeGetAttribute(const pxr::UsdAttribute& attr, T& inputValue)
 {
-    if (attr.IsValid())
+    // if (attr.IsValid())
+    // {
+    if (attr.HasValue())
     {
-        if (attr.HasValue())
-        {
-            attr.Get(&inputValue);
-        }
-        else
-        {
-            CARB_LOG_WARN("USD attribute %s does not exist, using default", attr.GetName().GetString().c_str());
-        }
+        attr.Get(&inputValue);
     }
     else
     {
-        CARB_LOG_ERROR_ONCE(
-            "USD attribute is INVALID, you will only be warned once, so you probably want to fix whatever called "
-            "omni::isaac::utils::safeGetAttribute");
+        CARB_LOG_WARN("USD attribute %s does not exist, using default", attr.GetName().GetString().c_str());
     }
+    // }
+    // else
+    // {
+    //     CARB_LOG_ERROR_ONCE(
+    //         "USD attribute is INVALID %s, you will only be warned once, so you probably want to fix whatever called "
+    //         "omni::isaac::utils::safeGetAttribute", attr.GetName().GetString().c_str());
+    // }
 }
 
 inline std::string GetName(const pxr::UsdPrim& prim)
@@ -80,6 +80,21 @@ inline std::string GetName(const pxr::UsdPrim& prim)
     return primName;
 }
 
+
+inline pxr::SdfPath getSdfPathFromUint64(uint64_t path_token)
+{
+#if defined(_WIN32)
+#    pragma warning(push)
+#    pragma warning(disable : 4996)
+    return reinterpret_cast<const pxr::SdfPath&>(path_token);
+#    pragma warning(pop)
+#else
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wstrict-aliasing"
+    return reinterpret_cast<const pxr::SdfPath&>(path_token);
+#    pragma GCC diagnostic pop
+#endif
+}
 
 }
 }

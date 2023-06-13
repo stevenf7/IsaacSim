@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -11,8 +11,15 @@
 #pragma once
 
 #include "DcCommon.h"
+#if defined(_WIN32)
+#    include <extensions/PxD6Joint.h>
+#else
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wpragmas"
+#    include <extensions/PxD6Joint.h>
+#    pragma GCC diagnostic pop
+#endif
 
-#include <extensions/PxD6Joint.h>
 #include <omni/isaac/dynamic_control/DynamicControlTypes.h>
 #include <pxr/usd/sdf/path.h>
 

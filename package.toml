@@ -93,12 +93,11 @@ files_strip = [
 ]
 
 files_strip_exclude = [
-    ["kit/extscore/omni.kit.pip_archive/pip_prebundle/PIL/**"],
-    ["exts/omni.isaac.core_archive/pip_prebundle/scipy/**"],
-    ["exts/omni.isaac.core_archive/pip_prebundle/cv2/**"],
+    ["kit/exts/omni.kit.pip_archive/pip_prebundle/PIL/**"],
+    ["exts/omni.pip.compute/pip_prebundle/scipy/**"],
     ["exts/omni.isaac.ml_archive/pip_prebundle/torchvision/**"],
     ["exts/omni.isaac.ocs2/pip_prebundle/lib/**"],
-    ["extscache/omni.pip.torch**"]
+#    ["extscache/omni.pip.torch**"]
 ]
 
 files_exclude = [
@@ -111,8 +110,8 @@ files = [
     # WAR: repo_fileutils fails to package folder starting with dot on windows unless specified explicitly. The reason is that
     # python's std glob module doesn't support finding them. Fixing that turned out to be quite hard.
     # Isaac Sim: This doesn't exist in non launcher versions of kit sdk package
-    ["kit/extscore/omni.kit.pip_archive/pip_prebundle/numpy/.libs"],
-    ["exts/omni.isaac.core_archive/pip_prebundle/scipy/.libs"],
+    ["kit/exts/omni.kit.pip_archive/pip_prebundle/numpy/.libs"],
+    ["exts/omni.pip.compute/pip_prebundle/scipy/_lib"],
     # ["../../docs/isaac_sim/latest/**", "docs/py/"] # windows ext api docs
 ]
 files_exclude = [

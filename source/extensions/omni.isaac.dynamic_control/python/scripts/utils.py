@@ -53,7 +53,9 @@ def set_scene_physics_type(gpu=False, scene_path="/physicsScene"):
 
 def set_physics_frequency(frequency=60):
     import carb
+    import omni
 
+    omni.timeline.get_timeline_interface().set_time_codes_per_second(frequency)
     carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
     carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(frequency))
     carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(frequency))

@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "5.6.4"
+version = "5.7.0"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Support physics based sensors, such as contact sensors and imu sensors"
@@ -54,6 +54,7 @@ recursive = false
 
 [settings]
 app.sensors.nv.lidar.profileBaseFolder=[
+    "${app}/../data/lidar/",
     "${app}/../exts/omni.isaac.sensor/data/lidar_configs/ouster/",
     "${app}/../exts/omni.isaac.sensor/data/lidar_configs/hesai/",
     "${app}/../exts/omni.isaac.sensor/data/lidar_configs/slamtec/",

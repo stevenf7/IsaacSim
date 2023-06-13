@@ -58,7 +58,7 @@ void GenericSensor::onComponentChange()
 
     RangeSensorComponent::onComponentChange();
 
-    const pxr::RangeSensorSchemaGeneric& typedPrim = (pxr::RangeSensorSchemaGeneric)mPrim;
+    const pxr::RangeSensorGeneric& typedPrim = (pxr::RangeSensorGeneric)mPrim;
 
     isaac::utils::safeGetAttribute(typedPrim.GetSamplingRateAttr(), mSamplingRate);
     isaac::utils::safeGetAttribute(typedPrim.GetStreamingAttr(), mStreaming);

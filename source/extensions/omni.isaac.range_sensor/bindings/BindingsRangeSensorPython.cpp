@@ -10,8 +10,8 @@
 #include <carb/BindingsPythonUtils.h>
 
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
-#include <pybind11/pybind11/numpy.h>
-#include <pybind11/pybind11/stl.h>
+#include <pybind11/numpy.h>
+#include <pybind11/stl.h>
 
 CARB_BINDINGS("omni.isaac.range_sensor.python")
 // PYBIND11_MAKE_OPAQUE(std::vector<carb::Float2>);

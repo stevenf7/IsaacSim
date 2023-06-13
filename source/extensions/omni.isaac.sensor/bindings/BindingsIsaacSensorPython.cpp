@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -11,10 +11,10 @@
 #include <carb/BindingsUtils.h>
 
 #include <omni/isaac/sensor/IsaacSensor.h>
-#include <pybind11/pybind11/functional.h>
-#include <pybind11/pybind11/numpy.h>
-#include <pybind11/pybind11/pybind11.h>
-#include <pybind11/pybind11/stl.h>
+#include <pybind11/functional.h>
+#include <pybind11/numpy.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include <string>
 CARB_BINDINGS("omni.isaac.sensor.python")

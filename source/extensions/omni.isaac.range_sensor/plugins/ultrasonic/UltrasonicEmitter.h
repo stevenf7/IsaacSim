@@ -26,9 +26,9 @@
 #include <omni/physx/IPhysxSceneQuery.h>
 #include <omni/timeline/ITimeline.h>
 #include <pxr/usd/usd/inherits.h>
+#include <pxr/usd/usdPhysics/materialAPI.h>
 #include <rangeSensorSchema/ultrasonicEmitter.h>
 #include <rangeSensorSchema/ultrasonicMaterialAPI.h>
-#include <usdPhysics/materialAPI.h>
 
 #include <vector>
 
@@ -43,7 +43,7 @@ namespace isaac
 namespace range_sensor
 {
 
-class UltrasonicEmitter : public utils::ComponentBase<pxr::RangeSensorSchemaUltrasonicEmitter>
+class UltrasonicEmitter : public utils::ComponentBase<pxr::RangeSensorUltrasonicEmitter>
 {
 public:
     UltrasonicEmitter()
@@ -191,9 +191,9 @@ public:
                     auto physicsMaterialPath = getMaterialBinding(mStage, hitPrim);
 
                     if (!physicsMaterialPath.IsEmpty() &&
-                        mStage->GetPrimAtPath(physicsMaterialPath).HasAPI<RangeSensorSchemaUltrasonicMaterialAPI>())
+                        mStage->GetPrimAtPath(physicsMaterialPath).HasAPI<pxr::RangeSensorUltrasonicMaterialAPI>())
                     {
-                        auto ussHitMaterial = RangeSensorSchemaUltrasonicMaterialAPI::Get(mStage, physicsMaterialPath);
+                        auto ussHitMaterial = pxr::RangeSensorUltrasonicMaterialAPI::Get(mStage, physicsMaterialPath);
                         ussHitMaterial.GetPerceptualRoughnessAttr().Get(&mHitMaterials[i].x);
                         ussHitMaterial.GetReflectanceAttr().Get(&mHitMaterials[i].y);
                         ussHitMaterial.GetMetallicAttr().Get(&mHitMaterials[i].z);
@@ -310,7 +310,7 @@ public:
         mEnvelope->updateEnvelope(totalDepth, intensities);*/
     }
 
-    void initialize(const pxr::RangeSensorSchemaUltrasonicEmitter& prim,
+    void initialize(const pxr::RangeSensorUltrasonicEmitter& prim,
                     pxr::UsdStageWeakPtr stage,
                     omni::physx::IPhysx* physxPtr,
                     const size_t numBins,
@@ -322,7 +322,7 @@ public:
                     const std::vector<float>& zenith,
                     const std::vector<float>& azimuth)
     {
-        utils::ComponentBase<pxr::RangeSensorSchemaUltrasonicEmitter>::initialize(prim, stage);
+        utils::ComponentBase<pxr::RangeSensorUltrasonicEmitter>::initialize(prim, stage);
 
         mPhysx = physxPtr;
 

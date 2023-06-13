@@ -164,7 +164,7 @@ public:
 
                 if (prim.IsA<pxr::UsdGeomCamera>())
                 {
-                    if (prim.HasAPI<pxr::IsaacSensorSchemaIsaacRtxLidarSensorAPI>())
+                    if (prim.HasAPI<pxr::IsaacSensorIsaacRtxLidarSensorAPI>())
                     {
                         // Rotating 90 degrees in X axis for RTX Lidar PCL
                         // Then rotate -90 degrees in Z axis for RTX Lidar PCL

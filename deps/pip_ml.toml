@@ -5,7 +5,7 @@
 #
 # [[dependency]]                           # Toml way to define array of objects.
 # python = "../_build/target-deps/python"  # Path to python used to install. Absolute or relative to this config.
-# packages = ["numpy"]                     # Array of packages to install, they all will be passed directly to pip.
+# packages = ["numpy==1.23.5"]                     # Array of packages to install, they all will be passed directly to pip.
 # target = "../_build/target-deps/numpy"   # Folder to install into.   Absolute or relative to this config.
 # platforms = ["windows-x86_64"]           # Platform(s) to filter, default is ["*"].
 # download_only = true                     # Do pip download instead of install, gets a whl file that can be installed later.
@@ -47,13 +47,14 @@
 [[dependency]]
 python = "../_build/target-deps/python"
 packages = [
+    "torch==1.13.0+cu117",
     "gym==0.26.2",                                # SWIPAT filed under: https://nvbugs/3634828
     "torchvision==0.14.0+cu117"                   # SWIPAT filed under: https://nvbugs/3433812
 ]
 target = "../_build/target-deps/isaac_ml_prebundle"
 platforms = ["*-x86_64"]
 download_only = false
-install_dependencies = false
+install_dependencies = true
 append_to_install_folder = true
 gather_licenses_path = "../_build/PACKAGE-LICENSES/PIP-prebundled-LICENSES.txt"
 extra_args = ["-f", "https://download.pytorch.org/whl/torch_stable.html"]

@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -9,6 +9,7 @@
 
 import carb
 import numpy as np
+import omni.isaac.RangeSensorSchema as RangeSensorSchema
 import omni.kit.commands
 import omni.kit.test
 from omni.isaac.core.utils.nucleus import get_assets_root_path
@@ -196,7 +197,7 @@ class TestLidar(omni.kit.test.AsyncTestCase):
 
         self._timeline.play()
         lidar.GetHighLodAttr().Set(True)
-        lidar.GetDrawPointsAttr().Set(False)
+        RangeSensorSchema.RangeSensor(lidar).GetDrawPointsAttr().Set(False)
         await self.sweep_parameter(lidar.GetRotationRateAttr(), -1024, 1024, 256)
         lidar.GetRotationRateAttr().Set(0)
         await self.sweep_parameter(lidar.GetHorizontalFovAttr(), -1024, 1024, 256)
@@ -206,8 +207,8 @@ class TestLidar(omni.kit.test.AsyncTestCase):
         lidar.GetVerticalFovAttr().Set(30)
         await self.sweep_parameter(lidar.GetHorizontalResolutionAttr(), -0.1, 1.0, 0.1)
         await self.sweep_parameter(lidar.GetVerticalResolutionAttr(), -0.1, 1.0, 0.1)
-        await self.sweep_parameter(lidar.GetMinRangeAttr(), -1024, 1024, 256)
-        await self.sweep_parameter(lidar.GetMaxRangeAttr(), -1024, 1024, 256)
+        await self.sweep_parameter(RangeSensorSchema.RangeSensor(lidar).GetMinRangeAttr(), -1024, 1024, 256)
+        await self.sweep_parameter(RangeSensorSchema.RangeSensor(lidar).GetMaxRangeAttr(), -1024, 1024, 256)
         lidar.GetHighLodAttr().Set(False)
 
     async def test_carter_lidar(self):

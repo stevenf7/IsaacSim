@@ -89,7 +89,8 @@ class Roscore(object):
         try:
             # append path to specified python bin folder
             ros_env["PATH"] = f"{python_path}:{ros_path}/bin:/bin"
-            # + ros_env["PATH"]
+            # append path to where python libs are stored
+            ros_env["PYTHONPATH"] += f":{ros_path}/local/lib/python3.10/dist-packages"
             # print(ros_env)
             # running roscore will output logs, rosmaster --core disables rosout
             self.roscore_process = subprocess.Popen(["rosmaster --core"], shell=True, cwd=f"{ros_path}", env=ros_env)

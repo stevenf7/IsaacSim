@@ -6,6 +6,10 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
+#ifdef _WIN32
+#    pragma warning(push)
+#    pragma warning(disable : 4996)
+#endif
 
 #define CARB_EXPORTS
 
@@ -33,10 +37,20 @@
 #include <omni/usd/UsdContext.h>
 #include <omni/usd/UsdContextIncludes.h>
 #include <physicsSchemaTools/UsdTools.h>
-#include <usdPhysics/scene.h>
+#include <pxr/usd/usdPhysics/scene.h>
 
 #include <PxActor.h>
-#include <PxArticulationLink.h>
+
+
+#if defined(_WIN32)
+#    include <PxArticulationLink.h>
+#else
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wpragmas"
+#    include <PxArticulationLink.h>
+#    pragma GCC diagnostic pop
+#endif
+
 #include <PxRigidDynamic.h>
 #include <PxScene.h>
 #include <map>
@@ -456,7 +470,7 @@ void ImuSensor::onComponentChange()
 
     // get orientation quad sensor period, and translate
 
-    const pxr::IsaacSensorSchemaIsaacImuSensor& typedPrim = (pxr::IsaacSensorSchemaIsaacImuSensor)mPrim;
+    const pxr::IsaacSensorIsaacImuSensor& typedPrim = (pxr::IsaacSensorIsaacImuSensor)mPrim;
 
     isaac::utils::safeGetAttribute(typedPrim.GetSensorPeriodAttr(), this->mProps.sensorPeriod);
 
@@ -510,7 +524,6 @@ void ImuSensor::onComponentChange()
             }
         }
     }
-
 
     if (mVisualize)
     {
@@ -569,3 +582,6 @@ void ImuSensor::printIsReading(IsReading reading)
 }
 }
 }
+#ifdef _WIN32
+#    pragma warning(pop)
+#endif

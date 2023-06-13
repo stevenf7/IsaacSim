@@ -17,11 +17,10 @@
 #include "LidarSensor.h"
 
 #include <carb/InterfaceUtils.h>
-#include <carb/flatcache/FlatCache.h>
-#include <carb/flatcache/FlatCacheUSD.h>
-#include <carb/flatcache/IToken.h>
-#include <carb/flatcache/StageWithHistory.h>
 
+#include <omni/fabric/FabricUSD.h>
+#include <omni/fabric/IToken.h>
+#include <omni/fabric/SimStageWithHistory.h>
 #include <omni/isaac/utils/Conversions.h>
 #include <omni/isaac/utils/Pose.h>
 #include <omni/kit/syntheticdata/SyntheticData.h>
@@ -66,7 +65,7 @@ void LidarSensor::onComponentChange()
 
     RangeSensorComponent::onComponentChange();
 
-    const pxr::RangeSensorSchemaLidar& typedPrim = (pxr::RangeSensorSchemaLidar)mPrim;
+    const pxr::RangeSensorLidar& typedPrim = (pxr::RangeSensorLidar)mPrim;
 
     isaac::utils::safeGetAttribute(typedPrim.GetHorizontalFovAttr(), mHorizontalFov);
     isaac::utils::safeGetAttribute(typedPrim.GetVerticalFovAttr(), mVerticalFov);

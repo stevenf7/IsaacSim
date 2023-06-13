@@ -128,7 +128,8 @@ public:
                 severity = gxf_severity_t::GXF_SEVERITY_VERBOSE;
             }
             gxf_result_t result;
-            if (result = state.mContext->create())
+            result = state.mContext->create();
+            if (result)
             {
                 db.logError("Graph not created");
                 state.mContext->destroy();
@@ -136,13 +137,15 @@ public:
             }
             state.mContext->setSeverity(severity);
 
-            if (result = state.mContext->loadManifest(state.mExtensionPath + "/lib", "manifest.yaml"))
+            result = state.mContext->loadManifest(state.mExtensionPath + "/lib", "manifest.yaml");
+            if (result)
             {
                 db.logError("manifest not loaded");
                 state.mContext->destroy();
                 return false;
             }
-            if (result = state.mContext->loadGraphsFromString(graphStrings))
+            result = state.mContext->loadGraphsFromString(graphStrings);
+            if (result)
             {
                 db.logError("specified graphs not loaded");
                 state.mContext->destroy();
@@ -151,15 +154,17 @@ public:
             std::vector<std::string> internalGraphs;
             internalGraphs.push_back(state.mExtensionPath + "/data/config/isaac_sim_allocator.yaml");
 
-            if (result = state.mContext->loadGraphsFromFile(internalGraphs))
+            result = state.mContext->loadGraphsFromFile(internalGraphs);
+            if (result)
             {
                 db.logError("isaac_sim_allocator graph not loaded");
                 state.mContext->destroy();
                 return false;
             }
 
-            if (result = state.mContext->start(db.inputs.clockEntity(), db.inputs.clockComponent(),
-                                               db.inputs.atlasEntity(), db.inputs.atlasComponent()))
+            result = state.mContext->start(db.inputs.clockEntity(), db.inputs.clockComponent(), db.inputs.atlasEntity(),
+                                           db.inputs.atlasComponent());
+            if (result)
             {
                 db.logError("graph not started");
                 state.mContext->stop();
@@ -170,6 +175,7 @@ public:
             db.outputs.context() = state.mHandle;
             return true;
         }
+        return false;
     }
     static void release(const NodeObj& nodeObj)
     {

@@ -17,7 +17,8 @@
             },
             "targetPrim": {
                 "type": "bundle",
-                "description": "The target robot prim"
+                "description": "The target robot prim",
+                "optional": true
             },
             "usePath": {
                 "type": "bool",

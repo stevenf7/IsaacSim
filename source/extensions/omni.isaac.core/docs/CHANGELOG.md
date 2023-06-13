@@ -1,9 +1,14 @@
 # Changelog
 
-## [1.49.0] - 2023-05-31
-### Added
-- Added OBB functions compute_obb and compute_obb_corners to utils.bounds
-- Added OBB tests
+## [2.0.0] - 2023-06-13
+### Fixed
+- Kit 105.1 update
+- UsdShaderConnecatbleAPI explicit for OmniGlass and PreviewSurface constructors
+- Renamed flatcache to fabric (enable_flatcache -> enable fabric in PhysicsContext) and sim_params dict key use_flatcache -> use_fabric
+- Extension omni.physx.flatcache renamed to omni.physx.fabric
+- Schema attributes moved from CLoth API to Particle API in ClothPrimView class
+- SimulationContext sets TimeCodesPerSecond attribute and the timeline's target framrate to the rendering frequency to account for the decoupling of stage updates and app updates.
+- set_prop_val move from omni.usd.utils to omni.usd
 
 ## [1.48.0] - 2023-04-18
 ### Changed

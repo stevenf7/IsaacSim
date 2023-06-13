@@ -10,9 +10,7 @@ import pathlib
 
 import omni.kit.app
 import omni.kit.test
-import omni.ui as ui
 from omni.ui.tests.test_base import OmniUiTest
-from pxr import Gf, Kind, Sdf
 
 
 class TestAboutWindow(OmniUiTest):

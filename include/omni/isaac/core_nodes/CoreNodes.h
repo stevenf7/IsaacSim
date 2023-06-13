@@ -10,8 +10,11 @@
 
 #include <carb/Interface.h>
 
+#include <omni/fabric/RationalTime.h>
+
 namespace omni
 {
+
 namespace isaac
 {
 namespace core_nodes
@@ -27,18 +30,26 @@ namespace core_nodes
  */
 struct CoreNodes
 {
-    CARB_PLUGIN_INTERFACE("omni::isaac::core_nodes", 1, 0);
+    CARB_PLUGIN_INTERFACE("omni::isaac::core_nodes", 1, 1);
 
     double(CARB_ABI* getSimTime)();
     double(CARB_ABI* getSimTimeMonotonic)();
     double(CARB_ABI* getSystemTime)();
+    // TODO105 kill these 3
+    // deprecated : use getSimTimeAtTime instead
     double(CARB_ABI* getSimTimeAtSwhFrame)(const int64_t swhFrame);
+    // deprecated : use getSimTimeMonotonicAtTime instead
     double(CARB_ABI* getSimTimeMonotonicAtSwhFrame)(const int64_t swhFrame);
+    // deprecated : use getSystemTimeAtTime instead
     double(CARB_ABI* getSystemTimeAtSwhFrame)(const int64_t swhFrame);
 
     uint64_t(CARB_ABI* addHandle)(void* handle);
     void*(CARB_ABI* getHandle)(const uint64_t handleId);
     bool(CARB_ABI* removeHandle)(const uint64_t handleId);
+
+    double(CARB_ABI* getSimTimeAtTime)(const omni::fabric::RationalTime& time);
+    double(CARB_ABI* getSimTimeMonotonicAtTime)(const omni::fabric::RationalTime& time);
+    double(CARB_ABI* getSystemTimeAtTime)(const omni::fabric::RationalTime& time);
 };
 } // action
 } // graph

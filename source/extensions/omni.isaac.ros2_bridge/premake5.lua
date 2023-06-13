@@ -9,43 +9,37 @@ project_ext_plugin(ext, "omni.isaac.ros2_bridge.plugin")
     add_files("impl", "%{root}/include/omni/isaac/utils/", "CameraKernels.cu")
     add_files("iface", "%{root}/include/omni/isaac/ros2_bridge/**")
     add_files("ogn", ogn.nodes_path)
-
+    link_boost_for_windows({"boost_python310"})
     add_cuda_dependencies()
 
     add_ogn_dependencies(ogn, {"python/nodes"})
 
+    include_physx()
     includedirs {
         "%{root}/include/pch",
-        "%{root}/_build/target-deps/physx/include",
-        "%{root}/_build/target-deps/pxshared/include",
-        "%{root}/_build/target-deps/carbonite/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
-        "%{root}/_build/target-deps/usd_ext/%{cfg.buildcfg}/include", 
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/usd_audio_schema/%{cfg.buildcfg}/include",
-        "%{root}/_build/target-deps/python/include/python3.7m",
+        "%{root}/_build/target-deps/python/include/python3.10",
         "%{root}/_build/target-deps/python/include",
         "%{root}/_build/target-deps/nv_ros2/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/omni_physics/include",
-        "%{root}/source/extensions/omni.isaac.ros2_bridge",
-        "%{kit_sdk_bin_dir}/extscore/omni.syntheticdata/include",
-        "%{kit_sdk_bin_dir}/extscore/usdrt.scenegraph/include",
-        "%{root}/_build/kit_%{config}/_exts/omni.syntheticdata/include",
+        "%{kit_sdk_bin_dir}/exts/omni.syntheticdata/include",
+        "%{kit_sdk_bin_dir}/exts/usdrt.scenegraph/include",
         "%{root}/_build/target-deps/omni_client_library/include",
-        "%{root}/schemas/_install/isaacSensorSchema/%{platform}_%{config}/include",
+        "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/include",
+        "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/RangeSensorSchema/include",
      }
      libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-        "%{root}/_build/target-deps/usd_ext/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/usd_audio_schema/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/nv_ros2/lib",
-        "%{root}/schemas/_install/rangeSensorSchema/%{platform}_%{config}/lib",
-        "%{kit_sdk_bin_dir}/plugins",
-        "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin",
-        "%{root}/schemas/_install/isaacSensorSchema/%{platform}_%{config}/lib",
+        "%{kit_sdk_bin_dir}/exts/omni.usd.core/bin",
+        "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/lib",
+        "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/RangeSensorSchema/lib",
     }
     -- Add link below to use cyclonedds
     -- "rmw_cyclonedds_cpp"
@@ -154,7 +148,8 @@ if os.target() == "linux" then
     repo_build.prebuild_copy {
         { "rclpy/*.py", ext.target_dir.."/omni/isaac/rclpy" },
         { "%{root}/_build/target-deps/nv_ros2/lib/lib**", ext.target_dir.."/bin" },
-        { "%{root}/_build/target-deps/nv_ros2/lib/python3.7/site-packages", ext.target_dir.."/omni/isaac/rclpy" },
+        -- TODO105 python3.10?
+        { "%{root}/_build/target-deps/nv_ros2/lib/python3.10/site-packages", ext.target_dir.."/omni/isaac/rclpy" },
         { "%{root}/_build/target-deps/tinyxml2/lib/lib**", ext.target_dir.."/bin" },
         { "%{root}/_build/target-deps/openssl/lib/*.so**", ext.target_dir.."/bin" },
     }

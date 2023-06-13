@@ -43,4 +43,3 @@ The code block below assumes a Franka Emika Panda robot is in the stage with a b
     # This should be called each frame of simulation if state on the articulation is being changed.
     dc.wake_up_articulation(art)
     dc.set_dof_position_target(dof_ptr, -1.5)
-

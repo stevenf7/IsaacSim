@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.6.4] - 2023-06-12
+### Changed
+- Update to kit 105.1, omni.usd.utils -> omni.usd
+
 ## [0.6.3] - 2023-03-13
 ### Fixed
 - Support for Python 3.10

@@ -2,7 +2,13 @@
 function include_physx()
 
     defines {  "PX_PHYSX_STATIC_LIB"}
-    libdirs { "%{root}/_build/target-deps/nvtx/lib/x64" }
+
+    filter { "system:windows" }
+        libdirs { "%{root}/_build/target-deps/nvtx/lib/x64" }
+    filter {}
+    filter { "system:linux" }
+        libdirs { "%{root}/_build/target-deps/nvtx/lib64" }
+    filter {}
 
     filter { "configurations:debug" }
         defines { "_DEBUG" }
@@ -10,20 +16,13 @@ function include_physx()
         defines { "NDEBUG" }
     filter {}
 
-    filter { "system:windows", "platforms:x86_64" }
-        links { "nvToolsExt64_1"}
-    filter { "system:linux", "platforms:x86_64" }
-        disablewarnings {"error=pragmas"}
-        links { "nvToolsExt"}
-    filter {}
-
     filter { "system:windows", "platforms:x86_64", "configurations:debug" }
         libdirs {
-            "%{root}/_build/target-deps/physx/bin/win.x86_64.vc141.md/debug",
+            "%{root}/_build/target-deps/physx/bin/win.x86_64.vc142.md/debug",
         }
     filter { "system:windows", "platforms:x86_64", "configurations:release" }
         libdirs {
-            "%{root}/_build/target-deps/physx/bin/win.x86_64.vc141.md/checked",
+            "%{root}/_build/target-deps/physx/bin/win.x86_64.vc142.md/checked",
         }
     filter {}
 
@@ -41,7 +40,6 @@ function include_physx()
 
     includedirs {
         "%{root}/_build/target-deps/physx/include",
-        "%{root}/_build/target-deps/pxshared/include",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
     }
 
@@ -93,9 +91,9 @@ function add_cuda_dependencies()
     filter { "files:**.cu", "system:windows", "configurations:release" }
         make_nvcc_command(nvccPath, nvccHostCompilerVS, "/MD", "")
     filter { "files:**.cu", "system:linux", "configurations:debug" }
-        make_nvcc_command(nvccPath, nvccHostCompilerVS, "-fPIC -g", "-g")
+        make_nvcc_command(nvccPath, "", "-fPIC -g", "-g")
     filter { "files:**.cu", "system:linux", "configurations:release" }
-        make_nvcc_command(nvccPath, nvccHostCompilerVS, "-fPIC", "")
+        make_nvcc_command(nvccPath, "", "-fPIC", "")
     filter {}
 
     -- link against CUDA runtime static library.
@@ -180,9 +178,10 @@ function define_test_experience(name, args)
 end
 
 -- Write experience running .bat/.sh file, like _build\windows-x86_64\release\example.helloext.app.bat
-function create_test_experience_runner(name, config_path, config, kit_sdk_config, extra_args)
+function create_test_experience_runner(name, config_path, config, kit_sdk_config, extra_args, executable)
     local os_target = os.target()
     if os_target == "windows" then
+        local executable = executable or "kit.exe"
         local bat_file_dir = root.."/_build/windows-x86_64/"..config.."/tests"
         local bat_file_path = bat_file_dir.."/"..name..".bat"
         local kit_bin_abs = string_fmt_vars_recursive(kit_sdk_bin_dir, {
@@ -191,18 +190,27 @@ function create_test_experience_runner(name, config_path, config, kit_sdk_config
         local kit_bin_relative = path.normalize(path.getrelative(bat_file_dir, kit_bin_abs)):gsub("/", "\\")
         local config_path = (is_string_empty(config_path) and "") or "\"%%~dp0"..config_path.."\""
         local f = io.open(bat_file_path, 'w')
-        f:write(string.format(KIT_RUNNER_SHELL_TEMPLATE[os_target], kit_bin_relative, config_path, extra_args))
+        f:write(string.format(KIT_RUNNER_SHELL_TEMPLATE[os_target], kit_bin_relative, executable, config_path, extra_args))
         f:close()
     else
-        local sh_file_dir = root.."/_build/linux-x86_64/"..config.."/tests"
+        local executable = executable or "kit"
+        local arch = io.popen('arch','r'):read('*l')
+        local platform_name = "linux"
+
+        if os_target == "macosx" then
+            arch = "universal"
+            platform_name = "macos"
+        end
+
+        local sh_file_dir = root.."/_build/"..platform_name.."-"..arch.."/"..config.."/tests"
         local sh_file_path = sh_file_dir.."/"..name..".sh"
         local kit_bin_abs = string_fmt_vars_recursive(kit_sdk_bin_dir, {
-            root=root, config=config, kit_sdk=kit_sdk, kit_sdk_config=kit_sdk_config, platform="linux-x86_64"
+            root=root, config=config, kit_sdk=kit_sdk, kit_sdk_config=kit_sdk_config, platform=platform_name.."-"..arch
         })
         local kit_bin_relative = path.normalize(path.getrelative(sh_file_dir, kit_bin_abs))
         local config_path = (is_string_empty(config_path) and "") or "\"$SCRIPT_DIR/"..config_path.."\""
         local f = io.open(sh_file_path, 'w')
-        f:write(string.format(KIT_RUNNER_SHELL_TEMPLATE[os_target], kit_bin_relative, config_path, extra_args))
+        f:write(string.format(KIT_RUNNER_SHELL_TEMPLATE[os_target], kit_bin_relative, executable, config_path, extra_args))
         f:close()
         os.chmod(sh_file_path, 755)
     end
@@ -277,20 +285,26 @@ echo "##teamcity[testFinished name='%s']"
 end
 
 -- Template Used to generate all the kit.bat, test.bat and other batch/shell files
--- format are: kit_bin_relative, config_path, extra_args
+-- format are: bin_relative, executable, config_path, extra_args
 KIT_RUNNER_SHELL_TEMPLATE = {
     ["windows"] = [[
 @echo off
 setlocal
-call "%%~dp0%s\kit.exe" %s %s %%*
+call "%%~dp0%s\%s" %s %s %%*
 ]],
     ["linux"] = [[
 #!/bin/bash
 set -e
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 export RESOURCE_NAME="IsaacSim"
-exec "$SCRIPT_DIR/%s/kit" %s %s $@
-]]
+exec "$SCRIPT_DIR/%s/%s" %s %s $@
+]],
+    ["macosx"] = [[
+#!/bin/bash
+set -e
+SCRIPT_DIR=$(dirname ${BASH_SOURCE})
+exec "$SCRIPT_DIR/%s/%s" %s %s "$@"
+]],
 }
 
 

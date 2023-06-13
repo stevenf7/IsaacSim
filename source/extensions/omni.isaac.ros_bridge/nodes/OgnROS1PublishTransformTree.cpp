@@ -13,8 +13,7 @@
 
 #include "tf2_msgs/TFMessage.h"
 
-#include <carb/flatcache/FlatCache.h>
-
+#include <omni/fabric/FabricUSD.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/ros/Conversions.h>
 #include <omni/isaac/ros/RosNode.h>
@@ -77,7 +76,7 @@ public:
             // Finidng parent prim
             pxr::SdfPathVector parent;
             pxr::TfToken parentPrimInput =
-                carb::flatcache::toTfToken(OgnROS1PublishTransformTreeAttributes::inputs::parentPrim.m_token);
+                omni::fabric::toTfToken(OgnROS1PublishTransformTreeAttributes::inputs::parentPrim.m_token);
 
             const pxr::UsdRelationship parentRel = thisPrim.GetRelationship(parentPrimInput);
             parentRel.GetTargets(&parent);
@@ -93,7 +92,7 @@ public:
 
             // Get target prims
             pxr::TfToken targetPrimInputs =
-                carb::flatcache::toTfToken(OgnROS1PublishTransformTreeAttributes::inputs::targetPrims.m_token);
+                omni::fabric::toTfToken(OgnROS1PublishTransformTreeAttributes::inputs::targetPrims.m_token);
 
             const pxr::UsdRelationship targetRel = thisPrim.GetRelationship(targetPrimInputs);
             targetRel.GetTargets(&state.mTargets);

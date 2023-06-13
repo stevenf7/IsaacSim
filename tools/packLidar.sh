@@ -1,9 +1,16 @@
 #!/bin/bash
 # must be run where tools/packman is.
+# 1) ./build.sh -r
+# 2) ./build.sh -d
+
 shopt -s extglob
 DOV_IN="/home/mcarlson/gitlab-master/drivesim-ov_mcarlson"
+BUILD_TYPE="debug"
 CWD=$(pwd)
-PACKAGENAME="drivesim_b4050e054e2-kit_104.2+release.39.145ad340-RTXSensor05"
+PACKAGENAME="nvsensors105-dev6.$BUILD_TYPE"
+# dev 6 based on ce1fdff41003c91c321255848aaee474e1f60d03  (no changes from 5)
+#"nvsensors105-dev2" based on 14214b7866d2af14807939f482c74830d0da48d8
+# PACKAGENAME="nvsensors105-dev1" based on aeabc8a02dd266af066a186b2bdcd6761854b0a4
 echo $PACKAGENAME
 mkdir -p $CWD/nvsensor
 mkdir -p $CWD/nvsensor/$PACKAGENAME
@@ -32,35 +39,32 @@ rm -v ./include/internal/omni/sensors/lidar/HesaiBackChannel.h
 rm -v ./include/internal/omni/sensors/lidar/Luminar*
 
 mkdir linux-x86_64
+mkdir linux-x86_64/$BUILD_TYPE
 
-cp -rflv $DOV_IN/_build/linux-x86_64/release/exts/omni.sensors.nv.beams/ linux-x86_64
-cp -rflv $DOV_IN/_build/linux-x86_64/release/exts/omni.sensors.nv.common/ linux-x86_64
-cp -rflv $DOV_IN/_build/linux-x86_64/release/exts/omni.sensors.nv.ids/ linux-x86_64
-cp -rflv $DOV_IN/_build/linux-x86_64/release/exts/omni.sensors.nv.lidar/ linux-x86_64
-cp -rflv $DOV_IN/_build/linux-x86_64/release/exts/omni.sensors.nv.lidar_tools/ linux-x86_64
-cp -rflv $DOV_IN/_build/linux-x86_64/release/exts/omni.sensors.nv.materials/ linux-x86_64
-cp -rflv $DOV_IN/_build/linux-x86_64/release/exts/omni.sensors.nv.material_tools/ linux-x86_64
-cp -rflv $DOV_IN/_build/linux-x86_64/release/exts/omni.sensors.nv.radar/ linux-x86_64
-cp -rflv $DOV_IN/_build/linux-x86_64/release/exts/omni.sensors.nv.ultrasonic/ linux-x86_64
-cp -rflv $DOV_IN/_build/linux-x86_64/release/exts/omni.sensors.nv.wpm/ linux-x86_64
+cp -rflv $DOV_IN/_build/linux-x86_64/$BUILD_TYPE/exts/ linux-x86_64/$BUILD_TYPE
 
 # delete configs that are propiatary 
-cd linux-x86_64/omni.sensors.nv.radar/data/dmat_approx
-rm -v -- !(Example*)
-cd -
-cd linux-x86_64/omni.sensors.nv.radar/data/wpm_dmat_approx
-rm -v -- !(Example*)
-cd -
-cd linux-x86_64/omni.sensors.nv.ultrasonic/data
-rm -v -- !(Example*)
-cd -
+rm -rfv linux-x86_64/$BUILD_TYPE/exts/omni.sensors.nv.radar/data
+rm -rfv linux-x86_64/$BUILD_TYPE/exts/omni.sensors.nv.lidar/data
+rm -rfv linux-x86_64/$BUILD_TYPE/exts/omni.sensors.nv.lidar_tools/data
 
 # get the material files
+# must be data/material_files path or won't find the material.
 mkdir data
-cp -rflv $DOV_IN/_build/linux-x86_64/release/data/material_files/ data/.
+cp -rflv $DOV_IN/_build/linux-x86_64/$BUILD_TYPE/data/material_files/ data/.
+# get the example configuration files.
+mkdir data/lidar
+cp -vf $DOV_IN/data/sensors/lidar/Example*.json data/lidar/.
+mkdir data/radar
+mkdir data/radar/wpm_dmat_approx
+cp -vf $DOV_IN/data/sensors/radar/wpm_dmat_approx/Example.json data/radar/wpm_dmat_approx/.
+mkdir data/radar/dmat_approx
+cp -vf $DOV_IN/data/sensors/radar/dmat_approx/Example.json data/radar/dmat_approx/.
+mkdir data/ultrasonic
+cp -vf $DOV_IN/data/sensors/ultrasonic/Example.json data/ultrasonic/.
 
 # copy to local repo then package and send out.
-cp -rflv $CWD/nvsensor/$PACKAGENAME/ /home/mcarlson/packman-repo/chk/nvsensor
+#cp -rflv $CWD/nvsensor/$PACKAGENAME/ /home/mcarlson/packman-repo/chk/nvsensor
 
 cd $DOV_IN
 ./tools/packman/packman pack $CWD/nvsensor/$PACKAGENAME/

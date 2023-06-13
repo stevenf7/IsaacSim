@@ -22,11 +22,11 @@
 
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
-#include <carb/flatcache/FlatCache.h>
 #include <carb/logging/Log.h>
 #include <carb/settings/ISettings.h>
 #include <carb/tasking/ITasking.h>
 
+#include <omni/fabric/FabricUSD.h>
 #include <omni/graph/core/ogn/Registration.h>
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
 #include <omni/kit/IStageUpdate.h>
@@ -51,7 +51,7 @@ CARB_PLUGIN_IMPL(kPluginImpl,
 
 CARB_PLUGIN_IMPL_DEPS(omni::physx::IPhysx,
                       omni::kit::IStageUpdate,
-                      carb::flatcache::IStageInProgress,
+                      omni::fabric::IStageReaderWriter,
                       omni::renderer::IDebugDraw,
                       omni::syntheticdata::SyntheticData,
                       carb::tasking::ITasking,

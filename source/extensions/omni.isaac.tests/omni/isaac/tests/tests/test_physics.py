@@ -74,14 +74,14 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
     #     physx_interface = omni.physx.acquire_physx_interface()
     #     position = physx_interface.get_rigidbody_transformation("/World/Cube")["position"]
     #     self.assertNotAlmostEqual(position[2], 0, 0)
-    #     usd_position = omni.usd.utils.get_world_transform_matrix(cubePrim).ExtractTranslation()
+    #     usd_position = omni.usd.get_world_transform_matrix(cubePrim).ExtractTranslation()
     #     self.assertAlmostEqual(usd_position[2], 0, 0)
     #     # carb.settings.get_settings().set_int("persistent/physics/updateToUsd", True)
     #     # await omni.kit.app.get_app().next_update_async()
     #     # calling this forces the pose to update
     #     physx_interface.update_transformations(True, True, True, False)
     #     await omni.kit.app.get_app().next_update_async()
-    #     usd_position = omni.usd.utils.get_world_transform_matrix(cubePrim).ExtractTranslation()
+    #     usd_position = omni.usd.get_world_transform_matrix(cubePrim).ExtractTranslation()
     #     self.assertNotAlmostEqual(usd_position[2], 0, 0)
     #     omni.timeline.get_timeline_interface().pause()
     #     pass
@@ -101,7 +101,7 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         for frame in range(60):
             await omni.kit.app.get_app().next_update_async()
         # check to make sure that the cube fell due to gravity
-        position = np.array(omni.usd.utils.get_world_transform_matrix(cubePrim).ExtractTranslation())
+        position = np.array(omni.usd.get_world_transform_matrix(cubePrim).ExtractTranslation())
         self.assertNotAlmostEqual(position[2], 0, 0)
         omni.timeline.get_timeline_interface().stop()
         pass
@@ -142,11 +142,11 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         # simulate for one second
         time_elapsed = dt
         for frame in range(30):
-            p_0 = np.array(omni.usd.utils.get_world_transform_matrix(cubePrim).ExtractTranslation())
+            p_0 = np.array(omni.usd.get_world_transform_matrix(cubePrim).ExtractTranslation())
             v_0 = np.array(rigidBodyAPI.GetVelocityAttr().Get())
             await omni.kit.app.get_app().next_update_async()
 
-            p_1 = np.array(omni.usd.utils.get_world_transform_matrix(cubePrim).ExtractTranslation())
+            p_1 = np.array(omni.usd.get_world_transform_matrix(cubePrim).ExtractTranslation())
             v_1 = np.array(rigidBodyAPI.GetVelocityAttr().Get())
             # print("time elapsed", time_elapsed)
             v_expected = v_0[2] + a * dt
@@ -210,7 +210,7 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         for frame in range(60):
             await omni.kit.app.get_app().next_update_async()
         # check to make sure that the cube fell -Z
-        position = np.array(omni.usd.utils.get_world_transform_matrix(cubePrim).ExtractTranslation())
+        position = np.array(omni.usd.get_world_transform_matrix(cubePrim).ExtractTranslation())
         self.assertAlmostEqual(position[2], -4.9867, delta=0.01)
         timeline.stop()
         UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.y)
@@ -220,7 +220,7 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         for frame in range(60):
             await omni.kit.app.get_app().next_update_async()
         # check to make sure that the cube fell -Y
-        position = np.array(omni.usd.utils.get_world_transform_matrix(cubePrim).ExtractTranslation())
+        position = np.array(omni.usd.get_world_transform_matrix(cubePrim).ExtractTranslation())
         self.assertAlmostEqual(position[1], -4.9867, delta=0.01)
 
     async def test_stage_units(self):
@@ -241,7 +241,7 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         for frame in range(60):
             await omni.kit.app.get_app().next_update_async()
         # check to make sure that the cube fell -Z
-        position = np.array(omni.usd.utils.get_world_transform_matrix(cubePrim).ExtractTranslation())
+        position = np.array(omni.usd.get_world_transform_matrix(cubePrim).ExtractTranslation())
         self.assertAlmostEqual(position[2], -4.9867, delta=0.01)
         timeline.stop()
         # switch to meters
@@ -251,7 +251,7 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         timeline.play()
         for frame in range(60):
             await omni.kit.app.get_app().next_update_async()
-        position = np.array(omni.usd.utils.get_world_transform_matrix(cubePrim).ExtractTranslation())
+        position = np.array(omni.usd.get_world_transform_matrix(cubePrim).ExtractTranslation())
         self.assertAlmostEqual(position[2], -4.9867, delta=0.01)
 
     async def test_articulation_reference(self):
@@ -269,7 +269,7 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         hand_prim = stage.GetPrimAtPath("/franka/panda_hand")
 
         await omni.kit.app.get_app().next_update_async()
-        trans_a = np.array(omni.usd.utils.get_world_transform_matrix(hand_prim).ExtractTranslation())
+        trans_a = np.array(omni.usd.get_world_transform_matrix(hand_prim).ExtractTranslation())
 
         timeline.stop()
         await omni.kit.app.get_app().next_update_async()
@@ -277,7 +277,7 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         for frame in range(60):
             await omni.kit.app.get_app().next_update_async()
 
-        trans_b = np.array(omni.usd.utils.get_world_transform_matrix(hand_prim).ExtractTranslation())
+        trans_b = np.array(omni.usd.get_world_transform_matrix(hand_prim).ExtractTranslation())
 
         self.assertAlmostEqual(np.linalg.norm(trans_a - trans_b), 0, delta=0.03)
 
@@ -300,8 +300,8 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
 
         # compare position in the x direction
-        xpos_1 = np.array(omni.usd.utils.get_world_transform_matrix(robot_joints).ExtractTranslation())[0]
-        xpos_2 = np.array(omni.usd.utils.get_world_transform_matrix(robot_articulation).ExtractTranslation())[0]
+        xpos_1 = np.array(omni.usd.get_world_transform_matrix(robot_joints).ExtractTranslation())[0]
+        xpos_2 = np.array(omni.usd.get_world_transform_matrix(robot_articulation).ExtractTranslation())[0]
         pos_diff = np.linalg.norm(xpos_1 - xpos_2)
         self.assertAlmostEqual(pos_diff, 0, delta=1)
         self.assertGreater(xpos_1, 2)

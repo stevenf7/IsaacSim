@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -6,7 +6,10 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
-
+#ifdef _WIN32
+#    pragma warning(push)
+#    pragma warning(disable : 4996)
+#endif
 // clang-format off
 #include "UsdPCH.h"
 #include <pxr/usd/usd/inherits.h>
@@ -200,7 +203,7 @@ void ContactSensor::processRawContacts(CsRawData* rawContact, const size_t& size
         uint64_t actor = rawContact[0].body0;
         if (rawContact[0].body0 != asInt(mParentPrim.GetPath())) // If Parent is on index 1
             actor = rawContact[0].body1;
-        pxr::SdfPath actorPath(reinterpret_cast<const pxr::SdfPath&>(actor));
+        pxr::SdfPath actorPath(omni::isaac::utils::getSdfPathFromUint64(actor));
         // CARB_LOG_INFO("getting PxActor");
         pxr::GfTransform parentPose;
         pxr::GfVec3d pose(static_cast<double>(mProp.position.x), static_cast<double>(mProp.position.y),
@@ -317,7 +320,7 @@ void ContactSensor::setContactReportApi()
         contactReportAPI.CreateReportPairsRel();
     }
 
-    const pxr::IsaacSensorSchemaIsaacContactSensor& typedPrim = (pxr::IsaacSensorSchemaIsaacContactSensor)mPrim;
+    const pxr::IsaacSensorIsaacContactSensor& typedPrim = (pxr::IsaacSensorIsaacContactSensor)mPrim;
 
     pxr::GfVec2f thresholdAttr = pxr::GfVec2f(0.01f, 100000.0f);
     isaac::utils::safeGetAttribute(typedPrim.GetThresholdAttr(), thresholdAttr);
@@ -392,7 +395,7 @@ void ContactSensor::onComponentChange()
     pxr::GfVec2f thresholdAttr = pxr::GfVec2f(0.01f, 100000.0f);
 
     // contact sensor onComponentChange
-    const pxr::IsaacSensorSchemaIsaacContactSensor& typedPrim = (pxr::IsaacSensorSchemaIsaacContactSensor)mPrim;
+    const pxr::IsaacSensorIsaacContactSensor& typedPrim = (pxr::IsaacSensorIsaacContactSensor)mPrim;
 
     isaac::utils::safeGetAttribute(typedPrim.GetThresholdAttr(), thresholdAttr);
     isaac::utils::safeGetAttribute(typedPrim.GetRadiusAttr(), radius);
@@ -466,8 +469,8 @@ void ContactSensor::printRawData(CsRawData* data)
 
     CARB_LOG_INFO("Raw Data \n");
     CARB_LOG_INFO("Time: %f\n", time);
-    CARB_LOG_INFO("Body 0: %s Body 1: %s \n", reinterpret_cast<const pxr::SdfPath&>(body0).GetString().c_str(),
-                  reinterpret_cast<const pxr::SdfPath&>(body1).GetString().c_str());
+    CARB_LOG_INFO("Body 0: %s Body 1: %s \n", omni::isaac::utils::getSdfPathFromUint64(body0).GetString().c_str(),
+                  omni::isaac::utils::getSdfPathFromUint64(body1).GetString().c_str());
     CARB_LOG_INFO("Position: %f, %f, %f \n", pos_x, pos_y, pos_z);
     CARB_LOG_INFO("Normal: %f, %f, %f \n", normal_x, normal_y, normal_z);
     CARB_LOG_INFO("Impulse: %f, %f, %f \n", impulse_x, impulse_y, impulse_z);
@@ -492,3 +495,6 @@ void ContactSensor::printReadingPair()
 }
 }
 }
+#ifdef _WIN32
+#    pragma warning(pop)
+#endif

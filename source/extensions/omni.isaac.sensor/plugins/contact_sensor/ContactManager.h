@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -23,10 +23,19 @@
 #include <omni/usd/UsdContext.h>
 #include <physicsSchemaTools/UsdTools.h>
 #include <physxSchema/physxContactReportAPI.h>
-#include <usdPhysics/scene.h>
+#include <pxr/usd/usdPhysics/scene.h>
 
 #include <PxActor.h>
-#include <PxArticulationLink.h>
+
+#if defined(_WIN32)
+#    include <PxArticulationLink.h>
+#else
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wpragmas"
+#    include <PxArticulationLink.h>
+#    pragma GCC diagnostic pop
+#endif
+
 #include <PxRigidDynamic.h>
 #include <PxScene.h>
 #include <map>

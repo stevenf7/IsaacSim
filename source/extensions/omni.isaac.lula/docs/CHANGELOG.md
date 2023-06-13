@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.4.1] - 2023-04-27
+
+### Fixed
+
+- Added a workaround for a DLL loading issue under Windows that manifested when using the new "FastImporter" in Omniverse Kit 105.
+
 ## [1.4.0] - 2023-02-23
 
 ### Changed

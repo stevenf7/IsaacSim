@@ -1,0 +1,89 @@
+{
+    "IsaacReadTimes": {
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",
+        "description": [
+            "Read time related value from Fabric."
+        ],
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacCore",
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "The input execution port"
+            },
+            "renderResults": {
+                "type": "uint64",
+                "description": "Render results"
+            },
+            "gpu": {
+                "type": "uint64",
+                "description": "Pointer to shared context containing gpu foundations valid only in the postRender graph."
+            }
+        },
+        "outputs": {
+            "execOut": {
+                "type": "execution",
+                "description": "The output execution port"
+            },
+            "simulationTime": {
+                "type": "double",
+                "description": "Current Simulation Time in Seconds",
+                "uiName": "Simulation Time"
+            },
+            "simulationTimeMonotonic": {
+                "type": "double",
+                "description": "Current Monotonic Simulation Time in Seconds",
+                "uiName": "Monotonic Simulation Time"
+            },
+            "systemTime": {
+                "type": "double",
+                "description": "Current System Time in Seconds",
+                "uiName": "System Time"
+            },
+            "frameNumber": {
+                "type": "int64",
+                "description": "frameNumber",
+                "uiName": "Frame Number"
+            },
+            "durationNumerator": {
+                "type": "int64",
+                "description": "durationNumerator",
+                "uiName": "Duration Numerator"
+            },
+            "durationDenominator": {
+                "type": "uint64",
+                "description": "durationDenominator",
+                "uiName": "Duration Denominator"
+            },
+            "sampleTimeOffsetInSimFrames": {
+                "type": "uint64",
+                "description": "sampleTimeOffsetInSimFrames",
+                "uiName": "Sample Time Offset In Sim Frames"
+            },
+            "externalTimeOfSimNs": {
+                "type": "int64",
+                "description": "externalTimeOfSimNs",
+                "uiName": "External Time Of Sim Ns"
+            },
+            "rationalTimeOfSimNumerator": {
+                "type": "int64",
+                "description": "rationalTimeOfSimNumerator",
+                "uiName": "Rational Time Of Sim Numerator"
+            },
+            "rationalTimeOfSimDenominator": {
+                "type": "uint64",
+                "description": "rationalTimeOfSimDenominator",
+                "uiName": "Rational Time Of Sim Denominator"
+            },
+            "swhFrameNumber": {
+                "type": "int64",
+                "description": "swhFrameNumber",
+                "uiName": "swhFrameNumber"
+            }
+        },
+        "tokens": [
+            "IsaacFabricTimes"
+        ]
+    }
+}

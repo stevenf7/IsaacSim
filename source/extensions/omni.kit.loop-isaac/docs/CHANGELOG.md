@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.2] - 2023-06-12
+
+### Changed
+- Update to kit 105.1, pybind11 header locations
+
 ## [1.0.1] - 2023-05-19
 ### Fixed
 - Crash on exit due to threading race condition

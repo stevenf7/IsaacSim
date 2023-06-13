@@ -348,7 +348,6 @@ public:
         geom2 = "";
         body1 = "";
         body2 = "";
-        int condim = 3;
     }
 };
 
@@ -481,10 +480,6 @@ public:
         width = 0.003f;
         material = "";
         rgba = Vec4(0.5f, 0.5f, 0.5f, 1.0f);
-
-        float springLength = 0.0f;
-        float stiffness = 0.0f;
-        float damping = 0.0f;
     }
 
     ~MJCFTendon()

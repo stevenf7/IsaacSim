@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2019-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -19,7 +19,7 @@
 
 #include <omni/usd/UsdUtils.h>
 #include <pxr/pxr.h>
-#include <usdPhysics/rigidBodyAPI.h>
+#include <pxr/usd/usdPhysics/rigidBodyAPI.h>
 
 
 namespace omni

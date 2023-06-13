@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.12.3] - 2023-06-12
+### Changed
+- Update to kit 105.1
+- rename synthetic data writer templates to match rendervar names
+
 ## [1.12.2] - 2023-03-13
 ### Fixed
 - Incorrect 2D, 3D bbox data

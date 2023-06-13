@@ -1,3 +1,11 @@
+# Copyright (c) 2021-2023, NVIDIA CORPORATION.  All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto.  Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+
 import numpy as np
 
 
@@ -5,7 +13,7 @@ def as_type(data, dtype):
     if dtype == "float32":
         return data.astype(np.float32)
     elif dtype == "bool":
-        return data.astype(np.bool)
+        return data.astype(np.bool_)
     elif dtype == "int32":
         return data.astype(np.int32)
     elif dtype == "int64":

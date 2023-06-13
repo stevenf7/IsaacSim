@@ -78,10 +78,6 @@
                 "type": "uint",
                 "description": "Size (in bytes) of the buffer (0 if the input is a texture)"
             },
-            "swhFrameNumber": {
-                "type": "uint64",
-                "description": "Frame number"
-            },
             "semanticTypes": {
                 "type": "token[]",
                 "description": "Semantic Types to consider",
@@ -104,10 +100,6 @@
             "primPaths": {
                 "description": "Prim paths corresponding to each pose.",
                 "type": "token[]"
-            },
-            "swhFrameNumber": {
-                "type": "uint64",
-                "description": "Frame number"
             },
             "bufferSize": {
                 "type": "uint",

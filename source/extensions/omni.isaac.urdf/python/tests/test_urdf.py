@@ -469,12 +469,12 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
 
         link_1 = stage.GetPrimAtPath("/test_floating/link_1")
         self.assertNotEqual(link_1.GetPath(), Sdf.Path.emptyPath)
-        link_1_trans = np.array(omni.usd.utils.get_world_transform_matrix(link_1).ExtractTranslation())
+        link_1_trans = np.array(omni.usd.get_world_transform_matrix(link_1).ExtractTranslation())
 
         self.assertAlmostEqual(np.linalg.norm(link_1_trans - np.array([0, 0, 0.45])), 0, delta=0.03)
         floating_link = stage.GetPrimAtPath("/test_floating/floating_link")
         self.assertNotEqual(floating_link.GetPath(), Sdf.Path.emptyPath)
-        floating_link_trans = np.array(omni.usd.utils.get_world_transform_matrix(floating_link).ExtractTranslation())
+        floating_link_trans = np.array(omni.usd.get_world_transform_matrix(floating_link).ExtractTranslation())
 
         self.assertAlmostEqual(np.linalg.norm(floating_link_trans - np.array([0, 0, 1.450])), 0, delta=0.03)
         # Start Simulation and wait
