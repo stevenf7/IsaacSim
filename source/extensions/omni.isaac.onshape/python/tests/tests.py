@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -17,19 +17,13 @@ from math import inf
 
 import omni.kit.test
 import pxr
-
-# Transition between 104 and 105, deprecation of namespace omni.usd.utils
-try:
-    from omni.usd.utils import get_local_transform_matrix, get_world_transform_matrix
-except:
-    from omni.usd import get_local_transform_matrix, get_world_transform_matrix
-
+from omni.isaac.onshape.scripts import usd_generator
+from omni.isaac.onshape.widgets import assembly_widget, documents_widget, elements_widget, parts_widget
+from omni.usd import get_local_transform_matrix, get_world_transform_matrix
+from pxr import Usd, UsdGeom, UsdPhysics
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the World of module will make it auto-discoverable by omni.kit.test
 
-from omni.isaac.onshape.scripts import usd_generator
-from omni.isaac.onshape.widgets import assembly_widget, documents_widget, elements_widget, parts_widget
-from pxr import Usd, UsdGeom, UsdPhysics
 
 test_documents = {
     "slider_mate_no_limits": {

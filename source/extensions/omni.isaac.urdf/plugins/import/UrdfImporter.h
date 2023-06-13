@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -25,17 +25,17 @@
 #include <omni/isaac/urdf/UrdfTypes.h>
 #include <physicsSchemaTools/UsdTools.h>
 #include <physxSchema/physxSceneAPI.h>
-#include <usdPhysics/articulationRootAPI.h>
-#include <usdPhysics/collisionAPI.h>
-#include <usdPhysics/driveAPI.h>
-#include <usdPhysics/fixedJoint.h>
-#include <usdPhysics/joint.h>
-#include <usdPhysics/limitAPI.h>
-#include <usdPhysics/massAPI.h>
-#include <usdPhysics/prismaticJoint.h>
-#include <usdPhysics/revoluteJoint.h>
-#include <usdPhysics/scene.h>
-#include <usdPhysics/sphericalJoint.h>
+#include <pxr/usd/usdPhysics/articulationRootAPI.h>
+#include <pxr/usd/usdPhysics/collisionAPI.h>
+#include <pxr/usd/usdPhysics/driveAPI.h>
+#include <pxr/usd/usdPhysics/fixedJoint.h>
+#include <pxr/usd/usdPhysics/joint.h>
+#include <pxr/usd/usdPhysics/limitAPI.h>
+#include <pxr/usd/usdPhysics/massAPI.h>
+#include <pxr/usd/usdPhysics/prismaticJoint.h>
+#include <pxr/usd/usdPhysics/revoluteJoint.h>
+#include <pxr/usd/usdPhysics/scene.h>
+#include <pxr/usd/usdPhysics/sphericalJoint.h>
 
 namespace omni
 {

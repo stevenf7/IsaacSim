@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -69,15 +69,15 @@ class TestIsaacSimCommands(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
         self.assertTupleEqual(
-            tuple(omni.usd.utils.get_world_transform_matrix(self._stage.GetPrimAtPath("/franka")).ExtractTranslation()),
+            tuple(omni.usd.get_world_transform_matrix(self._stage.GetPrimAtPath("/franka")).ExtractTranslation()),
             (100, 100, 0),
         )
         self.assertTupleEqual(
-            tuple(omni.usd.utils.get_world_transform_matrix(self._stage.GetPrimAtPath("/klt")).ExtractTranslation()),
+            tuple(omni.usd.get_world_transform_matrix(self._stage.GetPrimAtPath("/klt")).ExtractTranslation()),
             (-100, 100, 0),
         )
         self.assertTupleEqual(
-            tuple(omni.usd.utils.get_world_transform_matrix(self._stage.GetPrimAtPath("/block")).ExtractTranslation()),
+            tuple(omni.usd.get_world_transform_matrix(self._stage.GetPrimAtPath("/block")).ExtractTranslation()),
             (100, -100, 0),
         )
 
@@ -90,7 +90,7 @@ class TestIsaacSimCommands(omni.kit.test.AsyncTestCase):
         omni.kit.commands.execute("IsaacSimTeleportPrim", prim_path="/franka", translation=(-100, -100, 0))
         await omni.kit.app.get_app().next_update_async()
         self.assertTupleEqual(
-            tuple(omni.usd.utils.get_world_transform_matrix(self._stage.GetPrimAtPath("/franka")).ExtractTranslation()),
+            tuple(omni.usd.get_world_transform_matrix(self._stage.GetPrimAtPath("/franka")).ExtractTranslation()),
             (-100, -100, 0),
         )
 
@@ -106,9 +106,7 @@ class TestIsaacSimCommands(omni.kit.test.AsyncTestCase):
         omni.kit.commands.execute("IsaacSimScalePrim", prim_path="/franka", scale=(1.5, 1.5, 1.5))
         await omni.kit.app.get_app().next_update_async()
         self.assertTupleEqual(
-            tuple(
-                Gf.Transform(omni.usd.utils.get_world_transform_matrix(self._stage.GetPrimAtPath("/franka"))).GetScale()
-            ),
+            tuple(Gf.Transform(omni.usd.get_world_transform_matrix(self._stage.GetPrimAtPath("/franka"))).GetScale()),
             (1.5, 1.5, 1.5),
         )
 

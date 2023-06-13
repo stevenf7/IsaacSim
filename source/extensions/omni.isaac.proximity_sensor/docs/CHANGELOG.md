@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.1] - 2023-06-12
+
+### Changed
+- Update to kit 105.1, omni.usd.utils -> omni.usd
+
 ## [1.0.0] - 2022-06-27
 
 ### Added

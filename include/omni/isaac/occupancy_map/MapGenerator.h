@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -11,8 +11,14 @@
 
 #include <carb/Defines.h>
 #include <carb/Types.h>
-
-#include <PxPhysicsAPI.h>
+#if defined(_WIN32)
+#    include <PxPhysicsAPI.h>
+#else
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wpragmas"
+#    include <PxPhysicsAPI.h>
+#    pragma GCC diagnostic pop
+#endif
 
 namespace octomap
 {

@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.6.4] - 2023-06-13
+
+### Fixed
+- Kit 105.1 update 
+- use omni.usd instead of omni.usd.utils for get_world_transform_matrix
+
 ## [0.6.3] - 2023-03-10
 
 ### Fixed

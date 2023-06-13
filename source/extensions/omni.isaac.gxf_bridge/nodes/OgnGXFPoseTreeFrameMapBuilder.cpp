@@ -12,8 +12,7 @@
 // clang-format on
 
 
-#include <carb/flatcache/FlatCache.h>
-
+#include <omni/fabric/FabricUSD.h>
 #include <omni/isaac/core_nodes/CoreNodes.h>
 #include <omni/isaac/utils/BaseResetNode.h>
 #include <omni/usd/UsdUtils.h>
@@ -47,7 +46,7 @@ public:
         const pxr::UsdPrim thisPrim = stage->GetPrimAtPath(pxr::SdfPath(state.mThisPrimPath));
         // Finding target prims
         pxr::TfToken targetPrimInputs =
-            carb::flatcache::toTfToken(OgnGXFPoseTreeFrameMapBuilderAttributes::inputs::targetPrims.m_token);
+            omni::fabric::toTfToken(OgnGXFPoseTreeFrameMapBuilderAttributes::inputs::targetPrims.m_token);
         const pxr::UsdRelationship targetRel = thisPrim.GetRelationship(targetPrimInputs);
         targetRel.GetTargets(&state.mPrims);
 
@@ -58,12 +57,12 @@ public:
             CARB_LOG_ERROR_ONCE(
                 "Need to have the same number of target prims and frame names, "
                 "but there are %i target prims and %i frame names",
-                state.mPrims.size(), frameNames.size());
+                (int)state.mPrims.size(), (int)frameNames.size());
             return false;
         }
 
         db.outputs.frameNamesMap().resize(2 * frameNames.size());
-        for (int i = 0; i < frameNames.size(); ++i)
+        for (int i = 0; i < (int)frameNames.size(); ++i)
         {
             db.outputs.frameNamesMap()[2 * i] = db.stringToToken(state.mPrims[i].GetString().c_str());
             db.outputs.frameNamesMap()[2 * i + 1] = frameNames[i];

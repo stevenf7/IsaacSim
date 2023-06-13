@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.12.1"
+version = "0.12.2"
 title = "GXF Bridge"
 description = "Communication bridge for the Isaac SDK GXF backend"
 authors = ["Isaac Sim Team"]
@@ -31,8 +31,8 @@ icon = "data/icon.png"
 [[python.module]]
 name = "omni.isaac.gxf_bridge"
 
-[[python.module]]
-name = "omni.isaac.pygxf"
+# [[python.module]]
+# name = "omni.isaac.pygxf"
 
 [[python.module]]
 name = "omni.isaac.gxf_bridge.tests"

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -8,6 +8,12 @@
 //
 
 #define CARB_EXPORTS
+
+
+#ifdef _WIN32
+#    pragma warning(push)
+#    pragma warning(disable : 4996)
+#endif
 
 // clang-format off
 #include "UsdPCH.h"
@@ -20,6 +26,7 @@
 #include <carb/PluginUtils.h>
 #include <carb/dictionary/DictionaryUtils.h>
 #include <carb/logging/Log.h>
+#include <carb/tasking/ITasking.h>
 
 #include <omni/graph/core/iComputeGraph.h>
 #include <omni/graph/core/ogn/Registration.h>
@@ -119,3 +126,7 @@ void fillInterface(omni::isaac::ros2_bridge::Ros2Bridge& iface)
 
     memset(&iface, 0, sizeof(iface));
 }
+
+#ifdef _WIN32
+#    pragma warning(pop)
+#endif

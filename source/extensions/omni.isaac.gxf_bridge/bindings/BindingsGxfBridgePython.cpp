@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -10,7 +10,7 @@
 #include <carb/BindingsPythonUtils.h>
 
 #include <omni/isaac/gxf_bridge/GxfBridge.h>
-#include <pybind11/pybind11/numpy.h>
+#include <pybind11/numpy.h>
 
 CARB_BINDINGS("omni.isaac.gxf_bridge.python")
 

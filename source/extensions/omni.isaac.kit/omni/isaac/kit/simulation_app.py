@@ -477,6 +477,7 @@ class SimulationApp:
                 )
             while is_stage_loading():
                 self._app.update()
+
             self._app.shutdown()
             # disabled on linux to workaround issues where unloading plugins causes carb to fail
             self._framework.unload_all_plugins()

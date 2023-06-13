@@ -1,4 +1,4 @@
-# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2021-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -37,9 +37,8 @@ from omni.isaac.motion_generation.path_planner_visualizer import PathPlannerVisu
 class TestPathPlanner(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
-        self._physics_dt = 1 / 60  # duration of physics frame in seconds
-
-        self._timeline = omni.timeline.get_timeline_interface()
+        self._physics_fps = 60
+        self._physics_dt = 1 / self._physics_fps  # duration of physics frame in seconds
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.motion_generation")
@@ -57,10 +56,15 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         robot_prim_path = "/panda"
         usd_path = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
         await create_new_stage_async()
+        # TODO105 need this?
+        # omni.usd.get_context().get_stage().SetTimeCodesPerSecond(self._physics_fps)
+
         await update_stage_async()
         add_reference_to_stage(usd_path, robot_prim_path)
 
         self._timeline = omni.timeline.get_timeline_interface()
+        # TODO105 need this?
+        # self._timeline.set_target_framerate(self._physics_fps)
 
         set_camera_view(
             eye=[0.7 * 2.95, 0.7 * 3.3, 0.7 * 5.5], target=[0, 0, 0], camera_prim_path="/OmniverseKit_Persp"
@@ -121,16 +125,27 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         World.clear_instance()
         pass
 
-    async def _set_determinism_settings(self, robot):
-        World()
+    async def _prepare_stage(self, robot):
+        # Set settings to ensure deterministic behavior
+        # Initialize the robot
+        # Play the timeline
 
-        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
-        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(1 / self._physics_dt))
-        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(1 / self._physics_dt))
+        self._timeline.stop()
 
+        world = World()
+
+        await world.initialize_simulation_context_async()
+
+        self._timeline.play()
+        await update_stage_async()
+
+        robot.initialize()
         robot.disable_gravity()
         robot.set_solver_position_iteration_count(64)
         robot.set_solver_velocity_iteration_count(64)
+
+        self._robot.post_reset()
+        await update_stage_async()
 
     async def reset_robot(self, robot):
         """
@@ -140,7 +155,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         This prevents changes in dynamic_control from affecting motion_generation tests
         """
         robot.post_reset()
-        await self._set_determinism_settings(robot)
+        await self._prepare_stage(robot)
         await update_stage_async()
         pass
 

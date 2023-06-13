@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -16,11 +16,11 @@ from pxr import Gf, UsdGeom
 
 
 def setup_base_prim(prim, enabled, draw_points, draw_lines, min_range, max_range):
-    prim.CreateEnabledAttr(enabled)
-    prim.CreateDrawPointsAttr(draw_points)
-    prim.CreateDrawLinesAttr(draw_lines)
-    prim.CreateMinRangeAttr(min_range)
-    prim.CreateMaxRangeAttr(max_range)
+    RangeSensorSchema.RangeSensor(prim).CreateEnabledAttr(enabled)
+    RangeSensorSchema.RangeSensor(prim).CreateDrawPointsAttr(draw_points)
+    RangeSensorSchema.RangeSensor(prim).CreateDrawLinesAttr(draw_lines)
+    RangeSensorSchema.RangeSensor(prim).CreateMinRangeAttr(min_range)
+    RangeSensorSchema.RangeSensor(prim).CreateMaxRangeAttr(max_range)
 
 
 # this command is used to create each REB prim, it also handles undo so that each individual prim command doesn't have to

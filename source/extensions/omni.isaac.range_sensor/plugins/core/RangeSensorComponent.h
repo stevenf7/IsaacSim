@@ -12,23 +12,29 @@
 #include "omni/isaac/bridge/Component.h"
 #include "omni/isaac/utils/UsdUtilities.h"
 
-#include <carb/flatcache/FlatCache.h>
-#include <carb/flatcache/FlatCacheUSD.h>
-#include <carb/flatcache/IToken.h>
-#include <carb/flatcache/StageWithHistory.h>
 #include <carb/renderer/Renderer.h>
 
+#include <omni/fabric/FabricUSD.h>
+#include <omni/fabric/IToken.h>
+#include <omni/fabric/SimStageWithHistory.h>
 #include <omni/isaac/debug_draw/PrimitiveDrawingHelper.h>
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
 #include <omni/renderer/IDebugDraw.h>
 #include <omni/timeline/ITimeline.h>
+#include <pxr/usd/usdPhysics/scene.h>
 #include <rangeSensorSchema/rangeSensor.h>
-#include <usdPhysics/scene.h>
 
 #include <PxActor.h>
-#include <PxRigidDynamic.h>
+#if defined(_WIN32)
+#    include <PxRigidDynamic.h>
+#else
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wpragmas"
+#    include <PxRigidDynamic.h>
+#    pragma GCC diagnostic pop
+#endif
 namespace omni
 {
 namespace isaac
@@ -52,7 +58,7 @@ public:
         mPhysx = physxPtr;
         mTimeline = carb::getCachedInterface<omni::timeline::ITimeline>();
         mTasking = carb::getCachedInterface<carb::tasking::ITasking>();
-        mToken = carb::getCachedInterface<carb::flatcache::IToken>();
+        mToken = carb::getCachedInterface<omni::fabric::IToken>();
 
         mLineDrawing = std::make_shared<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper>(
             omni::usd::UsdContext::getContext(), debugDrawPtr,
@@ -79,10 +85,10 @@ public:
      * @param prim
      * @param stage
      */
-
     virtual void initialize(const PrimType& prim, pxr::UsdStageWeakPtr stage)
     {
         utils::ComponentBase<PrimType>::initialize(prim, stage);
+        this->mRangeSensorPrim = pxr::RangeSensorRangeSensor(this->mPrim);
     }
     /**
      * @brief Function that runs after start is pressed
@@ -154,11 +160,11 @@ public:
      */
     virtual void onComponentChange()
     {
-        isaac::utils::safeGetAttribute(this->mPrim.GetEnabledAttr(), this->mEnabled);
-        isaac::utils::safeGetAttribute(this->mPrim.GetMinRangeAttr(), mMinRange);
-        isaac::utils::safeGetAttribute(this->mPrim.GetMaxRangeAttr(), mMaxRange);
-        isaac::utils::safeGetAttribute(this->mPrim.GetDrawPointsAttr(), mDrawPoints);
-        isaac::utils::safeGetAttribute(this->mPrim.GetDrawLinesAttr(), mDrawLines);
+        isaac::utils::safeGetAttribute(this->mRangeSensorPrim.GetEnabledAttr(), this->mEnabled);
+        isaac::utils::safeGetAttribute(this->mRangeSensorPrim.GetMinRangeAttr(), mMinRange);
+        isaac::utils::safeGetAttribute(this->mRangeSensorPrim.GetMaxRangeAttr(), mMaxRange);
+        isaac::utils::safeGetAttribute(this->mRangeSensorPrim.GetDrawPointsAttr(), mDrawPoints);
+        isaac::utils::safeGetAttribute(this->mRangeSensorPrim.GetDrawLinesAttr(), mDrawLines);
 
 
         mParentPrim = this->mStage->GetPrimAtPath(this->mPrim.GetPath()).GetParent();
@@ -237,10 +243,12 @@ protected:
     omni::physx::IPhysx* mPhysx = nullptr;
     ::physx::PxScene* mPxScene = nullptr;
     omni::timeline::ITimeline* mTimeline = nullptr;
-    carb::flatcache::IToken* mToken = nullptr;
+    omni::fabric::IToken* mToken = nullptr;
     carb::tasking::ITasking* mTasking = nullptr;
     std::shared_ptr<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper> mLineDrawing;
     std::shared_ptr<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper> mPointDrawing;
+
+    pxr::RangeSensorRangeSensor mRangeSensorPrim;
 
     pxr::UsdTimeCode mParentPrimTimeCode;
     bool mIsParentPrimTimeSampled = false;
@@ -248,7 +256,7 @@ protected:
     bool mFirstFrame = true;
 };
 
-typedef RangeSensorComponentBase<pxr::RangeSensorSchemaRangeSensor> RangeSensorComponent;
+typedef RangeSensorComponentBase<pxr::RangeSensorRangeSensor> RangeSensorComponent;
 
 }
 }

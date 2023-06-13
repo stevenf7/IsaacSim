@@ -76,10 +76,6 @@
                 "type": "uchar[]",
                 "description": "Occlusion data"
             },
-            "swhFrameNumber": {
-                "type": "uint64",
-                "description": "Frame number"
-            },
             "sdIMNumSemantics": {
                 "type": "uint",
                 "description" : "Number of semantic entities in the semantic arrays"
@@ -122,10 +118,6 @@
             "idToLabels": {
                 "description": "Mapping from id to semantic labels.",
                 "type": "string"
-            },
-            "swhFrameNumber": {
-                "type": "uint64",
-                "description": "Frame number"
             },
             "bufferSize": {
                 "type": "uint",

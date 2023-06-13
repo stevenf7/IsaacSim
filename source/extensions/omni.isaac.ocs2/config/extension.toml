@@ -20,7 +20,6 @@ writeTarget.platform = true # pip prebundle makes this extension os specific
 "omni.kit.pip_archive" = {}
 
 [[python.module]]
-name = "ocs2"
 path = "pip_prebundle"
 
 [[python.module]]

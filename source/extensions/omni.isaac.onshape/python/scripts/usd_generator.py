@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -8,9 +8,14 @@
 #
 
 import asyncio
+import base64
 import ctypes
 import os
 import re
+import threading
+import unicodedata
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 
 import carb
 import numpy as np
@@ -19,25 +24,12 @@ import omni.client
 import pxr
 from carb._carb import Float3, Float4
 from omni.client._omniclient import Result
-from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdLux, UsdPhysics, UsdShade
-from pxr.Vt import DoubleArray, IntArray, Vec2fArray, Vec3fArray
-
-# Transition between 104 and 105, deprecation of namespace omni.usd.utils
-try:
-    from omni.usd.utils import get_local_transform_matrix, get_world_transform_matrix
-except:
-    from omni.usd import get_world_transform_matrix, get_local_transform_matrix
-
-import base64
-import re
-import threading
-import unicodedata
-from concurrent.futures import ThreadPoolExecutor
-from functools import partial
-
 from omni.isaac.onshape.scripts.preferences import OnshapeImporterPreferences
 from omni.isaac.onshape.widgets.assembly_widget import Mate
 from omni.isaac.onshape.widgets.visual_materials_widget import VisualMaterial
+from omni.usd import get_local_transform_matrix, get_world_transform_matrix
+from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdLux, UsdPhysics, UsdShade
+from pxr.Vt import DoubleArray, IntArray, Vec2fArray, Vec3fArray
 
 
 def make_valid_filename(value):

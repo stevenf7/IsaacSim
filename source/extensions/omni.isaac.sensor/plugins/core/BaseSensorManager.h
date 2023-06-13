@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -28,7 +28,7 @@
 #include <omni/usd/UsdContext.h>
 #include <physicsSchemaTools/UsdTools.h>
 #include <physxSchema/physxContactReportAPI.h>
-#include <usdPhysics/scene.h>
+#include <pxr/usd/usdPhysics/scene.h>
 
 #include <PxActor.h>
 #include <PxArticulationLink.h>
@@ -104,10 +104,10 @@ public:
     void onComponentAdd(const pxr::UsdPrim& prim)
     {
         std::unique_ptr<IsaacBaseSensorComponent> component;
-        if (prim.IsA<pxr::IsaacSensorSchemaIsaacContactSensor>())
+        if (prim.IsA<pxr::IsaacSensorIsaacContactSensor>())
         {
             component = std::make_unique<ContactSensor>(mDebugDrawPtr, mPhysXInterface, mContactManager.get());
-            component->initialize(pxr::IsaacSensorSchemaIsaacContactSensor(prim), mStage);
+            component->initialize(pxr::IsaacSensorIsaacBaseSensor(prim), mStage);
 
             ContactSensor* contactSensor = dynamic_cast<ContactSensor*>(component.get());
             bool validParentFound = contactSensor->findValidParent();
@@ -118,10 +118,10 @@ public:
                 return;
             }
         }
-        else if (prim.IsA<pxr::IsaacSensorSchemaIsaacImuSensor>())
+        else if (prim.IsA<pxr::IsaacSensorIsaacImuSensor>())
         {
             component = std::make_unique<ImuSensor>(mDebugDrawPtr, mPhysXInterface);
-            component->initialize(pxr::IsaacSensorSchemaIsaacImuSensor(prim), mStage);
+            component->initialize(pxr::IsaacSensorIsaacBaseSensor(prim), mStage);
 
             ImuSensor* imuSensor = dynamic_cast<ImuSensor*>(component.get());
             bool validParentFound = imuSensor->findValidParent();

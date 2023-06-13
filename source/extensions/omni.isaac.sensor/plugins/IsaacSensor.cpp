@@ -6,7 +6,10 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
-
+#ifdef _WIN32
+#    pragma warning(push)
+#    pragma warning(disable : 4996)
+#endif
 #define CARB_EXPORTS
 
 // clang-format off
@@ -105,7 +108,7 @@ bool CARB_ABI isContactSensor(const char* primPath)
 
 const char* CARB_ABI CsDecodeBodyName(uint64_t path_token)
 {
-    return reinterpret_cast<const pxr::SdfPath&>(path_token).GetString().c_str();
+    return omni::isaac::utils::getSdfPathFromUint64(path_token).GetString().c_str();
 }
 
 omni::isaac::sensor::CsRawData* CARB_ABI CsGetBodyRawData(const char* primPath, size_t& numContacts)
@@ -450,3 +453,6 @@ void fillInterface(omni::isaac::sensor::ImuSensorInterface& iface)
     iface.getSensorSimReading = imu_sensor::IsGetSensorSimReading;
     iface.isImuSensor = imu_sensor::isImuSensor;
 }
+#ifdef _WIN32
+#    pragma warning(pop)
+#endif

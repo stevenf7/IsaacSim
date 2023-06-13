@@ -1,4 +1,4 @@
-# Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2022-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -101,7 +101,7 @@ def get_target_pos(inputs, state):
         g = [pos[0], pos[1], rot]  # combine into list of useful data
     else:  # if targetPrim is provided
         prim = state.stage.GetPrimAtPath(inputs.targetPrim.path)  # get targetPrim
-        m = omni.usd.utils.get_world_transform_matrix(prim)  # get position/rotation matrix of targetPrim
+        m = omni.usd.get_world_transform_matrix(prim)  # get position/rotation matrix of targetPrim
         m.Orthonormalize()  # normalize vectors and make orthogonal
         pos = list(m.ExtractTranslation())  # get position double[3]
         rot = normalize_angle(np.radians(m.ExtractRotation().angle))  # get rotation double

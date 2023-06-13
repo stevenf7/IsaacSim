@@ -183,11 +183,11 @@ class OgnROS2CameraHelper:
                     if writer is not None:
                         db.internal_state.append_writer(writer)
                     type_dict = {
-                        "instance_segmentation": "InstanceSegmentation",
-                        "semantic_segmentation": "SemanticSegmentation",
-                        "bbox_2d_tight": "BoundingBox2DTight",
-                        "bbox_2d_loose": "BoundingBox2DLoose",
-                        "bbox_3d": "BoundingBox3D",
+                        "instance_segmentation": "InstanceSegmentationSD",
+                        "semantic_segmentation": "SemanticSegmentationSD",
+                        "bbox_2d_tight": "BoundingBox2DTightSD",
+                        "bbox_2d_loose": "BoundingBox2DLooseSD",
+                        "bbox_3d": "BoundingBox3DSD",
                     }
                     if sensor_type in type_dict:
                         if db.inputs.enableSemanticLabels:

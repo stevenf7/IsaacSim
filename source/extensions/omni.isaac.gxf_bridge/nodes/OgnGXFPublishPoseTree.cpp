@@ -11,9 +11,8 @@
 #include "UsdPCH.h"
 // clang-format on
 
-#include <carb/flatcache/FlatCache.h>
-
 #include <Utils/IsaacConversions.h>
+#include <omni/fabric/FabricUSD.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/utils/Conversions.h>
 #include <omni/usd/UsdUtils.h>
@@ -80,7 +79,7 @@ public:
         const pxr::UsdPrim thisPrim = stage->GetPrimAtPath(pxr::SdfPath(state.mThisPrimPath));
         // Finding target prims
         pxr::TfToken targetPrimInputs =
-            carb::flatcache::toTfToken(OgnGXFPublishPoseTreeAttributes::inputs::targetPrims.m_token);
+            omni::fabric::toTfToken(OgnGXFPublishPoseTreeAttributes::inputs::targetPrims.m_token);
         const pxr::UsdRelationship targetRel = thisPrim.GetRelationship(targetPrimInputs);
         targetRel.GetTargets(&state.mPrims);
 
@@ -93,7 +92,7 @@ public:
             CARB_LOG_ERROR_ONCE(
                 "Regex list must be of the same size as target root prims, but input regex "
                 "list has size %i and target prims has size %i",
-                numRegex, numPrims);
+                (int)numRegex, (int)numPrims);
             return false;
         }
         std::size_t numDepth = db.inputs.poseDepth().size();
@@ -102,7 +101,7 @@ public:
             CARB_LOG_ERROR_ONCE(
                 "Depth list must be of the same size as target root prims, but input depth "
                 "list has size %i and target prims has size %i",
-                numDepth, numPrims);
+                (int)numDepth, (int)numPrims);
             return false;
         }
 
@@ -141,7 +140,7 @@ private:
 
     void buildFrameNameMap(const OgnGXFPublishPoseTreeDatabase& db)
     {
-        for (int i = 0; i < db.inputs.frameNamesMap().size() / 2; ++i)
+        for (int i = 0; i < (int)db.inputs.frameNamesMap().size() / 2; ++i)
         {
             const std::string isaacPrimName = db.tokenToString(db.inputs.frameNamesMap()[2 * i]);
             const std::string atlasFrameName = db.tokenToString(db.inputs.frameNamesMap()[2 * i + 1]);
@@ -170,7 +169,7 @@ private:
         {
             frameName = iterator->second;
         }
-        nvidia::isaac::PoseTree::frame_t poseUid;
+        nvidia::isaac::PoseTree::frame_t poseUid{ 0 };
         nvidia::isaac::PoseTree& poseTree = state.mAtlas->pose_tree();
         // const std::string primRegexStr = db.inputs.primRegex();
         const std::regex primRegex = std::regex(primRegexStr);

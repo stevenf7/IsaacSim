@@ -1,4 +1,4 @@
-# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2021-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -76,7 +76,7 @@ class PhysicsContext(object):
         self._physx_interface = omni.physx.acquire_physx_interface()
         self._physx_sim_interface = omni.physx.get_physx_simulation_interface()
         self._use_gpu_pipeline = False
-        self._use_flatcache = False
+        self._use_fabric = False
 
         if sim_params is None and set_defaults:
             meters_per_unit = get_stage_units()
@@ -88,7 +88,7 @@ class PhysicsContext(object):
                 self._carb_settings.set_bool("/physics/suppressReadback", True)
                 self.set_broadphase_type("GPU")
                 self.enable_gpu_dynamics(flag=True)
-                self.enable_flatcache(True)
+                self.enable_fabric(True)
             else:
                 self._carb_settings.set_bool("/physics/suppressReadback", False)
                 self.set_broadphase_type(broadcast_type="MBP")
@@ -114,9 +114,9 @@ class PhysicsContext(object):
                 if sim_params["use_gpu_pipeline"]:
                     self._use_gpu_pipeline = True
 
-            if "use_flatcache" in sim_params.keys() and sim_params["use_flatcache"]:
-                self._use_flatcache = True
-                self.enable_flatcache(True)
+            if "use_fabric" in sim_params.keys() and sim_params["use_fabric"]:
+                self._use_fabric = True
+                self.enable_fabric(True)
 
             if "use_gpu" in sim_params.keys():
                 self.enable_gpu_dynamics(sim_params["use_gpu"])
@@ -190,8 +190,8 @@ class PhysicsContext(object):
         return self._use_gpu_pipeline
 
     @property
-    def use_flatcache(self):
-        return self._use_flatcache
+    def use_fabric(self):
+        return self._use_fabric
 
     def __del__(self):
         return
@@ -273,18 +273,18 @@ class PhysicsContext(object):
         else:
             return 1.0 / physics_hz
 
-    def enable_flatcache(self, enable):
+    def enable_fabric(self, enable):
         manager = omni.kit.app.get_app().get_extension_manager()
-        flatcache_was_enabled = manager.is_extension_enabled("omni.physx.flatcache")
-        if not flatcache_was_enabled and enable:
-            manager.set_extension_enabled_immediate("omni.physx.flatcache", True)
+        fabric_was_enabled = manager.is_extension_enabled("omni.physx.fabric")
+        if not fabric_was_enabled and enable:
+            manager.set_extension_enabled_immediate("omni.physx.fabric", True)
             self._carb_settings.set_bool("/physics/updateToUsd", False)
             self._carb_settings.set_bool("/physics/updateParticlesToUsd", False)
             self._carb_settings.set_bool("/physics/updateVelocitiesToUsd", False)
             self._carb_settings.set_bool("/physics/updateForceSensorsToUsd", False)
             self._carb_settings.set_bool("/physics/outputVelocitiesLocalSpace", False)
-        elif flatcache_was_enabled and not enable:
-            manager.set_extension_enabled_immediate("omni.physx.flatcache", False)
+        elif fabric_was_enabled and not enable:
+            manager.set_extension_enabled_immediate("omni.physx.fabric", False)
             self._carb_settings.set_bool("/physics/updateToUsd", True)
             self._carb_settings.set_bool("/physics/updateParticlesToUsd", True)
             self._carb_settings.set_bool("/physics/updateVelocitiesToUsd", True)

@@ -8,8 +8,14 @@
 //
 
 #pragma once
-
-#include <usdrt/scenegraph/usd/usd/stage.h>
+#if defined(_WIN32)
+#    include <usdrt/scenegraph/usd/usd/stage.h>
+#else
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wunused-variable"
+#    include <usdrt/scenegraph/usd/usd/stage.h>
+#    pragma GCC diagnostic pop
+#endif
 
 #include <string>
 #include <vector>

@@ -14,8 +14,15 @@
 #include <foundation/PxTransform.h>
 #include <omni/usd/UsdUtils.h>
 #include <physx/include/foundation/PxTransform.h>
-#include <usdrt/scenegraph/usd/rt/xformable.h>
 
+#if defined(_WIN32)
+#    include <usdrt/scenegraph/usd/rt/xformable.h>
+#else
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wunused-variable"
+#    include <usdrt/scenegraph/usd/rt/xformable.h>
+#    pragma GCC diagnostic pop
+#endif
 
 using namespace omni::isaac::utils::conversions;
 using namespace omni::isaac::utils;
@@ -42,14 +49,14 @@ static usdrt::GfMatrix4d computeWorldXformNoCache(pxr::UsdStageRefPtr usdStage,
 
         if (usdrtXformable.HasWorldXform())
         {
-            usdrt::GfVec3d worldPos;
-            usdrt::GfQuatf worldOrient;
-            usdrt::GfVec3f worldScale;
+            usdrt::GfVec3d worldPos{};
+            usdrt::GfQuatf worldOrient{};
+            usdrt::GfVec3f worldScale{};
             usdrtXformable.GetWorldPositionAttr().Get(&worldPos, usdrt::UsdTimeCode(timecode.GetValue()));
             usdrtXformable.GetWorldOrientationAttr().Get(&worldOrient, usdrt::UsdTimeCode(timecode.GetValue()));
             usdrtXformable.GetWorldScaleAttr().Get(&worldScale, usdrt::UsdTimeCode(timecode.GetValue()));
 
-            usdrt::GfMatrix4d rot, scale, result;
+            usdrt::GfMatrix4d rot, scale, result{};
             scale.SetScale(usdrt::GfVec3d(worldScale));
             rot.SetRotate(usdrt::GfQuatd(worldOrient));
             result = scale * rot;

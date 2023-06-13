@@ -19,9 +19,7 @@ project_ext_plugin(ext, "omni.isaac.gxf_bridge.plugin")
         "%{root}/include/pch",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
-        "%{root}/_build/target-deps/python/include/python3.7m",
-        "%{root}/_build/target-deps/physx/include",
-        "%{root}/_build/target-deps/pxshared/include",
+        "%{root}/_build/target-deps/python/include/python3.10",
         "%{root}/_build/target-deps/isaac_gxf",
         "%{root}/_build/target-deps/isaac_gxf/include",
         "%{root}/_build/target-deps/isaac_gxf/include/external/com_nvidia_gxf",
@@ -32,19 +30,19 @@ project_ext_plugin(ext, "omni.isaac.gxf_bridge.plugin")
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/omni_physics/include",
         "%{root}/_build/target-deps/omni_client_library/include",
-        "%{kit_sdk_bin_dir}/extscore/omni.syntheticdata/include",
-        "%{kit_sdk_bin_dir}/extscore/usdrt.scenegraph/include",
-        "%{root}/_build/kit_%{config}/_exts/omni.syntheticdata/include",
-        "%{root}/source/extensions/omni.isaac.gxf_bridge/"
+        "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/include",
+        "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/RangeSensorSchema/include",
+        "%{kit_sdk_bin_dir}/exts/omni.syntheticdata/include",
+        "%{kit_sdk_bin_dir}/exts/usdrt.scenegraph/include",
+        "%{root}/source/extensions/omni.isaac.gxf_bridge/",
      }
      libdirs {
-        "%{root}/_build/target-deps/python/libs", 
             "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
             "%{root}/_build/target-deps/isaac_gxf/lib",
-            "%{root}/schemas/_install/rangeSensorSchema/%{platform}_%{config}/lib",
+            "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/lib",
+            "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/RangeSensorSchema/lib",
             "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
-            "%{kit_sdk_bin_dir}/plugins",
-            "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin"
+            "%{kit_sdk_bin_dir}/exts/omni.usd.core/bin"
 
     }
 

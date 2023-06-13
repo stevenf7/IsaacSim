@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -10,10 +10,15 @@
 #include <carb/BindingsUtils.h>
 
 #include <omni/isaac/dynamic_control/DynamicControl.h>
-#include <pybind11/pybind11/functional.h>
-#include <pybind11/pybind11/numpy.h>
-#include <pybind11/pybind11/pybind11.h>
-#include <pybind11/pybind11/stl.h>
+#include <pybind11/functional.h>
+#include <pybind11/numpy.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
+#ifdef _WIN32
+typedef SSIZE_T ssize_t;
+#endif
+
 CARB_BINDINGS("omni.isaac.dynamic_control.python")
 
 namespace omni

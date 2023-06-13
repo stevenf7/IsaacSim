@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -16,6 +16,7 @@
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
 #include <omni/isaac/utils/BaseResetNode.h>
 #include <rangeSensorSchema/lidar.h>
+#include <rangeSensorSchema/rangeSensor.h>
 
 #include <OgnIsaacReadLidarPointCloudDatabase.h>
 
@@ -68,13 +69,13 @@ public:
 
             // Verify we have a valid lidar prim
             pxr::UsdPrim targetPrim = stage->GetPrimAtPath(pxr::SdfPath(primPath));
-            if (!targetPrim.IsA<pxr::RangeSensorSchemaLidar>())
+            if (!targetPrim.IsA<pxr::RangeSensorLidar>())
             {
                 db.logError("Prim is not a Lidar Prim");
                 return false;
             }
 
-            state.mLidarPrim = pxr::RangeSensorSchemaLidar(targetPrim);
+            state.mRangeSensorPrim = pxr::RangeSensorRangeSensor(targetPrim);
 
             if (!state.mLidarSensorInterface->isLidarSensor(primPath))
             {
@@ -96,7 +97,7 @@ public:
     {
         float maxRange = 100;
 
-        omni::isaac::utils::safeGetAttribute(mLidarPrim.GetMaxRangeAttr(), maxRange);
+        omni::isaac::utils::safeGetAttribute(mRangeSensorPrim.GetMaxRangeAttr(), maxRange);
 
         carb::Float3* lidarData = mLidarSensorInterface->getPointCloud(mLidarPrimPath);
         // float* theta = mLidarSensorInterface->getAzimuthData(mLidarPrimPath);
@@ -197,7 +198,8 @@ public:
 
 private:
     omni::isaac::range_sensor::LidarSensorInterface* mLidarSensorInterface = nullptr;
-    pxr::RangeSensorSchemaLidar mLidarPrim;
+    // pxr::RangeSensorLidar mLidarPrim;
+    pxr::RangeSensorRangeSensor mRangeSensorPrim;
 
     const char* mLidarPrimPath = nullptr;
 

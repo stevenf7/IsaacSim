@@ -19,24 +19,17 @@ project_ext_plugin(ext, "omni.isaac.partition.plugin")
 
     includedirs {
         "%{root}/include/pch",
-        targetDepsDir.."/carbonite/include",
-        targetDepsDir.."/physx/include",
-        targetDepsDir.."/pxshared/include",
         targetDepsDir.."/nv_usd/%{cfg.buildcfg}/include",
         targetDepsDir.."/usd_ext_physics/%{cfg.buildcfg}/include",
         targetDepsDir.."/omni_physics/include",
         targetDepsDir.."/rtx_plugins/include",
-        targetDepsDir.."/client_library/include",
         "./include",
         "%{root}/_build/target-deps/omni_client_library/include",
      }
     libdirs {
-        "%{root}/_build/target-deps/python/libs",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-        "%{root}/_build/target-deps/client_library/%{cfg.buildcfg}",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
-        "%{kit_sdk_bin_dir}/plugins",
-        "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin"
+        "%{kit_sdk_bin_dir}/exts/omni.usd.core/bin"
     }
 
     links { "gf", "vt", "tf", "sdf", "usd", "usdGeom", "usdShade", "usdImaging", "usdUtils", "physxSchema", "usdPhysics", "physicsSchemaTools", "omni.usd", "arch", "work", "carb", "kind"}
@@ -44,7 +37,7 @@ project_ext_plugin(ext, "omni.isaac.partition.plugin")
     filter { "system:linux" }
         includedirs {
             "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
-            "%{root}/_build/target-deps/python/include/python3.7m",
+            "%{root}/_build/target-deps/python/include/python3.10",
         }
         links {
             "stdc++fs"

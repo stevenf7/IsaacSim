@@ -29,7 +29,7 @@ persistent.simulation.defaultMetersPerUnit = 1.0
 # app.content.emptyStageOnStart = true
 app.file.ignoreUnsavedOnExit = true
 app.settings.persistent = false
-app.settings.flatCacheStageFrameHistoryCount = 3 # needed for omni.syntheticdata
+app.settings.fabricDefaultStageFrameHistoryCount = 3 # needed for omni.syntheticdata TODO105 Still true?
 app.hydraEngine.waitIdle = true
 app.hydra.aperture.conform = 4 # Don't modify camera prim, stretch the image so it fits
 app.asyncRendering = false
@@ -47,10 +47,13 @@ exts."omni.kit.thumbnails.usd".thumbnail_on_save = false
 exts."omni.kit.viewport.window".startup.windowName="Viewport" # Rename from viewport next
 # settings from the base app
 persistent.omnigraph.updateToUsd = false
+persistent.omnigraph.useSchemaPrims = true
+persistent.omnigraph.disablePrimNodes = true
 persistent.physics.updateToUsd = true
 persistent.physics.updateVelocitiesToUsd = true
 persistent.physics.useFastCache = false
 persistent.physics.visualizationDisplayJoints = false
+persistent.omni.replicator.captureOnPlay = true
 # crashreporter.enabled = false
 crashreporter.alwaysUpload = false
 crashreporter.skipOldDumpUpload = true
@@ -97,3 +100,5 @@ exts."omni.isaac.asset_browser".folders = [
     "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2023.1.0/Isaac/Samples",
 ]
 # FOR DEVELOPMENT - END #
+
+"omni.isaac.dynamic_control" = {}

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.5] - 2023-06-12
+### Changed
+- Update to kit 105.1, omni.usd.utils renamed omni.usd
+
 ## [0.2.4] - 2023-01-06
 ### Fixed
 - onclick_fn warning when creating UI

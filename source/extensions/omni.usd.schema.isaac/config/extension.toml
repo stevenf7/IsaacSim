@@ -4,12 +4,12 @@ reloadable = false
 order = -100
 
 [package]
-version = "1.1.0"
+version = "2.0.0"
 category = "Simulation"
 authors = ["Isaac Sim team"]
 title = "USD Isaac schema"
 description="USD Isaac schema"
-repository="https://gitlab-master.nvidia.com/isaac/usd-ext-isaac"
+repository="https://gitlab-master.nvidia.com/Isaac/omni-isaacsim-schema/-/tree/isaacsim"
 keywords = ["isaac", "usd", "schema"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
@@ -22,15 +22,17 @@ writeTarget.kit = true
 
 [[python.module]]
 name = "omni.isaac.RangeSensorSchema"
+path = "plugins/RangeSensorSchema/"
 
 [[python.module]]
 name = "omni.isaac.IsaacSensorSchema"
+path = "plugins/IsaacSensorSchema/"
 
 [[python.module]]
 name = "usd.schema.isaac"
 
 [[native.library]]
-path = "bin/${lib_prefix}rangeSensorSchema${lib_ext}"
+path = "plugins/RangeSensorSchema/lib/${lib_prefix}rangeSensorSchema${lib_ext}"
 
 [[native.library]]
-path = "bin/${lib_prefix}isaacSensorSchema${lib_ext}"
+path = "plugins/IsaacSensorSchema/lib/${lib_prefix}isaacSensorSchema${lib_ext}"

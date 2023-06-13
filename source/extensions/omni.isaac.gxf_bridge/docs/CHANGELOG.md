@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.12.2] - 2023-06-12
+### Changed
+- Update to kit 105.1, update build system
+
 ## [0.12.1] - 2023-06-07
 ### Fixed
 - Incorrect dimension assignment in gxf image publisher

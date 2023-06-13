@@ -13,7 +13,6 @@
 # !!!
 # IMPORTANT: If you change this config cleanup target folder. Script check that it already exists and does nothing.
 
-
 # Options. 
 # Various options are available that are passed through pip during the installation.
 
@@ -32,7 +31,7 @@
 # Disabled because we get this with the base omni.kit.pip_archive extension
 # [[dependency]]
 # python = "../_build/target-deps/python"
-# packages = ["pip==21.2.4"]
+# packages = ["pip==23.0.1"]
 # target = "../_build/target-deps/pip_archive"
 # platforms = ["*-x86_64"]
 # download_only = true
@@ -46,32 +45,28 @@
 [[dependency]]
 python = "../_build/target-deps/python"
 packages = [
-    "scipy==1.7.1",                         # SWIPAT filed under: https://nvbugs/3430404
-    "numpy-quaternion==2020.9.5.14.42.2",   # SWIPAT filed under: https://nvbugs/3430427
-    "numba==0.51.2",                        # SWIPAT filed under: https://nvbugs/3430475
+    "numpy-quaternion==2022.4.3",           # SWIPAT filed under: https://nvbugs/3430427
+    "numba==0.57.0",                        # SWIPAT filed under: https://nvbugs/3430475
     "webbot==0.34",                         # SWIPAT filed under: https://nvbugs/3430513
-    "selenium==3.141.0",                    # SWIPAT filed under: https://nvbugs/3430533
-    "urllib3==1.26.6",                      # SWIPAT filed under: https://nvbugs/3430655
-    "requests==2.26.0",                     # SWIPAT filed under: https://nvbugs/3430668
-    "charset-normalizer==2.0.4",            # SWIPAT filed under: https://nvbugs/3433736
-    "construct==2.10.61",                   # SWIPAT filed under: https://nvbugs/3433745
-    "llvmlite==0.37.0",                     # SWIPAT filed under: https://nvbugs/3433740
-    "nest_asyncio==1.5.1",                  # SWIPAT filed under: https://nvbugs/3433748
-    "jinja2==2.11.3",                       # SWIPAT filed under: https://nvbugs/3433752
-    "markupsafe==2.0.1",                    # SWIPAT filed under: https://nvbugs/3433754
-    "matplotlib==3.4.3",                    # SWIPAT filed under: https://nvbugs/3430500
-    "pyparsing==2.4.7",                     # SWIPAT filed under: https://nvbugs/3433756
-    "cycler==0.10.0",                       # SWIPAT filed under: https://nvbugs/3433763
-    "kiwisolver==1.3.2",                    # SWIPAT filed under: https://nvbugs/3433770
-    "pint==0.17.0",                         # SWIPAT filed under: https://nvbugs/3433818
-    "packaging==21.0",                      # SWIPAT filed under: https://nvbugs/3433815
-    "oauthlib==3.1.1",                      # SWIPAT filed under: https://nvbugs/3433846
-    "requests-oauthlib==1.3.0",             # SWIPAT filed under: https://nvbugs/3433849
+    "selenium==4.8.3",                      # SWIPAT filed under: https://nvbugs/3430533
+    "requests==2.28.2",                     # SWIPAT filed under: https://nvbugs/3430668
+    "construct==2.10.68",                   # SWIPAT filed under: https://nvbugs/3433745
+    "llvmlite==0.40.0",                     # SWIPAT filed under: https://nvbugs/3433740
+    "nest_asyncio==1.5.6",                  # SWIPAT filed under: https://nvbugs/3433748
+    "jinja2==3.1.2",                        # SWIPAT filed under: https://nvbugs/3433752
+    "markupsafe==2.1.2",                    # SWIPAT filed under: https://nvbugs/3433754
+    "matplotlib==3.7.1",                    # SWIPAT filed under: https://nvbugs/3430500
+    "pyparsing==3.0.9",                     # SWIPAT filed under: https://nvbugs/3433756
+    "cycler==0.11.0",                       # SWIPAT filed under: https://nvbugs/3433763
+    "kiwisolver==1.4.4",                    # SWIPAT filed under: https://nvbugs/3433770
+    "pint==0.20.1",                         # SWIPAT filed under: https://nvbugs/3433818
+    "packaging==23.0",                      # SWIPAT filed under: https://nvbugs/3433815
+    "oauthlib==3.2.2",                      # SWIPAT filed under: https://nvbugs/3433846
+    "requests-oauthlib==1.3.1",             # SWIPAT filed under: https://nvbugs/3433849
     "gunicorn==20.1.0",                     # SWIPAT filed under: https://nvbugs/3439010
-    "watchgod==0.7",                        # SWIPAT filed under: https://nvbugs/3439018
-    "pyyaml==5.4.1",                        # SWIPAT filed under: https://nvbugs/3434739
-    "osqp==0.6.2.post5",                    # SWIPAT filed under: https://nvbugs/3577752
-    "qdldl==0.1.5.post0",                   # SWIPAT filed under: https://nvbugs/3577749
+    "watchgod==0.8.2",                      # SWIPAT filed under: https://nvbugs/3439018
+    "osqp==0.6.2.post8",                    # SWIPAT filed under: https://nvbugs/3577752
+    "qdldl==0.1.5.post3",                   # SWIPAT filed under: https://nvbugs/3577749
     "nvsmi==0.4.2",                         # SWIPAT filed under: https://nvbugs/3639810
     "boto3==1.17.1",                        # SWIPAT filed under: https://nvbugs/3738079
     "s3transfer==0.3.7",                    # SWIPAT filed under: https://nvbugs/3738087
@@ -83,17 +78,3 @@ download_only = false
 install_dependencies = false
 append_to_install_folder = true
 gather_licenses_path = "../_build/PACKAGE-LICENSES/PIP-prebundled-LICENSES.txt"
-
-# capnp is a custom dependency that is compiled and brought in from packman for isaac sdk bridge
-[[dependency]]
-python = "../_build/target-deps/python"
-packages = [
-    "pycapnp==1.0.0"                        # SWIPAT filed under: https://nvbugs/3429543
-]
-target = "../_build/target-deps/isaac_reb_prebundle"
-platforms = ["linux-x86_64"]
-download_only = false
-install_dependencies = false
-append_to_install_folder = true
-gather_licenses_path = "../_build/PACKAGE-LICENSES/PIP-prebundled-LICENSES.txt"
-extra_args = ["--no-index", "-f", "_build/target-deps/isaac_engine"]

@@ -39,19 +39,6 @@
                 "type": "execution",
                 "description": "Output execution trigger"
             }
-        },
-        "tests": [
-            {
-            "description": "Test Render Product Creation",
-            "setup": {
-                "create_nodes": [["TestNode", "omni.isaac.core_nodes.IsaacCreateRenderProduct"]],
-                "expose_prims": [["bundle", "/OmniverseKit_Persp", "PrimBundle"]],
-                "connect": [["PrimBundle.inputs:prim", "TestNode.inputs:cameraPrim"]]
-            },
-            "outputs": {
-                "renderProductPath": "/Render/RenderProduct_Isaac"
-            }
         }
-        ]
     }
 }

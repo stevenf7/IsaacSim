@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -21,6 +21,7 @@
 #include <carb/dictionary/DictionaryUtils.h>
 #include <carb/logging/Log.h>
 #include <carb/settings/ISettings.h>
+#include <carb/tasking/ITasking.h>
 
 #include <omni/graph/core/iComputeGraph.h>
 #include <omni/graph/core/ogn/Registration.h>
@@ -52,7 +53,7 @@ CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       carb::tasking::ITasking,
                       carb::settings::ISettings,
                       omni::graph::core::IGraphRegistry,
-                      carb::flatcache::IToken)
+                      omni::fabric::IToken)
 DECLARE_OGN_NODES()
 
 // private stuff

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -16,9 +16,9 @@
 
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
-#include <carb/flatcache/IToken.h>
 #include <carb/settings/ISettings.h>
 
+#include <omni/fabric/IToken.h>
 #include <omni/graph/core/OgnHelpers.h>
 #include <omni/graph/core/iComputeGraph.h>
 #include <omni/graph/core/ogn/Registration.h>
@@ -30,7 +30,7 @@ const struct carb::PluginImplDesc pluginDesc = { "omni.isaac.conveyor.plugin", "
                                                  "NVIDIA", carb::PluginHotReload::eEnabled, "dev" };
 
 CARB_PLUGIN_IMPL(pluginDesc, omni::isaac::conveyor::IOmniIsaacConveyor)
-CARB_PLUGIN_IMPL_DEPS(omni::graph::core::IGraphRegistry, carb::flatcache::IToken, carb::settings::ISettings)
+CARB_PLUGIN_IMPL_DEPS(omni::graph::core::IGraphRegistry, omni::fabric::IToken, carb::settings::ISettings)
 DECLARE_OGN_NODES()
 
 // carbonite interface for this plugin (may contain multiple compute nodes)

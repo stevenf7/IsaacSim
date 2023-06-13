@@ -15,11 +15,11 @@
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
 #include <carb/filesystem/IFileSystem.h>
-#include <carb/flatcache/FlatCache.h>
-#include <carb/flatcache/IToken.h>
-#include <carb/flatcache/StageWithHistory.h>
 #include <carb/imaging/IImaging.h>
 
+#include <omni/fabric/FabricUSD.h>
+#include <omni/fabric/IToken.h>
+#include <omni/fabric/SimStageWithHistory.h>
 #include <omni/graph/core/NodeTypeRegistrar.h>
 #include <omni/graph/core/iComputeGraph.h>
 #include <omni/graph/core/ogn/Registration.h>
@@ -35,11 +35,11 @@ const struct carb::PluginImplDesc pluginDesc = { "omni.isaac.core_nodes", "Isaac
 CARB_PLUGIN_IMPL(pluginDesc, omni::isaac::core_nodes::CoreNodes)
 CARB_PLUGIN_IMPL_DEPS(omni::graph::core::IGraphRegistry,
                       omni::kit::IStageUpdate,
-                      carb::flatcache::IToken,
+                      omni::fabric::IToken,
                       omni::physx::IPhysx,
-                      carb::flatcache::IStageInProgress,
-                      carb::flatcache::IStageWithHistory,
-                      carb::flatcache::IStageAtTimeInterval,
+                      omni::fabric::IStageReaderWriter,
+                      omni::fabric::ISimStageWithHistory,
+                      omni::fabric::IStageAtTimeInterval,
                       omni::isaac::dynamic_control::DynamicControl)
 
 DECLARE_OGN_NODES()
@@ -48,15 +48,15 @@ namespace
 {
 omni::kit::IStageUpdate* gStageUpdate = nullptr;
 omni::kit::StageUpdateNode* gStageUpdateNode = nullptr;
-carb::flatcache::IStageWithHistory* gStageWithHistory = nullptr;
-carb::flatcache::IStageInProgress* gStageInProgress = nullptr;
-carb::flatcache::IStageAtTimeInterval* gStageAtTimeInterval = nullptr;
+omni::fabric::ISimStageWithHistory* gSimStageWithHistory = nullptr;
+omni::fabric::IStageReaderWriter* gStageReaderWriter = nullptr;
+omni::fabric::IStageAtTimeInterval* gStageAtTimeInterval = nullptr;
 omni::physx::IPhysx* gPhysXInterface = nullptr;
 omni::physx::SubscriptionId gStepSubscription;
 pxr::UsdStageWeakPtr gStage = nullptr;
-carb::flatcache::StageInProgressId gStageInProgressId;
-carb::flatcache::StageWithHistoryId gStageWithHistoryId;
-carb::flatcache::UsdStageId gStageId = { 0 };
+omni::fabric::StageReaderWriterId gStageReaderWriterId;
+omni::fabric::SimStageWithHistoryId gSimStageWithHistoryId;
+omni::fabric::UsdStageId gStageId;
 double gSimTime = 0.0;
 double gSimTimeMonotonic = 0.0;
 double gSystemTime = 0.0;
@@ -94,24 +94,24 @@ void onDetach(void* userData)
 
 void onResume(float currentTime, void* userData)
 {
-    gStageInProgressId = gStageInProgress->get(gStageId);
-    gStageWithHistoryId = gStageWithHistory->get(gStageId);
-    carb::flatcache::StageInProgress stageinProgress = carb::flatcache::StageInProgress(gStageInProgressId);
+    gStageReaderWriterId = gStageReaderWriter->get(gStageId);
+    gSimStageWithHistoryId = gSimStageWithHistory->get(gStageId);
+    omni::fabric::StageReaderWriter stageReaderWriter = omni::fabric::StageReaderWriter(gStageReaderWriterId);
 
-    stageinProgress.createPrim(carb::flatcache::Path("/__OgnIsaacSimTime__"));
+    stageReaderWriter.createPrim(omni::fabric::Path("/__OgnIsaacSimTime__"));
 
     const omni::graph::core::Type typeTag(omni::graph::core::BaseDataType::eTag);
-    const carb::flatcache::Token fc_exportToRingbuffer("fc_exportToRingbuffer");
-    stageinProgress.createAttribute(carb::flatcache::Path("/__OgnIsaacSimTime__"), fc_exportToRingbuffer, typeTag);
+    const omni::fabric::Token fc_exportToRingbuffer("fc_exportToRingbuffer");
+    stageReaderWriter.createAttribute(omni::fabric::Path("/__OgnIsaacSimTime__"), fc_exportToRingbuffer, typeTag);
 
     const omni::graph::core::Type typeDouble(omni::graph::core::BaseDataType::eDouble, 1, 0);
-    stageinProgress.getOrCreateAttributeWr<double>(
-        carb::flatcache::Path("/__OgnIsaacSimTime__"), carb::flatcache::Token("simTime"), typeDouble) = gSimTime;
-    stageinProgress.getOrCreateAttributeWr<double>(
-        carb::flatcache::Path("/__OgnIsaacSimTime__"), carb::flatcache::Token("simTimeMonotonic"), typeDouble) =
+    stageReaderWriter.getOrCreateAttributeWr<double>(
+        omni::fabric::Path("/__OgnIsaacSimTime__"), omni::fabric::Token("simTime"), typeDouble) = gSimTime;
+    stageReaderWriter.getOrCreateAttributeWr<double>(
+        omni::fabric::Path("/__OgnIsaacSimTime__"), omni::fabric::Token("simTimeMonotonic"), typeDouble) =
         gSimTimeMonotonic;
-    stageinProgress.getOrCreateAttributeWr<double>(
-        carb::flatcache::Path("/__OgnIsaacSimTime__"), carb::flatcache::Token("systemTime"), typeDouble) = gSystemTime;
+    stageReaderWriter.getOrCreateAttributeWr<double>(
+        omni::fabric::Path("/__OgnIsaacSimTime__"), omni::fabric::Token("systemTime"), typeDouble) = gSystemTime;
 }
 
 // void onPause(void* userData)
@@ -119,30 +119,30 @@ void onResume(float currentTime, void* userData)
 // }
 void onStop(void* userData)
 {
-    carb::flatcache::StageInProgress stageinProgress = carb::flatcache::StageInProgress(gStageInProgressId);
-    auto path = carb::flatcache::Path("/__OgnIsaacSimTime__");
-    pxr::SdfPath usdPath = carb::flatcache::intToPath(path);
+    omni::fabric::StageReaderWriter stageReaderWriter = omni::fabric::StageReaderWriter(gStageReaderWriterId);
+    auto path = omni::fabric::Path("/__OgnIsaacSimTime__");
+    pxr::SdfPath usdPath = omni::fabric::intToPath(path);
     pxr::UsdStageRefPtr usdStage =
         pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(uint32_t(gStageId.id)));
     if (usdStage->GetPrimAtPath(usdPath))
     {
-        stageinProgress.destroyPrim(path);
+        stageReaderWriter.destroyPrim(path);
     }
     gSimTime = 0;
 }
 
 void onPhysicsStep(float timeElapsed, void* userData)
 {
-    carb::flatcache::StageInProgress stageinProgress = carb::flatcache::StageInProgress(gStageInProgressId);
+    omni::fabric::StageReaderWriter stageReaderWriter = omni::fabric::StageReaderWriter(gStageReaderWriterId);
     gSimTime += timeElapsed;
     gSimTimeMonotonic += timeElapsed;
     gSystemTime = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
-    auto path = carb::flatcache::Path("/__OgnIsaacSimTime__");
-    pxr::SdfPath usdPath = carb::flatcache::intToPath(path);
+    auto path = omni::fabric::Path("/__OgnIsaacSimTime__");
+    pxr::SdfPath usdPath = omni::fabric::intToPath(path);
     pxr::UsdStageRefPtr usdStage =
         pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(uint32_t(gStageId.id)));
 
-    gStageInProgress->prefetchPrim(gStageId, path);
+    gStageReaderWriter->prefetchPrim(gStageId, path);
     // Check if attribute exists:
 
     if (!usdStage->GetPrimAtPath(usdPath))
@@ -152,9 +152,9 @@ void onPhysicsStep(float timeElapsed, void* userData)
         return;
     }
 
-    double* simTime = stageinProgress.getAttributeWr<double>(path, carb::flatcache::Token("simTime"));
-    double* simTimeMonotonic = stageinProgress.getAttributeWr<double>(path, carb::flatcache::Token("simTimeMonotonic"));
-    double* systemTime = stageinProgress.getAttributeWr<double>(path, carb::flatcache::Token("systemTime"));
+    double* simTime = stageReaderWriter.getAttributeWr<double>(path, omni::fabric::Token("simTime"));
+    double* simTimeMonotonic = stageReaderWriter.getAttributeWr<double>(path, omni::fabric::Token("simTimeMonotonic"));
+    double* systemTime = stageReaderWriter.getAttributeWr<double>(path, omni::fabric::Token("systemTime"));
     // Check if the attributes exist
     if (simTime && simTimeMonotonic && systemTime)
     {
@@ -185,93 +185,86 @@ double getSystemTime()
     return gSystemTime;
 }
 
+double getSimulationTimeAtTime(const omni::fabric::RationalTime& rtime)
+{
+    auto path = omni::fabric::Path("/__OgnIsaacSimTime__");
+    pxr::SdfPath usdPath = omni::fabric::intToPath(path);
+
+    if (!gStage->GetPrimAtPath(usdPath) || !gSimStageWithHistoryId.id || !gStageId.id)
+    {
+        return gSimTime;
+    }
+    else
+    {
+        CARB_LOG_ERROR("getSimulationTimeAtTime , returning default sim time %d %d %d", !gStage->GetPrimAtPath(usdPath),
+                       !gSimStageWithHistoryId.id, !gStageId.id);
+    }
+    omni::fabric::StageAtTime stageAtTime(gSimStageWithHistoryId, rtime);
+    auto simTime =
+        stageAtTime.getAttributeRd<double>(omni::fabric::Path("/__OgnIsaacSimTime__"), omni::fabric::Token("simTime"));
+    return simTime ? simTime.value() : gSimTime;
+}
+
+
+double getSimulationTimeMonotonicAtTime(const omni::fabric::RationalTime& rtime)
+{
+    auto path = omni::fabric::Path("/__OgnIsaacSimTime__");
+    pxr::SdfPath usdPath = omni::fabric::intToPath(path);
+
+    if (!gStage->GetPrimAtPath(usdPath) || !gSimStageWithHistoryId.id || !gStageId.id)
+    {
+        return gSimTimeMonotonic;
+    }
+    else
+    {
+        CARB_LOG_ERROR("getSimulationTimeMonotonicAtTime, returning default monotonic sim time %d %d %d",
+                       !gStage->GetPrimAtPath(usdPath), !gSimStageWithHistoryId.id, !gStageId.id);
+    }
+    omni::fabric::StageAtTime stageAtTime(gSimStageWithHistoryId, rtime);
+    auto simTimeMonotonic = stageAtTime.getAttributeRd<double>(
+        omni::fabric::Path("/__OgnIsaacSimTime__"), omni::fabric::Token("simTimeMonotonic"));
+    return simTimeMonotonic ? simTimeMonotonic.value() : gSimTimeMonotonic;
+}
+
+double getSystemTimeAtTime(const omni::fabric::RationalTime& rtime)
+{
+
+    auto path = omni::fabric::Path("/__OgnIsaacSimTime__");
+    pxr::SdfPath usdPath = omni::fabric::intToPath(path);
+
+    if (!gStage->GetPrimAtPath(usdPath) || !gSimStageWithHistoryId.id || !gStageId.id)
+    {
+        return gSystemTime;
+    }
+    else
+    {
+        CARB_LOG_ERROR("getSystemTimeAtTime, returning default system time %d %d %d", !gStage->GetPrimAtPath(usdPath),
+                       !gSimStageWithHistoryId.id, !gStageId.id);
+    }
+    omni::fabric::StageAtTime stageAtTime(gSimStageWithHistoryId, rtime);
+    auto systemTime = stageAtTime.getAttributeRd<double>(
+        omni::fabric::Path("/__OgnIsaacSimTime__"), omni::fabric::Token("systemTime"));
+    return systemTime ? systemTime.value() : gSystemTime;
+}
+// TODO105 Depricate next 3 functions.
 double getSimulationTimeAtSwhFrame(const int64_t swhFrame)
 {
-    auto path = carb::flatcache::Path("/__OgnIsaacSimTime__");
-    pxr::SdfPath usdPath = carb::flatcache::intToPath(path);
-
-    if (!gStage->GetPrimAtPath(usdPath) || !gStageWithHistoryId.id || !gStageId.id)
-    {
-        return gSimTime;
-    }
-    else
-    {
-        CARB_LOG_ERROR("getSimulationTimeAtSwhFrame , returning default sim time %d %d %d",
-                       !gStage->GetPrimAtPath(usdPath), !gStageWithHistoryId.id, !gStageId.id);
-    }
-    carb::flatcache::RationalTime simPeriod = gStageWithHistory->getSimPeriod(gStageId);
-    carb::flatcache::RationalTime rtime = simPeriod * swhFrame;
-    carb::flatcache::StageAtTimeInterval stageAtTimeInterval(gStageWithHistoryId, rtime, rtime, true);
-    auto simTime = stageAtTimeInterval.getAttributeRd<double>(
-        carb::flatcache::Path("/__OgnIsaacSimTime__"), carb::flatcache::Token("simTime"));
-    if (!simTime.empty() && simTime[0])
-    {
-        return *simTime[0];
-    }
-    else
-    {
-        return gSimTime;
-    }
+    return gSimStageWithHistory ? getSimulationTimeAtTime(gSimStageWithHistory->getSimPeriod(gStageId) * swhFrame) :
+                                  gSimTime;
 }
 
 
 double getSimulationTimeMonotonicAtSwhFrame(const int64_t swhFrame)
 {
-    auto path = carb::flatcache::Path("/__OgnIsaacSimTime__");
-    pxr::SdfPath usdPath = carb::flatcache::intToPath(path);
-
-    if (!gStage->GetPrimAtPath(usdPath) || !gStageWithHistoryId.id || !gStageId.id)
-    {
-        return gSimTimeMonotonic;
-    }
-    else
-    {
-        CARB_LOG_ERROR("getSimulationTimeMonotonicAtSwhFrame, returning default monotonic sim time %d %d %d",
-                       !gStage->GetPrimAtPath(usdPath), !gStageWithHistoryId.id, !gStageId.id);
-    }
-    carb::flatcache::RationalTime simPeriod = gStageWithHistory->getSimPeriod(gStageId);
-    carb::flatcache::RationalTime rtime = simPeriod * swhFrame;
-    carb::flatcache::StageAtTimeInterval stageAtTimeInterval(gStageWithHistoryId, rtime, rtime, true);
-    auto simTimeMonotonic = stageAtTimeInterval.getAttributeRd<double>(
-        carb::flatcache::Path("/__OgnIsaacSimTime__"), carb::flatcache::Token("simTimeMonotonic"));
-    if (!simTimeMonotonic.empty() && simTimeMonotonic[0])
-    {
-        return *simTimeMonotonic[0];
-    }
-    else
-    {
-        return gSimTimeMonotonic;
-    }
+    return gSimStageWithHistory ?
+               getSimulationTimeMonotonicAtTime(gSimStageWithHistory->getSimPeriod(gStageId) * swhFrame) :
+               gSimTimeMonotonic;
 }
 
 double getSystemTimeAtSwhFrame(const int64_t swhFrame)
 {
-
-    auto path = carb::flatcache::Path("/__OgnIsaacSimTime__");
-    pxr::SdfPath usdPath = carb::flatcache::intToPath(path);
-
-    if (!gStage->GetPrimAtPath(usdPath) || !gStageWithHistoryId.id || !gStageId.id)
-    {
-        return gSystemTime;
-    }
-    else
-    {
-        CARB_LOG_ERROR("getSystemTimeAtSwhFrame, returning default system time %d %d %d",
-                       !gStage->GetPrimAtPath(usdPath), !gStageWithHistoryId.id, !gStageId.id);
-    }
-    carb::flatcache::RationalTime simPeriod = gStageWithHistory->getSimPeriod(gStageId);
-    carb::flatcache::RationalTime rtime = simPeriod * swhFrame;
-    carb::flatcache::StageAtTimeInterval stageAtTimeInterval(gStageWithHistoryId, rtime, rtime, true);
-    auto systemTime = stageAtTimeInterval.getAttributeRd<double>(
-        carb::flatcache::Path("/__OgnIsaacSimTime__"), carb::flatcache::Token("systemTime"));
-    if (!systemTime.empty() && systemTime[0])
-    {
-        return *systemTime[0];
-    }
-    else
-    {
-        return gSystemTime;
-    }
+    return gSimStageWithHistory ? getSystemTimeAtTime(gSimStageWithHistory->getSimPeriod(gStageId) * swhFrame) :
+                                  gSystemTime;
 }
 
 uint64_t addHandle(void* handle)
@@ -305,10 +298,10 @@ bool removeHandle(const uint64_t handleId)
 CARB_EXPORT void carbOnPluginStartup()
 {
     gStageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>();
-    gStageInProgress = carb::getCachedInterface<carb::flatcache::IStageInProgress>();
+    gStageReaderWriter = carb::getCachedInterface<omni::fabric::IStageReaderWriter>();
     gPhysXInterface = carb::getCachedInterface<omni::physx::IPhysx>();
-    gStageWithHistory = carb::getCachedInterface<carb::flatcache::IStageWithHistory>();
-    gStageAtTimeInterval = carb::getCachedInterface<carb::flatcache::IStageAtTimeInterval>();
+    gSimStageWithHistory = carb::getCachedInterface<omni::fabric::ISimStageWithHistory>();
+    gStageAtTimeInterval = carb::getCachedInterface<omni::fabric::IStageAtTimeInterval>();
     omni::kit::StageUpdateNodeDesc desc = { 0 };
     desc.displayName = "Isaac Core Nodes";
     desc.onAttach = onAttach;
@@ -357,4 +350,8 @@ void fillInterface(omni::isaac::core_nodes::CoreNodes& iface)
     iface.addHandle = addHandle;
     iface.getHandle = getHandle;
     iface.removeHandle = removeHandle;
+
+    iface.getSimTimeAtTime = getSimulationTimeAtTime;
+    iface.getSimTimeMonotonicAtTime = getSimulationTimeMonotonicAtTime;
+    iface.getSystemTimeAtTime = getSystemTimeAtTime;
 }

@@ -1,5 +1,19 @@
 # Changelog
 
+## [5.7.0] - 2023-06-12
+
+### Added
+- TemplateRtxLidarDebugDrawPointCloud Synthetic Data template that mirrors the RtxLidarDebugDrawPointCloud writer.
+
+### Changed
+- Update to kit 105.1
+- RTX Lidar/Radar Nodes cleanup
+- Location of default and temp lidar config files set to ${app}/../data/lidar/
+- Removed pxr::Simulation Gate from Rtx[Lidar|Radar]DebugDrawPointCloud writers
+- renamed pxr::IsaacSensorSchemaIsaacBaseSensor to pxr::IsaacSensorIsaacBaseSensor
+- renamed pxr::IsaacSensorSchemaIsaacContactSensor to pxr::IsaacSensorIsaacContactSensor
+- renamed pxr::IsaacSensorSchemaIsaacImuSensor to pxr::IsaacSensorIsaacImuSensor
+
 
 ## [5.6.4] - 2023-05-09
 ### Fixed

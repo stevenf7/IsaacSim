@@ -56,16 +56,27 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
 
         pass
 
-    async def _set_determinism_settings(self, robot):
-        World()
+    async def _prepare_stage(self, robot):
+        # Set settings to ensure deterministic behavior
+        # Initialize the robot
+        # Play the timeline
 
-        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
-        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(1 / self._physics_dt))
-        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(1 / self._physics_dt))
+        self._timeline.stop()
 
+        world = World()
+
+        await world.initialize_simulation_context_async()
+
+        self._timeline.play()
+        await update_stage_async()
+
+        robot.initialize()
         robot.disable_gravity()
         robot.set_solver_position_iteration_count(64)
         robot.set_solver_velocity_iteration_count(64)
+
+        self._robot.post_reset()
+        await update_stage_async()
 
     # After running each test
     async def tearDown(self):
@@ -150,16 +161,12 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
         kinematics_config = interface_config_loader.load_supported_lula_kinematics_solver_config(robot_name)
         self._kinematics_solver = LulaKinematicsSolver(**kinematics_config)
 
-        # Start Simulation and wait
-        self._timeline.play()
-        await update_stage_async()
-
         for i, target_pos in enumerate(task_space_targets):
             VisualCuboid(f"/targets/target_{i}", position=target_pos, size=0.05)
 
         self._robot = Robot(robot_prim_path)
-        self._robot.initialize()
-        await self._set_determinism_settings(self._robot)
+
+        await self._prepare_stage(self._robot)
 
         iks = []
         ik = None
@@ -349,16 +356,11 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
             kinematics_config["robot_description_path"], kinematics_config["urdf_path"]
         )
 
-        # Start Simulation and wait
-        self._timeline.play()
-        await update_stage_async()
-
         for i, target_pos in enumerate(task_space_targets):
             VisualCuboid(f"/targets/target_{i}", position=target_pos, size=0.05)
 
         self._robot = Robot(robot_prim_path)
-        self._robot.initialize()
-        await self._set_determinism_settings(self._robot)
+        await self._prepare_stage(self._robot)
 
         if built_path is None:
             trajectory = self._trajectory_generator.compute_task_space_trajectory_from_points(

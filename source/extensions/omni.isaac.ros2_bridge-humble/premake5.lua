@@ -25,37 +25,32 @@ project_ext_plugin(ext, "omni.isaac.ros2_humble_bridge.plugin")
 
     add_ogn_dependencies(ogn, {"python/nodes"})
 
+    include_physx()
     includedirs {
         "%{root}/include/pch",
-        "%{root}/_build/target-deps/physx/include",
-        "%{root}/_build/target-deps/pxshared/include",
-        "%{root}/_build/target-deps/carbonite/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
-        "%{root}/_build/target-deps/usd_ext/%{cfg.buildcfg}/include", 
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/usd_audio_schema/%{cfg.buildcfg}/include",
-        "%{root}/_build/target-deps/python/include/python3.7m",
+        "%{root}/_build/target-deps/python/include/python3.10",
         "%{root}/_build/target-deps/nv_ros2_humble/include",
         "%{root}/_build/target-deps/nv_ros2_humble/include/rosidl_runtime_cpp",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/omni_physics/include",
-        "%{kit_sdk_bin_dir}/extscore/omni.syntheticdata/include",
-        "%{kit_sdk_bin_dir}/extscore/usdrt.scenegraph/include",
-        "%{root}/_build/kit_%{config}/_exts/omni.syntheticdata/include",
+        "%{kit_sdk_bin_dir}/exts/omni.syntheticdata/include",
+        "%{kit_sdk_bin_dir}/exts/usdrt.scenegraph/include",
         "%{root}/_build/target-deps/omni_client_library/include",
-        "%{root}/schemas/_install/isaacSensorSchema/%{platform}_%{config}/include",
+        "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/include",
+        "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/RangeSensorSchema/include",
      }
      libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-        "%{root}/_build/target-deps/usd_ext/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/usd_audio_schema/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/nv_ros2_humble/lib",
-        "%{root}/schemas/_install/rangeSensorSchema/%{platform}_%{config}/lib",
-        "%{kit_sdk_bin_dir}/plugins",
-        "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin",
-        "%{root}/schemas/_install/isaacSensorSchema/%{platform}_%{config}/lib",
+        "%{kit_sdk_bin_dir}/exts/omni.usd.core/bin",
+        "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/lib",
+        "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/RangeSensorSchema/lib",
     }
     -- Add link below to use cyclonedds
     -- "rmw_cyclonedds_cpp"
@@ -145,25 +140,27 @@ project_ext_bindings {
 }
 
 -- This is a WAR so that we can copy the correctly named icons
-filter { "configurations:debug" }
-    os.mkdir (root.."/_build/"..os.target().."-x86_64/".."debug".."/exts/omni.isaac.ros2_bridge/ogn")
-filter { "configurations:release" }
-    os.mkdir (root.."/_build/"..os.target().."-x86_64/".."release".."/exts/omni.isaac.ros2_bridge/ogn")
-filter {}
+-- filter { "configurations:debug" }
+--     os.mkdir (root.."/_build/"..os.target().."-x86_64/".."debug".."/exts/omni.isaac.ros2_bridge/ogn")
+-- filter { "configurations:release" }
+--     os.mkdir (root.."/_build/"..os.target().."-x86_64/".."release".."/exts/omni.isaac.ros2_bridge/ogn")
+-- filter {}
 repo_build.prebuild_link {
     { "python/scripts", ext.target_dir.."/omni/isaac/ros2_bridge/scripts" },
     { "python/tests", ext.target_dir.."/omni/isaac/ros2_bridge/tests" },
     { "docs", ext.target_dir.."/docs" },
     { "data", ext.target_dir.."/data" },
     -- This is a WAR so that we can copy the correctly named icons
-    { "%{root}/_build/%{platform}/%{config}/exts/omni.isaac.ros2_bridge/ogn", ext.target_dir.."/ogn" },
+    -- { "%{root}/_build/%{platform}/%{config}/exts/omni.isaac.ros2_bridge/omni/isaac/ros2_bridge/ogn", ext.target_dir.."/omni/isaac/ros2_bridge/ogn" },
 }
 
 repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir.."/omni/isaac/ros2_bridge" },
     { "rclpy/*.py", ext.target_dir.."/omni/isaac/rclpy" },
     { "%{root}/_build/target-deps/nv_ros2_humble/lib/lib**", ext.target_dir.."/bin" },
-    { "%{root}/_build/target-deps/nv_ros2_humble/lib/python3.7/site-packages", ext.target_dir.."/omni/isaac/rclpy" },
+    -- TODO105 python3.10?
+    { "%{root}/_build/target-deps/nv_ros2_humble/lib/python3.10/site-packages", ext.target_dir.."/omni/isaac/rclpy" },
+    {"%{root}/_build/target-deps/nv_ros2_humble/local/lib/python3.10/dist-packages", ext.target_dir.."/omni/isaac/rclpy" },
     { "%{root}/_build/target-deps/tinyxml2/lib/lib**", ext.target_dir.."/bin" },
     { "%{root}/_build/target-deps/openssl/lib/*.so**", ext.target_dir.."/bin" },
 }

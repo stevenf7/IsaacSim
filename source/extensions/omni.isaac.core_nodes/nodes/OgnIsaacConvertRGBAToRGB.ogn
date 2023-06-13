@@ -33,10 +33,6 @@
             "bufferSize": {
                 "type": "uint",
                 "description": "Size (in bytes) of the buffer (0 if the input is a texture)"
-            },
-            "swhFrameNumber": {
-                "type": "uint64",
-                "description": "Frame number"
             }
         },
         "outputs": {
@@ -65,10 +61,6 @@
             "bufferSize": {
                 "type": "uint",
                 "description": "Size (in bytes) of the buffer (0 if the input is a texture)"
-            },
-            "swhFrameNumber": {
-                "type": "uint64",
-                "description": "Frame number"
             }
         }
     }

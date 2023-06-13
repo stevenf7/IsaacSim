@@ -12,30 +12,27 @@ project_ext_plugin(ext, "omni.isaac.range_sensor.plugin")
     add_ogn_dependencies(ogn)
 
     include_physx()
-
     includedirs {
         "%{root}/include/pch",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/gsl/include",
-        "%{root}/_build/target-deps/physx/include",
-        "%{root}/_build/target-deps/pxshared/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/omni_physics/include",
-        "%{root}/schemas/_install/rangeSensorSchema/%{platform}_%{config}/include",
+        "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/include",
+        "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/RangeSensorSchema/include",
         "%{root}/_build/target-deps/usd_schema_semantics/%{cfg.buildcfg}/include",
-        "%{kit_sdk_bin_dir}/extscore/omni.syntheticdata/include",
-        "%{kit_sdk_bin_dir}/extscore/usdrt.scenegraph/include",
-        "%{root}/_build/kit_%{config}/_exts/omni.syntheticdata/include",
+        "%{kit_sdk_bin_dir}/exts/omni.syntheticdata/include",
+        "%{kit_sdk_bin_dir}/exts/usdrt.scenegraph/include",
         "%{root}/_build/target-deps/omni_client_library/include",
         "%{root}/_build/target-deps/python/include",
      }
      libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-        "%{root}/schemas/_install/rangeSensorSchema/%{platform}_%{config}/lib",
+        "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/lib",
+        "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/RangeSensorSchema/lib",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
-        "%{kit_sdk_bin_dir}/plugins",
-        "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin"
+        "%{kit_sdk_bin_dir}/exts/omni.usd.core/bin",
     }
 
     links {
@@ -46,7 +43,7 @@ project_ext_plugin(ext, "omni.isaac.range_sensor.plugin")
     filter { "system:linux" }
         includedirs {
             "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
-            "%{root}/_build/target-deps/python/include/python3.7m"
+            "%{root}/_build/target-deps/python/include/python3.10"
         }
     filter { "system:windows" }
         libdirs {
@@ -64,9 +61,8 @@ project "tests-unit-omni.isaac.range_sensor"
     kind "ConsoleApp"
     dependson { "prebuild" }
     targetdir ("%{root}/_build/%{platform}/%{config}/tests")
+    include_physx()
     includedirs {
-            "%{root}/source/extensions/omni.isaac.range_sensor",
-            "%{root}/_build/target-deps/physx/include",
             "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
             "%{root}/_build/target-deps/rtx_plugins/include",
             "%{root}/_build/target-deps/doctest",
@@ -78,14 +74,20 @@ project "tests-unit-omni.isaac.range_sensor"
 
     runpathdirs {
                 "%{root}/_build/%{platform}/%{config}/kit/plugins",
-                "%{root}/_build/%{platform}/%{config}/kit/extscore/omni.usd.libs/bin/" 
+                "%{root}/_build/%{platform}/%{config}/kit/exts/omni.usd.libs/bin/" 
             }
+    
+    filter { "system:windows", "platforms:x86_64" }
+        link_boost_for_windows({"boost_python310"})
+    filter {}
+    
     filter { "system:linux" }
             buildoptions { "-pthread" }
             links { "pthread" }
-            includedirs { "%{target_deps}/python/include/python3.7m",
-                          "%{target_deps}/nv_usd/%{config}/include/boost" }
-            links { "boost_python37", "python3.7m", "sdf", "tf", "usd", "usdUtils" }
+            includedirs { "%{target_deps}/python/include/python3.10",
+                          "%{target_deps}/nv_usd/%{config}/include/boost" }            
+            libdirs { "%{target_deps}/python/lib"}
+            links { "boost_python310", "python3.10", "sdf", "tf", "usd", "usdUtils" }
 
     files {
      	   "%{root}/source/extensions/omni.isaac.range_sensor/plugins/ultrasonic/TestUSS.cpp",

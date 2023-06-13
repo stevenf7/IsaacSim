@@ -25,8 +25,13 @@ class TestRotations(omni.kit.test.AsyncTestCase):
     async def test_euler_angles_to_quat(self):
         roll, pitch, yaw = np.pi * np.random.rand(3)
         rot = Rotation.from_euler("xyz", [roll, pitch, yaw], degrees=False)
+
         x, y, z, w = rot.as_quat()
-        self.assertTrue(np.all(euler_angles_to_quat(np.array([roll, pitch, yaw])) == np.array([w, x, y, z])))
+        print([w, x, y, z])
+        print(euler_angles_to_quat(np.array([roll, pitch, yaw])))
+        self.assertTrue(
+            np.all(np.isclose(euler_angles_to_quat(np.array([roll, pitch, yaw])), np.array([w, x, y, z]), atol=1e-05))
+        )
         pass
 
     async def test_quat_to_euler_angles(self):

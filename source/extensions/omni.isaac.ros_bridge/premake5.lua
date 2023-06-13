@@ -1,5 +1,6 @@
 local ext = get_current_extension_info()
 local ogn = get_ogn_project_information(ext, "omni/isaac/ros_bridge")
+
 project_ext (ext)
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
@@ -15,37 +16,32 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
 
     add_ogn_dependencies(ogn, {"python/nodes"})
 
+    include_physx()
     includedirs {
         "%{root}/include/pch",
-        "%{root}/_build/target-deps/physx/include",
-        "%{root}/_build/target-deps/pxshared/include",
-        "%{root}/_build/target-deps/carbonite/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
-        "%{root}/_build/target-deps/usd_ext/%{cfg.buildcfg}/include", 
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/usd_audio_schema/%{cfg.buildcfg}/include",
-        "%{root}/_build/target-deps/python/include/python3.7m",
+        "%{root}/_build/target-deps/python/include/python3.10",
         "%{root}/_build/target-deps/nv_ros/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/omni_physics/include",
         "%{root}/source/extensions/omni.isaac.ros_bridge",
-        "%{kit_sdk_bin_dir}/extscore/omni.syntheticdata/include",
-        "%{kit_sdk_bin_dir}/extscore/usdrt.scenegraph/include",
-        "%{root}/_build/kit_%{config}/_exts/omni.syntheticdata/include",
+        "%{kit_sdk_bin_dir}/exts/omni.syntheticdata/include",
+        "%{kit_sdk_bin_dir}/exts/usdrt.scenegraph/include",
         "%{root}/_build/target-deps/omni_client_library/include",
-        "%{root}/schemas/_install/isaacSensorSchema/%{platform}_%{config}/include",
+        "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/include",
+        "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/RangeSensorSchema/include",
      }
      libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-        "%{root}/_build/target-deps/usd_ext/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/usd_audio_schema/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/nv_ros/lib",
-        "%{root}/schemas/_install/rangeSensorSchema/%{platform}_%{config}/lib",
-        "%{kit_sdk_bin_dir}/plugins",
-        "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin",
-        "%{root}/schemas/_install/isaacSensorSchema/%{platform}_%{config}/lib",
+        "%{kit_sdk_bin_dir}/exts/omni.usd.core/bin",
+        "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/lib",
+        "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/RangeSensorSchema/lib",
     }
 
      links {

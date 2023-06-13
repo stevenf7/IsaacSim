@@ -48,7 +48,7 @@ try:
         {
             og.Controller.Keys.CREATE_NODES: [
                 ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
-                ("ReadSystemTime", "omni.isaac.core_nodes.IsaacReadSystemTime"),
+                ("ReadSystemTime", "omni.isaac.core_nodes.IsaacReadTimes"),
                 ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                 ("PublishClock", "omni.isaac.ros_bridge.ROS1PublishClock"),
                 ("PublishSystemClock", "omni.isaac.ros_bridge.ROS1PublishClock"),

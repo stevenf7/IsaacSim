@@ -1,4 +1,4 @@
-# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2021-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -288,11 +288,11 @@ def set_intrinsics_matrix(viewport_api: Any, intrinsics_matrix: np.ndarray, foca
     # TODO: this should be set_attr_val
     # We have to do it this way because the camera might be on a different layer (default cameras are on session layer),
     # and this is the simplest way to set the property on the right layer.
-    omni.usd.utils.set_prop_val(prim.GetFocalLengthAttr(), focal_length)
-    omni.usd.utils.set_prop_val(prim.GetHorizontalApertureAttr(), horizontal_aperture)
-    omni.usd.utils.set_prop_val(prim.GetVerticalApertureAttr(), vertical_aperture)
-    omni.usd.utils.set_prop_val(prim.GetHorizontalApertureOffsetAttr(), (cx - width / 2) / fx)
-    omni.usd.utils.set_prop_val(prim.GetVerticalApertureOffsetAttr(), (cy - height / 2) / fy)
+    omni.usd.set_prop_val(prim.GetFocalLengthAttr(), focal_length)
+    omni.usd.set_prop_val(prim.GetHorizontalApertureAttr(), horizontal_aperture)
+    omni.usd.set_prop_val(prim.GetVerticalApertureAttr(), vertical_aperture)
+    omni.usd.set_prop_val(prim.GetHorizontalApertureOffsetAttr(), (cx - width / 2) / fx)
+    omni.usd.set_prop_val(prim.GetVerticalApertureOffsetAttr(), (cy - height / 2) / fy)
 
 
 def backproject_depth(depth_image: np.array, viewport_api: Any, max_clip_depth: float) -> np.array:

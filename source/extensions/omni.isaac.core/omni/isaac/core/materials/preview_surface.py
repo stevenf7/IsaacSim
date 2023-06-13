@@ -1,4 +1,4 @@
-# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2021-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -67,7 +67,7 @@ class PreviewSurface(VisualMaterial):
             shader.CreateInput("roughness", Sdf.ValueTypeNames.Float).Set(roughness)
         if metallic is not None:
             shader.CreateInput("metallic", Sdf.ValueTypeNames.Float).Set(metallic)
-        material.CreateSurfaceOutput().ConnectToSource(shader, "surface")
+        material.CreateSurfaceOutput().ConnectToSource(shader.ConnectableAPI(), "surface")
         return
 
     def set_color(self, color: np.ndarray) -> None:

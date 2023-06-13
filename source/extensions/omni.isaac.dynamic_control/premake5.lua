@@ -11,13 +11,10 @@ project_ext_plugin(ext, "omni.isaac.dynamic_control.plugin")
 
     includedirs {
         "%{root}/include/pch",
-        target_deps.."/physx/include",
-        target_deps.."/pxshared/include",
         target_deps.."/nv_usd/%{cfg.buildcfg}/include",
         target_deps.."/nv_usd/%{cfg.buildcfg}/include/boost",
         target_deps.."/usd_ext_physics/%{cfg.buildcfg}/include",
         target_deps.."/omni_physics/include",
-        target_deps.."/carbonite/include",
         target_deps.."/rtx_plugins/include",
         target_deps.."/omni_client_library/include",
 
@@ -26,10 +23,8 @@ project_ext_plugin(ext, "omni.isaac.dynamic_control.plugin")
      }
      libdirs {
         target_deps.."/nv_usd/%{cfg.buildcfg}/lib",
-        target_deps.."/usd_ext/%{cfg.buildcfg}/lib",
         target_deps.."/usd_ext_physics/%{cfg.buildcfg}/lib",
-        "%{kit_sdk_bin_dir}/plugins",
-        "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin"
+        "%{kit_sdk_bin_dir}/exts/omni.usd.core/bin"
     }
 
     links {"gf", "sdf", "usd", "usdGeom","usdUtils", "tf", "arch",  "omni.usd"}
@@ -37,7 +32,7 @@ project_ext_plugin(ext, "omni.isaac.dynamic_control.plugin")
     filter { "system:linux" }
         includedirs {
             target_deps.."/nv_usd/%{cfg.buildcfg}/include/boost",
-            target_deps.."/python/include/python3.7m"
+            target_deps.."/python/include/python3.10"
         }
     filter { "system:windows" }
         libdirs {

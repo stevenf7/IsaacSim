@@ -38,8 +38,11 @@ keywords = ["experience", "app", "usd"]
 # PhysX
 "omni.physx.bundle" = {}
 "omni.physx.tensors" = {}
-# "omni.physx.flatcache" = {}
+# "omni.physx.fabric" = {}
 "omni.physx.zerogravity" = {}
+
+"omni.kit.search.service" = {}
+"omni.kit.primitive.mesh" = {}
 
 "omni.kit.search.service" = {}
 "omni.kit.primitive.mesh" = {}
@@ -78,7 +81,7 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.profiler.window" = {}
 
 "omni.kit.stage_column.variant" = {}
-"omni.kit.stage_column.payload" = {}
+#"omni.kit.stage_column.payload" = {}
 
 # Viewport Widgets and Collaboration
 "omni.kit.viewport_widgets_manager" = {}
@@ -106,7 +109,6 @@ keywords = ["experience", "app", "usd"]
 
 "omni.kit.window.extensions" = {}
 
-
 # browsers
 # "omni.kit.browser.sample" = {}
 "omni.kit.browser.asset" = {}
@@ -128,7 +130,7 @@ keywords = ["experience", "app", "usd"]
 
 "omni.kit.renderer.capture" = {}
 "omni.kit.thumbnails.usd" = {}
-"omni.kit.thumbnails.images" = {}
+#"omni.kit.thumbnails.images" = {} TODO105
 
 # bring all the property Widgets and Window
 "omni.kit.window.property" = {}
@@ -324,7 +326,7 @@ exts."omni.kit.test".includeTests.1 = "*isaac*"
 [settings.app.settings]
 persistent = true
 dev_build = false
-flatCacheStageFrameHistoryCount = 3 # needed for omni.syntheticdata
+fabricDefaultStageFrameHistoryCount = 3 # needed for omni.syntheticdata TODO105 still true?
 
 [settings.app.window]
 title = "Isaac Sim"
@@ -508,6 +510,7 @@ physics.updateToUsd = true
 physics.updateVelocitiesToUsd = true
 physics.useFastCache = false
 physics.visualizationDisplayJoints = false
+omni.replicator.captureOnPlay = true
 
 # Make Detail panel visible by default
 app.omniverse.content_browser.options_menu.show_details = true
@@ -523,6 +526,7 @@ persistent.isaac.asset_root.nvidia = "omniverse://isaac-dev.ov.nvidia.com/NVIDIA
 persistent.isaac.asset_root.isaac = "omniverse://isaac-dev.ov.nvidia.com/Isaac"
 persistent.isaac.asset_root.cloud = "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2023.1.0"
 
+
 exts."omni.isaac.asset_browser".folders = [
     "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2023.1.0/Isaac/Robots",
     "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2023.1.0/Isaac/People",
@@ -530,12 +534,14 @@ exts."omni.isaac.asset_browser".folders = [
     "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2023.1.0/Isaac/Environments",
     "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2023.1.0/Isaac/Samples",
 ]
+
 # FOR DEVELOPMENT - END #
 
 # Isaac Sim Extensions
 ###############################
 [dependencies]
 "omni.isaac.core_archive" = {}
+"omni.pip.compute" = {}
 "omni.isaac.ml_archive" = {}
 "omni.isaac.urdf" = {}
 "omni.isaac.mjcf" = {}
@@ -569,7 +575,7 @@ exts."omni.isaac.asset_browser".folders = [
 "omni.isaac.diff_usd" = {}
 "omni.isaac.franka" = {}
 "omni.isaac.manipulators" = {}
-"omni.isaac.quadruped" = {}
+#"omni.isaac.quadruped" = {}
 "omni.isaac.lula" = {}
 "omni.isaac.motion_generation" = {}
 "omni.isaac.universal_robots" = {}
@@ -583,16 +589,15 @@ exts."omni.isaac.asset_browser".folders = [
 [dependencies."filter:platform"."linux-x86_64"]
 # note that the ros bridge can now be configured via the persistent.isaac.startup.ros_bridge_extension setting and set at runtime.
 # the default is still omni.isaac.ros_bridge
-# "omni.isaac.ros_bridge" = {}
+# "omni.isaac.ros_bridge" = {} 
 "omni.isaac.gxf_bridge" = {}
 # "omni.isaac.ocs2" = {}
-
 
 # Non Isaac Sim Extensions
 ######################
 [dependencies]
 "omni.syntheticdata" = {}
 "semantics.schema.editor" = {}
-"omni.kit.importer.cad" = {}
+#"omni.kit.importer.cad" = {}
 "omni.replicator.core" = {}
 "omni.replicator.composer" = {}

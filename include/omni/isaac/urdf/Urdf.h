@@ -13,7 +13,7 @@
 
 #include <carb/Defines.h>
 
-#include <pybind11/pybind11/pybind11.h>
+#include <pybind11/pybind11.h>
 
 #include <stdint.h>
 

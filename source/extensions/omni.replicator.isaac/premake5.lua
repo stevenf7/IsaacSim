@@ -22,7 +22,6 @@ project_ext( ext, { generate_ext_project=true })
     add_files("python/tests", "python/tests/**.py")
     add_files("python/scripts", "python/scripts/**.py")
 
-
     -- Add the standard dependencies all OGN projects have
     add_ogn_dependencies(ogn, {"python/nodes"})
 
@@ -38,4 +37,7 @@ project_ext( ext, { generate_ext_project=true })
         { "python/tests", ogn.python_tests_target_path },
         { "python/_impl", ogn.python_target_path.."/_impl" },
         { "python/scripts", ogn.python_target_path.."/scripts" },
+    }
+    includedirs {
+        targetDepsDir.."/rtx_plugins/include",
     }

@@ -1,3 +1,11 @@
+# Copyright (c) 2021-2023, NVIDIA CORPORATION.  All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto.  Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+
 from math import asin, degrees
 from typing import List
 
@@ -145,7 +153,7 @@ class ConveyorBuilder:
             _prim_path = omni.usd.get_stage_next_free_path(
                 self.stage, str(world_prim.GetPath()) + "/ConveyorTrack", False
             )
-            parent_pose = omni.usd.utils.get_world_transform_matrix(world_prim)
+            parent_pose = omni.usd.get_world_transform_matrix(world_prim)
         elif self.is_track(parent):
             parent_path = self.stage.GetPrimAtPath(parent).GetParent().GetPath()
             _prim_path = omni.usd.get_stage_next_free_path(self.stage, str(parent_path) + "/ConveyorTrack", False)
@@ -235,12 +243,12 @@ class ConveyorBuilder:
         if parent:
             anchor_prim = self.stage.GetPrimAtPath("{}{}".format(parent, parent_anchor))
             base_xform = UsdGeom.Xformable(self.stage.GetPrimAtPath(parent))
-            base_pose = omni.usd.utils.get_world_transform_matrix(base_xform.GetPrim())
+            base_pose = omni.usd.get_world_transform_matrix(base_xform.GetPrim())
 
             scale_ops = [o for o in base_xform.GetOrderedXformOps() if o.GetOpType() in [UsdGeom.XformOp.TypeScale]]
             anchor_pose = Gf.Matrix4d()
             if parent_anchor:
-                anchor_pose = omni.usd.utils.get_local_transform_matrix(anchor_prim)
+                anchor_pose = omni.usd.get_local_transform_matrix(anchor_prim)
             if scale_ops:
                 # first, get the global pose of the base
 
@@ -291,7 +299,7 @@ class ConveyorBuilder:
         # print(track, track_anchor)
         if track_anchor:
             anchor_prim = track_stage.GetPrimAtPath(str(track_stage.GetDefaultPrim().GetPath()) + track_anchor)
-            mat = omni.usd.utils.get_local_transform_matrix(anchor_prim)
+            mat = omni.usd.get_local_transform_matrix(anchor_prim)
             if y_direction < 0:
                 t = mat.ExtractTranslation()
                 t[1] = -t[1]

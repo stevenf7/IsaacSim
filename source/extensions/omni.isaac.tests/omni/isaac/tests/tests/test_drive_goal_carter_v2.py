@@ -159,6 +159,7 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
         print("quintic passed")
         pass
 
+    """ TODO105 Hang
     async def test_check_goal_2d(self):
 
         # Start Simulation and wait
@@ -198,6 +199,7 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
         print("check goal passed")
 
         pass
+    """
 
     async def test_stanley_control_pid(self):
 

@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.8.2] - 2023-06-12
+### Changed
+- Update to kit 105.1
+- usd 22.11 schema inheritance
+- pxr::RangeSensorSchemaUltrasonicArray renamed pxr::RangeSensorUltrasonicArray
+- pxr::RangeSensorSchemaUltrasonicFiringGroup renamed pxr::RangeSensorUltrasonicFiringGroup
+- pxr::RangeSensorSchemaUltrasonicEmitter renamed pxr::RangeSensorUltrasonicEmitter
+- pxr::RangeSensorSchemaLidar renamed pxr::RangeSensorLidar
+- pxr::RangeSensorSchemaGeneric renamed pxr::RangeSensorGeneric
+- pxr::RangeSensorSchemaRangeSensor renamed pxr::RangeSensorRangeSensor
+
 ## [0.8.1] - 2023-02-08
 ### Fixed
 - Lidar Semantic IDs were incorrect when rotation rate was not zero

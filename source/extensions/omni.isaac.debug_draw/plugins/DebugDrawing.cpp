@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -35,7 +35,7 @@ CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::debug_draw::DebugDraw)
 CARB_PLUGIN_IMPL_DEPS(omni::kit::IStageUpdate,
                       omni::renderer::IDebugDraw,
                       omni::graph::core::IGraphRegistry,
-                      carb::flatcache::IToken)
+                      omni::fabric::IToken)
 DECLARE_OGN_NODES()
 
 using namespace carb::scenerenderer;

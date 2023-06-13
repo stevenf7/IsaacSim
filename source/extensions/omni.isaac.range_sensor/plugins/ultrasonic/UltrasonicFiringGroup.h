@@ -29,7 +29,7 @@ namespace isaac
 namespace range_sensor
 {
 
-class UltrasonicFiringGroup : public utils::ComponentBase<pxr::RangeSensorSchemaUltrasonicFiringGroup>
+class UltrasonicFiringGroup : public utils::ComponentBase<pxr::RangeSensorUltrasonicFiringGroup>
 {
 public:
     UltrasonicFiringGroup() : mIsReceiving(2, std::vector<bool>()), mIsFiring(2, std::vector<bool>())
@@ -37,11 +37,9 @@ public:
     }
 
 
-    void initialize(const pxr::RangeSensorSchemaUltrasonicFiringGroup& prim,
-                    pxr::UsdStageWeakPtr stage,
-                    const size_t numEmitters)
+    void initialize(const pxr::RangeSensorUltrasonicFiringGroup& prim, pxr::UsdStageWeakPtr stage, const size_t numEmitters)
     {
-        utils::ComponentBase<pxr::RangeSensorSchemaUltrasonicFiringGroup>::initialize(prim, stage);
+        utils::ComponentBase<pxr::RangeSensorUltrasonicFiringGroup>::initialize(prim, stage);
         mNumEmitters = numEmitters;
 
         onComponentChange();

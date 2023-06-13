@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -2549,7 +2549,9 @@ bool CARB_ABI DcGetDofProperties(DcHandle dofHandle, DcDofProperties* props)
     if (motion == PxArticulationMotion::eLIMITED)
     {
         props->hasLimits = true;
-        pxJoint->getLimit(dof->pxAxis, props->lower, props->upper);
+        PxArticulationLimit limit = pxJoint->getLimitParams(dof->pxAxis);
+        props->lower = limit.low;
+        props->upper = limit.high;
     }
     else
     {
@@ -3446,7 +3448,10 @@ bool setD6JointProperties(DcD6Joint* dcJoint, const DcD6JointProperties* props)
             }
             else
             {
-                joint->setSwingLimit(PxJointLimitCone(props->lowerLimit, props->upperLimit, 0.01f));
+                joint->setSwingLimit(PxJointLimitCone(props->lowerLimit, props->upperLimit)); // contact limit was
+                                                                                              // depricated.  TODO105
+                                                                                              // Check that this is
+                                                                                              // correct.
             }
             break;
         }
@@ -3481,7 +3486,13 @@ bool setD6JointProperties(DcD6Joint* dcJoint, const DcD6JointProperties* props)
                 }
                 else
                 {
-                    joint->setTwistLimit(PxJointAngularLimitPair(props->lowerLimit, props->upperLimit, 0.01f));
+                    joint->setTwistLimit(PxJointAngularLimitPair(props->lowerLimit, props->upperLimit)); // contact
+                                                                                                         // limit was
+                                                                                                         // depricated.
+                                                                                                         // TODO105
+                                                                                                         // Check that
+                                                                                                         // this is
+                                                                                                         // correct.
                 }
             }
             if ((((props->axes >> 4) & 1) && props->hasLimits[4]) || (((props->axes >> 5) & 1) && props->hasLimits[5]))
@@ -3492,7 +3503,10 @@ bool setD6JointProperties(DcD6Joint* dcJoint, const DcD6JointProperties* props)
                 }
                 else
                 {
-                    joint->setSwingLimit(PxJointLimitCone(props->lowerLimit, props->upperLimit, 0.01f));
+                    joint->setSwingLimit(PxJointLimitCone(props->lowerLimit, props->upperLimit)); // contact limit was
+                                                                                                  // depricated. TODO105
+                                                                                                  // Check that this is
+                                                                                                  // correct.
                 }
             }
         }

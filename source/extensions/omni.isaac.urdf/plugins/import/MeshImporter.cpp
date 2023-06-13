@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -437,8 +437,9 @@ pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
         {
             stName = pxr::TfToken("st_" + std::to_string(j));
         }
-        auto Primvar =
-            usdMesh.CreatePrimvar(stName, pxr::SdfValueTypeNames->TexCoord2fArray, pxr::UsdGeomTokens->faceVarying);
+        pxr::UsdGeomPrimvarsAPI primvarsAPI(usdMesh);
+        pxr::UsdGeomPrimvar Primvar =
+            primvarsAPI.CreatePrimvar(stName, pxr::SdfValueTypeNames->TexCoord2fArray, pxr::UsdGeomTokens->faceVarying);
         Primvar.Set(uvs[j]);
     }
 

@@ -44,7 +44,6 @@ class OgnIsaacComputeRTXLidarFlatScan : public BaseResetNode
 public:
     static bool compute(OgnIsaacComputeRTXLidarFlatScanDatabase& db)
     {
-        const GraphContextObj& context = db.abi_context();
 
         auto& state = db.internalState<OgnIsaacComputeRTXLidarFlatScan>();
 

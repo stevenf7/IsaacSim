@@ -86,7 +86,7 @@ void UltrasonicSensor::onComponentChange()
 {
 
     RangeSensorComponent::onComponentChange();
-    const pxr::RangeSensorSchemaUltrasonicArray& typedPrim = (pxr::RangeSensorSchemaUltrasonicArray)mPrim;
+    const pxr::RangeSensorUltrasonicArray& typedPrim = (pxr::RangeSensorUltrasonicArray)mPrim;
 
     isaac::utils::safeGetAttribute(typedPrim.GetHorizontalFovAttr(), mHorizontalFov);
     isaac::utils::safeGetAttribute(typedPrim.GetVerticalFovAttr(), mVerticalFov);
@@ -140,9 +140,9 @@ void UltrasonicSensor::onComponentChange()
     for (size_t i = 0; i < emitterTargets.size(); i++)
     {
         pxr::UsdPrim prim = mStage->GetPrimAtPath(emitterTargets[i]);
-        if (prim.IsA<pxr::RangeSensorSchemaUltrasonicEmitter>())
+        if (prim.IsA<pxr::RangeSensorUltrasonicEmitter>())
         {
-            const pxr::RangeSensorSchemaUltrasonicEmitter& typedPrim = (pxr::RangeSensorSchemaUltrasonicEmitter)prim;
+            const pxr::RangeSensorUltrasonicEmitter& typedPrim = (pxr::RangeSensorUltrasonicEmitter)prim;
             mEmitters.push_back(std::make_unique<UltrasonicEmitter>());
             mEmitters[i]->initialize(typedPrim, mStage, mPhysx, mNumBins, mMaxDepth * mMetersPerUnit, mRows, mCols,
                                      mDrawLines, mDrawPoints, mZenith, mAzimuth);
@@ -157,10 +157,9 @@ void UltrasonicSensor::onComponentChange()
         for (size_t i = 0; i < firingGroupTargets.size(); i++)
         {
             pxr::UsdPrim prim = mStage->GetPrimAtPath(firingGroupTargets[i]);
-            if (prim.IsA<pxr::RangeSensorSchemaUltrasonicFiringGroup>())
+            if (prim.IsA<pxr::RangeSensorUltrasonicFiringGroup>())
             {
-                const pxr::RangeSensorSchemaUltrasonicFiringGroup& typedPrim =
-                    (pxr::RangeSensorSchemaUltrasonicFiringGroup)prim;
+                const pxr::RangeSensorUltrasonicFiringGroup& typedPrim = (pxr::RangeSensorUltrasonicFiringGroup)prim;
                 mFiringGroups.push_back(UltrasonicFiringGroup());
                 mFiringGroups[i].initialize(typedPrim, mStage, mEmitters.size());
             }

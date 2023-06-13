@@ -1,4 +1,4 @@
-# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2021-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -59,10 +59,12 @@ class TestArticulationDeterminism(omni.kit.test.AsyncTestCase):
         )
 
         # On the develop branch, this test always takes 31 frames to converge
+        print(f"frames_to_converge[0] = {frames_to_converge[0]}")
         self.assertTrue(frames_to_converge[0] == 31, "Took too many frames to converge!")
 
     async def _test_franka_slow_convergence(self):
         (result, error) = await open_stage_async(self._assets_root_path + "/Isaac/Robots/Franka/franka.usd")
+        omni.usd.get_context().get_stage().SetTimeCodesPerSecond(60)
         robot_prim_path = "/panda"
         World()  # Create a new default world to reset any physics settings.
         # Start Simulation and wait

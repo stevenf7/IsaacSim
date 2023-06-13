@@ -16,6 +16,7 @@
 
 #    include <carb/InterfaceUtils.h>
 
+#    include <internal/omni/sensors/lidar/LidarIntensityMapping.h>
 #    include <internal/omni/sensors/lidar/LidarSettings.h>
 #    include <omni/isaac/utils/BaseResetNode.h>
 #    include <omni/math/linalg/matrix.h>
@@ -90,7 +91,8 @@ inline void convertReturnToPoint(omni::sensors::lidar::LidarPoint& point,
     point.range = distanceM + beamOriginDistM;
     point.intensity =
         profile ?
-            static_cast<float>(omni::sensors::lidar::mapIntensity<uint16_t>(*profile, lidarReturn.intensity)) / 100.f :
+            static_cast<float>(omni::sensors::lidar::mapIntensity<uint16_t>(*profile, lidarReturn.intensity, true)) /
+                100.f :
             lidarReturn.intensity;
 
     point.azimuth = azimuthRad;

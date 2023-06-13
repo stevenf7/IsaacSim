@@ -157,7 +157,7 @@ private:
                         const char* hitActorName = raycastHit.actor->getName();
                         pxr::UsdPrim hitActor = mStage->GetPrimAtPath(pxr::SdfPath(hitActorName));
                         auto schemas = hitActor.GetAppliedSchemas();
-                        for (int schema_idx = 0; schema_idx < schemas.size(); schema_idx++)
+                        for (int schema_idx = 0; schema_idx < int(schemas.size()); schema_idx++)
                         {
                             std::string temp = schemas[schema_idx].GetString();
 

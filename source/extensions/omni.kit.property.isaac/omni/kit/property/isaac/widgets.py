@@ -1,4 +1,4 @@
-# Copyright (c) 2020-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2020-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -15,6 +15,7 @@ from .name_override import NameOverrideWidget
 
 class IsaacPropertyWidgets(omni.ext.IExt):
     def __init__(self):
+        super().__init__()
         self._registered = False
 
     def on_startup(self, ext_id):

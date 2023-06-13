@@ -1,5 +1,32 @@
 # Changelog
 
+## [1.0.0] - 2023-06-13
+
+### Added
+- IsaacReadTimes node
+- get_sim_time_at_time
+- get_sim_time_monotonic_at_time
+- get_system_time_at_time
+- IsaacReadTimesAOV node template
+- IsaacReadTimes node template
+
+### Changed
+- Update to kit 105.1, build system update
+- IsaacArticulationController targetPrim now optional
+- getSimulationTimeAtSwhFrame now getSimulationTimeAtTime with rational time
+- getSimulationTimeMonotonicAtSwhFrame now getSimulationTimeMonotonicAtTime with rational time
+- getSystemTimeAtSwhFrame now getSystemTimeAtTime with rational time
+- [SENSOR NAME]IsaacSimulationGate nodes to [RENDERVAR]IsaacSimulationGate to match synthetic data standard
+
+### Depricated
+- get_sim_time_at_swh_frame
+- get_sim_time_monotonic_at_swh_frame
+- get_system_time_at_swh_frame
+
+### Removed
+- IsaacReadSystemTime node
+- swhFrameTime input/output from IsaacConvertRGBAToRGB node
+
 ## [0.24.0] - 2023-05-31
 
 ### Added

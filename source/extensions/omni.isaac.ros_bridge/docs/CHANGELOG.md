@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.11.4] - 2023-06-12
+### Changed
+- Update to kit 105.1
+- add lib locations to PYTHONPATH
+- rename synthetic data writer templates to match rendervar names
+
 ## [1.11.3] - 2023-03-30
 ### Fixed
 - Bug in Joint Subscriber when using effort commands

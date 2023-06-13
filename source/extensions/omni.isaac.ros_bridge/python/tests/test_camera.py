@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -18,7 +18,7 @@ import omni.graph.core as og
 import omni.kit.commands
 
 # NOTE:
-#   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
+#   omni.kit.test - std python's unittest module with additional wrapping to add support for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 import omni.kit.usd
@@ -34,7 +34,7 @@ from pxr import Gf, Sdf
 from .common import add_carter_ros, add_cube, wait_for_rosmaster
 
 
-# Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
+# Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestRosCamera(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
@@ -94,6 +94,8 @@ class TestRosCamera(omni.kit.test.AsyncTestCase):
     async def test_camera(self):
         scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
         await open_stage_async(self._assets_root_path + scene_path)
+        self._timeline = omni.timeline.get_timeline_interface()
+        self._timeline.set_auto_update(True)
 
         import rospy
 

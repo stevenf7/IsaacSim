@@ -11,8 +11,8 @@
 
 #include <omni/isaac/math/core/maths.h>
 #include <omni/isaac/urdf/Urdf.h>
-#include <pybind11/pybind11/stl.h>
-#include <pybind11/pybind11/stl_bind.h>
+#include <pybind11/stl.h>
+#include <pybind11/stl_bind.h>
 
 CARB_BINDINGS("omni.isaac.urdf.python")
 PYBIND11_MAKE_OPAQUE(std::map<std::string, omni::isaac::urdf::UrdfMaterial>);

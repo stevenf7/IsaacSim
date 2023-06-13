@@ -1,4 +1,4 @@
-# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2021-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -275,11 +275,12 @@ class Camera(BaseSensor):
         """
         return self._acquisition_callback is None
 
+    # TODO105 : ASYNCRENDERING VALIDATION
     def _data_acquisition_callback(self, event: carb.events.IEvent):
         frame_number = (
             og.Controller()
             .node("/Render/PostProcess/SDGPipeline/PostProcessDispatcher")
-            .get_attribute("outputs:swhFrameNumber")
+            .get_attribute("outputs:referenceTimeNumerator")
             .get()
         )
         current_time = self._core_nodes_interface.get_sim_time_at_swh_frame(frame_number)

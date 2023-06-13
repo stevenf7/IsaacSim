@@ -1,11 +1,12 @@
-__copyright__ = "Copyright (c) 2018-2022, NVIDIA CORPORATION. All rights reserved."
-__license__ = """
-NVIDIA CORPORATION and its licensors retain all intellectual property
-and proprietary rights in and to this software, related documentation
-and any modifications thereto. Any use, reproduction, disclosure or
-distribution of this software and related documentation without an express
-license agreement from NVIDIA CORPORATION is strictly prohibited.
-"""
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto.  Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+#
+
 
 import asyncio
 import os
@@ -100,7 +101,7 @@ class ROS2BridgeExtension(omni.ext.IExt):
             name=f"{rv}{BRIDGE_PREFIX}PublishImage",
             node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
             annotators=[
-                "distance_to_image_plane",
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(rv + "ExportRawArray"),
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                     "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
                 ),
@@ -128,7 +129,7 @@ class ROS2BridgeExtension(omni.ext.IExt):
             node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
             annotators=[
                 "instance_segmentation",
-                "InstanceSegmentationIsaacSimulationGate",
+                f'{omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("InstanceSegmentation")}IsaacSimulationGate',
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                     "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
                 ),
@@ -142,7 +143,7 @@ class ROS2BridgeExtension(omni.ext.IExt):
             node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
             annotators=[
                 "semantic_segmentation",
-                "SemanticSegmentationIsaacSimulationGate",
+                f'{omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("SemanticSegmentation")}IsaacSimulationGate',
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                     "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
                 ),
@@ -158,7 +159,7 @@ class ROS2BridgeExtension(omni.ext.IExt):
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                     "bounding_box_2d_tight", attributes_mapping={"input:semanticTypes": ["class"]}
                 ),
-                "BoundingBox2DTightIsaacSimulationGate",
+                f'{omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("BoundingBox2DTight")}IsaacSimulationGate',
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                     "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
                 ),
@@ -175,7 +176,7 @@ class ROS2BridgeExtension(omni.ext.IExt):
                     "bounding_box_2d_loose",
                     attributes_mapping={"input:semanticTypes": ["class"], "outputs:data": "inputs:data"},
                 ),
-                "BoundingBox2DLooseIsaacSimulationGate",
+                f'{omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("BoundingBox2DLoose")}IsaacSimulationGate',
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                     "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
                 ),
@@ -191,7 +192,7 @@ class ROS2BridgeExtension(omni.ext.IExt):
                     "bounding_box_3d",
                     attributes_mapping={"input:semanticTypes": ["class"], "outputs:data": "inputs:data"},
                 ),
-                "BoundingBox3DIsaacSimulationGate",
+                f'{omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("BoundingBox3D")}IsaacSimulationGate',
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                     "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
                 ),
@@ -213,11 +214,19 @@ class ROS2BridgeExtension(omni.ext.IExt):
         )
         # outputs that we can publish labels for
         label_names = {
-            "instance_segmentation": "InstanceSegmentation",
-            "semantic_segmentation": "SemanticSegmentation",
-            "bounding_box_2d_tight": "BoundingBox2DTight",
-            "bounding_box_2d_loose": "BoundingBox2DLoose",
-            "bounding_box_3d": "BoundingBox3D",
+            "instance_segmentation": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
+                "InstanceSegmentation"
+            ),
+            "semantic_segmentation": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
+                "SemanticSegmentation"
+            ),
+            "bounding_box_2d_tight": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
+                "BoundingBox2DTight"
+            ),
+            "bounding_box_2d_loose": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
+                "BoundingBox2DLoose"
+            ),
+            "bounding_box_3d": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("BoundingBox3D"),
         }
         for annotator, annotator_name in label_names.items():
             rep.writers.register_node_writer(

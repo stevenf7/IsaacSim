@@ -1,4 +1,4 @@
-# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2021-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -36,7 +36,6 @@ class OgnPose:
         if db.inputs.bufferSize == 0:
             db.outputs.data = np.frombuffer(np.empty(0, dtype=return_data_dtype).tobytes(), dtype=np.uint8)
             db.outputs.exec = og.ExecutionAttributeState.ENABLED
-            db.outputs.swhFrameNumber = db.inputs.swhFrameNumber
             db.outputs.bufferSize = 0
             db.outputs.height = 0
             db.outputs.width = 0
@@ -201,7 +200,6 @@ class OgnPose:
         db.outputs.idToLabels = serialized_index_to_labels
         db.outputs.primPaths = prim_paths
         db.outputs.exec = og.ExecutionAttributeState.ENABLED
-        db.outputs.swhFrameNumber = db.inputs.swhFrameNumber
         db.outputs.bufferSize = 0
         db.outputs.height = 0
         db.outputs.width = 0

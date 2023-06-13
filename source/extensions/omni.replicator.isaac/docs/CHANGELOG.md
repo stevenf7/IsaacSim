@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.8.0] - 2023-06-12
+
+### Changed
+- Update to kit 105.1
+- removed swhFrameNumber from Pose and Dope nodes
+
 ## [1.7.4] - 2023-01-10
 ### Fixed
 - Fix OgnDope node to return proper value for occlusion 

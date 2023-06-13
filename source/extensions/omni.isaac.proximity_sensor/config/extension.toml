@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.0"
+version = "1.0.1"
 category = "Simulation"
 title = "Isaac Sim Proximity Sensor Example"
 description = "Extension that provides a proximity sensor example"
@@ -17,6 +17,7 @@ icon = "data/icon.png"
 
 [dependencies]
 "omni.physx" = {}
+"omni.usd" = {}
 
 [[python.module]]
 name = "omni.isaac.proximity_sensor"

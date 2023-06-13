@@ -38,7 +38,7 @@ keywords = ["experience", "app", "usd"]
 # PhysX
 "omni.physx.bundle" = {}
 "omni.physx.tensors" = {}
-# "omni.physx.flatcache" = {}
+# "omni.physx.fabric" = {}
 # "omni.physx.zerogravity" = {}
 
 # "omni.kit.search.service" = {}
@@ -328,7 +328,7 @@ logSysStdOutput = false
 [settings.app.settings]
 persistent = false
 dev_build = false
-flatCacheStageFrameHistoryCount = 3 # needed for omni.syntheticdata
+fabricDefaultStageFrameHistoryCount = 3 # needed for omni.syntheticdata TODO105 Still True?
 
 [settings.app.window]
 title = "Isaac Sim Python"
@@ -517,6 +517,7 @@ physics.updateToUsd = true
 physics.updateVelocitiesToUsd = true
 physics.useFastCache = false
 physics.visualizationDisplayJoints = false
+omni.replicator.captureOnPlay = true
 
 # Make Detail panel visible by default
 app.omniverse.content_browser.options_menu.show_details = true
@@ -546,6 +547,7 @@ exts."omni.isaac.asset_browser".folders = [
 ###############################
 [dependencies]
 "omni.isaac.core_archive" = {}
+"omni.pip.compute" = {}
 "omni.isaac.ml_archive" = {}
 "omni.isaac.urdf" = {}
 "omni.isaac.mjcf" = {}
@@ -565,10 +567,10 @@ exts."omni.isaac.asset_browser".folders = [
 "omni.isaac.sensor" = {}
 "omni.isaac.debug_draw" = {}
 "omni.isaac.gym" = {}
-"omni.isaac.examples" = {}
+
 "omni.isaac.franka" = {}
 "omni.isaac.manipulators" = {}
-"omni.isaac.quadruped" = {order = 10} # (OM-88516) load this after core_archive so dependencies are already there
+#"omni.isaac.quadruped" = {}
 "omni.isaac.wheeled_robots" = {}
 "omni.isaac.lula" = {}
 "omni.isaac.motion_generation" = {}

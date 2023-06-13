@@ -104,6 +104,7 @@ public:
                                             } });
     }
 
+    // TODO105 : ASYNCRENDERING VALIDATION
     void update()
     {
         // Calculate dt
@@ -190,7 +191,7 @@ private:
     // step of the runloop runner we are in. This is currently used to
     // track the "framenumber" for the application. This is passed through
     // into fabric so that we can have an index that ties an element of
-    // StageWithHistory to the iteration of the update loop that the data
+    // SimStageWithHistory to the iteration of the update loop that the data
     // in the ring buffer was created from.
     //
     // Note this will wrap around, but it seems unlikley to cause problems

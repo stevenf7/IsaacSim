@@ -26,17 +26,15 @@ project_with_location("omni.isaac.debug_draw.primitive_drawing")
         "%{root}/_build/target-deps/omni_physics/include",
     }
     libdirs {
-        "%{root}/_build/target-deps/python/libs", 
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-        "%{kit_sdk_bin_dir}/plugins",
-        "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin"
+        "%{kit_sdk_bin_dir}/exts/omni.usd.core/bin"
     }
     links{"sdf", "omni.usd"}
 
     filter { "system:linux" }
         disablewarnings {"error=pragmas"}
         includedirs {
-            "%{root}/_build/target-deps/python/include/python3.7m"
+            "%{root}/_build/target-deps/python/include/python3.10"
         }
         buildoptions("-fvisibility=default")
     filter { "system:windows" }
@@ -62,17 +60,15 @@ project_ext_plugin(ext, "omni.isaac.debug_draw.plugin")
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
     }
-    libdirs {   
-        "%{root}/_build/target-deps/python/libs", 
+    libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-        "%{kit_sdk_bin_dir}/plugins",
-        "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin"
+        "%{kit_sdk_bin_dir}/exts/omni.usd.core/bin"
     }
 
     if os.target() == "linux" then
         includedirs {
             "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
-            "%{root}/_build/target-deps/python/include/python3.7m",
+            "%{root}/_build/target-deps/python/include/python3.10",
         }
     else
         libdirs {
@@ -98,24 +94,26 @@ project_ext_bindings ({
     
     -- Add the standard dependencies all OGN projects have, and link directories with Python nodes
     dependson {"omni.isaac.debug_draw.primitive_drawing"}
+    include_physx()
     includedirs {
         "%{root}/include/pch",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
-        "%{root}/_build/target-deps/carb_gfx_plugins/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
-        "%{root}/_build/target-deps/physx/include",
-        "%{root}/_build/target-deps/pxshared/include",
     }
 
-    libdirs {   
-        "%{root}/_build/target-deps/python/libs", 
+    libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/nv_usd/release/lib"
     }
     links {"arch", "gf", "sdf", "tf", "vt", "pcp", "usd", "usdGeom", "usdUtils", "omni.isaac.debug_draw.primitive_drawing"}
 
-    filter { "system:linux", "platforms:x86_64" }
-        links {"tbb", "boost_python37" }
+    filter { "system:linux", "platforms:x86_64" }        
+        links {"tbb", "boost_python310" }
+    filter {}
+
+    filter { "system:windows", "platforms:x86_64" }
+        link_boost_for_windows({"boost_python310"})
+
     filter {}
 
     filter { "configurations:debug" }

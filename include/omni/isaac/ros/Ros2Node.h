@@ -10,7 +10,14 @@
 #pragma once
 
 #include "../utils/BaseResetNode.h"
-#include "rclcpp/rclcpp.hpp"
+#if defined(_WIN32)
+#    include "rclcpp/rclcpp.hpp"
+#else
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#    include "rclcpp/rclcpp.hpp"
+#    pragma GCC diagnostic pop
+#endif
 #include "rmw/validate_full_topic_name.h"
 #include "rmw/validate_namespace.h"
 #include "rmw/validate_node_name.h"

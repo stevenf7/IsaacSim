@@ -54,7 +54,7 @@ class TestHolonomicController(omni.kit.test.AsyncTestCase):
 class TestHolonomicControllerOgn(ogts.OmniGraphTestCase):
     async def setUp(self):
         """Set up  test environment, to be torn down when done"""
-        await ogts.setup_test_environment()
+        await omni.usd.get_context().new_stage_async()
 
     # ----------------------------------------------------------------------
     async def tearDown(self):

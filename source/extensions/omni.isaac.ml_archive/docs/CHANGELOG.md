@@ -1,5 +1,10 @@
 # Changelog
 
+
+## [1.1.1] - 2023-06-12
+### Changed
+- no longer depend on omni.pip.torch
+
 ## [1.1.0] - 2022-07-11
 
 ### Changed

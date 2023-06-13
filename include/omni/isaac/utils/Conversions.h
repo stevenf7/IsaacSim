@@ -9,7 +9,6 @@
 
 #pragma once
 #include <carb/Types.h>
-#include <carb/fastcache/FastCache.h>
 
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <usdrt/gf/matrix.h>
@@ -145,20 +144,6 @@ inline pxr::GfMatrix4d asGfMatrix4d(const omni::isaac::dynamic_control::DcTransf
     pxr::GfMatrix4d mat;
     mat.SetTranslateOnly(asGfVec3d(input.p));
     mat.SetRotateOnly(pxr::GfMatrix3d(asGfQuatd(input.r)));
-    return mat;
-}
-
-/**
- * @brief Convert a carb::fastcache::Transform to a GfMatrix4d
- * Note that scale is not set currently
- * @param input
- * @return pxr::GfMatrix4d
- */
-inline pxr::GfMatrix4d asGfMatrix4d(const carb::fastcache::Transform& input)
-{
-    pxr::GfMatrix4d mat;
-    mat.SetTranslateOnly(asGfVec3d(input.position));
-    mat.SetRotateOnly(pxr::GfMatrix3d(asGfQuatd(input.orientation)));
     return mat;
 }
 

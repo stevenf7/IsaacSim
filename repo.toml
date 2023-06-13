@@ -43,6 +43,7 @@ fetch.pip.files_to_pull = [
     "${root}/deps/pip_lula.toml",
     "${root}/deps/pip_ocs2.toml",
     "${root}/deps/pip_repl.toml",
+    "${root}/deps/pip_compute.toml",
 ]
 
 stage_files.extra_mapping.kit_sdk_debug = "${root}/_build/$platform/debug/kit"
@@ -65,16 +66,20 @@ vscode.python_env.PYTHONPATH= [
   "$root/_build/$platform/$config/exts/omni.isaac.gym",
   "$root/_build/$platform/$config/kit/kernel/py",
   "$root/_build/$platform/$config/kit/plugins/bindings-python/",
-  "$root/_build/$platform/$config/kit/extscore/omni.kit.pip_archive/pip_prebundle",
+  "$root/_build/$platform/$config/exts/omni.isaac.lula/pip_prebundle",
+  "$root/_build/$platform/$config/kit/exts/omni.kit.pip_archive/pip_prebundle",
   "$root/_build/$platform/$config/exts/omni.isaac.core_archive/pip_prebundle",
   "$root/_build/$platform/$config/exts/omni.isaac.ml_archive/pip_prebundle",
-  "$root/_build/$platform/$config/extscache/omni.pip.torch*/torch-1-13-1/",
+  "$root/_build/$platform/$config/exts/omni.pip.compute/pip_prebundle",
+#  "$root/_build/$platform/$config/extscache/omni.pip.torch*/torch-1-13-1/",
 ]
 
 vscode.python_env.PATH= [
   "$$$${PATH}",
   "$root/_build/$platform/$config",
-  "$root/_build/$platform/$config/exts/omni.usd.schema.isaac/bin",
+  "$root/_build/$platform/$config/exts/omni.usd.schema.isaac/plugins/IsaacSensorSchema/lib",
+  "$root/_build/$platform/$config/exts/omni.usd.schema.isaac/plugins/RangeSensorSchema/lib",
+  "$root/_build/$platform/$config/exts/omni.isaac.lula/pip_prebundle",
   "$root/_build/$platform/$config/kit",
   "$root/_build/$platform/$config/kit/kernel/plugins",
   "$root/_build/$platform/$config/kit/libs/iray",
@@ -116,7 +121,7 @@ kwargs.required = false
 
 [repo_precache_exts]
 enabled = true
-
+kit_omit_ext_version = false
 # Extra args to pass to kit
 kit_extra_args = []
 
@@ -174,6 +179,11 @@ python_paths = [
   "${root}/_build/${platform}/${config}/exts/omni.isaac.ml_archive/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.isaac.lula/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.isaac.ocs2/pip_prebundle",
+  "${root}/_build/${platform}/${config}/extscache/*",
+  "${root}/_build/${platform}/${config}/kit/exts/*",
+  "${root}/_build/${platform}/${config}/kit/extscore/*",
+  "${root}/_build/${platform}/${config}/kit/extsPhysics/*",
+  "${root}/_build/${platform}/${config}/kit/extensions/extensions-bundled",
 ]
 library_paths = [
   "$root/_build/$platform/$config",
@@ -216,7 +226,6 @@ sphinx_exclude_patterns = [
     "**/omni.isaac.examples",     #TODO?
     "**/omni.isaac.ros2_bridge-humble",
     "**/omni.isaac.repl",
-    "**/omni.isaac.splash",
     "**/omni.isaac.tests",
     "**/omni.isaac.utils_manager",
     "**/omni.kit.property.isaac",
@@ -693,12 +702,12 @@ cpp.files.exclude = [
 ]
 
 python.files.exclude = [
-    ".vscode/*",
-    "_build/*",
-    "_compiler/*",
-    "_repo/*",
-    ".git/*",
-    ".eggs/*",
+    ".vscode/*", 
+    "_build/*", 
+    "_compiler/*", 
+    "_repo/*", 
+    ".git/*", 
+    ".eggs/*", 
     ".venv/*",
     "tools/packman/*",
     "schemas/*"
@@ -761,4 +770,4 @@ files.exclude = [
 flake8.config = "${root}/.flake8"
 
 [repo_edit_sysconfig]
-sysconfig_path = "${root}/_build/${platform}/${config}/kit/python/lib/python3.7/_sysconfigdata_m_linux_x86_64-linux-gnu.py"
+sysconfig_path = "${root}/_build/${platform}/${config}/kit/python/lib/python3.10/_sysconfigdata__linux_x86_64-linux-gnu.py"

@@ -1,4 +1,12 @@
 # Changelog
+
+## [2.0.0] - 2023-06-12
+
+### Changed
+- Updated to usd 22.11
+- Update to kit 105.1
+- Using omni-isaacsim-schema as dependency
+
 ## [1.1.0] - 2023-01-21
 
 ### Added

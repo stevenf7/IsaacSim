@@ -7,9 +7,9 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
-#pragma once
-
 #include "MjcfImporter.h"
+
+#include <pxr/usd/usdGeom/plane.h>
 
 namespace omni
 {
@@ -430,7 +430,7 @@ void MJCFImporter::addWorldGeomsAndSites(pxr::UsdStageWeakPtr stage,
             {
                 // add collision plane (do not support instanceable asset for the plane)
                 pxr::SdfPath collisionPlanePath = pxr::SdfPath(bodyPath + "/collisions/CollisionPlane");
-                pxr::PhysxSchemaPlane collisionPlane = pxr::PhysxSchemaPlane::Define(stage, collisionPlanePath);
+                pxr::UsdGeomPlane collisionPlane = pxr::UsdGeomPlane::Define(stage, collisionPlanePath);
                 collisionPlane.CreatePurposeAttr().Set(pxr::UsdGeomTokens->guide);
                 collisionPlane.CreateAxisAttr().Set(pxr::UsdGeomTokens->z);
                 pxr::UsdPrim collisionPlanePrim = collisionPlane.GetPrim();
@@ -584,6 +584,8 @@ void MJCFImporter::AddTendons(pxr::UsdStageWeakPtr stage, std::string rootPath)
                     pxr::UsdPhysicsRevoluteJoint rootJointPrim = revoluteJointsMap[rootJoint->joint];
                     pxr::PhysxSchemaPhysxTendonAxisRootAPI rootAPI = pxr::PhysxSchemaPhysxTendonAxisRootAPI::Apply(
                         rootJointPrim.GetPrim(), pxr::TfToken(SanitizeUsdName(t->name)));
+                    pxr::PhysxSchemaPhysxTendonAxisAPI axisAPI = pxr::PhysxSchemaPhysxTendonAxisAPI::Apply(
+                        rootJointPrim.GetPrim(), pxr::TfToken(SanitizeUsdName(t->name)));
                     if (t->limited)
                     {
                         rootAPI.CreateLowerLimitAttr().Set(t->range[0]);
@@ -595,30 +597,14 @@ void MJCFImporter::AddTendons(pxr::UsdStageWeakPtr stage, std::string rootPath)
                     }
                     rootAPI.CreateStiffnessAttr().Set(t->stiffness);
                     rootAPI.CreateDampingAttr().Set(t->damping);
-                    rootAPI.CreateGearingAttr().Set(coef);
+                    axisAPI.CreateGearingAttr().Set(coef);
                 }
                 else if (prismaticJointsMap.find(rootJoint->joint) != prismaticJointsMap.end())
                 {
                     pxr::UsdPhysicsPrismaticJoint rootJointPrim = prismaticJointsMap[rootJoint->joint];
                     pxr::PhysxSchemaPhysxTendonAxisRootAPI rootAPI = pxr::PhysxSchemaPhysxTendonAxisRootAPI::Apply(
                         rootJointPrim.GetPrim(), pxr::TfToken(SanitizeUsdName(t->name)));
-                    if (t->limited)
-                    {
-                        rootAPI.CreateLowerLimitAttr().Set(t->range[0]);
-                        rootAPI.CreateUpperLimitAttr().Set(t->range[1]);
-                    }
-                    if (t->springlength >= 0)
-                    {
-                        rootAPI.CreateRestLengthAttr().Set(t->springlength);
-                    }
-                    rootAPI.CreateStiffnessAttr().Set(t->stiffness);
-                    rootAPI.CreateDampingAttr().Set(t->damping);
-                    rootAPI.CreateGearingAttr().Set(coef);
-                }
-                else if (d6JointsMap.find(rootJoint->joint) != d6JointsMap.end())
-                {
-                    pxr::UsdPhysicsJoint rootJointPrim = d6JointsMap[rootJoint->joint];
-                    pxr::PhysxSchemaPhysxTendonAxisRootAPI rootAPI = pxr::PhysxSchemaPhysxTendonAxisRootAPI::Apply(
+                    pxr::PhysxSchemaPhysxTendonAxisAPI axisAPI = pxr::PhysxSchemaPhysxTendonAxisAPI::Apply(
                         rootJointPrim.GetPrim(), pxr::TfToken(SanitizeUsdName(t->name)));
                     if (t->limited)
                     {
@@ -631,7 +617,27 @@ void MJCFImporter::AddTendons(pxr::UsdStageWeakPtr stage, std::string rootPath)
                     }
                     rootAPI.CreateStiffnessAttr().Set(t->stiffness);
                     rootAPI.CreateDampingAttr().Set(t->damping);
-                    rootAPI.CreateGearingAttr().Set(coef);
+                    axisAPI.CreateGearingAttr().Set(coef);
+                }
+                else if (d6JointsMap.find(rootJoint->joint) != d6JointsMap.end())
+                {
+                    pxr::UsdPhysicsJoint rootJointPrim = d6JointsMap[rootJoint->joint];
+                    pxr::PhysxSchemaPhysxTendonAxisRootAPI rootAPI = pxr::PhysxSchemaPhysxTendonAxisRootAPI::Apply(
+                        rootJointPrim.GetPrim(), pxr::TfToken(SanitizeUsdName(t->name)));
+                    pxr::PhysxSchemaPhysxTendonAxisAPI axisAPI = pxr::PhysxSchemaPhysxTendonAxisAPI::Apply(
+                        rootJointPrim.GetPrim(), pxr::TfToken(SanitizeUsdName(t->name)));
+                    if (t->limited)
+                    {
+                        rootAPI.CreateLowerLimitAttr().Set(t->range[0]);
+                        rootAPI.CreateUpperLimitAttr().Set(t->range[1]);
+                    }
+                    if (t->springlength >= 0)
+                    {
+                        rootAPI.CreateRestLengthAttr().Set(t->springlength);
+                    }
+                    rootAPI.CreateStiffnessAttr().Set(t->stiffness);
+                    rootAPI.CreateDampingAttr().Set(t->damping);
+                    axisAPI.CreateGearingAttr().Set(coef);
                 }
                 else
                 {
@@ -1345,7 +1351,7 @@ bool MJCFImporter::createContactGraph()
     // First check pairwise compatability with contype/conaffinity
     for (int i = 0; i < int(collisionGeoms.size()) - 1; ++i)
     {
-        for (int j = i + 1; j < collisionGeoms.size(); ++j)
+        for (int j = i + 1; j < int(collisionGeoms.size()); ++j)
         {
             MJCFGeom* geom1 = collisionGeoms[i];
             MJCFGeom* geom2 = collisionGeoms[j];

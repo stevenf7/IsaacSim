@@ -6,7 +6,6 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
-#pragma once
 
 #include "MjcfParser.h"
 
@@ -773,8 +772,6 @@ void LoadAssets(tinyxml2::XMLElement* a,
 
         std::map<std::string, MeshInfo>::iterator it = simulationMeshCache.find(meshName);
         Mesh* mesh = nullptr;
-        TriangleMeshHandle trimesh;
-        const float dilation = 0.005f;
 
         if (it == simulationMeshCache.end())
         {
@@ -797,18 +794,15 @@ void LoadAssets(tinyxml2::XMLElement* a,
             // use flat normals on collision shapes
             mesh->CalculateFaceNormals();
             GymMeshHandle gymMeshHandle = -1;
-            // CreateTriangleMesh(sim, mesh, dilation, &trimesh, &gymMeshHandle);
 
             MeshInfo meshInfo;
             meshInfo.mesh = mesh;
-            // meshInfo.meshId = trimesh;
             meshInfo.meshHandle = gymMeshHandle;
             simulationMeshCache[meshName] = meshInfo;
         }
         else
         {
             mesh = it->second.mesh;
-            trimesh = it->second.meshId;
         }
 
         m = m->NextSiblingElement("mesh");

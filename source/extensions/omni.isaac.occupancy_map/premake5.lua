@@ -7,7 +7,7 @@ project_with_location("omni.isaac.occupancy_map.generator")
     kind "SharedLib"
     language "C++"
     defines { "OMGENERATOREXPORT" }
-    
+
     pic "On"
     staticruntime "Off"
     include_physx()
@@ -30,7 +30,7 @@ project_with_location("omni.isaac.occupancy_map.generator")
     filter { "system:linux" }
         disablewarnings {"error=pragmas"}
         includedirs {
-            "%{root}/_build/target-deps/python/include/python3.7m"
+            "%{root}/_build/target-deps/python/include/python3.10"
         }
         buildoptions("-fvisibility=default")
         libdirs {
@@ -66,16 +66,15 @@ project_ext_plugin(ext, "omni.isaac.occupancy_map.plugin")
     }
     libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-        "%{kit_sdk_bin_dir}/plugins",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
-        "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin"
+        "%{kit_sdk_bin_dir}/exts/omni.usd.core/bin"
     }
     links {"usdUtils", "omni.usd", "omni.isaac.debug_draw.primitive_drawing", "usdPhysics", "omni.isaac.occupancy_map.generator", "sdf", "tf", "usd"}
     filter { "system:linux" }
         disablewarnings {"error=pragmas"}
         includedirs {
             "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
-            "%{root}/_build/target-deps/python/include/python3.7m"
+            "%{root}/_build/target-deps/python/include/python3.10"
         }
         libdirs {
             "%{root}/_build/target-deps/octomap/lib64",
@@ -122,11 +121,11 @@ project_ext_bindings ({
     links {"sdf", "tf", "usd", "usdUtils", "usdPhysics", "omni.isaac.occupancy_map.generator"}
 
     filter { "system:linux" }
-        links {"tbb", "boost_python37", "pthread"}
+        links {"tbb", "boost_python310", "pthread"}
         buildoptions { "-pthread"}
         includedirs {
             "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
-            "%{root}/_build/target-deps/python/include/python3.7m"
+            "%{root}/_build/target-deps/python/include/python3.10"
         }
         -- libdirs {
         --     "%{root}/_build/target-deps/octomap/lib64",
@@ -134,7 +133,9 @@ project_ext_bindings ({
     filter { "system:windows" }
         -- Warning C4099: 'omni::physx::IPhysx': type name first seen using 'class' now seen using 'struct'
         disablewarnings {"4099"}
-        disablewarnings {"4251"} 
+        disablewarnings {"4251"}         
+        link_boost_for_windows({"boost_python310"})
+
         libdirs {
             "%{root}/_build/target-deps/tbb/lib/intel64/vc14"
         }

@@ -1,4 +1,4 @@
-# Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2022-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -48,11 +48,11 @@ class HolonomicRobotUsdSetup:
         self._wheel_dof_names = [j.GetName() for j in self._mecanum_joints]
         self._wheel_positions = np.zeros((self._num_wheels, 3), dtype=float)  ## xyz for position
         self._wheel_orientations = np.zeros((self._num_wheels, 4), dtype=float)  ## quaternion for orientation
-        com_pose = Gf.Matrix4f(omni.usd.utils.get_world_transform_matrix(com_prim))
+        com_pose = Gf.Matrix4f(omni.usd.get_world_transform_matrix(com_prim))
         for i, j in enumerate(self._mecanum_joints):
             joint = UsdPhysics.RevoluteJoint(j)
             chassis_prim = stage.GetPrimAtPath(joint.GetBody0Rel().GetTargets()[0])
-            chassis_pose = Gf.Matrix4f(omni.usd.utils.get_world_transform_matrix(chassis_prim))
+            chassis_pose = Gf.Matrix4f(omni.usd.get_world_transform_matrix(chassis_prim))
             p_0 = joint.GetLocalPos0Attr().Get()
             r_0 = joint.GetLocalRot0Attr().Get()
             local_0 = Gf.Matrix4f()

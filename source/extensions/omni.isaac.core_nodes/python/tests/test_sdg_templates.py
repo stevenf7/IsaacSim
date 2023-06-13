@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2022, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -44,20 +44,26 @@ class TestSDGTemplates(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         submit_node_template_activation("IsaacReadCameraInfo", 0, [render_product_path])
         submit_node_template_activation("IsaacReadSimulationTime", 0, [render_product_path])
-        for rv in sensors.get_synthetic_data()._ogn_rendervars:
-            if sensors.get_synthetic_data().is_node_template_registered(rv + "ExportRawArray"):
-                submit_node_template_activation(rv + "IsaacSimulationGate", 0, [render_product_path])
+        submit_node_template_activation("PostProcessDispatch" + "IsaacSimulationGate", 0, [render_product_path])
         sensor_names = {
-            "instance_segmentation": "InstanceSegmentation",
-            "semantic_segmentation": "SemanticSegmentation",
-            "bounding_box_2d_tight": "BoundingBox2DTight",
-            "bounding_box_2d_loose": "BoundingBox2DLoose",
-            "bounding_box_3d": "BoundingBox3D",
-            "PostProcessDispatch": "PostProcessDispatch",
+            "instance_segmentation": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
+                "InstanceSegmentation"
+            ),
+            "semantic_segmentation": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
+                "SemanticSegmentation"
+            ),
+            "bounding_box_2d_tight": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
+                "BoundingBox2DTight"
+            ),
+            "bounding_box_2d_loose": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
+                "BoundingBox2DLoose"
+            ),
+            "bounding_box_3d": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("BoundingBox3D"),
         }
-
-        for name in sensor_names.items():
-            submit_node_template_activation(name[1] + "IsaacSimulationGate", 0, [render_product_path])
+        for rv in sensors.get_synthetic_data()._ogn_rendervars:
+            if rv in sensor_names.values():
+                if sensors.get_synthetic_data().is_node_template_registered(rv + "ExportRawArray"):
+                    submit_node_template_activation(rv + "IsaacSimulationGate", 0, [render_product_path])
 
         rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
         submit_node_template_activation(rv + "IsaacConvertRGBAToRGB", 0, [render_product_path])

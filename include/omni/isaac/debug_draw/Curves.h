@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -454,8 +454,9 @@ public:
         m_mesh.CreateNormalsAttr().Set(meshNormals);
         m_mesh.CreateFaceVertexIndicesAttr().Set(meshIndices);
         m_mesh.CreateFaceVertexCountsAttr().Set(meshFaceCount);
+        pxr::UsdGeomPrimvarsAPI primvarsAPI(m_mesh);
         pxr::UsdGeomPrimvar uvPrimvar =
-            m_mesh.CreatePrimvar(UVToken, pxr::SdfValueTypeNames->Float2Array, pxr::UsdGeomTokens->faceVarying);
+            primvarsAPI.CreatePrimvar(UVToken, pxr::SdfValueTypeNames->Float2Array, pxr::UsdGeomTokens->faceVarying);
         if (uvPrimvar)
         {
             uvPrimvar.Set(meshTexCoords);

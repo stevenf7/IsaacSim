@@ -54,7 +54,6 @@ public:
         const LidarReturn* lidarReturns = reinterpret_cast<const LidarReturn*>(
             input + sizeof(LidarParameterType) + sizeof(LidarTick) * parameter->async.numTicks);
 
-        auto& nodeObj = db.abi_node();
         const size_t maxSize = parameter->async.numChannels * parameter->async.numEchos * parameter->async.numTicks;
 
         bool keepOnlyPositiveDistance = db.inputs.keepOnlyPositiveDistance();
