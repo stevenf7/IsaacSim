@@ -185,17 +185,22 @@ components:
       parameters:
         capacity: 100
         policy: 1
-    - name: channel_rgb_left
+    - name: channel_hawk_front_rgb_left
       type: nvidia::gxf::DoubleBufferReceiver
       parameters:
         capacity: 100
         policy: 1
-    - name: channel_rgb_right
+    - name: channel_hawk_front_rgb_right
       type: nvidia::gxf::DoubleBufferReceiver
       parameters:
         capacity: 100
         policy: 1
-    - name: channel_depth_left
+    - name: channel_realsense_front_depth
+      type: nvidia::gxf::DoubleBufferReceiver
+      parameters:
+        capacity: 10
+        policy: 1
+    - name: channel_realsense_front_rgb
       type: nvidia::gxf::DoubleBufferReceiver
       parameters:
         capacity: 10
@@ -241,9 +246,10 @@ components:
           - channel_differential_base_state
           - channel_imu
           - channel_rangescan
-          - channel_rgb_left
-          - channel_rgb_right
-          - channel_depth_left
+          - channel_hawk_front_rgb_left
+          - channel_hawk_front_rgb_right
+          - channel_realsense_front_depth
+          - channel_realsense_front_rgb
           - channel_pose_tree_operation
           transmitters: [channel_differential_base_command]
           entity_serializer: entity_serializer
