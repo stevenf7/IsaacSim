@@ -347,12 +347,10 @@ group "exts"
 repo_build.prebuild_link {
     { "source/standalone_examples", "_build/%{platform}/%{config}/standalone_examples" },
     { "source/tools", "_build/%{platform}/%{config}/tools"},
-    { "source/ros2_workspace", "_build/%{platform}/%{config}/ros2_workspace" },
 }
 
 if os.target() == "linux" then
     repo_build.prebuild_link {
-        { "source/ros_workspace", "_build/%{platform}/%{config}/ros_workspace" },
         { "source/scripts/python/linux-x86_64/icon", "_build/%{platform}/%{config}/data/icon" },
     }
     -- Not strictly necessary, but convenient for tab complete.
