@@ -17,8 +17,9 @@ writeTarget.kit = true
 
 [dependencies]
 "omni.isaac.dynamic_control" = {}
-"omni.isaac.core_archive" = {} # scipy
-"omni.isaac.ml_archive" = {} # torch
+"omni.isaac.core_archive" = {}
+"omni.isaac.ml_archive" = {}
+"omni.pip.compute" = {} # scipy
 "omni.physx.tensors" = {}
 "omni.kit.material.library" = {} # omni.kit.material
 "omni.kit.uiapp" = {}
