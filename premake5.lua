@@ -268,7 +268,7 @@ group "exts"
     include ("source/extensions/omni.isaac.articulation_inspector")
     include ("source/extensions/omni.isaac.assets_check")
     include ("source/extensions/omni.isaac.benchmark_environments")
-    --include ("source/extensions/omni.isaac.benchmarks") depends on ros_bridge
+    include ("source/extensions/omni.isaac.benchmarks")
     include ("source/extensions/omni.isaac.cloner")
     include ("source/extensions/omni.isaac.robot_description_editor")
     include ("source/extensions/omni.isaac.core")
@@ -336,7 +336,7 @@ group "exts"
     if os.target() == "linux" then
         include ("source/extensions/omni.isaac.benchmarks")
         include ("source/extensions/omni.isaac.repl")
-        -- include ("source/extensions/omni.isaac.cortex_sync")
+        include ("source/extensions/omni.isaac.cortex_sync")
         include ("source/extensions/omni.isaac.ocs2")
         include ("source/extensions/omni.isaac.gxf_bridge")
         include ("source/extensions/omni.isaac.ros_bridge")
@@ -423,9 +423,9 @@ group "python_samples"
     -- omni.isaac.urdf
     python_sample_test("tests-nativepython-omni.isaac.urdf.urdf_import", "standalone_examples/api/omni.isaac.urdf/urdf_import.py")
     -- omni.isaac.ros_bridge
---TODO105    python_sample_test("tests-nativepython-omni.isaac.ros_bridge.clock", "standalone_examples/api/omni.isaac.ros_bridge/clock.py")
---TODO105    python_sample_test("tests-nativepython-omni.isaac.ros_bridge.contact", "standalone_examples/api/omni.isaac.ros_bridge/contact.py")
---TODO105    python_sample_test("tests-nativepython-omni.isaac.ros_bridge.carter_stereo", "standalone_examples/api/omni.isaac.ros_bridge/carter_stereo.py", "--test")
+    python_sample_test("tests-nativepython-omni.isaac.ros_bridge.clock", "standalone_examples/api/omni.isaac.ros_bridge/clock.py")
+    python_sample_test("tests-nativepython-omni.isaac.ros_bridge.contact", "standalone_examples/api/omni.isaac.ros_bridge/contact.py")
+    python_sample_test("tests-nativepython-omni.isaac.ros_bridge.carter_stereo", "standalone_examples/api/omni.isaac.ros_bridge/carter_stereo.py", "--test")
     -- Replicator data samples:
     python_sample_test("tests-nativepython-replicator.offline_generation", "standalone_examples/replicator/offline_generation.py")
     python_sample_test("tests-nativepython-replicator.offline_pose_generation", "standalone_examples/replicator/offline_pose_generation/offline_pose_generation.py")
