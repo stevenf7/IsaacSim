@@ -2,7 +2,7 @@ local ext = get_current_extension_info()
 
 local ogn = get_ogn_project_information(ext, "omni/isaac/examples_nodes")
 
-project_ext (ext, ogn)
+project_ext_ogn (ext, ogn)
 project_ext( ext, { generate_ext_project=true })
 
     add_files("omni/isaac/examples_nodes", "*.py")
