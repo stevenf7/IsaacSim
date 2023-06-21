@@ -123,7 +123,15 @@ class OgnIsaacPrintRTXLidarInfo:
             return True
         # raw cpuPointer params start after 36 bytes
         params_p = db.inputs.cpuPointer + 36
+
         params = ctypes.cast(params_p, ctypes.POINTER(lidarAsyncParameter))
+        if db.inputs.testMode:
+            # print a unique id for the node to see how many are running, and the number of returns for each
+            print(
+                f"Print Node ID_{id(db.inputs)} has {params.contents.numTicks * params.contents.numEchos * params.contents.numChannels} returns"
+            )
+            return True
+
         printparams(params[0])
 
         ticks_p = params_p + ctypes.sizeof(lidarAsyncParameter)

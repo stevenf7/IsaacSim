@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2023, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2023, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -6,6 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+import sys
 
 import carb
 import omni.kit.test
@@ -29,61 +30,64 @@ class TestBenchmarkRtxLidar(BaseIsaacBenchmark):
 
     # ----------------------------------------------------------------------
     async def benchmark_rtx_lidar(self, n_sensor):
-        self.test_run.test_name = f"{n_sensor}_rtx_lidar"
-        self.set_phase("loading")
-        self.start_collecting_frametime()
-        scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
-        await self.fully_load_stage(self.assets_root_path + scene_path)
+        if sys.platform == "win32":
+            carb.log_warning("RTX Lidar Currently doesn't support windows")
+        else:
+            self.test_run.test_name = f"{n_sensor}_rtx_lidar"
+            self.set_phase("loading")
+            self.start_collecting_frametime()
+            scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
+            await self.fully_load_stage(self.assets_root_path + scene_path)
+            timeline = omni.timeline.get_timeline_interface()
+            hydra_textures = []
+            for i in range(n_sensor):
+                lidar_path = "/World/RtxLidar_" + str(i)
+                sensor_translation = Gf.Vec3f(
+                    [-8, 13 + i * 2.0, 2.0]
+                )  # these positions are used for full_warehouse.usd
 
-        timeline = omni.timeline.get_timeline_interface()
-        timeline.play()
-        hydra_textures = []
-        for i in range(n_sensor):
-            lidar_path = "/World/RtxLidar_" + str(i)
-            sensor_translation = Gf.Vec3f([-8, 13 + i * 2.0, 2.0])  # these positions are used for full_warehouse.usd
+                _, sensor = omni.kit.commands.execute(
+                    "IsaacSensorCreateRtxLidar",
+                    path=lidar_path,
+                    parent=None,
+                    config="Example_Rotary",
+                    translation=sensor_translation,
+                    orientation=Gf.Quatd(0.5, 0.5, -0.5, -0.5),  # Gf.Quatd is w,i,j,k
+                )
 
-            _, (_, sensor) = omni.kit.commands.execute(
-                "IsaacSensorCreateRtxLidar",
-                path=lidar_path,
-                parent=None,
-                config="Example_Rotary",
-                translation=sensor_translation,
-                orientation=Gf.Quatd(0.5, 0.5, -0.5, -0.5),  # Gf.Quatd is w,i,j,k
-            )
-            texture, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathString)
-            hydra_textures.append(texture)
-            # Create the post process graph that publishes the render var
-            sensors.get_synthetic_data().activate_node_template(
-                "RtxSensorCpu" + "IsaacReadRTXLidarFlatScan", 0, [render_product_path]
-            )
+                texture, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathString)
+                hydra_textures.append(texture)
+                # Create the post process graph that publishes the render var
+                sensors.get_synthetic_data().activate_node_template(
+                    "Test" + "IsaacPrintRTXLidarInfo", 0, [render_product_path]
+                )
 
-            await omni.kit.app.get_app().next_update_async()
-        self.stop_collecting_frametime()
-        await self.store_measurements()
+                await omni.kit.app.get_app().next_update_async()
 
-        self.set_phase("benchmark")
-        self.start_collecting_frametime()
+            self.stop_collecting_frametime()
+            await self.store_measurements()
 
-        while self.get_num_frames() < TEST_NUM_APP_UPDATES:
-            await omni.kit.app.get_app().next_update_async()
+            self.set_phase("benchmark")
+            timeline.play()
+            self.start_collecting_frametime()
 
-        self.stop_collecting_frametime()
-        await self.store_measurements()
+            while self.get_num_frames() < TEST_NUM_APP_UPDATES:
+                await omni.kit.app.get_app().next_update_async()
 
-        timeline.stop()
-        hydra_textures = None
+            self.stop_collecting_frametime()
+            await self.store_measurements()
+
+            timeline.stop()
+            hydra_textures = None
 
     async def test_benchmark_1_rtx_lidar(self):
         await self.benchmark_rtx_lidar(1)
 
-    async def test_benchmark_5_rtx_lidar(self):
-        await self.benchmark_rtx_lidar(5)
+    async def test_benchmark_2_rtx_lidar(self):
+        await self.benchmark_rtx_lidar(2)
 
-    async def test_benchmark_10_rtx_lidar(self):
-        await self.benchmark_rtx_lidar(10)
+    async def test_benchmark_4_rtx_lidar(self):
+        await self.benchmark_rtx_lidar(4)
 
-    async def test_benchmark_50_rtx_lidar(self):
-        await self.benchmark_rtx_lidar(50)
-
-    async def test_benchmark_100_rtx_lidar(self):
-        await self.benchmark_rtx_lidar(100)
+    async def test_benchmark_8_rtx_lidar(self):
+        await self.benchmark_rtx_lidar(8)

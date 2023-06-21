@@ -20,6 +20,11 @@
                 "type": "uint64",
                 "description": "Pointer to LiDAR render result",
                 "uiName": "LiDAR render result"
+            },
+            "testMode":{
+                "type": "bool",
+                "description": "Print less for benchmark tests",
+                "uiName": "Test Mode prints less"
             }
         }
     }

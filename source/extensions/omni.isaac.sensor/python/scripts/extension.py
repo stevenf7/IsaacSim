@@ -69,6 +69,18 @@ class Extension(omni.ext.IExt):
 
     def register_nodes(self):
 
+        ### Add template to no_op
+        template_name = "Noop"
+        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
+            template = sensors.get_synthetic_data().register_node_template(
+                omni.syntheticdata.SyntheticData.NodeTemplate(
+                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
+                    "omni.graph.nodes.Noop",
+                ),
+                template_name=template_name,
+            )
+            self.registered_template.append(template)
+
         ### Add render var to omni.syntheticdata
         omni.syntheticdata.SyntheticData._ogn_rendervars[
             "RtxSensorCpu"
@@ -129,6 +141,49 @@ class Extension(omni.ext.IExt):
                     #    "inputs:accuracyErrorElevationDeg": 0.00001,
                     #    "inputs:accuracyErrorPosition": [-0.0001, 0.0001, 0.0001]
                     # }
+                ),
+                template_name=template_name,
+            )
+            self.registered_template.append(template)
+
+        ### RtxLidar Point Cloud Print Info
+        template_name = "RtxSensorCpu" + "IsaacPrintRTXLidarInfo"
+        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
+            template = sensors.get_synthetic_data().register_node_template(
+                omni.syntheticdata.SyntheticData.NodeTemplate(
+                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
+                    "omni.isaac.sensor.IsaacPrintRTXLidarInfo",
+                    [
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            "RtxSensorCpu" + "ExportRaw",
+                            attributes_mapping={
+                                "outputs:dataPtr": "inputs:cpuPointer",
+                                "outputs:exec": "inputs:execIn",
+                            },
+                        ),
+                    ],
+                ),
+                template_name=template_name,
+            )
+            self.registered_template.append(template)
+
+        ### RtxLidar Point Cloud Print Info
+        template_name = "Test" + "IsaacPrintRTXLidarInfo"
+        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
+            template = sensors.get_synthetic_data().register_node_template(
+                omni.syntheticdata.SyntheticData.NodeTemplate(
+                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
+                    "omni.isaac.sensor.IsaacPrintRTXLidarInfo",
+                    [
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            "RtxSensorCpu" + "ExportRaw",
+                            attributes_mapping={
+                                "outputs:dataPtr": "inputs:cpuPointer",
+                                "outputs:exec": "inputs:execIn",
+                            },
+                        ),
+                    ],
+                    {"inputs:testMode": True},
                 ),
                 template_name=template_name,
             )
