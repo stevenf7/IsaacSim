@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.2] - 2023-06-21
+### Fixed
+- app framework not working in docker/root environments
+- simulation app startup warning
+
 ## [1.4.1] - 2023-02-22
 ### Added
 - make sure replicator is stopped before calling wait_until_complete on closing application
