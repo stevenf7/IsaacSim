@@ -130,7 +130,9 @@ def compute_obb(bbox_cache: UsdGeom.BBoxCache, prim_path: str) -> typing.Tuple[n
             - The axes of the OBB as a 2D NumPy array, where each row represents a different axis.
             - The half extent of the OBB as a NumPy array.
 
-    # NOTE: The rotation matrix incorporates any scale factors applied to the object.
+    # NOTE:
+    # The OBB does not guarantee the smallest possible bounding box, it rotates and scales the default AABB
+    # The rotation matrix incorporates any scale factors applied to the object.
     # The `half_extent` values do not include these scaling effects.
 
     """
@@ -155,6 +157,38 @@ def compute_obb(bbox_cache: UsdGeom.BBoxCache, prim_path: str) -> typing.Tuple[n
     return np.array([*centroid]), np.array([[*x_axis], [*y_axis], [*z_axis]]), np.array(half_extent)
 
 
+def get_obb_corners(centroid: np.ndarray, axes: np.ndarray, half_extent: np.ndarray) -> np.ndarray:
+    """Computes the corners of the Oriented Bounding Box (OBB) from the given OBB information
+
+    Args:
+        centroid (np.ndarray): The centroid of the OBB as a NumPy array.
+        axes (np.ndarray): The axes of the OBB as a 2D NumPy array, where each row represents a different axis.
+        half_extent (np.ndarray): The half extent of the OBB as a NumPy array.
+
+    Returns:
+        np.ndarray: NumPy array of shape (8, 3) containing each corner location of the OBB
+        c0 = min_x, min_y, min_z;
+        c1 = min_x, min_y, max_z;
+        c2 = min_x, max_y, min_z;
+        c3 = min_x, max_y, max_z;
+        c4 = max_x, min_y, min_z;
+        c5 = max_x, min_y, max_z;
+        c6 = max_x, max_y, min_z;
+        c7 = max_x, max_y, max_z;
+    """
+    corners = [
+        centroid - axes[0] * half_extent[0] - axes[1] * half_extent[1] - axes[2] * half_extent[2],
+        centroid - axes[0] * half_extent[0] - axes[1] * half_extent[1] + axes[2] * half_extent[2],
+        centroid - axes[0] * half_extent[0] + axes[1] * half_extent[1] - axes[2] * half_extent[2],
+        centroid - axes[0] * half_extent[0] + axes[1] * half_extent[1] + axes[2] * half_extent[2],
+        centroid + axes[0] * half_extent[0] - axes[1] * half_extent[1] - axes[2] * half_extent[2],
+        centroid + axes[0] * half_extent[0] - axes[1] * half_extent[1] + axes[2] * half_extent[2],
+        centroid + axes[0] * half_extent[0] + axes[1] * half_extent[1] - axes[2] * half_extent[2],
+        centroid + axes[0] * half_extent[0] + axes[1] * half_extent[1] + axes[2] * half_extent[2],
+    ]
+    return np.array(corners)
+
+
 def compute_obb_corners(bbox_cache: UsdGeom.BBoxCache, prim_path: str) -> np.ndarray:
     """Computes the corners of the Oriented Bounding Box (OBB) of a prim
 
@@ -166,14 +200,4 @@ def compute_obb_corners(bbox_cache: UsdGeom.BBoxCache, prim_path: str) -> np.nda
         np.ndarray: NumPy array of shape (8, 3) containing each corner location of the OBB
     """
     centroid, axis, half_extent = compute_obb(bbox_cache, prim_path)
-    corners = [
-        centroid - axis[0] * half_extent[0] - axis[1] * half_extent[1] - axis[2] * half_extent[2],
-        centroid - axis[0] * half_extent[0] - axis[1] * half_extent[1] + axis[2] * half_extent[2],
-        centroid - axis[0] * half_extent[0] + axis[1] * half_extent[1] - axis[2] * half_extent[2],
-        centroid - axis[0] * half_extent[0] + axis[1] * half_extent[1] + axis[2] * half_extent[2],
-        centroid + axis[0] * half_extent[0] - axis[1] * half_extent[1] - axis[2] * half_extent[2],
-        centroid + axis[0] * half_extent[0] - axis[1] * half_extent[1] + axis[2] * half_extent[2],
-        centroid + axis[0] * half_extent[0] + axis[1] * half_extent[1] - axis[2] * half_extent[2],
-        centroid + axis[0] * half_extent[0] + axis[1] * half_extent[1] + axis[2] * half_extent[2],
-    ]
-    return np.array(corners)
+    return get_obb_corners(centroid, axis, half_extent)

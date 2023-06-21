@@ -1,0 +1,11 @@
+launch_config:
+  renderer: RayTracedLighting
+  headless: true
+  width: 400
+  height: 400
+num_frames: 5  
+clear_previous_semantics: false
+writer: KittiWriter
+writer_config:
+  output_dir: _out_kitti
+  colorize_instance_segmentation: true
