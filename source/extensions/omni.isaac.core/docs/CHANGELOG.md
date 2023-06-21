@@ -10,6 +10,11 @@
 - SimulationContext sets TimeCodesPerSecond attribute and the timeline's target framrate to the rendering frequency to account for the decoupling of stage updates and app updates.
 - set_prop_val move from omni.usd.utils to omni.usd
 
+## [1.49.0] - 2023-05-31
+### Added
+- Added OBB functions compute_obb and compute_obb_corners to utils.bounds
+- Added OBB tests
+
 ## [1.48.0] - 2023-04-18
 ### Changed
 - Add function get_transform_with_normalized_rotation to utils.transformation.py 

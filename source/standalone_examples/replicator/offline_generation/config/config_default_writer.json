@@ -1,0 +1,11 @@
+
+
+{
+    "launch_config": {
+        "renderer": "RayTracedLighting",
+        "headless": false,
+        "width": 512,
+        "height": 512
+    },
+    "rt_subframes": 3
+}

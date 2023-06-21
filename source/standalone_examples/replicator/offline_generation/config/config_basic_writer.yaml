@@ -1,0 +1,10 @@
+launch_config:
+  renderer: RayTracedLighting
+  headless: false
+  width: 512
+  height: 512
+rt_subframes: 3
+writer: BasicWriter
+writer_config:
+  output_dir: _out_basicwriter
+  rgb: true

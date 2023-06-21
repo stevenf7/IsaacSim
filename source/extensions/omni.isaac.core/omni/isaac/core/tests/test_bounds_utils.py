@@ -120,12 +120,12 @@ class TestBounds(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         cache = create_bbox_cache()
 
-        centroid, axis, half_extent = compute_obb(cache, "/cube_shape")
+        centroid, axes, half_extent = compute_obb(cache, "/cube_shape")
         centroid_expected = [0.0, 0.0, 0.0]
         for a, b in zip(centroid.tolist(), centroid_expected):
             self.assertAlmostEqual(a, b)
-        axis_expected = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
-        for a, b in zip(axis.flatten().tolist(), axis_expected):
+        axes_expected = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+        for a, b in zip(axes.flatten().tolist(), axes_expected):
             self.assertAlmostEqual(a, b)
         half_extent_expected = [1.0, 1.0, 1.0]
         for a, b in zip(half_extent, half_extent_expected):
@@ -175,11 +175,11 @@ class TestBounds(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         cache = create_bbox_cache()
 
-        centroid, axis, half_extent = compute_obb(cache, "/cube_shape")
+        centroid, axes, half_extent = compute_obb(cache, "/cube_shape")
         centroid_expected = [-1.0, -2.2, 7.5]
         for a, b in zip(centroid.tolist(), centroid_expected):
             self.assertAlmostEqual(a, b)
-        axis_expected = [
+        axes_expected = [
             0.6123724356957945,
             -0.7071067811865474,
             -1.0606601717798214,
@@ -190,7 +190,7 @@ class TestBounds(omni.kit.test.AsyncTestCase):
             -0.7071067811865475,
             1.0606601717798212,
         ]
-        for a, b in zip(axis.flatten().tolist(), axis_expected):
+        for a, b in zip(axes.flatten().tolist(), axes_expected):
             self.assertAlmostEqual(a, b)
 
         half_extent_expected = [1.5, 1.5, 1.5]
@@ -255,11 +255,11 @@ class TestBounds(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         cache = create_bbox_cache()
 
-        centroidA, axisA, half_extentA = compute_obb(cache, "/nested_cube")
+        centroidA, axesA, half_extentA = compute_obb(cache, "/nested_cube")
         centroidA_expected = [-1.0, -1.0, 1.0]
         for a, b in zip(centroidA.tolist(), centroidA_expected):
             self.assertAlmostEqual(a, b)
-        axisA_expected = [
+        axesA_expected = [
             5.551115123125784e-17,
             0.25000000000000006,
             0.4330127018922193,
@@ -270,7 +270,7 @@ class TestBounds(omni.kit.test.AsyncTestCase):
             0.37499999999999994,
             -0.21650635094610973,
         ]
-        for a, b in zip(axisA.flatten().tolist(), axisA_expected):
+        for a, b in zip(axesA.flatten().tolist(), axesA_expected):
             self.assertAlmostEqual(a, b)
         half_extentA_expected = [0.5, 0.5, 0.5]
         for a, b in zip(half_extentA, half_extentA_expected):
@@ -305,11 +305,11 @@ class TestBounds(omni.kit.test.AsyncTestCase):
         for a, b in zip(cornersA.flatten().tolist(), cornersA_expected):
             self.assertAlmostEqual(a, b)
 
-        centroidB, axisB, half_extentB = compute_obb(cache, "/nested_cube/nested_cube")
+        centroidB, axesB, half_extentB = compute_obb(cache, "/nested_cube/nested_cube")
         centroidB_expected = [-0.3169872981077806, -0.5915063509461097, 1.3415063509461096]
         for a, b in zip(centroidB.tolist(), centroidB_expected):
             self.assertAlmostEqual(a, b)
-        axisB_expected = [
+        axesB_expected = [
             5.551115123125784e-17,
             0.25000000000000006,
             0.4330127018922193,
@@ -320,7 +320,7 @@ class TestBounds(omni.kit.test.AsyncTestCase):
             0.4182581518689039,
             -0.2414814565722671,
         ]
-        for a, b in zip(axisB.flatten().tolist(), axisB_expected):
+        for a, b in zip(axesB.flatten().tolist(), axesB_expected):
             self.assertAlmostEqual(a, b)
         half_extentB_expected = [0.75, 0.75, 0.75]
         for a, b in zip(half_extentB, half_extentB_expected):
@@ -355,11 +355,11 @@ class TestBounds(omni.kit.test.AsyncTestCase):
         for a, b in zip(cornersB.flatten().tolist(), cornersB_expected):
             self.assertAlmostEqual(a, b)
 
-        centroidC, axisC, half_extentC = compute_obb(cache, "/nested_cube/nested_cube/nested_cube")
+        centroidC, axesC, half_extentC = compute_obb(cache, "/nested_cube/nested_cube/nested_cube")
         centroidC_expected = [1.8043330454518622, 4.090474164393354, 2.1024652552120413]
         for a, b in zip(centroidC.tolist(), centroidC_expected):
             self.assertAlmostEqual(a, b)
-        axisC_expected = [
+        axesC_expected = [
             1.1102230246251568e-16,
             0.5000000000000001,
             0.8660254037844386,
@@ -370,7 +370,7 @@ class TestBounds(omni.kit.test.AsyncTestCase):
             0.8365163037378078,
             -0.4829629131445342,
         ]
-        for a, b in zip(axisC.flatten().tolist(), axisC_expected):
+        for a, b in zip(axesC.flatten().tolist(), axesC_expected):
             self.assertAlmostEqual(a, b)
         half_extentC_expected = [1.5, 1.5, 1.5]
         for a, b in zip(half_extentC, half_extentC_expected):
