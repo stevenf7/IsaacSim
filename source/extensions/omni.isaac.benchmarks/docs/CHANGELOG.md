@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.7.3] - 2023-06-21
+
+### Fixed
+- Scene generation crash on pre-existing prim transform attributes
+
 ## [0.7.2] - 2023-06-01
 
 ### Fixed

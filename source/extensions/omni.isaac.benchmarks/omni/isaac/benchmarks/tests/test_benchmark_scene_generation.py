@@ -154,8 +154,13 @@ def spawn_assets_randomized(stage, num_assets, num_lights, assets_path):
     # Spawn a ground below the spawning area to drop shadows and reflect lights
     _, plane_path = omni.kit.commands.execute("CreateMeshPrim", prim_type="Plane")
     plane_prim = stage.GetPrimAtPath(plane_path)
-    UsdGeom.Xformable(plane_prim).AddTranslateOp().Set((0, 0, -2))
-    UsdGeom.Xformable(plane_prim).AddScaleOp().Set((ext[0] * 2, ext[1] * 2, 1))
+    if not plane_prim.GetAttribute("xformOp:translate"):
+        UsdGeom.Xformable(plane_prim).AddTranslateOp()
+    plane_prim.GetAttribute("xformOp:translate").Set((0, 0, -2))
+
+    if not plane_prim.GetAttribute("xformOp:scale"):
+        UsdGeom.Xformable(plane_prim).AddScaleOp()
+    plane_prim.GetAttribute("xformOp:scale").Set((ext[0] * 2, ext[1] * 2, 1))
 
     # Spawn the assets
     for i in range(num_assets):
@@ -166,10 +171,14 @@ def spawn_assets_randomized(stage, num_assets, num_lights, assets_path):
         prim.GetReferences().AddReference(asset_path)
 
         location = (random.uniform(-ext[0], ext[0]), random.uniform(-ext[1], ext[1]), random.uniform(0, ext[2]))
-        UsdGeom.Xformable(prim).AddTranslateOp().Set(location)
+        if not prim.GetAttribute("xformOp:translate"):
+            UsdGeom.Xformable(prim).AddTranslateOp()
+        prim.GetAttribute("xformOp:translate").Set(location)
 
         rotation = (random.uniform(0, 360), random.uniform(0, 360), random.uniform(0, 360))
-        UsdGeom.Xformable(prim).AddRotateXYZOp().Set(rotation)
+        if not prim.GetAttribute("xformOp:rotateXYZ"):
+            UsdGeom.Xformable(prim).AddRotateXYZOp()
+        prim.GetAttribute("xformOp:rotateXYZ").Set(rotation)
 
     # Include random lights between the assets
     for i in range(num_lights):
@@ -177,7 +186,10 @@ def spawn_assets_randomized(stage, num_assets, num_lights, assets_path):
         light = UsdLux.SphereLight.Define(stage, f"/World/Lights/SphereLight_{i}")
         light.CreateRadiusAttr(ext[2])
         light.CreateIntensityAttr(500)
-        light.AddTranslateOp().Set(light_location)
+        light_prim = light.GetPrim()
+        if not light_prim.GetAttribute("xformOp:translate"):
+            UsdGeom.Xformable(light_prim).AddTranslateOp()
+        light_prim.GetAttribute("xformOp:translate").Set(light_location)
 
 
 class TestBenchmarkSceneGeneration(BaseIsaacBenchmark):
