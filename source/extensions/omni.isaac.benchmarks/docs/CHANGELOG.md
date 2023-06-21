@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.8.0] - 2023-06-21
+
+### Added
+- rtx lidar benchmark
+
 ## [0.7.3] - 2023-06-21
 
 ### Fixed

@@ -1,5 +1,11 @@
 # Changelog
 
+## [5.8.0] - 2023-06-21
+
+### Added
+- Test Mode for PrintRTXLidarInfo node.
+- synthetic data templates for Noop, RtxSensorCpuIsaacPrintRTXLidarInfo, and TestIsaacPrintRTXLidarInfo
+
 ## [5.7.0] - 2023-06-12
 
 ### Added
