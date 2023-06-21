@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.0.1] - 2023-06-21
+
+### Changed
+- Direct inheritance for IsA schema IsaacContactSensor, IsaacImuSensor, Lidar, UltrasonicArray, Generic
+
 ## [2.0.0] - 2023-06-12
 
 ### Changed
