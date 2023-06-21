@@ -8,6 +8,7 @@
 #
 import builtins
 import os
+import sys
 import typing
 
 import carb
@@ -29,9 +30,14 @@ class AppFramework:
         self._app = omni.kit.app.get_app()
         # Path to where kit was built to
         app_root = os.environ["CARB_APP_PATH"]
-        # first arg should be the file
 
+        # first arg should be the file
         argv.insert(0, os.path.abspath(__file__))
+
+        # allow root so apps don't fail when running in docker/root environments
+        if sys.platform.startswith("linux"):
+            if os.geteuid() == 0 and "--allow-root" not in argv:
+                argv.append("--allow-root")
         self._app.startup(name, app_root, argv)
 
     def update(self) -> None:
