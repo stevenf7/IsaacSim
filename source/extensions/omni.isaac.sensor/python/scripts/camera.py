@@ -158,6 +158,9 @@ class Camera(BaseSensor):
         self._current_frame["rendering_time"] = 0
         self._current_frame["rendering_frame"] = 0
         self._core_nodes_interface = _omni_isaac_core_nodes.acquire_interface()
+
+        self._elapsed_time = 0
+        self._previous_time = None
         return
 
     def set_frequency(self, value: int) -> None:
@@ -284,7 +287,13 @@ class Camera(BaseSensor):
             .get()
         )
         current_time = self._core_nodes_interface.get_sim_time_at_swh_frame(frame_number)
-        if round(current_time % self.get_dt(), 4) == 0:
+        if self._previous_time is not None:
+            # print("current time, previous time:",current_time, self._previous_time)
+            self._elapsed_time += current_time - self._previous_time
+
+        if self._elapsed_time >= self.get_dt():
+            # print("leftover time, elapsed:", current_time % self.get_dt(), self._elapsed_time)
+            self._elapsed_time = 0
             self._current_frame["rendering_frame"] = frame_number
             self._current_frame["rgba"] = self._rgb_annotator.get_data()
             self._current_frame["rendering_time"] = current_time
@@ -292,6 +301,7 @@ class Camera(BaseSensor):
                 if key not in ["rgba", "rendering_time", "rendering_frame"]:
                     # to be added: conversion to each backend
                     self._current_frame[key] = self._custom_annotators[key].get_data()
+        self._previous_time = current_time
         return
 
     def set_resolution(self, value: Tuple[int, int]) -> None:
