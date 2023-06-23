@@ -33,13 +33,11 @@ from .start_app import start_app
 class CreateSelectorExtension(omni.ext.IExt):
     """"""
 
-    def __init__(self):
+    def on_startup(self, ext_id: str):
         self._settings = carb.settings.get_settings()
         self._selector_window = None
         self._app_version = None
         self._app_version, _, _, _, _, _, _, _ = get_version()
-
-    def on_startup(self, ext_id: str):
         # Initialize settings
         default_app = self._settings.get(DEFAULT_APP_SETTING)
         user_auto_start = self._settings.get(AUTO_START_SETTING)
