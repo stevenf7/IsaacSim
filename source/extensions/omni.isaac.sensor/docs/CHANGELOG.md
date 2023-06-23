@@ -1,5 +1,10 @@
 # Changelog
 
+## [5.8.1] - 2023-06-22
+
+### Fixed
+- Bug causing the data frame to stop updating in the camera class over extended periods of time
+
 ## [5.8.0] - 2023-06-21
 
 ### Added
