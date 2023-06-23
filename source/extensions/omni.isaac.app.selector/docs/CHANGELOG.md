@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.2.1] - 2023-06-22
+
+### Fixed
+- Selector not starting with kit 105.1
+
 ## [2.2.0] - 2023-01-23
 
 ### Added
