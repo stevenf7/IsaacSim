@@ -19,11 +19,17 @@ import numpy as np
 import omni.isaac.motion_generation.interface_config_loader as interface_config_loader
 import omni.kit.test
 from omni.isaac.core.objects.cuboid import VisualCuboid
+from omni.isaac.core.prims import XFormPrim
 from omni.isaac.core.robots.robot import Robot
 from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats, rotvecs_to_quats
+from omni.isaac.core.utils.numpy.rotations import rot_matrices_to_quats, rotvecs_to_quats
 from omni.isaac.core.utils.prims import delete_prim
-from omni.isaac.core.utils.stage import add_reference_to_stage, create_new_stage_async, update_stage_async
+from omni.isaac.core.utils.stage import (
+    add_reference_to_stage,
+    create_new_stage_async,
+    get_current_stage,
+    update_stage_async,
+)
 from omni.isaac.core.world import World
 from omni.isaac.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
 from omni.isaac.motion_generation.articulation_trajectory import ArticulationTrajectory
@@ -32,6 +38,7 @@ from omni.isaac.motion_generation.lula.trajectory_generator import (
     LulaCSpaceTrajectoryGenerator,
     LulaTaskSpaceTrajectoryGenerator,
 )
+from pxr import Sdf, UsdLux
 
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will
@@ -57,6 +64,12 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
 
         pass
 
+    async def _create_light(self):
+        sphereLight = UsdLux.SphereLight.Define(get_current_stage(), Sdf.Path("/World/SphereLight"))
+        sphereLight.CreateRadiusAttr(2)
+        sphereLight.CreateIntensityAttr(100000)
+        XFormPrim(sphereLight.GetPath()).set_world_pose([6.5, 0, 12])
+
     async def _prepare_stage(self, robot):
         # Set settings to ensure deterministic behavior
         # Initialize the robot
@@ -67,6 +80,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
         world = World()
 
         await world.initialize_simulation_context_async()
+        await self._create_light()
 
         self._timeline.play()
         await update_stage_async()

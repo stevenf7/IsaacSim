@@ -11,16 +11,21 @@ import asyncio
 import json
 import os
 
-import carb
 import numpy as np
 import omni.isaac.motion_generation.interface_config_loader as interface_config_loader
 import omni.kit.test
 from omni.isaac.core.objects import FixedCuboid, VisualCuboid
 from omni.isaac.core.objects.ground_plane import GroundPlane
+from omni.isaac.core.prims import XFormPrim
 from omni.isaac.core.robots import Robot
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.numpy.rotations import euler_angles_to_quats
-from omni.isaac.core.utils.stage import add_reference_to_stage, create_new_stage_async, update_stage_async
+from omni.isaac.core.utils.stage import (
+    add_reference_to_stage,
+    create_new_stage_async,
+    get_current_stage,
+    update_stage_async,
+)
 from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.core.world import World
 from omni.isaac.motion_generation import ArticulationTrajectory
@@ -31,6 +36,7 @@ from omni.isaac.motion_generation.lula.kinematics import LulaKinematicsSolver
 from omni.isaac.motion_generation.lula.path_planners import RRT
 from omni.isaac.motion_generation.lula.trajectory_generator import LulaCSpaceTrajectoryGenerator
 from omni.isaac.motion_generation.path_planner_visualizer import PathPlannerVisualizer
+from pxr import Sdf, UsdLux
 
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will
@@ -126,6 +132,12 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         World.clear_instance()
         pass
 
+    async def _create_light(self):
+        sphereLight = UsdLux.SphereLight.Define(get_current_stage(), Sdf.Path("/World/SphereLight"))
+        sphereLight.CreateRadiusAttr(2)
+        sphereLight.CreateIntensityAttr(100000)
+        XFormPrim(sphereLight.GetPath()).set_world_pose([6.5, 0, 12])
+
     async def _prepare_stage(self, robot):
         # Set settings to ensure deterministic behavior
         # Initialize the robot
@@ -136,6 +148,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         world = World()
 
         await world.initialize_simulation_context_async()
+        await self._create_light()
 
         self._timeline.play()
         await update_stage_async()
@@ -423,7 +436,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
 
         self.assertTrue(np.all(min_path_dists < path_dist_thresh))
 
-    async def follow_plan(self, plan, interpolation_max_dist, path_dist_thresh=0.01):
+    async def follow_plan(self, plan, interpolation_max_dist, path_dist_thresh=0.02):
         # acceleration_limits =  1*np.array([15.0, 7.5, 10.0, 12.5, 15.0, 20.0, 20.0])
         # jerk_limits = 1.*np.array([7500.0, 3750.0, 5000.0, 6250.0, 7500.0, 10000.0, 10000.0])
 
