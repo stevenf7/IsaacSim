@@ -25,6 +25,7 @@ from omni.isaac.core.utils.rotations import gf_quat_to_np_array, quat_to_rot_mat
 from omni.isaac.core.utils.stage import (
     add_reference_to_stage,
     create_new_stage_async,
+    get_current_stage,
     open_stage_async,
     update_stage_async,
 )
@@ -33,7 +34,7 @@ from omni.isaac.core.world import World
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.motion_generation.articulation_motion_policy import ArticulationMotionPolicy
 from omni.isaac.motion_generation.lula.motion_policies import RmpFlow
-from pxr import Gf
+from pxr import Gf, Sdf, UsdLux
 
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will
@@ -79,6 +80,12 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         World.clear_instance()
         pass
 
+    async def _create_light(self):
+        sphereLight = UsdLux.SphereLight.Define(get_current_stage(), Sdf.Path("/World/SphereLight"))
+        sphereLight.CreateRadiusAttr(2)
+        sphereLight.CreateIntensityAttr(100000)
+        XFormPrim(sphereLight.GetPath()).set_world_pose([6.5, 0, 12])
+
     async def _prepare_stage(self, robot):
         # Set settings to ensure deterministic behavior
         # Initialize the robot
@@ -89,6 +96,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         world = World()
 
         await world.initialize_simulation_context_async()
+        await self._create_light()
 
         self._timeline.play()
         await update_stage_async()
@@ -849,13 +857,10 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
     async def add_block(self, path, offset, size=np.array([0.01, 0.01, 0.01]), collidable=True):
         if collidable:
-            cuboid = objects.cuboid.FixedCuboid(path, scale=size, size=1.0)
+            cuboid = objects.cuboid.FixedCuboid(path, scale=size, size=1.0, position=offset)
             await update_stage_async()
         else:
-            cuboid = objects.cuboid.VisualCuboid(path, scale=size, size=1.0)
-        await update_stage_async()
-        cuboid.set_world_pose(offset, np.array([1.0, 0, 0, 0]))
-        await update_stage_async()
+            cuboid = objects.cuboid.VisualCuboid(path, scale=size, size=1.0, position=offset)
 
         return cuboid
 
@@ -1011,15 +1016,14 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         target = await self.add_block("/scene/target", target_pos, size=0.05 * np.ones(3), collidable=False)
         self._motion_policy.set_robot_base_pose(*self._robot.get_world_pose())
 
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
         obs_prim = None
         if obs_pos is not None:
             cuboid = await self.add_block("/scene/obstacle", obs_pos, size=0.1 * np.array([2.0, 3.0, 1.0]))
-
-            await update_stage_async()
             self._motion_policy.add_obstacle(cuboid, static=static)
 
         self._motion_policy.set_end_effector_target(target_pos, target_orient)
+
         success, time_to_target = await self.simulate_until_target_reached(
             timeout, target_pos, target_orient=target_orient
         )

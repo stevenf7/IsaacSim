@@ -23,12 +23,13 @@ from omni.isaac.core.utils import distance_metrics
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices
 from omni.isaac.core.utils.prims import is_prim_path_valid
-from omni.isaac.core.utils.stage import open_stage_async, update_stage_async
+from omni.isaac.core.utils.stage import get_current_stage, open_stage_async, update_stage_async
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.core.world import World
 from omni.isaac.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
 from omni.isaac.motion_generation.lula.kinematics import LulaKinematicsSolver
+from pxr import Sdf, UsdLux
 
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will
@@ -69,6 +70,12 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         World.clear_instance()
         pass
 
+    async def _create_light(self):
+        sphereLight = UsdLux.SphereLight.Define(get_current_stage(), Sdf.Path("/World/SphereLight"))
+        sphereLight.CreateRadiusAttr(2)
+        sphereLight.CreateIntensityAttr(100000)
+        XFormPrim(sphereLight.GetPath()).set_world_pose([6.5, 0, 12])
+
     async def _prepare_stage(self, robot):
         # Set settings to ensure deterministic behavior
         # Initialize the robot
@@ -79,6 +86,7 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         world = World()
 
         await world.initialize_simulation_context_async()
+        await self._create_light()
 
         self._timeline.play()
         await update_stage_async()

@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.9.0] - 2023-06-22
+### Fixed
+- Add light to stages in all motion generation test cases because Kit 105.1 no longer has a default stage light
+- add_block function in motion_policy tests no longer waiting a frame before teleporting the block.  The single frame of collision was causing the robot in the test cases to explode.
+
+### Changed
+- Increase threshold on RRT test
+
 ## [4.8.0] - 2023-06-07
 ### Added
 - Update function in test cases that ensures deterministic behavior corresponding to moving to Kit 1.05
