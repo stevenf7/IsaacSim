@@ -54,12 +54,7 @@ class UIBuilder:
         Args:
             event (omni.timeline.TimelineEventType): Event Type
         """
-
-        if event.type == int(omni.timeline.TimelineEventType.PLAY):
-            # Populate Articulation selection menu when the user presses PLAY
-            self._selection_menu.repopulate()
-        elif event.type == int(omni.timeline.TimelineEventType.STOP):
-            self._invalidate_articulation()
+        pass
 
     def on_physics_step(self, step):
         """Callback for Physics Step.
@@ -76,8 +71,13 @@ class UIBuilder:
         Args:
             event (omni.usd.StageEventType): Event Type
         """
-        # The user adding or removing an Articulation from the stage would be a stage event
-        self._selection_menu.repopulate()
+
+        # The ASSETS_LOADED stage event is triggered on every occasion that the selection menu should be repopulated:
+        #   a) The timeline is stopped or played
+        #   b) An Articulation is added or removed from the stage
+        #   c) The USD stage is loaded or cleared
+        if event.type == int(omni.usd.StageEventType.ASSETS_LOADED):
+            self._selection_menu.repopulate()
         pass
 
     def cleanup(self):
