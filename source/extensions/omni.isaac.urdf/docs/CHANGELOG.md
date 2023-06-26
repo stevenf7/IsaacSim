@@ -1,6 +1,11 @@
 # Changelog
 
-## [0.5.13] - 2023-06-13
+## [0.5.15] - 2023-06-26
+### Fixed
+- Support for non-diagonal inertia matrix
+- Support for convex decomposition mesh collision method 
+
+## [0.5.14] - 2023-06-13
 ### Fixed
 - Kit 105.1 update
 - Accessing primvars is accessed through the PrimvarsAPI instead of usd convenience functions

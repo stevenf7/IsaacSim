@@ -357,7 +357,14 @@ void UrdfImporter::addInstanceableMeshes(pxr::UsdStageRefPtr stage,
             else
             {
                 pxr::UsdPhysicsMeshCollisionAPI physicsMeshAPI = pxr::UsdPhysicsMeshCollisionAPI::Apply(prim);
-                physicsMeshAPI.CreateApproximationAttr().Set(pxr::UsdPhysicsTokens.Get()->convexHull);
+                if (config.convexDecomp == true)
+                {
+                    physicsMeshAPI.CreateApproximationAttr().Set(pxr::UsdPhysicsTokens.Get()->convexDecomposition);
+                }
+                else
+                {
+                    physicsMeshAPI.CreateApproximationAttr().Set(pxr::UsdPhysicsTokens.Get()->convexHull);
+                }
             }
             pxr::UsdGeomMesh(prim).CreatePurposeAttr().Set(pxr::UsdGeomTokens->guide);
         }
@@ -404,10 +411,20 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
         }
         if (link.inertial.hasInertia && config.importInertiaTensor)
         {
+            Matrix33 inertiaMatrix;
+            inertiaMatrix.cols[0] = Vec3(link.inertial.inertia.ixx, link.inertial.inertia.ixy, link.inertial.inertia.ixz);
+            inertiaMatrix.cols[1] = Vec3(link.inertial.inertia.ixy, link.inertial.inertia.iyy, link.inertial.inertia.iyz);
+            inertiaMatrix.cols[2] = Vec3(link.inertial.inertia.ixz, link.inertial.inertia.iyz, link.inertial.inertia.izz);
+
+            Quat principalAxes;
+            Vec3 diaginertia = Diagonalize(inertiaMatrix, principalAxes);
+
             // input is meters, but convert to kit units
-            massAPI.CreateDiagonalInertiaAttr().Set(
-                pxr::GfVec3f(link.inertial.inertia.ixx, link.inertial.inertia.iyy, link.inertial.inertia.izz) *
-                config.distanceScale * config.distanceScale);
+            massAPI.CreateDiagonalInertiaAttr().Set(config.distanceScale * config.distanceScale *
+                                                    pxr::GfVec3f(diaginertia.x, diaginertia.y, diaginertia.z));
+
+            massAPI.CreatePrincipalAxesAttr().Set(
+                pxr::GfQuatf(principalAxes.w, principalAxes.x, principalAxes.y, principalAxes.z));
         }
         if (link.inertial.hasOrigin)
         {
@@ -565,7 +582,14 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
                 else
                 {
                     pxr::UsdPhysicsMeshCollisionAPI physicsMeshAPI = pxr::UsdPhysicsMeshCollisionAPI::Apply(prim);
-                    physicsMeshAPI.CreateApproximationAttr().Set(pxr::UsdPhysicsTokens.Get()->convexHull);
+                    if (config.convexDecomp == true)
+                    {
+                        physicsMeshAPI.CreateApproximationAttr().Set(pxr::UsdPhysicsTokens.Get()->convexDecomposition);
+                    }
+                    else
+                    {
+                        physicsMeshAPI.CreateApproximationAttr().Set(pxr::UsdPhysicsTokens.Get()->convexHull);
+                    }
                 }
                 pxr::UsdGeomMesh(prim).CreatePurposeAttr().Set(pxr::UsdGeomTokens->guide);
             }

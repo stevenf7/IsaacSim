@@ -23,6 +23,60 @@ namespace urdf
 {
 
 
+Quat indexedRotation(int axis, float s, float c)
+{
+    float v[3] = { 0, 0, 0 };
+    v[axis] = s;
+    return Quat(v[0], v[1], v[2], c);
+}
+
+Vec3 Diagonalize(const Matrix33& m, Quat& massFrame)
+{
+    const int MAX_ITERS = 24;
+
+    Quat q = Quat();
+    Matrix33 d;
+    for (int i = 0; i < MAX_ITERS; i++)
+    {
+        Matrix33 axes;
+        quat2Mat(q, axes);
+        d = Transpose(axes) * m * axes;
+
+        float d0 = fabs(d(1, 2)), d1 = fabs(d(0, 2)), d2 = fabs(d(0, 1));
+
+        // rotation axis index, from largest off-diagonal element
+        int a = int(d0 > d1 && d0 > d2 ? 0 : d1 > d2 ? 1 : 2);
+        int a1 = (a + 1 + (a >> 1)) & 3, a2 = (a1 + 1 + (a1 >> 1)) & 3;
+
+        if (d(a1, a2) == 0.0f || fabs(d(a1, a1) - d(a2, a2)) > 2e6f * fabs(2.0f * d(a1, a2)))
+            break;
+
+        // cot(2 * phi), where phi is the rotation angle
+        float w = (d(a1, a1) - d(a2, a2)) / (2.0f * d(a1, a2));
+        float absw = fabs(w);
+
+        Quat r;
+        if (absw > 1000)
+        {
+            // h will be very close to 1, so use small angle approx instead
+            r = indexedRotation(a, 1 / (4 * w), 1.f);
+        }
+        else
+        {
+            float t = 1 / (absw + Sqrt(w * w + 1)); // absolute value of tan phi
+            float h = 1 / Sqrt(t * t + 1); // absolute value of cos phi
+
+            assert(h != 1); // |w|<1000 guarantees this with typical IEEE754 machine eps (approx 6e-8)
+            r = indexedRotation(a, Sqrt((1 - h) / 2) * Sign(w), Sqrt((1 + h) / 2));
+        }
+
+        q = Normalize(q * r);
+    }
+    massFrame = q;
+    return Vec3(d.cols[0].x, d.cols[1].y, d.cols[2].z);
+}
+
+
 void inertiaToUrdf(const Matrix33& inertia, UrdfInertia& urdfInertia)
 {
     urdfInertia.ixx = inertia.cols[0].x;
