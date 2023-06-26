@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.8.2] - 2023-06-26
+
+### Fixed
+- Removed test loops, benchmark data was not exported because setUp and tearDown were not called for every test
+
+### Changed
+- SDG benchmark set default resolution to 720p
+- SDG benchmark set writer to None for future replicator changes to cleanup
+
+## [0.8.1] - 2023-06-21
+
+### Fixed
+- new (fixed) stage for SDG benchmark
+
 ## [0.8.0] - 2023-06-21
 
 ### Added
