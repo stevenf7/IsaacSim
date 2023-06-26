@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0] - 2023-06-26
+### Fixed
+- Fixed bug where Configuration Tooling Template could cause a crash in Kit 105.1
+- The crash was caused by attempting to initialize Articulation on all stage events.
+    The fix is to subscribe specifically to the ASSETS_LOADED stage event.
+- Subscriptions to STOP/PLAY timeline events in the Configuration Tooling Template have been removed, as they didn't acheive anything when running Kit 105.1
+
 ## [1.2.0] - 2023-05-03
 ### Added
 - Added limitations to special characters that are considered acceptible in an extension title
