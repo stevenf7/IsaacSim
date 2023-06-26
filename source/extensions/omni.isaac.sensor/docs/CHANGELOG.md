@@ -1,4 +1,7 @@
 # Changelog
+## [5.8.2] - 2023-06-23
+### Changed
+- IsaacPrintRTXLidarInfo node now prints prim paths and return data for first named prim hits.
 
 ## [5.8.1] - 2023-06-22
 

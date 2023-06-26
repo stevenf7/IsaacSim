@@ -10,6 +10,19 @@
 import ctypes
 
 import carb
+from omni.syntheticdata._syntheticdata import acquire_syntheticdata_interface
+
+
+def object_id_to_prim_path(object_id):
+    """Given an ObjectId get a Prim Path
+
+    Args:
+        object_id (int): object id, like form a RTX Lidar return
+
+    Returns:
+        prim path string
+    """
+    return acquire_syntheticdata_interface().get_uri_from_instance_segmentation_id(object_id)
 
 
 class sensorPose(ctypes.Structure):
@@ -88,9 +101,9 @@ class lidarReturn(ctypes.Structure):
     ]
 
 
-def printreturn(re):
+def printreturn(re, prim):
     print(
-        f"azimuthDeg {re.azimuthDeg}, elevationDeg {re.elevationDeg}, distance {re.distance}, intensity {re.intensity}, velocityMs ({re.velocityMs[0]}, {re.velocityMs[1]}, {re.velocityMs[2]}), deltaTimeNs {re.deltaTimeNs}, emitterId {re.emitterId} , beamId {re.beamId}, materialId {re.materialId}, hitPointNormal ({re.hitPointNormal[0]}, {re.hitPointNormal[1]}, {re.hitPointNormal[2]}), objectId {re.objectId}"
+        f"azimuthDeg {re.azimuthDeg}, elevationDeg {re.elevationDeg}, distance {re.distance}, intensity {re.intensity}, velocityMs ({re.velocityMs[0]}, {re.velocityMs[1]}, {re.velocityMs[2]}), deltaTimeNs {re.deltaTimeNs}, emitterId {re.emitterId} , beamId {re.beamId}, materialId {re.materialId}, hitPointNormal ({re.hitPointNormal[0]}, {re.hitPointNormal[1]}, {re.hitPointNormal[2]}), objectId {re.objectId}, prim path {prim}"
     )
 
 
@@ -142,7 +155,20 @@ class OgnIsaacPrintRTXLidarInfo:
         # idx =  echo + channel*numEchos + tick * numEchos * numChannels
         returns_p = ticks_p + ctypes.sizeof(lidarTick) * params.contents.numTicks
         returns = ctypes.cast(returns_p, ctypes.POINTER(lidarReturn))
-        printreturn(returns[0])
-        printreturn(returns[params.contents.numTicks * params.contents.numEchos * params.contents.numChannels - 1])
+        # print all the returns that hit things
+        rets = []
+        objIds = []
+        pps = []
+        for x in range(params.contents.numTicks * params.contents.numEchos * params.contents.numChannels):
+            if not returns[x].objectId in objIds:
+                objIds.append(returns[x].objectId)
+                primpath = object_id_to_prim_path(returns[x].objectId)
+                # only if the prim they hit has a path
+                if primpath:
+                    rets.append(x)
+                    pps.append(primpath)
+
+        for i in range(len(rets)):
+            printreturn(returns[rets[i]], pps[i])
 
         return True
