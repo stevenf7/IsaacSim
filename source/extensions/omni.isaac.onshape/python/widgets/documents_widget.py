@@ -9,6 +9,7 @@
 
 import asyncio
 import io
+import json
 import os
 import signal
 import threading
@@ -90,12 +91,12 @@ class DocumentItem(ui.AbstractItem):
 
     def populate_doc_type(self):
         def get_doc_type():
-            self.elements = [
-                i
-                for i in OnshapeClient.get().documents_api.get_elements_in_document(
-                    self.document_id, self.get_wdid(), self.get_workspace()
-                )
-            ]
+            response = OnshapeClient.get().documents_api.get_elements_in_document(
+                self.document_id, self.get_wdid(), self.get_workspace(), _preload_content=False
+            )
+            elements = json.loads(response.data)
+            # print(elements)
+            self.elements = [i for i in elements]
 
         self._doc_type_task = threading.Thread(target=get_doc_type)
         self._doc_type_task.start()
@@ -452,8 +453,7 @@ class DocumentListDelegate(ui.AbstractItemDelegate):
         self.listView = listView
 
     def build_widget(self, model, item, column_id, level, expanded):
-        if item:
-            type = item.get_document_type()
+        if item and type(item) is not ui.AbstractItem:
             if len(item.get_elements()) < 1:
                 return
             with ui.VStack():

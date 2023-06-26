@@ -28,6 +28,7 @@ import omni.ui as ui
 import pxr
 from omni.isaac.onshape.client import OnshapeClient
 from omni.isaac.onshape.scripts.style import UI_STYLES
+from omni.isaac.onshape.widgets.configuration_widget import *
 from omni.isaac.onshape.widgets.parts_widget import OnshapePart, OnshapePartsWidget
 from PIL import Image, ImageChops
 from pxr import Gf, Kind, Sdf, Usd, UsdGeom, UsdLux, UsdShade, Vt
@@ -35,9 +36,11 @@ from pxr.Vt import DoubleArray, IntArray, Vec2fArray, Vec3fArray
 
 
 def make_part_id(part):
-    string_id = "".join(
-        [part["documentId"], part["documentMicroversion"], part["elementId"], part["partId"], part["configuration"]]
-    )
+    if "documentVersion" not in part:
+        version = part["workspaceId"]
+    else:
+        version = part["documentVersion"]
+    string_id = "".join([part["documentId"], version, part["elementId"], part["partId"], part["configuration"]])
     return hash(string_id)
 
 
@@ -53,7 +56,21 @@ class MateRelation(object):
         self.occurrences = [m["featureId"] for m in relation["mates"]]
 
 
-distance_unit = {"cm": 0.01, "mm": 0.001, "m": 1.00, "yd": 0.9144, "ft": 0.3048, "in": 0.0254}
+distance_unit = {
+    "cm": 0.01,
+    "mm": 0.001,
+    "m": 1.00,
+    "yd": 0.9144,
+    "ft": 0.3048,
+    "in": 0.0254,
+    "meter": 1.00,
+    "centimiter": 0.01,
+    "milimiter": 0.001,
+    "meter": 1.00,
+    "yard": 0.9144,
+    "foot": 0.3048,
+    "inch": 0.0254,
+}
 
 
 def nop(a):
@@ -76,7 +93,7 @@ class Mate(object):
         carb.log_warn("Mate type {} unsupported".format(self.type))
         return False
 
-    def __init__(self, mate, details):
+    def __init__(self, mate, details, assembly):
         # print(mate)
         self.name = mate["featureData"]["name"]
         # print(self.name)
@@ -84,6 +101,34 @@ class Mate(object):
         # print(mate)
         self.limits = [None, None]
         self.occurrences = [m["matedOccurrence"] for m in mate["featureData"]["matedEntities"]]
+
+        def get_limits_values(lims, is_linear):
+            out = lims[:]
+            for i, limit in enumerate(lims):
+                l = limit
+                if type(l) is tuple:
+                    lim = limit[0]
+                    if lim:
+                        if lim[0] == "#":
+                            conf = lim[1:]
+                            out[i] = assembly.get_configuration_value(conf)
+                            continue
+                        else:
+                            l = lim
+                    else:
+                        out[i] = None
+                if type(l) is str:
+                    split = l.split(" ")
+                    if is_linear:
+                        out[i] = float(split[0]) * distance_unit[split[1]]
+                    else:
+                        out[i] = rotation_unit[split[1]](float(split[0]))
+                elif type(limit) in [int, float]:
+                    out[i] = limit
+                else:
+                    out[i] = None
+            return out
+
         self.positions = [
             Gf.Matrix4d(
                 m["matedCS"]["xAxis"] + [0],
@@ -103,26 +148,21 @@ class Mate(object):
                 if d["message"]["parameterId"] == "rotation"
             ]
             self.value = value[0] if value else 0
-            self.limits = [
+            limit_low = [
+                d["message"]["expression"] if not d["message"]["nullValue"] else None
+                for d in details["message"]["parameters"]
+                if d["message"]["parameterId"] == "limitAxialZMin"
+            ][0]
+            limit_high = (
                 [
-                    rotation_unit[d["message"]["expression"].split(" ")[1]](
-                        float(d["message"]["expression"].split(" ")[0])
-                    )
-                    if not d["message"]["nullValue"]
-                    else None
-                    for d in details["message"]["parameters"]
-                    if d["message"]["parameterId"] == "limitAxialZMin"
-                ][0],
-                [
-                    rotation_unit[d["message"]["expression"].split(" ")[1]](
-                        float(d["message"]["expression"].split(" ")[0])
-                    )
-                    if not d["message"]["nullValue"]
-                    else None
+                    d["message"]["expression"] if not d["message"]["nullValue"] else None
                     for d in details["message"]["parameters"]
                     if d["message"]["parameterId"] == "limitAxialZMax"
                 ][0],
-            ]
+            )
+            self.limits = get_limits_values([limit_low, limit_high], False)
+
+            # print(self.limits)
 
         # Axis is actually alwayz Z
         elif self.type == "SLIDER":
@@ -133,64 +173,48 @@ class Mate(object):
                 if d["message"]["parameterId"] == "rotation"
             ]
             self.value = value[0] if value else 0
-            self.limits = [
+            limit_low = [
+                d["message"]["expression"] if not d["message"]["nullValue"] else None
+                for d in details["message"]["parameters"]
+                if d["message"]["parameterId"] == "limitZMin"
+            ][0]
+            limit_high = (
                 [
-                    float(d["message"]["expression"].split(" ")[0])
-                    * distance_unit[d["message"]["expression"].split(" ")[1]]
-                    if not d["message"]["nullValue"]
-                    else None
-                    for d in details["message"]["parameters"]
-                    if d["message"]["parameterId"] == "limitZMin"
-                ][0],
-                [
-                    float(d["message"]["expression"].split(" ")[0])
-                    * distance_unit[d["message"]["expression"].split(" ")[1]]
-                    if not d["message"]["nullValue"]
-                    else None
+                    d["message"]["expression"] if not d["message"]["nullValue"] else None
                     for d in details["message"]["parameters"]
                     if d["message"]["parameterId"] == "limitZMax"
                 ][0],
-            ]
+            )
+            self.limits = self.limits = get_limits_values([limit_low, limit_high], True)
+
         elif self.type == "CYLINDRICAL":
             self.axis = "Z"
-            self.limits_linear = [
+            limit_low = [
+                d["message"]["expression"] if not d["message"]["nullValue"] else None
+                for d in details["message"]["parameters"]
+                if d["message"]["parameterId"] == "limitZMin"
+            ][0]
+            limit_high = (
                 [
-                    float(d["message"]["expression"].split(" ")[0])
-                    * distance_unit[d["message"]["expression"].split(" ")[1]]
-                    if not d["message"]["nullValue"]
-                    else None
-                    for d in details["message"]["parameters"]
-                    if d["message"]["parameterId"] == "limitZMin"
-                ][0],
-                [
-                    float(d["message"]["expression"].split(" ")[0])
-                    * distance_unit[d["message"]["expression"].split(" ")[1]]
-                    if not d["message"]["nullValue"]
-                    else None
+                    d["message"]["expression"] if not d["message"]["nullValue"] else None
                     for d in details["message"]["parameters"]
                     if d["message"]["parameterId"] == "limitZMax"
                 ][0],
-            ]
-            self.limits_radial = [
+            )
+            self.limits_linear = get_limits_values([limit_low, limit_high], True)
+            limit_low = [
+                d["message"]["expression"] if not d["message"]["nullValue"] else None
+                for d in details["message"]["parameters"]
+                if d["message"]["parameterId"] == "limitAxialZMin"
+            ][0]
+            limit_high = (
                 [
-                    rotation_unit[d["message"]["expression"].split(" ")[1]](
-                        float(d["message"]["expression"].split(" ")[0])
-                    )
-                    if not d["message"]["nullValue"]
-                    else None
-                    for d in details["message"]["parameters"]
-                    if d["message"]["parameterId"] == "limitAxialZMin"
-                ][0],
-                [
-                    rotation_unit[d["message"]["expression"].split(" ")[1]](
-                        float(d["message"]["expression"].split(" ")[0])
-                    )
-                    if not d["message"]["nullValue"]
-                    else None
+                    d["message"]["expression"] if not d["message"]["nullValue"] else None
                     for d in details["message"]["parameters"]
                     if d["message"]["parameterId"] == "limitAxialZMax"
                 ][0],
-            ]
+            )
+            self.limits_radial = get_limits_values([limit_low, limit_high], False)
         elif self.type == "BALL":
             self.axis = "Z"
             self.axis_cone = "Y"
@@ -255,6 +279,7 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
         confs = json.loads(confs.data)
         self.conf_models = [ConfigurationListModel(c) for c in confs["configurationParameters"]]
         self._on_assembly_loaded_fn = kwargs.get("assembly_loaded_fn", None)
+        self._on_assembly_reloaded_fn = kwargs.get("assembly_reloaded_fn", None)
         for cm in self.conf_models:
             cm.add_item_changed_fn(lambda a, b: self.conf_changed(a, b))
         # self._get_assembly_definition()
@@ -263,7 +288,11 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
         self._app_update_sub = None
 
     def _on_update(self, t):
+        # print("Assembly widget on_update")
         if self.pending_notify:
+            # print("Pending Notify")
+            if self.config_changed:
+                self.on_assembly_reloaded(None)
             self.on_assembly_loaded(None)
             self.pending_notify = False
 
@@ -279,27 +308,46 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
         self.config_changed = True
         self._get_assembly_definition()
 
-    def _get_assembly_features(self, document_id, wtype, workspace, eid):
+    def _get_assembly_features(
+        self,
+        document_id,
+        wtype,
+        workspace,
+        eid,
+    ):
         def _get_features(req):
-            req.wait()
-            if req.successful():
-                # print("get features", document_id, wtype, workspace, eid)
-                response = req.get()
-                # print(response.data)
-                data = json.loads(response.data)
-                # print(data)
-                with self.features_lock:
-                    for f in [f for f in data["features"] if f["message"]["nodeId"] in self.assembly_features]:
+            # print(eid, "Get Features ")
+            # print( eid, "entering lock")
+            with self.features_lock:
+                req.wait()
+                if req.successful():
+                    # print("   >Got Features ", eid)
+                    # print("get features", document_id, wtype, workspace, eid)
+                    response = req.get()
+                    # print(response.data)
+                    data = json.loads(response.data)
+                    # print(data)
+                    features = [f for f in data["features"] if f["message"]["nodeId"] in self.assembly_features]
+                    for f in features:
                         self.features_details[f["message"]["nodeId"]] = f
-                    # print("features", self.assembly_features.keys())
-                    # print("details", self.features_details.keys())
-            else:
-                carb.log_warn("Unable to get features".format(req))
+                        # print("features", self.assembly_features.keys())
+                        # print("details", self.features_details.keys())
+                else:
+                    carb.log_warn("Unable to get features".format(req))
+
+                # print(eid, "leaving lock")
 
         r = OnshapeClient.get().assemblies_api.get_features(
-            document_id, wtype, workspace, eid, _preload_content=False, async_req=True
+            document_id,
+            wtype,
+            workspace,
+            eid,
+            _preload_content=False,
+            async_req=True,
+            link_document_id=self.document.document_id,
         )
         self._assembly_features_task.append(self.thread_pool.submit(_get_features, r))
+        self._assembly_features_task[-1].name = eid
         # if not self.features_details:
         #     self._assembly_features_task.add_done_callback(self.on_assembly_loaded)
         # _get_features()
@@ -345,10 +393,11 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
                 self._parts_flat = {}
                 self.features_map[self._root.uid] = [f["id"] for f in self.assembly["rootAssembly"]["features"]]
                 for i, part in enumerate(self.assembly["parts"]):
-                    key = make_part_id(part)
-                    part["key"] = key
                     if "documentVersion" not in part:
                         part["workspaceId"] = self.document.get_workspace()
+                    key = make_part_id(part)
+                    part["key"] = key
+                    part["parentDocumentID"] = self.document.document_id
                     p = OnshapeAssemblyItem(part, self.document)
                     self._parts_flat[key] = p
 
@@ -367,6 +416,8 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
                     # Create Unique identifier on part instances to refer to the part dictionary
                     if inst["type"].lower() == "part":
                         # print(inst)
+                        if "documentVersion" not in inst:
+                            inst["workspaceId"] = self.document.get_workspace()
                         hash_id = make_part_id(inst)
                         self._instances_flat[inst["id"]]._item["hashId"] = hash_id
                         self._parts_flat[hash_id]._item["workspaceId"] = self.document.get_workspace()
@@ -416,6 +467,8 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
                         #         )
                         # Create Unique identifier on part instances to refer to the part dictionary
                         if inst["type"].lower() == "part":
+                            if "documentVersion" not in inst:
+                                inst["workspaceId"] = self.document.get_workspace()
                             hash_id = make_part_id(inst)
                             self._instances_flat[inst["id"]]._item["hashId"] = hash_id
                             self._parts_flat[hash_id]._item["workspaceId"] = self.document.get_workspace()
@@ -468,13 +521,22 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
         #     self._assembly_definition_task.add_done_callback(self.on_assembly_loaded)
 
     def assembly_features_sync(self):
-        for f in self._assembly_features_task:
-            f.result()
-            self._assembly_features_task.remove(f)
+        while self._assembly_features_task:
+            for f in self._assembly_features_task:
+                # print(f.name, len(self._assembly_features_task))
+                if f.done():
+                    self._assembly_features_task.remove(f)
+        # print("Done")
 
     def on_assembly_loaded(self, task):
-
         self.assembly_loaded = True
+        if self._on_assembly_loaded_fn:
+            self._on_assembly_loaded_fn()
+        # self._assembly_definition_task.result()
+        self._item_changed(None)
+
+    def on_assembly_reloaded(self, task):
+        self._on_assembly_reloaded_fn()
         if self._on_assembly_loaded_fn:
             self._on_assembly_loaded_fn()
         # self._assembly_definition_task.result()
@@ -557,6 +619,20 @@ class OnshapeAssemblyItem(ui.AbstractItem):
         if "features" in item:
             self.features = [f["id"] for f in item["features"]]
 
+    def get_configuration_value(self, config_name):
+        confs = {b[0]: b[1] for b in [a.split("=") for a in self._item["fullConfiguration"].split(";")]}
+        conf = confs.get(config_name, None)
+        # print(conf)
+        if conf:
+            value = conf.split("+")
+            # print(value)
+            if len(value) > 1:
+                unit = value[1]
+                if unit in rotation_unit:
+                    return rotation_unit[unit](float(value[0]))
+                if unit in distance_unit:
+                    return float(value[0]) * distance_unit[unit]
+
     def get_type(self):
         return self._item["type"]
 
@@ -596,128 +672,12 @@ class OnshapeAssemblyItem(ui.AbstractItem):
     #         child.print_recursive(level + 1)
 
 
-class ConfigurationItem(ui.AbstractItem):
-    def __init__(self, config, param_id, _id):
-        super().__init__()
-        self.config = config
-        self.model = ui.SimpleStringModel(self.config["optionName"])
-        self.param_id = param_id
-        self.id = _id
-
-    def get_value_as_string(self):
-        return self.config["optionName"]
-
-    def get_value(self):
-        return self.config["option"]
-
-    def get_item_value(self):
-        return "{}={}".format(self.param_id, self.config["option"])
-
-
-class ConfigurationListModel(ui.AbstractItemModel):
-    def __init__(self, configs):
-        super().__init__()
-        self._current_index = ui.SimpleIntModel()
-        self._current_index.add_value_changed_fn(lambda a: self.item_changed(None))
-        self.model = ui.SimpleIntModel()
-        self.parameter_id = configs["message"]["parameterId"]
-        self.node_id = configs["message"]["nodeId"]
-        self.name = configs["message"]["parameterName"]
-        self.type = configs["typeName"]
-        self.QuantityType = "INTEGER"
-        if self.type == "BTMConfigurationParameterQuantity":
-            self.unit = configs["message"]["rangeAndDefault"]["message"]["units"]
-            min_value = configs["message"]["rangeAndDefault"]["message"]["minValue"]
-            max_value = configs["message"]["rangeAndDefault"]["message"]["maxValue"]
-            self.QuantityType = configs["message"]["quantityType"]
-            if self.QuantityType == "INTEGER":
-                self.model = ui.SimpleIntModel()
-                self.model.set_min(int(min_value))
-                self.model.set_max(int(max_value))
-                self.model.set_value(int(configs["message"]["rangeAndDefault"]["message"]["defaultValue"]))
-            elif self.QuantityType in ["REAL", "ANGLE", "LENGTH"]:
-                self.model = ui.SimpleFloatModel()
-                self.model.set_min(float(min_value))
-                self.model.set_max(float(max_value))
-                self.model.set_value(float(configs["message"]["rangeAndDefault"]["message"]["defaultValue"]))
-
-        elif self.type == "BTMConfigurationParameterEnum":
-            self._items = {}
-            if "options" in configs["message"].keys():
-                self._items = {
-                    c["message"]["option"]: ConfigurationItem(c["message"], self.parameter_id, i)
-                    for i, c in enumerate(configs["message"]["options"])
-                }
-                # print(self._items[configs["message"]["defaultValue"]].id)
-                self.model.set_value(self._items[configs["message"]["defaultValue"]].id)
-        elif self.type == "BTMConfigurationParameterString":
-            self.model = ui.SimpleStringModel()
-            self.model.set_value(configs["message"]["defaultValue"])
-        elif self.type == "BTMConfigurationParameterBoolean":
-            self.model = ui.SimpleBoolModel()
-            self.model.set_value(configs["message"]["defaultValue"])
-        self.model.add_value_changed_fn(lambda a: self.item_changed(a))
-
-    def item_changed(self, item=None):
-        self._item_changed(None)
-
-    def get_value(self):
-        if self.type == "BTMConfigurationParameterQuantity":
-            if self.QuantityType == "INTEGER":
-                return self.model.get_value_as_int()
-            else:
-                return self.model.get_value_as_float()
-        elif self.type == "BTMConfigurationParameterBoolean":
-            return self.model.get_value_as_bool()
-        elif self.type == "BTMConfigurationParameterString":
-            return self.model.get_value_as_string()
-        elif self.type == "BTMConfigurationParameterEnum":
-            i = self._current_index.get_value_as_int()
-            return self.get_item_children()[i].get_value()
-
-    def build_widget(self):
-        self.frame = ui.Frame(style={"spacing": 2})
-        with self.frame:
-            with ui.HStack():
-                ui.Label(self.name)
-                if self.type == "BTMConfigurationParameterEnum":
-                    ui.ComboBox(self)
-                elif self.type == "BTMConfigurationParameterQuantity":
-                    if self.QuantityType == "INTEGER":
-                        ui.IntSlider(self.model)
-                    else:
-                        ui.FloatDrag(self.model)
-                elif self.type == "BTMConfigurationParameterBoolean":
-                    ui.CheckBox(self.model)
-                elif self.type == "BTMConfigurationParameterString":
-                    ui.StringField(self.model)
-
-    def get_item_value(self):
-        extra = ""
-        if self.type == "BTMConfigurationParameterQuantity":
-            if self.unit:
-                extra = "+{}".format(self.unit)
-        return "{}={}{}".format(self.parameter_id, self.get_value(), extra)
-
-    def get_item_children(self, parentItem=None):
-        if parentItem is None:
-            return list(self._items.values())
-        return []
-
-    def get_selected(self):
-        return self.get_item_children(None)[self.model.get_value_as_int()]
-
-    def get_item_value_model(self, item, column_id):
-        if item is None:
-            return self._current_index
-        return item.model
-
-
 class AssemblyDetailsWidget:
     def __init__(self, assembly_model, usd_gen, **kwargs):
 
         self.loop = asyncio.get_event_loop()
         self.model = assembly_model
+        self.model._on_assembly_reloaded_fn = self.assembly_loaded
         self.usd_gen = usd_gen
         self.conf_models = self.model.conf_models
         self.subs = self.model.subscribe_item_changed_fn(lambda a, b: weakref.proxy(self).build_ui())
@@ -737,8 +697,26 @@ class AssemblyDetailsWidget:
             self._parts_widget.shutdown()
         self._parts_widget = None
 
-    def conf_changed(self):
+    def pre_conf_changed(self):
         self.loading_image.visible = True
+
+    def assembly_loaded(self):
+        # Track changes in parts that need to be downloaded
+        list_current = [i.key for i in self._parts_widget.model._children]
+        list_new = self.model.get_parts().keys()
+        # print(list_current, list_new)
+        # intersection =set(list_current).intersect(list_new)
+        remainder = set(list_new).difference(list_current)
+        for key in remainder:
+            self._parts_widget.model.add_part(self.model.get_parts()[key], key)
+        if remainder:
+            for i in range(len(remainder)):
+                self._parts_widget.model._children[-(i + 1)].modelCols[4].changed = True
+            self.usd_gen.create_all_stages(self._parts_widget.model._children)
+            self._parts_widget.import_meshes()
+            # print(self._parts_widget.model.get_num_pending_meshes())
+        for item in self._parts_widget.model._children:
+            self._parts_widget.model._item_changed(item)
 
     def build_ui(self, *kwargs):
         self.widget.clear()
@@ -759,7 +737,7 @@ class AssemblyDetailsWidget:
                                 with ui.VStack(spacing=3):
                                     for model in self.conf_models:
                                         model.build_widget()
-                                        model.add_item_changed_fn(lambda a, b: weakref.proxy(self).conf_changed())
+                                        model.add_item_changed_fn(lambda a, b: weakref.proxy(self).pre_conf_changed())
                             ui.Spacer()
                         ui.Spacer(height=3)
                     if self._parts_widget:

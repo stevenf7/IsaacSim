@@ -3,7 +3,7 @@
         <package name="nv_ros" version="noetic_20230430_e60c560-linux64_release" platforms="linux-x86_64"/>
     </dependency>
     <dependency name="onshape_client" linkPath="../_build/target-deps/onshape_client">
-        <package name="onshape_client" version="20220810_d336d8f"/>
+        <package name="onshape_client" version="20230614_fc9d61f"/>
     </dependency>
     <dependency name="nv_ros2" linkPath="../_build/target-deps/nv_ros2">
         <package name="nv_ros2" version="foxy_20230601_a898270-linux64_release" platforms="linux-x86_64"/>
