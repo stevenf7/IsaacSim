@@ -25,7 +25,8 @@ namespace isaac
 {
 namespace urdf
 {
-
+Quat indexedRotation(int axis, float s, float c);
+Vec3 Diagonalize(const Matrix33& m, Quat& massFrame);
 void inertiaToUrdf(const Matrix33& inertia, UrdfInertia& urdfInertia);
 void urdfToInertia(const UrdfInertia& urdfInertia, Matrix33& inertia);
 void mergeFixedChildLinks(const KinematicChain::Node& parentNode, UrdfRobot& robot);
