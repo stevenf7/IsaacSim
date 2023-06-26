@@ -13,6 +13,7 @@ import ctypes
 import os
 import re
 import threading
+import traceback
 import unicodedata
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
@@ -338,12 +339,12 @@ class UsdGenerator:
         self.assembly_task = None
         self.stage_unit = stage_unit
         # define the work directory for the document usds
-        self.tempdir = preferences.get_working_folder()
-        self.tempdir = get_next_free_directory(self.tempdir, document.get_name())
-        omni.client.create_folder(self.tempdir)
-        # print(self.tempdir)
+        self.work_dir = preferences.get_working_folder()
+        self.work_dir = get_next_free_directory(self.work_dir, document.get_name())
+        omni.client.create_folder(self.work_dir)
+        # print(self.work_dir)
         # Materials USD, where all materials for the assembly will be stored.
-        self._materials_path = sanitize_slashes("{}/{}".format(self.tempdir, "materials"))
+        self._materials_path = sanitize_slashes("{}/{}".format(self.work_dir, "materials"))
         self.assemblies_path = {}
         self.groupMates = {}
         self.group_map = {}
@@ -361,7 +362,7 @@ class UsdGenerator:
         self._materials_path = "{}/{}".format(self._materials_path, "materials.usd")
         self._pending_assembly_notify = False
 
-        self._stages_dir = "{}/{}".format(self.tempdir, "parts")
+        self._stages_dir = "{}/{}".format(self.work_dir, "parts")
         omni.client.create_folder(self._stages_dir)
         self.parts_building_pool = ThreadPoolExecutor(max_workers=40, thread_name_prefix="onshape_parts_building_pool")
         # Assemblies need parts stage to be fully built
@@ -434,9 +435,9 @@ class UsdGenerator:
     def delete_folder(self):
 
         try:
-            result, _ = omni.client.list(self.tempdir)
+            result, _ = omni.client.list(self.work_dir)
             if result == Result.OK:
-                omni.client.delete(self.tempdir)
+                omni.client.delete(self.work_dir)
         except Exception as e:
             carb.log_error("Error trying to clean temp folder: " + str(e))
 
@@ -525,7 +526,7 @@ class UsdGenerator:
         with self.part_stage_lock:
             for part in parts:
                 if part.get_key() not in self._parts_stage_dict:
-                    # print(part.get_name(), " part Lock")
+                    # print(part.get_key(), part.get_name(), " part Lock")
                     self._parts_stage_dict[part.get_key()] = PartItem(
                         self._stages_dir, part, self.stage_unit, self.material_stage
                     )
@@ -541,6 +542,8 @@ class UsdGenerator:
             self._parts_stage_dict[part.get_key()].imported = True
 
     def set_payload_mesh(self, part):
+        if not part.get_mesh():
+            return
         stage = self._parts_stage_dict[part.get_key()].stage
         stage_unit = UsdGeom.GetStageMetersPerUnit(stage)
         rootLayer = stage.GetRootLayer()
@@ -563,7 +566,9 @@ class UsdGenerator:
 
             # with Sdf.ChangeBlock():
             if part.get_key() not in self._parts_stage_dict:
-                carb.log_error("Mesh USD Generation error: Stage was not previously created" + part.get_name())
+                carb.log_error(
+                    "Mesh USD Generation error: Stage was not previously created" + part.get_name() + part.configuration
+                )
                 return
 
             self._parts_stage_dict[part.get_key()].imported = False
@@ -619,9 +624,12 @@ class UsdGenerator:
                         geomSubset.CreateElementTypeAttr("face")
             except Exception as e:
                 carb.log_error(str(e))
+                traceback_str = traceback.format_exc()
+                carb.log_error(traceback_str)
         except Exception as e:
             carb.log_error(str(e))
-            carb.log_error(str(e.with_traceback()))
+            traceback_str = traceback.format_exc()
+            carb.log_error(traceback_str)
         stage.Save()
 
     async def finalize_mesh(self, part):
@@ -653,17 +661,21 @@ class UsdGenerator:
                 # materials.SetInstanceable(True)
             self._parts_stage_dict[part.get_key()].stage.Save()
         except Exception as e:
-            carb.log_error("Mesh USD Generation error: " + str(e))
+            carb.log_error(
+                "Mesh USD Generation error: {} ({} - {})".format(str(e), part.get_name(), part.configuration)
+            )
+            traceback_str = traceback.format_exc()
+            carb.log_error(traceback_str)
         # with Sdf.ChangeBlock():
         payloads = (
-            os.path.relpath(self._parts_stage_dict[part.get_key()].path, self.tempdir).replace("\\", "/"),
+            os.path.relpath(self._parts_stage_dict[part.get_key()].path, self.work_dir).replace("\\", "/"),
             [p for p in self._parts_stage_dict[part.get_key()].pending_payload],
         )
         self._parts_stage_dict[part.get_key()].pending_payload = []
         with self.part_stage_lock:
             self.pending_payloads.append((payloads))
             # p.GetPayloads().AddPayload(
-            #                 os.path.relpath(self._parts_stage_dict[part.get_key()].path, self.tempdir).replace("\\", "/"),
+            #                 os.path.relpath(self._parts_stage_dict[part.get_key()].path, self.work_dir).replace("\\", "/"),
             #                 # solid_name,
             #             )
         # self.assembly_stage.Save()
@@ -789,8 +801,8 @@ class UsdGenerator:
                         UsdGeom.Xform.Define(stage, path)
                         prim = stage.OverridePrim(path)
                         if self._parts_stage_dict[part_id].imported:
-                            prim.GetPayloads().AddPayload(
-                                os.path.relpath(self._parts_stage_dict[part_id].path, self.tempdir).replace("\\", "/"),
+                            prim.GetReferences().AddReference(
+                                os.path.relpath(self._parts_stage_dict[part_id].path, self.work_dir).replace("\\", "/"),
                                 # solid_name,
                             )
                         else:
@@ -799,8 +811,16 @@ class UsdGenerator:
 
                         self._parts_stage_dict[part_id].part.add_usd_path(path)
                     else:
+                        # if part_id not in self._parts_stage_dict:
+                        # print(part.get_name(), " part Lock")
+                        self._parts_stage_dict[part_id] = PartItem(
+                            self._stages_dir, self.assembly._parts_flat[part_id], self.stage_unit, self.material_stage
+                        )
+
                         carb.log_error(
-                            "Part Not Found, Please re-import the assembly to load it: {} ({})".format(name, path)
+                            "Part Not Found, Please re-import the assembly to load it: {} ({}), {}".format(
+                                name, path, part_id
+                            )
                         )
                         return
                 else:
@@ -889,13 +909,16 @@ class UsdGenerator:
                 and (
                     self.assembly.assembly_features[f]["featureData"]["mateType"]
                     in ["REVOLUTE", "SLIDER", "CYLINDRICAL", "BALL"]
-                    and not Mate(self.assembly.assembly_features[f], self.assembly.features_details[f]).is_locked()
+                    and not Mate(
+                        self.assembly.assembly_features[f], self.assembly.features_details[f], assembly
+                    ).is_locked()
                 )
             ]
             for f in features:
-                mate = Mate(self.assembly.assembly_features[f], self.assembly.features_details[f])
+                mate = Mate(self.assembly.assembly_features[f], self.assembly.features_details[f], assembly)
                 if mate.limits[0] == mate.limits[1] and mate.limits[0] is not None:
                     features.remove(f)
+
         for a in assembly.get_children():
             features += self.get_sub_joints(a)
         return features
@@ -942,8 +965,9 @@ class UsdGenerator:
                     self.get_assembly_paths(a, self.groupMates[p_in_group]["prim"], a_id)
                 self.create_group_mates(a, a_id, p_in_group)
 
-    def process_fastened_mates(self, assembly, a_id="", in_group=None):
+    def process_fastened_mates(self, assembly, a_id="", in_group=None, recursion_depth=0):
         if self.rig_physics:
+            usable_features = []
             _a_id = a_id
             a_id = a_id + str(assembly.get_item("id") or "")
             if (
@@ -951,20 +975,31 @@ class UsdGenerator:
                 and assembly.get_item("type").lower() == "assembly"
                 and assembly.uid in self.assembly.features_map
             ):
-                for f_id in [
-                    f
-                    for f in self.assembly.features_map[assembly.uid]
-                    if f in self.assembly.assembly_features
-                    and f in self.assembly.features_details
-                    and self.assembly.assembly_features[f]["featureType"] == "mate"
-                    and self.assembly.assembly_features[f]["suppressed"] == False
-                    and (
-                        self.assembly.assembly_features[f]["featureData"]["mateType"] == "FASTENED"
-                        or Mate(self.assembly.assembly_features[f], self.assembly.features_details[f]).is_locked()
-                    )
-                ]:
+                try:
+                    usable_features = [
+                        f
+                        for f in self.assembly.features_map[assembly.uid]
+                        if f in self.assembly.assembly_features
+                        and f in self.assembly.features_details
+                        and self.assembly.assembly_features[f]["featureType"] == "mate"
+                        and self.assembly.assembly_features[f]["suppressed"] == False
+                        and (
+                            self.assembly.assembly_features[f]["featureData"]["mateType"] == "FASTENED"
+                            or Mate(
+                                self.assembly.assembly_features[f], self.assembly.features_details[f], assembly
+                            ).is_locked()
+                        )
+                    ]
+                except Exception as e:
+                    carb.log_error("Process Fastened Mates: " + str(e))
+                    traceback_str = traceback.format_exc()
+                    carb.log_error(traceback_str)
+                    usable_features = []
+                # print("Starting", recursion_depth, a_id)
+                # print(len(usable_features))
+                for count, f_id in enumerate(usable_features):
                     feature = self.assembly.assembly_features[f_id]
-                    # print(assembly.get_item("name"), feature["featureData"]["name"], feature["suppressed"])
+                    # print(count, assembly.get_item("name"), feature["featureData"]["name"], feature["suppressed"])
                     f_id = feature["id"]
                     # f = Mate(self.assembly.assembly_features[f_id], self.assembly.features_details[f_id])
                     mateds = [m["matedOccurrence"] for m in feature["featureData"]["matedEntities"]]
@@ -1074,16 +1109,19 @@ class UsdGenerator:
                                 base_path
                             )  # Add this body to a set to later add the RBAPI, and set the collisions for the underlying meshes
                         # print("  ", feature["featureData"]["name"], prim_path)
-            ## Regenerate all assemblies paths if any group mate was created
-            # Find Instances of assembly that are part of each mate
-            # print("Done", a_id)
-            # print("redoing group mates", _a_id)
-            self.create_group_mates(assembly, _a_id, in_group)
+                ## Regenerate all assemblies paths if any group mate was created
+                # Find Instances of assembly that are part of each mate
+                # print("Done", a_id)
+                # print("redoing group mates", _a_id)
+                if usable_features:
+                    self.create_group_mates(assembly, _a_id, in_group)
             for a in assembly.get_children():
                 p_in_group = in_group
                 if a_id + a.get_item("id") in self.group_map:
                     p_in_group = self.group_map[a_id + a.get_item("id")]
-                self.process_fastened_mates(a, a_id, p_in_group)
+                self.process_fastened_mates(a, a_id, p_in_group, recursion_depth + 1)
+            # if usable_features:
+            #     print("Finished", a_id, recursion_depth)
 
     def get_rigid_body_path(self, a_id, occurence):
         if self.instance_group_map[a_id + "".join(occurence)]:
@@ -1138,7 +1176,9 @@ class UsdGenerator:
                     if f in self.assembly.assembly_features
                     and self.assembly.assembly_features[f]["featureData"]["mateType"]
                     in ["REVOLUTE", "SLIDER", "CYLINDRICAL", "BALL"]
-                    and not Mate(self.assembly.assembly_features[f], self.assembly.features_details[f]).is_locked()
+                    and not Mate(
+                        self.assembly.assembly_features[f], self.assembly.features_details[f], assembly
+                    ).is_locked()
                 ]:
 
                     feature = self.assembly.assembly_features[f_id]
@@ -1146,7 +1186,10 @@ class UsdGenerator:
                     # print(assembly.get_item("name"), feature["featureData"]["name"])
                     # print("feature", feature['featureData']["name"])
                     # f = Mate(self.assembly.assembly_features[f_id], self.assembly.features_details[f_id])
-                    base, p = [m["matedOccurrence"] for m in feature["featureData"]["matedEntities"]]
+                    entities = [m["matedOccurrence"] for m in feature["featureData"]["matedEntities"]]
+                    if len(entities) != 2:
+                        continue
+                    base, p = entities
                     base_path = self.get_rigid_body_path(a_id, base)
                     prim_path = self.get_rigid_body_path(a_id, p)
 
@@ -1163,15 +1206,25 @@ class UsdGenerator:
                     # print(" ",self.assembly._instances_flat[base[-1]].get_item("name"))
                     # print(" ",self.assembly._instances_flat[p[-1]].get_item("name"))
                     # print(" ",prim_path)
-                    mate = Mate(self.assembly.assembly_features[f_id], self.assembly.features_details[f_id])
+                    mate = Mate(self.assembly.assembly_features[f_id], self.assembly.features_details[f_id], assembly)
                     if mate.limits[0] == mate.limits[1] and mate.limits[0] is not None:
                         continue
                     body_0 = UsdGeom.Xform.Define(stage, base_path).GetPrim()
                     body_1 = UsdGeom.Xform.Define(stage, prim_path).GetPrim()
                     # body_1 = UsdGeom.Xformable(stage.GetPrimAtPath(prim_path)).GetPrim()
 
+                    body_0.SetInstanceable(True)
+                    body_1.SetInstanceable(True)
                     UsdPhysics.RigidBodyAPI.Apply(body_0)
                     UsdPhysics.RigidBodyAPI.Apply(body_1)
+                    UsdPhysics.CollisionAPI.Apply(body_0)
+                    UsdPhysics.CollisionAPI.Apply(body_1)
+
+                    # collisionAPI = UsdPhysics.MeshCollisionAPI.Apply(body_0)
+                    # collisionAPI.CreateApproximationAttr().Set("convexHull")
+
+                    # collisionAPI = UsdPhysics.MeshCollisionAPI.Apply(body_1)
+                    # collisionAPI.CreateApproximationAttr().Set("convexHull")
 
                     for p in [a for a in TraversePrim(body_0) + TraversePrim(body_1) if a.IsInstanceable()]:
                         UsdPhysics.CollisionAPI.Apply(p)
@@ -1232,7 +1285,8 @@ class UsdGenerator:
                         joint_slide.CreateAxisAttr(mate.axis)
                         PhysxSchema.JointStateAPI.Apply(joint_slide.GetPrim(), "linear")
                         for i in range(len(mate.limits_linear)):
-                            mate.limits_linear[i] /= stage_unit
+                            if mate.limits_linear[i]:
+                                mate.limits_linear[i] /= stage_unit
                         create_joint_attributes(
                             stage,
                             joint_slide,
@@ -1339,87 +1393,94 @@ class UsdGenerator:
 
     def _delayed_make_assembly(self):
         with self.assembly_lock:
-            self.delayed_make_assembly = False
+            try:
+                self.delayed_make_assembly = False
 
-            # self.main_thread.join()
-            # def do_task():
-            # print("Building assembly")
+                # self.main_thread.join()
+                # def do_task():
+                # print("Building assembly")
 
-            self.stage_path = "{}/{}_base.usd".format(self.tempdir, make_valid_filename(self.assembly.get_name()))
-            self.edit_layer_path = "{}/{}_edit.usd".format(self.tempdir, make_valid_filename(self.assembly.get_name()))
-            self.temp_stage_path = "{}/{}_temp.usd".format(self.tempdir, make_valid_filename(self.assembly.get_name()))
-            # print(self.stage_path)
-            if not self.assembly_stage:
-                self.assembly_stage = createInMemoryStage(self.stage_path, self.stage_unit)
-                self._assembly_edit_stage = createInMemoryStage(self.edit_layer_path, self.stage_unit)
-                root = UsdGeom.Xform.Define(self._assembly_edit_stage, "/World").GetPrim()
-                self._assembly_edit_stage.SetDefaultPrim(root)
-                root_layer = self._assembly_edit_stage.GetRootLayer()
-                root_layer.SetPermissionToEdit(True)
-                root_layer.subLayerPaths.append(self.assembly_stage.GetRootLayer().identifier)
-                self._assembly_edit_stage.Save()
-                stage = self.assembly_stage
+                self.stage_path = "{}/{}_base.usd".format(self.work_dir, make_valid_filename(self.assembly.get_name()))
+                self.edit_layer_path = "{}/{}_edit.usd".format(
+                    self.work_dir, make_valid_filename(self.assembly.get_name())
+                )
+                self.temp_stage_path = "{}/{}_temp.usd".format(
+                    self.work_dir, make_valid_filename(self.assembly.get_name())
+                )
+                # print(self.stage_path)
+                if not self.assembly_stage:
+                    self.assembly_stage = createInMemoryStage(self.stage_path, self.stage_unit)
+                    self._assembly_edit_stage = createInMemoryStage(self.edit_layer_path, self.stage_unit)
+                    root = UsdGeom.Xform.Define(self._assembly_edit_stage, "/World").GetPrim()
+                    self._assembly_edit_stage.SetDefaultPrim(root)
+                    root_layer = self._assembly_edit_stage.GetRootLayer()
+                    root_layer.SetPermissionToEdit(True)
+                    root_layer.subLayerPaths.append("{}_base.usd".format(make_valid_filename(self.assembly.get_name())))
+                    self._assembly_edit_stage.Save()
+                    stage = self.assembly_stage
 
-            self.temp_stage = createInMemoryStage(self.temp_stage_path, self.stage_unit)
-            stage = self.temp_stage
-            rootLayer = stage.GetRootLayer()
-            rootLayer.SetPermissionToEdit(True)
-            # with Usd.EditContext(self.assembly_stage, rootLayer):
-            # with self.stage_lock:
-            # asyncio.wait(omni.kit.app.get_app().next_update_async())
+                self.temp_stage = createInMemoryStage(self.temp_stage_path, self.stage_unit)
+                stage = self.temp_stage
+                rootLayer = stage.GetRootLayer()
+                rootLayer.SetPermissionToEdit(True)
+                # with Usd.EditContext(self.assembly_stage, rootLayer):
+                # with self.stage_lock:
+                # asyncio.wait(omni.kit.app.get_app().next_update_async())
 
-            # print(self.assembly_stage)
-            # print(self.assembly._root._item)
+                # print(self.assembly_stage)
+                # print(self.assembly._root._item)
 
-            # self.assembly_stage.Save()
-            path = "/World/{}".format(pxr.Tf.MakeValidIdentifier(make_valid_filename(self.assembly.get_name())))
-            self.root = path
-            _root = UsdGeom.Xform.Define(stage, "/World").GetPrim()
-            UsdGeom.Xform.Define(stage, self.root).GetPrim()
-            stage.SetDefaultPrim(_root)
-            mat_layer = os.path.relpath(self._materials_path, self.tempdir).replace("\\", "/")
-            if mat_layer not in rootLayer.subLayerPaths:
-                # with self.materials_update_lock:
-                rootLayer.subLayerPaths.append(mat_layer)
-            # print("wrote mat layer")
-            if self.rig_physics:
-                UsdPhysics.ArticulationRootAPI.Apply(stage.GetPrimAtPath(path))
-                root_api = PhysxSchema.PhysxArticulationAPI.Apply(stage.GetPrimAtPath(path))
-                root_api.CreateEnabledSelfCollisionsAttr().Set(False)
+                # self.assembly_stage.Save()
+                path = "/World/{}".format(pxr.Tf.MakeValidIdentifier(make_valid_filename(self.assembly.get_name())))
+                self.root = path
+                _root = UsdGeom.Xform.Define(stage, "/World").GetPrim()
+                UsdGeom.Xform.Define(stage, self.root).GetPrim()
+                stage.SetDefaultPrim(_root)
+                mat_layer = os.path.relpath(self._materials_path, self.work_dir).replace("\\", "/")
+                if mat_layer not in rootLayer.subLayerPaths:
+                    # with self.materials_update_lock:
+                    rootLayer.subLayerPaths.append(mat_layer)
+                if self.rig_physics:
+                    UsdPhysics.ArticulationRootAPI.Apply(stage.GetPrimAtPath(path))
+                    root_api = PhysxSchema.PhysxArticulationAPI.Apply(stage.GetPrimAtPath(path))
+                    root_api.CreateEnabledSelfCollisionsAttr().Set(False)
 
-            if self.rig_physics:
-                self.make_groups_xform(stage, self.assembly._root, path)
-            # print("write assembly xforms")
-            for a in self.assembly._root.get_children():
-                if not a.get_item("suppressed"):
-                    c_id = a.get_item("id")
-                    in_group = None
-                    if c_id in self.group_map:
-                        in_group = self.group_map[c_id]
-                    self.write_assembly_xform(stage, a, "", in_group=in_group)
-            while self.assembly_children_stack:
-                keys = list(self.assembly_children_stack.keys())
-                for path in keys:
-                    xforms_to_define = [path]
-                    parent = Sdf.Path(path).GetParentPath().pathString
-                    while not stage.GetPrimAtPath(parent):
-                        xforms_to_define.append(parent)
-                        parent = Sdf.Path(parent).GetParentPath().pathString
-                    for i in range(len(xforms_to_define) - 1, -1, -1):
-                        UsdGeom.Xform.Define(stage, xforms_to_define[i])
-                    for a, b, c in self.assembly_children_stack[path]:
-                        self.write_assembly_xform(stage, a, b, c)
-                    self.assembly_children_stack.pop(path)
-            if self.rig_physics:
-                self.process_joints(stage, self.assembly._root, "")
-            distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))
-            distantLight.CreateIntensityAttr(300)
-            light_pose = Transform(r=Float4(-0.383, 0, 0, 0.924))
-            set_pose(distantLight, light_pose)
-            if self.rig_physics:
-                scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/physicsScene"))
-                physxSceneAPI = PhysxSchema.PhysxSceneAPI.Apply(scene.GetPrim())
-
+                if self.rig_physics:
+                    self.make_groups_xform(stage, self.assembly._root, path)
+                for a in self.assembly._root.get_children():
+                    if not a.get_item("suppressed"):
+                        c_id = a.get_item("id")
+                        in_group = None
+                        if c_id in self.group_map:
+                            in_group = self.group_map[c_id]
+                        self.write_assembly_xform(stage, a, "", in_group=in_group)
+                while self.assembly_children_stack:
+                    keys = list(self.assembly_children_stack.keys())
+                    for path in keys:
+                        xforms_to_define = [path]
+                        parent = Sdf.Path(path).GetParentPath().pathString
+                        while not stage.GetPrimAtPath(parent):
+                            xforms_to_define.append(parent)
+                            parent = Sdf.Path(parent).GetParentPath().pathString
+                        for i in range(len(xforms_to_define) - 1, -1, -1):
+                            UsdGeom.Xform.Define(stage, xforms_to_define[i])
+                        for a, b, c in self.assembly_children_stack[path]:
+                            self.write_assembly_xform(stage, a, b, c)
+                        self.assembly_children_stack.pop(path)
+                if self.rig_physics:
+                    self.process_joints(stage, self.assembly._root, "")
+                distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))
+                distantLight.CreateIntensityAttr(300)
+                light_pose = Transform(r=Float4(-0.383, 0, 0, 0.924))
+                set_pose(distantLight, light_pose)
+                if self.rig_physics:
+                    scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/physicsScene"))
+                    physxSceneAPI = PhysxSchema.PhysxSceneAPI.Apply(scene.GetPrim())
+            except Exception as e:
+                carb.log_error(e)
+                traceback_str = traceback.format_exc()
+                # Print or save the traceback as needed
+                carb.log_error(traceback_str)
             stage.Save()
 
             self._pending_assembly_notify = True
@@ -1456,9 +1517,9 @@ class UsdGenerator:
         if self.delayed_make_assembly:
             self.delayed_make_assembly = False
 
-            self.assembly_building_pool.submit(self._delayed_make_assembly)
+            # self.assembly_building_pool.submit(self._delayed_make_assembly)
 
-            # self._delayed_make_assembly()
+            self._delayed_make_assembly()
             # if not self.is_temp_stage_open():
             #     omni.usd.get_context().open_stage(self.stage_path)
         if self._pending_assembly_notify:
@@ -1473,8 +1534,9 @@ class UsdGenerator:
                     p = self.parts_to_process.pop()
                     self.parts_to_process_post.append(p)
                     part = p[0]
-                    for material in part.get_mesh().colors:
-                        colors.append(material)
+                    if part.get_mesh():
+                        for material in part.get_mesh().colors:
+                            colors.append(material)
                 colors = set(colors)
                 for color in colors:
                     self.get_material(color)
@@ -1485,23 +1547,24 @@ class UsdGenerator:
                 self.set_payload_mesh(part[0])
 
             loop = asyncio.get_event_loop()
-            self.finalizing_meshes.append(loop.create_task(self.finalize_mesh(part[0])))
-            self._parts_stage_dict[part[0].get_key()].payload = True
-            if self.mesh_imported_fn:
-                self.mesh_imported_fn(None)
+            if part[0].get_mesh():
+                self.finalizing_meshes.append(loop.create_task(self.finalize_mesh(part[0])))
+                self._parts_stage_dict[part[0].get_key()].payload = True
+                if self.mesh_imported_fn:
+                    self.mesh_imported_fn(None)
             # self.parts_building_pool.submit(self.finalize_mesh,part[0])
 
-        if self.pending_payloads:
-            with self.assembly_lock:
+        if self.pending_payloads and self.assembly_stage:
+            with self.assembly_lock and self.part_stage_lock:
                 with Sdf.ChangeBlock():
                     while self.pending_payloads:
-                        with self.part_stage_lock:
-                            pl = self.pending_payloads.pop()
+                        # with self.part_stage_lock:
+                        pl = self.pending_payloads.pop()
                         pl_path = pl[0]
                         for p in set(pl[1]):
                             prim = self.assembly_stage.GetPrimAtPath(p)
                             if prim:
-                                prim.GetPayloads().AddPayload(pl_path)
+                                prim.GetReferences().AddReference(pl_path)
                     if self.mesh_imported_fn:
                         self.mesh_imported_fn(None)
                 self.assembly_stage.Save()

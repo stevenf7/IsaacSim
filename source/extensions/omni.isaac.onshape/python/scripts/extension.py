@@ -343,6 +343,7 @@ class OnshapeImporter(omni.ext.IExt):
             #             part.set_item(c, self._element_details.model._parts_flat[part.get_key()].get_item(c))
 
             self._element_details.model.config_changed = False
+            self.usd_gen.create_all_stages(self._element_details._parts_widget.model._children)
             self.usd_gen.reset_assembly()
             self.refresh = True
         if self.refresh:

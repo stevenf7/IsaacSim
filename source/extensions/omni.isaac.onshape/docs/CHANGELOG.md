@@ -1,5 +1,10 @@
 # Changelog
-
+## [0.6.5] - 2023-06-20
+### Fixed
+- Support for documents with Variable Studio
+- Automatically download when part configuration changes
+- Referenced assets would fail to import correctly if the user didn't have direct access to the original document.
+- Joints limits defined by configuration or variable studio would fail to import correctly. 
 ## [0.6.4] - 2023-06-12
 ### Changed
 - Update to kit 105.1, omni.usd.utils -> omni.usd
@@ -8,7 +13,7 @@
 ### Fixed
 - Support for Python 3.10
 ## [0.6.2] - 2023-02-17
-### Fixed
+### Fixedgi
 - Fix Ui for preferences pane to not depend on kit version
 ## [0.6.1] - 2023-02-16
 ### Fixed
