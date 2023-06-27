@@ -229,10 +229,10 @@ class IntField(UIWidgetWrapper):
         upper_limit: int = None,
         on_value_changed_fn: Callable = None,
     ):
-        self._lower_limit = lower_limit
-        self._upper_limit = upper_limit
+        self._lower_limit = int(lower_limit) if lower_limit is not None else None
+        self._upper_limit = int(upper_limit) if upper_limit is not None else None
 
-        self._default_value = default_value
+        self._default_value = int(default_value)
 
         self._on_value_changed_fn = on_value_changed_fn
 
@@ -290,7 +290,7 @@ class IntField(UIWidgetWrapper):
         Args:
             val (int): Value to fill IntField
         """
-        self.int_field.model.set_value(val)
+        self.int_field.model.set_value(int(val))
 
     def set_upper_limit(self, upper_limit: int):
         """Set upper limit of IntField.
@@ -299,6 +299,7 @@ class IntField(UIWidgetWrapper):
         Args:
             upper_limit (int): Upper limit of IntField
         """
+        upper_limit = int(upper_limit)
         self._upper_limit = upper_limit
         if self.get_value() > upper_limit:
             self.set_value(upper_limit)
@@ -310,6 +311,7 @@ class IntField(UIWidgetWrapper):
         Args:
             lower_limit (int): lower limit of IntField
         """
+        lower_limit = int(lower_limit)
         self._lower_limit = lower_limit
         if self.get_value() < lower_limit:
             self.set_value(lower_limit)
@@ -379,10 +381,10 @@ class FloatField(UIWidgetWrapper):
         upper_limit: float = None,
         on_value_changed_fn: Callable = None,
     ):
-        self._lower_limit = lower_limit
-        self._upper_limit = upper_limit
+        self._lower_limit = float(lower_limit) if lower_limit is not None else None
+        self._upper_limit = float(upper_limit) if upper_limit is not None else None
 
-        self._default_value = default_value
+        self._default_value = float(default_value)
 
         self._on_value_changed_fn = on_value_changed_fn
 
@@ -449,7 +451,8 @@ class FloatField(UIWidgetWrapper):
         Args:
             upper_limit (float): Upper limit of FloatField
         """
-        self._upper_limit = float(upper_limit)
+        upper_limit = float(upper_limit)
+        self._upper_limit = upper_limit
         if self.get_value() > upper_limit:
             self.set_value(upper_limit)
 
@@ -460,7 +463,8 @@ class FloatField(UIWidgetWrapper):
         Args:
             lower_limit (float): lower limit of FloatField
         """
-        self._lower_limit = float(lower_limit)
+        lower_limit = float(lower_limit)
+        self._lower_limit = lower_limit
         if self.get_value() < lower_limit:
             self.set_value(lower_limit)
 
@@ -1009,7 +1013,7 @@ class CheckBox(UIWidgetWrapper):
     def __init__(self, label: str, default_value: bool = False, tooltip="", on_click_fn=None):
         self._on_click_fn = on_click_fn
 
-        checkbox_frame = self._create_ui_widget(label, default_value, tooltip)
+        checkbox_frame = self._create_ui_widget(label, bool(default_value), tooltip)
         super().__init__(checkbox_frame)
 
     @property
@@ -1035,6 +1039,13 @@ class CheckBox(UIWidgetWrapper):
         """
         return self.checkbox.model.get_value_as_bool()
 
+    def set_value(self, val: bool):
+        """
+        Args:
+            val (bool): If True, set CheckBox to checked state
+        """
+        self.checkbox.model.set_value(bool(val))
+
     def set_on_click_fn(self, on_click_fn: Callable):
         """Set the function that will be called when the CheckBox is clicked.
 
@@ -1056,7 +1067,8 @@ class CheckBox(UIWidgetWrapper):
                     label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip)
                 )
                 model = ui.SimpleBoolModel()
-                self._checkbox = ui.CheckBox(model=model, tooltip=tooltip, checked=default_value)
+                model.set_value(default_value)
+                self._checkbox = ui.CheckBox(model=model, tooltip=tooltip)
                 model.add_value_changed_fn(self._on_click_fn_wrapper)
 
                 add_line_rect_flourish()
@@ -1527,11 +1539,11 @@ class XYPlot(UIWidgetWrapper):
         """
         self._has_built = False
 
-        self._x_min = x_min
-        self._x_max = x_max
+        self._x_min = float(x_min) if x_min is not None else None
+        self._x_max = float(x_max) if x_max is not None else None
 
-        self._y_min = y_min
-        self._y_max = y_max
+        self._y_min = float(y_min) if y_min is not None else None
+        self._y_max = float(y_max) if y_max is not None else None
 
         self._x_axis_float_fields = []
         self._y_axis_float_fields = []
@@ -1543,14 +1555,14 @@ class XYPlot(UIWidgetWrapper):
         # Check assertions around data shape, reshape data; set class variables: self._no_data, self._is_plot_visible
         self.set_data(x_data, y_data)
 
-        self._show_legend = show_legend
+        self._show_legend = bool(show_legend)
         self._legends = legends
 
         self._label = label
         self._tooltip = tooltip
         self._x_label = x_label
         self._y_label = y_label
-        self._plot_num_lines = plot_height
+        self._plot_num_lines = int(plot_height)
 
         self._data_colors = None
         if plot_colors is not None:
@@ -1717,6 +1729,7 @@ class XYPlot(UIWidgetWrapper):
         Args:
             x_min (float): Minimum value of x shown on the plot.
         """
+        x_min = float(x_min)
         self._x_min = x_min
 
         if self._has_built:
@@ -1729,6 +1742,7 @@ class XYPlot(UIWidgetWrapper):
         Args:
             y_min (float): Minimum value of y shown on the plot.
         """
+        y_min = float(y_min)
         self._y_min = y_min
 
         if self._has_built:
@@ -1741,6 +1755,7 @@ class XYPlot(UIWidgetWrapper):
         Args:
             x_max (float): Maximum value of x shown on the plot.
         """
+        x_max = float(x_max)
         self._x_max = x_max
 
         if self._has_built:
@@ -1753,6 +1768,7 @@ class XYPlot(UIWidgetWrapper):
         Args:
             y_max (float): Maximum value of y shown on the plot.
         """
+        y_max = float(y_max)
         self._y_max = y_max
 
         if self._has_built:
@@ -1794,6 +1810,7 @@ class XYPlot(UIWidgetWrapper):
         Args:
             plot_height (int): Height of the plot, proportional to the height of a line of text.
         """
+        plot_height = int(plot_height)
         self._plot_num_lines = plot_height
         if self._has_built:
             self.container_frame.rebuild()
@@ -1804,6 +1821,7 @@ class XYPlot(UIWidgetWrapper):
         Args:
             show_legend (bool): If True, show a legend for the Widget.
         """
+        show_legend = bool(show_legend)
         self._show_legend = show_legend
         if self._has_built:
             self._show_legend_cb.model.set_value(show_legend)
