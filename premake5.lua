@@ -97,7 +97,7 @@ workspace "isaac-sim"
     }
 
     -- Location for intermediate  files
-    objdir ("_build/intermediate/%{platform}/%{prj.name}")
+    objdir ("_build/obj/%{prj.name}")
 
     -- Default compilation settings
     symbols "On"

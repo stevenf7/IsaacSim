@@ -11,7 +11,7 @@ project_ext (ext)
 
 
 project_with_location("omni.isaac.debug_draw.primitive_drawing")
-    targetdir ("%{root}/_build/intermediate/%{platform}/%{prj.name}")
+    targetdir ("%{cfg.objdir}")
     kind "StaticLib"
     language "C++"
 
