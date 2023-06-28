@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.9.0] - 2023-06-26
+
+### Added
+- Test for 100 PhysX Lidar sensors
+- Tests for 1-50 robots with no sensor
 ## [0.8.2] - 2023-06-26
 
 ### Fixed

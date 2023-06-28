@@ -33,6 +33,9 @@ from ..utils.base_isaac_benchmark import BaseIsaacBenchmark
 from ..utils.helper import delete_prim_and_children
 from ..utils.logger import get_memory_stats, log_header
 
+# from parameterized import parameterized
+
+
 TEST_NUM_APP_UPDATES = 60 * 10
 
 
@@ -49,7 +52,14 @@ class TestBenchmarkRobots(BaseIsaacBenchmark):
     async def benchmark_robots(
         self, n_robot, enable_lidar: bool = False, enable_camera: bool = False, camera_resolution=[1280, 720]
     ):
-        self.test_run.test_name = f"{n_robot}_robots_no_sensor"
+        sensor_name = ""
+        if enable_lidar:
+            sensor_name += "_lidar"
+        if enable_camera:
+            sensor_name += "_camera"
+        if len(sensor_name) == 0:
+            sensor_name = "_no_sensor"
+        self.test_run.test_name = f"{n_robot}_robots{sensor_name}"
         self.set_phase("loading")
         self.start_collecting_frametime()
         robot_path = "/Isaac/Robots/Carter/carter_v2.usd"
@@ -66,7 +76,8 @@ class TestBenchmarkRobots(BaseIsaacBenchmark):
             )
             robot_usd_path = self.assets_root_path + robot_path
             # position the robot robot
-            robot_position = np.array([-2 * i, 0, 0])
+            MAX_IN_LINE = 10
+            robot_position = np.array([-2 * (i % MAX_IN_LINE), -2 * np.floor(i / MAX_IN_LINE), 0])
             current_robot = WheeledRobot(
                 prim_path=robot_prim_path,
                 wheel_dof_names=["joint_wheel_left", "joint_wheel_right"],
@@ -121,17 +132,43 @@ class TestBenchmarkRobots(BaseIsaacBenchmark):
 
         timeline.stop()
 
+    # ROBOT_NO_SENSOR_TESTS = range(1, 51)
+    # ROBOT_NO_SENSOR_TESTS = [1, 5, 10, 25, 50]
+    # using parameterized.expand requires parameterized version 0.9.0 or higher, current version in kit is 0.8.1 (_build/linux-x86_64/release/extscache/omni.kit.testing.services-1.6.28/pip_prebundle/parameterized/__init__.py)
+    # @parameterized.expand([("with " + str(x) + " robots", x) for x in ROBOT_NO_SENSOR_TESTS])
+    # @parameterized.expand([("with " + str(x) + " robots", x) for x in ROBOT_NO_SENSOR_TESTS])
+    # async def test_benchmark(self, name, n):
+    #     await self.benchmark_robots(n)
+
+    # ROBOT_LIDAR_TESTS = [1, 5, 10]
+    # @parameterized.expand([("with " + str(x) + " robots", x) for x in ROBOT_LIDAR_TESTS])
+    # async def test_benchmark_lidar(self, name, n):
+    #     await self.benchmark_robots(n, True)
+
+    # ROBOT_CAMERA_TESTS = [1, 5, 10]
+    # @parameterized.expand([("with " + str(x) + " robots", x) for x in ROBOT_CAMERA_TESTS])
+    # async def test_benchmark_camera(self, name, n):
+    #     await self.benchmark_robots(n, False, True)
+
+    # ROBOT_LIDAR_CAMERA_TESTS = [1, 5, 10]
+    # @parameterized.expand([("with " + str(x) + " robots", x) for x in ROBOT_LIDAR_CAMERA_TESTS])
+    # async def test_benchmark_lidar_camera(self, name, n):
+    #     await self.benchmark_robots(n, True, True)
+
     async def test_benchmark_1_robot(self):
         await self.benchmark_robots(1)
 
     async def test_benchmark_5_robot(self):
         await self.benchmark_robots(5)
 
-    # async def test_benchmark_10_robot(self):
-    #     await self.benchmark_robots(10)
+    async def test_benchmark_10_robot(self):
+        await self.benchmark_robots(10)
 
-    # async def test_benchmark_50_robot(self):
-    #     await self.benchmark_robots(50)
+    async def test_benchmark_25_robot(self):
+        await self.benchmark_robots(25)
+
+    async def test_benchmark_50_robot(self):
+        await self.benchmark_robots(50)
 
     async def test_benchmark_1_robot_lidar(self):
         await self.benchmark_robots(1, True)
