@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.8.1] - 2023-06-14
+
+### Fixed
+- Fixes for physics APIs
+- Fixes for updated replicator API
+
 ## [1.8.0] - 2023-06-12
 
 ### Changed

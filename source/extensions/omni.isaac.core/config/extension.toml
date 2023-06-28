@@ -22,7 +22,6 @@ writeTarget.kit = true
 "omni.pip.compute" = {} # scipy
 "omni.physx.tensors" = {}
 "omni.kit.material.library" = {} # omni.kit.material
-"omni.kit.uiapp" = {}
 "omni.isaac.version" = {}
 
 

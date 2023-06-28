@@ -14,7 +14,7 @@ app.version = "2023.1.0"
 "omni.kit.window.title" = {}
 "omni.physx" = {}
 "omni.physx.tensors" = {}
-"omni.warp" = {}
+"omni.warp.core" = {}
 
 [settings]
 # MGPU is always on, you can turn it from the settings, and force this off to save even more resource if you
@@ -41,6 +41,7 @@ exts."omni.kit.menu.utils".logDeprecated = false
 [settings.app.settings]
 persistent = false
 dev_build = false
+fabricDefaultStageFrameHistoryCount = 3
 
 # Extensions
 ###############################
@@ -102,6 +103,7 @@ exts."omni.isaac.asset_browser".folders = [
 [settings.app.exts]
 folders = ["${app}/../exts", "${app}/../extscache", "${app}/../extsPhysics"]
 
+
 # Isaac Sim Extensions
 ###############################
 [dependencies]
@@ -109,12 +111,7 @@ folders = ["${app}/../exts", "${app}/../extscache", "${app}/../extsPhysics"]
 "omni.isaac.core_archive" = {}
 "omni.pip.compute" = {}
 "omni.isaac.cloner" = {}
-"omni.isaac.dynamic_control" = {}
 "omni.isaac.gym" = {}
 "omni.isaac.kit" = {}
 "omni.isaac.ml_archive" = {}
 "omni.kit.loop-isaac" = {}
-
-# browsers
-# Added to deal with warp console message
-"omni.kit.browser.sample" = {}

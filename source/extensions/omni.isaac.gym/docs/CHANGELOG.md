@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0] - 2023-06-06
+### Changed
+- Update app files for gym
+
+### Added
+- Include web browser clients for livestream
+
 ## [0.4.0] - 2023-03-15
 ### Added
 - Add automated inferencing tests

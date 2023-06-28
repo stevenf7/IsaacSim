@@ -18,7 +18,7 @@ def on_interval(interval):
                         by omni.replicator.isaac.physics_view.step_randomization() call.
     """
     node = create_node("omni.replicator.isaac.OgnIntervalFiltering")
-    trigger_node = ReplicatorItem.get_context()
+    trigger_node = ReplicatorItem._get_context()
 
     node.get_attribute("inputs:interval").set(interval)
     trigger_node.get_attribute("outputs:execOut").connect(node.get_attribute("inputs:execIn"), True)
@@ -30,7 +30,7 @@ def on_interval(interval):
 @ReplicatorWrapper
 def on_env_reset():
     node = create_node("omni.replicator.isaac.OgnIntervalFiltering")
-    trigger_node = ReplicatorItem.get_context()
+    trigger_node = ReplicatorItem._get_context()
 
     node.get_attribute("inputs:ignoreInterval").set(True)
     trigger_node.get_attribute("outputs:execOut").connect(node.get_attribute("inputs:execIn"), True)
