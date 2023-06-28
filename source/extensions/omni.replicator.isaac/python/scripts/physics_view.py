@@ -1,11 +1,10 @@
-# Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2021 - 2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
 # and any modifications thereto. Any use, reproduction, disclosure or
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
-#
 
 import asyncio
 import copy
@@ -111,14 +110,14 @@ def register_articulation_view(articulation_view: omni.isaac.core.articulations.
     name = articulation_view.name
     _articulation_views[name] = articulation_view
     initial_values = dict()
-    initial_values["stiffness"] = clone_tensor(articulation_view._default_kps, device="cpu")
-    initial_values["damping"] = clone_tensor(articulation_view._default_kds, device="cpu")
+    initial_values["stiffness"] = clone_tensor(articulation_view._physics_view.get_dof_stiffnesses(), device="cpu")
+    initial_values["damping"] = clone_tensor(articulation_view._physics_view.get_dof_dampings(), device="cpu")
     initial_values["joint_friction"] = clone_tensor(
         articulation_view._physics_view.get_dof_friction_coefficients(), device="cpu"
     )
-    initial_values["position"] = articulation_view._default_state.positions
+    initial_values["position"] = articulation_view.get_world_poses()[0]
 
-    quats = articulation_view._default_state.orientations
+    quats = articulation_view.get_world_poses()[1]
     if articulation_view._backend == "torch":
         r, p, y = quat_to_euler_torch(quats)
         initial_values["orientation"] = torch.stack((r, p, y), dim=-1)
@@ -130,8 +129,8 @@ def register_articulation_view(articulation_view: omni.isaac.core.articulations.
     initial_values["velocity"] = tensor_cat(
         [initial_values["linear_velocity"], initial_values["angular_velocity"]], dim=-1
     )
-    initial_values["joint_positions"] = articulation_view._default_joints_state.positions
-    initial_values["joint_velocities"] = articulation_view._default_joints_state.positions
+    initial_values["joint_positions"] = articulation_view.get_joint_positions()
+    initial_values["joint_velocities"] = articulation_view.get_joint_velocities()
     initial_values["lower_dof_limits"] = clone_tensor(articulation_view.get_dof_limits()[..., 0], device="cpu")
     initial_values["upper_dof_limits"] = clone_tensor(articulation_view.get_dof_limits()[..., 1], device="cpu")
     initial_values["max_efforts"] = clone_tensor(articulation_view.get_max_efforts(), device="cpu")
@@ -221,7 +220,7 @@ def _write_physics_view_node(view, attribute, values, operation, node_type, num_
 
     counter = ReplicatorItem(utils.create_node, "omni.replicator.isaac.OgnCountIndices")
 
-    upstream_node = ReplicatorItem.get_context()
+    upstream_node = ReplicatorItem._get_context()
     upstream_node.get_attribute("outputs:indices").connect(counter.node.get_attribute("inputs:indices"), True)
     counter.node.get_attribute("outputs:count").connect(values.node.get_attribute("inputs:numSamples"), True)
     upstream_node.get_attribute("outputs:indices").connect(node.get_attribute("inputs:indices"), True)
@@ -274,7 +273,7 @@ def randomize_rigid_prim_view(
     """
 
     # check whether randomization occurs within the correct context
-    upstream_node_name = ReplicatorItem.get_context().get_node_type().get_node_type()
+    upstream_node_name = ReplicatorItem._get_context().get_node_type().get_node_type()
     if upstream_node_name != "omni.replicator.isaac.OgnIntervalFiltering":
         raise ValueError(
             "randomize_rigid_prim_view() is expected to be called within the omni.replicator.isaac.randomize.on_interval"
@@ -398,7 +397,7 @@ def randomize_articulation_view(
                                          where T is the number of tendons in the articulation.
     """
     # check whether randomization occurs within the correct context
-    upstream_node_name = ReplicatorItem.get_context().get_node_type().get_node_type()
+    upstream_node_name = ReplicatorItem._get_context().get_node_type().get_node_type()
     if upstream_node_name != "omni.replicator.isaac.OgnIntervalFiltering":
         raise ValueError(
             "randomize_articulation_view() is expected to be called within the omni.replicator.isaac.randomize.on_interval"
@@ -504,7 +503,7 @@ def randomize_simulation_context(operation: str = "direct", gravity: ReplicatorI
         gravity (ReplicatorItem): Randomizes the gravity vector of the simulation.
     """
     # check whether randomization occurs within the correct context
-    upstream_node_name = ReplicatorItem.get_context().get_node_type().get_node_type()
+    upstream_node_name = ReplicatorItem._get_context().get_node_type().get_node_type()
     if upstream_node_name != "omni.replicator.isaac.OgnIntervalFiltering":
         raise ValueError(
             "randomize_simulation_context() is expected to be called within the omni.replicator.isaac.randomize.on_interval"

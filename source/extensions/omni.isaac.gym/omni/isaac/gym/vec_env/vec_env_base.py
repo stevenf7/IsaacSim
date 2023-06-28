@@ -33,12 +33,12 @@ class VecEnvBase(gym.Env):
             enable_viewport (bool): Whether to enable rendering in headless mode.
         """
 
-        experience = ""
+        experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.gym.kit'
         if headless:
             if enable_livestream:
-                experience = ""
+                experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.gym.kit'
             elif enable_viewport:
-                experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.gym.headless.render.kit'
+                experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.gym.kit'
             else:
                 experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.gym.headless.kit'
 
@@ -57,6 +57,8 @@ class VecEnvBase(gym.Env):
             self._simulation_app.set_setting("/ngx/enabled", False)
             enable_extension("omni.kit.livestream.native")
             enable_extension("omni.services.streaming.manager")
+            enable_extension("omni.services.streamclient.websocket")
+            enable_extension("omni.services.streamclient.webrtc")
 
     def set_task(self, task, backend="numpy", sim_params=None, init_sim=True) -> None:
         """Creates a World object and adds Task to World.
