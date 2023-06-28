@@ -185,8 +185,8 @@ class TestBenchmarkRobots(BaseIsaacBenchmark):
     async def test_benchmark_5_robot_camera(self):
         await self.benchmark_robots(5, False, True)
 
-    # async def test_benchmark_10_robot_camera(self):
-    #     await self.benchmark_robots(10, False, True)
+    async def test_benchmark_10_robot_camera(self):
+        await self.benchmark_robots(10, False, True)
 
     async def test_benchmark_1_robot_lidar_camera(self):
         await self.benchmark_robots(1, True, True)
@@ -194,5 +194,5 @@ class TestBenchmarkRobots(BaseIsaacBenchmark):
     async def test_benchmark_5_robot_lidar_camera(self):
         await self.benchmark_robots(5, True, True)
 
-    # async def test_benchmark_10_robot_lidar_camera(self):
-    #     await self.benchmark_robots(10, True, True)
+    async def test_benchmark_10_robot_lidar_camera(self):
+        await self.benchmark_robots(10, True, True)

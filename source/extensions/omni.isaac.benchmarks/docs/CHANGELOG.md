@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10.0] - 2023-06-28
+
+### Added
+- Test for 10 robots with camera
+- Test 10 robots with lidar and camera
+
 ## [0.9.0] - 2023-06-26
 
 ### Added
