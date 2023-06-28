@@ -25,7 +25,6 @@ extensions = [
     "omni.isaac.physics_inspector",
     "omni.isaac.partition",
     "omni.isaac.occupancy_map",
-    "omni.isaac.mjcf",
     "omni.isaac.merge_mesh",
     "omni.isaac.internal_tools",
     "omni.isaac.gxf_bridge",
