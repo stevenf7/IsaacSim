@@ -242,6 +242,8 @@ class Camera(BaseSensor):
 
     def post_reset(self) -> None:
         BaseSensor.post_reset(self)
+        self._elapsed_time = 0
+        self._previous_time = None
         return
 
     def _stage_open_callback_fn(self, event):
