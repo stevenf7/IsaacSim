@@ -105,7 +105,7 @@ workspace "isaac-sim"
     rtti "On"
     staticruntime "On"
     flags { "FatalCompileWarnings", "MultiProcessorCompile", "NoPCH", "NoIncrementalLink" }
-    cppdialect "C++14"
+    cppdialect "C++17"
 
     -- Generic folder linking and file copy setup:
     repo_build.prebuild_link {
@@ -151,6 +151,11 @@ workspace "isaac-sim"
         -- command should be used instead, but it doesn't appear until premake5.0.0-alpha16 and even then it doesn't
         -- work correctly. https://premake.github.io/docs/removeunreferencedcodedata/
         buildoptions { "/Zc:inline-" }
+
+        -- define this everywhere to prevent 'pyerrors.h' from defining silly things like 'vsnprintf'
+        -- and 'snprintf'.
+        defines { "HAVE_SNPRINTF", "HAVE_COPYSIGN", "_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS" }
+        undefines { "_copysign" }
 
 
 
