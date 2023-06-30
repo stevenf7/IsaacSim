@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.12.0] - 2023-06-29
+
+### Added
+- ROS 1 camera benchmarks only appear when running Isaac Sim on Linux
+
 ## [0.11.0] - 2023-06-29
 
 ### Added

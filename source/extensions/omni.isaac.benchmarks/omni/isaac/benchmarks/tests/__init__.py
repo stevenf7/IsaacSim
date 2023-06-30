@@ -9,12 +9,14 @@
 
 # scan_for_test_modules = True
 
+import sys
 
 from .test_benchmark_camera import *
 from .test_benchmark_physx_lidar import *
 from .test_benchmark_robots import *
-from .test_benchmark_rtx_lidar import *
 from .test_benchmark_scene_generation import *
 from .test_benchmark_sdg_generation import *
 
-# from .test_benchmark_ros_camera import *
+if sys.platform != "win32":
+    from .test_benchmark_ros_camera import *
+    from .test_benchmark_rtx_lidar import *
