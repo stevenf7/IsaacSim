@@ -81,7 +81,7 @@ class TestBenchmarkSDGGeneration(BaseIsaacBenchmark):
         # <----------------------------
         # Perform the loading benchmark
         self.set_phase("loading")
-        self.start_collecting_frametime()
+        self.start_runtime()
         await omni.kit.app.get_app().next_update_async()
 
         assets_root_path = get_assets_root_path()
@@ -89,7 +89,7 @@ class TestBenchmarkSDGGeneration(BaseIsaacBenchmark):
         await wait_until_stage_is_fully_loaded_async()
 
         await omni.kit.app.get_app().next_update_async()
-        self.stop_collecting_frametime()
+        self.stop_runtime()
         await self.store_measurements()
         # ---------------------------->
 

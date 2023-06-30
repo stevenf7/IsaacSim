@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.11.0] - 2023-06-29
+
+### Added
+- Runtime metric for benchmarks, used to measure total load time in place of framerate data
+
 ## [0.10.0] - 2023-06-28
 
 ### Added

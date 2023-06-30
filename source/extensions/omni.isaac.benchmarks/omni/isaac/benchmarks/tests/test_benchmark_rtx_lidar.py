@@ -35,7 +35,8 @@ class TestBenchmarkRtxLidar(BaseIsaacBenchmark):
         else:
             self.test_run.test_name = f"{n_sensor}_rtx_lidar"
             self.set_phase("loading")
-            self.start_collecting_frametime()
+            self.start_runtime()
+
             scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
             await self.fully_load_stage(self.assets_root_path + scene_path)
             timeline = omni.timeline.get_timeline_interface()
@@ -64,7 +65,7 @@ class TestBenchmarkRtxLidar(BaseIsaacBenchmark):
 
                 await omni.kit.app.get_app().next_update_async()
 
-            self.stop_collecting_frametime()
+            self.stop_runtime()
             await self.store_measurements()
 
             self.set_phase("benchmark")

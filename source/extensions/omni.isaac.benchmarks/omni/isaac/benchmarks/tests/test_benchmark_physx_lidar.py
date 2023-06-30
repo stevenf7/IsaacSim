@@ -32,7 +32,8 @@ class TestBenchmarkLidar(BaseIsaacBenchmark):
     async def benchmark_physx_lidar(self, n_sensor):
         self.test_run.test_name = f"{n_sensor}_physx_lidars"
         self.set_phase("loading")
-        self.start_collecting_frametime()
+        self.start_runtime()
+
         scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
         await self.fully_load_stage(self.assets_root_path + scene_path)
         stage = omni.usd.get_context().get_stage()
@@ -53,7 +54,7 @@ class TestBenchmarkLidar(BaseIsaacBenchmark):
             sensor_orientation = Gf.Quatf(q[0], q[1], q[2], q[3])
             add_physx_lidar(prim_path=sensor_path, translation=sensor_translation, orientation=sensor_orientation)
 
-        self.stop_collecting_frametime()
+        self.stop_runtime()
         await self.store_measurements()
 
         # perform benchmark

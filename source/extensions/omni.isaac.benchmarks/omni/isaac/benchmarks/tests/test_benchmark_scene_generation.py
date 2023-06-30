@@ -215,7 +215,7 @@ class TestBenchmarkSceneGeneration(BaseIsaacBenchmark):
         # <----------------------------
         # Perform the loading benchmark
         self.set_phase("spawn")
-        self.start_collecting_frametime()
+        self.start_runtime()
         await omni.kit.app.get_app().next_update_async()
 
         # spawn the assest (xform or meshes) in the origin, (usd/isaac api) or at random poses (meshes, lights)
@@ -228,7 +228,7 @@ class TestBenchmarkSceneGeneration(BaseIsaacBenchmark):
         await wait_until_stage_is_fully_loaded_async()
 
         await omni.kit.app.get_app().next_update_async()
-        self.stop_collecting_frametime()
+        self.stop_runtime()
         await self.store_measurements()
         # ---------------------------->
 
@@ -263,14 +263,14 @@ class TestBenchmarkSceneGeneration(BaseIsaacBenchmark):
         # <----------------------------
         # Perform load saved stage benchmark
         self.set_phase("load")
-        self.start_collecting_frametime()
+        self.start_runtime()
         await omni.kit.app.get_app().next_update_async()
 
         await open_stage_async(f"{self.test_run.test_name}.usda")
         await wait_until_stage_is_fully_loaded_async()
 
         await omni.kit.app.get_app().next_update_async()
-        self.stop_collecting_frametime()
+        self.stop_runtime()
         await self.store_measurements()
         # ---------------------------->
 

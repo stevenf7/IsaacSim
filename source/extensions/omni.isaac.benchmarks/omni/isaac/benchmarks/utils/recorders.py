@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 import platform
+import time
 from pathlib import Path
 from typing import Optional
 
@@ -27,8 +28,10 @@ class IsaacFrameTimeRecorder(interface.MeasurementDataRecorder):
         self.root_dir = root_dir
         self.benchmark_settings = benchmark_settings
         self.frametime_collector = IsaacUpdateFrametimeCollector()
+        self.phase = None
 
     def start_collecting(self):
+        self.phase = self.context.phase
         self.frametime_collector.start_collecting()
 
     def stop_collecting(self):
@@ -38,6 +41,9 @@ class IsaacFrameTimeRecorder(interface.MeasurementDataRecorder):
         return len(self.frametime_collector.render_frametimes_ms)
 
     async def get_data(self):
+        if self.phase != self.context.phase:
+            return interface.MeasurementData(measurements=[])
+
         frametime_stats = frametime.FrametimeStats()
         frametime_stats.render_thread_frametime_samples = self.frametime_collector.render_frametimes_ms
         frametime_stats.gpu_frametime_samples = self.frametime_collector.gpu_frametimes_ms
@@ -161,3 +167,32 @@ class IsaacCPUStatsRecorder(cpu.CPUStatsRecorder):
         m4 = measurements.SingleMeasurement(name=f"{self.context.phase} System CPU idle", value=cpu_idle_pct, unit="%")
 
         return interface.MeasurementData(measurements=[m1, m2, m3, m4])
+
+
+class IsaacRuntimeRecorder(interface.MeasurementDataRecorder):
+    def __init__(
+        self,
+        context: Optional[interface.InputContext] = None,
+        root_dir: Optional[Path] = None,
+        benchmark_settings: Optional["BenchmarkSettings"] = None,
+    ):
+        self.context = context
+        self.root_dir = root_dir
+        self.benchmark_settings = benchmark_settings
+        self.start = None
+        self.elapsed_time = None
+        self.phase = None
+
+    def start_time(self):
+        self.phase = self.context.phase
+        self.start = time.perf_counter_ns()
+
+    def stop_time(self):
+        self.elapsed_time = (time.perf_counter_ns() - self.start) / 1000000
+
+    async def get_data(self):
+        if self.phase != self.context.phase:
+            return interface.MeasurementData(measurements=[])
+
+        m1 = measurements.SingleMeasurement(name=f"{self.context.phase} Runtime", value=self.elapsed_time, unit="ms")
+        return interface.MeasurementData(measurements=[m1])
