@@ -61,7 +61,8 @@ class TestBenchmarkRobots(BaseIsaacBenchmark):
             sensor_name = "_no_sensor"
         self.test_run.test_name = f"{n_robot}_robots{sensor_name}"
         self.set_phase("loading")
-        self.start_collecting_frametime()
+        self.start_runtime()
+
         robot_path = "/Isaac/Robots/Carter/carter_v2.usd"
         scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
         await self.fully_load_stage(self.assets_root_path + scene_path)
@@ -117,7 +118,7 @@ class TestBenchmarkRobots(BaseIsaacBenchmark):
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
 
-        self.stop_collecting_frametime()
+        self.stop_runtime()
         await self.store_measurements()
 
         # perform benchmark

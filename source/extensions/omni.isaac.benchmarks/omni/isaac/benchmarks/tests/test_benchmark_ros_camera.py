@@ -36,7 +36,8 @@ class TestBenchmarkRos1Camera(BaseIsaacBenchmark):
     async def benchmark_ros1_camera(self, n_camera, resolution):
         self.test_run.test_name = f"{n_camera}_cameras_{resolution[0]}_{resolution[1]}_resolution_ros_1"
         self.set_phase("loading")
-        self.start_collecting_frametime()
+        self.start_runtime()
+
         scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
         await self.fully_load_stage(self.assets_root_path + scene_path)
         stage = omni.usd.get_context().get_stage()
@@ -86,7 +87,7 @@ class TestBenchmarkRos1Camera(BaseIsaacBenchmark):
                 new_viewport.dock_in(main_viewport, omni.ui.DockPosition.RIGHT, 1.0 / n_camera)
             await omni.kit.app.get_app().next_update_async()
 
-            self.stop_collecting_frametime()
+            self.stop_runtime()
             await self.store_measurements()
 
             self.set_phase("benchmark")
