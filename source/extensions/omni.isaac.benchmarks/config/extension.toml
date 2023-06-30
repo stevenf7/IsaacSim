@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.11.0"
+version = "0.12.0"
 category = "Simulation"
 title = "Benchmark"
 description = "This extension provides benchmarking utilities"
@@ -26,7 +26,6 @@ writeTarget.kit = true
 "omni.isaac.range_sensor" = {}
 "omni.isaac.sensor" = {}
 "omni.isaac.wheeled_robots" = {}
-# "omni.isaac.ros_bridge" = {} #disabled until we enable ROS benchmarks again, not supported on windows
 "omni.kit.testing.services" = {}
 "omni.kit.nvdf.telemetry" = {}
 # "omni.kit.usdstats" = {}
@@ -36,6 +35,8 @@ writeTarget.kit = true
 "omni.kit.primitive.mesh"= {}
 "omni.kit.material.library"= {}
 
+[dependencies."filter:platform"."linux-x86_64"]
+"omni.isaac.ros_bridge" = {}
 
 [[python.module]]
 name = "omni.isaac.benchmarks"
