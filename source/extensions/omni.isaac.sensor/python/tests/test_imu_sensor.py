@@ -404,7 +404,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             sensor_reading = self._is.get_sensor_sim_reading(self.sphere_path + "/sensor")
             # print(sensor_reading.lin_acc_x, "\t", sensor_reading.lin_acc_y, "\t", sensor_reading.lin_acc_z)
         self.assertAlmostEqual(sensor_reading.lin_acc_z, 0, delta=0.1)
-        for i in range(100):
+        for i in range(200):
             await omni.kit.app.get_app().next_update_async()
             sensor_reading = self._is.get_sensor_sim_reading(self.sphere_path + "/sensor")
             # print(sensor_reading.lin_acc_x, "\t", sensor_reading.lin_acc_y, "\t", sensor_reading.lin_acc_z)

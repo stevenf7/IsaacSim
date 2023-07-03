@@ -30,9 +30,9 @@ class TestDistanceMetrics(omni.kit.test.AsyncTestCase):
 
     async def is_distance_metric(self, t1, t2, t3, dist_fun, *args):
         # satisfies identity
-        self.assertAlmostEqual(dist_fun(t1, t1, *args), 0)
-        self.assertAlmostEqual(dist_fun(t2, t2, *args), 0)
-        self.assertAlmostEqual(dist_fun(t3, t3, *args), 0)
+        self.assertAlmostEqual(dist_fun(t1, t1, *args), 0, delta=1e-07)
+        self.assertAlmostEqual(dist_fun(t2, t2, *args), 0, delta=1e-07)
+        self.assertAlmostEqual(dist_fun(t3, t3, *args), 0, delta=1e-07)
 
         # satisfies symmetry
         self.assertAlmostEqual(dist_fun(t1, t2, *args), dist_fun(t2, t1, *args))

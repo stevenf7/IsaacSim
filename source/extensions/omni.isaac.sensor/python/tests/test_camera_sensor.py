@@ -19,6 +19,7 @@ from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.semantics import add_update_semantics
 from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
 from omni.isaac.sensor import Camera
+from omni.kit.viewport.utility import get_active_viewport
 
 
 class TestCameraSensor(omni.kit.test.AsyncTestCase):
@@ -81,6 +82,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
     # After running each test
     async def tearDown(self):
         self.camera = None
+        self.viewport_camera = None
         self.my_world.clear_instance()
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
@@ -140,6 +142,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
             "distance_to_camera",
             "bounding_box_2d_tight",
             "bounding_box_2d_loose",
+            "bounding_box_3d",
             "semantic_segmentation",
             "instance_id_segmentation",
             "instance_segmentation",
@@ -216,3 +219,21 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         self.camera.get_horizontal_fov()
         self.camera.get_vertical_fov()
         return
+
+    async def test_viewport_camera(self):
+        viewport_api = get_active_viewport()
+        render_product_path = viewport_api.get_render_product_path()
+
+        self.viewport_camera = self.my_world.scene.add(
+            Camera(
+                prim_path="/World/rig/viewport_camera",
+                name="viewport_camera",
+                position=np.array([0.0, 0.0, 25.0]),
+                resolution=(256, 256),
+                orientation=rot_utils.euler_angles_to_quats(np.array([0, 90, 0]), degrees=True),
+                render_product_path=render_product_path,
+            )
+        )
+        await update_stage_async()
+        await update_stage_async()
+        self.assertEqual(self.viewport_camera.get_rgba().size, 256 * 256 * 4)

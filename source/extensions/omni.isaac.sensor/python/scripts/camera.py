@@ -17,6 +17,7 @@ import omni.replicator.core as rep
 from omni.isaac.core.prims.base_sensor import BaseSensor
 from omni.isaac.core.utils.carb import get_carb_setting
 from omni.isaac.core.utils.prims import define_prim, get_prim_at_path, get_prim_type_name, is_prim_path_valid
+from omni.isaac.core.utils.render_product import get_resolution, set_camera_prim_path, set_resolution
 from omni.isaac.core.utils.stage import get_current_stage
 from omni.isaac.core_nodes.bindings import _omni_isaac_core_nodes
 from pxr import Gf, Sdf, Usd, UsdGeom, UsdRender, Vt
@@ -52,7 +53,7 @@ class Camera(BaseSensor):
                                 Defaults to "camera".
         frequency (Optional[int], optional): Frequency of the sensor (i.e: how often is the data frame updated).
                                              Defaults to None.
-        dt (Optional[str], optional): dt of the sensor (i.e: period at which a the data frame updated). . Defaults to None.
+        dt (Optional[str], optional): dt of the sensor (i.e: period at which a the data frame updated). Defaults to None.
         resolution (Optional[Tuple[int, int]], optional): resolution of the camera (width, height). Defaults to None.
         position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
                                                     Defaults to None, which means left unchanged.
@@ -63,6 +64,10 @@ class Camera(BaseSensor):
                                                         (depends if translation or position is specified).
                                                         quaternion is scalar-first (w, x, y, z). shape is (4, ).
                                                         Defaults to None, which means left unchanged.
+        render_product_path (str): path to an existing render product, will be used instead of creating a new render product
+                                   the resolution and camera attached to this render product will be set based on the input arguments.
+                                   Note: Using same render product path on two Camera objects with different camera prims, resolutions is not supported
+                                   Defaults to None
 
     """
 
@@ -76,9 +81,11 @@ class Camera(BaseSensor):
         position: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
         translation: Optional[np.ndarray] = None,
+        render_product_path: str = None,
     ) -> None:
         frequency = frequency
         dt = dt
+        self._frequency = -1  # default to processing all frames
         if frequency is not None and dt is not None:
             raise Exception("Frequency and dt can't be both specified.")
         if dt is not None:
@@ -90,7 +97,8 @@ class Camera(BaseSensor):
             current_rendering_frequency = get_carb_setting(
                 carb.settings.get_settings(), "/app/runLoops/main/rateLimitFrequency"
             )
-            self.set_frequency(current_rendering_frequency)
+            if current_rendering_frequency is not None:
+                self.set_frequency(current_rendering_frequency)
 
         if resolution is None:
             resolution = (128, 128)
@@ -104,7 +112,12 @@ class Camera(BaseSensor):
             self._camera_prim = UsdGeom.Camera(define_prim(prim_path=prim_path, prim_type="Camera"))
             if orientation is None:
                 orientation = [1, 0, 0, 0]
-        self._render_product_path = rep.create.render_product(prim_path, resolution=resolution)
+        if render_product_path:
+            self._render_product_path = render_product_path
+            self.set_resolution(resolution)
+            set_camera_prim_path(self._render_product_path, prim_path)
+        else:
+            self._render_product_path = rep.create.render_product(prim_path, resolution=resolution)
         self._rgb_annotator = rep.AnnotatorRegistry.get_annotator("rgb")
         self._rgb_annotator.attach([self._render_product_path])
         supported_annotators = [
@@ -115,6 +128,7 @@ class Camera(BaseSensor):
             "distance_to_camera",
             "bounding_box_2d_tight",
             "bounding_box_2d_loose",
+            "bounding_box_3d",
             "semantic_segmentation",
             "instance_id_segmentation",
             "instance_segmentation",
@@ -171,9 +185,13 @@ class Camera(BaseSensor):
         current_rendering_frequency = get_carb_setting(
             carb.settings.get_settings(), "/app/runLoops/main/rateLimitFrequency"
         )
-        if current_rendering_frequency % value != 0:
-            raise Exception("frequency of the camera sensor needs to be a divisible by the rendering frequency.")
-        self._frequency = value
+        if current_rendering_frequency is None:
+            # Target rendering frequency is not known, processing all frames
+            self._frequency = -1
+        else:
+            if current_rendering_frequency % value != 0:
+                raise Exception("frequency of the camera sensor needs to be a divisible by the rendering frequency.")
+            self._frequency = value
         return
 
     def get_frequency(self) -> float:
@@ -192,9 +210,13 @@ class Camera(BaseSensor):
         current_rendering_frequency = get_carb_setting(
             carb.settings.get_settings(), "/app/runLoops/main/rateLimitFrequency"
         )
-        if value % (1.0 / current_rendering_frequency) != 0:
-            raise Exception("dt of the contact sensor needs to be a multiple of the physics frequency.")
-        self._frequency = 1.0 / value
+        if current_rendering_frequency is None:
+            # Target rendering frequency is not known, processing all frames
+            self._frequency = -1
+        else:
+            if value % (1.0 / current_rendering_frequency) != 0:
+                raise Exception("dt of the contact sensor needs to be a multiple of the physics frequency.")
+            self._frequency = 1.0 / value
         return
 
     def get_dt(self) -> float:
@@ -293,7 +315,7 @@ class Camera(BaseSensor):
             # print("current time, previous time:",current_time, self._previous_time)
             self._elapsed_time += current_time - self._previous_time
 
-        if self._elapsed_time >= self.get_dt():
+        if self._frequency < 0 or self._elapsed_time >= self.get_dt():
             # print("leftover time, elapsed:", current_time % self.get_dt(), self._elapsed_time)
             self._elapsed_time = 0
             self._current_frame["rendering_frame"] = frame_number
@@ -313,12 +335,7 @@ class Camera(BaseSensor):
             value (Tuple[int, int]): width and height respectively.
 
         """
-        stage = get_current_stage()
-        with Usd.EditContext(stage, stage.GetSessionLayer()):
-            render_prod_prim = UsdRender.Product(stage.GetPrimAtPath(self._render_product_path))
-            if not render_prod_prim:
-                raise RuntimeError(f'Invalid renderProduct "{self._render_product_path}"')
-            render_prod_prim.GetResolutionAttr().Set(Gf.Vec2i(value[0], value[1]))
+        set_resolution(self._render_product_path, value)
         return
 
     def get_resolution(self) -> Tuple[int, int]:
@@ -326,12 +343,7 @@ class Camera(BaseSensor):
         Returns:
             Tuple[int, int]: width and height respectively.
         """
-        stage = get_current_stage()
-        with Usd.EditContext(stage, stage.GetSessionLayer()):
-            render_prod_prim = UsdRender.Product(stage.GetPrimAtPath(self._render_product_path))
-            if not render_prod_prim:
-                raise RuntimeError(f'Invalid renderProduct "{self._render_product_path}"')
-            return render_prod_prim.GetResolutionAttr().Get()
+        return get_resolution(self._render_product_path)
 
     def get_aspect_ratio(self) -> float:
         """
@@ -483,6 +495,19 @@ class Camera(BaseSensor):
             self._custom_annotators["bounding_box_2d_loose"].detach([self._render_product_path])
             self._custom_annotators["bounding_box_2d_loose"] = None
         del self._current_frame["bounding_box_2d_loose"]
+
+    def add_bounding_box_3d_to_frame(self) -> None:
+        if self._custom_annotators["bounding_box_3d"] is None:
+            self._custom_annotators["bounding_box_3d"] = rep.AnnotatorRegistry.get_annotator("bounding_box_3d")
+            self._custom_annotators["bounding_box_3d"].attach([self._render_product_path])
+        self._current_frame["bounding_box_3d"] = None
+        return
+
+    def remove_bounding_box_3d_from_frame(self) -> None:
+        if self._custom_annotators["bounding_box_3d"] is not None:
+            self._custom_annotators["bounding_box_3d"].detach([self._render_product_path])
+            self._custom_annotators["bounding_box_3d"] = None
+        del self._current_frame["bounding_box_3d"]
 
     def add_semantic_segmentation_to_frame(self) -> None:
         if self._custom_annotators["semantic_segmentation"] is None:

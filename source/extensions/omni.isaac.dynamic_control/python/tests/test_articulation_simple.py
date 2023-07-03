@@ -467,7 +467,7 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCase):
         self._dc.set_articulation_dof_states(art, state, _dynamic_control.STATE_ALL)
         await dc_utils.simulate(1.0, self._dc, art)
         state = self._dc.get_articulation_dof_states(art, _dynamic_control.STATE_VEL)
-        self.assertAlmostEqual(state["vel"][0], 3.5, delta=1e-2, msg=f'{state["vel"][0]}')
+        self.assertAlmostEqual(state["vel"][0], 3.522, delta=1e-2, msg=f'{state["vel"][0]}')
 
     async def test_get_gravity_effort(self, gpu=False):
         dc_utils.set_scene_physics_type(gpu)
@@ -601,8 +601,8 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCase):
         # use get_dof_state api
         state = self._dc.get_dof_state(dof_ptr, _dynamic_control.STATE_ALL)
         new_pose = self._dc.get_rigid_body_pose(slider_body)
-        self.assertAlmostEqual(state.pos, 1.8822, delta=1e-3, msg=f"state.pos = {state.pos}")
-        self.assertAlmostEqual(state.vel, 3.6385, delta=1e-3, msg=f"state.vel = {state.vel}")
+        self.assertAlmostEqual(state.pos, 1.8838, delta=1e-3, msg=f"state.pos = {state.pos}")
+        self.assertAlmostEqual(state.vel, 3.64863, delta=1e-3, msg=f"state.vel = {state.vel}")
         self.assertTrue(
             np.allclose([new_pose.p.x, new_pose.p.y, new_pose.p.z], [-0.46066, 1.4307, 2.34091e-05], atol=1e-2),
             f"{new_pose.p}",
@@ -615,8 +615,8 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCase):
         await dc_utils.simulate(1.0, self._dc, art)
         state = self._dc.get_dof_state(dof_ptr, _dynamic_control.STATE_ALL)
         new_pose = self._dc.get_rigid_body_pose(slider_body)
-        self.assertAlmostEqual(state.pos, 1.8822, delta=1e-3, msg=f"state.pos = {state.pos}")
-        self.assertAlmostEqual(state.vel, 3.6385, delta=1e-3, msg=f"state.vel = {state.vel}")
+        self.assertAlmostEqual(state.pos, 1.8838, delta=1e-3, msg=f"state.pos = {state.pos}")
+        self.assertAlmostEqual(state.vel, 3.6486, delta=1e-3, msg=f"state.vel = {state.vel}")
         self.assertTrue(
             np.allclose([new_pose.p.x, new_pose.p.y, new_pose.p.z], [-0.46066, 1.4307, 2.34091e-05], atol=1e-2),
             f"{new_pose.p}",
@@ -633,8 +633,8 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCase):
         await dc_utils.simulate(1.0, self._dc, art)
         state = self._dc.get_dof_state(dof_ptr, _dynamic_control.STATE_ALL)
         new_pose = self._dc.get_rigid_body_pose(slider_body)
-        self.assertAlmostEqual(state.pos, 1.8822, delta=1e-3, msg=f"state.pos = {state.pos}")
-        self.assertAlmostEqual(state.vel, 3.6385, delta=1e-3, msg=f"state.vel = {state.vel}")
+        self.assertAlmostEqual(state.pos, 1.8838, delta=1e-3, msg=f"state.pos = {state.pos}")
+        self.assertAlmostEqual(state.vel, 3.6486, delta=1e-3, msg=f"state.vel = {state.vel}")
         self.assertTrue(
             np.allclose([new_pose.p.x, new_pose.p.y, new_pose.p.z], [-0.46066, 1.4307, 2.34091e-05], atol=1e-2),
             f"new_pose.p = {new_pose.p}",

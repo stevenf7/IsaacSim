@@ -1,8 +1,8 @@
 # Changelog
 
-## [1.6.3] - 2023-06-13
+## [1.6.3] - 2023-06-30
 ### Fixed
-- Added omni.isaac.kit dependency needed for cortex pipeline
+- Error in nut+bolt example due to USD schema changes
 
 ## [1.6.2] - 2023-05-19
 ### Fixed
