@@ -23,7 +23,7 @@ from omni.kit.testing.services.datarecorders import cpu, interface, memory
 from omni.kit.testing.services.metrics import backend, measurements
 from omni.kit.widget.viewport.capture import FileCapture
 
-from .recorders import IsaacCPUStatsRecorder, IsaacFrameTimeRecorder, IsaacMemoryRecorder, IsaacRuntimeRecorder
+from .recorders import *
 
 logger = utils.set_up_logging(__name__)
 

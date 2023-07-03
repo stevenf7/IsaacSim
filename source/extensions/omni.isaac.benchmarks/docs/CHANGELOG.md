@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.13.0] - 2023-06-30
+
+### Added
+- Real Time Factor (RTF) measurement to frametime recorder and benchmark specificially for RTF, used to compare time in simulator vs real time
+
 ## [0.12.0] - 2023-06-29
 
 ### Added
