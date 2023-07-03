@@ -430,7 +430,7 @@ group "python_samples"
     python_sample_test("tests-nativepython-omni.isaac.ros_bridge.contact", "standalone_examples/api/omni.isaac.ros_bridge/contact.py")
     python_sample_test("tests-nativepython-omni.isaac.ros_bridge.carter_stereo", "standalone_examples/api/omni.isaac.ros_bridge/carter_stereo.py", "--test")
     -- Replicator data samples:
-    python_sample_test("tests-nativepython-replicator.offline_generation", "standalone_examples/replicator/offline_generation.py")
+    python_sample_test("tests-nativepython-replicator.offline_generation", "standalone_examples/replicator/offline_generation/offline_generation.py")
     python_sample_test("tests-nativepython-replicator.offline_pose_generation", "standalone_examples/replicator/offline_pose_generation/offline_pose_generation.py")
     python_sample_test("tests-nativepython-replicator.offline_pose_generation_ycbvideo", "standalone_examples/replicator/offline_pose_generation/offline_pose_generation.py", "--num_mesh 3 --num_dome 3 --writer YCBVideo --output_folder _out_ycb")
     python_sample_test("tests-nativepython-replicator.offline_pose_generation_ycbvideo_output_check", "standalone_examples/replicator/offline_pose_generation/offline_pose_generation.py", "--test --writer YCBVideo --output_folder _out_ycb_test")

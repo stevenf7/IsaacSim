@@ -1,4 +1,13 @@
 # Changelog
+
+## [5.9.0] - 2023-06-30
+### Added
+- An existing render product path can be specified for the camera helper class
+- bounding_box_3d annotator to camera class
+
+### Changed
+- If /app/runLoops/main/rateLimitFrequency is not set Frequency goes to -1, and all frames are captured
+
 ## [5.8.2] - 2023-06-23
 ### Changed
 - IsaacPrintRTXLidarInfo node now prints prim paths and return data for first named prim hits.

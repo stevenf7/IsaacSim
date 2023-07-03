@@ -28,6 +28,7 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
         carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
+        omni.timeline.get_timeline_interface().set_target_framerate(self._physics_rate)
         for _ in range(10):
             await omni.kit.app.get_app().next_update_async()
 

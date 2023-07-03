@@ -442,17 +442,17 @@ class FrankaNutAndBolt(BaseSample):
         self._meshCollisionGroup = UsdPhysics.CollisionGroup.Define(
             self._world.scene.stage, "/World/collisionGroups/meshColliders"
         )
-        collectionAPI = Usd.CollectionAPI.ApplyCollection(self._meshCollisionGroup.GetPrim(), "colliders")
+        collectionAPI = Usd.CollectionAPI.Apply(self._meshCollisionGroup.GetPrim(), "colliders")
         self._nutMeshIncludeRel = collectionAPI.CreateIncludesRel()
         self._convexCollisionGroup = UsdPhysics.CollisionGroup.Define(
             self._world.scene.stage, "/World/collisionGroups/convexColliders"
         )
-        collectionAPI = Usd.CollectionAPI.ApplyCollection(self._convexCollisionGroup.GetPrim(), "colliders")
+        collectionAPI = Usd.CollectionAPI.Apply(self._convexCollisionGroup.GetPrim(), "colliders")
         self._convexIncludeRel = collectionAPI.CreateIncludesRel()
         self._boltCollisionGroup = UsdPhysics.CollisionGroup.Define(
             self._world.scene.stage, "/World/collisionGroups/boltColliders"
         )
-        collectionAPI = Usd.CollectionAPI.ApplyCollection(self._boltCollisionGroup.GetPrim(), "colliders")
+        collectionAPI = Usd.CollectionAPI.Apply(self._boltCollisionGroup.GetPrim(), "colliders")
         self._boltMeshIncludeRel = collectionAPI.CreateIncludesRel()
 
         # invert group logic so only groups that filter each-other will collide:

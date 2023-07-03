@@ -295,6 +295,11 @@ keywords = ["experience", "app", "usd"]
 "omni.warp" = {}
 
 "omni.simready.explorer" = {}
+"omni.kit.widget.cache_indicator" = {}
+
+# WAR - load those 2 extensions otherwise they will get loaded by a task thread and it will deadlock (2 python threads)
+"omni.hsscclient" = {}
+"omni.ujitso" = {}
 
 [settings]
 renderer.active = "rtx"

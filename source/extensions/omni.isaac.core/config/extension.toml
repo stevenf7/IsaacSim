@@ -39,7 +39,7 @@ dependencies = [
     "omni.kit.primitive.mesh",
     "omni.kit.material.library",
 ]
-
+timeout=1000
 args = ["--/physics/cudaDevice=0"]
 
 stdoutFailPatterns.exclude = [
