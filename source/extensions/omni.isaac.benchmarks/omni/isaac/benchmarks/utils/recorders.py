@@ -11,6 +11,7 @@ import time
 from pathlib import Path
 from typing import Optional
 
+from omni.isaac.core_nodes.bindings import _omni_isaac_core_nodes
 from omni.kit.testing.services.datarecorders import cpu, frametime, interface, memory
 from omni.kit.testing.services.metrics import measurements
 
@@ -30,11 +31,21 @@ class IsaacFrameTimeRecorder(interface.MeasurementDataRecorder):
         self.frametime_collector = IsaacUpdateFrametimeCollector()
         self.phase = None
 
+        self.real_time_start = None
+        self.elapsed_real_time = None
+        self.sim_time_start = None
+        self.elapsed_sim_time = None
+        self._core_nodes = _omni_isaac_core_nodes.acquire_interface()
+
     def start_collecting(self):
         self.phase = self.context.phase
+        self.sim_time_start = self._core_nodes.get_sim_time_monotonic()
+        self.real_time_start = time.perf_counter_ns()
         self.frametime_collector.start_collecting()
 
     def stop_collecting(self):
+        self.elapsed_sim_time = (self._core_nodes.get_sim_time_monotonic() - self.sim_time_start) * 1000
+        self.elapsed_real_time = (time.perf_counter_ns() - self.real_time_start) / 1000000
         self.frametime_collector.stop_collecting()
 
     def get_num_frames(self):
@@ -88,7 +99,10 @@ class IsaacFrameTimeRecorder(interface.MeasurementDataRecorder):
         m10 = measurements.ListMeasurement(
             name=f"{self.context.phase} GPU Frametime Samples", value=frametime_stats.gpu_frametime_samples
         )
-        measurements_out = [m1, m2, m3, m4, m5, m6, m7, m8, m9, m10]
+        m11 = measurements.SingleMeasurement(
+            name=f"{self.context.phase} Real Time Factor", value=self.elapsed_sim_time / self.elapsed_real_time, unit=""
+        )
+        measurements_out = [m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11]
         return interface.MeasurementData(measurements=measurements_out)
 
 
