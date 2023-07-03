@@ -537,6 +537,9 @@ exts."omni.isaac.asset_browser".folders = [
     "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2023.1.0/Isaac/Samples",
 ]
 
+# Disable IOMMU Enabled pop-up message on warmup (OM-100381)
+# persistent.renderer.startupMessageDisplayed = true
+
 # FOR DEVELOPMENT - END #
 
 # Isaac Sim Extensions
@@ -590,7 +593,7 @@ exts."omni.isaac.asset_browser".folders = [
 [dependencies."filter:platform"."linux-x86_64"]
 # note that the ros bridge can now be configured via the persistent.isaac.startup.ros_bridge_extension setting and set at runtime.
 # the default is still omni.isaac.ros_bridge
-# "omni.isaac.ros_bridge" = {} 
+# "omni.isaac.ros_bridge" = {}
 "omni.isaac.gxf_bridge" = {}
 # "omni.isaac.ocs2" = {}
 

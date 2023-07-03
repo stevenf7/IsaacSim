@@ -8,6 +8,7 @@ TASKING_THREAD_CNT=$(($TASKING_THREAD_CNT/2))
 # Warm up cache with App Selector
 "$SCRIPT_DIR/kit/kit" "$SCRIPT_DIR/apps/omni.isaac.sim.selector.kit" \
     --no-window \
+    --/persistent/renderer/startupMessageDisplayed=true \
     --ext-folder "$SCRIPT_DIR/exts" \
     --ext-folder "$SCRIPT_DIR/apps" \
     --/app/settings/persistent=0 \
@@ -21,6 +22,7 @@ TASKING_THREAD_CNT=$(($TASKING_THREAD_CNT/2))
 # Warm up cache
 "$SCRIPT_DIR/kit/kit" "$SCRIPT_DIR/apps/omni.isaac.sim.kit" \
     --no-window \
+    --/persistent/renderer/startupMessageDisplayed=true \
     --ext-folder "$SCRIPT_DIR/exts" \
     --ext-folder "$SCRIPT_DIR/apps" \
     --/app/settings/persistent=0 \
