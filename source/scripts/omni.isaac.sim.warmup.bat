@@ -5,6 +5,7 @@ setlocal
 set /a TASKING_THREAD_CNT = %NUMBER_OF_PROCESSORS% / 2
 call "%~dp0kit\kit.exe"  "%%~dp0apps/omni.isaac.sim.kit" ^
     --no-window ^
+    --/persistent/renderer/startupMessageDisplayed=true ^
     --ext-folder "%~dp0/exts" ^
     --ext-folder "%~dp0/apps" ^
     --/app/extensions/excluded/2='omni.kit.telemetry' ^
