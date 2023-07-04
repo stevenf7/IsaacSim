@@ -377,6 +377,8 @@ app.hydra.aperture.conform = 4 # Don't modify camera prim, stretch the image so 
 # Enable Iray and pxr by setting this to "rtx,iray,pxr"
 renderer.enabled = "rtx"
 
+physics.autoPopupSimulationOutputWindow=false
+
 # Basic Kit App
 ################################
 app.versionFile = "${app}/../VERSION"
@@ -517,6 +519,7 @@ physics.updateToUsd = true
 physics.updateVelocitiesToUsd = true
 physics.useFastCache = false
 physics.visualizationDisplayJoints = false
+physics.visualizationSimulationOutput = false
 omni.replicator.captureOnPlay = true
 
 # Make Detail panel visible by default
