@@ -292,6 +292,9 @@ keywords = ["experience", "app", "usd"]
 "omni.activity.profiler" = {}
 "omni.activity.pump" = {}
 
+"omni.kit.widget.cache_indicator" = {}
+
+
 [settings]
 renderer.active = "rtx"
 exts."omni.kit.viewport.menubar.camera".expand = true # Expand the extra-camera settings by default
@@ -375,6 +378,8 @@ app.hydraEngine.waitIdle = true
 
 # Enable Iray and pxr by setting this to "rtx,iray,pxr"
 renderer.enabled = "rtx"
+
+physics.autoPopupSimulationOutputWindow=false
 
 # Basic Kit App
 ################################
@@ -521,7 +526,10 @@ physics.updateToUsd = true
 physics.updateVelocitiesToUsd = true
 physics.useFastCache = false
 physics.visualizationDisplayJoints = false
+physics.visualizationSimulationOutput = false
 omni.replicator.captureOnPlay = true
+
+renderer.startupMessageDisplayed = true # hides the IOMMU popup window
 
 # Make Detail panel visible by default
 app.omniverse.content_browser.options_menu.show_details = true
