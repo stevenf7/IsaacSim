@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.12.4] - 2023-07-05
+### Fixed
+- Joint efforts not being applied in joint state subscriber
+
 ## [1.12.3] - 2023-06-12
 ### Changed
 - Update to kit 105.1
