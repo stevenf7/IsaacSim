@@ -129,10 +129,11 @@ while simulation_app.is_running():
     # Run with a fixed step size
     simulation_context.step(render=True)
 
-    # Rotate camera by 0.5 degree every frame
-    xform_api.SetRotate((90, 0, frame / 4.0), UsdGeom.XformCommonAPI.RotationOrderXYZ)
+    if simulation_context.is_playing():
+        # Rotate camera by 0.5 degree every frame
+        xform_api.SetRotate((90, 0, frame / 4.0), UsdGeom.XformCommonAPI.RotationOrderXYZ)
 
-    frame = frame + 1
+        frame = frame + 1
 
 simulation_context.stop()
 simulation_app.close()

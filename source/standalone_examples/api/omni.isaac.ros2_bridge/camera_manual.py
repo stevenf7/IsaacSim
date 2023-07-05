@@ -168,32 +168,33 @@ simulation_context.play()
 
 frame = 0
 
-while simulation_app.is_running():
+while simulation_app.is_running() and simulation_context.is_playing():
     # Run with a fixed step size
     simulation_context.step(render=True)
 
-    # Rotate camera by 0.5 degree every frame
-    xform_api.SetRotate((90, 0, frame / 4.0), UsdGeom.XformCommonAPI.RotationOrderXYZ)
+    if simulation_context.is_playing():
+        # Rotate camera by 0.5 degree every frame
+        xform_api.SetRotate((90, 0, frame / 4.0), UsdGeom.XformCommonAPI.RotationOrderXYZ)
 
-    # Set the step value for the simulation gates to zero to stop execution
-    og.Controller.attribute(rgb_camera_gate_path + ".inputs:step").set(0)
-    og.Controller.attribute(depth_camera_gate_path + ".inputs:step").set(0)
-    og.Controller.attribute(camera_info_gate_path + ".inputs:step").set(0)
+        # Set the step value for the simulation gates to zero to stop execution
+        og.Controller.attribute(rgb_camera_gate_path + ".inputs:step").set(0)
+        og.Controller.attribute(depth_camera_gate_path + ".inputs:step").set(0)
+        og.Controller.attribute(camera_info_gate_path + ".inputs:step").set(0)
 
-    # Publish the ROS rgb image message every 5 frames
-    if frame % 5 == 0:
-        # Enable rgb Branch node to start publishing rgb image
-        og.Controller.attribute(rgb_camera_gate_path + ".inputs:step").set(1)
+        # Publish the ROS rgb image message every 5 frames
+        if frame % 5 == 0:
+            # Enable rgb Branch node to start publishing rgb image
+            og.Controller.attribute(rgb_camera_gate_path + ".inputs:step").set(1)
 
-    # Publish the ROS Depth image message every 60 frames
-    if frame % 60 == 0:
-        # Enable depth Branch node to start publishing depth image
-        og.Controller.attribute(depth_camera_gate_path + ".inputs:step").set(1)
+        # Publish the ROS Depth image message every 60 frames
+        if frame % 60 == 0:
+            # Enable depth Branch node to start publishing depth image
+            og.Controller.attribute(depth_camera_gate_path + ".inputs:step").set(1)
 
-    # Publish the ROS Camera Info message every frame
-    og.Controller.attribute(camera_info_gate_path + ".inputs:step").set(1)
+        # Publish the ROS Camera Info message every frame
+        og.Controller.attribute(camera_info_gate_path + ".inputs:step").set(1)
 
-    frame = frame + 1
+        frame = frame + 1
 
 simulation_context.stop()
 simulation_app.close()
