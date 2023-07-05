@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.14.0] - 2023-07-04
+
+### Added
+- added sync load parameters to setUp in base isaac benchmark class
+
+## [0.13.2] - 2023-07-04
+
+### Added
+- runtime and frametime recorder to sdg benchmark phase
+
+## [0.13.1] - 2023-07-03
+
+### Added
+- moved wait_until_stage_is_fully_loaded_async to helper.py
+
+### Fixed
+- unrolled scene generation benchmark loops
+- sdg using step_async loop + wait_until_complete_async to make sure data is written to disk in the benchmark phase 
+
 ## [0.13.0] - 2023-06-30
 
 ### Added
