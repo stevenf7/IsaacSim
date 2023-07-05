@@ -16,15 +16,15 @@ from itertools import cycle
 import carb
 import omni.kit.test
 from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.utils.stage import add_reference_to_stage, create_new_stage_async, open_stage_async
+from omni.isaac.core.utils.stage import add_reference_to_stage, create_new_stage_async, open_stage, open_stage_async
 from pxr import UsdGeom, UsdLux
 
 from ..utils.base_isaac_benchmark import BaseIsaacBenchmark
+from ..utils.helper import wait_until_stage_is_fully_loaded_async
 
 ASSETS_PATH = "/Isaac/Environments/Simple_Warehouse/Props"
+TEST_NUM_APP_UPDATES = 100
 RANDOM_SEED = 132
-TEST_NUM_ASSETS = [100, 1000]
-TEST_NUM_LIGHTS = [8, 16]
 
 # Helper function to get the test from the arguments
 def get_test_name_from_args(num_assets, location, prim_type, api, num_lights=0):
@@ -69,20 +69,7 @@ def get_extent_from_num_assets(num_assets):
     return (num_assets ** (1 / 3), num_assets ** (1 / 3), num_assets ** (1 / 4))
 
 
-# Update the app until the materials and textures are fully loaded (stop once the frame update times become small)
-async def wait_until_stage_is_fully_loaded_async():
-    # 4/5 frames are usually needed to load materials/textures
-    frame_start = time.time()
-    for i in range(10):
-        await omni.kit.app.get_app().next_update_async()
-        curr_time = time.time()
-        if curr_time - frame_start < 0.1:
-            print(f"\tStage fully loaded at frame {i} (last frame duration: {curr_time - frame_start} seconds)..")
-            break
-        frame_start = curr_time
-
-
-# Spawn all assets in a new stage (caching)
+# Spawn all assets in a new stage once to perform any caching and avoid influencing the following tests
 async def load_all_assets_in_new_stage_async(assets_path):
     assets_root_path = get_assets_root_path()
     path = assets_root_path + assets_path
@@ -99,7 +86,8 @@ async def load_all_assets_in_new_stage_async(assets_path):
     # Create a new stage and load all assets in its origin
     await create_new_stage_async()
     stage = omni.usd.get_context().get_stage()
-    print(f"Loading {len(assets)} assets in stage from {assets_path}...")
+    print(f" ** [scene_benchmark] Assets loading warmup, loading {len(assets)} assets from {assets_path}")
+
     start = time.time()
     for i, asset_path in enumerate(assets):
         asset_name = os.path.splitext(os.path.basename(asset_path))[0]
@@ -109,7 +97,7 @@ async def load_all_assets_in_new_stage_async(assets_path):
 
     # Wait (update the app) until the stage is fully loaded (materials/textures)
     await wait_until_stage_is_fully_loaded_async()
-    print(f"Done loading assets in stage in {time.time() - start} seconds.")
+    print(f" ** [scene_benchmark] Assets loaded in {time.time() - start} seconds.")
 
 
 # Spawn the assets in the origin using various parameters
@@ -207,18 +195,20 @@ class TestBenchmarkSceneGeneration(BaseIsaacBenchmark):
     ):
         # Set the test name
         self.test_run.test_name = get_test_name_from_args(num_assets, location, prim_type, api, num_lights)
+        print(f" ** [scene_benchmark] Running test: {self.test_run.test_name}")
 
+        # Create a fresh stage
         await create_new_stage_async()
-        await omni.kit.app.get_app().next_update_async()
+        await wait_until_stage_is_fully_loaded_async(verbose=True)
         stage = omni.usd.get_context().get_stage()
 
-        # <----------------------------
+        # <---------------------------- spawn phase -----------------------------
         # Perform the loading benchmark
         self.set_phase("spawn")
         self.start_runtime()
         await omni.kit.app.get_app().next_update_async()
 
-        # spawn the assest (xform or meshes) in the origin, (usd/isaac api) or at random poses (meshes, lights)
+        # Spawn the assest (xform or meshes) in the origin, (usd/isaac api) or at random poses (meshes, lights)
         if location.lower() == "origin":
             spawn_assets_at_origin(stage, num_assets, prim_type, api, ASSETS_PATH)
         elif location.lower() == "random":
@@ -230,79 +220,87 @@ class TestBenchmarkSceneGeneration(BaseIsaacBenchmark):
         await omni.kit.app.get_app().next_update_async()
         self.stop_runtime()
         await self.store_measurements()
-        # ---------------------------->
+        # ----------------------------- spawn phase ----------------------------->
 
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()
         await omni.kit.app.get_app().next_update_async()
 
-        # <----------------------------
-        # Perform application play benchmark
+        # <---------------------------- play phase -----------------------------
         self.set_phase("play")
         self.start_collecting_frametime()
 
-        for _ in range(250):
+        for _ in range(TEST_NUM_APP_UPDATES):
             await omni.kit.app.get_app().next_update_async()
 
         self.stop_collecting_frametime()
         await self.store_measurements()
-        # ---------------------------->
+        # ----------------------------- play phase ----------------------------->
 
-        # Stop the running timeline
         timeline.stop()
         await omni.kit.app.get_app().next_update_async()
 
-        # Export the stage to file
+        # Export the generated stage to file
         stage.GetRootLayer().Export(f"{self.test_run.test_name}.usda")
         await omni.kit.app.get_app().next_update_async()
 
         # Create a fresh stage
         await create_new_stage_async()
         await omni.kit.app.get_app().next_update_async()
+        await wait_until_stage_is_fully_loaded_async(verbose=True)
 
-        # <----------------------------
-        # Perform load saved stage benchmark
+        # <---------------------------- load phase -----------------------------
         self.set_phase("load")
         self.start_runtime()
         await omni.kit.app.get_app().next_update_async()
 
-        await open_stage_async(f"{self.test_run.test_name}.usda")
-        await wait_until_stage_is_fully_loaded_async()
+        # await open_stage_async(f"{self.test_run.test_name}.usda")
+        open_stage(f"{self.test_run.test_name}.usda")
+        await wait_until_stage_is_fully_loaded_async(verbose=True)
 
         await omni.kit.app.get_app().next_update_async()
         self.stop_runtime()
         await self.store_measurements()
-        # ---------------------------->
+        # ----------------------------- load phase ----------------------------->
 
-        # Delete the exported file
+        # Delete the exported usd file
         os.remove(f"{self.test_run.test_name}.usda")
+        await omni.kit.app.get_app().next_update_async()
 
-    # Not a benchmark: load all meshes in scene once for the first time to run any existing caches
-    async def test_benchmark_0_scene_generation(self):
+    # NOTE: Not a benchmark, loading all meshes in scene once if any caching is done not to affect the benchmarks
+    async def test_benchmark_scene_generation_asset_warmup(self):
         await load_all_assets_in_new_stage_async(ASSETS_PATH)
 
-    # Benchmark: xfoms in origin (usd api by default)
-    async def test_benchmark_1_scene_generation(self):
-        for num in TEST_NUM_ASSETS:
-            await self.benchmark_scene_generation(num_assets=num, location="origin", prim_type="xform", api="usd")
+    # ----------------------------------------------------------------------
+    async def test_benchmark_scene_generation_origin_location_100_xform(self):
+        await self.benchmark_scene_generation(num_assets=100, location="origin", prim_type="xform")
 
-    # Benchmark: meshes in origin, usd api
-    async def test_benchmark_2_scene_generation(self):
-        for num in TEST_NUM_ASSETS:
-            await self.benchmark_scene_generation(num_assets=num, location="origin", prim_type="mesh", api="usd")
+    async def test_benchmark_scene_generation_origin_location_1000_xform(self):
+        await self.benchmark_scene_generation(num_assets=1000, location="origin", prim_type="xform")
 
-    # Benchmark: meshes in origin, isaac api
-    async def test_benchmark_3_scene_generation(self):
-        for num in TEST_NUM_ASSETS:
-            await self.benchmark_scene_generation(num_assets=num, location="origin", prim_type="mesh", api="isaac")
+    # ----------------------------------------------------------------------
+    async def test_benchmark_scene_generation_origin_location_100_mesh(self):
+        await self.benchmark_scene_generation(num_assets=100, location="origin", prim_type="mesh")
 
-    # Benchmark: randomized, meshed (usd api by default)
-    async def test_benchmark_4_scene_generation(self):
-        for num in TEST_NUM_ASSETS:
-            await self.benchmark_scene_generation(num_assets=num, location="random")
+    async def test_benchmark_scene_generation_origin_location_1000_mesh(self):
+        await self.benchmark_scene_generation(num_assets=1000, location="origin", prim_type="mesh")
 
-    # Benchmark: randomized, meshed, lights (usd api by default)
-    async def test_benchmark_5_scene_generation(self):
-        for num_a in TEST_NUM_ASSETS:
-            for num_l in TEST_NUM_LIGHTS:
-                await self.benchmark_scene_generation(num_assets=num_a, location="random", num_lights=num_l)
+    # ----------------------------------------------------------------------
+    # NOTE Leaving out isaac api version for now
+    # async def test_benchmark_scene_generation_origin_location_100_xform_isaac_api(self):
+    #     await self.benchmark_scene_generation(num_assets=100, location="origin", prim_type="xform", api="isaac")
+    # [..]
+
+    # ----------------------------------------------------------------------
+    async def test_benchmark_scene_generation_random_location_100_mesh(self):
+        await self.benchmark_scene_generation(num_assets=100, location="random", prim_type="mesh")
+
+    async def test_benchmark_scene_generation_random_location_1000_mesh(self):
+        await self.benchmark_scene_generation(num_assets=1000, location="random", prim_type="mesh")
+
+    # ----------------------------------------------------------------------
+    async def test_benchmark_scene_generation_random_location_100_mesh_light_8(self):
+        await self.benchmark_scene_generation(num_assets=100, location="random", prim_type="mesh", num_lights=8)
+
+    async def test_benchmark_scene_generation_random_location_1000_mesh_light_8(self):
+        await self.benchmark_scene_generation(num_assets=1000, location="random", prim_type="mesh", num_lights=8)

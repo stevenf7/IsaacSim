@@ -12,17 +12,20 @@ import os
 import shutil
 import time
 
+import carb
 import omni.kit.test
 import omni.replicator.core as rep
 from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.utils.stage import create_new_stage_async, open_stage_async
+from omni.isaac.core.utils.stage import create_new_stage_async, open_stage, open_stage_async
 
 from ..utils.base_isaac_benchmark import BaseIsaacBenchmark
+from ..utils.helper import wait_until_stage_is_fully_loaded_async
 
 STAGE = "/Isaac/Samples/Replicator/Benchmark/full_warehouse_worker_benchmark_sdg.usd"
 LOOK_AT_PRIM_PATH = "/Root/SM_CardBoxA_3"
 DEFAULT_RESOLUTION = (1280, 720)
-PHASE_NUM_APP_UPDATES = 100
+TEST_NUM_APP_UPDATES = 100
+SDG_NUM_FRAMES = 100
 ALL_ANNOTATORS = {
     "rgb": True,
     "bounding_box_2d_tight": True,
@@ -46,17 +49,26 @@ ALL_ANNOTATORS = {
 }
 
 
-# Update the app until the materials and textures are fully loaded (stop once the frame update times become small)
-async def wait_until_stage_is_fully_loaded_async():
-    # 4/5 frames are usually needed to load materials/textures
-    frame_start = time.time()
-    for i in range(10):
-        await omni.kit.app.get_app().next_update_async()
-        curr_time = time.time()
-        if curr_time - frame_start < 0.1:
-            print(f"\tStage fully loaded at frame {i} (last frame duration: {curr_time - frame_start} seconds)..")
-            break
-        frame_start = curr_time
+# Count the number of SDG frames written to disk
+def check_number_of_written_sdg_frames(output_directory, num_frames_expected, verbose=False):
+    # Count the written frames by counting the 'rgb_*.png' files in the output directory,
+    # or in case of multiple cameras the '/rgb' folder of the first subdirectory
+    folders = [f for f in os.listdir(output_directory) if os.path.isdir(os.path.join(output_directory, f))]
+    num_written_frames = 0
+    if len(folders) > 0:
+        first_subdir_path = os.path.join(output_directory, folders[0], "rgb")
+        rgb_files = [f for f in os.listdir(first_subdir_path) if f.startswith("rgb_")]
+        num_written_frames = len(rgb_files)
+        if verbose:
+            print(
+                f"Found {len(folders)} folders in {output_directory}, counted {num_written_frames} rgb_*.png files in {first_subdir_path}"
+            )
+    else:
+        rgb_files = [f for f in os.listdir(output_directory) if f.startswith("rgb_")]
+        num_written_frames = len(rgb_files)
+        if verbose:
+            print(f"No subdirectories found, counted {num_written_frames} rgb_*.png files in {output_directory}")
+    return num_written_frames == num_frames_expected
 
 
 class TestBenchmarkSDGGeneration(BaseIsaacBenchmark):
@@ -72,163 +84,182 @@ class TestBenchmarkSDGGeneration(BaseIsaacBenchmark):
     async def benchmark_sdg_generation(self, num_render_products, resolution, num_frames, annotators="rgb"):
         # Set the test name
         self.test_run.test_name = f"sdg_generation_{num_render_products}_cameras_{resolution[0]}_{resolution[1]}_resolution_{num_frames}_frames_{annotators}_annotators"
-        print(f"Running test: {self.test_run.test_name}")
+        print(f" ** [sdg_benchmark] Running test: {self.test_run.test_name}")
 
         # Create a fresh stage
         await create_new_stage_async()
-        await omni.kit.app.get_app().next_update_async()
+        await wait_until_stage_is_fully_loaded_async()
+        assets_root_path = get_assets_root_path()
 
-        # <----------------------------
-        # Perform the loading benchmark
+        # <---------------------------- loading phase -----------------------------
+        # Perform the loading phase: check for the duration for loading the stage,
+        # where the first frames take longer in order to load all the prims followed by the materials/textures
         self.set_phase("loading")
+        # self.start_collecting_frametime()
         self.start_runtime()
         await omni.kit.app.get_app().next_update_async()
 
-        assets_root_path = get_assets_root_path()
-        await open_stage_async(assets_root_path + STAGE)
+        # Async version seems to cause running extra frames when collecting frametimes
+        # await open_stage_async(assets_root_path + STAGE)
+        open_stage(assets_root_path + STAGE)
         await wait_until_stage_is_fully_loaded_async()
 
         await omni.kit.app.get_app().next_update_async()
         self.stop_runtime()
+        # self.stop_collecting_frametime()
         await self.store_measurements()
-        # ---------------------------->
+        # ----------------------------- loading phase ----------------------------->
 
-        # <----------------------------
-        # Perform clean stage benchmark
+        # <---------------------------- baseline phase -----------------------------
+        # Perform the baseline phase: check the performance with the cleanly loaded stage
         self.set_phase("baseline")
         self.start_collecting_frametime()
 
         # Run for a few frames to check the clean stage stats
-        for _ in range(PHASE_NUM_APP_UPDATES):
+        for _ in range(TEST_NUM_APP_UPDATES):
             await omni.kit.app.get_app().next_update_async()
 
         self.stop_collecting_frametime()
         await self.store_measurements()
-        # ---------------------------->
+        # ---------------------------- baseline phase ------------------------------->
 
-        # <----------------------------
-        # Perform application play benchmark
-        self.set_phase("baseline_sdg")
-        self.start_collecting_frametime()
-
+        # Setup the SDG parts for the benchmark (render products, writer, etc.)
         render_products = []
         for i in range(num_render_products):
             z_offset = i * 0.005
             cam = rep.create.camera(position=(-6, -1, 4 + z_offset), look_at=LOOK_AT_PRIM_PATH, name=f"cam_{i}")
             render_products.append(rep.create.render_product(cam, resolution))
-
         writer = rep.WriterRegistry.get("BasicWriter")
         output_directory = os.getcwd() + "/" + self.test_run.test_name
         if annotators == "rgb":
             writer.initialize(output_dir=output_directory, rgb=True)
         elif annotators == "all":
             writer.initialize(output_dir=output_directory, **ALL_ANNOTATORS)
-
         await writer.attach_async(render_products)
-        await omni.kit.app.get_app().next_update_async()
+        # Evaluate og graph
+        await rep.orchestrator.preview_async()
+
+        # <---------------------------- baseline_sdg phase -----------------------------
+        # Check the performance with the SDG parts loaded
+        self.set_phase("baseline_sdg")
+        self.start_collecting_frametime()
 
         # Run for a few frames to check the stage stats with the render products
-        for _ in range(PHASE_NUM_APP_UPDATES):
+        for _ in range(TEST_NUM_APP_UPDATES):
             await omni.kit.app.get_app().next_update_async()
 
         self.stop_collecting_frametime()
         await self.store_measurements()
-        # ---------------------------->
+        # ---------------------------- baseline_sdg phase ------------------------------->
 
-        # <----------------------------
-        # Perform load saved stage benchmark
+        # Make sure capture on play is not on
+        carb_settings = carb.settings.get_settings()
+        carb_settings.set_bool("/omni/replicator/captureOnPlay", False)
+
+        # <---------------------------- benchmark phase -----------------------------
+        # Check the performance while writing SDG data
         self.set_phase("benchmark")
         self.start_collecting_frametime()
+        self.start_runtime()
 
         await rep.orchestrator.run_until_complete_async(num_frames=num_frames)
+        # await rep.orchestrator.run_async(num_frames=num_frames)
+        # for _ in range(num_frames):
+        #     await rep.orchestrator.step_async()
+        # await rep.orchestrator.wait_until_complete_async()
 
+        self.stop_runtime()
         self.stop_collecting_frametime()
         await self.store_measurements()
-        # ---------------------------->
-
-        # <----------------------------
-        # Perform load saved stage benchmark
-        self.set_phase("baseline_cleanup")
-        self.start_collecting_frametime()
+        # ---------------------------- benchmark phase ------------------------------->
 
         writer.detach()
         writer = None
 
+        # Check that all the SDG frames were written to disk
+        all_frames_written = check_number_of_written_sdg_frames(output_directory, num_frames, verbose=True)
+        self.assertTrue(all_frames_written)
+
+        # Remove the written data from disk
+        shutil.rmtree(output_directory)
+
+        # <---------------------------- baseline_cleanup phase -----------------------------
+        # Check performance after running the SDG benchmark and cleaning up replicator functionalities
+        self.set_phase("baseline_cleanup")
+        self.start_collecting_frametime()
+
         # Run for a few frames to check the stage stats after detaching the writer
-        for _ in range(PHASE_NUM_APP_UPDATES):
+        for _ in range(TEST_NUM_APP_UPDATES):
             await omni.kit.app.get_app().next_update_async()
 
         self.stop_collecting_frametime()
         await self.store_measurements()
-        # ---------------------------->
-
-        # Remove generated data
-        shutil.rmtree(output_directory)
+        # ---------------------------- baseline_cleanup phase ------------------------------->
 
     # ----------------------------------------------------------------------
     # Render products with rgb
-    async def test_benchmark_1_camera_rgb_annotator(self):
+    async def test_benchmark_sdg_1_camera_rgb_annotator(self):
         await self.benchmark_sdg_generation(
-            num_render_products=1, resolution=DEFAULT_RESOLUTION, num_frames=PHASE_NUM_APP_UPDATES, annotators="rgb"
+            num_render_products=1, resolution=DEFAULT_RESOLUTION, num_frames=SDG_NUM_FRAMES, annotators="rgb"
         )
 
-    async def test_benchmark_2_camera_rgb_annotator(self):
+    async def test_benchmark_sdg_2_camera_rgb_annotator(self):
         await self.benchmark_sdg_generation(
-            num_render_products=2, resolution=DEFAULT_RESOLUTION, num_frames=PHASE_NUM_APP_UPDATES, annotators="rgb"
+            num_render_products=2, resolution=DEFAULT_RESOLUTION, num_frames=SDG_NUM_FRAMES, annotators="rgb"
         )
 
-    async def test_benchmark_4_camera_rgb_annotator(self):
+    async def test_benchmark_sdg_4_camera_rgb_annotator(self):
         await self.benchmark_sdg_generation(
-            num_render_products=4, resolution=DEFAULT_RESOLUTION, num_frames=PHASE_NUM_APP_UPDATES, annotators="rgb"
+            num_render_products=4, resolution=DEFAULT_RESOLUTION, num_frames=SDG_NUM_FRAMES, annotators="rgb"
         )
 
     # ----------------------------------------------------------------------
     # Render products with all annotators
-    async def test_benchmark_1_camera_all_annotator(self):
+    async def test_benchmark_sdg_1_camera_all_annotator(self):
         await self.benchmark_sdg_generation(
-            num_render_products=1, resolution=DEFAULT_RESOLUTION, num_frames=PHASE_NUM_APP_UPDATES, annotators="all"
+            num_render_products=1, resolution=DEFAULT_RESOLUTION, num_frames=SDG_NUM_FRAMES, annotators="all"
         )
 
-    async def test_benchmark_2_camera_all_annotator(self):
+    async def test_benchmark_sdg_2_camera_all_annotator(self):
         await self.benchmark_sdg_generation(
-            num_render_products=2, resolution=DEFAULT_RESOLUTION, num_frames=PHASE_NUM_APP_UPDATES, annotators="all"
+            num_render_products=2, resolution=DEFAULT_RESOLUTION, num_frames=SDG_NUM_FRAMES, annotators="all"
         )
 
-    async def test_benchmark_4_camera_all_annotator(self):
+    async def test_benchmark_sdg_4_camera_all_annotator(self):
         await self.benchmark_sdg_generation(
-            num_render_products=4, resolution=DEFAULT_RESOLUTION, num_frames=PHASE_NUM_APP_UPDATES, annotators="all"
+            num_render_products=4, resolution=DEFAULT_RESOLUTION, num_frames=SDG_NUM_FRAMES, annotators="all"
         )
 
     # ----------------------------------------------------------------------
     # Benchmark resolution with rgb
-    async def test_benchmark_128_128_resolution_rgb_annotator(self):
+    async def test_benchmark_sdg_128_128_resolution_rgb_annotator(self):
         await self.benchmark_sdg_generation(
-            num_render_products=1, resolution=(128, 128), num_frames=PHASE_NUM_APP_UPDATES, annotators="rgb"
+            num_render_products=1, resolution=(128, 128), num_frames=SDG_NUM_FRAMES, annotators="rgb"
         )
 
-    async def test_benchmark_256_256_resolution_rgb_annotator(self):
+    async def test_benchmark_sdg_256_256_resolution_rgb_annotator(self):
         await self.benchmark_sdg_generation(
-            num_render_products=1, resolution=(256, 256), num_frames=PHASE_NUM_APP_UPDATES, annotators="rgb"
+            num_render_products=1, resolution=(256, 256), num_frames=SDG_NUM_FRAMES, annotators="rgb"
         )
 
-    async def test_benchmark_512_512_resolution_rgb_annotator(self):
+    async def test_benchmark_sdg_512_512_resolution_rgb_annotator(self):
         await self.benchmark_sdg_generation(
-            num_render_products=1, resolution=(512, 512), num_frames=PHASE_NUM_APP_UPDATES, annotators="rgb"
+            num_render_products=1, resolution=(512, 512), num_frames=SDG_NUM_FRAMES, annotators="rgb"
         )
 
     # ----------------------------------------------------------------------
     # Benchmark resolution with all annotators
-    async def test_benchmark_128_128_resolution_all_annotator(self):
+    async def test_benchmark_sdg_128_128_resolution_all_annotator(self):
         await self.benchmark_sdg_generation(
-            num_render_products=1, resolution=(128, 128), num_frames=PHASE_NUM_APP_UPDATES, annotators="all"
+            num_render_products=1, resolution=(128, 128), num_frames=SDG_NUM_FRAMES, annotators="all"
         )
 
-    async def test_benchmark_256_256_resolution_all_annotator(self):
+    async def test_benchmark_sdg_256_256_resolution_all_annotator(self):
         await self.benchmark_sdg_generation(
-            num_render_products=1, resolution=(256, 256), num_frames=PHASE_NUM_APP_UPDATES, annotators="all"
+            num_render_products=1, resolution=(256, 256), num_frames=SDG_NUM_FRAMES, annotators="all"
         )
 
-    async def test_benchmark_512_512_resolution_all_annotator(self):
+    async def test_benchmark_sdg_512_512_resolution_all_annotator(self):
         await self.benchmark_sdg_generation(
-            num_render_products=1, resolution=(512, 512), num_frames=PHASE_NUM_APP_UPDATES, annotators="all"
+            num_render_products=1, resolution=(512, 512), num_frames=SDG_NUM_FRAMES, annotators="all"
         )

@@ -27,9 +27,20 @@ from .recorders import *
 
 logger = utils.set_up_logging(__name__)
 
+# Sync mode sets settings that blocks the app until all materials are fully loaded
+def set_sync_mode():
+    carb_settings = carb.settings.get_settings()
+    if carb_settings.get("/app/asyncRendering"):
+        carb.log_warn(f"Async rendering is enabled, setting sync mode might not work")
+    carb_settings.set("/omni.kit.plugin/syncUsdLoads", True)
+    carb_settings.set("/rtx-defaults/materialDb/syncLoads", True)
+    carb_settings.set("/rtx-defaults/hydra/materialSyncLoads", True)
+
 
 class BaseIsaacBenchmark(omni.kit.test.AsyncTestCase):
     async def setUp(self):
+        # Set carb settings to wait until all materials are loaded when loading a stage
+        set_sync_mode()
         self.assets_root_path = get_assets_root_path()
         if self.assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")

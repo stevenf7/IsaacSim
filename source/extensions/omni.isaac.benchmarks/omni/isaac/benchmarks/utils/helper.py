@@ -8,6 +8,9 @@
 #
 
 
+import time
+
+import carb
 import omni.graph.core as og
 import omni.kit.commands
 import omni.usd
@@ -110,3 +113,24 @@ def add_ros_camera(
     )
 
     return ros_camera_graph
+
+
+# Run a given number of app updates after loading a stage to fully loaded materials/textures and co.
+# early stop if a frame time threshold (frametime_threshold) is reached
+# or if the time ratio (time_ratio_treshold) between the current and the previous frame is reached
+# e.g. current frame needed X times less time than the previous one
+async def wait_until_stage_is_fully_loaded_async(
+    max_frames=10, frametime_threshold=0.1, time_ratio_treshold=5, verbose=False
+):
+    prev_frametime = 0
+    for i in range(max_frames):
+        start_time = time.time()
+        await omni.kit.app.get_app().next_update_async()
+        elapsed_time = time.time() - start_time
+        if verbose:
+            print(f"Frame {i} frametime: {elapsed_time}")
+        if elapsed_time < frametime_threshold or elapsed_time * time_ratio_treshold < prev_frametime:
+            if verbose:
+                print(f"Stage fully loaded at frame {i}, last frametime: {elapsed_time}")
+            break
+        prev_frametime = elapsed_time
