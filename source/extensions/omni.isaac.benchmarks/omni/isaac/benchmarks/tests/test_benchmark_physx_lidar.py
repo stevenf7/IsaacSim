@@ -10,7 +10,6 @@
 
 import omni.kit.test
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
-from omni.isaac.core.utils.viewports import destroy_all_viewports
 from pxr import Gf
 
 from ..utils.base_isaac_benchmark import BaseIsaacBenchmark

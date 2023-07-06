@@ -4,7 +4,7 @@ order = -1000
 reloadable = false
 
 [package]
-version = "1.1.0"
+version = "1.1.1"
 category = "Internal"
 title = "Compute package Pip Archive"
 description = "General packages for compute"
@@ -19,7 +19,6 @@ preview_image = "data/preview.png"
 writeTarget.platform = true
 
 [dependencies]
-"omni.kit.pipapi" = {} # We need it so that we can use [python.pipapi].
 "omni.kit.pip_archive" = {} # import the base kit python archive
 
 # We bundle not only "scipy" package, but many other. No need to mention all of them, just importing one will add whole

@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.2] - 2023-07-05
+### Changed
+- Added explicit omni.kit.pipapi dependency
+
 ## [2.0.1] - 2023-01-06
 ### Fixed
 - onclick_fn warning when creating UI

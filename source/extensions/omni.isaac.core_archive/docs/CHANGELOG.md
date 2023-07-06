@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.1] - 2023-07-05
+### Changed
+- Removed unused omni.kit.pipapi dependency
+
 ## [2.2.0] - 2023-05-15
 ### Removed 
 - boto3, s3transfer to omni.pip.compute

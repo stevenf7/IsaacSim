@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.1.2] - 2023-07-05
+### Changed
+- Removed unused omni.kit.pipapi dependency
 
 ## [1.1.1] - 2023-06-12
 ### Changed

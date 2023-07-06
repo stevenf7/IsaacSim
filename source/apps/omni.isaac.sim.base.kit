@@ -32,17 +32,11 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.stage_templates" = {}
 "omni.kit.stage.mdl_converter" = {}
 
-# Animation
-# "omni.anim.skelvis" = {}
-
 # PhysX
 "omni.physx.bundle" = {}
 "omni.physx.tensors" = {}
 # "omni.physx.fabric" = {}
 "omni.physx.zerogravity" = {}
-
-"omni.kit.search.service" = {}
-"omni.kit.primitive.mesh" = {}
 
 "omni.kit.search.service" = {}
 "omni.kit.primitive.mesh" = {}
@@ -59,15 +53,10 @@ keywords = ["experience", "app", "usd"]
 # New Viewport, load the default bundle of extensions
 "omni.kit.viewport.bundle" = {}
 "omni.kit.viewport.menubar.lighting" = {}
-# Load the rendering extensions
-# "omni.renderer" = { tag = "rtx" }
 # Load the RTX rendering bundle
 "omni.kit.viewport.rtx" = {}
 # Load the Storm rendering bundle
 "omni.kit.viewport.pxr" = {}
-
-# Needed for Fabric delegate
-"omni.resourcemonitor" = {}
 
 # Additional Viewport features (legacy grid etc, HUD GPU stats)
 "omni.kit.viewport.legacy_gizmos" = {}
@@ -76,16 +65,18 @@ keywords = ["experience", "app", "usd"]
 
 "omni.rtx.settings.core" = {} # this is the new Render Settings 2.0
 
-"omni.kit.window.movie_capture" = { }
+"omni.kit.window.movie_capture" = {}
 
 "omni.kit.profiler.window" = {}
 
 "omni.kit.stage_column.variant" = {}
-#"omni.kit.stage_column.payload" = {}
+"omni.kit.stage_column.payload" = {}
 
 # Viewport Widgets and Collaboration
 "omni.kit.viewport_widgets_manager" = {}
 "omni.kit.collaboration.channel_manager" = {}
+"omni.kit.collaboration.viewport.camera" = {}
+"omni.kit.collaboration.selection_outline" = {}
 
 "omni.kit.widgets.custom" = {}
 
@@ -117,20 +108,22 @@ keywords = ["experience", "app", "usd"]
 # "omni.kit.browser.asset_provider.sketchfab" = {}
 # "omni.kit.browser.asset_provider.turbosquid" = {}
 # "omni.kit.browser.asset_provider.actorcore" = {}
+"omni.simready.explorer" = {}
 
 # "omni.kit.window.environment" = {} # potentially increases startup times
 
 # Material
-"omni.kit.window.material" = { }
-"omni.kit.graph.delegate.default" = { }
-"omni.kit.window.material_graph" = { }
+"omni.kit.window.material" = {}
+"omni.kit.browser.material" = {}
+"omni.kit.graph.delegate.default" = {}
+"omni.kit.window.material_graph" = {}
 
 "omni.kit.window.usd_paths" = {}
 "omni.kit.window.preferences" = { order = 1000 } # so the menu is in the correct place
 
 "omni.kit.renderer.capture" = {}
 "omni.kit.thumbnails.usd" = {}
-#"omni.kit.thumbnails.images" = {} TODO105
+#"omni.kit.thumbnails.images" = {}
 
 # bring all the property Widgets and Window
 "omni.kit.window.property" = {}
@@ -150,7 +143,7 @@ keywords = ["experience", "app", "usd"]
 "omni.hydra.iray" = { order = -1000 }
 
 #Particle/PointCloud FileFormat
-"omni.usd.fileformat.e57" = { }
+"omni.usd.fileformat.e57" = {}
 "omni.kit.pointclouds" = {}
 
 # External Scene
@@ -189,21 +182,32 @@ keywords = ["experience", "app", "usd"]
 # Destruction schema
 "omni.usd.schema.destruction" = {}
 
+# Boom schema
+"omni.schema.audio.boom" = {}
+
 # Animation
-"omni.anim.skelJoint" = { }
-"omni.anim.curve" = { }
-"omni.kit.widget.timeline" = { }
-"omni.anim.curve_editor" = { }
-# "omni.anim.window.timeline" = { }
+"omni.anim.skelJoint" = {}
+# "omni.skel" = {}
+"omni.anim.preview" = {}
+"omni.anim.curve.bundle" = {}
+"omni.kit.widget.timeline" = {}
+"omni.anim.curve_editor" = {}
+# "omni.anim.window.timeline" = {}
 "omni.anim.shared" = {}
-"omni.anim.timeline" = { }
+"omni.anim.timeline" = {}
 "omni.anim.graph.bundle" = {}
 "omni.anim.graph.core" = {}
 "omni.anim.graph.ui" = {}
 "omni.anim.retarget.bundle" = {}
 "omni.anim.retarget.core" = {}
 "omni.anim.retarget.ui" = {}
-#"omni.anim.camera_tool" = {}
+"omni.anim.navigation.bundle" = {}
+"omni.anim.navigation.core" = {}
+"omni.anim.navigation.ui" = {}
+"omni.anim.graph.schema" = {}
+"omni.anim.navigation.schema" = {}
+
+
 
 # OmniGraph
 "omni.graph.bundle.action" = {}
@@ -213,9 +217,6 @@ keywords = ["experience", "app", "usd"]
 
 # Python Scripting Component
 "omni.kit.scripting" = {}
-
-# kit-testing
-# "omni.kit.tests.usd_stress" = {}
 
 # Curves
 "omni.curve.manipulator" = {}
@@ -227,6 +228,7 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.window.sequencer" = {}
 
 "omni.services.usd" = {}
+"omni.services.transport.server.http" = {}
 
 # SBSAR
 "omni.kit.property.sbsar" = {}
@@ -248,7 +250,7 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.property.collection" = {}
 
 # Extended Searchfield
-# "omni.kit.widget.extended_searchfield" = {}
+"omni.kit.widget.extended_searchfield" = {}
 
 # Particle
 "omni.particle.system.bundle" = {}
@@ -285,14 +287,38 @@ keywords = ["experience", "app", "usd"]
 # USDA
 "omni.kit.usda_edit" = {}
 
-# "omni.rakis" = {}
+# Measure Tool
+"omni.kit.tool.measure" = {}
+"omni.tools.distribute" = {}
+"omni.kit.mesh.raycast" = {}
+"omni.kit.stagerecorder.bundle" = {}
 
 # Activity Monitor
 "omni.activity.ui" = {}
 "omni.activity.freeze_monitor" = {}
 "omni.activity.usd_resolver" = {}
 
+# Warp
 "omni.warp" = {}
+
+
+# MetricsAssembler
+"omni.usd.schema.metrics.assembler" = {}
+"omni.usd.metrics.assembler.ui" = {}
+
+# Waypoint Bundle
+"omni.kit.waypoint.bundle" = {}
+"omni.kit.stage.copypaste" = {}
+"omni.flowusd.bundle" = {}
+"omni.kit.preferences.animation" = {}
+"omni.kit.collaboration.stage_columns" = {}
+
+# Variant
+"omni.kit.variant.editor" = {}
+"omni.kit.variant.presenter" = {}
+
+# Services
+"omni.services.transport.client.http_async" = { }
 
 "omni.simready.explorer" = {}
 "omni.kit.widget.cache_indicator" = {}
@@ -313,10 +339,14 @@ exts."omni.kit.browser.material".enabled = false
 exts."omni.kit.browser.asset".visible_after_startup = false
 exts."omni.kit.window.material".load_after_startup = true
 exts."omni.kit.widget.cloud_share".require_access_code = false
-exts."omni.kit.viewport.window".startup.windowName="Viewport" # Rename from Viewport Next
+exts."omni.kit.mesh.raycast".bvhBuildOnFirstRequired = true
 exts."omni.kit.menu.utils".logDeprecated = false
-
+exts."omni.ui".raster.default_rasterpolicy_enabled = true
+exts."omni.kit.widget.graph".raster_nodes = true
 app.content.emptyStageOnStart = false
+# persistent.app.newStage.defaultTemplate = "default stage"
+exts."omni.kit.viewport.window".startup.windowName="Viewport" # Rename from Viewport Next
+
 
 # deprecate support for old kit.ui.menu
 app.menu.legacy_mode = false
@@ -327,7 +357,7 @@ exts."omni.services.transport.server.http".port = 8211
 
 # default viewport is fill
 app.runLoops.rendering_0.fillResolution = false
-exts."omni.kit.window.viewport".blockingGetViewportDrawable = false
+exts."omni.kit.window.viewport".blockingGetViewportDrawable = true
 
 exts."omni.kit.test".includeTests.1 = "*isaac*"
 [settings.app.settings]
@@ -499,8 +529,9 @@ app.stage.instanceableOnCreatingReference = false
 app.stage.materialStrength = "weakerThanDescendants"
 
 app.transform.gizmoUseSRT = true
+app.camera.controllerUseSRT = true
 app.viewport.grid.scale = 1.0
-app.viewport.pickingMode = "models"
+app.viewport.pickingMode = "kind:model.ALL"
 app.viewport.camMoveVelocity = 0.05 # 5 m/s
 app.viewport.gizmo.scale = 0.01 # scaled to meters
 app.viewport.previewOnPeek = false
@@ -579,7 +610,7 @@ exts."omni.isaac.asset_browser".folders = [
 "omni.isaac.app.setup" = { order = 1000 } # we are running that at the end
 "omni.isaac.window.about" = {}
 "omni.isaac.unit_converter" = {}
-"omni.isaac.onshape" = {order = 10} # load this after core_archive so dependencies are already there
+"omni.isaac.onshape" = {}
 "omni.isaac.assets_check" = { order = 1001 } # we are running that at the end
 "omni.isaac.articulation_inspector" = {}
 "omni.isaac.gain_tuner" = {}
@@ -613,4 +644,4 @@ exts."omni.isaac.asset_browser".folders = [
 #"omni.kit.importer.cad" = {}
 "omni.replicator.core" = {}
 "omni.replicator.composer" = {}
-# "omni.importer.mjcf" = {}
+"omni.importer.mjcf" = {}

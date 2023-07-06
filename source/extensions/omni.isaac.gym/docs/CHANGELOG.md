@@ -1,5 +1,10 @@
 # Changelog
 
+
+## [0.5.1] - 2023-07-05
+### Changed
+- Added explicit omni.kit.pipapi dependency
+
 ## [0.5.0] - 2023-06-06
 ### Changed
 - Update app files for gym

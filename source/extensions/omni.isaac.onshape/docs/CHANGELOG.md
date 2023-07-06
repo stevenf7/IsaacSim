@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.6.6] - 2023-07-05
+### Changed
+- Added explicit omni.kit.pipapi dependency
+
 ## [0.6.5] - 2023-06-20
 ### Fixed
 - Support for documents with Variable Studio

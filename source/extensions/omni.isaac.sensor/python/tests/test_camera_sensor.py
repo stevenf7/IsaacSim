@@ -237,3 +237,4 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         await update_stage_async()
         await update_stage_async()
         self.assertEqual(self.viewport_camera.get_rgba().size, 256 * 256 * 4)
+        self.assertEqual(self.viewport_camera.get_render_product_path(), render_product_path)

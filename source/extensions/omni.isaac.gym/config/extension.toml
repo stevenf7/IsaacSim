@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.5.0"
+version = "0.5.1"
 category = "Simulation"
 title = "Isaac Sim Gym"
 description = "Gym for RL"
@@ -16,6 +16,7 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
+"omni.kit.pipapi" = {}
 "omni.isaac.core" = {}
 "omni.isaac.cloner" = {}
 "omni.isaac.ml_archive" = {} # torch

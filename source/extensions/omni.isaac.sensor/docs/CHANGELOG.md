@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.10.0] - 2023-07-05
+### Added
+- get_render_product_path to camera class
+
 ## [5.9.0] - 2023-06-30
 ### Added
 - An existing render product path can be specified for the camera helper class
