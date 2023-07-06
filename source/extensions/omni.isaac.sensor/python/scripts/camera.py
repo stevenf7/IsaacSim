@@ -177,6 +177,13 @@ class Camera(BaseSensor):
         self._previous_time = None
         return
 
+    def get_render_product_path(self) -> str:
+        """
+        Returns:
+            string: gets the path to the render product attached to this camera
+        """
+        return self._render_product_path
+
     def set_frequency(self, value: int) -> None:
         """
         Args:

@@ -5,6 +5,10 @@
 ### Added
 - added sync load parameters to setUp in base isaac benchmark class
 
+### Changed
+- Update ROS camera test to use render products
+- Start ROSCore when running benchmarks
+
 ## [0.13.2] - 2023-07-04
 
 ### Added

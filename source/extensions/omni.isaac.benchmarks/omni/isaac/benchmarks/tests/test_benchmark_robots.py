@@ -18,7 +18,7 @@ from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.render_product import create_hydra_texture, set_camera_prim_path, set_resolution
 from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.core.utils.types import ArticulationAction
-from omni.isaac.core.utils.viewports import destroy_all_viewports, get_viewport_names, set_camera_view
+from omni.isaac.core.utils.viewports import get_viewport_names, set_camera_view
 from omni.isaac.wheeled_robots.robots import WheeledRobot
 from omni.kit.viewport.utility import (
     create_viewport_window,

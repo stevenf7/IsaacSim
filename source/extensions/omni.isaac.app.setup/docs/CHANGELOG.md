@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.9.0] - 2023-07-05
+
+### Changed
+- Removed settings that were already set in .kit file
+
 ## [0.8.2] - 2023-06-07
 
 ### Fixed

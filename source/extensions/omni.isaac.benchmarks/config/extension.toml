@@ -44,10 +44,6 @@ name = "omni.isaac.benchmarks"
 [[python.module]]
 name = "omni.isaac.benchmarks.tests"
 
-[python.pipapi]
-requirements = []
-use_online_index = true
-
 [settings]
 exts."omni.isaac.benchmarks".metrics.nvdataflow_default_test_suite_name = "Isaac Sim Benchmarks"
 # uncomment and set this to output metrics to a specific folder
@@ -62,7 +58,7 @@ dependencies = [
 #    "omni.kit.usdstats"
 ]
 timeout=6000
-args = ["--/app/fastShutdown=1"] # we can use fast shutdown because metrics are not uploaded
+args = ["--/app/fastShutdown=1", "--vulkan"] # we can use fast shutdown because metrics are not uploaded
 
 stdoutFailPatterns.exclude = [
     "*NGX EvaluateFeature failed*", # Ada multi gpu doesn't support this yet

@@ -101,6 +101,9 @@ class Roscore(object):
             raise e
 
     def shutdown(self):
+        if Roscore.__initialized is False:
+            # Shutdown was already called
+            return
         if self.roscore_pid is not None and self.roscore_process is not None:
             carb.log_warn("Try to kill child pids of roscore pid: " + str(self.roscore_pid))
             kill_child_processes(self.roscore_pid)

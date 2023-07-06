@@ -4,7 +4,7 @@ order = -1000
 reloadable = false
 
 [package]
-version = "2.2.0"
+version = "2.2.1"
 category = "Internal"
 title = "Isaac Sim Core Pip Archive"
 description = "Pip packages needed by isaac sim extensions"
@@ -18,7 +18,6 @@ writeTarget.kit = true
 writeTarget.platform = true
 
 [dependencies]
-"omni.kit.pipapi" = {} # We need it so that we can use [python.pipapi].
 "omni.kit.pip_archive" = {} # import the base kit python archive
 "omni.pip.compute" = {} # import the compute python archive
 

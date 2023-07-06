@@ -52,62 +52,22 @@ def add_physx_lidar(prim_path, translation=Gf.Vec3f(0, 0, 0), orientation=Gf.Vec
     lidar_prim.GetAttribute("xformOp:orient").Set(orientation)
 
 
-def add_ros_camera(
-    camera_prim_path,
-    graph_path=None,
-    camera_topic=None,
-    sim_camera_id=None,
-    viewport_name=None,
-    viewport_resolution=[1280, 720],
-    # camera_info_topic=None,
-    # sim_camera_info_id=None,
-    # camera_info = None,
-):
-
-    n_viewport = get_num_viewports()
-    if not viewport_name:
-        viewport_name = "Viewport " + str(n_viewport)  # assuming the viewports are 0-indexed
-        print("new viewport named {}".format(viewport_name))
-    if not camera_topic:
-        camera_topic = "/rgb_" + str(n_viewport)
-    if not graph_path:
-        graph_path = "/ROS_camera_" + str(n_viewport)
-    if not sim_camera_id:
-        sim_camera_id = "sim_camera" + str(n_viewport)
-
+def add_ros1_camera(render_product_path, graph_path, camera_topic, sim_camera_id, type="rgb"):
     (ros_camera_graph, _, _, _) = og.Controller.edit(
         {"graph_path": graph_path, "evaluator_name": "execution"},
         {
             og.Controller.Keys.CREATE_NODES: [
                 ("OnTick", "omni.graph.action.OnTick"),
-                ("createViewport", "omni.isaac.core_nodes.IsaacCreateViewport"),
-                ("setActiveCamera", "omni.graph.ui.SetActiveViewportCamera"),
-                ("setViewportResolution", "omni.isaac.core_nodes.IsaacSetViewportResolution"),
                 ("cameraHelperRgb", "omni.isaac.ros_bridge.ROS1CameraHelper"),
-                # ("cameraHelperInfo", "omni.isaac.ros_bridge.ROS1CameraHelper"),
             ],
             og.Controller.Keys.CONNECT: [
-                ("OnTick.outputs:tick", "createViewport.inputs:execIn"),
-                ("createViewport.outputs:execOut", "setActiveCamera.inputs:execIn"),
-                ("createViewport.outputs:viewport", "setActiveCamera.inputs:viewport"),
-                ("createViewport.outputs:execOut", "setViewportResolution.inputs:execIn"),
-                ("createViewport.outputs:viewport", "setViewportResolution.inputs:viewport"),
-                ("setActiveCamera.outputs:execOut", "cameraHelperRgb.inputs:execIn"),
-                # ("setActiveCamera.outputs:execOut", "cameraHelperInfo.inputs:execIn"),
-                ("createViewport.outputs:viewport", "cameraHelperRgb.inputs:viewport"),
-                # ("createViewport.outputs:viewport", "cameraHelperInfo.inputs:viewport"),
+                ("OnTick.outputs:tick", "cameraHelperRgb.inputs:execIn"),
             ],
             og.Controller.Keys.SET_VALUES: [
-                ("createViewport.inputs:name", viewport_name),
-                ("setActiveCamera.inputs:primPath", camera_prim_path),
-                ("setViewportResolution.inputs:height", int(viewport_resolution[1])),
-                ("setViewportResolution.inputs:width", int(viewport_resolution[0])),
+                ("cameraHelperRgb.inputs:renderProductPath", render_product_path),
                 ("cameraHelperRgb.inputs:frameId", sim_camera_id),
                 ("cameraHelperRgb.inputs:topicName", camera_topic),
-                ("cameraHelperRgb.inputs:type", "rgb"),
-                # ("cameraHelperInfo.inputs:frameId", sim_camera_info_id),
-                # ("cameraHelperInfo.inputs:topicName", camera_info_topic),
-                # ("cameraHelperInfo.inputs:type", camera_info),
+                ("cameraHelperRgb.inputs:type", type),
             ],
         },
     )

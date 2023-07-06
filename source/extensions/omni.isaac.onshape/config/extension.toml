@@ -1,7 +1,7 @@
 display_name = "Onshape Importer"
 
 [package]
-version = "0.6.5"
+version = "0.6.6"
 category = "Importer"
 title = "Onshape Importer"
 description = "Import Onshape Documents into Omniverse"
@@ -15,6 +15,7 @@ preview_image = "data/preview.png"
 writeTarget.kit = true
 
 [dependencies]
+"omni.kit.pipapi" = {}
 "omni.kit.uiapp" = {}
 "omni.kit.commands" = {}
 "omni.kit.window.filepicker" = {}
