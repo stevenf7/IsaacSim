@@ -9,6 +9,7 @@
 
 
 import omni.kit.test
+from omni.isaac.core import PhysicsContext
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from pxr import Gf
 
@@ -36,6 +37,7 @@ class TestBenchmarkLidar(BaseIsaacBenchmark):
         scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
         await self.fully_load_stage(self.assets_root_path + scene_path)
         stage = omni.usd.get_context().get_stage()
+        PhysicsContext(physics_dt=1.0 / 60.0)
 
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()

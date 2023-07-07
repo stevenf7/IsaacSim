@@ -17,12 +17,13 @@ from pathlib import Path
 import carb
 import omni.kit.test
 from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.utils.stage import is_stage_loading, open_stage_async
+from omni.isaac.core.utils.stage import is_stage_loading, open_stage
 from omni.kit.testing.services import execution, settings, utils
 from omni.kit.testing.services.datarecorders import cpu, interface, memory
 from omni.kit.testing.services.metrics import backend, measurements
 from omni.kit.widget.viewport.capture import FileCapture
 
+from .helper import wait_until_stage_is_fully_loaded_async
 from .recorders import *
 
 logger = utils.set_up_logging(__name__)
@@ -221,15 +222,8 @@ class BaseIsaacBenchmark(omni.kit.test.AsyncTestCase):
 
     async def fully_load_stage(self, usd_path, loop_frames=120):
 
-        await open_stage_async(usd_path)
-
-        while is_stage_loading():
-            logger.info("asset still loading, waiting to finish")
-            await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-
-        for _ in range(loop_frames):
-            await omni.kit.app.get_app().next_update_async()
+        open_stage(usd_path)
+        await wait_until_stage_is_fully_loaded_async()
 
     # TODO, use datarecorders.ImageComparison
     # async def capture_image(self):
