@@ -1,4 +1,7 @@
 # Changelog
+## [1.2.2] - 2023-07-07
+### Changed
+- Update Golden Values in tests due to Kit version 105.1
 
 ## [1.2.1] - 2023-05-19
 ### Fixed
