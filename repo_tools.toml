@@ -17,6 +17,16 @@ entry_point = "${config_root}/tools/repoman/publish_launcher_images.py:setup_rep
 
 
 ########################################################################################################################
+# Isaac Sim internal package publish tool
+########################################################################################################################
+
+[publish_internal_packages]
+command = "publish_internal_packages"
+entry_point = "${config_root}/tools/repoman/publish_internal_packages.py:setup_repo_tool"
+
+
+
+########################################################################################################################
 # Isaac Sim package publish tool
 ########################################################################################################################
 
