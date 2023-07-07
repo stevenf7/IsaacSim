@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.0] - 2023-07-06
+
+### Removed
+- unused writer and node template attachment systems
+
 ## [1.0.0] - 2023-06-13
 
 ### Added

@@ -853,8 +853,8 @@ class SimulationContext:
         self._physics_timer_callback = self._physics_context._physx_interface.subscribe_physics_step_events(
             self._physics_timer_callback_fn
         )
-        self._event_timer_callback = self._timeline.get_timeline_event_stream().create_subscription_to_pop(
-            self._timeline_timer_callback_fn
+        self._event_timer_callback = self._timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
+            int(omni.timeline.TimelineEventType.STOP), self._timeline_timer_callback_fn
         )
         self._physics_callback_functions = dict()
         self._physics_functions = dict()
@@ -877,10 +877,9 @@ class SimulationContext:
         return
 
     def _timeline_timer_callback_fn(self, event):
-        if event.type == int(omni.timeline.TimelineEventType.STOP):
-            self._current_time = 0
-            self._number_of_steps = 0
-        return
+        # because we use create_subscription_to_pop_by_type for omni.timeline.TimelineEventType.STOP, there is no need to check the type here
+        self._current_time = 0
+        self._number_of_steps = 0
 
     def _stage_open_callback_fn(self, event):
         self._physics_callback_functions = dict()

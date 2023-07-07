@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.15.0] - 2023-07-06
+
+### Changed
+- use sync stage load function to get better behavior
+- reuse viewport rp for first camera. 
+
 ## [0.14.0] - 2023-07-04
 
 ### Added

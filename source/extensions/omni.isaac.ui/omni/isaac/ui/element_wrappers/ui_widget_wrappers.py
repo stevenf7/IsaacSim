@@ -236,7 +236,7 @@ class IntField(UIWidgetWrapper):
 
         self._on_value_changed_fn = on_value_changed_fn
 
-        int_field_frame = self._create_ui_widget(label, tooltip, default_value)
+        int_field_frame = self._create_ui_widget(label, tooltip, self._default_value)
 
         super().__init__(int_field_frame)
 
@@ -388,7 +388,7 @@ class FloatField(UIWidgetWrapper):
 
         self._on_value_changed_fn = on_value_changed_fn
 
-        float_field_frame = self._create_ui_widget(label, tooltip, default_value, step, format)
+        float_field_frame = self._create_ui_widget(label, tooltip, self._default_value, step, format)
 
         super().__init__(float_field_frame)
 

@@ -14,11 +14,10 @@ import carb
 import numpy as np
 import omni.kit.test
 import yaml
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.utils.render_product import create_hydra_texture, set_camera_prim_path, set_resolution
-from omni.isaac.core.utils.stage import open_stage_async
+from omni.isaac.core import PhysicsContext
 from omni.isaac.core.utils.types import ArticulationAction
-from omni.isaac.core.utils.viewports import get_viewport_names, set_camera_view
+from omni.isaac.core.utils.viewports import set_camera_view
+from omni.isaac.sensor import Camera
 from omni.isaac.wheeled_robots.robots import WheeledRobot
 from omni.kit.viewport.utility import (
     create_viewport_window,
@@ -67,9 +66,10 @@ class TestBenchmarkRobots(BaseIsaacBenchmark):
         scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
         await self.fully_load_stage(self.assets_root_path + scene_path)
         stage = omni.usd.get_context().get_stage()
-
+        PhysicsContext(physics_dt=1.0 / 60.0)
         set_camera_view(eye=[-6, -15.5, 6.5], target=[-6, 10.5, -1], camera_prim_path="/OmniverseKit_Persp")
         robots = []
+        cameras = []
         for i in range(n_robot):
             robot_prim_path = "/Robots/Robot_" + str(i)
             robot_camera_prim_path = (
@@ -95,9 +95,21 @@ class TestBenchmarkRobots(BaseIsaacBenchmark):
                 lidar_prim.GetAttribute("enabled").Set(False)
 
             if enable_camera:
-                texture, texture_path = create_hydra_texture(camera_resolution, robot_camera_prim_path)
+                render_product_path = None
+                if i == 0:
+                    viewport_api = get_active_viewport()
+                    render_product_path = viewport_api.get_render_product_path()
+                cameras.append(
+                    Camera(
+                        prim_path=robot_camera_prim_path,
+                        resolution=[1280, 720],
+                        render_product_path=render_product_path,
+                    )
+                )
+                await omni.kit.app.get_app().next_update_async()
+                cameras[i].initialize()
             else:
-                viewport_api, active_window = get_active_viewport_and_window()
+                viewport_api = get_active_viewport()
                 viewport_api.set_texture_resolution([1280, 720])
             await omni.kit.app.get_app().next_update_async()
             await omni.kit.app.get_app().next_update_async()

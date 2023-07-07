@@ -14,6 +14,7 @@ from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.core.utils.stage import is_stage_loading
 from omni.isaac.sensor import Camera
+from omni.kit.viewport.utility import get_active_viewport
 from pxr import Gf
 
 from ..utils.base_isaac_benchmark import BaseIsaacBenchmark
@@ -44,12 +45,17 @@ class TestBenchmarkCamera(BaseIsaacBenchmark):
         cameras = []
 
         for i in range(n_camera):
+            render_product_path = None
+            if i == 0:
+                viewport_api = get_active_viewport()
+                render_product_path = viewport_api.get_render_product_path()
             cameras.append(
                 Camera(
                     prim_path="/Cameras/Camera_" + str(i),
                     position=np.array([-8, 13, 2.0]),
                     resolution=resolution,
                     orientation=euler_angles_to_quat([90, 0, 90 + i * 360 / n_camera], degrees=True),
+                    render_product_path=render_product_path,
                 )
             )
 

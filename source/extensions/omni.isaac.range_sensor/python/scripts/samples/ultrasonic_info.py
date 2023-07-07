@@ -45,10 +45,6 @@ class Extension(omni.ext.IExt):
         ]
         add_menu_items(self._menu_items, "Isaac Examples")
 
-        self._editor_event_subscription = (
-            omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_editor_step)
-        )
-
         self._build_ui()
 
     def _build_ui(self):
@@ -270,6 +266,10 @@ class Extension(omni.ext.IExt):
         asyncio.ensure_future(self._spawn_ultrasonic_function(task))
         # refresh data stream box
         self._info_label.text = ""
+
+        self._editor_event_subscription = (
+            omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_editor_step)
+        )
 
     def _on_editor_step(self, step):
         if self._info_cb.get_value_as_bool():

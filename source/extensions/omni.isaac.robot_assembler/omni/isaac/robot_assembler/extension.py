@@ -17,7 +17,7 @@ import omni.physx as _physx
 import omni.timeline
 import omni.ui as ui
 import omni.usd
-from omni.isaac.ui.menu import make_menu_item_description
+from omni.isaac.ui.menu import MenuItemDescription, make_menu_item_description
 from omni.kit.menu.utils import add_menu_items, remove_menu_items
 from omni.usd import StageEventType
 
@@ -59,11 +59,11 @@ class Extension(omni.ext.IExt):
         # UI
         self._models = {}
         self._ext_id = ext_id
-        self._menu_items = [
+        menu_items = [
             make_menu_item_description(ext_id, EXTENSION_TITLE, lambda a=weakref.proxy(self): a._menu_callback())
         ]
-
-        add_menu_items(self._menu_items, EXTENSION_TITLE)
+        self._menu_items = [MenuItemDescription(name="Workflows", sub_menu=menu_items)]
+        add_menu_items(self._menu_items, "Isaac Utils")
 
         # Filled in with User Functions
         self.ui_builder = UIBuilder()
