@@ -11,7 +11,6 @@
 #pragma once
 #include "extensions/atlas/atlas_frontend.hpp"
 #include "gxf/core/gxf.h"
-#include "omni/isaac/bridge/BridgeApplication.h"
 #include "omni/isaac/bridge/ViewportManager.h"
 
 #include <gxf/std/synthetic_clock.hpp>

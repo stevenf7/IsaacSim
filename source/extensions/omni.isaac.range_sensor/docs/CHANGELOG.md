@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.8.3] - 2023-06-12
+### Fixed
+- app update event subscribers in examples are created even when not using example
+
 ## [0.8.2] - 2023-06-12
 ### Changed
 - Update to kit 105.1

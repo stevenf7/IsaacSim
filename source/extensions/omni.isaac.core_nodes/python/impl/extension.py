@@ -30,37 +30,10 @@ from ..bindings._omni_isaac_core_nodes import acquire_interface, release_interfa
 # on_shutdown() will be called.
 
 
-_extension_instance = None
-
-# the version in utils.py should be used in user facing code, this is an implementation detail that might change in the future.
-def cache_node_template_activation(
-    template_name: str,
-    render_product_path_index: int = -1,
-    render_product_paths: list = None,
-    attributes: dict = None,
-    stage: Usd.Stage = None,
-) -> None:
-    request = (True, template_name, render_product_path_index, render_product_paths, attributes, stage)
-    global _extension_instance
-    if _extension_instance is not None:
-        _extension_instance._node_template_activation_requests.append(copy.deepcopy(request))
-
-
-def cache_writer_attach(writer: rep.Writer, render_product_path: str) -> None:
-    request = (True, writer, render_product_path)
-    global _extension_instance
-    if _extension_instance is not None:
-        _extension_instance._writer_attach_requests.append(copy.deepcopy(request))
-
-
 class Extension(omni.ext.IExt):
     def on_startup(self):
-        global _extension_instance
-        _extension_instance = self
         self.__interface = acquire_interface()
         self.registered_template = []
-        self._node_template_activation_requests = []
-        self._writer_attach_requests = []
         try:
             self.register_nodes()
         except Exception as e:
@@ -71,16 +44,9 @@ class Extension(omni.ext.IExt):
             .get_stage_event_stream()
             .create_subscription_to_pop_by_type(int(omni.usd.StageEventType.OPENED), self._on_stage_open_event)
         )
-        self._event_stream = (
-            omni.kit.app.get_app()
-            .get_update_event_stream()
-            .create_subscription_to_pop(self._process_acivation_requests, name="core_node_process_activation")
-        )
         pass
 
     def on_shutdown(self):
-        global _extension_instance
-        _extension_instance = None
         release_interface(self.__interface)
         self.__interface = None
         try:
@@ -299,38 +265,3 @@ class Extension(omni.ext.IExt):
     def unregister_nodes(self):
         for template in self.registered_template:
             sensors.get_synthetic_data().unregister_node_template(template)
-
-    @staticmethod
-    def get_instance():
-        return _extension_instance
-
-    def _process_acivation_requests(self, event):
-        if not len(self._node_template_activation_requests) and not len(self._writer_attach_requests):
-            return
-        stage = omni.usd.get_context().get_stage()
-        with Usd.EditContext(stage, stage.GetSessionLayer()):
-            activation_requests = self._node_template_activation_requests
-            self._node_template_activation_requests = []
-            for request in activation_requests:
-                if request[0]:
-                    try:
-                        omni.syntheticdata.SyntheticData.Get().activate_node_template(
-                            request[1], request[2], request[3], request[4], request[5]
-                        )
-                    except Exception as e:
-                        carb.log_error(f"Could not process node activation request {request}, {e}")
-                else:
-                    omni.syntheticdata.SyntheticData.Get().deactivate_node_template(
-                        request[1], request[2], request[3], request[4]
-                    )
-
-            attach_requests = self._writer_attach_requests
-            self._writer_attach_requests = []
-            for request in attach_requests:
-                if request[0]:
-                    try:
-                        request[1].attach(request[2])
-                    except Exception as e:
-                        carb.log_error(f"Could not process writer attach request {request}, {e}")
-                else:
-                    request[1].detach()

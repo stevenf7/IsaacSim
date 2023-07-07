@@ -12,4 +12,3 @@ from .test_articulation_controller import *
 from .test_compute_odometry import *
 from .test_core_nodes import *
 from .test_create_viewport import *
-from .test_sdg_templates import *
