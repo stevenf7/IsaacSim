@@ -7,6 +7,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-EXTENSION_TITLE = "Robot Composer"
+EXTENSION_TITLE = "Robot Assembler"
 
-EXTENSION_DESCRIPTION = "Compose multiple Articulations into a single robot"
+EXTENSION_DESCRIPTION = "Assemble multiple Articulations together"
