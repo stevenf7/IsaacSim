@@ -50,11 +50,11 @@ files_exclude = [
     ["tests/tests-python-omni.isaac.internal_tools.*"],
     ["tests/tests-internal*"],
     ["tests/tests-docker*"],
-    ["extscache/omni.kit.testing.metrics_uploader"],
-    ["extscache/omni.kit.testing.services"],
-    ["extscache/omni.kit.nvdf.telemetry"],
-    ["extscache/omni.kit.usdstats"],
-    ["omni.kit.profiler.tracy"],
+    ["extscache/omni.kit.testing.metrics_uploader*"],
+    ["extscache/omni.kit.testing.services*"],
+    ["extscache/omni.kit.nvdf.telemetry*"],
+    ["extscache/omni.kit.usdstats*"],
+    ["extscache/omni.kit.profiler.tracy*"],
 
 ]
 
@@ -76,11 +76,11 @@ files_exclude = [
     ["dockertests/**"],
     ["standalone_examples/testing/**"],
     ["exts/omni.isaac.core_archive/pip_prebundle/bin/**"], # OM-84922
-    ["extscache/omni.kit.testing.metrics_uploader"],
-    ["extscache/omni.kit.testing.services"],
-    ["extscache/omni.kit.nvdf.telemetry"],
-    ["extscache/omni.kit.usdstats"],
-    ["omni.kit.profiler.tracy"],
+    ["extscache/omni.kit.testing.metrics_uploader*"],
+    ["extscache/omni.kit.testing.services*"],
+    ["extscache/omni.kit.nvdf.telemetry*"],
+    ["extscache/omni.kit.usdstats*"],
+    ["extscache/omni.kit.profiler.tracy*"],
 
 ]
 
