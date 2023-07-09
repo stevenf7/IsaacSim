@@ -84,4 +84,5 @@ while simulation_app.is_running():
     frame = frame + 1
 
 simulation_context.stop()
+simulation_app.update()
 simulation_app.close()

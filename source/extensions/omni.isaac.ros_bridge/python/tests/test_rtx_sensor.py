@@ -32,7 +32,7 @@ from omni.isaac.sensor import _sensor
 from omni.kit.viewport.utility import get_active_viewport
 from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics
 
-from .common import fields_to_dtype, wait_for_rosmaster
+from .common import fields_to_dtype, wait_for_rosmaster_async
 
 
 def add_cube(stage, path, scale, offset, physics=False):
@@ -72,7 +72,7 @@ class TestROS1RTXSensor(omni.kit.test.AsyncTestCase):
         self._extension_path = ext_manager.get_extension_path(ext_id)
 
         self._roscore = Roscore()
-        await wait_for_rosmaster()
+        await wait_for_rosmaster_async()
         await omni.kit.app.get_app().next_update_async()
 
         try:

@@ -7,11 +7,16 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import argparse
 import sys
 
 import carb
 import numpy as np
 from omni.isaac.kit import SimulationApp
+
+parser = argparse.ArgumentParser(description="ROS Clock Example")
+parser.add_argument("--test", action="store_true")
+args, unknown = parser.parse_known_args()
 
 CARTER_STAGE_PATH = "/Carter"
 CARTER_USD_PATH = "/Isaac/Robots/Carter/carter_v1.usd"
@@ -29,6 +34,13 @@ from omni.isaac.core_nodes.scripts.utils import set_target_prims
 from pxr import Gf
 
 extensions.enable_extension("omni.isaac.ros_bridge")
+
+if args.test:
+    from omni.isaac.ros_bridge.scripts.roscore import Roscore
+    from omni.isaac.ros_bridge.tests.common import wait_for_rosmaster
+
+    roscore = Roscore()
+    wait_for_rosmaster()
 
 simulation_context = SimulationContext(stage_units_in_meters=1.0)
 
@@ -116,4 +128,8 @@ while simulation_app.is_running():
     frame = frame + 1
 
 simulation_context.stop()
+
+if args.test:
+    roscore = None
+
 simulation_app.close()

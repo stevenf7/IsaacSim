@@ -13,12 +13,17 @@ simulation_app = SimulationApp({"headless": False})
 
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.utils.stage import add_reference_to_stage
+from omni.isaac.core.utils.stage import add_reference_to_stage, is_stage_loading
 
 assets_root_path = get_assets_root_path()
 asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
 simulation_context = SimulationContext()
 add_reference_to_stage(asset_path, "/Franka")
+# wait for things to load
+simulation_app.update()
+while is_stage_loading():
+    simulation_app.update()
+
 # need to initialize physics getting any articulation..etc
 simulation_context.initialize_physics()
 simulation_context.play()

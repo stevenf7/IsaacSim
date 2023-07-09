@@ -23,7 +23,7 @@ import omni.kit.test
 import omni.kit.usd
 from omni.isaac.core.utils.physics import simulate_async
 
-from .common import wait_for_rosmaster
+from .common import wait_for_rosmaster_async
 
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -47,7 +47,7 @@ class TestRosClock(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         self._roscore = Roscore()
-        await wait_for_rosmaster()
+        await wait_for_rosmaster_async()
         # You must disable signals so that the init node call does not take over the ctrl-c callback for kit
         try:
             rospy.init_node("isaac_sim_test_clock", anonymous=True, disable_signals=True, log_level=rospy.ERROR)

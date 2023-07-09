@@ -12,7 +12,7 @@ import argparse
 import carb
 from omni.isaac.kit import SimulationApp
 
-parser = argparse.ArgumentParser(description="Generate Occluded and Unoccluded data")
+parser = argparse.ArgumentParser(description="Carter Stereo Example")
 parser.add_argument("--test", action="store_true")
 args, unknown = parser.parse_known_args()
 
