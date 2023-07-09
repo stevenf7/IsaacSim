@@ -7,12 +7,17 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.isaac.kit import SimulationApp
-
-simulation_app = SimulationApp({"headless": False})
 
 import argparse
 import sys
+
+if sys.platform == "win32":
+    print("RTX lidar is not supported on windows currently, exiting")
+    sys.exit()
+
+from omni.isaac.kit import SimulationApp
+
+simulation_app = SimulationApp({"headless": False})
 
 import carb
 import numpy as np
@@ -86,6 +91,8 @@ while simulation_app.is_running():
         elif i == 2000:
             i = 0
         i += 1
-    if args.test is True:
+    if args.test is True and i > 100:
         break
+my_world.stop()
+simulation_app.update()
 simulation_app.close()

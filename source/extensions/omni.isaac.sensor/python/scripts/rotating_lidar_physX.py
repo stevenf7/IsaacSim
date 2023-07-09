@@ -284,12 +284,12 @@ class RotatingLidarPhysX(BaseSensor):
         if self.prim.GetAttribute("drawPoints").Get() is None:
             RangeSensorSchema.RangeSensor(self._lidar_prim).CreateDrawPointsAttr().Set(draw_points)
         else:
-            RangeSensorSchema.RangeSensor(self.prim).GetAttribute("drawPoints").Set(draw_points)
+            self.prim.GetAttribute("drawPoints").Set(draw_points)
 
         if self.prim.GetAttribute("drawLines").Get() is None:
             RangeSensorSchema.RangeSensor(self._lidar_prim).CreateDrawLinesAttr().Set(draw_lines)
         else:
-            RangeSensorSchema.RangeSensor(self.prim).GetAttribute("drawLines").Set(draw_lines)
+            self.prim.GetAttribute("drawLines").Set(draw_lines)
         return
 
     def disable_visualization(self) -> None:

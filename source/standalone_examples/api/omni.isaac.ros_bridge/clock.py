@@ -7,10 +7,16 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import argparse
 import time
 
 import carb
 from omni.isaac.kit import SimulationApp
+
+parser = argparse.ArgumentParser(description="ROS Clock Example")
+parser.add_argument("--test", action="store_true")
+args, unknown = parser.parse_known_args()
+
 
 # Example ROS bridge sample showing rospy and rosclock interaction
 simulation_app = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
@@ -18,6 +24,13 @@ import omni
 import omni.graph.core as og
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils.extensions import enable_extension
+
+if args.test:
+    from omni.isaac.ros_bridge.scripts.roscore import Roscore
+    from omni.isaac.ros_bridge.tests.common import wait_for_rosmaster
+
+    roscore = Roscore()
+    wait_for_rosmaster()
 
 # enable ROS bridge extension
 enable_extension("omni.isaac.ros_bridge")
@@ -140,4 +153,8 @@ sim_clock_sub.unregister()
 system_clock_sub.unregister()
 manual_clock_sub.unregister()
 simulation_context.stop()
+
+if args.test:
+    roscore = None
+
 simulation_app.close()

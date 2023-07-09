@@ -25,7 +25,7 @@ from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.physics import simulate_async
 from pxr import Sdf
 
-from .common import add_carter_ros, add_cube, wait_for_rosmaster
+from .common import add_carter_ros, add_cube, wait_for_rosmaster_async
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -55,7 +55,7 @@ class TestRosLidar(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         self._roscore = Roscore()
-        await wait_for_rosmaster()
+        await wait_for_rosmaster_async()
         await omni.kit.app.get_app().next_update_async()
 
         try:

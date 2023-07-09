@@ -28,7 +28,7 @@ from pxr import Sdf
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from usd.schema.isaac import ISAAC_NAME_OVERRIDE
 
-from .common import add_cube, add_franka, wait_for_rosmaster
+from .common import add_cube, add_franka, wait_for_rosmaster_async
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -58,7 +58,7 @@ class TestRosPoseTree(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         self._roscore = Roscore()
-        await wait_for_rosmaster()
+        await wait_for_rosmaster_async()
         await omni.kit.app.get_app().next_update_async()
 
         try:

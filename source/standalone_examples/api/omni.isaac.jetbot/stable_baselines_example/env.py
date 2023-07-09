@@ -9,12 +9,12 @@
 import math
 
 import carb
-import gym
+import gymnasium
 import numpy as np
-from gym import spaces
+from gymnasium import spaces
 
 
-class JetBotEnv(gym.Env):
+class JetBotEnv(gymnasium.Env):
     metadata = {"render.modes": ["human"]}
 
     def __init__(
@@ -70,7 +70,7 @@ class JetBotEnv(gym.Env):
         )
         self.seed(seed)
         self.reward_range = (-float("inf"), float("inf"))
-        gym.Env.__init__(self)
+        gymnasium.Env.__init__(self)
         self.action_space = spaces.Box(low=-1, high=1.0, shape=(2,), dtype=np.float32)
         self.observation_space = spaces.Box(low=float("inf"), high=float("inf"), shape=(16,), dtype=np.float32)
 
@@ -107,8 +107,10 @@ class JetBotEnv(gym.Env):
         observations = self.get_observations()
         info = {}
         done = False
+        truncated = False
         if self._my_world.current_time_step_index - self._steps_after_reset >= self._max_episode_length:
             done = True
+            truncated = True
         goal_world_position, _ = self.goal.get_world_pose()
         current_jetbot_position, _ = self.jetbot.get_world_pose()
         previous_dist_to_goal = np.linalg.norm(goal_world_position - previous_jetbot_position)
@@ -116,9 +118,9 @@ class JetBotEnv(gym.Env):
         reward = previous_dist_to_goal - current_dist_to_goal
         if current_dist_to_goal < 0.1:
             done = True
-        return observations, reward, done, info
+        return observations, reward, done, truncated, info
 
-    def reset(self):
+    def reset(self, seed=None):
         self._my_world.reset()
         self.reset_counter = 0
         # randomize goal location in circle around robot
@@ -126,7 +128,7 @@ class JetBotEnv(gym.Env):
         r = 1.00 * math.sqrt(np.random.rand()) + 0.20
         self.goal.set_world_pose(np.array([math.sin(alpha) * r, math.cos(alpha) * r, 0.05]))
         observations = self.get_observations()
-        return observations
+        return observations, {}
 
     def get_observations(self):
         self._my_world.render()
@@ -152,6 +154,6 @@ class JetBotEnv(gym.Env):
         return
 
     def seed(self, seed=None):
-        self.np_random, seed = gym.utils.seeding.np_random(seed)
+        self.np_random, seed = gymnasium.utils.seeding.np_random(seed)
         np.random.seed(seed)
         return [seed]

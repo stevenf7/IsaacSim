@@ -24,10 +24,10 @@ class TestBenchmarkRos1Camera(BaseIsaacBenchmark):
     async def setUp(self):
         await super().setUp()
         from omni.isaac.ros_bridge.scripts.roscore import Roscore
-        from omni.isaac.ros_bridge.tests.common import wait_for_rosmaster
+        from omni.isaac.ros_bridge.tests.common import wait_for_rosmaster_async
 
         self._roscore = Roscore()
-        await wait_for_rosmaster()
+        await wait_for_rosmaster_async()
 
         pass
 

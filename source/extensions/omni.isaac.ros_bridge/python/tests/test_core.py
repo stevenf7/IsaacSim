@@ -23,7 +23,7 @@ import omni.kit.test
 import omni.kit.usd
 from omni.isaac.ros_bridge import _ros_bridge
 
-from .common import bridge_rosmaster_connect, wait_for_rosmaster
+from .common import bridge_rosmaster_connect, wait_for_rosmaster_async
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -40,7 +40,7 @@ class TestRosBridge(omni.kit.test.AsyncTestCase):
         self._ros_extension_path = ext_manager.get_extension_path(ext_id)
         kit_folder = carb.tokens.get_tokens_interface().resolve("${kit}")
         self._roscore = Roscore()
-        await wait_for_rosmaster()
+        await wait_for_rosmaster_async()
         # You must disable signals so that the init node call does not take over the ctrl-c callback for kit
         await omni.kit.app.get_app().next_update_async()
         await bridge_rosmaster_connect()
