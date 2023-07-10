@@ -8,6 +8,7 @@
 #
 
 import asyncio
+import time
 
 import carb
 import numpy as np
@@ -71,7 +72,7 @@ def set_rotate(prim, rot_mat):
         xform_op.Set(Gf.Matrix4d().SetRotate(rot_mat))
 
 
-async def wait_for_rosmaster():
+async def wait_for_rosmaster_async():
     carb.log_warn("Waiting for rosmaster to start")
     import rosgraph
 
@@ -87,6 +88,28 @@ async def wait_for_rosmaster():
         except:
             carb.log_warn("ROS master is not running yet...")
             await asyncio.sleep(1.0)
+            continue
+        else:
+            carb.log_warn("ROS master is running, continuing")
+            break
+
+
+def wait_for_rosmaster():
+    carb.log_warn("Waiting for rosmaster to start")
+    import rosgraph
+
+    tries = 0
+    while True:
+        if tries > 10:
+            carb.log_warn(f"ROS master was not found after {tries} tries")
+            return
+
+        try:
+            tries = tries + 1
+            rosgraph.Master("/rostopic").getPid()
+        except:
+            carb.log_warn("ROS master is not running yet...")
+            time.sleep(1.0)
             continue
         else:
             carb.log_warn("ROS master is running, continuing")

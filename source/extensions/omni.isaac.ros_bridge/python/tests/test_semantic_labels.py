@@ -28,7 +28,7 @@ from omni.isaac.core.utils.physics import simulate_async
 from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.core.utils.viewports import set_camera_view
 
-from .common import wait_for_rosmaster
+from .common import wait_for_rosmaster_async
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -55,7 +55,7 @@ class TestRosSemanticLabels(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         self._roscore = Roscore()
-        await wait_for_rosmaster()
+        await wait_for_rosmaster_async()
         # You must disable signals so that the init node call does not take over the ctrl-c callback for kit
         try:
             rospy.init_node(

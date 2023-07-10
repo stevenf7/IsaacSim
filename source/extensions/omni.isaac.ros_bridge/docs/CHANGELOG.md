@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.12.0] - 2023-07-07
+### Added
+- Sync and async versions of checking for rosmaster
+### Changed
+- renamed wait_for_rosmaster to wait_for_rosmaster_async
+
 ## [1.11.4] - 2023-06-12
 ### Changed
 - Update to kit 105.1
