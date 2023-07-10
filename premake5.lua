@@ -492,7 +492,7 @@ group "docker_tests"
 
     docker_test("tests-internaldocker-simple", "./dockertests/simple.sh")
     docker_test("tests-internaldocker-headless-native", "./isaac-sim.headless.native.sh", "--allow-root --/app/quitAfter=500")
-    -- docker_test("tests-internaldocker-headless-webrtc", "./isaac-sim.headless.webrtc.sh", "--allow-root --/app/quitAfter=500")
+    docker_test("tests-internaldocker-headless-webrtc", "./isaac-sim.headless.webrtc.sh", "--allow-root --/app/quitAfter=500")
     docker_test("tests-internaldocker-headless-websocket", "./isaac-sim.headless.websocket.sh", "--allow-root --/app/quitAfter=500")
     docker_test("tests-internaldocker-headless-websocket-h264", "./isaac-sim.headless.websocket.h264.sh", "--allow-root --/app/quitAfter=500")
     -- docker_test("tests-internaldocker-python-livestream", "./python.sh", "standalone_examples/api/omni.isaac.kit/livestream.py --/app/quitAfter=500")
