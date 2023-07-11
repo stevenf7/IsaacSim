@@ -90,6 +90,8 @@ class BaseIsaacBenchmark(omni.kit.test.AsyncTestCase):
         logger.info(f"Local folder location = {self.outputs_dir}")
         logger.info(f"Starting")
         self.benchmark_start_time = time.time()
+        self.test_mode = os.getenv("ISAAC_TEST_MODE") == "1"
+        logger.info(f"Test mode = {'true' if self.test_mode else 'false'}")
         pass
 
     async def tearDown(self):

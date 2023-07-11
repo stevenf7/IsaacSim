@@ -7,7 +7,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-
 import os
 import random
 import time
@@ -16,7 +15,7 @@ from itertools import cycle
 import carb
 import omni.kit.test
 from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.utils.stage import add_reference_to_stage, create_new_stage_async, open_stage, open_stage_async
+from omni.isaac.core.utils.stage import add_reference_to_stage, create_new_stage_async, open_stage
 from pxr import UsdGeom, UsdLux
 
 from ..utils.base_isaac_benchmark import BaseIsaacBenchmark
@@ -25,6 +24,7 @@ from ..utils.helper import wait_until_stage_is_fully_loaded_async
 ASSETS_PATH = "/Isaac/Environments/Simple_Warehouse/Props"
 TEST_NUM_APP_UPDATES = 100
 RANDOM_SEED = 132
+
 
 # Helper function to get the test from the arguments
 def get_test_name_from_args(num_assets, location, prim_type, api, num_lights=0):
@@ -230,7 +230,7 @@ class TestBenchmarkSceneGeneration(BaseIsaacBenchmark):
         self.set_phase("play")
         self.start_collecting_frametime()
 
-        for _ in range(TEST_NUM_APP_UPDATES):
+        for _ in range(1 if self.test_mode else TEST_NUM_APP_UPDATES):
             await omni.kit.app.get_app().next_update_async()
 
         self.stop_collecting_frametime()

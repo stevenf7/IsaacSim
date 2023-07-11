@@ -7,7 +7,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-
 import numpy as np
 import omni.kit.test
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
@@ -45,7 +44,6 @@ class TestBenchmarkRos1Camera(BaseIsaacBenchmark):
 
         scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
         await self.fully_load_stage(self.assets_root_path + scene_path)
-        stage = omni.usd.get_context().get_stage()
 
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()
@@ -80,7 +78,7 @@ class TestBenchmarkRos1Camera(BaseIsaacBenchmark):
         self.set_phase("benchmark")
         self.start_collecting_frametime()
 
-        while self.get_num_frames() < TEST_NUM_APP_UPDATES:
+        while self.get_num_frames() < (1 if self.test_mode else TEST_NUM_APP_UPDATES):
             await omni.kit.app.get_app().next_update_async()
 
         self.stop_collecting_frametime()
