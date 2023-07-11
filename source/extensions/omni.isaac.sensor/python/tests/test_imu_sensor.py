@@ -35,7 +35,6 @@ from pxr import Gf, UsdGeom
 class TestIMUSensor(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
-        self._physics_rate = 60
         self._sensor_rate = 120
         self._is = _sensor.acquire_imu_sensor_interface()
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
@@ -46,7 +45,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         self.my_world = None
         pass
 
-    async def createAnt(self):
+    async def createAnt(self, physics_rate=60):
         self.leg_paths = ["/Ant/Arm_{:02d}/Lower_Arm".format(i + 1) for i in range(4)]
         self.sphere_path = "/Ant/Sphere"
         self.sensor_offsets = [
@@ -74,14 +73,12 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         self._stage = omni.usd.get_context().get_stage()
 
-        self.my_world = World(
-            stage_units_in_meters=1.0, physics_dt=1.0 / self._physics_rate, rendering_dt=1.0 / self._physics_rate
-        )
+        self.my_world = World(stage_units_in_meters=1.0, physics_dt=1.0 / physics_rate, rendering_dt=1.0 / physics_rate)
         await self.my_world.initialize_simulation_context_async()
         self.ant = XFormPrim("/Ant")
         pass
 
-    async def createSimpleArticulation(self):
+    async def createSimpleArticulation(self, physics_rate=60):
 
         self.pivot_path = "/Articulation/CenterPivot"
         self.slider_path = "/Articulation/Slider"
@@ -95,9 +92,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
         self._stage = omni.usd.get_context().get_stage()
-        self.my_world = World(
-            stage_units_in_meters=1.0, physics_dt=1.0 / self._physics_rate, rendering_dt=1.0 / self._physics_rate
-        )
+        self.my_world = World(stage_units_in_meters=1.0, physics_dt=1.0 / physics_rate, rendering_dt=1.0 / physics_rate)
         await self.my_world.initialize_simulation_context_async()
 
         pass
@@ -136,7 +131,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
                 "IsaacSensorCreateImuSensor",
                 path="/sensor",
                 parent=self.sphere_path,
-                sensor_period=self._sensor_rate,
+                sensor_period=1 / self._sensor_rate,
                 translation=self.sensor_offsets[4],
                 orientation=self.sensor_quatd[4],
                 visualize=True,
@@ -148,7 +143,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
 
     # notice the ways of reading data for get_sensor_readings
     # and get_sensor_sim_reading are very different
-    async def test_get_sensor_readings(self):
+    async def test_get_sensor_readings(self, sensor_rate=120, physics_rate=60):
         await self.test_add_sensor_prim()  # And is also created
         self.my_world.play()
         await omni.kit.app.get_app().next_update_async()
@@ -157,7 +152,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
             sensor_reading = self._is.get_sensor_readings(self.leg_paths[0] + "/sensor")
             # this should be
-            num_readings = self._sensor_rate / self._physics_rate
+            num_readings = sensor_rate / physics_rate
             # print(len(sensor_reading))
             self.assertTrue(abs(len(sensor_reading) - num_readings) <= 1)
             # the last is the newest
@@ -167,6 +162,30 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             self.assertIsNotNone(sensor_reading["ang_vel_x"])
             self.assertIsNotNone(sensor_reading["orientation"])
         pass
+
+    # this test is to verify that repeatedly callng get_sensor_reading in the same step will return identical result everytime
+    async def test_repeated_get_sensor_reading(self):
+        await self.test_add_sensor_prim()  # And is also created
+        self.my_world.play()
+        await omni.kit.app.get_app().next_update_async()
+
+        for i in range(200):
+            await omni.kit.app.get_app().next_update_async()
+
+        reading1 = self._is.get_sensor_readings(self.leg_paths[0] + "/sensor")
+        reading2 = self._is.get_sensor_readings(self.leg_paths[0] + "/sensor")
+
+        # the two readings should have the same number of measurement
+        self.assertEqual(len(reading1), len(reading2))
+
+        for idx in range(len(reading1)):
+            self.assertEqual(reading1[idx]["lin_acc_x"], reading2[idx]["lin_acc_x"])
+            self.assertEqual(reading1[idx]["lin_acc_y"], reading2[idx]["lin_acc_y"])
+            self.assertEqual(reading1[idx]["lin_acc_z"], reading2[idx]["lin_acc_z"])
+            self.assertEqual(reading1[idx]["ang_vel_x"], reading2[idx]["ang_vel_x"])
+            self.assertEqual(reading1[idx]["ang_vel_y"], reading2[idx]["ang_vel_y"])
+            self.assertEqual(reading1[idx]["ang_vel_z"], reading2[idx]["ang_vel_z"])
+            self.assertEqual(reading1[idx]["orientation"], reading2[idx]["orientation"])
 
     async def test_get_sensor_sim_reading(self):
         await self.test_add_sensor_prim()
@@ -182,14 +201,14 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             self.assertIsNotNone(sensor_reading.orientation)
         pass
 
-    async def test_orientation_imu(self):
+    async def test_orientation_imu(self, sensor_frequency=60):
         await self.createSimpleArticulation()
 
         result, sensor = omni.kit.commands.execute(
             "IsaacSensorCreateImuSensor",
             path="/arm_imu",
             parent=self.arm_path,
-            sensor_period=self._sensor_rate,
+            sensor_period=1 / sensor_frequency,
             translation=Gf.Vec3d(0, 0, 0),
             orientation=Gf.Quatd(1, 0, 0, 0),
             visualize=True,
@@ -217,6 +236,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         self._dc.set_articulation_dof_properties(art, props)
 
         ang = 0
+        old_orientation = ang
         for i in range(70):
             new_state = [math.radians(ang), 0.5]
 
@@ -224,29 +244,37 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             self._dc.set_articulation_dof_states(art, state, _dynamic_control.STATE_POS)
             self._dc.set_articulation_dof_position_targets(art, new_state)
             await omni.kit.app.get_app().next_update_async()
-            await omni.kit.app.get_app().next_update_async()
 
             orientation = quat_to_euler_angles(
-                np.array(self._is.get_sensor_readings(self.arm_path + "/arm_imu")[-1]["orientation"]), True
+                np.array(self._is.get_sensor_sim_reading(self.arm_path + "/arm_imu").orientation), True
             )[0]
 
             angtest = ang % 360
             if ang >= 180:
                 angtest = ang - 360
 
+            # get sensor readings measurement should match get sim sensor readings measurement from the previous step
+            if i > 1:
+                readings_orientation = quat_to_euler_angles(
+                    np.array(self._is.get_sensor_readings(self.arm_path + "/arm_imu")[-1]["orientation"]), True
+                )[0]
+                self.assertAlmostEqual(readings_orientation, old_orientation, delta=1e-2)
+                # print(f"reading_orientation: {readings_orientation} old orientation: {old_orientation} orientation: {orientation}")
+
+            old_orientation = orientation
             self.assertAlmostEqual(orientation, angtest, delta=1e-1)
             ang += 5
 
         pass
 
-    async def test_ang_vel_imu(self):
+    async def test_ang_vel_imu(self, sensor_frequency=60):
         await self.createSimpleArticulation()
 
         result, sensor = omni.kit.commands.execute(
             "IsaacSensorCreateImuSensor",
             path="/slider_imu",
             parent=self.slider_path,
-            sensor_period=self._sensor_rate,
+            sensor_period=1 / sensor_frequency,
             translation=Gf.Vec3d(0, 0, 0),
             orientation=Gf.Quatd(1, 0, 0, 0),
             visualize=True,
@@ -271,7 +299,8 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         self._dc.set_articulation_dof_properties(art, props)
 
         ang_vel_l = [x * 30 for x in range(0, 20)]
-        for x in ang_vel_l:
+        old_ang_vel_z = 0
+        for idx, x in enumerate(ang_vel_l):
 
             new_state = [math.radians(x), 0]
             state["pos"] = new_state
@@ -280,29 +309,36 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             self._dc.set_articulation_dof_velocity_targets(art, new_state)
 
             await omni.kit.app.get_app().next_update_async()
-            await omni.kit.app.get_app().next_update_async()
-
-            ang_vel_z = self._is.get_sensor_readings(self.slider_path + "/slider_imu")[-1]["ang_vel_z"]
+            ang_vel_z = self._is.get_sensor_sim_reading(self.slider_path + "/slider_imu").ang_vel_z
 
             # reset state before next test
             self._dc.set_dof_state(dof_ptr, _dynamic_control.DofState(0, 0, 0), _dynamic_control.STATE_ALL)
             self._dc.set_dof_position_target(dof_ptr, 0)
 
-            self.assertAlmostEqual(ang_vel_z, math.radians(x), delta=2.0e-2)
+            # get sensor readings measurement should match get sim sensor readings measurement from the previous step
+            if idx > 1:
+                ang_vel_z_readings = self._is.get_sensor_readings(self.slider_path + "/slider_imu")[-1]["ang_vel_z"]
+                self.assertAlmostEqual(old_ang_vel_z, ang_vel_z_readings, delta=1.0e-2)
+            old_ang_vel_z = ang_vel_z
+
+            self.assertAlmostEqual(ang_vel_z, math.radians(x), delta=2.0e-1)
 
         pass
 
-    async def test_lin_acc_imu(self):
+    async def test_lin_acc_imu(self, sensor_frequency=60):
         await self.createSimpleArticulation()
 
         result, sensor = omni.kit.commands.execute(
             "IsaacSensorCreateImuSensor",
             path="/slider_imu",
             parent=self.slider_path,
-            sensor_period=self._sensor_rate,
+            sensor_period=1 / sensor_frequency,
             translation=Gf.Vec3d(0, 0, 0),
             orientation=Gf.Quatd(1, 0, 0, 0),
             visualize=True,
+            linear_acceleration_filter_size=10,
+            angular_velocity_filter_size=10,
+            orientation_filter_size=10,
         )
         self.assertTrue(result)
         self.assertIsNotNone(sensor)
@@ -312,10 +348,13 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             "IsaacSensorCreateImuSensor",
             path="/arm_imu",
             parent=self.arm_path,
-            sensor_period=self._sensor_rate,
+            sensor_period=1 / 60,
             translation=Gf.Vec3d(0, 0, 0),
             orientation=Gf.Quatd(1, 0, 0, 0),
             visualize=True,
+            linear_acceleration_filter_size=10,
+            angular_velocity_filter_size=10,
+            orientation_filter_size=10,
         )
         self.assertTrue(result)
         self.assertIsNotNone(sensor)
@@ -342,6 +381,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         self._dc.set_articulation_dof_properties(art, props)
 
         x = 0
+        last_slider_sim_mag = 0
         for i in range(60):
 
             new_state = [math.radians(x), 0]
@@ -353,17 +393,27 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
             slider_mag = np.linalg.norm(
                 [
-                    self._is.get_sensor_readings(self.slider_path + "/slider_imu")[-1]["lin_acc_x"],
-                    self._is.get_sensor_readings(self.slider_path + "/slider_imu")[-1]["lin_acc_y"],
+                    self._is.get_sensor_sim_reading(self.slider_path + "/slider_imu").lin_acc_x,
+                    self._is.get_sensor_sim_reading(self.slider_path + "/slider_imu").lin_acc_y,
                 ]
             )
             arm_mag = np.linalg.norm(
                 [
-                    self._is.get_sensor_readings(self.arm_path + "/arm_imu")[-1]["lin_acc_x"],
-                    self._is.get_sensor_readings(self.arm_path + "/arm_imu")[-1]["lin_acc_y"],
+                    self._is.get_sensor_sim_reading(self.arm_path + "/arm_imu").lin_acc_x,
+                    self._is.get_sensor_sim_reading(self.arm_path + "/arm_imu").lin_acc_y,
                 ]
             )
 
+            # get sensor readings measurement should match get sim sensor readings measurement from the previous step
+            if i > 1:
+                slider_mag_from_readings = np.linalg.norm(
+                    [
+                        self._is.get_sensor_readings(self.slider_path + "/slider_imu")[-1]["lin_acc_x"],
+                        self._is.get_sensor_readings(self.slider_path + "/slider_imu")[-1]["lin_acc_y"],
+                    ]
+                )
+                self.assertAlmostEqual(slider_mag_from_readings, last_slider_sim_mag, delta=1e-2)
+            last_slider_sim_mag = slider_mag
             self.assertGreaterEqual(slider_mag, arm_mag)
 
             x += 1000
@@ -491,3 +541,94 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(sensor_reading.lin_acc_z, 9.81, delta=0.1)
         omni.timeline.get_timeline_interface().stop()
         pass
+
+    async def test_rolling_average_attributes(self):
+        await self.createAnt(physics_rate=400)
+        await omni.kit.app.get_app().next_update_async()
+
+        result, sensor = omni.kit.commands.execute(
+            "IsaacSensorCreateImuSensor",
+            path="/sphere_imu_1",
+            parent=self.sphere_path,
+            sensor_period=1 / self._sensor_rate,
+            translation=Gf.Vec3d(0, 0, 0),
+            orientation=Gf.Quatd(1, 0, 0, 0),
+            visualize=True,
+            linear_acceleration_filter_size=1,
+            angular_velocity_filter_size=1,
+            orientation_filter_size=1,
+        )
+        self.assertTrue(result)
+        self.assertIsNotNone(sensor)
+
+        low_rolling_avg_size_reading = np.zeros(
+            6,
+        )
+        high_rolling_avg_size_reading = np.zeros(
+            6,
+        )
+
+        self.my_world.play()
+        # wait for the ant to settle down
+        for i in range(200):
+            await omni.kit.app.get_app().next_update_async()
+
+        # test 1, when the rolling average is 1, should expect larger fluctuations
+        for i in range(50):
+            await omni.kit.app.get_app().next_update_async()
+            sensor_reading = self._is.get_sensor_sim_reading(self.sphere_path + "/sphere_imu_1")
+
+            readings = np.array(
+                [
+                    sensor_reading.lin_acc_x,
+                    sensor_reading.lin_acc_y,
+                    sensor_reading.lin_acc_z,
+                    sensor_reading.ang_vel_x,
+                    sensor_reading.ang_vel_y,
+                    sensor_reading.ang_vel_z,
+                ]
+            )
+
+            low_rolling_avg_size_reading = np.vstack((low_rolling_avg_size_reading, readings))
+
+        low_rolling_avg_size_1th_percentile = np.percentile(low_rolling_avg_size_reading, 1, axis=0)
+        low_rolling_avg_size_99th_percentile = np.percentile(low_rolling_avg_size_reading, 99, axis=0)
+
+        low_rolling_avg_size_diff = np.subtract(
+            low_rolling_avg_size_99th_percentile, low_rolling_avg_size_1th_percentile
+        )
+
+        # test 2, when the rolling average is 20, should expect lower fluctuations
+        sensor.CreateLinearAccelerationFilterWidthAttr().Set(20)
+        sensor.CreateAngularVelocityFilterWidthAttr().Set(20)
+        sensor.CreateOrientationFilterWidthAttr().Set(20)
+
+        await omni.kit.app.get_app().next_update_async()
+
+        for i in range(50):
+            await omni.kit.app.get_app().next_update_async()
+            sensor_reading = self._is.get_sensor_sim_reading(self.sphere_path + "/sphere_imu_1")
+
+            readings = np.array(
+                [
+                    sensor_reading.lin_acc_x,
+                    sensor_reading.lin_acc_y,
+                    sensor_reading.lin_acc_z,
+                    sensor_reading.ang_vel_x,
+                    sensor_reading.ang_vel_y,
+                    sensor_reading.ang_vel_z,
+                ]
+            )
+
+            high_rolling_avg_size_reading = np.vstack((high_rolling_avg_size_reading, readings))
+
+        high_rolling_avg_size_1th_percentile = np.percentile(high_rolling_avg_size_reading, 1, axis=0)
+        high_rolling_avg_size_99th_percentile = np.percentile(high_rolling_avg_size_reading, 99, axis=0)
+
+        high_rolling_avg_size_diff = np.subtract(
+            high_rolling_avg_size_99th_percentile, high_rolling_avg_size_1th_percentile
+        )
+
+        # low rolling average size is expected to have larger variation than with high rolling average size
+        for i in range(len(high_rolling_avg_size_diff)):
+            self.assertGreater(low_rolling_avg_size_diff[i], high_rolling_avg_size_diff[i])

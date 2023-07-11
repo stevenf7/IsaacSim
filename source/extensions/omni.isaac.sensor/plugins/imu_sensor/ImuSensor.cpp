@@ -66,6 +66,7 @@ namespace sensor
 ImuSensor::~ImuSensor()
 {
     reset();
+    mRawBuffer.clear();
 }
 
 void ImuSensor::drawAxis(const pxr::GfVec3d& _position, const pxr::GfRotation& _orientation, const float& length)
@@ -152,7 +153,9 @@ IsReading* ImuSensor::getSensorReadings(size_t& num_readings)
         if (!mProcessedReadings)
         {
             float start = mReadingPair[!mCurrent].time;
-            float end = mReadingPair[mCurrent].time;
+
+            // Add a tolerance to the end time to be 1/10th of sensorperiod, to avoid duplicate data near the end
+            float end = mReadingPair[mCurrent].time - mProps.sensorPeriod / 10;
 
             // will return the data from the last physics dt update. This is to keep the getSensorReadings function
             // consistent with the contact sensor
@@ -207,10 +210,9 @@ void ImuSensor::reset()
 {
     mCurrentTime = 0.0f;
     mCurrent = 0;
-    for (int i = 0; i < RAW_BUFFER_SIZE; i++)
-    {
-        mRawBuffer[i] = IsRawData();
-    }
+
+    mRawBuffer.resize(mRawBufferSize, IsRawData());
+
     mReadingPair[0] = mReadingPair[1] = IsReading();
     mProcessedReadings = false;
     mSensorReadings.clear();
@@ -313,7 +315,7 @@ void ImuSensor::onPhysicsStep()
         // we then finite diff v_b to get a_b, to reduce noise, average multiple finite diffs
         // save raw data into a buffer list , buffer 0 always saves the latest velocities
 
-        for (int i = RAW_BUFFER_SIZE - 1; i > 0; i--)
+        for (int i = mRawBufferSize - 1; i > 0; i--)
         {
             mRawBuffer[i].time = mRawBuffer[i - 1].time;
             mRawBuffer[i].dt = mRawBuffer[i - 1].dt;
@@ -348,39 +350,39 @@ void ImuSensor::onPhysicsStep()
         // signal processing
         mCurrent ^= 1;
         mReadingPair[mCurrent].time = static_cast<float>(mTimeSeconds);
-        // ang_vel output strategy: average past ANG_VEL_AVERAGE_NUM timesteps
+        // ang_vel output strategy: average past mAngularVelocityFilterSize timesteps
         float tmp_sum_x = 0, tmp_sum_y = 0, tmp_sum_z = 0;
-        for (int i = 0; i < ANG_VEL_AVERAGE_NUM; i++)
+        for (int i = 0; i < mAngularVelocityFilterSize; i++)
         {
             tmp_sum_x += mRawBuffer[i].ang_vel_x;
             tmp_sum_y += mRawBuffer[i].ang_vel_y;
             tmp_sum_z += mRawBuffer[i].ang_vel_z;
         }
-        mReadingPair[mCurrent].ang_vel_x = static_cast<float>(tmp_sum_x / ANG_VEL_AVERAGE_NUM);
-        mReadingPair[mCurrent].ang_vel_y = static_cast<float>(tmp_sum_y / ANG_VEL_AVERAGE_NUM);
-        mReadingPair[mCurrent].ang_vel_z = static_cast<float>(tmp_sum_z / ANG_VEL_AVERAGE_NUM);
+        mReadingPair[mCurrent].ang_vel_x = static_cast<float>(tmp_sum_x / mAngularVelocityFilterSize);
+        mReadingPair[mCurrent].ang_vel_y = static_cast<float>(tmp_sum_y / mAngularVelocityFilterSize);
+        mReadingPair[mCurrent].ang_vel_z = static_cast<float>(tmp_sum_z / mAngularVelocityFilterSize);
 
-        // lin acc output strategy: average LIN_ACC_AVERAGE_NUM finite diffs
-        // say if LIN_ACC_AVERAGE_NUM = 2, we do (([0] - [2]) / (2dt) + ([1] - [3]) / (2dt))/2
+        // lin acc output strategy: average mLinearAccelerationFilterSize finite diffs
+        // say if mLinearAccelerationFilterSize = 2, we do (([0] - [2]) / (2dt) + ([1] - [3]) / (2dt))/2
         tmp_sum_x = 0.0f;
         tmp_sum_y = 0.0f;
         tmp_sum_z = 0.0f;
-        for (int i = 0; i < LIN_ACC_AVERAGE_NUM; i++)
+        for (int i = 0; i < mLinearAccelerationFilterSize; i++)
         {
-            float dt = mRawBuffer[i].time - mRawBuffer[i + LIN_ACC_AVERAGE_NUM].time;
+            float dt = mRawBuffer[i].time - mRawBuffer[i + mLinearAccelerationFilterSize].time;
 
             if (dt > 1e-10)
             {
-                tmp_sum_x += (mRawBuffer[i].lin_vel_x - mRawBuffer[i + LIN_ACC_AVERAGE_NUM].lin_vel_x) / dt;
-                tmp_sum_y += (mRawBuffer[i].lin_vel_y - mRawBuffer[i + LIN_ACC_AVERAGE_NUM].lin_vel_y) / dt;
-                tmp_sum_z += (mRawBuffer[i].lin_vel_z - mRawBuffer[i + LIN_ACC_AVERAGE_NUM].lin_vel_z) / dt;
+                tmp_sum_x += (mRawBuffer[i].lin_vel_x - mRawBuffer[i + mLinearAccelerationFilterSize].lin_vel_x) / dt;
+                tmp_sum_y += (mRawBuffer[i].lin_vel_y - mRawBuffer[i + mLinearAccelerationFilterSize].lin_vel_y) / dt;
+                tmp_sum_z += (mRawBuffer[i].lin_vel_z - mRawBuffer[i + mLinearAccelerationFilterSize].lin_vel_z) / dt;
             }
         }
 
         // average acc
-        mReadingPair[mCurrent].lin_acc_x = static_cast<float>(tmp_sum_x / LIN_ACC_AVERAGE_NUM);
-        mReadingPair[mCurrent].lin_acc_y = static_cast<float>(tmp_sum_y / LIN_ACC_AVERAGE_NUM);
-        mReadingPair[mCurrent].lin_acc_z = static_cast<float>(tmp_sum_z / LIN_ACC_AVERAGE_NUM);
+        mReadingPair[mCurrent].lin_acc_x = static_cast<float>(tmp_sum_x / mLinearAccelerationFilterSize);
+        mReadingPair[mCurrent].lin_acc_y = static_cast<float>(tmp_sum_y / mLinearAccelerationFilterSize);
+        mReadingPair[mCurrent].lin_acc_z = static_cast<float>(tmp_sum_z / mLinearAccelerationFilterSize);
         // add gravity
         mReadingPair[mCurrent].lin_acc_x += static_cast<float>(g_b[0]);
         mReadingPair[mCurrent].lin_acc_y += static_cast<float>(g_b[1]);
@@ -397,7 +399,7 @@ void ImuSensor::onPhysicsStep()
         tmp_sum_y = 0.0f;
         tmp_sum_z = 0.0f;
 
-        for (int i = 0; i < ORIENT_AVERAGE_NUM; i++)
+        for (int i = 0; i < mOrientationFilterSize; i++)
         {
             tmp_sum_w += mRawBuffer[i].orientation.w;
             tmp_sum_x += mRawBuffer[i].orientation.x;
@@ -405,10 +407,10 @@ void ImuSensor::onPhysicsStep()
             tmp_sum_z += mRawBuffer[i].orientation.z;
         }
 
-        mReadingPair[mCurrent].orientation.w = static_cast<float>(tmp_sum_w / ORIENT_AVERAGE_NUM);
-        mReadingPair[mCurrent].orientation.x = static_cast<float>(tmp_sum_x / ORIENT_AVERAGE_NUM);
-        mReadingPair[mCurrent].orientation.y = static_cast<float>(tmp_sum_y / ORIENT_AVERAGE_NUM);
-        mReadingPair[mCurrent].orientation.z = static_cast<float>(tmp_sum_z / ORIENT_AVERAGE_NUM);
+        mReadingPair[mCurrent].orientation.w = static_cast<float>(tmp_sum_w / mOrientationFilterSize);
+        mReadingPair[mCurrent].orientation.x = static_cast<float>(tmp_sum_x / mOrientationFilterSize);
+        mReadingPair[mCurrent].orientation.y = static_cast<float>(tmp_sum_y / mOrientationFilterSize);
+        mReadingPair[mCurrent].orientation.z = static_cast<float>(tmp_sum_z / mOrientationFilterSize);
 
         // Print out reading pair:
         // CARB_LOG_INFO("mReadingPair[0]: [(%f, %f, %f), (%f, %f, %f), (%f, %f, %f, %f)]", mReadingPair[0].lin_acc_x,
@@ -473,6 +475,27 @@ void ImuSensor::onComponentChange()
     const pxr::IsaacSensorIsaacImuSensor& typedPrim = (pxr::IsaacSensorIsaacImuSensor)mPrim;
 
     isaac::utils::safeGetAttribute(typedPrim.GetSensorPeriodAttr(), this->mProps.sensorPeriod);
+
+    isaac::utils::safeGetAttribute(typedPrim.GetLinearAccelerationFilterWidthAttr(), this->mLinearAccelerationFilterSize);
+    isaac::utils::safeGetAttribute(typedPrim.GetAngularVelocityFilterWidthAttr(), this->mAngularVelocityFilterSize);
+    isaac::utils::safeGetAttribute(typedPrim.GetOrientationFilterWidthAttr(), this->mOrientationFilterSize);
+
+    // reject 0 or negative rolling avg size
+    mLinearAccelerationFilterSize = std::max(mLinearAccelerationFilterSize, 1);
+    mAngularVelocityFilterSize = std::max(mAngularVelocityFilterSize, 1);
+    mOrientationFilterSize = std::max(mOrientationFilterSize, 1);
+
+    int max_rolling_size =
+        std::max(std::max(mLinearAccelerationFilterSize, mAngularVelocityFilterSize), mOrientationFilterSize);
+
+    // size of the raw data must be 2 times larger than the max rolling avg size
+    // also the buffer should be sufficiently large (20)
+    if (this->mRawBufferSize < 2 * max_rolling_size && max_rolling_size > 10)
+    {
+        this->mRawBufferSize = 2 * max_rolling_size;
+    }
+
+    mRawBuffer.resize(mRawBufferSize, IsRawData());
 
     pxr::GfVec3d position(0.0);
     mPrim.GetPrim().GetAttribute(pxr::TfToken("xformOp:translate")).Get(&position);
@@ -550,9 +573,7 @@ void ImuSensor::onStop()
 
     mReadingPair[!mCurrent] = IsReading();
 
-    // reset raw buffer upon Stop/Start
-    for (int i = 0; i < RAW_BUFFER_SIZE; i++)
-        mRawBuffer[i] = IsRawData();
+    mRawBuffer.resize(mRawBufferSize, IsRawData());
 
     mFirst = true;
 
