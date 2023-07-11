@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.1.0] - 2023-06-21
+### Added
+- Added new APIs for joint force sensors and dof effort sensors
+
 ## [2.0.0] - 2023-06-13
 ### Fixed
 - Kit 105.1 update
