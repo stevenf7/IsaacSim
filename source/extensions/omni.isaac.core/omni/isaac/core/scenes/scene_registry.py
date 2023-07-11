@@ -8,6 +8,8 @@
 #
 from omni.isaac.core.articulations.articulation import Articulation
 from omni.isaac.core.articulations.articulation_view import ArticulationView
+from omni.isaac.core.materials.deformable_material import DeformableMaterial
+from omni.isaac.core.materials.deformable_material_view import DeformableMaterialView
 from omni.isaac.core.materials.particle_material import ParticleMaterial
 from omni.isaac.core.materials.particle_material_view import ParticleMaterialView
 from omni.isaac.core.prims.base_sensor import BaseSensor
@@ -18,6 +20,8 @@ from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.prims.rigid_prim_view import RigidPrimView
 from omni.isaac.core.prims.soft.cloth_prim import ClothPrim
 from omni.isaac.core.prims.soft.cloth_prim_view import ClothPrimView
+from omni.isaac.core.prims.soft.deformable_prim import DeformablePrim
+from omni.isaac.core.prims.soft.deformable_prim_view import DeformablePrimView
 from omni.isaac.core.prims.soft.particle_system import ParticleSystem
 from omni.isaac.core.prims.soft.particle_system_view import ParticleSystemView
 from omni.isaac.core.prims.xform_prim import XFormPrim
@@ -36,6 +40,10 @@ class SceneRegistry(object):
         self._xforms = dict()
         self._sensors = dict()
         self._xform_prim_views = dict()
+        self._deformable_prims = dict()
+        self._deformable_prim_views = dict()
+        self._deformable_materials = dict()
+        self._deformable_material_views = dict()
         self._cloth_prims = dict()
         self._cloth_prim_views = dict()
         self._particle_systems = dict()
@@ -147,6 +155,42 @@ class SceneRegistry(object):
             dict: [description]
         """
         return self._xform_prim_views
+
+    @property
+    def deformable_prims(self) -> dict:
+        """[summary]
+
+        Returns:
+            dict: [description]
+        """
+        return self._deformable_prims
+
+    @property
+    def deformable_prim_views(self) -> dict:
+        """[summary]
+
+        Returns:
+            dict: [description]
+        """
+        return self._deformable_prim_views
+
+    @property
+    def deformable_materials(self) -> dict:
+        """[summary]
+
+        Returns:
+            dict: [description]
+        """
+        return self._deformable_materials
+
+    @property
+    def deformable_material_views(self) -> dict:
+        """[summary]
+
+        Returns:
+            dict: [description]
+        """
+        return self._deformable_material_views
 
     @property
     def cloth_prims(self) -> dict:
@@ -301,6 +345,46 @@ class SceneRegistry(object):
             geometry_object (GeometryPrim): [description]
         """
         self._xform_prim_views[name] = xform_prim_view
+        return
+
+    def add_deformable(self, name, deformable: DeformablePrim) -> None:
+        """[summary]
+
+        Args:
+            name ([type]): [description]
+            deformable (DeformablePrim): [description]
+        """
+        self._deformable_prims[name] = deformable
+        return
+
+    def add_deformable_view(self, name, deformable_prim_view: DeformablePrimView) -> None:
+        """[summary]
+
+        Args:
+            name ([type]): [description]
+            geometry_object (DeformablePrimView): [description]
+        """
+        self._deformable_prim_views[name] = deformable_prim_view
+        return
+
+    def add_deformable_material(self, name, deformable_material: DeformableMaterial) -> None:
+        """[summary]
+
+        Args:
+            name ([type]): [description]
+            geometry_object (DeformableMaterial): [description]
+        """
+        self._deformable_materials[name] = deformable_material
+        return
+
+    def add_deformable_material_view(self, name, deformable_material_view: DeformableMaterialView) -> None:
+        """[summary]
+
+        Args:
+            name ([type]): [description]
+            geometry_object (DeformableMaterialView): [description]
+        """
+        self._deformable_material_views[name] = deformable_material_view
         return
 
     def add_cloth(self, name, cloth: ClothPrim) -> None:

@@ -187,6 +187,10 @@ class ParticleSystemView:
             physics_sim_view = omni.physics.tensors.create_simulation_view(self._backend)
             physics_sim_view.set_subspace_roots("/")
         carb.log_info("initializing view for {}".format(self._name))
+        if not carb.settings.get_settings().get_as_bool("/physics/suppressReadback"):
+            carb.log_error(
+                "Using particle system view requires the gpu pipeline or (a World initialized with a cuda device)"
+            )
         self._physics_sim_view = physics_sim_view
         self._physics_view = physics_sim_view.create_particle_system_view(self._regex_prim_paths.replace(".*", "*"))
         self._count = self._physics_view.count
