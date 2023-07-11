@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.16.0] - 2023-07-03
+
+### Added
+- Test mode for TeamCity, which runs each benchmark for 1 frame instead of 600 frames, just to check if there are no bugs. To enable test mode, set environment variable ISAAC_TEST_MODE to 1.
+
 ## [0.15.0] - 2023-07-06
 
 ### Changed
