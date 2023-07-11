@@ -175,7 +175,9 @@ class TestBenchmarkSDGGeneration(BaseIsaacBenchmark):
         writer = None
 
         # Check that all the SDG frames were written to disk
-        all_frames_written = check_number_of_written_sdg_frames(output_directory, (1 if self.test_mode else num_frames), verbose=True)
+        all_frames_written = check_number_of_written_sdg_frames(
+            output_directory, (1 if self.test_mode else num_frames), verbose=True
+        )
         self.assertTrue(all_frames_written)
 
         # Remove the written data from disk
