@@ -29,16 +29,23 @@ class IMUSensor(BaseSensor):
         translation: Optional[np.ndarray] = None,
         position: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
+        linear_acceleration_filter_size: Optional[int] = 1,
+        angular_velocity_filter_size: Optional[int] = 1,
+        orientation_filter_size: Optional[int] = 1,
     ) -> None:
         if frequency is not None and dt is not None:
             raise Exception("Sensor Frequency and Sensor dt can't be both specified")
 
         if frequency is not None:
-            dt = int(1 / frequency)
+            dt = float(1 / frequency)
 
         self._body_prim_path = "/".join(prim_path.split("/")[:-1])
         self._sensor_name = prim_path.split("/")[-1]
         self._imu_sensor_interface = _sensor.acquire_imu_sensor_interface()
+
+        linear_acceleration_filter_size = max(linear_acceleration_filter_size, 1)
+        angular_velocity_filter_size = max(angular_velocity_filter_size, 1)
+        orientation_filter_size = max(orientation_filter_size, 1)
 
         if is_prim_path_valid(prim_path):
             self._isaac_sensor_prim = IsaacSensorSchema.IsaacImuSensor(get_prim_at_path(prim_path))
@@ -67,6 +74,9 @@ class IMUSensor(BaseSensor):
                 parent=self._body_prim_path,
                 sensor_period=dt,
                 visualize=False,
+                linear_acceleration_filter_size=linear_acceleration_filter_size,
+                angular_velocity_filter_size=angular_velocity_filter_size,
+                orientation_filter_size=orientation_filter_size,
             )
             if not success:
                 raise Exception("Not successful")
