@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.5.0] - 2023-04-27
+
+### Added
+- Added option to specify mode of cloning (inherit vs. copy)
+
 ## [0.4.1] - 2022-12-09
 
 ### Fixed
