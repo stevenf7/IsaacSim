@@ -27,7 +27,7 @@ class TestParticleMaterial(omni.kit.test.AsyncTestCase, TestProperties):
     async def setUp(self):
         World.clear_instance()
         await create_new_stage_async()
-        self.my_world = World(backend="torch", device="cuda")
+        self.my_world = World(backend="torch")  # , device="cuda")
         await self.my_world.initialize_simulation_context_async()
         self._test_cfg = dict()
         pass

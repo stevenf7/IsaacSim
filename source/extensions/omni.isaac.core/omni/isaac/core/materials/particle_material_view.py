@@ -267,7 +267,7 @@ class ParticleMaterialView:
             for i in indices:
                 self._apply_material_api(i.tolist())
                 if "physxPBDMaterial:friction" not in self._prims[i.tolist()].GetPropertyNames():
-                    carb.log_error(f"friction is not defined on the cloth prim: {self.name}.")
+                    result[write_idx] = self._material_apis[i.tolist()].CreateFrictionAttr().Get()
                 else:
                     result[write_idx] = self._material_apis[i.tolist()].GetFrictionAttr().Get()
                 write_idx += 1
@@ -334,7 +334,7 @@ class ParticleMaterialView:
             for i in indices:
                 self._apply_material_api(i.tolist())
                 if "physxPBDMaterial:damping" not in self._prims[i.tolist()].GetPropertyNames():
-                    carb.log_error(f"damping is not defined on the cloth prim: {self.name}.")
+                    result[write_idx] = self._material_apis[i.tolist()].CreateDampingAttr().Get()
                 else:
                     result[write_idx] = self._material_apis[i.tolist()].GetDampingAttr().Get()
                 write_idx += 1
@@ -400,7 +400,7 @@ class ParticleMaterialView:
             for i in indices:
                 self._apply_material_api(i.tolist())
                 if "physxPBDMaterial:gravityScale" not in self._prims[i.tolist()].GetPropertyNames():
-                    carb.log_error(f"gravityScale is not defined on the cloth prim: {self.name}.")
+                    result[write_idx] = self._material_apis[i.tolist()].CreateGravityScaleAttr().Get()
                 else:
                     result[write_idx] = self._material_apis[i.tolist()].GetGravityScaleAttr().Get()
                 write_idx += 1
@@ -466,7 +466,7 @@ class ParticleMaterialView:
             for i in indices:
                 self._apply_material_api(i.tolist())
                 if "physxPBDMaterial:lift" not in self._prims[i.tolist()].GetPropertyNames():
-                    carb.log_error(f"lift is not defined on the cloth prim: {self.name}.")
+                    result[write_idx] = self._material_apis[i.tolist()].CraeteLiftAttr().Get()
                 else:
                     result[write_idx] = self._material_apis[i.tolist()].GetLiftAttr().Get()
                 write_idx += 1
@@ -532,7 +532,7 @@ class ParticleMaterialView:
             for i in indices:
                 self._apply_material_api(i.tolist())
                 if "physxPBDMaterial:drag" not in self._prims[i.tolist()].GetPropertyNames():
-                    carb.log_error(f"drag is not defined on the cloth prim: {self.name}.")
+                    result[write_idx] = self._material_apis[i.tolist()].CreateDragAttr().Get()
                 else:
                     result[write_idx] = self._material_apis[i.tolist()].GetDragAttr().Get()
                 write_idx += 1
@@ -581,7 +581,7 @@ class ParticleMaterialView:
         for i in indices:
             self._apply_material_api(i.tolist())
             if "physxPBDMaterial:viscosity" not in self._prims[i.tolist()].GetPropertyNames():
-                carb.log_error(f"viscosity is not defined on the cloth prim: {self.name}.")
+                result[write_idx] = self._material_apis[i.tolist()].CreateViscosityAttr().Get()
             else:
                 result[write_idx] = self._material_apis[i.tolist()].GetViscosityAttr().Get()
             write_idx += 1
@@ -630,7 +630,7 @@ class ParticleMaterialView:
         for i in indices:
             self._apply_material_api(i.tolist())
             if "physxPBDMaterial:cohesion" not in self._prims[i.tolist()].GetPropertyNames():
-                carb.log_error(f"cohesion is not defined on the cloth prim: {self.name}.")
+                result[write_idx] = self._material_apis[i.tolist()].CreateCohesionAttr().Get()
             else:
                 result[write_idx] = self._material_apis[i.tolist()].GetCohesionAttr().Get()
             write_idx += 1
@@ -679,7 +679,7 @@ class ParticleMaterialView:
         for i in indices:
             self._apply_material_api(i.tolist())
             if "physxPBDMaterial:adhesion" not in self._prims[i.tolist()].GetPropertyNames():
-                carb.log_error(f"adhesion is not defined on the cloth prim: {self.name}.")
+                result[write_idx] = self._material_apis[i.tolist()].CreateAdhesionAttr().Get()
             else:
                 result[write_idx] = self._material_apis[i.tolist()].GetAdhesionAttr().Get()
             write_idx += 1
@@ -728,7 +728,7 @@ class ParticleMaterialView:
         for i in indices:
             self._apply_material_api(i.tolist())
             if "physxPBDMaterial:particleAdhesionScale" not in self._prims[i.tolist()].GetPropertyNames():
-                carb.log_error(f"particleAdhesionScale is not defined on the cloth prim: {self.name}.")
+                result[write_idx] = self._material_apis[i.tolist()].CreateParticleAdhesionScaleAttr().Get()
             else:
                 result[write_idx] = self._material_apis[i.tolist()].GetParticleAdhesionScaleAttr().Get()
             write_idx += 1
@@ -777,7 +777,7 @@ class ParticleMaterialView:
         for i in indices:
             self._apply_material_api(i.tolist())
             if "physxPBDMaterial:adhesionOffsetScale" not in self._prims[i.tolist()].GetPropertyNames():
-                carb.log_error(f"adhesionOffsetScale is not defined on the cloth prim: {self.name}.")
+                result[write_idx] = self._material_apis[i.tolist()].CreateAdhesionOffsetScaleAttr().Get()
             else:
                 result[write_idx] = self._material_apis[i.tolist()].GetAdhesionOffsetScaleAttr().Get()
             write_idx += 1
@@ -826,7 +826,7 @@ class ParticleMaterialView:
         for i in indices:
             self._apply_material_api(i.tolist())
             if "physxPBDMaterial:surfaceTension" not in self._prims[i.tolist()].GetPropertyNames():
-                carb.log_error(f"surface tension is not defined on the cloth prim: {self.name}.")
+                result[write_idx] = self._material_apis[i.tolist()].CreateSurfaceTensionAttr().Get()
             else:
                 result[write_idx] = self._material_apis[i.tolist()].GetSurfaceTensionAttr().Get()
             write_idx += 1
@@ -875,7 +875,7 @@ class ParticleMaterialView:
         for i in indices:
             self._apply_material_api(i.tolist())
             if "physxPBDMaterial:vorticityConfinement" not in self._prims[i.tolist()].GetPropertyNames():
-                carb.log_error(f"vorticityConfinement is not defined on the cloth prim: {self.name}.")
+                result[write_idx] = self._material_apis[i.tolist()].CreateVorticityConfinementAttr().Get()
             else:
                 result[write_idx] = self._material_apis[i.tolist()].GetVorticityConfinementAttr().Get()
             write_idx += 1
@@ -924,7 +924,7 @@ class ParticleMaterialView:
         for i in indices:
             self._apply_material_api(i.tolist())
             if "physxPBDMaterial:particleFrictionScale" not in self._prims[i.tolist()].GetPropertyNames():
-                carb.log_error(f"particleFrictionScale is not defined on the cloth prim: {self.name}.")
+                result[write_idx] = self._material_apis[i.tolist()].CreateParticleFrictionScaleAttr().Get()
             else:
                 result[write_idx] = self._material_apis[i.tolist()].GetParticleFrictionScaleAttr().Get()
             write_idx += 1

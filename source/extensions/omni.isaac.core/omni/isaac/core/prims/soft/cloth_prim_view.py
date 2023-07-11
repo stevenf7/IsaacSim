@@ -190,6 +190,8 @@ class ClothPrimView(XFormPrimView):
             physics_sim_view = omni.physics.tensors.create_simulation_view(self._backend)
             physics_sim_view.set_subspace_roots("/")
         carb.log_info("initializing view for {}".format(self._name))
+        if not carb.settings.get_settings().get_as_bool("/physics/suppressReadback"):
+            carb.log_error("Using cloth view requires the gpu pipeline or (a World initialized with a cuda device)")
         self._physics_sim_view = physics_sim_view
         self._physics_view = self._physics_sim_view.create_particle_cloth_view(
             self._regex_prim_paths.replace(".*", "*")
@@ -440,7 +442,12 @@ class ClothPrimView(XFormPrimView):
             write_idx = 0
             for i in indices:
                 if "physics:mass" not in self._prims[i.tolist()].GetPropertyNames():
-                    carb.log_error(f"physics:mass is not defined on the cloth prim: {self.name}.")
+                    carb.log_warn(
+                        f"physics:mass is not defined on the cloth prim: {self.name}. Using the default value."
+                    )
+                    values[write_idx] = (
+                        self._mass_apis[i.tolist()].CreateMassAttr().Get() / self.max_particles_per_cloth
+                    )
                 else:
                     values[write_idx, :] = (
                         self._mass_apis[i.tolist()].GetMassAttr().Get() / self.max_particles_per_cloth
@@ -516,7 +523,12 @@ class ClothPrimView(XFormPrimView):
             for i in indices:
                 self._apply_cloth_api(i.tolist())
                 if "physxParticle:springStiffnesses" not in self._prims[i.tolist()].GetPropertyNames():
-                    carb.log_error(f"Stretch stiffness is not defined on the cloth prim: {self.name}.")
+                    carb.log_warn(
+                        f"Stretch stiffness is not defined on the cloth prim: {self.name}. Using the default value."
+                    )
+                    stiffnesses[write_idx] = self._backend_utils.create_tensor_from_list(
+                        self._cloth_apis[i.tolist()].CreateSpringStiffnessesAttr().Get(), dtype="float32"
+                    )
                 else:
                     stiffnesses[write_idx] = self._backend_utils.create_tensor_from_list(
                         self._cloth_apis[i.tolist()].GetSpringStiffnessesAttr().Get(), dtype="float32"
@@ -591,7 +603,12 @@ class ClothPrimView(XFormPrimView):
             for i in indices:
                 self._apply_cloth_api(i.tolist())
                 if "physxParticle:springDampings" not in self._prims[i.tolist()].GetPropertyNames():
-                    carb.log_error(f"Stretch damping is not defined on the cloth prim: {self.name}.")
+                    carb.log_warn(
+                        f"Stretch damping is not defined on the cloth prim: {self.name}. Using the default value"
+                    )
+                    dampings[write_idx] = self._backend_utils.create_tensor_from_list(
+                        self._cloth_apis[i.tolist()].GetSpringDampingsAttr().Get(), dtype="float32"
+                    )
                 else:
                     dampings[write_idx] = self._backend_utils.create_tensor_from_list(
                         self._cloth_apis[i.tolist()].GetSpringDampingsAttr().Get(), dtype="float32"
@@ -818,7 +835,8 @@ class ClothPrimView(XFormPrimView):
         for i in indices:
             self._apply_cloth_auto_api(i.tolist())
             if "physxAutoParticleCloth:springDamping" not in self._prims[i.tolist()].GetPropertyNames():
-                carb.log_error(f"damping is not defined on the cloth prim: {self.name}.")
+                carb.log_warn(f"damping is not defined on the cloth prim: {self.name}. Using the default value.")
+                values[write_idx] = self._cloth_auto_apis[i.tolist()].CreateSpringDampingAttr().Get()
             else:
                 values[write_idx] = self._cloth_auto_apis[i.tolist()].GetSpringDampingAttr().Get()
             write_idx += 1
@@ -844,7 +862,10 @@ class ClothPrimView(XFormPrimView):
         for i in indices:
             self._apply_cloth_auto_api(i.tolist())
             if "physxAutoParticleCloth:springStretchStiffness" not in self._prims[i.tolist()].GetPropertyNames():
-                carb.log_error(f"Stretch stiffness is not defined on the cloth prim: {self.name}.")
+                carb.log_warn(
+                    f"Stretch stiffness is not defined on the cloth prim: {self.name}. Using the default value."
+                )
+                values[write_idx] = self._cloth_auto_apis[i.tolist()].CreateSpringStretchStiffnessAttr().Get()
             else:
                 values[write_idx] = self._cloth_auto_apis[i.tolist()].GetSpringStretchStiffnessAttr().Get()
             write_idx += 1
@@ -870,7 +891,8 @@ class ClothPrimView(XFormPrimView):
         for i in indices:
             self._apply_cloth_auto_api(i.tolist())
             if "physxAutoParticleCloth:springBendStiffness" not in self._prims[i.tolist()].GetPropertyNames():
-                carb.log_error(f"bend stiffness is not defined on the cloth prim: {self.name}.")
+                carb.log_warn(f"bend stiffness is not defined on the cloth prim: {self.name}. Using the default value.")
+                values[write_idx] = self._cloth_auto_apis[i.tolist()].CreateSpringBendStiffnessAttr().Get()
             else:
                 values[write_idx] = self._cloth_auto_apis[i.tolist()].GetSpringBendStiffnessAttr().Get()
             write_idx += 1
@@ -896,7 +918,10 @@ class ClothPrimView(XFormPrimView):
         for i in indices:
             self._apply_cloth_auto_api(i.tolist())
             if "physxAutoParticleCloth:springShearStiffness" not in self._prims[i.tolist()].GetPropertyNames():
-                carb.log_error(f"shear stiffness is not defined on the cloth prim: {self.name}.")
+                carb.log_warn(
+                    f"shear stiffness is not defined on the cloth prim: {self.name}. Using the default values."
+                )
+                values[write_idx] = self._cloth_auto_apis[i.tolist()].CreateSpringShearStiffnessAttr().Get()
             else:
                 values[write_idx] = self._cloth_auto_apis[i.tolist()].GetSpringShearStiffnessAttr().Get()
             write_idx += 1
@@ -924,7 +949,10 @@ class ClothPrimView(XFormPrimView):
         for i in indices:
             self._apply_cloth_api(i.tolist())
             if "physxParticle:selfCollisionFilter" not in self._prims[i.tolist()].GetPropertyNames():
-                carb.log_error(f"selfCollisionFilter is not defined on the cloth prim: {self.name}.")
+                carb.log_warn(
+                    f"selfCollisionFilter is not defined on the cloth prim: {self.name}. Using the default values."
+                )
+                self_collision_filters[write_idx] = self._cloth_apis[i.tolist()].CreateSelfCollisionFilterAttr().Get()
             else:
                 self_collision_filters[write_idx] = self._cloth_apis[i.tolist()].GetSelfCollisionFilterAttr().Get()
             write_idx += 1
@@ -950,7 +978,8 @@ class ClothPrimView(XFormPrimView):
         for i in indices:
             self._apply_particle_api(i.tolist())
             if "physxParticle:selfCollision" not in self._prims[i.tolist()].GetPropertyNames():
-                carb.log_error(f"selfCollision is not defined on the cloth prim: {self.name}.")
+                carb.log_warn(f"selfCollision is not defined on the cloth prim: {self.name}. Using the default values.")
+                self_collisions[write_idx] = self._particle_apis[i.tolist()].CreateSelfCollisionAttr().Get()
             else:
                 self_collisions[write_idx] = self._particle_apis[i.tolist()].GetSelfCollisionAttr().Get()
             write_idx += 1
@@ -976,7 +1005,8 @@ class ClothPrimView(XFormPrimView):
         for i in indices:
             self._apply_cloth_api(i.tolist())
             if "physxParticle:pressure" not in self._prims[i.tolist()].GetPropertyNames():
-                carb.log_error(f"pressure is not defined on the cloth prim: {self.name}.")
+                carb.log_warn(f"pressure is not defined on the cloth prim: {self.name}. Using the default value.")
+                pressures[write_idx] = self._cloth_apis[i.tolist()].CreatePressureAttr().Get()
             else:
                 pressures[write_idx] = self._cloth_apis[i.tolist()].GetPressureAttr().Get()
             write_idx += 1
@@ -1004,7 +1034,8 @@ class ClothPrimView(XFormPrimView):
         for i in indices:
             self._apply_particle_api(i.tolist())
             if "physxParticle:particleGroup" not in self._prims[i.tolist()].GetPropertyNames():
-                carb.log_error(f"particleGroup is not defined on the cloth prim: {self.name}.")
+                carb.log_warn(f"particleGroup is not defined on the cloth prim: {self.name}. Using the default value.")
+                particle_groups[write_idx] = self._particle_apis[i.tolist()].GetParticleGroupAttr().Get()
             else:
                 particle_groups[write_idx] = self._particle_apis[i.tolist()].GetParticleGroupAttr().Get()
             write_idx += 1
