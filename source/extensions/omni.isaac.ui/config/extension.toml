@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.10.0"
+version = "0.11.0"
 category = "Simulation"
 title = "Isaac Sim UI Utilities"
 description = "Core UI Elements for Isaac Sim"
@@ -17,6 +17,7 @@ writeTarget.kit = true
 
 [dependencies]
 "omni.kit.uiapp" = {}
+"omni.kit.ui_test" = {}
 "omni.kit.menu.utils" = {}
 "omni.kit.window.extensions" = {}
 "omni.kit.window.property" = {}
