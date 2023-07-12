@@ -1,4 +1,12 @@
 # Changelog
+## [0.11.0] - 2023-07-11
+### Added
+- Added test cases for UI widget wrappers
+- Added test cases for UI Core Connectors
+
+### Fixed
+- Fixed small bugs found in UI widget wrappers
+
 ## [0.10.0] - 2023-06-27
 ### Fixed
 - Enforce argument types in setter functions for UI Widget Wrappers by casting [int,float,bool] args to their required type explicitly

@@ -186,7 +186,6 @@ class UIBuilder:
                     tooltip=" Click this checkbox to activate a callback function",
                     on_click_fn=self._on_checkbox_click_fn,
                 )
-                check_box.visible = False
                 self.wrapped_ui_elements.append(check_box)
 
     def _create_selection_widgets_frame(self):

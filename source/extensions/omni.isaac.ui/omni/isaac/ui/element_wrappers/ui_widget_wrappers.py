@@ -329,7 +329,14 @@ class IntField(UIWidgetWrapper):
         # Enforces upper and lower limits on value change
         model.set_max(self.get_upper_limit())
         model.set_min(self.get_lower_limit())
+
         val = model.get_value_as_int()
+        if val < self.get_lower_limit():
+            model.set_value(self.get_lower_limit())
+            return
+        if val > self.get_upper_limit():
+            model.set_value(self.get_upper_limit())
+            return
 
         if self._on_value_changed_fn is not None:
             self._on_value_changed_fn(val)
@@ -1320,6 +1327,7 @@ class ColorPicker(UIWidgetWrapper):
         on_color_picked_fn: Callable = None,
     ):
         self._on_color_picked_fn = on_color_picked_fn
+        default_value = list(default_value)
 
         color_picker_frame = self._create_ui_widget(label, default_value, tooltip)
         super().__init__(color_picker_frame)
@@ -1358,9 +1366,12 @@ class ColorPicker(UIWidgetWrapper):
         Args:
             color (List[float]): RGBA color value with four values between 0 and 1
         """
+        color = list(color)
         for i, item in enumerate(self.color_picker.model.get_item_children()):
             val = self.color_picker.model.get_item_value_model(item).set_value(color[i])
             color.append(val)
+
+        self._on_color_picked_fn_wrapper()
 
     def set_on_color_picked_fn(self, on_color_picked_fn: Callable):
         """Set the function that should be called if the user picks a new color
@@ -1598,7 +1609,7 @@ class XYPlot(UIWidgetWrapper):
         if self._x_min is not None:
             return float(self._x_min)
         elif self._x_data is not None:
-            return
+            return self._get_ragged_data_min(self._x_data)
         else:
             return None
 
@@ -2443,7 +2454,9 @@ class XYPlot(UIWidgetWrapper):
                                         x_fracs, y_data, color_idx
                                     )
                                 )
-                                plot_frame.visible = self._is_plot_visible[i]
+                                plot_frame.visible = (
+                                    self._is_plot_visible[i] if i < len(self._is_plot_visible) else False
+                                )
                                 self._plot_frames.append(plot_frame)
 
                             # Create an invisible frame on top that will give a helpful tooltip

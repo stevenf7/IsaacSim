@@ -9,3 +9,5 @@
 
 from .test_screen_printer import *
 from .test_ui import *
+from .test_ui_core_connectors import *
+from .test_ui_widget_wrappers import *
