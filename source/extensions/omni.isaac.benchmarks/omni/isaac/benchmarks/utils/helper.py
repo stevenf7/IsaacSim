@@ -10,22 +10,14 @@
 
 import time
 
-import carb
 import omni.graph.core as og
 import omni.kit.commands
 import omni.usd
-from omni.kit.viewport.utility import get_num_viewports
-from omni.usd.commands import DeletePrimsCommand
 from pxr import Gf, UsdGeom
 
 
-def delete_prim_and_children(prim_path: str):
-    """deleting the prim at given path as well as all its children"""
-    DeletePrimsCommand([prim_path]).do()
-
-
 def add_physx_lidar(prim_path, translation=Gf.Vec3f(0, 0, 0), orientation=Gf.Vec4f(0, 0, 0, 0)):
-    result, lidar = omni.kit.commands.execute(
+    _, lidar = omni.kit.commands.execute(
         "RangeSensorCreateLidar",
         path=prim_path,
         parent=None,

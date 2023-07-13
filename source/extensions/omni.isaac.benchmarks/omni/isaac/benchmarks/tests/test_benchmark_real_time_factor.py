@@ -7,15 +7,8 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import sys
-import time
-
-import carb
 import omni.kit.test
-from omni.isaac.core.utils.render_product import create_hydra_texture
 from omni.isaac.core_nodes.bindings import _omni_isaac_core_nodes
-from omni.syntheticdata import sensors
-from pxr import Gf
 
 from ..utils.base_isaac_benchmark import BaseIsaacBenchmark
 
@@ -49,7 +42,7 @@ class TestBenchmarkRealTimeFactor(BaseIsaacBenchmark):
         timeline.play()
         self.start_collecting_frametime()
 
-        while self.get_num_frames() < (1 if self.test_mode else TEST_NUM_APP_UPDATES):
+        for _ in range(1 if self.test_mode else TEST_NUM_APP_UPDATES):
             await omni.kit.app.get_app().next_update_async()
 
         self.stop_collecting_frametime()

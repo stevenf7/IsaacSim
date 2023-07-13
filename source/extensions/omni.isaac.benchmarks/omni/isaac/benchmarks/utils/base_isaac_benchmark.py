@@ -19,20 +19,20 @@ import omni.kit.test
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import is_stage_loading, open_stage
 from omni.kit.testing.services import execution, settings, utils
-from omni.kit.testing.services.datarecorders import cpu, interface, memory
+from omni.kit.testing.services.datarecorders import interface
 from omni.kit.testing.services.metrics import backend, measurements
-from omni.kit.widget.viewport.capture import FileCapture
 
 from .helper import wait_until_stage_is_fully_loaded_async
 from .recorders import *
 
 logger = utils.set_up_logging(__name__)
 
+
 # Sync mode sets settings that blocks the app until all materials are fully loaded
 def set_sync_mode():
     carb_settings = carb.settings.get_settings()
     if carb_settings.get("/app/asyncRendering"):
-        carb.log_warn(f"Async rendering is enabled, setting sync mode might not work")
+        carb.log_warn("Async rendering is enabled, setting sync mode might not work")
     carb_settings.set("/omni.kit.plugin/syncUsdLoads", True)
     carb_settings.set("/rtx-defaults/materialDb/syncLoads", True)
     carb_settings.set("/rtx-defaults/hydra/materialSyncLoads", True)
@@ -88,14 +88,14 @@ class BaseIsaacBenchmark(omni.kit.test.AsyncTestCase):
         self.outputs_dir: Path = Path(self._metrics_output_folder) / "isaac_sim_benchmark_outputs"
 
         logger.info(f"Local folder location = {self.outputs_dir}")
-        logger.info(f"Starting")
+        logger.info("Starting")
         self.benchmark_start_time = time.time()
         self.test_mode = os.getenv("ISAAC_TEST_MODE") == "1"
         logger.info(f"Test mode = {'true' if self.test_mode else 'false'}")
         pass
 
     async def tearDown(self):
-        logger.info(f"Stopping")
+        logger.info("Stopping")
         while is_stage_loading():
             print("asset still loading, waiting to finish")
             await omni.kit.app.get_app().next_update_async()
@@ -207,9 +207,6 @@ class BaseIsaacBenchmark(omni.kit.test.AsyncTestCase):
     def stop_runtime(self):
         self.runtime_recorder.stop_time()
 
-    def get_num_frames(self):
-        return self.frametime_recorder.get_num_frames()
-
     async def store_measurements(self):
         run_measurements = []
         run_metadata = []
@@ -222,20 +219,6 @@ class BaseIsaacBenchmark(omni.kit.test.AsyncTestCase):
         self.test_run.measurements.extend(run_measurements)
         self.test_run.metadata.extend(run_metadata)
 
-    async def fully_load_stage(self, usd_path, loop_frames=120):
-
+    async def fully_load_stage(self, usd_path):
         open_stage(usd_path)
         await wait_until_stage_is_fully_loaded_async()
-
-    # TODO, use datarecorders.ImageComparison
-    # async def capture_image(self):
-    #     viewport_names = get_viewport_names()
-    #     for v in range(get_num_viewports()):
-    #         image_path = data_dir + "/snapshot_" + str(v)
-    #         viewport_window = get_viewport_from_window_name(window_name=viewport_names[v])
-    #         capture = viewport_window.schedule_capture(FileCapture(image_path))
-    #         captured_aovs = await capture.wait_for_result()
-    #         if captured_aovs:
-    #             print(f'AOV "{captured_aovs[0]}" was written to "{image_path}"')
-    #         else:
-    #             print(f'No image was written to "{image_path}"')
