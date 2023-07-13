@@ -93,6 +93,67 @@ class DOPEWriter(Writer):
         # Pose Data
         self.annotators.append(AnnotatorRegistry.get_annotator("dope", init_params={"semanticTypes": semantic_types}))
 
+    def register_pose_annotator(config_data: dict):
+        AnnotatorRegistry.register_annotator_from_node(
+            name="DopeSync",
+            input_rendervars=[
+                NodeConnectionTemplate(
+                    "PostProcessDispatcher",
+                    attributes_mapping={
+                        "outputs:referenceTimeNumerator": "inputs:rationalTimeNumerator",
+                        "outputs:referenceTimeDenominator": "inputs:rationalTimeDenominator",
+                    },
+                ),
+                NodeConnectionTemplate("CameraParams", attributes_mapping={"outputs:exec": "inputs:execIn"}),
+                NodeConnectionTemplate("InstanceMapping", attributes_mapping={"outputs:exec": "inputs:execIn"}),
+                NodeConnectionTemplate("bounding_box_3d", attributes_mapping={"outputs:exec": "inputs:execIn"}),
+            ],
+            node_type_id="omni.graph.action.RationalTimeSyncGate",
+        )
+
+        AnnotatorRegistry.register_annotator_from_node(
+            name="dope",
+            input_rendervars=[
+                NodeConnectionTemplate("DopeSync", attributes_mapping={"outputs:execOut": "inputs:exec"}),
+                "CameraParams",
+                "InstanceMapping",
+                NodeConnectionTemplate("bounding_box_3d", attributes_mapping={"outputs:data": "inputs:boundingBox3d"}),
+            ],
+            node_type_id="omni.replicator.isaac.Dope",
+            init_params={
+                "width": config_data["WIDTH"],
+                "height": config_data["HEIGHT"],
+                "cameraRotation": np.array(config_data["CAMERA_ROTATION"]),
+            },
+            output_data_type=np.dtype(
+                [
+                    ("semanticId", "<u4"),
+                    ("visibility", "<f4"),
+                    ("location", "<f4", (3,)),
+                    ("rotation", "<f4", (4,)),  # Quaternion
+                    ("projected_cuboid", "<f4", (9, 2)),  # Includes Center
+                ]
+            ),
+            output_is_2d=False,
+        )
+
+    def setup_writer(config_data: dict, writer_config: dict):
+        """Initialize writer and attach render product
+        Args:
+            config_data: A dictionary containing the general configurations for the script.
+            writer_config: A dictionary containing writer-specific configurations.
+        """
+        writer = WriterRegistry.get("DOPEWriter")
+        writer.initialize(
+            output_dir=writer_config["output_folder"],
+            class_name_to_index_map=config_data["CLASS_NAME_TO_INDEX"],
+            use_s3=writer_config["use_s3"],
+            bucket_name=writer_config["bucket_name"],
+            endpoint_url=writer_config["endpoint_url"],
+        )
+
+        return writer
+
     def write(self, data: dict):
         """Write function called from the OgnWriter node on every frame to process annotator output.
 

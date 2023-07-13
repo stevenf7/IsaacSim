@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.9.0] - 2023-07-12
+
+### Added 
+- register_pose_annotator() to DOPEWriter and YCBVideoWriter 
+- setup_writer() to DOPEWriter and YCBVideoWriter 
+- Functions were originally in standalone_examples/replicator/offline_pose_generation/offline_pose_generation.py
+- Moved into dope_writer.py and ycb_video_writer.py 
+
 ## [1.8.1] - 2023-06-14
 
 ### Fixed

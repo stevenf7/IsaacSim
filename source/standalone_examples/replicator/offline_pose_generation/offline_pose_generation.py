@@ -147,6 +147,14 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self.endpoint = endpoint
         self.bucket = bucket
 
+        self.writer_config = {
+            "output_folder": self._output_folder,
+            "use_s3": self.use_s3,
+            "bucket_name": self.bucket,
+            "endpoint_url": self.endpoint,
+            "train_size": self.train_size,
+        }
+
         self._setup_world()
 
         self.cur_idx = 0
@@ -348,8 +356,9 @@ class RandomScenario(torch.utils.data.IterableDataset):
         while is_stage_loading():
             kit.app.update()
 
-        self._register_pose_annotator()
-        self._setup_writer()
+        self.writer_helper.register_pose_annotator(config_data=config_data)
+        self.writer = self.writer_helper.setup_writer(config_data=config_data, writer_config=self.writer_config)
+        self.writer.attach([self.render_product])
 
         world.play()
 
@@ -409,139 +418,6 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
         with rep.trigger.on_frame(interval=self.dome_interval):
             rep.randomizer.randomize_domelight(dome_texture_paths)
-
-    def _register_pose_annotator(self):
-        """Register custom pose annotator, specifying its upstream inputs required for computation and its output data
-        type.
-        """
-
-        NodeConnectionTemplate = SyntheticData.NodeConnectionTemplate
-
-        if self.writer_helper == YCBVideoWriter:
-            rep.AnnotatorRegistry.register_annotator_from_node(
-                name="PoseSync",
-                input_rendervars=[
-                    NodeConnectionTemplate(
-                        "PostProcessDispatch", attributes_mapping={"outputs:referenceTimeNumerator": "inputs:syncValue"}
-                    ),
-                    NodeConnectionTemplate(
-                        "SemanticBoundingBox2DExtentTightSDExportRawArray",
-                        attributes_mapping={"outputs:exec": "inputs:execIn"},
-                    ),
-                    NodeConnectionTemplate(
-                        "InstanceMappingWithTransforms", attributes_mapping={"outputs:exec": "inputs:execIn"}
-                    ),
-                    NodeConnectionTemplate("CameraParams", attributes_mapping={"outputs:exec": "inputs:execIn"}),
-                ],
-                node_type_id="omni.graph.action.SyncGate",
-            )
-
-            rep.AnnotatorRegistry.register_annotator_from_node(
-                name="pose",
-                input_rendervars=[
-                    NodeConnectionTemplate("PoseSync", attributes_mapping={"outputs:execOut": "inputs:exec"}),
-                    NodeConnectionTemplate(
-                        "SemanticBoundingBox2DExtentTightSDExportRawArray",
-                        attributes_mapping={"outputs:data": "inputs:data", "outputs:bufferSize": "inputs:bufferSize"},
-                    ),
-                    "InstanceMappingWithTransforms",
-                    "CameraParams",
-                ],
-                node_type_id="omni.replicator.isaac.Pose",
-                init_params={
-                    "imageWidth": config_data["WIDTH"],
-                    "imageHeight": config_data["HEIGHT"],
-                    "cameraRotation": np.array(config_data["CAMERA_ROTATION"]),
-                    "getCenters": True,
-                    "includeOccludedPrims": False,
-                },
-                output_data_type=np.dtype(
-                    [
-                        ("semanticId", "<u4"),
-                        ("prims_to_desired_camera", "<f4", (4, 4)),
-                        ("center_coords_image_space", "<f4", (2,)),
-                    ]
-                ),
-                output_is_2d=False,
-            )
-        elif self.writer_helper == DOPEWriter:
-            rep.AnnotatorRegistry.register_annotator_from_node(
-                name="DopeSync",
-                input_rendervars=[
-                    NodeConnectionTemplate(
-                        "PostProcessDispatch", attributes_mapping={"outputs:referenceTimeNumerator": "inputs:syncValue"}
-                    ),
-                    NodeConnectionTemplate("CameraParams", attributes_mapping={"outputs:exec": "inputs:execIn"}),
-                    NodeConnectionTemplate("InstanceMapping", attributes_mapping={"outputs:exec": "inputs:execIn"}),
-                    NodeConnectionTemplate("bounding_box_3d", attributes_mapping={"outputs:exec": "inputs:execIn"}),
-                ],
-                node_type_id="omni.graph.action.SyncGate",
-            )
-
-            rep.AnnotatorRegistry.register_annotator_from_node(
-                name="dope",
-                input_rendervars=[
-                    NodeConnectionTemplate("DopeSync", attributes_mapping={"outputs:execOut": "inputs:exec"}),
-                    "CameraParams",
-                    "InstanceMapping",
-                    NodeConnectionTemplate(
-                        "bounding_box_3d", attributes_mapping={"outputs:data": "inputs:boundingBox3d"}
-                    ),
-                ],
-                node_type_id="omni.replicator.isaac.Dope",
-                init_params={
-                    "width": config_data["WIDTH"],
-                    "height": config_data["HEIGHT"],
-                    "cameraRotation": np.array(config_data["CAMERA_ROTATION"]),
-                },
-                output_data_type=np.dtype(
-                    [
-                        ("semanticId", "<u4"),
-                        ("visibility", "<f4"),
-                        ("location", "<f4", (3,)),
-                        ("rotation", "<f4", (4,)),  # Quaternion
-                        ("projected_cuboid", "<f4", (9, 2)),  # Includes Center
-                    ]
-                ),
-                output_is_2d=False,
-            )
-
-    def _setup_writer(self):
-        """Setup the OV Replicator dataset writer and attach it to a render product."""
-
-        if self.writer_helper == YCBVideoWriter:
-            # Initialize and attach Replicator writer
-            self.writer = rep.WriterRegistry.get("YCBVideoWriter")
-            self.writer.initialize(
-                output_dir=self._output_folder,
-                num_frames=self.train_size,
-                semantic_types=None,
-                rgb=True,
-                bounding_box_2d_tight=True,
-                semantic_segmentation=True,
-                distance_to_image_plane=True,
-                pose=True,
-                class_name_to_index_map=config_data["CLASS_NAME_TO_INDEX"],
-                factor_depth=10000,
-                intrinsic_matrix=np.array(
-                    [
-                        [config_data["F_X"], 0, config_data["C_X"]],
-                        [0, config_data["F_Y"], config_data["C_Y"]],
-                        [0, 0, 1],
-                    ]
-                ),
-            )
-        elif self.writer_helper == DOPEWriter:
-            self.writer = rep.WriterRegistry.get("DOPEWriter")
-            self.writer.initialize(
-                output_dir=self._output_folder,
-                class_name_to_index_map=config_data["CLASS_NAME_TO_INDEX"],
-                use_s3=self.use_s3,
-                bucket_name=self.bucket,
-                endpoint_url=self.endpoint,
-            )
-
-        self.writer.attach([self.render_product])
 
     def randomize_movement_in_view(self, prim):
         """Randomly move and rotate prim such that it stays in view of camera.

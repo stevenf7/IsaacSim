@@ -124,6 +124,91 @@ class YCBVideoWriter(Writer):
         self._create_output_folders()
         self._create_train_text_file()
 
+    def register_pose_annotator(config_data: dict):
+        """Registers the annotators for the specific writer
+        Args:
+            config_data: A dictionary containing the configuration data for the current writer.
+        """
+        AnnotatorRegistry.register_annotator_from_node(
+            name="PoseSync",
+            input_rendervars=[
+                NodeConnectionTemplate(
+                    "PostProcessDispatcher",
+                    attributes_mapping={
+                        "outputs:referenceTimeNumerator": "inputs:rationalTimeNumerator",
+                        "outputs:referenceTimeDenominator": "inputs:rationalTimeDenominator",
+                    },
+                ),
+                NodeConnectionTemplate(
+                    "SemanticBoundingBox2DExtentTightSDExportRawArray",
+                    attributes_mapping={"outputs:exec": "inputs:execIn"},
+                ),
+                NodeConnectionTemplate(
+                    "InstanceMappingWithTransforms", attributes_mapping={"outputs:exec": "inputs:execIn"}
+                ),
+                NodeConnectionTemplate("CameraParams", attributes_mapping={"outputs:exec": "inputs:execIn"}),
+            ],
+            node_type_id="omni.graph.action.RationalTimeSyncGate",
+        )
+
+        AnnotatorRegistry.register_annotator_from_node(
+            name="pose",
+            input_rendervars=[
+                NodeConnectionTemplate("PoseSync", attributes_mapping={"outputs:execOut": "inputs:exec"}),
+                NodeConnectionTemplate(
+                    "SemanticBoundingBox2DExtentTightSDExportRawArray",
+                    attributes_mapping={"outputs:data": "inputs:data", "outputs:bufferSize": "inputs:bufferSize"},
+                ),
+                "InstanceMappingWithTransforms",
+                "CameraParams",
+            ],
+            node_type_id="omni.replicator.isaac.Pose",
+            init_params={
+                "imageWidth": config_data["WIDTH"],
+                "imageHeight": config_data["HEIGHT"],
+                "cameraRotation": np.array(config_data["CAMERA_ROTATION"]),
+                "getCenters": True,
+                "includeOccludedPrims": False,
+            },
+            output_data_type=np.dtype(
+                [
+                    ("semanticId", "<u4"),
+                    ("prims_to_desired_camera", "<f4", (4, 4)),
+                    ("center_coords_image_space", "<f4", (2,)),
+                ]
+            ),
+            output_is_2d=False,
+        )
+
+    def setup_writer(config_data: dict, writer_config: dict):
+        """Initialize writer and attach render product
+        Args:
+            config_data: A dictionary containing the general configurations for the script.
+            writer_config: A dictionary containing writer-specific configurations.
+        """
+        writer = WriterRegistry.get("YCBVideoWriter")
+        writer.initialize(
+            output_dir=writer_config["output_folder"],
+            num_frames=writer_config["train_size"],
+            semantic_types=None,
+            rgb=True,
+            bounding_box_2d_tight=True,
+            semantic_segmentation=True,
+            distance_to_image_plane=True,
+            pose=True,
+            class_name_to_index_map=config_data["CLASS_NAME_TO_INDEX"],
+            factor_depth=10000,
+            intrinsic_matrix=np.array(
+                [
+                    [config_data["F_X"], 0, config_data["C_X"]],
+                    [0, config_data["F_Y"], config_data["C_Y"]],
+                    [0, 0, 1],
+                ]
+            ),
+        )
+
+        return writer
+
     def write(self, data: dict):
         """Write function called from the OgnWriter node on every frame to process annotator output.
 
