@@ -511,6 +511,12 @@ stdout_fail_patterns.exclude = [
 	"*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*",  # optix disk cache errors
 	"*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*", # optix disk cache errors
 ]
+[[repo_test.suites.internalpythontests.bucket]]
+name = "1"
+include = ["tests-python-omni.isaac.internal_tools*${shell_ext}"]
+[[repo_test.suites.internalpythontests.bucket]]
+name = "2"
+include = ["tests-python-omni.isaac.benchmarks*${shell_ext}"]
 
 [repo_test.suites.internalnativepythontests]
 kind = "glob_and_exec"
