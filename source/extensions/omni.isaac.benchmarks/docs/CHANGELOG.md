@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.16.1] - 2023-07-13
+
+### Changed
+- Cleaned up benchmark code - unused imports, formatting, etc.
+
 ## [0.16.0] - 2023-07-03
 
 ### Added

@@ -9,12 +9,10 @@
 
 import numpy as np
 import omni.kit.test
-from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.core.utils.stage import is_stage_loading
 from omni.isaac.sensor import Camera
 from omni.kit.viewport.utility import get_active_viewport
-from pxr import Gf
 
 from ..utils.base_isaac_benchmark import BaseIsaacBenchmark
 
@@ -37,7 +35,6 @@ class TestBenchmarkCamera(BaseIsaacBenchmark):
 
         scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
         await self.fully_load_stage(self.assets_root_path + scene_path)
-        stage = omni.usd.get_context().get_stage()
 
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()
@@ -74,7 +71,7 @@ class TestBenchmarkCamera(BaseIsaacBenchmark):
         self.set_phase("benchmark")
         self.start_collecting_frametime()
 
-        while self.get_num_frames() < (1 if self.test_mode else TEST_NUM_APP_UPDATES):
+        for _ in range(1 if self.test_mode else TEST_NUM_APP_UPDATES):
             await omni.kit.app.get_app().next_update_async()
 
         self.stop_collecting_frametime()

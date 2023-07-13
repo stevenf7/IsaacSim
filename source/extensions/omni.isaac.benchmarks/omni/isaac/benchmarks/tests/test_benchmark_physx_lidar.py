@@ -35,7 +35,6 @@ class TestBenchmarkLidar(BaseIsaacBenchmark):
 
         scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
         await self.fully_load_stage(self.assets_root_path + scene_path)
-        stage = omni.usd.get_context().get_stage()
         PhysicsContext(physics_dt=1.0 / 60.0)
 
         timeline = omni.timeline.get_timeline_interface()
@@ -44,7 +43,7 @@ class TestBenchmarkLidar(BaseIsaacBenchmark):
         await omni.kit.app.get_app().next_update_async()
 
         timeline = omni.timeline.get_timeline_interface()
-        timeline.play()
+        timeline.play()  # TODO: why is this here twice?
         for i in range(n_sensor):
 
             # add a sensor on stage
@@ -61,7 +60,7 @@ class TestBenchmarkLidar(BaseIsaacBenchmark):
         self.set_phase("benchmark")
         self.start_collecting_frametime()
 
-        while self.get_num_frames() < (1 if self.test_mode else TEST_NUM_APP_UPDATES):
+        for _ in range(1 if self.test_mode else TEST_NUM_APP_UPDATES):
             await omni.kit.app.get_app().next_update_async()
 
         self.stop_collecting_frametime()

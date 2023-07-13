@@ -6,10 +6,12 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-import platform
 import time
 from pathlib import Path
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
+
+if TYPE_CHECKING:
+    from omni.kit.testing.services.settings import BenchmarkSettings
 
 from omni.isaac.core_nodes.bindings import _omni_isaac_core_nodes
 from omni.kit.testing.services.datarecorders import cpu, frametime, interface, memory
@@ -47,9 +49,6 @@ class IsaacFrameTimeRecorder(interface.MeasurementDataRecorder):
         self.elapsed_sim_time = (self._core_nodes.get_sim_time_monotonic() - self.sim_time_start) * 1000
         self.elapsed_real_time = (time.perf_counter_ns() - self.real_time_start) / 1000000
         self.frametime_collector.stop_collecting()
-
-    def get_num_frames(self):
-        return len(self.frametime_collector.render_frametimes_ms)
 
     async def get_data(self):
         if self.phase != self.context.phase:
@@ -119,7 +118,6 @@ class IsaacMemoryRecorder(memory.MemoryRecorder):
         super().__init__(context, root_dir, benchmark_settings)
 
     async def get_data(self) -> interface.MeasurementData:
-
         (
             cpu_load,
             rss,
@@ -163,7 +161,6 @@ class IsaacCPUStatsRecorder(cpu.CPUStatsRecorder):
         super().__init__(context, root_dir, benchmark_settings)
 
     async def get_data(self) -> interface.MeasurementData:
-
         (
             cpu_iowait_pct,
             cpu_system_pct,

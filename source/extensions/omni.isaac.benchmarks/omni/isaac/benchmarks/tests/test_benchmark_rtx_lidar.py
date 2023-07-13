@@ -64,7 +64,7 @@ class TestBenchmarkRtxLidar(BaseIsaacBenchmark):
         timeline.play()
         self.start_collecting_frametime()
 
-        while self.get_num_frames() < (1 if self.test_mode else TEST_NUM_APP_UPDATES):
+        for _ in range(1 if self.test_mode else TEST_NUM_APP_UPDATES):
             await omni.kit.app.get_app().next_update_async()
 
         self.stop_collecting_frametime()

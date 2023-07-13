@@ -7,29 +7,16 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import asyncio
-
-import carb
 import numpy as np
 import omni.kit.test
-import yaml
 from omni.isaac.core import PhysicsContext
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.sensor import Camera
 from omni.isaac.wheeled_robots.robots import WheeledRobot
-from omni.kit.viewport.utility import (
-    create_viewport_window,
-    get_active_viewport,
-    get_active_viewport_and_window,
-    get_num_viewports,
-    get_viewport_from_window_name,
-)
-from omni.kit.widget.viewport.capture import FileCapture
+from omni.kit.viewport.utility import get_active_viewport
 
 from ..utils.base_isaac_benchmark import BaseIsaacBenchmark
-from ..utils.helper import delete_prim_and_children
-from ..utils.logger import get_memory_stats, log_header
 
 # from parameterized import parameterized
 
@@ -57,6 +44,7 @@ class TestBenchmarkRobots(BaseIsaacBenchmark):
             sensor_name += "_camera"
         if len(sensor_name) == 0:
             sensor_name = "_no_sensor"
+
         self.test_run.test_name = f"{n_robot}_robots{sensor_name}"
         self.set_phase("loading")
         self.start_runtime()
@@ -136,7 +124,7 @@ class TestBenchmarkRobots(BaseIsaacBenchmark):
         self.set_phase("benchmark")
         self.start_collecting_frametime()
 
-        while self.get_num_frames() < (1 if self.test_mode else TEST_NUM_APP_UPDATES):
+        for _ in range(1 if self.test_mode else TEST_NUM_APP_UPDATES):
             await omni.kit.app.get_app().next_update_async()
 
         self.stop_collecting_frametime()
