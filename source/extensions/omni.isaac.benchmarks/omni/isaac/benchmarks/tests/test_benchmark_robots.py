@@ -7,7 +7,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-
 import asyncio
 
 import carb
@@ -137,7 +136,7 @@ class TestBenchmarkRobots(BaseIsaacBenchmark):
         self.set_phase("benchmark")
         self.start_collecting_frametime()
 
-        while self.get_num_frames() < TEST_NUM_APP_UPDATES:
+        while self.get_num_frames() < (1 if self.test_mode else TEST_NUM_APP_UPDATES):
             await omni.kit.app.get_app().next_update_async()
 
         self.stop_collecting_frametime()

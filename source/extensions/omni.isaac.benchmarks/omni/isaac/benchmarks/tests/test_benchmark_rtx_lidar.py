@@ -6,6 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+
 import omni.kit.test
 from omni.isaac.core.utils.render_product import create_hydra_texture
 from omni.syntheticdata import sensors
@@ -63,7 +64,7 @@ class TestBenchmarkRtxLidar(BaseIsaacBenchmark):
         timeline.play()
         self.start_collecting_frametime()
 
-        while self.get_num_frames() < TEST_NUM_APP_UPDATES:
+        while self.get_num_frames() < (1 if self.test_mode else TEST_NUM_APP_UPDATES):
             await omni.kit.app.get_app().next_update_async()
 
         self.stop_collecting_frametime()

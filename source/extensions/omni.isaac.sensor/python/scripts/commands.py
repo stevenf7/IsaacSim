@@ -109,6 +109,9 @@ class IsaacSensorCreateImuSensor(omni.kit.commands.Command):
         sensor_period: float = -1,
         translation: Gf.Vec3d = Gf.Vec3d(0, 0, 0),
         orientation: Gf.Quatd = Gf.Quatd(1, 0, 0, 0),
+        linear_acceleration_filter_size: int = 1,
+        angular_velocity_filter_size: int = 1,
+        orientation_filter_size: int = 1,
     ):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
@@ -130,6 +133,10 @@ class IsaacSensorCreateImuSensor(omni.kit.commands.Command):
 
         if success and self._prim:
             self._prim.CreateSensorPeriodAttr().Set(self._sensor_period)
+            self._prim.CreateLinearAccelerationFilterWidthAttr().Set(self._linear_acceleration_filter_size)
+            self._prim.CreateAngularVelocityFilterWidthAttr().Set(self._angular_velocity_filter_size)
+            self._prim.CreateOrientationFilterWidthAttr().Set(self._orientation_filter_size)
+
             return self._prim
         else:
             carb.log_error("Could not create Imu sensor prim")

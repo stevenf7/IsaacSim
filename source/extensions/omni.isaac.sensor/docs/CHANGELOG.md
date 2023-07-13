@@ -1,4 +1,11 @@
 # Changelog
+## [5.11.0] - 2023-07-05
+### Added
+- Added filter width attributes to the imu sensor for adjusting noise
+- Added unit test for imu sensor filter, and repeated imu sensor readings
+
+### Fixed
+- Imu frequency to downtime calculation has been fixed
 
 ## [5.10.0] - 2023-07-05
 ### Added

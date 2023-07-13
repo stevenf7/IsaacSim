@@ -37,6 +37,7 @@ public:
         : IsaacBaseSensorComponent(debugDraw)
     {
         mPhysXInterface = PhysXInterface;
+        mRawBuffer.resize(mRawBufferSize, IsRawData());
         reset();
     }
 
@@ -74,17 +75,17 @@ public:
 private:
     IsProperties mProps;
     // sensor signal processing constant
-    // size of raw data, must be larger than 2*LIN_ACC_AVERAGE_NUM
-    const static int RAW_BUFFER_SIZE = 10;
+    // size of raw data, must be larger than 2*mLinearAccelerationFilterSize
+    int mRawBufferSize = 20;
 
     IsRawData mInitBuffer;
-    IsRawData mRawBuffer[RAW_BUFFER_SIZE]; // raw velocities data
+    std::vector<IsRawData> mRawBuffer; // raw velocities data array
     // moving average past n angular velocities
-    const static int ANG_VEL_AVERAGE_NUM = 1;
+    int mAngularVelocityFilterSize = 1;
     // moving average past n finite diff acc
-    const static int LIN_ACC_AVERAGE_NUM = 2;
+    int mLinearAccelerationFilterSize = 1;
     // moving average past n orientation values
-    const static int ORIENT_AVERAGE_NUM = 1;
+    int mOrientationFilterSize = 1;
 
     IsReading mInitPair; // Data obtained on simulation timestamp
     IsReading mReadingPair[2]; // Data obtained on simulation timestamp

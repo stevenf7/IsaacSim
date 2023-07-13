@@ -7,16 +7,14 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-
 import os
 import shutil
-import time
 
 import carb
 import omni.kit.test
 import omni.replicator.core as rep
 from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.utils.stage import create_new_stage_async, open_stage, open_stage_async
+from omni.isaac.core.utils.stage import create_new_stage_async, open_stage
 
 from ..utils.base_isaac_benchmark import BaseIsaacBenchmark
 from ..utils.helper import wait_until_stage_is_fully_loaded_async
@@ -116,7 +114,7 @@ class TestBenchmarkSDGGeneration(BaseIsaacBenchmark):
         self.start_collecting_frametime()
 
         # Run for a few frames to check the clean stage stats
-        for _ in range(TEST_NUM_APP_UPDATES):
+        for _ in range(1 if self.test_mode else TEST_NUM_APP_UPDATES):
             await omni.kit.app.get_app().next_update_async()
 
         self.stop_collecting_frametime()
@@ -145,7 +143,7 @@ class TestBenchmarkSDGGeneration(BaseIsaacBenchmark):
         self.start_collecting_frametime()
 
         # Run for a few frames to check the stage stats with the render products
-        for _ in range(TEST_NUM_APP_UPDATES):
+        for _ in range(1 if self.test_mode else TEST_NUM_APP_UPDATES):
             await omni.kit.app.get_app().next_update_async()
 
         self.stop_collecting_frametime()
@@ -162,7 +160,7 @@ class TestBenchmarkSDGGeneration(BaseIsaacBenchmark):
         self.start_collecting_frametime()
         self.start_runtime()
 
-        await rep.orchestrator.run_until_complete_async(num_frames=num_frames)
+        await rep.orchestrator.run_until_complete_async(num_frames=(1 if self.test_mode else num_frames))
         # await rep.orchestrator.run_async(num_frames=num_frames)
         # for _ in range(num_frames):
         #     await rep.orchestrator.step_async()
@@ -177,7 +175,9 @@ class TestBenchmarkSDGGeneration(BaseIsaacBenchmark):
         writer = None
 
         # Check that all the SDG frames were written to disk
-        all_frames_written = check_number_of_written_sdg_frames(output_directory, num_frames, verbose=True)
+        all_frames_written = check_number_of_written_sdg_frames(
+            output_directory, (1 if self.test_mode else num_frames), verbose=True
+        )
         self.assertTrue(all_frames_written)
 
         # Remove the written data from disk
@@ -189,7 +189,7 @@ class TestBenchmarkSDGGeneration(BaseIsaacBenchmark):
         self.start_collecting_frametime()
 
         # Run for a few frames to check the stage stats after detaching the writer
-        for _ in range(TEST_NUM_APP_UPDATES):
+        for _ in range(1 if self.test_mode else TEST_NUM_APP_UPDATES):
             await omni.kit.app.get_app().next_update_async()
 
         self.stop_collecting_frametime()

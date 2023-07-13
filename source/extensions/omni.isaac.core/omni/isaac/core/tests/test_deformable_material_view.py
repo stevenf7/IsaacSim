@@ -1,8 +1,8 @@
-# Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
-# and any modifications thereto. Any use, reproduction, disclosure or
+# and any modifications thereto.  Any use, reproduction, disclosure or
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
@@ -17,13 +17,13 @@ import numpy as np
 import omni.kit.test
 import torch
 from omni.isaac.core import World
-from omni.isaac.core.materials.particle_material import ParticleMaterial
-from omni.isaac.core.materials.particle_material_view import ParticleMaterialView
+from omni.isaac.core.materials.deformable_material import DeformableMaterial
+from omni.isaac.core.materials.deformable_material_view import DeformableMaterialView
 from omni.isaac.core.utils.stage import create_new_stage_async, get_current_stage, update_stage_async
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestParticleMaterialView(omni.kit.test.AsyncTestCase):
+class TestDeformableMaterialView(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         World.clear_instance()
         await create_new_stage_async()
@@ -38,7 +38,7 @@ class TestParticleMaterialView(omni.kit.test.AsyncTestCase):
         await update_stage_async()
         pass
 
-    async def test_particle_material_view(self):
+    async def test_deformable_material_view(self):
         self.isclose = torch.isclose
         self._array_container = torch.cuda.FloatTensor
         self.stage = get_current_stage()
@@ -49,124 +49,112 @@ class TestParticleMaterialView(omni.kit.test.AsyncTestCase):
     async def _runner(self):
         self.num_envs = 10
         for i in range(self.num_envs):
-            self.particle_material = ParticleMaterial(
-                prim_path="/World/particleMaterial_" + str(i), drag=0.1, lift=0.3, friction=0.6
+            self.deformable_material = DeformableMaterial(
+                prim_path="/World/deformableMaterial_" + str(i),
+                dynamic_friction=0.5,
+                youngs_modulus=5e4,
+                poissons_ratio=0.4,
+                damping_scale=0.1,
+                elasticity_damping=0.1,
             )
 
-        # create a view to deal with all the cloths
-        self.particle_material_view = ParticleMaterialView(prim_paths_expr="/World/particleMaterial_*")
-        self.my_world.scene.add(self.particle_material_view)
+        # create a view to deal with all the deformables
+        self.deformable_material_view = DeformableMaterialView(prim_paths_expr="/World/deformableMaterial_*")
+        self.my_world.scene.add(self.deformable_material_view)
         await update_stage_async()
 
         for indexed in [False, True]:
             self._test_cfg["indexed"] = indexed
             print(self._test_cfg)
-            await self.friction_test()
-            await self.damping_test()
-            await self.lift_test()
-            await self.drag_test()
-            await self.gravity_scale_test()
+            await self.dynamic_friction_test()
+            await self.poissons_ratio_test()
+            await self.youngs_modululs_test()
+            await self.damping_scale_test()
+            await self.elasticity_damping_test()
 
         await self.my_world.stop_async()
 
-    async def friction_test(self):
+    async def dynamic_friction_test(self):
         await self.my_world.reset_async()
         await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
-        prev_values = self.particle_material_view.get_frictions(indices)
+        prev_values = self.deformable_material_view.get_dynamic_frictions(indices)
         new_values = prev_values + np.random.uniform(low=0.0, high=1.0, size=(prev_values.shape[0], 1)).astype(
             np.single
         )
-        self.particle_material_view.set_frictions(new_values, indices)
-        cur_values = self.particle_material_view.get_frictions(indices)
+        self.deformable_material_view.set_dynamic_frictions(new_values, indices)
+        cur_values = self.deformable_material_view.get_dynamic_frictions(indices)
         self.assertTrue(self.isclose(new_values, cur_values).all())
         expected_shape = torch.Size(
-            [len(indices) if self._test_cfg["indexed"] else self.particle_material_view.count, 1]
+            [len(indices) if self._test_cfg["indexed"] else self.deformable_material_view.count, 1]
         )
         self.assertTrue(cur_values.shape == expected_shape)
         print(expected_shape)
 
-    async def damping_test(self):
+    async def poissons_ratio_test(self):
         await self.my_world.reset_async()
         await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
-        prev_values = self.particle_material_view.get_dampings(indices)
-        new_values = prev_values + np.random.uniform(low=0.0, high=1.0, size=(prev_values.shape[0], 1)).astype(
+        prev_values = self.deformable_material_view.get_poissons_ratios(indices) / 2
+        new_values = prev_values + np.random.uniform(low=0.0, high=0.1, size=(prev_values.shape[0], 1)).astype(
             np.single
         )
-        self.particle_material_view.set_dampings(new_values, indices)
-        cur_values = self.particle_material_view.get_dampings(indices)
+        self.deformable_material_view.set_poissons_ratios(new_values, indices)
+        cur_values = self.deformable_material_view.get_poissons_ratios(indices)
         self.assertTrue(self.isclose(new_values, cur_values).all())
         expected_shape = torch.Size(
-            [len(indices) if self._test_cfg["indexed"] else self.particle_material_view.count, 1]
+            [len(indices) if self._test_cfg["indexed"] else self.deformable_material_view.count, 1]
         )
         self.assertTrue(cur_values.shape == expected_shape)
         print(expected_shape)
 
-    async def damping_test(self):
+    async def youngs_modululs_test(self):
         await self.my_world.reset_async()
         await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
-        prev_values = self.particle_material_view.get_dampings(indices)
+        prev_values = self.deformable_material_view.get_youngs_moduli(indices)
         new_values = prev_values + np.random.uniform(low=0.0, high=1.0, size=(prev_values.shape[0], 1)).astype(
             np.single
         )
-        self.particle_material_view.set_dampings(new_values, indices)
-        cur_values = self.particle_material_view.get_dampings(indices)
+        self.deformable_material_view.set_youngs_moduli(new_values, indices)
+        cur_values = self.deformable_material_view.get_youngs_moduli(indices)
         self.assertTrue(self.isclose(new_values, cur_values).all())
         expected_shape = torch.Size(
-            [len(indices) if self._test_cfg["indexed"] else self.particle_material_view.count, 1]
+            [len(indices) if self._test_cfg["indexed"] else self.deformable_material_view.count, 1]
         )
         self.assertTrue(cur_values.shape == expected_shape)
         print(expected_shape)
 
-    async def lift_test(self):
+    async def damping_scale_test(self):
         await self.my_world.reset_async()
         await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
-        prev_values = self.particle_material_view.get_lifts(indices)
-        new_values = prev_values + np.random.uniform(low=0.0, high=1.0, size=(prev_values.shape[0], 1)).astype(
+        prev_values = self.deformable_material_view.get_damping_scales(indices) / 2
+        new_values = prev_values + np.random.uniform(low=0.0, high=0.3, size=(prev_values.shape[0], 1)).astype(
             np.single
         )
-        self.particle_material_view.set_lifts(new_values, indices)
-        cur_values = self.particle_material_view.get_lifts(indices)
-        self.assertTrue(self.isclose(new_values, cur_values).all())
+        self.deformable_material_view.set_damping_scales(new_values, indices)
+        cur_values = self.deformable_material_view.get_damping_scales(indices)
+        self.assertTrue(self.isclose(new_values, cur_values, atol=5e-5).all())
         expected_shape = torch.Size(
-            [len(indices) if self._test_cfg["indexed"] else self.particle_material_view.count, 1]
+            [len(indices) if self._test_cfg["indexed"] else self.deformable_material_view.count, 1]
         )
         self.assertTrue(cur_values.shape == expected_shape)
         print(expected_shape)
 
-    async def drag_test(self):
+    async def elasticity_damping_test(self):
         await self.my_world.reset_async()
         await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
-        prev_values = self.particle_material_view.get_drags(indices)
+        prev_values = self.deformable_material_view.get_elasticity_dampings(indices)
         new_values = prev_values + np.random.uniform(low=0.0, high=1.0, size=(prev_values.shape[0], 1)).astype(
             np.single
         )
-        self.particle_material_view.set_drags(new_values, indices)
-        cur_values = self.particle_material_view.get_drags(indices)
+        self.deformable_material_view.set_elasticity_dampings(new_values, indices)
+        cur_values = self.deformable_material_view.get_elasticity_dampings(indices)
         self.assertTrue(self.isclose(new_values, cur_values).all())
         expected_shape = torch.Size(
-            [len(indices) if self._test_cfg["indexed"] else self.particle_material_view.count, 1]
-        )
-        self.assertTrue(cur_values.shape == expected_shape)
-        print(expected_shape)
-
-    async def gravity_scale_test(self):
-        await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
-        indices = [1, 2] if self._test_cfg["indexed"] else None
-        prev_values = self.particle_material_view.get_gravity_scales(indices)
-        new_values = prev_values + np.random.uniform(low=0.0, high=1.0, size=(prev_values.shape[0], 1)).astype(
-            np.single
-        )
-        self.particle_material_view.set_gravity_scales(new_values, indices)
-        cur_values = self.particle_material_view.get_gravity_scales(indices)
-        self.assertTrue(self.isclose(new_values, cur_values).all())
-        expected_shape = torch.Size(
-            [len(indices) if self._test_cfg["indexed"] else self.particle_material_view.count, 1]
+            [len(indices) if self._test_cfg["indexed"] else self.deformable_material_view.count, 1]
         )
         self.assertTrue(cur_values.shape == expected_shape)
         print(expected_shape)

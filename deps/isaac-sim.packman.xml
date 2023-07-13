@@ -51,7 +51,7 @@
         <package name="openssl" version="1.1.1t+nv1-${platform}" />
     </dependency>
     <dependency name="omni-isaacsim-schema" linkPath="../_build/target-deps/omni-isaacsim-schema/${platform}/${config}">
-        <package name="omni-isaacsim-schema" version="2.0.1+isaacsim.0.7330f66e.local.${platform}.${config}"/>
+        <package name="omni-isaacsim-schema" version="2.1.0+isaacsim.0.24ac08dc.local.${platform}.${config}"/>
     </dependency>
 
 </project>

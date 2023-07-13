@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.2.0] - 2023-07-10
+### Added
+- Added core wrappers for physx and physics.tensors deformable body APIs
+
+## [2.1.0] - 2023-06-21
+### Added
+- Added new APIs for joint force sensors and dof effort sensors
+
 ## [2.0.0] - 2023-06-13
 ### Fixed
 - Kit 105.1 update

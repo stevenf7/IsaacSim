@@ -15,6 +15,8 @@ import numpy as np
 import omni.usd.commands
 from omni.isaac.core.articulations.articulation import Articulation
 from omni.isaac.core.articulations.articulation_view import ArticulationView
+from omni.isaac.core.materials.deformable_material import DeformableMaterial
+from omni.isaac.core.materials.deformable_material_view import DeformableMaterialView
 from omni.isaac.core.materials.particle_material import ParticleMaterial
 from omni.isaac.core.materials.particle_material_view import ParticleMaterialView
 from omni.isaac.core.materials.physics_material import PhysicsMaterial
@@ -27,6 +29,8 @@ from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.prims.rigid_prim_view import RigidPrimView
 from omni.isaac.core.prims.soft.cloth_prim import ClothPrim
 from omni.isaac.core.prims.soft.cloth_prim_view import ClothPrimView
+from omni.isaac.core.prims.soft.deformable_prim import DeformablePrim
+from omni.isaac.core.prims.soft.deformable_prim_view import DeformablePrimView
 from omni.isaac.core.prims.soft.particle_system import ParticleSystem
 from omni.isaac.core.prims.soft.particle_system_view import ParticleSystemView
 from omni.isaac.core.prims.xform_prim import XFormPrim
@@ -127,6 +131,14 @@ class Scene(object):
             self._scene_registry.add_particle_material(name=obj.name, particle_material=obj)
         elif isinstance(obj, ParticleMaterialView):
             self._scene_registry.add_particle_material_view(name=obj.name, particle_material_view=obj)
+        elif isinstance(obj, DeformablePrim):
+            self._scene_registry.add_deformable(name=obj.name, deformable=obj)
+        elif isinstance(obj, DeformablePrimView):
+            self._scene_registry.add_deformable_view(name=obj.name, deformable_prim_view=obj)
+        elif isinstance(obj, DeformableMaterial):
+            self._scene_registry.add_deformable_material(name=obj.name, deformable_material=obj)
+        elif isinstance(obj, DeformableMaterialView):
+            self._scene_registry.add_deformable_material_view(name=obj.name, deformable_material_view=obj)
         else:
             raise Exception("object type is not supported yet")
         return obj
@@ -244,6 +256,10 @@ class Scene(object):
             self._scene_registry._cloth_prim_views,
             self._scene_registry._particle_system_views,
             self._scene_registry._particle_material_views,
+            self._scene_registry._deformable_prims,
+            self._scene_registry._deformable_prim_views,
+            self._scene_registry._deformable_materials,
+            self._scene_registry._deformable_material_views,
         ]
 
         for prim_registery in prim_registries_available:
@@ -264,6 +280,17 @@ class Scene(object):
             xform_object.initialize(physics_sim_view)
         for xform_name, xform_view in self._scene_registry.xform_prim_views.items():
             xform_view.initialize(physics_sim_view)
+        for deformable_name, deformable_object in self._scene_registry.deformable_prims.items():
+            deformable_object.initialize(physics_sim_view)
+        for deformable_name, deformable_object in self._scene_registry.deformable_prim_views.items():
+            deformable_object.initialize(physics_sim_view)
+        for deformable_material_name, deformable_material_object in self._scene_registry.deformable_materials.items():
+            deformable_material_object.initialize(physics_sim_view)
+        for (
+            deformable_material_name,
+            deformable_material_object,
+        ) in self._scene_registry.deformable_material_views.items():
+            deformable_material_object.initialize(physics_sim_view)
         for cloth_name, cloth_object in self._scene_registry.cloth_prims.items():
             cloth_object.initialize(physics_sim_view)
         for cloth_name, cloth_object in self._scene_registry.cloth_prim_views.items():
@@ -408,6 +435,15 @@ class Scene(object):
                 self.remove_object(particle_system_name, registry_only=registry_only)
             for particle_material_name in list(self._scene_registry._particle_material_views):
                 self.remove_object(particle_material_name, registry_only=registry_only)
+
+            for deformable_name in list(self._scene_registry._deformable_prims):
+                self.remove_object(deformable_name, registry_only=registry_only)
+            for deformable_name in list(self._scene_registry._deformable_prim_views):
+                self.remove_object(deformable_name, registry_only=registry_only)
+            for deformable_material_name in list(self._scene_registry._deformable_materials):
+                self.remove_object(deformable_material_name, registry_only=registry_only)
+            for deformable_material_name in list(self._scene_registry._deformable_material_views):
+                self.remove_object(deformable_material_name, registry_only=registry_only)
         return
 
     def compute_object_AABB(self, name: str) -> Tuple[np.ndarray, np.ndarray]:
