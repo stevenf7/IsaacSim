@@ -69,6 +69,7 @@ files_exclude = [
     ["apps/omni.isaac.sim.extscache.kit"],
     ["apps/omni.isaac.sim.splash.kit"],
     ["kit/data/**"], # This can contain portable files we don't want to package
+    ["kit/extsPhysics/**"], # This can contain portable files we don't want to package
     ["exts/omni.isaac.internal_tools"],
     ["tests/tests-python-omni.isaac.internal_tools.*"],
     ["tests/tests-internal*"],
@@ -122,6 +123,10 @@ files_exclude = [
 [isaac-sim-internal]
 files = [
     ["**"],
+]
+files_exclude = [
+    ["kit/extsPhysics/**"] # This can contain portable files we don't want to package
+
 ]
 
 ########################################################################################################################
