@@ -468,7 +468,7 @@ stdout_fail_patterns.exclude = [
 ]
 [[repo_test.suites.pythontests.bucket]]
 name = "1"
-include = ["tests-python-omni.isaac.*benchmark*${shell_ext}"]
+include = ["tests-python-omni.isaac.*benchmark_environments*${shell_ext}", "tests-python-omni.isaac.*motion*${shell_ext}", "tests-python-omni.isaac.*dynamic*${shell_ext}"]
 [[repo_test.suites.pythontests.bucket]]
 name = "2"
 include = ["tests-python-omni.isaac.example*${shell_ext}"]
@@ -486,23 +486,25 @@ name = "6"
 include = ["tests-python-omni.isaac.demo*${shell_ext}", "tests-python-omni.isaac.debug_draw*${shell_ext}", "tests-python-omni.isaac.synthetic*${shell_ext}"]
 [[repo_test.suites.pythontests.bucket]]
 name = "7"
-include = ["tests-python-omni.isaac.*dynamic*${shell_ext}","tests-python-omni.isaac.*motion*${shell_ext}","tests-python-omni.isaac.*sensor*${shell_ext}"]
+include = ["tests-python-omni.isaac.*motion*${shell_ext}","tests-python-omni.isaac.*sensor*${shell_ext}"]
 [[repo_test.suites.pythontests.bucket]]
 name = "8"
 include = ["tests-python-omni.isaac*${shell_ext}"]
+exclude =["tests-python-omni.isaac.internal_tools*${shell_ext}", "tests-python-omni.isaac.benchmarks*${shell_ext}"]
 [[repo_test.suites.pythontests.bucket]]
 name = "9"
 include = ["*"]
+exclude =["tests-python-omni.isaac.internal_tools*${shell_ext}", "tests-python-omni.isaac.benchmarks*${shell_ext}"]
 
 [repo_test.suites.internalpythontests]
 kind = "glob_and_exec"
 path = "${test_root}/tests"
   [[repo_test.suites.internalpythontests.group]]
-  include = ["tests-python-omni.isaac.internal_tools*${shell_ext}"]
+  include = ["tests-python-omni.isaac.internal_tools*${shell_ext}", "tests-python-omni.isaac.benchmarks*${shell_ext}"]
   exclude =[]
   args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
   tc_report_enabled = false
-  timeout = 960
+  timeout = 5000
 
 stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
 stdout_fail_patterns.exclude = [
@@ -707,6 +709,8 @@ python.files.exclude = [
     ".git/*", 
     ".eggs/*", 
     ".venv/*",
+    ".local/*",
+    ".nvidia-omniverse/*",
     "tools/packman/*",
     "schemas/*"
 ]

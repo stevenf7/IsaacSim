@@ -138,6 +138,7 @@ function define_ext_test_experience(ext_name, args)
         "--/exts/omni.kit.test/testExts/0='"..python_module.."'", -- Only include tests from the python module
         "--ext-folder \""..script_dir_token.."/../exts\" ",
         "--ext-folder \""..script_dir_token.."/../extscache\" ",
+        "--ext-folder \""..script_dir_token.."/../extsPhysics\" ",
         "--ext-folder \""..script_dir_token.."/../apps\" ",
         "--/app/enableStdoutOutput=0",  -- this app just runs the test command, hide its output
         "--no-window",
@@ -297,7 +298,7 @@ call "%%~dp0%s\%s" %s %s %%*
 set -e
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 export RESOURCE_NAME="IsaacSim"
-exec "$SCRIPT_DIR/%s/%s" %s %s $@
+exec "$SCRIPT_DIR/%s/%s" %s %s "$@"
 ]],
     ["macosx"] = [[
 #!/bin/bash
