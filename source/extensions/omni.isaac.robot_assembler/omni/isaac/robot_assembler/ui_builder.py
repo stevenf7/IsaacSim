@@ -517,8 +517,8 @@ class UIBuilder:
             + f"fixed_joint_orient = {list_print(rel_orient)}\n"
             + "assembled_bodies = robot_assembler.assemble_rigid_bodies(\n\tbase_robot_path,\n\tattach_robot_path,\n\tbase_robot_mount_frame,\n\tattach_robot_mount_frame,\n\tfixed_joint_offset,\n\tfixed_joint_orient,\n\tmask_all_collisions = True\n)\n\n"
             + "# The fixed joint in a assembled body is editable after the fact:\n"
-            + "# offset,orient = assembled_body.get_fixed_joint_transform()\n"
-            + "# assembled_body.set_fixed_joint_transform(np.array([.3,0,0]),np.array([1,0,0,0]))\n\n"
+            + "# offset,orient = assembled_bodies.get_fixed_joint_transform()\n"
+            + "# assembled_bodies.set_fixed_joint_transform(np.array([.3,0,0]),np.array([1,0,0,0]))\n\n"
             + "# And the assembled body can be disassembled, after which point the AssembledBodies object will no longer function.\n"
             + "# assembled_bodies.disassemble()\n\n"
         )
