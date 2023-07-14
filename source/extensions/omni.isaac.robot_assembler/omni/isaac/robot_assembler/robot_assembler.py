@@ -283,7 +283,8 @@ class RobotAssembler:
             fixed_joint_orient (np.array, optional): Fixed orientation between attach points. Defaults to np.array([1, 0, 0, 0]).
             mask_all_collisions (bool, optional): Mask all collisions between attach robot and base robot.  This is necessary when setting single_robot=False to prevent Physics constraint
                 violations from the new fixed joint.  Advanced users may set this flag to False and use the mask_collisions() function separately for more customizable behavior.  Defaults to True.
-            single_robot (bool, optional): If True: control the resulting composed robots as a single robot Articulation at base_robot_path. Defaults to False.
+            single_robot (bool, optional): If True: control the resulting composed robots as a single robot Articulation at base_robot_path.
+                Setting this flag to True may resolve unstable physics behavior when teleporting the robot base.  Defaults to False.
 
         Returns:
             AssembledRobot: An object representing the composed robot.  This object can detach the composed robots and edit the fixed joint transform.
