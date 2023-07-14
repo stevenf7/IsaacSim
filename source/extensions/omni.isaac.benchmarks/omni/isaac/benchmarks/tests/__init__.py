@@ -20,4 +20,5 @@ from .test_benchmark_sdg_generation import *
 
 if sys.platform != "win32":
     from .test_benchmark_ros_camera import *
-    from .test_benchmark_rtx_lidar import *
+
+    # from .test_benchmark_rtx_lidar import *
