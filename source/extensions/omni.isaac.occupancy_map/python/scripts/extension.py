@@ -19,6 +19,7 @@ from omni.isaac.core.utils.stage import get_stage_units
 from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.ui.ui_utils import (
     btn_builder,
+    cb_builder,
     color_picker_builder,
     dropdown_builder,
     float_builder,
@@ -26,7 +27,8 @@ from omni.isaac.ui.ui_utils import (
     xyz_builder,
 )
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
-from pxr import Gf, Usd, UsdGeom
+from omni.physx.scripts import utils
+from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics
 
 from .. import _occupancy_map
 from .utils import compute_coordinates, generate_image, update_location
@@ -87,6 +89,13 @@ class Extension(omni.ext.IExt):
                         "Occupancy Map",
                         text=["Calculate", "Visualize Image"],
                         on_clicked_fn=[self._generate_map, self._generate_image],
+                    )
+
+                    self._models["physx_geom"] = cb_builder(
+                        "Use PhysX Collision Geometry",
+                        tooltip="If True, the current collision approximations are used, if False the original USD meshes are used. for PhysX based lidar use True for RTX lidar use False",
+                        on_clicked_fn=None,
+                        default_val=True,
                     )
 
                     # self.draw_voxel_btn = ui.Button("Draw Voxels", clicked_fn=self._draw_instances)
@@ -255,14 +264,45 @@ class Extension(omni.ext.IExt):
         self.on_update_cell_size(0)
 
         async def generate_task():
-            do_stop = False
-            if not self._timeline.is_playing():
+            self._timeline.stop()
+            await omni.kit.app.get_app().next_update_async()
+            if not self._models["physx_geom"].get_value_as_bool():
+                layer = Sdf.Layer.CreateAnonymous("anon_occupancy_map")
+                stage = omni.usd.get_context().get_stage()
+                session = stage.GetSessionLayer()
+                session.subLayerPaths.append(layer.identifier)
+                with Usd.EditContext(stage, layer):
+                    with Sdf.ChangeBlock():
+                        for prim in stage.Traverse():
+                            if prim.HasAPI(UsdPhysics.CollisionAPI) and prim.HasAPI(UsdPhysics.RigidBodyAPI):
+                                utils.removePhysics(prim)
+                    await omni.kit.app.get_app().next_update_async()
+                    with Sdf.ChangeBlock():
+                        for prim in stage.Traverse():
+                            if prim.HasAPI(UsdPhysics.CollisionAPI):
+                                if prim.HasAPI(UsdPhysics.MeshCollisionAPI):
+                                    collision_api = UsdPhysics.MeshCollisionAPI(prim)
+                                    approx = collision_api.GetApproximationAttr().Get()
+                                    if approx == "none":
+                                        continue
+                                if prim.IsA(UsdGeom.Gprim):
+                                    if prim.IsInstanceable():
+                                        UsdPhysics.CollisionAPI.Apply(prim)
+                                        UsdPhysics.MeshCollisionAPI.Apply(prim)
+                                    else:
+                                        utils.setCollider(prim, "none")
                 self._timeline.play()
-                do_stop = True
-            await omni.kit.app.get_app().next_update_async()
-            self._om.generate()
-            await omni.kit.app.get_app().next_update_async()
-            if do_stop:
+                await omni.kit.app.get_app().next_update_async()
+                self._om.generate()
+                await omni.kit.app.get_app().next_update_async()
+                self._timeline.stop()
+                session.subLayerPaths.remove(layer.identifier)
+                layer = None
+            else:
+                self._timeline.play()
+                await omni.kit.app.get_app().next_update_async()
+                self._om.generate()
+                await omni.kit.app.get_app().next_update_async()
                 self._timeline.stop()
 
         asyncio.ensure_future(generate_task())

@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.2.8"
+version = "0.3.0"
 category = "Simulation"
 title = "Isaac Sim Occupancy Map"
 description = "2D Occupancy Map Generation"
