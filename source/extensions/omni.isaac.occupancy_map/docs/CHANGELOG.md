@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.0] - 2023-07-14
+### Added
+- Checkbox to use USD triangle geometry instead of physx approx for occupancy map generation. Useful for generating occupancy maps for PhysX vs RTX lidar. 
+
 ## [0.2.8] - 2023-06-12
 ### Changed
 - Update to kit 105.1, update build system
