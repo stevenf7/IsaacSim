@@ -10,7 +10,7 @@
 import os
 
 import carb
-import gym
+import gymnasium as gym
 from omni.isaac.kit import SimulationApp
 
 
@@ -149,18 +149,31 @@ class VecEnvBase(gym.Env):
 
         observations = self._task.get_observations()
         rewards = self._task.calculate_metrics()
-        dones = self._task.is_done()
+        terminated = self._task.is_done()
+        truncated = self._task.is_done() * 0
         info = {}
 
-        return observations, rewards, dones, info
+        return observations, rewards, terminated, truncated, info
 
-    def reset(self):
-        """Resets the task and updates observations."""
+    def reset(self, seed=None, options=None):
+        """Resets the task and updates observations.
+
+        Args:
+            seed (Optional[int]): Seed.
+            options (Optional[dict]): Options as used in gymnasium.
+        Returns:
+            observations(Union[numpy.ndarray, torch.Tensor]): Buffer of observation data.
+            info(dict): Dictionary of extras data.
+        """
+        if seed is not None:
+            seed = self.seed(seed)
+            super().reset(seed=seed)
+
         self._task.reset()
         self._world.step(render=self._render)
         observations = self._task.get_observations()
 
-        return observations
+        return observations, {}
 
     @property
     def num_envs(self):
