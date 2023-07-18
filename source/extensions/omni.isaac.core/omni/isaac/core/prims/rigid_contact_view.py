@@ -12,6 +12,7 @@ import carb
 import numpy as np
 import omni.kit.app
 import torch
+import warp as wp
 from omni.isaac.core.simulation_context.simulation_context import SimulationContext
 from omni.isaac.core.utils.prims import find_matching_prim_paths, get_prim_at_path
 from pxr import PhysxSchema, UsdPhysics
@@ -145,12 +146,12 @@ class RigidContactView(object):
         return
 
     def get_net_contact_forces(
-        self, indices: Optional[Union[np.ndarray, torch.Tensor]] = None, clone: bool = True, dt: float = 1.0
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None, clone: bool = True, dt: float = 1.0
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Gets the overall net contact forces on the prims in the view with respect to the world's frame.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -158,29 +159,31 @@ class RigidContactView(object):
             dt (float): time step multiplier to convert the underlying impulses to forces. The function returns contact impulses if the default dt is used
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: Net contact forces of the prims with shape (M,3).
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: Net contact forces of the prims with shape (M,3).
         """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self._num_shapes, self._device)
             self._physics_sim_view.enable_warnings(False)
             net_contact_forces = self._physics_view.get_net_contact_forces(dt)
             self._physics_sim_view.enable_warnings(True)
-            if not clone:
-                return net_contact_forces[indices]
-            else:
-                return self._backend_utils.clone_tensor(net_contact_forces[indices], device=self._device)
+            if clone:
+                net_contact_forces = self._backend_utils.clone_tensor(net_contact_forces, device=self._device)
+            return net_contact_forces[indices]
         else:
             carb.log_warn("Physics Simulation View is not created yet")
             return None
 
     def get_contact_force_matrix(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True, dt: float = 1.0
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self,
+        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        clone: bool = True,
+        dt: float = 1.0,
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Gets the contact forces between the prims in the view and the filter prims. i.e., a matrix of dimension
         (self.num_shapes, self.num_filters, 3) where filter_count is the determined according to the filter_paths_expr parameter.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -188,17 +191,16 @@ class RigidContactView(object):
             dt (float): time step multiplier to convert the underlying impulses to forces. The function returns contact impulses if the default dt is used
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: Net contact forces of the prims with shape (M, self.num_filters, 3).
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: Net contact forces of the prims with shape (M, self.num_filters, 3).
         """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self._num_shapes, self._device)
             self._physics_sim_view.enable_warnings(False)
             net_contact_forces = self._physics_view.get_contact_force_matrix(dt)
             self._physics_sim_view.enable_warnings(True)
-            if not clone:
-                return net_contact_forces[indices, :, :]
-            else:
-                return self._backend_utils.clone_tensor(net_contact_forces[indices, :, :], device=self._device)
+            if clone:
+                net_contact_forces = self._backend_utils.clone_tensor(net_contact_forces, device=self._device)
+            return net_contact_forces[indices, :, :]
         else:
             carb.log_warn("Physics Simulation View is not created yet")
             return None

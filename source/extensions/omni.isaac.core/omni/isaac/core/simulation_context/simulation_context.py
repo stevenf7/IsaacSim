@@ -18,6 +18,7 @@ import carb
 # isaac-core
 import omni.isaac.core.utils.numpy as np_utils
 import omni.isaac.core.utils.torch as torch_utils
+import omni.isaac.core.utils.warp as warp_utils
 
 # omniverse
 import omni.kit.app
@@ -71,8 +72,8 @@ class SimulationContext:
                                         gpu dynamics turned off,
                                         broadcast type is MBP,
                                         solver type is TGS]. Defaults to True.
-        backend (str, optional): specifies the backend to be used (numpy or torch). Defaults to numpy.
-        device (Optional[str], optional): specifies the device to be used if running on the gpu with torch backend.
+        backend (str, optional): specifies the backend to be used (numpy or torch or warp). Defaults to numpy.
+        device (Optional[str], optional): specifies the device to be used if running on the gpu with torch or warp backend.
 
     """
 
@@ -146,8 +147,10 @@ class SimulationContext:
             self._backend_utils = np_utils
         elif self._backend == "torch":
             self._backend_utils = torch_utils
+        elif self._backend == "warp":
+            self._backend_utils = warp_utils
         else:
-            raise Exception(f"Provided backend is not supported: {self._backend}. Supported: torch, numpy.")
+            raise Exception(f"Provided backend is not supported: {self._backend}. Supported: torch, numpy, warp.")
         self._physics_sim_view = None
         return
 

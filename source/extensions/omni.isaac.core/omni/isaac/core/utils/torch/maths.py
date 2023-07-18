@@ -11,6 +11,7 @@ import random
 
 import numpy as np
 import torch
+import warp as wp
 
 
 @torch.jit.script
@@ -113,6 +114,7 @@ def set_seed(seed, torch_deterministic=False):
     os.environ["PYTHONHASHSEED"] = str(seed)
     torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
+    wp.rand_init(seed)
 
     if torch_deterministic:
         # refer to https://docs.nvidia.com/cuda/cublas/index.html#cublasApi_reproducibility

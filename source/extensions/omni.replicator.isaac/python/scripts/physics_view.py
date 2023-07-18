@@ -79,7 +79,7 @@ def register_rigid_prim_view(rigid_prim_view: omni.isaac.core.prims.RigidPrimVie
     initial_values["linear_velocity"] = rigid_prim_view.get_linear_velocities()
     initial_values["angular_velocity"] = rigid_prim_view.get_angular_velocities()
     initial_values["velocity"] = tensor_cat(
-        [initial_values["linear_velocity"], initial_values["angular_velocity"]], dim=-1
+        [initial_values["linear_velocity"], initial_values["angular_velocity"]], dim=-1, device=device
     )
     initial_values["force"] = create_zeros_tensor(
         shape=[initial_values["position"].shape[0], 3], dtype="float32", device=device
@@ -127,7 +127,7 @@ def register_articulation_view(articulation_view: omni.isaac.core.articulations.
     initial_values["linear_velocity"] = articulation_view.get_linear_velocities()
     initial_values["angular_velocity"] = articulation_view.get_angular_velocities()
     initial_values["velocity"] = tensor_cat(
-        [initial_values["linear_velocity"], initial_values["angular_velocity"]], dim=-1
+        [initial_values["linear_velocity"], initial_values["angular_velocity"]], dim=-1, device=device
     )
     initial_values["joint_positions"] = articulation_view.get_joint_positions()
     initial_values["joint_velocities"] = articulation_view.get_joint_velocities()

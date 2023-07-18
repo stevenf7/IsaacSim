@@ -13,6 +13,7 @@ import carb
 import numpy as np
 import omni.kit.test
 import torch
+import warp as wp
 from omni.isaac.core import World
 from omni.isaac.core.objects import DynamicCuboid
 
@@ -26,6 +27,7 @@ from omni.isaac.core.utils.torch.rotations import euler_angles_to_quats as euler
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 from omni.isaac.core.utils.types import DynamicsViewState
+from omni.isaac.core.utils.warp.rotations import euler_angles_to_quats as euler_angles_to_quats_warp
 
 default_physics_material = {"static_friction": 1.0, "dynamic_friction": 1.0, "restitution": 0.0}
 
@@ -89,7 +91,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
 
     async def test_rigid_prim_view_gpu_pipeline(self):
         test_configs = {"use_gpu": True, "use_gpu_pipeline": True, "device": "gpu"}
-        for backend in ["torch"]:
+        for backend in ["torch", "warp"]:
             test_configs["backend"] = backend
 
             self._sim_params["use_gpu"] = test_configs["use_gpu"]
@@ -106,12 +108,19 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
                     self._array_container = torch.cuda.FloatTensor
                     self._device = "cuda:0"
 
+            elif backend == "warp":
+                self.euler_angles_to_quats = euler_angles_to_quats_warp
+                self.isclose = np.isclose
+                if self._test_cfg["device"] == "gpu":
+                    self._device = "cuda:0"
+                self._array_container = lambda x: wp.array(x, device=self._device, dtype=wp.float32)
+
             await self._runner()
 
     async def test_rigid_prim_view_cpu_pipeline(self):
         test_configs = {"use_gpu_pipeline": False, "device": "cpu"}
 
-        for backend in ["numpy", "torch"]:
+        for backend in ["numpy", "torch", "warp"]:
             for gpu_sim in [False, True]:
                 self._sim_params["use_gpu"] = gpu_sim
                 self._sim_params["use_gpu_pipeline"] = test_configs["use_gpu_pipeline"]
@@ -128,12 +137,14 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
                 elif self._test_cfg["backend"] == "torch":
                     self.euler_angles_to_quats = euler_angles_to_quats_torch
                     self.isclose = torch.isclose
-                    if self._test_cfg["device"] == "gpu":
-                        self._array_container = torch.cuda.FloatTensor
-                        self._device = "cuda"
-                    else:
-                        self._array_container = torch.Tensor
-                        self._device = "cpu"
+                    self._array_container = torch.Tensor
+                    self._device = "cpu"
+                elif self._test_cfg["backend"] == "warp":
+                    self.euler_angles_to_quats = euler_angles_to_quats_warp
+                    self.isclose = np.isclose
+                    self._array_container = wp.array
+                    self._device = "cpu"
+                    self._array_container = lambda x: wp.array(x, device=self._device, dtype=wp.float32)
 
                 await self._runner()
 
@@ -288,26 +299,53 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else [0, 1, 2]
 
-        new_positions = self._array_container([[20.0, -20.0, 10.0], [30.0, 30.0, 0], [-40, -40, 0]])
-        new_orientations = self.euler_angles_to_quats(
-            euler_angles=self._array_container([[np.pi / 2, 0, 0], [0, np.pi / 2, 0], [0, 0, np.pi / 2]]),
-            device=self._device,
-        )  # [y->z, z->x, x->y] rotation
-        self._cubes_view.set_world_poses(
-            positions=new_positions[indices], orientations=new_orientations[indices], indices=indices
-        )
+        if self._test_cfg["backend"] == "warp":
+            new_positions = np.array([[20.0, -20.0, 10.0], [30.0, 30.0, 0], [-40, -40, 0]])[indices]
+            new_orientations = euler_angles_to_quats_numpy(
+                euler_angles=np.array([[np.pi / 2, 0, 0], [0, np.pi / 2, 0], [0, 0, np.pi / 2]])[indices],
+                device=self._device,
+            )  # [y->z, z->x, x->y] rotation
+            new_positions = wp.from_numpy(new_positions, dtype=wp.float32, device=self._device)
+            new_orientations = wp.from_numpy(new_orientations, dtype=wp.float32, device=self._device)
+            self._cubes_view.set_world_poses(positions=new_positions, orientations=new_orientations, indices=indices)
+        else:
+            new_positions = self._array_container([[20.0, -20.0, 10.0], [30.0, 30.0, 0], [-40, -40, 0]])[indices]
+            new_orientations = self.euler_angles_to_quats(
+                euler_angles=self._array_container([[np.pi / 2, 0, 0], [0, np.pi / 2, 0], [0, 0, np.pi / 2]])[indices],
+                device=self._device,
+            )  # [y->z, z->x, x->y] rotation
+            self._cubes_view.set_world_poses(positions=new_positions, orientations=new_orientations, indices=indices)
 
         position = None
-        if is_global:
-            force = self._array_container([[3000, 0, 0], [-3000, 0, 0], [3000, 0, 0]])[indices]
-            torque = self._array_container([[0, 0, 3000], [0, 0, -3000], [0, 0, 3000]])[indices]
-            if apply_at_pos:
-                position = (self._array_container([[20.0, -19.0, 10.0], [30.0, 31.0, 0], [-40, -39, 0]]))[indices]
+        if self._test_cfg["backend"] == "warp":
+            if is_global:
+                force = np.array([[3000, 0, 0], [-3000, 0, 0], [3000, 0, 0]])[indices]
+                torque = np.array([[0, 0, 3000], [0, 0, -3000], [0, 0, 3000]])[indices]
+                if apply_at_pos:
+                    position = (np.array([[20.0, -19.0, 10.0], [30.0, 31.0, 0], [-40, -39, 0]]))[indices]
+            else:
+                force = (np.array([[3000, 0, 0], [0, 0, 3000], [0, 3000, 0]]))[indices]  # global x forces
+                torque = (np.array([[0, 3000, 0], [3000, 0, 0], [0, 0, 3000]]))[indices]  # global z torques
+                if apply_at_pos:
+                    position = (np.array([[0, 0, -1], [0, -1, 0], [-1, 0, 0]]))[indices]  # cancel the torques
+            force = wp.from_numpy(force, dtype=wp.float32, device=self._device)
+            torque = wp.from_numpy(torque, dtype=wp.float32, device=self._device)
+            position = wp.from_numpy(position, dtype=wp.float32, device=self._device) if position is not None else None
         else:
-            force = (self._array_container([[3000, 0, 0], [0, 0, 3000], [0, 3000, 0]]))[indices]  # global x forces
-            torque = (self._array_container([[0, 3000, 0], [3000, 0, 0], [0, 0, 3000]]))[indices]  # global z torques
-            if apply_at_pos:
-                position = (self._array_container([[0, 0, -1], [0, -1, 0], [-1, 0, 0]]))[indices]  # cancel the torques
+            if is_global:
+                force = self._array_container([[3000, 0, 0], [-3000, 0, 0], [3000, 0, 0]])[indices]
+                torque = self._array_container([[0, 0, 3000], [0, 0, -3000], [0, 0, 3000]])[indices]
+                if apply_at_pos:
+                    position = (self._array_container([[20.0, -19.0, 10.0], [30.0, 31.0, 0], [-40, -39, 0]]))[indices]
+            else:
+                force = (self._array_container([[3000, 0, 0], [0, 0, 3000], [0, 3000, 0]]))[indices]  # global x forces
+                torque = (self._array_container([[0, 3000, 0], [3000, 0, 0], [0, 0, 3000]]))[
+                    indices
+                ]  # global z torques
+                if apply_at_pos:
+                    position = (self._array_container([[0, 0, -1], [0, -1, 0], [-1, 0, 0]]))[
+                        indices
+                    ]  # cancel the torques
 
         self._cubes_view.apply_forces_and_torques_at_pos(force, torque, position, indices, is_global)
 
@@ -323,6 +361,9 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
         if self._test_cfg["backend"] == "torch":
             current_linear_velocities = current_linear_velocities.cpu().numpy()
             current_angular_velocities = current_angular_velocities.cpu().numpy()
+        elif self._test_cfg["backend"] == "warp":
+            current_linear_velocities = current_linear_velocities.numpy()
+            current_angular_velocities = current_angular_velocities.numpy()
 
         print(current_linear_velocities)
         print(current_angular_velocities)
@@ -489,10 +530,19 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             indices = [1, 2] if self._test_cfg["indexed"] else [0, 1, 2]
 
             cur_pos, cur_ori = self._cubes_view.get_coms()
-            new_pos = cur_pos[indices] + 0.1
-            new_ori = cur_ori[indices]
+            if self._test_cfg["backend"] == "warp":
+                new_pos = wp.from_numpy(cur_pos.numpy()[indices] + 0.1, dtype=wp.float32, device=self._device)
+                new_ori = wp.from_numpy(cur_ori.numpy()[indices], dtype=wp.float32, device=self._device)
+            else:
+                new_pos = cur_pos[indices] + 0.1
+                new_ori = cur_ori[indices]
             self._cubes_view.set_coms(new_pos, new_ori, indices)
             pos, ori = self._cubes_view.get_coms(indices)
+            if self._test_cfg["backend"] == "warp":
+                new_pos = new_pos.numpy()
+                pos = pos.numpy()
+                new_ori = new_ori.numpy()
+                ori = ori.numpy()
             self.assertTrue(self.isclose(new_pos, pos).all())
             self.assertTrue(self.isclose(new_ori, ori).all())
 
@@ -502,10 +552,18 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
         indices = [1, 2] if self._test_cfg["indexed"] else [0, 1, 2]
 
         prev_values = self._cubes_view.get_inertias()
-        new_values = prev_values[indices]
-        new_values[:, [0, 4, 8]] + 0.01
+        if self._test_cfg["backend"] == "warp":
+            values = prev_values.numpy()[indices]
+            values[:, [0, 4, 8]] += 0.01
+            new_values = wp.from_numpy(values, dtype=wp.float32, device=self._device)
+        else:
+            new_values = prev_values[indices]
+            new_values[:, [0, 4, 8]] += 0.01
         self._cubes_view.set_inertias(new_values, indices)
         cur_values = self._cubes_view.get_inertias(indices)
+        if self._test_cfg["backend"] == "warp":
+            new_values = new_values.numpy()
+            cur_values = cur_values.numpy()
         self.assertTrue(self.isclose(new_values, cur_values).all())
 
         inv_masses = self._cubes_view.get_inv_inertias()
@@ -519,25 +577,32 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             await self._my_world.stop_async()
             await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
+        new_positions = np.array([[25.0, -20.0, 10.0], [15.0, 10.0, 0.0], [-40.0, -40.0, 0.0]])
+        new_orientations = euler_angles_to_quats_numpy(
+            euler_angles=np.array([[0, np.pi / 4.0, 0], [0, 0, np.pi / 4.0], [0, 0, -np.pi / 8.0]])
+        )
+        new_positions = self._array_container(
+            new_positions.tolist() if indices is None else new_positions[indices].tolist()
+        )
+        new_orientations = self._array_container(
+            new_orientations.tolist() if indices is None else new_orientations[indices].tolist()
+        )
 
-        new_positions = self._array_container([[25.0, -20.0, 10.0], [15.0, 10.0, 0.0], [-40.0, -40.0, 0.0]])
-        new_orientations = self.euler_angles_to_quats(
-            euler_angles=self._array_container([[0, np.pi / 4.0, 0], [0, 0, np.pi / 4.0], [0, 0, -np.pi / 8.0]]),
-            device=self._device,
-        )
-        self._cubes_view.set_world_poses(
-            positions=new_positions[indices] if indices else new_positions,
-            orientations=new_orientations[indices] if indices else new_orientations,
-            indices=indices,
-        )
+        self._cubes_view.set_world_poses(positions=new_positions, orientations=new_orientations, indices=indices)
         self._my_world.step_async(0)
         self._my_world._physics_sim_view.flush()
         await omni.kit.app.get_app().next_update_async()
         # await asyncio.sleep(5.0)
         current_positions, current_orientations = self._cubes_view.get_world_poses(indices=indices)
 
-        self.assertTrue(self.isclose(current_positions, new_positions[indices], atol=1e-4).all())
-        self.assertTrue(self.isclose(current_orientations, new_orientations[indices], atol=1e-4).all())
+        if self._test_cfg["backend"] == "warp":
+            current_positions = current_positions.numpy()
+            new_positions = new_positions.numpy()
+            current_orientations = current_orientations.numpy()
+            new_orientations = new_orientations.numpy()
+
+        self.assertTrue(self.isclose(current_positions, new_positions, atol=1e-4).all())
+        self.assertTrue(self.isclose(current_orientations, new_orientations, atol=1e-4).all())
 
         return
 
@@ -549,24 +614,30 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             await self._my_world.stop_async()
             await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
+        new_positions = np.array([[25.0, -20.0, 10.0], [15.0, 10.0, 0.0], [-40.0, -40.0, 0.0]])
+        new_orientations = euler_angles_to_quats_numpy(
+            euler_angles=np.array([[0, np.pi / 4.0, 0], [0, 0, np.pi / 4.0], [0, 0, -np.pi / 8.0]])
+        )
+        new_positions = self._array_container(
+            new_positions.tolist() if indices is None else new_positions[indices].tolist()
+        )
+        new_orientations = self._array_container(
+            new_orientations.tolist() if indices is None else new_orientations[indices].tolist()
+        )
 
-        new_positions = self._array_container([[25.0, -20.0, 10.0], [15.0, 10.0, 0.0], [-40.0, -40.0, 0.0]])
-        new_orientations = self.euler_angles_to_quats(
-            euler_angles=self._array_container([[0, np.pi / 4.0, 0], [0, 0, np.pi / 4.0], [0, 0, -np.pi / 8.0]]),
-            device=self._device,
-        )
-        self._cubes_view.set_local_poses(
-            translations=new_positions[indices] if indices else new_positions,
-            orientations=new_orientations[indices] if indices else new_orientations,
-            indices=indices,
-        )
+        self._cubes_view.set_local_poses(translations=new_positions, orientations=new_orientations, indices=indices)
         self._my_world.step_async(0)
         self._my_world._physics_sim_view.flush()
         await omni.kit.app.get_app().next_update_async()
         # await asyncio.sleep(5.0)
         current_positions, current_orientations = self._cubes_view.get_local_poses(indices=indices)
-        self.assertTrue(self.isclose(current_positions, new_positions[indices], atol=1e-4).all())
-        self.assertTrue(self.isclose(current_orientations, new_orientations[indices], atol=1e-4).all())
+        if self._test_cfg["backend"] == "warp":
+            current_positions = current_positions.numpy()
+            new_positions = new_positions.numpy()
+            current_orientations = current_orientations.numpy()
+            new_orientations = new_orientations.numpy()
+        self.assertTrue(self.isclose(current_positions, new_positions, atol=1e-4).all())
+        self.assertTrue(self.isclose(current_orientations, new_orientations, atol=1e-4).all())
 
     async def linear_velocities_test(self, usd=False):
         print("linear velocities test")
@@ -578,8 +649,10 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
                 await omni.kit.app.get_app().next_update_async()
             indices = [1, 2] if self._test_cfg["indexed"] else None
 
-            linear_velocities = self._array_container([[10.0, 0.0, 0.0], [20.0, 0.0, 0.0], [-10, 0, 0]])
-            linear_velocities = linear_velocities[indices] if indices else linear_velocities
+            linear_velocities = np.array([[10.0, 0.0, 0.0], [20.0, 0.0, 0.0], [-10, 0, 0]])
+            linear_velocities = self._array_container(
+                linear_velocities.tolist() if indices is None else linear_velocities[indices].tolist()
+            )
             self._cubes_view.set_linear_velocities(linear_velocities, indices)
             self._my_world.step_async()
             self._my_world._physics_sim_view.flush()
@@ -587,6 +660,9 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             await asyncio.sleep(0.1)
 
             current_linear_velocities = self._cubes_view.get_linear_velocities(indices)
+            if self._test_cfg["backend"] == "warp":
+                current_linear_velocities = current_linear_velocities.numpy()
+                linear_velocities = linear_velocities.numpy()
             print(current_linear_velocities)
             print(linear_velocities)
             self.assertTrue(self.isclose(current_linear_velocities, linear_velocities, atol=1e-4).all())
@@ -602,14 +678,18 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
                 await self._my_world.stop_async()
                 await omni.kit.app.get_app().next_update_async()
             indices = [1, 2] if self._test_cfg["indexed"] else None
-
-            angular_velocities = self._array_container([[20.0, 0, 0], [0, -20, 0], [0, 0, 20]])
-            angular_velocities = angular_velocities[indices] if indices else angular_velocities
+            angular_velocities = np.array([[20.0, 0, 0], [0, -20, 0], [0, 0, 20]])
+            angular_velocities = self._array_container(
+                angular_velocities.tolist() if indices is None else angular_velocities[indices].tolist()
+            )
             self._cubes_view.set_angular_velocities(angular_velocities, indices)
             self._my_world.step_async()
             self._my_world._physics_sim_view.flush()
             await omni.kit.app.get_app().next_update_async()
             current_angular_velocities = self._cubes_view.get_angular_velocities(indices)
+            if self._test_cfg["backend"] == "warp":
+                current_angular_velocities = current_angular_velocities.numpy()
+                angular_velocities = angular_velocities.numpy()
             print(current_angular_velocities)
             print(angular_velocities)
             self.assertTrue(self.isclose(current_angular_velocities, angular_velocities, atol=1e-1).all())
@@ -624,10 +704,13 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
 
-        masses = self._array_container([10, 20, 30])
-        masses = masses[indices] if indices else masses
+        masses = np.array([10, 20, 30])
+        masses = self._array_container(masses.tolist() if indices is None else masses[indices].tolist())
         self._cubes_view.set_masses(masses, indices)
         current_masses = self._cubes_view.get_masses(indices)
+        if self._test_cfg["backend"] == "warp":
+            masses = masses.numpy()
+            current_masses = current_masses.numpy()
         self.assertTrue(self.isclose(masses, current_masses, atol=1e-4).all())
         return
 
@@ -640,10 +723,13 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
 
-        densities = self._array_container([10, 20, 30])
-        densities = densities[indices] if indices else densities
+        densities = np.array([10, 20, 30])
+        densities = self._array_container(densities.tolist() if indices is None else densities[indices].tolist())
         self._cubes_view.set_densities(densities, indices)
         current_densities = self._cubes_view.get_densities(indices)
+        if self._test_cfg["backend"] == "warp":
+            densities = densities.numpy()
+            current_densities = current_densities.numpy()
         self.assertTrue(self.isclose(densities, current_densities, atol=1e-4).all())
         return
 
@@ -656,10 +742,13 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
 
-        thresholds = self._array_container([0.0, 0.2, 0.1])
-        thresholds = thresholds[indices] if indices else thresholds
+        thresholds = np.array([0.0, 0.2, 0.1])
+        thresholds = self._array_container(thresholds.tolist() if indices is None else thresholds[indices].tolist())
         self._cubes_view.set_sleep_thresholds(thresholds, indices)
         current_thresholds = self._cubes_view.get_sleep_thresholds(indices)
+        if self._test_cfg["backend"] == "warp":
+            thresholds = thresholds.numpy()
+            current_thresholds = current_thresholds.numpy()
         self.assertTrue(self.isclose(thresholds, current_thresholds, atol=1e-4).all())
         return
 
@@ -705,20 +794,31 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
 
-        positions = self._array_container([[10.0, 10.0, 0.0], [0.0, 10.0, 0.0], [0.0, -10.0, 0.0]])
-        orientations = self.euler_angles_to_quats(
-            self._array_container([[0.0, np.pi / 4.0, 0], [0, 0, np.pi / 4.0], [0, 0, -np.pi / 8.0]]),
-            device=self._device,
+        positions = np.array([[10.0, 10.0, 0.0], [0.0, 10.0, 0.0], [0.0, -10.0, 0.0]])
+        orientations = euler_angles_to_quats_numpy(
+            np.array([[0.0, np.pi / 4.0, 0], [0, 0, np.pi / 4.0], [0, 0, -np.pi / 8.0]])
         )
-        linear_velocities = self._array_container([[0.0, 10, 0], [10, 0, 0], [-10, 0, 0]])
-        angular_velocities = self._array_container([[0.0, 360, 0], [360, 0, 0], [-360, 0, 0]])
+        linear_velocities = np.array([[0.0, 10, 0], [10, 0, 0], [-10, 0, 0]])
+        angular_velocities = np.array([[0.0, 360, 0], [360, 0, 0], [-360, 0, 0]])
+
+        positions = self._array_container(positions.tolist() if indices is None else positions[indices].tolist())
+        orientations = self._array_container(
+            orientations.tolist() if indices is None else orientations[indices].tolist()
+        )
+        linear_velocities = self._array_container(
+            linear_velocities.tolist() if indices is None else linear_velocities[indices].tolist()
+        )
+        angular_velocities = self._array_container(
+            angular_velocities.tolist() if indices is None else angular_velocities[indices].tolist()
+        )
 
         desired_default_state = DynamicsViewState(
-            positions=positions[indices] if indices else positions,
-            orientations=orientations[indices] if indices else orientations,
-            linear_velocities=linear_velocities[indices] if indices else linear_velocities,
-            angular_velocities=angular_velocities[indices] if indices else angular_velocities,
+            positions=positions,
+            orientations=orientations,
+            linear_velocities=linear_velocities,
+            angular_velocities=angular_velocities,
         )
+
         self._cubes_view.set_default_state(
             positions=desired_default_state.positions,
             orientations=desired_default_state.orientations,
@@ -726,40 +826,117 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             angular_velocities=desired_default_state.angular_velocities,
             indices=indices,
         )
+
         default_state = self._cubes_view.get_default_state()
-        self.assertTrue(
-            self.isclose(desired_default_state.positions, default_state.positions[indices], atol=1e-4).all()
-        )
-        self.assertTrue(
-            self.isclose(desired_default_state.orientations, default_state.orientations[indices], atol=1e-4).all()
-        )
-        self.assertTrue(
-            self.isclose(
-                desired_default_state.linear_velocities, default_state.linear_velocities[indices], atol=1e-4
-            ).all()
-        )
-        self.assertTrue(
-            self.isclose(
-                desired_default_state.angular_velocities, default_state.angular_velocities[indices], atol=1e-4
-            ).all()
-        )
+        if self._test_cfg["backend"] == "warp":
+            self.assertTrue(
+                self.isclose(
+                    desired_default_state.positions.numpy(),
+                    default_state.positions.numpy() if indices is None else default_state.positions.numpy()[indices],
+                    atol=1e-4,
+                ).all()
+            )
+            self.assertTrue(
+                self.isclose(
+                    desired_default_state.orientations.numpy(),
+                    default_state.orientations.numpy()
+                    if indices is None
+                    else default_state.orientations.numpy()[indices],
+                    atol=1e-4,
+                ).all()
+            )
+            self.assertTrue(
+                self.isclose(
+                    desired_default_state.linear_velocities.numpy(),
+                    default_state.linear_velocities.numpy()
+                    if indices is None
+                    else default_state.linear_velocities.numpy()[indices],
+                    atol=1e-4,
+                ).all()
+            )
+            self.assertTrue(
+                self.isclose(
+                    desired_default_state.angular_velocities.numpy(),
+                    default_state.angular_velocities.numpy()
+                    if indices is None
+                    else default_state.angular_velocities.numpy()[indices],
+                    atol=1e-4,
+                ).all()
+            )
+        else:
+            self.assertTrue(
+                self.isclose(
+                    desired_default_state.positions,
+                    default_state.positions if indices is None else default_state.positions[indices],
+                    atol=1e-4,
+                ).all()
+            )
+            self.assertTrue(
+                self.isclose(
+                    desired_default_state.orientations,
+                    default_state.orientations if indices is None else default_state.orientations[indices],
+                    atol=1e-4,
+                ).all()
+            )
+            self.assertTrue(
+                self.isclose(
+                    desired_default_state.linear_velocities,
+                    default_state.linear_velocities if indices is None else default_state.linear_velocities[indices],
+                    atol=1e-4,
+                ).all()
+            )
+            self.assertTrue(
+                self.isclose(
+                    desired_default_state.angular_velocities,
+                    default_state.angular_velocities if indices is None else default_state.angular_velocities[indices],
+                    atol=1e-4,
+                ).all()
+            )
 
         if not self._test_cfg["indexed"]:
             # resets to default state
             self._cubes_view.post_reset()
             current_state = self._cubes_view.get_current_dynamic_state()
-            self.assertTrue(self.isclose(desired_default_state.positions, current_state.positions, atol=1e-4).all())
-            self.assertTrue(
-                self.isclose(desired_default_state.orientations, current_state.orientations, atol=1e-4).all()
-            )
-            self.assertTrue(
-                self.isclose(desired_default_state.linear_velocities, current_state.linear_velocities, atol=1e-4).all()
-            )
-            self.assertTrue(
-                self.isclose(
-                    desired_default_state.angular_velocities, current_state.angular_velocities, atol=1e-4
-                ).all()
-            )
+            if self._test_cfg["backend"] == "warp":
+                self.assertTrue(
+                    self.isclose(
+                        desired_default_state.positions.numpy(), current_state.positions.numpy(), atol=1e-4
+                    ).all()
+                )
+                self.assertTrue(
+                    self.isclose(
+                        desired_default_state.orientations.numpy(), current_state.orientations.numpy(), atol=1e-4
+                    ).all()
+                )
+                self.assertTrue(
+                    self.isclose(
+                        desired_default_state.linear_velocities.numpy(),
+                        current_state.linear_velocities.numpy(),
+                        atol=1e-4,
+                    ).all()
+                )
+                self.assertTrue(
+                    self.isclose(
+                        desired_default_state.angular_velocities.numpy(),
+                        current_state.angular_velocities.numpy(),
+                        atol=1e-4,
+                    ).all()
+                )
+            else:
+                self.assertTrue(self.isclose(desired_default_state.positions, current_state.positions, atol=1e-4).all())
+                self.assertTrue(
+                    self.isclose(desired_default_state.orientations, current_state.orientations, atol=1e-4).all()
+                )
+                self.assertTrue(
+                    self.isclose(
+                        desired_default_state.linear_velocities, current_state.linear_velocities, atol=1e-4
+                    ).all()
+                )
+                self.assertTrue(
+                    self.isclose(
+                        desired_default_state.angular_velocities, current_state.angular_velocities, atol=1e-4
+                    ).all()
+                )
 
     async def transforms_test(self):
         print("transforms test")
@@ -768,15 +945,24 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
         indices = [1, 2] if self._test_cfg["indexed"] else None
         num_indices = 2 if self._test_cfg["indexed"] else 3
 
-        new_positions = self._array_container([[25.0, -20.0, 10.0], [15.0, 10.0, 0.0], [-45.0, -40.0, 0.0]])
-        new_orientations = self._array_container([[1.0, 0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]])
-        new_positions = new_positions[indices] if indices else new_positions
-        new_orientations = new_orientations[indices] if indices else new_orientations
+        new_positions = np.array([[25.0, -20.0, 10.0], [15.0, 10.0, 0.0], [-45.0, -40.0, 0.0]])
+        new_orientations = np.array([[1.0, 0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]])
+        new_positions = self._array_container(
+            new_positions.tolist() if indices is None else new_positions[indices].tolist()
+        )
+        new_orientations = self._array_container(
+            new_orientations.tolist() if indices is None else new_orientations[indices].tolist()
+        )
         self._cubes_view.set_world_poses(positions=new_positions, orientations=new_orientations, indices=indices)
         self._my_world.step_async()
         self._my_world._physics_sim_view.flush()
         await omni.kit.app.get_app().next_update_async()
         current_positions, current_orientations = self._cubes_view.get_world_poses(indices=indices)
+        if self._test_cfg["backend"] == "warp":
+            current_positions = current_positions.numpy()
+            new_positions = new_positions.numpy()
+            current_orientations = current_orientations.numpy()
+            new_orientations = new_orientations.numpy()
         self.assertTrue(self.isclose(current_positions, new_positions, atol=1e-4).all())
         self.assertTrue(self.isclose(current_orientations, new_orientations, atol=1e-4).all())
         return
@@ -790,15 +976,18 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
 
-        velocities = self._array_container(
+        velocities = np.array(
             [[10.0, 0.0, 0.0, 20.0, 0.0, 0.0], [20.0, 0.0, 0.0, 0.0, -20.0, 0.0], [-10.0, 0.0, 0.0, 0.0, 0.0, 20.0]]
         )
-        velocities = velocities[indices] if indices else velocities
+        velocities = self._array_container(velocities.tolist() if indices is None else velocities[indices].tolist())
         self._cubes_view.set_velocities(velocities, indices)
         self._my_world.step_async()
         self._my_world._physics_sim_view.flush()
         await omni.kit.app.get_app().next_update_async()
         current_velocities = self._cubes_view.get_velocities(indices)
+        if self._test_cfg["backend"] == "warp":
+            current_velocities = current_velocities.numpy()
+            velocities = velocities.numpy()
         self.assertTrue(self.isclose(current_velocities, velocities, atol=1e-1).all())
         return
 
@@ -808,18 +997,18 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
 
-        new_positions = self._array_container([[20.0, -20.0, 10.0], [30.0, 30.0, 0], [-40, -40, 0]])
-        new_orientations = self.euler_angles_to_quats(
-            euler_angles=self._array_container([[0.0, 0, 0], [0, 0, 0], [0, 0, 0]]), device=self._device
+        new_positions = np.array([[20.0, -20.0, 10.0], [30.0, 30.0, 0], [-40, -40, 0]])
+        new_orientations = euler_angles_to_quats_numpy(euler_angles=np.array([[0.0, 0, 0], [0, 0, 0], [0, 0, 0]]))
+        new_positions = self._array_container(
+            new_positions.tolist() if indices is None else new_positions[indices].tolist()
         )
-        self._cubes_view.set_world_poses(
-            positions=new_positions[indices] if indices else new_positions,
-            orientations=new_orientations[indices] if indices else new_orientations,
-            indices=indices,
+        new_orientations = self._array_container(
+            new_orientations.tolist() if indices is None else new_orientations[indices].tolist()
         )
+        self._cubes_view.set_world_poses(positions=new_positions, orientations=new_orientations, indices=indices)
 
-        forces = self._array_container([[3000, 0, 0], [-3000, 0, 0], [3000, 0, 0]])
-        forces = forces[indices] if indices else forces
+        forces = np.array([[3000, 0, 0], [-3000, 0, 0], [3000, 0, 0]])
+        forces = self._array_container(forces.tolist() if indices is None else forces[indices].tolist())
         self._cubes_view.apply_forces(forces, indices)
         self._my_world.step_async()
         self._my_world._physics_sim_view.flush()
@@ -829,16 +1018,11 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
 
         if self._test_cfg["backend"] == "torch":
             current_linear_velocities = current_linear_velocities.cpu().numpy()
+        elif self._test_cfg["backend"] == "warp":
+            current_linear_velocities = current_linear_velocities.numpy()
 
         self.assertTrue(
             np.isclose(current_linear_velocities[:, 1:], np.array([[0, 0], [0, 0], [0, 0]])[indices], atol=1e-4).all()
         )
 
-        if self._test_cfg["backend"] == "numpy":
-            self.assertTrue(
-                np.logical_not(np.isclose(current_linear_velocities[:, 0], np.array([0, 0, 0])[indices])).all()
-            )
-        elif self._test_cfg["backend"] == "torch":
-            self.assertTrue(
-                np.logical_not(np.isclose(current_linear_velocities[:, 0], np.array([0, 0, 0])[indices])).all()
-            )
+        self.assertTrue(np.logical_not(np.isclose(current_linear_velocities[:, 0], np.array([0, 0, 0])[indices])).all())

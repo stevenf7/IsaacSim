@@ -92,8 +92,8 @@ class TestArticulationDeterminism(omni.kit.test.AsyncTestCase):
                     -0.34608791253975374,
                     2.9291361940824485,
                     0.4814803907662416,
-                    None,
-                    None,
+                    0.0,
+                    0.0,
                 ]
             )
         )
