@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 import numpy as np
-from omni.isaac.core.utils.numpy.rotations import gf_quat_to_tensor
+from omni.isaac.core.utils.numpy.rotations import gf_quat_to_tensor, wxyz2xyzw, xyzw2wxyz
 from omni.isaac.core.utils.numpy.tensor import create_zeros_tensor
 from pxr import Gf
 from scipy.spatial.transform import Rotation
@@ -63,3 +63,16 @@ def get_world_from_local(parent_transforms, translations, orientations, device=N
 def get_pose(positions, orientations, device=None):
     pose = np.concatenate([positions, orientations], axis=-1)
     return pose
+
+
+def assign_pose(current_positions, current_orientations, positions, orientations, indices, device=None, pose=None):
+    if positions is None:
+        positions = current_positions[indices]
+    if orientations is None:
+        orientations = current_orientations[indices]
+    orientations = wxyz2xyzw(orientations)
+    current_orientations = wxyz2xyzw(current_orientations)
+    old_pose = get_pose(current_positions, current_orientations)
+    new_pose = get_pose(positions, orientations)
+    old_pose[indices] = new_pose
+    return old_pose

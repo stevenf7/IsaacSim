@@ -20,15 +20,17 @@ def as_type(data, dtype):
         return data.to(torch.int64)
     elif dtype == "long":
         return data.to(torch.long)
+    elif dtype == "uint8":
+        return data.to(torch.uint8)
     else:
         print(f"Type {dtype} not supported.")
 
 
-def convert(data, device):
+def convert(data, device, dtype="float32", indexed=None):
     if not isinstance(data, torch.Tensor):
-        return torch.tensor(data, device=device)
+        return as_type(torch.tensor(data, device=device), dtype)
     else:
-        return data.to(device=device)
+        return as_type(data.to(device=device), dtype)
 
 
 def create_zeros_tensor(shape, dtype, device=None):
@@ -66,7 +68,7 @@ def move_data(data, device):
     return data.to(device=device)
 
 
-def tensor_cat(data, dim=-1):
+def tensor_cat(data, device=None, dim=-1):
     return torch.cat(data, dim=dim)
 
 
@@ -80,3 +82,23 @@ def pad(data, pad_width, mode="constant", value=None):
 
 def tensor_stack(data, dim=0):
     return torch.stack(data, dim=dim)
+
+
+def to_list(data):
+    if not isinstance(data, list):
+        return data.cpu().numpy().tolist()
+    return data
+
+
+def to_numpy(data):
+    if isinstance(data, torch.Tensor):
+        return data.cpu().numpy()
+    return data
+
+
+def assign(src, dst, indices):
+    if isinstance(indices, list):
+        dst[tuple(indices)] = src
+    else:
+        dst[indices] = src
+    return dst

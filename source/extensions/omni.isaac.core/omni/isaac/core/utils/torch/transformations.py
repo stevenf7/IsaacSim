@@ -7,7 +7,14 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 import torch
-from omni.isaac.core.utils.torch.rotations import gf_quat_to_tensor, quat_apply, quat_conjugate, quat_mul
+from omni.isaac.core.utils.torch.rotations import (
+    gf_quat_to_tensor,
+    quat_apply,
+    quat_conjugate,
+    quat_mul,
+    wxyz2xyzw,
+    xyzw2wxyz,
+)
 from omni.isaac.core.utils.torch.tensor import create_zeros_tensor
 from pxr import Gf
 from scipy.spatial.transform import Rotation
@@ -129,3 +136,16 @@ def tf_vector(q, v):
 @torch.jit.script
 def tf_combine(q1, t1, q2, t2):
     return quat_mul(q1, q2), quat_apply(q1, t2) + t1
+
+
+def assign_pose(current_positions, current_orientations, positions, orientations, indices, device, pose=None):
+    if positions is None:
+        positions = current_positions[indices]
+    if orientations is None:
+        orientations = current_orientations[indices]
+    orientations = wxyz2xyzw(orientations)
+    current_orientations = wxyz2xyzw(current_orientations)
+    old_pose = get_pose(current_positions, current_orientations, device=current_positions.device)
+    new_pose = get_pose(positions, orientations, device=current_positions.device)
+    old_pose[indices] = new_pose
+    return old_pose

@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.3.0] - 2023-07-10
+### Added
+- Added support for Warp backend for rigid classes
+
 ## [2.2.0] - 2023-07-10
 ### Added
 - Added core wrappers for physx and physics.tensors deformable body APIs

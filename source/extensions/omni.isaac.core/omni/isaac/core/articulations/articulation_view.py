@@ -13,6 +13,7 @@ import carb
 import numpy as np
 import omni.kit.app
 import torch
+import warp as wp
 from omni.isaac.core.prims.xform_prim_view import XFormPrimView
 from omni.isaac.core.utils.prims import get_prim_at_path, get_prim_parent, get_prim_property, set_prim_property
 from omni.isaac.core.utils.types import ArticulationActions, JointsState
@@ -36,20 +37,20 @@ class ArticulationView(XFormPrimView):
         name (str, optional): shortname to be used as a key by Scene class.
                                 Note: needs to be unique if the object is added to the Scene.
                                 Defaults to "articulation_prim_view".
-        positions (Optional[Union[np.ndarray, torch.Tensor]], optional): default positions in the world frame of the prims.
+        positions (Optional[Union[np.ndarray, torch.Tensor, wp.array]], optional): default positions in the world frame of the prims.
                                                                         shape is (N, 3). Defaults to None, which means left unchanged.
-        translations (Optional[Union[np.ndarray, torch.Tensor]], optional):
+        translations (Optional[Union[np.ndarray, torch.Tensor, wp.array]], optional):
                                                         default translations in the local frame of the prims
                                                         (with respect to its parent prims). shape is (N, 3).
                                                         Defaults to None, which means left unchanged.
-        orientations (Optional[Union[np.ndarray, torch.Tensor]], optional):
+        orientations (Optional[Union[np.ndarray, torch.Tensor, wp.array]], optional):
                                                         default quaternion orientations in the world/ local frame of the prims
                                                         (depends if translation or position is specified).
                                                         quaternion is scalar-first (w, x, y, z). shape is (N, 4).
-        scales (Optional[Union[np.ndarray, torch.Tensor]], optional): local scales to be applied to
+        scales (Optional[Union[np.ndarray, torch.Tensor, wp.array]], optional): local scales to be applied to
                                                         the prim's dimensions in the view. shape is (N, 3).
                                                         Defaults to None, which means left unchanged.
-        visibilities (Optional[Union[np.ndarray, torch.Tensor]], optional): set to false for an invisible prim in
+        visibilities (Optional[Union[np.ndarray, torch.Tensor, wp.array]], optional): set to false for an invisible prim in
                                                                             the stage while rendering. shape is (N,).
                                                                             Defaults to None.
         reset_xform_properties (bool, optional): True if the prims don't have the right set of xform properties
@@ -57,18 +58,18 @@ class ArticulationView(XFormPrimView):
                                                 Set this parameter to False if the object were cloned using using
                                                 the cloner api in omni.isaac.cloner. Defaults to True.
         enable_dof_force_sensors (bool, optional): enables the solver computed dof force sensors on articulation joints.
-                                                   Defaults to False.
+                                                    Defaults to False.
     """
 
     def __init__(
         self,
         prim_paths_expr: str,
         name: str = "articulation_prim_view",
-        positions: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        translations: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        orientations: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        scales: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        visibilities: Optional[Union[np.ndarray, torch.Tensor]] = None,
+        positions: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
+        translations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
+        orientations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
+        scales: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
+        visibilities: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
         reset_xform_properties: bool = True,
         enable_dof_force_sensors: bool = False,
     ) -> None:
@@ -284,7 +285,7 @@ class ArticulationView(XFormPrimView):
     def get_dof_limits(self) -> Union[np.ndarray, torch.Tensor]:
         """
         Returns:
-            Union[np.ndarray, torch.Tensor]: degrees of freedom position limits.
+            Union[np.ndarray, torch.Tensor, wp.array]: degrees of freedom position limits.
                                             shape is (N, num_dof, 2) where index 0 corresponds to the lower limit and index 1 corresponds to the upper limit.
         """
         if not self._is_initialized:
@@ -295,18 +296,18 @@ class ArticulationView(XFormPrimView):
     def set_friction_coefficients(
         self,
         values: Union[np.ndarray, torch.Tensor],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
     ) -> None:
         """Sets friction coefficients for articulation joints in the view.
 
         Args:
-            values (Union[np.ndarray, torch.Tensor]): friction coefficients for articulations in the view. shape (M, K).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            values (Union[np.ndarray, torch.Tensor, wp.array]): friction coefficients for articulations in the view. shape (M, K).
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): joint indicies to specify which joints
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
@@ -317,17 +318,23 @@ class ArticulationView(XFormPrimView):
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, "cpu")
-            new_values = self._backend_utils.clone_tensor(
-                self._physics_view.get_dof_friction_coefficients(), device="cpu"
-            )
-            new_values[self._backend_utils.expand_dims(indices, 1), joint_indices] = self._backend_utils.move_data(
-                values, device="cpu"
+            new_values = self._physics_view.get_dof_friction_coefficients()
+            values = self._backend_utils.move_data(values, device="cpu")
+            new_values = self._backend_utils.assign(
+                values,
+                new_values,
+                [self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, joint_indices],
             )
             self._physics_view.set_dof_friction_coefficients(new_values, indices)
         else:
-            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-            dof_types = self.get_dof_types()
-            joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
+            indices = self._backend_utils.to_list(
+                self._backend_utils.resolve_indices(indices, self.count, self._device)
+            )
+            dof_types = self._backend_utils.to_list(self.get_dof_types())
+            joint_indices = self._backend_utils.to_list(
+                self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
+            )
+            values = self._backend_utils.to_list(values)
             articulation_read_idx = 0
             for i in indices:
                 dof_read_idx = 0
@@ -335,36 +342,36 @@ class ArticulationView(XFormPrimView):
                     drive_type = (
                         "angular" if dof_types[dof_index] == omni.physics.tensors.DofType.Rotation else "linear"
                     )
-                    prim = PhysxSchema.PhysxJointAPI(get_prim_at_path(self._dof_paths[i.tolist()][dof_index]))
+                    prim = PhysxSchema.PhysxJointAPI(get_prim_at_path(self._dof_paths[i][dof_index]))
                     if not prim.GetJointFrictionAttr():
-                        prim.CreateJointFrictionAttr().Set(values[articulation_read_idx][dof_read_idx].tolist())
+                        prim.CreateJointFrictionAttr().Set(values[articulation_read_idx][dof_read_idx])
                     else:
-                        prim.GetJointFrictionAttr().Set(values[articulation_read_idx][dof_read_idx].tolist())
+                        prim.GetJointFrictionAttr().Set(values[articulation_read_idx][dof_read_idx])
                     dof_read_idx += 1
                 articulation_read_idx += 1
         return
 
     def get_friction_coefficients(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor]:
+    ) -> Union[np.ndarray, torch.Tensor, wp.array]:
         """Gets friction coefficients for articulation in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): joint indicies to specify which joints
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
             clone (Optional[bool]): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: maximum efforts for articulations in the view. shape (M, K).
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: maximum efforts for articulations in the view. shape (M, K).
         """
         if not self._is_initialized:
             carb.log_warn("ArticulationView needs to be initialized.")
@@ -373,17 +380,19 @@ class ArticulationView(XFormPrimView):
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
             values = self._backend_utils.move_data(self._physics_view.get_dof_friction_coefficients(), self._device)
-            result = values[self._backend_utils.expand_dims(indices, 1), joint_indices]
             if clone:
-                result = self._backend_utils.clone_tensor(values, device=self._device)
+                values = self._backend_utils.clone_tensor(values, device=self._device)
+            result = values[
+                self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, joint_indices
+            ]
             return result
         else:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
-            values = self._backend_utils.create_zeros_tensor(
-                shape=[indices.shape[0], joint_indices.shape[0]], dtype="float32", device=self._device
-            )
+            values = np.zeros(shape=(indices.shape[0], joint_indices.shape[0]), dtype="float32")
             articulation_write_idx = 0
+            indices = self._backend_utils.to_list(indices)
+            joint_indices = self._backend_utils.to_list(joint_indices)
             for i in indices:
                 dof_write_idx = 0
                 for dof_index in joint_indices:
@@ -392,23 +401,24 @@ class ArticulationView(XFormPrimView):
                         values[articulation_write_idx][dof_write_idx] = prim.GetJointFrictionAttr().Get()
                     dof_write_idx += 1
                 articulation_write_idx += 1
+            values = self._backend_utils.convert(values, dtype="float32", device=self._device, indexed=True)
             return values
 
     def set_armatures(
         self,
-        values: Union[np.ndarray, torch.Tensor],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        values: Union[np.ndarray, torch.Tensor, wp.array],
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
     ) -> None:
         """Sets armatures for articulation joints in the view.
 
         Args:
-            values (Union[np.ndarray, torch.Tensor]): armatures for articulations in the view. shape (M, K).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            values (Union[np.ndarray, torch.Tensor, wp.array]): armatures for articulations in the view. shape (M, K).
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): joint indicies to specify which joints
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
@@ -419,48 +429,56 @@ class ArticulationView(XFormPrimView):
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, "cpu")
-            new_values = self._backend_utils.clone_tensor(self._physics_view.get_dof_armatures(), device="cpu")
-            new_values[self._backend_utils.expand_dims(indices, 1), joint_indices] = self._backend_utils.move_data(
-                values, device="cpu"
+            new_values = self._physics_view.get_dof_armatures()
+            values = self._backend_utils.move_data(values, device="cpu")
+            new_values = self._backend_utils.assign(
+                values,
+                new_values,
+                [self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, joint_indices],
             )
             self._physics_view.set_dof_armatures(new_values, indices)
         else:
-            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-            joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
+            indices = self._backend_utils.to_list(
+                self._backend_utils.resolve_indices(indices, self.count, self._device)
+            )
+            joint_indices = self._backend_utils.to_list(
+                self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
+            )
+            values = self._backend_utils.to_list(values)
             articulation_read_idx = 0
             for i in indices:
                 dof_read_idx = 0
                 for dof_index in joint_indices:
-                    prim = PhysxSchema.PhysxJointAPI(get_prim_at_path(self._dof_paths[i.tolist()][dof_index]))
+                    prim = PhysxSchema.PhysxJointAPI(get_prim_at_path(self._dof_paths[i][dof_index]))
                     if not prim.GetArmatureAttr():
-                        prim.CreateArmatureAttr().Set(values[articulation_read_idx][dof_read_idx].tolist())
+                        prim.CreateArmatureAttr().Set(values[articulation_read_idx][dof_read_idx])
                     else:
-                        prim.GetArmatureAttr().Set(values[articulation_read_idx][dof_read_idx].tolist())
+                        prim.GetArmatureAttr().Set(values[articulation_read_idx][dof_read_idx])
                     dof_read_idx += 1
                 articulation_read_idx += 1
         return
 
     def get_armatures(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor]:
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Gets armatures for articulation in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): joint indicies to specify which joints
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
             clone (Optional[bool]): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: maximum efforts for articulations in the view. shape (M, K).
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: maximum efforts for articulations in the view. shape (M, K).
         """
         if not self._is_initialized:
             carb.log_warn("ArticulationView needs to be initialized.")
@@ -469,16 +487,18 @@ class ArticulationView(XFormPrimView):
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
             values = self._backend_utils.move_data(self._physics_view.get_dof_armatures(), device=self._device)
-            result = values[self._backend_utils.expand_dims(indices, 1), joint_indices]
             if clone:
-                result = self._backend_utils.clone_tensor(result, device=self._device)
+                values = self._backend_utils.clone_tensor(values, device=self._device)
+            result = values[
+                self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, joint_indices
+            ]
             return result
         else:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
-            values = self._backend_utils.create_zeros_tensor(
-                shape=[indices.shape[0], joint_indices.shape[0]], dtype="float32", device=self._device
-            )
+            values = np.zeros(shape=(indices.shape[0], joint_indices.shape[0]), dtype="float32")
+            indices = self._backend_utils.to_list(indices)
+            joint_indices = self._backend_utils.to_list(joint_indices)
             articulation_write_idx = 0
             for i in indices:
                 dof_write_idx = 0
@@ -488,6 +508,7 @@ class ArticulationView(XFormPrimView):
                         values[articulation_write_idx, dof_write_idx] = prim.GetArmatureAttr().Get()
                     dof_write_idx += 1
                 articulation_write_idx += 1
+            values = self._backend_utils.convert(values, dtype="float32", device=self._device, indexed=True)
             return values
 
     def get_articulation_body_count(self) -> int:
@@ -502,21 +523,21 @@ class ArticulationView(XFormPrimView):
 
     def set_joint_position_targets(
         self,
-        positions: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        positions: Optional[Union[np.ndarray, torch.Tensor, wp.array]],
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
     ) -> None:
         """
         Sets the joint position targets for the implicit pd controllers.
 
         Args:
-            positions (Optional[Union[np.ndarray, torch.Tensor]]): joint position targets for the implicit pd controller.
+            positions (Optional[Union[np.ndarray, torch.Tensor, wp.array]]): joint position targets for the implicit pd controller.
                                                                     shape is (M, K).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): joint indicies to specify which joints
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
@@ -528,11 +549,11 @@ class ArticulationView(XFormPrimView):
             self._physics_sim_view.enable_warnings(False)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
-            action = self._backend_utils.clone_tensor(
-                self._physics_view.get_dof_position_targets(), device=self._device
-            )
-            action[self._backend_utils.expand_dims(indices, 1), joint_indices] = self._backend_utils.move_data(
-                positions, device=self._device
+            action = self._physics_view.get_dof_position_targets()
+            action = self._backend_utils.assign(
+                self._backend_utils.move_data(positions, device=self._device),
+                action,
+                [self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, joint_indices],
             )
             self._physics_view.set_dof_position_targets(action, indices)
             self._physics_sim_view.enable_warnings(True)
@@ -541,20 +562,20 @@ class ArticulationView(XFormPrimView):
 
     def set_joint_positions(
         self,
-        positions: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        positions: Optional[Union[np.ndarray, torch.Tensor, wp.array]],
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
     ) -> None:
         """Sets the joint positions of articulations in the view.
 
         Args:
-            positions (Optional[Union[np.ndarray, torch.Tensor]]): joint positions of articulations in the view to be set to in the next frame.
+            positions (Optional[Union[np.ndarray, torch.Tensor, wp.array]]): joint positions of articulations in the view to be set to in the next frame.
                                                                     shape is (M, K).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): joint indicies to specify which joints
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
@@ -566,9 +587,11 @@ class ArticulationView(XFormPrimView):
             self._physics_sim_view.enable_warnings(False)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
-            new_dof_pos = self._backend_utils.clone_tensor(self._physics_view.get_dof_positions(), device=self._device)
-            new_dof_pos[self._backend_utils.expand_dims(indices, 1), joint_indices] = self._backend_utils.move_data(
-                positions, device=self._device
+            new_dof_pos = self._physics_view.get_dof_positions()
+            new_dof_pos = self._backend_utils.assign(
+                self._backend_utils.move_data(positions, device=self._device),
+                new_dof_pos,
+                [self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, joint_indices],
             )
             self._physics_view.set_dof_positions(new_dof_pos, indices)
             self._physics_view.set_dof_position_targets(new_dof_pos, indices)
@@ -578,21 +601,21 @@ class ArticulationView(XFormPrimView):
 
     def set_joint_velocity_targets(
         self,
-        velocities: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        velocities: Optional[Union[np.ndarray, torch.Tensor, wp.array]],
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
     ) -> None:
         """
         Sets the joint velocity targets for the implicit pd controllers.
 
         Args:
-            velocities (Optional[Union[np.ndarray, torch.Tensor]]): joint velocity targets for the implicit pd controller.
+            velocities (Optional[Union[np.ndarray, torch.Tensor, wp.array]]): joint velocity targets for the implicit pd controller.
                                                                     shape is (M, K).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): joint indicies to specify which joints
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
@@ -604,11 +627,11 @@ class ArticulationView(XFormPrimView):
             self._physics_sim_view.enable_warnings(False)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
-            action = self._backend_utils.clone_tensor(
-                self._physics_view.get_dof_velocity_targets(), device=self._device
-            )
-            action[self._backend_utils.expand_dims(indices, 1), joint_indices] = self._backend_utils.move_data(
-                velocities, device=self._device
+            action = self._physics_view.get_dof_velocity_targets()
+            action = self._backend_utils.assign(
+                self._backend_utils.move_data(velocities, device=self._device),
+                action,
+                [self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, joint_indices],
             )
             self._physics_view.set_dof_velocity_targets(action, indices)
             self._physics_sim_view.enable_warnings(True)
@@ -617,20 +640,20 @@ class ArticulationView(XFormPrimView):
 
     def set_joint_velocities(
         self,
-        velocities: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        velocities: Optional[Union[np.ndarray, torch.Tensor, wp.array]],
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
     ) -> None:
         """Sets the joint velocities of articulations in the view.
 
         Args:
-            velocities (Optional[Union[np.ndarray, torch.Tensor]]): joint velocities of articulations in the view to be set to in the next frame.
+            velocities (Optional[Union[np.ndarray, torch.Tensor, wp.array]]): joint velocities of articulations in the view to be set to in the next frame.
                                                                     shape is (M, K).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): joint indicies to specify which joints
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
@@ -642,9 +665,11 @@ class ArticulationView(XFormPrimView):
             self._physics_sim_view.enable_warnings(False)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
-            new_dof_vel = self._backend_utils.clone_tensor(self._physics_view.get_dof_velocities(), device=self._device)
-            new_dof_vel[self._backend_utils.expand_dims(indices, 1), joint_indices] = self._backend_utils.move_data(
-                velocities, device=self._device
+            new_dof_vel = self._physics_view.get_dof_velocities()
+            new_dof_vel = self._backend_utils.assign(
+                self._backend_utils.move_data(velocities, device=self._device),
+                new_dof_vel,
+                [self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, joint_indices],
             )
             self._physics_view.set_dof_velocities(new_dof_vel, indices)
             self._physics_view.set_dof_velocity_targets(new_dof_vel, indices)
@@ -655,20 +680,20 @@ class ArticulationView(XFormPrimView):
 
     def set_joint_efforts(
         self,
-        efforts: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        efforts: Optional[Union[np.ndarray, torch.Tensor, wp.array]],
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
     ) -> None:
         """Sets the joint efforts of articulations in the view.
 
         Args:
-            efforts (Optional[Union[np.ndarray, torch.Tensor]]): efforts of articulations in the view to be set to in the next frame.
+            efforts (Optional[Union[np.ndarray, torch.Tensor, wp.array]]): efforts of articulations in the view to be set to in the next frame.
                                                                     shape is (M, K).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): joint indicies to specify which joints
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
@@ -685,8 +710,10 @@ class ArticulationView(XFormPrimView):
             new_dof_efforts = self._backend_utils.create_zeros_tensor(
                 shape=[self.count, self.num_dof], dtype="float32", device=self._device
             )
-            new_dof_efforts[self._backend_utils.expand_dims(indices, 1), joint_indices] = self._backend_utils.move_data(
-                efforts, device=self._device
+            new_dof_efforts = self._backend_utils.assign(
+                self._backend_utils.move_data(efforts, device=self._device),
+                new_dof_efforts,
+                [self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, joint_indices],
             )
             # TODO: double check this/ is this setting a force or applying a force?
             self._physics_view.set_dof_actuation_forces(new_dof_efforts, indices)
@@ -697,26 +724,26 @@ class ArticulationView(XFormPrimView):
 
     def get_applied_joint_efforts(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor]:
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Gets the joint efforts of articulations in the view. The method will return the efforts set by the set_joint_efforts.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): joint indicies to specify which joints
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: joint efforts of articulations in the view assigned via set_joint_efforts. shape is (M, K)."""
-
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: joint efforts of articulations in the view assigned via set_joint_efforts. shape is (M, K).
+        """
         if not self._is_initialized:
             carb.log_warn("ArticulationView needs to be initialized.")
             return None
@@ -725,10 +752,12 @@ class ArticulationView(XFormPrimView):
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
             current_joint_forces = self._physics_view.get_dof_actuation_forces()
-            result = current_joint_forces[self._backend_utils.expand_dims(indices, 1), joint_indices]
-            self._physics_sim_view.enable_warnings(True)
             if clone:
-                result = self._backend_utils.clone_tensor(result, device=self._device)
+                current_joint_forces = self._backend_utils.clone_tensor(current_joint_forces, device=self._device)
+            result = current_joint_forces[
+                self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, joint_indices
+            ]
+            self._physics_sim_view.enable_warnings(True)
             return result
         else:
             carb.log_warn("Physics Simulation View is not created yet in order to use get_applied_joint_efforts")
@@ -736,10 +765,10 @@ class ArticulationView(XFormPrimView):
 
     def get_measured_joint_efforts(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor]:
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Gets the dof forces of articulations in the view. The method will return the solver computed projection of the joint forces in the dof motion direction.
 
         Args:
@@ -764,10 +793,12 @@ class ArticulationView(XFormPrimView):
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
             current_joint_forces = self._physics_view.get_dof_projected_joint_forces()
-            result = current_joint_forces[self._backend_utils.expand_dims(indices, 1), joint_indices]
-            self._physics_sim_view.enable_warnings(True)
             if clone:
-                result = self._backend_utils.clone_tensor(result, device=self._device)
+                result = self._backend_utils.clone_tensor(current_joint_forces, device=self._device)
+            result = result[
+                self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, joint_indices
+            ]
+            self._physics_sim_view.enable_warnings(True)
             return result
         else:
             carb.log_warn("Physics Simulation View is not created yet in order to use get_measured_joint_efforts")
@@ -801,9 +832,11 @@ class ArticulationView(XFormPrimView):
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_bodies, self._device)
             current_joint_forces = self._physics_view.get_link_incoming_joint_force()
-            result = current_joint_forces[self._backend_utils.expand_dims(indices, 1), joint_indices]
             if clone:
-                result = self._backend_utils.clone_tensor(result, device=self._device)
+                result = self._backend_utils.clone_tensor(current_joint_forces, device=self._device)
+            result = result[
+                self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, joint_indices
+            ]
             return result
         else:
             carb.log_warn("Physics Simulation View is not created yet in order to use get_measured_joint_forces")
@@ -811,25 +844,25 @@ class ArticulationView(XFormPrimView):
 
     def get_joint_positions(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor]:
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Gets the joint positions of articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): joint indicies to specify which joints
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: joint positions of articulations in the view.
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: joint positions of articulations in the view.
                                                     shape is (M, K).
         """
         if not self._is_initialized:
@@ -840,10 +873,12 @@ class ArticulationView(XFormPrimView):
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
             current_joint_positions = self._physics_view.get_dof_positions()
-            result = current_joint_positions[self._backend_utils.expand_dims(indices, 1), joint_indices]
-            self._physics_sim_view.enable_warnings(True)
             if clone:
-                result = self._backend_utils.clone_tensor(result, device=self._device)
+                current_joint_positions = self._backend_utils.clone_tensor(current_joint_positions, device=self._device)
+            result = current_joint_positions[
+                self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, joint_indices
+            ]
+            self._physics_sim_view.enable_warnings(True)
             return result
         else:
             carb.log_warn("Physics Simulation View is not created yet in order to use get_joint_positions")
@@ -851,25 +886,25 @@ class ArticulationView(XFormPrimView):
 
     def get_joint_velocities(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor]:
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Gets the joint velocities of articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): joint indicies to specify which joints
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: joint velocities of articulations in the view.
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: joint velocities of articulations in the view.
                                                     shape is (M, K).
         """
         if not self._is_initialized:
@@ -880,24 +915,30 @@ class ArticulationView(XFormPrimView):
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
             current_joint_velocities = self._physics_view.get_dof_velocities()
-            result = current_joint_velocities[self._backend_utils.expand_dims(indices, 1), joint_indices]
-            self._physics_sim_view.enable_warnings(True)
             if clone:
-                result = self._backend_utils.clone_tensor(result, device=self._device)
+                current_joint_velocities = self._backend_utils.clone_tensor(
+                    current_joint_velocities, device=self._device
+                )
+            result = current_joint_velocities[
+                self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, joint_indices
+            ]
+            self._physics_sim_view.enable_warnings(True)
             return result
         else:
             carb.log_warn("Physics Simulation View is not created yet in order to use get_joint_velocities")
             return None
 
     def apply_action(
-        self, control_actions: ArticulationActions, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None
+        self,
+        control_actions: ArticulationActions,
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
     ) -> None:
         """Applies ArticulationActions which encapsulates joint position targets, velocity targets, efforts and joint indices in one object.
             Can be used instead of the seperate set_joint_position_targets..etc.
 
         Args:
             control_actions (ArticulationActions): actions to be applied for next physics step.
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -914,20 +955,26 @@ class ArticulationView(XFormPrimView):
 
             if control_actions.joint_positions is not None:
                 # TODO: optimize this operation
-                action = self._backend_utils.clone_tensor(
-                    self._physics_view.get_dof_position_targets(), device=self._device
-                )
-                action[self._backend_utils.expand_dims(indices, 1), joint_indices] = self._backend_utils.move_data(
-                    control_actions.joint_positions, device=self._device
+                action = self._physics_view.get_dof_position_targets()
+                action = self._backend_utils.assign(
+                    self._backend_utils.move_data(control_actions.joint_positions, device=self._device),
+                    action,
+                    [
+                        self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices,
+                        joint_indices,
+                    ],
                 )
                 self._physics_view.set_dof_position_targets(action, indices)
             if control_actions.joint_velocities is not None:
                 # TODO: optimize this operation
-                action = self._backend_utils.clone_tensor(
-                    self._physics_view.get_dof_velocity_targets(), device=self._device
-                )
-                action[self._backend_utils.expand_dims(indices, 1), joint_indices] = self._backend_utils.move_data(
-                    control_actions.joint_velocities, device=self._device
+                action = self._physics_view.get_dof_velocity_targets()
+                action = self._backend_utils.assign(
+                    self._backend_utils.move_data(control_actions.joint_velocities, device=self._device),
+                    action,
+                    [
+                        self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices,
+                        joint_indices,
+                    ],
                 )
                 self._physics_view.set_dof_velocity_targets(action, indices)
             if control_actions.joint_efforts is not None:
@@ -936,8 +983,13 @@ class ArticulationView(XFormPrimView):
                 action = self._backend_utils.create_zeros_tensor(
                     (self.count, self.num_dof), dtype="float32", device=self._device
                 )
-                action[self._backend_utils.expand_dims(indices, 1), joint_indices] = self._backend_utils.move_data(
-                    control_actions.joint_efforts, device=self._device
+                actionself._backend_utils.assign(
+                    self._backend_utils.move_data(control_actions.joint_efforts, device=self._device),
+                    action,
+                    [
+                        self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices,
+                        joint_indices,
+                    ],
                 )
                 self._physics_view.set_dof_actuation_forces(action, indices)
             self._physics_sim_view.enable_warnings(True)
@@ -982,19 +1034,19 @@ class ArticulationView(XFormPrimView):
 
     def set_world_poses(
         self,
-        positions: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        orientations: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        positions: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
+        orientations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
+        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
     ) -> None:
         """Sets poses of prims in the view with respect to the world's frame.
 
         Args:
-            positions (Optional[Union[np.ndarray, torch.Tensor]], optional): positions in the world frame of the prim. shape is (M, 3).
+            positions (Optional[Union[np.ndarray, torch.Tensor, wp.array]], optional): positions in the world frame of the prim. shape is (M, 3).
                                                                              Defaults to None, which means left unchanged.
-            orientations (Optional[Union[np.ndarray, torch.Tensor]], optional): quaternion orientations in the world frame of the prims.
+            orientations (Optional[Union[np.ndarray, torch.Tensor, wp.array]], optional): quaternion orientations in the world frame of the prims.
                                                                                 quaternion is scalar-first (w, x, y, z). shape is (M, 4).
                                                                                 Defaults to None, which means left unchanged.
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -1003,16 +1055,18 @@ class ArticulationView(XFormPrimView):
             self._physics_sim_view.enable_warnings(False)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             current_positions, current_orientations = self.get_world_poses(clone=False)
-            if positions is None:
-                positions = current_positions[indices]
-            if orientations is None:
-                orientations = current_orientations[indices]
-            orientations = orientations[:, [1, 2, 3, 0]]
-            current_orientations = current_orientations[:, [1, 2, 3, 0]]
-            old_pose = self._backend_utils.get_pose(current_positions, current_orientations, device=self._device)
-            new_pose = self._backend_utils.get_pose(positions, orientations, device=self._device)
-            old_pose[indices] = new_pose
-            self._physics_view.set_root_transforms(old_pose, indices)
+            if not hasattr(self, "_pose_buf"):
+                self._pose_buf = self._backend_utils.create_zeros_tensor(
+                    shape=[self.count, 7], dtype="float32", device=self._device
+                )
+            if positions is not None:
+                positions = self._backend_utils.move_data(positions, self._device)
+            if orientations is not None:
+                orientations = self._backend_utils.move_data(orientations, self._device)
+            pose = self._backend_utils.assign_pose(
+                current_positions, current_orientations, positions, orientations, indices, self._device, self._pose_buf
+            )
+            self._physics_view.set_root_transforms(pose, indices)
             self._physics_sim_view.enable_warnings(True)
             return
         else:
@@ -1020,19 +1074,21 @@ class ArticulationView(XFormPrimView):
         return
 
     def get_world_poses(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]:
+        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None, clone: bool = True
+    ) -> Union[
+        Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor], Tuple[wp.indexedarray, wp.indexedarray]
+    ]:
         """Gets the poses of the prims in the view with respect to the world's frame.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]:
+            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor], Tuple[wp.indexedarray, wp.indexedarray]]:
                                         first index is positions in the world frame of the prims. shape is (M, 3).
                                            second index is quaternion orientations in the world frame of the prims.
                                            quaternion is scalar-first (w, x, y, z). shape is (M, 4).
@@ -1042,29 +1098,32 @@ class ArticulationView(XFormPrimView):
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             pose = self._physics_view.get_root_transforms()
             self._physics_sim_view.enable_warnings(True)
-            if not clone:
-                return pose[indices, 0:3], pose[indices, 3:7][:, [3, 0, 1, 2]]
-            else:
-                return (
-                    self._backend_utils.clone_tensor(pose[indices, 0:3], device=self._device),
-                    self._backend_utils.clone_tensor(pose[indices, 3:7][:, [3, 0, 1, 2]], device=self._device),
-                )
+            if clone:
+                pose = self._backend_utils.clone_tensor(pose, device=self._device)
+            pos = pose[indices, 0:3]
+            rot = self._backend_utils.xyzw2wxyz(pose[indices, 3:7])
+            return pos, rot
         else:
-            return XFormPrimView.get_world_poses(self, indices=indices)
+            pos, rot = XFormPrimView.get_world_poses(self, indices=indices)
+            ret_pos = self._backend_utils.convert(pos, dtype="float32", device=self._device, indexed=True)
+            ret_rot = self._backend_utils.convert(rot, dtype="float32", device=self._device, indexed=True)
+            return ret_pos, ret_rot
 
     def get_local_poses(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
-    ) -> Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]:
+        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
+    ) -> Union[
+        Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor], Tuple[wp.indexedarray, wp.indexedarray]
+    ]:
         """Gets prim poses in the view with respect to the local frame (the prim's parent frame).
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                     to query. Shape (M,).
                                                                                     Where M <= size of the encapsulated prims in the view.
                                                                                     Defaults to None (i.e: all prims in the view)
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]:
+            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor], Tuple[wp.indexedarray, wp.indexedarray]]:
                                                             first index is positions in the local frame of the prims. shape is (M, 3).
                                                         second index is quaternion orientations in the local frame of the prims.
                                                         quaternion is scalar-first (w, x, y, z). shape is (M, 4).
@@ -1072,43 +1131,43 @@ class ArticulationView(XFormPrimView):
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             world_positions, world_orientations = self.get_world_poses(indices=indices)
-            parent_transforms = self._backend_utils.create_zeros_tensor(
-                shape=[indices.shape[0], 4, 4], dtype="float32", device=self._device
-            )
+            parent_transforms = np.zeros(shape=(indices.shape[0], 4, 4), dtype="float32")
             write_idx = 0
+            indices = self._backend_utils.to_list(indices)
             for i in indices:
-                parent_transforms[write_idx] = self._backend_utils.create_tensor_from_list(
-                    UsdGeom.Xformable(get_prim_parent(self._prims[i.tolist()])).ComputeLocalToWorldTransform(
+                parent_transforms[write_idx] = np.array(
+                    UsdGeom.Xformable(get_prim_parent(self._prims[i])).ComputeLocalToWorldTransform(
                         Usd.TimeCode.Default()
                     ),
                     dtype="float32",
-                    device=self._device,
                 )
                 write_idx += 1
-            return self._backend_utils.get_local_from_world(
+            parent_transforms = self._backend_utils.convert(parent_transforms, dtype="float32", device=self._device)
+            res = self._backend_utils.get_local_from_world(
                 parent_transforms, world_positions, world_orientations, self._device
             )
+            return res
         else:
             return XFormPrimView.get_local_poses(self, indices=indices)
 
     def set_local_poses(
         self,
-        translations: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        orientations: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        translations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
+        orientations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
+        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
     ) -> None:
         """Sets prim poses in the view with respect to the local frame (the prim's parent frame).
 
         Args:
-            translations (Optional[Union[np.ndarray, torch.Tensor]], optional):
+            translations (Optional[Union[np.ndarray, torch.Tensor, wp.array]], optional):
                                                           translations in the local frame of the prims
                                                           (with respect to its parent prim). shape is (M, 3).
                                                           Defaults to None, which means left unchanged.
-            orientations (Optional[Union[np.ndarray, torch.Tensor]], optional):
+            orientations (Optional[Union[np.ndarray, torch.Tensor, wp.array]], optional):
                                                           quaternion orientations in the local frame of the prims.
                                                           quaternion is scalar-first (w, x, y, z). shape is (M, 4).
                                                           Defaults to None, which means left unchanged.
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -1122,19 +1181,18 @@ class ArticulationView(XFormPrimView):
                     orientations = current_orientations
             self._physics_sim_view.enable_warnings(False)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-            parent_transforms = self._backend_utils.create_zeros_tensor(
-                shape=[indices.shape[0], 4, 4], dtype="float32", device=self._device
-            )
+            parent_transforms = np.zeros(shape=(indices.shape[0], 4, 4), dtype="float32")
             write_idx = 0
+            indices = self._backend_utils.to_list(indices)
             for i in indices:
-                parent_transforms[write_idx] = self._backend_utils.create_tensor_from_list(
-                    UsdGeom.Xformable(get_prim_parent(self._prims[i.tolist()])).ComputeLocalToWorldTransform(
+                parent_transforms[write_idx] = np.array(
+                    UsdGeom.Xformable(get_prim_parent(self._prims[i])).ComputeLocalToWorldTransform(
                         Usd.TimeCode.Default()
                     ),
                     dtype="float32",
-                    device=self._device,
                 )
                 write_idx += 1
+            parent_transforms = self._backend_utils.convert(parent_transforms, dtype="float32", device=self._device)
             calculated_positions, calculated_orientations = self._backend_utils.get_world_from_local(
                 parent_transforms, translations, orientations, self._device
             )
@@ -1148,15 +1206,15 @@ class ArticulationView(XFormPrimView):
 
     def set_velocities(
         self,
-        velocities: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        velocities: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
+        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
     ) -> None:
         """Sets the linear and angular velocities of the prims in the view at once. The method does this through the physx API only.
             i.e: It has to be called after initialization.
 
         Args:
-            velocities (Optional[Union[np.ndarray, torch.Tensor]]): linear and angular velocities respectively to set the rigid prims to. shape is (M, 6).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
+            velocities (Optional[Union[np.ndarray, torch.Tensor, wp.array]]): linear and angular velocities respectively to set the rigid prims to. shape is (M, 6).
+            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -1167,7 +1225,9 @@ class ArticulationView(XFormPrimView):
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
             root_vel = self._physics_view.get_root_velocities()
-            root_vel[indices, :] = self._backend_utils.move_data(velocities, self._device)
+            root_vel = self._backend_utils.assign(
+                self._backend_utils.move_data(velocities, self._device), root_vel, indices
+            )
             self._physics_view.set_root_velocities(root_vel, indices)
             self._physics_sim_view.enable_warnings(True)
         else:
@@ -1175,19 +1235,19 @@ class ArticulationView(XFormPrimView):
             self.set_angular_velocities(velocities[:, 3:6], indices=indices)
 
     def get_velocities(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None, clone: bool = True
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Gets the linear and angular velocities of prims in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                     to query. Shape (M,).
                                                                                     Where M <= size of the encapsulated prims in the view.
                                                                                     Defaults to None (i.e: all prims in the view)
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: linear and angular velocities of the prims in the view concatenated. shape is (M, 6).
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: linear and angular velocities of the prims in the view concatenated. shape is (M, 6).
         """
         if not self._is_initialized:
             carb.log_warn("ArticulationView needs to be initialized.")
@@ -1196,27 +1256,26 @@ class ArticulationView(XFormPrimView):
             self._physics_sim_view.enable_warnings(False)
             velocities = self._physics_view.get_root_velocities()
             self._physics_sim_view.enable_warnings(True)
-            if not clone:
-                return velocities[indices]
-            else:
-                return self._backend_utils.clone_tensor(velocities[indices], device=self._device)
+            if clone:
+                velocities = self._backend_utils.clone_tensor(velocities, device=self._device)
+            return velocities[indices]
         else:
             linear_velocities = self.get_linear_velocities(indices, clone)
             angular_velocities = self.get_angular_velocities(indices, clone)
-            return self._backend_utils.tensor_cat([linear_velocities, angular_velocities], dim=-1)[indices]
+            return self._backend_utils.tensor_cat([linear_velocities, angular_velocities], dim=-1, device=self._device)
 
     def set_linear_velocities(
         self,
-        velocities: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        velocities: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
+        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
     ) -> None:
         """Sets the linear velocities of the prims in the view. The method does this through the physx API only.
             i.e: It has to be called after initialization.
             Note: This method is not supported for the gpu pipeline. set_velocities method should be used instead.
 
         Args:
-            velocities (Optional[Union[np.ndarray, torch.Tensor]]): linear velocities to set the rigid prims to. shape is (M, 3).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
+            velocities (Optional[Union[np.ndarray, torch.Tensor, wp.array]]): linear velocities to set the rigid prims to. shape is (M, 3).
+            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -1231,29 +1290,34 @@ class ArticulationView(XFormPrimView):
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
-            root_velocities = self._backend_utils.clone_tensor(
-                self._physics_view.get_root_velocities(), device=self._device
-            )
-            root_velocities[indices, 0:3] = self._backend_utils.move_data(velocities, device=self._device)
+            root_velocities = self._physics_view.get_root_velocities()
+            if self._backend == "warp":
+                root_velocities = self._backend_utils.assign(
+                    self._backend_utils.move_data(velocities, device=self._device),
+                    root_velocities,
+                    [indices, wp.array([0, 1, 2], device=self._device, dtype=wp.int32)],
+                )
+            else:
+                root_velocities[indices, 0:3] = self._backend_utils.move_data(velocities, device=self._device)
             self._physics_view.set_root_velocities(root_velocities, indices)
             self._physics_sim_view.enable_warnings(True)
         else:
             carb.log_warn("Physics Simulation View is not created yet in order to use set_linear_velocities")
 
     def get_linear_velocities(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone=True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None, clone=True
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Gets the linear velocities of prims in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                     to query. Shape (M,).
                                                                                     Where M <= size of the encapsulated prims in the view.
                                                                                     Defaults to None (i.e: all prims in the view)
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: linear velocities of the prims in the view. shape is (M, 3).
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: linear velocities of the prims in the view. shape is (M, 3).
         """
         if not self._is_initialized:
             carb.log_warn("ArticulationView needs to be initialized.")
@@ -1262,26 +1326,25 @@ class ArticulationView(XFormPrimView):
             self._physics_sim_view.enable_warnings(False)
             linear_velocities = self._physics_view.get_root_velocities()
             self._physics_sim_view.enable_warnings(True)
-            if not clone:
-                return linear_velocities[indices, 0:3]
-            else:
-                return self._backend_utils.clone_tensor(linear_velocities[indices, 0:3], device=self._device)
+            if clone:
+                linear_velocities = self._backend_utils.clone_tensor(linear_velocities, device=self._device)
+            return linear_velocities[indices, 0:3]
         else:
             carb.log_warn("Physics Simulation View is not created yet in order to use get_linear_velocities")
             return None
 
     def set_angular_velocities(
         self,
-        velocities: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        velocities: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
+        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
     ) -> None:
         """Sets the angular velocities of the prims in the view. The method does this through the physx API only.
             i.e: It has to be called after initialization.
             Note: This method is not supported for the gpu pipeline. set_velocities method should be used instead.
 
         Args:
-            velocities (Optional[Union[np.ndarray, torch.Tensor]]): angular velocities to set the rigid prims to. shape is (M, 3).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
+            velocities (Optional[Union[np.ndarray, torch.Tensor, wp.array]]): angular velocities to set the rigid prims to. shape is (M, 3).
+            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -1295,10 +1358,15 @@ class ArticulationView(XFormPrimView):
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
-            root_velocities = self._backend_utils.clone_tensor(
-                self._physics_view.get_root_velocities(), device=self._device
-            )
-            root_velocities[indices, 3:6] = self._backend_utils.move_data(velocities, self._device)
+            root_velocities = self._physics_view.get_root_velocities()
+            if self._backend == "warp":
+                root_velocities = self._backend_utils.assign(
+                    self._backend_utils.move_data(velocities, device=self._device),
+                    root_velocities,
+                    [indices, wp.array([3, 4, 5], device=self._device, dtype=wp.int32)],
+                )
+            else:
+                root_velocities[indices, 3:6] = self._backend_utils.move_data(velocities, device=self._device)
             self._physics_view.set_root_velocities(root_velocities, indices)
             self._physics_sim_view.enable_warnings(True)
         else:
@@ -1306,19 +1374,19 @@ class ArticulationView(XFormPrimView):
         return
 
     def get_angular_velocities(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None, clone: bool = True
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Gets the angular velocities of prims in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                     to query. Shape (M,).
                                                                                     Where M <= size of the encapsulated prims in the view.
                                                                                     Defaults to None (i.e: all prims in the view)
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: angular velocities of the prims in the view. shape is (M, 3).
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: angular velocities of the prims in the view. shape is (M, 3).
         """
         if not self._is_initialized:
             carb.log_warn("ArticulationView needs to be initialized.")
@@ -1327,28 +1395,27 @@ class ArticulationView(XFormPrimView):
             self._physics_sim_view.enable_warnings(False)
             angular_velocities = self._physics_view.get_root_velocities()
             self._physics_sim_view.enable_warnings(True)
-            if not clone:
-                return angular_velocities[indices, 3:6]
-            else:
-                return self._backend_utils.clone_tensor(angular_velocities[indices, 3:6], device=self._device)
+            if clone:
+                angular_velocities = self._backend_utils.clone_tensor(angular_velocities, device=self._device)
+            return angular_velocities[indices, 3:6]
         else:
             carb.log_warn("Physics Simulation View is not created yet in order to use get_angular_velocities")
             return None
 
     def set_joints_default_state(
         self,
-        positions: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        velocities: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        efforts: Optional[Union[np.ndarray, torch.Tensor]] = None,
+        positions: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
+        velocities: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
+        efforts: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
     ) -> None:
         """Sets the joints default state (joint positions, velocities and efforts) to be applied after each reset.
 
         Args:
-            positions (Optional[Union[np.ndarray, torch.Tensor]], optional): default joint positions.
+            positions (Optional[Union[np.ndarray, torch.Tensor, wp.array]], optional): default joint positions.
                                                                              shape is (N, num of dofs). Defaults to None.
-            velocities (Optional[Union[np.ndarray, torch.Tensor]], optional): default joint velocities.
+            velocities (Optional[Union[np.ndarray, torch.Tensor, wp.array]], optional): default joint velocities.
                                                                              shape is (N, num of dofs). Defaults to None.
-            efforts (Optional[Union[np.ndarray, torch.Tensor]], optional): default joint efforts.
+            efforts (Optional[Union[np.ndarray, torch.Tensor, wp.array]], optional): default joint efforts.
                                                                              shape is (N, num of dofs). Defaults to None.
         """
         if self._default_joints_state is None:
@@ -1395,18 +1462,18 @@ class ArticulationView(XFormPrimView):
 
     def get_effort_modes(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
     ) -> List[str]:
         """
         Gets effort modes for articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): joint indicies to specify which joints
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
@@ -1422,6 +1489,8 @@ class ArticulationView(XFormPrimView):
         joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
         result = [[None for i in range(joint_indices.shape[0])] for j in range(indices.shape[0])]
         articulation_write_idx = 0
+        indices = self._backend_utils.to_list(indices)
+        joint_indices = self._backend_utils.to_list(joint_indices)
         for i in indices:
             dof_write_idx = 0
             for dof_index in joint_indices:
@@ -1439,19 +1508,19 @@ class ArticulationView(XFormPrimView):
     def set_effort_modes(
         self,
         mode: str,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
     ) -> None:
         """
         Sets effort modes for articulations in the view.
 
         Args:
-            mode (str): effort mode to be applied to prims in the view. force or acceleration.
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            mode (str): effort mode to be applied to prims in the vie, wp.arrayw. force or acceleration.
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): joint indicies to specify which joints
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
@@ -1467,6 +1536,8 @@ class ArticulationView(XFormPrimView):
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         dof_types = self.get_dof_types()
         joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
+        indices = self._backend_utils.to_list(indices)
+        joint_indices = self._backend_utils.to_list(joint_indices)
         for i in indices:
             for dof_index in joint_indices:
                 drive_type = "angular" if dof_types[dof_index] == omni.physics.tensors.DofType.Rotation else "linear"
@@ -1483,19 +1554,19 @@ class ArticulationView(XFormPrimView):
 
     def set_max_efforts(
         self,
-        values: Union[np.ndarray, torch.Tensor],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        values: Union[np.ndarray, torch.Tensor, wp.array],
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
     ) -> None:
         """Sets maximum efforts for articulation in the view.
 
         Args:
-            values (Union[np.ndarray, torch.Tensor]): maximum efforts for articulations in the view. shape (M, K).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            values (Union[np.ndarray, torch.Tensor, wp.array]): maximum efforts for articulations in the view. shape (M, K).
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): joint indicies to specify which joints
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
@@ -1506,9 +1577,11 @@ class ArticulationView(XFormPrimView):
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, "cpu")
-            new_values = self._backend_utils.clone_tensor(self._physics_view.get_dof_max_forces(), device="cpu")
-            new_values[self._backend_utils.expand_dims(indices, 1), joint_indices] = self._backend_utils.move_data(
-                values, device="cpu"
+            new_values = self._physics_view.get_dof_max_forces()
+            new_values = self._backend_utils.assign(
+                self._backend_utils.move_data(values, device="cpu"),
+                new_values,
+                [self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, joint_indices],
             )
             self._physics_view.set_dof_max_forces(new_values, indices)
         else:
@@ -1516,46 +1589,49 @@ class ArticulationView(XFormPrimView):
             dof_types = self.get_dof_types()
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
             articulation_read_idx = 0
+            indices = self._backend_utils.to_list(indices)
+            joint_indices = self._backend_utils.to_list(joint_indices)
+            values = self._backend_utils.to_list(values)
             for i in indices:
                 dof_read_idx = 0
                 for dof_index in joint_indices:
                     drive_type = (
                         "angular" if dof_types[dof_index] == omni.physics.tensors.DofType.Rotation else "linear"
                     )
-                    prim = get_prim_at_path(self._dof_paths[i.tolist()][dof_index])
+                    prim = get_prim_at_path(self._dof_paths[i][dof_index])
                     if prim.HasAPI(UsdPhysics.DriveAPI):
                         drive = UsdPhysics.DriveAPI(prim, drive_type)
                     else:
                         drive = UsdPhysics.DriveAPI.Apply(prim, drive_type)
                     if not drive.GetMaxForceAttr():
-                        drive.CreateMaxForceAttr().Set(values[articulation_read_idx][dof_read_idx].tolist())
+                        drive.CreateMaxForceAttr().Set(values[articulation_read_idx][dof_read_idx])
                     else:
-                        drive.GetMaxForceAttr().Set(values[articulation_read_idx][dof_read_idx].tolist())
+                        drive.GetMaxForceAttr().Set(values[articulation_read_idx][dof_read_idx])
                     dof_read_idx += 1
                 articulation_read_idx += 1
         return
 
     def get_max_efforts(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor]:
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Gets maximum efforts for articulation in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): joint indicies to specify which joints
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
             clone (Optional[bool]): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: maximum efforts for articulations in the view. shape (M, K).
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: maximum efforts for articulations in the view. shape (M, K).
         """
         if not self._is_initialized:
             carb.log_warn("ArticulationView needs to be initialized.")
@@ -1564,19 +1640,22 @@ class ArticulationView(XFormPrimView):
             indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, "cpu")
             max_efforts = self._physics_view.get_dof_max_forces()
-            result = self._backend_utils.move_data(
-                max_efforts[self._backend_utils.expand_dims(indices, 1), joint_indices], device=self._device
-            )
             if clone:
-                result = self._backend_utils.clone_tensor(result, device=self._device)
+                max_efforts = self._backend_utils.clone_tensor(max_efforts, device="cpu")
+            result = self._backend_utils.move_data(
+                max_efforts[
+                    self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, joint_indices
+                ],
+                device=self._device,
+            )
             return result
         else:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             dof_types = self.get_dof_types()
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
-            max_efforts = self._backend_utils.create_zeros_tensor(
-                shape=[indices.shape[0], joint_indices.shape[0]], dtype="float32", device=self._device
-            )
+            max_efforts = np.zeros(shape=(indices.shape[0], joint_indices.shape[0]), dtype="float32")
+            indices = self._backend_utils.to_list(indices)
+            joint_indices = self._backend_utils.to_list(joint_indices)
             articulation_write_idx = 0
             for i in indices:
                 dof_write_idx = 0
@@ -1592,27 +1671,28 @@ class ArticulationView(XFormPrimView):
                     max_efforts[articulation_write_idx][dof_write_idx] = drive.GetMaxForceAttr().Get()
                     dof_write_idx += 1
                 articulation_write_idx += 1
+            max_efforts = self._backend_utils.convert(max_efforts, dtype="float32", device=self._device, indexed=True)
             return max_efforts
 
     def set_gains(
         self,
-        kps: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        kds: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        kps: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
+        kds: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         save_to_usd: bool = False,
     ) -> None:
         """
         Sets stiffness and damping of articulations in the view.
 
         Args:
-            kps (Optional[Union[np.ndarray, torch.Tensor]], optional): stiffness of the drives. shape is (M, K). Defaults to None.
-            kds (Optional[Union[np.ndarray, torch.Tensor]], optional): damping of the drives. shape is (M, K).. Defaults to None.
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            kps (Optional[Union[np.ndarray, torch.Tensor, wp.array]], optional): stiffness of the drives. shape is (M, K). Defaults to None.
+            kds (Optional[Union[np.ndarray, torch.Tensor, wp.array]], optional): damping of the drives. shape is (M, K).. Defaults to None.
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): joint indicies to specify which joints
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
@@ -1630,17 +1710,27 @@ class ArticulationView(XFormPrimView):
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, device="cpu")
             if kps is None:
                 kps = self._physics_view.get_dof_stiffnesses()[
-                    self._backend_utils.expand_dims(indices, 1), joint_indices
+                    self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, joint_indices
                 ]
+            else:
+                kps = self._backend_utils.move_data(kps, device="cpu")
             if kds is None:
-                kds = self._physics_view.get_dof_dampings()[self._backend_utils.expand_dims(indices, 1), joint_indices]
-            stiffnesses = self._backend_utils.clone_tensor(self._physics_view.get_dof_stiffnesses(), device="cpu")
-            stiffnesses[self._backend_utils.expand_dims(indices, 1), joint_indices] = self._backend_utils.move_data(
-                kps, device="cpu"
+                kds = self._physics_view.get_dof_dampings()[
+                    self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, joint_indices
+                ]
+            else:
+                kds = self._backend_utils.move_data(kds, device="cpu")
+            stiffnesses = self._physics_view.get_dof_stiffnesses()
+            stiffnesses = self._backend_utils.assign(
+                kps,
+                stiffnesses,
+                [self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, joint_indices],
             )
-            dampings = self._backend_utils.clone_tensor(self._physics_view.get_dof_dampings(), device="cpu")
-            dampings[self._backend_utils.expand_dims(indices, 1), joint_indices] = self._backend_utils.move_data(
-                kds, device="cpu"
+            dampings = self._physics_view.get_dof_dampings()
+            dampings = self._backend_utils.assign(
+                kds,
+                dampings,
+                [self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, joint_indices],
             )
             self._physics_view.set_dof_stiffnesses(stiffnesses, indices)
             self._physics_view.set_dof_dampings(dampings, indices)
@@ -1649,6 +1739,12 @@ class ArticulationView(XFormPrimView):
             dof_types = self.get_dof_types()
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
             articulation_read_idx = 0
+            indices = self._backend_utils.to_list(indices)
+            joint_indices = self._backend_utils.to_list(joint_indices)
+            if kps is not None:
+                kps = self._backend_utils.to_list(kps)
+            if kds is not None:
+                kds = self._backend_utils.to_list(kds)
             for i in indices:
                 dof_read_idx = 0
                 for dof_index in joint_indices:
@@ -1663,44 +1759,44 @@ class ArticulationView(XFormPrimView):
                     if kps is not None:
                         if not drive.GetStiffnessAttr():
                             if kps[articulation_read_idx][dof_read_idx] == 0 or drive_type == "linear":
-                                drive.CreateStiffnessAttr(kps[articulation_read_idx][dof_read_idx].tolist())
+                                drive.CreateStiffnessAttr(kps[articulation_read_idx][dof_read_idx])
                             else:
                                 drive.CreateStiffnessAttr(
                                     1.0
                                     / omni.isaac.core.utils.numpy.rad2deg(
-                                        float(1.0 / kps[articulation_read_idx][dof_read_idx].tolist())
+                                        float(1.0 / kps[articulation_read_idx][dof_read_idx])
                                     )
                                 )
                         else:
                             if kps[articulation_read_idx][dof_read_idx] == 0 or drive_type == "linear":
-                                drive.GetStiffnessAttr().Set(kps[articulation_read_idx][dof_read_idx].tolist())
+                                drive.GetStiffnessAttr().Set(kps[articulation_read_idx][dof_read_idx])
                             else:
                                 drive.GetStiffnessAttr().Set(
                                     1.0
                                     / omni.isaac.core.utils.numpy.rad2deg(
-                                        float(1.0 / kps[articulation_read_idx][dof_read_idx].tolist())
+                                        float(1.0 / kps[articulation_read_idx][dof_read_idx])
                                     )
                                 )
                     if kds is not None:
                         if not drive.GetDampingAttr():
                             if kds[articulation_read_idx][dof_read_idx] == 0 or drive_type == "linear":
-                                drive.CreateDampingAttr(kds[articulation_read_idx][dof_read_idx].tolist())
+                                drive.CreateDampingAttr(kds[articulation_read_idx][dof_read_idx])
                             else:
                                 drive.CreateDampingAttr(
                                     1.0
                                     / omni.isaac.core.utils.numpy.rad2deg(
                                         float(1.0 / kds[articulation_read_idx][dof_read_idx])
-                                    ).tolist()
+                                    )
                                 )
                         else:
                             if kds[articulation_read_idx][dof_read_idx] == 0 or drive_type == "linear":
-                                drive.GetDampingAttr().Set(kds[articulation_read_idx][dof_read_idx].tolist())
+                                drive.GetDampingAttr().Set(kds[articulation_read_idx][dof_read_idx])
                             else:
                                 drive.GetDampingAttr().Set(
                                     1.0
                                     / omni.isaac.core.utils.numpy.rad2deg(
                                         float(1.0 / kds[articulation_read_idx][dof_read_idx])
-                                    ).tolist()
+                                    )
                                 )
                     dof_read_idx += 1
                 articulation_read_idx += 1
@@ -1709,56 +1805,56 @@ class ArticulationView(XFormPrimView):
 
     def get_gains(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         clone: bool = True,
-    ) -> Tuple[Union[np.ndarray, torch.Tensor], Union[np.ndarray, torch.Tensor]]:
+    ) -> Tuple[Union[np.ndarray, torch.Tensor], Union[np.ndarray, torch.Tensor], Union[wp.indexedarray, wp.index]]:
         """
         Gets stiffness and damping of articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): joint indicies to specify which joints
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
             clone (bool, optional): True to return clones of the internal buffers. Otherwise False. Defaults to True.
 
         Returns:
-            Tuple[Union[np.ndarray, torch.Tensor], Union[np.ndarray, torch.Tensor]]: stiffness and damping of
+            Tuple[Union[np.ndarray, torch.Tensor], Union[np.ndarray, torch.Tensor], Union[wp.indexedarray, wp.index]]: stiffness and damping of
                                                              articulations in the view respectively. shapes are (M, K).
         """
         if not self._is_initialized:
             carb.log_warn("ArticulationView needs to be initialized.")
             return None
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            indices = self._backend_utils.resolve_indices(indices, self.count, device="cpu")
-            joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, device="cpu")
+            indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
+            joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, device=self._device)
             kps = self._physics_view.get_dof_stiffnesses()
             kds = self._physics_view.get_dof_dampings()
-            result_kps = self._backend_utils.move_data(
-                kps[self._backend_utils.expand_dims(indices, 1), joint_indices], device=self._device
-            )
-            result_kds = self._backend_utils.move_data(
-                kds[self._backend_utils.expand_dims(indices, 1), joint_indices], device=self._device
-            )
+            kps = self._backend_utils.move_data(kps, device=self._device)
+            kds = self._backend_utils.move_data(kds, device=self._device)
             if clone:
-                result_kps = self._backend_utils.clone_tensor(result_kps, device=self._device)
-                result_kds = self._backend_utils.clone_tensor(result_kds, device=self._device)
+                kps = self._backend_utils.clone_tensor(kps, device=self._device)
+                kds = self._backend_utils.clone_tensor(kds, device=self._device)
+            result_kps = kps[
+                self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, joint_indices
+            ]
+            result_kds = kds[
+                self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, joint_indices
+            ]
             return result_kps, result_kds
         else:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             dof_types = self.get_dof_types()
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
-            kps = self._backend_utils.create_zeros_tensor(
-                shape=[indices.shape[0], joint_indices.shape[0]], dtype="float32", device=self._device
-            )
-            kds = self._backend_utils.create_zeros_tensor(
-                shape=[indices.shape[0], joint_indices.shape[0]], dtype="float32", device=self._device
-            )
+            kps = np.zeros(shape=[indices.shape[0], joint_indices.shape[0]], dtype="float32")
+            kds = np.zeros(shape=[indices.shape[0], joint_indices.shape[0]], dtype="float32")
+            indices = self._backend_utils.to_list(indices)
+            joint_indices = self._backend_utils.to_list(joint_indices)
             articulation_write_idx = 0
             for i in indices:
                 dof_write_idx = 0
@@ -1774,36 +1870,36 @@ class ArticulationView(XFormPrimView):
                     if drive.GetStiffnessAttr().Get() == 0.0 or drive_type == "linear":
                         kps[articulation_write_idx][dof_write_idx] = drive.GetStiffnessAttr().Get()
                     else:
-                        kps[articulation_write_idx][dof_write_idx] = self._backend_utils.convert(
-                            1.0 / omni.isaac.core.utils.numpy.deg2rad(float(1.0 / drive.GetStiffnessAttr().Get())),
-                            device=self._device,
+                        kps[articulation_write_idx][dof_write_idx] = 1.0 / omni.isaac.core.utils.numpy.deg2rad(
+                            float(1.0 / drive.GetStiffnessAttr().Get())
                         )
                     if drive.GetDampingAttr().Get() == 0.0 or drive_type == "linear":
                         kds[articulation_write_idx][dof_write_idx] = drive.GetDampingAttr().Get()
                     else:
-                        kds[articulation_write_idx][dof_write_idx] = self._backend_utils.convert(
-                            1.0 / omni.isaac.core.utils.numpy.deg2rad(float(1.0 / drive.GetDampingAttr().Get())),
-                            device=self._device,
+                        kds[articulation_write_idx][dof_write_idx] = 1.0 / omni.isaac.core.utils.numpy.deg2rad(
+                            float(1.0 / drive.GetDampingAttr().Get())
                         )
                     dof_write_idx += 1
                 articulation_write_idx += 1
-            return kps, kds
+            result_kps = self._backend_utils.convert(kps, dtype="float32", device=self._device, indexed=True)
+            result_kds = self._backend_utils.convert(kds, dtype="float32", device=self._device, indexed=True)
+            return result_kps, result_kds
 
     def switch_control_mode(
         self,
         mode: str,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
     ) -> None:
         """Switches control mode between velocity, position or effort.
 
         Args:
             mode (str): control mode to switch the articulations specified to. mode can be velocity, position or effort.
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): joint indicies to specify which joints
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
@@ -1818,14 +1914,20 @@ class ArticulationView(XFormPrimView):
                 kps=self._backend_utils.create_zeros_tensor(
                     shape=[indices.shape[0], joint_indices.shape[0]], dtype="float32", device=self._device
                 ),
-                kds=self._default_kds[indices][:, joint_indices],
+                kds=self._default_kds[indices][:, joint_indices]
+                if self._backend != "warp"
+                else self._default_kps.data[indices, joint_indices],
                 indices=indices,
                 joint_indices=joint_indices,
             )
         elif mode == "position":
             self.set_gains(
-                kps=self._default_kps[indices][:, joint_indices],
-                kds=self._default_kds[indices][:, joint_indices],
+                kps=self._default_kps[indices][:, joint_indices]
+                if self._backend != "warp"
+                else self._default_kps.data[indices, joint_indices],
+                kds=self._default_kds[indices][:, joint_indices]
+                if self._backend != "warp"
+                else self._default_kds.data[indices, joint_indices],
                 indices=indices,
                 joint_indices=joint_indices,
             )
@@ -1843,14 +1945,14 @@ class ArticulationView(XFormPrimView):
         return
 
     def switch_dof_control_mode(
-        self, mode: str, dof_index: int, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None
+        self, mode: str, dof_index: int, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None
     ) -> None:
         """Switches dof control mode between velocity, position or effort.
 
         Args:
             mode (str): control mode to switch the dof in articulations specified to. mode an be velocity, position or effort.
             dof_index (int): dof index to swith the control mode of.
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -1864,14 +1966,26 @@ class ArticulationView(XFormPrimView):
                 kps=self._backend_utils.create_zeros_tensor(
                     shape=[indices.shape[0], 1], dtype="float32", device=self._device
                 ),
-                kds=self._backend_utils.expand_dims(self._default_kds[indices, dof_index], 1),
+                kds=self._backend_utils.expand_dims(self._default_kds[indices, dof_index], 1)
+                if self._backend != "warp"
+                else self._default_kds.data[
+                    indices, wp.array([dof_index], dtype=wp.int32, device=self._default_kds.device)
+                ],
                 indices=indices,
                 joint_indices=[dof_index],
             )
         elif mode == "position":
             self.set_gains(
-                kps=self._backend_utils.expand_dims(self._default_kps[indices, dof_index], 1),
-                kds=self._backend_utils.expand_dims(self._default_kds[indices, dof_index], 1),
+                kps=self._backend_utils.expand_dims(self._default_kps[indices, dof_index], 1)
+                if self._backend != "warp"
+                else self._default_kps.data[
+                    indices, wp.array(dof_index, dtype=wp.int32, device=self._default_kds.device)
+                ],
+                kds=self._backend_utils.expand_dims(self._default_kds[indices, dof_index], 1)
+                if self._backend != "warp"
+                else self._default_kds.data[
+                    indices, wp.array([dof_index], dtype=wp.int32, device=self._default_kds.device)
+                ],
                 indices=indices,
                 joint_indices=[dof_index],
             )
@@ -1889,232 +2003,248 @@ class ArticulationView(XFormPrimView):
         return
 
     def set_solver_position_iteration_counts(
-        self, counts: Union[np.ndarray, torch.Tensor], indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None
+        self,
+        counts: Union[np.ndarray, torch.Tensor, wp.array],
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
     ) -> None:
         """
         Sets the physics solver itertion counts for joint positions.
 
         Args:
-            counts (Union[np.ndarray, torch.Tensor]): number of iterations for the solver. Shape (M,).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            counts (Union[np.ndarray, torch.Tensor, wp.array]): number of iterations for the solver. Shape (M,).
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         read_idx = 0
+        indices = self._backend_utils.to_list(indices)
+        counts = self._backend_utils.to_list(counts)
         for i in indices:
-            set_prim_property(
-                self.prim_paths[i.tolist()], "physxArticulation:solverPositionIterationCount", counts[read_idx].tolist()
-            )
+            set_prim_property(self.prim_paths[i], "physxArticulation:solverPositionIterationCount", counts[read_idx])
             read_idx += 1
         return
 
     def get_solver_position_iteration_counts(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Gets the physics solver itertion counts for joint positions.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: number of iterations for the solver. Shape (M,).
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: number of iterations for the solver. Shape (M,).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        result = self._backend_utils.create_zeros_tensor(shape=[indices.shape[0]], dtype="int32", device=self._device)
+        result = np.zeros(shape=indices.shape[0], dtype="int32")
         write_idx = 0
+        indices = self._backend_utils.to_list(indices)
         for i in indices:
             result[write_idx] = get_prim_property(self.prim_paths[i], "physxArticulation:solverPositionIterationCount")
             write_idx += 1
+        result = self._backend_utils.convert(result, device=self._device, dtype="int32", indexed=True)
         return result
 
     def set_solver_velocity_iteration_counts(
-        self, counts: Union[np.ndarray, torch.Tensor], indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None
+        self,
+        counts: Union[np.ndarray, torch.Tensor, wp.array],
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
     ) -> None:
         """
         Sets the physics solver itertion counts for joint velocities.
 
         Args:
-            counts (Union[np.ndarray, torch.Tensor]): number of iterations for the solver. Shape (M,).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            counts (Union[np.ndarray, torch.Tensor, wp.array]): number of iterations for the solver. Shape (M,).
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         read_idx = 0
+        indices = self._backend_utils.to_list(indices)
+        counts = self._backend_utils.to_list(counts)
         for i in indices:
-            set_prim_property(
-                self.prim_paths[i.tolist()], "physxArticulation:solverVelocityIterationCount", counts[read_idx].tolist()
-            )
+            set_prim_property(self.prim_paths[i], "physxArticulation:solverVelocityIterationCount", counts[read_idx])
             read_idx += 1
         return
 
     def get_solver_velocity_iteration_counts(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """
         Gets the physics solver itertion counts for joint velocities.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: number of iterations for the solver. Shape (M,).
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: number of iterations for the solver. Shape (M,).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        result = self._backend_utils.create_zeros_tensor(shape=[indices.shape[0]], dtype="int32", device=self._device)
+        result = np.zeros(shape=indices.shape[0], dtype="int32")
         write_idx = 0
+        indices = self._backend_utils.to_list(indices)
         for i in indices:
             result[write_idx] = get_prim_property(self.prim_paths[i], "physxArticulation:solverVelocityIterationCount")
             write_idx += 1
+        result = self._backend_utils.convert(result, device=self._device, dtype="int32", indexed=True)
         return result
 
     def set_stabilization_thresholds(
         self,
-        thresholds: Union[np.ndarray, torch.Tensor],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        thresholds: Union[np.ndarray, torch.Tensor, wp.array],
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
     ) -> None:
         """Sets the stabilizaion thresholds.
 
         Args:
-            thresholds (Union[np.ndarray, torch.Tensor]): stabilization thresholds to be applied. Shape (M,).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            thresholds (Union[np.ndarray, torch.Tensor, wp.array]): stabilization thresholds to be applied. Shape (M,).
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         read_idx = 0
+        indices = self._backend_utils.to_list(indices)
+        thresholds = self._backend_utils.to_list(thresholds)
         for i in indices:
-            set_prim_property(
-                self.prim_paths[i.tolist()], "physxArticulation:stabilizationThreshold", thresholds[read_idx].tolist()
-            )
+            set_prim_property(self.prim_paths[i], "physxArticulation:stabilizationThreshold", thresholds[read_idx])
             read_idx += 1
         return
 
     def get_stabilization_thresholds(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Gets the stabilizaion thresholds.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: current stabilization thresholds. Shape (M,).
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: current stabilization thresholds. Shape (M,).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        result = self._backend_utils.create_zeros_tensor(shape=[indices.shape[0]], dtype="float32", device=self._device)
+        result = np.zeros(shape=indices.shape[0], dtype="float32")
         write_idx = 0
+        indices = self._backend_utils.to_list(indices)
         for i in indices:
             result[write_idx] = get_prim_property(self.prim_paths[i], "physxArticulation:stabilizationThreshold")
             write_idx += 1
+        result = self._backend_utils.convert(result, dtype="float32", device=self._device, indexed=True)
         return result
 
     def set_enabled_self_collisions(
-        self, flags: Union[np.ndarray, torch.Tensor], indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None
+        self,
+        flags: Union[np.ndarray, torch.Tensor, wp.array],
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
     ) -> None:
         """Sets the enable self collisions flag
 
         Args:
-            flags (Union[np.ndarray, torch.Tensor]): true to enable self collision. otherwise false. shape (M,)
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            flags (Union[np.ndarray, torch.Tensor, wp.array]): true to enable self collision. otherwise false. shape (M,)
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         read_idx = 0
+        indices = self._backend_utils.to_list(indices)
+        flags = self._backend_utils.to_list(flags)
         for i in indices:
-            set_prim_property(
-                self.prim_paths[i.tolist()], "physxArticulation:enabledSelfCollisions", flags[read_idx].tolist()
-            )
+            set_prim_property(self.prim_paths[i], "physxArticulation:enabledSelfCollisions", flags[read_idx])
             read_idx += 1
         return
 
     def get_enabled_self_collisions(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """
         Gets the enable self collisions flag
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: true if self collisions enabled. otherwise false. shape (M,)
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: true if self collisions enabled. otherwise false. shape (M,)
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        result = self._backend_utils.create_zeros_tensor(shape=[indices.shape[0]], dtype="bool", device=self._device)
+        result = np.zeros(shape=indices.shape[0], dtype="bool")
         write_idx = 0
+        indices = self._backend_utils.to_list(indices)
         for i in indices:
             result[write_idx] = get_prim_property(self.prim_paths[i], "physxArticulation:enabledSelfCollisions")
             write_idx += 1
+        result = self._backend_utils.convert(result, device=self._device, dtype="uint8", indexed=True)
         return result
 
     def set_sleep_thresholds(
         self,
-        thresholds: Union[np.ndarray, torch.Tensor],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        thresholds: Union[np.ndarray, torch.Tensor, wp.array],
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
     ) -> None:
         """Sets sleep thresholds for articulations in the view.
 
         Args:
-            thresholds (Union[np.ndarray, torch.Tensor]): sleep thresholds to be applied. shape (M,).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            thresholds (Union[np.ndarray, torch.Tensor, wp.array]): sleep thresholds to be applied. shape (M,).
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         read_idx = 0
+        indices = self._backend_utils.to_list(indices)
+        thresholds = self._backend_utils.to_list(thresholds)
         for i in indices:
-            set_prim_property(
-                self.prim_paths[i.tolist()], "physxArticulation:sleepThreshold", thresholds[read_idx].tolist()
-            )
+            set_prim_property(self.prim_paths[i], "physxArticulation:sleepThreshold", thresholds[read_idx])
             read_idx += 1
         return
 
     def get_sleep_thresholds(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Gets sleep thresholds for articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: current sleep thresholds. shape (M,).
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: current sleep thresholds. shape (M,).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        result = self._backend_utils.create_zeros_tensor(shape=[indices.shape[0]], dtype="float32", device=self._device)
+        result = np.zeros(shape=indices.shape[0], dtype="float32")
         write_idx = 0
+        indices = self._backend_utils.to_list(indices)
         for i in indices:
             result[write_idx] = get_prim_property(self.prim_paths[i], "physxArticulation:sleepThreshold")
             write_idx += 1
+        result = self._backend_utils.convert(result, dtype="float32", device=self._device, indexed=True)
         return result
 
-    def get_jacobian_shape(self) -> Union[np.ndarray, torch.Tensor]:
+    def get_jacobian_shape(self) -> Union[np.ndarray, torch.Tensor, wp.array]:
         """
         Returns:
-            Union[np.ndarray, torch.Tensor]: shape of jacobian for a single articulation.
+            Union[np.ndarray, torch.Tensor, wp.array]: shape of jacobian for a single articulation.
         """
         if not self._is_initialized:
             carb.log_warn("ArticulationView needs to be initialized.")
@@ -2122,10 +2252,10 @@ class ArticulationView(XFormPrimView):
         shape = self._physics_view.jacobian_shape
         return (shape[0] // 6, 6, shape[1])
 
-    def get_mass_matrix_shape(self) -> Union[np.ndarray, torch.Tensor]:
+    def get_mass_matrix_shape(self) -> Union[np.ndarray, torch.Tensor, wp.array]:
         """
         Returns:
-            Union[np.ndarray, torch.Tensor]: shape of mass matrix for a single articulation.
+            Union[np.ndarray, torch.Tensor, wp.array]: shape of mass matrix for a single articulation.
         """
         if not self._is_initialized:
             carb.log_warn("ArticulationView needs to be initialized.")
@@ -2133,19 +2263,19 @@ class ArticulationView(XFormPrimView):
         return self._physics_view.mass_matrix_shape
 
     def get_jacobians(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None, clone: bool = True
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Gets the jacobians of articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: jacobians of articulations in the view.
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: jacobians of articulations in the view.
                                                     shape is (M, jacobian_shape).
         """
         if not self._is_initialized:
@@ -2155,29 +2285,29 @@ class ArticulationView(XFormPrimView):
             self._physics_sim_view.enable_warnings(False)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             current_values = self._physics_view.get_jacobians()
-            result = current_values[indices]
             self._physics_sim_view.enable_warnings(True)
             if clone:
-                result = self._backend_utils.clone_tensor(result, device=self._device)
+                current_values = self._backend_utils.clone_tensor(current_values, device=self._device)
+            result = current_values[indices]
             return result
         else:
             carb.log_warn("Physics Simulation View is not created yet in order to use get_jacobians")
             return None
 
     def get_mass_matrices(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None, clone: bool = True
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Gets the mass matrices of articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: mass matrices of articulations in the view.
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: mass matrices of articulations in the view.
                                                     shape is (M, mass_matrix_shape).
         """
         if not self._is_initialized:
@@ -2187,10 +2317,10 @@ class ArticulationView(XFormPrimView):
             self._physics_sim_view.enable_warnings(False)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             current_values = self._physics_view.get_mass_matrices()
-            result = current_values[indices]
             self._physics_sim_view.enable_warnings(True)
             if clone:
-                result = self._backend_utils.clone_tensor(result, device=self._device)
+                current_values = self._backend_utils.clone_tensor(current_values, device=self._device)
+            result = current_values[indices]
             return result
         else:
             carb.log_warn("Physics Simulation View is not created yet in order to use get_mass_matrices")
@@ -2198,25 +2328,25 @@ class ArticulationView(XFormPrimView):
 
     def get_coriolis_and_centrifugal_forces(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor]:
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Gets the coriolis and centrifugal forces of articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): joint indicies to specify which joints
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: Coriolis and centrifugal forces of articulations in the view.
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: Coriolis and centrifugal forces of articulations in the view.
                                                     shape is (M, K).
         """
         if not self._is_initialized:
@@ -2227,10 +2357,12 @@ class ArticulationView(XFormPrimView):
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
             current_values = self._physics_view.get_coriolis_and_centrifugal_forces()
-            result = current_values[self._backend_utils.expand_dims(indices, 1), joint_indices]
             self._physics_sim_view.enable_warnings(True)
             if clone:
-                result = self._backend_utils.clone_tensor(result, device=self._device)
+                current_values = self._backend_utils.clone_tensor(current_values, device=self._device)
+            result = current_values[
+                self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, joint_indices
+            ]
             return result
         else:
             carb.log_warn(
@@ -2240,25 +2372,25 @@ class ArticulationView(XFormPrimView):
 
     def get_generalized_gravity_forces(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor]:
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Gets the generalized gravity forces of articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): joint indicies to specify which joints
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: generalized gravity forces of articulations in the view.
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: generalized gravity forces of articulations in the view.
                                                     shape is (M, K).
         """
         if not self._is_initialized:
@@ -2269,10 +2401,12 @@ class ArticulationView(XFormPrimView):
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
             current_values = self._physics_view.get_generalized_gravity_forces()
-            result = current_values[self._backend_utils.expand_dims(indices, 1), joint_indices]
             self._physics_sim_view.enable_warnings(True)
             if clone:
-                result = self._backend_utils.clone_tensor(result, device=self._device)
+                current_values = self._backend_utils.clone_tensor(current_values, device=self._device)
+            result = current_values[
+                self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, joint_indices
+            ]
             return result
         else:
             carb.log_warn("Physics Simulation View is not created yet in order to use get_generalized_gravity_forces")
@@ -2280,25 +2414,25 @@ class ArticulationView(XFormPrimView):
 
     def get_body_masses(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        body_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        body_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor]:
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Gets rigid body masses of articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            body_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): body indicies to specify which bodies
+            body_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): body indicies to specify which bodies
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of bodies.
                                                                                  Defaults to None (i.e: all bodies).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: rigid body masses of articulations in the view.
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: rigid body masses of articulations in the view.
                                                     shape is (M, K).
         """
         if not self._is_initialized:
@@ -2308,9 +2442,11 @@ class ArticulationView(XFormPrimView):
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             body_indices = self._backend_utils.resolve_indices(body_indices, self.num_bodies, self._device)
             current_values = self._backend_utils.move_data(self._physics_view.get_masses(), self._device)
-            result = current_values[self._backend_utils.expand_dims(indices, 1), body_indices]
             if clone:
-                result = self._backend_utils.clone_tensor(result, device=self._device)
+                current_values = self._backend_utils.clone_tensor(current_values, device=self._device)
+            result = current_values[
+                self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, body_indices
+            ]
             return result
         else:
             carb.log_warn("Physics Simulation View is not created yet in order to use get_body_masses")
@@ -2318,25 +2454,25 @@ class ArticulationView(XFormPrimView):
 
     def get_body_inv_masses(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        body_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        body_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor]:
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Gets rigid body inverse masses of articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            body_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): body indicies to specify which bodies
+            body_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): body indicies to specify which bodies
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of bodies.
                                                                                  Defaults to None (i.e: all bodies).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: rigid body inverse masses of articulations in the view.
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: rigid body inverse masses of articulations in the view.
                                                     shape is (M, K).
         """
         if not self._is_initialized:
@@ -2346,9 +2482,11 @@ class ArticulationView(XFormPrimView):
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             body_indices = self._backend_utils.resolve_indices(body_indices, self._num_bodies, self._device)
             current_values = self._backend_utils.move_data(self._physics_view.get_inv_masses(), self._device)
-            result = current_values[self._backend_utils.expand_dims(indices, 1), body_indices]
             if clone:
-                result = self._backend_utils.clone_tensor(result, device=self._device)
+                current_values = self._backend_utils.clone_tensor(current_values, device=self._device)
+            result = current_values[
+                self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, body_indices
+            ]
             return result
         else:
             carb.log_warn("Physics Simulation View is not created yet in order to use get_body_inv_masses")
@@ -2356,25 +2494,25 @@ class ArticulationView(XFormPrimView):
 
     def get_body_coms(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        body_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        body_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor]:
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Gets rigid body center of mass of articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            body_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): body indicies to specify which bodies
+            body_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): body indicies to specify which bodies
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of bodies.
                                                                                  Defaults to None (i.e: all bodies).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: rigid body center of mass positions and orientations of articulations in the view.
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: rigid body center of mass positions and orientations of articulations in the view.
                                                     position shape is (M, K, 3), orientation shape is (M, k, 4).
         """
         if not self._is_initialized:
@@ -2384,17 +2522,20 @@ class ArticulationView(XFormPrimView):
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             body_indices = self._backend_utils.resolve_indices(body_indices, self._num_bodies, self._device)
             current_values = self._backend_utils.move_data(
-                self._physics_view.get_coms().reshape(self.count, self.num_bodies, 7), self._device
+                self._physics_view.get_coms().reshape((self.count, self.num_bodies, 7)), self._device
             )
-            positions = current_values[self._backend_utils.expand_dims(indices, 1), body_indices, 0:3]
-            orientations = current_values[self._backend_utils.expand_dims(indices, 1), body_indices, 3:7][
-                :, :, [3, 0, 1, 2]
-            ]
             if clone:
-                return (
-                    self._backend_utils.clone_tensor(positions, device=self._device),
-                    self._backend_utils.clone_tensor(orientations, device=self._device),
-                )
+                current_values = self._backend_utils.clone_tensor(current_values, device=self._device)
+            positions = current_values[
+                self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, body_indices, 0:3
+            ]
+            orientations = self._backend_utils.xyzw2wxyz(
+                current_values[
+                    self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices,
+                    body_indices,
+                    3:7,
+                ]
+            )
             return positions, orientations
         else:
             carb.log_warn("Physics Simulation View is not created yet in order to use get_body_coms")
@@ -2402,25 +2543,25 @@ class ArticulationView(XFormPrimView):
 
     def get_body_inertias(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        body_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        body_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor]:
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Gets rigid body inertias of articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            body_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): body indicies to specify which bodies
+            body_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): body indicies to specify which bodies
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of bodies.
                                                                                  Defaults to None (i.e: all bodies).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: rigid body inertias of articulations in the view.
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: rigid body inertias of articulations in the view.
                                                     shape is (M, K, 9).
         """
         if not self._is_initialized:
@@ -2430,11 +2571,13 @@ class ArticulationView(XFormPrimView):
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             body_indices = self._backend_utils.resolve_indices(body_indices, self.num_bodies, self._device)
             current_values = self._backend_utils.move_data(
-                self._physics_view.get_inertias().reshape(self.count, self.num_bodies, 9), self._device
+                self._physics_view.get_inertias().reshape((self.count, self.num_bodies, 9)), self._device
             )
-            result = current_values[self._backend_utils.expand_dims(indices, 1), body_indices]
             if clone:
-                result = self._backend_utils.clone_tensor(result, device=self._device)
+                current_values = self._backend_utils.clone_tensor(current_values, device=self._device)
+            result = current_values[
+                self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, body_indices
+            ]
             return result
         else:
             carb.log_warn("Physics Simulation View is not created yet in order to use get_body_inertias")
@@ -2442,25 +2585,25 @@ class ArticulationView(XFormPrimView):
 
     def get_body_inv_inertias(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        body_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        body_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor]:
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Gets rigid body inverse inertias of articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            body_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): body indicies to specify which bodies
+            body_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): body indicies to specify which bodies
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of bodies.
                                                                                  Defaults to None (i.e: all bodies).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: rigid body inverse inertias of articulations in the view.
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: rigid body inverse inertias of articulations in the view.
                                                     shape is (M, K, 9).
         """
         if not self._is_initialized:
@@ -2470,11 +2613,13 @@ class ArticulationView(XFormPrimView):
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             body_indices = self._backend_utils.resolve_indices(body_indices, self._num_bodies, self._device)
             current_values = self._backend_utils.move_data(
-                self._physics_view.get_inv_inertias().reshape(self.count, self.num_bodies, 9), self._device
+                self._physics_view.get_inv_inertias().reshape((self.count, self.num_bodies, 9)), self._device
             )
-            result = current_values[self._backend_utils.expand_dims(indices, 1), body_indices]
             if clone:
-                result = self._backend_utils.clone_tensor(result, device=self._device)
+                current_values = self._backend_utils.clone_tensor(current_values, device=self._device)
+            result = current_values[
+                self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, body_indices
+            ]
             return result
         else:
             carb.log_warn("Physics Simulation View is not created yet in order to use get_body_inv_inertias")
@@ -2482,19 +2627,19 @@ class ArticulationView(XFormPrimView):
 
     def set_body_masses(
         self,
-        values: Union[np.ndarray, torch.Tensor],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        body_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        values: Union[np.ndarray, torch.Tensor, wp.array],
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        body_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
     ) -> None:
         """Sets body masses for articulation bodies in the view.
 
         Args:
-            values (Union[np.ndarray, torch.Tensor]): body masses for articulations in the view. shape (M, K).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            values (Union[np.ndarray, torch.Tensor, wp.array]): body masses for articulations in the view. shape (M, K).
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            body_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): body indicies to specify which bodies
+            body_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): body indicies to specify which bodies
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of bodies.
                                                                                  Defaults to None (i.e: all bodies).
@@ -2507,8 +2652,10 @@ class ArticulationView(XFormPrimView):
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             body_indices = self._backend_utils.resolve_indices(body_indices, self.num_bodies, self._device)
             data = self._backend_utils.clone_tensor(self._physics_view.get_masses(), device="cpu")
-            data[self._backend_utils.expand_dims(indices, 1), body_indices] = self._backend_utils.move_data(
-                values, device="cpu"
+            data = self._backend_utils.assign(
+                self._backend_utils.move_data(values, device="cpu"),
+                data,
+                [self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, body_indices],
             )
             self._physics_view.set_masses(data, indices)
         else:
@@ -2516,19 +2663,19 @@ class ArticulationView(XFormPrimView):
 
     def set_body_inertias(
         self,
-        values: Union[np.ndarray, torch.Tensor],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        body_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        values: Union[np.ndarray, torch.Tensor, wp.array],
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        body_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
     ) -> None:
         """Sets body inertias for articulation bodies in the view.
 
         Args:
-            values (Union[np.ndarray, torch.Tensor]): body inertias for articulations in the view. shape (M, K, 9).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            values (Union[np.ndarray, torch.Tensor, wp.array]): body inertias for articulations in the view. shape (M, K, 9).
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            body_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): body indicies to specify which bodies
+            body_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): body indicies to specify which bodies
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of bodies.
                                                                                  Defaults to None (i.e: all bodies).
@@ -2541,8 +2688,10 @@ class ArticulationView(XFormPrimView):
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             body_indices = self._backend_utils.resolve_indices(body_indices, self.num_bodies, self._device)
             data = self._backend_utils.clone_tensor(self._physics_view.get_inertias(), device="cpu")
-            data[self._backend_utils.expand_dims(indices, 1), body_indices] = self._backend_utils.move_data(
-                values, device="cpu"
+            data = self._backend_utils.assign(
+                self._backend_utils.move_data(values, device="cpu"),
+                data,
+                [self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, body_indices],
             )
             self._physics_view.set_inertias(data, indices)
         else:
@@ -2550,21 +2699,21 @@ class ArticulationView(XFormPrimView):
 
     def set_body_coms(
         self,
-        positions: Union[np.ndarray, torch.Tensor] = None,
-        orientations: Union[np.ndarray, torch.Tensor] = None,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        body_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        positions: Union[np.ndarray, torch.Tensor, wp.array] = None,
+        orientations: Union[np.ndarray, torch.Tensor, wp.array] = None,
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        body_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
     ) -> None:
         """Sets body center of mass positions and orientations for articulation bodies in the view.
 
         Args:
-            positions (Union[np.ndarray, torch.Tensor]): body center of mass positions for articulations in the view. shape (M, K, 3).
-            orientations (Union[np.ndarray, torch.Tensor]): body center of mass orientations for articulations in the view. shape (M, K, 4).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            positions (Union[np.ndarray, torch.Tensor, wp.array]): body center of mass positions for articulations in the view. shape (M, K, 3).
+            orientations (Union[np.ndarray, torch.Tensor, wp.array]): body center of mass orientations for articulations in the view. shape (M, K, 4).
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            body_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): body indicies to specify which bodies
+            body_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): body indicies to specify which bodies
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of bodies.
                                                                                  Defaults to None (i.e: all bodies).
@@ -2579,35 +2728,47 @@ class ArticulationView(XFormPrimView):
         indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             body_indices = self._backend_utils.resolve_indices(body_indices, self.num_bodies, self._device)
-            coms = self._backend_utils.clone_tensor(self._physics_view.get_coms(), device="cpu").reshape(
-                self.count, self.num_bodies, 7
-            )
+            coms = self._physics_view.get_coms().reshape((self.count, self.num_bodies, 7))
             if positions is not None:
-                coms[self._backend_utils.expand_dims(indices, 1), body_indices, 0:3] = self._backend_utils.move_data(
-                    positions, device="cpu"
-                )
+                if self._backend == "warp":
+                    coms = self._backend_utils.assign(
+                        self._backend_utils.move_data(positions, device="cpu"),
+                        coms,
+                        [indices, body_indices, wp.array([0, 1, 2], dtype=wp.int32, device="cpu")],
+                    )
+                else:
+                    coms[
+                        self._backend_utils.expand_dims(indices, 1), body_indices, 0:3
+                    ] = self._backend_utils.move_data(positions, device="cpu")
             if orientations is not None:
-                coms[self._backend_utils.expand_dims(indices, 1), body_indices, 3:7] = self._backend_utils.move_data(
-                    orientations[:, :, [1, 2, 3, 0]], device="cpu"
-                )
+                if self._backend == "warp":
+                    coms = self._backend_utils.assign(
+                        self._backend_utils.move_data(self._backend_utils.wxyz2xyzw(orientations), device="cpu"),
+                        coms,
+                        [indices, body_indices, wp.array([3, 4, 5, 6], dtype=wp.int32, device="cpu")],
+                    )
+                else:
+                    coms[
+                        self._backend_utils.expand_dims(indices, 1), body_indices, 3:7
+                    ] = self._backend_utils.move_data(orientations[:, :, [1, 2, 3, 0]], device="cpu")
             self._physics_view.set_coms(coms, indices)
         else:
             carb.log_warn("Physics Simulation View is not created yet in order to use set_body_coms")
 
     def get_fixed_tendon_stiffnesses(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None, clone: bool = True
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Gets the stiffness of fixed tendons for articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: fixed tendon stiffnesses of articulations in the view.
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: fixed tendon stiffnesses of articulations in the view.
                                                     shape is (M, K).
         """
         if not self._is_initialized:
@@ -2617,29 +2778,29 @@ class ArticulationView(XFormPrimView):
             self._physics_sim_view.enable_warnings(False)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             current_values = self._physics_view.get_fixed_tendon_stiffnesses()
-            result = current_values[indices]
             self._physics_sim_view.enable_warnings(True)
             if clone:
-                result = self._backend_utils.clone_tensor(result, device=self._device)
+                current_values = self._backend_utils.clone_tensor(current_values, device=self._device)
+            result = current_values[indices]
             return result
         else:
             carb.log_warn("Physics Simulation View is not created yet in order to use get_fixed_tendon_stiffnesses")
             return None
 
     def get_fixed_tendon_dampings(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None, clone: bool = True
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Gets the dampings of fixed tendons for articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: fixed tendon dampings of articulations in the view.
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: fixed tendon dampings of articulations in the view.
                                                     shape is (M, K).
         """
         if not self._is_initialized:
@@ -2649,29 +2810,29 @@ class ArticulationView(XFormPrimView):
             self._physics_sim_view.enable_warnings(False)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             current_values = self._physics_view.get_fixed_tendon_dampings()
-            result = current_values[indices]
             self._physics_sim_view.enable_warnings(True)
             if clone:
-                result = self._backend_utils.clone_tensor(result, device=self._device)
+                current_values = self._backend_utils.clone_tensor(current_values, device=self._device)
+            result = current_values[indices]
             return result
         else:
             carb.log_warn("Physics Simulation View is not created yet in order to use get_fixed_tendon_dampings")
             return None
 
     def get_fixed_tendon_limit_stiffnesses(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None, clone: bool = True
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Gets the limit stiffness of fixed tendons for articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: fixed tendon stiffnesses of articulations in the view.
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: fixed tendon stiffnesses of articulations in the view.
                                                     shape is (M, K).
         """
         if not self._is_initialized:
@@ -2681,10 +2842,10 @@ class ArticulationView(XFormPrimView):
             self._physics_sim_view.enable_warnings(False)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             current_values = self._physics_view.get_fixed_tendon_limit_stiffnesses()
-            result = current_values[indices]
             self._physics_sim_view.enable_warnings(True)
             if clone:
-                result = self._backend_utils.clone_tensor(result, device=self._device)
+                current_values = self._backend_utils.clone_tensor(current_values, device=self._device)
+            result = current_values[indices]
             return result
         else:
             carb.log_warn(
@@ -2693,19 +2854,19 @@ class ArticulationView(XFormPrimView):
             return None
 
     def get_fixed_tendon_limits(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None, clone: bool = True
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Gets the limits of fixed tendons for articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: fixed tendon stiffnesses of articulations in the view.
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: fixed tendon stiffnesses of articulations in the view.
                                                     shape is (M, K, 2).
         """
         if not self._is_initialized:
@@ -2714,30 +2875,32 @@ class ArticulationView(XFormPrimView):
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-            current_values = self._physics_view.get_fixed_tendon_limits().reshape(self.count, self.num_fixed_tendons, 2)
-            result = current_values[indices]
+            current_values = self._physics_view.get_fixed_tendon_limits().reshape(
+                (self.count, self.num_fixed_tendons, 2)
+            )
             self._physics_sim_view.enable_warnings(True)
             if clone:
-                result = self._backend_utils.clone_tensor(result, device=self._device)
+                current_values = self._backend_utils.clone_tensor(current_values, device=self._device)
+            result = current_values[indices]
             return result
         else:
             carb.log_warn("Physics Simulation View is not created yet in order to use get_fixed_tendon_limits")
             return None
 
     def get_fixed_tendon_rest_lengths(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None, clone: bool = True
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Gets the rest length of fixed tendons for articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: fixed tendon stiffnesses of articulations in the view.
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: fixed tendon stiffnesses of articulations in the view.
                                                     shape is (M, K).
         """
         if not self._is_initialized:
@@ -2747,29 +2910,29 @@ class ArticulationView(XFormPrimView):
             self._physics_sim_view.enable_warnings(False)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             current_values = self._physics_view.get_fixed_tendon_rest_lengths()
-            result = current_values[indices]
             self._physics_sim_view.enable_warnings(True)
             if clone:
-                result = self._backend_utils.clone_tensor(result, device=self._device)
+                current_values = self._backend_utils.clone_tensor(current_values, device=self._device)
+            result = current_values[indices]
             return result
         else:
             carb.log_warn("Physics Simulation View is not created yet in order to use get_fixed_tendon_rest_lengths")
             return None
 
     def get_fixed_tendon_offsets(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None, clone: bool = True
+    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Gets the offsets of fixed tendons for articulations in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: fixed tendon stiffnesses of articulations in the view.
+            Union[np.ndarray, torch.Tensor, wp.indexedarray]: fixed tendon stiffnesses of articulations in the view.
                                                     shape is (M, K).
         """
         if not self._is_initialized:
@@ -2779,10 +2942,10 @@ class ArticulationView(XFormPrimView):
             self._physics_sim_view.enable_warnings(False)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             current_values = self._physics_view.get_fixed_tendon_offsets()
-            result = current_values[indices]
             self._physics_sim_view.enable_warnings(True)
             if clone:
-                result = self._backend_utils.clone_tensor(result, device=self._device)
+                current_values = self._backend_utils.clone_tensor(current_values, device=self._device)
+            result = current_values[indices]
             return result
         else:
             carb.log_warn("Physics Simulation View is not created yet in order to use get_fixed_tendon_offsets")
@@ -2790,24 +2953,24 @@ class ArticulationView(XFormPrimView):
 
     def set_fixed_tendon_properties(
         self,
-        stiffnesses: Union[np.ndarray, torch.Tensor] = None,
-        dampings: Union[np.ndarray, torch.Tensor] = None,
-        limit_stiffnesses: Union[np.ndarray, torch.Tensor] = None,
-        limits: Union[np.ndarray, torch.Tensor] = None,
-        rest_lengths: Union[np.ndarray, torch.Tensor] = None,
-        offsets: Union[np.ndarray, torch.Tensor] = None,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        stiffnesses: Union[np.ndarray, torch.Tensor, wp.array] = None,
+        dampings: Union[np.ndarray, torch.Tensor, wp.array] = None,
+        limit_stiffnesses: Union[np.ndarray, torch.Tensor, wp.array] = None,
+        limits: Union[np.ndarray, torch.Tensor, wp.array] = None,
+        rest_lengths: Union[np.ndarray, torch.Tensor, wp.array] = None,
+        offsets: Union[np.ndarray, torch.Tensor, wp.array] = None,
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
     ) -> None:
         """Sets fixed tendon properties for articulations in the view.
 
         Args:
-            stiffnesses (Union[np.ndarray, torch.Tensor]): fixed tendon stiffnesses for articulations in the view. shape (M, K).
-            dampings (Union[np.ndarray, torch.Tensor]): fixed tendon dampings for articulations in the view. shape (M, K).
-            limit_stiffnesses (Union[np.ndarray, torch.Tensor]): fixed tendon limit stiffnesses for articulations in the view. shape (M, K).
-            limits (Union[np.ndarray, torch.Tensor]): fixed tendon limits for articulations in the view. shape (M, K, 2).
-            rest_lengths (Union[np.ndarray, torch.Tensor]): fixed tendon rest lengths for articulations in the view. shape (M, K).
-            offsets (Union[np.ndarray, torch.Tensor]): fixed tendon offsets for articulations in the view. shape (M, K).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            stiffnesses (Union[np.ndarray, torch.Tensor, wp.array]): fixed tendon stiffnesses for articulations in the view. shape (M, K).
+            dampings (Union[np.ndarray, torch.Tensor, wp.array]): fixed tendon dampings for articulations in the view. shape (M, K).
+            limit_stiffnesses (Union[np.ndarray, torch.Tensor, wp.array]): fixed tendon limit stiffnesses for articulations in the view. shape (M, K).
+            limits (Union[np.ndarray, torch.Tensor, wp.array]): fixed tendon limits for articulations in the view. shape (M, K, 2).
+            rest_lengths (Union[np.ndarray, torch.Tensor, wp.array]): fixed tendon rest lengths for articulations in the view. shape (M, K).
+            offsets (Union[np.ndarray, torch.Tensor, wp.array]): fixed tendon offsets for articulations in the view. shape (M, K).
+            indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): indicies to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -2821,23 +2984,37 @@ class ArticulationView(XFormPrimView):
             current_stiffnesses = self._physics_view.get_fixed_tendon_stiffnesses()
             current_dampings = self._physics_view.get_fixed_tendon_dampings()
             current_limit_stiffnesses = self._physics_view.get_fixed_tendon_limit_stiffnesses()
-            current_limits = self._physics_view.get_fixed_tendon_limits().reshape(self.count, self.num_fixed_tendons, 2)
+            current_limits = self._physics_view.get_fixed_tendon_limits().reshape(
+                (self.count, self.num_fixed_tendons, 2)
+            )
             current_rest_lengths = self._physics_view.get_fixed_tendon_rest_lengths()
             current_offsets = self._physics_view.get_fixed_tendon_offsets()
             if stiffnesses is not None:
-                current_stiffnesses[indices] = self._backend_utils.move_data(stiffnesses, device=self._device)
+                current_stiffnesses = self._backend_utils.assign(
+                    self._backend_utils.move_data(stiffnesses, device=self._device), current_stiffnesses, indices
+                )
             if dampings is not None:
-                current_dampings[indices] = self._backend_utils.move_data(dampings, device=self._device)
+                current_dampings = self._backend_utils.assign(
+                    self._backend_utils.move_data(dampings, device=self._device), current_dampings, indices
+                )
             if limit_stiffnesses is not None:
-                current_limit_stiffnesses[indices] = self._backend_utils.move_data(
-                    limit_stiffnesses, device=self._device
+                current_limit_stiffnesses = self._backend_utils.assign(
+                    self._backend_utils.move_data(limit_stiffnesses, device=self._device),
+                    current_limit_stiffnesses,
+                    indices,
                 )
             if limits is not None:
-                current_limits[indices] = self._backend_utils.move_data(limits, device=self._device)
+                current_limits = self._backend_utils.assign(
+                    self._backend_utils.move_data(limits, device=self._device), current_limits, indices
+                )
             if rest_lengths is not None:
-                current_rest_lengths[indices] = self._backend_utils.move_data(rest_lengths, device=self._device)
+                current_rest_lengths = self._backend_utils.assign(
+                    self._backend_utils.move_data(rest_lengths, device=self._device), current_rest_lengths, indices
+                )
             if offsets is not None:
-                current_offsets[indices] = self._backend_utils.move_data(offsets, device=self._device)
+                current_offsets = self._backend_utils.assign(
+                    self._backend_utils.move_data(offsets, device=self._device), current_offsets, indices
+                )
             self._physics_view.set_fixed_tendon_properties(
                 current_stiffnesses,
                 current_dampings,

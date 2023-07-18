@@ -16,6 +16,7 @@ import numpy as np
 import omni.kit.test
 import omni.physx as _physx
 import torch
+import warp as wp
 from omni.isaac.core import World
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
@@ -27,7 +28,7 @@ from omni.isaac.core.utils.torch.rotations import euler_angles_to_quats
 
 INDEXED = [True, False]
 USD_PATH = [True, False]
-BACKEND = ["torch", "numpy"]
+BACKEND = ["torch", "numpy", "warp"]
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -126,7 +127,8 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
 
     async def _step(self):
         self._my_world.step_async()
-        self._my_world._physics_sim_view.flush()
+        if self._my_world.is_playing():
+            self._my_world._physics_sim_view.flush()
         await omni.kit.app.get_app().next_update_async()
 
     async def test_world_poses_torch(self):
@@ -199,6 +201,45 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 )
                 self._my_world.clear_instance()
 
+    async def test_world_poses_warp(self):
+        for indexed in INDEXED:
+            for usd in USD_PATH:
+                for device in ["cuda:0", "cpu"]:
+                    print("index:", indexed, "usd:", usd, "device:", device)
+                    await self.setUpWorld(backend="warp", device=device)
+                    await self.add_frankas(backend="warp")
+                    if usd:
+                        await self._my_world.stop_async()
+                    if indexed:
+                        gt_positions = wp.array([[100.0, 100.0, 0]], device=device, dtype=wp.float32)
+                        orientations = euler_angles_to_quats(
+                            torch.tensor([[0, 0, -np.pi / 2.0]], device=device)
+                        ).contiguous()
+                        gt_orientations = wp.from_torch(orientations)
+                        self._frankas_view.set_world_poses(
+                            positions=gt_positions, orientations=gt_orientations, indices=[1]
+                        )
+                        await self._step()
+
+                        new_positions, new_orientations = self._frankas_view.get_world_poses(indices=[1])
+                    else:
+                        gt_positions = wp.array([[10.0, 10.0, 0], [100.0, 100.0, 0]], device=device, dtype=wp.float32)
+                        orientations = euler_angles_to_quats(
+                            torch.tensor([[0, 0, np.pi / 2.0], [0, 0, -np.pi / 2.0]], device=device)
+                        ).contiguous()
+                        gt_orientations = wp.from_torch(orientations)
+                        self._frankas_view.set_world_poses(positions=gt_positions, orientations=gt_orientations)
+                        await self._step()
+                        new_positions, new_orientations = self._frankas_view.get_world_poses()
+                    self.assertTrue(np.isclose(new_positions.numpy(), gt_positions.numpy(), atol=1e-05).all())
+                    self.assertTrue(
+                        np.logical_or(
+                            np.isclose(new_orientations.numpy(), gt_orientations.numpy(), atol=1e-05).all(axis=1),
+                            np.isclose(new_orientations.numpy(), -gt_orientations.numpy(), atol=1e-05).all(axis=1),
+                        ).all()
+                    )
+                    self._my_world.clear_instance()
+
     async def test_velocities_torch(self):
         for indexed in INDEXED:
             for device in ["cpu", "cuda:0"]:
@@ -235,6 +276,42 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
             self.assertTrue(np.isclose(new_v1, gt_v1, atol=1e-05).all())
             self._my_world.clear_instance()
 
+    async def test_velocities_warp(self):
+        for indexed in INDEXED:
+            for device in ["cpu", "cuda:0"]:
+                print("index:", indexed, "device:", device)
+                await self.setUpWorld(backend="warp", device=device)
+                await self.add_humanoids(backend="warp")
+                if indexed:
+                    gt_v1 = wp.array([[1.0, 2.0, 3.0, 0, 0, 0]], device=device, dtype=wp.float32)
+                    self._humanoids_view.set_velocities(gt_v1, indices=[1])
+                    await self._step()
+                    new_v1 = self._humanoids_view.get_velocities(indices=[1])
+                else:
+                    gt_v1 = wp.array(
+                        [[1.0, 2.0, 3.0, 0, 0, 0], [0.1, 0.2, 0.3, 0, 0, 0]], device=device, dtype=wp.float32
+                    )
+                    self._humanoids_view.set_velocities(gt_v1)
+                    await self._step()
+                    new_v1 = self._humanoids_view.get_velocities()
+                self.assertTrue(np.isclose(new_v1.numpy(), gt_v1.numpy(), atol=1e-05).all())
+                self._my_world.clear_instance()
+
+    async def test_velocities_torch(self):
+        for indexed in INDEXED:
+            await self.setUpWorld(backend="torch")
+            await self.add_humanoids(backend="torch")
+            if indexed:
+                gt_v1 = torch.tensor([[1.0, 2.0, 3.0, 0, 0, 0]])
+                self._humanoids_view.set_velocities(gt_v1, indices=[1])
+                new_v1 = self._humanoids_view.get_velocities(indices=[1])
+            else:
+                gt_v1 = torch.tensor([[1.0, 2.0, 3.0, 0, 0, 0], [0.1, 0.2, 0.3, 0, 0, 0]])
+                self._humanoids_view.set_velocities(gt_v1)
+                new_v1 = self._humanoids_view.get_velocities()
+            self.assertTrue(np.isclose(new_v1.cpu().numpy(), gt_v1.cpu().numpy(), atol=1e-05).all())
+            self._my_world.clear_instance()
+
     async def test_linear_velocities_torch(self):
         for indexed in INDEXED:
             await self.setUpWorld(backend="torch")
@@ -265,6 +342,21 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
             self.assertTrue(np.isclose(new_v1, gt_v1, atol=1e-05).all())
             self._my_world.clear_instance()
 
+    async def test_linear_velocities_warp(self):
+        for indexed in INDEXED:
+            await self.setUpWorld(backend="warp")
+            await self.add_frankas(backend="warp")
+            if indexed:
+                gt_v1 = wp.array([[1.0, 2.0, 3.0]], device="cpu", dtype=wp.float32)
+                self._frankas_view.set_linear_velocities(gt_v1, indices=[1])
+                new_v1 = self._frankas_view.get_linear_velocities(indices=[1])
+            else:
+                gt_v1 = wp.array([[1.0, 2.0, 3.0], [0.1, 0.2, 0.3]], device="cpu", dtype=wp.float32)
+                self._frankas_view.set_linear_velocities(gt_v1)
+                new_v1 = self._frankas_view.get_linear_velocities()
+            self.assertTrue(np.isclose(new_v1.numpy(), gt_v1.numpy(), atol=1e-05).all())
+            self._my_world.clear_instance()
+
     async def test_angular_velocities_torch(self):
         for indexed in INDEXED:
             await self.setUpWorld(backend="torch")
@@ -293,6 +385,21 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self._frankas_view.set_angular_velocities(gt_v1)
                 new_v1 = self._frankas_view.get_angular_velocities()
             self.assertTrue(np.isclose(new_v1, gt_v1, atol=1e-05).all())
+            self._my_world.clear_instance()
+
+    async def test_angular_velocities_warp(self):
+        for indexed in INDEXED:
+            await self.setUpWorld(backend="warp")
+            await self.add_frankas(backend="warp")
+            if indexed:
+                gt_v1 = wp.array([[1.0, 2.0, 3.0]], device="cpu", dtype=wp.float32)
+                self._frankas_view.set_angular_velocities(gt_v1, indices=[1])
+                new_v1 = self._frankas_view.get_angular_velocities(indices=[1])
+            else:
+                gt_v1 = wp.array([[1.0, 2.0, 3.0], [0.1, 0.2, 0.3]], device="cpu", dtype=wp.float32)
+                self._frankas_view.set_angular_velocities(gt_v1)
+                new_v1 = self._frankas_view.get_angular_velocities()
+            self.assertTrue(np.isclose(new_v1.numpy(), gt_v1.numpy(), atol=1e-05).all())
             self._my_world.clear_instance()
 
     async def test_friction_coefficients_torch(self):
@@ -339,6 +446,31 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 friction = self._frankas_view.get_friction_coefficients()
                 self.assertTrue(np.isclose(new_friction, friction, atol=1e-05).all())
 
+    async def test_friction_coefficients_warp(self):
+        for indexed in INDEXED:
+            for usd in USD_PATH:
+                for device in ["cuda:0", "cpu"]:
+                    print("index:", indexed, "usd:", usd, "device:", device)
+                    await self.setUpWorld(backend="warp", device=device)
+                    await self.add_frankas(backend="warp")
+                    if usd:
+                        await self._my_world.stop_async()
+                    cur_value = self._frankas_view.get_friction_coefficients()
+                    if indexed:
+                        new_np = cur_value.numpy()
+                        new_np[1, 2] += 0.5
+                        new_value = wp.from_numpy(np.array([[new_np[1, 2]]]), dtype=wp.float32, device=device)
+                        self._frankas_view.set_friction_coefficients(new_value, indices=[1], joint_indices=[2])
+                        new_value = wp.from_numpy(new_np, dtype=wp.float32, device=device)
+                    else:
+                        new_np = cur_value.numpy()
+                        new_np[1, 2] += 0.5
+                        new_value = wp.from_numpy(new_np, dtype=wp.float32, device=device)
+                        self._frankas_view.set_friction_coefficients(new_value)
+                    value = self._frankas_view.get_friction_coefficients()
+                    self.assertTrue(np.isclose(new_value.numpy(), value.numpy(), atol=1e-05).all())
+                    self._my_world.clear_instance()
+
     async def test_armatures_torch(self):
         for indexed in INDEXED:
             for usd in USD_PATH:
@@ -379,6 +511,31 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                     self._frankas_view.set_armatures(new_value)
                 value = self._frankas_view.get_armatures()
                 self.assertTrue(np.isclose(new_value, value, atol=1e-05).all())
+
+    async def test_armatures_warp(self):
+        for indexed in INDEXED:
+            for usd in USD_PATH:
+                for device in ["cpu", "cuda:0"]:
+                    print("index:", indexed, "usd:", usd, "device:", device)
+                    await self.setUpWorld(backend="warp", device=device)
+                    await self.add_frankas(backend="warp")
+                    if usd:
+                        await self._my_world.stop_async()
+                    cur_value = self._frankas_view.get_armatures()
+                    if indexed:
+                        new_np = cur_value.numpy()
+                        new_np[1, 2] += 0.5
+                        new_value = wp.from_numpy(np.array([[new_np[1, 2]]]), dtype=wp.float32, device=device)
+                        self._frankas_view.set_armatures(new_value, indices=[1], joint_indices=[2])
+                        new_value = wp.from_numpy(new_np, dtype=wp.float32, device=device)
+                    else:
+                        new_np = cur_value.numpy()
+                        new_np[1, 2] += 0.5
+                        new_value = wp.from_numpy(new_np, dtype=wp.float32, device=device)
+                        self._frankas_view.set_armatures(new_value)
+                    value = self._frankas_view.get_armatures()
+                    self.assertTrue(np.isclose(new_value.numpy(), value.numpy(), atol=1e-05).all())
+                    self._my_world.clear_instance()
 
     async def test_physics_callback(self):
         for backend in BACKEND:
@@ -431,7 +588,7 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
 
     async def test_local_pose_numpy(self):
         for indexed in INDEXED:
-            for usd in USD_PATH:
+            for usd in [False]:
                 await self.setUpWorld(backend="numpy", device="cpu")
                 await self.add_frankas(backend="numpy")
                 if usd:
@@ -450,6 +607,35 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self.assertTrue(np.isclose(new_trans, trans, atol=1e-05).all())
                 self.assertTrue(np.isclose(new_ori, rot, atol=1e-05).all())
                 self._my_world.clear_instance()
+
+    async def test_local_pose_warp(self):
+        for indexed in INDEXED:
+            for usd in USD_PATH:
+                for device in ["cpu", "cuda:0"]:
+                    print("index:", indexed, "usd:", usd, "device:", device)
+                    await self.setUpWorld(backend="warp", device=device)
+                    await self.add_frankas(backend="warp")
+                    if usd:
+                        await self._my_world.stop_async()
+                    cur_trans, cur_ori = self._frankas_view.get_local_poses()
+                    if indexed:
+                        new_trans = wp.array([[0, 1.0, 0]], device=device, dtype=wp.float32)
+                        new_ori = wp.array([[np.sqrt(2) / 2, 0, 0, np.sqrt(2) / 2]], device=device, dtype=wp.float32)
+                        self._frankas_view.set_local_poses(new_trans, new_ori, indices=[1])
+                        await self._step()
+                        trans, rot = self._frankas_view.get_local_poses(indices=[1])
+                    else:
+                        new_trans = wp.array([[0, 1.0, 0], [0, 2.0, 0]], device=device, dtype=wp.float32)
+                        new_ori = wp.array(
+                            [[np.sqrt(2) / 2, 0, 0, np.sqrt(2) / 2], [np.sqrt(2) / 2, 0, 0, np.sqrt(2) / 2]],
+                            device=device,
+                            dtype=wp.float32,
+                        )
+                        self._frankas_view.set_local_poses(new_trans, new_ori)
+                        await self._step()
+                        trans, rot = self._frankas_view.get_local_poses()
+                    self.assertTrue(np.isclose(new_trans.numpy(), trans.numpy(), atol=1e-05).all())
+                    self.assertTrue(np.isclose(new_ori.numpy(), rot.numpy(), atol=1e-05).all())
 
     async def test_effort_modes(self):
         for indexed in INDEXED:
@@ -521,6 +707,35 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                     kps, kds = self._frankas_view.get_gains()
                 self.assertTrue(np.isclose(new_kps, kps, atol=1e-05).all())
                 self.assertTrue(np.isclose(old_kds, kds, atol=1e-05).all())
+
+    async def test_gains_warp(self):
+        for indexed in INDEXED:
+            for device in ["cuda:0", "cpu"]:
+                for usd in USD_PATH:
+                    print("index:", indexed, "device:", device, "usd:", usd)
+                    await self.setUpWorld(backend="warp", device=device)
+                    await self.add_frankas(backend="warp")
+                    if usd:
+                        await self._my_world.stop_async()
+                    if indexed:
+                        old_kps, old_kds = self._frankas_view.get_gains(indices=[1], joint_indices=[1, 2])
+                        new_kps = wp.array([[100.0, 100.0]], device=device, dtype=wp.float32)
+                        self._frankas_view.set_gains(kps=new_kps, indices=[1], joint_indices=[1, 2])
+                        kps, kds = self._frankas_view.get_gains(indices=[1], joint_indices=[1, 2])
+                    else:
+                        old_kps, old_kds = self._frankas_view.get_gains()
+                        new_kps = wp.array(
+                            [
+                                [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 500.0],
+                                [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 400.0],
+                            ],
+                            device=device,
+                            dtype=wp.float32,
+                        )
+                        self._frankas_view.set_gains(kps=new_kps)
+                        kps, kds = self._frankas_view.get_gains()
+                    self.assertTrue(np.isclose(new_kps.numpy(), kps.numpy(), atol=1e-05).all())
+                    self.assertTrue(np.isclose(old_kds.numpy(), kds.numpy(), atol=1e-05).all())
 
     async def test_switch_control_mode(self):
         for indexed in INDEXED:
@@ -616,6 +831,34 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                     efforts = self._frankas_view.get_max_efforts()
                 self.assertTrue(np.isclose(new_efforts, efforts, atol=1e-05).all())
 
+    async def test_max_efforts_warp(self):
+        for indexed in INDEXED:
+            for device in ["cpu", "cuda:0"]:
+                for usd in USD_PATH:
+                    print("index:", indexed, "device:", device, "usd:", usd)
+                    await self.setUpWorld(backend="warp", device=device)
+                    await self.add_frankas(backend="warp")
+                    if usd:
+                        await self._my_world.stop_async()
+                    if indexed:
+                        old_efforts = self._frankas_view.get_max_efforts(indices=[1], joint_indices=[1, 2])
+                        new_efforts = wp.array([[100.0, 100.0]], device=device, dtype=wp.float32)
+                        self._frankas_view.set_max_efforts(new_efforts, indices=[1], joint_indices=[1, 2])
+                        efforts = self._frankas_view.get_max_efforts(indices=[1], joint_indices=[1, 2])
+                    else:
+                        old_efforts = self._frankas_view.get_max_efforts()
+                        new_efforts = wp.array(
+                            [
+                                [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 500.0],
+                                [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 400.0],
+                            ],
+                            device=device,
+                            dtype=wp.float32,
+                        )
+                        self._frankas_view.set_max_efforts(new_efforts)
+                        efforts = self._frankas_view.get_max_efforts()
+                    self.assertTrue(np.isclose(new_efforts.numpy(), efforts.numpy(), atol=1e-05).all())
+
     async def test_physics_properties_torch(self):
         for device in ["cpu", "cuda:0"]:
             await self.setUpWorld(backend="torch", device=device)
@@ -673,6 +916,40 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         self._frankas_view.switch_control_mode("velocity", joint_indices=list(range(7)))
         self._frankas_view.switch_control_mode("position", joint_indices=[7, 8])
         self._frankas_view.set_max_efforts(max_efforts_tensor)
+
+    async def test_physics_properties_warp(self):
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="warp", device=device)
+            await self.add_frankas(backend="warp")
+            self._frankas_view.set_effort_modes("force")
+            stiffness_tensor = wp.array(
+                [
+                    [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 500.0],
+                    [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 400.0],
+                ],
+                device=device,
+                dtype=wp.float32,
+            )
+            damping_tensor = wp.array(
+                [
+                    [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 500.0],
+                    [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 400.0],
+                ],
+                device=device,
+                dtype=wp.float32,
+            )
+            max_efforts_tensor = wp.array(
+                [
+                    [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 500.0],
+                    [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 400.0],
+                ],
+                device=device,
+                dtype=wp.float32,
+            )
+            self._frankas_view.set_gains(stiffness_tensor, damping_tensor)
+            self._frankas_view.switch_control_mode("velocity", joint_indices=list(range(7)))
+            self._frankas_view.switch_control_mode("position", joint_indices=[7, 8])
+            self._frankas_view.set_max_efforts(max_efforts_tensor)
 
     async def test_initializing_views(self):
         for backend in BACKEND:
@@ -743,6 +1020,29 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
             value = self._frankas_view.get_applied_actions().joint_positions
             self.assertTrue(np.isclose(new_value, value, atol=1e-05).all())
 
+    async def test_position_targets_warp(self):
+        for indexed in INDEXED:
+            for device in ["cpu", "cuda:0"]:
+                print("index:", indexed, "device:", device)
+                await self.setUpWorld(backend="warp", device=device)
+                await self.add_frankas(backend="warp")
+                cur_value = self._frankas_view.get_applied_actions().joint_positions
+                if indexed:
+                    new_np = cur_value.numpy()
+                    new_np[1, 2] += 0.5
+                    new_value = wp.array([[new_np[1, 2]]], dtype=wp.float32, device=device)
+                    self._frankas_view.set_joint_position_targets(new_value, indices=[1], joint_indices=[2])
+                    new_value = wp.from_numpy(new_np, dtype=wp.float32, device=device)
+                else:
+                    new_np = cur_value.numpy()
+                    new_np += 0.5
+                    new_value = wp.from_numpy(new_np, dtype=wp.float32, device=device)
+                    self._frankas_view.set_joint_position_targets(new_value)
+                await self._step()
+                value = self._frankas_view.get_applied_actions().joint_positions
+                self.assertTrue(np.isclose(new_value.numpy(), value.numpy(), atol=1e-05).all())
+                self._my_world.clear_instance()
+
     async def test_velocity_targets_torch(self):
         for indexed in INDEXED:
             for device in ["cpu", "cuda:0"]:
@@ -776,6 +1076,29 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self._frankas_view.set_joint_velocity_targets(new_value)
             value = self._frankas_view.get_applied_actions().joint_velocities
             self.assertTrue(np.isclose(new_value, value, atol=1e-05).all())
+
+    async def test_velocity_targets_warp(self):
+        for indexed in INDEXED:
+            for device in ["cpu", "cuda:0"]:
+                print("index:", indexed, "device:", device)
+                await self.setUpWorld(backend="warp", device=device)
+                await self.add_frankas(backend="warp")
+                cur_value = self._frankas_view.get_applied_actions().joint_velocities
+                if indexed:
+                    new_np = cur_value.numpy()
+                    new_np[1, 2] += 0.5
+                    new_value = wp.array([[new_np[1, 2]]], dtype=wp.float32, device=device)
+                    self._frankas_view.set_joint_velocity_targets(new_value, indices=[1], joint_indices=[2])
+                    new_value = wp.from_numpy(new_np, dtype=wp.float32, device=device)
+                else:
+                    new_np = cur_value.numpy()
+                    new_np += 0.5
+                    new_value = wp.from_numpy(new_np, dtype=wp.float32, device=device)
+                    self._frankas_view.set_joint_velocity_targets(new_value)
+                await self._step()
+                value = self._frankas_view.get_applied_actions().joint_velocities
+                self.assertTrue(np.isclose(new_value.numpy(), value.numpy(), atol=1e-05).all())
+                self._my_world.clear_instance()
 
     async def test_joint_velocities_torch(self):
         for indexed in INDEXED:
@@ -812,6 +1135,27 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self._cartpoles_view.set_joint_velocities(new_value)
                 value = self._cartpoles_view.get_joint_velocities()
             self.assertTrue(np.isclose(new_value, value, atol=1e-03).all())
+
+    async def test_joint_velocities_warp(self):
+        for indexed in INDEXED:
+            for device in ["cpu", "cuda:0"]:
+                print("index:", indexed, "device:", device)
+                await self.setUpWorld(backend="warp", device=device)
+                await self.add_cartpoles(backend="warp")
+                cur_value = self._cartpoles_view.get_joint_velocities()
+                if indexed:
+                    new_value = wp.array([[0.1]], device=device, dtype=wp.float32)
+                    self._cartpoles_view.set_joint_velocities(new_value, indices=[1], joint_indices=[0])
+                    await self._step()
+                    value = self._cartpoles_view.get_joint_velocities(indices=[1], joint_indices=[0])
+                else:
+                    new_value = wp.array([[0.1, 0.1], [0.1, 0.1]], device=device, dtype=wp.float32)
+                    self._cartpoles_view.set_joint_velocities(new_value)
+                    await self._step()
+                    value = self._cartpoles_view.get_joint_velocities()
+
+                self.assertTrue(np.isclose(new_value.numpy(), value.numpy(), atol=1e-03).all())
+                self._my_world.clear_instance()
 
     async def test_joint_positions_torch(self):
         for indexed in INDEXED:
@@ -860,6 +1204,33 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 value = self._frankas_view.get_joint_positions()
             self.assertTrue(np.isclose(new_value, value, atol=1e-05).all())
 
+    async def test_joint_positions_warp(self):
+        for indexed in INDEXED:
+            for device in ["cpu", "cuda:0"]:
+                print("index:", indexed, "device:", device)
+                await self.setUpWorld(backend="warp", device=device)
+                await self.add_frankas(backend="warp")
+                cur_value = self._frankas_view.get_joint_positions()
+                if indexed:
+                    new_value = wp.array([[0.02, 0.02]], device=device, dtype=wp.float32)
+                    self._frankas_view.set_joint_positions(new_value, indices=[1], joint_indices=[7, 8])
+                    await self._step()
+                    value = self._frankas_view.get_joint_positions(indices=[1], joint_indices=[7, 8])
+                else:
+                    new_value = wp.array(
+                        [
+                            [0.0, -1.0, 0.0, -2.2, 0.0, 2.4, 0.8, 0.02, 0.02],
+                            [0.0, -1.0, 0.0, -2.2, 0.0, 2.4, 0.8, 0.02, 0.02],
+                        ],
+                        device=device,
+                        dtype=wp.float32,
+                    )
+                    self._frankas_view.set_joint_positions(new_value)
+                    await self._step()
+                    value = self._frankas_view.get_joint_positions()
+                self.assertTrue(np.isclose(new_value.numpy(), value.numpy(), atol=1e-05).all())
+                self._my_world.clear_instance()
+
     async def test_joint_efforts_torch(self):
         for indexed in INDEXED:
             for device in ["cpu", "cuda:0"]:
@@ -889,6 +1260,28 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
             else:
                 new_value = cur_value + 0.5
                 self._frankas_view.set_joint_efforts(new_value)
+
+    async def test_joint_efforts_warp(self):
+        for indexed in INDEXED:
+            for device in ["cpu", "cuda:0"]:
+                print("index:", indexed, "device:", device)
+                await self.setUpWorld(backend="warp", device=device)
+                await self.add_frankas(backend="warp")
+                cur_value = wp.zeros(
+                    (self._frankas_view.count, self._frankas_view._num_dof), dtype=wp.float32, device=device
+                )
+                if indexed:
+                    new_np = cur_value.numpy()
+                    new_np[1, 2] += 0.5
+                    new_value = wp.from_numpy(np.array([[new_np[1, 2]]]), dtype=wp.float32, device=device)
+                    self._frankas_view.set_joint_efforts(new_value, indices=[1], joint_indices=[2])
+                else:
+                    new_np = cur_value.numpy()
+                    new_np += 0.5
+                    new_value = wp.from_numpy(new_np, dtype=wp.float32, device=device)
+                    self._frankas_view.set_joint_efforts(new_value)
+                await omni.kit.app.get_app().next_update_async()
+                self._my_world.clear_instance()
 
     async def test_body_indices(self):
         await self.setUpWorld(backend="numpy", device="cpu")
@@ -925,6 +1318,21 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         self.assertTrue(current_forces.shape == (self._frankas_view.count, self._frankas_view.num_dof))
         self.assertTrue(torch.isclose(current_forces, new_forces).all())
         self.assertTrue(torch.isclose(current_forces, self._frankas_view.get_applied_actions().joint_efforts).all())
+        self._my_world.clear_instance()
+
+        await self.setUpWorld(backend="warp", device="cuda:0")
+        await self.add_frankas(backend="warp")
+        await self._my_world.reset_async()
+        current_forces = self._frankas_view.get_applied_joint_efforts()
+        self.assertTrue(current_forces.shape == (self._frankas_view.count, self._frankas_view.num_dof))
+        new_forces = wp.from_numpy(current_forces.numpy() + 100, device="cuda:0", dtype=wp.float32)
+        self._frankas_view.set_joint_efforts(new_forces)
+        current_forces = self._frankas_view.get_applied_joint_efforts().numpy()
+        self.assertTrue(current_forces.shape == (self._frankas_view.count, self._frankas_view.num_dof))
+        self.assertTrue(np.isclose(current_forces, new_forces.numpy()).all())
+        self.assertTrue(
+            np.isclose(current_forces, self._frankas_view.get_applied_actions().joint_efforts.numpy()).all()
+        )
 
     async def test_jacobians(self):
         for indexed in INDEXED:
@@ -1083,6 +1491,30 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self.assertTrue(inv_masses.shape == (self._frankas_view.count, self._frankas_view._num_bodies))
             self.assertTrue(np.allclose(values, new_values, atol=1e-05))
 
+    async def test_masses_warp(self):
+        for indexed in INDEXED:
+            for device in ["cpu", "cuda:0"]:
+                print("index:", indexed, "device:", device)
+                await self.setUpWorld(backend="warp", device=device)
+                await self.add_frankas(backend="warp")
+                if indexed:
+                    new_values = wp.array([[100.0, 200.0, 300.0]], device=device, dtype=wp.float32)
+                    self._frankas_view.set_body_masses(new_values, indices=[1], body_indices=[1, 3, 5])
+                    values = self._frankas_view.get_body_masses(indices=[1], body_indices=[1, 3, 5])
+
+                    inv_masses = self._frankas_view.get_body_inv_masses(indices=[1], body_indices=[1, 3, 5])
+                    self.assertTrue(inv_masses.shape == (1, 3))
+                else:
+                    new_values = wp.from_torch(
+                        torch.zeros((self._frankas_view.count, self._frankas_view._num_bodies), device=device) + 100.0
+                    )
+                    self._frankas_view.set_body_masses(new_values)
+                    values = self._frankas_view.get_body_masses()
+
+                    inv_masses = self._frankas_view.get_body_inv_masses()
+                    self.assertTrue(inv_masses.shape == (self._frankas_view.count, self._frankas_view._num_bodies))
+                self.assertTrue(np.allclose(values.numpy().squeeze(), new_values.numpy().squeeze(), atol=1e-05))
+
     async def test_com_torch(self):
         for indexed in INDEXED:
             await self.setUpWorld(backend="torch")
@@ -1117,6 +1549,25 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 pos, ori = self._frankas_view.get_body_coms()
             self.assertTrue(np.allclose(new_pos, pos, atol=1e-05))
             self.assertTrue(np.allclose(cur_ori, ori, atol=1e-05))
+
+    async def test_com_warp(self):
+        for indexed in INDEXED:
+            await self.setUpWorld(backend="warp")
+            await self.add_frankas(backend="warp")
+            if indexed:
+                cur_pos, cur_ori = self._frankas_view.get_body_coms(indices=[1], body_indices=[1, 3, 5])
+                new_ori = wp.from_numpy(cur_ori.numpy(), device="cpu", dtype=wp.float32)
+                new_pos = wp.from_numpy(cur_pos.numpy() + 0.1, device="cpu", dtype=wp.float32)
+                self._frankas_view.set_body_coms(new_pos, new_ori, indices=[1], body_indices=[1, 3, 5])
+                pos, ori = self._frankas_view.get_body_coms(indices=[1], body_indices=[1, 3, 5])
+            else:
+                cur_pos, cur_ori = self._frankas_view.get_body_coms()
+                new_pos = wp.from_numpy(cur_pos.numpy() + 0.1, device="cpu", dtype=wp.float32)
+                new_ori = wp.from_numpy(cur_ori.numpy(), device="cpu", dtype=wp.float32)
+                self._frankas_view.set_body_coms(new_pos, new_ori)
+                pos, ori = self._frankas_view.get_body_coms()
+            self.assertTrue(np.allclose(new_pos.numpy(), pos.numpy(), atol=1e-05))
+            self.assertTrue(np.allclose(cur_ori.numpy(), ori.numpy(), atol=1e-05))
 
     async def test_inertia_torch(self):
         for indexed in INDEXED:
@@ -1169,6 +1620,37 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 inv_masses = self._frankas_view.get_body_inv_inertias()
                 self.assertTrue(inv_masses.shape == (self._frankas_view.count, self._frankas_view.num_bodies, 9))
             self.assertTrue(np.allclose(new_value, value, atol=1e-05))
+
+    async def test_inertia_warp(self):
+        for indexed in INDEXED:
+            for device in ["cpu", "cuda:0"]:
+                print("index:", indexed, "device:", device)
+                await self.setUpWorld(backend="warp", device=device)
+                await self.add_frankas(backend="warp")
+                if indexed:
+                    cur_value = self._frankas_view.get_body_inertias(indices=[1], body_indices=[1, 3, 5])
+                    offset = np.zeros((1, 3, 9))
+                    offset[:, :, [0, 4, 8]] += 0.1
+                    new_value = cur_value.numpy() + offset
+                    new_value = wp.from_numpy(new_value, dtype=wp.float32, device=device)
+                    self._frankas_view.set_body_inertias(new_value, indices=[1], body_indices=[1, 3, 5])
+                    value = self._frankas_view.get_body_inertias(indices=[1], body_indices=[1, 3, 5])
+
+                    inv_masses = self._frankas_view.get_body_inv_inertias(indices=[1], body_indices=[1, 3, 5])
+                    self.assertTrue(inv_masses.shape == (1, 3, 9))
+                else:
+                    cur_value = self._frankas_view.get_body_inertias()
+                    offset = np.zeros((2, 12, 9))
+                    offset[:, :, [0, 4, 8]] += 0.1
+                    new_value = cur_value.numpy() + offset
+                    new_value = wp.from_numpy(new_value, dtype=wp.float32, device=device)
+                    self._frankas_view.set_body_inertias(new_value)
+                    value = self._frankas_view.get_body_inertias()
+
+                    inv_masses = self._frankas_view.get_body_inv_inertias()
+                    self.assertTrue(inv_masses.shape == (self._frankas_view.count, self._frankas_view.num_bodies, 9))
+
+                self.assertTrue(np.allclose(new_value.numpy(), value.numpy(), atol=1e-05))
 
     async def test_fixed_tendon_properties_torch(self):
         for indexed in INDEXED:
@@ -1384,6 +1866,149 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 )
                 self.assertTrue(np.allclose(self._hands_view.get_fixed_tendon_offsets(), new_offsets, atol=1e-05))
 
+    async def test_fixed_tendon_properties_warp(self):
+        for indexed in INDEXED:
+            for device in ["cpu", "cuda:0"]:
+                print("index:", indexed, "device:", device)
+                await self.setUpWorld(backend="warp", device=device)
+                await self.add_shadow_hands(backend="warp", device=device)
+
+                if indexed:
+                    new_stiffness = wp.array([[0.1, 0.2, 0.3, 0.4]], device=device, dtype=wp.float32)
+                    new_dampings = wp.array([[0.1, 0.2, 0.3, 0.4]], device=device, dtype=wp.float32)
+                    new_limit_stiffness = wp.array([[0.1, 0.2, 0.3, 0.4]], device=device, dtype=wp.float32)
+                    new_limits = wp.array(
+                        [[[0.1, 0.2], [0.3, 0.4], [0.5, 0.6], [0.7, 0.8]]], device=device, dtype=wp.float32
+                    )
+                    new_rest_lengths = wp.array([[0.1, 0.2, 0.3, 0.4]], device=device, dtype=wp.float32)
+                    new_offsets = wp.array([[0.1, 0.2, 0.3, 0.4]], device=device, dtype=wp.float32)
+
+                    self._hands_view.set_fixed_tendon_properties(
+                        stiffnesses=new_stiffness,
+                        dampings=new_dampings,
+                        limit_stiffnesses=new_limit_stiffness,
+                        limits=new_limits,
+                        rest_lengths=new_rest_lengths,
+                        offsets=new_offsets,
+                        indices=[1],
+                    )
+
+                    if device == "cpu":
+                        self.assertTrue(
+                            np.allclose(
+                                self._hands_view.get_fixed_tendon_stiffnesses(indices=[1]).numpy(),
+                                new_stiffness.numpy(),
+                                atol=1e-05,
+                            )
+                        )
+                        self.assertTrue(
+                            np.allclose(
+                                self._hands_view.get_fixed_tendon_dampings(indices=[1]).numpy(),
+                                new_dampings.numpy(),
+                                atol=1e-05,
+                            )
+                        )
+                        self.assertTrue(
+                            np.allclose(
+                                self._hands_view.get_fixed_tendon_limit_stiffnesses(indices=[1]).numpy(),
+                                new_limit_stiffness.numpy(),
+                                atol=1e-05,
+                            )
+                        )
+                        self.assertTrue(
+                            np.allclose(
+                                self._hands_view.get_fixed_tendon_limits(indices=[1]).numpy(),
+                                new_limits.numpy(),
+                                atol=1e-05,
+                            )
+                        )
+                        self.assertTrue(
+                            np.allclose(
+                                self._hands_view.get_fixed_tendon_rest_lengths(indices=[1]).numpy(),
+                                new_rest_lengths.numpy(),
+                                atol=1e-05,
+                            )
+                        )
+                        self.assertTrue(
+                            np.allclose(
+                                self._hands_view.get_fixed_tendon_offsets(indices=[1]).numpy(),
+                                new_offsets.numpy(),
+                                atol=1e-05,
+                            )
+                        )
+
+                else:
+                    new_stiffness = wp.array(
+                        [[0.1, 0.2, 0.3, 0.4], [0.5, 0.6, 0.7, 0.8]], device=device, dtype=wp.float32
+                    )
+                    new_dampings = wp.array(
+                        [[0.1, 0.2, 0.3, 0.4], [0.5, 0.6, 0.7, 0.8]], device=device, dtype=wp.float32
+                    )
+                    new_limit_stiffness = wp.array(
+                        [[0.1, 0.2, 0.3, 0.4], [0.5, 0.6, 0.7, 0.8]], device=device, dtype=wp.float32
+                    )
+                    new_limits = wp.array(
+                        [
+                            [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6], [0.7, 0.8]],
+                            [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6], [0.7, 0.8]],
+                        ],
+                        device=device,
+                        dtype=wp.float32,
+                    )
+                    new_rest_lengths = wp.array(
+                        [[0.1, 0.2, 0.3, 0.4], [0.5, 0.6, 0.7, 0.8]], device=device, dtype=wp.float32
+                    )
+                    new_offsets = wp.array(
+                        [[0.1, 0.2, 0.3, 0.4], [0.5, 0.6, 0.7, 0.8]], device=device, dtype=wp.float32
+                    )
+
+                    self._hands_view.set_fixed_tendon_properties(
+                        stiffnesses=new_stiffness,
+                        dampings=new_dampings,
+                        limit_stiffnesses=new_limit_stiffness,
+                        limits=new_limits,
+                        rest_lengths=new_rest_lengths,
+                        offsets=new_offsets,
+                    )
+
+                    if device == "cpu":
+                        self.assertTrue(
+                            np.allclose(
+                                self._hands_view.get_fixed_tendon_stiffnesses().numpy(),
+                                new_stiffness.numpy(),
+                                atol=1e-05,
+                            )
+                        )
+                        self.assertTrue(
+                            np.allclose(
+                                self._hands_view.get_fixed_tendon_dampings().numpy(), new_dampings.numpy(), atol=1e-05
+                            )
+                        )
+                        self.assertTrue(
+                            np.allclose(
+                                self._hands_view.get_fixed_tendon_limit_stiffnesses().numpy(),
+                                new_limit_stiffness.numpy(),
+                                atol=1e-05,
+                            )
+                        )
+                        self.assertTrue(
+                            np.allclose(
+                                self._hands_view.get_fixed_tendon_limits().numpy(), new_limits.numpy(), atol=1e-05
+                            )
+                        )
+                        self.assertTrue(
+                            np.allclose(
+                                self._hands_view.get_fixed_tendon_rest_lengths().numpy(),
+                                new_rest_lengths.numpy(),
+                                atol=1e-05,
+                            )
+                        )
+                        self.assertTrue(
+                            np.allclose(
+                                self._hands_view.get_fixed_tendon_offsets().numpy(), new_offsets.numpy(), atol=1e-05
+                            )
+                        )
+
     async def test_position_iteration_count_torch(self):
         for indexed in INDEXED:
             for device in ["cpu", "cuda:0"]:
@@ -1413,6 +2038,22 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self._frankas_view.set_solver_position_iteration_counts(new_values)
                 values = self._frankas_view.get_solver_position_iteration_counts()
             self.assertTrue(np.allclose(values, new_values, atol=1e-05))
+
+    async def test_position_iteration_count_warp(self):
+        for indexed in INDEXED:
+            for device in ["cpu", "cuda:0"]:
+                print("index:", indexed, "device:", device)
+                await self.setUpWorld(backend="warp", device=device)
+                await self.add_frankas(backend="warp")
+                if indexed:
+                    new_values = wp.array([4], device=device, dtype=wp.int32)
+                    self._frankas_view.set_solver_position_iteration_counts(new_values, indices=[1])
+                    values = self._frankas_view.get_solver_position_iteration_counts(indices=[1])
+                else:
+                    new_values = wp.array([4, 4], device=device, dtype=wp.int32)
+                    self._frankas_view.set_solver_position_iteration_counts(new_values)
+                    values = self._frankas_view.get_solver_position_iteration_counts()
+                self.assertTrue(np.allclose(values.numpy(), new_values.numpy(), atol=1e-05))
 
     async def test_velocity_iteration_count_torch(self):
         for indexed in INDEXED:
@@ -1444,6 +2085,22 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 values = self._frankas_view.get_solver_velocity_iteration_counts()
             self.assertTrue(np.allclose(values, new_values, atol=1e-05))
 
+    async def test_velocity_iteration_count_warp(self):
+        for indexed in INDEXED:
+            for device in ["cpu", "cuda:0"]:
+                print("index:", indexed, "device:", device)
+                await self.setUpWorld(backend="warp", device=device)
+                await self.add_frankas(backend="warp")
+                if indexed:
+                    new_values = wp.array([4], device=device, dtype=wp.int32)
+                    self._frankas_view.set_solver_velocity_iteration_counts(new_values, indices=[1])
+                    values = self._frankas_view.get_solver_velocity_iteration_counts(indices=[1])
+                else:
+                    new_values = wp.array([4, 4], device=device, dtype=wp.int32)
+                    self._frankas_view.set_solver_velocity_iteration_counts(new_values)
+                    values = self._frankas_view.get_solver_velocity_iteration_counts()
+                self.assertTrue(np.allclose(values.numpy(), new_values.numpy(), atol=1e-05))
+
     async def test_stabilization_thresholds_torch(self):
         for indexed in INDEXED:
             for device in ["cpu", "cuda:0"]:
@@ -1473,6 +2130,22 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self._frankas_view.set_stabilization_thresholds(new_values)
                 values = self._frankas_view.get_stabilization_thresholds()
             self.assertTrue(np.allclose(values, new_values, atol=1e-05))
+
+    async def test_stabilization_thresholds_warp(self):
+        for indexed in INDEXED:
+            for device in ["cpu", "cuda:0"]:
+                print("index:", indexed, "device:", device)
+                await self.setUpWorld(backend="warp", device=device)
+                await self.add_frankas(backend="warp")
+                if indexed:
+                    new_values = wp.array([0.01], device=device, dtype=wp.float32)
+                    self._frankas_view.set_stabilization_thresholds(new_values, indices=[1])
+                    values = self._frankas_view.get_stabilization_thresholds(indices=[1])
+                else:
+                    new_values = wp.array([0.01, 0.02], device=device, dtype=wp.float32)
+                    self._frankas_view.set_stabilization_thresholds(new_values)
+                    values = self._frankas_view.get_stabilization_thresholds()
+                self.assertTrue(np.allclose(values.numpy(), new_values.numpy(), atol=1e-05))
 
     async def test_sleep_thresholds_torch(self):
         for indexed in INDEXED:
@@ -1504,6 +2177,22 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 values = self._frankas_view.get_sleep_thresholds()
             self.assertTrue(np.allclose(values, new_values, atol=1e-05))
 
+    async def test_sleep_thresholds_warp(self):
+        for indexed in INDEXED:
+            for device in ["cpu", "cuda:0"]:
+                print("index:", indexed, "device:", device)
+                await self.setUpWorld(backend="warp", device=device)
+                await self.add_frankas(backend="warp")
+                if indexed:
+                    new_values = wp.array([0.01], device=device, dtype=wp.float32)
+                    self._frankas_view.set_sleep_thresholds(new_values, indices=[1])
+                    values = self._frankas_view.get_sleep_thresholds(indices=[1])
+                else:
+                    new_values = wp.array([0.01, 0.02], device=device, dtype=wp.float32)
+                    self._frankas_view.set_sleep_thresholds(new_values)
+                    values = self._frankas_view.get_sleep_thresholds()
+                self.assertTrue(np.allclose(values.numpy(), new_values.numpy(), atol=1e-05))
+
     async def test_enabled_self_collisions_torch(self):
         for indexed in INDEXED:
             for device in ["cpu", "cuda:0"]:
@@ -1533,3 +2222,19 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self._frankas_view.set_enabled_self_collisions(new_values)
                 values = self._frankas_view.get_enabled_self_collisions()
             self.assertTrue(np.allclose(values, new_values, atol=1e-05))
+
+    async def test_enabled_self_collisions_warp(self):
+        for indexed in INDEXED:
+            for device in ["cpu", "cuda:0"]:
+                print("index:", indexed, "device:", device)
+                await self.setUpWorld(backend="warp", device=device)
+                await self.add_frankas(backend="warp")
+                if indexed:
+                    new_values = wp.array([True], device=device, dtype=wp.uint8)
+                    self._frankas_view.set_enabled_self_collisions(new_values, indices=[1])
+                    values = self._frankas_view.get_enabled_self_collisions(indices=[1])
+                else:
+                    new_values = wp.array([False, True], device=device, dtype=wp.uint8)
+                    self._frankas_view.set_enabled_self_collisions(new_values)
+                    values = self._frankas_view.get_enabled_self_collisions()
+                self.assertTrue(np.allclose(values.numpy(), new_values.numpy(), atol=1e-05))

@@ -14,19 +14,21 @@ def as_type(data, dtype):
     if dtype == "float32":
         return data.astype(np.float32)
     elif dtype == "bool":
-        return data.astype(np.bool_)
+        return data.astype(bool)
     elif dtype == "int32":
         return data.astype(np.int32)
     elif dtype == "int64":
-        return data.to(np.int64)
+        return data.astype(np.int64)
     elif dtype == "long":
-        return data.to(np.long)
+        return data.astype(np.long)
+    elif dtype == "uint8":
+        return data.astype(np.uint8)
     else:
         print(f"Type {dtype} not supported.")
 
 
-def convert(data, device=None):
-    return np.asarray(data)
+def convert(data, device=None, dtype="float32", indexed=None):
+    return as_type(np.asarray(data), dtype)
 
 
 def create_zeros_tensor(shape, dtype, device=None):
@@ -54,7 +56,7 @@ def move_data(data, device=None):
     return data
 
 
-def tensor_cat(data, dim=-1):
+def tensor_cat(data, device=None, dim=-1):
     return np.concatenate(data, axis=dim)
 
 
@@ -72,3 +74,21 @@ def pad(data, pad_width, mode="constant", value=None):
 
 def tensor_stack(data, dim=0):
     return np.stack(data, axis=dim)
+
+
+def to_list(data):
+    if not isinstance(data, list):
+        return data.tolist()
+    return data
+
+
+def to_numpy(data):
+    return data
+
+
+def assign(src, dst, indices):
+    if isinstance(indices, list):
+        dst[tuple(indices)] = src
+    else:
+        dst[indices] = src
+    return dst

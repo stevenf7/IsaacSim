@@ -165,3 +165,11 @@ def deg2rad(degree_value: np.ndarray, device=None) -> np.ndarray:
         np.ndarray: _description_
     """
     return np.deg2rad(degree_value)
+
+
+def xyzw2wxyz(q, ret_torch=False):
+    return np.roll(q, 1, -1)
+
+
+def wxyz2xyzw(q, ret_torch=False):
+    return np.roll(q, -1, -1)

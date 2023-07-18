@@ -73,8 +73,6 @@ class VecEnvMT(VecEnvBase):
                     self._stop = True
                     self._action_queue.task_done()
                     raise TaskStopException()
-                else:
-                    actions = actions.clone()
                 self._action_queue.task_done()
             except (queue.Full, queue.Empty) as e:
                 print("Getting actions: timeout occurred.")

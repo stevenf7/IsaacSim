@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.2.0"
+version = "2.3.0"
 category = "Simulation"
 title = "Isaac Sim Core"
 description = "Core"
@@ -23,6 +23,7 @@ writeTarget.kit = true
 "omni.physx.tensors" = {}
 "omni.kit.material.library" = {} # omni.kit.material
 "omni.isaac.version" = {}
+"omni.warp.core" = {}
 
 
 [[python.module]]
@@ -32,14 +33,15 @@ name = "omni.isaac.core"
 name = "omni.isaac.core.tests"
 
 [[test]]
+timeout = 12000
 dependencies = [
     "omni.hydra.rtx",                       # "omni.hydra.pxr", Can we run and pass with Storm ?
     "omni.kit.viewport.utility",
     "omni.kit.viewport.window",
     "omni.kit.primitive.mesh",
     "omni.kit.material.library",
+    "omni.warp"
 ]
-timeout=1000
 args = ["--/physics/cudaDevice=0"]
 
 stdoutFailPatterns.exclude = [

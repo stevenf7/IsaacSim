@@ -263,3 +263,11 @@ def compute_rot(torso_quat, velocity, ang_velocity, targets, torso_positions):
     angle_to_target = walk_target_angle - yaw
 
     return vel_loc, angvel_loc, roll, pitch, yaw, angle_to_target
+
+
+def xyzw2wxyz(q):
+    return torch.roll(q, 1, -1)
+
+
+def wxyz2xyzw(q):
+    return torch.roll(q, -1, -1)

@@ -67,8 +67,8 @@ class World(SimulationContext):
                                         gpu dynamics turned off,
                                         broadcast type is MBP,
                                         solver type is TGS]. Defaults to True.
-        backend (str, optional): specifies the backend to be used (numpy or torch). Defaults to numpy.
-        device (Optional[str], optional): specifies the device to be used if running on the gpu with torch backend.
+        backend (str, optional): specifies the backend to be used (numpy or torch or warp). Defaults to numpy.
+        device (Optional[str], optional): specifies the device to be used if running on the gpu with torch or warp backends.
     """
 
     _world_initialized = False

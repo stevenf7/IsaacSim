@@ -169,7 +169,10 @@ class _SinglePrimWrapper(object):
                                            quaternion is scalar-first (w, x, y, z). shape is (4, ).
         """
         positions, orientations = self._prim_view.get_world_poses()
-        return positions[0], orientations[0]
+        if self._backend == "warp":
+            return positions.numpy()[0], orientations.numpy()[0]
+        else:
+            return positions[0], orientations[0]
 
     def get_local_pose(self) -> Tuple[np.ndarray, np.ndarray]:
         """Gets prim's pose with respect to the local frame (the prim's parent frame).
@@ -180,7 +183,10 @@ class _SinglePrimWrapper(object):
                                            quaternion is scalar-first (w, x, y, z). shape is (4, ).
         """
         translations, orientations = self._prim_view.get_local_poses()
-        return translations[0], orientations[0]
+        if self._backend == "warp":
+            return translations.numpy()[0], orientations.numpy()[0]
+        else:
+            return translations[0], orientations[0]
 
     def set_local_pose(
         self, translation: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
@@ -230,7 +236,10 @@ class _SinglePrimWrapper(object):
         Returns:
             np.ndarray: scale applied to the prim's dimensions in the local frame. shape is (3, ).
         """
-        return self._prim_view.get_local_scales()[0]
+        if self._backend == "warp":
+            return self._prim_view.get_local_scales().numpy()[0]
+        else:
+            return self._prim_view.get_local_scales()[0]
 
     def is_valid(self) -> bool:
         """
