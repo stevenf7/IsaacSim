@@ -14,7 +14,8 @@ import sys
 from .test_benchmark_camera import *
 from .test_benchmark_physx_lidar import *
 from .test_benchmark_real_time_factor import *
-from .test_benchmark_robots import *
+from .test_benchmark_robots_carter import *
+from .test_benchmark_robots_o3dyn import *
 from .test_benchmark_scene_generation import *
 from .test_benchmark_sdg_generation import *
 

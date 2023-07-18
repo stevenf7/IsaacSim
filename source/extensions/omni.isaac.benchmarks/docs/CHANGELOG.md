@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.17.0] - 2023-07-13
+
+### Added
+- Created tests for O3dyn robots, renamed original test_benchmark_robots to test_benchmark_robots_carter
+
 ## [0.16.1] - 2023-07-13
 
 ### Changed
