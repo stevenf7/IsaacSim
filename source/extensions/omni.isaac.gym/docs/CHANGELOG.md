@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.6.0] - 2023-07-13
+### Changed
+- Update interface from gym to gymnasium
 
 ## [0.5.1] - 2023-07-05
 ### Changed

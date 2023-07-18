@@ -24,9 +24,9 @@ from stable_baselines3 import PPO
 # Run inference on the trained policy
 model = PPO.load("ppo_cartpole")
 env._world.reset()
-obs = env.reset()
+obs, _ = env.reset()
 while env._simulation_app.is_running():
     action, _states = model.predict(obs)
-    obs, rewards, dones, info = env.step(action)
+    obs, rewards, terminated, truncated, info = env.step(action)
 
 env.close()

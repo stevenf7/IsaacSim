@@ -12,7 +12,7 @@ import math
 import numpy as np
 import omni.kit
 import torch
-from gym import spaces
+from gymnasium import spaces
 from omni.isaac.core.articulations import ArticulationView
 from omni.isaac.core.tasks.base_task import BaseTask
 from omni.isaac.core.utils.nucleus import get_assets_root_path
@@ -40,9 +40,12 @@ class CartpoleTask(BaseTask):
         self.resets = torch.zeros((self.num_envs, 1))
 
         # set the action and observation space for RL
-        self.action_space = spaces.Box(np.ones(self._num_actions) * -1.0, np.ones(self._num_actions) * 1.0)
+        self.action_space = spaces.Box(
+            np.ones(self._num_actions, dtype=np.float32) * -1.0, np.ones(self._num_actions, dtype=np.float32) * 1.0
+        )
         self.observation_space = spaces.Box(
-            np.ones(self._num_observations) * -np.Inf, np.ones(self._num_observations) * np.Inf
+            np.ones(self._num_observations, dtype=np.float32) * -np.Inf,
+            np.ones(self._num_observations, dtype=np.float32) * np.Inf,
         )
 
         # trigger __init__ of parent class
