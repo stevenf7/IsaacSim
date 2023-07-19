@@ -28,7 +28,7 @@ class TestBenchmarkRtxLidar(BaseIsaacBenchmark):
 
     # ----------------------------------------------------------------------
     async def benchmark_rtx_lidar(self, n_sensor):
-        self.test_run.test_name = f"{n_sensor}_rtx_lidar"
+        self.test_run.test_name = f"rtx_lidar_{n_sensor}"
         self.set_phase("loading")
         self.start_runtime()
         scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"

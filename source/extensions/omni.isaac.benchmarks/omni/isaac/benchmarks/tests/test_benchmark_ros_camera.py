@@ -38,7 +38,7 @@ class TestBenchmarkRos1Camera(BaseIsaacBenchmark):
 
     # ----------------------------------------------------------------------
     async def benchmark_ros1_camera(self, n_camera, resolution):
-        self.test_run.test_name = f"{n_camera}_cameras_{resolution[0]}_{resolution[1]}_resolution_ros_1"
+        self.test_run.test_name = f"cameras_{n_camera}_resolution_{resolution[0]}_{resolution[1]}_ros_1"
         self.set_phase("loading")
         self.start_runtime()
 

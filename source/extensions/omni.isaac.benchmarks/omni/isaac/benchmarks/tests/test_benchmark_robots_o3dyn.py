@@ -36,7 +36,7 @@ class TestBenchmarkRobotsO3dyn(BaseIsaacBenchmark):
         #     sensor_name += "_lidar"
         if len(sensor_name) == 0:
             sensor_name = "_no_sensor"
-        self.test_run.test_name = f"{n_robot}_robots_o3dyn{sensor_name}"
+        self.test_run.test_name = f"robots_o3dyn{sensor_name}_{n_robot}"
         self.set_phase("loading")
         self.start_runtime()
 

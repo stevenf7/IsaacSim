@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.17.1] - 2023-07-18
+
+### Added
+- Renamed benchmarks to make output easier to process
+
 ## [0.17.0] - 2023-07-13
 
 ### Added
