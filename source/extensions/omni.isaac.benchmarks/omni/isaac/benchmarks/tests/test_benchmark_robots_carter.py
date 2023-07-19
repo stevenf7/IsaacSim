@@ -44,7 +44,7 @@ class TestBenchmarkRobotsCarter(BaseIsaacBenchmark):
             sensor_name += "_camera"
         if len(sensor_name) == 0:
             sensor_name = "_no_sensor"
-        self.test_run.test_name = f"{n_robot}_robots_carter{sensor_name}"
+        self.test_run.test_name = f"robots_carter{sensor_name}_{n_robot}"
         self.set_phase("loading")
         self.start_runtime()
 

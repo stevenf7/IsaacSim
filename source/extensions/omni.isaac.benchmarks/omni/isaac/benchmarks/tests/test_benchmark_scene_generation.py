@@ -41,11 +41,11 @@ def get_test_name_from_args(num_assets, location, prim_type, api, num_lights=0):
                 test_name += "usd_"
             elif api.lower() == "isaac":
                 test_name += "isaac_"
-        return f"{test_name}{num_assets}_assets"
+        return f"{test_name}assets_{num_assets}"
 
     # Test name if the assets are randomized (can only be meshes w/wo lights)
     elif location.lower() == "random":
-        return f"{test_name}random_{num_lights}_lights_{num_assets}_assets"
+        return f"{test_name}random_lights_{num_lights}_assets_{num_assets}"
 
 
 # Get a list of assets as a cycle iterator

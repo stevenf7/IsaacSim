@@ -29,7 +29,7 @@ class TestBenchmarkLidar(BaseIsaacBenchmark):
 
     # ----------------------------------------------------------------------
     async def benchmark_physx_lidar(self, n_sensor):
-        self.test_run.test_name = f"{n_sensor}_physx_lidars"
+        self.test_run.test_name = f"physx_lidars_{n_sensor}"
         self.set_phase("loading")
         self.start_runtime()
 
