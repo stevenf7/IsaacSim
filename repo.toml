@@ -779,3 +779,52 @@ flake8.config = "${root}/.flake8"
 
 [repo_edit_sysconfig]
 sysconfig_path = "${root}/_build/${platform}/${config}/kit/python/lib/python3.10/_sysconfigdata__linux_x86_64-linux-gnu.py"
+
+
+########################################################################################################################
+# Update extscache
+########################################################################################################################
+
+[repo_update_extscache]
+
+url = "https://gitlab-master.nvidia.com/omniverse/ov-create/-/raw/release/2023.2/source/apps/omni.create.full.kit"
+
+deps_for_isaac = [
+  "omni.kit.livestream.native-2.2.0",
+  "omni.replicator.composer-1.2.12",
+  "omni.replicator.core-1.10.0-isaac_rc2",
+  "omni.services.transport.server.tcp_socket-1.0.2",
+  "semantics.schema.editor-0.3.3",
+  "omni.importer.mjcf-1.0.0"
+]
+
+deps_for_testing = [
+  "omni.kit.testing.services-1.6.28",
+  "omni.kit.nvdf.telemetry-1.2.1"
+]
+
+deps_for_ml = [
+  {dep = "omni.pip.torch-0.1.4", tag = "1_13_1"}
+]
+
+windows_only = [
+  "omni.kit.window.modifier.titlebar",
+  "omni.houdini_engine.core",
+  "omni.houdini_engine.hda_loader",
+  "omni.kit.converter.patchmanager"
+]
+
+linux_only = []
+
+exclude = [
+  "omni.app.workflow.composer_startup",
+  "omni.create.app.resources",
+  "omni.create.app.setup",
+  "omni.create.tests",
+]
+
+override = [
+  # please provide extensions in the format "extension.name-version" or {dep = "extension.name-version", tag = "tag"}
+]
+
+output_file = "${root}/source/apps/omni.isaac.sim.extscache.kit"
