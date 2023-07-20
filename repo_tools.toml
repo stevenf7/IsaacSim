@@ -88,3 +88,11 @@ entry_point = "${config_root}/tools/isaac/generate_changelog.py:setup_repo_tool"
 [edit_sysconfig]
 command = "edit_sysconfig"
 entry_point = "${config_root}/tools/isaac/edit_sysconfig.py:setup_repo_tool"
+
+########################################################################################################################
+# Update extscache
+########################################################################################################################
+
+[update_extscache]
+command = "update_extscache"
+entry_point = "${config_root}/tools/isaac/update_extscache.py:setup_repo_tool"
