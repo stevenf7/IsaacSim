@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.17.2] - 2023-07-20
+
+### Changed
+- Renamed ROS camera benchmarks from _ros_1 to _ros1
+
 ## [0.17.1] - 2023-07-18
 
 ### Added
