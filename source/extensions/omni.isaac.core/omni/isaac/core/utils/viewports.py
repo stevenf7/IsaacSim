@@ -57,7 +57,36 @@ def set_camera_view(
         ).Set(Gf.Vec3d(0, 0, -10))
     camera_state = ViewportCameraState(camera_prim_path, viewport_api)
     camera_state.set_position_world(Gf.Vec3d(camera_position[0], camera_position[1], camera_position[2]), True)
-    camera_state.set_target_world(Gf.Vec3d(camera_target[0], camera_target[1], camera_target[2]), True)
+    if (camera_target[0:1] != camera_position[0:1]).all():
+        camera_state.set_target_world(Gf.Vec3d(camera_target[0], camera_target[1], camera_target[2]), True)
+    else:
+        rotate_prop = prim.GetAttribute(
+            "xformOp:rotateXYZ" if camera_prim_path == "/OmniverseKit_Persp" else "xformOp:orient"
+        )
+        old_rotate = rotate_prop.Get()
+        new_rotate = (
+            Gf.Vec3f(0, (180 if camera_target[2] >= camera_position[2] else 0), 0)
+            if camera_prim_path == "/OmniverseKit_Persp"
+            else Gf.Quatd(
+                0 if camera_target[2] >= camera_position[2] else 1,
+                0,
+                1 if camera_target[2] >= camera_position[2] else 0,
+                0,
+            )
+        )
+        # (C, XS, YS, ZS) where C = cos(theta/2) and S = sin(theta/2)
+
+        omni.kit.commands.create(
+            "ChangePropertyCommand",
+            prop_path=rotate_prop.GetPath(),
+            value=new_rotate,
+            prev=old_rotate,
+            timecode=Usd.TimeCode.Default(),
+            type_to_create_if_not_exist=(
+                Sdf.ValueTypeNames.Vector3d if camera_prim_path == "/OmniverseKit_Persp" else Sdf.ValueTypeNames.Quatd
+            ),
+        ).do()
+
     return
 
 
