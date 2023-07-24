@@ -16,6 +16,7 @@ from omni.isaac.core.utils.viewports import (
     get_intrinsics_matrix,
     get_viewport_names,
     get_window_from_id,
+    set_camera_view,
     set_intrinsics_matrix,
 )
 from omni.kit.viewport.utility import (
@@ -146,3 +147,64 @@ class TestViewports(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
 
         destroy_all_viewports(None, False)
+
+    async def test_set_camera_view_perspective(self):
+        import numpy as np
+
+        viewport_api = get_active_viewport()
+        camera_prim_path = "/OmniverseKit_Persp"
+        prim = viewport_api.stage.GetPrimAtPath(camera_prim_path)
+        rotate_prop = prim.GetAttribute("xformOp:rotateXYZ")
+        pos_prop = prim.GetAttribute("xformOp:translate")
+
+        set_camera_view(eye=np.array([0, 0, 0]), target=np.array([0, 0, 10]))
+        await omni.kit.app.get_app().next_update_async()
+        self.assertEqual(pos_prop.Get(), (0, 0, 0))
+        self.assertEqual(rotate_prop.Get(), (0, 180, 0))
+
+        set_camera_view(eye=np.array([5, 5, 10]), target=np.array([5, 5, 0]))
+        await omni.kit.app.get_app().next_update_async()
+        self.assertEqual(pos_prop.Get(), (5, 5, 10))
+        self.assertEqual(rotate_prop.Get(), (0, 0, 0))
+
+        set_camera_view(eye=np.array([5, 5, 5]), target=np.array([0, 0, 0]))
+        await omni.kit.app.get_app().next_update_async()
+        self.assertEqual(pos_prop.Get(), (5, 5, 5))
+        self.assertAlmostEqual(rotate_prop.Get()[0], np.rad2deg(np.arctan(2**0.5)), delta=0.01)
+        self.assertAlmostEqual(rotate_prop.Get()[1], 0, delta=0.01)
+        self.assertAlmostEqual(rotate_prop.Get()[2], 135, delta=0.01)
+
+    async def test_set_camera_view_camera_prim(self):
+        # create a camera prim using omni.isaac.sensor
+        import numpy as np
+        from omni.isaac.sensor import Camera
+        from pxr import Gf
+
+        viewport_api = get_active_viewport()
+        camera_prim_path = "/Camera"
+        camera = Camera(prim_path=camera_prim_path, render_product_path=viewport_api.get_render_product_path())
+        camera.initialize()
+        await omni.kit.app.get_app().next_update_async()
+        prim = viewport_api.stage.GetPrimAtPath(camera_prim_path)
+        rotate_prop = prim.GetAttribute("xformOp:orient")
+        pos_prop = prim.GetAttribute("xformOp:translate")
+
+        set_camera_view(eye=np.array([0, 0, 0]), target=np.array([0, 0, 10]), camera_prim_path=camera_prim_path)
+        await omni.kit.app.get_app().next_update_async()
+        self.assertEqual(pos_prop.Get(), (0, 0, 0))
+        self.assertEqual(rotate_prop.Get(), Gf.Quatd(0, Gf.Vec3d(0, 1, 0)))
+
+        set_camera_view(eye=np.array([5, 5, 10]), target=np.array([5, 5, 0]), camera_prim_path=camera_prim_path)
+        await omni.kit.app.get_app().next_update_async()
+        self.assertEqual(pos_prop.Get(), (5, 5, 10))
+        self.assertEqual(rotate_prop.Get(), Gf.Quatd(1, Gf.Vec3d(0, 0, 0)))
+
+        set_camera_view(eye=np.array([5, 5, 5]), target=np.array([0, 0, 0]), camera_prim_path=camera_prim_path)
+        await omni.kit.app.get_app().next_update_async()
+        self.assertEqual(pos_prop.Get(), (5, 5, 5))
+        self.assertAlmostEqual(rotate_prop.Get().GetReal(), 0.340, delta=0.01)
+        self.assertAlmostEqual(rotate_prop.Get().GetImaginary()[0], 0.176, delta=0.01)
+        self.assertAlmostEqual(rotate_prop.Get().GetImaginary()[1], 0.425, delta=0.01)
+        self.assertAlmostEqual(rotate_prop.Get().GetImaginary()[2], 0.820, delta=0.01)
+
+        camera = None
