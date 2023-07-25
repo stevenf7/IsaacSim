@@ -109,7 +109,7 @@ void LidarSensor::onComponentChange()
     mDepth.assign(mRows * mCols, 0);
     mHitPos.assign(mRows * mCols, { 0, 0, 0 });
     mLinearDepth.assign(mRows * mCols, 0);
-
+    mBeamTime.assign(mRows * mCols, 0);
     mIntensity.assign(mRows * mCols, 0);
     mZenith.assign(mRows, 0.0f);
     mAzimuth.assign(mCols, 0.0f);
@@ -136,6 +136,7 @@ void LidarSensor::onComponentChange()
     mLastAzimuth.assign(mMaxColsPerTick, 0.0f);
     mLastDepth.assign(mRows * mMaxColsPerTick, 0);
     mLastLinearDepth.assign(mRows * mMaxColsPerTick, 0);
+    mLastBeamTime.assign(mRows * mMaxColsPerTick, 0);
     mLastHitPos.assign(mRows * mCols, { 0, 0, 0 });
     mLastSemanticID.assign(mRows * mCols, 0);
     mLastCol = 0;
@@ -170,6 +171,7 @@ void LidarSensor::dumpData(int start, int stop, double dt)
     mLastDepth.resize(mRows * colsToTick);
     mLastHitPos.resize(mRows * colsToTick);
     mLastLinearDepth.resize(mRows * colsToTick);
+    mLastBeamTime.resize(mRows * colsToTick);
     mLastIntensity.resize(mRows * colsToTick);
     mLastAzimuth.resize(colsToTick);
     mLastSemanticID.resize(mRows * colsToTick);
@@ -177,6 +179,9 @@ void LidarSensor::dumpData(int start, int stop, double dt)
     std::copy(mAzimuth.begin() + start, mAzimuth.begin() + (start + unwrappedSize), mLastAzimuth.begin());
     std::copy(mDepth.begin() + start * mRows, mDepth.begin() + (start + unwrappedSize) * mRows, mLastDepth.begin());
     std::copy(mHitPos.begin() + start * mRows, mHitPos.begin() + (start + unwrappedSize) * mRows, mLastHitPos.begin());
+
+    std::copy(
+        mBeamTime.begin() + start * mRows, mBeamTime.begin() + (start + unwrappedSize) * mRows, mLastBeamTime.begin());
 
     std::copy(mLinearDepth.begin() + start * mRows, mLinearDepth.begin() + (start + unwrappedSize) * mRows,
               mLastLinearDepth.begin());
@@ -193,6 +198,8 @@ void LidarSensor::dumpData(int start, int stop, double dt)
         std::copy(mAzimuth.begin(), mAzimuth.begin() + wrappedSize, mLastAzimuth.begin() + unwrappedSize);
         std::copy(mDepth.begin(), mDepth.begin() + wrappedSize * mRows, mLastDepth.begin() + unwrappedSize * mRows);
         std::copy(mHitPos.begin(), mHitPos.begin() + wrappedSize * mRows, mLastHitPos.begin() + unwrappedSize * mRows);
+        std::copy(
+            mBeamTime.begin(), mBeamTime.begin() + wrappedSize * mRows, mLastBeamTime.begin() + unwrappedSize * mRows);
         std::copy(mLinearDepth.begin(), mLinearDepth.begin() + wrappedSize * mRows,
                   mLastLinearDepth.begin() + unwrappedSize * mRows);
         std::copy(mIntensity.begin(), mIntensity.begin() + wrappedSize * mRows,

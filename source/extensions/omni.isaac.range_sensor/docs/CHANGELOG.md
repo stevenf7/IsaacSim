@@ -1,4 +1,8 @@
 # Changelog
+## [0.8.4] - 2023-06-23
+### Added
+- Lidar now tracks time at which each beam was traced. (Bug 4143606)
+- OgnIsaacReadLidarBeams provides beam times as output. (Bug 4143606)
 
 ## [0.8.3] - 2023-06-12
 ### Fixed

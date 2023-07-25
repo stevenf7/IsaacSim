@@ -64,6 +64,11 @@ public:
         return mLastDepth;
     }
 
+    std::vector<float>& getBeamTimeData()
+    {
+        return mLastBeamTime;
+    }
+
     std::vector<float>& getLinearDepthData()
     {
         return mLastLinearDepth;
@@ -133,6 +138,8 @@ private:
             {
                 int i = row + colPreMod * rows % (rows * cols);
 
+                // Time will be the same for all beams in this bucket - note beams are not interpolated over frame.
+                mBeamTime[i] = static_cast<float>(mTimeSeconds);
                 // Pitch then yaw
                 ::physx::PxQuat rot = mainrot * ::physx::PxQuat(mZenith[row], zenithDir);
                 ::physx::PxVec3 unitDir = rot.rotate(::physx::PxVec3(1.0f, 0.0f, 0.0f)).getNormalized();
@@ -294,6 +301,7 @@ private:
     carb::Float2 mAzimuthRange;
     carb::Float2 mZenithRange;
 
+    std::vector<float> mBeamTime, mLastBeamTime;
     std::vector<float> mLinearDepth, mLastLinearDepth;
     std::vector<uint8_t> mIntensity, mLastIntensity;
 

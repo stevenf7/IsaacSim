@@ -20,6 +20,7 @@
 #include <carb/PluginUtils.h>
 #include <carb/logging/Log.h>
 
+#include <libuuid/uuid.h>
 #include <omni/graph/core/iComputeGraph.h>
 #include <omni/graph/core/ogn/Registration.h>
 #include <omni/isaac/core_nodes/CoreNodes.h>
@@ -27,7 +28,6 @@
 #include <omni/isaac/gxf_bridge/GxfBridge.h>
 #include <omni/kit/IApp.h>
 #include <omni/kit/IStageUpdate.h>
-#include <uuid/uuid.h>
 
 #include <dlfcn.h>
 #include <memory>

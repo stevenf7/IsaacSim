@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -32,6 +32,7 @@ struct LidarSensorInterface
     int(CARB_ABI* getNumColsTicked)(const char* sensorPath);
 
     uint16_t*(CARB_ABI* getDepthData)(const char* sensorPath);
+    float*(CARB_ABI* getBeamTimeData)(const char* sensorPath);
     float*(CARB_ABI* getLinearDepthData)(const char* sensorPath);
     uint8_t*(CARB_ABI* getIntensityData)(const char* sensorPath);
     float*(CARB_ABI* getZenithData)(const char* sensorPath);

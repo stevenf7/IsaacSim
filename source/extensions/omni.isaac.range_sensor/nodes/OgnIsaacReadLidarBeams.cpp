@@ -112,10 +112,11 @@ public:
 
         float* azimuthData = mLidarSensorInterface->getAzimuthData(mLidarPrimPath);
         // float* zenithData = mLidarSensorInterface->getZenithData(mLidarPrimPath);
+        float* beamTimes = mLidarSensorInterface->getBeamTimeData(mLidarPrimPath);
         float* ranges = mLidarSensorInterface->getLinearDepthData(mLidarPrimPath);
         uint8_t* intensities = mLidarSensorInterface->getIntensityData(mLidarPrimPath);
 
-        if (!azimuthData || !ranges || !intensities)
+        if (!azimuthData || !beamTimes || !ranges || !intensities)
         {
             return;
         }
@@ -190,6 +191,7 @@ public:
 
         if (mResetLaserScan)
         {
+            mBeamTimeData.clear();
             mIntensitiesData.clear();
             mRangesData.clear();
 
@@ -215,6 +217,7 @@ public:
         {
             for (size_t i = mBeamIdx; i < numBeams; i++)
             {
+                mBeamTimeData.push_back(beamTimes[i]);
                 mIntensitiesData.push_back(intensities[i]);
                 mRangesData.push_back(ranges[i]);
                 mNumBeamsRemaining--;
@@ -229,15 +232,18 @@ public:
             size_t idx;
             for (idx = 0; idx < mNumBeamsRemaining; idx++)
             {
+                mBeamTimeData.push_back(beamTimes[idx]);
                 mIntensitiesData.push_back(intensities[idx]);
                 mRangesData.push_back(ranges[idx]);
             }
 
             size_t buffSize = mRangesData.size();
 
+            db.outputs.beamTimeData.resize(buffSize);
             db.outputs.linearDepthData.resize(buffSize);
             db.outputs.intensitiesData.resize(buffSize);
 
+            std::memcpy(db.outputs.beamTimeData().data(), &mBeamTimeData[0], mBeamTimeData.size() * sizeof(float));
             std::memcpy(db.outputs.linearDepthData().data(), &mRangesData[0], mRangesData.size() * sizeof(float));
             std::memcpy(
                 db.outputs.intensitiesData().data(), &mIntensitiesData[0], mIntensitiesData.size() * sizeof(uint8_t));
@@ -247,6 +253,7 @@ public:
             mPrevSequenceNumber = curr_sequence_num;
 
             // Reset fields for new lidar scan
+            mBeamTimeData.clear();
             mRangesData.clear();
             mIntensitiesData.clear();
 
@@ -263,6 +270,7 @@ public:
             size_t numBeamsOffset = numBeams - mNumBeamsRemaining;
             for (size_t j = 0; j < numBeamsOffset; j++)
             {
+                mBeamTimeData.push_back(beamTimes[idx]);
                 mIntensitiesData.push_back(intensities[idx]);
                 mRangesData.push_back(ranges[idx]);
                 idx++;
@@ -287,6 +295,7 @@ private:
 
     std::vector<uint8_t> mIntensitiesData;
     std::vector<float> mRangesData;
+    std::vector<float> mBeamTimeData;
 
     uint64_t mPrevSequenceNumber = 0;
 
