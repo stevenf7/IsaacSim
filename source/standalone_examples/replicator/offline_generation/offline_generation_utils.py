@@ -148,7 +148,7 @@ def register_cone_placement(forklift_prim, assets_root_path, config):
     bb_cache = create_bbox_cache()
 
     centroid, axes, half_extent = compute_obb(bb_cache, forklift_prim.GetPrimPath())
-    obb_corners = get_obb_corners(centroid, axes, half_extent)
+    obb_corners = get_obb_corners(centroid, axes, half_extent * 1.2)
     bottom_corners = [
         obb_corners[0].tolist(),
         obb_corners[2].tolist(),
