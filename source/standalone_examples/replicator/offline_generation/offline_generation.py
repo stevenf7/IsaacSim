@@ -38,7 +38,8 @@ config = {
         "bounding_box_2d_tight": True,
         "semantic_segmentation": True,
         "distance_to_image_plane": True,
-        "bounding_box_3d": True,
+        # OM-100140
+        # "bounding_box_3d": True,
         "occlusion": True,
     },
     "clear_previous_semantics": True,
@@ -207,9 +208,9 @@ print(f"Output directory={config['writer_config']['output_dir']}")
 # Setup the writer
 writer = rep.WriterRegistry.get(config["writer"])
 writer.initialize(**config["writer_config"])
-driver_rp = rep.create.render_product(driver_cam, config["resolution"])
-pallet_rp = rep.create.render_product(pallet_cam, config["resolution"])
-forklift_rp = rep.create.render_product(top_view_cam, config["resolution"])
+driver_rp = rep.create.render_product(driver_cam, config["resolution"], name="DriverView")
+pallet_rp = rep.create.render_product(pallet_cam, config["resolution"], name="PalletView")
+forklift_rp = rep.create.render_product(top_view_cam, config["resolution"], name="TopView")
 writer.attach([driver_rp, forklift_rp, pallet_rp])
 
 # Run the generated randomization graphs
