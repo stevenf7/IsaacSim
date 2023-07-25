@@ -102,8 +102,10 @@ project "tests-unit-omni.isaac.range_sensor"
            "%{root}/source/extensions/omni.isaac.range_sensor/plugins/ultrasonic/BRDF.cpp"}
     filter { "configurations:debug" }
       defines { "_DEBUG" }
+      filter {}
     filter { "configurations:release" }
-      defines { "_NDEBUG" }
+      defines { "NDEBUG" }
+      filter {}
 
 project_ext_ogn( ext, ogn )
 

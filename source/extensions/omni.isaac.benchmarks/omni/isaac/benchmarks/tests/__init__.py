@@ -16,10 +16,9 @@ from .test_benchmark_physx_lidar import *
 from .test_benchmark_real_time_factor import *
 from .test_benchmark_robots_carter import *
 from .test_benchmark_robots_o3dyn import *
+from .test_benchmark_rtx_lidar import *
 from .test_benchmark_scene_generation import *
 from .test_benchmark_sdg_generation import *
 
 if sys.platform != "win32":
     from .test_benchmark_ros_camera import *
-
-    # from .test_benchmark_rtx_lidar import *

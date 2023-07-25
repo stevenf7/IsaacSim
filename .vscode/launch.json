@@ -15,6 +15,7 @@
             },
             "python": "${workspaceFolder}/_build/linux-x86_64/release/kit/python/bin/python3",
             "envFile": "${workspaceFolder}/.vscode/.python_samples.env",
+            "args": "",
             "preLaunchTask": "setup_python_env"
         },
         {

@@ -6,21 +6,21 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
-#ifndef _WIN32
 
 // clang-format off
 #include <UsdPCH.h>
 // clang-format on
 
-#    include <carb/InterfaceUtils.h>
+#include <carb/InterfaceUtils.h>
+// TODOMTC Where to?
+#include <internal/omni/sensors/lidar/LidarReturnHelper.h>
+#include <internal/omni/sensors/lidar/LidarSettings.h>
+#include <omni/isaac/utils/BaseResetNode.h>
+#include <omni/sensors/lidar/LidarParameterType.h>
+#include <omni/sensors/lidar/LidarReturn.h>
+#include <omni/sensors/lidar/LidarReturnTypes.h>
 
-#    include <internal/omni/sensors/lidar/LidarSettings.h>
-#    include <omni/isaac/utils/BaseResetNode.h>
-#    include <omni/sensors/lidar/LidarParameterType.h>
-#    include <omni/sensors/lidar/LidarReturn.h>
-#    include <omni/sensors/lidar/LidarReturnTypes.h>
-
-#    include <OgnIsaacReadRTXLidarDataDatabase.h>
+#include <OgnIsaacReadRTXLidarDataDatabase.h>
 
 namespace omni
 {
@@ -37,98 +37,135 @@ public:
     {
         CARB_PROFILE_ZONE(0, "Read RTX Lidar Data");
 
-        const uint8_t* input = reinterpret_cast<const uint8_t*>(db.inputs.cpuPointer());
+        uint8_t* input = reinterpret_cast<uint8_t*>(db.inputs.cpuPointer());
         if (!input)
         {
             return true;
         }
+        // fill the structure of arrays
+        LidarTicks lidarTicks;
+        LidarReturns lidarReturns;
+        LidarParameterType* parameter = omni::sensors::nv::lidar::fillStructsFromBuffer(input, lidarReturns, lidarTicks);
+        const uint32_t numTicks = parameter->async.numTicks;
+        const uint32_t numChannels = parameter->async.numChannels;
+        const uint32_t numEchos = parameter->async.numEchos;
 
-        const LidarParameterType* parameter{ reinterpret_cast<const LidarParameterType*>(input) };
-
-        if (parameter->async.numTicks == 0 || parameter->async.numChannels * parameter->async.numEchos == 0)
+        if (numTicks == 0 || numChannels * numEchos == 0)
         {
             return true;
         }
 
-        const LidarTick* lidarTicks = reinterpret_cast<const LidarTick*>(input + sizeof(LidarParameterType));
-        const LidarReturn* lidarReturns = reinterpret_cast<const LidarReturn*>(
-            input + sizeof(LidarParameterType) + sizeof(LidarTick) * parameter->async.numTicks);
-
-        const size_t maxSize = parameter->async.numChannels * parameter->async.numEchos * parameter->async.numTicks;
+        const size_t maxSize = numChannels * numEchos * numTicks;
 
         bool keepOnlyPositiveDistance = db.inputs.keepOnlyPositiveDistance();
-        size_t outSize = 0;
+        size_t outSize = maxSize;
         if (keepOnlyPositiveDistance)
         {
+            outSize = 0;
             for (size_t i = 0; i < maxSize; ++i)
             {
-                if (lidarReturns[i].distance > 0.f)
+                if (lidarReturns.distances[i] > 0.f)
                 {
-                    outSize++;
+                    ++outSize;
+                }
+            }
+        }
+        // TODOMTC remove debug prints.
+        std::cout << "MTCC sync = " << sizeof(LidarSyncParameter) << ", async = " << sizeof(LidarAsyncParameter) << "\n";
+        std::cout << "MTC startTime = " << parameter->sync.scanStartTimeNs << ", numChannels " << numChannels
+                  << ", numTicks " << numTicks << ", numEchoes " << numEchos << ", maxSize = " << maxSize
+                  << ", outSize = " << outSize << "\n";
+
+#define _DEF_OUT_VAR(outName, outSz)                                                                                   \
+    auto& outName = db.outputs.outName();                                                                              \
+    outName.resize(outSz)
+
+        _DEF_OUT_VAR(tickAzimuths, numTicks);
+        _DEF_OUT_VAR(tickStates, numTicks);
+        _DEF_OUT_VAR(tickTimestamps, numTicks);
+
+        _DEF_OUT_VAR(azimuths, outSize);
+        _DEF_OUT_VAR(elevations, outSize);
+        _DEF_OUT_VAR(distances, outSize);
+        _DEF_OUT_VAR(intensities, outSize);
+        _DEF_OUT_VAR(velocities, outSize);
+        _DEF_OUT_VAR(hitPointNormals, outSize);
+        _DEF_OUT_VAR(deltaTimes, outSize);
+        _DEF_OUT_VAR(emitterIds, outSize);
+        _DEF_OUT_VAR(beamIds, outSize);
+        _DEF_OUT_VAR(materialIds, outSize);
+        _DEF_OUT_VAR(objectIds, outSize);
+        _DEF_OUT_VAR(ticks, outSize);
+        _DEF_OUT_VAR(channels, outSize);
+        _DEF_OUT_VAR(echos, outSize);
+#undef _DEFINE_OUTPUT_VARS
+
+        // One tick fires every channel an echo number of times.
+        memcpy(tickAzimuths.data(), lidarTicks.azimuths, numTicks * sizeof(float));
+        memcpy(tickStates.data(), lidarTicks.states, numTicks * sizeof(uint32_t));
+        memcpy(tickTimestamps.data(), lidarTicks.timestamps, numTicks * sizeof(uint64_t));
+
+        uint32_t atomicOutIdx = 0;
+        if (!keepOnlyPositiveDistance)
+        {
+            memcpy(azimuths.data(), lidarReturns.azimuths, maxSize * sizeof(float));
+            memcpy(elevations.data(), lidarReturns.elevations, maxSize * sizeof(float));
+            memcpy(distances.data(), lidarReturns.distances, maxSize * sizeof(float));
+            memcpy(intensities.data(), lidarReturns.intensities, maxSize * sizeof(float));
+            memcpy(velocities.data(), lidarReturns.velocities, 3 * maxSize * sizeof(float));
+            memcpy(hitPointNormals.data(), lidarReturns.hitPointNormals, 3 * maxSize * sizeof(float));
+            memcpy(deltaTimes.data(), lidarReturns.deltaTimes, maxSize * sizeof(uint32_t));
+            memcpy(emitterIds.data(), lidarReturns.emitterIds, maxSize * sizeof(uint32_t));
+            memcpy(beamIds.data(), lidarReturns.beamIds, maxSize * sizeof(uint32_t));
+            memcpy(materialIds.data(), lidarReturns.materialIds, maxSize * sizeof(uint32_t));
+            memcpy(objectIds.data(), lidarReturns.objectIds, maxSize * sizeof(uint32_t));
+            unsigned int i = 0;
+
+            for (uint32_t tick = 0; tick < numTicks; tick++)
+            {
+                for (uint32_t channelId = 0; channelId < numChannels; ++channelId)
+                {
+                    for (uint32_t echoId = 0; echoId < numEchos; ++echoId)
+                    {
+                        ticks[i] = tick;
+                        channels[i] = channelId;
+                        echos[i] = echoId;
+                        i += 1;
+                    }
                 }
             }
         }
         else
         {
-            outSize = maxSize;
-        }
-
-#    define _DEF_OUT_VAR(outName)                                                                                      \
-        auto& db_outputs_##outName = db.outputs.outName();                                                             \
-        db_outputs_##outName.resize(outSize)
-        _DEF_OUT_VAR(intensity);
-        _DEF_OUT_VAR(distance);
-        _DEF_OUT_VAR(azimuth);
-        _DEF_OUT_VAR(elevation);
-        _DEF_OUT_VAR(velocityMs);
-        _DEF_OUT_VAR(echoId);
-        _DEF_OUT_VAR(emitterId);
-        _DEF_OUT_VAR(beamId);
-        _DEF_OUT_VAR(materialId);
-        _DEF_OUT_VAR(hitPointNormal);
-        _DEF_OUT_VAR(tick);
-        _DEF_OUT_VAR(objectId);
-        _DEF_OUT_VAR(timeStampNs);
-#    undef _DEFINE_OUTPUT_VARS
-
-        uint32_t atomicOutIdx = 0;
-        for (uint32_t tick = 0; tick < parameter->async.numTicks; tick++)
-        {
-            const LidarTick& lidarTick = lidarTicks[tick];
-            for (uint32_t channelId = 0; channelId < parameter->async.numChannels; ++channelId)
+            for (uint32_t tick = 0; tick < numTicks; tick++)
             {
-                for (uint32_t echoId = 0; echoId < parameter->async.numEchos; ++echoId)
+                for (uint32_t channelId = 0; channelId < numChannels; ++channelId)
                 {
-                    const uint32_t pointIdx{ idxOfReturn(
-                        channelId, echoId, parameter->async.numEchos, parameter->async.numChannels, tick) };
-                    const LidarReturn& lidarReturn = lidarReturns[pointIdx];
-
-                    // This is just for runtime efficiency
-                    if (!keepOnlyPositiveDistance || lidarReturn.distance > 0.f)
+                    for (uint32_t echoId = 0; echoId < numEchos; ++echoId)
                     {
-                        const uint32_t outIdx = keepOnlyPositiveDistance ? atomicOutIdx++ : pointIdx;
-
-#    define _ASSIGN_OUT(outputName, index, comp, src) db_outputs_##outputName[index] comp = src
-
-                        _ASSIGN_OUT(intensity, outIdx, , lidarReturn.intensity);
-                        _ASSIGN_OUT(distance, outIdx, , lidarReturn.distance);
-                        _ASSIGN_OUT(azimuth, outIdx, , lidarReturn.azimuthDeg);
-                        _ASSIGN_OUT(elevation, outIdx, , lidarReturn.elevationDeg);
-                        _ASSIGN_OUT(velocityMs, outIdx, [0], lidarReturn.velocityMs[0]);
-                        _ASSIGN_OUT(velocityMs, outIdx, [1], lidarReturn.velocityMs[1]);
-                        _ASSIGN_OUT(velocityMs, outIdx, [2], lidarReturn.velocityMs[2]);
-                        _ASSIGN_OUT(echoId, outIdx, , echoId);
-                        _ASSIGN_OUT(emitterId, outIdx, , lidarReturn.emitterId);
-                        _ASSIGN_OUT(beamId, outIdx, , lidarReturn.beamId);
-                        _ASSIGN_OUT(materialId, outIdx, , lidarReturn.materialId);
-                        _ASSIGN_OUT(hitPointNormal, outIdx, [0], lidarReturn.hitPointNormal[0]);
-                        _ASSIGN_OUT(hitPointNormal, outIdx, [1], lidarReturn.hitPointNormal[1]);
-                        _ASSIGN_OUT(hitPointNormal, outIdx, [2], lidarReturn.hitPointNormal[2]);
-                        _ASSIGN_OUT(tick, outIdx, , tick + parameter->async.startTick);
-                        _ASSIGN_OUT(objectId, outIdx, , lidarReturn.objectId);
-                        _ASSIGN_OUT(timeStampNs, outIdx, , lidarTick.timeStampNs + lidarReturn.deltaTimeNs);
-
-#    undef _ASSIGN_IF_NEEDED
+                        const uint32_t idx{ idxOfReturn(channelId, echoId, numEchos, numChannels, tick) };
+                        if (lidarReturns.distances[atomicOutIdx] > 0.f)
+                        {
+                            const uint32_t i = atomicOutIdx++;
+                            azimuths[i] = lidarReturns.azimuths[idx];
+                            elevations[i] = lidarReturns.elevations[idx];
+                            distances[i] = lidarReturns.distances[idx];
+                            intensities[i] = lidarReturns.intensities[idx];
+                            velocities[i][0] = lidarReturns.velocities[idx * 3 + 0];
+                            velocities[i][1] = lidarReturns.velocities[idx * 3 + 1];
+                            velocities[i][2] = lidarReturns.velocities[idx * 3 + 2];
+                            hitPointNormals[i][0] = lidarReturns.hitPointNormals[idx * 3 + 0];
+                            hitPointNormals[i][1] = lidarReturns.hitPointNormals[idx * 3 + 1];
+                            hitPointNormals[i][2] = lidarReturns.hitPointNormals[idx * 3 + 2];
+                            deltaTimes[i] = lidarReturns.deltaTimes[idx];
+                            emitterIds[i] = lidarReturns.emitterIds[idx];
+                            beamIds[i] = lidarReturns.beamIds[idx];
+                            materialIds[i] = lidarReturns.materialIds[idx];
+                            objectIds[i] = lidarReturns.objectIds[idx];
+                            ticks[i] = tick;
+                            channels[i] = channelId;
+                            echos[i] = echoId;
+                        }
                     }
                 }
             }
@@ -144,4 +181,3 @@ REGISTER_OGN_NODE()
 } // sensor
 } // isaac
 } // omni
-#endif

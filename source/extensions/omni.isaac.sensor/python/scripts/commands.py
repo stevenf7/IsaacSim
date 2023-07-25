@@ -165,9 +165,6 @@ class IsaacSensorCreateRtxLidar(omni.kit.commands.Command):
         pass
 
     def do(self):
-        if sys.platform == "win32":
-            carb.log_error("RTX Lidar not supported on windows currently")
-            return False, None
         self._stage = omni.usd.get_context().get_stage()
         self._prim_path = get_next_free_path(self._path, self._parent)
         self._prim = UsdGeom.Camera.Define(self._stage, Sdf.Path(self._prim_path)).GetPrim()
@@ -213,9 +210,6 @@ class IsaacSensorCreateRtxRadar(omni.kit.commands.Command):
         pass
 
     def do(self):
-        if sys.platform == "win32":
-            carb.log_error("RTX Radar not supported on windows currently")
-            return False, None
         self._stage = omni.usd.get_context().get_stage()
         self._prim_path = get_next_free_path(self._path, self._parent)
         self._prim = UsdGeom.Camera.Define(self._stage, Sdf.Path(self._prim_path)).GetPrim()

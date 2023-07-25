@@ -1,17 +1,10 @@
 local ext = get_current_extension_info()
-
--- Helper variable containing standard configuration information for projects containing OGN files
 local ogn = get_ogn_project_information(ext, "omni/isaac/debug_draw")
-
--- Grouping also tells the name of the premake file that calls this one - $TOP/premake5-{ext.group}.lua
-ext.group = "isaac"
-
--- Set up common project variables
 project_ext (ext)
 
 
 project_with_location("omni.isaac.debug_draw.primitive_drawing")
-    targetdir ("%{cfg.objdir}")
+    targetdir (ext.bin_dir)
     kind "StaticLib"
     language "C++"
 
@@ -41,6 +34,12 @@ project_with_location("omni.isaac.debug_draw.primitive_drawing")
         libdirs {
             "%{root}/_build/target-deps/tbb/lib/intel64/vc14"
         }
+    filter {}
+
+    filter { "configurations:debug" }
+        defines { "_DEBUG" }
+    filter { "configurations:release" }
+        defines { "NDEBUG" }
     filter {}
 
 -- C++ Carbonite plugin
@@ -80,6 +79,12 @@ project_ext_plugin(ext, "omni.isaac.debug_draw.plugin")
         "gf", "tf", "sdf", "vt","usd", "usdGeom", "usdUtils", "usdShade", "usdImaging", "omni.usd", "omni.isaac.debug_draw.primitive_drawing"
     }
 
+    filter { "configurations:debug" }
+        defines { "_DEBUG" }
+    filter { "configurations:release" }
+        defines { "NDEBUG" }
+    filter {}
+
 -- ----------------------------------------------------------------------
 -- Breaking this out as a separate project ensures the .ogn files are processed before their results are needed
 project_ext_ogn( ext, ogn )
@@ -94,6 +99,9 @@ project_ext_bindings ({
     
     -- Add the standard dependencies all OGN projects have, and link directories with Python nodes
     dependson {"omni.isaac.debug_draw.primitive_drawing"}
+    --add_files("bindings", "bindings")
+    --add_files("python", "python/*.py")
+    --add_files("python/tests", "python/tests/*.py")
     include_physx()
     includedirs {
         "%{root}/include/pch",

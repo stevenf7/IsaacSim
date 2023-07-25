@@ -15,7 +15,7 @@ import omni.kit.commands
 from omni.isaac.core.utils.prims import set_prim_visibility
 from omni.isaac.ui.menu import make_menu_item_description
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
-from pxr import Gf, Sdf, UsdGeom
+from pxr import Gf
 
 
 class IsaacSensorMenu:
@@ -24,20 +24,19 @@ class IsaacSensorMenu:
             make_menu_item_description(ext_id, "Contact Sensor", lambda a=weakref.proxy(self): a._add_contact_sensor()),
             make_menu_item_description(ext_id, "Imu Sensor", lambda a=weakref.proxy(self): a._add_imu_sensor()),
         ]
-        if sys.platform != "win32":
-            menu_items.append(
-                MenuItemDescription(
-                    name="RTX Lidar",
-                    sub_menu=[
-                        make_menu_item_description(
-                            ext_id, "Rotating", lambda a=weakref.proxy(self): a._add_rtx_rotating_lidar()
-                        ),
-                        make_menu_item_description(
-                            ext_id, "Solid State", lambda a=weakref.proxy(self): a._add_rtx_solid_lidar()
-                        ),
-                    ],
-                )
+        menu_items.append(
+            MenuItemDescription(
+                name="RTX Lidar",
+                sub_menu=[
+                    make_menu_item_description(
+                        ext_id, "Rotating", lambda a=weakref.proxy(self): a._add_rtx_rotating_lidar()
+                    ),
+                    make_menu_item_description(
+                        ext_id, "Solid State", lambda a=weakref.proxy(self): a._add_rtx_solid_lidar()
+                    ),
+                ],
             )
+        )
         self._menu_items = [
             MenuItemDescription(
                 name="Isaac", glyph="plug.svg", sub_menu=[MenuItemDescription(name="Sensors", sub_menu=menu_items)]

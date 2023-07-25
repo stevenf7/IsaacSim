@@ -1,4 +1,13 @@
 # Changelog
+## [6.0.0] - 2023-07-25
+### Changed
+- IsaacReadRTXLidarData outputs match changed rtx lidar data
+
+### Added
+- RTX Sensors to Windows
+- WriterIsaacReadRTXLidarData Synthetic Data Writer
+- RtxSensorCpuIsaacReadRTXLidarData Synthetic Data Template
+
 ## [5.11.0] - 2023-07-05
 ### Added
 - Added filter width attributes to the imu sensor for adjusting noise

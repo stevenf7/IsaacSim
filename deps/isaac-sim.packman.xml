@@ -44,14 +44,14 @@
     <dependency name="doctest" linkPath="../_build/target-deps/doctest">
         <package name="doctest" version="2.4.0-b29bc767" />
     </dependency>
-    <dependency name="nvsensor" linkPath="../_build/target-deps/nvsensor">
-        <package name="nvsensor" version="nvsensors105-dev6.${config}" platforms="linux-x86_64"/>
-    </dependency>
     <dependency name="openssl" linkPath="../_build/target-deps/openssl">
         <package name="openssl" version="1.1.1t+nv1-${platform}" />
     </dependency>
     <dependency name="omni-isaacsim-schema" linkPath="../_build/target-deps/omni-isaacsim-schema/${platform}/${config}">
         <package name="omni-isaacsim-schema" version="2.1.0+isaacsim.0.24ac08dc.local.${platform}.${config}"/>
     </dependency>
-
+    <dependency name="rapidjson" linkPath="../_build/target-deps/rapidjson">
+        <!-- for omni.sensors-->
+        <package name="rapidjson" version="5.2.1-5-b4cf59b6" />
+    </dependency>
 </project>

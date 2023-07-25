@@ -17,7 +17,6 @@ project_ext_plugin(ext, "omni.isaac.ros2_humble_bridge.plugin")
     disablewarnings {"error=narrowing", "error=unused-but-set-variable", "error=unused-variable", "error=deprecated-declarations"}
 
     add_files("impl", "plugins")
-    add_files("impl", "%{root}/include/omni/isaac/utils/", "CameraKernels.cu")
     add_files("iface", "%{root}/include/omni/isaac/ros2_bridge/**")
     add_files("ogn", ogn.nodes_path)
 

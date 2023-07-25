@@ -70,6 +70,8 @@ packages = [
     "nvsmi==0.4.2",                         # SWIPAT filed under: https://nvbugs/3639810
     "boto3==1.17.1",                        # SWIPAT filed under: https://nvbugs/3738079
     "s3transfer==0.3.7",                    # SWIPAT filed under: https://nvbugs/3738087
+    "tornado==6.2",             # For omni.sensors.nv.lidar_tools SWIPAT for 6.0.4 filed under: http://nvbugs/200609232 and license matches 6.2
+    "plotly==5.3.1",            # For omni.sensors.nv.material_tools SWIPAT filed under: http://nvbugs/3453142
 ]
 
 target = "../_build/target-deps/isaac_core_prebundle"

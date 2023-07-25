@@ -18,19 +18,19 @@ project_ext_plugin(ext, "omni.isaac.sensor.plugin")
 
     include_physx()
     add_cuda_dependencies()
-
+    
     includedirs {
         "%{root}/include/pch",
+        "%{root}/source/include",
         targetDepsDir.."/nv_usd/%{cfg.buildcfg}/include",
         targetDepsDir.."/usd_ext_physics/%{cfg.buildcfg}/include",
         targetDepsDir.."/omni_physics/include",
         targetDepsDir.."/rtx_plugins/include",
-        targetDepsDir.."/nvsensor/include",
         "%{kit_sdk_bin_dir}/exts/usdrt.scenegraph/include",
         "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/include",
         targetDepsDir.."/omni_client_library/include",
         targetDepsDir.."/python/include",
-     }
+    }
     libdirs {
         targetDepsDir.."/python/lib",
         targetDepsDir.."/nv_usd/%{cfg.buildcfg}/lib",
@@ -80,23 +80,12 @@ repo_build.prebuild_link {
 repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir.."/omni/isaac/sensor" },
 }
-if os.target() == "linux" then
-    repo_build.prebuild_copy {
+-- sensor material and configrations
+repo_build.prebuild_copy {
+    -- needs to be here because material_files folder location is hard coded to %(app}../data/material_files)
+    {"%{root}/data/sensors/materials/","%{root}/_build/%{platform}/%{config}/data" },
+    {"%{root}/data/sensors/radar/","%{root}/_build/%{platform}/%{config}/data/radar" },
+    {"%{root}/data/sensors/lidar/","%{root}/_build/%{platform}/%{config}/data/lidar" },
+    {"%{root}/data/sensors/ultrasonic/","%{root}/_build/%{platform}/%{config}/data/ultrasonic" },
+}
 
-        {"%{root}/_build/target-deps/nvsensor/%{platform}/%{config}/exts/omni.sensors.nv.beams/bin/*", ext.target_dir.."/bin" },
-        {"%{root}/_build/target-deps/nvsensor/%{platform}/%{config}/exts/omni.sensors.nv.common/bin/*", ext.target_dir.."/bin" },
-        {"%{root}/_build/target-deps/nvsensor/%{platform}/%{config}/exts/omni.sensors.nv.ids/bin/*", ext.target_dir.."/bin" },
-        {"%{root}/_build/target-deps/nvsensor/%{platform}/%{config}/exts/omni.sensors.nv.lidar/bin/*", ext.target_dir.."/bin" },
-        {"%{root}/_build/target-deps/nvsensor/%{platform}/%{config}/exts/omni.sensors.nv.lidar_tools/bin/*", ext.target_dir.."/bin" },
-        {"%{root}/_build/target-deps/nvsensor/%{platform}/%{config}/exts/omni.sensors.nv.materials/bin/*", ext.target_dir.."/bin" },
-        {"%{root}/_build/target-deps/nvsensor/%{platform}/%{config}/exts/omni.sensors.nv.material_tools/bin/*", ext.target_dir.."/bin" },
-        {"%{root}/_build/target-deps/nvsensor/%{platform}/%{config}/exts/omni.sensors.nv.radar/bin/*", ext.target_dir.."/bin" },
-        {"%{root}/_build/target-deps/nvsensor/%{platform}/%{config}/exts/omni.sensors.nv.samples/bin/*", ext.target_dir.."/bin" },
-        {"%{root}/_build/target-deps/nvsensor/%{platform}/%{config}/exts/omni.sensors.nv.ultrasonic/bin/*", ext.target_dir.."/bin" },
-        {"%{root}/_build/target-deps/nvsensor/%{platform}/%{config}/exts/omni.sensors.nv.wpm/bin/*", ext.target_dir.."/bin" },
-        {"%{root}/_build/target-deps/cuda/lib64/libnvrtc.so*", ext.target_dir.."/bin" },
-        {"%{root}/_build/target-deps/cuda/lib64/libcufft.so*", ext.target_dir.."/bin" },
-        -- needs to be here because material_files folder location is hard coded to %(app}../data/material_files)
-        {targetDepsDir.."/nvsensor/data/","%{root}/_build/%{platform}/%{config}/data" },
-    }
-end
