@@ -17,20 +17,20 @@ namespace gxf_bridge
 {
 
 
-void toVector3d(const pxr::GfVec3d& usdVec3d, ::isaac::Vector3d& isaacVector3d)
+void toVector3d(const pxr::GfVec3d& usdVec3d, ::nvidia::isaac::Vector3d& isaacVector3d)
 {
     isaacVector3d = { usdVec3d[0], usdVec3d[1], usdVec3d[2] };
 }
 
 
-void toVector3d(const carb::Float3& carbFloat3, ::isaac::Vector3d& isaacVector3d)
+void toVector3d(const carb::Float3& carbFloat3, ::nvidia::isaac::Vector3d& isaacVector3d)
 {
     isaacVector3d = { carbFloat3.x, carbFloat3.y, carbFloat3.z };
 }
 
-void toSO3d(const pxr::GfQuatd& usdQuat, ::isaac::SO3d& isaacSO3d)
+void toSO3d(const pxr::GfQuatd& usdQuat, ::nvidia::isaac::SO3d& isaacSO3d)
 {
-    isaacSO3d = ::isaac::SO3d::FromQuaternion(::isaac::Quaterniond(
+    isaacSO3d = ::nvidia::isaac::SO3d::FromQuaternion(::nvidia::isaac::Quaterniond(
         usdQuat.GetReal(), usdQuat.GetImaginary()[0], usdQuat.GetImaginary()[1], usdQuat.GetImaginary()[2]));
 }
 

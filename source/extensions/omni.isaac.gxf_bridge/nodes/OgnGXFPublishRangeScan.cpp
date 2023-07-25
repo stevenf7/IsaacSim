@@ -36,8 +36,18 @@ public:
 
         auto maybe_message = nvidia::isaac::CreateRangeScanMessage(state.getGxfContext(), state.mAllocator, numBeams);
         auto message = std::move(maybe_message.value());
+
+        // Populate message info field
+        message.info->delta_time = 0.0; // TODO (@adevalla)- correct value
+        message.info->invalid_range = 0.05;
+        message.info->out_of_range = 120.0;
+        message.info->return_mode = nvidia::isaac::RangeScanReturnMode::kRangeScanReturnModeFirst;
+
+        // Populate message timestamp
         message.timestamp->pubtime = state.mClock->timestamp();
         message.timestamp->acqtime = message.timestamp->pubtime;
+
+        // Populate message frame UID
         const std::string frame_name = db.inputs.poseFrame();
         const auto maybe_frame = state.mAtlas->pose_tree().findFrame(frame_name.c_str());
         if (!maybe_frame)
@@ -47,6 +57,7 @@ public:
         }
         message.pose_frame_uid->uid = maybe_frame.value();
 
+        // Populate message beam info
         const auto horizontalResolutionRad = db.inputs.horizontalResolution() * M_PI / 180.0f;
         const auto verticalResolutionRad = db.inputs.verticalResolution() * M_PI / 180.0f;
 
@@ -62,10 +73,9 @@ public:
                     return false;
                 }
                 nvidia::isaac::RangeScanView<float>& beam = maybe_beam.value();
-                // TODO: fill this from spinning lidar model
-                beam.relative_time() = 0.0;
+                beam.relative_time() = db.inputs.beamTimeData()[ray_idx] - db.inputs.beamTimeData()[0];
                 beam.horizontal_angle() = db.inputs.azimuthRange()[0] + i * horizontalResolutionRad;
-                beam.vertical_angle() = -db.inputs.zenithRange()[0] + j * verticalResolutionRad;
+                beam.vertical_angle() = db.inputs.zenithRange()[0] + j * verticalResolutionRad;
                 beam.range() = db.inputs.linearDepthData()[ray_idx];
                 beam.intensity() = db.inputs.intensitiesData()[ray_idx];
             }

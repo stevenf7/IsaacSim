@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -28,25 +28,25 @@ namespace gxf_bridge
  * @brief Converts sim Vec3d to robot engine Vector3d C++ type
  *
  * @param usdVec3d
- * @param ::isaac::Vector3d
+ * @param ::nvidia::isaac::Vector3d
  */
-void toVector3d(const pxr::GfVec3d& usdVec3d, ::isaac::Vector3d& isaaVector3d);
+void toVector3d(const pxr::GfVec3d& usdVec3d, ::nvidia::isaac::Vector3d& isaaVector3d);
 
 /**
  * @brief Converts sim Float3 to robot engine Vector3d C++ type
  *
  * @param carbFloat3
- * @param ::isaac::Vector3d
+ * @param ::nvidia::isaac::Vector3d
  */
-void toVector3d(const carb::Float3& carbFloat3, ::isaac::Vector3d& isaacVector3d);
+void toVector3d(const carb::Float3& carbFloat3, ::nvidia::isaac::Vector3d& isaacVector3d);
 
 /**
  * @brief Converts sim quat to robot engine SO3d C++ type
  *
  * @param usdQuat
- * @param ::isaac::SO3d
+ * @param ::nvidia::isaac::SO3d
  */
-void toSO3d(const pxr::GfQuatd& usdQuat, ::isaac::SO3d& isaacSO3d);
+void toSO3d(const pxr::GfQuatd& usdQuat, ::nvidia::isaac::SO3d& isaacSO3d);
 
 
 }

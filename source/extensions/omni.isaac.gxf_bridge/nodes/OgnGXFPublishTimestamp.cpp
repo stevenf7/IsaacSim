@@ -31,6 +31,14 @@ public:
             return true;
         }
 
+        // Test for duplicate timestamps
+        if (db.inputs.timeStamp() == state.timeStampPrev)
+        {
+            CARB_LOG_WARN("Encountered duplicate timestamp: %f. Skipping node execution.", state.timeStampPrev);
+            return true;
+        }
+        state.timeStampPrev = db.inputs.timeStamp();
+
         // Immediately advance the context's SyntheticClock so downstream publishing nodes can access the correct time.
         state.mClock->advanceTo(db.inputs.timeStamp() * 1e9);
 
@@ -63,6 +71,9 @@ public:
         db.outputs.execOut() = kExecutionAttributeStateEnabled;
         return true;
     }
+
+private:
+    double timeStampPrev = -1;
 };
 
 REGISTER_OGN_NODE()

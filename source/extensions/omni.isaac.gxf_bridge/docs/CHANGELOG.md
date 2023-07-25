@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.12.7] - 2023-07-21
+### Fixed
+- Skips OgnGXFPublishTimestamp execution if timestamp does not change with
+  app update. (Bug 4182191)
+
+## [0.12.6] - 2023-07-10
+### Fixed
+- Updates RangeScan info field population due to redefinition. (Bug 4188093)
+## [0.12.5] - 2023-06-23
+### Fixed
+- RangeScan message relative_time correctly populated. (Bug 4143606)
+## [0.12.4] - 2023-06-23
+### Changed
+- Isaac SDK dependency promoted, including GXF v23.05.
+- Updates tcp_server.yaml to use new asynchronous TCP implementation.
+
+## [0.12.3] - 2023-06-23
+### Fixed
+- Camera message intrinsics correctly populated for all distortion types (Bug 4163354)
+
 ## [0.12.2] - 2023-06-12
 ### Changed
 - Update to kit 105.1, update build system

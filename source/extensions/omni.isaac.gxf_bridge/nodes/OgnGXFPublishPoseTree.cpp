@@ -91,8 +91,8 @@ public:
         {
             CARB_LOG_ERROR_ONCE(
                 "Regex list must be of the same size as target root prims, but input regex "
-                "list has size %i and target prims has size %i",
-                (int)numRegex, (int)numPrims);
+                "list has size %lu and target prims has size %lu",
+                numRegex, numPrims);
             return false;
         }
         std::size_t numDepth = db.inputs.poseDepth().size();
@@ -100,8 +100,8 @@ public:
         {
             CARB_LOG_ERROR_ONCE(
                 "Depth list must be of the same size as target root prims, but input depth "
-                "list has size %i and target prims has size %i",
-                (int)numDepth, (int)numPrims);
+                "list has size %lu and target prims has size %lu",
+                numDepth, numPrims);
             return false;
         }
 
@@ -140,7 +140,7 @@ private:
 
     void buildFrameNameMap(const OgnGXFPublishPoseTreeDatabase& db)
     {
-        for (int i = 0; i < (int)db.inputs.frameNamesMap().size() / 2; ++i)
+        for (std::size_t i = 0; i < db.inputs.frameNamesMap().size() / 2; ++i)
         {
             const std::string isaacPrimName = db.tokenToString(db.inputs.frameNamesMap()[2 * i]);
             const std::string atlasFrameName = db.tokenToString(db.inputs.frameNamesMap()[2 * i + 1]);
@@ -197,7 +197,7 @@ private:
             }
         }
         // Get pose of the prim
-        ::isaac::Pose3d pose = ::isaac::Pose3d::Identity();
+        ::nvidia::isaac::Pose3d pose = ::nvidia::isaac::Pose3d::Identity();
         omni::isaac::dynamic_control::DcObjectType prim_type =
             mDynamicControlPtr->peekObjectType(prim.GetPath().GetString().c_str());
         pxr::GfMatrix4d currentPrimToWorld;
@@ -280,7 +280,7 @@ private:
                 const auto result = poseTree.set(parentUid, poseUid, mClock->time(), pose);
                 if (!result)
                 {
-                    db.logError(
+                    db.logWarning(
                         "Unable to set pose for %s_T_%s: %d", parentName.c_str(), frameName.c_str(), result.error());
                     return;
                 }
@@ -297,7 +297,7 @@ private:
                 const auto result = poseTree.set(mRootUid, poseUid, mClock->time(), pose);
                 if (!result)
                 {
-                    db.logError("Unable to set pose for sim_T_%s: %d", frameName.c_str(), result.error());
+                    db.logWarning("Unable to set pose for sim_T_%s: %d", frameName.c_str(), result.error());
                     return;
                 }
             }

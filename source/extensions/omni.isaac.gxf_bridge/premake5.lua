@@ -5,15 +5,18 @@ project_ext (ext)
 
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.gxf_bridge.plugin")
+    cppdialect "C++17"
+
     add_files("impl", "plugins")
     add_files("impl", "%{root}/include/omni/isaac/utils/", "CameraKernels.cu")
     add_files("iface", "%{root}/include/omni/isaac/gxf_bridge/**")
     add_files("ogn", ogn.nodes_path)
-    include_physx()
-
-    add_cuda_dependencies()
 
     add_ogn_dependencies(ogn, {"python/nodes"})
+
+    include_physx()
+    -- NOTE: CUDA dependencies must be brought in via isaac_gxf package, due to patch made to CUDA cmath in Isaac to 
+    --       ensure C++17 compatibility
 
     includedirs {
         "%{root}/include/pch",
@@ -22,10 +25,12 @@ project_ext_plugin(ext, "omni.isaac.gxf_bridge.plugin")
         "%{root}/_build/target-deps/python/include/python3.10",
         "%{root}/_build/target-deps/isaac_gxf",
         "%{root}/_build/target-deps/isaac_gxf/include",
+        "%{root}/_build/target-deps/isaac_gxf/include/external",
         "%{root}/_build/target-deps/isaac_gxf/include/external/com_nvidia_gxf",
         "%{root}/_build/target-deps/isaac_gxf/include/external/com_nvidia_isaac_engine",
+        "%{root}/_build/target-deps/isaac_gxf/include/external/cuda_x86_64_11080/usr/local/cuda-11.8/targets/x86_64-linux/include",
         "%{root}/_build/target-deps/isaac_gxf/include/external/org_tuxfamily_eigen",
-        "%{root}/_build/target-deps/isaac_gxf/include/external/capnproto/c++/src/",
+        "%{root}/_build/target-deps/isaac_gxf/include/external/yaml-cpp/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/omni_physics/include",

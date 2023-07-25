@@ -103,7 +103,7 @@ components:
     - name: rx_sim_time
       type: nvidia::gxf::DoubleBufferReceiver
       parameters:
-        capacity: 1
+        capacity: 10
         policy: 1
     - name: tx_primary_clock
       type: nvidia::gxf::DoubleBufferTransmitter
@@ -255,11 +255,10 @@ components:
           entity_serializer: entity_serializer
           address: 127.0.0.1
           port: 7000
-          timeout_ms: 100
-    - type: nvidia::gxf::MessageAvailableSchedulingTerm
-      parameters:
-        receiver: channel_primary_clock
-        min_size: 1
+          timeout_period: 100ms
+          async_scheduling_term: async_st
+    - name: async_st
+      type: nvidia::gxf::AsynchronousSchedulingTerm
 ---
 # This connects published simulation time from the broadcaster to the client and the clock
 components:
@@ -271,8 +270,6 @@ components:
       parameters:
           source: sim_time_broadcast/tx_clock_trigger
           target: pose_tree_feed/rx_trigger
----
-components:
     - type: nvidia::gxf::Connection
       parameters:
           source: tcp_server/channel_differential_base_command

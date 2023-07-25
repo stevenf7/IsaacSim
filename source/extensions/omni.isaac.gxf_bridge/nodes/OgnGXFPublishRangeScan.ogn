@@ -63,6 +63,12 @@
                 "description": "Rotation rate of sensor in Hz",
                 "default": 0
             },
+            "beamTimeData":{
+                "type": "float[]",
+                "description": "Buffer array containing beam time data",
+                "memoryType": "cpu",
+                "default": []
+            },
             "linearDepthData":{
                 "type": "float[]",
                 "description": "Buffer array containing linear depth data",
