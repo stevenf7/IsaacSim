@@ -8,7 +8,6 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
     disablewarnings {"error=narrowing", "error=unused-but-set-variable", "error=unused-variable"}
 
     add_files("impl", "plugins")
-    add_files("impl", "%{root}/include/omni/isaac/utils/", "CameraKernels.cu")
     add_files("iface", "%{root}/include/omni/isaac/ros_bridge/**")
     add_files("ogn", ogn.nodes_path)
 

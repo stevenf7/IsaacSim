@@ -33,81 +33,105 @@
                 "type": "execution",
                 "description": "Output execution triggers when lidar sensor has data"
             },
-            "intensity":{
+            "tickAzimuths":{
                 "type": "float[]",
-                "description": "intensity [0,1]",
+                "description": "azimuth origin of a tick in rad [-pi,pi]",
                 "memoryType": "cpu",
                 "default": []
             },
-            "distance":{
-                "type": "float[]",
-                "description": "distance in m",
+            "tickStates":{
+                "type": "uint[]",
+                "description": "emitter state the tick belongs to",
                 "memoryType": "cpu",
                 "default": []
             },
-            "azimuth":{
+            "tickTimestamps":{
+                "type": "uint64[]",
+                "description": "timestamp of the tick in Ns",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "azimuths":{
                 "type": "float[]",
                 "description": "azimuth in rad [-pi,pi]",
                 "memoryType": "cpu",
                 "default": []
             },
-            "elevation":{
+            "elevations":{
                 "type": "float[]",
                 "description": "elevation in rad [-pi/2, pi/2]",
                 "memoryType": "cpu",
                 "default": []
             },
-            "velocityMs":{
+            "distances":{
+                "type": "float[]",
+                "description": "distance in m",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "intensities":{
+                "type": "float[]",
+                "description": "intensity [0,1]",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "velocities":{
                 "type": "pointf[3][]",
                 "description": "velocity at hit point in sensor coordinates [m/s]",
                 "memoryType": "cpu",
                 "default": []
             },
-            "echoId":{
-                "type": "uint[]",
-                "description": "echo id in ascending order",
-                "memoryType": "cpu",
-                "default": []
-            },
-            "emitterId":{
-                "type": "uint[]",
-                "description": "beam/laser detector id",
-                "memoryType": "cpu",
-                "default": []
-            },
-            "beamId":{
-                "type": "uint[]",
-                "description": "beam/laser detector id",
-                "memoryType": "cpu",
-                "default": []
-            },
-            "materialId":{
-                "type": "uint[]",
-                "description": "hit point material id",
-                "memoryType": "cpu",
-                "default": []
-            },
-            "hitPointNormal":{
+            "hitPointNormals":{
                 "type": "pointf[3][]",
                 "description": "hit point Normal",
                 "memoryType": "cpu",
                 "default": []
             },
-            "tick":{
+            "deltaTimes":{
+                "type": "uint[]",
+                "description": "delta time in ns from the head (relative to tick timestamp)",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "emitterIds":{
+                "type": "uint[]",
+                "description": "beam/laser detector id",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "beamIds":{
+                "type": "uint[]",
+                "description": "beam/laser detector id",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "materialIds":{
+                "type": "uint[]",
+                "description": "hit point material id",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "objectIds":{
+                "type": "uint[]",
+                "description": "hit point object id",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "ticks":{
                 "type": "uint[]",
                 "description": "tick of point",
                 "memoryType": "cpu",
                 "default": []
             },
-            "objectId":{
-                "type": "uint64[]",
-                "description": "hit point object id",
+            "channels":{
+                "type": "uint[]",
+                "description": "channel of point",
                 "memoryType": "cpu",
                 "default": []
             },
-            "timeStampNs":{
-                "type": "uint64[]",
-                "description": "absolute timeStamp in nano seconds",
+            "echos":{
+                "type": "uint[]",
+                "description": "echo id in ascending order",
                 "memoryType": "cpu",
                 "default": []
             }

@@ -7,26 +7,30 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 // clang-format off
-#ifndef _WIN32
 #include <UsdPCH.h>
 // clang-format on
 
-#    include "omni/isaac/utils/UsdUtilities.h"
+#include "omni/isaac/utils/UsdUtilities.h"
 
-#    include <carb/InterfaceUtils.h>
-#    include <carb/Types.h>
+#include <carb/InterfaceUtils.h>
+#include <carb/Types.h>
 
-#    include <omni/isaac/utils/BaseResetNode.h>
-#    include <omni/math/linalg/matrix.h>
-#    include <omni/math/linalg/quat.h>
-#    include <omni/sensors/radar/IRadarPCConverter.h>
+#include <omni/isaac/utils/BaseResetNode.h>
+#include <omni/math/linalg/matrix.h>
+#include <omni/math/linalg/quat.h>
+#include <omni/sensors/radar/IRadarPCConverter.h>
 
-#    include <OgnIsaacComputeRTXRadarPointCloudDatabase.h>
-#    include <iostream>
-#    include <math.h>
+#include <OgnIsaacComputeRTXRadarPointCloudDatabase.h>
+#include <iostream>
+#include <math.h>
 
-#    define __DEBUG_PRINT_ON 0
-namespace omni::isaac::sensor
+#define __DEBUG_PRINT_ON 0
+
+namespace omni
+{
+namespace isaac
+{
+namespace sensor
 {
 
 using namespace omni::sensors::radar;
@@ -66,17 +70,17 @@ public:
         db.outputs.objectId().resize(0);
 
         db.outputs.execOut() = passThroughValue ? kExecutionAttributeStateEnabled : kExecutionAttributeStateDisabled;
-#    if __DEBUG_PRINT_ON
+#if __DEBUG_PRINT_ON
         std::cout << dbv << "}";
-#    endif
+#endif
         return passThroughValue;
     }
 
     static bool compute(OgnIsaacComputeRTXRadarPointCloudDatabase& db)
     {
-#    if __DEBUG_PRINT_ON
+#if __DEBUG_PRINT_ON
         std::cout << "RC[";
-#    endif
+#endif
         CARB_PROFILE_ZONE(0, "Compute RTX Radar PointCloud");
         const uint8_t* input = reinterpret_cast<const uint8_t*>(db.inputs.cpuPointer());
         if (!input)
@@ -118,9 +122,9 @@ public:
 
         size_t numDetects = scan->numDetections;
 
-#    define _DEF_OUT_VAR(outName)                                                                                      \
-        auto& db_outputs_##outName = db.outputs.outName();                                                             \
-        db_outputs_##outName.resize(numDetects)
+#define _DEF_OUT_VAR(outName)                                                                                          \
+    auto& db_outputs_##outName = db.outputs.outName();                                                                 \
+    db_outputs_##outName.resize(numDetects)
         _DEF_OUT_VAR(pointCloudData);
         _DEF_OUT_VAR(radialDistance);
         _DEF_OUT_VAR(radialVelocity);
@@ -130,14 +134,14 @@ public:
         _DEF_OUT_VAR(semanticId);
         _DEF_OUT_VAR(materialId);
         _DEF_OUT_VAR(objectId);
-#    undef _DEF_OUT_VAR
+#undef _DEF_OUT_VAR
 
         for (uint32_t i = 0; i < numDetects; ++i)
         {
             const RadarDetection& d = detections[i];
             convertDetectionToPoint(d, db_outputs_pointCloudData[i]);
 
-#    define _ASSIGN_OUT(outputName, src) db_outputs_##outputName[i] = d.src
+#define _ASSIGN_OUT(outputName, src) db_outputs_##outputName[i] = d.src
             _ASSIGN_OUT(radialDistance, r_m);
             _ASSIGN_OUT(radialVelocity, rv_ms);
             _ASSIGN_OUT(azimuth, az_ang_rad);
@@ -146,19 +150,19 @@ public:
             _ASSIGN_OUT(semanticId, semId);
             _ASSIGN_OUT(materialId, matId);
             _ASSIGN_OUT(objectId, objId);
-#    undef _ASSIGN_OUT
+#undef _ASSIGN_OUT
         }
 
         db.outputs.execOut() = kExecutionAttributeStateEnabled;
 
-#    if __DEBUG_PRINT_ON
+#if __DEBUG_PRINT_ON
         std::cout << "]";
-#    endif
+#endif
         return true;
     }
 };
 
 REGISTER_OGN_NODE()
-} // omni::isaac::sensor
-
-#endif
+} // sensor
+} // isaac
+} // omni

@@ -6,24 +6,21 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
-#ifndef _WIN32
-
 // clang-format off
 #include <UsdPCH.h>
 // clang-format on
 
-#    include "omni/isaac/utils/UsdUtilities.h"
+#include "omni/isaac/utils/UsdUtilities.h"
+// TODOMTC Where to?
+#include <internal/omni/sensors/lidar/LidarReturnHelper.h>
+#include <omni/isaac/utils/BaseResetNode.h>
+#include <omni/sensors/lidar/LidarParameterType.h>
+#include <omni/sensors/lidar/LidarReturn.h>
+#include <omni/sensors/lidar/LidarReturnTypes.h>
 
-// #include <omni/isaac/range_sensor/RangeSensorInterface.h>
-#    include <omni/isaac/utils/BaseResetNode.h>
-// #include <rangeSensorSchema/lidar.h>
-#    include <omni/sensors/lidar/LidarParameterType.h>
-#    include <omni/sensors/lidar/LidarReturn.h>
-#    include <omni/sensors/lidar/LidarReturnTypes.h>
-
-#    include <OgnIsaacComputeRTXLidarFlatScanDatabase.h>
-#    include <fstream>
-#    include <math.h>
+#include <OgnIsaacComputeRTXLidarFlatScanDatabase.h>
+#include <fstream>
+#include <math.h>
 
 namespace omni
 {
@@ -32,7 +29,7 @@ namespace isaac
 namespace sensor
 {
 
-#    define PI 3.141592653589f
+#define PI 3.141592653589f
 
 inline constexpr float Deg2Rad(float deg)
 {
@@ -47,72 +44,71 @@ public:
 
         auto& state = db.internalState<OgnIsaacComputeRTXLidarFlatScan>();
 
-        const uint8_t* input = reinterpret_cast<const uint8_t*>(db.inputs.cpuPointer());
+        uint8_t* input = reinterpret_cast<uint8_t*>(db.inputs.cpuPointer());
         if (!input)
         {
             return true;
         }
 
-        const LidarParameterType* parameter{ reinterpret_cast<const LidarParameterType*>(input) };
+        // fill the structure of arrays
+        LidarTicks lidarTicks;
+        LidarReturns lidarReturns;
+        LidarParameterType* parameter = omni::sensors::nv::lidar::fillStructsFromBuffer(input, lidarReturns, lidarTicks);
+        const uint32_t numTicks = parameter->async.numTicks;
+        const uint32_t numChannels = parameter->async.numChannels;
+        const uint32_t numEchos = parameter->async.numEchos;
 
-        if (parameter->async.numTicks == 0 || parameter->async.numChannels * parameter->async.numEchos == 0)
+        if (numTicks == 0 || numChannels * numEchos == 0)
         {
             return true;
         }
 
-        // const LidarTick* lidarTicks = reinterpret_cast<const LidarTick*>(input + sizeof(LidarParameterType));
-        const LidarReturn* lidarReturns = reinterpret_cast<const LidarReturn*>(
-            input + sizeof(LidarParameterType) + sizeof(LidarTick) * parameter->async.numTicks);
 
-
-        for (uint32_t tick = 0; tick < parameter->async.numTicks; tick++)
+        for (uint32_t tick = 0; tick < numTicks; tick++)
         {
-            for (uint32_t channelId = 0; channelId < parameter->async.numChannels; ++channelId)
+            for (uint32_t channelId = 0; channelId < numChannels; ++channelId)
             {
                 const uint32_t echoId = 0;
-                const uint32_t pointIdx{ idxOfReturn(
-                    channelId, echoId, parameter->async.numEchos, parameter->async.numChannels, tick) };
-                const LidarReturn& lidarReturn = lidarReturns[pointIdx];
+                const uint32_t pointIdx{ idxOfReturn(channelId, echoId, numEchos, numChannels, tick) };
 
                 if (!state.mFoundLevelChannelId)
                 {
 
-                    if (abs(lidarReturn.elevationDeg) > abs(state.mElevationDiff))
+                    if (abs(lidarReturns.elevations[pointIdx]) > abs(state.mElevationDiff))
                     {
                         state.mFoundLevelChannelId = true;
                         return true;
                     }
                     state.mLevelChannelId = channelId;
-                    state.mElevationDiff = lidarReturn.elevationDeg;
+                    state.mElevationDiff = lidarReturns.elevations[pointIdx];
                 }
                 else
                 {
-                    // const float azimuthDeg{ state.mRightHanded ? (360.f - lidarReturn.azimuthDeg) :
-                    // lidarReturn.azimuthDeg };
 
-                    if (channelId == state.mLevelChannelId && lidarReturn.elevationDeg == state.mElevationDiff)
+                    if (channelId == state.mLevelChannelId && lidarReturns.elevations[pointIdx] == state.mElevationDiff)
                     {
 
                         if (!state.mFoundStartAzimuth)
                         {
-                            if (lidarReturn.azimuthDeg > state.mStartAzimuth)
+                            if (lidarReturns.azimuths[pointIdx] > state.mStartAzimuth)
                             {
                                 state.mFoundStartAzimuth = true;
 
                                 state.mRanges.clear();
                                 state.mIntensities.clear();
 
-                                state.mRanges.push_back(lidarReturn.distance);
-                                state.mIntensities.push_back((uint8_t)(lidarReturn.intensity * 255));
+                                state.mRanges.push_back(lidarReturns.distances[pointIdx]);
+                                state.mIntensities.push_back((uint8_t)(lidarReturns.intensities[pointIdx] * 255));
                             }
-                            state.mStartAzimuth = lidarReturn.azimuthDeg;
+                            state.mStartAzimuth = lidarReturns.azimuths[pointIdx];
                             state.mPrevAzimuth = state.mStartAzimuth;
                         }
                         else
                         {
-                            if (lidarReturn.azimuthDeg < state.mPrevAzimuth)
+                            if (lidarReturns.azimuths[pointIdx] < state.mPrevAzimuth)
                             {
-                                if (abs(lidarReturn.azimuthDeg - state.mPrevAzimuth) < db.outputs.horizontalFov() * 0.9)
+                                if (abs(lidarReturns.azimuths[pointIdx] - state.mPrevAzimuth) <
+                                    db.outputs.horizontalFov() * 0.9)
                                 {
                                     state.mFoundStartAzimuth = false;
                                     state.mStartAzimuth = FLT_MAX;
@@ -161,14 +157,14 @@ public:
 
 
                                 // Reset start Azimuth
-                                state.mStartAzimuth = lidarReturn.azimuthDeg;
+                                state.mStartAzimuth = lidarReturns.azimuths[pointIdx];
 
                                 state.mRanges.clear();
                                 state.mIntensities.clear();
                             }
-                            state.mRanges.push_back(lidarReturn.distance);
-                            state.mIntensities.push_back((uint8_t)(lidarReturn.intensity * 255));
-                            state.mPrevAzimuth = lidarReturn.azimuthDeg;
+                            state.mRanges.push_back(lidarReturns.distances[pointIdx]);
+                            state.mIntensities.push_back((uint8_t)(lidarReturns.intensities[pointIdx] * 255));
+                            state.mPrevAzimuth = lidarReturns.azimuths[pointIdx];
                         }
                     }
                 }
@@ -209,4 +205,3 @@ REGISTER_OGN_NODE()
 } // sensor
 } // isaac
 } // omni
-#endif

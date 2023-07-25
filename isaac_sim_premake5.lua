@@ -63,37 +63,92 @@ function commaficate(options)
     return result;
 end
 
+-- This function binds the runtime and settings to be compatiable with kit. This means
+-- that even though our debug builds
+function setRuntimeToBeKitCompatible()
+    if kit_sdk_config == "debug" then
+        runtime "Debug"
+        defines{ "_DEBUG"}
+    elseif kit_sdk_config == "release" then
+        runtime "Release"
+        defines{ "NDEBUG"}
+    else
+        filter { "configurations:debug" }
+            runtime "Debug"
+            defines{ "_DEBUG"}
+        filter  { "configurations:release" }
+            runtime "Release"
+            defines{ "NDEBUG"}
+        filter {}
+    end
+end
+
+
 -- Helper function to implement a build step that preprocesses .cu files (CUDA code) for compilation
--- TODO: the cross-compilation case is missed here and that forces compilation errors on TC
-function make_nvcc_command(nvccPath, nvccHostCompilerVS, nvccHostCompilerFlags, nvccFlags)
+function make_nvcc_command(nvccPath, nvccHostCompilerVS, nvccHostCompilerFlags, nvccFlags, dependencies, isPtx)
+    isPtx = isPtx or false
+    local nvccXcompilerFlags = string.gsub(nvccHostCompilerFlags, "^%s*(.-)%s*$", "%1") -- trim leading and trailing spaces from the host compiler flags
+    -- -- the flags in the following section precompiles for all DRIVESIM supported arch
+    -- local sass = "-gencode=arch=compute_75,code=sm_75 ".. -- Turing
+    -- "-gencode=arch=compute_80,code=sm_80 ".. -- Ampere
+    -- "-gencode=arch=compute_86,code=sm_86 "..
+    -- "-gencode=arch=compute_87,code=sm_87 "..
+    -- "-gencode=arch=compute_89,code=sm_89 ".. -- Ada
+    -- "-gencode=arch=compute_90,code=sm_90 "   -- Hopper
+
+    -- For forward compatibility with future architectures we also include a Hopper-based PTX that can be JIT compiled at runtime
+    -- local ptx = "-gencode=arch=compute_90,code=compute_90 "
+    -- local nvccCompiler = nvcc114Path
+    -- if isPtx then
+    --     sass = ""
+    --     ptx = ""
+    --     nvccCompiler = nvcc114Path
+    -- end
     if os.target() == "windows" then
         ext = ".obj"
+        if isPtx then
+            ext = ".ptx"
+        end
         local compilerBindir = " --compiler-bindir "..nvccHostCompilerVS
-        local buildString =  "\""..nvccPath.."\"".." "..nvccFlags..compilerBindir.." -Xcompiler="..nvccHostCompilerFlags.." -c -I "..carbSDKInclude.." %{get_include_string(cfg.includedirs)} %{file.abspath} -o %{cfg.objdir}/%{file.basename}"..ext
+        local buildString =  "\""..nvccPath.."\" -std=c++17 "..nvccFlags..compilerBindir
+            .." -Xcompiler="..iif(not nvccXcompilerFlags or #nvccXcompilerFlags==0, "", nvccXcompilerFlags..",").."%{iif(not cfg.staticruntime or cfg.staticruntime ~= \"On\", \"/MD\", \"/MT\")..iif(not cfg.runtime or cfg.runtime == \"Debug\", \"d\", \"\")}"
+            .." -c -I "..carbSDKInclude.." -DBUILDING_FOR_ISAAC_SIM %{get_include_string(cfg.includedirs)} %{file.abspath} -o %{cfg.objdir}/%{file.basename}"..ext
         buildmessage (buildString)
         buildcommands { buildString }
         buildoutputs { "%{cfg.objdir}/%{file.basename}"..ext }
+        buildinputs { dependencies }
     end
     if os.target() == "linux" then
         ext = ".o"
-        local buildString =  "\""..nvccPath.."\" -std=c++14 "..nvccFlags.." -Xcompiler="..commaficate(nvccHostCompilerFlags).." -c -I "..carbSDKInclude.." %{get_include_string(cfg.includedirs)} %{file.abspath} -o %{cfg.objdir}/%{file.basename}"..ext
+        if isPtx then
+            ext = ".ptx"
+        end
+        local buildString =  "\""..nvccPath.."\" -std=c++17 "..nvccFlags.." -Xcompiler="..commaficate(nvccXcompilerFlags).." -c -I "..carbSDKInclude.." -DBUILDING_FOR_ISAAC_SIM %{get_include_string(cfg.includedirs)} %{file.abspath} -o %{cfg.objdir}/%{file.basename}"..ext
         buildcommands { "{MKDIR} %{cfg.objdir} ", buildString }
         buildoutputs { "%{cfg.objdir}/%{file.basename}"..ext }
+        buildinputs { dependencies }
     end
+end
+
+function make_ptx_header(nvccPath, nvccHostCompilerVS, nvccHostCompilerFlags, nvccFlags, dependencies)
+    make_nvcc_command(nvccPath, nvccHostCompilerVS, nvccHostCompilerFlags, nvccFlags, dependencies, true)
+    buildcommands { "{MKDIR} %{cfg.objdir} ", bin2cPath.." -st -c -p 0 ".."%{cfg.objdir}/%{file.basename}.ptx > %{cfg.objdir}/%{file.basename}.ptx.h"}
 end
 
 -- Helper function to call in your project definition when you have .cu files to process.
 -- This sets up the CUDA compilation for all files within your project using the correct rules for each configuration.
 function add_cuda_dependencies()
     -- First the build rules for CUDA files
+    setRuntimeToBeKitCompatible()
+
     filter { "files:**.cu", "system:windows", "configurations:debug" }
-        make_nvcc_command(nvccPath, nvccHostCompilerVS, "/MDd", "-g -G")
+        make_nvcc_command(nvccPath, nvccHostCompilerVS, "/Od", "-g -G")
     filter { "files:**.cu", "system:windows", "configurations:release" }
-        make_nvcc_command(nvccPath, nvccHostCompilerVS, "/MD", "")
+        make_nvcc_command(nvccPath, nvccHostCompilerVS, "", "")
     filter { "files:**.cu", "system:linux", "configurations:debug" }
-        make_nvcc_command(nvccPath, "", "-fPIC -g", "-g")
+        make_nvcc_command(nvccPath, nvccHostCompilerVS, "-fPIC -g", "-g -G")
     filter { "files:**.cu", "system:linux", "configurations:release" }
-        make_nvcc_command(nvccPath, "", "-fPIC", "")
+        make_nvcc_command(nvccPath, nvccHostCompilerVS, "-fPIC", "")
     filter {}
 
     -- link against CUDA runtime static library.

@@ -11,10 +11,6 @@
 import argparse
 import sys
 
-if sys.platform == "win32":
-    print("RTX lidar is not supported on windows currently, exiting")
-    sys.exit()
-
 from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})

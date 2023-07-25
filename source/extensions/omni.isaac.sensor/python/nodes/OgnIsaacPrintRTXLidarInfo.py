@@ -6,13 +6,14 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-
+# TODOMTC Finish this with new SoA data layout
 import ctypes
 
 import carb
 from omni.syntheticdata._syntheticdata import acquire_syntheticdata_interface
 
 
+# TODOMTC  Make sure to have this work with the struct of arrays version of rtx sensor
 def object_id_to_prim_path(object_id):
     """Given an ObjectId get a Prim Path
 
@@ -38,32 +39,26 @@ class sensorPose(ctypes.Structure):
 class lidarAsyncParameter(ctypes.Structure):
     _pack_ = 1
     _fields_ = [
-        # number of ticks (sensor positions) in this trace data
-        ("numTicks", ctypes.c_uint32),
-        # ensor frequency in hz
-        ("scanFrequency", ctypes.c_float),
-        # number of ticks of one full scan of the sensor
-        ("ticksPerScan", ctypes.c_uint32),
-        # maximum possible size of the lidar trace data in bytes (can be used for initialization)
-        ("maxSizeBuffer", ctypes.c_size_t),
-        # current size of the lidar trace data
-        ("currentSizeBuffer", ctypes.c_size_t),
-        # current size of the lidar trace data
-        ("numChannels", ctypes.c_uint32),
-        # number of echos per detector/laser
-        ("numEchos", ctypes.c_uint8),
-        # start time of the trace data
-        ("startTimeNs", ctypes.c_uint64),
-        # delta time of the trace data
-        ("deltaTimeNs", ctypes.c_uint64),
-        # start time of the corresponding scan (i.e. full rotation of a spinning lidar)
-        ("scanStartTimeNs", ctypes.c_uint64),
-        # start tick of this frame/trace
-        ("startTick", ctypes.c_uint32),
-        # sensor transformation at frame start
-        ("frameStart", sensorPose),
-        # sensor transformation at frame end
-        ("frameEnd", sensorPose),
+        ("numTicks", ctypes.c_uint32),  # number of ticks (sensor positions) in this trace data
+        ("scanFrequency", ctypes.c_float),  # ensor frequency in hz
+        ("ticksPerScan", ctypes.c_uint32),  # number of ticks of one full scan of the sensor
+        (
+            "maxSizeBuffer",
+            ctypes.c_size_t,
+        ),  # maximum possible size of the lidar trace data in bytes (can be used for initialization)
+        ("currentSizeBuffer", ctypes.c_size_t),  # current size of the lidar trace data
+        ("numChannels", ctypes.c_uint32),  # current size of the lidar trace data
+        ("numEchos", ctypes.c_uint8),  # number of echos per detector/laser
+        ("padding", ctypes.c_uint8 * 7),
+        ("startTimeNs", ctypes.c_uint64),  # start time of the trace data
+        ("deltaTimeNs", ctypes.c_uint64),  # delta time of the trace data
+        (
+            "scanStartTimeNs",
+            ctypes.c_uint64,
+        ),  # start time of the corresponding scan (i.e. full rotation of a spinning lidar)
+        ("startTick", ctypes.c_uint32),  # start tick of this frame/trace
+        ("frameStart", sensorPose),  # sensor transformation at frame start
+        ("frameEnd", sensorPose),  # sensor transformation at frame end
     ]
 
 
@@ -76,28 +71,17 @@ def printparams(params):
 class lidarReturn(ctypes.Structure):
     _pack_ = 1
     _fields_ = [
-        # azimuth in deg [-180,180]
-        ("azimuthDeg", ctypes.c_float),
-        # elevation in deg [-90, 90]
-        ("elevationDeg", ctypes.c_float),
-        # distance in m
-        ("distance", ctypes.c_float),
-        # intensity [0,1]
-        ("intensity", ctypes.c_float),
-        # velocity at hit point in sensor coordinates [m/s]
-        ("velocityMs", ctypes.c_float * 3),
-        # deltatime in ns from the head (relative to tick time)
-        ("deltaTimeNs", ctypes.c_uint32),
-        # beam emitter id
-        ("emitterId", ctypes.c_uint32),
-        # beam/laser detector id
-        ("beamId", ctypes.c_uint32),
-        # hit point material id
-        ("materialId", ctypes.c_uint32),
-        # hit point normal
-        ("hitPointNormal", ctypes.c_float * 3),
-        # hit point object id
-        ("objectId", ctypes.c_uint64),
+        ("azimuths", ctypes.POINTER(ctypes.c_float)),  # azimuth in deg [-180,180]
+        ("elevations", ctypes.POINTER(ctypes.c_float)),  # elevation in deg [-90, 90]
+        ("distance", ctypes.POINTER(ctypes.c_float)),  # distance in m
+        ("intensity", ctypes.POINTER(ctypes.c_float)),  # intensity [0,1]
+        ("velocityMs", ctypes.POINTER(ctypes.c_float * 3)),  # velocity at hit point in sensor coordinates [m/s]
+        ("deltaTimeNs", ctypes.POINTER(ctypes.c_uint32)),  # deltatime in ns from the head (relative to tick time)
+        ("emitterId", ctypes.POINTER(ctypes.c_uint32)),  # beam emitter id
+        ("beamId", ctypes.POINTER(ctypes.c_uint32)),  # beam/laser detector id
+        ("materialId", ctypes.POINTER(ctypes.c_uint32)),  # hit point material id
+        ("hitPointNormal", ctypes.POINTER(ctypes.c_float * 3)),  # hit point normal
+        ("objectId", ctypes.POINTER(ctypes.c_uint64)),  # hit point object id
     ]
 
 

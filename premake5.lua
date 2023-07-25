@@ -6,6 +6,7 @@ newoption {
 
 -- Shared build scripts from repo_build package
 no_compile_commands_file = false
+build_with_omni_sensors = false
 repo_build = require("omni/repo/build")
 
 -- Repo root
@@ -24,6 +25,9 @@ end
 
 -- Shared build scripts from isaac sim
 include("isaac_sim_premake5.lua")
+if build_with_omni_sensors then
+    include("omni_sensors_premake5.lua")
+end
 
 -- Setup where to write generate prebuild.toml file
 repo_build.set_prebuild_file('_build/generated/prebuild.toml')
@@ -78,7 +82,14 @@ workspace "isaac-sim"
 
     -- Set default target dir, later projects overwrite it
     targetdir (bin_dir)
-
+    
+    -- mostly so outside code knows we are building isaac-sim
+    building_for_isaac_sim = true
+    defines { "BUILDING_FOR_ISAAC_SIM" }
+    if build_with_omni_sensors then
+        includedirs { "source/include" }
+    end
+    
     -- Setup include paths. Add kit SDK include paths too.
     includedirs {
         "include",
@@ -267,6 +278,9 @@ group "selector_tests"
 
 -- Isaac Extensions
 group "exts"
+    -- needed until drivesim and omni.sensors gets their pip_prebundle straight.
+    os.execute("{MKDIR} _build/target-deps/pip_prebundle")
+
     -- Windows and Linux
     include ("source/extensions/omni.isaac.app.setup")
     include ("source/extensions/omni.isaac.app.selector")
@@ -333,6 +347,21 @@ group "exts"
     include ("source/extensions/omni.isaac.ros2_bridge")
     include ("source/extensions/omni.isaac.scene_blox")
     include ("source/extensions/omni.pip.compute")
+    if build_with_omni_sensors then
+        include ("source/extensions/omni.sensors.fov_preview_visualization")
+        include ("source/extensions/omni.sensors.nv.beams")
+        include ("source/extensions/omni.sensors.nv.camera")
+        include ("source/extensions/omni.sensors.nv.common")
+        include ("source/extensions/omni.sensors.nv.ids")
+        include ("source/extensions/omni.sensors.nv.lidar")
+        include ("source/extensions/omni.sensors.nv.lidar_tools")
+        include ("source/extensions/omni.sensors.nv.materials")
+        include ("source/extensions/omni.sensors.nv.material_tools")
+        include ("source/extensions/omni.sensors.nv.radar")
+        include ("source/extensions/omni.sensors.nv.radar_tools")
+        include ("source/extensions/omni.sensors.nv.ultrasonic")
+        include ("source/extensions/omni.sensors.nv.wpm")
+    end
 
 
 
@@ -359,8 +388,8 @@ if os.target() == "linux" then
         { "source/scripts/python/linux-x86_64/icon", "_build/%{platform}/%{config}/data/icon" },
     }
     -- Not strictly necessary, but convenient for tab complete.
-    os.execute("ln -s `pwd`/_build/linux-x86_64/%{config}/isaac-sim.sh _build/linux-x86_64/%{config}/isaac-sim")
-    -- For docker tests
+    os.execute("ln -s `pwd`/_build/linux-x86_64/release/isaac-sim.sh _build/linux-x86_64/release/isaac-sim")
+    -- For docker tests 
     repo_build.prebuild_copy {
         {"source/scripts/docker/tests/*",  "_build/%{platform}/%{config}/dockertests"},
         -- {"source/scripts/docker/vulkan_check.sh",  "_build/%{platform}/%{config}"},

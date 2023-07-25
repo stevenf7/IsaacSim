@@ -8,7 +8,6 @@ project_ext_plugin(ext, "omni.isaac.gxf_bridge.plugin")
     cppdialect "C++17"
 
     add_files("impl", "plugins")
-    add_files("impl", "%{root}/include/omni/isaac/utils/", "CameraKernels.cu")
     add_files("iface", "%{root}/include/omni/isaac/gxf_bridge/**")
     add_files("ogn", ogn.nodes_path)
 

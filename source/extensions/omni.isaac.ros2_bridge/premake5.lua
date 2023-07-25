@@ -6,7 +6,6 @@ project_ext_plugin(ext, "omni.isaac.ros2_bridge.plugin")
 
 
     add_files("impl", "plugins")
-    add_files("impl", "%{root}/include/omni/isaac/utils/", "CameraKernels.cu")
     add_files("iface", "%{root}/include/omni/isaac/ros2_bridge/**")
     add_files("ogn", ogn.nodes_path)
     link_boost_for_windows({"boost_python310"})

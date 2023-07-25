@@ -128,9 +128,10 @@ _, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathStrin
 # _, render_product_path2 = create_hydra_texture([1, 1], sensor2.GetPath().pathString)
 
 # Create the debug draw pipeline in the post process graph
-if 0:
+if 1:
     i = printinc(i)
-    writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
+    # writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
+    writer = rep.writers.get("Writer" + "IsaacReadRTXLidarData")
 
     i = printinc(i)
     writer.attach([render_product_path])  # , render_product_path2])
@@ -139,12 +140,13 @@ else:
     from omni.syntheticdata import sensors
 
     sensors.get_synthetic_data().activate_node_template(
-        # "RtxSensorCpu" + "ExportRaw", 0, [render_product_path]
-        "RtxSensorCpuIsaacPrintRTXLidarInfo",
+        "RtxSensorCpu" + "ExportRaw",
+        # "RtxSensorCpuIsaacPrintRTXLidarInfo",
+        # "RtxLidar" + "DebugDrawPointCloud",
+        # "Template" + "RtxLidar" + "DebugDrawPointCloud",
+        # "RtxSensorCpuIsaacReadRTXLidarData",
         0,
-        [render_product_path]
-        # "RtxLidar" + "DebugDrawPointCloud", 0, [render_product_path]
-        # "Template" + "RtxLidar" + "DebugDrawPointCloud", 0, [render_product_path]
+        [render_product_path],
     )
 
 # disable_extension("omni.replicator.core")
