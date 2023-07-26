@@ -816,7 +816,7 @@ deps_for_testing = [
 ]
 
 deps_for_ml = [
-  {dep = "omni.pip.torch-0.1.4", tag = "1_13_1"}
+  {dep = "omni.pip.torch-2.0.1", tag = "2_0_1"}
 ]
 
 windows_only = [
