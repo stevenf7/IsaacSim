@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.17.3] - 2023-07-19
+
+### Changed
+- README to include information about reading a perflab report
+
 ## [0.17.2] - 2023-07-20
 
 ### Changed
