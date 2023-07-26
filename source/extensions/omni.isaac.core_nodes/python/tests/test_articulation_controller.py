@@ -8,6 +8,7 @@
 #
 
 
+import asyncio
 from re import I
 
 import carb
@@ -35,7 +36,12 @@ class TestArticulationControllerNode(ogts.OmniGraphTestCase):
     # ----------------------------------------------------------------------
     async def tearDown(self):
         """Get rid of temporary data used by the test"""
-        await omni.kit.stage_templates.new_stage_async()
+        await omni.kit.app.get_app().next_update_async()
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            print("tearDown, assets still loading, waiting to finish...")
+            await asyncio.sleep(1.0)
+        await omni.kit.app.get_app().next_update_async()
+        return
 
     # ----------------------------------------------------------------------
     async def test_joint_name_ogn(self):
@@ -44,30 +50,28 @@ class TestArticulationControllerNode(ogts.OmniGraphTestCase):
             {
                 og.Controller.Keys.CREATE_NODES: [
                     ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                    ("Joint1Name", "omni.graph.nodes.ConstantToken"),
-                    ("Joint2Name", "omni.graph.nodes.ConstantToken"),
-                    ("JointNameArray", "omni.graph.nodes.MakeArray"),
-                    ("Joint1Position", "omni.graph.nodes.ConstantDouble"),
-                    ("Joint2Position", "omni.graph.nodes.ConstantDouble"),
-                    ("JointCommandArray", "omni.graph.nodes.MakeArray"),
+                    ("JointNameArray", "omni.graph.nodes.ConstructArray"),
+                    ("JointCommandArray", "omni.graph.nodes.ConstructArray"),
                     ("ArticulationController", "omni.isaac.core_nodes.IsaacArticulationController"),
                 ],
                 og.Controller.Keys.SET_VALUES: [
-                    ("Joint1Name.inputs:value", "panda_joint2"),
-                    ("Joint2Name.inputs:value", "panda_joint3"),
-                    ("Joint1Position.inputs:value", -1.0),
-                    ("Joint2Position.inputs:value", 1.2),
                     ("JointNameArray.inputs:arraySize", 2),
+                    ("JointNameArray.inputs:arrayType", "token[]"),
+                    ("JointNameArray.inputs:input0", "panda_joint2"),
+                    ("JointNameArray.inputs:input1", "panda_joint3"),
                     ("JointCommandArray.inputs:arraySize", 2),
+                    ("JointCommandArray.inputs:arrayType", "double[]"),
+                    ("JointCommandArray.inputs:input0", -1.0),
+                    ("JointCommandArray.inputs:input1", 1.2),
                     ("ArticulationController.inputs:robotPath", "/panda"),
+                ],
+                og.Controller.Keys.CREATE_ATTRIBUTES: [
+                    ("JointNameArray.inputs:input1", "token"),
+                    ("JointCommandArray.inputs:input1", "double"),
                 ],
                 og.Controller.Keys.CONNECT: [
                     ("OnPlaybackTick.outputs:tick", "ArticulationController.inputs:execIn"),
-                    ("Joint1Name.outputs:value", "JointNameArray.inputs:a"),
-                    ("Joint2Name.outputs:value", "JointNameArray.inputs:b"),
                     ("JointNameArray.outputs:array", "ArticulationController.inputs:jointNames"),
-                    ("Joint1Position.outputs:value", "JointCommandArray.inputs:a"),
-                    ("Joint2Position.outputs:value", "JointCommandArray.inputs:b"),
                     ("JointCommandArray.outputs:array", "ArticulationController.inputs:positionCommand"),
                 ],
             },

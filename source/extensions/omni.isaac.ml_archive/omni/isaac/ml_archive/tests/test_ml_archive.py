@@ -13,10 +13,10 @@ import omni.kit.test
 class TestPipArchive(omni.kit.test.AsyncTestCase):
     # import all packages to make sure dependencies were not missed
     async def test_import_all(self):
-        import gym
+        import gymnasium
         import torch
         import torchvision
 
         self.assertIsNotNone(torch)
         self.assertIsNotNone(torchvision)
-        self.assertIsNotNone(gym)
+        self.assertIsNotNone(gymnasium)

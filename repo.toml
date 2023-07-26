@@ -490,7 +490,6 @@ include = ["tests-python-omni.isaac.*motion*${shell_ext}","tests-python-omni.isa
 [[repo_test.suites.pythontests.bucket]]
 name = "8"
 include = ["tests-python-omni.isaac*${shell_ext}"]
-exclude =["tests-python-omni.isaac.internal_tools*${shell_ext}", "tests-python-omni.isaac.benchmarks*${shell_ext}"]
 [[repo_test.suites.pythontests.bucket]]
 name = "9"
 include = ["*"]

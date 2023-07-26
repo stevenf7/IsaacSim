@@ -40,7 +40,8 @@ dependencies = [
     "omni.kit.viewport.window",
     "omni.kit.primitive.mesh",
     "omni.kit.material.library",
-    "omni.warp"
+    "omni.warp",
+    "omni.isaac.sensor",
 ]
 args = ["--/physics/cudaDevice=0"]
 
