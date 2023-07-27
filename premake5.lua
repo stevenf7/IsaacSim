@@ -387,8 +387,6 @@ if os.target() == "linux" then
     repo_build.prebuild_link {
         { "source/scripts/python/linux-x86_64/icon", "_build/%{platform}/%{config}/data/icon" },
     }
-    -- Not strictly necessary, but convenient for tab complete.
-    os.execute("ln -s `pwd`/_build/linux-x86_64/release/isaac-sim.sh _build/linux-x86_64/release/isaac-sim")
     -- For docker tests 
     repo_build.prebuild_copy {
         {"source/scripts/docker/tests/*",  "_build/%{platform}/%{config}/dockertests"},
