@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.1] - 2023-03-13
+### Fixed
+- load_config checks for empty json files 
+
 ## [1.5.0] - 2023-03-13
 ### Added
 - pointcloud_include_unlabelled parameter for pointcloud data
