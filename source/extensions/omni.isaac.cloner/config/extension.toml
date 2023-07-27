@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.5.0"
+version = "0.6.0"
 category = "Simulation"
 title = "Isaac Sim Cloner"
 description = "Cloner"
@@ -19,6 +19,7 @@ writeTarget.kit = true
 "omni.usd" = {}
 "omni.usd.libs" = {}
 "omni.physx" = {}
+"omni.isaac.ml_archive" = {}  # needed for torch
 
 [[python.module]]
 name = "omni.isaac.cloner"

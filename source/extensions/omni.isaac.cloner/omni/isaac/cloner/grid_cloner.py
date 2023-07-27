@@ -6,10 +6,11 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import List
+from typing import List, Union
 
 import numpy as np
 import omni.usd
+import torch
 from omni.isaac.cloner import Cloner
 from pxr import Gf, UsdGeom
 
@@ -33,8 +34,8 @@ class GridCloner(Cloner):
         self,
         source_prim_path: str,
         prim_paths: List[str],
-        position_offsets: np.ndarray = None,
-        orientation_offsets: np.ndarray = None,
+        position_offsets: Union[np.ndarray, torch.Tensor] = None,
+        orientation_offsets: Union[np.ndarray, torch.Tensor] = None,
         replicate_physics: bool = False,
         base_env_path: str = None,
         root_path: str = None,
@@ -46,9 +47,9 @@ class GridCloner(Cloner):
         Args:
             source_prim_path (str): Path of source object.
             prim_paths (List[str]): List of destination paths.
-            position_offsets (np.ndarray): Positions to be applied as local translations on top of computed clone position.
+            position_offsets (np.ndarray | torch.Tensor): Positions to be applied as local translations on top of computed clone position.
                                            Defaults to None, no offset will be applied.
-            orientation_offsets (np.ndarray): Orientations to be applied as local rotations for each clone.
+            orientation_offsets (np.ndarray | torch.Tensor): Orientations to be applied as local rotations for each clone.
                                            Defaults to None, no offset will be applied.
             replicate_physics (bool): Uses omni.physics replication. This will replicate physics properties directly for paths beginning with root_path and skip physics parsing for anything under the base_env_path.
             base_env_path (str): Path to namespace for all environments. Required if replicate_physics=True and define_base_env() not called.
@@ -58,6 +59,23 @@ class GridCloner(Cloner):
         Returns:
             positions (List): Computed positions of all clones.
         """
+        # check if inputs are valid
+        if position_offsets is not None:
+            if len(position_offsets) != len(prim_paths):
+                raise ValueError("Dimension mismatch between position_offsets and prim_paths!")
+            # convert to numpy array
+            if isinstance(position_offsets, torch.Tensor):
+                position_offsets = position_offsets.detach().cpu().numpy()
+            elif not isinstance(position_offsets, np.ndarray):
+                position_offsets = np.asarray(position_offsets)
+        if orientation_offsets is not None:
+            if len(orientation_offsets) != len(prim_paths):
+                raise ValueError("Dimension mismatch between orientation_offsets and prim_paths!")
+            # convert to numpy array
+            if isinstance(orientation_offsets, torch.Tensor):
+                orientation_offsets = orientation_offsets.detach().cpu().numpy()
+            elif not isinstance(orientation_offsets, np.ndarray):
+                orientation_offsets = np.asarray(orientation_offsets)
 
         num_clones = len(prim_paths)
 
