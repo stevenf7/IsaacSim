@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.6.0] - 2023-07-19
+
+### Changed
+- When `positions` and `orientations` are None, the cloner keeps the Xform translation and orientation instead of using identity
+- Makes the method `replicate_physics` public to allow users to have control over it
+
 ## [0.5.0] - 2023-04-27
 
 ### Added

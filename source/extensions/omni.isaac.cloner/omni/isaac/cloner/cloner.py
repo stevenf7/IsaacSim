@@ -6,11 +6,12 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import List
+from typing import List, Union
 
 import carb
 import numpy as np
 import omni.usd
+import torch
 from omni.physx import get_physx_replicator_interface, get_physx_simulation_interface
 from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdUtils, Vt
 
@@ -54,7 +55,7 @@ class Cloner:
         self._root_path = root_path + "_"
         return [f"{root_path}_{i}" for i in range(num_paths)]
 
-    def _replicate_physics(self, source_prim_path: str, prim_paths: list, base_env_path: str, root_path: str):
+    def replicate_physics(self, source_prim_path: str, prim_paths: list, base_env_path: str, root_path: str):
         """Replicates physics properties directly in omni.physics to avoid performance bottlenecks when parsing physics.
 
         Args:
@@ -66,12 +67,17 @@ class Cloner:
             Exception: Raises exception if base_env_path is None or root_path is None.
 
         """
-        assert base_env_path is not None or self._base_env_path is not None, "base_env_path needs to be specified!"
-        assert root_path is not None or self._root_path is not None, "root_path needs to be specified!"
+        if base_env_path is None and self._base_env_path is None:
+            raise ValueError("base_env_path needs to be specified!")
+        if root_path is None and self._root_path is None:
+            raise ValueError("root_path needs to be specified!")
 
+        # resolve number of replications being made
+        replicate_first = source_prim_path not in prim_paths
+        # resolve inputs
         clone_base_path = self._root_path if root_path is None else root_path
         clone_root = self._base_env_path if base_env_path is None else base_env_path
-        num_replications = len(prim_paths) if self._replicate_first else len(prim_paths) - 1
+        num_replications = len(prim_paths) if replicate_first else len(prim_paths) - 1
 
         def replicationAttachFn(stageId):
             exclude_paths = [clone_root]
@@ -81,7 +87,7 @@ class Cloner:
             get_physx_replicator_interface().replicate(stageId, source_prim_path, num_replications)
 
         def hierarchyRenameFn(replicatePath, index):
-            if self._replicate_first:
+            if replicate_first:
                 stringPath = clone_base_path + str(index)
             else:
                 stringPath = clone_base_path + str(index + 1)
@@ -98,8 +104,8 @@ class Cloner:
         self,
         source_prim_path: str,
         prim_paths: List[str],
-        positions: np.ndarray = None,
-        orientations: np.ndarray = None,
+        positions: Union[np.ndarray, torch.Tensor] = None,
+        orientations: Union[np.ndarray, torch.Tensor] = None,
         replicate_physics: bool = False,
         base_env_path: str = None,
         root_path: str = None,
@@ -112,9 +118,9 @@ class Cloner:
         Args:
             source_prim_path (str): Path of source object.
             prim_paths (List[str]): List of destination paths.
-            positions (np.ndarray): Numpy array containing target positions of clones. Dimension must equal length of prim_paths.
+            positions (Union[np.ndarray, torch.Tensor]): An array containing target positions of clones. Dimension must equal length of prim_paths.
                                     Defaults to None. Clones will be placed at (0, 0, 0) if not specified.
-            orientations (np.ndarray): Numpy array containing target orientations of clones. Dimension must equal length of prim_paths.
+            orientations (Union[np.ndarray, torch.Tensor]): An array containing target orientations of clones. Dimension must equal length of prim_paths.
                                     Defaults to None. Clones will have identity orientation (1, 0, 0, 0) if not specified.
             replicate_physics (bool): Uses omni.physics replication. This will replicate physics properties directly for paths beginning with root_path and skip physics parsing for anything under the base_env_path.
             base_env_path (str): Path to namespace for all environments. Required if replicate_physics=True and define_base_env() not called.
@@ -125,15 +131,31 @@ class Cloner:
             Exception: Raises exception if source prim path is not valid.
 
         """
-
-        stage = omni.usd.get_context().get_stage()
-
+        # check if inputs are valid
         if positions is not None:
-            assert len(positions) == len(prim_paths), "dimension mismatch between positions and prim_paths!"
+            if len(positions) != len(prim_paths):
+                raise ValueError("Dimension mismatch between positions and prim_paths!")
+            # convert to numpy array
+            if isinstance(positions, torch.Tensor):
+                positions = positions.detach().cpu().numpy()
+            elif not isinstance(positions, np.ndarray):
+                positions = np.asarray(positions)
+            # convert to pxr gf
+            positions = Vt.Vec3fArray.FromNumpy(positions)
         if orientations is not None:
-            assert len(orientations) == len(prim_paths), "dimension mismatch between orientations and prim_paths!"
+            if len(orientations) != len(prim_paths):
+                raise ValueError("Dimension mismatch between orientations and prim_paths!")
+            # convert to numpy array
+            if isinstance(orientations, torch.Tensor):
+                orientations = orientations.detach().cpu().numpy()
+            elif not isinstance(orientations, np.ndarray):
+                orientations = np.asarray(orientations)
+            # convert to pxr gf -- wxyz to xyzw
+            orientations = np.roll(orientations, -1, -1)
+            orientations = Vt.QuatdArray.FromNumpy(orientations)
 
         # make sure source prim has valid xform properties
+        stage = omni.usd.get_context().get_stage()
         source_prim = stage.GetPrimAtPath(source_prim_path)
         if not source_prim:
             raise Exception("Source prim does not exist")
@@ -146,11 +168,12 @@ class Cloner:
         T_l_p.SetMatrix(Gf.Matrix4d(np.matmul(T_l_w, np.linalg.inv(T_p_w)).tolist()))
         current_translation = T_l_p.GetTranslation()
         current_orientation = T_l_p.GetRotation().GetQuat()
-
+        # get current scale
         current_scale = Gf.Vec3d(1, 1, 1)
         if "xformOp:scale" in properties:
             current_scale = Gf.Vec3d(source_prim.GetAttribute("xformOp:scale").Get())
 
+        # remove all xform ops except for translate, orient, and scale
         properties_to_remove = [
             "xformOp:rotateX",
             "xformOp:rotateXZY",
@@ -170,14 +193,14 @@ class Cloner:
                 source_prim.RemoveProperty(prop_name)
 
         properties = source_prim.GetPropertyNames()
-
+        # add xform ops if they don't exist
         if "xformOp:translate" not in properties:
-            xform_op_tranlsate = xformable.AddXformOp(
+            xform_op_translate = xformable.AddXformOp(
                 UsdGeom.XformOp.TypeTranslate, UsdGeom.XformOp.PrecisionDouble, ""
             )
         else:
-            xform_op_tranlsate = UsdGeom.XformOp(source_prim.GetAttribute("xformOp:translate"))
-        xform_op_tranlsate.Set(current_translation)
+            xform_op_translate = UsdGeom.XformOp(source_prim.GetAttribute("xformOp:translate"))
+        xform_op_translate.Set(current_translation)
 
         if "xformOp:orient" not in properties:
             xform_op_rot = xformable.AddXformOp(UsdGeom.XformOp.TypeOrient, UsdGeom.XformOp.PrecisionDouble, "")
@@ -190,36 +213,23 @@ class Cloner:
         else:
             xform_op_scale = UsdGeom.XformOp(source_prim.GetAttribute("xformOp:scale"))
         xform_op_scale.Set(current_scale)
-
-        xformable.SetXformOpOrder([xform_op_tranlsate, xform_op_rot, xform_op_scale])
+        # set xform op order
+        xformable.SetXformOpOrder([xform_op_translate, xform_op_rot, xform_op_scale])
 
         # set source actor transform
-        self._replicate_first = True  # if source path is not in clone paths
         if source_prim_path in prim_paths:
-            self._replicate_first = False
             idx = prim_paths.index(source_prim_path)
             prim = UsdGeom.Xform(stage.GetPrimAtPath(source_prim_path))
 
             if positions is not None:
-                if isinstance(positions, np.ndarray):
-                    translation = Gf.Vec3d(positions[idx][0].item(), positions[idx][1].item(), positions[idx][2].item())
-                else:
-                    translation = Gf.Vec3d(positions[idx][0], positions[idx][1], positions[idx][2])
+                translation = positions[idx]
             else:
-                translation = Gf.Vec3d(0.0, 0.0, 0.0)
+                translation = current_translation
 
             if orientations is not None:
-                if isinstance(positions, np.ndarray):
-                    orientation = Gf.Quatd(
-                        orientations[idx][0].item(),
-                        Gf.Vec3d(orientations[idx][1].item(), orientations[idx][2].item(), orientations[idx][3].item()),
-                    )
-                else:
-                    orientation = Gf.Quatd(
-                        orientations[idx][0], Gf.Vec3d(orientations[idx][1], orientations[idx][2], orientations[idx][3])
-                    )
+                orientation = orientations[idx]
             else:
-                orientation = Gf.Quatd.GetIdentity()
+                orientation = current_orientation
 
             # overwrite translation and orientation to values specified
             prim.GetPrim().GetAttribute("xformOp:translate").Set(translation)
@@ -232,35 +242,21 @@ class Cloner:
                     has_clones = True
                     env_spec = Sdf.CreatePrimInLayer(stage.GetRootLayer(), prim_path)
                     stack = UsdGeom.Xform(stage.GetPrimAtPath(source_prim_path)).GetPrim().GetPrimStack()
+
                     if copy_from_source:
                         Sdf.CopySpec(env_spec.layer, Sdf.Path(source_prim_path), env_spec.layer, Sdf.Path(prim_path))
                     else:
                         env_spec.inheritPathList.Prepend(source_prim_path)
 
                     if positions is not None:
-                        if isinstance(positions, np.ndarray):
-                            translation = Gf.Vec3d(
-                                positions[i][0].item(), positions[i][1].item(), positions[i][2].item()
-                            )
-                        else:
-                            translation = Gf.Vec3d(positions[i][0], positions[i][1], positions[i][2])
+                        translation = positions[i]  # use specified translation
                     else:
-                        translation = Gf.Vec3d(0.0, 0.0, 0.0)
+                        translation = current_translation  # use the same translation as source
 
                     if orientations is not None:
-                        if isinstance(orientations, np.ndarray):
-                            orientation = Gf.Quatd(
-                                orientations[i][0].item(),
-                                Gf.Vec3d(
-                                    orientations[i][1].item(), orientations[i][2].item(), orientations[i][3].item()
-                                ),
-                            )
-                        else:
-                            orientation = Gf.Quatd(
-                                orientations[i][0], Gf.Vec3d(orientations[i][1], orientations[i][2], orientations[i][3])
-                            )
+                        orientation = orientations[i]  # use specified orientation
                     else:
-                        orientation = Gf.Quatd.GetIdentity()
+                        orientation = current_orientation  # use the same orientation as source
 
                     translate_spec = env_spec.GetAttributeAtPath(prim_path + ".xformOp:translate")
                     if translate_spec is None:
@@ -285,7 +281,7 @@ class Cloner:
                     op_order_spec.default = Vt.TokenArray({"xformOp:translate", "xformOp:orient", "xformOp:scale"})
 
         if replicate_physics and has_clones:
-            self._replicate_physics(source_prim_path, prim_paths, base_env_path, root_path)
+            self.replicate_physics(source_prim_path, prim_paths, base_env_path, root_path)
 
     def filter_collisions(
         self, physicsscene_path: str, collision_root_path: str, prim_paths: List[str], global_paths: List[str] = []
