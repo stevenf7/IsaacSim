@@ -233,41 +233,45 @@ class SyntheticRecorderExtension(omni.ext.IExt):
         open_file_using_os_default(path)
 
     def load_config(self, path):
-        if not os.path.isfile(path):
-            carb.log_warn(f"Could not find config file {path}.")
+        if not os.path.isfile(path) or os.path.getsize(path) == 0:
+            carb.log_warn(f"Could not find (or empty) config file: {path}")
             return
-        with open(path, "r") as f:
-            config = json.load(f)
-            if "writer_name" in config and config["writer_name"]:
-                self._writer_name = config["writer_name"]
-            if "custom_writer_name" in config and config["custom_writer_name"]:
-                self._custom_writer_name = config["custom_writer_name"]
-            if "num_frames" in config:
-                self._num_frames = config["num_frames"]
-            if "rt_subframes" in config:
-                self._rt_subframes = config["rt_subframes"]
-            if "control_timeline" in config:
-                self._control_timeline = config["control_timeline"]
-            if "config_file" in config and config["config_file"]:
-                self._config_file = config["config_file"]
-            if "custom_params_path" in config and config["custom_params_path"]:
-                self._custom_params_path = config["custom_params_path"]
-            if "out_working_dir" in config and config["out_working_dir"]:
-                self._out_working_dir = config["out_working_dir"]
-            if "out_dir" in config and config["out_dir"]:
-                self._out_dir = config["out_dir"]
-            if "out_write_type" in config:
-                self._out_write_type = OutWriteType[config["out_write_type"]]
-            if "use_s3" in config:
-                self._use_s3 = config["use_s3"]
-            if "s3_params" in config:
-                self._s3_params = config["s3_params"]
-            if "basic_writer_params" in config and isinstance(config["basic_writer_params"], dict):
-                for key, value in config["basic_writer_params"].items():
-                    if key in self._basic_writer_params:
-                        self._basic_writer_params[key] = value
-            if "rp_data" in config:
-                self._rp_data = config["rp_data"]
+        try:
+            with open(path, "r") as f:
+                config = json.load(f)
+                if "writer_name" in config and config["writer_name"]:
+                    self._writer_name = config["writer_name"]
+                if "custom_writer_name" in config and config["custom_writer_name"]:
+                    self._custom_writer_name = config["custom_writer_name"]
+                if "num_frames" in config:
+                    self._num_frames = config["num_frames"]
+                if "rt_subframes" in config:
+                    self._rt_subframes = config["rt_subframes"]
+                if "control_timeline" in config:
+                    self._control_timeline = config["control_timeline"]
+                if "config_file" in config and config["config_file"]:
+                    self._config_file = config["config_file"]
+                if "custom_params_path" in config and config["custom_params_path"]:
+                    self._custom_params_path = config["custom_params_path"]
+                if "out_working_dir" in config and config["out_working_dir"]:
+                    self._out_working_dir = config["out_working_dir"]
+                if "out_dir" in config and config["out_dir"]:
+                    self._out_dir = config["out_dir"]
+                if "out_write_type" in config:
+                    self._out_write_type = OutWriteType[config["out_write_type"]]
+                if "use_s3" in config:
+                    self._use_s3 = config["use_s3"]
+                if "s3_params" in config:
+                    self._s3_params = config["s3_params"]
+                if "basic_writer_params" in config and isinstance(config["basic_writer_params"], dict):
+                    for key, value in config["basic_writer_params"].items():
+                        if key in self._basic_writer_params:
+                            self._basic_writer_params[key] = value
+                if "rp_data" in config:
+                    self._rp_data = config["rp_data"]
+        except Exception as e:
+            carb.log_warn(f"Could not parse JSON in config file: {path}, exception: {e}")
+            return
 
     def _load_config_and_refresh_ui(self, directory, filename):
         self.load_config(os.path.join(directory, filename))
