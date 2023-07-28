@@ -13,10 +13,9 @@ import omni.kit.test
 class TestPipArchive(omni.kit.test.AsyncTestCase):
     # import all packages to make sure dependencies were not missed
     async def test_import_all(self):
-        import boto3
-        import charset_normalizer
         import construct
         import cycler
+        import gunicorn
         import jinja2
         import kiwisolver
         import llvmlite
@@ -29,42 +28,37 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
         import osqp
         import packaging
         import pint
+        import plotly
         import pyparsing
         import qdldl
         import quaternion
         import requests
         import requests_oauthlib
-        import s3transfer
-        import scipy
         import selenium
-        import urllib3
+        import tornado
         import webbot
-        import yaml
 
-        self.assertIsNotNone(boto3)
-        self.assertIsNotNone(charset_normalizer)
+        self.assertIsNotNone(quaternion)
+        self.assertIsNotNone(numba)
+        self.assertIsNotNone(webbot)
+        self.assertIsNotNone(selenium)
+        self.assertIsNotNone(requests)
         self.assertIsNotNone(construct)
-        self.assertIsNotNone(cycler)
-        self.assertIsNotNone(jinja2)
-        self.assertIsNotNone(kiwisolver)
         self.assertIsNotNone(llvmlite)
+        self.assertIsNotNone(nest_asyncio)
+        self.assertIsNotNone(jinja2)
         self.assertIsNotNone(markupsafe)
         self.assertIsNotNone(matplotlib)
-        self.assertIsNotNone(nest_asyncio)
-        self.assertIsNotNone(numba)
-        self.assertIsNotNone(nvsmi)
-        self.assertIsNotNone(oauthlib)
-        self.assertIsNotNone(osqp)
-        self.assertIsNotNone(packaging)
-        self.assertIsNotNone(pint)
         self.assertIsNotNone(pyparsing)
-        self.assertIsNotNone(qdldl)
-        self.assertIsNotNone(quaternion)
-        self.assertIsNotNone(requests)
+        self.assertIsNotNone(cycler)
+        self.assertIsNotNone(kiwisolver)
+        self.assertIsNotNone(pint)
+        self.assertIsNotNone(packaging)
+        self.assertIsNotNone(oauthlib)
         self.assertIsNotNone(requests_oauthlib)
-        self.assertIsNotNone(s3transfer)
-        self.assertIsNotNone(scipy)
-        self.assertIsNotNone(selenium)
-        self.assertIsNotNone(urllib3)
-        self.assertIsNotNone(webbot)
-        self.assertIsNotNone(yaml)
+        self.assertIsNotNone(gunicorn)
+        self.assertIsNotNone(osqp)
+        self.assertIsNotNone(qdldl)
+        self.assertIsNotNone(nvsmi)
+        self.assertIsNotNone(tornado)
+        self.assertIsNotNone(plotly)
