@@ -20,7 +20,10 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
     def run_repo_tool(options: Dict, config: Dict):
         # get config specific to repo build tool
         tool_config = config.get("repo_build", {})
-        settings = load_settings_from_config(config)
+        # needed to make load_settings_from_config work
+        options.jobs = -1
+        options.compilation_cores = 1
+        settings = load_settings_from_config(config, options)
         repo_folders = get_repo_paths()
 
         # configs = get_all_known_configs()
