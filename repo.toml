@@ -707,12 +707,12 @@ cpp.files.exclude = [
 ]
 
 python.files.exclude = [
-    ".vscode/*", 
-    "_build/*", 
-    "_compiler/*", 
-    "_repo/*", 
-    ".git/*", 
-    ".eggs/*", 
+    ".vscode/*",
+    "_build/*",
+    "_compiler/*",
+    "_repo/*",
+    ".git/*",
+    ".eggs/*",
     ".venv/*",
     ".local/*",
     ".nvidia-omniverse/*",
