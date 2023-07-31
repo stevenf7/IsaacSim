@@ -11,7 +11,7 @@
 // clang-format on
 
 #include "omni/isaac/utils/UsdUtilities.h"
-// TODOMTC Where to?
+
 #include <internal/omni/sensors/lidar/LidarReturnHelper.h>
 #include <omni/isaac/utils/BaseResetNode.h>
 #include <omni/sensors/lidar/LidarParameterType.h>

@@ -1,4 +1,8 @@
 # Changelog
+## [6.0.1] - 2023-07-28
+### Changed
+- IsaacPrintRTXLidarInfo works with changed rtx lidar data
+
 ## [6.0.0] - 2023-07-25
 ### Changed
 - IsaacReadRTXLidarData outputs match changed rtx lidar data

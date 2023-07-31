@@ -12,7 +12,7 @@
 // clang-format on
 
 #include <carb/InterfaceUtils.h>
-// TODOMTC Where to?
+
 #include <internal/omni/sensors/lidar/LidarReturnHelper.h>
 #include <internal/omni/sensors/lidar/LidarSettings.h>
 #include <omni/isaac/utils/BaseResetNode.h>
@@ -70,11 +70,6 @@ public:
                 }
             }
         }
-        // TODOMTC remove debug prints.
-        std::cout << "MTCC sync = " << sizeof(LidarSyncParameter) << ", async = " << sizeof(LidarAsyncParameter) << "\n";
-        std::cout << "MTC startTime = " << parameter->sync.scanStartTimeNs << ", numChannels " << numChannels
-                  << ", numTicks " << numTicks << ", numEchoes " << numEchos << ", maxSize = " << maxSize
-                  << ", outSize = " << outSize << "\n";
 
 #define _DEF_OUT_VAR(outName, outSz)                                                                                   \
     auto& outName = db.outputs.outName();                                                                              \
