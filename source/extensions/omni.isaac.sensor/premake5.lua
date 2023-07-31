@@ -84,8 +84,6 @@ repo_build.prebuild_copy {
 repo_build.prebuild_copy {
     -- needs to be here because material_files folder location is hard coded to %(app}../data/material_files)
     {"%{root}/data/sensors/materials/","%{root}/_build/%{platform}/%{config}/data" },
-    {"%{root}/data/sensors/radar/","%{root}/_build/%{platform}/%{config}/data/radar" },
-    {"%{root}/data/sensors/lidar/","%{root}/_build/%{platform}/%{config}/data/lidar" },
-    {"%{root}/data/sensors/ultrasonic/","%{root}/_build/%{platform}/%{config}/data/ultrasonic" },
+    {"%{root}/data/sensors/","%{root}/_build/%{platform}/%{config}/data/sensors" },
 }
 

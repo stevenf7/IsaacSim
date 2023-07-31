@@ -643,38 +643,7 @@ ext_folders = [
 
 # Extensions to publish, include and exclude among those discovered by kit. Wildcards are supported.
 exts.include = [
-    "omni.isaac.core",
-    "omni.isaac.core_archive",
-    "omni.isaac.core_nodes",
-    "omni.isaac.dynamic_control",
-    "omni.isaac.ml_archive",
-    "omni.isaac.version",
-    "omni.isaac.motion_generation",
-    "omni.isaac.lula",
-    "omni.isaac.onshape",
-    "omni.isaac.diff_usd",
-    "omni.isaac.debug_draw",
-    "omni.isaac.merge_mesh",
-    "omni.isaac.occupancy_map",
-    "omni.isaac.physics_inspector",
-    "omni.isaac.articulation_inspector",
-    "omni.isaac.physics_utilities",
-    "omni.isaac.range_sensor",
-    "omni.isaac.scene_blox",
-    "omni.isaac.sensor",
-    "omni.isaac.surface_gripper",
-    "omni.isaac.synthetic_recorder",
-    "omni.isaac.synthetic_utils",
-    "omni.isaac.ui",
-    "omni.isaac.urdf",
-    "omni.isaac.utils",
-    "omni.kit.loop-isaac",
-    "omni.usd.schema.isaac",
-    "omni.isaac.wheeled_robots",
-    "omni.isaac.proximity_sensor",
-    "omni.isaac.unit_converter",
-    "omni.isaac.repl",
-    #"omni.isaac.examples",
+    "omni.sensors.*",
 ]
 exts.exclude = []
 
@@ -685,6 +654,9 @@ registries = [
 
 # verify before publishing
 publish_verification = true
+
+# upload archives using packman (switch to using packman by default to reduce load on nucleus registry)
+use_packman_to_upload_archive = false
 
 # When running from package, look for package using that path/pattern:
 archive_pattern = "${root}/_build/packages/isaac-sim-*.7z"
@@ -792,19 +764,19 @@ deps_for_isaac = [
   "omni.kit.livestream.native-2.2.0",
   "omni.replicator.composer-1.2.12",
   "omni.replicator.core-1.10.0-isaac_rc2",
-  "omni.sensors.fov_preview_visualization-0.1.0",
-  "omni.sensors.nv.beams-0.1.2",
-  "omni.sensors.nv.camera-0.6.0",
-  "omni.sensors.nv.common-0.0.2",
-  "omni.sensors.nv.ids-0.0.3",
-  "omni.sensors.nv.lidar-0.1.4",
-  "omni.sensors.nv.lidar_tools-0.1.0",
-  "omni.sensors.nv.materials-0.1.1",
-  "omni.sensors.nv.material_tools-0.1.0",
-  "omni.sensors.nv.radar-0.1.1",
-  "omni.sensors.nv.radar_tools-0.1.0",
-  "omni.sensors.nv.ultrasonic-0.1.2",
-  "omni.sensors.nv.wpm-0.1.2",
+  "omni.sensors.fov_preview_visualization-0.1.0-isaacsim.0",
+  "omni.sensors.nv.beams-0.1.2-isaacsim.0",
+  "omni.sensors.nv.camera-0.6.0-isaacsim.0",
+  "omni.sensors.nv.common-0.0.2-isaacsim.0",
+  "omni.sensors.nv.ids-0.0.3-isaacsim.0",
+  "omni.sensors.nv.lidar-0.1.4-isaacsim.0",
+  "omni.sensors.nv.lidar_tools-0.1.0-isaacsim.0",
+  "omni.sensors.nv.materials-0.1.1-isaacsim.0",
+  "omni.sensors.nv.material_tools-0.1.0-isaacsim.0",
+  "omni.sensors.nv.radar-0.1.1-isaacsim.0",
+  "omni.sensors.nv.radar_tools-0.1.0-isaacsim.0",
+  "omni.sensors.nv.ultrasonic-0.1.2-isaacsim.0",
+  "omni.sensors.nv.wpm-0.1.2-isaacsim.0",
   "omni.services.transport.server.tcp_socket-1.0.2",
   "semantics.schema.editor-0.3.3",
   "omni.importer.mjcf-1.0.0"

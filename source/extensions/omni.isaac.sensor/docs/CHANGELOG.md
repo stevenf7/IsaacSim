@@ -1,4 +1,8 @@
 # Changelog
+## [6.0.2] - 2023-07-31
+### Changed
+- Location of default and temp lidar config files set to ${app}/../data/sensors/lidar/
+
 ## [6.0.1] - 2023-07-28
 ### Changed
 - IsaacPrintRTXLidarInfo works with changed rtx lidar data

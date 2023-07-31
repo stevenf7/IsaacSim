@@ -4,7 +4,7 @@
 # This file is used for the released branches of isaac-sim.
 # If you want to build the new versions of omni.sensors then you are looking for the sensors_prep_build.sh
 # script, which is used to build the omni.sensors extensions in isaac-sim.
-# using drivesim-ov hash: 066b16db966ffa9e1cc4fbe4e17fa47dde6d2e3c
+# using drivesim-ov hash: c5ef2973b27adc0ea9f2a73dff0860d8dd43e1fc
 shopt -s extglob
 OMNI_SENSORS_FOLDER="/home/mcarlson/gitlab-master/drivesim-ov_autosimulator"
 
@@ -43,6 +43,8 @@ cp -flv $OMNI_SENSORS_FOLDER/source/include/internal/omni/sensors/lidar/LidarRet
 cp -flv $OMNI_SENSORS_FOLDER/source/include/internal/omni/sensors/lidar/LidarSettings.h source/include/internal/omni/sensors/lidar/LidarSettings.h
 
 #data 
+mkdir -p data/sensors/ids
+cp -flv $OMNI_SENSORS_FOLDER/data/sensors/ids/*.json data/sensors/ids/.
 mkdir -p data/sensors/materials
 cp -rflv $OMNI_SENSORS_FOLDER/data/sensors/materials/material_files data/sensors/materials/.
 mkdir -p data/sensors/lidar
@@ -55,4 +57,7 @@ mkdir -p data/sensors/ultrasonic/wpm_ultrasonic_interference
 mkdir -p data/sensors/ultrasonic/wpm_ultrasonic
 cp -flv $OMNI_SENSORS_FOLDER/data/sensors/ultrasonic/wpm_ultrasonic_interference/Example.json data/sensors/ultrasonic/wpm_ultrasonic_interference/.
 cp -flv $OMNI_SENSORS_FOLDER/data/sensors/ultrasonic/wpm_ultrasonic/Example.json data/sensors/ultrasonic/wpm_ultrasonic/.
+mkdir -p data/sensors/material_tools/configuration
+#note folder change
+cp -flv $OMNI_SENSORS_FOLDER/source/extensions/omni.sensors.nv.material_tools/configuration/parameters.json data/sensors/material_tools/configuration/.
 
