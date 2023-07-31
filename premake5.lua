@@ -278,8 +278,6 @@ group "selector_tests"
 
 -- Isaac Extensions
 group "exts"
-    -- needed until drivesim and omni.sensors gets their pip_prebundle straight.
-    os.execute("{MKDIR} _build/target-deps/pip_prebundle")
 
     -- Windows and Linux
     include ("source/extensions/omni.isaac.app.setup")

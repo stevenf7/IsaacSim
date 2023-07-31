@@ -3,7 +3,8 @@
 # in order to share those extensions with isaac-sim, it is necessary to build with the same kit version as isaac-sim.
 #  This script copies over all the omni.sensors extensions from a drivesim repo to the isaac-sim one.  In the 
 # premake5.lua file, you will want to set build_with_omni_sensors=true.
-# using drivesim-ov hash: 066b16db966ffa9e1cc4fbe4e17fa47dde6d2e3c
+# using drivesim-ov hash: c5ef2973b27adc0ea9f2a73dff0860d8dd43e1fc
+
 shopt -s extglob
 OMNI_SENSORS_FOLDER="/home/mcarlson/gitlab-master/drivesim-ov_autosimulator"
 
@@ -61,3 +62,8 @@ cp -rflv $OMNI_SENSORS_FOLDER/data/sensors/materials/material_files data/sensors
 
 # remove ip
 rm -rfv source/include/internal/omni/sensors/radar/encoders/SOMEIPNCD
+# too big
+rm -fv source/extensions/omni.sensors.nv.wpm/docs/images/EmPulse.apng 
+
+echo "Remove the pip_prebundle from common extension.toml file."
+echo "fix path in source/extensions/omni.sensors.nv.material_tools/python/nodes/MaterialAnalyzer.py"

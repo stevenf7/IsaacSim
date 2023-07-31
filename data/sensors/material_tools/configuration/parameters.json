@@ -1,0 +1,71 @@
+{ 
+	"Scenarios":
+	[
+		{
+			"InitialParameters":
+			{
+				"_comment_SourceEMWaveType": "1 - PlaneWave, 2 - Spherical Wave, 3 - GaussianWave",
+				"_comment_units": "wo and lambda are in meters",
+				"sourceEMWaveType": 1,
+				"wavelength": 905e-9,
+				"wo": 1e-5,
+				"Mfactor": 1
+			},
+			
+			"SimulationParameters":
+			{
+				"_comment_units": "ranges and segments are in meters. Angles are in radians without pi multiplied",
+				"EInitialFieldAmplitudeX": 0,
+				"EInitialFieldAmplitudeY": 1,
+				"EInitialFieldAmplitudeZ": 0,
+				"incidentDirTheta": 135,
+				"incidentDirPhi": 0,
+				"initialX": -1,
+				"initialY": 0,
+				"initialZ": 1,
+				"surfaceNormalX": 0,
+				"surfaceNormalY": 0,
+				"surfaceNormalZ": 1,
+				"numberSamples": 15
+			},
+			
+			"MaterialFiles":
+			[
+				{
+					"_comment_units": "air material boundary",
+					"MaterialName": "Air",
+					"thickness": 2,
+					"layer": 0
+				},
+				
+				{
+					"_comment_units": "base material boundary",
+					"MaterialName": "GlassStandardMaterial.json",
+					"thickness": 0.1,
+					"layer": 1
+				},
+				
+				{
+					"_comment_units": "air material boundary",
+					"MaterialName": "Air",
+					"thickness": 2,
+					"layer": 2
+				},
+				
+				{
+					"_comment_units": "sub surface material boundary",
+					"MaterialName": "AluminumMaterial.json",
+					"thickness": 0.5,
+					"layer": 3
+				}
+			]
+		}
+	],
+	
+	"Graphs":
+	{
+		"Irradiance": 1,		
+		"BRDF": 1,
+		"BTDF": 0
+	}
+}

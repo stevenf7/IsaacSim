@@ -1,0 +1,10 @@
+{
+    "type" : "SPHERICAL",
+    "numRows": 400,
+    "numCols": 3600,
+    "minColUnit": 0.0,
+    "maxColUnit": 360.0,
+    "minRowUnit": -20.0,
+    "maxRowUnit": 20.0,
+    "origin": [0.0,0.0,0.0]
+}
