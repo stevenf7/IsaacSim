@@ -14,7 +14,6 @@ import sys
 import carb
 from omni.isaac.kit import SimulationApp
 
-# Example for creating a RTX lidar sensor and publishing PCL data
 simulation_app = SimulationApp({"headless": False})
 import omni
 import omni.kit.viewport.utility
@@ -23,11 +22,7 @@ from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils import nucleus, stage
 from omni.isaac.core.utils.extensions import disable_extension, enable_extension
 from omni.isaac.core.utils.render_product import create_hydra_texture
-from pxr import Gf, UsdGeom, UsdPhysics
-
-# enable ROS bridge extension
-# enable_extension("omni.isaac.debug_draw")
-# disable_extension("omni.replicator.core")
+from pxr import Gf, Sdf, UsdGeom, UsdPhysics
 
 
 def printinc(i):
@@ -73,15 +68,46 @@ if len(sys.argv) >= 2:
     if geo_type == "warehouse":
         # Loading the simple_room environment
         stage.add_reference_to_stage(
-            assets_root_path + "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd",
-            "/background"
-            # assets_root_path + "/Users/mcarlson@nvidia.com/Environments/Simple_Warehouse/full_warehouse.usd", "/background"
+            assets_root_path + "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd", "/background"
         )
     elif geo_type == "cubes":
-        add_cube(stage.get_current_stage(), "/World/cube_1", (1, 20, 1), (5, 0, 0), physics=False)
-        add_cube(stage.get_current_stage(), "/World/cube_2", (1, 20, 1), (-5, 0, 0), physics=False)
-        add_cube(stage.get_current_stage(), "/World/cube_3", (20, 1, 1), (0, 5, 0), physics=False)
-        add_cube(stage.get_current_stage(), "/World/cube_4", (20, 1, 1), (0, -5, 0), physics=False)
+        add_cube(stage.get_current_stage(), "/World/cxube_x1", (1, 20, 1), (5, 0, 0), physics=False)
+        add_cube(stage.get_current_stage(), "/World/cxube_x2", (1, 20, 1), (-5, 0, 0), physics=False)
+        add_cube(stage.get_current_stage(), "/World/cxube_x3", (20, 1, 1), (0, 5, 0), physics=False)
+        add_cube(stage.get_current_stage(), "/World/cxube_x4", (20, 1, 1), (0, -5, 0), physics=False)
+        add_cube(stage.get_current_stage(), "/World/cxube_x5", (20, 1, 1), (-5, -5, 0), physics=False)
+        add_cube(
+            stage.get_current_stage(),
+            "/World/cube_5",
+            (0.1764972, 2.0025313, 1.5832705),
+            (-3.0258131660928367, 0, 0),
+            physics=False,
+        )
+        # omni.kit.commands.execute('CreateAndBindMdlMaterialFromLibrary',
+        #    mdl_name='OmniGlass.mdl',
+        #    mtl_name='glass',
+        #    mtl_created_list=['/World/Looks/glass'],
+        #    bind_selected_prims=['/World/cube_5'])
+        omni.kit.commands.execute(
+            "CreateMdlMaterialPrim",
+            mtl_url="omniverse://ov-isaac-dev/NVIDIA/Materials/OmniSurface/Glass/OmniSurface_Glass.mdl",
+            mtl_name="OmniSurface_Glass",
+            mtl_path="/World/Looks/OmniSurface_Glass",
+        )
+        omni.kit.commands.execute(
+            "BindMaterialCommand",
+            prim_path=["/World/cube_5"],
+            material_path=Sdf.Path("/World/Looks/OmniSurface_Glass"),
+            strength=None,
+        )
+
+        # omni.kit.commands.execute('CreateUsdAttributeOnPath',
+        #    attr_path=Sdf.Path('/World/Looks/OmniSurface_Glass.SensorMaterialIndex'),
+        #    attr_type=Sdf.ValueTypeNames.Int,
+        #    custom=False,
+        #    variability=Sdf.VariabilityUniform,
+        #    attr_value=5)
+
     elif geo_type == "floor":
         stage.add_reference_to_stage(
             assets_root_path + "/Users/mcarlson@nvidia.com/Environments/Simple_Warehouse/just_floor.usd", "/background"
@@ -89,10 +115,13 @@ if len(sys.argv) >= 2:
     elif geo_type == "floora":
         stage.add_reference_to_stage("/home/mcarlson/data/just_floor/just_floor0.usda", "/background")
 
-
 lidar_config = "Example_Rotary"
 if len(sys.argv) >= 3:
-    lidar_config = sys.argv[1]
+    lidar_config = sys.argv[2]
+
+omni.kit.commands.execute(
+    "CreatePrim", prim_type="DomeLight", attributes={"inputs:intensity": 1000, "inputs:texture:format": "latlong"}
+)
 
 i = printinc(i)
 simulation_app.update()
@@ -128,16 +157,17 @@ _, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathStrin
 # _, render_product_path2 = create_hydra_texture([1, 1], sensor2.GetPath().pathString)
 
 # Create the debug draw pipeline in the post process graph
+from omni.syntheticdata import sensors
+
 if 1:
     i = printinc(i)
-    # writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
-    writer = rep.writers.get("Writer" + "IsaacReadRTXLidarData")
+    writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
+    # writer = rep.writers.get("Writer" + "IsaacReadRTXLidarData")
 
     i = printinc(i)
     writer.attach([render_product_path])  # , render_product_path2])
 else:
     # print("try RtxSensorCpuExportRaw")
-    from omni.syntheticdata import sensors
 
     sensors.get_synthetic_data().activate_node_template(
         "RtxSensorCpu" + "ExportRaw",
@@ -149,6 +179,13 @@ else:
         [render_product_path],
     )
 
+
+# sensors.get_synthetic_data().activate_node_template(
+#    "RtxSensorCpuIsaacPrintRTXLidarInfo",
+#    0,
+#    [render_product_path],
+# )
+
 # disable_extension("omni.replicator.core")
 i = printinc(i)
 simulation_app.update()
@@ -156,6 +193,13 @@ simulation_app.update()
 
 i = printinc(i)
 simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=1.0)
+
+omni.kit.commands.execute(
+    "ChangeProperty",
+    prop_path=Sdf.Path("/Render/PostProcess/SDGPipeline/DispatchSync.inputs:enabled"),
+    value=True,
+    prev=None,
+)
 
 i = printinc(i)
 simulation_context.play()
