@@ -35,6 +35,7 @@ struct CoreNodes
     double(CARB_ABI* getSimTime)();
     double(CARB_ABI* getSimTimeMonotonic)();
     double(CARB_ABI* getSystemTime)();
+    size_t(CARB_ABI* getPhysicsNumSteps)();
     // TODO105 kill these 3
     // deprecated : use getSimTimeAtTime instead
     double(CARB_ABI* getSimTimeAtSwhFrame)(const int64_t swhFrame);

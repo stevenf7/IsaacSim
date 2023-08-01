@@ -60,6 +60,7 @@ omni::fabric::UsdStageId gStageId;
 double gSimTime = 0.0;
 double gSimTimeMonotonic = 0.0;
 double gSystemTime = 0.0;
+size_t gPhysicsNumSteps = 0;
 std::map<uint64_t, void*> gHandleMap;
 std::mutex gHandleMutex;
 }
@@ -129,6 +130,7 @@ void onStop(void* userData)
         stageReaderWriter.destroyPrim(path);
     }
     gSimTime = 0;
+    gPhysicsNumSteps = 0;
 }
 
 void onPhysicsStep(float timeElapsed, void* userData)
@@ -136,6 +138,7 @@ void onPhysicsStep(float timeElapsed, void* userData)
     omni::fabric::StageReaderWriter stageReaderWriter = omni::fabric::StageReaderWriter(gStageReaderWriterId);
     gSimTime += timeElapsed;
     gSimTimeMonotonic += timeElapsed;
+    gPhysicsNumSteps += 1;
     gSystemTime = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
     auto path = omni::fabric::Path("/__OgnIsaacSimTime__");
     pxr::SdfPath usdPath = omni::fabric::intToPath(path);
@@ -183,6 +186,11 @@ double getSimulationTimeMonotonic()
 double getSystemTime()
 {
     return gSystemTime;
+}
+
+size_t getPhysicsNumSteps()
+{
+    return gPhysicsNumSteps;
 }
 
 double getSimulationTimeAtTime(const omni::fabric::RationalTime& rtime)
@@ -319,7 +327,7 @@ CARB_EXPORT void carbOnPluginStartup()
     // This increases forever until we stop sim.
     gSimTimeMonotonic = 0.0;
     gSystemTime = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
-
+    gPhysicsNumSteps = 0;
     INITIALIZE_OGN_NODES()
 }
 
@@ -342,6 +350,7 @@ void fillInterface(omni::isaac::core_nodes::CoreNodes& iface)
     iface.getSimTime = getSimulationTime;
     iface.getSimTimeMonotonic = getSimulationTimeMonotonic;
     iface.getSystemTime = getSystemTime;
+    iface.getPhysicsNumSteps = getPhysicsNumSteps;
 
     iface.getSimTimeAtSwhFrame = getSimulationTimeAtSwhFrame;
     iface.getSimTimeMonotonicAtSwhFrame = getSimulationTimeMonotonicAtSwhFrame;

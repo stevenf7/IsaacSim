@@ -1,4 +1,7 @@
 # Changelog
+## [1.2.0] - 2023-07-31
+### Added
+- Added tracking for the number of physics step
 
 ## [1.1.0] - 2023-07-06
 
