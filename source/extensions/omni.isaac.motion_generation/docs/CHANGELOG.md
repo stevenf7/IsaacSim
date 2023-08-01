@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.10.0] - 2023-08-01
+### Added
+- Add Kuka KR210 rmpflow configs with corresponding test case
+
 ## [4.9.0] - 2023-06-22
 ### Fixed
 - Add light to stages in all motion generation test cases because Kit 105.1 no longer has a default stage light
