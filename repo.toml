@@ -761,7 +761,7 @@ sysconfig_path = "${root}/_build/${platform}/${config}/kit/python/lib/python3.10
 url = "https://gitlab-master.nvidia.com/omniverse/ov-create/-/raw/release/2023.2/source/apps/omni.create.full.kit"
 
 deps_for_isaac = [
-  "omni.kit.livestream.native-2.2.0",
+  "omni.kit.livestream.native-2.3.0",
   "omni.replicator.composer-1.2.12",
   "omni.replicator.core-1.10.0-isaac_rc2",
   "omni.sensors.fov_preview_visualization-0.1.0-isaacsim.0",
@@ -779,7 +779,8 @@ deps_for_isaac = [
   "omni.sensors.nv.wpm-0.1.2-isaacsim.0",
   "omni.services.transport.server.tcp_socket-1.0.2",
   "semantics.schema.editor-0.3.3",
-  "omni.importer.mjcf-1.0.0"
+  "omni.importer.mjcf-1.0.0",
+  "omni.anim.shared.core-105.8.1" # temporary it seems to be needed by a dependency
 ]
 
 deps_for_testing = [
@@ -807,8 +808,10 @@ exclude = [
   "omni.create.tests",
 ]
 
+# please provide extensions in the format "extension.name-version" or {dep = "extension.name-version", tag = "tag"}
 override = [
-  # please provide extensions in the format "extension.name-version" or {dep = "extension.name-version", tag = "tag"}
+  "omni.kit.livestream.core-2.2.0",
+  "omni.kit.livestream.webrtc-2.2.0"
 ]
 
 output_file = "${root}/source/apps/omni.isaac.sim.extscache.kit"
