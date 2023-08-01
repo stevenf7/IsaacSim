@@ -8,7 +8,7 @@ cd "$SCRIPT_DIR"
 
 
 ../repo.sh update kit-sdk
-../repo.sh update repo_
 ../repo.sh update omni_physics --include-pre-release
 ../repo.sh update_extscache
-./packman/packman update -y
+# ../repo.sh update repo_
+# ./packman/packman update -y
