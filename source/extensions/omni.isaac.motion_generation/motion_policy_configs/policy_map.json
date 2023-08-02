@@ -62,5 +62,8 @@
 	},
 	"Kuka_KR210":{
 		"RMPflow": "./Kuka/kr210/rmpflow/config.json"
+	},
+	"Fanuc_CRX10IAL":{
+		"RMPflow": "./Fanuc/crx10ial/rmpflow/config.json"
 	}
 }
