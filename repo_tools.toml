@@ -96,3 +96,11 @@ entry_point = "${config_root}/tools/isaac/edit_sysconfig.py:setup_repo_tool"
 [update_extscache]
 command = "update_extscache"
 entry_point = "${config_root}/tools/isaac/update_extscache.py:setup_repo_tool"
+
+########################################################################################################################
+# Find duplicate files
+########################################################################################################################
+
+[find_duplicate_files]
+command = "find_duplicate_files"
+entry_point = "${config_root}/tools/isaac/find_duplicate_files.py:setup_repo_tool"
