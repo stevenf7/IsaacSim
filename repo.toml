@@ -174,16 +174,15 @@ python_paths = [
   "${root}/_build/${platform}/${config}/kit/extscore/*",
   "${root}/_build/${platform}/${config}/kit/kernel/py",
   "${root}/_build/${platform}/${config}/kit/plugins/bindings-python/",
-  "${root}/_build/${platform}/${config}/kit/extscore/omni.kit.pip_archive/pip_prebundle",
+  "${root}/_build/${platform}/${config}/kit/exts/omni.kit.pip_archive/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.isaac.core_archive/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.isaac.ml_archive/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.isaac.lula/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.isaac.ocs2/pip_prebundle",
+  "${root}/_build/${platform}/${config}/exts/omni.pip.compute/pip_prebundle",
+  "${root}/_build/${platform}/${config}/exts/omni.usd.schema.isaac/plugins",
   "${root}/_build/${platform}/${config}/extscache/*",
-  "${root}/_build/${platform}/${config}/kit/exts/*",
-  "${root}/_build/${platform}/${config}/kit/extscore/*",
-  "${root}/_build/${platform}/${config}/kit/extsPhysics/*",
-  "${root}/_build/${platform}/${config}/kit/extensions/extensions-bundled",
+  "${root}/_build/${platform}/${config}/extsPhysics/*",
 ]
 library_paths = [
   "$root/_build/$platform/$config",
@@ -209,7 +208,7 @@ sphinx_conf_py_extra = """
     html_static_path = [
         "docs/media/NVIDIA-LogoBlack.svg",
     ]
-    autodoc_mock_imports = ["pxr.PhysxSchema", "pxr.PhysicsSchemaTools",  "omni.physx", "omni.physics", "omni.replicator.core", "warp", "torch"]
+    autodoc_mock_imports = ["carb", "pxr.PhysxSchema", "pxr.PhysicsSchemaTools",  "omni.physx", "omni.physics", "omni.replicator.core", "warp", "torch"]
 
 """
 
@@ -222,6 +221,7 @@ sphinx_exclude_patterns = [
     "**/omni.isaac.internal_tools",
     "**/omni.isaac.core_archive",
     "**/omni.isaac.ml_archive",
+    "**/omni.pip.compute",
     "**/omni.isaac.gxf_bridge",     #TODO
     "**/omni.isaac.examples",     #TODO?
     "**/omni.isaac.ros2_bridge-humble",
@@ -242,10 +242,14 @@ sphinx_exclude_patterns = [
     "**/CHANGELOG.md",
     "CHANGELOG.md",
     "**/*LICENSE.md",
-    ".cache",
     "_deps_acl",
     "source/deprecated_extensions",
-    "schemas"
+    "schemas",
+    ".cache",
+    ".local",
+    ".vscode",
+    ".nvidia-omniverse",
+    "_build",
 ]
 
 ########################################################################################################################
@@ -457,7 +461,7 @@ kind = "glob_and_exec"
 path = "${test_root}/tests"
   [[repo_test.suites.pythontests.group]]
   include = ["tests-python*${shell_ext}"]
-  exclude = ["tests-python-omni.isaac.gym${shell_ext}"]
+  exclude = ["tests-python-omni.isaac.gym${shell_ext}", "tests-python-omni.isaac.internal_tools*${shell_ext}", "tests-python-omni.isaac.benchmarks*${shell_ext}"]
   args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
   tc_report_enabled = false
   timeout = 960
@@ -811,7 +815,9 @@ exclude = [
 # please provide extensions in the format "extension.name-version" or {dep = "extension.name-version", tag = "tag"}
 override = [
   "omni.kit.livestream.core-2.2.0",
-  "omni.kit.livestream.webrtc-2.2.0"
+  "omni.kit.livestream.webrtc-2.2.0",
+  "omni.warp-0.10.1",
+  "omni.warp.core-0.10.1"
 ]
 
 output_file = "${root}/source/apps/omni.isaac.sim.extscache.kit"
