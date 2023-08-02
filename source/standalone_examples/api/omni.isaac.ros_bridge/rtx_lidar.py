@@ -69,6 +69,9 @@ _, sensor = omni.kit.commands.execute(
 
 _, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathString)
 
+simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=1.0)
+simulation_app.update()
+
 # Create Point cloud publisher pipeline in the post process graph
 writer = rep.writers.get("RtxLidar" + "ROS1PublishPointCloud")
 writer.initialize(topicName="point_cloud", frameId="sim_lidar")
@@ -83,9 +86,6 @@ writer = rep.writers.get("RtxLidar" + "ROS1PublishLaserScan")
 writer.initialize(topicName="laser_scan", frameId="sim_lidar")
 writer.attach([render_product_path])
 simulation_app.update()
-simulation_app.update()
-
-simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=1.0)
 
 simulation_context.play()
 

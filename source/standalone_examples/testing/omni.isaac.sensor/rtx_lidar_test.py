@@ -159,6 +159,8 @@ _, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathStrin
 # Create the debug draw pipeline in the post process graph
 from omni.syntheticdata import sensors
 
+i = printinc(i)
+simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=1.0)
 if 1:
     i = printinc(i)
     writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
@@ -170,7 +172,8 @@ else:
     # print("try RtxSensorCpuExportRaw")
 
     sensors.get_synthetic_data().activate_node_template(
-        "RtxSensorCpu" + "ExportRaw",
+        "RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud",
+        # "RtxSensorCpu" + "ExportRaw",
         # "RtxSensorCpuIsaacPrintRTXLidarInfo",
         # "RtxLidar" + "DebugDrawPointCloud",
         # "Template" + "RtxLidar" + "DebugDrawPointCloud",
@@ -191,15 +194,13 @@ i = printinc(i)
 simulation_app.update()
 simulation_app.update()
 
-i = printinc(i)
-simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=1.0)
 
-omni.kit.commands.execute(
-    "ChangeProperty",
-    prop_path=Sdf.Path("/Render/PostProcess/SDGPipeline/DispatchSync.inputs:enabled"),
-    value=True,
-    prev=None,
-)
+# omni.kit.commands.execute(
+#    "ChangeProperty",
+#    prop_path=Sdf.Path("/Render/PostProcess/SDGPipeline/DispatchSync.inputs:enabled"),
+#    value=True,
+#    prev=None,
+# )
 
 i = printinc(i)
 simulation_context.play()
