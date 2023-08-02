@@ -19,7 +19,7 @@ writeTarget.kit = true
 [dependencies]
 "omni.kit.pip_archive" = {} # import the base kit python archive
 "omni.isaac.core_archive" = {} # pull in the main isaac sim pip archive
-"omni.pip.torch" = {} # pull in torch
+"omni.pip.torch" = {order = -1000} # pull in torch
 
 
 # Just importing one will add whole folder (pip_prebundle) to sys.path.
