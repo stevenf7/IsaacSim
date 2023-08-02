@@ -59,5 +59,8 @@
 	},
 	"Techman_TM12":{
 		"RMPflow": "./Techman/rmpflow/config.json"
+	},
+	"Kuka_KR210":{
+		"RMPflow": "./Kuka/kr210/rmpflow/config.json"
 	}
 }
