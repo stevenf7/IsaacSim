@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.7.0] - 2023-08-02
+### Changed
+- Use pip_prebundle instead of runtime installation of pip packages
+
 ## [0.6.6] - 2023-07-05
 ### Changed
 - Added explicit omni.kit.pipapi dependency

@@ -13,6 +13,8 @@ repo_build.prebuild_link {
     { "docs", ext.target_dir.."/docs" },
     { "data", ext.target_dir.."/data" },
     { "icons", ext.target_dir.."/icons" },
+    { "$root/_build/target-deps/isaac_onshape_prebundle", ext.target_dir.."/pip_prebundle" },
+
 }
 
 repo_build.prebuild_copy {
