@@ -199,6 +199,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
                 [[10.0, 10.0, self.cube_height], [10.0, 20.0, self.cube_height], [10.0, 30.0, self.cube_height]]
             ),
             contact_filter_prim_paths_expr=["/World/TopBox_*"],
+            max_contact_count=3 * 10,  # 3 box each with maximum of 20 potential contacts
         )
         # a view just to manipulate the top boxes
         self._top_box_view = RigidPrimView(
@@ -394,9 +395,11 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
 
     async def contact_force_test(self):
         print("contact force test")
+        wp.config.verify_cuda = True
         await self._my_world.reset_async()
         await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
+        view_size = 2 if self._test_cfg["indexed"] else 3
         for i in range(60):
             self._my_world.step_async()
             self._my_world._physics_sim_view.flush()
@@ -407,12 +410,46 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
         top_net_forces = self._top_box_view.get_net_contact_forces(indices, dt=self._sim_params["dt"])
         net_forces = self._box_view.get_net_contact_forces(indices, dt=self._sim_params["dt"])
         forces_matrix = self._box_view.get_contact_force_matrix(indices, dt=self._sim_params["dt"])
+        (
+            forces,
+            points,
+            normals,
+            distances,
+            pair_contacts_count,
+            pair_contacts_start_indices,
+        ) = self._box_view.get_contact_force_data(indices, dt=self._sim_params["dt"])
         # print("final forces: \n", net_forces)
         # print("matirx forces: \n", forces_matrix)
         # print("final positions: \n", states.positions)
         # print("final top positions: \n", top_states.positions)
         # print("final linear_velocities: \n", states.linear_velocities)
         # print("final top linear_velocities: \n", top_states.linear_velocities)
+        # print("forces= \n" ,forces, "pair_contacts_count= \n" ,pair_contacts_count, "pair_contacts_start_indices= \n" ,pair_contacts_start_indices)
+        # print("points= \n" ,points, "\nnormal= \n" , normals, "\ndistances= \n" , distances)
+        if self._test_cfg["backend"] == "torch":
+            pair_contacts_count = pair_contacts_count.cpu()
+            pair_contacts_start_indices = pair_contacts_start_indices.cpu()
+            normals = normals.cpu()
+            forces = forces.cpu()
+            points = points.cpu()
+
+        if self._test_cfg["backend"] != "numpy":
+            pair_contacts_count = pair_contacts_count.numpy()
+            pair_contacts_start_indices = pair_contacts_start_indices.numpy()
+            normals = normals.numpy()
+            forces = forces.numpy()
+            points = points.numpy()
+
+        force_aggregate = np.zeros((view_size, 1, 3))
+        effective_position = np.zeros((view_size, 1, 3))
+        for i in range(pair_contacts_count.shape[0]):
+            for j in range(pair_contacts_count.shape[1]):
+                start_idx = pair_contacts_start_indices[i, j]
+                count = pair_contacts_count[i, j]
+                if count > 0:
+                    pair_forces = forces[start_idx : start_idx + count] * normals[start_idx : start_idx + count]
+                    force_aggregate[i, j] = np.sum(pair_forces, axis=0)
+                    effective_position[i, j] = np.sum(points[start_idx : start_idx + count], axis=0) / count
 
         if self._test_cfg["backend"] == "warp":
             # position test
@@ -423,6 +460,14 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
                     atol=1.0e-4,
                 ).all()
             )
+            self.assertTrue(
+                self.isclose(
+                    effective_position.squeeze(),
+                    np.array([[10.0, 10, 1.0], [10.0, 20.0, 1.0], [10.0, 30.0, 1.0]])[indices],
+                    atol=1.0e-2,
+                ).all()
+            )
+
             self.assertTrue(
                 self.isclose(
                     top_states.positions.numpy()[indices],
@@ -454,6 +499,14 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
                     atol=2.0e-1,
                 ).all()
             )
+            # similar for the force aggregate
+            self.assertTrue(
+                self.isclose(
+                    force_aggregate[:, 0, :],
+                    np.array([[0, 0, -10], [0, 0, -10], [0, 0, -10]])[indices],
+                    atol=2.0e-1,
+                ).all()
+            )
 
             # force test : net forces on box
             self.assertTrue(
@@ -475,6 +528,14 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
                     atol=1.0e-4,
                 ).all()
             )
+            self.assertTrue(
+                self.isclose(
+                    self._array_container(effective_position).squeeze(),
+                    self._array_container([[10.0, 10, 1.0], [10.0, 20.0, 1.0], [10.0, 30.0, 1.0]])[indices].squeeze(),
+                    atol=1.0e-2,
+                ).all()
+            )
+
             self.assertTrue(
                 self.isclose(
                     top_states.positions[indices],
@@ -502,6 +563,13 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             self.assertTrue(
                 self.isclose(
                     forces_matrix[:, 0, :].squeeze(),
+                    self._array_container([[0, 0, -10], [0, 0, -10], [0, 0, -10]])[indices].squeeze(),
+                    atol=2.0e-1,
+                ).all()
+            )
+            self.assertTrue(
+                self.isclose(
+                    self._array_container(force_aggregate[:, 0, :]).squeeze(),
                     self._array_container([[0, 0, -10], [0, 0, -10], [0, 0, -10]])[indices].squeeze(),
                     atol=2.0e-1,
                 ).all()

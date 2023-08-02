@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from typing import List, Optional, Union
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 import omni.kit.app
@@ -72,6 +72,8 @@ class GeometryPrimView(XFormPrimView):
         contact_filter_prim_paths_expr (Optional[List[str]], Optional): a list of filter expressions which allows for tracking
                                                                         contact forces between the geometry prim and this subset
                                                                         through get_contact_force_matrix().
+        max_contact_count (int, optional): maximum number of contact data to report when detailed contact information is needed
+
     """
 
     def __init__(
@@ -89,6 +91,7 @@ class GeometryPrimView(XFormPrimView):
         prepare_contact_sensors: bool = False,
         disable_stablization: bool = True,
         contact_filter_prim_paths_expr: Optional[List[str]] = [],
+        max_contact_count: int = 0,
     ) -> None:
         XFormPrimView.__init__(
             self,
@@ -140,6 +143,7 @@ class GeometryPrimView(XFormPrimView):
                 prepare_contact_sensors=prepare_contact_sensors,
                 apply_rigid_body_api=False,
                 disable_stablization=disable_stablization,
+                max_contact_count=max_contact_count,
             )
         return
 
@@ -724,5 +728,51 @@ class GeometryPrimView(XFormPrimView):
         else:
             carb.log_warn(
                 "No filter is specified for get_contact_force_matrix. Initialize the GeometryPrimView with the contact_filter_prim_paths_expr and specify a list of filters."
+            )
+            return None
+
+    def get_contact_force_data(
+        self,
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        clone: bool = True,
+        dt: float = 1.0,
+    ) -> Tuple[
+        Union[np.ndarray, torch.Tensor, wp.indexedarray],
+        Union[np.ndarray, torch.Tensor, wp.indexedarray],
+        Union[np.ndarray, torch.Tensor, wp.indexedarray],
+        Union[np.ndarray, torch.Tensor, wp.indexedarray],
+        Union[np.ndarray, torch.Tensor, wp.indexedarray],
+        Union[np.ndarray, torch.Tensor, wp.indexedarray],
+    ]:
+        """
+        Gets more detailed contact information between the prims in the view and the filter prims. Specifically, this method provides individual
+        contact normals, contact pointes, contact separations as well as contact forces for each pair
+        (the sum of which equals the forces that the get_contact_force_matrix method provides as the force aggregate of a pair)
+        Given to the dynamic nature of collision between bodies, this method will provide buffers of contact data which are arranged sequentially for each pair.
+        The starting index and the number of contact data points for each pair in this stream can be realized from pair_contacts_start_indices,
+        and pair_contacts_count tensors. They both have a dimension of (self.num_shapes, self.num_filters) where filter_count is determined
+        according to the filter_paths_expr parameter.
+
+        Args:
+            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indicies to specify which prims
+                                                                                 to query. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
+            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            dt (float): time step multiplier to convert the underlying impulses to forces. If the default value is used then the forces are in fact contact impulses
+
+        Returns:
+            Tuple[Union[np.ndarray, torch.Tensor, wp.indexedarray], Union[np.ndarray, torch.Tensor, wp.indexedarray],
+                Union[np.ndarray, torch.Tensor, wp.indexedarray], Union[np.ndarray, torch.Tensor, wp.indexedarray],
+                Union[np.ndarray, torch.Tensor, wp.indexedarray], Union[np.ndarray, torch.Tensor, wp.indexedarray]]:
+                A set of buffers for normal forces with shape (max_contact_count, 1), points with shape (max_contact_count, 3), normals with shape (max_contact_count, 3),
+                and distances with shape (max_contact_count, 1), as well as two tensors with shape (M, self.num_filters)
+                to indicate the starting index and the number of contact data points per pair in the aforementioned buffers.
+        """
+        if len(self._contact_filter_prim_paths_expr) != 0:
+            return self._contact_view.get_contact_force_data(indices, clone, dt)
+        else:
+            carb.log_warn(
+                "No filter is specified for get_contact_force_data. Initialize the GeometryPrimView with the contact_filter_prim_paths_expr and specify a list of filters."
             )
             return None

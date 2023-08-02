@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.0] - 2023-08-01
+### Added
+- Added a new API for reading detailed contact data
+
 ## [2.3.1] - 2023-07-19
 
 ### Fixed
