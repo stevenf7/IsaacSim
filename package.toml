@@ -96,7 +96,6 @@ files_strip = [
 files_strip_exclude = [
     ["kit/exts/omni.kit.pip_archive/pip_prebundle/PIL/**"],
     ["exts/omni.pip.compute/pip_prebundle/scipy/**"],
-    ["exts/omni.isaac.ml_archive/pip_prebundle/torchvision/**"],
     ["exts/omni.isaac.ocs2/pip_prebundle/lib/**"],
     ["extscache/omni.pip.torch**"]
 ]

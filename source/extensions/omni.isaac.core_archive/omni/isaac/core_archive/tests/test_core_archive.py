@@ -24,7 +24,6 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
         import nest_asyncio
         import numba
         import nvsmi
-        import oauthlib
         import osqp
         import packaging
         import pint
@@ -32,8 +31,6 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
         import pyparsing
         import qdldl
         import quaternion
-        import requests
-        import requests_oauthlib
         import selenium
         import tornado
         import webbot
@@ -42,7 +39,6 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(numba)
         self.assertIsNotNone(webbot)
         self.assertIsNotNone(selenium)
-        self.assertIsNotNone(requests)
         self.assertIsNotNone(construct)
         self.assertIsNotNone(llvmlite)
         self.assertIsNotNone(nest_asyncio)
@@ -54,8 +50,6 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(kiwisolver)
         self.assertIsNotNone(pint)
         self.assertIsNotNone(packaging)
-        self.assertIsNotNone(oauthlib)
-        self.assertIsNotNone(requests_oauthlib)
         self.assertIsNotNone(gunicorn)
         self.assertIsNotNone(osqp)
         self.assertIsNotNone(qdldl)

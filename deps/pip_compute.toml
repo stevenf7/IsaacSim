@@ -1,13 +1,9 @@
-# lula is a custom dependency that is compiled and brought in from packman for omni.isaac.lula
 [[dependency]]
 python = "../_build/target-deps/python"
 packages = [
-    # "pip==20.1.1",
     "imageio==2.22.2",          # SWIPAT filed under: https://nvbugs/3701046
     "scipy==1.10.1",            # SWIPAT filed under: https://nvbugs/3673519
-    "boto3[crt]==1.26.63",      # SWIPAT filed under: https://nvbugs/3697913,
-    "pyyaml==5.4.1",            # SWIPAT filed under: https://nvbugs/3434739
-    "s3transfer==0.6.1",        # SWIPAT filed under: https://nvbugs/3738087
+    "pyyaml==6.0.1",            # SWIPAT filed under: https://nvbugs/3434739
 ]
 
 target = "../_build/target-deps/pip_compute_prebundle"

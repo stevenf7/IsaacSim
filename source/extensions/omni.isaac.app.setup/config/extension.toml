@@ -26,7 +26,7 @@ name = "omni.isaac.app.setup"
 
 [[test]]
 dependencies = [
-   "omni.rtx.settings.core", "omni.replicator.core"
+   "omni.rtx.settings.core", "omni.pip.cloud", "omni.replicator.core"
 ]
 
 [settings."filter:platform"."windows-x86_64"]

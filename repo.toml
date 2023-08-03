@@ -45,6 +45,7 @@ fetch.pip.files_to_pull = [
     "${root}/deps/pip_repl.toml",
     "${root}/deps/pip_compute.toml",
     "${root}/deps/pip_onshape.toml",
+    "${root}/deps/pip_cloud.toml",
 ]
 
 stage_files.extra_mapping.kit_sdk_debug = "${root}/_build/$platform/debug/kit"
@@ -72,6 +73,7 @@ vscode.python_env.PYTHONPATH= [
   "$root/_build/$platform/$config/exts/omni.isaac.core_archive/pip_prebundle",
   "$root/_build/$platform/$config/exts/omni.isaac.ml_archive/pip_prebundle",
   "$root/_build/$platform/$config/exts/omni.pip.compute/pip_prebundle",
+  "$root/_build/$platform/$config/exts/omni.pip.cloud/pip_prebundle",
   "$root/_build/$platform/$config/extscache/omni.pip.torch*/torch-2-0-1/",
 ]
 
@@ -181,6 +183,7 @@ python_paths = [
   "${root}/_build/${platform}/${config}/exts/omni.isaac.lula/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.isaac.ocs2/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.pip.compute/pip_prebundle",
+  "${root}/_build/${platform}/${config}/exts/omni.pip.cloud/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.usd.schema.isaac/plugins",
   "${root}/_build/${platform}/${config}/extscache/*",
   "${root}/_build/${platform}/${config}/extsPhysics/*",
@@ -794,7 +797,7 @@ deps_for_testing = [
 ]
 
 deps_for_ml = [
-  {dep = "omni.pip.torch-2.0.1", tag = "2_0_1"}
+  {dep = "omni.pip.torch-2.0.2", tag = "2_0_1"}
 ]
 
 windows_only = [
