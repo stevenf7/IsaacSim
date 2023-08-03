@@ -1,0 +1,26 @@
+[[dependency]]
+python = "../_build/target-deps/python"
+packages = [
+    "boto3[crt]==1.26.63",         # SWIPAT filed under: https://nvbugs/3697913
+    "s3transfer==0.6.1",           # SWIPAT filed under: https://nvbugs/3738087
+    "azure-storage-blob==12.17.0", # SWIPAT filed under: https://nvbugs/4221315
+    "azure-identity==1.13.0",      # SWIPAT filed under: https://nvbugs/4221323
+    "requests==2.31.0",            # SWIPAT filed under: https://nvbugs/3430668
+    "oauthlib==3.2.2",             # SWIPAT filed under: https://nvbugs/3433846
+    "requests-oauthlib==1.3.1",    # SWIPAT filed under: https://nvbugs/3433849
+    "isodate==0.6.1",              # SWIPAT filed under:
+    "cryptography==41.0.1",        # SWIPAT filed under:
+    "typing-extensions==4.7.1",    # SWIPAT filed under: https://nvbugs/3114241
+    "azure-core==1.28.0",          # SWIPAT filed under:
+    "msal==1.23.0",                # SWIPAT filed under:
+    "msal-extensions==1.0.0",      # SWIPAT filed under:
+    "portalocker==2.7.0",          # SWIPAT filed under:
+]
+
+target = "../_build/target-deps/pip_cloud_prebundle"
+platforms = ["*-x86_64"]
+download_only = false
+install_dependencies = false
+append_to_install_folder = true
+gather_licenses_path = "../_build/PACKAGE-LICENSES/PIP-prebundled-LICENSES.txt"
+# extra_args = []

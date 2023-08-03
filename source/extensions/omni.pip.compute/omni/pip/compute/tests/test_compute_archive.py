@@ -13,14 +13,10 @@ import omni.kit.test
 class TestPipArchive(omni.kit.test.AsyncTestCase):
     # import all packages to make sure dependencies were not missed
     async def test_import_all(self):
-        import boto3
         import imageio
         import pyyaml
-        import s3transfer
         import scipy
 
         self.assertIsNotNone(imageio)
         self.assertIsNotNone(scipy)
-        self.assertIsNotNone(boto3)
         self.assertIsNotNone(pyyaml)
-        self.assertIsNotNone(s3transfer)

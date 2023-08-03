@@ -20,6 +20,7 @@ writeTarget.kit = true
 "omni.isaac.core_archive" = {}
 "omni.isaac.ml_archive" = {}
 "omni.pip.compute" = {} # scipy
+"omni.pip.cloud" = {}
 "omni.physx.tensors" = {}
 "omni.kit.material.library" = {} # omni.kit.material
 "omni.isaac.version" = {}
