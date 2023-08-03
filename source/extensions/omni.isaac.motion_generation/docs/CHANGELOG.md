@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.11.0] - 2023-08-02
+### Added
+- Add Fanuc CRX10IAL rmpflow configs with corresponding test case
+
 ## [4.10.0] - 2023-08-01
 ### Added
 - Add Kuka KR210 rmpflow configs with corresponding test case
