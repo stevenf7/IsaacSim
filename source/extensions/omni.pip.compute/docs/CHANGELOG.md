@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.0] - 2023-08-03
+
+### Changed
+- Update pyyaml to 6.0.1
+
+### Removed
+- Removed boto3 and s3transfer into omni.pip.cloud
+
 ## [1.1.1] - 2023-07-05
 
 ### Changed
