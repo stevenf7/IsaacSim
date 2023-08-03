@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.1] - 2023-08-03
+
+### Changed
+
+- Add Materials folder
+
 ## [0.3.0] - 2023-03-31
 
 ### Changed
