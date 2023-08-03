@@ -18,7 +18,7 @@ argv = [
     "--ext-folder",
     f'{os.path.abspath(os.environ["ISAAC_PATH"])}/exts',
     "--no-window",
-    "--/app/asyncRendering=False",
+    "--/app/asyncRendering=True",
     "--/app/fastShutdown=True",
     "--enable",
     "omni.usd",
