@@ -28,13 +28,13 @@ class OmnigraphKeyboard(BaseSample):
             VisualCuboid(
                 prim_path="/Cube",  # The prim path of the cube in the USD stage
                 name="cube",  # The unique name used to retrieve the object from the scene later on
-                position=np.array([0, 0, 10.0]),  # Using the current stage units which is cms by default.
-                size=10.0,  # most arguments accept mainly numpy arrays.
+                position=np.array([0, 0, 1.0]),  # Using the current stage units which is cms by default.
+                size=1.0,  # most arguments accept mainly numpy arrays.
                 color=np.array([0, 1.0, 1.0]),  # RGB channels, going from 0-1
             )
         )
         world.scene.add_default_ground_plane()
-        set_camera_view(eye=np.array([75, 75, 45]), target=np.array([0, 0, 0]))
+        set_camera_view(eye=np.array([5, 5, 3]), target=np.array([0, 0, 0]))
 
         # setup graph
         keys = og.Controller.Keys
