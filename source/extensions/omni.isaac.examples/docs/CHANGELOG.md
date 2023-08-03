@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.4] - 2023-08-02
+### Fixed
+- Physics/lighting error caused by 100x scale in cube size and camera position
+
 ## [1.6.3] - 2023-06-30
 ### Fixed
 - Error in nut+bolt example due to USD schema changes
