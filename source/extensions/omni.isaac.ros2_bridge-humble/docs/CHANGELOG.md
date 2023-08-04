@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.13.0] - 2023-08-03
+### Changed
+- Image and PCL publishers to use ptrs instead of arrays when possible to reduce memory copies
+
 ## [1.12.4] - 2023-07-05
 ### Fixed
 - Joint efforts not being applied in joint state subscriber

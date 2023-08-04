@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.3.0] - 2023-08-03
+### Changed
+- RGBA and Depth to PCL nodes use raw ptrs instead of arrays to improve perf
+
 ## [1.2.0] - 2023-07-31
 ### Added
 - Added tracking for the number of physics step

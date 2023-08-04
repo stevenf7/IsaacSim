@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -8,7 +8,10 @@
 //
 #pragma once
 
+#include "ScopedCudaDevice.h"
+
 #include <carb/cuda/CudaRuntime.h>
+#include <carb/cudainterop/CudaInterop.h>
 
 #include <cuda.h>
 #include <vector>
@@ -17,7 +20,7 @@ namespace omni
 {
 namespace isaac
 {
-namespace buffer
+namespace utils
 {
 enum class eMemoryType
 {
@@ -36,7 +39,16 @@ public:
     virtual void resize(size_t size) = 0;
     virtual T* data() const = 0;
     virtual size_t size() const = 0;
-    virtual eMemoryType type() const
+    size_t sizeofType() const
+    {
+        return sizeof(T);
+    }
+    size_t sizeInBytes() const
+    {
+        return size() * sizeofType();
+    }
+
+    eMemoryType type() const
     {
         return mMemoryType;
     }
@@ -51,19 +63,38 @@ class DeviceBufferBase : public Buffer<T>
     using Buffer<T>::mMemoryType;
 
 public:
-    DeviceBufferBase(size_t size = 0)
+    DeviceBufferBase(const size_t& size = 0, const int device = -1)
     {
         mMemoryType = eMemoryType::Device;
+        mDevice = device;
         resize(size);
     }
     virtual ~DeviceBufferBase()
     {
+        ScopedDevice(mDevice);
+
         CUDA_CHECK(cudaFree(mBuffer));
         mBuffer = nullptr;
     }
+    virtual void setDevice(const int device = -1)
+    {
+        if (device != mDevice)
+        {
+            // if the device doesn't match and we had a buffer allocated, release it on the old device and switch
+            if (mBuffer)
+            {
+                ScopedDevice(mDevice);
+                CUDA_CHECK(cudaFree(mBuffer));
+                mBuffer = nullptr;
+            }
+            mDevice = device;
+            resize(mSize);
+        }
+    }
     virtual void resize(size_t size)
     {
-        if (size != mSize)
+        ScopedDevice(mDevice);
+        if (size != mSize && size > 0)
         {
             if (mBuffer)
             {
@@ -85,10 +116,21 @@ public:
     {
         return mSize;
     }
+    virtual void copy(const void* src, size_t size, enum cudaMemcpyKind kind = cudaMemcpyDeviceToHost)
+    {
+        ScopedDevice(mDevice);
+        CUDA_CHECK(cudaMemcpy(mBuffer, src, size * sizeof(T), kind));
+    }
+    virtual void copyAsync(const void* src, size_t size, enum cudaMemcpyKind kind = cudaMemcpyDeviceToHost)
+    {
+        ScopedDevice(mDevice);
+        CUDA_CHECK(cudaMemcpyAsync(mBuffer, src, size * sizeof(T), kind));
+    }
 
 private:
     T* mBuffer = nullptr;
     size_t mSize = 0;
+    int mDevice = 0;
 };
 template <typename T>
 class HostBufferBase : public Buffer<T>

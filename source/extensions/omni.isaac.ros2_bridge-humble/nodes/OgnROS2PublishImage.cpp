@@ -1,4 +1,4 @@
-// Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -13,8 +13,12 @@
 #include <carb/graphics/GraphicsTypes.h>
 
 #include <omni/isaac/ros/Ros2Node.h>
+#include <omni/isaac/utils/Buffer.h>
+#include <omni/isaac/utils/ScopedCudaDevice.h>
 
 #include <OgnROS2PublishImageDatabase.h>
+
+extern "C" void textureFloatCopyToRawBuffer(cudaTextureObject_t, uint8_t*, uint32_t, uint32_t, cudaStream_t);
 
 class OgnROS2PublishImage : public Ros2Node
 {
@@ -57,7 +61,7 @@ public:
         }
 
         // Setup ROS Image Message
-        sensor_msgs::msg::Image msg;
+        sensor_msgs::msg::Image& msg = state.msg;
         msg.header.frame_id = state.mFrameId;
 
         if (db.inputs.timeStamp() >= 0.0)
@@ -97,19 +101,69 @@ public:
         msg.step = msg.width * channels * byteDepth;
 
         size_t totalBytes = msg.step * msg.height;
-        if (totalBytes != db.inputs.data.size())
-        {
-            db.logError(
-                "image format with bit depth %d and expected size %d bytes does not match input buffer Size of %d bytes",
-                bitDepth, totalBytes, db.inputs.data.size());
-            return false;
-        }
-
         msg.data.resize(totalBytes);
 
-        const uint8_t* pointsAsCpu = reinterpret_cast<const uint8_t*>(db.inputs.data.cpu().data());
+        if (db.inputs.cudaDeviceIndex() == -1)
+        {
+            if (db.inputs.dataPtr() != 0 && totalBytes == db.inputs.bufferSize())
+            {
+                // Data is on host as ptr, buffer size matches
+                memcpy(&msg.data[0], reinterpret_cast<void*>(db.inputs.dataPtr()), totalBytes);
+            }
+            else if (db.inputs.dataPtr() == 0 && totalBytes == db.inputs.data.size())
+            {
+                // data is on host as ogn data, copy from cpu
+                memcpy(&msg.data[0], reinterpret_cast<const uint8_t*>(db.inputs.data.cpu().data()), totalBytes);
+            }
+            else
+            {
+                db.logError(
+                    "image format with bit depth %d and expected size %d bytes does not match input buffer Size of %d bytes",
+                    bitDepth, totalBytes, db.inputs.bufferSize());
+                db.logError("dataPtr null and expected size %d bytes does not match input data Size of %d bytes",
+                            totalBytes, db.inputs.data.size());
+                return false;
+            }
+        }
+        else
+        {
+            omni::isaac::utils::ScopedDevice(db.inputs.cudaDeviceIndex());
 
-        memcpy(&msg.data[0], &pointsAsCpu[0], totalBytes);
+            if (db.inputs.bufferSize() == 0)
+            {
+                omni::isaac::utils::ScopedCudaTextureObject srcTexObj(
+                    reinterpret_cast<cudaMipmappedArray_t>(db.inputs.dataPtr()), 0);
+                switch (static_cast<carb::graphics::Format>(db.inputs.format()))
+                {
+                case carb::graphics::Format::eR32_SFLOAT:
+                    if (db.inputs.width() * db.inputs.height() * sizeof(float) != totalBytes)
+                    {
+                        CARB_LOG_ERROR("totalBytes doesn't match eR32_SFLOAT %d %d",
+                                       db.inputs.width() * db.inputs.height() * sizeof(float), totalBytes);
+                    }
+                    else
+                    {
+                        state.mBuffer.setDevice(db.inputs.cudaDeviceIndex());
+                        state.mBuffer.resize(db.inputs.width() * db.inputs.height() * sizeof(float));
+                        textureFloatCopyToRawBuffer(srcTexObj, state.mBuffer.data(), msg.width, msg.height, 0);
+                        CUDA_CHECK(cudaGetLastError());
+                        auto src = reinterpret_cast<void*>(state.mBuffer.data());
+                        CUDA_CHECK(cudaMemcpy(&msg.data[0], src, totalBytes, cudaMemcpyDeviceToHost));
+                    }
+                    break;
+
+                default:
+                    CARB_LOG_ERROR("SdRenderVarToRawArray : input texture format (%d) is not supported.",
+                                   static_cast<int>(db.inputs.format()));
+                    return false;
+                }
+            }
+            else
+            {
+                CUDA_CHECK(cudaMemcpy(&msg.data[0], reinterpret_cast<void*>(db.inputs.dataPtr()),
+                                      db.inputs.bufferSize(), cudaMemcpyDeviceToHost));
+            }
+        }
 
         state.mPublisher->publish(msg);
 
@@ -132,6 +186,8 @@ private:
     std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::Image>> mPublisher = nullptr;
 
     std::string mFrameId = "sim_camera";
+    sensor_msgs::msg::Image msg;
+    omni::isaac::utils::DeviceBuffer mBuffer;
 };
 
 REGISTER_OGN_NODE()

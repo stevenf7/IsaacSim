@@ -25,23 +25,6 @@ __global__ void rgbaToRgbKernel(uint8_t *dest, const uint8_t *src, const int wid
 	dest[idx*3+2] = src[row*srcStride + col*4+2];
 
 }
-
-__global__ void rgbaToRgbKernelOgn(uint8_t **dest, const uint8_t **src, const int width, const int height, const int srcStride)
-{
-
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx >= width*height)
-        return;
-
-	int row = idx / width;
-	int col = idx % width;
-
-	(*dest)[idx*3] = (*src)[row*srcStride + col*4];
-	(*dest)[idx*3+1] = (*src)[row*srcStride + col*4+1];
-	(*dest)[idx*3+2] = (*src)[row*srcStride + col*4+2];
-
-}
-
 extern "C" void rgbaToRgb(uint8_t *dest, const uint8_t *src, const int width, const int height, const int srcStride)
 {
 
@@ -53,16 +36,31 @@ extern "C" void rgbaToRgb(uint8_t *dest, const uint8_t *src, const int width, co
 
 }
 
-
-
-extern "C" void rgbaToRgbOgn(uint8_t **dest, const uint8_t **src, const int width, const int height, const int srcStride)
+__global__ void rgbaToRgbKernelOgn(uint8_t *dest, cudaTextureObject_t src, const int width, const int height, const int srcStride)
 {
 
-	const int num = width*height;
-    const int nt = 256;
-    const int nb = (num + nt - 1) / nt;
+    const unsigned int x = blockIdx.x * blockDim.x + threadIdx.x;
+    const unsigned int y = blockIdx.y * blockDim.y + threadIdx.y;
 
-    rgbaToRgbKernelOgn<<<nb, nt>>>(dest, src, width, height, srcStride);
+    if (x >= width || y >= height)
+        return;
+
+    const float tu = (x + 0.5f) / width;
+    const float tv = (y + 0.5f) / height;
+    
+    dest[(y * width + x)*3+0] = tex2D<uchar4>(src, tu, tv).x;
+    dest[(y * width + x)*3+1] = tex2D<uchar4>(src, tu, tv).y;
+    dest[(y * width + x)*3+2] = tex2D<uchar4>(src, tu, tv).z;
+
+}
+
+extern "C" void rgbaToRgbOgn(uint8_t *dest, cudaTextureObject_t src, const int width, const int height, const int srcStride)
+{
+
+	const dim3 dimBlock(32, 32);
+    const dim3 dimGrid((width + dimBlock.x - 1) / dimBlock.x, (height + dimBlock.y - 1) / dimBlock.y);
+
+    rgbaToRgbKernelOgn<<<dimGrid, dimBlock>>>(dest, src, width, height, srcStride);
 
 }
 
@@ -157,33 +155,7 @@ __global__ void depthToPCLKernel(void *dest, const float *src, const int width, 
     result[idx] = point;
 
 }
-__global__ void depthToPCLKernelOgn(float3** dest, const uint8_t** src, const int width, const int height, const float fx, const float fy, const float cx, const float cy)
-{
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (idx >= width * height)
-        return;
-    int row = idx / (width);
-    int col = idx % (width);
-
-    uint8_t buff[4] = {(*src)[idx * 4], (*src)[idx * 4+1], (*src)[idx * 4+2], (*src)[idx * 4+3]};
-    float z = ((float*)buff)[0];
-
-    if (z != INFINITY)
-    {
-        (*dest)[idx].x = (float)(z * (col - cx) / fx);
-        (*dest)[idx].y = (float)(z * (row - cy) / fy);
-        (*dest)[idx].z = z;
-    }
-
-    else
-    {
-        (*dest)[idx].x = nanf("1");
-        (*dest)[idx].y = nanf("2");
-        (*dest)[idx].z = nanf("3");
-    }
-
-}
 
 extern "C" void depthToPCL(void *dest, const float *src, const int width, const int height, const float fx, const float fy, const float cx, const float cy)
 {
@@ -195,12 +167,86 @@ extern "C" void depthToPCL(void *dest, const float *src, const int width, const 
     depthToPCLKernel<<<nb, nt>>>(dest, src, width, height, fx, fy, cx, cy);
 
 }
-extern "C" void depthToPCLOgn(float3** dest, const uint8_t** src, const int width, const int height, const float fx, const float fy, const float cx, const float cy)
+
+__global__ void depthToPCLKernelOgn(float3 * dest, const cudaTextureObject_t src, const int width, const int height, const float fx, const float fy, const float cx, const float cy)
 {
 
-    const int num = width * height;
-    const int nt = 256;
-    const int nb = (num + nt - 1) / nt;
+    const unsigned int x = blockIdx.x * blockDim.x + threadIdx.x;
+    const unsigned int y = blockIdx.y * blockDim.y + threadIdx.y;
 
-    depthToPCLKernelOgn<<<nb, nt>>>(dest, src, width, height, fx, fy, cx, cy);
+    if (x >= width || y >= height)
+        return;
+
+    const float tu = (x + 0.5f) / width;
+    const float tv = (y + 0.5f) / height;
+    int idx = y * width + x;
+    int row = idx / width;
+	int col = idx % width;
+    
+    float z = tex2D<float>(src, tu, tv);
+
+    if (z != INFINITY)
+    {
+        dest[idx].x = (float)(z * (col - cx) / fx);
+        dest[idx].y = (float)(z * (row - cy) / fy);
+        dest[idx].z = z;
+    }
+
+    else
+    {
+        dest[idx].x = nanf("1");
+        dest[idx].y = nanf("2");
+        dest[idx].z = nanf("3");
+    }
+
+}
+
+extern "C" void depthToPCLOgn(float3 * dest, const cudaTextureObject_t src, const int width, const int height, const float fx, const float fy, const float cx, const float cy)
+{
+
+    const dim3 dimBlock(32, 32);
+    const dim3 dimGrid((width + dimBlock.x - 1) / dimBlock.x, (height + dimBlock.y - 1) / dimBlock.y);
+
+    depthToPCLKernelOgn<<<dimGrid, dimBlock>>>(dest, src, width, height, fx, fy, cx, cy);
+}
+
+
+template <typename T>
+__global__ void textureCopyToRawBufferKernel(cudaTextureObject_t srcTexObj,
+                                             T* dstBuffer,
+                                             unsigned int dstWidth,
+                                             unsigned int dstHeight)
+{
+    const unsigned int x = blockIdx.x * blockDim.x + threadIdx.x;
+    const unsigned int y = blockIdx.y * blockDim.y + threadIdx.y;
+
+    if (x >= dstWidth || y >= dstHeight)
+        return;
+
+    const float tu = (x + 0.5f) / dstWidth;
+    const float tv = (y + 0.5f) / dstHeight;
+
+    dstBuffer[y * dstWidth + x] = tex2D<T>(srcTexObj, tu, tv);
+}
+
+template <typename T>
+void textureCopyToRawBuffer(cudaTextureObject_t srcTexObj,
+                            unsigned char* dstBuffer,
+                            unsigned int dstWidth,
+                            unsigned int dstHeight,
+                            cudaStream_t stream)
+{
+    const dim3 dimBlock(32, 32);
+    const dim3 dimGrid((dstWidth + dimBlock.x - 1) / dimBlock.x, (dstHeight + dimBlock.y - 1) / dimBlock.y);
+    textureCopyToRawBufferKernel<T>
+        <<<dimGrid, dimBlock, 0, stream>>>(srcTexObj, reinterpret_cast<T*>(dstBuffer), dstWidth, dstHeight);
+}
+
+extern "C" void textureFloatCopyToRawBuffer(cudaTextureObject_t srcTexObj,
+                                            unsigned char* dstBuffer,
+                                            unsigned int dstWidth,
+                                            unsigned int dstHeight,
+                                            cudaStream_t stream)
+{
+    textureCopyToRawBuffer<float>(srcTexObj, dstBuffer, dstWidth, dstHeight, stream);
 }
