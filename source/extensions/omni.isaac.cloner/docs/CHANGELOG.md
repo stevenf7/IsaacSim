@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.7.0] - 2023-07-26
+### Added
+- Exposed API for retrieving clone transorms from GridCloner
+- Add unregister when physics replication is disabled
+
 ## [0.6.0] - 2023-07-19
 
 ### Changed

@@ -8,8 +8,11 @@
 #
 
 import abc
+import asyncio
 import queue
 
+import carb
+import omni.kit
 from omni.isaac.gym.vec_env import VecEnvBase
 
 
@@ -177,70 +180,85 @@ class VecEnvMT(VecEnvBase):
 
         return data
 
-    def run(self, trainer):
+    async def run(self, trainer):
         """Main loop for controlling simulation and task stepping.
-        This method is responsible for starting simulation, stepping task and simulation,
+        This method is responsible for stepping task and simulation,
         collecting buffers from task, sending data to policy, and retrieving actions from policy.
         It also deals with the case when the policy terminates on completion and continues
         the simulation thread so that UI does not get affected.
 
         Args:
             trainer (TrainerMT): A Trainer object that implements APIs for starting and stopping RL thread.
-
         """
 
-        from omni.isaac.core.simulation_context.simulation_context import SimulationContext
+        frames_count = 0
+        update_freq = 10
+        carb_settings = carb.settings.get_settings()
 
-        trainer_initialized = False
-        self._world.reset()
-
-        frames_stopped = 0
-        while self._simulation_app.is_running():
+        self.should_run = True
+        while self.should_run:
             try:
                 if self._world.is_playing():
-                    frames_stopped = 0
-                    # initialize sim on first step
-                    if self._world.get_physics_context()._use_fabric:
-                        self._world.get_physics_context().enable_fabric(True)
-                    if self._world.current_time_step_index == 0:
-                        self._world.reset(soft=False)
                     actions = self.get_actions()
+                    if actions is None:
+                        continue
                     self._task.pre_physics_step(actions)
-                    for _ in range(self._task.control_frequency_inv):
-                        self._world.step(render=self._render)
+                    self._world._physics_sim_view.flush()
+                    for _ in range(self._task.control_frequency_inv - 1):
+                        self._world._physics_context._step(current_time=self._world.current_time)
                         self.sim_frame_count += 1
+
+                    # do one step with UI/viewport update
+                    if self._render_mode == 0:
+                        await omni.kit.app.get_app().next_update_async()
+                    else:
+                        self._world._physics_context._step(current_time=self._world.current_time)
+                    self.sim_frame_count = (self.sim_frame_count + 1) % update_freq
+
                     obs, rew, reset, extras = self._task.post_physics_step()
                     states = self._task.get_states()
                     data = self._collect_data(obs, rew, reset, extras, states)
                     self.send_data(data)
+                    frames_count = (frames_count + 1) % update_freq
+
+                    # periodically update UI to avoid completely blocking UI
+                    if self._render_mode == 2:
+                        if frames_count == update_freq - 1:
+                            frames_count = 0
+                            carb_settings.set_bool("/app/player/playSimulations", False)
+                            await omni.kit.app.get_app().next_update_async()
+                            carb_settings.set_bool("/app/player/playSimulations", True)
+                    elif self._render_mode == 1:
+                        carb_settings.set_bool("/app/player/playSimulations", False)
+                        await omni.kit.app.get_app().next_update_async()
+                        carb_settings.set_bool("/app/player/playSimulations", True)
                 elif self._world.is_stopped():
-                    # terminate process in headless mode
-                    if not self._render:
-                        self._simulation_app.close()
-                        return
-                    if self._world.get_physics_context()._use_fabric:
-                        self._world.get_physics_context().enable_fabric(False)
+                    await omni.kit.app.get_app().next_update_async()
                     if trainer:
                         # this means simulation was stopped from UI - send stop signal to RL thread
-                        if not self._stop and frames_stopped == 0:
-                            self.send_data(None, block=False)
-                            self.get_actions(block=False)
-                            trainer_initialized = False
-                        # RL thread already stopped, but trainer not initialized yet
-                        elif self._stop and not trainer_initialized:
-                            # start trainer - trainer must start before simulation to prevent deadlock. This prepares for simulation restart.
-                            trainer.run()
-                            trainer_initialized = True
-                    # do not trigger task functions when simulation not running
-                    SimulationContext.step(self._world, render=self._render)
-                    frames_stopped += 1
-                elif self._render:
-                    SimulationContext.render(self._world)
+                        self.send_data(None, block=False)
+                        self.get_actions(block=False)
+                    await omni.kit.app.get_app().next_update_async()
+                    break
+                else:
+                    # i.e. paused - make sure UI is responsive
+                    await omni.kit.app.get_app().next_update_async()
             # signals task stopped
             except TaskStopException:
                 if trainer:
                     trainer.stop()
-                    trainer_initialized = False
-                self._world.stop()
-                continue
-        self._simulation_app.close()
+                await self._world.stop_async()
+                await omni.kit.app.get_app().next_update_async()
+                break
+            except Exception as e:
+                import traceback
+
+                print(traceback.format_exc())
+                await self._world.stop_async()
+                await omni.kit.app.get_app().next_update_async()
+                break
+
+        # task was stopped from RL thread
+        if not self.should_run:
+            await self._world.stop_async()
+            await omni.kit.app.get_app().next_update_async()
