@@ -22,7 +22,12 @@ class VecEnvBase(gym.Env):
     """
 
     def __init__(
-        self, headless: bool, sim_device: int = 0, enable_livestream: bool = False, enable_viewport: bool = False
+        self,
+        headless: bool,
+        sim_device: int = 0,
+        enable_livestream: bool = False,
+        enable_viewport: bool = False,
+        launch_simulation_app: bool = True,
     ) -> None:
         """Initializes RL and task parameters.
 
@@ -31,36 +36,38 @@ class VecEnvBase(gym.Env):
             sim_device (int): GPU device ID for running physics simulation. Defaults to 0.
             enable_livestream (bool): Whether to enable running with livestream.
             enable_viewport (bool): Whether to enable rendering in headless mode.
+            launch_simulation_app (bool): Whether to launch the simulation app (required if launching from python). Defaults to True.
         """
 
-        experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.gym.kit'
-        if headless:
-            if enable_livestream:
-                experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.gym.kit'
-            elif enable_viewport:
-                experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.gym.kit'
-            else:
-                experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.gym.headless.kit'
+        if launch_simulation_app:
+            experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.gym.kit'
+            if headless:
+                if enable_livestream:
+                    experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.gym.kit'
+                elif enable_viewport:
+                    experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.gym.kit'
+                else:
+                    experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.gym.headless.kit'
 
-        self._simulation_app = SimulationApp({"headless": headless, "physics_gpu": sim_device}, experience=experience)
-        carb.settings.get_settings().set("/persistent/omnihydra/useSceneGraphInstancing", True)
+            self._simulation_app = SimulationApp(
+                {"headless": headless, "physics_gpu": sim_device}, experience=experience
+            )
+
+            if enable_livestream:
+                from omni.isaac.core.utils.extensions import enable_extension
+
+                self._simulation_app.set_setting("/app/livestream/enabled", True)
+                self._simulation_app.set_setting("/app/window/drawMouse", True)
+                self._simulation_app.set_setting("/app/livestream/proto", "ws")
+                self._simulation_app.set_setting("/app/livestream/websocket/framerate_limit", 120)
+                self._simulation_app.set_setting("/ngx/enabled", False)
+                enable_extension("omni.kit.livestream.native")
+                enable_extension("omni.services.streaming.manager")
+
         self._render = not headless or enable_livestream or enable_viewport
         self.sim_frame_count = 0
 
-        if enable_livestream:
-            from omni.isaac.core.utils.extensions import enable_extension
-
-            self._simulation_app.set_setting("/app/livestream/enabled", True)
-            self._simulation_app.set_setting("/app/window/drawMouse", True)
-            self._simulation_app.set_setting("/app/livestream/proto", "ws")
-            self._simulation_app.set_setting("/app/livestream/websocket/framerate_limit", 120)
-            self._simulation_app.set_setting("/ngx/enabled", False)
-            enable_extension("omni.kit.livestream.native")
-            enable_extension("omni.services.streaming.manager")
-            enable_extension("omni.services.streamclient.websocket")
-            enable_extension("omni.services.streamclient.webrtc")
-
-    def set_task(self, task, backend="numpy", sim_params=None, init_sim=True) -> None:
+    def set_task(self, task, backend="numpy", sim_params=None, init_sim=True, rendering_dt=1.0 / 60.0) -> None:
         """Creates a World object and adds Task to World.
             Initializes and registers task to the environment interface.
             Triggers task start-up.
@@ -70,6 +77,7 @@ class VecEnvBase(gym.Env):
             backend (str): Backend to use for task. Can be "numpy" or "torch". Defaults to "numpy".
             sim_params (dict): Simulation parameters for physics settings. Defaults to None.
             init_sim (Optional[bool]): Automatically starts simulation. Defaults to True.
+            rendering_dt (Optional[float]): dt for rendering. Defaults to 1/60s.
         """
 
         from omni.isaac.core.world import World
@@ -80,8 +88,9 @@ class VecEnvBase(gym.Env):
                 device = "cuda"
 
         self._world = World(
-            stage_units_in_meters=1.0, rendering_dt=1.0 / 60.0, backend=backend, sim_params=sim_params, device=device
+            stage_units_in_meters=1.0, rendering_dt=rendering_dt, backend=backend, sim_params=sim_params, device=device
         )
+        self._world._current_tasks = dict()
         self._world.add_task(task)
         self._task = task
         self._num_envs = self._task.num_envs
@@ -94,6 +103,11 @@ class VecEnvBase(gym.Env):
 
         if init_sim:
             self._world.reset()
+
+    def update_task_params(self):
+        self._num_envs = self._task.num_envs
+        self.observation_space = self._task.observation_space
+        self.action_space = self._task.action_space
 
     def render(self, mode="human") -> None:
         """Step the renderer.

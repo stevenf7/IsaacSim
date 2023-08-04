@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.7.0] - 2023-07-26
+### Changed
+- Update app files for gym
+- Redesign MT env for extension workflow
+
 ## [0.6.0] - 2023-07-13
 ### Changed
 - Update interface from gym to gymnasium

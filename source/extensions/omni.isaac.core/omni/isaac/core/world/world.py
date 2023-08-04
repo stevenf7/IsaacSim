@@ -284,6 +284,56 @@ class World(SimulationContext):
         for task in self._current_tasks.values():
             task.post_reset()
 
+    async def reset_async_set_up_scene(self, soft: bool = False) -> None:
+        """Resets the stage to its initial state and each object included in the Scene to its default state
+            as specified by .set_default_state and the __init__ funcs.
+
+            Note:
+            - All tasks should be added before the first reset is called unless a .clear() was called.
+            - All articulations should be added before the first reset is called unless a .clear() was called.
+            - This method takes care of initializing articulation handles with the first reset called.
+            - This will do one step internally regardless
+            - calls post_reset on each object in the Scene
+            - calls post_reset on each Task
+
+            things like setting pd gains for instance should happend at a Task reset or a Robot reset since
+            the defaults are restored after .stop() is called.
+
+        Args:
+            soft (bool, optional): if set to True simulation won't be stopped and start again. It only calls the reset on the scene objects.
+        """
+        for task in self._current_tasks.values():
+            task.set_up_scene(self.scene)
+
+    async def reset_async_no_set_up_scene(self, soft: bool = False) -> None:
+        """Resets the stage to its initial state and each object included in the Scene to its default state
+            as specified by .set_default_state and the __init__ funcs.
+
+            Note:
+            - All tasks should be added before the first reset is called unless a .clear() was called.
+            - All articulations should be added before the first reset is called unless a .clear() was called.
+            - This method takes care of initializing articulation handles with the first reset called.
+            - This will do one step internally regardless
+            - calls post_reset on each object in the Scene
+            - calls post_reset on each Task
+
+            things like setting pd gains for instance should happend at a Task reset or a Robot reset since
+            the defaults are restored after .stop() is called.
+
+        Args:
+            soft (bool, optional): if set to True simulation won't be stopped and start again. It only calls the reset on the scene objects.
+        """
+        if not soft:
+            await self.stop_async()
+        for task in self._current_tasks.values():
+            task.cleanup()
+        await SimulationContext.reset_async(self, soft=soft)
+        self._scene._finalize(self.physics_sim_view)
+        self._scene.post_reset()
+        for task in self._current_tasks.values():
+            task.post_reset()
+        return
+
     async def reset_async(self, soft: bool = False) -> None:
         """Resets the stage to its initial state and each object included in the Scene to its default state
             as specified by .set_default_state and the __init__ funcs.
@@ -303,18 +353,9 @@ class World(SimulationContext):
             soft (bool, optional): if set to True simulation won't be stopped and start again. It only calls the reset on the scene objects.
         """
         if not self._task_scene_built:
-            for task in self._current_tasks.values():
-                task.set_up_scene(self.scene)
+            await self.reset_async_set_up_scene()
             self._task_scene_built = True
-        if not soft:
-            await self.stop_async()
-        for task in self._current_tasks.values():
-            task.cleanup()
-        await SimulationContext.reset_async(self, soft=soft)
-        self._scene._finalize(self.physics_sim_view)
-        self._scene.post_reset()
-        for task in self._current_tasks.values():
-            task.post_reset()
+        await self.reset_async_no_set_up_scene(soft=soft)
         return
 
     def step(self, render: bool = True, step_sim: bool = True) -> None:

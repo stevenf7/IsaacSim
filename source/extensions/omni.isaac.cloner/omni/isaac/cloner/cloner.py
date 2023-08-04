@@ -282,6 +282,8 @@ class Cloner:
 
         if replicate_physics and has_clones:
             self.replicate_physics(source_prim_path, prim_paths, base_env_path, root_path)
+        else:
+            get_physx_replicator_interface().unregister_replicator(UsdUtils.StageCache.Get().GetId(stage).ToLongInt())
 
     def filter_collisions(
         self, physicsscene_path: str, collision_root_path: str, prim_paths: List[str], global_paths: List[str] = []

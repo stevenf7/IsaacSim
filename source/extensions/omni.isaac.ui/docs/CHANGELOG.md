@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.11.1] - 2023-07-26
+### Fixed
+- Fixed unused on event function for string builder
+
 ## [0.11.0] - 2023-07-11
 ### Added
 - Added test cases for UI widget wrappers

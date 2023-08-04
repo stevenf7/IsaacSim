@@ -243,6 +243,7 @@ def str_builder(
             name="StringField", width=ui.Fraction(1), height=0, alignment=ui.Alignment.LEFT_CENTER, read_only=read_only
         ).model
         str_field.set_value(default_val)
+        str_field.add_value_changed_fn(on_clicked_fn)
 
         if use_folder_picker:
 
