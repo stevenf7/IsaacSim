@@ -7,7 +7,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import re
 import sys
 
 import carb
@@ -16,7 +15,6 @@ import omni.kit.commands
 import omni.kit.utils
 import omni.usd
 from omni.isaac.core.utils.prims import delete_prim
-from omni.isaac.core.utils.rotations import gf_quat_to_np_array
 from omni.isaac.core.utils.stage import get_next_free_path
 from omni.isaac.core.utils.xforms import reset_and_set_xform_ops
 from pxr import Gf, Sdf, UsdGeom
