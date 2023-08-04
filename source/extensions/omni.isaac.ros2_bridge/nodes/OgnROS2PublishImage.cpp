@@ -138,7 +138,7 @@ public:
                 case carb::graphics::Format::eR32_SFLOAT:
                     if (db.inputs.width() * db.inputs.height() * sizeof(float) != totalBytes)
                     {
-                        CARB_LOG_ERROR("totalBytes doesn't match eR32_SFLOAT %d %d",
+                        CARB_LOG_ERROR("totalBytes doesn't match eR32_SFLOAT %zu %zu",
                                        db.inputs.width() * db.inputs.height() * sizeof(float), totalBytes);
                     }
                     else
