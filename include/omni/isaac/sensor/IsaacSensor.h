@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -45,7 +45,7 @@ struct ContactSensorInterface
      * \param num_readings size of reading
      * \return time-stamped sensor values.
      */
-    CsReading*(CARB_ABI* getSensorReadings)(const char* primPath, size_t& num_readings);
+    CsReading(CARB_ABI* getSensorReadings)(const char* primPath, size_t& num_readings);
 
     //! Gets Sensor latest simulation
     /*! Gets the sensor latest simulation reading
@@ -59,6 +59,8 @@ struct ContactSensorInterface
      * \param primPath path of the sensor prim
      * \return boolean for is contact sensor
      */
+    CsReading(CARB_ABI* getSensorReading)(const char* primPath, const bool& getLatestValue);
+
     bool(CARB_ABI* isContactSensor)(const char* primPath);
 
     const char*(CARB_ABI* decodeBodyName)(uint64_t body);
@@ -93,7 +95,23 @@ struct ImuSensorInterface
 
      * \return time-stamped sensor values.
      */
-    IsReading*(CARB_ABI* getSensorReadings)(const char* usdPath, size_t& num_readings);
+    IsReading(CARB_ABI* getSensorReadings)(const char* usdPath, size_t& num_readings);
+
+    //! Gets Sensor last reading
+    /*! Gets the sensor last reading on its latest sensor period
+
+     * \param usdPath sensor prim path
+     * \param interpolationFunction interpolation functional pointer
+     * \param getLatestValue flag for getting the latest sim value or the last sensor measured value
+
+
+     * \return time-stamped sensor values.
+     */
+    IsReading(CARB_ABI* getSensorReading)(
+        const char* usdPath,
+        const std::function<omni::isaac::sensor::IsReading(std::vector<omni::isaac::sensor::IsReading>, float)>&
+            interpolateFunction,
+        const bool& getLatestValue);
 
     //! Gets Sensor latest simulation
     /*! Gets the sensor latest simulation reading

@@ -22,6 +22,7 @@
 #include "ImuSensor.h"
 
 #include "omni/isaac/sensor/IsaacSensor.h"
+#include "omni/isaac/utils/Pose.h"
 #include "omni/isaac/utils/UsdUtilities.h"
 
 #include <carb/Framework.h>
@@ -67,24 +68,32 @@ ImuSensor::~ImuSensor()
 {
     reset();
     mRawBuffer.clear();
+    mSensorReadings.clear();
+    mSensorReadingSensorFrame.clear();
 }
 
-void ImuSensor::drawAxis(const pxr::GfVec3d& _position, const pxr::GfRotation& _orientation, const float& length)
+void ImuSensor::drawAxis(const usdrt::GfMatrix4d& usdTransform, const float& length)
 {
-    pxr::GfVec3d xtransform = _orientation.TransformDir(pxr::GfVec3d(static_cast<double>(length), 0.0, 0.0));
-    pxr::GfVec3d ytransform = _orientation.TransformDir(pxr::GfVec3d(0.0, static_cast<double>(length), 0.0));
-    pxr::GfVec3d ztransform = _orientation.TransformDir(pxr::GfVec3d(0.0, 0.0, static_cast<double>(length)));
+    omni::math::linalg::vec3d position = usdTransform.ExtractTranslation();
 
-    xtransform += _position;
-    ytransform += _position;
-    ztransform += _position;
+    // TransformDir for a 4x4 matrix multiplies the rotation matrix part by a vector
+    omni::math::linalg::vec3d xtransform =
+        usdTransform.TransformDir(omni::math::linalg::vec3d(static_cast<double>(length), 0.0, 0.0));
+    omni::math::linalg::vec3d ytransform =
+        usdTransform.TransformDir(omni::math::linalg::vec3d(0.0, static_cast<double>(length), 0.0));
+    omni::math::linalg::vec3d ztransform =
+        usdTransform.TransformDir(omni::math::linalg::vec3d(0.0, 0.0, static_cast<double>(length)));
+
+    xtransform += position;
+    ytransform += position;
+    ztransform += position;
 
     // draw the axis in global frame
     carb::scenerenderer::PrimitiveVertex center;
-    center.position.x = static_cast<float>(_position.GetArray()[0]);
-    center.position.y = static_cast<float>(_position.GetArray()[1]);
-    center.position.z = static_cast<float>(_position.GetArray()[2]);
-    center.width = length * 0.1f;
+    center.position.x = static_cast<float>(position.GetArray()[0]);
+    center.position.y = static_cast<float>(position.GetArray()[1]);
+    center.position.z = static_cast<float>(position.GetArray()[2]);
+    center.width = length * 0.5f;
 
     // x axis - red
     center.color = carb::ColorRgba{ 1.0f, 0.0f, 0.0f, 1.0f };
@@ -125,97 +134,148 @@ void ImuSensor::drawAxis(const pxr::GfVec3d& _position, const pxr::GfRotation& _
 
 void ImuSensor::draw()
 {
-    pxr::GfMatrix4d usdTransform = omni::usd::UsdUtils::getWorldTransformMatrix(mPrim.GetPrim());
-    pxr::GfVec3d translation = usdTransform.ExtractTranslation();
+    usdrt::GfMatrix4d usdTransform =
+        omni::isaac::utils::pose::computeWorldXformNoCache(mStage, mUsdrtStage, mPrim.GetPath());
     usdTransform.Orthonormalize();
-    pxr::GfRotation rotation = usdTransform.ExtractRotation();
 
     // 0.5/unit scale means 0.5 meter or 50cm
-    drawAxis(pxr::GfVec3f(translation), rotation, static_cast<float>(0.5f / mUnitScale));
+    drawAxis(usdTransform, static_cast<float>(0.5f / mUnitScale));
 
     return;
 }
 
 size_t ImuSensor::getNumReadings()
 {
-    if (!mProcessedReadings)
+    CARB_LOG_WARN_ONCE(
+        "*** Deprecation alert: IMU getNumReadings function is deprecated and will be removed in the next update");
+    CARB_LOG_WARN_ONCE("*** the return value will always be 0 or 1");
+
+    size_t size = 0;
+    if (getSensorReading().is_valid)
     {
-        size_t size;
-        getSensorReadings(size);
+        size = 1;
     }
-    return mSensorReadings.size();
+    return size;
 }
 
-IsReading* ImuSensor::getSensorReadings(size_t& num_readings)
+IsReading ImuSensor::getSensorReadings(size_t& num_readings)
 {
-    if (mProps.sensorPeriod > 0)
+    CARB_LOG_WARN_ONCE(
+        "*** Deprecation alert: IMU getSensorReadings function is deprecated and will be removed in the next update");
+    CARB_LOG_WARN_ONCE("*** please use getSensorReading for sensor readings");
+
+    if (mProps.sensorPeriod < mTimeDelta && mProps.sensorPeriod > 0 && mTimeDelta - mProps.sensorPeriod > 0.001)
     {
-        if (!mProcessedReadings)
-        {
-            float start = mReadingPair[!mCurrent].time;
+        CARB_LOG_WARN_ONCE(
+            "*** warning: IMU sensor frequency is higher than physics frequency, returning the latest physics value");
+    }
 
-            // Add a tolerance to the end time to be 1/10th of sensorperiod, to avoid duplicate data near the end
-            float end = mReadingPair[mCurrent].time - mProps.sensorPeriod / 10;
+    IsReading reading = getSensorReading();
 
-            // will return the data from the last physics dt update. This is to keep the getSensorReadings function
-            // consistent with the contact sensor
-            mCurrentTime = start;
-            mSensorReadings.clear();
-
-            // when sensorPeriod is much shorter than simulation dt, more than 1 readings are returned
-            while (mCurrentTime < end)
-            {
-                float time_pos = (mCurrentTime - start) / (end - start);
-                IsReading reading;
-                reading.time = mCurrentTime;
-                reading.lin_acc_x = lerp(mReadingPair[!mCurrent].lin_acc_x, mReadingPair[mCurrent].lin_acc_x, time_pos);
-                reading.lin_acc_y = lerp(mReadingPair[!mCurrent].lin_acc_y, mReadingPair[mCurrent].lin_acc_y, time_pos);
-                reading.lin_acc_z = lerp(mReadingPair[!mCurrent].lin_acc_z, mReadingPair[mCurrent].lin_acc_z, time_pos);
-
-                reading.ang_vel_x = lerp(mReadingPair[!mCurrent].ang_vel_x, mReadingPair[mCurrent].ang_vel_x, time_pos);
-                reading.ang_vel_y = lerp(mReadingPair[!mCurrent].ang_vel_y, mReadingPair[mCurrent].ang_vel_y, time_pos);
-                reading.ang_vel_z = lerp(mReadingPair[!mCurrent].ang_vel_z, mReadingPair[mCurrent].ang_vel_z, time_pos);
-
-                reading.orientation.w =
-                    lerp(mReadingPair[!mCurrent].orientation.w, mReadingPair[mCurrent].orientation.w, time_pos);
-                reading.orientation.x =
-                    lerp(mReadingPair[!mCurrent].orientation.x, mReadingPair[mCurrent].orientation.x, time_pos);
-                reading.orientation.y =
-                    lerp(mReadingPair[!mCurrent].orientation.y, mReadingPair[mCurrent].orientation.y, time_pos);
-                reading.orientation.z =
-                    lerp(mReadingPair[!mCurrent].orientation.z, mReadingPair[mCurrent].orientation.z, time_pos);
-
-                mSensorReadings.push_back(reading);
-                mCurrentTime += mProps.sensorPeriod;
-            }
-            mProcessedReadings = true;
-        }
+    if (reading.is_valid)
+    {
+        num_readings = 1;
     }
     else
     {
-        mSensorReadings.clear();
-        mSensorReadings.push_back(mReadingPair[mCurrent]);
+        num_readings = 0;
     }
-    num_readings = mSensorReadings.size();
-    // INFO_LOG_INFO("Num Readings :%ld", num_readings);
-    return mSensorReadings.data();
+
+    return reading;
+}
+
+IsReading ImuSensor::getSensorReading(const std::function<IsReading(std::vector<IsReading>, float)>& interpolateFunction,
+                                      const bool& getLatestValue)
+{
+    if (mProps.sensorPeriod > 0 && mProps.sensorPeriod < mTimeDelta && mTimeDelta - mProps.sensorPeriod > 0.001)
+    {
+        CARB_LOG_WARN_ONCE(
+            "*** warning: IMU sensor frequency is higher than physics frequency, returning the latest physics value");
+    }
+
+    IsReading sensorReading = IsReading();
+
+    if (mEnabled)
+    {
+        // if sensor period is shorter than physics downtime, or user choose latest value return current value
+        // or internal time + sensor period time is behind the last step time, then something went wrong
+        // i.e. sensor was disabled for a long time and then re-enabled
+        // get the latest time and measurement
+        if (mProps.sensorPeriod <= mTimeDelta || mSensorTime + mProps.sensorPeriod < mReadingPair[!mCurrent].time ||
+            getLatestValue)
+        {
+            sensorReading = mReadingPair[mCurrent];
+            sensorReading.is_valid = true;
+            if (mProps.sensorPeriod > 0 && mSensorTime + mProps.sensorPeriod < mReadingPair[!mCurrent].time)
+            {
+                CARB_LOG_WARN("*** warning IMU sensor time out of sync, using latest measurements");
+            }
+        }
+        else
+        {
+            sensorReading.time = mSensorTime;
+            sensorReading.is_valid = true;
+            float time_ratio = (mSensorTime - mInterpolationPair[!mCurrent].time) /
+                               (mInterpolationPair[mCurrent].time - mInterpolationPair[!mCurrent].time);
+            // user didn't pass in a interpolation function
+            if (!interpolateFunction)
+            {
+                sensorReading.lin_acc_x =
+                    lerp(mInterpolationPair[!mCurrent].lin_acc_x, mInterpolationPair[mCurrent].lin_acc_x, time_ratio);
+                sensorReading.lin_acc_y =
+                    lerp(mInterpolationPair[!mCurrent].lin_acc_y, mInterpolationPair[mCurrent].lin_acc_y, time_ratio);
+                sensorReading.lin_acc_z =
+                    lerp(mInterpolationPair[!mCurrent].lin_acc_z, mInterpolationPair[mCurrent].lin_acc_z, time_ratio);
+
+                sensorReading.ang_vel_x =
+                    lerp(mInterpolationPair[!mCurrent].ang_vel_x, mInterpolationPair[mCurrent].ang_vel_x, time_ratio);
+                sensorReading.ang_vel_y =
+                    lerp(mInterpolationPair[!mCurrent].ang_vel_y, mInterpolationPair[mCurrent].ang_vel_y, time_ratio);
+                sensorReading.ang_vel_z =
+                    lerp(mInterpolationPair[!mCurrent].ang_vel_z, mInterpolationPair[mCurrent].ang_vel_z, time_ratio);
+
+                sensorReading.orientation.w = lerp(mInterpolationPair[!mCurrent].orientation.w,
+                                                   mInterpolationPair[mCurrent].orientation.w, time_ratio);
+                sensorReading.orientation.x = lerp(mInterpolationPair[!mCurrent].orientation.x,
+                                                   mInterpolationPair[mCurrent].orientation.x, time_ratio);
+                sensorReading.orientation.y = lerp(mInterpolationPair[!mCurrent].orientation.y,
+                                                   mInterpolationPair[mCurrent].orientation.y, time_ratio);
+                sensorReading.orientation.z = lerp(mInterpolationPair[!mCurrent].orientation.z,
+                                                   mInterpolationPair[mCurrent].orientation.z, time_ratio);
+            }
+            // use user's interpolation function
+            else
+            {
+                sensorReading = interpolateFunction(mSensorReadingSensorFrame, mSensorTime);
+            }
+        }
+    }
+    return sensorReading;
 }
 
 IsReading ImuSensor::getSimSensorReading()
 {
+    CARB_LOG_WARN_ONCE(
+        "*** Deprecation alert: IMU getSensorSimReading function is deprecated and will be removed in the next update");
+    CARB_LOG_WARN_ONCE("*** please use getSensorReading for sensor reading");
+    if (mProps.sensorPeriod > 0 && mProps.sensorPeriod < mTimeDelta && mTimeDelta - mProps.sensorPeriod > 0.001)
+    {
+        CARB_LOG_WARN_ONCE(
+            "*** warning: IMU sensor frequency is higher than physics frequency, returning the latest physics value");
+    }
     return mReadingPair[mCurrent];
 }
 
 void ImuSensor::reset()
 {
-    mCurrentTime = 0.0f;
     mCurrent = 0;
-
     mRawBuffer.resize(mRawBufferSize, IsRawData());
 
+
     mReadingPair[0] = mReadingPair[1] = IsReading();
-    mProcessedReadings = false;
-    mSensorReadings.clear();
+    mInterpolationPair[0] = mInterpolationPair[1] = IsReading();
+    mSensorReadings.resize(mRawBufferSize, IsReading());
+    mSensorTime = 0;
 }
 
 void ImuSensor::onPhysicsStep()
@@ -275,27 +335,31 @@ void ImuSensor::onPhysicsStep()
          */
         pxr::GfVec3d w(
             static_cast<double>(ang_vel.x), static_cast<double>(ang_vel.y), static_cast<double>(ang_vel.z)); // w_wa
+                                                                                                             // parent
         pxr::GfVec3d v(
             static_cast<double>(lin_vel.x), static_cast<double>(lin_vel.y), static_cast<double>(lin_vel.z)); // v_wa
+                                                                                                             // parent
 
-        ::physx::PxTransform T_wa = rigid->getGlobalPose();
+        ::physx::PxTransform T_wa = rigid->getGlobalPose(); // parent pose
 
-        pxr::GfVec3d p_wa(static_cast<double>(T_wa.p.x), static_cast<double>(T_wa.p.y), static_cast<double>(T_wa.p.z));
+        pxr::GfVec3d p_wa(static_cast<double>(T_wa.p.x), static_cast<double>(T_wa.p.y),
+                          static_cast<double>(T_wa.p.z)); // parent world position
 
         pxr::GfRotation R_wa(pxr::GfQuatd(
-            static_cast<double>(T_wa.q.w),
-            pxr::GfVec3d(static_cast<double>(T_wa.q.x), static_cast<double>(T_wa.q.y), static_cast<double>(T_wa.q.z))));
+            static_cast<double>(T_wa.q.w), pxr::GfVec3d(static_cast<double>(T_wa.q.x), static_cast<double>(T_wa.q.y),
+                                                        static_cast<double>(T_wa.q.z)))); // parent orientation
 
-        pxr::GfVec3d p_ab(static_cast<double>(mProps.position.x), static_cast<double>(mProps.position.y),
+        pxr::GfVec3d p_ab(static_cast<double>(mProps.position.x), static_cast<double>(mProps.position.y), // sensor
+                                                                                                          // relative
+                                                                                                          // position
                           static_cast<double>(mProps.position.z));
-        pxr::GfQuatd q_ab(
+        pxr::GfQuatd q_ab( // sensor relative orientation
             static_cast<double>(mProps.orientation.w),
             pxr::GfVec3d(static_cast<double>(mProps.orientation.x), static_cast<double>(mProps.orientation.y),
                          static_cast<double>(mProps.orientation.z)));
 
-
-        pxr::GfRotation R_ab(q_ab);
-        pxr::GfRotation R_wb = R_wa * R_ab;
+        pxr::GfRotation R_ab(q_ab); // sensor relative orientation in rotation
+        pxr::GfRotation R_wb = R_wa * R_ab; // R_world * R_relative
         pxr::GfVec3d p_wab = R_wa.TransformDir(p_ab);
         // velocity of sensor frame in world frame
         pxr::GfVec3d v_wb =
@@ -303,6 +367,8 @@ void ImuSensor::onPhysicsStep()
                                                                                                // a
                                                                                                // skew-symmetric
                                                                                                // form
+        // rotation of sensor frame in quaternion
+        pxr::GfQuatd q_wb = R_wb.GetQuat();
         // velocity of sensor frame in sensor frame
         pxr::GfVec3d v_b = R_wb.GetInverse().TransformDir(v_wb);
         // angular velocity of sensor frame in sensor frame
@@ -315,25 +381,15 @@ void ImuSensor::onPhysicsStep()
         // we then finite diff v_b to get a_b, to reduce noise, average multiple finite diffs
         // save raw data into a buffer list , buffer 0 always saves the latest velocities
 
-        for (int i = mRawBufferSize - 1; i > 0; i--)
+        if (!mRawBuffer.empty())
         {
-            mRawBuffer[i].time = mRawBuffer[i - 1].time;
-            mRawBuffer[i].dt = mRawBuffer[i - 1].dt;
-            mRawBuffer[i].lin_vel_x = mRawBuffer[i - 1].lin_vel_x;
-            mRawBuffer[i].lin_vel_y = mRawBuffer[i - 1].lin_vel_y;
-            mRawBuffer[i].lin_vel_z = mRawBuffer[i - 1].lin_vel_z;
-            mRawBuffer[i].ang_vel_x = mRawBuffer[i - 1].ang_vel_x;
-            mRawBuffer[i].ang_vel_y = mRawBuffer[i - 1].ang_vel_y;
-            mRawBuffer[i].ang_vel_z = mRawBuffer[i - 1].ang_vel_z;
-
-            mRawBuffer[i].orientation.w = mRawBuffer[i - 1].orientation.w;
-            mRawBuffer[i].orientation.x = mRawBuffer[i - 1].orientation.x;
-            mRawBuffer[i].orientation.y = mRawBuffer[i - 1].orientation.y;
-            mRawBuffer[i].orientation.z = mRawBuffer[i - 1].orientation.z;
+            mRawBuffer.pop_back();
         }
 
+        const double* imaginary = q_wb.GetImaginary().GetArray();
+
         // read in new data
-        mRawBuffer[0] = IsRawData();
+        mRawBuffer.insert(mRawBuffer.begin(), IsRawData());
         mRawBuffer[0].time = static_cast<float>(mTimeSeconds);
         mRawBuffer[0].dt = static_cast<float>(mTimeDelta);
         mRawBuffer[0].lin_vel_x = static_cast<float>(v_b[0]);
@@ -342,10 +398,10 @@ void ImuSensor::onPhysicsStep()
         mRawBuffer[0].ang_vel_x = static_cast<float>(w_b[0]);
         mRawBuffer[0].ang_vel_y = static_cast<float>(w_b[1]);
         mRawBuffer[0].ang_vel_z = static_cast<float>(w_b[2]);
-        mRawBuffer[0].orientation.w = static_cast<float>(T_wa.q.w);
-        mRawBuffer[0].orientation.x = static_cast<float>(T_wa.q.x);
-        mRawBuffer[0].orientation.y = static_cast<float>(T_wa.q.y);
-        mRawBuffer[0].orientation.z = static_cast<float>(T_wa.q.z);
+        mRawBuffer[0].orientation.w = static_cast<float>(q_wb.GetReal());
+        mRawBuffer[0].orientation.x = static_cast<float>(imaginary[0]);
+        mRawBuffer[0].orientation.y = static_cast<float>(imaginary[1]);
+        mRawBuffer[0].orientation.z = static_cast<float>(imaginary[2]);
 
         // signal processing
         mCurrent ^= 1;
@@ -424,23 +480,27 @@ void ImuSensor::onPhysicsStep()
 
         if (mFirst)
         {
-            mInitPair.lin_acc_x = mReadingPair[mCurrent].lin_acc_x;
-            mInitPair.lin_acc_y = mReadingPair[mCurrent].lin_acc_y;
-            mInitPair.lin_acc_z = mReadingPair[mCurrent].lin_acc_z;
-
-            mInitPair.ang_vel_x = mReadingPair[mCurrent].ang_vel_x;
-            mInitPair.ang_vel_y = mReadingPair[mCurrent].ang_vel_y;
-            mInitPair.ang_vel_z = mReadingPair[mCurrent].ang_vel_z;
-
-            mInitPair.orientation.w = mReadingPair[mCurrent].orientation.w;
-            mInitPair.orientation.x = mReadingPair[mCurrent].orientation.x;
-            mInitPair.orientation.y = mReadingPair[mCurrent].orientation.y;
-            mInitPair.orientation.z = mReadingPair[mCurrent].orientation.z;
-
+            mInitPair = mReadingPair[mCurrent];
             mFirst = false;
         }
+    }
 
-        mProcessedReadings = false;
+    if (!mSensorReadings.empty())
+    {
+        mSensorReadings.pop_back();
+    }
+    mSensorReadings.insert(mSensorReadings.begin(), mReadingPair[mCurrent]);
+
+    if (mProps.sensorPeriod <= mTimeDelta)
+    {
+        mSensorTime = mReadingPair[mCurrent].time;
+    }
+    else if (mSensorTime + mProps.sensorPeriod <= mReadingPair[mCurrent].time)
+    {
+        mSensorTime += mProps.sensorPeriod;
+        mInterpolationPair[0] = mReadingPair[!mCurrent];
+        mInterpolationPair[1] = mReadingPair[mCurrent];
+        mSensorReadingSensorFrame = mSensorReadings;
     }
 }
 
@@ -475,7 +535,6 @@ void ImuSensor::onComponentChange()
     const pxr::IsaacSensorIsaacImuSensor& typedPrim = (pxr::IsaacSensorIsaacImuSensor)mPrim;
 
     isaac::utils::safeGetAttribute(typedPrim.GetSensorPeriodAttr(), this->mProps.sensorPeriod);
-
     isaac::utils::safeGetAttribute(typedPrim.GetLinearAccelerationFilterWidthAttr(), this->mLinearAccelerationFilterSize);
     isaac::utils::safeGetAttribute(typedPrim.GetAngularVelocityFilterWidthAttr(), this->mAngularVelocityFilterSize);
     isaac::utils::safeGetAttribute(typedPrim.GetOrientationFilterWidthAttr(), this->mOrientationFilterSize);
@@ -493,9 +552,9 @@ void ImuSensor::onComponentChange()
     if (this->mRawBufferSize < 2 * max_rolling_size && max_rolling_size > 10)
     {
         this->mRawBufferSize = 2 * max_rolling_size;
+        mRawBuffer.resize(mRawBufferSize, IsRawData());
+        mSensorReadings.resize(mRawBufferSize, IsReading());
     }
-
-    mRawBuffer.resize(mRawBufferSize, IsRawData());
 
     pxr::GfVec3d position(0.0);
     mPrim.GetPrim().GetAttribute(pxr::TfToken("xformOp:translate")).Get(&position);
@@ -548,44 +607,46 @@ void ImuSensor::onComponentChange()
         }
     }
 
-    if (mVisualize)
+    if (mPreviousEnabled != this->mEnabled)
     {
+        if (mEnabled)
+        {
+            this->onPhysicsStep(); // force on physics step to run to get up to date value
+            mReadingPair[!mCurrent] = mReadingPair[mCurrent]; // first step, copy latest values for both readingpairs
+            mSensorTime = mReadingPair[mCurrent].time;
+            mInterpolationPair[0] = mInterpolationPair[1] = mReadingPair[mCurrent];
+            mRawBuffer.resize(mRawBufferSize, IsRawData());
+            mSensorReadings.resize(mRawBufferSize, IsReading());
+            mSensorReadingSensorFrame = mSensorReadings;
+        }
+        else
+        {
+            this->onStop();
+        }
+        mPreviousEnabled = this->mEnabled;
+    }
+
+    if (mVisualize && mEnabled)
+    {
+        CARB_LOG_WARN_ONCE("*** Deprecation Alert: visualization through prim will be removed in the next release!");
+        CARB_LOG_WARN_ONCE(" please use axis visualization node in Omnigraph to visualize this");
         draw();
     }
 }
 
 void ImuSensor::onStop()
 {
-
-    // reset output reading buffer to match initial value
-    mReadingPair[mCurrent].lin_acc_x = mInitPair.lin_acc_x;
-    mReadingPair[mCurrent].lin_acc_y = mInitPair.lin_acc_y;
-    mReadingPair[mCurrent].lin_acc_z = mInitPair.lin_acc_z;
-
-    mReadingPair[mCurrent].ang_vel_x = mInitPair.ang_vel_x;
-    mReadingPair[mCurrent].ang_vel_y = mInitPair.ang_vel_y;
-    mReadingPair[mCurrent].ang_vel_z = mInitPair.ang_vel_z;
-
-    mReadingPair[mCurrent].orientation.w = mInitPair.orientation.w;
-    mReadingPair[mCurrent].orientation.x = mInitPair.orientation.x;
-    mReadingPair[mCurrent].orientation.y = mInitPair.orientation.y;
-    mReadingPair[mCurrent].orientation.z = mInitPair.orientation.z;
-
-    mReadingPair[!mCurrent] = IsReading();
-
-    mRawBuffer.resize(mRawBufferSize, IsRawData());
-
+    reset();
     mFirst = true;
 
     mLineDrawing->clear();
-    mPointDrawing->clear();
     if (mVisualize)
     {
         draw();
     }
 }
 
-void ImuSensor::printIsReading(IsReading reading)
+void ImuSensor::printIsReading(const IsReading& reading)
 {
     CARB_LOG_INFO("Is Reading");
     CARB_LOG_INFO("time: %f", reading.time);

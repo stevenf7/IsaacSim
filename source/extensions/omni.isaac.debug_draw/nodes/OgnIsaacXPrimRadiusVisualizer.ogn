@@ -1,0 +1,72 @@
+{
+    "IsaacXPrimRadiusVisualizer": {
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",        
+        "description": [
+            "displays the Radius of the xPrim for visualization."
+        ],
+        "metadata": {
+            "uiName": "Isaac xPrim Radius Visualizer Node"
+        },
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacDebugDraw",
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "The input execution port"
+            },            
+            "xPrim": {
+                "type": "bundle",
+                "description": "Usd prim to visualize",
+                "metadata": {
+                    "uiName": "xPrim"
+                }
+            },
+            "radius": {
+                "type": "float",
+                "description": "Radius of the sphere",
+                "default": 1
+            },
+            "thickness": {
+                "type": "float",
+                "description": "Thickness of the radius lines",
+                "default": 1
+            },
+            "segments": {
+                "type": "int",
+                "description": "Number of segments in the circle",
+                "default": 30
+            },
+            "drawXAxis": {
+                "type": "bool",
+                "description": "True to draw the x axis circle",
+                "default": true
+            },
+            "drawYAxis": {
+                "type": "bool",
+                "description": "True to draw the y axis circle",
+                "default": true
+            },
+            "drawZAxis": {
+                "type": "bool",
+                "description": "True to draw the z axis circle",
+                "default": true
+            },
+            "xAxisColor": {
+                "type": "colorf[4]",
+                "description": "Color of the x axis sphere points",
+                "default": [1,0,0,1]
+            },
+            "yAxisColor": {
+                "type": "colorf[4]",
+                "description": "Color of the y axis sphere points",
+                "default": [0,1,0,1]
+            },
+            "zAxisColor": {
+                "type": "colorf[4]",
+                "description": "Color of the z axis sphere points",
+                "default": [0,0,1,1]
+            }
+        }
+    }
+}

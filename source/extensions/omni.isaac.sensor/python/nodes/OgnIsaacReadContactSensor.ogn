@@ -27,6 +27,14 @@
                 "type": "execution",
                 "description": "Output execution triggers when sensor has data"
             },
+            "sensorTime": {
+                "type": "float",
+                "description": "Sensor reading timestamp",
+                "metadata": {
+                    "uiName": "Sensor Time"
+                },
+                "default": 0.0
+            },
             "inContact": {
                 "type": "bool",
                 "description": "Bool that registers current sensor contact",

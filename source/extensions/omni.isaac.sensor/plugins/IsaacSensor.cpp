@@ -160,11 +160,11 @@ omni::isaac::sensor::CsRawData* CARB_ABI CsGetSensorRawData(const char* primPath
     return data;
 }
 
-omni::isaac::sensor::CsReading* CARB_ABI CsGetSensorReadings(const char* primPath, size_t& num_readings)
+omni::isaac::sensor::CsReading CARB_ABI CsGetSensorReadings(const char* primPath, size_t& num_readings)
 {
     omni::isaac::sensor::ContactSensor* sensor =
         gIsaacSensorManager->getContactSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
-    omni::isaac::sensor::CsReading* data = nullptr;
+    omni::isaac::sensor::CsReading data = omni::isaac::sensor::CsReading();
     if (sensor)
     {
         data = sensor->getSensorReadings(num_readings);
@@ -196,6 +196,18 @@ omni::isaac::sensor::CsReading CARB_ABI CsGetSensorSimReading(const char* primPa
     }
     return data;
 }
+
+omni::isaac::sensor::CsReading CARB_ABI CsGetSensorReading(const char* primPath, const bool& getLatestValue = false)
+{
+    omni::isaac::sensor::ContactSensor* sensor =
+        gIsaacSensorManager->getContactSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+    omni::isaac::sensor::CsReading data;
+    if (sensor)
+    {
+        data = sensor->getSensorReading(getLatestValue);
+    }
+    return data;
+}
 }
 
 namespace imu_sensor
@@ -224,14 +236,30 @@ bool CARB_ABI isImuSensor(const char* primPath)
     }
 }
 
-omni::isaac::sensor::IsReading* CARB_ABI IsGetSensorReadings(const char* primPath, size_t& num_readings)
+omni::isaac::sensor::IsReading CARB_ABI IsGetSensorReadings(const char* primPath, size_t& num_readings)
 {
     omni::isaac::sensor::ImuSensor* sensor =
         gIsaacSensorManager->getImuSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
-    omni::isaac::sensor::IsReading* data = nullptr;
+    omni::isaac::sensor::IsReading data = omni::isaac::sensor::IsReading();
     if (sensor)
     {
         data = sensor->getSensorReadings(num_readings);
+    }
+    return data;
+}
+
+omni::isaac::sensor::IsReading CARB_ABI IsGetSensorReading(
+    const char* primPath,
+    const std::function<omni::isaac::sensor::IsReading(std::vector<omni::isaac::sensor::IsReading>, float)>&
+        interpolateFunction = {},
+    const bool& getLatestValue = false)
+{
+    omni::isaac::sensor::ImuSensor* sensor =
+        gIsaacSensorManager->getImuSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+    omni::isaac::sensor::IsReading data = omni::isaac::sensor::IsReading();
+    if (sensor)
+    {
+        data = sensor->getSensorReading(interpolateFunction, getLatestValue);
     }
     return data;
 }
@@ -427,6 +455,7 @@ void fillInterface(omni::isaac::sensor::ContactSensorInterface& iface)
     iface.getSensorReadingsSize = contact_sensor::CsGetSensorReadingsSize;
     iface.getSensorReadings = contact_sensor::CsGetSensorReadings;
     iface.getSensorSimReading = contact_sensor::CsGetSensorSimReading;
+    iface.getSensorReading = contact_sensor::CsGetSensorReading;
     iface.decodeBodyName = contact_sensor::CsDecodeBodyName;
     iface.isContactSensor = contact_sensor::isContactSensor; // Checks if the path is a contact sensor
 }
@@ -439,6 +468,7 @@ void fillInterface(omni::isaac::sensor::ImuSensorInterface& iface)
 
     iface.getSensorReadingsSize = imu_sensor::IsGetSensorReadingsSize;
     iface.getSensorReadings = imu_sensor::IsGetSensorReadings;
+    iface.getSensorReading = imu_sensor::IsGetSensorReading;
     iface.getSensorSimReading = imu_sensor::IsGetSensorSimReading;
     iface.isImuSensor = imu_sensor::isImuSensor;
 }

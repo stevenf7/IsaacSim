@@ -8,6 +8,7 @@
 //
 
 
+#include <carb/BindingsPythonUtils.h>
 #include <carb/BindingsUtils.h>
 
 #include <omni/isaac/sensor/IsaacSensor.h>
@@ -95,7 +96,6 @@ PYBIND11_MODULE(_sensor, m)
         .def_readwrite("normal", &CsRawPython::normal, "normal, global coordinates , (:obj:`carb.Float3`)")
         .def_readwrite("impulse", &CsRawPython::impulse, "impulse, global coordinates , (:obj:`carb.Float3`)");
 
-
     // PYBIND11_NUMPY_DTYPE(carb::Float3, x, y, z);
     // PYBIND11_NUMPY_DTYPE(CsRawData, time, body0, body1, position, normal, impulse);
 
@@ -104,24 +104,26 @@ PYBIND11_MODULE(_sensor, m)
         .def_readwrite("time", &CsReading::time, "timestamp of the reading, in seconds . (:obj:`float`)")
         .def_readwrite("value", &CsReading::value, "sensor force reading value. (:obj:`float`)")
         .def_readwrite(
-            "inContact", &CsReading::inContact, "boolean that flags if the sensor registers a contact. (:obj:`bool`)");
+            "inContact", &CsReading::inContact, "boolean that flags if the sensor registers a contact. (:obj:`bool`)")
+        .def_readwrite("is_valid", &CsReading::is_valid, "validity of the data. (:obj:`bool`)");
 
     py::class_<IsReading>(m, "IsSensorReading", "Imu Sensor Reading")
         .def(py::init<>())
-        .def_readwrite("time", &IsReading::time, "timestamp of the reading, in seconds . (:obj:`float`)")
+        .def_readwrite("time", &IsReading::time, "timestamp of the reading, in seconds. (:obj:`float`)")
         .def_readwrite("lin_acc_x", &IsReading::lin_acc_x, "Accelerometer reading value x axis, in m/s^2. (:obj:`float`)")
         .def_readwrite("lin_acc_y", &IsReading::lin_acc_y, "Accelerometer reading value y axis, in m/s^2. (:obj:`float`)")
         .def_readwrite("lin_acc_z", &IsReading::lin_acc_z, "Accelerometer reading value z axis, in m/s^2. (:obj:`float`)")
         .def_readwrite("ang_vel_x", &IsReading::ang_vel_x, "Gyroscope reading value x axis, in rad/s. (:obj:`float`)")
         .def_readwrite("ang_vel_y", &IsReading::ang_vel_y, "Gyroscope reading value y axis, in rad/s. (:obj:`float`)")
         .def_readwrite("ang_vel_z", &IsReading::ang_vel_z, "Gyroscope reading value z axis, in rad/s. (:obj:`float`)")
-        .def_readwrite("orientation", &IsReading::orientation,
-                       "Orientation quaternion reading (x, y, z, w). (:obj:`carb.Float4`)");
+        .def_readwrite(
+            "orientation", &IsReading::orientation, "Orientation quaternion reading (x, y, z, w). (:obj:`carb.Float4`)")
+        .def_readwrite("is_valid", &IsReading::is_valid, "validity of sensor reading. (:obj:`bool`)");
 
-    PYBIND11_NUMPY_DTYPE(CsReading, time, value, inContact);
+    PYBIND11_NUMPY_DTYPE(CsReading, time, value, inContact, is_valid);
     PYBIND11_NUMPY_DTYPE(CsRawPython, time, dt, body0, body1, position, normal, impulse);
-    PYBIND11_NUMPY_DTYPE(IsReading, time, lin_acc_x, lin_acc_y, lin_acc_z, ang_vel_x, ang_vel_y, ang_vel_z, orientation);
-
+    PYBIND11_NUMPY_DTYPE(
+        IsReading, time, lin_acc_x, lin_acc_y, lin_acc_z, ang_vel_x, ang_vel_y, ang_vel_z, orientation, is_valid);
 
     m.doc() = R"pbdoc(
     This Extension provides an interface to 'pxr.IsaacSensorSchemaIsaacBaseSensor' to be used in a stage. 
@@ -182,8 +184,8 @@ PYBIND11_MODULE(_sensor, m)
                  if (!li)
                      return py::none();
                  size_t num_data = 0;
-                 CsReading* data = li->getSensorReadings(sensor_path, num_data);
-                 return py::array(py::buffer_info(data, sizeof(CsReading), py::format_descriptor<CsReading>::format(),
+                 CsReading data = li->getSensorReadings(sensor_path, num_data);
+                 return py::array(py::buffer_info(&data, sizeof(CsReading), py::format_descriptor<CsReading>::format(),
                                                   1, { num_data }, { sizeof(CsReading) }));
              },
              R"pbdoc(   
@@ -198,6 +200,15 @@ PYBIND11_MODULE(_sensor, m)
                     arg0 (:obj:`str`): USD Path to sensor as string
                 Returns:
                     :obj:`numpy.array`: The reading for the current simulation time.)pbdoc")
+        .def("get_sensor_reading", wrapInterfaceFunction(&ContactSensorInterface::getSensorReading),
+             R"pbdoc(   
+                Args:
+                    arg0 (:obj:`char*`): the sensor path
+                    arg1 (:obj:`std::function<IsReading(std::vector<IsRawData>, float)>&`): interpolation function
+                    arg2 (:obj:`bool`): getLatestValue
+                Returns:
+                    :obj:`numpy.array`: The reading for the current sensor period.)pbdoc",
+             py::arg("sensor_path"), py::arg("getLatestValue") = false)
         .def("is_contact_sensor", wrapInterfaceFunction(&ContactSensorInterface::isContactSensor),
              R"pbdoc(   
                 Args:
@@ -220,10 +231,12 @@ PYBIND11_MODULE(_sensor, m)
              [](const ImuSensorInterface* li, const char* sensor_path) -> py::object
              {
                  if (!li)
+                 {
                      return py::none();
+                 }
                  size_t num_data = 0;
-                 IsReading* data = li->getSensorReadings(sensor_path, num_data);
-                 return py::array(py::buffer_info(data, sizeof(IsReading), py::format_descriptor<IsReading>::format(),
+                 IsReading data = li->getSensorReadings(sensor_path, num_data);
+                 return py::array(py::buffer_info(&data, sizeof(IsReading), py::format_descriptor<IsReading>::format(),
                                                   1, { num_data }, { sizeof(IsReading) }));
              },
              R"pbdoc(   
@@ -232,6 +245,35 @@ PYBIND11_MODULE(_sensor, m)
                     arg0 (:obj:`char*`): the sensor path
                 Returns:
                     :obj:`numpy.array`: The list of readings for the sensor ready on the buffer.)pbdoc")
+        .def("get_sensor_reading",
+             [](const ImuSensorInterface* li, const char* sensor_path,
+                std::function<IsReading(std::vector<IsReading>, float)> interpolateFunction = nullptr,
+                bool getLatestValue = false) -> py::object
+             {
+                 if (!li)
+                 {
+                     return py::none();
+                 }
+                 IsReading data = IsReading();
+                 if (interpolateFunction)
+                 {
+                     data = li->getSensorReading(
+                         sensor_path, carb::wrapPythonCallback(std::move(interpolateFunction)), getLatestValue);
+                 }
+                 else
+                 {
+                     data = li->getSensorReading(sensor_path, nullptr, getLatestValue);
+                 }
+                 return py::cast(data);
+             },
+             R"pbdoc(   
+                Args:
+                    arg0 (:obj:`char*`): the sensor path
+                    arg1 (:obj:`std::function<IsReading(std::vector<IsReading>, float)>&`): interpolation function
+                    arg2 (:obj:`bool`): getLatestValue
+                Returns:
+                    :obj:`numpy.array`: The reading for the current sensor period.)pbdoc",
+             py::arg("sensor_path"), py::arg("interpolateFunction") = nullptr, py::arg("getLatestValue") = false)
         .def("get_sensor_sim_reading", wrapInterfaceFunction(&ImuSensorInterface::getSensorSimReading),
              R"pbdoc(   
                 Args:

@@ -125,9 +125,9 @@ class Contact_sensor_demo(omni.ext.IExt):
         if self._timeline.is_playing() and self.sliders:
             for i in range(4):
                 reading = self._cs.get_sensor_readings(self.leg_paths[i] + "/sensor")
-                if reading.shape[0]:
+                if reading.is_valid:
                     self.sliders[i].model.set_value(
-                        float(reading[-1]["value"]) * self.meters_per_unit
+                        float(reading.value) * self.meters_per_unit
                     )  # readings are in kg⋅m⋅s−2, converting to Newtons
                 else:
                     self.sliders[i].model.set_value(0)

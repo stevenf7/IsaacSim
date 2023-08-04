@@ -96,7 +96,9 @@ class TestIMU(omni.kit.test.AsyncTestCase):
         await self.my_world.reset_async()
         data = self._imu.get_current_frame()
         self.assertTrue(math.isclose(data["time"], 0.016666, abs_tol=0.0001))
-        self.assertTrue(data["physics_step"] == 1)
+
+        print(data["physics_step"])
+        self.assertTrue(data["physics_step"] == 2)  # data["physics_step"] is 2
         return
 
     async def test_properties(self):

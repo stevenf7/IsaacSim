@@ -23,6 +23,7 @@
 #include "ContactManager.h"
 #include "omni/isaac/sensor/IsaacSensor.h"
 
+#include <omni/isaac/utils/Pose.h>
 
 namespace omni
 {
@@ -39,17 +40,17 @@ void ContactSensor::reset()
 {
     mContactManagerPtr = nullptr;
     mCurrentTime = 0.0f;
+    mSensorTime = 0.0f;
     mTimeSeconds = 0.0f;
     mTimeDelta = 0.0f;
     mReadingPair[0] = mReadingPair[1] = CsReading();
-    mSensorReadings.clear();
-    mContacts = nullptr;
+    mContactsRawData = nullptr;
 }
 
-void ContactSensor::drawCircle(const pxr::GfVec3d& _pose, const int& nsegment)
+void ContactSensor::drawCircle(const omni::math::linalg::vec3d& _pose, const int& nsegment)
 {
     // will not visualize if the visualize flag is off or if radius is <=0 (full body sensor)
-    if (!mVisualize || mProp.radius <= 0)
+    if (!mVisualize || mProps.radius <= 0)
     {
         return;
     }
@@ -62,18 +63,17 @@ void ContactSensor::drawCircle(const pxr::GfVec3d& _pose, const int& nsegment)
     float y = static_cast<float>(pose[1]);
     float z = static_cast<float>(pose[2]);
 
-    // CARB_LOG_WARN("Draw for pose (%f %f %f)", x, y, z);
     const float* color = mColor.GetArray();
     carb::scenerenderer::PrimitiveVertex data;
 
     for (int i = 0; i < nsegment; i++, angle += step)
     {
-        data.position.x = mProp.radius * cos(angle) + x;
-        data.position.y = mProp.radius * sin(angle) + y;
+        data.position.x = mProps.radius * cos(angle) + x;
+        data.position.y = mProps.radius * sin(angle) + y;
         data.position.z = z;
 
         data.color = carb::ColorRgba{ color[0], color[1], color[2], color[3] };
-        data.width = 0.1f;
+        data.width = 1;
         mLineDrawing->addVertex(data);
     }
     angle = 0.0f;
@@ -81,11 +81,11 @@ void ContactSensor::drawCircle(const pxr::GfVec3d& _pose, const int& nsegment)
     for (int i = 0; i < nsegment; i++, angle += step)
     {
         data.position.x = x;
-        data.position.y = mProp.radius * cos(angle) + y;
-        data.position.z = mProp.radius * sin(angle) + z;
+        data.position.y = mProps.radius * cos(angle) + y;
+        data.position.z = mProps.radius * sin(angle) + z;
 
         data.color = carb::ColorRgba{ color[0], color[1], color[2], color[3] };
-        data.width = 0.1f;
+        data.width = 1;
 
         mLineDrawing->addVertex(data);
     }
@@ -93,12 +93,12 @@ void ContactSensor::drawCircle(const pxr::GfVec3d& _pose, const int& nsegment)
 
     for (int i = 0; i < nsegment; i++, angle += step)
     {
-        data.position.x = mProp.radius * cos(angle) + x;
+        data.position.x = mProps.radius * cos(angle) + x;
         data.position.y = y;
-        data.position.z = mProp.radius * sin(angle) + z;
+        data.position.z = mProps.radius * sin(angle) + z;
 
         data.color = carb::ColorRgba{ color[0], color[1], color[2], color[3] };
-        data.width = 0.1f;
+        data.width = 1;
 
         mLineDrawing->addVertex(data);
     }
@@ -108,81 +108,98 @@ void ContactSensor::drawCircle(const pxr::GfVec3d& _pose, const int& nsegment)
 
 void ContactSensor::draw()
 {
-    pxr::GfMatrix4d usdTransform = omni::usd::UsdUtils::getWorldTransformMatrix(mPrim.GetPrim());
-    pxr::GfVec3d translation = usdTransform.ExtractTranslation();
+    usdrt::GfMatrix4d usdTransform =
+        omni::isaac::utils::pose::computeWorldXformNoCache(mStage, mUsdrtStage, mPrim.GetPath());
+    omni::math::linalg::vec3d translation = usdTransform.ExtractTranslation();
     drawCircle(translation, 96);
 }
 
 CsRawData* ContactSensor::getRawData(size_t& size)
 {
-    size = mSize;
-    return mContacts;
+    if (mContactsRawData == nullptr)
+    {
+        size = 0;
+    }
+    else
+    {
+        size = 1;
+    }
+    return mContactsRawData;
 }
 
 CsReading ContactSensor::getSimSensorReading()
 {
-    size_t index = 1;
-    processRawContacts(mContacts, mSize, index, mTimeSeconds);
-    return mReadingPair[index];
+    CARB_LOG_WARN_ONCE(
+        "*** Deprecation alert: Contact Sensor getSensorSimReading function is deprecated and will be removed in the next update");
+    CARB_LOG_WARN_ONCE("*** please use getSensorReading for sensor reading");
+    if (mProps.sensorPeriod > 0 && mProps.sensorPeriod < mTimeDelta && mTimeDelta - mProps.sensorPeriod > 0.001)
+    {
+        CARB_LOG_WARN_ONCE(
+            "*** warning: contact sensor frequency is higher than physics frequency, returning the latest physics value");
+    }
+    return mReadingPair[mCurrent];
 }
 
-CsReading* ContactSensor::getSensorReadings(size_t& num_readings)
+CsReading ContactSensor::getSensorReadings(size_t& num_readings)
 {
     CARB_PROFILE_ZONE(0, "ContactSensor::getSensorReadings");
-    // when mContactsOld's time is 0, then it's the first frame and we return 0.
-    if (mContacts == nullptr || mContactsOld.time == 0)
+    CARB_LOG_WARN_ONCE(
+        "*** Deprecation alert: Contact Sensor getSensorReadings function is deprecated and will be removed in the next update");
+    CARB_LOG_WARN_ONCE("*** please use getSensorReading for sensor readings");
+
+    if (mProps.sensorPeriod < mTimeDelta && mProps.sensorPeriod > 0 && mTimeDelta - mProps.sensorPeriod > 0.001)
     {
-        mSensorReadings.clear();
-        mReadingPair[1].time = mContactManagerPtr->getCurrentTime();
-        mSensorReadings.push_back(mReadingPair[1]);
-        // CARB_LOG_WARN("mSensorReadings.size(): %zu", mSensorReadings.size());
-        num_readings = 1;
-        return mSensorReadings.data();
+        CARB_LOG_WARN_ONCE(
+            "*** warning: contact sensor frequency is higher than physics frequency, returning the latest physics value");
     }
-    // store processed old data to index 0
-    double delTime = (mTimeSeconds - mTimeDelta < 0) ? 0.0 : mTimeSeconds - mTimeDelta;
-    processRawContacts(&mContactsOld, mSizeOld, 0, delTime);
 
-    // store processed new data to index 1
-    processRawContacts(mContacts, mSize, 1, mTimeSeconds);
+    CsReading reading = getSensorReading();
 
-    if (mProp.sensorPeriod > 0)
+    if (reading.is_valid)
     {
-        float start = mReadingPair[0].time;
-        float end = mReadingPair[1].time;
-        mSensorReadings.clear();
-
-        while (mCurrentTime < end)
-        {
-            if (mCurrentTime >= start)
-            {
-                float time_pos = (mCurrentTime - start) / (end - start);
-                CsReading reading;
-                reading.time = mCurrentTime;
-                reading.value = lerp(mReadingPair[0].value, mReadingPair[1].value, time_pos);
-                if (reading.value < mProp.minThreshold)
-                {
-                    reading.value = 0.0f;
-                }
-                reading.inContact = reading.value > 0.0f;
-                mSensorReadings.push_back(reading);
-            }
-            mCurrentTime += mProp.sensorPeriod;
-        }
+        num_readings = 1;
     }
     else
     {
-        mSensorReadings.clear();
-        mSensorReadings.push_back(mReadingPair[1]);
-        if (mSensorReadings.back().value < mProp.minThreshold)
+        num_readings = 0;
+    }
+
+    return reading;
+}
+
+CsReading ContactSensor::getSensorReading(const bool& getLatestValue)
+{
+    if (mProps.sensorPeriod > 0 && mProps.sensorPeriod < mTimeDelta && mTimeDelta - mProps.sensorPeriod > 0.001)
+    {
+        CARB_LOG_WARN_ONCE(
+            "*** warning: IMU sensor frequency is higher than physics frequency, returning the latest physics value");
+    }
+
+    CsReading sensorReading = CsReading();
+
+    if (mEnabled)
+    {
+        // if sensor period is shorter than physics downtime, or user choose latest value return current value
+        // or internal time + sensor period time is behind the last step time (something went wrong
+        // i.e. sensor was disabled for a long time and then re-enabled)
+        // get the latest time and measurement
+        if (mProps.sensorPeriod <= mTimeDelta || mSensorTime + mProps.sensorPeriod < mReadingPair[!mCurrent].time ||
+            getLatestValue)
         {
-            mSensorReadings.back().value = 0.0f;
-            mSensorReadings.back().inContact = false;
+            sensorReading = mReadingPair[mCurrent];
+            sensorReading.is_valid = true;
+            if (mProps.sensorPeriod > 0 && mSensorTime + mProps.sensorPeriod < mReadingPair[!mCurrent].time)
+            {
+                CARB_LOG_WARN("*** warning Contact sensor time out of sync, using latest measurements");
+            }
+        }
+        else
+        {
+            sensorReading = mSensorReading;
+            sensorReading.is_valid = true;
         }
     }
-    num_readings = mSensorReadings.size();
-    // CARB_LOG_INFO("normal mSensorReadings.size(): %zu", num_readings);
-    return mSensorReadings.data();
+    return sensorReading;
 }
 
 void ContactSensor::processRawContacts(CsRawData* rawContact, const size_t& size, const size_t& index, const double& time)
@@ -206,8 +223,8 @@ void ContactSensor::processRawContacts(CsRawData* rawContact, const size_t& size
         pxr::SdfPath actorPath(omni::isaac::utils::getSdfPathFromUint64(actor));
         // CARB_LOG_INFO("getting PxActor");
         pxr::GfTransform parentPose;
-        pxr::GfVec3d pose(static_cast<double>(mProp.position.x), static_cast<double>(mProp.position.y),
-                          static_cast<double>(mProp.position.z));
+        pxr::GfVec3d pose(static_cast<double>(mProps.position.x), static_cast<double>(mProps.position.y),
+                          static_cast<double>(mProps.position.z));
         ::physx::PxActor* pxActor =
             (::physx::PxActor*)mPhysXInterfacePtr->getPhysXPtr(actorPath, omni::physx::PhysXType::ePTActor);
         // CARB_LOG_INFO("used Physx interface");
@@ -254,10 +271,10 @@ void ContactSensor::processRawContacts(CsRawData* rawContact, const size_t& size
             auto d = pxr::GfVec3d(0.0f); // dp*rawContact->dt; Pending update on physics contact position being delayed
                                          // a few frames
             auto distance = pose - contactPoint - d;
-            // pose.GetLength(), mProp.radius);
+            // pose.GetLength(), mProps.radius);
 
             // Check if the distance from sensor to contact position is within sensor radius
-            if (mProp.radius < 0.0f || distance.GetLength() < static_cast<double>(mProp.radius))
+            if (mProps.radius < 0.0f || distance.GetLength() < static_cast<double>(mProps.radius))
             {
                 mReadingPair[index].inContact = mReadingPair[index].inContact || true;
                 // compute force from impulse (F = i/dt) and add to sensor output
@@ -271,29 +288,50 @@ void ContactSensor::processRawContacts(CsRawData* rawContact, const size_t& size
             }
         }
         mReadingPair[index].value =
-            std::min(static_cast<float>((totalImpulse.GetLength()) / rawContact[0].dt), mProp.maxThreshold);
+            std::min(static_cast<float>((totalImpulse.GetLength()) / rawContact[0].dt), mProps.maxThreshold);
     }
 }
 
 void ContactSensor::onPhysicsStep()
 {
     CARB_PROFILE_ZONE(0, "ContactSensor::physics step");
-    mPointDrawing->clear();
     mLineDrawing->clear();
+    mLineDrawing->draw();
     if (mContactManagerPtr == nullptr)
     {
         CARB_LOG_ERROR("ContactManager not found");
         return;
     }
-    if (mContacts != nullptr)
-    {
-        mContactsOld = CsRawData(*mContacts); // update mContactsOld with the mContacts from the previous step if
-                                              // mContacts is not null
-    }
-    mSizeOld = mSize;
 
-    mContacts = mContactManagerPtr->getCsRawData(asInt(mParentPrim.GetPath()), mSize);
-    return;
+    mContactsRawData = mContactManagerPtr->getCsRawData(asInt(mParentPrim.GetPath()), mSize);
+
+    mCurrent = !mCurrent;
+    processRawContacts(mContactsRawData, mSize, mCurrent, mTimeSeconds);
+
+    // clear raw data if not in contact
+    if (mReadingPair[mCurrent].inContact == false)
+    {
+        mContactsRawData = nullptr;
+    }
+
+    if (mProps.sensorPeriod <= mTimeDelta)
+    {
+        mSensorTime = mReadingPair[mCurrent].time;
+    }
+    else if (mSensorTime + mProps.sensorPeriod <= mReadingPair[mCurrent].time)
+    {
+        mSensorTime += mProps.sensorPeriod;
+        // the sensor measurement is closer to current reading than the last reading
+        if (abs(mReadingPair[mCurrent].time - mSensorTime) <= abs(mReadingPair[!mCurrent].time - mSensorTime))
+        {
+            mSensorReading = mReadingPair[mCurrent];
+        }
+        else
+        {
+            mSensorReading = mReadingPair[!mCurrent];
+        }
+        mSensorReading.time = mSensorTime;
+    }
 }
 
 void ContactSensor::setContactReportApi()
@@ -412,31 +450,53 @@ void ContactSensor::onComponentChange()
     const float* thresholds = thresholdAttr.GetArray();
 
     // contact sensor props
-    mProp.maxThreshold = thresholds[1];
-    mProp.minThreshold = thresholds[0];
-    mProp.radius = radius;
-    mProp.sensorPeriod = sensorPeriod;
+    mProps.maxThreshold = thresholds[1];
+    mProps.minThreshold = thresholds[0];
+    mProps.radius = radius;
+    mProps.sensorPeriod = sensorPeriod;
 
     carb::Float3 mPropPos = { static_cast<float>(pos[0] * scale[0]), static_cast<float>(pos[1] * scale[1]),
                               static_cast<float>(pos[2] * scale[2]) };
-    mProp.position = mPropPos;
+    mProps.position = mPropPos;
 
-    // CARB_LOG_WARN("relative position (stage unit): %f %f %f", mProp.position.x, mProp.position.y,
-    // mProp.position.z);
-    if (mVisualize)
+    // CARB_LOG_WARN("relative position (stage unit): %f %f %f", mProps.position.x, mProps.position.y,
+    // mProps.position.z);
+    if (mVisualize && mEnabled)
     {
+        CARB_LOG_WARN_ONCE("*** Deprecation Alert: visualization through USD will be removed in the next release!");
         draw();
+    }
+
+
+    if (mPreviousEnabled != this->mEnabled)
+    {
+        if (mEnabled)
+        {
+            this->onPhysicsStep(); // force on physics step to run to get up to date value
+            mReadingPair[!mCurrent] = mReadingPair[mCurrent]; // first step, copy latest values for both readingpairs
+            mSensorTime = mReadingPair[mCurrent].time;
+            mSensorReading = mReadingPair[mCurrent];
+        }
+        else
+        {
+            this->onStop();
+        }
+        mPreviousEnabled = this->mEnabled;
     }
 }
 
 void ContactSensor::onStop()
 {
     mLineDrawing->clear();
-    mPointDrawing->clear();
+    mLineDrawing->draw();
     mCurrentTime = 0.0f;
+    mSensorTime = 0.0f;
+    mTimeSeconds = 0.0f;
+    mTimeDelta = 0.0f;
     mReadingPair[0] = mReadingPair[1] = CsReading();
-    mSensorReadings.clear();
-    mContacts = nullptr;
+
+
+    mContactsRawData = nullptr;
     if (mVisualize)
     {
         draw();

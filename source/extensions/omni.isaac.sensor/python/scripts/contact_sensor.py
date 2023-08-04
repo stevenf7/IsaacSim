@@ -15,6 +15,7 @@ import omni.kit.commands
 from omni.isaac.core.prims.base_sensor import BaseSensor
 from omni.isaac.core.utils.prims import get_prim_at_path, is_prim_path_valid
 from omni.isaac.core.utils.stage import traverse_stage
+from omni.isaac.core_nodes.bindings import _omni_isaac_core_nodes
 from omni.isaac.sensor import _sensor
 from pxr import Gf, PhysxSchema, UsdPhysics
 
@@ -90,91 +91,57 @@ class ContactSensor(BaseSensor):
         self._current_frame = dict()
         self._current_frame["time"] = 0
         self._current_frame["physics_step"] = 0
+        self._core_nodes = _omni_isaac_core_nodes.acquire_interface()
         return
 
     def initialize(self, physics_sim_view=None) -> None:
         BaseSensor.initialize(self, physics_sim_view=physics_sim_view)
-        self._acquisition_callback = omni.physx.acquire_physx_interface().subscribe_physics_step_events(
-            self._data_acquisition_callback
-        )
-        self._stage_open_callback = (
-            omni.usd.get_context()
-            .get_stage_event_stream()
-            .create_subscription_to_pop_by_type(int(omni.usd.StageEventType.OPENED), self._stage_open_callback_fn)
-        )
-        timeline = omni.timeline.get_timeline_interface()
-        self._timer_reset_callback = timeline.get_timeline_event_stream().create_subscription_to_pop(
-            self._timeline_timer_callback_fn
-        )
         return
 
-    def _stage_open_callback_fn(self, event) -> None:
-        self._acquisition_callback = None
-        self._timer_reset_callback = None
-        self._stage_open_callback = None
-        return
-
-    def _timeline_timer_callback_fn(self, event) -> None:
-        if event.type == int(omni.timeline.TimelineEventType.STOP):
-            self._current_time = 0
-            self._number_of_physics_steps = 0
-        return
-
-    def post_reset(self) -> None:
-        BaseSensor.post_reset(self)
-        self._current_time = 0
-        self._number_of_physics_steps = 0
-        return
-
-    def _data_acquisition_callback(self, step_size: float) -> None:
-        self._current_time += step_size
-        self._number_of_physics_steps += 1
-        if not self._pause:
-            cs_sensor_reading = self._contact_sensor_interface.get_sensor_readings(self.prim_path)
-            cs_raw_data = self._contact_sensor_interface.get_contact_sensor_raw_data(self.prim_path)
-            if cs_sensor_reading.shape[0]:
-                self._current_frame["in_contact"] = bool(cs_sensor_reading["inContact"][-1])
-                self._current_frame["force"] = float(cs_sensor_reading["value"][-1])
-                self._current_frame["time"] = float(self._current_time)
-                self._current_frame["physics_step"] = float(self._number_of_physics_steps)
-                self._current_frame["number_of_contacts"] = len(cs_raw_data)
-                if "contacts" in self._current_frame:
-                    self._current_frame["contacts"] = []
-                    for i in range(len(cs_raw_data)):
-                        contact_frame = dict()
-                        contact_frame["body0"] = self._contact_sensor_interface.decode_body_name(
-                            int(cs_raw_data["body0"][-1])
-                        )
-                        contact_frame["body1"] = self._contact_sensor_interface.decode_body_name(
-                            int(cs_raw_data["body1"][-1])
-                        )
-                        contact_frame["position"] = self._backend_utils.create_tensor_from_list(
-                            [
-                                cs_raw_data["position"][-1][0],
-                                cs_raw_data["position"][-1][1],
-                                cs_raw_data["position"][-1][2],
-                            ],
-                            dtype="float32",
-                            device=self._device,
-                        )
-                        contact_frame["normal"] = self._backend_utils.create_tensor_from_list(
-                            [cs_raw_data["normal"][-1][0], cs_raw_data["normal"][-1][1], cs_raw_data["normal"][-1][2]],
-                            dtype="float32",
-                            device=self._device,
-                        )
-                        contact_frame["impulse"] = self._backend_utils.create_tensor_from_list(
-                            [
-                                cs_raw_data["impulse"][-1][0],
-                                cs_raw_data["impulse"][-1][1],
-                                cs_raw_data["impulse"][-1][2],
-                            ],
-                            dtype="float32",
-                            device=self._device,
-                        )
-                        self._current_frame["contacts"].append(contact_frame)
-        return
-
-    def get_current_frame(self) -> dict:
+    def get_current_frame(self) -> None:
+        cs_sensor_reading = self._contact_sensor_interface.get_sensor_reading(self.prim_path)
+        cs_raw_data = self._contact_sensor_interface.get_contact_sensor_raw_data(self.prim_path)
+        if cs_sensor_reading.is_valid:
+            self._current_frame["in_contact"] = bool(cs_sensor_reading.inContact)
+            self._current_frame["force"] = float(cs_sensor_reading.value)
+            self._current_frame["time"] = float(cs_sensor_reading.time)
+            # self._current_frame["physics_step"] = float(self._number_of_physics_steps)
+            self._current_frame["number_of_contacts"] = len(cs_raw_data)
+            if "contacts" in self._current_frame:
+                self._current_frame["contacts"] = []
+                for i in range(len(cs_raw_data)):
+                    contact_frame = dict()
+                    contact_frame["body0"] = self._contact_sensor_interface.decode_body_name(
+                        int(cs_raw_data["body0"][i])
+                    )
+                    contact_frame["body1"] = self._contact_sensor_interface.decode_body_name(
+                        int(cs_raw_data["body1"][i])
+                    )
+                    contact_frame["position"] = self._backend_utils.create_tensor_from_list(
+                        [
+                            cs_raw_data["position"][i][0],
+                            cs_raw_data["position"][i][1],
+                            cs_raw_data["position"][i][2],
+                        ],
+                        dtype="float32",
+                        device=self._device,
+                    )
+                    contact_frame["normal"] = self._backend_utils.create_tensor_from_list(
+                        [cs_raw_data["normal"][i][0], cs_raw_data["normal"][i][1], cs_raw_data["normal"][i][2]],
+                        dtype="float32",
+                        device=self._device,
+                    )
+                    contact_frame["impulse"] = self._backend_utils.create_tensor_from_list(
+                        [
+                            cs_raw_data["impulse"][i][0],
+                            cs_raw_data["impulse"][i][1],
+                            cs_raw_data["impulse"][i][2],
+                        ],
+                        dtype="float32",
+                        device=self._device,
+                    )
+                    self._current_frame["contacts"].append(contact_frame)
+            self._current_frame["physics_step"] = float(self._core_nodes.get_physics_num_steps())
         return self._current_frame
 
     def add_raw_contact_data_to_frame(self) -> None:
@@ -186,15 +153,17 @@ class ContactSensor(BaseSensor):
         return
 
     def resume(self) -> None:
-        self._pause = False
+        self._isaac_sensor_prim.GetEnabledAttr().Set(True)
         return
 
     def pause(self) -> None:
-        self._pause = True
+        self._isaac_sensor_prim.GetEnabledAttr().Set(False)
         return
 
     def is_paused(self) -> bool:
-        return self._pause
+        if not self._isaac_sensor_prim.GetEnabledAttr().Get():
+            return True
+        return False
 
     def set_frequency(self, value: int) -> None:
         self._isaac_sensor_prim.GetSensorPeriodAttr().Set(1.0 / value)

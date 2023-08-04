@@ -1,5 +1,8 @@
 # Changelog
-
+## [0.3.0] - 2023-07-27
+### Added
+- xPrim Axis Visualzier node
+- xPrim Radius Visualizer node
 ## [0.2.3] - 2023-01-19
 ### Fixed
 - crash when trying to draw without a valid renderer

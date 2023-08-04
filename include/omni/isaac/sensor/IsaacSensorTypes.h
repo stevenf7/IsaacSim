@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -42,6 +42,7 @@ struct CsReading
     float time{ 0.0f }; //<! Simulation Timestamp for contact sensor reading
     float value{ 0.0f }; //<! Reading value, in N
     bool inContact{ false }; //<! Flag that checks if the sensor is in contact with something or not
+    bool is_valid{ false }; //<! Validity of the data. False for when the sensor is disabled, true for enabled
 };
 
 /**
@@ -82,6 +83,7 @@ struct IsReading
     float ang_vel_y{ 0.0f }; //<! Gyroscope reading value y axis, in rad/s
     float ang_vel_z{ 0.0f }; //<! Gyroscope reading value z axis, in rad/s
     carb::Float4 orientation{ 0.0f, 0.0f, 0.0f, 0.0f }; //<! quaternion orientation of parent body
+    bool is_valid{ false }; //<! Validity of the data. False for when the sensor is disabled, true for enabled
 };
 
 /**
