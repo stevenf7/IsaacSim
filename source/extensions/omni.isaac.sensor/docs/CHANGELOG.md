@@ -1,4 +1,8 @@
 # Changelog
+## [6.1.0] - 2023-07-26
+### Added
+- Added RGBD sensors to Create > Isaac > Sensors menu
+
 ## [6.0.2] - 2023-07-31
 ### Changed
 - Location of default and temp lidar config files set to ${app}/../data/sensors/lidar/

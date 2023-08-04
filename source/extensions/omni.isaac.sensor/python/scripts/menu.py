@@ -10,9 +10,10 @@
 import sys
 import weakref
 
-import carb
 import omni.kit.commands
-from omni.isaac.core.utils.prims import set_prim_visibility
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.prims import create_prim, set_prim_visibility
+from omni.isaac.core.utils.stage import get_next_free_path
 from omni.isaac.ui.menu import make_menu_item_description
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from pxr import Gf
@@ -23,6 +24,50 @@ class IsaacSensorMenu:
         menu_items = [
             make_menu_item_description(ext_id, "Contact Sensor", lambda a=weakref.proxy(self): a._add_contact_sensor()),
             make_menu_item_description(ext_id, "Imu Sensor", lambda a=weakref.proxy(self): a._add_imu_sensor()),
+            MenuItemDescription(
+                name="RGBD Sensor",
+                sub_menu=[
+                    make_menu_item_description(
+                        ext_id,
+                        "Intel Realsense",
+                        lambda a=weakref.proxy(self): create_prim(
+                            prim_path=get_next_free_path("/Realsense", None),
+                            prim_type="Camera",
+                            usd_path=get_assets_root_path() + "/Isaac/Sensors/Intel/RealSense/rsd455.usd",
+                        ),
+                    ),
+                    make_menu_item_description(
+                        ext_id,
+                        "Orbbec Gemini 2",
+                        lambda a=weakref.proxy(self): create_prim(
+                            prim_path=get_next_free_path("/Gemini", None),
+                            prim_type="Camera",
+                            usd_path=get_assets_root_path()
+                            + "/Users/imadan@nvidia.com/Sensors/Orbbec/Gemini 2/orbbec_gemini2_V1.0.usd",
+                        ),
+                    ),
+                    make_menu_item_description(
+                        ext_id,
+                        "Orbbec FemtoMega",
+                        lambda a=weakref.proxy(self): create_prim(
+                            prim_path=get_next_free_path("/Femto", None),
+                            prim_type="Camera",
+                            usd_path=get_assets_root_path()
+                            + "/Users/imadan@nvidia.com/Sensors/Orbbec/FemtoMega/orbbec_femtomega_v1.0.usd",
+                        ),
+                    ),
+                    make_menu_item_description(
+                        ext_id,
+                        "NVIDIA Hawk",
+                        lambda a=weakref.proxy(self): create_prim(
+                            prim_path=get_next_free_path("/Hawk", None),
+                            prim_type="Camera",
+                            usd_path=get_assets_root_path()
+                            + "/Users/imadan@nvidia.com/Sensors/NVIDIA/Hawk/hawk1_1.usd",
+                        ),
+                    ),
+                ],
+            ),
         ]
         menu_items.append(
             MenuItemDescription(
