@@ -47,11 +47,25 @@
                 "uiName": "Timestamp",
                 "default": 0.0
             },
-            "pointCloudData":{
+            "dataPtr": {
+                "type": "uint64",
+                "description": "Pointer to the buffer data",
+                "default": 0
+            },
+            "data": {
                 "type": "pointf[3][]",
-                "description": "Buffer of 3d points containing point cloud data",
                 "memoryType": "cpu",
+                "description": "Buffer array data, must contain data if dataPtr is null",
                 "default": []
+            },
+            "cudaDeviceIndex": {
+                "type": "int",
+                "description": "Index of the device where the data lives (-1 for host data)",
+                "default": -1
+            },
+            "bufferSize": {
+                "type": "uint",
+                "description": "Size (in bytes) of the buffer (0 if the input is a texture)"
             }
         }
     }

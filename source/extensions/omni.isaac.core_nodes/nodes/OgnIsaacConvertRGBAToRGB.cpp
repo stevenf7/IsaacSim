@@ -9,19 +9,22 @@
 
 #include "OgnIsaacConvertRGBAToRGBDatabase.h"
 
+#include <carb/cudainterop/CudaInterop.h>
 #include <carb/graphics/GraphicsTypes.h>
 #include <carb/logging/Log.h>
 
+#include <omni/isaac/utils/Buffer.h>
+#include <omni/isaac/utils/ScopedCudaDevice.h>
+
 #include <cmath>
 #include <string>
-
 namespace omni
 {
 namespace isaac
 {
 namespace core_nodes
 {
-extern "C" void rgbaToRgbOgn(uint8_t** dest, const uint8_t** src, const int width, const int height, const int srcStride);
+extern "C" void rgbaToRgbOgn(uint8_t* dest, cudaTextureObject_t src, const int width, const int height, const int srcStride);
 
 
 /**
@@ -39,17 +42,54 @@ public:
             db.logError("input data must be encoded as rgba8");
             return false;
         }
-        db.outputs.data.resize(db.inputs.width() * db.inputs.height() * 3);
+        // db.outputs.data.resize(db.inputs.width() * db.inputs.height() * 3);
+        // CARB_LOG_ERROR(
+        //     "BUFFER SIZE: %d %d", db.inputs.width() * db.inputs.height() * 3 * sizeof(uint8_t),
+        //     db.inputs.bufferSize());
+        // CARB_LOG_ERROR("FORMAT: %lu DEVICE: %d", db.inputs.format(), db.inputs.cudaDeviceIndex());
+        auto& state = db.internalState<OgnIsaacConvertRGBAToRGB>();
 
-        rgbaToRgbOgn((uint8_t**)db.outputs.data(), (const uint8_t**)db.inputs.data(), db.inputs.width(),
-                     db.inputs.height(), db.inputs.width() * 4);
+        // // If the data is on host, copy to device, use default device
+        // if (db.inputs.cudaDeviceIndex() == -1)
+        // {
+        //     state.mBuffer =
+        //         isaac::utils::DeviceBuffer(db.inputs.width() * db.inputs.height() * 4, db.inputs.cudaDeviceIndex());
+        //     uint64_t handle = db.inputs.dataPtr();
+        //     state.mBuffer.copy(
+        //         reinterpret_cast<void*>(&handle), db.inputs.width() * db.inputs.height() * 4,
+        //         cudaMemcpyHostToDevice);
+        //     state.inputBuffer = state.mBuffer.data();
+        // }
+        // else
+        // {
+        //     uint64_t handle = db.inputs.dataPtr();
+        //     state.inputBuffer = reinterpret_cast<void*>(&handle);
+        // }
+        {
+            isaac::utils::ScopedDevice(db.inputs.cudaDeviceIndex());
+            uint64_t handle = db.inputs.dataPtr();
+            state.mBuffer.resize(db.inputs.width() * db.inputs.height() * 3);
+
+            isaac::utils::ScopedCudaTextureObject srcTexObj(reinterpret_cast<cudaMipmappedArray_t>(handle), 0);
+            rgbaToRgbOgn(state.mBuffer.data(), srcTexObj, db.inputs.width(), db.inputs.height(), db.inputs.width() * 4);
+        }
+        db.outputs.dataPtr() = reinterpret_cast<uint64_t>(state.mBuffer.data());
+        db.outputs.cudaDeviceIndex() = db.inputs.cudaDeviceIndex();
         db.outputs.width() = db.inputs.width();
         db.outputs.height() = db.inputs.height();
         db.outputs.encoding() = db.stringToToken("rgb8");
-        db.outputs.bufferSize() = static_cast<uint32_t>(db.outputs.data.size());
+        db.outputs.bufferSize() = static_cast<uint32_t>(state.mBuffer.sizeInBytes());
         db.outputs.execOut() = kExecutionAttributeStateEnabled;
         return true;
     }
+
+    // virtual void release(const NodeObj& nodeObj)
+    // {
+    //     auto& state = OgnIsaacConvertRGBAToRGBDatabase::sInternalState<OgnIsaacConvertRGBAToRGB>(nodeObj);
+    // }
+
+private:
+    isaac::utils::DeviceBuffer mBuffer;
 };
 REGISTER_OGN_NODE()
 }

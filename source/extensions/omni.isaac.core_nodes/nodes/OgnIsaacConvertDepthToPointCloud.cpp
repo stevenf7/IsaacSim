@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -12,17 +12,19 @@
 #include <carb/graphics/GraphicsTypes.h>
 #include <carb/logging/Log.h>
 
+#include <omni/isaac/utils/Buffer.h>
+#include <omni/isaac/utils/ScopedCudaDevice.h>
+
 #include <cmath>
 #include <string>
-
 namespace omni
 {
 namespace isaac
 {
 namespace core_nodes
 {
-extern "C" void depthToPCLOgn(GfVec3f** dest,
-                              const uint8_t** src,
+extern "C" void depthToPCLOgn(float3* dest,
+                              const cudaTextureObject_t src,
                               const int width,
                               const int height,
                               const float fx,
@@ -45,7 +47,7 @@ public:
         auto& height = db.inputs.height();
         auto& width = db.inputs.width();
 
-        db.outputs.pointCloudData.resize(db.inputs.data.size() / sizeof(float));
+        auto& state = db.internalState<OgnIsaacConvertDepthToPointCloud>();
 
         float fx, fy, cx, cy;
 
@@ -53,13 +55,23 @@ public:
         fy = height * db.inputs.focalLength() / db.inputs.verticalAperture();
         cx = width * 0.5f;
         cy = height * 0.5f;
+        {
+            isaac::utils::ScopedDevice(db.inputs.cudaDeviceIndex());
+            uint64_t handle = db.inputs.dataPtr();
+            isaac::utils::ScopedCudaTextureObject srcTexObj(reinterpret_cast<cudaMipmappedArray_t>(handle), 0);
+            state.mBuffer.resize(db.inputs.width() * db.inputs.height());
+            depthToPCLOgn(state.mBuffer.data(), srcTexObj, width, height, fx, fy, cx, cy);
+        }
 
-        depthToPCLOgn(
-            (GfVec3f**)db.outputs.pointCloudData(), (const uint8_t**)db.inputs.data(), width, height, fx, fy, cx, cy);
-
+        db.outputs.dataPtr() = reinterpret_cast<uint64_t>(state.mBuffer.data());
+        db.outputs.cudaDeviceIndex() = db.inputs.cudaDeviceIndex();
+        db.outputs.bufferSize() = static_cast<uint32_t>(state.mBuffer.sizeInBytes());
         db.outputs.execOut() = kExecutionAttributeStateEnabled;
         return true;
     }
+
+private:
+    isaac::utils::DeviceBufferBase<float3> mBuffer;
 };
 REGISTER_OGN_NODE()
 }

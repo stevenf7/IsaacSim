@@ -101,7 +101,7 @@ class Extension(omni.ext.IExt):
             name=f"{rv}{BRIDGE_PREFIX}PublishImage",
             node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
             annotators=[
-                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(rv + "ExportRawArray"),
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(rv + "Ptr"),
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                     "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
                 ),
@@ -128,7 +128,7 @@ class Extension(omni.ext.IExt):
             name=f"{BRIDGE_PREFIX}PublishInstanceSegmentation",
             node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
             annotators=[
-                "instance_segmentation",
+                "instance_segmentation_fast",
                 f'{omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("InstanceSegmentation")}IsaacSimulationGate',
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                     "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
@@ -157,7 +157,7 @@ class Extension(omni.ext.IExt):
             node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishBbox2D",
             annotators=[
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    "bounding_box_2d_tight", attributes_mapping={"input:semanticTypes": ["class"]}
+                    "bounding_box_2d_tight_fast", attributes_mapping={"input:semanticTypes": ["class"]}
                 ),
                 f'{omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("BoundingBox2DTight")}IsaacSimulationGate',
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
@@ -173,7 +173,7 @@ class Extension(omni.ext.IExt):
             node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishBbox2D",
             annotators=[
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    "bounding_box_2d_loose",
+                    "bounding_box_2d_loose_fast",
                     attributes_mapping={"input:semanticTypes": ["class"], "outputs:data": "inputs:data"},
                 ),
                 f'{omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("BoundingBox2DLoose")}IsaacSimulationGate',
@@ -189,7 +189,7 @@ class Extension(omni.ext.IExt):
             node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishBbox3D",
             annotators=[
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    "bounding_box_3d",
+                    "bounding_box_3d_fast",
                     attributes_mapping={"input:semanticTypes": ["class"], "outputs:data": "inputs:data"},
                 ),
                 f'{omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("BoundingBox3D")}IsaacSimulationGate',
@@ -214,19 +214,19 @@ class Extension(omni.ext.IExt):
         )
         # outputs that we can publish labels for
         label_names = {
-            "instance_segmentation": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
+            "instance_segmentation_fast": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
                 "InstanceSegmentation"
             ),
             "semantic_segmentation": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
                 "SemanticSegmentation"
             ),
-            "bounding_box_2d_tight": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
+            "bounding_box_2d_tight_fast": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
                 "BoundingBox2DTight"
             ),
-            "bounding_box_2d_loose": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
+            "bounding_box_2d_loose_fast": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
                 "BoundingBox2DLoose"
             ),
-            "bounding_box_3d": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("BoundingBox3D"),
+            "bounding_box_3d_fast": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("BoundingBox3D"),
         }
         for annotator, annotator_name in label_names.items():
             rep.writers.register_node_writer(

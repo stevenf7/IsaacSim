@@ -11,11 +11,15 @@
                 "type": "execution",
                 "description": "The input execution port"
             },
-            "data": {
-                "type": "uchar[]",
-                "memoryType": "cuda",
-                "description": "Buffer rgba array data",
-                "default": []
+            "dataPtr": {
+                "type": "uint64",
+                "description": "Pointer to the raw rgba array data",
+                "default": 0
+            },
+            "cudaDeviceIndex": {
+                "type": "int",
+                "description": "Index of the device where the data lives (-1 for host data)",
+                "default": -1
             },
             "width": {
                 "type": "uint",
@@ -33,6 +37,10 @@
             "bufferSize": {
                 "type": "uint",
                 "description": "Size (in bytes) of the buffer (0 if the input is a texture)"
+            },
+            "format": {
+                "type": "uint64",
+                "description": "Format"
             }
         },
         "outputs": {
@@ -40,11 +48,15 @@
                 "type": "execution",
                 "description": "Output execution triggers when conversion complete"
             },
-            "data": {
-                "type": "uchar[]",
-                "memoryType": "cuda",
-                "description": "Buffer rgb array data",
-                "default": []
+            "dataPtr": {
+                "type": "uint64",
+                "description": "Pointer to the rgb buffer data",
+                "default": 0
+            },
+            "cudaDeviceIndex": {
+                "type": "int",
+                "description": "Index of the device where the data lives (-1 for host data)",
+                "default": -1
             },
             "encoding": {
                 "type": "token",

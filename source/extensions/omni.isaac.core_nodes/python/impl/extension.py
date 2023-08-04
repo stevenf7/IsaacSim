@@ -153,7 +153,7 @@ class Extension(omni.ext.IExt):
 
         ##### Simulation Gates
         for rv in sensors.get_synthetic_data()._ogn_rendervars:
-            if sensors.get_synthetic_data().is_node_template_registered(rv + "ExportRawArray"):
+            if sensors.get_synthetic_data().is_node_template_registered(rv + "Ptr"):
                 template_name = rv + "IsaacSimulationGate"
                 if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
                     template = sensors.get_synthetic_data().register_node_template(
@@ -162,7 +162,7 @@ class Extension(omni.ext.IExt):
                             "omni.isaac.core_nodes.IsaacSimulationGate",
                             [
                                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                                    rv + "ExportRawArray", attributes_mapping={"outputs:exec": "inputs:execIn"}
+                                    rv + "Ptr", attributes_mapping={"outputs:exec": "inputs:execIn"}
                                 )
                             ],
                         ),
@@ -216,7 +216,7 @@ class Extension(omni.ext.IExt):
                     omni.syntheticdata.SyntheticDataStage.ON_DEMAND,  # node template stage
                     "omni.isaac.core_nodes.IsaacConvertRGBAToRGB",  # node template type
                     [
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(rv + "ExportRawArray"),
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(rv + "Ptr"),
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                             rv + "IsaacSimulationGate", attributes_mapping={"outputs:execOut": "inputs:execIn"}
                         ),
@@ -237,7 +237,7 @@ class Extension(omni.ext.IExt):
                     "omni.isaac.core_nodes.IsaacConvertDepthToPointCloud",  # node template type
                     [
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            rv + "ExportRawArray",
+                            rv + "Ptr",
                             attributes_mapping={
                                 "outputs:data": "inputs:data",
                                 "outputs:width": "inputs:width",
