@@ -1,4 +1,9 @@
 # Changelog
+=======
+
+## [7.2.0] - 2023-08-04
+### Added
+- Added support for ros and usd camera axes in get_world_pose, get_local_pose, set_world_pose, set_local_pose.
 ## [7.1.0] - 2023-08-04
 ### Added
 - Add following functions to Camera class 
