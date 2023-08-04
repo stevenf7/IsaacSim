@@ -44,7 +44,7 @@ public:
 
         auto& state = db.internalState<OgnIsaacComputeRTXLidarFlatScan>();
 
-        uint8_t* input = reinterpret_cast<uint8_t*>(db.inputs.cpuPointer());
+        uint8_t* input = reinterpret_cast<uint8_t*>(db.inputs.dataPtr());
         if (!input)
         {
             return true;
@@ -153,7 +153,7 @@ public:
 
                                 db.outputs.azimuthRange() = { Deg2Rad(startAzimuth), Deg2Rad(endAzimuth) };
 
-                                db.outputs.execOut() = kExecutionAttributeStateEnabled;
+                                db.outputs.exec() = kExecutionAttributeStateEnabled;
 
 
                                 // Reset start Azimuth

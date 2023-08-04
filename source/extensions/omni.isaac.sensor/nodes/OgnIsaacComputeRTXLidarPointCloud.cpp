@@ -14,6 +14,8 @@
 
 #include <carb/InterfaceUtils.h>
 
+#include <boost/make_shared.hpp>
+#include <boost/shared_ptr.hpp>
 #include <internal/omni/sensors/lidar/LidarIntensityMapping.h>
 #include <internal/omni/sensors/lidar/LidarReturnHelper.h>
 #include <internal/omni/sensors/lidar/LidarSettings.h>
@@ -115,6 +117,7 @@ public:
     {
         auto& state =
             OgnIsaacComputeRTXLidarPointCloudDatabase::sInternalState<OgnIsaacComputeRTXLidarPointCloud>(nodeObj);
+        state.mDataPtr.reset();
         state.mLidarDeleted = false;
         state.mConfig = "";
         state.mScanType = LidarScanType::kUnknown;
@@ -123,16 +126,17 @@ public:
     // If the node fails we want to cleanup the output
     static bool returnCleanly(OgnIsaacComputeRTXLidarPointCloudDatabase& db, bool passThroughReturnValue, int dbv)
     {
-        auto& matrixOutput = *reinterpret_cast<omni::math::linalg::matrix4d*>(&db.outputs.toWorldMatrix());
+        auto& matrixOutput = *reinterpret_cast<omni::math::linalg::matrix4d*>(&db.outputs.transform());
         matrixOutput.SetIdentity();
-        db.outputs.pointCloudData().resize(0);
+        db.outputs.dataPtr() = 0;
+        db.outputs.bufferSize() = 0;
+        db.outputs.cudaDeviceIndex() = -1; // db.inputs.cudaDeviceIndex();
         db.outputs.intensity().resize(0);
         db.outputs.range().resize(0);
         db.outputs.azimuth().resize(0);
         db.outputs.elevation().resize(0);
 
-        db.outputs.execOut() =
-            passThroughReturnValue ? kExecutionAttributeStateEnabled : kExecutionAttributeStateDisabled;
+        db.outputs.exec() = passThroughReturnValue ? kExecutionAttributeStateEnabled : kExecutionAttributeStateDisabled;
 #if __DEBUG_PRINT_ON
         std::cout << dbv << "}";
 #endif
@@ -145,7 +149,7 @@ public:
 #if __DEBUG_PRINT_ON
         std::cout << "LC[";
 #endif
-        uint8_t* input = reinterpret_cast<uint8_t*>(db.inputs.cpuPointer());
+        uint8_t* input = reinterpret_cast<uint8_t*>(db.inputs.dataPtr());
         if (!input)
         {
             return returnCleanly(db, true, 1);
@@ -233,7 +237,7 @@ public:
                                         parameter->async.frameEnd.orientation[0],
                                         parameter->async.frameEnd.orientation[1],
                                         parameter->async.frameEnd.orientation[2] };
-        auto& matrixOutput = *reinterpret_cast<omni::math::linalg::matrix4d*>(&db.outputs.toWorldMatrix());
+        auto& matrixOutput = *reinterpret_cast<omni::math::linalg::matrix4d*>(&db.outputs.transform());
         matrixOutput.SetIdentity();
         matrixOutput.SetRotateOnly(pose);
         matrixOutput.SetTranslateOnly(posM);
@@ -252,10 +256,14 @@ public:
             }
         }
 
+        state.mDataPtr = boost::make_shared<pxr::GfVec3f[]>(outSize);
+        db.outputs.dataPtr() = reinterpret_cast<uint64_t>(state.mDataPtr.get());
+        db.outputs.bufferSize() = outSize * sizeof(pxr::GfVec3f);
+        db.outputs.cudaDeviceIndex() = -1; // TODO
+
 #define _DEF_OUT_VAR(outName)                                                                                          \
     auto& db_outputs_##outName = db.outputs.outName();                                                                 \
     db_outputs_##outName.resize(outSize)
-        _DEF_OUT_VAR(pointCloudData);
         _DEF_OUT_VAR(intensity);
         _DEF_OUT_VAR(range);
         _DEF_OUT_VAR(azimuth);
@@ -301,12 +309,12 @@ public:
                         p.x += accuracyErrorPosition.x;
                         p.y += accuracyErrorPosition.y;
                         p.z += accuracyErrorPosition.z;
+                        state.mDataPtr[outIdx][0] = p.x;
+                        state.mDataPtr[outIdx][1] = p.y;
+                        state.mDataPtr[outIdx][2] = p.z;
 
 #define _ASSIGN_OUT(outputName, index, comp, src) db_outputs_##outputName[index] comp = p.src
 
-                        _ASSIGN_OUT(pointCloudData, outIdx, [0], x);
-                        _ASSIGN_OUT(pointCloudData, outIdx, [1], y);
-                        _ASSIGN_OUT(pointCloudData, outIdx, [2], z);
                         _ASSIGN_OUT(intensity, outIdx, , intensity);
                         _ASSIGN_OUT(range, outIdx, , range);
                         _ASSIGN_OUT(azimuth, outIdx, , azimuth);
@@ -318,7 +326,7 @@ public:
             }
         }
 
-        db.outputs.execOut() = kExecutionAttributeStateEnabled;
+        db.outputs.exec() = kExecutionAttributeStateEnabled;
 
 #if __DEBUG_PRINT_ON
         std::cout << "]";
@@ -332,10 +340,12 @@ public:
         mConfig = "";
         mScanType = LidarScanType::kUnknown;
         mLidarDeleted = false;
+        mDataPtr.reset();
     }
 
 private:
     bool mLidarDeleted;
+    boost::shared_ptr<pxr::GfVec3f[]> mDataPtr;
     std::string mConfig;
     LidarScanType mScanType{ LidarScanType::kUnknown };
     LidarSolidStateProfile mSolidStateProfile;

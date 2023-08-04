@@ -1,10 +1,13 @@
 # Changelog
+## [7.0.0] - 2023-08-03
 
-## [7.0.0] - 2023-08-01
 ### Added
 - added get_sensor_reading function
 
 ### Changed
+- RTX Nodes updated to work with dataPtr/cudaDeviceIndex/bufferSize inputs and outputs.
+- RTX Nodes updated to auto connect with synthetic data/replicator nodes.
+- RTX Node and DebugDrawPointCloud templates and writers updated to auto connect with synthetic data/replicator nodes.
 - Changed sensor reading behavior that prohibit interpolation when the sensor frequency is higher than physics frequency
 - Uses data interpolated at previous sensor measurement period when it's lower than physics frequency for the IMU sensor and nearest physics step data for the contact sensor
 - Deprecated get_sensor_readings, get_sensor_sim_reading, get_sensor_num_reading for IMU Sensor and Contact Sensor
@@ -12,6 +15,9 @@
 - Changed contact sensor logic to process sensor measurement every step instead of on call
 - Updated ant sensor samples to use the new API
 - Updated python wrapper and removed callbacks.
+
+### Removed
+- IsaacRenderVarToCpuPointer, use omni.syntheticdata.SdRenderVarPtr instead.
 
 ### Fixed
 - Fixed index out of bound error for the read IMU and contact sensor nodes

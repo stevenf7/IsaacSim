@@ -11,7 +11,7 @@
         "categoryDefinitions": "config/CategoryDefinition.json",
         "categories": "isaacDebugDraw",
         "inputs": {
-            "execIn": {
+            "exec": {
                 "type": "execution",
                 "description": "The input execution port"
             },
@@ -27,11 +27,13 @@
                 "type": "matrixd[4]",
                 "description": "The matrix to transform the points by"
             },
-            "pointCloudData": {
-                "type": "pointf[3][]",
-                "description": "Buffer of 3d points containing point cloud data",
-                "metadata": {},
-                "default": []
+            "dataPtr": {
+                "type": "uint64",
+                "description": "Buffer of points containing point cloud data"
+            },
+            "bufferSize": {
+                "type": "uint64",
+                "description": "Size (in bytes) of the buffer (0 if the input is a texture)"
             },
             "color": {
                 "type": "colorf[4]",

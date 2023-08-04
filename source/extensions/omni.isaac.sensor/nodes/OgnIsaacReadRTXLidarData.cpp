@@ -37,7 +37,7 @@ public:
     {
         CARB_PROFILE_ZONE(0, "Read RTX Lidar Data");
 
-        uint8_t* input = reinterpret_cast<uint8_t*>(db.inputs.cpuPointer());
+        uint8_t* input = reinterpret_cast<uint8_t*>(db.inputs.dataPtr());
         if (!input)
         {
             return true;
@@ -166,7 +166,7 @@ public:
             }
         }
 
-        db.outputs.execOut() = kExecutionAttributeStateEnabled;
+        db.outputs.exec() = kExecutionAttributeStateEnabled;
 
         return true;
     }

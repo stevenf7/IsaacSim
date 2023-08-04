@@ -64,7 +64,7 @@ void PrimitiveDrawingHelper::addVertex(const carb::scenerenderer::PrimitiveVerte
 // Add a list of vertices
 void PrimitiveDrawingHelper::addVertices(const std::vector<carb::Float3>& positions,
                                          const std::vector<carb::ColorRgba>& colors,
-                                         const std::vector<float> widths)
+                                         const std::vector<float>& widths)
 {
     mDirty = true;
     carb::scenerenderer::PrimitiveVertex point;

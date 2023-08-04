@@ -89,11 +89,11 @@ class OgnIsaacPrintRTXRadarInfo:
     @staticmethod
     def compute(db) -> bool:
         """read a pointer and print data from it assuming it is Rtx"""
-        if not db.inputs.cpuPointer:
+        if not db.inputs.dataPtr:
             carb.log_warn("invalid data input to OgnIsaacPrintRTXRadarInfo")
             return True
-        # raw cpuPointer scan start after 8 bytes
-        scan_p = db.inputs.cpuPointer + 8
+        # raw dataPtr scan start after 8 bytes
+        scan_p = db.inputs.dataPtr + 8
         scan = ctypes.cast(scan_p, ctypes.POINTER(radarPointCloud))
         printRadarPointCloud(scan[0])
 

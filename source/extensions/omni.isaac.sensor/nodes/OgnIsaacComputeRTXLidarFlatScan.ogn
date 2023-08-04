@@ -10,20 +10,24 @@
         },
         "categoryDefinitions": "config/CategoryDefinition.json",
         "categories": "isaacSensor",
+        "state": {"$comment": ["Internal state"]},
         "inputs": {
-            "execIn": {
+            "exec": {
                 "type": "execution",
                 "description": "The input execution port"
             },
-            "cpuPointer": {
+            "dataPtr": {
                 "type": "uint64",
-                "memoryType": "cpu",
-                "description": "CPU Pointer to LiDAR render result.",
-                "uiName": "CPU Pointer"
+                "description": "Pointer to LiDAR render result.",
+                "uiName": "Data Pointer"
+            },
+            "bufferSize": {
+                "type": "uint64",
+                "description": "Size (in bytes) of the buffer (0 if the input is a texture)"
             }
         },
         "outputs": {
-            "execOut": {
+            "exec": {
                 "type": "execution",
                 "description": "Output execution triggers when lidar sensor has data"
             },
