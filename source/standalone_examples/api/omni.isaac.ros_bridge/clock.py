@@ -55,6 +55,8 @@ clock_topic = "sim_time"
 system_clock_topic = "system_time"
 manual_clock_topic = "manual_time"
 
+simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=1.0)
+
 # Creating a action graph with ROS component nodes
 try:
     og.Controller.edit(
@@ -117,7 +119,6 @@ sim_clock_sub = rospy.Subscriber(clock_topic, Clock, sim_clock_callback)
 system_clock_sub = rospy.Subscriber(system_clock_topic, Clock, system_clock_callback)
 manual_clock_sub = rospy.Subscriber(manual_clock_topic, Clock, manual_clock_callback)
 time.sleep(1.0)
-simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=1.0)
 # need to initialize physics getting any articulation..etc
 simulation_context.initialize_physics()
 
