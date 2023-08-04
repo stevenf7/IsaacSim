@@ -65,7 +65,7 @@ omni::physx::IPhysxSceneQuery* gPhysxSceneQuery = nullptr;
 // Only one "current" context is supported now.  This is due to limitations in the IStageUpdate interface.
 uint32_t g_dcCtxId = 0;
 std::unique_ptr<DcContext> g_dcCtx = nullptr;
-
+pxr::UsdStageWeakPtr gStage = nullptr;
 
 // This custom Usd notice listener is required to clean up properly
 class DcUsdNoticeListener : public omni::usd::UsdUtils::UsdNoticeListener<pxr::UsdNotice::ObjectsChanged>
@@ -265,7 +265,7 @@ inline PxTransform asPxTransform(const DcTransform& pose)
     return PxTransform{ asPxVec3(pose.p), asPxQuat(pose.r) };
 }
 
-std::unique_ptr<DcContext> createContext()
+std::unique_ptr<DcContext> createContext(long stageId)
 {
 
 
@@ -274,6 +274,7 @@ std::unique_ptr<DcContext> createContext()
     std::unique_ptr<DcContext> ctx = std::make_unique<DcContext>(g_dcCtxId);
     ctx->physx = gPhysXInterface;
     ctx->physxSceneQuery = gPhysxSceneQuery;
+    ctx->mStage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
 
     /*
     // get scene pointer
@@ -577,7 +578,9 @@ DcObjectType CARB_ABI DcPeekObjectType(const char* usdPath)
     // check if it's an articulation
     PxArticulationReducedCoordinate* abase =
         (PxArticulationReducedCoordinate*)physx->getPhysXPtr(SdfPath(usdPath), omni::physx::PhysXType::ePTArticulation);
-    if (abase)
+    auto atype = gStage->GetPrimAtPath(SdfPath(usdPath)).GetTypeName();
+
+    if (abase && atype != "PhysicsFixedJoint")
     {
         return eDcObjectArticulation;
     }
@@ -3635,9 +3638,11 @@ void SuAttach(long stageId, double metersPerUnit, void* data)
         destroyContext(g_dcCtx);
     }
 
-    g_dcCtx = createContext();
+    g_dcCtx = createContext(stageId);
     gNoticeListener = std::make_unique<DcUsdNoticeListener>(stageId);
     gNoticeListener->registerListener();
+
+    gStage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
 }
 
 void SuDetach(void* data)
@@ -3650,6 +3655,7 @@ void SuDetach(void* data)
         g_dcCtx = nullptr;
     }
     gNoticeListener.reset();
+    gStage = nullptr;
 }
 
 void SuPause()
