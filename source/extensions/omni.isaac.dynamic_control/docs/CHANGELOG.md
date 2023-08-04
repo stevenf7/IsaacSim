@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.5] - 2023-08-04
+### Fixed
+- Fixed joints on the root of an articulation are treated as a special type of internal articulation to support fixed base. 
+- Getting the type for the first fixed joint on the root link of an articulation will return none now
+- Use USD apis to interact with the first fixed joint on the root of an articulation. 
+
 ## [1.2.4] - 2023-06-12
 ### Changed
 - Update to kit 105.1, update build system

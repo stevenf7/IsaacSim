@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -93,7 +93,7 @@ public:
     omni::physx::IPhysx* physx = nullptr;
     omni::physx::IPhysxSceneQuery* physxSceneQuery = nullptr;
     bool isSimulating = false;
-
+    pxr::UsdStageWeakPtr mStage = nullptr;
 
     bool wasPaused = false;
     // refresh physics pointers after a reset

@@ -17,7 +17,7 @@ import omni.physx as _physx
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.dynamic_control import conversions as dc_conversions
 from omni.isaac.dynamic_control import utils as dc_utils
-from pxr import Gf, Sdf, UsdPhysics
+from pxr import Gf, Sdf, Usd, UsdPhysics
 
 # from omni.isaac.core.utils.nucleus import get_assets_root_path
 from .common import get_assets_root_path, open_stage_async
@@ -639,6 +639,29 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCase):
             np.allclose([new_pose.p.x, new_pose.p.y, new_pose.p.z], [-0.46066, 1.4307, 2.34091e-05], atol=1e-2),
             f"new_pose.p = {new_pose.p}",
         )
+
+    async def test_articulation_type(self, gpu=False):
+        dc_utils.set_scene_physics_type(gpu)
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        self.assertNotEqual(self._dc.get_articulation("/Articulation"), _dynamic_control.INVALID_HANDLE)
+        # the first fixed joint to the root link is not an articulation
+        self.assertEqual(
+            self._dc.get_articulation("/Articulation/CenterPivot/FixedJoint"), _dynamic_control.INVALID_HANDLE
+        )
+        # the first fixed joint to the root link is not a valid physx joint, its internally treated as a fixed base
+        self.assertEqual(
+            self._dc.peek_object_type("/Articulation/CenterPivot/FixedJoint"), _dynamic_control.ObjectType.OBJECT_NONE
+        )
+        # only one articulation should exist
+        count = 0
+        for prim in Usd.PrimRange(self._stage.GetPrimAtPath("/")):
+            path = str(prim.GetPath())
+            if self._dc.peek_object_type(path) == _dynamic_control.ObjectType.OBJECT_ARTICULATION:
+                count += 1
+        self.assertEqual(count, 1)
+        pass
 
     # async def test_get_effort(self, gpu=False):
     #     (result, error) = await open_stage_async(

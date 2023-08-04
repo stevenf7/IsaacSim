@@ -754,8 +754,10 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
             }
         }
     }
+    auto atype = mStage->GetPrimAtPath(SdfPath(usdPath)).GetTypeName();
 
-    if (!abase || abase->getConcreteType() != PxConcreteType::eARTICULATION_REDUCED_COORDINATE)
+    if (!abase || abase->getConcreteType() != PxConcreteType::eARTICULATION_REDUCED_COORDINATE ||
+        (abase && atype == "PhysicsFixedJoint"))
     {
         CARB_LOG_WARN("Failed to find articulation at '%s'", usdPath.GetString().c_str());
         return kDcInvalidHandle;
