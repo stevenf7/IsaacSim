@@ -18,6 +18,8 @@
 #include <omni/usd/UsdUtils.h>
 #include <omni/usd/UtilsIncludes.h>
 #include <pxr/usd/usd/inherits.h>
+#include <usdrt/gf/matrix.h>
+#include <usdrt/gf/vec.h>
 
 #include <map>
 #include <memory>
@@ -38,19 +40,23 @@ public:
     {
         mPhysXInterface = PhysXInterface;
         mRawBuffer.resize(mRawBufferSize, IsRawData());
+
         reset();
     }
 
     virtual ~ImuSensor();
 
-    void drawAxis(const pxr::GfVec3d& _position, const pxr::GfRotation& _orientation, const float& length);
+    void drawAxis(const usdrt::GfMatrix4d& usdTransform, const float& length);
 
     virtual void draw();
 
     size_t getNumReadings(); //<! Gets length of accumulated readings
 
-    IsReading* getSensorReadings(size_t& num_readings); //<! Gets accumulated array of readings from last
-                                                        // simulation step to current step.
+    IsReading getSensorReadings(size_t& num_readings); //<! Gets accumulated array of readings from last
+                                                       // simulation step to current step.
+
+    IsReading getSensorReading(const std::function<IsReading(std::vector<IsReading>, float)>& interpolateFunction = nullptr,
+                               const bool& getLatestValue = false);
 
     IsReading getSimSensorReading();
 
@@ -70,7 +76,7 @@ public:
     virtual void onStop();
 
     // internal debug function
-    void printIsReading(IsReading reading);
+    void printIsReading(const IsReading& reading);
 
 private:
     IsProperties mProps;
@@ -89,13 +95,18 @@ private:
 
     IsReading mInitPair; // Data obtained on simulation timestamp
     IsReading mReadingPair[2]; // Data obtained on simulation timestamp
+
+    // Data obtained at the last sensor period frame for intnerpolation
+    IsReading mInterpolationPair[2]; // Data obtained at the measurement sensorperiod
+    std::vector<IsReading> mSensorReadingSensorFrame; // IsReading at the measurement sensorperiod
+
     std::vector<IsReading> mSensorReadings; // Sensor readings in sensor timestamps
     double mUnitScale{ 1.0 };
     bool mCurrent{ 0 };
-    float mCurrentTime;
-    bool mProcessedReadings{ false };
+    float mSensorTime{ 0 };
     bool mProcessedRaw{ false };
     bool mFirst{ true };
+    bool mPreviousEnabled{ true };
     pxr::GfVec3f mGravity;
     omni::physx::IPhysx* mPhysXInterface = nullptr;
 };

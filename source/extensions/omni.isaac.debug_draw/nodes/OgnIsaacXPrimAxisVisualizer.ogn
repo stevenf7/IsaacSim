@@ -1,0 +1,37 @@
+{
+    "IsaacXPrimAxisVisualizer": {
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",        
+        "description": [
+            "displays the x,y,z axis of an xPrim for visualization."
+        ],
+        "metadata": {
+            "uiName": "Isaac xPrim Axis Visualizer Node"
+        },
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacDebugDraw",
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "The input execution port"
+            },            
+            "xPrim": {
+                "type": "bundle",
+                "description": "Usd prim to visualize",
+                "metadata": {
+                    "uiName": "xPrim"
+                }
+            },
+            "length": {
+                "type": "float",
+                "description": "Length of the axis lines",
+                "default": 1
+            },
+            "thickness": {
+                "type": "float",
+                "description": "Thickness of the axis lines",
+                "default": 1
+            }
+        }
+    }
+}

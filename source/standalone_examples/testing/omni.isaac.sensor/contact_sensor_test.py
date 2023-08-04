@@ -56,15 +56,13 @@ for frame in range(100):
 print("cube pose", cube_1.get_world_pose())
 
 # Get processed contact data
-reading = cs.get_sensor_readings(cube_path + "/Contact_Sensor")
-print(len(reading), str(reading))
+reading = cs.get_sensor_reading(cube_path + "/Contact_Sensor")
 
-if len(reading) == 0:
+if not reading.is_valid:
     raise ValueError("No contact sensor readings")
 
-if reading.shape[0]:
-    for r in reading:
-        print(r)
+if reading.is_valid:
+    print(str(reading))
 
 
 # Cleanup

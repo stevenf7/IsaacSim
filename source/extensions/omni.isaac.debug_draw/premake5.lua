@@ -45,19 +45,23 @@ project_with_location("omni.isaac.debug_draw.primitive_drawing")
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.debug_draw.plugin")
     cppdialect "C++17"
-    dependson {"omni.isaac.debug_draw.primitive_drawing"}
+    dependson {"omni.isaac.debug_draw.primitive_drawing", "omni.physx.plugin"}
     removeflags { "FatalCompileWarnings", "UndefinedIdentifiers" }
 
     add_files("impl", "plugins")
     add_files("iface", "%{root}/include/omni/isaac/debug_draw/**")
     add_files("ogn", ogn.nodes_path)
 
+    include_physx()
     -- Add the standard dependencies all OGN projects have
     add_ogn_dependencies(ogn)
     includedirs {
         "%{root}/include/pch",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
+        "%{root}/_build/target-deps/omni_client_library/include",
+        "%{kit_sdk_bin_dir}/exts/usdrt.scenegraph/include",
+        "%{root}/_build/target-deps/python/include",
     }
     libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",

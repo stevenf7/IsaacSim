@@ -67,6 +67,7 @@ class OgnIsaacReadIMU:
                     db.outputs.linAcc = [0.0, 0.0, 0.0]
                     db.outputs.angVel = [0.0, 0.0, 0.0]
                     db.outputs.orientation = [0.0, 0.0, 0.0, 1.0]
+                    db.outputs.sensorTime = 0.0
                     db.log_error("Prim is not an Imu sensor or is not attached to a rigid body")
                     return False
 
@@ -74,39 +75,45 @@ class OgnIsaacReadIMU:
                 db.outputs.linAcc = [0.0, 0.0, 0.0]
                 db.outputs.angVel = [0.0, 0.0, 0.0]
                 db.outputs.orientation = [0.0, 0.0, 0.0, 1.0]
+                db.outputs.sensorTime = 0.0
                 db.log_warn("Invalid Imu sensor prim")
                 return False
 
         else:
-            readings = state._is.get_sensor_readings(state.imu_path)
+            reading = state._is.get_sensor_reading(state.imu_path, None, db.inputs.useLatestData)
+            if reading.is_valid:
+                # next pass
+                if state.first:
+                    state.init_rot = reading.orientation
+                    state.first = False
 
-            # next pass
-            if state.first:
-                state.init_rot = readings[-1]["orientation"]
-                state.first = False
+                else:
+                    b = reading.orientation
+
+                    # compute quaternion inverse + multiplication
+                    a = [-1 * state.init_rot[i] for i in range(3)]
+                    a.append(state.init_rot[3])
+
+                    db.outputs.orientation = [
+                        a[3] * b[0] + b[3] * a[0] + a[1] * b[2] - b[1] * a[2],
+                        a[3] * b[1] + b[3] * a[1] + a[2] * b[0] - b[2] * a[0],
+                        a[3] * b[2] + b[3] * a[2] + a[0] * b[1] - b[0] * a[1],
+                        a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2],
+                    ]
+
+                lin_acc = [reading.lin_acc_x, reading.lin_acc_y, reading.lin_acc_z]
+                ang_vel = [reading.ang_vel_x, reading.ang_vel_y, reading.ang_vel_z]
+                db.outputs.sensorTime = reading.time
+                db.outputs.linAcc = lin_acc
+                db.outputs.angVel = ang_vel
 
             else:
-                b = readings[-1]["orientation"]
-
-                # compute quaternion inverse + multiplication
-                a = [-state.init_rot[i] for i in range(3)]
-                a.append(state.init_rot[3])
-
-                db.outputs.orientation = [
-                    a[3] * b[0] + b[3] * a[0] + a[1] * b[2] - b[1] * a[2],
-                    a[3] * b[1] + b[3] * a[1] + a[2] * b[0] - b[2] * a[0],
-                    a[3] * b[2] + b[3] * a[2] + a[0] * b[1] - b[0] * a[1],
-                    a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2],
-                ]
-
-            lin_acc_l = ["lin_acc_x", "lin_acc_y", "lin_acc_z"]
-            ang_vel_l = ["ang_vel_x", "ang_vel_y", "ang_vel_z"]
-
-            lin_acc_l = [float(readings[-1][x]) for x in lin_acc_l]
-            ang_vel_l = [float(readings[-1][x]) for x in ang_vel_l]
-
-            db.outputs.linAcc = lin_acc_l
-            db.outputs.angVel = ang_vel_l
+                db.outputs.linAcc = [0.0, 0.0, 0.0]
+                db.outputs.angVel = [0.0, 0.0, 0.0]
+                db.outputs.orientation = [0.0, 0.0, 0.0, 1.0]
+                db.outputs.sensorTime = 0.0
+                db.log_warn("no valid sensor reading, is the sensor enabled?")
+                return False
             db.outputs.execOut = og.ExecutionAttributeState.ENABLED
 
         return True

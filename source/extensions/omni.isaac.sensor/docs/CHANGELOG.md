@@ -1,5 +1,22 @@
 # Changelog
-## [6.1.0] - 2023-07-26
+
+## [7.0.0] - 2023-08-01
+### Added
+- added get_sensor_reading function
+
+### Changed
+- Changed sensor reading behavior that prohibit interpolation when the sensor frequency is higher than physics frequency
+- Uses data interpolated at previous sensor measurement period when it's lower than physics frequency for the IMU sensor and nearest physics step data for the contact sensor
+- Deprecated get_sensor_readings, get_sensor_sim_reading, get_sensor_num_reading for IMU Sensor and Contact Sensor
+- Changed orientation measurement to be the orientation of the IMU sensor rather than the parent prim
+- Changed contact sensor logic to process sensor measurement every step instead of on call
+- Updated ant sensor samples to use the new API
+- Updated python wrapper and removed callbacks.
+
+### Fixed
+- Fixed index out of bound error for the read IMU and contact sensor nodes
+
+## [6.1.0] - 2023-08-03
 ### Added
 - Added RGBD sensors to Create > Isaac > Sensors menu
 
@@ -19,7 +36,6 @@
 - RTX Sensors to Windows
 - WriterIsaacReadRTXLidarData Synthetic Data Writer
 - RtxSensorCpuIsaacReadRTXLidarData Synthetic Data Template
-
 ## [5.11.0] - 2023-07-05
 ### Added
 - Added filter width attributes to the imu sensor for adjusting noise

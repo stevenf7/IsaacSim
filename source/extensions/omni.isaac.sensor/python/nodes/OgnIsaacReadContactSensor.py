@@ -62,24 +62,40 @@ class OgnIsaacReadContactSensor:
                 if not result:
                     db.outputs.inContact = False
                     db.outputs.value = 0
+                    db.outputs.sensorTime = 0
                     db.log_error("Prim is not a contact sensor or is not attached to rigid body")
                     return False
 
-                readings = state._cs.get_sensor_readings(state.cs_path)
-
-                db.outputs.inContact = readings[-1]["inContact"]
-                db.outputs.value = readings[-1]["value"]
+                reading = state._cs.get_sensor_reading(state.cs_path)
+                if reading.is_valid:
+                    db.outputs.inContact = reading.inContact
+                    db.outputs.value = reading.value
+                    db.outputs.sensorTime = reading.time
+                else:
+                    db.outputs.inContact = False
+                    db.outputs.value = 0
+                    db.outputs.sensorTime = 0
+                    db.log_warn("Invalid contact sensor measurement, is it enabled?")
+                    return False
             else:
                 db.outputs.inContact = False
                 db.outputs.value = 0
+                db.outputs.sensorTime = 0
                 db.log_warn("Invalid contact sensor prim")
                 return False
             return True
 
-        readings = state._cs.get_sensor_readings(state.cs_path)
-
-        db.outputs.inContact = readings[-1]["inContact"]
-        db.outputs.value = readings[-1]["value"]
+        reading = state._cs.get_sensor_reading(state.cs_path)
+        if reading.is_valid:
+            db.outputs.inContact = reading.inContact
+            db.outputs.value = reading.value
+            db.outputs.sensorTime = reading.time
+        else:
+            db.outputs.inContact = False
+            db.outputs.value = 0
+            db.outputs.sensorTime = 0
+            db.log_warn("Invalid contact sensor measurement, is it enabled?")
+            return False
 
         db.outputs.execOut = og.ExecutionAttributeState.ENABLED
 

@@ -138,7 +138,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
 
         await omni.kit.app.get_app().next_update_async()
         self.my_world.play()
-        await simulate_async(0.1)  # simulate 0.1 s
+        await omni.kit.app.get_app().next_update_async()  # ant should be in the air and have no contact
         contacts_raw = self._cs.get_contact_sensor_raw_data(self.leg_paths[0] + "/sensor")
         self.assertEqual(len(contacts_raw), 0)
 
@@ -245,9 +245,8 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         for i in range(120):
             await omni.kit.app.get_app().next_update_async()
             contacts_raw = self._cs.get_contact_sensor_raw_data(self.leg_paths[0] + "/sensor")
-            sensor_reading = self._cs.get_sensor_readings(self.leg_paths[0] + "/sensor")
-            self.assertTrue(len(sensor_reading) >= 1)
-            sensor_reading = sensor_reading[0]
+            sensor_reading = self._cs.get_sensor_reading(self.leg_paths[0] + "/sensor")
+            self.assertTrue(sensor_reading.is_valid)
             if len((contacts_raw)):
                 # there is a contact, compute force from impulse, compare to sensor reading
                 force = (
@@ -260,10 +259,10 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
                     )
                     * 60.0
                 )  # dt is 1/60
-                self.assertAlmostEqual(force, sensor_reading["value"], 2)
+                self.assertAlmostEqual(force, sensor_reading.value, 2)
             else:
                 # No contact, reading should be zero
-                self.assertEqual(sensor_reading["value"], 0)
+                self.assertEqual(sensor_reading.value, 0)
         pass
 
     async def test_delayed_get_sensor_readings(self):
@@ -276,9 +275,8 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
 
         contacts_raw = self._cs.get_contact_sensor_raw_data(self.leg_paths[0] + "/sensor")
-        sensor_reading = self._cs.get_sensor_readings(self.leg_paths[0] + "/sensor")
-        self.assertEqual(len(sensor_reading), 1)
-        sensor_reading = sensor_reading[0]
+        sensor_reading = self._cs.get_sensor_reading(self.leg_paths[0] + "/sensor")
+        self.assertTrue(sensor_reading.is_valid)
 
         if len((contacts_raw)):
             # there is a contact, compute force from impulse, compare to sensor reading
@@ -288,10 +286,10 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
                 )
                 * 60.0
             )  # dt is 1/60
-            self.assertAlmostEqual(force, sensor_reading["value"], 2)
+            self.assertAlmostEqual(force, sensor_reading.value, 2)
         else:
             # No contact, reading should be zero
-            self.assertEqual(sensor_reading["value"], 0)
+            self.assertEqual(sensor_reading.value, 0)
         pass
 
     # async def test_compare_sensor_force_to_mass(self):
@@ -376,14 +374,13 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
 
         for i in range(40):
             await omni.kit.app.get_app().next_update_async()
-            sensor_reading = self._cs.get_sensor_readings(self.leg_paths[0] + "/sensor")
-            self.assertEqual(len(sensor_reading), 1)
-            sensor_reading = sensor_reading[0]
-            self.assertEqual(sensor_reading["value"], 0)
+            sensor_reading = self._cs.get_sensor_reading(self.leg_paths[0] + "/sensor")
+            self.assertTrue(sensor_reading.is_valid)
+            self.assertEqual(sensor_reading.value, 0)
         pass
 
     async def test_sensor_period(self):
-        # create four sensors that run at 120hz
+        # create four sensors that run at 30hz
         for i in range(4):
             result, sensor = omni.kit.commands.execute(
                 "IsaacSensorCreateContactSensor",
@@ -393,7 +390,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
                 max_threshold=10000000,
                 color=self.color[i],
                 radius=0.12,
-                sensor_period=1.0 / 120.0,
+                sensor_period=1.0 / 30.0,
                 translation=self.sensor_offsets[i],
                 visualize=True,
             )
@@ -411,15 +408,19 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
             raw = self._cs.get_contact_sensor_raw_data(self.leg_paths[0] + "/sensor")
             print(str(raw))
-            sensor_reading = self._cs.get_sensor_readings(self.leg_paths[0] + "/sensor")
+            sensor_reading = self._cs.get_sensor_reading(self.leg_paths[0] + "/sensor")
             print(str(sensor_reading))
             sensor_sim = self._cs.get_sensor_sim_reading(self.leg_paths[0] + "/sensor")
             print(str(sensor_sim.value))
-            readings = readings + sensor_reading.tolist()
 
-        # tolerance +-1 reading (119, 120, 121 will be accepted)
+            # the sensor is running at 30hz, while the sim is 60hz, so expecting every other reading to be new,
+            # old reading should be identical, and have the same timestamp
+            if not readings or readings[-1].time != sensor_reading.time:
+                readings.append(sensor_reading)
+
+        # tolerance +-1 reading (29, 30, 31 will be accepted)
         print(len(readings))
-        self.assertTrue(abs(len(readings) - 120) <= 1)
+        self.assertTrue(abs(len(readings) - 30) <= 1)
         pass
 
     async def test_stop_start(self):
@@ -432,7 +433,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         first = True
         for i in range(200):
             await omni.kit.app.get_app().next_update_async()
-            sensor_reading = self._cs.get_sensor_sim_reading(self.leg_paths[0] + "/sensor")
+            sensor_reading = self._cs.get_sensor_reading(self.leg_paths[0] + "/sensor")
             print(
                 "sensor_reading: "
                 + str(sensor_reading.inContact)
@@ -460,7 +461,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         self.my_world.play()
         await omni.kit.app.get_app().next_update_async()
 
-        sensor_reading = self._cs.get_sensor_sim_reading(self.leg_paths[0] + "/sensor")
+        sensor_reading = self._cs.get_sensor_reading(self.leg_paths[0] + "/sensor")
 
         print(
             "sensor_reading: "
@@ -610,7 +611,6 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
 
         pass
 
-    # working:
     async def test_ant_not_touching_restart(self):
         await self.test_add_sensor_prim()
 
@@ -623,7 +623,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
 
         for i in range(10):
             await omni.kit.app.get_app().next_update_async()
-            pre_reading = self._cs.get_sensor_readings(self.leg_paths[0] + "/sensor")[-1]
+            pre_reading = self._cs.get_sensor_reading(self.leg_paths[0] + "/sensor")
 
         self.my_world.stop()
         await omni.kit.app.get_app().next_update_async()
@@ -633,10 +633,10 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
 
         for i in range(10):
             await omni.kit.app.get_app().next_update_async()
-            post_reading = self._cs.get_sensor_readings(self.leg_paths[0] + "/sensor")[-1]
+            post_reading = self._cs.get_sensor_reading(self.leg_paths[0] + "/sensor")
 
-        self.assertEqual(pre_reading["inContact"], 0)
-        self.assertEqual(post_reading["inContact"], 0)
+        self.assertEqual(pre_reading.inContact, 0)
+        self.assertEqual(post_reading.inContact, 0)
 
         pass
 
@@ -894,6 +894,55 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         self.assertEqual(pre_reading["inContact"], 1)
         self.assertEqual(post_reading["inContact"], 0)
 
+        pass
+
+    async def test_sensor_latest_data(self):
+        # create four sensors that run at 30hz
+        for i in range(4):
+            result, sensor = omni.kit.commands.execute(
+                "IsaacSensorCreateContactSensor",
+                path="/custom_sensor",
+                parent=self.leg_paths[i],
+                min_threshold=0,
+                max_threshold=10000000,
+                color=self.color[i],
+                radius=0.12,
+                sensor_period=1.0 / 30.0,
+                translation=self.sensor_offsets[i],
+                visualize=True,
+            )
+            self.assertTrue(result)
+            self.assertIsNotNone(sensor)
+
+        await omni.kit.app.get_app().next_update_async()
+        self.my_world.play()
+        # give it some time to reach the ground first
+        await omni.kit.app.get_app().next_update_async()
+        readings = []
+
+        for i in range(10):  # Simulate for 10 steps
+            await omni.kit.app.get_app().next_update_async()
+            latest_sensor_reading = self._cs.get_sensor_reading(self.leg_paths[0] + "/custom_sensor", True)
+            sensor_sim_reading = self._cs.get_sensor_sim_reading(self.leg_paths[0] + "/custom_sensor")
+
+            self.assertEqual(latest_sensor_reading.time, sensor_sim_reading.time)
+            self.assertEqual(latest_sensor_reading.value, sensor_sim_reading.value)
+        pass
+
+    async def test_wrong_sensor_path(self):
+        await self.test_add_sensor_prim()
+        await omni.kit.app.get_app().next_update_async()
+        self.my_world.play()
+        # give it some time to reach the ground first
+        await omni.kit.app.get_app().next_update_async()
+        readings = []
+
+        for i in range(10):  # Simulate for 10 steps
+            await omni.kit.app.get_app().next_update_async()
+            latest_sensor_reading = self._cs.get_sensor_reading(self.leg_paths[0] + "/wrong_sensor", True)
+
+            self.assertFalse(latest_sensor_reading.is_valid)
+            self.assertEqual(latest_sensor_reading.time, 0)
         pass
 
     # async def test_cubes_touching_then_not_touching_restart(self):

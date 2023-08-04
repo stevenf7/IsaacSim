@@ -15,6 +15,7 @@ import omni.kit.commands
 from omni.isaac.core.prims.base_sensor import BaseSensor
 from omni.isaac.core.utils.prims import get_prim_at_path, is_prim_path_valid
 from omni.isaac.core.utils.stage import traverse_stage
+from omni.isaac.core_nodes.bindings import _omni_isaac_core_nodes
 from omni.isaac.sensor import _sensor
 from pxr import PhysxSchema
 
@@ -42,6 +43,7 @@ class IMUSensor(BaseSensor):
         self._body_prim_path = "/".join(prim_path.split("/")[:-1])
         self._sensor_name = prim_path.split("/")[-1]
         self._imu_sensor_interface = _sensor.acquire_imu_sensor_interface()
+        self._core_nodes = _omni_isaac_core_nodes.acquire_interface()
 
         linear_acceleration_filter_size = max(linear_acceleration_filter_size, 1)
         angular_velocity_filter_size = max(angular_velocity_filter_size, 1)
@@ -90,7 +92,6 @@ class IMUSensor(BaseSensor):
             )
         self._pause = False
         self._current_time = 0
-        self._number_of_physics_steps = 0
         self._current_frame = dict()
         self._current_frame["time"] = 0
         self._current_frame["physics_step"] = 0
@@ -108,89 +109,54 @@ class IMUSensor(BaseSensor):
 
     def initialize(self, physics_sim_view=None) -> None:
         BaseSensor.initialize(self, physics_sim_view=physics_sim_view)
-        self._acquisition_callback = omni.physx.acquire_physx_interface().subscribe_physics_step_events(
-            self._data_acquisition_callback
-        )
-        self._stage_open_callback = (
-            omni.usd.get_context()
-            .get_stage_event_stream()
-            .create_subscription_to_pop_by_type(int(omni.usd.StageEventType.OPENED), self._stage_open_callback_fn)
-        )
-        timeline = omni.timeline.get_timeline_interface()
-        self._timer_reset_callback = timeline.get_timeline_event_stream().create_subscription_to_pop(
-            self._timeline_timer_callback_fn
-        )
-        return
-
-    def _stage_open_callback_fn(self, event) -> None:
-        self._acquisition_callback = None
-        self._timer_reset_callback = None
-        self._stage_open_callback = None
-        return
-
-    def _timeline_timer_callback_fn(self, event) -> None:
-        if event.type == int(omni.timeline.TimelineEventType.STOP):
-            self._current_time = 0
-            self._number_of_physics_steps = 0
-        return
-
-    def post_reset(self) -> None:
-        BaseSensor.post_reset(self)
-        self._current_time = 0
-        self._number_of_physics_steps = 0
-        return
-
-    def _data_acquisition_callback(self, step_size: float):
-        self._current_time += step_size
-        self._number_of_physics_steps += 1
-        if not self._pause:
-            imu_sensor_reading = self._imu_sensor_interface.get_sensor_readings(self.prim_path)
-            if imu_sensor_reading.shape[0]:
-                self._current_frame["lin_acc"] = self._backend_utils.create_tensor_from_list(
-                    [
-                        imu_sensor_reading["lin_acc_x"][0],
-                        imu_sensor_reading["lin_acc_y"][0],
-                        imu_sensor_reading["lin_acc_z"][0],
-                    ],
-                    dtype="float32",
-                    device=self._device,
-                )
-                self._current_frame["ang_vel"] = self._backend_utils.create_tensor_from_list(
-                    [
-                        imu_sensor_reading["ang_vel_x"][0],
-                        imu_sensor_reading["ang_vel_y"][0],
-                        imu_sensor_reading["ang_vel_z"][0],
-                    ],
-                    dtype="float32",
-                    device=self._device,
-                )
-                self._current_frame["orientation"] = self._backend_utils.create_tensor_from_list(
-                    [
-                        imu_sensor_reading["orientation"][0][3],
-                        imu_sensor_reading["orientation"][0][0],
-                        imu_sensor_reading["orientation"][0][1],
-                        imu_sensor_reading["orientation"][0][2],
-                    ],
-                    dtype="float32",
-                    device=self._device,
-                )
-                self._current_frame["time"] = float(self._current_time)
-                self._current_frame["physics_step"] = float(self._number_of_physics_steps)
-        return
 
     def get_current_frame(self) -> dict:
+        imu_sensor_reading = self._imu_sensor_interface.get_sensor_reading(self.prim_path)
+        if imu_sensor_reading.is_valid:
+            self._current_frame["lin_acc"] = self._backend_utils.create_tensor_from_list(
+                [
+                    imu_sensor_reading.lin_acc_x,
+                    imu_sensor_reading.lin_acc_y,
+                    imu_sensor_reading.lin_acc_z,
+                ],
+                dtype="float32",
+                device=self._device,
+            )
+            self._current_frame["ang_vel"] = self._backend_utils.create_tensor_from_list(
+                [
+                    imu_sensor_reading.ang_vel_x,
+                    imu_sensor_reading.ang_vel_y,
+                    imu_sensor_reading.ang_vel_z,
+                ],
+                dtype="float32",
+                device=self._device,
+            )
+            self._current_frame["orientation"] = self._backend_utils.create_tensor_from_list(
+                [
+                    imu_sensor_reading.orientation[3],
+                    imu_sensor_reading.orientation[0],
+                    imu_sensor_reading.orientation[1],
+                    imu_sensor_reading.orientation[2],
+                ],
+                dtype="float32",
+                device=self._device,
+            )
+            self._current_frame["time"] = float(imu_sensor_reading.time)
+            self._current_frame["physics_step"] = float(self._core_nodes.get_physics_num_steps())
         return self._current_frame
 
     def resume(self) -> None:
-        self._pause = False
+        self._isaac_sensor_prim.GetEnabledAttr().Set(True)
         return
 
     def pause(self) -> None:
-        self._pause = True
+        self._isaac_sensor_prim.GetEnabledAttr().Set(False)
         return
 
     def is_paused(self) -> bool:
-        return self._pause
+        if not self._isaac_sensor_prim.GetEnabledAttr().Get():
+            return True
+        return False
 
     def set_frequency(self, value: int) -> None:
         self._isaac_sensor_prim.GetSensorPeriodAttr().Set(1.0 / value)

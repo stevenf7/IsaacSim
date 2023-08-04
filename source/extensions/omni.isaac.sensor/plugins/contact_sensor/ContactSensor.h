@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -19,6 +19,8 @@
 #include <omni/usd/UtilsIncludes.h>
 #include <pxr/base/gf/vec4d.h>
 #include <pxr/usd/usd/inherits.h>
+#include <usdrt/gf/matrix.h>
+#include <usdrt/gf/vec.h>
 
 #include <cmath>
 #include <vector>
@@ -47,7 +49,7 @@ public:
     void reset();
 
     // this function will draw a sphere based on the radius and location of the contact sensor
-    void drawCircle(const pxr::GfVec3d& _pose, const int& nsegment);
+    void drawCircle(const omni::math::linalg::vec3d& _pose, const int& nsegment);
 
     virtual void draw();
 
@@ -55,8 +57,9 @@ public:
 
     CsReading getSimSensorReading();
 
-    // TODO: optimization for when getSensorReading is called every tick?
-    CsReading* getSensorReadings(size_t& num_readings);
+    CsReading getSensorReadings(size_t& num_readings);
+
+    CsReading getSensorReading(const bool& getLatestValue = false);
 
     // use the index to indicate the recency of the data
     // 0 for old data, 1 for new data for the reading pair
@@ -87,19 +90,19 @@ public:
 
 private:
     pxr::GfVec4f mColor = pxr::GfVec4f(1.0f, 1.0f, 1.0f, 1.0f);
-    CsProperties mProp;
+    CsProperties mProps;
 
     size_t mSize;
-    size_t mSizeOld;
     CsReading mReadingPair[2]; // Data obtained on simulation timestamp
-    CsRawData* mContacts = nullptr;
-    CsRawData mContactsOld;
-    std::vector<CsReading> mSensorReadings; // Sensor readings in sensor timestamps
-
+    CsReading mSensorReading;
+    CsRawData* mContactsRawData = nullptr;
     ContactManager* mContactManagerPtr = nullptr;
     omni::renderer::IDebugDraw* mDebugDrawPtr = nullptr;
     omni::physx::IPhysx* mPhysXInterfacePtr = nullptr;
-    float mCurrentTime;
+    bool mCurrent{ 0 };
+    bool mPreviousEnabled{ true };
+    float mCurrentTime{ 0 };
+    float mSensorTime{ 0 };
 };
 }
 }

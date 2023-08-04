@@ -152,31 +152,29 @@ class Imu_sensor_demo(omni.ext.IExt):
 
     def _on_update(self, dt):
         if self._timeline.is_playing() and self.sliders:
-            reading = self._is.get_sensor_readings(self.body_path + "/sensor")
-            print(reading)
-            if reading.shape[0]:
-                self.sliders[0].model.set_value(float(reading[-1]["lin_acc_x"]) * self.meters_per_unit)  # readings
-                self.sliders[1].model.set_value(float(reading[-1]["lin_acc_y"]) * self.meters_per_unit)  # readings
-                self.sliders[2].model.set_value(float(reading[-1]["lin_acc_z"]) * self.meters_per_unit)  # readings
-                self.sliders[3].model.set_value(float(reading[-1]["ang_vel_x"]))  # readings
-                self.sliders[4].model.set_value(float(reading[-1]["ang_vel_y"]))  # readings
-                self.sliders[5].model.set_value(float(reading[-1]["ang_vel_z"]))  # readings
-                self.sliders[6].model.set_value(float(reading[-1]["orientation"][0]))  # readings
-                self.sliders[7].model.set_value(float(reading[-1]["orientation"][1]))  # readings
-                self.sliders[8].model.set_value(float(reading[-1]["orientation"][2]))  # readings
-                self.sliders[9].model.set_value(float(reading[-1]["orientation"][3]))  # readings
-
-            else:
-                self.sliders[0].model.set_value(0)
-                self.sliders[1].model.set_value(0)
-                self.sliders[2].model.set_value(0)
-                self.sliders[3].model.set_value(0)
-                self.sliders[4].model.set_value(0)
-                self.sliders[5].model.set_value(0)
-                self.sliders[6].model.set_value(0)
-                self.sliders[7].model.set_value(0)
-                self.sliders[8].model.set_value(0)
-                self.sliders[9].model.set_value(1)
+            reading = self._is.get_sensor_reading(self.body_path + "/sensor")
+            if reading.is_valid:
+                self.sliders[0].model.set_value(float(reading.lin_acc_x) * self.meters_per_unit)  # readings
+                self.sliders[1].model.set_value(float(reading.lin_acc_y) * self.meters_per_unit)  # readings
+                self.sliders[2].model.set_value(float(reading.lin_acc_z) * self.meters_per_unit)  # readings
+                self.sliders[3].model.set_value(float(reading.ang_vel_x))  # readings
+                self.sliders[4].model.set_value(float(reading.ang_vel_y))  # readings
+                self.sliders[5].model.set_value(float(reading.ang_vel_z))  # readings
+                self.sliders[6].model.set_value(float(reading.orientation[0]))  # readings
+                self.sliders[7].model.set_value(float(reading.orientation[1]))  # readings
+                self.sliders[8].model.set_value(float(reading.orientation[2]))  # readings
+                self.sliders[9].model.set_value(float(reading.orientation[3]))  # readings
+        else:
+            self.sliders[0].model.set_value(0)
+            self.sliders[1].model.set_value(0)
+            self.sliders[2].model.set_value(0)
+            self.sliders[3].model.set_value(0)
+            self.sliders[4].model.set_value(0)
+            self.sliders[5].model.set_value(0)
+            self.sliders[6].model.set_value(0)
+            self.sliders[7].model.set_value(0)
+            self.sliders[8].model.set_value(0)
+            self.sliders[9].model.set_value(1)
 
     async def create_scenario(self):
         self._assets_root_path = get_assets_root_path()
