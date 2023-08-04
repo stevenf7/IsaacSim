@@ -10,16 +10,16 @@
         },
         "categoryDefinitions": "config/CategoryDefinition.json",
         "categories": "isaacSensor",
+        "state": {"$comment": ["Internal state"]},
         "inputs": {
-            "execIn": {
+            "exec": {
                 "type": "execution",
                 "description": "The input execution port"
             },
-            "cpuPointer": {
+            "dataPtr": {
                 "type": "uint64",
-                "memoryType": "cpu",
-                "description": "CPU Pointer to Radar render result.",
-                "uiName": "CPU Pointer"
+                "description": "Pointer to Radar render result.",
+                "uiName": "Data Pointer"
             },
             "transform": {
                 "type": "matrixd[4]",
@@ -27,7 +27,7 @@
             }
         },
         "outputs": {
-            "execOut": {
+            "exec": {
                 "type": "execution",
                 "description": "Output execution triggers when Radar sensor has data"
             },
@@ -87,59 +87,58 @@
                 "type": "uint",
                 "description": "The number of valid detections in the array"
             },
-            "pointCloudData":{
-                "type": "pointf[3][]",
+            "dataPtr": {
+                "type": "uint64",
                 "description": "Buffer of 3d points containing point cloud data in Radar coordinates",
-                "memoryType": "cpu",
-                "uiName": "Point Cloud Data",
-                "default": []
+                "uiName": "Point Cloud Data"
+            },
+            "cudaDeviceIndex": {
+                "type": "int",
+                "description": "Index of the device where the data lives (-1 for host data)",
+                "default": -1
+            },
+            "bufferSize": {
+                "type": "uint64",
+                "description": "Size (in bytes) of the buffer (0 if the input is a texture)"
             },
             "radialDistance":{
                 "type": "float[]",
                 "description": "Radial distance (m)",
-                "memoryType": "cpu",
                 "default": []
             },
             "radialVelocity":{
                 "type": "float[]",
                 "description": "Radial velocity (m/s)",
-                "memoryType": "cpu",
                 "default": []
             },
             "azimuth":{
                 "type": "float[]",
                 "description": "Azimuth angle (radians)",
-                "memoryType": "cpu",
                 "default": []
             },
             "elevation":{
                 "type": "float[]",
                 "description": "Angle of elevation (radians)",
-                "memoryType": "cpu",
                 "default": []
             },
             "rcs":{
                 "type": "float[]",
                 "description": "Radar cross section in decibels referenced to a square meter (dBsm)",
-                "memoryType": "cpu",
                 "default": []
             },
             "semanticId":{
                 "type": "uint[]",
                 "description": "semantic ID",
-                "memoryType": "cpu",
                 "default": []
             },
             "materialId":{
                 "type": "uint[]",
                 "description": "material ID",
-                "memoryType": "cpu",
                 "default": []
             },
             "objectId":{
                 "type": "uint[]",
                 "description": "object ID",
-                "memoryType": "cpu",
                 "default": []
             }
         }

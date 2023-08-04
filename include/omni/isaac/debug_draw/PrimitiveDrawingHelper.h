@@ -47,7 +47,7 @@ public:
     // Add a list of vertices
     void addVertices(const std::vector<carb::Float3>& positions,
                      const std::vector<carb::ColorRgba>& colors,
-                     const std::vector<float> sizes);
+                     const std::vector<float>& sizes);
     // Add a list of vertices with constant color and width
     void addVertices(const std::vector<carb::Float3>& positions, const carb::ColorRgba& color, float width);
     // set a list of vertices

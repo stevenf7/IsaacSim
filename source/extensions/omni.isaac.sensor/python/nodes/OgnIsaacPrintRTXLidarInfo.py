@@ -174,11 +174,11 @@ class OgnIsaacPrintRTXLidarInfo:
     @staticmethod
     def compute(db) -> bool:
         """read a pointer and print data from it assuming it is Rtx"""
-        if not db.inputs.cpuPointer:
+        if not db.inputs.dataPtr:
             carb.log_warn("invalid data input to OgnIsaacPrintRTXLidarInfo")
             return True
-        # raw cpuPointer params start after 36 bytes
-        params_p = db.inputs.cpuPointer + 36
+        # raw dataPtr params start after 36 bytes
+        params_p = db.inputs.dataPtr + 36
 
         params = ctypes.cast(params_p, ctypes.POINTER(lidarAsyncParameter))
         nt = params.contents.numTicks

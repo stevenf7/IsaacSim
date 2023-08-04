@@ -12,11 +12,11 @@
         "categoryDefinitions": "config/CategoryDefinition.json",
         "categories": "isaacSensor",
         "inputs": {
-            "execIn": {
+            "exec": {
                 "type": "execution",
                 "description": "The input execution port"
             },
-            "cpuPointer":{
+            "dataPtr":{
                 "type": "uint64",
                 "description": "Pointer to Radar render result",
                 "uiName": "Radar render result"

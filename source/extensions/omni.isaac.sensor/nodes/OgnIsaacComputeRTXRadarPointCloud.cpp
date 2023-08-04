@@ -15,6 +15,8 @@
 #include <carb/InterfaceUtils.h>
 #include <carb/Types.h>
 
+#include <boost/make_shared.hpp>
+#include <boost/shared_ptr.hpp>
 #include <omni/isaac/utils/BaseResetNode.h>
 #include <omni/math/linalg/matrix.h>
 #include <omni/math/linalg/quat.h>
@@ -59,7 +61,9 @@ public:
     {
         pxr::GfMatrix4d T = db.inputs.transform();
         T.SetIdentity();
-        db.outputs.pointCloudData().resize(0);
+        db.outputs.dataPtr() = 0;
+        db.outputs.bufferSize() = 0;
+        db.outputs.cudaDeviceIndex() = -1; // db.inputs.cudaDeviceIndex();
         db.outputs.radialDistance().resize(0);
         db.outputs.radialVelocity().resize(0);
         db.outputs.azimuth().resize(0);
@@ -69,7 +73,7 @@ public:
         db.outputs.materialId().resize(0);
         db.outputs.objectId().resize(0);
 
-        db.outputs.execOut() = passThroughValue ? kExecutionAttributeStateEnabled : kExecutionAttributeStateDisabled;
+        db.outputs.exec() = passThroughValue ? kExecutionAttributeStateEnabled : kExecutionAttributeStateDisabled;
 #if __DEBUG_PRINT_ON
         std::cout << dbv << "}";
 #endif
@@ -82,7 +86,7 @@ public:
         std::cout << "RC[";
 #endif
         CARB_PROFILE_ZONE(0, "Compute RTX Radar PointCloud");
-        const uint8_t* input = reinterpret_cast<const uint8_t*>(db.inputs.cpuPointer());
+        const uint8_t* input = reinterpret_cast<const uint8_t*>(db.inputs.dataPtr());
         if (!input)
         {
             return returnCleanly(db, true, 1);
@@ -122,10 +126,15 @@ public:
 
         size_t numDetects = scan->numDetections;
 
+        auto& state = db.internalState<OgnIsaacComputeRTXRadarPointCloud>();
+        state.mDataPtr = boost::make_shared<pxr::GfVec3f[]>(numDetects);
+        db.outputs.dataPtr() = reinterpret_cast<uint64_t>(state.mDataPtr.get());
+        db.outputs.bufferSize() = numDetects * sizeof(pxr::GfVec3f);
+        db.outputs.cudaDeviceIndex() = -1; // TODOMTC
+
 #define _DEF_OUT_VAR(outName)                                                                                          \
     auto& db_outputs_##outName = db.outputs.outName();                                                                 \
     db_outputs_##outName.resize(numDetects)
-        _DEF_OUT_VAR(pointCloudData);
         _DEF_OUT_VAR(radialDistance);
         _DEF_OUT_VAR(radialVelocity);
         _DEF_OUT_VAR(azimuth);
@@ -139,7 +148,7 @@ public:
         for (uint32_t i = 0; i < numDetects; ++i)
         {
             const RadarDetection& d = detections[i];
-            convertDetectionToPoint(d, db_outputs_pointCloudData[i]);
+            convertDetectionToPoint(d, state.mDataPtr[i]);
 
 #define _ASSIGN_OUT(outputName, src) db_outputs_##outputName[i] = d.src
             _ASSIGN_OUT(radialDistance, r_m);
@@ -153,13 +162,21 @@ public:
 #undef _ASSIGN_OUT
         }
 
-        db.outputs.execOut() = kExecutionAttributeStateEnabled;
+        db.outputs.exec() = kExecutionAttributeStateEnabled;
 
 #if __DEBUG_PRINT_ON
         std::cout << "]";
 #endif
         return true;
     }
+
+    virtual void reset()
+    {
+        mDataPtr.reset();
+    }
+
+private:
+    boost::shared_ptr<pxr::GfVec3f[]> mDataPtr;
 };
 
 REGISTER_OGN_NODE()

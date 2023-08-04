@@ -10,16 +10,16 @@
         },
         "categoryDefinitions": "config/CategoryDefinition.json",
         "categories": "isaacSensor",
+        "state": {"$comment": ["Internal state"]},
         "inputs": {
-            "execIn": {
+            "exec": {
                 "type": "execution",
                 "description": "The input execution port"
             },
-            "cpuPointer": {
+            "dataPtr":{
                 "type": "uint64",
-                "memoryType": "cpu",
-                "description": "CPU Pointer to LiDAR render result.",
-                "uiName": "CPU Pointer"
+                "description": "Pointer to LiDAR render result",
+                "uiName": "LiDAR render result"
             },
             "keepOnlyPositiveDistance": {
                 "type": "bool",
@@ -48,20 +48,27 @@
             }
         },
         "outputs": {
-            "execOut": {
+            "exec": {
                 "type": "execution",
                 "description": "Output execution triggers when lidar sensor has data"
             },
-            "toWorldMatrix": {
+            "transform": {
                 "type": "matrixd[4]",
                 "description": "The transform matrix from lidar to world coordinates"
             },
-            "pointCloudData":{
-                "type": "pointf[3][]",
-                "description": "Buffer of 3d points containing point cloud data in Lidar coordinates",
-                "memoryType": "cpu",
-                "uiName": "Point Cloud Data",
-                "default": []
+            "dataPtr": {
+                "type": "uint64",
+                "description": "Buffer of points containing point cloud data in Lidar coordinates",
+                "uiName": "Point Cloud Data"
+            },
+            "cudaDeviceIndex": {
+                "type": "int",
+                "description": "Index of the device where the data lives (-1 for host data)",
+                "default": -1
+            },
+            "bufferSize": {
+                "type": "uint64",
+                "description": "Size (in bytes) of the buffer (0 if the input is a texture)"
             },
             "intensity":{
                 "type": "float[]",

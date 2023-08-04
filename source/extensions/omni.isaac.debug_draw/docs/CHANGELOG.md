@@ -1,8 +1,15 @@
 # Changelog
-## [0.3.0] - 2023-07-27
+
+## [0.3.0] - 2023-08-01
 ### Added
 - xPrim Axis Visualzier node
 - xPrim Radius Visualizer node
+### Changed
+- pass width vector by reference.
+- Simplified DebugDrawPointCloud internals.
+- DebugDrawPointCloud Node updated to work with dataPtr/bufferSize inputs.
+- DebugDrawPointCloud Node updated to auto connect with synthetic data/replicator nodes.
+
 ## [0.2.3] - 2023-01-19
 ### Fixed
 - crash when trying to draw without a valid renderer
