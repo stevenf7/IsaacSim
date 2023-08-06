@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.0] - 2023-07-11
+### Changed
+- Deprecating omni.isaac.urdf, moving it to omni.importer.urdf
+
 ## [0.5.15] - 2023-06-26
 ### Fixed
 - Support for non-diagonal inertia matrix
