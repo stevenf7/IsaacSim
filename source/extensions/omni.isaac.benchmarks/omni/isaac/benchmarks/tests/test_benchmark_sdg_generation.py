@@ -76,6 +76,9 @@ class TestBenchmarkSDGGeneration(BaseIsaacBenchmark):
 
     async def tearDown(self):
         await super().tearDown()
+        # set capture on play back to true
+        carb_settings = carb.settings.get_settings()
+        carb_settings.set_bool("/omni/replicator/captureOnPlay", True)
         pass
 
     # ----------------------------------------------------------------------
