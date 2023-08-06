@@ -788,6 +788,7 @@ deps_for_isaac = [
   "omni.services.transport.server.tcp_socket-1.0.2",
   "semantics.schema.editor-0.3.3",
   "omni.importer.mjcf-1.0.0",
+  "omni.importer.urdf-1.0.0",
   "omni.anim.shared.core-105.8.1" # temporary it seems to be needed by a dependency
 ]
 

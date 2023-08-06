@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+
 import carb
 
-carb.log_error("The extension omni.isaac.urdf has been deprecated. Please use omni.importer.urdf instead.")
+carb.log_error("The extension omni.isaac.mjcf has been deprecated. Please use omni.importer.mjcf instead.")

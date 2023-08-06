@@ -312,6 +312,7 @@ group "exts"
     include ("source/extensions/omni.isaac.lula_test_widget")
     include ("source/extensions/omni.isaac.merge_mesh")
     include ("source/extensions/omni.isaac.ml_archive")
+    include ("source/extensions/omni.isaac.mjcf")
     include ("source/extensions/omni.isaac.motion_generation")
     include ("source/extensions/omni.isaac.occupancy_map")
     include ("source/extensions/omni.isaac.onshape")
