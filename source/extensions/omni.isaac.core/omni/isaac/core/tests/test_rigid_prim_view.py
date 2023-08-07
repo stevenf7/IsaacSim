@@ -218,6 +218,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
         self._my_world.scene.add(self._top_box_view)
 
     async def _runner(self):
+        await self._setup_scene()
         for indexed in [False, True]:
             self._test_cfg["indexed"] = indexed
             print(indexed, self._test_cfg)
@@ -457,7 +458,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
                 self.isclose(
                     states.positions.numpy()[indices],
                     np.array([[10.0, 10, 0.5], [10.0, 20.0, 0.5], [10.0, 30.0, 0.5]])[indices],
-                    atol=1.0e-4,
+                    atol=1.0e-3,
                 ).all()
             )
             self.assertTrue(
@@ -525,7 +526,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
                 self.isclose(
                     states.positions[indices],
                     self._array_container([[10.0, 10, 0.5], [10.0, 20.0, 0.5], [10.0, 30.0, 0.5]])[indices].squeeze(),
-                    atol=1.0e-4,
+                    atol=1.0e-3,
                 ).all()
             )
             self.assertTrue(

@@ -312,13 +312,11 @@ class ParticleSystemView:
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
             new_values = self._backend_utils.clone_tensor(
                 self._physics_view.get_particle_contact_offsets(), device=self._device
             )
             new_values[indices] = self._backend_utils.move_data(values, self._device)
             self._physics_view.set_particle_contact_offsets(new_values, indices)
-            self._physics_sim_view.enable_warnings(True)
         else:
             idx_count = 0
             for i in indices:
@@ -347,13 +345,11 @@ class ParticleSystemView:
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
             new_values = self._backend_utils.clone_tensor(
                 self._physics_view.get_solid_rest_offsets(), device=self._device
             )
             new_values[indices] = self._backend_utils.move_data(values, self._device)
             self._physics_view.set_solid_rest_offsets(new_values, indices)
-            self._physics_sim_view.enable_warnings(True)
         else:
             idx_count = 0
             for i in indices:
@@ -380,13 +376,11 @@ class ParticleSystemView:
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
             new_values = self._backend_utils.clone_tensor(
                 self._physics_view.get_fluid_rest_offsets(), device=self._device
             )
             new_values[indices] = self._backend_utils.move_data(values, self._device)
             self._physics_view.set_fluid_rest_offsets(new_values, indices)
-            self._physics_sim_view.enable_warnings(True)
         else:
             idx_count = 0
             for i in indices:
@@ -411,11 +405,9 @@ class ParticleSystemView:
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
             new_values = self._backend_utils.clone_tensor(self._physics_view.get_wind(), device=self._device)
             new_values[indices] = self._backend_utils.move_data(values, self._device)
             self._physics_view.set_wind(new_values, indices)
-            self._physics_sim_view.enable_warnings(True)
         else:
             idx_count = 0
             for i in indices:
@@ -663,9 +655,7 @@ class ParticleSystemView:
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
             results = self._physics_view.get_particle_contact_offsets()
-            self._physics_sim_view.enable_warnings(True)
             if not clone:
                 return results[indices]
             else:
@@ -694,9 +684,7 @@ class ParticleSystemView:
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
             results = self._physics_view.get_solid_rest_offsets()
-            self._physics_sim_view.enable_warnings(True)
             if not clone:
                 return results[indices]
             else:
@@ -725,9 +713,7 @@ class ParticleSystemView:
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
             results = self._physics_view.get_fluid_rest_offsets()
-            self._physics_sim_view.enable_warnings(True)
             if not clone:
                 return results[indices]
             else:
@@ -758,7 +744,6 @@ class ParticleSystemView:
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
             results = self._physics_view.get_wind()
-            self._physics_sim_view.enable_warnings(True)
             if not clone:
                 return results[indices]
             else:

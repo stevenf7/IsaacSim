@@ -167,9 +167,7 @@ class RigidContactView(object):
         """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self._num_shapes, self._device)
-            self._physics_sim_view.enable_warnings(False)
             net_contact_forces = self._physics_view.get_net_contact_forces(dt)
-            self._physics_sim_view.enable_warnings(True)
             if clone:
                 net_contact_forces = self._backend_utils.clone_tensor(net_contact_forces, device=self._device)
             return net_contact_forces[indices]
@@ -199,9 +197,7 @@ class RigidContactView(object):
         """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self._num_shapes, self._device)
-            self._physics_sim_view.enable_warnings(False)
             net_contact_forces = self._physics_view.get_contact_force_matrix(dt)
-            self._physics_sim_view.enable_warnings(True)
             if clone:
                 net_contact_forces = self._backend_utils.clone_tensor(net_contact_forces, device=self._device)
             return net_contact_forces[indices, :, :]
