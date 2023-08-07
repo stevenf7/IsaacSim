@@ -6,3 +6,20 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+
+
+import omni.ext
+
+
+class Extension(omni.ext.IExt):
+    def on_startup(self, ext_id):
+        # Force reload of newer typing extensions provided by this extensions prebundle
+        from importlib import reload
+
+        import typing_extensions
+
+        reload(typing_extensions)
+        pass
+
+    def on_shutdown(self):
+        pass

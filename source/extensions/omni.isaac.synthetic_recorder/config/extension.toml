@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.5.1"
+version = "1.5.2"
 title = "Isaac Sim Synthetic Data Recorder"
 description = "Tool to record synthetic data"
 authors = ["Isaac Sim Team"]
@@ -16,6 +16,7 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
+"omni.pip.cloud" = {}
 "omni.replicator.core" = {}
 "omni.timeline" = {}
 "omni.kit.viewport.utility" = {}
