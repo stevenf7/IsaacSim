@@ -1,6 +1,10 @@
 # Changelog
 
-## [1.5.1] - 2023-03-13
+## [1.5.2] - 2023-08-03
+### Fixed
+- omni.pip.cloud dependency is needed for replicator.core deps
+
+## [1.5.1] - 2023-07-13
 ### Fixed
 - load_config checks for empty json files 
 
