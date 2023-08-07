@@ -247,12 +247,10 @@ class ClothPrimView(XFormPrimView):
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
-            new_positions = self._backend_utils.move_to_gpu(positions)
+            new_positions = self._backend_utils.move_data(positions, self._device)
             current_positions = self.get_world_positions(clone=False)
             current_positions[indices] = new_positions
             self._physics_view.set_positions(current_positions, indices)
-            self._physics_sim_view.enable_warnings(True)
         else:
             idx_count = 0
             for i in indices:
@@ -280,9 +278,7 @@ class ClothPrimView(XFormPrimView):
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
             positions = self._physics_view.get_positions()
-            self._physics_sim_view.enable_warnings(True)
             if not clone:
                 return positions[indices].reshape(len(indices), -1, 3)
             else:
@@ -321,12 +317,10 @@ class ClothPrimView(XFormPrimView):
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
-            new_velocities = self._backend_utils.move_to_gpu(velocities)
+            new_velocities = self._backend_utils.move_data(velocities, self._device)
             current_velocities = self.get_velocities(clone=False)
             current_velocities[indices] = new_velocities
             self._physics_view.set_velocities(current_velocities, indices)
-            self._physics_sim_view.enable_warnings(True)
         else:
             idx_count = 0
             for i in indices:
@@ -353,9 +347,7 @@ class ClothPrimView(XFormPrimView):
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
             velocities = self._physics_view.get_velocities()
-            self._physics_sim_view.enable_warnings(True)
             if not clone:
                 return velocities[indices].reshape(len(indices), -1, 3)
             else:
@@ -394,12 +386,10 @@ class ClothPrimView(XFormPrimView):
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
-            new_masses = self._backend_utils.move_to_gpu(masses)
+            new_masses = self._backend_utils.move_data(masses, self._device)
             current_masses = self.get_masses(clone=False)
             current_masses[indices] = new_masses
             self._physics_view.set_masses(current_masses, indices)
-            self._physics_sim_view.enable_warnings(True)
         else:
             idx_count = 0
             for i in indices:
@@ -428,9 +418,7 @@ class ClothPrimView(XFormPrimView):
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
             masses = self._physics_view.get_masses()
-            self._physics_sim_view.enable_warnings(True)
             if not clone:
                 return masses[indices]
             else:
@@ -470,12 +458,10 @@ class ClothPrimView(XFormPrimView):
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
-            new_stiffnesses = self._backend_utils.move_to_gpu(stiffness)
+            new_stiffnesses = self._backend_utils.move_data(stiffness, self._device)
             current_stiffnesses = self.get_stretch_stiffnesses(clone=False)
             current_stiffnesses[indices] = new_stiffnesses
             self._physics_view.set_spring_stiffness(current_stiffnesses, indices)
-            self._physics_sim_view.enable_warnings(True)
         else:
             idx_count = 0
             for i in indices:
@@ -508,9 +494,7 @@ class ClothPrimView(XFormPrimView):
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
             stiffness = self._physics_view.get_spring_stiffness()
-            self._physics_sim_view.enable_warnings(True)
             if not clone:
                 return stiffness[indices]
             else:
@@ -552,12 +536,10 @@ class ClothPrimView(XFormPrimView):
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
-            new_damping = self._backend_utils.move_to_gpu(damping)
+            new_damping = self._backend_utils.move_data(damping, self._device)
             current_damping = self.get_spring_dampings(clone=False)
             current_damping[indices] = new_damping
             self._physics_view.set_spring_damping(current_damping, indices)
-            self._physics_sim_view.enable_warnings(True)
         else:
             idx_count = 0
             for i in indices:
@@ -588,9 +570,7 @@ class ClothPrimView(XFormPrimView):
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
             damping = self._physics_view.get_spring_damping()
-            self._physics_sim_view.enable_warnings(True)
             if not clone:
                 return damping[indices]
             else:

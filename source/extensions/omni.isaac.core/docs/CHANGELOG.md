@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.5.0] - 2023-08-04
+### Added
+- Added SdfShapeView class for handling shapes signed-distance function
+
 ## [2.4.1] - 2023-08-01
 ### Changed
 - Split World reset_async into scene construction and simulation start.

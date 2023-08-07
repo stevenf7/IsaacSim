@@ -221,7 +221,6 @@ class ParticleMaterialView:
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
             new_values = self._backend_utils.move_data(values, self._device)
             current_values = self.get_frictions(clone=False)
             current_values[indices] = new_values
@@ -254,7 +253,6 @@ class ParticleMaterialView:
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
             current_values = self._physics_view.get_friction()
             self._physics_sim_view.enable_warnings(True)
             if not clone:
@@ -288,7 +286,6 @@ class ParticleMaterialView:
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
             new_values = self._backend_utils.move_data(values, self._device)
             current_values = self.get_dampings(clone=False)
             current_values[indices] = new_values
@@ -321,7 +318,6 @@ class ParticleMaterialView:
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
             current_values = self._physics_view.get_damping()
             self._physics_sim_view.enable_warnings(True)
             if not clone:
@@ -355,7 +351,6 @@ class ParticleMaterialView:
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
             new_values = self._backend_utils.move_data(values, self._device)
             current_values = self.get_gravity_scales(clone=False)
             current_values[indices] = new_values
@@ -387,7 +382,6 @@ class ParticleMaterialView:
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
             current_values = self._physics_view.get_gravity_scale()
             self._physics_sim_view.enable_warnings(True)
             if not clone:
@@ -421,7 +415,6 @@ class ParticleMaterialView:
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
             new_values = self._backend_utils.move_data(values, self._device)
             current_values = self.get_lifts(clone=False)
             current_values[indices] = new_values
@@ -453,7 +446,6 @@ class ParticleMaterialView:
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
             current_values = self._physics_view.get_lift()
             self._physics_sim_view.enable_warnings(True)
             if not clone:
@@ -487,7 +479,6 @@ class ParticleMaterialView:
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
             new_values = self._backend_utils.move_data(values, self._device)
             current_values = self.get_drags(clone=False)
             current_values[indices] = new_values
@@ -519,7 +510,6 @@ class ParticleMaterialView:
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
             current_values = self._physics_view.get_drag()
             self._physics_sim_view.enable_warnings(True)
             if not clone:

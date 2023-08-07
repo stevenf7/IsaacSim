@@ -298,7 +298,7 @@ class DeformablePrimView(XFormPrimView):
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            new_positions = self._backend_utils.move_to_gpu(positions)
+            new_positions = self._backend_utils.move_data(positions, self._device)
             current_positions = self.get_simulation_mesh_nodal_positions(clone=False)
             current_positions[indices] = new_positions
             self._physics_view.set_sim_nodal_positions(current_positions, indices)
@@ -334,7 +334,7 @@ class DeformablePrimView(XFormPrimView):
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            new_velocities = self._backend_utils.move_to_gpu(velocities)
+            new_velocities = self._backend_utils.move_data(velocities, self._device)
             current_velocities = self.get_simulation_mesh_nodal_velocities(clone=False)
             current_velocities[indices] = new_velocities
             self._physics_view.set_sim_nodal_velocities(current_velocities, indices)
@@ -368,7 +368,7 @@ class DeformablePrimView(XFormPrimView):
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            new_positions = self._backend_utils.move_to_gpu(positions)
+            new_positions = self._backend_utils.move_data(positions, self._device)
             current_positions = self.get_simulation_mesh_kinematic_targets(clone=False)
             current_positions[indices] = new_positions
             self._physics_view.set_sim_kinematic_targets(current_positions, indices)

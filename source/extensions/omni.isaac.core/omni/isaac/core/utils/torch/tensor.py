@@ -55,15 +55,6 @@ def resolve_indices(indices, count, device):
     return result.to(dtype=torch.long, device=device)
 
 
-def move_to_gpu(data):
-    if isinstance(data, torch.Tensor) and not data.is_cuda:
-        return data.cuda()
-    if not isinstance(data, torch.Tensor):
-        return torch.tensor(data).cuda()
-    else:
-        return data
-
-
 def move_data(data, device):
     return data.to(device=device)
 
