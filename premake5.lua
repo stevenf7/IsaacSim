@@ -452,7 +452,7 @@ group "python_samples"
     -- omni.isaac.dynamic_control
     python_sample_test("tests-nativepython-omni.isaac.dynamic_control.franka_articulation", "standalone_examples/api/omni.isaac.dynamic_control/franka_articulation.py")
     -- omni.isaac.urdf
-    python_sample_test("tests-nativepython-omni.isaac.urdf.urdf_import", "standalone_examples/api/omni.isaac.urdf/urdf_import.py")
+    python_sample_test("tests-nativepython-omni.isaac.urdf.urdf_import", "standalone_examples/api/omni.importer.urdf/urdf_import.py")
     -- omni.isaac.ros_bridge
     python_sample_test("tests-nativepython-omni.isaac.ros_bridge.clock", "standalone_examples/api/omni.isaac.ros_bridge/clock.py", "--test")
     -- python_sample_test("tests-nativepython-omni.isaac.ros_bridge.contact", "standalone_examples/api/omni.isaac.ros_bridge/contact.py") # disabling as this requires isaac sim custom message to be sourced, which doesn't work on TC
