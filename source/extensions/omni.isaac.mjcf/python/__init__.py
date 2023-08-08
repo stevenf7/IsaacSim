@@ -10,4 +10,4 @@
 
 import carb
 
-carb.log_error("The extension omni.isaac.mjcf has been deprecated. Please use omni.importer.mjcf instead.")
+carb.log_warn("The extension omni.isaac.mjcf has been deprecated. Please use omni.importer.mjcf instead.")

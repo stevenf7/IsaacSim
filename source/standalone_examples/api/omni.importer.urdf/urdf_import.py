@@ -25,7 +25,7 @@ import_config.fix_base = False
 import_config.distance_scale = 100
 
 # Get path to extension data:
-extension_path = get_extension_path_from_name("omni.isaac.urdf")
+extension_path = get_extension_path_from_name("omni.importer.urdf")
 # Import URDF, stage_path contains the path the path to the usd prim in the stage.
 status, stage_path = omni.kit.commands.execute(
     "URDFParseAndImportFile",
