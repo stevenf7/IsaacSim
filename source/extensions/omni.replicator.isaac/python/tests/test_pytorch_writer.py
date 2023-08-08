@@ -41,7 +41,7 @@ class TestMultipleRenderProducts(omni.kit.test.AsyncTestCase):
         cube = rep.create.cube(semantics=[("class", "cube")])
 
         test_seed = 2134
-        with rep.trigger.on_frame(num_frames=10):
+        with rep.trigger.on_frame():
             with rep.create.group([torus, sphere, cube]):
                 rep.modify.pose(
                     position=rep.distribution.uniform((-100, -100, -100), (200, 200, 200), seed=test_seed),
@@ -59,8 +59,7 @@ class TestMultipleRenderProducts(omni.kit.test.AsyncTestCase):
         pass
 
     async def _run_until_stopped(self):
-        await rep.orchestrator.run_until_complete_async()
-        rep.BackendDispatch.wait_until_done()
+        await rep.orchestrator.run_until_complete_async(num_frames=10)
 
     async def test_single_camera_writer_without_backend(self):
         render_products = self.render_products[1:2]
