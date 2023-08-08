@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.4.1"
+version = "2.0.0"
 category = "Simulation"
 title = "Isaac Sim Lula"
 description = "Extension that provides lula python interface"
