@@ -786,9 +786,9 @@ deps_for_isaac = [
   "omni.sensors.nv.ultrasonic-0.1.2-isaacsim.0",
   "omni.sensors.nv.wpm-0.1.2-isaacsim.0",
   "omni.services.transport.server.tcp_socket-1.0.2",
-  "semantics.schema.editor-0.3.3",
-  "omni.importer.mjcf-1.0.0",
-  "omni.importer.urdf-1.0.0",
+  "semantics.schema.editor-0.3.4",
+  "omni.importer.mjcf-1.0.1",
+  "omni.importer.urdf-1.1.0",
   "omni.anim.shared.core-105.8.1" # temporary it seems to be needed by a dependency
 ]
 
@@ -822,7 +822,8 @@ override = [
   "omni.kit.livestream.core-2.2.0",
   "omni.kit.livestream.webrtc-2.2.0",
   "omni.warp-0.10.1",
-  "omni.warp.core-0.10.1"
+  "omni.warp.core-0.10.1",
+  "omni.warehouse_creator-0.3.0"
 ]
 
 output_file = "${root}/source/apps/omni.isaac.sim.extscache.kit"
