@@ -6,6 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+import copy
 import math
 from typing import List, Optional, Sequence, Tuple
 
@@ -233,12 +234,17 @@ class Camera(BaseSensor):
         """
         return 1.0 / self._frequency
 
-    def get_current_frame(self) -> dict:
+    def get_current_frame(self, clone=False) -> dict:
         """
+        Args:
+            clone (bool, optional): if True, returns a deepcopy of the current frame. Defaults to False.
         Returns:
             dict: returns the current frame of data
         """
-        return self._current_frame
+        if clone:
+            return copy.deepcopy(self._current_frame)
+        else:
+            return self._current_frame
 
     def initialize(self, physics_sim_view=None) -> None:
         """To be called before using this class after a reset of the world
@@ -577,7 +583,66 @@ class Camera(BaseSensor):
         del self._current_frame["pointcloud"]
 
     def get_rgba(self) -> np.ndarray:
+        """
+        Returns:
+            rgba (np.ndarray): (N x 4) RGBa color data for each point.
+        """
         return self._rgb_annotator.get_data()
+
+    def get_rgb(self) -> np.ndarray:
+        """
+        Returns:
+            rgb (np.ndarray): (N x 3) RGB color data for each point.
+        """
+
+        data = self._rgb_annotator.get_data()
+        return data[..., :3]
+
+    def get_depth(self) -> np.ndarray:
+        """
+        Returns:
+            depth (np.ndarray): (n x m x 1) depth data for each point.
+        """
+
+        data = self.get_current_frame()
+        if "distance_to_image_plane" not in data.keys():
+            carb.log_warn(
+                f"[get_depth][{self.prim_path}] WARNING: Annotator 'distance_to_image_plane' not found. Available annotators: {data.keys()}. Returning None"
+            )
+            return None
+
+        depth = data["distance_to_image_plane"]
+        if depth is None:
+            carb.log_warn(
+                f"[get_depth][{self.prim_path}] WARNING: Annotator 'distance_to_image_plane' contains no data. Returning None"
+            )
+            return None
+        return depth
+
+    def get_pointcloud(self) -> np.ndarray:
+        """
+        Returns:
+            pointcloud (np.ndarray):  (N x 3) 3d points (X, Y, Z) in camera frame. Shape is (N x 3) where N is the number of points.
+        """
+
+        depth = self.get_depth()
+        if depth is None:
+            carb.log_warn(f"[get_pointcloud][{self.prim_path}] WARNING: Unable to get depth. Returning None")
+            return None
+
+        # First, generate a grid of the mesh.
+        im_height, im_width = depth.shape[0], depth.shape[1]
+
+        ww = np.linspace(0, im_width - 1, im_width)
+        hh = np.linspace(0, im_height - 1, im_height)
+        xmap, ymap = np.meshgrid(ww, hh)
+
+        points_2d = np.column_stack((xmap.ravel(), ymap.ravel()))
+
+        # Directly use this function from the camera class to do this.
+        pointcloud = self.get_world_points_from_image_coords(points_2d, depth.flatten())
+
+        return pointcloud
 
     def get_focal_length(self) -> float:
         """

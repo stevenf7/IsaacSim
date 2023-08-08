@@ -1,4 +1,15 @@
 # Changelog
+## [7.1.0] - 2023-08-04
+### Added
+- Add following functions to Camera class 
+- get_point_cloud()  
+- get_depth()  
+- get_rgb()  
+
+### Changed
+- get_current_frame() now accepts optional argument to return deepcopy of data 
+- get_rgba() now accepts optional argument to specify device 
+
 ## [7.0.0] - 2023-08-03
 
 ### Added
