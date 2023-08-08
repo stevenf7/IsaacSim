@@ -6,6 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+import gc
 from typing import List, Optional, Tuple, Union
 
 import carb
@@ -156,11 +157,11 @@ class RigidPrimView(XFormPrimView):
                 max_contact_count=max_contact_count,
                 apply_rigid_body_api=False,
             )
+        return
 
-        timeline = omni.timeline.get_timeline_interface()
-        self._invalidate_physics_handle_event = timeline.get_timeline_event_stream().create_subscription_to_pop(
-            self._invalidate_physics_handle_callback
-        )
+    def __del__(self):
+        del self._physics_view
+        self._invalidate_physics_handle_event = None
         return
 
     @property
@@ -194,10 +195,15 @@ class RigidPrimView(XFormPrimView):
         carb.log_info("Rigid Prim View Device: {}".format(self._device))
         if self._track_contact_forces:
             self._contact_view.initialize(self._physics_sim_view)
+        timeline = omni.timeline.get_timeline_interface()
+        self._invalidate_physics_handle_event = timeline.get_timeline_event_stream().create_subscription_to_pop(
+            self._invalidate_physics_handle_callback
+        )
 
     def _invalidate_physics_handle_callback(self, event):
         if event.type == int(omni.timeline.TimelineEventType.STOP):
             self._physics_view = None
+            self._invalidate_physics_handle_event = None
         return
 
     def set_world_poses(

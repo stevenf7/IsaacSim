@@ -182,7 +182,8 @@ class SimulationContext:
         return SimulationContext._instance
 
     def __del__(self):
-        """Destructor for object."""
+        if hasattr(self, "_physics_sim_view"):
+            del self._physics_sim_view
         SimulationContext._instance = None
         SimulationContext._sim_context_initialized = False
         self.clear_all_callbacks()
@@ -200,8 +201,8 @@ class SimulationContext:
     @classmethod
     def clear_instance(cls):
         """[summary]"""
-        SimulationContext._instance = None
-        SimulationContext._sim_context_initialized = False
+        if SimulationContext._instance is not None:
+            SimulationContext._instance.__del__()
         return
 
     """

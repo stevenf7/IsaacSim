@@ -140,6 +140,9 @@ class XFormPrimView(object):
                 self._default_state = XFormPrimViewState(positions=default_positions, orientations=default_orientations)
         return
 
+    def __del__(self):
+        return
+
     @property
     def prim_paths(self) -> List[str]:
         """

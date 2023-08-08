@@ -6,6 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+import gc
 from collections import OrderedDict
 from typing import List, Optional, Tuple, Union
 
@@ -97,10 +98,11 @@ class ArticulationView(XFormPrimView):
         self._dof_types = None
         self._metadata = None
         self._enable_dof_force_sensors = enable_dof_force_sensors
-        timeline = omni.timeline.get_timeline_interface()
-        self._invalidate_physics_handle_event = timeline.get_timeline_event_stream().create_subscription_to_pop(
-            self._invalidate_physics_handle_callback
-        )
+        return
+
+    def __del__(self):
+        del self._physics_view
+        self._invalidate_physics_handle_event = None
         return
 
     @property
@@ -196,7 +198,6 @@ class ArticulationView(XFormPrimView):
             physics_sim_view = omni.physics.tensors.create_simulation_view(self._backend)
             physics_sim_view.set_subspace_roots("/")
         carb.log_info("initializing view for {}".format(self._name))
-        # TODO: add a callback to set physics view to None once stop is called
         self._physics_view = physics_sim_view.create_articulation_view(
             self._regex_prim_paths.replace(".*", "*"), self._enable_dof_force_sensors
         )
@@ -230,11 +231,16 @@ class ArticulationView(XFormPrimView):
                 self._default_joints_state.efforts = self._backend_utils.create_zeros_tensor(
                     shape=[self.count, self.num_dof], dtype="float32", device=self._device
                 )
+        timeline = omni.timeline.get_timeline_interface()
+        self._invalidate_physics_handle_event = timeline.get_timeline_event_stream().create_subscription_to_pop(
+            self._invalidate_physics_handle_callback
+        )
         return
 
     def _invalidate_physics_handle_callback(self, event):
         if event.type == int(omni.timeline.TimelineEventType.STOP):
             self._physics_view = None
+            self._invalidate_physics_handle_event = None
         return
 
     def get_body_index(self, body_name: str) -> int:
