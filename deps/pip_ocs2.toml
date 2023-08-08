@@ -1,5 +1,7 @@
 # ocs2 is a custom dependency that is compiled and brought in from packman for omni.isaac.ocs2
 # 2023-01-18 - updated to fix RPATH for dependencies
+# 2023-08-07 - updated to python 3.10 and boost 1.76.0
+# 2023-08-08 - fix origin path issue with libs
 [[dependency]]
 python = "../_build/target-deps/python"
 packages = [

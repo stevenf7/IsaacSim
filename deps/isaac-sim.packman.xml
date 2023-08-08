@@ -17,7 +17,7 @@
         <package name="lula" version="v0.9.0_build1.windows-x86_64.release" platforms="windows-x86_64"/>
     </dependency>
     <dependency name="ocs2" linkPath="../_build/target-deps/ocs2">
-        <package name="ocs2" version="v11.0_1941096.linux-x86_64.release" platforms="linux-x86_64"/>
+        <package name="ocs2" version="v11.0_b01f3d7.linux-x86_64.release" platforms="linux-x86_64"/>
     </dependency>
     <dependency name="isaac_engine" linkPath="../_build/target-deps/isaac_engine">
         <package name="isaac_engine" version="linux_x64_e36b915_20210515_release-2021.1_60c595d5d" platforms="linux-x86_64"/>

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.0] - 2023-08-08
+
+### Changed
+- Updated ocs2 prebundle for kit 105.1
 
 ## [0.1.2] - 2023-02-21
 
