@@ -1,4 +1,7 @@
 # Changelog
+## [0.1.4] - 2023-08-08
+### Fixed
+- Error on selecting Articulation because get_joint_efforts() is deprecated.
 
 ## [0.1.3] - 2023-01-06
 ### Fixed

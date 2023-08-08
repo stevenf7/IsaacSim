@@ -273,7 +273,7 @@ class Extension(omni.ext.IExt):
         # Update dynamic properties every time
         self.positions = articulation.get_joint_positions()
         self.velocities = articulation.get_joint_velocities()
-        self.efforts = articulation.get_joint_efforts()
+        self.efforts = articulation.get_measured_joint_efforts()
         self.update_properties_ui_dynamic()
 
     def _refresh_ui(self, articulation):
