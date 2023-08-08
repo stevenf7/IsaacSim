@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.5] - 2023-08-07
+### Fixed
+- Incorrect scaling factor in Omnigraph Keyboard example
+
 ## [1.6.4] - 2023-08-02
 ### Fixed
 - Physics/lighting error caused by 100x scale in cube size and camera position

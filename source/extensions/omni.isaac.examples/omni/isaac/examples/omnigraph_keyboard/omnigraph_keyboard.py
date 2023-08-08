@@ -51,6 +51,8 @@ class OmnigraphKeyboard(BaseSample):
                     ("DeltaAdd", "omni.graph.nodes.Add"),
                     ("SizeAdd", "omni.graph.nodes.Add"),
                     ("NegOne", "omni.graph.nodes.ConstantInt"),
+                    ("ScaleDown", "omni.graph.nodes.Multiply"),
+                    ("ScaleFactor", "omni.graph.nodes.ConstantDouble"),
                     ("CubeWrite", "omni.graph.nodes.WritePrimAttribute"),  # write prim property translate
                     ("CubeRead", "omni.graph.nodes.ReadPrimAttribute"),
                 ],
@@ -59,6 +61,7 @@ class OmnigraphKeyboard(BaseSample):
                     ("D.inputs:key", "D"),
                     ("OnTick.inputs:onlyPlayback", True),  # only tick when simulator is playing
                     ("NegOne.inputs:value", -1),
+                    ("ScaleFactor.inputs:value", 0.1),
                     ("CubeWrite.inputs:name", "size"),
                     ("CubeWrite.inputs:primPath", "/Cube"),
                     ("CubeWrite.inputs:usePath", True),
@@ -74,9 +77,11 @@ class OmnigraphKeyboard(BaseSample):
                     ("NegOne.inputs:value", "Negate.inputs:b"),
                     ("ToDouble1.outputs:converted", "DeltaAdd.inputs:a"),
                     ("Negate.outputs:product", "DeltaAdd.inputs:b"),
-                    ("DeltaAdd.outputs:sum", "SizeAdd.inputs:a"),
+                    ("DeltaAdd.outputs:sum", "ScaleDown.inputs:a"),
                     ("CubeRead.outputs:value", "SizeAdd.inputs:b"),
                     ("SizeAdd.outputs:sum", "CubeWrite.inputs:value"),
+                    ("ScaleFactor.inputs:value", "ScaleDown.inputs:b"),
+                    ("ScaleDown.outputs:product", "SizeAdd.inputs:a"),
                 ],
             },
         )
