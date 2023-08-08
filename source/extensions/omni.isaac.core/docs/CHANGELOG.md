@@ -1,4 +1,7 @@
 # Changelog
+## [2.5.1] - 2023-08-08
+### Added
+- Fixed minor typo in articulation view
 
 ## [2.5.0] - 2023-08-04
 ### Added
