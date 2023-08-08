@@ -1,6 +1,8 @@
 # Changelog
+
 ## [2.5.1] - 2023-08-08
-### Added
+### Fixed
+- Fixed memory leak in ArticulationView, RigidPrimView and SimulationContext stemming from tensor api views
 - Fixed minor typo in articulation view
 
 ## [2.5.0] - 2023-08-04
@@ -19,6 +21,8 @@
 
 ### Fixed
 - OM-78161 - set_camera_view now works when the camera is directly above or directly below the target (x and y positions are equal)
+
+
 
 ## [2.3.0] - 2023-07-10
 ### Added

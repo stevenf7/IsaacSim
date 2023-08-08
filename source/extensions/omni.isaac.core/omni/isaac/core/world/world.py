@@ -7,6 +7,8 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import gc
+
 # python
 from typing import List, Optional
 
@@ -109,8 +111,12 @@ class World(SimulationContext):
         return
 
     def __del__(self):
+        if self._world_initialized:
+            if hasattr(self, "_scene"):
+                del self._scene
+                gc.collect()
+        World._world_initialized = False
         SimulationContext.__del__(self)
-        World._world_initialized = None
         return
 
     """
@@ -120,7 +126,6 @@ class World(SimulationContext):
     @classmethod
     def clear_instance(cls):
         SimulationContext.clear_instance()
-        World._world_initialized = None
         return
 
     """

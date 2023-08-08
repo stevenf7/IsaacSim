@@ -69,6 +69,11 @@ class Scene(object):
         self._bbox_cache = None
         return
 
+    def __del__(self):
+        self.clear(registry_only=True)
+        gc.collect()
+        return
+
     @property
     def stage(self) -> Usd.Stage:
         """[summary]
