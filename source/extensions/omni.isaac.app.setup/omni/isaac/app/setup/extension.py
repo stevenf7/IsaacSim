@@ -32,6 +32,7 @@ from omni.kit.window.title import get_main_window_title
 DOCS_URL = "https://docs.omniverse.nvidia.com"
 REFERENCE_GUIDE_URL = DOCS_URL + "/isaacsim"
 ASSETS_GUIDE_URL = DOCS_URL + "/app_isaacsim/app_isaacsim/install_basic.html#isaac-sim-first-run"
+MANUAL_URL = "https://docs.omniverse.nvidia.com/py/isaacsim/index.html"
 FORUMS_URL = "https://forums.developer.nvidia.com/c/omniverse/simulation/69"
 KIT_MANUAL_URL = DOCS_URL + "/py/kit/index.html"
 
@@ -239,19 +240,13 @@ class CreateSetupExtension(omni.ext.IExt):
         else:
             carb.log_warn("Failed to open " + filepath)
 
-    def get_manual_url_path(self):
-        manual_path = os.path.abspath(carb.tokens.get_tokens_interface().resolve("${app}/../docs/py/index.html"))
-        if os.path.isfile(manual_path):
-            return manual_path
-        return None
-
     def __menu_update(self):
 
         self.HELP_REFERENCE_GUIDE_MENU = (
             f'Help/{omni.kit.ui.get_custom_glyph_code("${glyphs}/cloud.svg")} Isaac Sim Online Guide'
         )
         self.HELP_SCRIPTING_MANUAL = (
-            f'Help/{omni.kit.ui.get_custom_glyph_code("${glyphs}/book.svg")} Isaac Sim Scripting Manual'
+            f'Help/{omni.kit.ui.get_custom_glyph_code("${glyphs}/cloud.svg")} Isaac Sim Scripting Manual'
         )
         self.HELP_FORUMS_URL = (
             f'Help/{omni.kit.ui.get_custom_glyph_code("${glyphs}/cloud.svg")} Isaac Sim Online Forums'
@@ -274,10 +269,14 @@ class CreateSetupExtension(omni.ext.IExt):
         )
         self.menus.append((ref_guide_menu, ref_guide_menu_action))
 
-        manual_url_path = self.get_manual_url_path()
-        self._add_menu(self.HELP_SCRIPTING_MANUAL, lambda *_: self._open_web_file(manual_url_path), priority=-22)
-        if manual_url_path is None:
-            editor_menu.set_enabled(self.HELP_SCRIPTING_MANUAL, False)
+        manual_url_path = editor_menu.add_item(self.HELP_SCRIPTING_MANUAL, None, priority=-21)
+        manual_url_path_action = omni.kit.menu.utils.add_action_to_menu(
+            self.HELP_SCRIPTING_MANUAL,
+            lambda *_: self._open_browser(MANUAL_URL),
+            "OpenManual",
+            (0, Key.F1),
+        )
+        self.menus.append((manual_url_path, manual_url_path_action))
 
         forums_link = editor_menu.add_item(self.HELP_FORUMS_URL, None, priority=-21)
         forums_link_action = omni.kit.menu.utils.add_action_to_menu(
@@ -285,7 +284,7 @@ class CreateSetupExtension(omni.ext.IExt):
         )
         self.menus.append((forums_link, forums_link_action))
 
-        kit_manual = editor_menu.add_item(self.HELP_KIT_MANUAL, None, priority=-9)
+        kit_manual = editor_menu.add_item(self.HELP_KIT_MANUAL, None, priority=-11)
         kit_manual_action = omni.kit.menu.utils.add_action_to_menu(
             self.HELP_KIT_MANUAL, lambda *_: self._open_browser(KIT_MANUAL_URL), "OpenKitManual"
         )
@@ -398,6 +397,20 @@ class CreateSetupExtension(omni.ext.IExt):
                     MenuLayout.Item("Semantics Schema Editor", source="Replicator/Semantics Schema Editor"),
                     MenuLayout.Item("Composer", source="Replicator/Composer"),
                     MenuLayout.Seperator(),
+                ],
+            ),
+            MenuLayout.Menu(
+                "Help",
+                [
+                    MenuLayout.Item(self.HELP_REFERENCE_GUIDE_MENU),
+                    MenuLayout.Item(self.HELP_SCRIPTING_MANUAL),
+                    MenuLayout.Item(self.HELP_FORUMS_URL),
+                    MenuLayout.Seperator(),
+                    MenuLayout.Item(self.HELP_KIT_MANUAL),
+                    MenuLayout.Item(self.HELP_UI_DOCS),
+                    MenuLayout.Item("Reference Guide", remove=True),
+                    MenuLayout.Item("Discover Kit SDK", remove=True),
+                    MenuLayout.Item("Developers Manual", remove=True),
                 ],
             ),
         ]

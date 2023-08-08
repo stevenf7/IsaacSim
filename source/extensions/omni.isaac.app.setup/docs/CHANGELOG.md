@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.10.0] - 2023-08-08
+
+### Changed
+- Update Help menu
+
 ## [0.9.0] - 2023-07-05
 
 ### Changed
