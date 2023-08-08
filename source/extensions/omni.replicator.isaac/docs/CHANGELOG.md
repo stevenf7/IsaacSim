@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.9.1] - 2023-08-08
+
+### Fixed 
+- test_pytorch_writer adding the num_frames to run_until_complete_async due to possible off-by-one frame issue
+
 ## [1.9.0] - 2023-07-12
 
 ### Added 
