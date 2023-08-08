@@ -964,7 +964,7 @@ class ArticulationView(XFormPrimView):
                 action = self._backend_utils.create_zeros_tensor(
                     (self.count, self.num_dof), dtype="float32", device=self._device
                 )
-                actionself._backend_utils.assign(
+                action = self._backend_utils.assign(
                     self._backend_utils.move_data(control_actions.joint_efforts, device=self._device),
                     action,
                     [
