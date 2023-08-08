@@ -9,7 +9,7 @@ latest = true
 slug = "isaac_sim-assets-1"
 
 #displayed before application name in launcher
-productArea = "Omniverse Content"
+productArea = ""
 #category of content
 #["File Management", "Connectors", "Apps", "Experiences", "Extensions"]
 category = "Content"
