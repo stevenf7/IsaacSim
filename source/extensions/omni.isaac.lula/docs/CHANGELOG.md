@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.0.0] - 2023-08.06
+
+### Changed
+
+- Upgraded Lula from release 0.8.2 to release 0.9.0.  This new version includes a major overhaul of inverse kinematics (IK), improving performance and robustness via many performance optimizations and the addition of a BFGS solver used to refine the solution produced by the existing cyclic coordinate descent (CCD) solver.  The names of certain parameters in the `CyclicCoordDescentIkConfig` struct have changed, breaking backward compatibility.  This update also includes the fix for a bug that could affect CCD convergence and the addition of "mimic joint" support throughout.
+
 ## [1.4.1] - 2023-04-27
 
 ### Fixed

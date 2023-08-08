@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.12.0] - 2023-08-06
+### Changed
+- Made minimal internal changes to IK interface for compatibility with Lula 0.9.0.
+
+### Fixed
+- Fixed a bug in `LulaKinematicsSolver` that had resulted in `set_descent_termination_delta()` having no effect.
+
 ## [4.11.0] - 2023-08-02
 ### Added
 - Add Fanuc CRX10IAL rmpflow configs with corresponding test case

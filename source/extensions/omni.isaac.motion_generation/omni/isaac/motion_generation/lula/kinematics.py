@@ -53,10 +53,10 @@ class LulaKinematicsSolver(KinematicsSolver):
             self._ik_config.orientation_tolerance
         )
         self._default_position_tolerance = self._ik_config.position_tolerance
-        self._default_orientation_weight = self._ik_config.orientation_weight
+        self._default_ccd_orientation_weight = self._ik_config.ccd_orientation_weight
 
-        self._default_max_iter = self._ik_config.max_iterations_per_descent
-        self._default_descent_termination_delta = self._ik_config.descent_termination_delta
+        self._default_max_iter = self._ik_config.ccd_max_iterations
+        self._default_ccd_descent_termination_delta = self._ik_config.ccd_descent_termination_delta
         self._default_cspace_seeds = []
 
     def set_robot_base_pose(self, robot_position: np.array, robot_orientation: np.array) -> None:
@@ -134,9 +134,9 @@ class LulaKinematicsSolver(KinematicsSolver):
         if target_orientation is None:
             target_orientation = np.array([1, 0, 0, 0])
             self._ik_config.orientation_tolerance = 2.0
-            self._ik_config.orientation_weight = 0.0
+            self._ik_config.ccd_orientation_weight = 0.0
         else:
-            self._ik_config.orientation_weight = self._default_orientation_weight
+            self._ik_config.ccd_orientation_weight = self._default_ccd_orientation_weight
 
         rot = quats_to_rot_matrices(target_orientation).astype(np.float64)
         pos = target_position.astype(np.float64) * self._meters_per_unit
@@ -166,14 +166,14 @@ class LulaKinematicsSolver(KinematicsSolver):
         return False
 
     def set_orientation_weight(self, weight: float) -> None:
-        """Orientation weight describes a ratio of importance betwee hitting the position and orientation target.
+        """Orientation weight describes a ratio of importance between hitting the position and orientation target.
         A weight of 0 implies that the solver cares only about the orientation target.  When no orientation target is given
         to compute_inverse_kinematics(), a weight of 0 is automatically used over the default.
 
         Args:
             weight (float): Ratio describing the relative importance of the orientation target vs. the position target when solving IK
         """
-        self._default_orientation_weight = weight
+        self._default_ccd_orientation_weight = weight
 
     def set_default_orientation_tolerance(self, tolerance: float) -> None:
         """Default orientation tolerance to be used when calculating IK when none is specified
@@ -199,7 +199,7 @@ class LulaKinematicsSolver(KinematicsSolver):
         Args:
             max_iterations (int): maximum number of iterations that the IK solver will attempt before giving up
         """
-        self._ik_config.max_iterations_per_descent = max_iterations
+        self._ik_config.ccd_max_iterations = max_iterations
 
     def set_descent_termination_delta(self, delta: float) -> None:
         """Set the minimum delta between two solutions at which the IK solver may terminate due to the solution not improving anymore
@@ -207,7 +207,7 @@ class LulaKinematicsSolver(KinematicsSolver):
         Args:
             delta (float): minimum delta between two solutions at which the IK solver may terminate due to the solution not improving anymore
         """
-        self._ik_config.descent_termination_delta
+        self._ik_config.ccd_descent_termination_delta = delta
 
     def set_default_cspace_seeds(self, seeds: np.array) -> None:
         """Set a list of cspace seeds that the solver may use as starting points for solutions
@@ -225,7 +225,7 @@ class LulaKinematicsSolver(KinematicsSolver):
         Returns:
             float: Ratio describing the relative importance of the orientation target vs. the position target when solving IK
         """
-        return self._default_orientation_weight
+        return self._default_ccd_orientation_weight
 
     def get_default_orientation_tolerance(self) -> float:
         """Get the default orientation tolerance to be used when calculating IK when none is specified
@@ -250,7 +250,7 @@ class LulaKinematicsSolver(KinematicsSolver):
         Returns:
             int: maximum number of iterations that the IK solver will attempt before giving up
         """
-        return self._ik_config.max_iterations_per_descent
+        return self._ik_config.ccd_max_iterations
 
     def get_descent_termination_delta(self) -> float:
         """Get the minimum delta between two solutions at which the IK solver may terminate due to the solution not improving anymore
@@ -258,7 +258,7 @@ class LulaKinematicsSolver(KinematicsSolver):
         Returns:
             float: minimum delta between two solutions at which the IK solver may terminate due to the solution not improving anymore
         """
-        return self._ik_config.descent_termination_delta
+        return self._ik_config.ccd_descent_termination_delta
 
     def get_default_cspace_seeds(self) -> List[np.array]:
         """Get a list of cspace seeds that the solver may use as starting points for solutions
