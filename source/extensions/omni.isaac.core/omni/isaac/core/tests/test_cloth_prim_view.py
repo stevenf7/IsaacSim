@@ -58,7 +58,7 @@ class TestClothPrimView(omni.kit.test.AsyncTestCase):
             env_path = "/World/Env" + str(i)
             env = UsdGeom.Xform.Define(self.stage, env_path)
             # set up the geometry
-            cloth_path = env.GetPrim().GetPath().AppendChild("cloth")
+            cloth_path = env.GetPrim().GetPath().AppendChild("cloth").pathString
             self.plane_mesh = UsdGeom.Mesh.Define(self.stage, cloth_path)
             tri_points, tri_indices = deformableUtils.create_triangle_mesh_square(
                 dimx=self.dimx, dimy=self.dimy, scale=1.0

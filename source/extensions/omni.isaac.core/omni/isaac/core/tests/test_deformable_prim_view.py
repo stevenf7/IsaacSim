@@ -62,7 +62,7 @@ class TestDeformablePrimView(omni.kit.test.AsyncTestCase):
             env_path = "/World/Env" + str(i)
             env = UsdGeom.Xform.Define(self.stage, env_path)
             # set up the geometry
-            deformable_path = env.GetPrim().GetPath().AppendChild("deformable")
+            deformable_path = env.GetPrim().GetPath().AppendChild("deformable").pathString
             self.plane_mesh = UsdGeom.Mesh.Define(self.stage, deformable_path)
             tri_points, tri_indices = DeformableMeshUtils.createTriangleMeshCube(8)
             self.plane_mesh.GetPointsAttr().Set(tri_points)
@@ -71,7 +71,7 @@ class TestDeformablePrimView(omni.kit.test.AsyncTestCase):
             physicsUtils.setup_transform_as_scale_orient_translate(self.plane_mesh)
             physicsUtils.set_or_add_translate_op(self.plane_mesh, Gf.Vec3f(i * 2, 0.0, 2.0))
             # physicsUtils.set_or_add_orient_op(self.plane_mesh, Gf.Rotation(Gf.Vec3d([1, 0, 0]), 15 * i).GetQuat())
-            deformable_material_path = env.GetPrim().GetPath().AppendChild("deformableMaterial")
+            deformable_material_path = env.GetPrim().GetPath().AppendChild("deformableMaterial").pathString
             self.deformable_material = DeformableMaterial(
                 prim_path=deformable_material_path,
                 dynamic_friction=0.5,

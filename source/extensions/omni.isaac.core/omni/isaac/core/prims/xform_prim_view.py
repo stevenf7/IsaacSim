@@ -27,6 +27,7 @@ from omni.isaac.core.utils.prims import (
 )
 from omni.isaac.core.utils.stage import get_current_stage
 from omni.isaac.core.utils.types import XFormPrimViewState
+from omni.isaac.core.utils.xforms import get_local_pose, get_world_pose
 from pxr import Gf, Usd, UsdGeom, UsdShade
 
 
@@ -118,6 +119,7 @@ class XFormPrimView(object):
         self._non_root_link = is_prim_non_root_articulation_link(prim_path=self._prim_paths[0])
         if not self._non_root_link and reset_xform_properties:
             self._set_xform_properties()
+
         if not self._non_root_link:
             if translations is not None and positions is not None:
                 raise Exception("You can not define translation and position at the same time")
@@ -552,12 +554,7 @@ class XFormPrimView(object):
         indices = self._backend_utils.to_list(indices)
         write_idx = 0
         for i in indices:
-            prim_tf = UsdGeom.Xformable(self._prims[i]).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
-            transform = Gf.Transform()
-            transform.SetMatrix(prim_tf)
-            positions[write_idx] = np.array(transform.GetTranslation())
-            orientation = transform.GetRotation().GetQuat()
-            orientations[write_idx] = np.array([orientation.GetReal(), *orientation.GetImaginary()])
+            positions[write_idx], orientations[write_idx] = get_world_pose(self._prim_paths[i])
             write_idx += 1
         positions = self._backend_utils.convert(positions, device=self._device, dtype="float32", indexed=True)
         orientations = self._backend_utils.convert(orientations, device=self._device, dtype="float32", indexed=True)
@@ -632,9 +629,7 @@ class XFormPrimView(object):
         write_idx = 0
         indices = self._backend_utils.to_list(indices)
         for i in indices:
-            translations[write_idx] = np.array(self._prims[i].GetAttribute("xformOp:translate").Get(), dtype="float32")
-            orientation = self._prims[i].GetAttribute("xformOp:orient").Get()
-            orientations[write_idx] = np.array([orientation.GetReal(), *orientation.GetImaginary()], dtype="float32")
+            translations[write_idx], orientations[write_idx] = get_local_pose(self._prim_paths[i])
             write_idx += 1
         translations = self._backend_utils.convert(translations, dtype="float32", device=self._device, indexed=True)
         orientations = self._backend_utils.convert(orientations, dtype="float32", device=self._device, indexed=True)
