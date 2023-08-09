@@ -22,12 +22,12 @@ from omni.isaac.articulation_inspector.widgets import ComboBoxModel, ListItemDel
 from omni.isaac.core.articulations import Articulation
 from omni.isaac.core.utils.prims import get_prim_object_type
 from omni.isaac.core.utils.stage import get_stage_units
+from omni.isaac.ui.element_wrappers import ScrollingWindow
 from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.ui.ui_utils import (
     add_line_rect_flourish,
     btn_builder,
     combo_floatfield_slider_builder,
-    float_builder,
     get_style,
     setup_ui_headers,
     str_builder,
@@ -53,7 +53,7 @@ class Extension(omni.ext.IExt):
         self._timeline = omni.timeline.get_timeline_interface()
 
         # Build Window
-        self._window = ui.Window(
+        self._window = ScrollingWindow(
             title=EXTENSION_NAME, width=500, height=500, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
         self._window.set_visibility_changed_fn(self._on_window)

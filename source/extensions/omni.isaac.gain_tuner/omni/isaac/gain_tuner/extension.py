@@ -13,7 +13,6 @@ import random
 import weakref
 
 import carb
-import numpy as np
 import omni
 import omni.physx as _physx
 import omni.timeline
@@ -21,8 +20,8 @@ import omni.ui as ui
 import omni.usd
 from omni.isaac.core.articulations import Articulation
 from omni.isaac.core.utils.prims import get_prim_object_type
-from omni.isaac.core.utils.stage import get_stage_units
 from omni.isaac.core.utils.types import ArticulationAction
+from omni.isaac.ui.element_wrappers import ScrollingWindow
 from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.ui.ui_utils import (
     add_line_rect_flourish,
@@ -54,7 +53,7 @@ class Extension(omni.ext.IExt):
         self._timeline = omni.timeline.get_timeline_interface()
 
         # Build Window
-        self._window = ui.Window(
+        self._window = ScrollingWindow(
             title=EXTENSION_NAME, width=500, height=500, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
         self._window.set_visibility_changed_fn(self._on_window)
@@ -484,7 +483,6 @@ class Extension(omni.ext.IExt):
     def _build_command_ui(self):
         self._models["frame_command_ui"] = ui.CollapsableFrame(
             title="Command Panel",
-            name="groupFrame",
             height=0,
             collapsed=True,
             style=get_style(),
@@ -591,7 +589,6 @@ class Extension(omni.ext.IExt):
             height=0,
             collapsed=True,
             style=get_style(),
-            name="groupFrame",
             horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
             vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
         )

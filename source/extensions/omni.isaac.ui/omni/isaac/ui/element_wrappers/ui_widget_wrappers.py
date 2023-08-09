@@ -9,7 +9,7 @@
 import sys
 from cmath import inf
 from collections.abc import Iterable
-from typing import Callable, List, Tuple, Union
+from typing import Callable, List, Optional, Tuple, Union
 
 import carb
 import numpy as np
@@ -37,6 +37,22 @@ from .base_ui_element_wrappers import UIWidgetWrapper
 ##########################################################################################
 #                                 UI Frame Wrappers
 ##########################################################################################
+
+
+class ScrollingWindow(ui.Window):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        original_frame = ui.Window.frame.fget(self)
+        with original_frame:
+            self._scrolling_frame = ScrollingFrame().container_frame
+
+    @property
+    def frame(self) -> ui.ScrollingFrame:
+        """
+        Returns:
+            omni.ui.Frame: A UI Frame
+        """
+        return self._scrolling_frame
 
 
 class Frame(UIWidgetWrapper):
@@ -165,14 +181,14 @@ class ScrollingFrame(Frame):
 
     Args:
         num_lines (int, optional): Determines height of ScrollingFrame element in terms of the
-            typical line height of UI elements. Defaults to 5.
+            typical line height of UI elements. If not specified, the ScrollingFrame will fill the space it can in the UI Window.
         enabled (bool, optional): Frame is enabled. Defaults to True.
         visible (bool, optional): Frame is visible. Defaults to True.
         build_fn (Callable, optional): A function that can be called to specify what should fill the Frame.
             Function should take no arguments.  Return values will not be used. Defaults to None.
     """
 
-    def __init__(self, num_lines=5, enabled: bool = True, visible: bool = True, build_fn: Callable = None):
+    def __init__(self, num_lines=None, enabled: bool = True, visible: bool = True, build_fn: Callable = None):
         # Create a Frame UI element
         self._frame = self._create_frame(num_lines, enabled, visible, build_fn)
         UIWidgetWrapper.__init__(self, self.frame)
@@ -186,9 +202,15 @@ class ScrollingFrame(Frame):
         """
         self.frame.height = LABEL_HEIGHT * num_lines
 
-    def _create_frame(self, num_lines: int, enabled: bool, visible: bool, build_fn: Callable) -> ui.CollapsableFrame:
+    def _create_frame(
+        self, num_lines: Optional[int], enabled: bool, visible: bool, build_fn: Callable
+    ) -> ui.ScrollingFrame:
+        if num_lines is not None:
+            height = LABEL_HEIGHT * num_lines
+        else:
+            height = ui.Fraction(1)
         frame = ui.ScrollingFrame(
-            height=LABEL_HEIGHT * num_lines,
+            height=height,
             visible=visible,
             enabled=enabled,
             build_fn=build_fn,

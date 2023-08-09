@@ -1,4 +1,8 @@
 # Changelog
+## [0.1.5] - 2023-08-08
+### Fixed
+- Switch from ui.Window to ScrollingWindow wrapper for extension because scrolling was broken
+
 ## [0.1.4] - 2023-08-08
 ### Fixed
 - Error on selecting Articulation because get_joint_efforts() is deprecated.

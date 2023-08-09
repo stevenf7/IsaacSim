@@ -17,6 +17,7 @@ from .ui_widget_wrappers import (
     Frame,
     IntField,
     ScrollingFrame,
+    ScrollingWindow,
     StateButton,
     StringField,
     TextBlock,

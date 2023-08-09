@@ -1,4 +1,10 @@
 # Changelog
+## [0.12.0] - 2023-08-08
+### Added
+- Added ScrollingWindow UI wrapper now that Kit 105.1 windows do not automatically have a scrollbar.
+
+### Changed
+- Update build_header() function to use constant colors
 
 ## [0.11.1] - 2023-07-26
 ### Fixed

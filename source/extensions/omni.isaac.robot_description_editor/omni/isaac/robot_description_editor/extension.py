@@ -26,6 +26,7 @@ from omni.isaac.core.articulations import Articulation
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices
 from omni.isaac.core.utils.prims import get_prim_at_path, get_prim_object_type
+from omni.isaac.ui.element_wrappers import ScrollingWindow
 from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.ui.ui_utils import (
     add_line_rect_flourish,
@@ -74,7 +75,7 @@ class Extension(omni.ext.IExt):
         self._timeline = omni.timeline.get_timeline_interface()
 
         # Build Window
-        self._window = ui.Window(
+        self._window = ScrollingWindow(
             title=EXTENSION_NAME, width=600, height=500, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
         self._window.set_visibility_changed_fn(self._on_window)
