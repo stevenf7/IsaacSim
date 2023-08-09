@@ -26,6 +26,7 @@ from omni.isaac.ui.element_wrappers import (
     Frame,
     IntField,
     ScrollingFrame,
+    ScrollingWindow,
     StateButton,
     StringField,
     TextBlock,
@@ -58,7 +59,7 @@ class TestUI(omni.kit.test.AsyncTestCase):
         pass
 
     async def _create_window(self, title, width, height):
-        window = ui.Window(
+        window = ScrollingWindow(
             title=title,
             width=width,
             height=height,
@@ -131,10 +132,13 @@ class TestUI(omni.kit.test.AsyncTestCase):
         height = 200
         window = await self._create_window(window_title, width, height)
 
+        self._selected_colors = []
+
         def on_color_picked(color):
             # The chosen colors should be the same every time
+            self._selected_colors.append(color)
             self.assertTrue(
-                (color == [0.2512417733669281, 0.3619080185890198, 0.47257381677627563, 1.0] or color == [1, 1, 1, 1])
+                (color == [0.24344389140605927, 0.34535083174705505, 0.447257399559021, 1.0] or color == [1, 1, 1, 1])
             )
 
         with window.frame:
@@ -150,6 +154,7 @@ class TestUI(omni.kit.test.AsyncTestCase):
 
         color_picker.set_color(np.ones(4))
         self.assertTrue(np.all(color_picker.get_color() == np.ones(4)))
+        self.assertTrue(len(self._selected_colors) == 2)
 
         window.destroy()
 
@@ -186,6 +191,7 @@ class TestUI(omni.kit.test.AsyncTestCase):
         combobox = ui_test.find(
             f"{window_title}//Frame/CollapsableFrame[0]/Frame[0]/ZStack[0]/VStack[0]/Frame[0]/Frame[0]/HStack[0]/ComboBox[0]"
         )
+        await combobox.click()
         await combobox.click()
 
         # Selects option B
@@ -285,8 +291,8 @@ class TestUI(omni.kit.test.AsyncTestCase):
                     on_value_changed_fn=on_value_changed,
                 )
 
-        await ui_test.emulate_mouse_move(ui_test.Vec2(400, 120))
-        await ui_test.emulate_mouse_drag_and_drop(ui_test.Vec2(400, 120), ui_test.Vec2(600, 120))
+        await ui_test.emulate_mouse_move(ui_test.Vec2(400, 130))
+        await ui_test.emulate_mouse_drag_and_drop(ui_test.Vec2(400, 130), ui_test.Vec2(600, 130))
         await update_stage_async()
 
         self.assertTrue(int_field.get_value() == self.max_value)

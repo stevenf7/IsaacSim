@@ -1318,10 +1318,10 @@ def build_header(
                             )
 
     with ui.ZStack():
-        ui.Rectangle(style={"border_radius": 5})
+        ui.Rectangle(style={"border_radius": 5, "background_color": 0xFF292929})
         with ui.HStack():
             ui.Spacer(width=5)
-            ui.Label(title, width=0, name="title", style={"font_size": 16})
+            ui.Label(title, width=0, name="title", style={"font_size": 16, "color": 0xFFC7C7C7})
             ui.Spacer(width=ui.Fraction(1))
             build_icon_bar()
             ui.Spacer(width=5)

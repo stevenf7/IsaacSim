@@ -1,8 +1,9 @@
-# Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
+# This software contains source code provided by NVIDIA Corporation.
+# Copyright (c) 2022-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
-# and any modifications thereto. Any use, reproduction, disclosure or
+# and any modifications thereto.  Any use, reproduction, disclosure or
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
@@ -12,14 +13,16 @@ import omni.timeline
 import omni.ui as ui
 from omni.isaac.core.articulations import Articulation
 from omni.isaac.core.objects.cuboid import FixedCuboid
+from omni.isaac.core.prims import XFormPrim
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.prims import is_prim_path_valid
-from omni.isaac.core.utils.stage import add_reference_to_stage, create_new_stage
+from omni.isaac.core.utils.stage import add_reference_to_stage, create_new_stage, get_current_stage
 from omni.isaac.core.world import World
 from omni.isaac.ui.element_wrappers import CollapsableFrame, StateButton
 from omni.isaac.ui.element_wrappers.core_connectors import LoadButton, ResetButton
 from omni.isaac.ui.ui_utils import get_style
 from omni.usd import StageEventType
+from pxr import Sdf, UsdLux
 
 from .scenario import ExampleScenario
 
@@ -134,6 +137,15 @@ class UIBuilder:
         self._cuboid = None
         self._scenario = ExampleScenario()
 
+    def _add_light_to_stage(self):
+        """
+        A new stage does not have a light by default.  This function creates a spherical light
+        """
+        sphereLight = UsdLux.SphereLight.Define(get_current_stage(), Sdf.Path("/World/SphereLight"))
+        sphereLight.CreateRadiusAttr(2)
+        sphereLight.CreateIntensityAttr(100000)
+        XFormPrim(sphereLight.GetPath()).set_world_pose([6.5, 0, 12])
+
     def _setup_scene(self):
         """
         This function is attached to the Load Button as the setup_scene_fn callback.
@@ -158,6 +170,7 @@ class UIBuilder:
         #     print("Robot already on Stage")
 
         create_new_stage()
+        self._add_light_to_stage()
         add_reference_to_stage(path_to_robot_usd, robot_prim_path)
 
         # Create a cuboid

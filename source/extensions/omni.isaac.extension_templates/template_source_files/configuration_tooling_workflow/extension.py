@@ -16,6 +16,7 @@ import omni.physx as _physx
 import omni.timeline
 import omni.ui as ui
 import omni.usd
+from omni.isaac.ui.element_wrappers import ScrollingWindow
 from omni.isaac.ui.menu import MenuItemDescription
 from omni.kit.menu.utils import add_menu_items, remove_menu_items
 from omni.usd import StageEventType
@@ -50,7 +51,7 @@ class Extension(omni.ext.IExt):
         self._usd_context = omni.usd.get_context()
 
         # Build Window
-        self._window = ui.Window(
+        self._window = ScrollingWindow(
             title=EXTENSION_TITLE, width=600, height=500, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
         self._window.set_visibility_changed_fn(self._on_window)
