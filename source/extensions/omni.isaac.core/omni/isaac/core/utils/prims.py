@@ -12,33 +12,37 @@ import re
 # python
 import typing
 
+import numpy as np
 import omni.kit
 import omni.usd
+import usdrt
 from omni.isaac.core.utils.semantics import add_update_semantics
 
 # isaacsim
 from omni.isaac.core.utils.stage import add_reference_to_stage, get_current_stage
 from omni.isaac.core.utils.string import find_root_prim_path_from_regex
+from omni.isaac.core.utils.types import SDF_type_to_Gf
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.usd.commands import DeletePrimsCommand, MovePrimCommand
 
 # omniverse
-from pxr import Usd, UsdGeom, UsdPhysics
+from pxr import Gf, Usd, UsdGeom, UsdPhysics
 
 
-def get_prim_at_path(prim_path: str) -> Usd.Prim:
-    """Get the USD Prim at a given path string
+def get_prim_at_path(prim_path: str, fabric: bool = False) -> typing.Union[Usd.Prim, usdrt.Usd._Usd.Prim]:
+    """Get the USD or Fabric Prim at a given path string
 
     Args:
-        prim_path (str): path of the prim in the stage
+        prim_path (str): path of the prim in the stage.
+        fabric (bool, optional): True for fabric stage and False for USD stage. Defaults to False.
 
     Returns:
-        Usd.Prim: USD Prim object at the given path in the current stage
+        typing.Union[Usd.Prim, usdrt.Usd._Usd.Prim]: USD or Fabric Prim object at the given path in the current stage.
     """
-    return get_current_stage().GetPrimAtPath(prim_path)
+    return get_current_stage(fabric=fabric).GetPrimAtPath(prim_path)
 
 
-def is_prim_path_valid(prim_path: str) -> bool:
+def is_prim_path_valid(prim_path: str, fabric: bool = False) -> bool:
     """Check if a path has a valid USD Prim at it
 
     Args:
@@ -47,10 +51,43 @@ def is_prim_path_valid(prim_path: str) -> bool:
     Returns:
         bool: True if the path points to a valid prim
     """
-    return get_current_stage().GetPrimAtPath(prim_path).IsValid()
+    return get_prim_at_path(prim_path, fabric=fabric).IsValid()
 
 
-def define_prim(prim_path: str, prim_type: str = "Xform") -> Usd.Prim:
+def get_prim_attribute_names(prim_path: str, fabric: bool = False):
+    return [attr.GetName() for attr in get_prim_at_path(prim_path=prim_path, fabric=fabric).GetAttributes()]
+
+
+def get_prim_attribute_value(prim_path: str, attribute_name: str, fabric: bool = False):
+    attr = get_prim_at_path(prim_path=prim_path, fabric=fabric).GetAttribute(attribute_name)
+    if fabric:
+        type_name = str(attr.GetTypeName().GetAsString())
+    else:
+        type_name = str(attr.GetTypeName())
+    if type_name in SDF_type_to_Gf:
+        return list(attr.Get())
+    else:
+        return attr.Get()
+
+
+def set_prim_attribute_value(prim_path: str, attribute_name: str, value: np.ndarray, fabric: bool = False):
+    attr = get_prim_at_path(prim_path=prim_path, fabric=fabric).GetAttribute(attribute_name)
+    if fabric:
+        type_name = str(attr.GetTypeName().GetAsString())
+    else:
+        type_name = str(attr.GetTypeName())
+    if isinstance(value, np.ndarray):
+        value = value.tolist()
+    if type_name in SDF_type_to_Gf:
+        if fabric:
+            eval("attr.Set(usdrt." + SDF_type_to_Gf[type_name] + "(*value))")
+        else:
+            eval("attr.Set(" + SDF_type_to_Gf[type_name] + "(*value))")
+    else:
+        attr.Set(value)
+
+
+def define_prim(prim_path: str, prim_type: str = "Xform", fabric=False) -> Usd.Prim:
     """Create a USD Prim at the given prim_path of type prim_type unless one already exists
 
     Args:
@@ -63,12 +100,12 @@ def define_prim(prim_path: str, prim_type: str = "Xform") -> Usd.Prim:
     Returns:
         Usd.Prim: The created USD prim.
     """
-    if is_prim_path_valid(prim_path):
+    if is_prim_path_valid(prim_path, fabric=fabric):
         raise Exception("A prim already exists at prim path: {}".format(prim_path))
-    return get_current_stage().DefinePrim(prim_path, prim_type)
+    return get_current_stage(fabric=fabric).DefinePrim(prim_path, prim_type)
 
 
-def get_prim_type_name(prim_path: str) -> str:
+def get_prim_type_name(prim_path: str, fabric=False) -> str:
     """Get the TypeName of the USD Prim at the path if it is valid
 
     Args:
@@ -80,10 +117,13 @@ def get_prim_type_name(prim_path: str) -> str:
     Returns:
         str: The TypeName of the USD Prim at the path string
     """
-    if not is_prim_path_valid(prim_path):
+    if not is_prim_path_valid(prim_path, fabric=fabric):
         raise Exception("A prim does not exist at prim path: {}".format(prim_path))
-    prim = get_prim_at_path(prim_path)
-    return prim.GetPrimTypeInfo().GetTypeName()
+    prim = get_prim_at_path(prim_path, fabric=fabric)
+    if fabric:
+        return prim.GetTypeName()
+    else:
+        return prim.GetPrimTypeInfo().GetTypeName()
 
 
 def move_prim(path_from: str, path_to: str) -> None:
@@ -96,7 +136,7 @@ def move_prim(path_from: str, path_to: str) -> None:
     MovePrimCommand(path_from=path_from, path_to=path_to).do()
 
 
-def get_first_matching_child_prim(prim_path: str, predicate: typing.Callable[[str], bool]) -> Usd.Prim:
+def get_first_matching_child_prim(prim_path: str, predicate: typing.Callable[[str], bool], fabric=False) -> Usd.Prim:
     """Recursively get the first USD Prim at the path string that passes the predicate function
 
     Args:
@@ -106,7 +146,7 @@ def get_first_matching_child_prim(prim_path: str, predicate: typing.Callable[[st
     Returns:
          Usd.Prim: The first prim or child of the prim, as defined by GetChildren, that passes the predicate
     """
-    prim = get_current_stage().GetPrimAtPath(prim_path)
+    prim = get_current_stage(fabric=fabric).GetPrimAtPath(prim_path)
     children_stack = [prim]
     out = prim.GetChildren()
     while len(children_stack) > 0:
@@ -303,7 +343,10 @@ def get_prim_path(prim: Usd.Prim) -> str:
     Returns:
         str: The path to the input prim.
     """
-    return prim.GetPath().pathString
+    if isinstance(prim, Usd.Prim):
+        return prim.GetPath().pathString
+    else:
+        return prim.GetPath()
 
 
 def set_prim_visibility(prim: Usd.Prim, visible: bool) -> None:

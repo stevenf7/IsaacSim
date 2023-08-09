@@ -15,6 +15,7 @@ import typing
 # omniverse
 import carb
 import omni.kit.app
+import usdrt
 
 # isaacsim
 from omni.isaac.core.utils.constants import AXES_TOKEN
@@ -22,13 +23,22 @@ from omni.usd.commands import DeletePrimsCommand
 from pxr import Sdf, Usd, UsdGeom
 
 
-def get_current_stage() -> Usd.Stage:
-    """Get the current open USD stage.
+def get_current_stage(fabric: bool = False) -> typing.Union[Usd.Stage, usdrt.Usd._Usd.Stage]:
+    """ "Get the current open USD or Fabric stage.
+
+    Args:
+        fabric (bool, optional): True to get the fabric stage. False to get the USD stage. Defaults to False.
 
     Returns:
-        Usd.Stage: The USD stage.
+        typing.Union[Usd.Stage, usdrt.Usd._Usd.Stage]: The USD or Fabric stage as specified by the input arg fabric.
     """
-    return omni.usd.get_context().get_stage()
+
+    if fabric:
+        stage_id = omni.usd.get_context().get_stage_id()
+        stage = usdrt.Usd.Stage.Attach(stage_id)
+        return stage
+    else:
+        return omni.usd.get_context().get_stage()
 
 
 def update_stage() -> None:
@@ -114,13 +124,13 @@ def clear_stage(predicate: typing.Optional[typing.Callable[[str], bool]] = None)
         omni.kit.app.get_app_interface().update()
 
 
-def print_stage_prim_paths() -> None:
+def print_stage_prim_paths(fabric=False) -> None:
     """Traverses the stage and prints all prim paths."""
     # Note: Need to import this here to prevent circular dependencies.
     from omni.isaac.core.utils.prims import get_prim_path
 
-    for prim in traverse_stage():
-        prim_path = get_prim_path(prim)
+    for prim in traverse_stage(fabric=fabric):
+        prim_path = get_prim_path(prim, fabric=fabric)
         print(prim_path)
 
 
@@ -270,13 +280,13 @@ def set_livesync_stage(usd_path: str, enable: bool) -> bool:
         return False
 
 
-def traverse_stage() -> typing.Iterable:
+def traverse_stage(fabric=False) -> typing.Iterable:
     """Traverse through prims in the opened USd stage.
 
     Returns:
         typing.Iterable: Generator which yields prims from the stage in depth-first-traversal order.
     """
-    return get_current_stage().Traverse()
+    return get_current_stage(fabric=fabric).Traverse()
 
 
 def is_stage_loading() -> bool:

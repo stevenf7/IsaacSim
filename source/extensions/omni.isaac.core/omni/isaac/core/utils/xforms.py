@@ -8,7 +8,17 @@
 #
 
 import numpy as np
+import usdrt
+from omni.isaac.core.utils.prims import (
+    get_prim_at_path,
+    get_prim_attribute_names,
+    get_prim_attribute_value,
+    get_prim_parent,
+    get_prim_path,
+    is_prim_path_valid,
+)
 from pxr import Gf, Usd, UsdGeom
+from scipy.spatial.transform import Rotation
 
 
 def clear_xform_ops(prim: Usd.Prim):
@@ -69,3 +79,78 @@ def reset_xform_ops(prim: Usd.Prim):
     current_orientation = T_l_p.GetRotation().GetQuat()
 
     reset_and_set_xform_ops(current_translation, current_orientation)
+
+
+def _get_world_pose_transform_w_scale(prim_path):
+    # This will return a transformation matrix with translation as the last row and scale included
+    if not is_prim_path_valid(prim_path, fabric=False):
+        raise Exception("Prim path is not valid")
+    fabric_prim = get_prim_at_path(prim_path=prim_path, fabric=True)
+    xformable_prim = usdrt.Rt.Xformable(fabric_prim)
+    if xformable_prim.HasWorldXform():
+        world_pos = xformable_prim.GetWorldPositionAttr().Get(usdrt.Usd.TimeCode.Default())
+        world_orientation = xformable_prim.GetWorldOrientationAttr().Get(usdrt.Usd.TimeCode.Default())
+        world_scale = xformable_prim.GetWorldScaleAttr().Get(usdrt.Usd.TimeCode.Default())
+        scale = usdrt.Gf.Matrix4d()
+        rot = usdrt.Gf.Matrix4d()
+        scale.SetScale(usdrt.Gf.Vec3d(world_scale))
+        rot.SetRotate(usdrt.Gf.Quatd(world_orientation))
+        result = scale * rot
+        result.SetTranslateOnly(world_pos)
+        return result
+    elif xformable_prim.HasLocalXform():
+        local_transform = xformable_prim.GetLocalMatrixAttr().Get(usdrt.Usd.TimeCode.Default())
+        parent_prim = get_prim_parent(get_prim_at_path(prim_path=prim_path, fabric=False))
+        parent_world_transform = usdrt.Gf.Matrix4d(1.0)
+        if parent_prim:
+            parent_world_transform = _get_world_pose_transform_w_scale(get_prim_path(parent_prim))
+        return local_transform * parent_world_transform
+    else:
+        usd_prim = get_prim_at_path(prim_path=prim_path, fabric=False)
+        local_transform = usdrt.Gf.Matrix4d(UsdGeom.Xformable(usd_prim).GetLocalTransformation(Usd.TimeCode.Default()))
+        parent_prim = get_prim_parent(get_prim_at_path(prim_path=prim_path, fabric=False))
+        parent_world_transform = usdrt.Gf.Matrix4d(1.0)
+        if parent_prim:
+            parent_world_transform = _get_world_pose_transform_w_scale(get_prim_path(parent_prim))
+        return local_transform * parent_world_transform
+
+
+def get_local_pose(prim_path):
+    if not is_prim_path_valid(prim_path, fabric=False):
+        raise Exception("Prim path is not valid")
+    fabric_prim = get_prim_at_path(prim_path=prim_path, fabric=True)
+    xformable_prim = usdrt.Rt.Xformable(fabric_prim)
+    if xformable_prim.HasWorldXform():
+        world_pos = xformable_prim.GetWorldPositionAttr().Get(usdrt.Usd.TimeCode.Default())
+        world_orientation = xformable_prim.GetWorldOrientationAttr().Get(usdrt.Usd.TimeCode.Default())
+        prim_l_w_transform = usdrt.Gf.Matrix4d()
+        prim_l_w_transform.SetRotate(usdrt.Gf.Quatd(world_orientation))
+        prim_l_w_transform.SetTranslateOnly(world_pos)
+        parent_prim = get_prim_parent(get_prim_at_path(prim_path=prim_path, fabric=False))
+        parent_l_w_transform = usdrt.Gf.Matrix4d(1.0)
+        if parent_prim:
+            parent_l_w_transform = _get_world_pose_transform_w_scale(get_prim_path(parent_prim))
+            parent_l_w_transform.Orthonormalize()
+            parent_l_w_transform = np.array(parent_l_w_transform)
+        result_transform = np.matmul(prim_l_w_transform, np.linalg.inv(parent_l_w_transform))
+        result_transform = np.transpose(result_transform)
+        r = Rotation.from_matrix(result_transform[:3, :3])
+        return result_transform[:3, 3], r.as_quat()[[3, 0, 1, 2]]
+
+    elif xformable_prim.HasLocalXform():
+        local_transform = xformable_prim.GetLocalMatrixAttr().Get(usdrt.Usd.TimeCode.Default())
+        local_transform.Orthonormalize()
+        return np.array(local_transform.ExtractTranslation()), np.array(local_transform.ExtractRotation())[[3, 0, 1, 2]]
+    else:
+        usd_prim = get_prim_at_path(prim_path=prim_path, fabric=False)
+        local_transform = usdrt.Gf.Matrix4d(UsdGeom.Xformable(usd_prim).GetLocalTransformation(Usd.TimeCode.Default()))
+        local_transform.Orthonormalize()
+        return np.array(local_transform.ExtractTranslation()), np.array(local_transform.ExtractRotation())[[3, 0, 1, 2]]
+
+
+def get_world_pose(prim_path):
+    result_transform = _get_world_pose_transform_w_scale(prim_path)
+    result_transform.Orthonormalize()
+    result_transform = np.transpose(result_transform)
+    r = Rotation.from_matrix(result_transform[:3, :3])
+    return result_transform[:3, 3], r.as_quat()[[3, 0, 1, 2]]

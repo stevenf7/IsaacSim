@@ -1,4 +1,10 @@
 # Changelog
+=======
+## [2.6.0] - 2023-08-03
+### Added
+- get_local_pose and get_world_pose in xforms utils which will go through fabric if the prim exists there, otherwise it will read it from USD
+### Changed
+- XFormPrimView get_local_poses and get_world_poses uses the new methods available in xforms utils to query the poses from Fabric and USD alike
 
 ## [2.5.1] - 2023-08-08
 ### Fixed
