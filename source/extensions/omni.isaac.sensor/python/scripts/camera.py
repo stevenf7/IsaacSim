@@ -19,15 +19,14 @@ from omni.isaac.core.prims.base_sensor import BaseSensor
 from omni.isaac.core.utils.carb import get_carb_setting
 from omni.isaac.core.utils.prims import define_prim, get_prim_at_path, get_prim_type_name, is_prim_path_valid
 from omni.isaac.core.utils.render_product import get_resolution, set_camera_prim_path, set_resolution
-from omni.isaac.core.utils.stage import get_current_stage
 from omni.isaac.core_nodes.bindings import _omni_isaac_core_nodes
-from pxr import Gf, Sdf, Usd, UsdGeom, UsdRender, Vt
+from pxr import Sdf, Usd, UsdGeom, Vt
 
 # transforms are read from right to left
 # U_R_TRANSFORM means transformation matrix from R frame to U frame
 # R indicates the ROS camera convention (computer vision community)
 # U indicates the USD camera convention (computer graphics community)
-# I indicates the Isaac camera convention (robotics community)
+# W indicates the World camera convention (robotics community)
 
 # from ROS camera convention to USD camera convention
 U_R_TRANSFORM = np.array([[1, 0, 0, 0], [0, -1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])
@@ -35,11 +34,11 @@ U_R_TRANSFORM = np.array([[1, 0, 0, 0], [0, -1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 
 # from USD camera convention to ROS camera convention
 R_U_TRANSFORM = np.array([[1, 0, 0, 0], [0, -1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])
 
-# from USD camera convention to Isaac camera convention
-I_U_TRANSFORM = np.array([[0, 0, -1, 0], [-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]])
+# from USD camera convention to World camera convention
+W_U_TRANSFORM = np.array([[0, 0, -1, 0], [-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]])
 
-# from Isaac camera convention to USD camera convention
-U_I_TRANSFORM = np.array([[0, -1, 0, 0], [0, 0, 1, 0], [-1, 0, 0, 0], [0, 0, 0, 1]])
+# from World camera convention to USD camera convention
+U_W_TRANSFORM = np.array([[0, -1, 0, 0], [0, 0, 1, 0], [-1, 0, 0, 0], [0, 0, 0, 1]])
 
 
 class Camera(BaseSensor):
@@ -366,50 +365,171 @@ class Camera(BaseSensor):
         width, height = self.get_resolution()
         return width / float(height)
 
-    def get_world_pose(self) -> Tuple[np.ndarray, np.ndarray]:
-        position, orientation_u = BaseSensor.get_world_pose(self)
-        world_i_cam_u_R = self._backend_utils.quats_to_rot_matrices(orientation_u)
-        u_i_R = self._backend_utils.create_tensor_from_list(
-            U_I_TRANSFORM[:3, :3].tolist(), dtype="float32", device=self._device
-        )
-        orientation_world_frame = self._backend_utils.rot_matrices_to_quats(
-            self._backend_utils.matmul(world_i_cam_u_R, u_i_R)
-        )
-        return position, orientation_world_frame
+    def get_world_pose(self, camera_axes: str = "world") -> Tuple[np.ndarray, np.ndarray]:
+        """Gets prim's pose with respect to the world's frame (always at [0, 0, 0] and unity quaternion not to be confused with /World Prim)
+
+        Args:
+            camera_axes (str, optional): camera axes, world is (+Z up, +X forward), ros is (+Y up, +Z forward) and usd is (+Y up and -Z forward). Defaults to "world".
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray]: first index is position in the world frame of the prim. shape is (3, ).
+                                           second index is quaternion orientation in the world frame of the prim.
+                                           quaternion is scalar-first (w, x, y, z). shape is (4, ).
+        """
+        if camera_axes not in ["world", "ros", "usd"]:
+            raise Exception(
+                "camera axes passed {} is not supported: accepted values are ["
+                "world"
+                ", "
+                "ros"
+                ", "
+                "usd"
+                "] only".format(camera_axes)
+            )
+        position, orientation = BaseSensor.get_world_pose(self)
+        if camera_axes == "world":
+            world_w_cam_u_R = self._backend_utils.quats_to_rot_matrices(orientation)
+            u_w_R = self._backend_utils.create_tensor_from_list(
+                U_W_TRANSFORM[:3, :3].tolist(), dtype="float32", device=self._device
+            )
+            orientation = self._backend_utils.rot_matrices_to_quats(self._backend_utils.matmul(world_w_cam_u_R, u_w_R))
+        elif camera_axes == "ros":
+            world_w_cam_u_R = self._backend_utils.quats_to_rot_matrices(orientation)
+            u_r_R = self._backend_utils.create_tensor_from_list(
+                U_R_TRANSFORM[:3, :3].tolist(), dtype="float32", device=self._device
+            )
+            orientation = self._backend_utils.rot_matrices_to_quats(self._backend_utils.matmul(world_w_cam_u_R, u_r_R))
+        return position, orientation
 
     def set_world_pose(
-        self, position: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
+        self,
+        position: Optional[Sequence[float]] = None,
+        orientation: Optional[Sequence[float]] = None,
+        camera_axes: str = "world",
     ) -> None:
-        if orientation is not None:
-            orientation = self._backend_utils.convert(orientation, device=self._device)
-            world_i_cam_i_R = self._backend_utils.quats_to_rot_matrices(orientation)
-            i_u_R = self._backend_utils.create_tensor_from_list(
-                I_U_TRANSFORM[:3, :3].tolist(), dtype="float32", device=self._device
+        """Sets prim's pose with respect to the world's frame (always at [0, 0, 0] and unity quaternion not to be confused with /World Prim).
+
+        Args:
+            position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
+                                                       Defaults to None, which means left unchanged.
+            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim.
+                                                          quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                                                          Defaults to None, which means left unchanged.
+            camera_axes (str, optional): camera axes, world is (+Z up, +X forward), ros is (+Y up, +Z forward) and usd is (+Y up and -Z forward). Defaults to "world".
+        """
+        if camera_axes not in ["world", "ros", "usd"]:
+            raise Exception(
+                "camera axes passed {} is not supported: accepted values are ["
+                "world"
+                ", "
+                "ros"
+                ", "
+                "usd"
+                "] only".format(camera_axes)
             )
-            orientation = self._backend_utils.rot_matrices_to_quats(self._backend_utils.matmul(world_i_cam_i_R, i_u_R))
+        if orientation is not None:
+            if camera_axes == "world":
+                orientation = self._backend_utils.convert(orientation, device=self._device)
+                world_w_cam_w_R = self._backend_utils.quats_to_rot_matrices(orientation)
+                w_u_R = self._backend_utils.create_tensor_from_list(
+                    W_U_TRANSFORM[:3, :3].tolist(), dtype="float32", device=self._device
+                )
+                orientation = self._backend_utils.rot_matrices_to_quats(
+                    self._backend_utils.matmul(world_w_cam_w_R, w_u_R)
+                )
+            elif camera_axes == "ros":
+                orientation = self._backend_utils.convert(orientation, device=self._device)
+                world_w_cam_r_R = self._backend_utils.quats_to_rot_matrices(orientation)
+                r_u_R = self._backend_utils.create_tensor_from_list(
+                    R_U_TRANSFORM[:3, :3].tolist(), dtype="float32", device=self._device
+                )
+                orientation = self._backend_utils.rot_matrices_to_quats(
+                    self._backend_utils.matmul(world_w_cam_r_R, r_u_R)
+                )
         return BaseSensor.set_world_pose(self, position, orientation)
 
-    def get_local_pose(self) -> None:
-        translation, orientation_camera_frame = BaseSensor.get_local_pose(self)
-        parent_i_cam_u_R = self._backend_utils.quats_to_rot_matrices(orientation_camera_frame)
-        u_i_R = self._backend_utils.create_tensor_from_list(
-            U_I_TRANSFORM[:3, :3].tolist(), dtype="float32", device=self._device
-        )
-        orientation_world_frame = self._backend_utils.rot_matrices_to_quats(
-            self._backend_utils.matmul(parent_i_cam_u_R, u_i_R)
-        )
-        return translation, orientation_world_frame
+    def get_local_pose(self, camera_axes: str = "world") -> None:
+        """Gets prim's pose with respect to the local frame (the prim's parent frame in the world axes).
+
+        Args:
+            camera_axes (str, optional): camera axes, world is (+Z up, +X forward), ros is (+Y up, +Z forward) and usd is (+Y up and -Z forward). Defaults to "world".
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray]: first index is position in the local frame of the prim. shape is (3, ).
+                                           second index is quaternion orientation in the local frame of the prim.
+                                           quaternion is scalar-first (w, x, y, z). shape is (4, ).
+        """
+        if camera_axes not in ["world", "ros", "usd"]:
+            raise Exception(
+                "camera axes passed {} is not supported: accepted values are ["
+                "world"
+                ", "
+                "ros"
+                ", "
+                "usd"
+                "] only".format(camera_axes)
+            )
+        translation, orientation = BaseSensor.get_local_pose(self)
+        if camera_axes == "world":
+            parent_w_cam_u_R = self._backend_utils.quats_to_rot_matrices(orientation)
+            u_w_R = self._backend_utils.create_tensor_from_list(
+                U_W_TRANSFORM[:3, :3].tolist(), dtype="float32", device=self._device
+            )
+            orientation = self._backend_utils.rot_matrices_to_quats(self._backend_utils.matmul(parent_w_cam_u_R, u_w_R))
+        elif camera_axes == "ros":
+            parent_w_cam_u_R = self._backend_utils.quats_to_rot_matrices(orientation)
+            u_r_R = self._backend_utils.create_tensor_from_list(
+                U_R_TRANSFORM[:3, :3].tolist(), dtype="float32", device=self._device
+            )
+            orientation = self._backend_utils.rot_matrices_to_quats(self._backend_utils.matmul(parent_w_cam_u_R, u_r_R))
+        return translation, orientation
 
     def set_local_pose(
-        self, translation: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
+        self,
+        translation: Optional[Sequence[float]] = None,
+        orientation: Optional[Sequence[float]] = None,
+        camera_axes: str = "world",
     ) -> None:
-        if orientation is not None:
-            orientation = self._backend_utils.convert(orientation, device=self._device)
-            parent_i_cam_i_R = self._backend_utils.quats_to_rot_matrices(orientation)
-            i_u_R = self._backend_utils.create_tensor_from_list(
-                I_U_TRANSFORM[:3, :3].tolist(), dtype="float32", device=self._device
+        """Sets prim's pose with respect to the local frame (the prim's parent frame in the world axes).
+
+        Args:
+            translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
+                                                          (with respect to its parent prim). shape is (3, ).
+                                                          Defaults to None, which means left unchanged.
+            orientation (Optional[Sequence[float]], optional): quaternion orientation in the local frame of the prim.
+                                                          quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                                                          Defaults to None, which means left unchanged.
+            camera_axes (str, optional): camera axes, world is (+Z up, +X forward), ros is (+Y up, +Z forward) and usd is (+Y up and -Z forward). Defaults to "world".
+        """
+        if camera_axes not in ["world", "ros", "usd"]:
+            raise Exception(
+                "camera axes passed {} is not supported: accepted values are ["
+                "world"
+                ", "
+                "ros"
+                ", "
+                "usd"
+                "] only".format(camera_axes)
             )
-            orientation = self._backend_utils.rot_matrices_to_quats(self._backend_utils.matmul(parent_i_cam_i_R, i_u_R))
+        if orientation is not None:
+            if camera_axes == "world":
+                orientation = self._backend_utils.convert(orientation, device=self._device)
+                parent_w_cam_w_R = self._backend_utils.quats_to_rot_matrices(orientation)
+                w_u_R = self._backend_utils.create_tensor_from_list(
+                    W_U_TRANSFORM[:3, :3].tolist(), dtype="float32", device=self._device
+                )
+                orientation = self._backend_utils.rot_matrices_to_quats(
+                    self._backend_utils.matmul(parent_w_cam_w_R, w_u_R)
+                )
+            elif camera_axes == "ros":
+                orientation = self._backend_utils.convert(orientation, device=self._device)
+                parent_w_cam_r_R = self._backend_utils.quats_to_rot_matrices(orientation)
+                r_u_R = self._backend_utils.create_tensor_from_list(
+                    R_U_TRANSFORM[:3, :3].tolist(), dtype="float32", device=self._device
+                )
+                orientation = self._backend_utils.rot_matrices_to_quats(
+                    self._backend_utils.matmul(parent_w_cam_r_R, r_u_R)
+                )
         return BaseSensor.set_local_pose(self, translation, orientation)
 
     def add_normals_to_frame(self) -> None:
@@ -886,13 +1006,13 @@ class Camera(BaseSensor):
         """3D points in World Frame -> 3D points in Camera Ros Frame
 
         Returns:
-            np.ndarray: the view matrix that transforms 3d points in the world frame to 3d points in the camera frame
+            np.ndarray: the view matrix that transforms 3d points in the world frame to 3d points in the camera axes
                         with ros camera convention.
         """
-        world_i_cam_u_T = self._backend_utils.transpose_2d(
+        world_w_cam_u_T = self._backend_utils.transpose_2d(
             UsdGeom.Imageable(self.prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
         )
-        return self._backend_utils.matmul(R_U_TRANSFORM, self._backend_utils.inverse(world_i_cam_u_T))
+        return self._backend_utils.matmul(R_U_TRANSFORM, self._backend_utils.inverse(world_w_cam_u_T))
 
     def get_intrinsics_matrix(self) -> np.ndarray:
         """
@@ -914,11 +1034,11 @@ class Camera(BaseSensor):
         )
 
     def get_image_coords_from_world_points(self, points_3d: np.ndarray) -> np.ndarray:
-        """Using pinhole perspective projection, this method projects 3d points in the isaac world frame to the image
+        """Using pinhole perspective projection, this method projects 3d points in the world frame to the image
            plane giving the pixel coordinates [[0, width], [0, height]]
 
         Args:
-            points_3d (np.ndarray): 3d points (X, Y, Z) in isaac world frame. shape is (n, 3) where n is the number of points.
+            points_3d (np.ndarray): 3d points (X, Y, Z) in world frame. shape is (n, 3) where n is the number of points.
 
         Returns:
             np.ndarray: 2d points (u, v) corresponds to the pixel coordinates. shape is (n, 2) where n is the number of points.
@@ -942,20 +1062,20 @@ class Camera(BaseSensor):
             depth (np.ndarray): depth corresponds to each of the pixel coords. shape is (n,)
 
         Returns:
-            np.ndarray: (n, 3) 3d points (X, Y, Z) in isaac world frame. shape is (n, 3) where n is the number of points.
+            np.ndarray: (n, 3) 3d points (X, Y, Z) in world frame. shape is (n, 3) where n is the number of points.
         """
         if "pinhole" not in self.get_projection_type():
             raise Exception(
                 "pinhole projection type is not set to be able to use get_world_points_from_image_coords method which use pinhole prespective projection."
             )
         homogenous = self._backend_utils.pad(points_2d, ((0, 0), (0, 1)), value=1.0)
-        points_in_camera_frame = self._backend_utils.matmul(
+        points_in_camera_axes = self._backend_utils.matmul(
             self._backend_utils.inverse(self.get_intrinsics_matrix()),
             self._backend_utils.transpose_2d(homogenous) * self._backend_utils.expand_dims(depth, 0),
         )
-        points_in_camera_frame_homogenous = self._backend_utils.pad(points_in_camera_frame, ((0, 1), (0, 0)), value=1.0)
+        points_in_camera_axes_homogenous = self._backend_utils.pad(points_in_camera_axes, ((0, 1), (0, 0)), value=1.0)
         points_in_world_frame_homogenous = self._backend_utils.matmul(
-            self._backend_utils.inverse(self.get_view_matrix_ros()), points_in_camera_frame_homogenous
+            self._backend_utils.inverse(self.get_view_matrix_ros()), points_in_camera_axes_homogenous
         )
         return self._backend_utils.transpose_2d(points_in_world_frame_homogenous[:3, :])
 
