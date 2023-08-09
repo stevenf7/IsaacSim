@@ -126,6 +126,8 @@ class SimulationContext:
         if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
             import omni.kit.loop._loop as omni_loop
 
+            if self.is_playing():
+                self.stop()
             self._loop_runner = omni_loop.acquire_loop_interface()
             self._init_stage(
                 physics_dt=physics_dt,
@@ -363,6 +365,8 @@ class SimulationContext:
     """
 
     async def initialize_simulation_context_async(self) -> None:
+        if self.is_playing():
+            await self.stop_async()
         await omni.kit.app.get_app().next_update_async()
         await self._initialize_stage_async(
             physics_dt=self._initial_physics_dt,
