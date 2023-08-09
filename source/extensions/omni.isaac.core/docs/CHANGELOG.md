@@ -4,7 +4,7 @@
 ### Fixed
 - Fixed memory leak in ArticulationView, RigidPrimView and SimulationContext stemming from tensor api views
 - Fixed minor typo in articulation view
-
+- Fixed the order of parsing of the stage in the physics context warm start operation
 ## [2.5.0] - 2023-08-04
 ### Added
 - Added SdfShapeView class for handling shapes signed-distance function

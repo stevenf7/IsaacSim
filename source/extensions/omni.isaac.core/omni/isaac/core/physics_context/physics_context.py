@@ -208,8 +208,9 @@ class PhysicsContext(object):
         return None
 
     def warm_start(self):
-        self._physx_interface.start_simulation()
+        # note: physics parsing of USD should happen before starting the simulation
         self._physx_interface.force_load_physics_from_usd()
+        self._physx_interface.start_simulation()
         self._physx_interface.update_simulation(self.get_physics_dt(), 0.0)
         # self._physx_sim_interface.simulate(self.get_physics_dt(), 0.0) # This causes a hang
         self._physx_sim_interface.fetch_results()
