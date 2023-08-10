@@ -10,7 +10,7 @@
 import omni.graph.core as og
 from omni.isaac.core_nodes import BaseResetNode
 from omni.isaac.sensor.ogn.OgnIsaacReadEffortSensorDatabase import OgnIsaacReadEffortSensorDatabase
-from omni.isaac.sensor.scripts.effort_force_sensor import EffortSensor
+from omni.isaac.sensor.scripts.effort_sensor import EffortSensor
 
 
 class OgnIsaacReadEffortSensorInternalState(BaseResetNode):
