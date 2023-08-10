@@ -174,24 +174,32 @@ class TestBenchmarkSDGGeneration(BaseIsaacBenchmark):
         await self.store_measurements()
         # ---------------------------- benchmark phase ------------------------------->
 
+        # Cleanup writer, render products, and replicator graphs
         writer.detach()
         writer = None
+        for rp in render_products:
+            rp.destroy()
+        render_products.clear()
+        stage = omni.usd.get_context().get_stage()
+        if stage.GetPrimAtPath("/Replicator"):
+            omni.kit.commands.execute("DeletePrimsCommand", paths=["/Replicator"])
+        await omni.kit.app.get_app().next_update_async()
 
         # Check that all the SDG frames were written to disk
         all_frames_written = check_number_of_written_sdg_frames(
             output_directory, (1 if self.test_mode else num_frames), verbose=True
         )
-        self.assertTrue(all_frames_written)
-
         # Remove the written data from disk
         shutil.rmtree(output_directory)
+        # Check results if all the frames were written
+        self.assertTrue(all_frames_written)
 
         # <---------------------------- baseline_cleanup phase -----------------------------
         # Check performance after running the SDG benchmark and cleaning up replicator functionalities
         self.set_phase("baseline_cleanup")
         self.start_collecting_frametime()
 
-        # Run for a few frames to check the stage stats after detaching the writer
+        # Run for a few frames to check the stage stats after detaching the writer and destroying the render products
         for _ in range(1 if self.test_mode else TEST_NUM_APP_UPDATES):
             await omni.kit.app.get_app().next_update_async()
 

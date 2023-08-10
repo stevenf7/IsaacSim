@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.17.4] - 2023-08-10
+
+### Added
+- SDG benchmark render product destruction (supported with Replicator 1.10.1)
+
+
 ## [0.17.3] - 2023-07-19
 
 ### Changed
