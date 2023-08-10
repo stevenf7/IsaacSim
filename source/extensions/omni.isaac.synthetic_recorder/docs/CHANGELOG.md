@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.6.0] - 2023-08-10
+### Added
+- custom names for render products
+- render products are destroyed after each recording (OM-87164)
+- select all and toggle all buttons for writer annotator parameters
+  
+### Changed
+- increased render product max resolution to 16kx8k
+
 ## [1.5.2] - 2023-08-03
 ### Fixed
 - omni.pip.cloud dependency is needed for replicator.core deps

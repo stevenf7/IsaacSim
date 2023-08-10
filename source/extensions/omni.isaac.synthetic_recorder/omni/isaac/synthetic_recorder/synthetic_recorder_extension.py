@@ -51,7 +51,7 @@ PARAM_TOOLTIPS = {
     "s3_endpoint": "Gateway endpoint for Amazon S3",
 }
 
-MAX_RESOLUTION = (7680, 4320)  # 8K
+MAX_RESOLUTION = (16000, 8000)  # 16K
 
 WINDOW_NAME = "Synthetic Data Recorder"
 MENU_PATH = f"Replicator/{WINDOW_NAME}"
@@ -158,7 +158,7 @@ class SyntheticRecorderExtension(omni.ext.IExt):
         }
 
         self._render_products = []
-        self._rp_data = [["/OmniverseKit_Persp", 512, 512]]
+        self._rp_data = [["/OmniverseKit_Persp", 512, 512, ""]]
 
         # UI - frames collapsed state
         self._writer_frame_collapsed = False
@@ -269,6 +269,10 @@ class SyntheticRecorderExtension(omni.ext.IExt):
                             self._basic_writer_params[key] = value
                 if "rp_data" in config:
                     self._rp_data = config["rp_data"]
+                    # Backwards compatibility when loading older config files without render product name field
+                    for rp in self._rp_data:
+                        if len(rp) == 3:
+                            rp.append("")
         except Exception as e:
             carb.log_warn(f"Could not parse JSON in config file: {path}, exception: {e}")
             return
@@ -374,7 +378,7 @@ class SyntheticRecorderExtension(omni.ext.IExt):
 
     def _check_if_valid_rp_entry(self, entry):
         if (
-            len(entry) == 3
+            len(entry) == 4
             and self._check_if_valid_camera(entry[0])
             and self._check_if_valid_resolution(entry[1], entry[2])
         ):
@@ -433,12 +437,12 @@ class SyntheticRecorderExtension(omni.ext.IExt):
 
         if selected_cameras:
             for path in selected_cameras:
-                self._rp_data.append([path, 512, 512])
+                self._rp_data.append([path, 512, 512, ""])
         else:
             # Use selected viewport camera as default value
             active_vp = get_active_viewport()
             active_cam = active_vp.get_active_camera()
-            self._rp_data.append([str(active_cam), 512, 512])
+            self._rp_data.append([str(active_cam), 512, 512, ""])
 
         self._build_window_ui()
 
@@ -446,6 +450,8 @@ class SyntheticRecorderExtension(omni.ext.IExt):
         if self._writer:
             self._writer.detach()
             self._writer = None
+        for rp in self._render_products:
+            rp.destroy()
         self._render_products.clear()
 
     def _init_recorder(self) -> bool:
@@ -504,7 +510,13 @@ class SyntheticRecorderExtension(omni.ext.IExt):
         # Create the render products
         for rp_entry in self._rp_data:
             if self._check_if_valid_rp_entry(rp_entry):
-                rp = rep.create.render_product(rp_entry[0], (rp_entry[1], rp_entry[2]))
+                # force_new is set to True to make sure name changes only are applied
+                if rp_entry[3]:
+                    rp = rep.create.render_product(
+                        rp_entry[0], (rp_entry[1], rp_entry[2]), name=rp_entry[3], force_new=True
+                    )
+                else:
+                    rp = rep.create.render_product(rp_entry[0], (rp_entry[1], rp_entry[2]), force_new=True)
                 self._render_products.append(rp)
             else:
                 carb.log_warn(f"Invalid render product entry {rp_entry}.")
@@ -772,10 +784,12 @@ class SyntheticRecorderExtension(omni.ext.IExt):
             with ui.HStack(spacing=5):
                 ui.Spacer(width=15)
                 ui.Label("Camera Path", width=200, tooltip="Camera prim to be used as a render product")
-                ui.Spacer(width=15)
+                ui.Spacer(width=10)
                 ui.Label("X", tooltip="X resolution of the render product")
-                ui.Spacer(width=15)
+                ui.Spacer(width=0)
                 ui.Label("Y", tooltip="Y resolution of the render product")
+                ui.Spacer(width=0)
+                ui.Label("Name", tooltip="Render product name (optional)")
             for i, entry in enumerate(self._rp_data):
                 with ui.HStack(spacing=5):
                     ui.Spacer(width=10)
@@ -790,6 +804,10 @@ class SyntheticRecorderExtension(omni.ext.IExt):
                     y_field = ui.IntField()
                     y_field.model.set_value(entry[2])
                     y_field.model.add_value_changed_fn(lambda m, idx=i: self._update_rp_entry(idx, 2, m.as_int))
+                    ui.Spacer(width=10)
+                    name_field = ui.StringField()
+                    name_field.model.set_value(entry[3])
+                    name_field.model.add_value_changed_fn(lambda m, idx=i: self._update_rp_entry(idx, 3, m.as_string))
                     ui.Button(
                         f"{_ui_get_delete_glyph()}",
                         width=30,
@@ -820,7 +838,6 @@ class SyntheticRecorderExtension(omni.ext.IExt):
                         self._writer_name = "BasicWriter"
                     else:
                         self._writer_name = self._custom_writer_name
-                    # self._writer_name = "BasicWriter" if model.as_int == 0 else "CustomWriter"
                     self._build_window_ui()
 
                 writer_type_collection.model.add_value_changed_fn(writer_type_collection_changed)
@@ -849,6 +866,21 @@ class SyntheticRecorderExtension(omni.ext.IExt):
                     self._basic_writer_params[k] = m.as_bool
 
                 model.add_value_changed_fn(value_changed)
+
+        with ui.HStack():
+
+            def select_all():
+                for k in self._basic_writer_params:
+                    self._basic_writer_params[k] = True
+                self._build_window_ui()
+
+            def toggle_all():
+                for k in self._basic_writer_params:
+                    self._basic_writer_params[k] = not self._basic_writer_params[k]
+                self._build_window_ui()
+
+            ui.Button(text="Select All", clicked_fn=select_all, tooltip="Select all parameters")
+            ui.Button(text="Toggle All", clicked_fn=toggle_all, tooltip="Toggle all parameters")
 
     def _build_custom_writer_ui(self):
         with ui.HStack(spacing=5):
