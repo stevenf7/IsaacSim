@@ -53,13 +53,21 @@ class TestCoreNodes(omni.kit.test.AsyncTestCase):
 
     # ----------------------------------------------------------------------
     async def test_physics_num_steps(self):
-        await omni.kit.app.get_app().next_update_async()
+        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
+        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", 60)
+        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", 60)
+        omni.timeline.get_timeline_interface().set_target_framerate(60)
+        omni.timeline.get_timeline_interface().set_time_codes_per_second(60)
+
         steps = self._core_nodes.get_physics_num_steps()
         self.assertEqual(steps, 0)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         steps = self._core_nodes.get_physics_num_steps()
         self.assertEqual(steps, 1)
+        await omni.kit.app.get_app().next_update_async()
+        steps = self._core_nodes.get_physics_num_steps()
+        self.assertEqual(steps, 2)
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
         steps = self._core_nodes.get_physics_num_steps()

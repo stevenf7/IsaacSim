@@ -199,6 +199,7 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set("persistent/app/stage/upAxis", "Z")
         await omni.usd.get_context().new_stage_async()
         stage = omni.usd.get_context().get_stage()
+        stage.SetTimeCodesPerSecond(self._physics_rate)
         # Add a cube for testing gravity
         cubePath = "/World/Cube"
         cubeGeom = UsdGeom.Cube.Define(stage, cubePath)
@@ -230,6 +231,7 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set("persistent/app/stage/upAxis", "Z")
         await omni.usd.get_context().new_stage_async()
         stage = omni.usd.get_context().get_stage()
+        stage.SetTimeCodesPerSecond(self._physics_rate)
         # Add a cube for testing gravity
         cubePath = "/World/Cube"
         cubeGeom = UsdGeom.Cube.Define(stage, cubePath)

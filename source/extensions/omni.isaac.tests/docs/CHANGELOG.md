@@ -1,4 +1,8 @@
 # Changelog
+## [1.10.2] - 2023-08-09
+### Fixed
+- Added timecode to stage for test_stage_up_axis and test_stage_units
+- Fixed articulation_drives_opposite.usd file errors
 
 ## [1.10.1] - 2023-06-12
 ### Changed

@@ -1,4 +1,7 @@
 # Changelog
+## [1.3.1] - 2023-08-09
+### Fixed
+- Added time code settings for test_physics_num_steps
 
 ## [1.3.0] - 2023-08-03
 ### Changed
