@@ -16,6 +16,7 @@ import omni.kit.commands
 import omni.kit.utils
 import omni.ui as ui
 import omni.usd
+from omni.isaac.ui.element_wrappers import ScrollingWindow
 from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.ui.ui_utils import btn_builder, cb_builder, dropdown_builder, multi_btn_builder, progress_bar_builder
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
@@ -31,8 +32,8 @@ class Extension(omni.ext.IExt):
         self._selected_prim = None
         self._selection = self._usd_context.get_selection()
 
-        self._window = omni.ui.Window(
-            EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
+        self._window = ScrollingWindow(
+            title=EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
         self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
         self._menu_items = [

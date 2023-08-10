@@ -1,4 +1,8 @@
 # Changelog
+## [0.12.1] - 2023-08-09
+### Changed
+- Updated ScrollingWindow wrapper to use only omni.ui as a dependency
+
 ## [0.12.0] - 2023-08-08
 ### Added
 - Added ScrollingWindow UI wrapper now that Kit 105.1 windows do not automatically have a scrollbar.

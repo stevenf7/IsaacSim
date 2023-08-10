@@ -16,6 +16,7 @@ import omni
 import omni.ext
 import omni.ui as ui
 from omni.isaac.core.utils.stage import get_stage_units
+from omni.isaac.ui.element_wrappers import ScrollingWindow
 from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.ui.ui_utils import (
     btn_builder,
@@ -38,7 +39,7 @@ class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         EXTENSION_NAME = "Occupancy Map"
         self._timeline = omni.timeline.get_timeline_interface()
-        self._window = omni.ui.Window(EXTENSION_NAME, width=600, height=400, visible=False)
+        self._window = ScrollingWindow(title=EXTENSION_NAME, width=600, height=400, visible=False)
         self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
         self._menu_items = [
             make_menu_item_description(ext_id, EXTENSION_NAME, lambda a=weakref.proxy(self): a._menu_callback())

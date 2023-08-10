@@ -44,7 +44,7 @@ class ScrollingWindow(ui.Window):
         super().__init__(**kwargs)
         original_frame = ui.Window.frame.fget(self)
         with original_frame:
-            self._scrolling_frame = ScrollingFrame().container_frame
+            self._scrolling_frame = ui.ScrollingFrame(vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON)
 
     @property
     def frame(self) -> ui.ScrollingFrame:

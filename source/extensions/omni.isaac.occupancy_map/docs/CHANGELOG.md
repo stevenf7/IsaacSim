@@ -1,4 +1,7 @@
 # Changelog
+## [0.3.1] - 2023-08-09
+### Fixed
+- Switch from ui.Window to ScrollingWindow wrapper for extension because scrolling was broken
 
 ## [0.3.0] - 2023-07-14
 ### Added

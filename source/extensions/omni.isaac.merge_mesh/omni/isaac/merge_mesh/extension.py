@@ -16,6 +16,7 @@ import omni.kit.commands
 import omni.kit.utils
 import omni.ui as ui
 import omni.usd
+from omni.isaac.ui.element_wrappers import ScrollingWindow
 from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.ui.style import get_style
 from omni.isaac.ui.ui_utils import btn_builder, cb_builder, combo_cb_str_builder, str_builder
@@ -30,8 +31,8 @@ class Extension(omni.ext.IExt):
         """Called to load the extension"""
 
         self._stage = omni.usd.get_context().get_stage()
-        self._window = omni.ui.Window(
-            EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
+        self._window = ScrollingWindow(
+            title=EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
         self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
         self._window.set_visibility_changed_fn(self._on_window)

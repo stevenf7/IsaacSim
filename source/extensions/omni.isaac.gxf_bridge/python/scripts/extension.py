@@ -17,6 +17,7 @@ import omni.kit.menu
 import omni.replicator.core as rep
 import omni.syntheticdata._syntheticdata as sd
 import omni.ui
+from omni.isaac.ui.element_wrappers import ScrollingWindow
 from omni.isaac.ui.menu import make_menu_item_description
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from omni.syntheticdata import sensors
@@ -34,8 +35,8 @@ class Extension(omni.ext.IExt):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         self._gxf_extension_path = ext_manager.get_extension_path(ext_id)
 
-        self._window = omni.ui.Window(
-            EXTENSION_NAME, width=600, height=400, visible=True, dockPreference=omni.ui.DockPreference.LEFT_BOTTOM
+        self._window = ScrollingWindow(
+            title=EXTENSION_NAME, width=600, height=400, visible=True, dockPreference=omni.ui.DockPreference.LEFT_BOTTOM
         )
         self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
         self._window.dock_order = 3
