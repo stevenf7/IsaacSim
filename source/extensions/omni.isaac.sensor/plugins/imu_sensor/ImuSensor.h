@@ -94,17 +94,13 @@ private:
     int mOrientationFilterSize = 1;
 
     IsReading mInitPair; // Data obtained on simulation timestamp
-    IsReading mReadingPair[2]; // Data obtained on simulation timestamp
 
     // Data obtained at the last sensor period frame for intnerpolation
-    IsReading mInterpolationPair[2]; // Data obtained at the measurement sensorperiod
-    std::vector<IsReading> mSensorReadingSensorFrame; // IsReading at the measurement sensorperiod
+    std::vector<IsReading> mSensorReadingsSensorFrame; // IsReading at the measurement sensorperiod
 
     std::vector<IsReading> mSensorReadings; // Sensor readings in sensor timestamps
     double mUnitScale{ 1.0 };
-    bool mCurrent{ 0 };
     float mSensorTime{ 0 };
-    bool mProcessedRaw{ false };
     bool mFirst{ true };
     bool mPreviousEnabled{ true };
     pxr::GfVec3f mGravity;

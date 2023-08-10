@@ -69,7 +69,7 @@ ImuSensor::~ImuSensor()
     reset();
     mRawBuffer.clear();
     mSensorReadings.clear();
-    mSensorReadingSensorFrame.clear();
+    mSensorReadingsSensorFrame.clear();
 }
 
 void ImuSensor::drawAxis(const usdrt::GfMatrix4d& usdTransform, const float& length)
@@ -201,12 +201,12 @@ IsReading ImuSensor::getSensorReading(const std::function<IsReading(std::vector<
         // or internal time + sensor period time is behind the last step time, then something went wrong
         // i.e. sensor was disabled for a long time and then re-enabled
         // get the latest time and measurement
-        if (mProps.sensorPeriod <= mTimeDelta || mSensorTime + mProps.sensorPeriod < mReadingPair[!mCurrent].time ||
+        if (mProps.sensorPeriod <= mTimeDelta || mSensorTime + mProps.sensorPeriod < mSensorReadings[1].time ||
             getLatestValue)
         {
-            sensorReading = mReadingPair[mCurrent];
+            sensorReading = mSensorReadings[0];
             sensorReading.is_valid = true;
-            if (mProps.sensorPeriod > 0 && mSensorTime + mProps.sensorPeriod < mReadingPair[!mCurrent].time)
+            if (mProps.sensorPeriod > 0 && mSensorTime + mProps.sensorPeriod < mSensorReadings[1].time)
             {
                 CARB_LOG_WARN("*** warning IMU sensor time out of sync, using latest measurements");
             }
@@ -215,38 +215,47 @@ IsReading ImuSensor::getSensorReading(const std::function<IsReading(std::vector<
         {
             sensorReading.time = mSensorTime;
             sensorReading.is_valid = true;
-            float time_ratio = (mSensorTime - mInterpolationPair[!mCurrent].time) /
-                               (mInterpolationPair[mCurrent].time - mInterpolationPair[!mCurrent].time);
+            float time_ratio = 1;
+
+            if (mSensorReadingsSensorFrame[1].time != mSensorReadingsSensorFrame[0].time)
+            {
+                time_ratio = (mSensorTime - mSensorReadingsSensorFrame[1].time) /
+                             (mSensorReadingsSensorFrame[0].time - mSensorReadingsSensorFrame[1].time);
+            }
+            else
+            {
+                time_ratio = (mSensorTime - mSensorReadingsSensorFrame[1].time) / static_cast<float>(mTimeDelta);
+            }
             // user didn't pass in a interpolation function
             if (!interpolateFunction)
             {
                 sensorReading.lin_acc_x =
-                    lerp(mInterpolationPair[!mCurrent].lin_acc_x, mInterpolationPair[mCurrent].lin_acc_x, time_ratio);
+                    lerp(mSensorReadingsSensorFrame[1].lin_acc_x, mSensorReadingsSensorFrame[0].lin_acc_x, time_ratio);
                 sensorReading.lin_acc_y =
-                    lerp(mInterpolationPair[!mCurrent].lin_acc_y, mInterpolationPair[mCurrent].lin_acc_y, time_ratio);
+                    lerp(mSensorReadingsSensorFrame[1].lin_acc_y, mSensorReadingsSensorFrame[0].lin_acc_y, time_ratio);
                 sensorReading.lin_acc_z =
-                    lerp(mInterpolationPair[!mCurrent].lin_acc_z, mInterpolationPair[mCurrent].lin_acc_z, time_ratio);
+                    lerp(mSensorReadingsSensorFrame[1].lin_acc_z, mSensorReadingsSensorFrame[0].lin_acc_z, time_ratio);
 
                 sensorReading.ang_vel_x =
-                    lerp(mInterpolationPair[!mCurrent].ang_vel_x, mInterpolationPair[mCurrent].ang_vel_x, time_ratio);
+                    lerp(mSensorReadingsSensorFrame[1].ang_vel_x, mSensorReadingsSensorFrame[0].ang_vel_x, time_ratio);
                 sensorReading.ang_vel_y =
-                    lerp(mInterpolationPair[!mCurrent].ang_vel_y, mInterpolationPair[mCurrent].ang_vel_y, time_ratio);
+                    lerp(mSensorReadingsSensorFrame[1].ang_vel_y, mSensorReadingsSensorFrame[0].ang_vel_y, time_ratio);
                 sensorReading.ang_vel_z =
-                    lerp(mInterpolationPair[!mCurrent].ang_vel_z, mInterpolationPair[mCurrent].ang_vel_z, time_ratio);
+                    lerp(mSensorReadingsSensorFrame[1].ang_vel_z, mSensorReadingsSensorFrame[0].ang_vel_z, time_ratio);
 
-                sensorReading.orientation.w = lerp(mInterpolationPair[!mCurrent].orientation.w,
-                                                   mInterpolationPair[mCurrent].orientation.w, time_ratio);
-                sensorReading.orientation.x = lerp(mInterpolationPair[!mCurrent].orientation.x,
-                                                   mInterpolationPair[mCurrent].orientation.x, time_ratio);
-                sensorReading.orientation.y = lerp(mInterpolationPair[!mCurrent].orientation.y,
-                                                   mInterpolationPair[mCurrent].orientation.y, time_ratio);
-                sensorReading.orientation.z = lerp(mInterpolationPair[!mCurrent].orientation.z,
-                                                   mInterpolationPair[mCurrent].orientation.z, time_ratio);
+                sensorReading.orientation.w = lerp(mSensorReadingsSensorFrame[1].orientation.w,
+                                                   mSensorReadingsSensorFrame[0].orientation.w, time_ratio);
+                sensorReading.orientation.x = lerp(mSensorReadingsSensorFrame[1].orientation.x,
+                                                   mSensorReadingsSensorFrame[0].orientation.x, time_ratio);
+                sensorReading.orientation.y = lerp(mSensorReadingsSensorFrame[1].orientation.y,
+                                                   mSensorReadingsSensorFrame[0].orientation.y, time_ratio);
+                sensorReading.orientation.z = lerp(mSensorReadingsSensorFrame[1].orientation.z,
+                                                   mSensorReadingsSensorFrame[0].orientation.z, time_ratio);
             }
             // use user's interpolation function
             else
             {
-                sensorReading = interpolateFunction(mSensorReadingSensorFrame, mSensorTime);
+                sensorReading = interpolateFunction(mSensorReadingsSensorFrame, mSensorTime);
             }
         }
     }
@@ -263,18 +272,15 @@ IsReading ImuSensor::getSimSensorReading()
         CARB_LOG_WARN_ONCE(
             "*** warning: IMU sensor frequency is higher than physics frequency, returning the latest physics value");
     }
-    return mReadingPair[mCurrent];
+    return mSensorReadings[0];
 }
 
 void ImuSensor::reset()
 {
-    mCurrent = 0;
     mRawBuffer.resize(mRawBufferSize, IsRawData());
 
-
-    mReadingPair[0] = mReadingPair[1] = IsReading();
-    mInterpolationPair[0] = mInterpolationPair[1] = IsReading();
     mSensorReadings.resize(mRawBufferSize, IsReading());
+    mSensorReadingsSensorFrame.resize(mRawBufferSize, IsReading());
     mSensorTime = 0;
 }
 
@@ -403,9 +409,14 @@ void ImuSensor::onPhysicsStep()
         mRawBuffer[0].orientation.y = static_cast<float>(imaginary[1]);
         mRawBuffer[0].orientation.z = static_cast<float>(imaginary[2]);
 
+        if (!mSensorReadings.empty())
+        {
+            mSensorReadings.pop_back();
+        }
+        mSensorReadings.insert(mSensorReadings.begin(), IsReading());
+
         // signal processing
-        mCurrent ^= 1;
-        mReadingPair[mCurrent].time = static_cast<float>(mTimeSeconds);
+        mSensorReadings[0].time = static_cast<float>(mTimeSeconds);
         // ang_vel output strategy: average past mAngularVelocityFilterSize timesteps
         float tmp_sum_x = 0, tmp_sum_y = 0, tmp_sum_z = 0;
         for (int i = 0; i < mAngularVelocityFilterSize; i++)
@@ -414,9 +425,9 @@ void ImuSensor::onPhysicsStep()
             tmp_sum_y += mRawBuffer[i].ang_vel_y;
             tmp_sum_z += mRawBuffer[i].ang_vel_z;
         }
-        mReadingPair[mCurrent].ang_vel_x = static_cast<float>(tmp_sum_x / mAngularVelocityFilterSize);
-        mReadingPair[mCurrent].ang_vel_y = static_cast<float>(tmp_sum_y / mAngularVelocityFilterSize);
-        mReadingPair[mCurrent].ang_vel_z = static_cast<float>(tmp_sum_z / mAngularVelocityFilterSize);
+        mSensorReadings[0].ang_vel_x = static_cast<float>(tmp_sum_x / mAngularVelocityFilterSize);
+        mSensorReadings[0].ang_vel_y = static_cast<float>(tmp_sum_y / mAngularVelocityFilterSize);
+        mSensorReadings[0].ang_vel_z = static_cast<float>(tmp_sum_z / mAngularVelocityFilterSize);
 
         // lin acc output strategy: average mLinearAccelerationFilterSize finite diffs
         // say if mLinearAccelerationFilterSize = 2, we do (([0] - [2]) / (2dt) + ([1] - [3]) / (2dt))/2
@@ -435,14 +446,15 @@ void ImuSensor::onPhysicsStep()
             }
         }
 
+
         // average acc
-        mReadingPair[mCurrent].lin_acc_x = static_cast<float>(tmp_sum_x / mLinearAccelerationFilterSize);
-        mReadingPair[mCurrent].lin_acc_y = static_cast<float>(tmp_sum_y / mLinearAccelerationFilterSize);
-        mReadingPair[mCurrent].lin_acc_z = static_cast<float>(tmp_sum_z / mLinearAccelerationFilterSize);
+        mSensorReadings[0].lin_acc_x = static_cast<float>(tmp_sum_x / mLinearAccelerationFilterSize);
+        mSensorReadings[0].lin_acc_y = static_cast<float>(tmp_sum_y / mLinearAccelerationFilterSize);
+        mSensorReadings[0].lin_acc_z = static_cast<float>(tmp_sum_z / mLinearAccelerationFilterSize);
         // add gravity
-        mReadingPair[mCurrent].lin_acc_x += static_cast<float>(g_b[0]);
-        mReadingPair[mCurrent].lin_acc_y += static_cast<float>(g_b[1]);
-        mReadingPair[mCurrent].lin_acc_z += static_cast<float>(g_b[2]);
+        mSensorReadings[0].lin_acc_x += static_cast<float>(g_b[0]);
+        mSensorReadings[0].lin_acc_y += static_cast<float>(g_b[1]);
+        mSensorReadings[0].lin_acc_z += static_cast<float>(g_b[2]);
 
         // Log raw buffer:
         // CARB_LOG_INFO("mRawBuffer [%f, %f, %f, %f, %f, %f, %f, %f, %f, %f]", mRawBuffer[0].lin_vel_x,
@@ -463,10 +475,10 @@ void ImuSensor::onPhysicsStep()
             tmp_sum_z += mRawBuffer[i].orientation.z;
         }
 
-        mReadingPair[mCurrent].orientation.w = static_cast<float>(tmp_sum_w / mOrientationFilterSize);
-        mReadingPair[mCurrent].orientation.x = static_cast<float>(tmp_sum_x / mOrientationFilterSize);
-        mReadingPair[mCurrent].orientation.y = static_cast<float>(tmp_sum_y / mOrientationFilterSize);
-        mReadingPair[mCurrent].orientation.z = static_cast<float>(tmp_sum_z / mOrientationFilterSize);
+        mSensorReadings[0].orientation.w = static_cast<float>(tmp_sum_w / mOrientationFilterSize);
+        mSensorReadings[0].orientation.x = static_cast<float>(tmp_sum_x / mOrientationFilterSize);
+        mSensorReadings[0].orientation.y = static_cast<float>(tmp_sum_y / mOrientationFilterSize);
+        mSensorReadings[0].orientation.z = static_cast<float>(tmp_sum_z / mOrientationFilterSize);
 
         // Print out reading pair:
         // CARB_LOG_INFO("mReadingPair[0]: [(%f, %f, %f), (%f, %f, %f), (%f, %f, %f, %f)]", mReadingPair[0].lin_acc_x,
@@ -480,27 +492,20 @@ void ImuSensor::onPhysicsStep()
 
         if (mFirst)
         {
-            mInitPair = mReadingPair[mCurrent];
+            mInitPair = mSensorReadings[0];
             mFirst = false;
         }
-    }
 
-    if (!mSensorReadings.empty())
-    {
-        mSensorReadings.pop_back();
-    }
-    mSensorReadings.insert(mSensorReadings.begin(), mReadingPair[mCurrent]);
 
-    if (mProps.sensorPeriod <= mTimeDelta)
-    {
-        mSensorTime = mReadingPair[mCurrent].time;
-    }
-    else if (mSensorTime + mProps.sensorPeriod <= mReadingPair[mCurrent].time)
-    {
-        mSensorTime += mProps.sensorPeriod;
-        mInterpolationPair[0] = mReadingPair[!mCurrent];
-        mInterpolationPair[1] = mReadingPair[mCurrent];
-        mSensorReadingSensorFrame = mSensorReadings;
+        if (mProps.sensorPeriod <= mTimeDelta)
+        {
+            mSensorTime = mSensorReadings[0].time;
+        }
+        else if (mSensorTime + mProps.sensorPeriod <= mSensorReadings[0].time)
+        {
+            mSensorTime += mProps.sensorPeriod;
+            mSensorReadingsSensorFrame = mSensorReadings;
+        }
     }
 }
 
@@ -612,12 +617,10 @@ void ImuSensor::onComponentChange()
         if (mEnabled)
         {
             this->onPhysicsStep(); // force on physics step to run to get up to date value
-            mReadingPair[!mCurrent] = mReadingPair[mCurrent]; // first step, copy latest values for both readingpairs
-            mSensorTime = mReadingPair[mCurrent].time;
-            mInterpolationPair[0] = mInterpolationPair[1] = mReadingPair[mCurrent];
+            mSensorTime = static_cast<float>(mTimeSeconds);
             mRawBuffer.resize(mRawBufferSize, IsRawData());
             mSensorReadings.resize(mRawBufferSize, IsReading());
-            mSensorReadingSensorFrame = mSensorReadings;
+            mSensorReadingsSensorFrame = mSensorReadings;
         }
         else
         {
