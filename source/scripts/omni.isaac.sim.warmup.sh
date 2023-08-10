@@ -5,21 +5,12 @@ SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 TASKING_THREAD_CNT=$(nproc --all)
 TASKING_THREAD_CNT=$(($TASKING_THREAD_CNT/2))
 
-# Warm up cache with App Selector
-"$SCRIPT_DIR/kit/kit" "$SCRIPT_DIR/apps/omni.isaac.sim.selector.kit" \
-    --no-window \
-    --/persistent/renderer/startupMessageDisplayed=true \
-    --ext-folder "$SCRIPT_DIR/exts" \
-    --ext-folder "$SCRIPT_DIR/apps" \
-    --/app/settings/persistent=0 \
-    --/app/settings/loadUserConfig=0 \
-    --/app/quitAfter=1000 \
-    --/persistent/ext/omni.isaac.selector/auto_start=true \
-    --/persistent/ext/omni.isaac.selector/show_console=true \
-    --/persistent/ext/omni.isaac.selector/persistent_selector=true \
-    --/persistent/ext/omni.isaac.selector/extra_args="--/app/quitAfter=100 --no-window --/app/settings/persistent=0 --/app/settings/loadUserConfig=0 --/plugins/carb.tasking.plugin/threadCount=$TASKING_THREAD_CNT"
+set +e # Workaround post-install script failure
+# Warm up shader cache for Python app
+"$SCRIPT_DIR/python.sh" "$SCRIPT_DIR/standalone_examples/api/omni.isaac.kit/hello_world.py"
+echo "Python app shader cache is warmed up."
 
-# Warm up cache
+# Warm up shader cache
 "$SCRIPT_DIR/kit/kit" "$SCRIPT_DIR/apps/omni.isaac.sim.kit" \
     --no-window \
     --/persistent/renderer/startupMessageDisplayed=true \
@@ -41,3 +32,5 @@ TASKING_THREAD_CNT=$(($TASKING_THREAD_CNT/2))
     --/app/warmupMode=1 \
     --/exts/omni.kit.registry.nucleus/registries/0/name=0 \
     --/plugins/carb.tasking.plugin/threadCount=$TASKING_THREAD_CNT
+echo "Shader cache is warmed up."
+set -e
