@@ -224,4 +224,20 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         await update_stage_async()
         await update_stage_async()
         self.assertEqual(self.viewport_camera.get_rgba().size, 256 * 256 * 4)
+        self.assertEqual(self.viewport_camera.get_rgb().size, 256 * 256 * 3)
+        self.assertEqual(self.viewport_camera.get_depth().size, 256 * 256 * 1)
+        self.assertEqual(self.viewport_camera.get_point_cloud().size, 256 * 256 * 3)
         self.assertEqual(self.viewport_camera.get_render_product_path(), render_product_path)
+
+    async def test_get_current_frame(self):
+        current_frame_1 = self.camera.get_current_frame()
+        current_frame_2 = self.camera.get_current_frame()
+
+        # Make sure that the two frames refer to the same object
+        self.assertIs(current_frame_1, current_frame_2)
+
+        current_frame_3 = self.camera.get_current_frame()
+        current_frame_4 = self.camera.get_current_frame(clone=True)
+
+        # Make sure that the two frames refer to different objects
+        self.assertIsNot(current_frame_3, current_frame_4)

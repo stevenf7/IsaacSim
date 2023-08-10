@@ -5,6 +5,7 @@
 - Added support for ros and usd camera axes in get_world_pose, get_local_pose, set_world_pose, set_local_pose.
 - Added Effort Sensor
 - supported_annotators property
+- Add unit tests for Camera class to test get_point_cloud(), get_depth(), get_rgb()
 ### Fixed
 - Fixed divisible by zero error in IMU linear interpolation
 - Removed reading pairs from the IMU sensor to use the buffer directly
@@ -20,7 +21,6 @@
 
 ### Changed
 - get_current_frame() now accepts optional argument to return deepcopy of data 
-- get_rgba() now accepts optional argument to specify device 
 
 ## [7.0.0] - 2023-08-03
 
