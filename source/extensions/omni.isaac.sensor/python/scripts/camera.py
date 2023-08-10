@@ -86,6 +86,7 @@ class Camera(BaseSensor):
         frequency = frequency
         dt = dt
         self._frequency = -1  # default to processing all frames
+        self._render_product = None
         if frequency is not None and dt is not None:
             raise Exception("Frequency and dt can't be both specified.")
         if dt is not None:
@@ -117,10 +118,11 @@ class Camera(BaseSensor):
             self.set_resolution(resolution)
             set_camera_prim_path(self._render_product_path, prim_path)
         else:
-            self._render_product_path = rep.create.render_product(prim_path, resolution=resolution)
+            self._render_product = rep.create.render_product(prim_path, resolution=resolution)
+            self._render_product_path = self._render_product.path
         self._rgb_annotator = rep.AnnotatorRegistry.get_annotator("rgb")
         self._rgb_annotator.attach([self._render_product_path])
-        supported_annotators = [
+        self._supported_annotators = [
             "normals",
             "motion_vectors",
             "occlusion",
@@ -135,7 +137,7 @@ class Camera(BaseSensor):
             "pointcloud",
         ]
         self._custom_annotators = dict()
-        for annotator in supported_annotators:
+        for annotator in self._supported_annotators:
             self._custom_annotators[annotator] = None
         BaseSensor.__init__(
             self, prim_path=prim_path, name=name, position=position, translation=translation, orientation=orientation
@@ -176,6 +178,24 @@ class Camera(BaseSensor):
         self._elapsed_time = 0
         self._previous_time = None
         return
+
+    def __del__(self):
+        """detach annotators on destroy and destroy the internal render product if it exists"""
+        for annotator in self.supported_annotators:
+            try:
+                getattr(self, "remove_{}_from_frame".format(annotator))()
+            except Exception as error:
+                print(error)
+        if self._render_product is not None:
+            self._render_product.destroy()
+
+    @property
+    def supported_annotators(self) -> List[str]:
+        """
+        Returns:
+            List[str]: annotators supported by the camera
+        """
+        return self._supported_annotators
 
     def get_render_product_path(self) -> str:
         """

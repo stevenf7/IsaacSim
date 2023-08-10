@@ -133,20 +133,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         for i in range(100):
             await update_stage_async()
         self.camera.resume()
-        for annotator in [
-            "pointcloud",
-            "normals",
-            "motion_vectors",
-            "occlusion",
-            "distance_to_image_plane",
-            "distance_to_camera",
-            "bounding_box_2d_tight",
-            "bounding_box_2d_loose",
-            "bounding_box_3d",
-            "semantic_segmentation",
-            "instance_id_segmentation",
-            "instance_segmentation",
-        ]:
+        for annotator in self.camera.supported_annotators:
             getattr(self.camera, "add_{}_to_frame".format(annotator))()
             # frequency is set to 20, rendering rate is set to 120, so do 6 updates to make sure always have a frame
             await update_stage_async()
