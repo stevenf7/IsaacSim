@@ -23,6 +23,10 @@ call "%~dp0kit\kit.exe"  "%%~dp0apps/omni.isaac.sim.kit" ^
     --/exts/omni.kit.registry.nucleus/registries/0/name=0 ^
     --/plugins/carb.tasking.plugin/threadCount=%TASKING_THREAD_CNT% ^
     %*
+if %ERRORLEVEL% neq 0 (echo "Error warming up shader cache.") else (echo "Shader cache is warmed up.")
+
+call "%~dp0python.bat" "%~dp0standalone_examples\api\omni.isaac.kit\hello_world.py"
+if %ERRORLEVEL% neq 0 (echo "Error warming up python app shader cache.") else (echo "Python app shader cache is warmed up.")
 
 :: Always succeed in case kit crashed or hanged
 exit /b 0

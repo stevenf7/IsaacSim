@@ -15,4 +15,6 @@ kit = SimulationApp()
 for i in range(100):
     kit.update()
 
+print("Hello World!")
+
 kit.close()  # Cleanup application
