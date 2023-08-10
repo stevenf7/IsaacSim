@@ -1,9 +1,13 @@
 # Changelog
-=======
 
-## [7.2.0] - 2023-08-04
+## [7.2.0] - 2023-08-08
 ### Added
 - Added support for ros and usd camera axes in get_world_pose, get_local_pose, set_world_pose, set_local_pose.
+- Added Effort Sensor
+### Fixed
+- Fixed divisible by zero error in IMU linear interpolation
+- Removed reading pairs from the IMU sensor to use the buffer directly
+
 ## [7.1.0] - 2023-08-04
 ### Added
 - Add following functions to Camera class 
