@@ -182,10 +182,7 @@ class Camera(BaseSensor):
     def __del__(self):
         """detach annotators on destroy and destroy the internal render product if it exists"""
         for annotator in self.supported_annotators:
-            try:
-                getattr(self, "remove_{}_from_frame".format(annotator))()
-            except Exception as error:
-                print(error)
+            getattr(self, "remove_{}_from_frame".format(annotator))()
         if self._render_product is not None:
             self._render_product.destroy()
 
@@ -570,7 +567,7 @@ class Camera(BaseSensor):
         if self._custom_annotators["normals"] is not None:
             self._custom_annotators["normals"].detach([self._render_product_path])
             self._custom_annotators["normals"] = None
-        del self._current_frame["normals"]
+        self._current_frame.pop("normals", None)
 
     def add_motion_vectors_to_frame(self) -> None:
         """Attach the motion vectors annotator to this camera.
@@ -590,7 +587,7 @@ class Camera(BaseSensor):
         if self._custom_annotators["motion_vectors"] is not None:
             self._custom_annotators["motion_vectors"].detach([self._render_product_path])
             self._custom_annotators["motion_vectors"] = None
-        del self._current_frame["motion_vectors"]
+        self._current_frame.pop("motion_vectors", None)
 
     def add_occlusion_to_frame(self) -> None:
         """Attach the occlusion annotator to this camera.
@@ -609,7 +606,7 @@ class Camera(BaseSensor):
         if self._custom_annotators["occlusion"] is not None:
             self._custom_annotators["occlusion"].detach([self._render_product_path])
             self._custom_annotators["occlusion"] = None
-        del self._current_frame["occlusion"]
+        self._current_frame.pop("occlusion", None)
 
     def add_distance_to_image_plane_to_frame(self) -> None:
         """Attach the distance_to_image_plane annotator to this camera.
@@ -631,7 +628,7 @@ class Camera(BaseSensor):
         if self._custom_annotators["distance_to_image_plane"] is not None:
             self._custom_annotators["distance_to_image_plane"].detach([self._render_product_path])
             self._custom_annotators["distance_to_image_plane"] = None
-        del self._current_frame["distance_to_image_plane"]
+        self._current_frame.pop("distance_to_image_plane", None)
 
     def add_distance_to_camera_to_frame(self) -> None:
         """Attach the distance_to_camera_to_frame annotator to this camera.
@@ -651,7 +648,7 @@ class Camera(BaseSensor):
         if self._custom_annotators["distance_to_camera"] is not None:
             self._custom_annotators["distance_to_camera"].detach([self._render_product_path])
             self._custom_annotators["distance_to_camera"] = None
-        del self._current_frame["distance_to_camera"]
+        self._current_frame.pop("distance_to_camera", None)
 
     def add_bounding_box_2d_tight_to_frame(self) -> None:
         """Attach the bounding_box_2d_tight annotator to this camera.
@@ -681,7 +678,7 @@ class Camera(BaseSensor):
         if self._custom_annotators["bounding_box_2d_tight"] is not None:
             self._custom_annotators["bounding_box_2d_tight"].detach([self._render_product_path])
             self._custom_annotators["bounding_box_2d_tight"] = None
-        del self._current_frame["bounding_box_2d_tight"]
+        self._current_frame.pop("bounding_box_2d_tight", None)
 
     def add_bounding_box_2d_loose_to_frame(self) -> None:
         """Attach the bounding_box_2d_loose annotator to this camera.
@@ -710,7 +707,7 @@ class Camera(BaseSensor):
         if self._custom_annotators["bounding_box_2d_loose"] is not None:
             self._custom_annotators["bounding_box_2d_loose"].detach([self._render_product_path])
             self._custom_annotators["bounding_box_2d_loose"] = None
-        del self._current_frame["bounding_box_2d_loose"]
+        self._current_frame.pop("bounding_box_2d_loose", None)
 
     def add_bounding_box_3d_to_frame(self) -> None:
         if self._custom_annotators["bounding_box_3d"] is None:
@@ -723,7 +720,7 @@ class Camera(BaseSensor):
         if self._custom_annotators["bounding_box_3d"] is not None:
             self._custom_annotators["bounding_box_3d"].detach([self._render_product_path])
             self._custom_annotators["bounding_box_3d"] = None
-        del self._current_frame["bounding_box_3d"]
+        self._current_frame.pop("bounding_box_3d", None)
 
     def add_semantic_segmentation_to_frame(self) -> None:
         """Attach the semantic_segmentation annotator to this camera.
@@ -745,7 +742,7 @@ class Camera(BaseSensor):
         if self._custom_annotators["semantic_segmentation"] is not None:
             self._custom_annotators["semantic_segmentation"].detach([self._render_product_path])
             self._custom_annotators["semantic_segmentation"] = None
-        del self._current_frame["semantic_segmentation"]
+        self._current_frame.pop("semantic_segmentation", None)
 
     def add_instance_id_segmentation_to_frame(self) -> None:
         """Attach the instance_id_segmentation annotator to this camera.
@@ -767,7 +764,7 @@ class Camera(BaseSensor):
         if self._custom_annotators["instance_id_segmentation"] is not None:
             self._custom_annotators["instance_id_segmentation"].detach([self._render_product_path])
             self._custom_annotators["instance_id_segmentation"] = None
-        del self._current_frame["instance_id_segmentation"]
+        self._current_frame.pop("instance_id_segmentation", None)
 
     def add_instance_segmentation_to_frame(self) -> None:
         """Attach the instance_segmentation annotator to this camera.
@@ -790,7 +787,7 @@ class Camera(BaseSensor):
         if self._custom_annotators["instance_segmentation"] is not None:
             self._custom_annotators["instance_segmentation"].detach([self._render_product_path])
             self._custom_annotators["instance_segmentation"] = None
-        del self._current_frame["instance_segmentation"]
+        self._current_frame.pop("instance_segmentation", None)
 
     def add_pointcloud_to_frame(self, include_unlabelled: bool = False):
         """Attach the pointcloud annotator to this camera.
@@ -812,7 +809,7 @@ class Camera(BaseSensor):
         if self._custom_annotators["pointcloud"] is not None:
             self._custom_annotators["pointcloud"].detach([self._render_product_path])
             self._custom_annotators["pointcloud"] = None
-        del self._current_frame["pointcloud"]
+        self._current_frame.pop("pointcloud", None)
 
     def get_rgba(self) -> np.ndarray:
         """

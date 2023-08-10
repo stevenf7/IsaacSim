@@ -13,6 +13,7 @@
 ### Fixed
 - Fixed divisible by zero error in IMU linear interpolation
 - Removed reading pairs from the IMU sensor to use the buffer directly
+- Error when removing an annotator that had not been added yet
 ### Changed
 - store and destroy internaly created renderproduct
 
