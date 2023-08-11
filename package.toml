@@ -186,3 +186,8 @@ files = [
 files = [
     ["_assets-2_temp/**",""],
 ]
+
+[isaac-sim-assets-3]
+files = [
+    ["_assets-3_temp/**",""],
+]
