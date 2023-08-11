@@ -158,7 +158,6 @@ repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir.."/omni/isaac/ros2_bridge" },
     { "rclpy/*.py", ext.target_dir.."/omni/isaac/rclpy" },
     { "%{root}/_build/target-deps/nv_ros2_humble/lib/lib**", ext.target_dir.."/bin" },
-    -- TODO105 python3.10?
     { "%{root}/_build/target-deps/nv_ros2_humble/lib/python3.10/site-packages", ext.target_dir.."/omni/isaac/rclpy" },
     {"%{root}/_build/target-deps/nv_ros2_humble/local/lib/python3.10/dist-packages", ext.target_dir.."/omni/isaac/rclpy" },
     { "%{root}/_build/target-deps/tinyxml2/lib/lib**", ext.target_dir.."/bin" },

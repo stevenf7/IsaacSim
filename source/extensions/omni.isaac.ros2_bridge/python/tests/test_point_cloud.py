@@ -236,7 +236,6 @@ class TestRos2PointCloud(omni.kit.test.AsyncTestCase):
 
         pass
 
-    """ TODO105 Hang
     async def test_depth_to_point_cloud(self):
         import rclpy
         from sensor_msgs.msg import PointCloud2
@@ -315,4 +314,3 @@ class TestRos2PointCloud(omni.kit.test.AsyncTestCase):
         spin()
 
         pass
-    """

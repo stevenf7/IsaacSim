@@ -12,10 +12,6 @@ import omni
 from omni.isaac.core_nodes.ogn.OgnIsaacGetViewportRenderProductDatabase import OgnIsaacGetViewportRenderProductDatabase
 from omni.kit.viewport.utility import get_viewport_from_window_name
 
-# from omni.kit.viewport.utility import create_viewport_window, get_active_viewport_window
-# from omni.isaac.core.utils.viewports import get_window_from_id, get_id_from_index
-from omni.replicator.core.scripts.utils.viewport_manager import HydraTextureWrapper
-
 
 class OgnIsaacGetViewportRenderProductInternalState:
     def __init__(self):

@@ -71,7 +71,6 @@ class TestRos2DifferentialBase(omni.kit.test.AsyncTestCase):
         gc.collect()
         pass
 
-    """ TODO105 Hang
     async def test_differential_base(self):
         from copy import deepcopy
 
@@ -255,9 +254,7 @@ class TestRos2DifferentialBase(omni.kit.test.AsyncTestCase):
         self._timeline.stop()
         spin()
         pass
-    """
 
-    """ TODO105 Hang
     # add carter and ROS topic from scratch
     async def test_differential_base_scratch(self):
         from copy import deepcopy
@@ -369,7 +366,6 @@ class TestRos2DifferentialBase(omni.kit.test.AsyncTestCase):
         self._timeline.stop()
         spin()
         pass
-    """
 
     def add_differential_drive(self, graph_path):
 
