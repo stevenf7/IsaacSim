@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.3] - 2023-08-10
+### Changed
+- Added version to omni.pip.torch dependency
+
 ## [1.1.2] - 2023-07-05
 ### Changed
 - Removed unused omni.kit.pipapi dependency
