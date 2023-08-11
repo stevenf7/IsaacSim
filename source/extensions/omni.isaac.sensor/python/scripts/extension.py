@@ -103,6 +103,19 @@ class Extension(omni.ext.IExt):
             )
             self.registered_template.append(template)
 
+        ### RtxLidar Point Cloud Print Info
+        template_name = "RtxSensorCpu" + "IsaacCreateRTXLidarScanBuffer"
+        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
+            template = sensors.get_synthetic_data().register_node_template(
+                omni.syntheticdata.SyntheticData.NodeTemplate(
+                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
+                    "omni.isaac.sensor.IsaacCreateRTXLidarScanBuffer",
+                    [omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu" + "ExportRaw")],
+                ),
+                template_name=template_name,
+            )
+            self.registered_template.append(template)
+
         ### Add sync gate
         template_name = "RtxSensorCpu" + "IsaacSimulationGate"
         if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
@@ -197,6 +210,18 @@ class Extension(omni.ext.IExt):
             annotators=[
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                     "RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud"
+                )
+            ],
+            category="omni.isaac.sensor",
+        )
+
+        # RTX lidar Debug Draw Writer
+        rep.writers.register_node_writer(
+            name="RtxLidar" + "DebugDrawPointCloud" + "Buffer",
+            node_type_id="omni.isaac.debug_draw.DebugDrawPointCloud",
+            annotators=[
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    "RtxSensorCpu" + "IsaacCreateRTXLidarScanBuffer"
                 )
             ],
             category="omni.isaac.sensor",

@@ -163,7 +163,8 @@ i = printinc(i)
 simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=1.0)
 if 1:
     i = printinc(i)
-    writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
+    writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud" + "Buffer")
+    # writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
     # writer = rep.writers.get("Writer" + "IsaacReadRTXLidarData")
 
     i = printinc(i)

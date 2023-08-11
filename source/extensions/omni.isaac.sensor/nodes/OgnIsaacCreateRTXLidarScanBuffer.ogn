@@ -1,0 +1,124 @@
+{
+    "IsaacCreateRTXLidarScanBuffer": {
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",
+        "description": [
+            "This node creates a full scan buffer for RTX Lidar sensor."
+        ],
+        "metadata": {
+            "uiName": "Isaac create RTX Lidar 360 Point buffer"
+        },
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacSensor",
+        "state": {"$comment": ["Internal state"]},
+        "inputs": {
+            "exec": {
+                "type": "execution",
+                "description": "The input execution port"
+            },
+            "dataPtr": {
+                "type": "uint64",
+                "description": "Pointer to LiDAR render result.",
+                "uiName": "Data Pointer"
+            },
+            "cudaDeviceIndex": {
+                "type": "int",
+                "description": "Index of the device where the data lives (-1 for host data)",
+                "default": -1
+            },
+            "keepOnlyPositiveDistance": {
+                "type": "bool",
+                "description": "Keep points only if the return distance is > 0",
+                "default": true,
+                "uiName": "Keep Only Positive Distance"
+            },
+            "accuracyErrorAzimuthDeg": {
+                "type": "float",
+                "description": "Accuracy error of azimuth in degrees applied to all points equally",
+                "uiName": "Error Azimuth"
+            },
+            "accuracyErrorElevationDeg": {
+                "type": "float",
+                "description": "Accuracy error of elevation in degrees applied to all points equally",
+                "uiName": "Error Elevation"
+            },
+            "accuracyErrorPosition": {
+                "type": "float[3]",
+                "description": "Position offset applied to all points equally",
+                "uiName": "Error Position"
+            },
+            "renderProductPath": {
+                "type": "token",
+                "description": "Config is gotten from this"
+            }
+        },
+        "outputs": {
+            "exec": {
+                "type": "execution",
+                "description": "Output execution triggers when lidar sensor has data"
+            },
+            "dataPtr": {
+                "type": "uint64",
+                "description": "Pointer to LiDAR render result.",
+                "uiName": "Data Pointer"
+            },
+            "cudaDeviceIndex": {
+                "type": "int",
+                "description": "Index of the device where the data lives (-1 for host data)",
+                "default": -1
+            },
+            "bufferSize": {
+                "type": "uint64",
+                "description": "Size (in bytes) of the buffer (0 if the input is a texture)"
+            },
+            "transform": {
+                "type": "matrixd[4]",
+                "description": "The transform matrix from lidar to world coordinates"
+            },
+            "intensityPtr":{
+                "type": "uint64",
+                "description": "intensity [0,1]"
+            },
+            "distancePtr":{
+                "type": "uint64",
+                "description": "range in m"
+            },
+            "azimuthPtr":{
+                "type": "uint64",
+                "description": "azimuth in rad [-pi,pi]"
+            },
+            "elevationPtr":{
+                "type": "uint64",
+                "description": "elevation in rad [-pi/2, pi/2]"
+            },
+            "objectIdPtr":{
+                "type": "uint64",
+                "description": "ObjectId for getting usd prim information"
+            },
+            "indexPtr":{
+                "type": "uint64",
+                "description": "Index into the full array if keepOnlyPositiveDistance ((startTick+tick)*numChannels*numEchos + channel*numEchos + echo)" 
+            },
+            "returnsPerScan": {
+                "type": "uint",
+                "description": "Number of returns in the scan, changes based on keepOnlyPositiveDistance"
+            },
+            "ticksPerScan": {
+                "type": "uint",
+                "description": "Number of ticks in a full scan"
+            },
+            "numChannels": {
+                "type": "uint",
+                "description": "Number of channels of the lidar"
+            },
+            "numEchos": {
+                "type": "uint",
+                "description": "Number of echos of the lidar"
+            },
+            "renderProductPath": {
+                "type": "token",
+                "description": "Config is gotten from this"
+            }
+        }
+    }
+}
