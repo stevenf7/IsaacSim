@@ -1,12 +1,12 @@
 #displayed application name
-name = "Isaac Sim Assets Pack 2"
+name = "Isaac Sim Assets Pack 3"
 #displayed application name in smaller card and library view
-shortName = "Isaac Sim Assets Pack 2"
+shortName = "Isaac Sim Assets Pack 3"
 version = "${version}"
 #boolean for if this version is the latest version
 latest = true
 #unique identifier for component, all lower case, persists between versions
-slug = "isaac_sim-assets-2"
+slug = "isaac_sim-assets-3"
 
 #displayed before application name in launcher
 productArea = ""
@@ -37,8 +37,8 @@ kind = "content-pack"
 #string array, each line is a new line, keep lines under 256 char and keep lines under 4
 description = [
     "This content pack replicates the Isaac Sim assets found in the following publicly available Omniverse Nucleus folder; **NVIDIA -> Assets -> Isaac**. This content pack is designed for storage on a local system.",
-    "This is pack 2 of 3.",
-    "Total content pack size: ~27.8GB (uncompressed)"
+    "This is pack 3 of 3.",
+    "Total content pack size: ~28.4GB (uncompressed)"
 ]
 
 extensionDependencies = [ "n/a" ]

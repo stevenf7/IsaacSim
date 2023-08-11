@@ -333,6 +333,11 @@ omniverse_flow_version_scheme = true
 archive_format = "zip"
 strip_package_infos = true
 
+[repo_package.packages.isaac-sim-assets-3]
+omniverse_flow_version_scheme = true
+archive_format = "zip"
+strip_package_infos = true
+
 
 ########################################################################################################################
 # Package publishing to packman
@@ -366,6 +371,11 @@ branch_prefix = "integ"
 [publish_assets_launcher_2]
 git_url = "https://oauth2:${env:ISAAC_SIM_PIPELINE_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac-sim/release-pipelines/isaac-sim-assets-content-pack-2.git"
 template_path = "${root}/tools/repoman/assets-pipeline-template-2"
+branch_prefix = "integ"
+
+[publish_assets_launcher_3]
+git_url = "https://oauth2:${env:ISAAC_SIM_PIPELINE_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac-sim/release-pipelines/isaac-sim-assets-content-pack-3.git"
+template_path = "${root}/tools/repoman/assets-pipeline-template-3"
 branch_prefix = "integ"
 
 ########################################################################################################################
