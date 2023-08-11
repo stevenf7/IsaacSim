@@ -1,5 +1,9 @@
 # Changelog
-=======
+
+## [2.7.0] - 2023-08-11
+### Added
+- Add function create_viewport_for_camera() to viewports.py 
+
 ## [2.6.0] - 2023-08-03
 ### Added
 - get_local_pose and get_world_pose in xforms utils which will go through fabric if the prim exists there, otherwise it will read it from USD
@@ -27,11 +31,8 @@
 - Added a new API for reading detailed contact data
 
 ## [2.3.1] - 2023-07-19
-
 ### Fixed
 - OM-78161 - set_camera_view now works when the camera is directly above or directly below the target (x and y positions are equal)
-
-
 
 ## [2.3.0] - 2023-07-10
 ### Added

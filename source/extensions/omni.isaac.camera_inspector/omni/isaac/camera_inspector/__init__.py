@@ -7,10 +7,4 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .scripts.camera import *
-from .scripts.commands import *
-from .scripts.contact_sensor import ContactSensor
-from .scripts.extension import *
-from .scripts.imu_sensor import IMUSensor
-from .scripts.lidar_rtx import LidarRtx
-from .scripts.rotating_lidar_physX import RotatingLidarPhysX
+from .extension import *

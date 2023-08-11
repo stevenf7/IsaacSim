@@ -17,7 +17,14 @@ import omni.graph.core as og
 import omni.replicator.core as rep
 from omni.isaac.core.prims.base_sensor import BaseSensor
 from omni.isaac.core.utils.carb import get_carb_setting
-from omni.isaac.core.utils.prims import define_prim, get_prim_at_path, get_prim_type_name, is_prim_path_valid
+from omni.isaac.core.utils.prims import (
+    define_prim,
+    get_all_matching_child_prims,
+    get_prim_at_path,
+    get_prim_path,
+    get_prim_type_name,
+    is_prim_path_valid,
+)
 from omni.isaac.core.utils.render_product import get_resolution, set_camera_prim_path, set_resolution
 from omni.isaac.core_nodes.bindings import _omni_isaac_core_nodes
 from pxr import Sdf, Usd, UsdGeom, Vt
@@ -1205,3 +1212,28 @@ class Camera(BaseSensor):
         """
         width, height = self.get_resolution()
         return self.get_horizontal_fov() * (height / float(width))
+
+
+def get_all_camera_objects(root_prim: str = "/World"):
+    """Retrieve omni.isaac.sensor Camera objects for each camera in the scene.
+
+    Args:
+        root_prim (str): Root prim where the world exists.
+
+    Returns:
+        Camera[]: A list of omni.isaac.sensor Camera objects
+    """
+
+    # Get the paths of prims that are of type "Camera" from scene
+    camera_prims = get_all_matching_child_prims(
+        prim_path=root_prim, predicate=lambda prim: get_prim_type_name(prim) == "Camera"
+    )
+
+    # Create a "Camera" object for them
+    camera_objects = []
+    for prim in camera_prims:
+        camera_path_split = get_prim_path(prim).split("/")
+        camera = Camera(prim_path=get_prim_path(prim), name=camera_path_split[-1])
+        camera_objects.append(camera)
+
+    return camera_objects

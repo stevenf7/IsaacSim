@@ -284,6 +284,7 @@ group "exts"
     include ("source/extensions/omni.isaac.app.setup")
     include ("source/extensions/omni.isaac.app.selector")
     include ("source/extensions/omni.isaac.articulation_inspector")
+    include ("source/extensions/omni.isaac.camera_inspector")
     include ("source/extensions/omni.isaac.assets_check")
     include ("source/extensions/omni.isaac.benchmark_environments")
     include ("source/extensions/omni.isaac.benchmarks")

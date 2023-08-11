@@ -15,7 +15,8 @@ import carb
 import numpy as np
 import omni
 import omni.kit.app
-from omni.isaac.core.utils.prims import set_prim_hide_in_stage_window, set_prim_no_delete
+import omni.kit.commands
+from omni.isaac.core.utils.prims import is_prim_path_valid, set_prim_hide_in_stage_window, set_prim_no_delete
 
 # isaacsim
 from omni.isaac.core.utils.stage import get_current_stage
@@ -382,3 +383,43 @@ def project_depth_to_worldspace(depth_image: np.array, viewport_api: Any, max_cl
         points.append(carb.Float3(p[0], p[1], p[2]))
 
     return points
+
+
+def create_viewport_for_camera(
+    viewport_name: str,
+    camera_prim_path: str,
+    width: int = 1280,
+    height: int = 720,
+    position_x: int = 0,
+    position_y: int = 0,
+):
+    """Create a new viewport and peg it to a specific camera specified by camera_prim_path. If the viewport already exists with the specified viewport_name, that viewport will be replaced with the new camera view.
+
+    Args:
+        viewport_name (str): name of the viewport. If not provided, it will default to camera name.
+        camera_prim_path (str): name of the prim path of the camera
+        width (int): width of the viewport window, in pixels.
+        height (int): height of the viewport window, in pixels.
+        position_x (int): location x of the viewport window.
+        position_y (int): location y of the viewport window.
+    """
+    import omni.kit.viewport.utility as kit_viewport_utils
+
+    if not is_prim_path_valid(camera_prim_path):
+        err = f"Provided camera_prim_path '{camera_prim_path}' is an invalid prim in the scene."
+        raise ValueError(err)
+
+    # Create new viewport. If viewport already exists, this will overwrite that window's content.
+    viewport_window = kit_viewport_utils.create_viewport_window(
+        name=viewport_name, width=width, height=height, position_x=position_x, position_y=position_y
+    )
+
+    # Peg the viewport to the specified camera.
+    omni.kit.commands.execute(
+        "SetViewportCamera", camera_path=camera_prim_path, viewport_api=viewport_window.viewport_api
+    )
+
+    carb.log_info(
+        f"[ui_utils/create_viewport_for_camera] Added new viewport '{ viewport_name }' for camera '{ camera_prim_path }'"
+    )
+    return viewport_window

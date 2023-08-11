@@ -1,5 +1,9 @@
 # Changelog
 
+## [7.3.0] - 2023-08-11
+### Added
+- Add function to camera.py to scrap all Camera objects in the scene 
+  
 ## [7.2.1] - 2023-08-10
 ### Added 
 - docstrings to Camera class for functions adding annotators 
