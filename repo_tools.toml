@@ -56,6 +56,9 @@ entry_point = "${config_root}/tools/repoman/publish_assets_launcher_1.py:setup_r
 command = "publish_assets_launcher_2"
 entry_point = "${config_root}/tools/repoman/publish_assets_launcher_2.py:setup_repo_tool"
 
+[publish_assets_launcher_3]
+command = "publish_assets_launcher_3"
+entry_point = "${config_root}/tools/repoman/publish_assets_launcher_3.py:setup_repo_tool"
 ########################################################################################################################
 # Generate Omnigraph Docs
 ########################################################################################################################
