@@ -59,8 +59,9 @@ def get_version() -> typing.Tuple[str, str, str, str, str, str, str, str]:
     if not app_folder:
         app_folder = carb.tokens.get_tokens_interface().resolve("${app}")
     app_start_folder = os.path.normpath(os.path.join(app_folder, os.pardir))
-    app_version = open(f"{app_start_folder}/VERSION").readline().strip()
-    parsed_version = parse_version(app_version)
+    with open(f"{app_start_folder}/VERSION") as f:
+        app_version = f.readline().strip()
+        parsed_version = parse_version(app_version)
     return (
         parsed_version.core,
         parsed_version.prerelease,
