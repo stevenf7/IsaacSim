@@ -69,7 +69,6 @@ class TestRos2Lidar(omni.kit.test.AsyncTestCase):
         gc.collect()
         pass
 
-    """ TODO105 Hang
     async def test_lidar(self):
         import rclpy
         from sensor_msgs.msg import LaserScan
@@ -169,4 +168,3 @@ class TestRos2Lidar(omni.kit.test.AsyncTestCase):
         spin()
 
         pass
-    """

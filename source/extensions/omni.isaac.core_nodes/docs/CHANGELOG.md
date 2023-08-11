@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.3.2] - 2023-08-11
+### Fixed
+- Import error in OgnIsaacGetViewportRenderProduct
+
 ## [1.3.1] - 2023-08-09
 ### Fixed
 - Added time code settings for test_physics_num_steps

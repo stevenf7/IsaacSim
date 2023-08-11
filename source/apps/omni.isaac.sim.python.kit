@@ -371,16 +371,38 @@ featuredExts = []
 renderer.multiGpu.enabled = true
 renderer.multiGpu.autoEnable = true
 'rtx-transient'.resourcemanager.enableTextureStreaming = true
-app.asyncRendering = false
-app.asyncRenderingLowLatency = false
 app.hydra.aperture.conform = 4 # Don't modify camera prim, stretch the image so it fits
 app.hydraEngine.waitIdle = true
-omni.replicator.asyncRendering = false
 
 # Enable Iray and pxr by setting this to "rtx,iray,pxr"
 renderer.enabled = "rtx"
 
 physics.autoPopupSimulationOutputWindow=false
+
+### async rendering settings
+omni.replicator.asyncRendering = false
+app.asyncRendering = false
+app.asyncRenderingLowLatency = false
+
+### Render thread settings
+app.runLoops.main.rateLimitEnabled = false
+app.runLoops.main.rateLimitFrequency = 120
+app.runLoops.main.rateLimitUsePrecisionSleep = true
+app.runLoops.main.syncToPresent = false
+app.runLoops.present.rateLimitFrequency = 120
+app.runLoops.present.rateLimitUsePrecisionSleep = true
+app.runLoops.rendering_0.rateLimitFrequency = 120
+app.runLoops.rendering_0.rateLimitUsePrecisionSleep = true
+app.runLoops.rendering_0.syncToPresent = false
+app.runLoops.rendering_1.rateLimitFrequency = 120
+app.runLoops.rendering_1.rateLimitUsePrecisionSleep = true
+app.runLoops.rendering_1.syncToPresent = false
+app.runLoopsGlobal.syncToPresent = false
+app.vsync = false
+exts.omni.kit.renderer.core.present.enabled = false
+exts.omni.kit.renderer.core.present.presentAfterRendering = false
+persistent.app.viewport.defaults.tickRate = 120
+rtx-transient.dlssg.enabled = false
 
 # Basic Kit App
 ################################

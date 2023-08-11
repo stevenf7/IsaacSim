@@ -124,7 +124,7 @@ class TestMultipleRenderProducts(omni.kit.test.AsyncTestCase):
         image = pytorch_listener.get_rgb_data()
         file_paths = []
         for rp in render_products:
-            name = rp.split("/Render/RenderProduct_")[-1]
+            name = rp.path.split("/Render/RenderProduct_")[-1]
             path = os.path.join(out_dir, f"rgb_9_RenderProduct_{name}.png")
             file_paths.append(path)
             self.assertTrue(Path(path).exists())
