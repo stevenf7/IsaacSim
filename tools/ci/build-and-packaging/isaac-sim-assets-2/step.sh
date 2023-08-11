@@ -8,7 +8,7 @@ OUTPUT_PATH="_assets-2_temp"
 VERSION="2023.1.0"
 NAME="isaac-sim-assets-2"
 
-echo Removing %OUTPUT_PATH...
+echo Removing $SCRIPT_DIR/../../../../$OUTPUT_PATH/...
 rm -rf $SCRIPT_DIR/../../../../$OUTPUT_PATH
 
 # # Pack 1 (19.9GB)
@@ -48,13 +48,13 @@ $OMNICLI copy $ROOT_PATH/$VERSION/NVIDIA/Assets/Skies $SCRIPT_DIR/../../../../$O
 echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/Vegetation/...']"
 $OMNICLI copy $ROOT_PATH/$VERSION/NVIDIA/Assets/Vegetation $SCRIPT_DIR/../../../../$OUTPUT_PATH/NVIDIA/Assets/Vegetation
 echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Commercial/...']"
-$OMNICLI copy $ROOT_PATH/$VERSION/NVIDIA/Assets/ArchVis $SCRIPT_DIR/../../../../$OUTPUT_PATH/NVIDIA/Assets/ArchVis/Commercial
+$OMNICLI copy $ROOT_PATH/$VERSION/NVIDIA/Assets/ArchVis/Commercial $SCRIPT_DIR/../../../../$OUTPUT_PATH/NVIDIA/Assets/ArchVis/Commercial
 echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Industrial/...']"
-$OMNICLI copy $ROOT_PATH/$VERSION/NVIDIA/Assets/ArchVis $SCRIPT_DIR/../../../../$OUTPUT_PATH/NVIDIA/Assets/ArchVis/Industrial
+$OMNICLI copy $ROOT_PATH/$VERSION/NVIDIA/Assets/ArchVis/Industrial $SCRIPT_DIR/../../../../$OUTPUT_PATH/NVIDIA/Assets/ArchVis/Industrial
 
 # # Pack 3 (28.4GB)
 # echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Residential/...']"
-# $OMNICLI copy $ROOT_PATH/$VERSION/NVIDIA/Assets/ArchVis $SCRIPT_DIR/../../../../$OUTPUT_PATH/NVIDIA/Assets/ArchVis/Residential
+# $OMNICLI copy $ROOT_PATH/$VERSION/NVIDIA/Assets/ArchVis/Residential $SCRIPT_DIR/../../../../$OUTPUT_PATH/NVIDIA/Assets/ArchVis/Residential
 
 # Packaging assets
 echo "##teamcity[progressMessage 'Packaging $NAME...']"
