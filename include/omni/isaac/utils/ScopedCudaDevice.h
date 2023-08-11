@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -8,8 +8,8 @@
 //
 
 #pragma once
-
 #include <carb/cuda/CudaRuntime.h>
+#include <carb/logging/Log.h> // CudaRintime.h does not have CARB_LOG_ERROR
 
 #include <cuda.h>
 
@@ -26,7 +26,7 @@ public:
     {
 
         // if we want cpu or can't get a cuda device, then do nothing.
-        if (device == -1 || cudaGetDevice(&mOldDevice) != cudaError_enum::CUDA_SUCCESS)
+        if (device == -1 || cudaGetDevice(&mOldDevice) != cudaError::cudaSuccess)
         {
             mOldDevice = mDevice = -1;
         }

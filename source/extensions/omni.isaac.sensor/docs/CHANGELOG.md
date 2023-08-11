@@ -1,9 +1,8 @@
 # Changelog
-
 ## [7.3.0] - 2023-08-11
 ### Added
 - Add function to camera.py to scrap all Camera objects in the scene 
-  
+- Added IsaacCreateRTXLidarScanBuffer Node
 ## [7.2.1] - 2023-08-10
 ### Added 
 - docstrings to Camera class for functions adding annotators 
@@ -32,7 +31,6 @@
 - get_current_frame() now accepts optional argument to return deepcopy of data 
 
 ## [7.0.0] - 2023-08-03
-
 ### Added
 - added get_sensor_reading function
 

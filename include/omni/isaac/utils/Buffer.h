@@ -71,7 +71,7 @@ public:
     }
     virtual ~DeviceBufferBase()
     {
-        ScopedDevice(mDevice);
+        ScopedDevice scopedDevice(mDevice);
 
         CUDA_CHECK(cudaFree(mBuffer));
         mBuffer = nullptr;
@@ -83,7 +83,7 @@ public:
             // if the device doesn't match and we had a buffer allocated, release it on the old device and switch
             if (mBuffer)
             {
-                ScopedDevice(mDevice);
+                ScopedDevice scopedDevice(mDevice);
                 CUDA_CHECK(cudaFree(mBuffer));
                 mBuffer = nullptr;
             }
@@ -93,9 +93,9 @@ public:
     }
     virtual void resize(size_t size)
     {
-        ScopedDevice(mDevice);
         if (size != mSize && size > 0)
         {
+            ScopedDevice scopedDevice(mDevice);
             if (mBuffer)
             {
                 CUDA_CHECK(cudaFree(mBuffer));
@@ -118,12 +118,12 @@ public:
     }
     virtual void copy(const void* src, size_t size, enum cudaMemcpyKind kind = cudaMemcpyDeviceToHost)
     {
-        ScopedDevice(mDevice);
+        ScopedDevice scopedDevice(mDevice);
         CUDA_CHECK(cudaMemcpy(mBuffer, src, size * sizeof(T), kind));
     }
     virtual void copyAsync(const void* src, size_t size, enum cudaMemcpyKind kind = cudaMemcpyDeviceToHost)
     {
-        ScopedDevice(mDevice);
+        ScopedDevice scopedDevice(mDevice);
         CUDA_CHECK(cudaMemcpyAsync(mBuffer, src, size * sizeof(T), kind));
     }
 
@@ -146,6 +146,10 @@ public:
     virtual void resize(size_t size)
     {
         mBuffer.resize(size);
+    }
+    virtual void resize(size_t size, const T& val)
+    {
+        mBuffer.resize(size, val);
     }
     virtual T* data() const
     {
