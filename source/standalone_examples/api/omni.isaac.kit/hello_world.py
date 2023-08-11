@@ -7,8 +7,8 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.isaac.kit import SimulationApp
 import omni
+from omni.isaac.kit import SimulationApp
 
 # The most basic usage for creating a simulation app
 kit = SimulationApp()
