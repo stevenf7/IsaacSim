@@ -8,6 +8,7 @@
 #
 
 from omni.isaac.kit import SimulationApp
+import omni
 
 # The most basic usage for creating a simulation app
 kit = SimulationApp()
@@ -15,6 +16,6 @@ kit = SimulationApp()
 for i in range(100):
     kit.update()
 
-print("Hello World!")
+omni.kit.app.get_app().print_and_log("Hello World!")
 
 kit.close()  # Cleanup application
