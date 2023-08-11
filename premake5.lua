@@ -55,7 +55,7 @@ function write_version_file(config)
             os.execute(get_current_lua_file_dir().."/"..cmd)
         end
     end
-    
+
 end
 
 -- Starting from here we define a structure of actual solution to be generated. Starting with solution name.
@@ -82,14 +82,14 @@ workspace "isaac-sim"
 
     -- Set default target dir, later projects overwrite it
     targetdir (bin_dir)
-    
+
     -- mostly so outside code knows we are building isaac-sim
     building_for_isaac_sim = true
     defines { "BUILDING_FOR_ISAAC_SIM" }
     if build_with_omni_sensors then
         includedirs { "source/include" }
     end
-    
+
     -- Setup include paths. Add kit SDK include paths too.
     includedirs {
         "include",
@@ -102,9 +102,9 @@ workspace "isaac-sim"
     }
 
     -- Carbonite carb lib
-    libdirs { 
+    libdirs {
         carbSDKLibs,
-        carbSDKLibs.."/scripting-python-3.10" 
+        carbSDKLibs.."/scripting-python-3.10"
     }
 
     -- Location for intermediate  files
@@ -155,7 +155,7 @@ workspace "isaac-sim"
 
         -- All of our source strings and executable strings are utf8
         buildoptions {"/utf-8", "/bigobj"}
-        buildoptions {"/permissive-", "/Zc:externC-"}        
+        buildoptions {"/permissive-", "/Zc:externC-"}
         -- The /Zc:inline option strips out the "arch_ctor_<name>" symbols, so disable it.
         -- See https://groups.google.com/g/usd-interest/c/nWm7u3B6CQk/m/OvIkOIyAAwAJ
         -- NOTE: This will give warnings for this project. According to premake docs, the removeunreferencedcodedata
@@ -388,7 +388,7 @@ if os.target() == "linux" then
     repo_build.prebuild_link {
         { "source/scripts/python/linux-x86_64/icon", "_build/%{platform}/%{config}/data/icon" },
     }
-    -- For docker tests 
+    -- For docker tests
     repo_build.prebuild_copy {
         {"source/scripts/docker/tests/*",  "_build/%{platform}/%{config}/dockertests"},
         -- {"source/scripts/docker/vulkan_check.sh",  "_build/%{platform}/%{config}"},
@@ -407,6 +407,7 @@ repo_build.prebuild_copy {
     {"source/scripts/jupyter_kernel",  "_build/%{platform}/%{config}/jupyter_kernel"},
     {"source/scripts/run_all_tests${shell_ext}",  "_build/%{platform}/%{config}"},
     {"source/scripts/omni.isaac.sim.post.install${shell_ext}",  "_build/%{platform}/%{config}"},
+    {"source/scripts/omni.isaac.sim.post.install.run${shell_ext}",  "_build/%{platform}/%{config}"},
     {"source/scripts/omni.isaac.sim.warmup${shell_ext}",  "_build/%{platform}/%{config}"},
     {"source/scripts/isaac-sim.docker*${shell_ext}",  "_build/%{platform}/%{config}"},
     {"source/apps/omni.isaac.sim.python.kit",  "_build/%{platform}/%{config}/apps"},
