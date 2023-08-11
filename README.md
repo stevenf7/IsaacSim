@@ -31,8 +31,9 @@ Once launched you will see the builds under the ``Exchange`` tab
 * [Isaac Sim](https://web.launcher.omniverse.nvidia.com/exchange/app/isaac_sim): Latest build from Release branch. This build works staging or production assets. (Use the Release channel only)
 * [Isaac Sim Daily](https://web.launcher.omniverse.nvidia.com/exchange/app/isaac_sim-daily): Latest daily build from Develop branch. This build works with our internal isaac-dev.ov.nvidia.com Nucleus by default. (Use the Beta channel only)
 * [Isaac Sim Public Release](https://web.launcher.omniverse.nvidia.com/exchange/app/prod-isaac_sim): Latest public release. This build works with localhost Nucleus by default.
-* [Isaac Sim Assets Pack 1](https://web.launcher.omniverse.nvidia.com/exchange/content-pack/isaac_sim-assets-1?text=&kind=content-pack): Latest asset pack download for use in an air-gapped environment. Pack 1 of 2.
-* [Isaac Sim Assets Pack 2](https://web.launcher.omniverse.nvidia.com/exchange/content-pack/isaac_sim-assets-2?text=&kind=content-pack): Latest asset pack download for use in an air-gapped environment. Pack 2 of 2.
+* [Isaac Sim Assets Pack 1](https://web.launcher.omniverse.nvidia.com/exchange/content-pack/isaac_sim-assets-1?text=&kind=content-pack): Latest asset pack download for use in an air-gapped environment. Pack 1 of 3.
+* [Isaac Sim Assets Pack 2](https://web.launcher.omniverse.nvidia.com/exchange/content-pack/isaac_sim-assets-2?text=&kind=content-pack): Latest asset pack download for use in an air-gapped environment. Pack 2 of 3.
+* [Isaac Sim Assets Pack 3](https://web.launcher.omniverse.nvidia.com/exchange/content-pack/isaac_sim-assets-3?text=&kind=content-pack): Latest asset pack download for use in an air-gapped environment. Pack 3 of 3.
 
 For information on launching once you have downloaded a build [see here](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/install_workstation.html).
 
