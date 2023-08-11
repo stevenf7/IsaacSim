@@ -1,0 +1,26 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.1.0"
+category = "Simulation"
+title = "Camera Inspector"
+description = "This extension can inspect and modify the properties of cameras in the scene."
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.camera_inspector"
+keywords = ["isaac", "camera", "analyze", "inspect", "manager"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+icon = "data/icon.png"
+writeTarget.kit = true
+
+[dependencies]
+"omni.physx" = {}
+"omni.isaac.core" = {}
+"omni.isaac.dynamic_control" = {}
+"omni.isaac.ui" = {}
+"omni.isaac.sensor" = {}
+
+[[python.module]]
+name = "omni.isaac.camera_inspector"
