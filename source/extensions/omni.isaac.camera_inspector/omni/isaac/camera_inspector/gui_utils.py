@@ -79,6 +79,6 @@ def custom_pos_quat_builder(label_width=LABEL_WIDTH, enable_scroll=False, label=
                     ui.Spacer(width=4)
 
     _build_model(f"{label} Position", all_axis=["X", "Y", "Z"])
-    _build_model(f"{label} Orientation", all_axis=["X", "Y", "Z", "W"])
+    _build_model(f"{label} Orientation", all_axis=["W", "X", "Y", "Z"])
 
     return models
