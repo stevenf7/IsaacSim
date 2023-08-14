@@ -340,7 +340,7 @@ class Extension(omni.ext.IExt):
                 self._task_ui_elements["World Camera Orientation"][i].set_value(float(world_quat[i]))
                 self._task_ui_elements["Local Camera Orientation"][i].set_value(float(local_quat[i]))
 
-            status = f"# World Axis: {self._selected_axis_world}\nworld_position=[{world_pos[0]}, {world_pos[1]}, {world_pos[2]}]\nworld_quat_xyzw=[{world_quat[0]}, {world_quat[1]}, {world_quat[2]}, {world_quat[3]}]\n # Local Axis: {self._selected_axis_local}\nlocal_position=[{local_pos[0]}, {local_pos[1]}, {local_pos[2]}]\nlocal_quat_xyzw=[{local_quat[0]}, {local_quat[1]}, {local_quat[2]}, {local_quat[3]}]"
+            status = f"# World Axis: {self._selected_axis_world}\nworld_position={world_pos.tolist()}\nworld_quat_wxyz={world_quat.tolist()}\n# Local Axis: {self._selected_axis_local}\nlocal_position={local_pos.tolist()}\nlocal_quat_wxyz={local_quat.tolist()}"
 
             self._task_ui_elements["CameraTextField"].set_text(status)
         else:
