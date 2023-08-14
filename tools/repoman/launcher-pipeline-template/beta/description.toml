@@ -52,10 +52,10 @@ title = "Developer README"
 url = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/blob/develop/README.md"
 [[links]]
 title = "System Requirements"
-url = "https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/requirements.html"
+url = "https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/isaacsim/latest/requirements.html"
 [[links]]
 title = "Release Notes"
-url = "https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/release_notes.html"
+url = "https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/isaacsim/latest/release_notes.html"
 [[links]]
 title = "Documentation"
-url = "https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/overview.html"
+url = "https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/isaacsim/latest/overview.html"
