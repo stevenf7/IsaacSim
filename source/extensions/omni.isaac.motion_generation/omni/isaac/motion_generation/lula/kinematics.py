@@ -23,7 +23,10 @@ class LulaKinematicsSolver(KinematicsSolver):
     """A Lula-based implementaion of the KinematicsSolver interface.  Lula uses a URDF file describing the robot and
     a custom yaml file that specifies the cspace of the robot and other parameters.
 
-    This class provides functions beyond the specified interface for getting and setting solver parameters.
+    This class provides functions beyond the KinematicsSolver interface for getting and setting solver parameters.
+    Inverse kinematics is solved quickly by first approximating a solution with cyclic coordinate descent (CCD) and then
+    refining the solution with a second-order method (bfgs).  As such, parameters for both solvers are available and changable
+    as properties of this class.
 
     Args:
         robot_description_path (str): path to a robot description yaml file describing the cspace of the robot and other relevant parameters
@@ -53,11 +56,139 @@ class LulaKinematicsSolver(KinematicsSolver):
             self._ik_config.orientation_tolerance
         )
         self._default_position_tolerance = self._ik_config.position_tolerance
+
+        self._default_bfgs_orientation_weight = self._ik_config.bfgs_orientation_weight
         self._default_ccd_orientation_weight = self._ik_config.ccd_orientation_weight
 
-        self._default_max_iter = self._ik_config.ccd_max_iterations
-        self._default_ccd_descent_termination_delta = self._ik_config.ccd_descent_termination_delta
         self._default_cspace_seeds = []
+
+    @property
+    def bfgs_cspace_limit_biasing(self):
+        return self._ik_config.bfgs_cspace_limit_biasing
+
+    @bfgs_cspace_limit_biasing.setter
+    def bfgs_cspace_limit_biasing(self, value):
+        self._ik_config.bfgs_cspace_limit_biasing = value
+
+    @property
+    def bfgs_cspace_limit_biasing_weight(self):
+        return self._ik_config.bfgs_cspace_limit_biasing_weight
+
+    @bfgs_cspace_limit_biasing_weight.setter
+    def bfgs_cspace_limit_biasing_weight(self, value):
+        self._ik_config.bfgs_cspace_limit_biasing_weight = value
+
+    @property
+    def bfgs_cspace_limit_penalty_region(self):
+        return self._ik_config.bfgs_cspace_limit_penalty_region
+
+    @bfgs_cspace_limit_penalty_region.setter
+    def bfgs_cspace_limit_penalty_region(self, value):
+        self._ik_config.bfgs_cspace_limit_penalty_region = value
+
+    @property
+    def bfgs_gradient_norm_termination(self):
+        return self._ik_config.bfgs_gradient_norm_termination
+
+    @bfgs_gradient_norm_termination.setter
+    def bfgs_gradient_norm_termination(self, value):
+        self._ik_config.bfgs_gradient_norm_termination = value
+
+    @property
+    def bfgs_gradient_norm_termination_coarse_scale_factor(self):
+        return self._ik_config.bfgs_gradient_norm_termination_coarse_scale_factor
+
+    @bfgs_gradient_norm_termination_coarse_scale_factor.setter
+    def bfgs_gradient_norm_termination_coarse_scale_factor(self, value):
+        self._ik_config.bfgs_gradient_norm_termination_coarse_scale_factor = value
+
+    @property
+    def bfgs_max_iterations(self):
+        return self._ik_config.bfgs_max_iterations
+
+    @bfgs_max_iterations.setter
+    def bfgs_max_iterations(self, value):
+        self._ik_config.bfgs_max_iterations = value
+
+    @property
+    def bfgs_orientation_weight(self):
+        return self._default_bfgs_orientation_weight
+
+    @bfgs_orientation_weight.setter
+    def bfgs_orientation_weight(self, value):
+        self._default_bfgs_orientation_weight = value
+
+    @property
+    def bfgs_position_weight(self):
+        return self._ik_config.bfgs_position_weight
+
+    @bfgs_position_weight.setter
+    def bfgs_position_weight(self, value):
+        self._ik_config.bfgs_position_weight = value
+
+    @property
+    def ccd_bracket_search_num_uniform_samples(self):
+        return self._ik_config.ccd_bracket_search_num_uniform_samples
+
+    @ccd_bracket_search_num_uniform_samples.setter
+    def ccd_bracket_search_num_uniform_samples(self, value):
+        self._ik_config.ccd_bracket_search_num_uniform_samples = value
+
+    @property
+    def ccd_descent_termination_delta(self):
+        return self._ik_config.ccd_descent_termination_delta
+
+    @ccd_descent_termination_delta.setter
+    def ccd_descent_termination_delta(self, value):
+        self._ik_config.ccd_descent_termination_delta = value
+
+    @property
+    def ccd_max_iterations(self):
+        return self._ik_config.ccd_max_iterations
+
+    @ccd_max_iterations.setter
+    def ccd_max_iterations(self, value):
+        self._ik_config.ccd_max_iterations = value
+
+    @property
+    def ccd_orientation_weight(self):
+        return self._default_ccd_orientation_weight
+
+    @ccd_orientation_weight.setter
+    def ccd_orientation_weight(self, value):
+        self._default_ccd_orientation_weight = value
+
+    @property
+    def ccd_position_weight(self):
+        return self._ik_config.ccd_position_weight
+
+    @ccd_position_weight.setter
+    def ccd_position_weight(self, value):
+        self._ik_config.ccd_position_weight = value
+
+    @property
+    def irwin_hall_sampling_order(self):
+        return self._ik_config.irwin_hall_sampling_order
+
+    @irwin_hall_sampling_order.setter
+    def irwin_hall_sampling_order(self, value):
+        self._ik_config.irwin_hall_sampling_order = value
+
+    @property
+    def max_num_descents(self):
+        return self._ik_config.max_num_descents
+
+    @max_num_descents.setter
+    def max_num_descents(self, value):
+        self._ik_config.max_num_descents = value
+
+    @property
+    def sampling_seed(self):
+        return self._ik_config.sampling_seed
+
+    @sampling_seed.setter
+    def sampling_seed(self, value):
+        self._ik_config.sampling_seed = value
 
     def set_robot_base_pose(self, robot_position: np.array, robot_orientation: np.array) -> None:
         LulaInterfaceHelper.set_robot_base_pose(self, robot_position, robot_orientation)
@@ -135,8 +266,10 @@ class LulaKinematicsSolver(KinematicsSolver):
             target_orientation = np.array([1, 0, 0, 0])
             self._ik_config.orientation_tolerance = 2.0
             self._ik_config.ccd_orientation_weight = 0.0
+            self._ik_config.bfgs_orientation_weight = 0.0
         else:
             self._ik_config.ccd_orientation_weight = self._default_ccd_orientation_weight
+            self._ik_config.bfgs_orientation_weight = self._default_bfgs_orientation_weight
 
         rot = quats_to_rot_matrices(target_orientation).astype(np.float64)
         pos = target_position.astype(np.float64) * self._meters_per_unit
@@ -165,16 +298,6 @@ class LulaKinematicsSolver(KinematicsSolver):
 
         return False
 
-    def set_orientation_weight(self, weight: float) -> None:
-        """Orientation weight describes a ratio of importance between hitting the position and orientation target.
-        A weight of 0 implies that the solver cares only about the orientation target.  When no orientation target is given
-        to compute_inverse_kinematics(), a weight of 0 is automatically used over the default.
-
-        Args:
-            weight (float): Ratio describing the relative importance of the orientation target vs. the position target when solving IK
-        """
-        self._default_ccd_orientation_weight = weight
-
     def set_default_orientation_tolerance(self, tolerance: float) -> None:
         """Default orientation tolerance to be used when calculating IK when none is specified
 
@@ -193,22 +316,6 @@ class LulaKinematicsSolver(KinematicsSolver):
         """
         self._default_position_tolerance = tolerance * self._meters_per_unit
 
-    def set_max_iterations(self, max_iterations: int) -> None:
-        """Set the maximum number of iterations that the IK solver will attempt before giving up
-
-        Args:
-            max_iterations (int): maximum number of iterations that the IK solver will attempt before giving up
-        """
-        self._ik_config.ccd_max_iterations = max_iterations
-
-    def set_descent_termination_delta(self, delta: float) -> None:
-        """Set the minimum delta between two solutions at which the IK solver may terminate due to the solution not improving anymore
-
-        Args:
-            delta (float): minimum delta between two solutions at which the IK solver may terminate due to the solution not improving anymore
-        """
-        self._ik_config.ccd_descent_termination_delta = delta
-
     def set_default_cspace_seeds(self, seeds: np.array) -> None:
         """Set a list of cspace seeds that the solver may use as starting points for solutions
 
@@ -216,16 +323,6 @@ class LulaKinematicsSolver(KinematicsSolver):
             seeds (np.array): An N x num_dof list of cspace seeds
         """
         self._default_cspace_seeds = seeds
-
-    def get_orientation_weight(self) -> float:
-        """Orientation weight describes a ratio of importance betwee hitting the position and orientation target.
-        A weight of 0 implies that the solver cares only about the orientation target.  When no orientation target is given
-        to compute_inverse_kinematics(), a weight of 0 is automatically used over the default.
-
-        Returns:
-            float: Ratio describing the relative importance of the orientation target vs. the position target when solving IK
-        """
-        return self._default_ccd_orientation_weight
 
     def get_default_orientation_tolerance(self) -> float:
         """Get the default orientation tolerance to be used when calculating IK when none is specified
@@ -243,22 +340,6 @@ class LulaKinematicsSolver(KinematicsSolver):
             float: l-2 norm of acceptable position error (in stage units) between the target and achieved translations
         """
         return self._default_position_tolerance / self._meters_per_unit
-
-    def get_max_iterations(self) -> int:
-        """Get the maximum number of iterations that the IK solver will attempt before giving up
-
-        Returns:
-            int: maximum number of iterations that the IK solver will attempt before giving up
-        """
-        return self._ik_config.ccd_max_iterations
-
-    def get_descent_termination_delta(self) -> float:
-        """Get the minimum delta between two solutions at which the IK solver may terminate due to the solution not improving anymore
-
-        Returns:
-            float: minimum delta between two solutions at which the IK solver may terminate due to the solution not improving anymore
-        """
-        return self._ik_config.ccd_descent_termination_delta
 
     def get_default_cspace_seeds(self) -> List[np.array]:
         """Get a list of cspace seeds that the solver may use as starting points for solutions
@@ -353,3 +434,52 @@ class LulaKinematicsSolver(KinematicsSolver):
         # e.g. rotating pi rad about the z axis maps to a norm of 2.0 when comparing the x columns
 
         return np.linalg.norm(np.subtract([1, 0], [np.cos(tol), np.sin(tol)]))
+
+
+LulaKinematicsSolver.bfgs_cspace_limit_biasing.__doc__ = (
+    lula.CyclicCoordDescentIkConfig.bfgs_cspace_limit_biasing.__doc__
+)
+
+LulaKinematicsSolver.bfgs_cspace_limit_biasing_weight.__doc__ = (
+    lula.CyclicCoordDescentIkConfig.bfgs_cspace_limit_biasing_weight.__doc__
+)
+
+LulaKinematicsSolver.bfgs_cspace_limit_penalty_region.__doc__ = (
+    lula.CyclicCoordDescentIkConfig.bfgs_cspace_limit_penalty_region.__doc__
+)
+
+LulaKinematicsSolver.bfgs_gradient_norm_termination.__doc__ = (
+    lula.CyclicCoordDescentIkConfig.bfgs_gradient_norm_termination.__doc__
+)
+
+LulaKinematicsSolver.bfgs_gradient_norm_termination_coarse_scale_factor.__doc__ = (
+    lula.CyclicCoordDescentIkConfig.bfgs_gradient_norm_termination_coarse_scale_factor.__doc__
+)
+
+LulaKinematicsSolver.bfgs_max_iterations.__doc__ = lula.CyclicCoordDescentIkConfig.bfgs_max_iterations.__doc__
+
+LulaKinematicsSolver.bfgs_orientation_weight.__doc__ = lula.CyclicCoordDescentIkConfig.bfgs_orientation_weight.__doc__
+
+LulaKinematicsSolver.bfgs_position_weight.__doc__ = lula.CyclicCoordDescentIkConfig.bfgs_position_weight.__doc__
+
+LulaKinematicsSolver.ccd_bracket_search_num_uniform_samples.__doc__ = (
+    lula.CyclicCoordDescentIkConfig.ccd_bracket_search_num_uniform_samples.__doc__
+)
+
+LulaKinematicsSolver.ccd_descent_termination_delta.__doc__ = (
+    lula.CyclicCoordDescentIkConfig.ccd_descent_termination_delta.__doc__
+)
+
+LulaKinematicsSolver.ccd_max_iterations.__doc__ = lula.CyclicCoordDescentIkConfig.ccd_max_iterations.__doc__
+
+LulaKinematicsSolver.ccd_orientation_weight.__doc__ = lula.CyclicCoordDescentIkConfig.ccd_orientation_weight.__doc__
+
+LulaKinematicsSolver.ccd_position_weight.__doc__ = lula.CyclicCoordDescentIkConfig.ccd_position_weight.__doc__
+
+LulaKinematicsSolver.irwin_hall_sampling_order.__doc__ = (
+    lula.CyclicCoordDescentIkConfig.irwin_hall_sampling_order.__doc__
+)
+
+LulaKinematicsSolver.max_num_descents.__doc__ = lula.CyclicCoordDescentIkConfig.max_num_descents.__doc__
+
+LulaKinematicsSolver.sampling_seed.__doc__ = lula.CyclicCoordDescentIkConfig.sampling_seed.__doc__
