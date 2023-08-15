@@ -781,7 +781,8 @@ url = "https://gitlab-master.nvidia.com/omniverse/ov-create/-/raw/release/2023.2
 deps_for_isaac = [
   "omni.kit.livestream.native-2.3.0",
   "omni.replicator.composer-1.2.13",
-  "omni.replicator.core-1.10.1",
+  "omni.replicator.replicator_yaml-2.0.0",
+  "omni.replicator.core-1.10.2",
   "omni.sensors.fov_preview_visualization-0.1.0-isaacsim.0",
   "omni.sensors.nv.beams-0.1.2-isaacsim.0",
   "omni.sensors.nv.camera-0.6.0-isaacsim.0",
