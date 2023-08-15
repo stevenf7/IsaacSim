@@ -1,4 +1,7 @@
 # Changelog
+## [4.13.0] - 2023-08-14
+### Changed
+- Made stronger changes to IK interface to expose every property available in the Lula IK solver.
 
 ## [4.12.0] - 2023-08-06
 ### Changed

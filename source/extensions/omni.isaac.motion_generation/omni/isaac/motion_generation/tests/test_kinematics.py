@@ -199,7 +199,7 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         robot_name = "UR10"
         robot_prim_path = "/ur10"
         frame = "ee_link"
-        # await self._test_lula_ik(usd_path,robot_name,robot_prim_path,frame,np.array([40,60,80]),np.array([0,1,0,0]),1,.1)
+
         await self._test_lula_ik(
             usd_path,
             robot_name,
@@ -207,6 +207,19 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
             frame,
             np.array([0.40, 0.40, 0.80]),
             None,
+            1,
+            0.1,
+            base_pose=np.array([0.10, 0, 0.5]),
+            base_orient=np.array([0.1, 0, 0.3, 0.7]),
+        )
+
+        await self._test_lula_ik(
+            usd_path,
+            robot_name,
+            robot_prim_path,
+            frame,
+            np.array([0.40, 0.40, 0.80]),
+            np.array([0.6, 0, 0, -1]),
             1,
             0.1,
             base_pose=np.array([0.10, 0, 0.5]),
@@ -315,6 +328,71 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
 
         else:
             carb.log_warn("Frame " + frame + " does not exist on USD robot")
+
+    async def test_lula_ik_properties(self):
+        robot_name = "UR10"
+
+        kinematics_config = interface_config_loader.load_supported_lula_kinematics_solver_config(robot_name)
+        lk = LulaKinematicsSolver(**kinematics_config)
+
+        import lula
+
+        lk.bfgs_cspace_limit_biasing = lula.CyclicCoordDescentIkConfig.CSpaceLimitBiasing.DISABLE
+        self.assertTrue(lk.bfgs_cspace_limit_biasing == lula.CyclicCoordDescentIkConfig.CSpaceLimitBiasing.DISABLE)
+
+        lk.bfgs_cspace_limit_biasing_weight = 0.1
+        self.assertTrue(lk.bfgs_cspace_limit_biasing_weight == 0.1)
+
+        lk.bfgs_cspace_limit_penalty_region = 0.1
+        self.assertTrue(lk.bfgs_cspace_limit_penalty_region == 0.1)
+
+        lk.bfgs_gradient_norm_termination = False
+        self.assertTrue(lk.bfgs_gradient_norm_termination == False)
+
+        lk.bfgs_gradient_norm_termination_coarse_scale_factor = 2.0
+        self.assertTrue(lk.bfgs_gradient_norm_termination_coarse_scale_factor == 2.0)
+
+        lk.bfgs_max_iterations = 101
+        self.assertTrue(lk.bfgs_max_iterations == 101)
+
+        lk.bfgs_orientation_weight = 0.5
+        self.assertTrue(lk.bfgs_orientation_weight == 0.5)
+
+        lk.bfgs_position_weight = 0.5
+        self.assertTrue(lk.bfgs_position_weight == 0.5)
+
+        lk.ccd_bracket_search_num_uniform_samples = 13
+        self.assertTrue(lk.ccd_bracket_search_num_uniform_samples == 13)
+
+        lk.ccd_descent_termination_delta = 0.01
+        self.assertTrue(lk.ccd_descent_termination_delta == 0.01)
+
+        lk.ccd_max_iterations = 15
+        self.assertTrue(lk.ccd_max_iterations == 15)
+
+        lk.ccd_orientation_weight = 0.3
+        self.assertTrue(lk.ccd_orientation_weight == 0.3)
+
+        lk.ccd_position_weight = 0.8
+        self.assertTrue(lk.ccd_position_weight == 0.8)
+
+        lk.cspace_seeds = []
+        self.assertTrue(lk.cspace_seeds == [])
+
+        lk.irwin_hall_sampling_order = 4
+        self.assertTrue(lk.irwin_hall_sampling_order == 4)
+
+        lk.max_num_descents = 51
+        self.assertTrue(lk.max_num_descents == 51)
+
+        lk.orientation_tolerance = 0.1
+        self.assertTrue(lk.orientation_tolerance == 0.1)
+
+        lk.position_tolerance = 0.1
+        self.assertTrue(lk.position_tolerance == 0.1)
+
+        lk.sampling_seed = 16
+        self.assertTrue(lk.sampling_seed == 16)
 
     async def move_until_still(self, robot, timeout=500):
         h = 10
