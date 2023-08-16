@@ -93,6 +93,16 @@
                 "description": "elevation in rad [-pi/2, pi/2]",
                 "memoryType": "cpu",
                 "default": []
+            },
+            "height":{
+                "type": "uint",
+                "description": "Height of point cloud buffer, will always return 1",
+                "default": 1
+            },
+            "width":{
+                "type": "uint",
+                "description": "3 x Width or number of points in point cloud buffer",
+                "default": 0
             }
         }
     }

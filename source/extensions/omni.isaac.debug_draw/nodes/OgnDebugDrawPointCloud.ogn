@@ -40,7 +40,7 @@
                 "description": "Color of points",
                 "default": [0.75,0.75,1,1]
             },
-            "width": {
+            "size": {
                 "type": "float",
                 "description": "Size of points",
                 "default": 0.02

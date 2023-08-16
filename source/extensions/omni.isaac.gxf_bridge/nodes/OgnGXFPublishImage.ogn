@@ -108,6 +108,24 @@
                 "type": "float[]",
                 "description": "physical distortion model used for approximation, empty if not specified on camera prim",
                 "optional": true
+            },
+            "dataPtr": {
+                "type": "uint64",
+                "description": "Pointer to the raw image data",
+                "default": 0
+            },
+            "cudaDeviceIndex": {
+                "type": "int",
+                "description": "Index of the device where the data lives (-1 for host data)",
+                "default": -1
+            },
+            "bufferSize": {
+                "type": "uint",
+                "description": "Size (in bytes) of the buffer (0 if the input is a texture)"
+            },
+            "format": {
+                "type": "uint64",
+                "description": "Format"
             }
         },
         "outputs": {

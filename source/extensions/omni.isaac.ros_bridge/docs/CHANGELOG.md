@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.14.0] - 2023-08-11
+### Changed
+- Image and pcl nodes support gpu/cpu ptr data
+
 ## [1.13.0] - 2023-08-03
 ### Changed
 - Image and PCL publishers to use ptrs instead of arrays when possible to reduce memory copies

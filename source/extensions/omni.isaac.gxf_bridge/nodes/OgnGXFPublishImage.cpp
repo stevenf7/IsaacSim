@@ -9,10 +9,14 @@
 
 #include <carb/graphics/GraphicsTypes.h>
 
+#include <omni/isaac/utils/Buffer.h>
+#include <omni/isaac/utils/ScopedCudaDevice.h>
 #include <plugins/Core/GxfNode.h>
 
 #include <OgnGXFPublishImageDatabase.h>
 using namespace omni::isaac::gxf_bridge;
+
+extern "C" void textureFloatCopyToRawBuffer(cudaTextureObject_t, uint8_t*, uint32_t, uint32_t, cudaStream_t);
 
 
 class OgnGXFPublishImage : public GxfNode
@@ -34,27 +38,85 @@ public:
         auto encoding = db.inputs.encoding();
         int width = static_cast<int>(db.inputs.width()); // Eigen types define scalar as int
         int height = static_cast<int>(db.inputs.height());
-        const uint8_t* dataAsCPU = reinterpret_cast<const uint8_t*>(db.inputs.data.cpu().data());
+
+        if (db.inputs.cudaDeviceIndex() == -1)
+        {
+            if (db.inputs.dataPtr() != 0 && db.inputs.bufferSize() > 0)
+            {
+                // Data is on host as ptr, buffer size matches
+                state.mDataOnCPU.resize(db.inputs.bufferSize());
+                memcpy(state.mDataOnCPU.data(), reinterpret_cast<void*>(db.inputs.dataPtr()), db.inputs.bufferSize());
+            }
+            else if (db.inputs.dataPtr() == 0 && db.inputs.data.size() > 0)
+            {
+                // data is on host as ogn data, copy from cpu
+                state.mDataOnCPU.resize(db.inputs.data.size());
+                memcpy(state.mDataOnCPU.data(), reinterpret_cast<const uint8_t*>(db.inputs.data.cpu().data()),
+                       db.inputs.data.size());
+            }
+            else
+            {
+                db.logError("dataPtr null and data has size zero");
+                return false;
+            }
+        }
+        else
+        {
+            omni::isaac::utils::ScopedDevice(db.inputs.cudaDeviceIndex());
+
+            if (db.inputs.bufferSize() == 0)
+            {
+                omni::isaac::utils::ScopedCudaTextureObject srcTexObj(
+                    reinterpret_cast<cudaMipmappedArray_t>(db.inputs.dataPtr()), 0);
+                switch (static_cast<carb::graphics::Format>(db.inputs.format()))
+                {
+                case carb::graphics::Format::eR32_SFLOAT:
+                {
+                    state.mBuffer.setDevice(db.inputs.cudaDeviceIndex());
+                    state.mBuffer.resize(db.inputs.width() * db.inputs.height() * sizeof(float));
+                    textureFloatCopyToRawBuffer(srcTexObj, state.mBuffer.data(), width, height, 0);
+                    CUDA_CHECK(cudaGetLastError());
+                    auto src = reinterpret_cast<void*>(state.mBuffer.data());
+                    state.mDataOnCPU.resize(db.inputs.width() * db.inputs.height() * sizeof(float));
+                    CUDA_CHECK(cudaMemcpy(state.mDataOnCPU.data(), src,
+                                          db.inputs.width() * db.inputs.height() * sizeof(float), cudaMemcpyDeviceToHost));
+                }
+                break;
+
+                default:
+                    CARB_LOG_ERROR("SdRenderVarToRawArray : input texture format (%d) is not supported.",
+                                   static_cast<int>(db.inputs.format()));
+                    return false;
+                }
+            }
+            else
+            {
+                state.mDataOnCPU.resize(db.inputs.bufferSize());
+                CUDA_CHECK(cudaMemcpy(state.mDataOnCPU.data(), reinterpret_cast<void*>(db.inputs.dataPtr()),
+                                      db.inputs.bufferSize(), cudaMemcpyDeviceToHost));
+            }
+        }
+
         bool success = false;
         const double current_time = db.inputs.timeStamp();
         if (encoding == db.tokens.Type_RGB8)
         {
             success = publishColorImage<nvidia::gxf::VideoFormat::GXF_VIDEO_FORMAT_RGB>(
-                db, height, width, dataAsCPU, current_time);
+                db, height, width, state.mDataOnCPU.data(), current_time);
         }
         else if (encoding == db.tokens.Type_U8)
         {
             success = publishColorImage<nvidia::gxf::VideoFormat::GXF_VIDEO_FORMAT_GRAY>(
-                db, height, width, dataAsCPU, current_time);
+                db, height, width, state.mDataOnCPU.data(), current_time);
         }
         else if (encoding == db.tokens.Type_U16)
         {
             publishColorImage<nvidia::gxf::VideoFormat::GXF_VIDEO_FORMAT_GRAY16>(
-                db, height, width, dataAsCPU, current_time);
+                db, height, width, state.mDataOnCPU.data(), current_time);
         }
         else if (encoding == db.tokens.Type_F32)
         {
-            success = publishDepthImage<float>(db, height, width, 1, dataAsCPU, current_time);
+            success = publishDepthImage<float>(db, height, width, 1, state.mDataOnCPU.data(), current_time);
         }
         else
         {
@@ -267,6 +329,8 @@ private:
                                          ::nvidia::isaac::geometry::DistortionModel::kPerspective);
         }
     }
+    omni::isaac::utils::DeviceBuffer mBuffer;
+    omni::isaac::utils::HostBuffer mDataOnCPU;
 };
 
 REGISTER_OGN_NODE()

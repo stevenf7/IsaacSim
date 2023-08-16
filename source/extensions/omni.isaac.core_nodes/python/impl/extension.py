@@ -13,13 +13,14 @@ Support required by the Carbonite extension loader
 import copy
 
 import carb
+import numpy as np
 import omni.ext
 import omni.kit.commands
-import omni.replicator.core as rep
 import omni.syntheticdata
 import omni.syntheticdata._syntheticdata as sd
 from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.stage import get_current_stage
+from omni.replicator.core import AnnotatorRegistry
 from omni.syntheticdata import sensors
 from pxr import Sdf, Usd
 
@@ -34,6 +35,7 @@ class Extension(omni.ext.IExt):
     def on_startup(self):
         self.__interface = acquire_interface()
         self.registered_template = []
+        self.registered_annotators = []
         try:
             self.register_nodes()
         except Exception as e:
@@ -72,16 +74,23 @@ class Extension(omni.ext.IExt):
             get_prim_at_path(path).SetMetadata("hide_in_stage_window", True)
 
     def register_nodes(self):
-        # need to set the viewport manually at runtime
-        template_name = "IsaacReadCameraInfo"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND, "omni.isaac.core_nodes.IsaacReadCameraInfo"
-                ),
-                template_name=template_name,
-            )
-            self.registered_template.append(template)
+
+        ### Add template to no_op
+        annotator_name = "IsaacNoop"
+        AnnotatorRegistry.register_annotator_from_node(
+            name=annotator_name,
+            input_rendervars=["RenderProductCameraPrimPath"],
+            node_type_id="omni.graph.nodes.Noop",
+        )
+        self.registered_annotators.append(annotator_name)
+
+        annotator_name = "IsaacReadCameraInfo"
+        AnnotatorRegistry.register_annotator_from_node(
+            name=annotator_name,
+            input_rendervars=["RenderProductCameraPrimPath"],
+            node_type_id="omni.isaac.core_nodes.IsaacReadCameraInfo",
+        )
+        self.registered_annotators.append(annotator_name)
 
         ##### Time
         # TODO105 : ASYNCRENDERING VALIDATION
@@ -106,162 +115,127 @@ class Extension(omni.ext.IExt):
             )
             self.registered_template.append(template)
 
-        template_name = "IsaacReadTimes"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                    "omni.isaac.core_nodes.IsaacReadTimes",
-                    [
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "PostProcessDispatch",
-                            attributes_mapping={
-                                "outputs:renderResults": "inputs:renderResults",
-                                "outputs:exec": "inputs:execIn",
-                            },
-                        ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "IsaacReadTimesAOV",
-                            attributes_mapping={
-                                "outputs:execOut": "inputs:execIn",
-                            },
-                        ),
-                    ],
+        annotator_name = "IsaacReadTimes"
+        AnnotatorRegistry.register_annotator_from_node(
+            name=annotator_name,
+            input_rendervars=[
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    "PostProcessDispatch",
+                    attributes_mapping={
+                        "outputs:renderResults": "inputs:renderResults",
+                        "outputs:exec": "inputs:execIn",
+                    },
                 ),
-                template_name=template_name,
-            )
-            self.registered_template.append(template)
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    "IsaacReadTimesAOV",
+                    attributes_mapping={
+                        "outputs:execOut": "inputs:execIn",
+                    },
+                ),
+            ],
+            node_type_id="omni.isaac.core_nodes.IsaacReadTimes",
+        )
+        self.registered_annotators.append(annotator_name)
 
-        template_name = "IsaacReadSimulationTime"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                    "omni.isaac.core_nodes.IsaacReadSimulationTime",
-                    [
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "IsaacReadTimes",
-                            attributes_mapping={
-                                "outputs:swhFrameNumber": "inputs:swhFrameNumber",
-                            },
-                        )
-                    ],
-                ),
-                template_name=template_name,
-            )
-            self.registered_template.append(template)
+        annotator_name = "IsaacReadSimulationTime"
+        AnnotatorRegistry.register_annotator_from_node(
+            name=annotator_name,
+            input_rendervars=["IsaacReadTimes"],
+            node_type_id="omni.isaac.core_nodes.IsaacReadSimulationTime",
+        )
+        self.registered_annotators.append(annotator_name)
 
         ##### Simulation Gates
         for rv in sensors.get_synthetic_data()._ogn_rendervars:
-            if sensors.get_synthetic_data().is_node_template_registered(rv + "Ptr"):
-                template_name = rv + "IsaacSimulationGate"
-                if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-                    template = sensors.get_synthetic_data().register_node_template(
-                        omni.syntheticdata.SyntheticData.NodeTemplate(
-                            omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                            "omni.isaac.core_nodes.IsaacSimulationGate",
-                            [
-                                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                                    rv + "Ptr", attributes_mapping={"outputs:exec": "inputs:execIn"}
-                                )
-                            ],
-                        ),
-                        template_name=template_name,
-                    )
-                    self.registered_template.append(template)
+            annotator_name = rv + "IsaacSimulationGate"
+            try:
+                AnnotatorRegistry.register_annotator_from_node(
+                    name=annotator_name,
+                    input_rendervars=[
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            rv + "Ptr", attributes_mapping={"outputs:exec": "inputs:execIn"}
+                        )
+                    ],
+                    node_type_id="omni.isaac.core_nodes.IsaacSimulationGate",
+                )
+                self.registered_annotators.append(annotator_name)
+            except Exception as e:
+                print("EXCEPT:", e)
+
         # These gates connect to annotators
         # instance_segmentation = anotator name?
         # InstanceSegmentation = sensor type
         # InstanceSegmentationSD = rendervar
-        sensor_names = {
-            "instance_segmentation": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
-                "InstanceSegmentation"
-            ),
-            "semantic_segmentation": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
-                "SemanticSegmentation"
-            ),
-            "bounding_box_2d_tight": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
-                "BoundingBox2DTight"
-            ),
-            "bounding_box_2d_loose": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
-                "BoundingBox2DLoose"
-            ),
-            "bounding_box_3d": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("BoundingBox3D"),
-            "PostProcessDispatch": "PostProcessDispatch",
-        }
-        # TODO105 why postProcessDispatch?
-        for name in sensor_names.items():
-            template_name = name[1] + "IsaacSimulationGate"
-            if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-                template = sensors.get_synthetic_data().register_node_template(
-                    omni.syntheticdata.SyntheticData.NodeTemplate(
-                        omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                        "omni.isaac.core_nodes.IsaacSimulationGate",
-                        [
-                            omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                                name[0], attributes_mapping={"outputs:exec": "inputs:execIn"}
-                            )
-                        ],
-                    ),
-                    template_name=template_name,
-                )
-                self.registered_template.append(template)
+        annotator_names = [
+            "instance_segmentation_fast",
+            "semantic_segmentation",
+            "bounding_box_2d_tight_fast",
+            "bounding_box_2d_loose_fast",
+            "bounding_box_3d_fast",
+            "PostProcessDispatch",  # this is so we have a simulation gate on the base dispatch node if needed
+        ]
+        for name in annotator_names:
+            annotator_name = name + "IsaacSimulationGate"
+            AnnotatorRegistry.register_annotator_from_node(
+                name=annotator_name,
+                input_rendervars=[name],
+                node_type_id="omni.isaac.core_nodes.IsaacSimulationGate",
+            )
+            self.registered_annotators.append(annotator_name)
 
-        ##### RGBA to RGB
+        # ##### RGBA to RGB
         rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
-        template_name = rv + "IsaacConvertRGBAToRGB"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,  # node template stage
-                    "omni.isaac.core_nodes.IsaacConvertRGBAToRGB",  # node template type
-                    [
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(rv + "Ptr"),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            rv + "IsaacSimulationGate", attributes_mapping={"outputs:execOut": "inputs:execIn"}
-                        ),
-                    ],
-                    attributes={"inputs:encoding": "rgba8"},
+        annotator_name = rv + "IsaacConvertRGBAToRGB"
+        AnnotatorRegistry.register_annotator_from_node(
+            name=annotator_name,
+            input_rendervars=[
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(rv + "Ptr"),
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    rv + "IsaacSimulationGate", attributes_mapping={"outputs:execOut": "inputs:execIn"}
                 ),
-                template_name=template_name,
-            )
-            self.registered_template.append(template)
+            ],
+            node_type_id="omni.isaac.core_nodes.IsaacConvertRGBAToRGB",
+            init_params={"encoding": "rgba8"},
+            output_data_type=np.uint8,
+            output_channels=3,
+        )
+        self.registered_annotators.append(annotator_name)
 
-        # convert depth to pcl
+        # # convert depth to pcl
         rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.DistanceToImagePlane.name)
-        template_name = rv + "IsaacConvertDepthToPointCloud"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,  # node template stage
-                    "omni.isaac.core_nodes.IsaacConvertDepthToPointCloud",  # node template type
-                    [
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            rv + "Ptr",
-                            attributes_mapping={
-                                "outputs:data": "inputs:data",
-                                "outputs:width": "inputs:width",
-                                "outputs:height": "inputs:height",
-                                "outputs:format": "inputs:format",
-                            },
-                        ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "IsaacReadCameraInfo",
-                            attributes_mapping={
-                                "outputs:focalLength": "inputs:focalLength",
-                                "outputs:horizontalAperture": "inputs:horizontalAperture",
-                                "outputs:verticalAperture": "inputs:verticalAperture",
-                            },
-                        ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            rv + "IsaacSimulationGate", attributes_mapping={"outputs:execOut": "inputs:execIn"}
-                        ),
-                    ],
+        annotator_name = rv + "IsaacConvertDepthToPointCloud"
+        AnnotatorRegistry.register_annotator_from_node(
+            name=annotator_name,
+            input_rendervars=[
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    rv + "Ptr",
+                    attributes_mapping={
+                        "outputs:dataPtr": "inputs:dataPtr",
+                        "outputs:width": "inputs:width",
+                        "outputs:height": "inputs:height",
+                        "outputs:format": "inputs:format",
+                    },
                 ),
-                template_name=template_name,
-            )
-            self.registered_template.append(template)
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    "IsaacReadCameraInfo",
+                    attributes_mapping={
+                        "outputs:focalLength": "inputs:focalLength",
+                        "outputs:horizontalAperture": "inputs:horizontalAperture",
+                        "outputs:verticalAperture": "inputs:verticalAperture",
+                    },
+                ),
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    rv + "IsaacSimulationGate", attributes_mapping={"outputs:execOut": "inputs:execIn"}
+                ),
+            ],
+            node_type_id="omni.isaac.core_nodes.IsaacConvertDepthToPointCloud",
+            output_data_type=np.float32,
+            output_channels=3,
+        )
+        self.registered_annotators.append(annotator_name)
 
     def unregister_nodes(self):
+        for annotator in self.registered_annotators:
+            AnnotatorRegistry.unregister_annotator(annotator)
         for template in self.registered_template:
             sensors.get_synthetic_data().unregister_node_template(template)

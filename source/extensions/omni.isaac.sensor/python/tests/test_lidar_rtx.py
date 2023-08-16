@@ -12,6 +12,7 @@ import asyncio
 import numpy as np
 import omni.isaac.core.utils.numpy.rotations as rot_utils
 import omni.kit.test
+import omni.replicator.core as rep
 from omni.isaac.core import World
 from omni.isaac.core.articulations import Articulation
 from omni.isaac.core.objects import VisualCuboid
@@ -54,6 +55,7 @@ class TestRotatingLidarRtx(omni.kit.test.AsyncTestCase):
             )
         )
         await self.my_world.reset_async()
+        self._timeline = omni.timeline.get_timeline_interface()
         return
 
     # After running each test
@@ -94,6 +96,31 @@ class TestRotatingLidarRtx(omni.kit.test.AsyncTestCase):
             orientation=rot_utils.euler_angles_to_quats(np.array([0, 90, 0]), degrees=True),
         )
         return
+
+    async def test_read_data_annotator(self):
+        annotator = rep.AnnotatorRegistry.get_annotator("RtxSensorCpu" + "IsaacReadRTXLidarData")
+        annotator.attach([self._my_lidar.get_render_product_path()])
+
+        self._timeline.play()
+        for i in range(20):
+            await update_stage_async()
+        data = annotator.get_data()
+        # TODO: Improve Test
+        self.assertEqual(len(data["intensities"]), len(data["azimuths"]))
+        annotator.detach()
+
+    async def test_read_pcl_annotator(self):
+
+        annotator = rep.AnnotatorRegistry.get_annotator("RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud")
+        annotator.attach([self._my_lidar.get_render_product_path()])
+
+        self._timeline.play()
+        for i in range(20):
+            await update_stage_async()
+        data = annotator.get_data()
+        # TODO: Improve Test
+        self.assertTrue(np.all(np.linalg.norm(data["data"], axis=1) > 0))
+        annotator.detach()
 
     async def test_data_acquisition(self):
         for i in range(20):
@@ -158,6 +185,13 @@ class TestRotatingLidarRtx(omni.kit.test.AsyncTestCase):
         return
 
     async def test_get_properties(self):
+        await update_stage_async()
+        await update_stage_async()
+        await update_stage_async()
+        await update_stage_async()
+        await update_stage_async()
+        await update_stage_async()
+        await update_stage_async()
         await update_stage_async()
         await update_stage_async()
         await update_stage_async()

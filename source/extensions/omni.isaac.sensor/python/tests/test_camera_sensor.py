@@ -211,22 +211,28 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         viewport_api = get_active_viewport()
         render_product_path = viewport_api.get_render_product_path()
 
-        self.viewport_camera = self.my_world.scene.add(
-            Camera(
-                prim_path="/World/rig/viewport_camera",
-                name="viewport_camera",
-                position=np.array([0.0, 0.0, 25.0]),
-                resolution=(256, 256),
-                orientation=rot_utils.euler_angles_to_quats(np.array([0, 90, 0]), degrees=True),
-                render_product_path=render_product_path,
-            )
+        self.viewport_camera = Camera(
+            prim_path="/World/rig/viewport_camera",
+            name="viewport_camera",
+            position=np.array([0.0, 0.0, 25.0]),
+            resolution=(256, 256),
+            orientation=rot_utils.euler_angles_to_quats(np.array([0, 90, 0]), degrees=True),
+            render_product_path=render_product_path,
         )
+        self.viewport_camera.add_distance_to_image_plane_to_frame()
+        self.viewport_camera.add_pointcloud_to_frame()
+        self.viewport_camera.initialize()
+
+        await update_stage_async()
+        await update_stage_async()
+        await update_stage_async()
+        await update_stage_async()
         await update_stage_async()
         await update_stage_async()
         self.assertEqual(self.viewport_camera.get_rgba().size, 256 * 256 * 4)
         self.assertEqual(self.viewport_camera.get_rgb().size, 256 * 256 * 3)
         self.assertEqual(self.viewport_camera.get_depth().size, 256 * 256 * 1)
-        self.assertEqual(self.viewport_camera.get_point_cloud().size, 256 * 256 * 3)
+        self.assertEqual(self.viewport_camera.get_pointcloud().size, 256 * 256 * 3)
         self.assertEqual(self.viewport_camera.get_render_product_path(), render_product_path)
 
     async def test_get_current_frame(self):
