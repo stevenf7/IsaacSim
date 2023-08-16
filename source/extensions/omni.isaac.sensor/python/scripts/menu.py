@@ -42,8 +42,7 @@ class IsaacSensorMenu:
                         lambda a=weakref.proxy(self): create_prim(
                             prim_path=get_next_free_path("/Gemini", None),
                             prim_type="Camera",
-                            usd_path=get_assets_root_path()
-                            + "/Users/imadan@nvidia.com/Sensors/Orbbec/Gemini 2/orbbec_gemini2_V1.0.usd",
+                            usd_path=get_assets_root_path() + "/Isaac/Sensors/Orbbec/Gemini 2/orbbec_gemini2_V1.0.usd",
                         ),
                     ),
                     make_menu_item_description(
@@ -53,7 +52,7 @@ class IsaacSensorMenu:
                             prim_path=get_next_free_path("/Femto", None),
                             prim_type="Camera",
                             usd_path=get_assets_root_path()
-                            + "/Users/imadan@nvidia.com/Sensors/Orbbec/FemtoMega/orbbec_femtomega_v1.0.usd",
+                            + "/Isaac/Sensors/Orbbec/FemtoMega/orbbec_femtomega_v1.0.usd",
                         ),
                     ),
                     make_menu_item_description(
@@ -62,8 +61,7 @@ class IsaacSensorMenu:
                         lambda a=weakref.proxy(self): create_prim(
                             prim_path=get_next_free_path("/Hawk", None),
                             prim_type="Camera",
-                            usd_path=get_assets_root_path()
-                            + "/Users/imadan@nvidia.com/Sensors/NVIDIA/Hawk/hawk1_1.usd",
+                            usd_path=get_assets_root_path() + "/Isaac/Sensors/NVIDIA/Hawk/hawk1_1.usd",
                         ),
                     ),
                 ],
