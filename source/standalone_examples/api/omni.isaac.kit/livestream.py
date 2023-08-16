@@ -37,7 +37,7 @@ kit.set_setting("/ngx/enabled", False)
 # Default App: Streaming Client from the Omniverse Launcher
 enable_extension("omni.kit.livestream.native")
 
-# Enable WebSocket Livestream extension
+# Enable WebSocket Livestream extension(Deprecated)
 # Default URL: http://localhost:8211/streaming/client/
 # enable_extension("omni.services.streamclient.websocket")
 
