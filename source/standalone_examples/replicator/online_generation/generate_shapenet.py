@@ -269,7 +269,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
         valid_areas = (areas > 0.0) * (areas < (image.shape[1] * image.shape[2]))
 
         # Instance Segmentation
-        instance_data = self.wp.to_torch(gt["instanceSegmentation"]["data"]).squeeze()
+        instance_data = self.wp.to_torch(gt["instanceSegmentation"]["data"].view(self.wp.int32)).squeeze()
         path_to_instance_id = {v: int(k) for k, v in gt["instanceSegmentation"]["info"]["idToLabels"].items()}
 
         instance_list = [im[0] for im in gt_bbox]
