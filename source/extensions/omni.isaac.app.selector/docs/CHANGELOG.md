@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.3.0] - 2023-08-16
+
+### Changed
+- Deprecate WebSocket
+
 ## [2.2.1] - 2023-06-22
 
 ### Fixed

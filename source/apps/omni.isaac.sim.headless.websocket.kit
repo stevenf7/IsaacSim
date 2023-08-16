@@ -1,6 +1,6 @@
 [package]
-title = "Isaac Sim (Headless WebSocket)"
-description = "Headless Isaac Sim with Livestream using WebSocket"
+title = "Isaac Sim (Headless WebSocket)(Deprecated)"
+description = "Headless Isaac Sim with Livestream using WebSocket(Deprecated)"
 version = "2023.1.0"
 execFile = "isaac-sim.headless.websocket"
 
@@ -9,7 +9,7 @@ keywords = ["experience", "app", "usd"]
 
 [dependencies]
 "omni.isaac.sim.base" = {}
-"omni.services.streamclient.websocket" = {}
+"omni.services.streamclient.websocket" = {} # Note: WebSocket is deprecated (OM-105631)
 
 [settings]
 app.name = "Isaac-Sim"
@@ -23,7 +23,7 @@ folders = ["${app}/../exts", "${app}/../extscache", "${app}/../extsPhysics"]
 proto = "ws"
 
 [settings.app.window]
-title = "Isaac Sim Headless Websocket"
+title = "Isaac Sim Headless Websocket(Deprecated)"
 hideUi = false
 
 width = 1700
