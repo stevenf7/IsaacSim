@@ -126,7 +126,7 @@ COPY --from=isaac-sim /root/.nvidia-omniverse/config /root/.nvidia-omniverse/con
 
 # Copy Vulkan files
 COPY --from=isaac-sim /etc/vulkan/icd.d/nvidia_icd.json /etc/vulkan/icd.d/nvidia_icd.json
-COPY --from=isaac-sim /etc/vulkan/icd.d/nvidia_icd.json /etc/vulkan/implicit_layer.d/nvidia_layers.json
+COPY --from=isaac-sim /etc/vulkan/implicit_layer.d/nvidia_layers.json /etc/vulkan/implicit_layer.d/nvidia_layers.json
 
 WORKDIR /isaac-sim
 
