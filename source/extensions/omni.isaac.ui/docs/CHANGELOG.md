@@ -1,4 +1,9 @@
 # Changelog
+## [0.13.0] - 2023-08-15
+### Fixed
+- Added extra frame of waiting when using LoadButton and ResetButton after core.World.reset().
+    The extra frame resolves possible differences in rendered object position and queried position.
+
 ## [0.12.1] - 2023-08-09
 ### Changed
 - Updated ScrollingWindow wrapper to use only omni.ui as a dependency

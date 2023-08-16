@@ -192,6 +192,7 @@ class LoadButton(UIWidgetWrapper):
                 self.setup_scene_fn()
 
             await world.reset_async()
+            await update_stage_async()
             await world.pause_async()
 
             # User assets are now initialized, and the timeline is playing at timestep 0
@@ -301,6 +302,7 @@ class ResetButton(UIWidgetWrapper):
                 carb.log_warn("Reset Button was used when there is no instance of World.")
             else:
                 await world.reset_async()
+                await update_stage_async()
                 await world.pause_async()
 
             # User assets are initialized, and the timeline is playing at timestep 0

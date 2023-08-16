@@ -82,7 +82,7 @@ class TestUICoreConnectors(omni.kit.test.AsyncTestCase):
         await update_stage_async()
 
         # The LoadButton resets the Core World asynchronously, so it can take some time to get to the setup_post_load_fn
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(1)
 
         self.assertTrue(self.setup_scene_called)
         self.assertTrue(self.setup_post_load_called)
@@ -127,7 +127,7 @@ class TestUICoreConnectors(omni.kit.test.AsyncTestCase):
         await update_stage_async()
 
         # The ResetButton resets the Core World asynchronously, so it can take some time to get to the setup_post_load_fn
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0.25)
 
         self.assertTrue(self.pre_reset_called)
         self.assertTrue(self.post_reset_called)

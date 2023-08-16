@@ -1,4 +1,8 @@
 # Changelog
+## [1.4.0] - 2023-08-15
+### Fixed
+- Fixed bug in Loaded Scenario Template where XFormPrim no longer accepts an Sdf.Path
+
 ## [1.3.1] - 2023-08-08
 ### Fixed
 - Switch from ui.Window to ScrollingWindow wrapper for extensions because scrolling was broken
