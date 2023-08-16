@@ -52,7 +52,6 @@ class LidarRtx(BaseSensor):
         firing_dt: Optional[float] = None,
         rotation_frequency: Optional[int] = None,
         rotation_dt: Optional[float] = None,
-        resolution: Optional[Tuple[float, float]] = None,
         valid_range: Optional[Tuple[float, float]] = None,
         scan_type: Optional[str] = None,
         elevation_range: Optional[Tuple[float, float]] = None,
@@ -79,16 +78,20 @@ class LidarRtx(BaseSensor):
         else:
             if config_file_name is None:
                 file_index = 0
-                file_path = os.path.join(
-                    get_extension_path_from_name("omni.isaac.sensor"),
-                    "../../data/sensors/lidar/Temp_Config_" + str(file_index) + ".json",
-                )
-                file_name = "Temp_Config_" + str(file_index)
-                while os.path.isfile(file_name):
-                    file_index += 1
-                    file_name = os.path.join(
+                file_path = os.path.abspath(
+                    os.path.join(
                         get_extension_path_from_name("omni.isaac.sensor"),
                         "../../data/sensors/lidar/Temp_Config_" + str(file_index) + ".json",
+                    )
+                )
+                file_name = "Temp_Config_" + str(file_index)
+                while os.path.isfile(file_path):
+                    file_index += 1
+                    file_path = os.path.abspath(
+                        os.path.join(
+                            get_extension_path_from_name("omni.isaac.sensor"),
+                            "../../data/sensors/lidar/Temp_Config_" + str(file_index) + ".json",
+                        )
                     )
                 config_file_name = "Temp_Config_" + str(file_index)
                 self._temp_data_file_path = file_path
@@ -96,7 +99,6 @@ class LidarRtx(BaseSensor):
                     file_path=file_path,
                     firing_frequency=firing_frequency,
                     rotation_frequency=rotation_frequency,
-                    resolution=resolution,
                     valid_range=valid_range,
                     scan_type=scan_type,
                     elevation_range=elevation_range,
@@ -114,7 +116,8 @@ class LidarRtx(BaseSensor):
             _, sensor = omni.kit.commands.execute(
                 "IsaacSensorCreateRtxLidar", path=prim_path, parent=None, config=config_file_name
             )
-        self._render_product_path = rep.create.render_product(prim_path, resolution=(1, 1))
+        self._render_product = rep.create.render_product(prim_path, resolution=(1, 1))
+        self._render_product_path = self._render_product.path
         self._point_cloud_node_path = None
         self._flat_scan_node_path = None
         self._create_point_cloud_graph_node()
@@ -134,31 +137,46 @@ class LidarRtx(BaseSensor):
         self._current_frame["rendering_time"] = 0
         self._current_frame["rendering_frame"] = 0
         self._writer = None
+
+        self._attribute_map = {
+            "point_cloud_data": "data",
+            "range": "range",
+            "azimuth": "azimuth",
+            "elevation": "elevation",
+            "linear_depth_data": "linearDepthData",
+            "intensities_data": "intensitiesData",
+        }
         return
+
+    def __del__(self):
+        if self._render_product:
+            self._render_product.destroy()
+
+    def get_render_product_path(self) -> str:
+        """
+        Returns:
+            string: gets the path to the render product used by the lidar
+        """
+        return self._render_product_path
 
     def get_current_frame(self) -> dict:
         return self._current_frame
 
     def _create_point_cloud_graph_node(self):
-        template = sensors.get_synthetic_data().activate_node_template(
-            "RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud",
-            render_product_path_index=0,
-            render_product_paths=[self._render_product_path],
+        self._point_cloud_annotator = rep.AnnotatorRegistry.get_annotator(
+            "RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud"
         )
-        self._point_cloud_node_path = sensors.get_synthetic_data()._get_node_path(
-            templateName="RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud", renderProductPath=self._render_product_path
-        )
+        self._point_cloud_annotator.attach([self._render_product_path])
+        self._point_cloud_node_path = self._point_cloud_annotator.get_node().get_prim_path()
+        # print(self._point_cloud_node.get_attributes())
+        # print(self._point_cloud_node)
         return
 
     def _create_flat_scan_graph_node(self):
-        template = sensors.get_synthetic_data().activate_node_template(
-            "RtxSensorCpu" + "IsaacComputeRTXLidarFlatScan",
-            render_product_path_index=0,
-            render_product_paths=[self._render_product_path],
-        )
-        self._flat_scan_node_path = sensors.get_synthetic_data()._get_node_path(
-            templateName="RtxSensorCpu" + "IsaacComputeRTXLidarFlatScan", renderProductPath=self._render_product_path
-        )
+        self._flat_scan_annotator = rep.AnnotatorRegistry.get_annotator("RtxSensorCpu" + "IsaacComputeRTXLidarFlatScan")
+        self._flat_scan_annotator.attach([self._render_product_path])
+        self._flat_scan_node_path = self._flat_scan_annotator.get_node().get_prim_path()
+        # print(self._flat_scan_node)
         return
 
     def initialize(self, physics_sim_view=None) -> None:
@@ -269,6 +287,7 @@ class LidarRtx(BaseSensor):
             .get_attribute("outputs:referenceTimeNumerator")
             .get()
         )
+
         self._current_frame["rendering_time"] = self._core_nodes_interface.get_sim_time_at_swh_frame(
             self._current_frame["rendering_frame"]
         )
@@ -277,23 +296,14 @@ class LidarRtx(BaseSensor):
             attribute_name = attribute_name[0].lower() + attribute_name[1:]
             if key not in ["rendering_time", "rendering_frame"]:
                 if key in ["point_cloud_data", "range", "azimuth", "elevation"]:
-                    self._current_frame[key] = self._backend_utils.create_tensor_from_list(
-                        og.Controller()
-                        .node(self._point_cloud_node_path)
-                        .get_attribute("outputs:" + attribute_name)
-                        .get(),
-                        dtype="float32",
-                        device=self._device,
-                    )
+                    data = self._point_cloud_annotator.get_data()
+                    if key == "point_cloud_data":
+                        self._current_frame[key] = data[self._attribute_map[key]]
+                    else:
+                        self._current_frame[key] = data["info"][self._attribute_map[key]]
                 elif key in ["linear_depth_data", "intensities_data"]:
-                    self._current_frame[key] = self._backend_utils.create_tensor_from_list(
-                        og.Controller()
-                        .node(self._flat_scan_node_path)
-                        .get_attribute("outputs:" + attribute_name)
-                        .get(),
-                        dtype="float32",
-                        device=self._device,
-                    )
+                    data = self._flat_scan_annotator.get_data()
+                    self._current_frame[key] = data[self._attribute_map[key]]
         return
 
     def add_point_cloud_data_to_frame(self):
@@ -385,7 +395,6 @@ class LidarRtx(BaseSensor):
         file_path: str,
         firing_frequency: Optional[int] = None,
         rotation_frequency: Optional[int] = None,
-        resolution: Optional[Tuple[float, float]] = None,
         valid_range: Optional[Tuple[float, float]] = None,
         scan_type: Optional[str] = None,
         elevation_range: Optional[Tuple[float, float]] = None,
@@ -397,13 +406,13 @@ class LidarRtx(BaseSensor):
         pulse_time: float = None,
     ):
         file_name = file_path.split("/")[-1]
+        carb.log_info(f"writing to {file_path}")
         config = dict()
         config["class"] = "sensor"
         config["type"] = "lidar"
         config["name"] = str(file_name.split(".json")[0].replace("_", " "))
         config["driveWorksId"] = "GENERIC"
         config["profile"] = dict()
-        config["profile"]["maxReturns"] = 1
         if scan_type:
             config["profile"]["scanType"] = scan_type
         else:
@@ -418,18 +427,18 @@ class LidarRtx(BaseSensor):
         else:
             config["profile"]["nearRangeM"] = 1.0 / get_stage_units()
             config["profile"]["farRangeM"] = 200.0 / get_stage_units()
-        if elevation_range:
-            config["profile"]["upElevationDeg"] = math.degrees(elevation_range[0])
-            config["profile"]["downElevationDeg"] = math.degrees(elevation_range[1])
-        else:
-            config["profile"]["upElevationDeg"] = 10.0
-            config["profile"]["downElevationDeg"] = -15
         if azimuth_range:
             config["profile"]["startAzimuthDeg"] = math.degrees(azimuth_range[0])
             config["profile"]["endAzimuthDeg"] = math.degrees(azimuth_range[1])
         else:
             config["profile"]["startAzimuthDeg"] = 0.0
             config["profile"]["endAzimuthDeg"] = 360.0
+        if elevation_range:
+            config["profile"]["upElevationDeg"] = math.degrees(elevation_range[0])
+            config["profile"]["downElevationDeg"] = math.degrees(elevation_range[1])
+        else:
+            config["profile"]["upElevationDeg"] = 10.0
+            config["profile"]["downElevationDeg"] = -15
         if range_resolution:
             config["profile"]["rangeResolutionM"] = range_resolution / get_stage_units()
         else:
@@ -449,7 +458,7 @@ class LidarRtx(BaseSensor):
         if pulse_time:
             config["profile"]["pulseTimeNs"] = pulse_time * 1e9
         else:
-            config["profile"]["pulseTimeNs"] = 6e-9 / 1e9
+            config["profile"]["pulseTimeNs"] = 6e-9 * 1e9
         if firing_frequency:
             config["profile"]["reportRateBaseHz"] = firing_frequency
         else:
@@ -458,19 +467,13 @@ class LidarRtx(BaseSensor):
             config["profile"]["scanRateBaseHz"] = rotation_frequency
         else:
             config["profile"]["scanRateBaseHz"] = 10
-
-        if resolution:
-            config["profile"]["ResolutionDeg"] = [math.degrees(resolution[0]), math.degrees(resolution[1])]
-        else:
-            config["profile"]["ResolutionDeg"] = [1, 1]
         config["profile"]["minReflectance"] = 0.1
         config["profile"]["minReflectanceRange"] = 120.0
         config["profile"]["azimuthErrorMean"] = 0.0
         config["profile"]["azimuthErrorStd"] = 0.015
         config["profile"]["elevationErrorMean"] = 0.0
         config["profile"]["elevationErrorStd"] = 0.0000
-        config["profile"]["reportTypes"] = "Strongest, Last, Dual"
-        config["profile"]["scanRatesHz"] = [5.0, 10.0, 15.0, 20.0]
+        config["profile"]["maxReturns"] = 2
         config["profile"]["numberOfEmitters"] = 128
         config["profile"]["intensityMappingType"] = "LINEAR"
         config["profile"]["emitters"] = dict()
@@ -751,6 +754,22 @@ class LidarRtx(BaseSensor):
             0,
             0,
             0,
+            3500,
+            3500,
+            3500,
+            3500,
+            3500,
+            3500,
+            3500,
+            3500,
+            3500,
+            3500,
+            3500,
+            3500,
+            3500,
+            3500,
+            3500,
+            3500,
             7000,
             7000,
             7000,
@@ -767,6 +786,22 @@ class LidarRtx(BaseSensor):
             7000,
             7000,
             7000,
+            10500,
+            10500,
+            10500,
+            10500,
+            10500,
+            10500,
+            10500,
+            10500,
+            10500,
+            10500,
+            10500,
+            10500,
+            10500,
+            10500,
+            10500,
+            10500,
             14000,
             14000,
             14000,
@@ -783,6 +818,22 @@ class LidarRtx(BaseSensor):
             14000,
             14000,
             14000,
+            17500,
+            17500,
+            17500,
+            17500,
+            17500,
+            17500,
+            17500,
+            17500,
+            17500,
+            17500,
+            17500,
+            17500,
+            17500,
+            17500,
+            17500,
+            17500,
             21000,
             21000,
             21000,
@@ -799,70 +850,22 @@ class LidarRtx(BaseSensor):
             21000,
             21000,
             21000,
-            28000,
-            28000,
-            28000,
-            28000,
-            28000,
-            28000,
-            28000,
-            28000,
-            28000,
-            28000,
-            28000,
-            28000,
-            28000,
-            28000,
-            28000,
-            28000,
-            35000,
-            35000,
-            35000,
-            35000,
-            35000,
-            35000,
-            35000,
-            35000,
-            35000,
-            35000,
-            35000,
-            35000,
-            35000,
-            35000,
-            35000,
-            35000,
-            42000,
-            42000,
-            42000,
-            42000,
-            42000,
-            42000,
-            42000,
-            42000,
-            42000,
-            42000,
-            42000,
-            42000,
-            42000,
-            42000,
-            42000,
-            42000,
-            49000,
-            49000,
-            49000,
-            49000,
-            49000,
-            49000,
-            49000,
-            49000,
-            49000,
-            49000,
-            49000,
-            49000,
-            49000,
-            49000,
-            49000,
-            49000,
+            24500,
+            24500,
+            24500,
+            24500,
+            24500,
+            24500,
+            24500,
+            24500,
+            24500,
+            24500,
+            24500,
+            24500,
+            24500,
+            24500,
+            24500,
+            24500,
         ]
         with open(file_path, "w") as outfile:
             json.dump(config, outfile)

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.0] - 2023-08-15
+### Changed
+- rename width to size for point cloud debug node to prevent auto connection when using in replicator pipelines
+
 ## [0.3.0] - 2023-08-01
 ### Added
 - xPrim Axis Visualzier node

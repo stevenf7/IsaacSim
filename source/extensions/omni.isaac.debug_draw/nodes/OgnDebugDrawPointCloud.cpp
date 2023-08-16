@@ -62,7 +62,7 @@ public:
         auto& state = db.internalState<OgnDebugDrawPointCloud>();
 
         const carb::ColorRgba* color = (const carb::ColorRgba*)db.inputs.color().data();
-        float width = db.inputs.width();
+        float size = db.inputs.size();
         state.m_pointDrawing->clear();
         state.m_pointDrawing->clear();
 
@@ -70,7 +70,7 @@ public:
         {
             state.m_pointDrawing->setVertices(input, numVerts);
             state.m_pointDrawing->setColor(*color);
-            state.m_pointDrawing->setWidth(width);
+            state.m_pointDrawing->setWidth(size);
             // if there is no transform input, then don't use it.
             auto& nodeObj = db.abi_node();
             const AttributeObj attr = nodeObj.iNode->getAttributeByToken(nodeObj, inputs::transform.m_token);

@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.0] - 2023-08-15
+### Changed
+- Use Replicator Annotator class for nodes that can provide data
+- Point Cloud node returns width and height of data
+
 ## [1.3.2] - 2023-08-11
 ### Fixed
 - Import error in OgnIsaacGetViewportRenderProduct

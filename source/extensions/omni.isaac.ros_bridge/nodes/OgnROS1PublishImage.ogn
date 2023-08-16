@@ -68,6 +68,24 @@
                     }
                 },
                 "default": "rgb8"
+            },
+            "dataPtr": {
+                "type": "uint64",
+                "description": "Pointer to the raw rgba array data",
+                "default": 0
+            },
+            "cudaDeviceIndex": {
+                "type": "int",
+                "description": "Index of the device where the data lives (-1 for host data)",
+                "default": -1
+            },
+            "bufferSize": {
+                "type": "uint",
+                "description": "Size (in bytes) of the buffer (0 if the input is a texture)"
+            },
+            "format": {
+                "type": "uint64",
+                "description": "Format"
             }
         }
     }

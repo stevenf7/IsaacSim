@@ -1,4 +1,12 @@
 # Changelog
+
+## [7.4.0] - 2023-08-15
+### Changed
+- RTX point cloud node returns width and height of buffer
+- Convert RTX templates to annotators
+### Fixed 
+- RTX lidar class not returning data
+
 ## [7.3.0] - 2023-08-11
 ### Added
 - Add function to camera.py to scrap all Camera objects in the scene 

@@ -10,10 +10,12 @@
 import gc
 
 import carb
+import numpy as np
 import omni.ext
 import omni.kit.commands
 import omni.replicator.core as rep
 from omni.isaac.core.utils.stage import traverse_stage
+from omni.replicator.core import AnnotatorRegistry
 from omni.syntheticdata import sensors
 
 from .. import _sensor
@@ -29,6 +31,7 @@ class Extension(omni.ext.IExt):
         self._menu = IsaacSensorMenu(ext_id)
 
         self.registered_template = []
+        self.registered_annotators = []
         try:
             self.register_nodes()
         except Exception as e:
@@ -69,52 +72,32 @@ class Extension(omni.ext.IExt):
 
     def register_nodes(self):
 
-        ### Add template to no_op
-        template_name = "Noop"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                    "omni.graph.nodes.Noop",
-                ),
-                template_name=template_name,
-            )
-            self.registered_template.append(template)
-
         ### Add render var to omni.syntheticdata
         omni.syntheticdata.SyntheticData._ogn_rendervars[
             "RtxSensorCpu"
         ] = omni.syntheticdata.SyntheticData._rendererTemplateName
 
         ### Add template to export raw data.
-        template_name = "RtxSensorCpu" + "ExportRaw"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                    "omni.syntheticdata.SdRenderVarPtr",
-                    [
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu", (0,), None),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate("PostProcessDispatch"),
-                    ],
-                    {"inputs:renderVar": "RtxSensorCpu"},
-                ),
-                template_name=template_name,
-            )
-            self.registered_template.append(template)
+        annotator_name = "RtxSensorCpu" + "ExportRaw"
+        AnnotatorRegistry.register_annotator_from_node(
+            name=annotator_name,
+            input_rendervars=[
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu", (0,), None),
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate("PostProcessDispatch"),
+            ],
+            node_type_id="omni.syntheticdata.SdRenderVarPtr",
+            init_params={"renderVar": "RtxSensorCpu"},
+        )
+        self.registered_annotators.append(annotator_name)
 
         ### RtxLidar Point Cloud Print Info
-        template_name = "RtxSensorCpu" + "IsaacCreateRTXLidarScanBuffer"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                    "omni.isaac.sensor.IsaacCreateRTXLidarScanBuffer",
-                    [omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu" + "ExportRaw")],
-                ),
-                template_name=template_name,
-            )
-            self.registered_template.append(template)
+        annotator_name = "RtxSensorCpu" + "IsaacCreateRTXLidarScanBuffer"
+        AnnotatorRegistry.register_annotator_from_node(
+            name=annotator_name,
+            input_rendervars=["RtxSensorCpu" + "ExportRaw"],
+            node_type_id="omni.isaac.sensor.IsaacCreateRTXLidarScanBuffer",
+        )
+        self.registered_annotators.append(annotator_name)
 
         ### Add sync gate
         template_name = "RtxSensorCpu" + "IsaacSimulationGate"
@@ -138,30 +121,24 @@ class Extension(omni.ext.IExt):
         )
 
         ### Read RtxLidar Data
-        template_name = "RtxSensorCpu" + "IsaacReadRTXLidarData"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                    "omni.isaac.sensor.IsaacReadRTXLidarData",
-                    [omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu" + "ExportRaw")],
-                ),
-                template_name=template_name,
-            )
-            self.registered_template.append(template)
+        annotator_name = "RtxSensorCpu" + "IsaacReadRTXLidarData"
+        AnnotatorRegistry.register_annotator_from_node(
+            name=annotator_name,
+            input_rendervars=["RtxSensorCpu" + "ExportRaw"],
+            node_type_id="omni.isaac.sensor.IsaacReadRTXLidarData",
+        )
+        self.registered_annotators.append(annotator_name)
 
         ### RtxLidar Point Cloud
-        template_name = "RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                    "omni.isaac.sensor.IsaacComputeRTXLidarPointCloud",
-                    [omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu" + "ExportRaw")],
-                ),
-                template_name=template_name,
-            )
-            self.registered_template.append(template)
+        annotator_name = "RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud"
+        AnnotatorRegistry.register_annotator_from_node(
+            name=annotator_name,
+            input_rendervars=["RtxSensorCpu" + "ExportRaw"],
+            node_type_id="omni.isaac.sensor.IsaacComputeRTXLidarPointCloud",
+            output_data_type=np.float32,
+            output_channels=3,
+        )
+        self.registered_annotators.append(annotator_name)
 
         ### RtxLidar Point Cloud Print Info
         template_name = "RtxSensorCpu" + "IsaacPrintRTXLidarInfo"
@@ -191,17 +168,15 @@ class Extension(omni.ext.IExt):
             self.registered_template.append(template)
 
         ### RtxLidar Flat Scan
-        template_name = "RtxSensorCpu" + "IsaacComputeRTXLidarFlatScan"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                    "omni.isaac.sensor.IsaacComputeRTXLidarFlatScan",
-                    [omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu" + "ExportRaw")],
-                ),
-                template_name=template_name,
-            )
-            self.registered_template.append(template)
+        annotator_name = "RtxSensorCpu" + "IsaacComputeRTXLidarFlatScan"
+        AnnotatorRegistry.register_annotator_from_node(
+            name=annotator_name,
+            input_rendervars=["RtxSensorCpu" + "ExportRaw"],
+            node_type_id="omni.isaac.sensor.IsaacComputeRTXLidarFlatScan",
+            output_data_type=np.float32,
+            output_channels=3,
+        )
+        self.registered_annotators.append(annotator_name)
 
         # RTX lidar Debug Draw Writer
         rep.writers.register_node_writer(
@@ -295,5 +270,7 @@ class Extension(omni.ext.IExt):
     def unregister_nodes(self):
         for template in self.registered_template:
             sensors.get_synthetic_data().unregister_node_template(template)
+        for annotator in self.registered_annotators:
+            AnnotatorRegistry.unregister_annotator(annotator)
         for writer in rep.WriterRegistry.get_writers(category="omni.isaac.sensor"):
             rep.writers.unregister_writer(writer)

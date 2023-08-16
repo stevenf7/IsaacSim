@@ -67,6 +67,8 @@ public:
         db.outputs.cudaDeviceIndex() = db.inputs.cudaDeviceIndex();
         db.outputs.bufferSize() = static_cast<uint32_t>(state.mBuffer.sizeInBytes());
         db.outputs.execOut() = kExecutionAttributeStateEnabled;
+        db.outputs.height() = 1;
+        db.outputs.width() = static_cast<uint32_t>(state.mBuffer.size());
         return true;
     }
 

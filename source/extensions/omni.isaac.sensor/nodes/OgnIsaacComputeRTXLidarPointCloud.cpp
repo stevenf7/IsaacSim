@@ -135,6 +135,8 @@ public:
         db.outputs.range().resize(0);
         db.outputs.azimuth().resize(0);
         db.outputs.elevation().resize(0);
+        db.outputs.width() = 0;
+        db.outputs.height() = 1;
 
         db.outputs.exec() = passThroughReturnValue ? kExecutionAttributeStateEnabled : kExecutionAttributeStateDisabled;
 #if __DEBUG_PRINT_ON
@@ -260,6 +262,8 @@ public:
         db.outputs.dataPtr() = reinterpret_cast<uint64_t>(state.mDataPtr.get());
         db.outputs.bufferSize() = outSize * sizeof(pxr::GfVec3f);
         db.outputs.cudaDeviceIndex() = -1; // TODO
+        db.outputs.width() = static_cast<uint32_t>(outSize);
+        db.outputs.height() = 1;
 
 #define _DEF_OUT_VAR(outName)                                                                                          \
     auto& db_outputs_##outName = db.outputs.outName();                                                                 \

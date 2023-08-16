@@ -18,6 +18,7 @@
 #include "sensor_msgs/PointCloud2.h"
 
 #include <omni/isaac/ros/RosNode.h>
+#include <omni/isaac/utils/ScopedCudaDevice.h>
 
 #include <OgnROS1PublishPointCloudDatabase.h>
 
@@ -65,23 +66,51 @@ public:
     {
         CARB_PROFILE_ZONE(0, "Lidar Point Cloud Pub");
 
-        if (!db.inputs.pointCloudData.isValid())
-        {
-            db.logError("Buffer is invalid");
-            return;
-        }
         // Setup ROS PointCloud2 Message
         sensor_msgs::PointCloud2 point_cloud_msg;
         point_cloud_msg.is_dense = true;
         point_cloud_msg.header.frame_id = mFrameId;
         point_cloud_msg.height = 1;
         point_cloud_msg.point_step = sizeof(GfVec3f);
-        point_cloud_msg.width = db.inputs.pointCloudData.size();
-        point_cloud_msg.row_step = point_cloud_msg.point_step * db.inputs.pointCloudData.size();
-        point_cloud_msg.data.resize(db.inputs.pointCloudData.size() * sizeof(GfVec3f));
+        point_cloud_msg.width = 0;
+        point_cloud_msg.row_step = 0;
 
-        std::memcpy(&point_cloud_msg.data[0], db.inputs.pointCloudData().data(),
-                    db.inputs.pointCloudData.size() * sizeof(GfVec3f));
+        if (db.inputs.cudaDeviceIndex() == -1)
+        {
+            if (db.inputs.dataPtr() != 0)
+            {
+                point_cloud_msg.width = db.inputs.bufferSize() / point_cloud_msg.point_step;
+                point_cloud_msg.row_step = db.inputs.bufferSize();
+                size_t totalBytes = point_cloud_msg.row_step;
+
+                point_cloud_msg.data.resize(totalBytes);
+                // Data is on host as ptr, buffer size matches
+                memcpy(&point_cloud_msg.data[0], reinterpret_cast<void*>(db.inputs.dataPtr()), totalBytes);
+            }
+
+            else if (db.inputs.dataPtr() == 0)
+            {
+                point_cloud_msg.width = db.inputs.data.size();
+                point_cloud_msg.row_step = point_cloud_msg.point_step * db.inputs.data.size();
+                size_t totalBytes = point_cloud_msg.row_step;
+                // data is on host as ogn data, copy from cpu
+                memcpy(&point_cloud_msg.data[0], reinterpret_cast<const uint8_t*>(db.inputs.data.cpu().data()),
+                       totalBytes);
+            }
+        }
+        else
+        {
+            if (db.inputs.dataPtr() != 0)
+            {
+                point_cloud_msg.width = db.inputs.bufferSize() / point_cloud_msg.point_step;
+                point_cloud_msg.row_step = db.inputs.bufferSize();
+                size_t totalBytes = point_cloud_msg.row_step;
+
+                omni::isaac::utils::ScopedDevice(db.inputs.cudaDeviceIndex());
+                auto src = reinterpret_cast<void*>(db.inputs.dataPtr());
+                CUDA_CHECK(cudaMemcpy(&point_cloud_msg.data[0], src, db.inputs.bufferSize(), cudaMemcpyDeviceToHost));
+            }
+        }
 
         pcl::PCLPointCloud2 pcl_pc2;
         pcl_pc2.fields.clear();

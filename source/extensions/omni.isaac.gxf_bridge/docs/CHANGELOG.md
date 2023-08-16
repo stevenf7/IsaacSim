@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.13.0] - 2023-08-11
+### Changed
+- GXF image publisher node supports gpu and cpu ptr data to avoid extra copies
+
 ## [0.12.8] - 2023-08-09
 ### Fixed
 - Switch from ui.Window to ScrollingWindow wrapper for extension because scrolling was broken

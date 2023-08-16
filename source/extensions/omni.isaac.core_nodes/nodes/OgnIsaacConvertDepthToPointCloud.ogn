@@ -71,6 +71,16 @@
             "bufferSize": {
                 "type": "uint",
                 "description": "Size (in bytes) of the buffer (0 if the input is a texture)"
+            },
+            "height":{
+                "type": "uint",
+                "description": "Height of point cloud buffer, will always return 1",
+                "default": 1
+            },
+            "width":{
+                "type": "uint",
+                "description": "number of points in point cloud buffer",
+                "default": 0
             }
         }
     }
