@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.0] - 2023-08-01
+### Added
+- Added new robots to Create -> Isaac -> Robots menu
+
 ## [0.2.5] - 2023-06-12
 ### Changed
 - Update to kit 105.1, omni.usd.utils renamed omni.usd
