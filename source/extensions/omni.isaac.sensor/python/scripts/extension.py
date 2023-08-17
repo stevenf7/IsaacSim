@@ -78,17 +78,21 @@ class Extension(omni.ext.IExt):
         ] = omni.syntheticdata.SyntheticData._rendererTemplateName
 
         ### Add template to export raw data.
-        annotator_name = "RtxSensorCpu" + "ExportRaw"
-        AnnotatorRegistry.register_annotator_from_node(
-            name=annotator_name,
-            input_rendervars=[
-                omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu", (0,), None),
-                omni.syntheticdata.SyntheticData.NodeConnectionTemplate("PostProcessDispatch"),
-            ],
-            node_type_id="omni.syntheticdata.SdRenderVarPtr",
-            init_params={"renderVar": "RtxSensorCpu"},
-        )
-        self.registered_annotators.append(annotator_name)
+        template_name = "RtxSensorCpu" + "ExportRaw"
+        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
+            template = sensors.get_synthetic_data().register_node_template(
+                omni.syntheticdata.SyntheticData.NodeTemplate(
+                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
+                    "omni.syntheticdata.SdRenderVarPtr",
+                    [
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu", (0,), None),
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate("PostProcessDispatch"),
+                    ],
+                    {"inputs:renderVar": "RtxSensorCpu"},
+                ),
+                template_name=template_name,
+            )
+            self.registered_template.append(template)
 
         ### RtxLidar Point Cloud Print Info
         annotator_name = "RtxSensorCpu" + "IsaacCreateRTXLidarScanBuffer"

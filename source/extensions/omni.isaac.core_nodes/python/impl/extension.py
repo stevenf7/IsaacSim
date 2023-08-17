@@ -74,7 +74,7 @@ class Extension(omni.ext.IExt):
             get_prim_at_path(path).SetMetadata("hide_in_stage_window", True)
 
     def register_nodes(self):
-
+        ## Annotators
         ### Add template to no_op
         annotator_name = "IsaacNoop"
         AnnotatorRegistry.register_annotator_from_node(
@@ -147,21 +147,22 @@ class Extension(omni.ext.IExt):
 
         ##### Simulation Gates
         for rv in sensors.get_synthetic_data()._ogn_rendervars:
-            annotator_name = rv + "IsaacSimulationGate"
-            try:
-                AnnotatorRegistry.register_annotator_from_node(
-                    name=annotator_name,
-                    input_rendervars=[
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            rv + "Ptr", attributes_mapping={"outputs:exec": "inputs:execIn"}
-                        )
-                    ],
-                    node_type_id="omni.isaac.core_nodes.IsaacSimulationGate",
-                )
-                self.registered_annotators.append(annotator_name)
-            except Exception as e:
-                print("EXCEPT:", e)
-
+            if sensors.get_synthetic_data().is_node_template_registered(rv + "Ptr"):
+                template_name = rv + "IsaacSimulationGate"
+                if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
+                    template = sensors.get_synthetic_data().register_node_template(
+                        omni.syntheticdata.SyntheticData.NodeTemplate(
+                            omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
+                            "omni.isaac.core_nodes.IsaacSimulationGate",
+                            [
+                                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                                    rv + "Ptr", attributes_mapping={"outputs:exec": "inputs:execIn"}
+                                )
+                            ],
+                        ),
+                        template_name=template_name,
+                    )
+                    self.registered_template.append(template)
         # These gates connect to annotators
         # instance_segmentation = anotator name?
         # InstanceSegmentation = sensor type
@@ -175,13 +176,21 @@ class Extension(omni.ext.IExt):
             "PostProcessDispatch",  # this is so we have a simulation gate on the base dispatch node if needed
         ]
         for name in annotator_names:
-            annotator_name = name + "IsaacSimulationGate"
-            AnnotatorRegistry.register_annotator_from_node(
-                name=annotator_name,
-                input_rendervars=[name],
-                node_type_id="omni.isaac.core_nodes.IsaacSimulationGate",
-            )
-            self.registered_annotators.append(annotator_name)
+            template_name = name + "IsaacSimulationGate"
+            if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
+                template = sensors.get_synthetic_data().register_node_template(
+                    omni.syntheticdata.SyntheticData.NodeTemplate(
+                        omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
+                        "omni.isaac.core_nodes.IsaacSimulationGate",
+                        [
+                            omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                                name, attributes_mapping={"outputs:exec": "inputs:execIn"}
+                            )
+                        ],
+                    ),
+                    template_name=template_name,
+                )
+                self.registered_template.append(template)
 
         # ##### RGBA to RGB
         rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
