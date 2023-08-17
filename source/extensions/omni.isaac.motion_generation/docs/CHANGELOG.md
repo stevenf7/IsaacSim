@@ -1,4 +1,11 @@
 # Changelog
+## [5.0.0] - 2023-08-15
+### Changed
+- Breaking Change: Updated ArticulationTrajectory, PathPlannerVisualizer, and ArticulationKinematics to use ArticulationSubset.make_articulation_action()
+    This will result in ArticulationActions being returned that have fewer dimensions because they are not padded with Nones
+### Fixed
+- Fixed robot loading in Trajectory Generator test cases to use add_reference_to_stage() instead of open_stage()
+
 ## [4.13.0] - 2023-08-14
 ### Changed
 - Made stronger changes to IK interface to expose every property available in the Lula IK solver.

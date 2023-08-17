@@ -51,10 +51,7 @@ class ArticulationTrajectory:
 
         position_target, velocity_target = self._trajectory.get_joint_targets(time)
 
-        position_action_np_array = self._active_joints_view.map_to_articulation_order(position_target)
-        velocity_action_np_array = self._active_joints_view.map_to_articulation_order(velocity_target)
-
-        return ArticulationAction(joint_positions=position_action_np_array, joint_velocities=velocity_action_np_array)
+        return self._active_joints_view.make_articulation_action(position_target, velocity_target)
 
     def get_action_sequence(self, timestep: float = None) -> List[ArticulationAction]:
         """Get a sequence of ArticulationActions which sample the entire Trajectory according to the provided timestep.

@@ -450,9 +450,6 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         trajectory = self._cspace_trajectory_planner.compute_c_space_trajectory(interpolated_plan)
         self.assertTrue(trajectory is not None, "Failed to Generate Trajectory connecting RRT waypoints!")
 
-        print("Trajectory Timespan: ", trajectory.end_time - trajectory.start_time)
-        print("Plan length:", len(interpolated_plan))
-
         discretized_trajectory = np.array(
             [
                 trajectory.get_joint_targets(t)[0]
