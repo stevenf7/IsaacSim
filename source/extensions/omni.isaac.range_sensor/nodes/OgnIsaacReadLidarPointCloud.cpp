@@ -13,6 +13,7 @@
 
 #include "omni/isaac/utils/UsdUtilities.h"
 
+#include <omni/fabric/FabricUSD.h>
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
 #include <omni/isaac/utils/BaseResetNode.h>
 #include <rangeSensorSchema/lidar.h>
@@ -51,10 +52,19 @@ public:
 
         if (state.mFirstFrame)
         {
+            const auto& prim = db.inputs.lidarPrim();
+            const char* primPath;
+            if (prim.size() > 0)
+            {
+                primPath = omni::fabric::toSdfPath(prim[0]).GetText();
+            }
+            else
+            {
+                db.logError("no prim path found for the lidar");
+                return false;
+            }
 
             state.mFirstFrame = false;
-
-            const char* primPath = db.inputs.lidarPrim.path();
 
             // Find our stage
             long stageId = context.iContext->getStageId(context);

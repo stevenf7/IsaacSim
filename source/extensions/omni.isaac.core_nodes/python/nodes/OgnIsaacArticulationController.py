@@ -80,10 +80,10 @@ class OgnIsaacArticulationController:
                 if db.inputs.usePath:
                     state.robot_prim = db.inputs.robotPath
                 else:
-                    if db.inputs.targetPrim.path is None:
+                    if len(db.inputs.targetPrim) == 0:
                         return False
                     else:
-                        state.robot_prim = db.inputs.targetPrim.path
+                        state.robot_prim = db.inputs.targetPrim[0].GetString()
 
                 # initialize the controller handle for the robot
                 state.initialize_controller()

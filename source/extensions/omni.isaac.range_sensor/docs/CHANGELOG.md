@@ -1,4 +1,8 @@
 # Changelog
+## [0.8.5] 0 2023-08-10
+### Changed
+- Changed lidar prim types from bundle to target
+
 ## [0.8.4] - 2023-06-23
 ### Added
 - Lidar now tracks time at which each beam was traced. (Bug 4143606)

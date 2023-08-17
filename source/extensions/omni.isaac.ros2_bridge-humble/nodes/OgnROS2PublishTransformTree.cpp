@@ -72,36 +72,31 @@ public:
 
             state.mStageUnits = UsdGeomGetStageMetersPerUnit(state.mUsdStage);
 
-            const pxr::UsdPrim thisPrim = state.mUsdStage->GetPrimAtPath(pxr::SdfPath(state.mThisPrimPath));
+            //  Finding target prims
+            const auto& targetPrims = db.inputs.targetPrims();
 
-            // Finidng parent prim
-            pxr::SdfPathVector parent;
-            pxr::TfToken parentPrimInput =
-                omni::fabric::toTfToken(OgnROS2PublishTransformTreeAttributes::inputs::parentPrim.m_token);
-
-            const pxr::UsdRelationship parentRel = thisPrim.GetRelationship(parentPrimInput);
-            parentRel.GetTargets(&parent);
-
-            if (parent.size() == 0)
+            if (targetPrims.size() > 0)
             {
-                state.mParentPath = pxr::SdfPath();
+                state.mTargets.resize(targetPrims.size());
+                std::transform(targetPrims.begin(), targetPrims.end(), state.mTargets.begin(),
+                               [](TargetPath path) { return omni::fabric::toSdfPath(path); });
             }
             else
             {
-                state.mParentPath = parent[0];
+                db.logError("Please specify atleast one target prim for the ROS pose tree component");
+                return false;
             }
 
-            // Finidng target prims
-            pxr::TfToken targetPrimInputs =
-                omni::fabric::toTfToken(OgnROS2PublishTransformTreeAttributes::inputs::targetPrims.m_token);
+            // Finding Parent Prim
+            const auto& parentPrim = db.inputs.parentPrim();
 
-            const pxr::UsdRelationship targetRel = thisPrim.GetRelationship(targetPrimInputs);
-            targetRel.GetTargets(&state.mTargets);
-
-            if (state.mTargets.size() == 0)
+            if (parentPrim.size() > 0)
             {
-                db.logWarning("Please specify atleast one target prim for the ROS pose tree component");
-                return false;
+                state.mParentPath = omni::fabric::toSdfPath(parentPrim[0]);
+            }
+            else
+            {
+                state.mParentPath = pxr::SdfPath();
             }
 
             // reset this object

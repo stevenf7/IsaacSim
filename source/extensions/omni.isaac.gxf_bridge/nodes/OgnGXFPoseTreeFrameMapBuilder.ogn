@@ -12,7 +12,7 @@
         "categories": "isaacGxf:publisher",
         "inputs": {
             "targetPrims": {
-                "type": "bundle",
+                "type": "target",
                 "description": "Target prims for which poses will be published. If prim is an articulation, the entire articulation tree will be published."
             },
             "frameNames": {

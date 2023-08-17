@@ -54,11 +54,11 @@ class OgnHolonomicRobotUsdSetup:
                 robot_prim_path = db.inputs.robotPrimPath
                 com_prim_path = db.inputs.comPrimPath
             else:
-                if db.inputs.robotPrim.attributes is []:
+                if len(db.inputs.robotPrim) == 0 or len(db.inputs.comPrim) == 0:
                     return False
                 else:
-                    robot_prim_path = db.inputs.robotPrim.path
-                    com_prim_path = db.inputs.comPrim.path
+                    robot_prim_path = db.inputs.robotPrim[0].GetString()
+                    com_prim_path = db.inputs.comPrim[0].GetString()
 
             if (robot_prim_path != state.robot_prim_path) or (com_prim_path != state.com_prim_path):
                 state.robot_prim_path = robot_prim_path

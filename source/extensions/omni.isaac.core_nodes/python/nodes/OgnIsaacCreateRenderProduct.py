@@ -47,7 +47,7 @@ class OgnIsaacCreateRenderProduct:
     @staticmethod
     def compute(db) -> bool:
         state = db.internal_state
-        if not db.inputs.cameraPrim.valid:
+        if len(db.inputs.cameraPrim) == 0:
             db.log_warn(f"Camera prim must be specified")
             return False
         if state.factory is None:
@@ -60,7 +60,7 @@ class OgnIsaacCreateRenderProduct:
                 )
                 name = state.render_product_path.split("/Render/RenderProduct_")[-1]
                 state.hydra_texture = state.factory.create_hydra_texture(
-                    name, db.inputs.width, db.inputs.height, "", db.inputs.cameraPrim.path, "rtx", True, True
+                    name, db.inputs.width, db.inputs.height, "", db.inputs.cameraPrim[0].GetString(), "rtx", True, True
                 )
             db.outputs.renderProductPath = state.render_product_path
         db.outputs.execOut = omni.graph.core.ExecutionAttributeState.ENABLED

@@ -22,9 +22,9 @@ import omni.graph.core as og
 import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd
+import usdrt.Sdf
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.physics import simulate_async
-from omni.isaac.core_nodes.scripts.utils import set_target_prims
 from pxr import Gf, Sdf
 
 from .common import add_carter, add_carter_ros, set_rotate, set_translate, wait_for_rosmaster_async
@@ -104,7 +104,10 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
                 graph_path,
                 {
                     og.Controller.Keys.CREATE_NODES: [("PublishTF", "omni.isaac.ros_bridge.ROS1PublishTransformTree")],
-                    og.Controller.Keys.SET_VALUES: [("PublishTF.inputs:topicName", "/tf")],
+                    og.Controller.Keys.SET_VALUES: [
+                        ("PublishTF.inputs:topicName", "/tf"),
+                        ("PublishTF.inputs:targetPrims", [usdrt.Sdf.Path("/Carter/chassis_link/odom")]),
+                    ],
                     og.Controller.Keys.CONNECT: [
                         (graph_path + "/on_playback_tick.outputs:tick", "PublishTF.inputs:execIn"),
                         (
@@ -116,12 +119,6 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
             )
         except Exception as e:
             print(e)
-
-        set_target_prims(
-            primPath=graph_path + "/PublishTF",
-            inputName="inputs:targetPrims",
-            targetPrimPaths=["/Carter/chassis_link/odom"],
-        )
 
         # move carter off origin
         carter_prim = stage.GetPrimAtPath("/Carter")
@@ -413,17 +410,11 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
                         ("diffController.inputs:wheelDistance", 0.5),
                         ("artController.inputs:jointNames", ["left_wheel", "right_wheel"]),
                         ("artController.inputs:usePath", False),
+                        ("computeOdom.inputs:chassisPrim", [usdrt.Sdf.Path("/carter")]),
+                        ("artController.inputs:targetPrim", [usdrt.Sdf.Path("/carter")]),
                     ],
                 },
             )
         except Exception as e:
             print(e)
-
-        set_target_prims(
-            primPath=graph_path + "/computeOdom", inputName="inputs:chassisPrim", targetPrimPaths=["/carter"]
-        )
-
-        set_target_prims(
-            primPath=graph_path + "/artController", inputName="inputs:targetPrim", targetPrimPaths=["/carter"]
-        )
         return graph, nodes

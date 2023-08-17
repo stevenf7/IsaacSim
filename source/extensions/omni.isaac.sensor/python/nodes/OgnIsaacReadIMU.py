@@ -60,8 +60,8 @@ class OgnIsaacReadIMU:
         state = db.internal_state
 
         if not state.initialized:
-            if db.inputs.imuPrim.valid:
-                state.imu_path = db.inputs.imuPrim.path
+            if len(db.inputs.imuPrim) > 0:
+                state.imu_path = db.inputs.imuPrim[0].GetString()
                 result = state.init_compute()
                 if not result:
                     db.outputs.linAcc = [0.0, 0.0, 0.0]

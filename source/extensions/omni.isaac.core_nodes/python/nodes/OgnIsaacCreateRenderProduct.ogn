@@ -25,7 +25,7 @@
                 "default": 720
             },
             "cameraPrim":{
-                "type": "bundle",
+                "type": "target",
                 "description": "Usd prim reference to the camera associated with this render product"
             }
 

@@ -28,9 +28,9 @@ CONFIG = {"renderer": "RayTracedLighting", "headless": False}
 simulation_app = SimulationApp(CONFIG)
 import omni
 import omni.graph.core as og
+import usdrt.Sdf
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils import extensions, nucleus, prims, rotations, stage, viewports
-from omni.isaac.core_nodes.scripts.utils import set_target_prims
 from pxr import Gf
 
 extensions.enable_extension("omni.isaac.ros_bridge")
@@ -96,16 +96,13 @@ try:
                 ("ReadLidarBeams.outputs:numRows", "PublishLidar.inputs:numRows"),
                 ("ReadLidarBeams.outputs:rotationRate", "PublishLidar.inputs:rotationRate"),
             ],
+            keys.SET_VALUES: [
+                ("ReadLidarBeams.inputs:lidarPrim", [usdrt.Sdf.Path(CARTER_STAGE_PATH + "/chassis_link/carter_lidar")])
+            ],
         },
     )
 except Exception as e:
     print(e)
-
-set_target_prims(
-    primPath=graph_path + "/ReadLidarBeams",
-    inputName="inputs:lidarPrim",
-    targetPrimPaths=[CARTER_STAGE_PATH + "/chassis_link/carter_lidar"],
-)
 
 simulation_app.update()
 

@@ -96,12 +96,12 @@ class OgnQuinticPathPlanner:
 
 def get_target_pos(inputs, state):
     g = []
-    if not inputs.targetPrim.valid:  # if targetPrim not provided
+    if len(inputs.targetPrim) == 0:  # if targetPrim not provided
         pos = inputs.targetPosition  # use double[3] position input
         _, _, rot = quatd4_to_euler(inputs.targetOrientation)  # and quaternion rotation input
         g = [pos[0], pos[1], rot]  # combine into list of useful data
     else:  # if targetPrim is provided
-        prim = state.stage.GetPrimAtPath(inputs.targetPrim.path)  # get targetPrim
+        prim = state.stage.GetPrimAtPath(inputs.targetPrim[0].GetString())  # get targetPrim
         m = omni.usd.get_world_transform_matrix(prim)  # get position/rotation matrix of targetPrim
         m.Orthonormalize()  # normalize vectors and make orthogonal
         pos = list(m.ExtractTranslation())  # get position double[3]

@@ -22,10 +22,10 @@ import omni.kit
 import omni.kit.commands
 import omni.kit.test
 import omni.replicator.core as rep
+import usdrt.Sdf
 from omni.isaac.core.utils.physics import simulate_async
 from omni.isaac.core.utils.render_product import create_hydra_texture
 from omni.isaac.core.utils.viewports import add_aov_to_viewport
-from omni.isaac.core_nodes.scripts.utils import set_target_prims
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.sensor import _sensor
@@ -189,6 +189,8 @@ class TestROS2RTXSensor(omni.kit.test.AsyncTestCase):
                         ("LaserScanPublish.inputs:topicName", "laser_scan"),
                         ("LaserScanPublish.inputs:type", "laser_scan"),
                         ("LaserScanPublish.inputs:resetSimulationTimeOnStop", True),
+                        ("PublishTF.inputs:targetPrims", usdrt.Sdf.Path("/sim_lidar")),
+                        ("PublishTF.inputs:parentPrim", [usdrt.Sdf.Path("/sim_lidar")]),
                     ],
                     og.Controller.Keys.CONNECT: [
                         ("OnPlaybackTick.outputs:tick", "PCLPublish.inputs:execIn"),
@@ -201,9 +203,6 @@ class TestROS2RTXSensor(omni.kit.test.AsyncTestCase):
         except Exception as e:
             print(e)
 
-        set_target_prims(
-            primPath="/ActionGraph" + "/PublishTF", inputName="inputs:targetPrims", targetPrimPaths=["/sim_lidar"]
-        )
         # enable debug rendering for test purposes
         rv = "RtxLidar"
         writer = rep.writers.get(rv + "DebugDrawPointCloud")

@@ -22,6 +22,7 @@ import omni.graph.core as og
 import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd
+import usdrt.Sdf
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.physics import simulate_async
 from omni.isaac.core.utils.stage import open_stage_async
@@ -98,7 +99,18 @@ class TestRos2PoseTree(omni.kit.test.AsyncTestCase):
                         ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
                         ("PublishTF", "omni.isaac.ros2_bridge.ROS2PublishTransformTree"),
                     ],
-                    og.Controller.Keys.SET_VALUES: [("PublishTF.inputs:topicName", "/tf_test")],
+                    og.Controller.Keys.SET_VALUES: [
+                        ("PublishTF.inputs:topicName", "/tf_test"),
+                        (
+                            "PublishTF.inputs:targetPrims",
+                            [
+                                usdrt.Sdf.Path("/panda"),
+                                usdrt.Sdf.Path("/cube"),
+                                usdrt.Sdf.Path("/panda/panda_hand/geometry"),
+                                usdrt.Sdf.Path("/panda/panda_hand"),
+                            ],
+                        ),
+                    ],
                     og.Controller.Keys.CONNECT: [
                         ("OnPlaybackTick.outputs:tick", "PublishTF.inputs:execIn"),
                         ("ReadSimTime.outputs:simulationTime", "PublishTF.inputs:timeStamp"),
@@ -107,13 +119,6 @@ class TestRos2PoseTree(omni.kit.test.AsyncTestCase):
             )
         except Exception as e:
             print(e)
-
-        # add target prims robot and cube
-        set_target_prims(
-            primPath="/ActionGraph/PublishTF",
-            inputName="inputs:targetPrims",
-            targetPrimPaths=["/panda", "/cube", "/panda/panda_hand/geometry", "/panda/panda_hand"],
-        )
 
         def spin():
             rclpy.spin_once(node, timeout_sec=0.1)
@@ -193,7 +198,22 @@ class TestRos2PoseTree(omni.kit.test.AsyncTestCase):
                         ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
                         ("PublishTF", "omni.isaac.ros2_bridge.ROS2PublishTransformTree"),
                     ],
-                    og.Controller.Keys.SET_VALUES: [("PublishTF.inputs:topicName", "/tf_test")],
+                    og.Controller.Keys.SET_VALUES: [
+                        ("PublishTF.inputs:topicName", "/tf_test"),
+                        (
+                            "PublishTF.inputs:targetPrims",
+                            [
+                                usdrt.Sdf.Path("/panda"),
+                                usdrt.Sdf.Path("/cube0/cube"),
+                                usdrt.Sdf.Path("/cube1/cube"),
+                                usdrt.Sdf.Path("/cube2/cube"),
+                            ],
+                        ),
+                        (
+                            "PublishTF.inputs:parentPrim",
+                            [usdrt.Sdf.Path("/panda")],
+                        ),
+                    ],
                     og.Controller.Keys.CONNECT: [
                         ("OnPlaybackTick.outputs:tick", "PublishTF.inputs:execIn"),
                         ("ReadSimTime.outputs:simulationTime", "PublishTF.inputs:timeStamp"),
@@ -202,13 +222,6 @@ class TestRos2PoseTree(omni.kit.test.AsyncTestCase):
             )
         except Exception as e:
             print(e)
-
-        # add target prims robot and cube
-        set_target_prims(
-            primPath="/ActionGraph/PublishTF",
-            inputName="inputs:targetPrims",
-            targetPrimPaths=["/panda", "/cube0/cube", "/cube1/cube", "/cube2/cube"],
-        )
 
         def spin():
             rclpy.spin_once(node, timeout_sec=0.1)

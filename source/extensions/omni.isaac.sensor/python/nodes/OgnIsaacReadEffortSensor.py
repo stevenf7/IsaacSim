@@ -30,7 +30,6 @@ class OgnIsaacReadEffortSensorInternalState(BaseResetNode):
     def init_compute(self):
         self.effort_sensor = EffortSensor(
             prim_path=self.prim_path,
-            dof_name=self.dof_name,
             sensor_period=self.sensor_period,
             use_latest_data=self.use_latest_data,
             enabled=self.enabled,
@@ -59,8 +58,14 @@ class OgnIsaacReadEffortSensor:
         state.use_latest_data = db.inputs.useLatestData
         state.enabled = db.inputs.enabled
         if not state.initialized:
-            state.prim_path = db.inputs.primPath
-            state.dof_name = db.inputs.dofName
+            if len(db.inputs.prim) > 0:
+                state.prim_path = db.inputs.prim[0].GetString()
+                state.parent_path = "/".join(state.prim_path.split("/")[:-1])
+                state.dof_name = state.prim_path.split("/")[-1]
+            else:
+                db.log_warn(f"Failed to create sensor, prim path missing")
+                return False
+
             result = state.init_compute()
             if not result:
                 db.outputs.sensorTime = 0
@@ -68,9 +73,13 @@ class OgnIsaacReadEffortSensor:
                 db.log_warn(f"Failed to create sensor at {state.prim_path} for joint {state.dof_name}")
                 return False
 
-        if state.prim_path != db.inputs.primPath:
-            state.prim_path = db.inputs.primPath
-            state.dof_name = db.inputs.dofName
+        state.prim_path = db.inputs.prim[0].GetString()
+        parent_path = "/".join(state.prim_path.split("/")[:-1])
+        dof_name = state.prim_path.split("/")[-1]
+
+        if state.parent_path != parent_path:
+            state.parent_path = parent_path
+            state.dof_name = dof_name
             try:
                 # if change prim path, need to delete, and recreate the effort sensor
                 state.custom_reset
@@ -82,8 +91,8 @@ class OgnIsaacReadEffortSensor:
                 db.log_warn(f"Effort sensor error, invalid art: {state.prim_path} or dof name: {state.dof_name}")
                 return False
 
-        elif state.dof_name != db.inputs.dofName:
-            state.dof_name = db.inputs.dofName
+        elif state.dof_name != dof_name:
+            state.dof_name = dof_name
             try:
                 state.effort_sensor.update_dof_name(state.dof_name)
             except:

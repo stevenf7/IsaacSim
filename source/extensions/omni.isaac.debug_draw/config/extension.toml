@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.4.0"
+version = "0.4.1"
 category = "Simulation"
 title = "Isaac Sim Debug Drawing"
 description = "Persistent Debug Drawing Helpers"

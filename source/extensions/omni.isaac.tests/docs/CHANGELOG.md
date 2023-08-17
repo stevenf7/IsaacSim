@@ -1,4 +1,7 @@
 # Changelog
+## [1.10.3] - 2023-08-09
+- Changed unit tests as the prim types of omnigraph nodes have been changed from bundle to target
+
 ## [1.10.2] - 2023-08-09
 ### Fixed
 - Added timecode to stage for test_stage_up_axis and test_stage_units

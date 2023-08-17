@@ -15,11 +15,11 @@ import omni.graph.core as og
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
+import usdrt.Sdf
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.rotations import quat_to_euler_angles
 from omni.isaac.core.utils.stage import open_stage_async
-from omni.isaac.core_nodes.scripts.utils import set_target_prims
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.dynamic_control import utils as dc_utils
 
@@ -70,11 +70,10 @@ def setup_robot_og(graph_path, lwheel_name, rwheel_name, robot_path, wheel_rad, 
                 ("ArticulationController.inputs:robotPath", robot_path),
                 ("DifferentialController.inputs:wheelRadius", wheel_rad),
                 ("DifferentialController.inputs:wheelDistance", wheel_dist),
+                ("computeOdom.inputs:chassisPrim", [usdrt.Sdf.Path(robot_path)]),
             ],
         },
     )
-
-    set_target_prims(primPath="/ActionGraph/computeOdom", inputName="inputs:chassisPrim", targetPrimPaths=[robot_path])
 
     return graph, nodes[3]
 

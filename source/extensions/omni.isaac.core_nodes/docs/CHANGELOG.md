@@ -1,4 +1,7 @@
 # Changelog
+## [1.4.1] - 2023-08-15
+### Changed
+- Changed omnigraph prim from bundle to target for OgnIsaacComputeOdometry, OgnIsaacArticulationController, OgnIsaacCreateRenderProduct, OgnIsaacSetCameraOnRenderProduct
 
 ## [1.4.0] - 2023-08-15
 ### Changed

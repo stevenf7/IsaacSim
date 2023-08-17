@@ -1,4 +1,7 @@
 # Changelog
+## [0.4.1] - 2023-08-11
+### Changed 
+- Updated ogn node prims types from bundle to ogn
 
 ## [0.4.0] - 2023-01-03
 ### Changed

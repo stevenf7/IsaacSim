@@ -110,10 +110,10 @@ class OgnIsaacPickPlaceController:
                 if db.inputs.usePath:
                     state.robot_prim_path = db.inputs.robotPrimPath
                 else:
-                    if db.inputs.targetPrim.path is None:
+                    if len(db.inputs.targetPrim.path) == None:
                         return False
                     else:
-                        state.robot_prim_path = db.inputs.targetPrim.path
+                        state.robot_prim_path = db.inputs.targetPrim[0].GetString()
 
                 # grab the task params
                 state.events_dt = db.inputs.eventsDT

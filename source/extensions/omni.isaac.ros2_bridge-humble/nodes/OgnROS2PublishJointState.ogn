@@ -21,7 +21,7 @@
                 "default" : 0
             },
             "targetPrim":{
-                "type": "bundle",
+                "type": "target",
                 "description": "USD reference to the robot prim"
             },
             "nodeNamespace": {

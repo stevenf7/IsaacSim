@@ -12,16 +12,16 @@
         "$comment": "Use this node to extract all the holonomic drive information from USD if the listed information are stored in the USD file already. If they are not in USD, you can manually set those values in the HolonomicController node",
         "inputs": {
             "robotPrim":{
-                "type": "bundle",
+                "type": "target",
                 "description": "prim for the robot's articulation root"
             },
             "comPrim":{
-                "type": "bundle",
+                "type": "target",
                 "description": "prim for the center of mass xform"
             },
             "usePath":{
                 "type": "bool",
-                "description": "use prim path instead of prim bundles",
+                "description": "use prim path instead of prim target",
                 "default": false
             },
             "robotPrimPath":{

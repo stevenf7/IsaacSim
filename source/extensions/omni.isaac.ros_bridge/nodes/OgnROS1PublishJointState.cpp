@@ -46,7 +46,17 @@ public:
         const GraphContextObj& context = db.abi_context();
 
         auto& state = db.internalState<OgnROS1PublishJointState>();
-        const char* primPath = db.inputs.targetPrim.path();
+        const auto& prim = db.inputs.targetPrim();
+        const char* primPath;
+        if (prim.size() > 0)
+        {
+            primPath = omni::fabric::toSdfPath(prim[0]).GetText();
+        }
+        else
+        {
+            db.logError("no prim path");
+            return false;
+        }
 
         // spin once calls reset automatically if it was not successful
         if (!state.spinOnce(db.inputs.nodeNamespace()))

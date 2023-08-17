@@ -15,7 +15,7 @@
                 "description": "The input execution port"
             },            
             "csPrim": {
-                "type": "bundle",
+                "type": "target",
                 "description": "USD prim reference to contact sensor prim",
                 "metadata": {
                     "uiName": "Contact Sensor Prim"
