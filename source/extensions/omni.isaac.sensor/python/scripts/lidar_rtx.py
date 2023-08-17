@@ -168,15 +168,12 @@ class LidarRtx(BaseSensor):
         )
         self._point_cloud_annotator.attach([self._render_product_path])
         self._point_cloud_node_path = self._point_cloud_annotator.get_node().get_prim_path()
-        # print(self._point_cloud_node.get_attributes())
-        # print(self._point_cloud_node)
         return
 
     def _create_flat_scan_graph_node(self):
         self._flat_scan_annotator = rep.AnnotatorRegistry.get_annotator("RtxSensorCpu" + "IsaacComputeRTXLidarFlatScan")
         self._flat_scan_annotator.attach([self._render_product_path])
         self._flat_scan_node_path = self._flat_scan_annotator.get_node().get_prim_path()
-        # print(self._flat_scan_node)
         return
 
     def initialize(self, physics_sim_view=None) -> None:
