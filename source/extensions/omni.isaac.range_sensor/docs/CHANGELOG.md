@@ -1,5 +1,8 @@
 # Changelog
-## [0.8.5] 0 2023-08-10
+## [0.8.6] - 2023-08-17
+### Fixed
+- Fixed blackness in sensor examples
+## [0.8.5] - 2023-08-10
 ### Changed
 - Changed lidar prim types from bundle to target
 
