@@ -244,12 +244,12 @@ group "apps"
 group "startup_tests"
     -- use "--/app/settings/persistent=0 --/app/settings/loadUserConfig=0" to ignore config user config file
     -- use "--reset-user" to reset user config file
-    define_startup_experience("tests-startup.main", "omni.isaac.sim", "--/app/quitAfter=500")
-    define_startup_experience("tests-startup.websocket", "omni.isaac.sim.headless.websocket", "--no-window --/app/quitAfter=500")
-    define_startup_experience("tests-startup.websocket.h264", "omni.isaac.sim.headless.websocket", "--no-window --/app/livestream/websocket/encoder_selection=OPENH264 --/app/quitAfter=500")
-    define_startup_experience("tests-startup.webrtc", "omni.isaac.sim.headless.webrtc", "--no-window --/app/quitAfter=500")
-    define_startup_experience("tests-startup.native", "omni.isaac.sim.headless.native", "--no-window --/app/quitAfter=500")
-    define_startup_experience("tests-startup.extscache", "omni.isaac.sim", "--no-window --/app/quitAfter=500 --/app/extensions/registryEnabled=0")
+    define_startup_experience("tests-startup.main", "omni.isaac.sim", "--/app/quitAfter=500 --/app/file/ignoreUnsavedOnExit=1")
+    define_startup_experience("tests-startup.websocket", "omni.isaac.sim.headless.websocket", "--no-window --/app/quitAfter=500 --/app/file/ignoreUnsavedOnExit=1")
+    define_startup_experience("tests-startup.websocket.h264", "omni.isaac.sim.headless.websocket", "--no-window --/app/livestream/websocket/encoder_selection=OPENH264 --/app/quitAfter=500 --/app/file/ignoreUnsavedOnExit=1")
+    define_startup_experience("tests-startup.webrtc", "omni.isaac.sim.headless.webrtc", "--no-window --/app/quitAfter=500 --/app/file/ignoreUnsavedOnExit=1")
+    define_startup_experience("tests-startup.native", "omni.isaac.sim.headless.native", "--no-window --/app/quitAfter=500 --/app/file/ignoreUnsavedOnExit=1")
+    define_startup_experience("tests-startup.extscache", "omni.isaac.sim", "--no-window --/app/quitAfter=500 --/app/extensions/registryEnabled=0 --/app/file/ignoreUnsavedOnExit=1")
     -- Windows Only
     if os.target() == "windows" then
         define_startup_experience("tests-startup.xr.steamvr", "omni.isaac.sim.xr.steamvr", "--no-window --/app/quitAfter=500")
