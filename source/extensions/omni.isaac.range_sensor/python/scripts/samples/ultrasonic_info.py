@@ -12,15 +12,15 @@ import weakref
 
 import omni
 import omni.ui as ui
+from omni.isaac.core.utils.prims import delete_prim, get_prim_at_path
 from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.range_sensor import _range_sensor
 from omni.isaac.ui.menu import make_menu_item_description
+from omni.isaac.ui.ui_utils import btn_builder, combo_cb_scrolling_frame_builder, get_style, setup_ui_headers
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from pxr import Gf, Sdf, UsdGeom, UsdLux, UsdPhysics
 
 EXTENSION_NAME = "Ultrasonic Info"
-
-from omni.isaac.ui.ui_utils import btn_builder, combo_cb_scrolling_frame_builder, get_style, setup_ui_headers
 
 
 class Extension(omni.ext.IExt):
@@ -289,8 +289,11 @@ class Extension(omni.ext.IExt):
         radius = 0.10
 
         # Define a light so we can see the obstacle better
+        if get_prim_at_path("/DistantLight"):
+            delete_prim("/DistantLight")
         distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))
         distantLight.CreateIntensityAttr(500)
+        distantLight.AddRotateXYZOp().Set((-36, 36, 0))
 
         # To create a cube, we first define our geometry at our chosen path.  Then, becuase
         # we will need the primitive later, we query the prim from the stage. If the prim already exists, skip creation
