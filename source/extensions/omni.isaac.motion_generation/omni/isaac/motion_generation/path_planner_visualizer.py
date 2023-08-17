@@ -65,10 +65,9 @@ class PathPlannerVisualizer:
 
         interpolated_path = self.interpolate_path(path, max_cspace_dist)
 
-        actions_np_array = self._active_joints_view.map_to_articulation_order(interpolated_path)
-
         articulation_actions = [
-            ArticulationAction(joint_positions=actions_np_array[i]) for i in range(len(actions_np_array))
+            self._active_joints_view.make_articulation_action(interpolated_path[i], None)
+            for i in range(len(interpolated_path))
         ]
 
         return articulation_actions

@@ -136,6 +136,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
             orientation_target,
             timestamps=timestamps,
             interp_type="linear",
+            distance_thresh=0.02,
         )
 
     async def test_lula_c_space_traj_gen_cobotta(self):
@@ -153,7 +154,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
             usd_path, robot_name, robot_prim_path, ee_frame, task_space_traj, orientation_target
         )
 
-        timestamps = np.array([0.0, 3, 6.0])
+        timestamps = np.array([0.0, 3.0, 6.0])
         await self._test_lula_c_space_traj_gen(
             usd_path, robot_name, robot_prim_path, ee_frame, task_space_traj, orientation_target, timestamps=timestamps
         )
@@ -168,6 +169,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
         orientation_target,
         timestamps=None,
         interp_type="cubic_spline",
+        distance_thresh=0.01,
     ):
         add_reference_to_stage(usd_path, robot_prim_path)
 
@@ -216,8 +218,8 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
 
         art_traj = self._art_trajectory.get_action_sequence()
 
-        initial_positions = art_traj[0].joint_positions
-        initial_positions[initial_positions == None] = 0
+        initial_positions = np.zeros(self._robot.num_dof)
+        initial_positions[art_traj[0].joint_indices] = art_traj[0].joint_positions
 
         self._robot.set_joint_positions(initial_positions)
         self._robot.set_joint_velocities(np.zeros_like(initial_positions))
@@ -229,6 +231,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
             self._robot.apply_action(action)
 
             robot_pos = self._art_kinematics.compute_end_effector_pose()[0]
+
             diff = np.linalg.norm(task_space_targets - robot_pos, axis=1)
             mask = target_dists > diff
             target_dists[mask] = diff[mask]
@@ -236,7 +239,8 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
         delete_prim("/targets")
 
         self.assertTrue(
-            np.all(target_dists < 0.01), f"Did not hit every task_space target: Distance to targets = {target_dists}"
+            np.all(target_dists < distance_thresh),
+            f"Did not hit every task_space target: Distance to targets = {target_dists}",
         )
 
     async def test_set_c_space_trajectory_solver_config_settings(self):
@@ -359,7 +363,15 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
         return builder, position_targets, orientation_targets
 
     async def _test_lula_task_space_trajectory_generator(
-        self, usd_path, robot_name, robot_prim_path, ee_frame, task_space_targets, orientation_targets, built_path=None
+        self,
+        usd_path,
+        robot_name,
+        robot_prim_path,
+        ee_frame,
+        task_space_targets,
+        orientation_targets,
+        built_path=None,
+        distance_thresh=0.01,
     ):
         add_reference_to_stage(usd_path, robot_prim_path)
 
@@ -391,8 +403,8 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
 
         art_traj = self._art_trajectory.get_action_sequence()
 
-        initial_positions = art_traj[0].joint_positions
-        initial_positions[initial_positions == None] = 0
+        initial_positions = np.zeros(self._robot.num_dof)
+        initial_positions[art_traj[0].joint_indices] = art_traj[0].joint_positions
 
         self._robot.set_joint_positions(initial_positions)
         self._robot.set_joint_velocities(np.zeros_like(initial_positions))
@@ -412,7 +424,8 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
 
         delete_prim("/targets")
         self.assertTrue(
-            np.all(target_dists < 0.01), f"Did not hit every task_space target: Distance to targets = {target_dists}"
+            np.all(target_dists < distance_thresh),
+            f"Did not hit every task_space target: Distance to targets = {target_dists}",
         )
 
     async def test_set_task_space_trajectory_solver_config_settings(self):

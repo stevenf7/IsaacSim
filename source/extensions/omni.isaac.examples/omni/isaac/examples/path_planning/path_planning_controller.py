@@ -80,7 +80,7 @@ class PathPlannerController(BaseController):
             return
 
         self._action_sequence = self._convert_rrt_plan_to_trajectory(self._rrt_plan)
-        self._last_solution = self._action_sequence[-1].joint_positions[:7]
+        self._last_solution = self._action_sequence[-1].joint_positions
 
     def forward(
         self, target_end_effector_position: np.ndarray, target_end_effector_orientation: Optional[np.ndarray] = None
@@ -96,7 +96,9 @@ class PathPlannerController(BaseController):
         if len(self._action_sequence) == 1:
             final_positions = self._action_sequence[0].joint_positions
             # print("Steady State Error: ", np.linalg.norm(self._robot.get_joint_positions()[:7]-final_positions[:7]))
-            return ArticulationAction(final_positions, np.zeros_like(final_positions))
+            return ArticulationAction(
+                final_positions, np.zeros_like(final_positions), joint_indices=self._action_sequence[0].joint_indices
+            )
 
         return self._action_sequence.pop(0)
 

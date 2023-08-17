@@ -72,7 +72,9 @@ class TrajectoryController(LulaController):
             action = first_action
         elif self._action_index >= len(self._actions):
             return ArticulationAction(
-                self._actions[-1].joint_positions, np.zeros_like(self._actions[-1].joint_velocities)
+                self._actions[-1].joint_positions,
+                np.zeros_like(self._actions[-1].joint_velocities),
+                self._actions[-1].joint_indices,
             )
         else:
             action = self._actions[self._action_index]

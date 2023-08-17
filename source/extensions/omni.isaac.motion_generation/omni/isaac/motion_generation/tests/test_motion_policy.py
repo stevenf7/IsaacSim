@@ -390,8 +390,6 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
-        pass
-
     async def test_rmpflow_visualization_franka(self):
         usd_path = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
         robot_prim_path = "/panda"
@@ -415,21 +413,20 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         self._motion_policy.visualize_collision_spheres()
         self._motion_policy.visualize_end_effector_position()
 
-        test_sphere = self._motion_policy.get_collision_spheres_as_prims()[-1]
+        test_sphere = self._motion_policy.get_collision_spheres_as_prims()[16]
         test_ee_visual = self._motion_policy.get_end_effector_as_prim()
 
         panda_hand_prim = XFormPrim("/panda/panda_hand")
 
         self._articulation_policy.move()
 
-        for _ in range(100):
+        for i in range(100):
             sphere_pos, _ = test_sphere.get_world_pose()
             ee_pos, _ = test_ee_visual.get_world_pose()
 
             hand_pose, _ = panda_hand_prim.get_world_pose()
-
             self.assertTrue(
-                abs(np.linalg.norm(sphere_pos - ee_pos) - 0.09014) < 0.001,
+                abs(np.linalg.norm(sphere_pos - ee_pos) - 0.0672) < 0.001,
                 f"End effector visualization is not consistent with sphere visualization: {np.linalg.norm(sphere_pos - ee_pos)}",
             )
             self.assertTrue(
@@ -448,7 +445,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
         self._motion_policy.set_end_effector_target(np.array([0.8, 0.2, 0.8]))
 
-        test_sphere = self._motion_policy.get_collision_spheres_as_prims()[-1]
+        test_sphere = self._motion_policy.get_collision_spheres_as_prims()[16]
         test_ee_visual = self._motion_policy.get_end_effector_as_prim()
 
         # self._articulation_policy.move()
@@ -460,7 +457,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
             hand_pose, _ = panda_hand_prim.get_world_pose()
             self.assertTrue(
-                abs(np.linalg.norm(sphere_pos - ee_pos) - 0.09014) < 0.001,
+                abs(np.linalg.norm(sphere_pos - ee_pos) - 0.0672) < 0.001,
                 f"End effector visualization is not consistent with sphere visualization: {np.linalg.norm(sphere_pos - ee_pos) }",
             )
             self.assertTrue(

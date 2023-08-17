@@ -23,7 +23,12 @@ from omni.isaac.core.utils import distance_metrics
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices
 from omni.isaac.core.utils.prims import is_prim_path_valid
-from omni.isaac.core.utils.stage import get_current_stage, open_stage_async, update_stage_async
+from omni.isaac.core.utils.stage import (
+    add_reference_to_stage,
+    create_new_stage_async,
+    get_current_stage,
+    update_stage_async,
+)
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.core.world import World
@@ -96,20 +101,7 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         robot.set_solver_position_iteration_count(64)
         robot.set_solver_velocity_iteration_count(64)
 
-        self._robot.post_reset()
         await update_stage_async()
-
-    async def reset_robot(self, robot):
-        """
-        To make motion_generation outputs more deterministic, this method may be used to
-        teleport the robot to specified position targets, setting velocity to 0
-
-        This prevents changes in dynamic_control from affecting motion_generation tests
-        """
-        robot.post_reset()
-        await self._prepare_stage(robot)
-        await update_stage_async()
-        pass
 
     async def test_lula_fk_ur10(self):
         usd_path = get_assets_root_path() + "/Isaac/Robots/UR10/ur10.usd"
@@ -133,7 +125,7 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
             base_orient=np.array([0.1, 0, 0.3, 0.7]),
         )
         # There is a known bug with the kinematics not matching on the Franka finger frames
-        # and whatever is in frame 0?
+        # and whatever is in frame 0
         self.assertTrue(np.all(trans_dist[1:-2] < 0.005), trans_dist)
         # first entry error appears here too.
         self.assertTrue(np.all(rot_dist[1:] < 0.005), rot_dist)
@@ -147,7 +139,9 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         base_pose=np.zeros(3),
         base_orient=np.array([1, 0, 0, 0]),
     ):
-        await open_stage_async(usd_path)
+        await create_new_stage_async()
+        add_reference_to_stage(usd_path, robot_prim_path)
+
         omni.usd.get_context().get_stage().SetTimeCodesPerSecond(self._physics_fps)
         set_camera_view(eye=[3.5, 2.3, 2.1], target=[0, 0, 0], camera_prim_path="/OmniverseKit_Persp")
 
@@ -156,12 +150,8 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         kinematics_config = interface_config_loader.load_supported_lula_kinematics_solver_config(robot_name)
         self._kinematics = LulaKinematicsSolver(**kinematics_config)
 
-        # Start Simulation and wait
-        self._timeline.play()
-        await update_stage_async()
-
         self._robot = Robot(robot_prim_path)
-        self._robot.initialize()
+        await self._prepare_stage(self._robot)
         self._robot.set_world_pose(base_pose, base_orient)
 
         self._kinematics.set_robot_base_pose(base_pose, base_orient)
@@ -272,7 +262,8 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         base_pose=np.zeros(3),
         base_orient=np.array([0, 0, 0, 1]),
     ):
-        await open_stage_async(usd_path)
+        await create_new_stage_async()
+        add_reference_to_stage(usd_path, robot_prim_path)
         omni.usd.get_context().get_stage().SetTimeCodesPerSecond(self._physics_fps)
         set_camera_view(eye=[3.5, 2.3, 2.1], target=[0, 0, 0], camera_prim_path="/OmniverseKit_Persp")
 
@@ -281,12 +272,8 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         kinematics_config = interface_config_loader.load_supported_lula_kinematics_solver_config(robot_name)
         self._kinematics = LulaKinematicsSolver(**kinematics_config)
 
-        # Start Simulation and wait
-        self._timeline.play()
-        await update_stage_async()
-
         self._robot = Robot(robot_prim_path)
-        self._robot.initialize()
+        await self._prepare_stage(self._robot)
 
         self._robot.set_world_pose(base_pose, base_orient)
         self._kinematics.set_robot_base_pose(base_pose, base_orient)

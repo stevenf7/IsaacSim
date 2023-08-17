@@ -93,7 +93,8 @@ class ArticulationKinematicsSolver:
         ik_result, succ = self._kinematics_solver.compute_inverse_kinematics(
             self._ee_frame, target_position, target_orientation, warm_start, position_tolerance, orientation_tolerance
         )
-        return ArticulationAction(joint_positions=self._joints_view.map_to_articulation_order(ik_result)), succ
+
+        return self._joints_view.make_articulation_action(ik_result, None), succ
 
     def set_end_effector_frame(self, end_effector_frame_name: str) -> None:
         """Set the name for the end effector frame.  If the frame is not recognized by the internal KinematicsSolver instance, an error will be thrown
