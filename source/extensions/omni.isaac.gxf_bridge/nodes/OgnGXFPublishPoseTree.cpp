@@ -76,12 +76,20 @@ public:
             return false;
         }
         state.mRootUid = maybeUid.value();
-        const pxr::UsdPrim thisPrim = stage->GetPrimAtPath(pxr::SdfPath(state.mThisPrimPath));
-        // Finding target prims
-        pxr::TfToken targetPrimInputs =
-            omni::fabric::toTfToken(OgnGXFPublishPoseTreeAttributes::inputs::targetPrims.m_token);
-        const pxr::UsdRelationship targetRel = thisPrim.GetRelationship(targetPrimInputs);
-        targetRel.GetTargets(&state.mPrims);
+        //  Finding target prims
+        const auto& targetPrims = db.inputs.targetPrims();
+
+        if (targetPrims.size() > 0)
+        {
+            state.mPrims.resize(targetPrims.size());
+            std::transform(targetPrims.begin(), targetPrims.end(), state.mPrims.begin(),
+                           [](TargetPath path) { return omni::fabric::toSdfPath(path); });
+        }
+        else
+        {
+            db.logError("Please specify atleast one target prim for the ROS pose tree component");
+            return false;
+        }
 
         state.buildFrameNameMap(db);
 
@@ -122,7 +130,7 @@ public:
             {
                 depth = primDepths.data()[i];
             }
-            const GfMatrix4d identity = GfMatrix4d();
+            const pxr::GfMatrix4d identity = pxr::GfMatrix4d();
             // Initial root prim starts from nothing, no prefix.
             state.addPrimToPoseTree(prim, depth, primRegexStr, identity, "", state.mRootUid, false, false, db);
         }
@@ -314,7 +322,7 @@ private:
             pxr::UsdPrim child_prim = *iter;
             // Take care of having the correct parent position, frame id and name
             // if we skip the intermediary prims we need to keep track.
-            const GfMatrix4d parentToWorld = keepPrim ? currentPrimToWorld : actualParentToWorld;
+            const pxr::GfMatrix4d parentToWorld = keepPrim ? currentPrimToWorld : actualParentToWorld;
             const nvidia::isaac::PoseTree::frame_t actualParentUid = !keepPrim ? parentUid : poseUid;
             const std::string actualParentName = keepPrim ? frameName : parentName;
             addPrimToPoseTree(child_prim, depth - 1, primRegexStr, parentToWorld, actualParentName, actualParentUid,

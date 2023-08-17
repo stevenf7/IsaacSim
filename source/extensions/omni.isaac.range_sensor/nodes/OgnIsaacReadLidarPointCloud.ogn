@@ -16,7 +16,7 @@
                 "description": "The input execution port"
             },
             "lidarPrim":{
-                "type": "bundle",
+                "type": "target",
                 "description": "Usd prim reference to the lidar prim"
             }
         },

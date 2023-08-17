@@ -19,9 +19,9 @@ class OgnIsaacSetCameraOnRenderProduct:
 
     @staticmethod
     def compute(db) -> bool:
-        if not db.inputs.cameraPrim.valid:
+        if len(db.inputs.cameraPrim) == 0:
             db.log_warn(f"Camera prim must be specified")
             return False
-        set_camera_prim_path(db.inputs.renderProductPath, db.inputs.cameraPrim.path)
+        set_camera_prim_path(db.inputs.renderProductPath, db.inputs.cameraPrim[0].GetString())
         db.outputs.execOut = omni.graph.core.ExecutionAttributeState.ENABLED
         return True

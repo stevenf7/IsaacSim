@@ -1,5 +1,7 @@
 # Changelog
-
+## [0.6.5] - 2023-08-10
+### Fixed
+- Changed robot prim types from bundle to target in Omnigraph
 ## [0.6.4] - 2023-06-13
 
 ### Fixed

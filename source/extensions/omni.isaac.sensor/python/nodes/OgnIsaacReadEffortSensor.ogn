@@ -14,18 +14,11 @@
                 "type": "execution",
                 "description": "The input execution port"
             },            
-            "primPath": {
-                "type": "string",
+            "prim": {
+                "type": "target",
                 "description": "Path to the joint getting measured",
                 "metadata": {
                     "uiName": "Prim Path"
-                }
-            },
-            "dofName": {
-                "type": "string",
-                "description": "Path to the joint getting measured",
-                "metadata": {
-                    "uiName": "DOF name"
                 }
             },
             "useLatestData": {

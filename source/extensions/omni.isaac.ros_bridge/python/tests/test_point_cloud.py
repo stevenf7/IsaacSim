@@ -22,9 +22,9 @@ import omni.kit.commands
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 import omni.kit.usd
+import usdrt.Sdf
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.physics import simulate_async
-from omni.isaac.core_nodes.scripts.utils import set_target_prims
 from omni.kit.viewport.utility import get_active_viewport
 from pxr import Sdf
 
@@ -102,6 +102,9 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
                         ("ReadLidarPCL", "omni.isaac.range_sensor.IsaacReadLidarPointCloud"),
                         ("PublishPCL", "omni.isaac.ros_bridge.ROS1PublishPointCloud"),
                     ],
+                    keys.SET_VALUES: [
+                        ("ReadLidarPCL.inputs:lidarPrim", [usdrt.Sdf.Path("/carter/chassis_link/carter_lidar")])
+                    ],
                     keys.CONNECT: [
                         ("OnPlaybackTick.outputs:tick", "ReadLidarPCL.inputs:execIn"),
                         ("ReadLidarPCL.outputs:execOut", "PublishPCL.inputs:execIn"),
@@ -112,12 +115,6 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
             )
         except Exception as e:
             print(e)
-
-        set_target_prims(
-            primPath=graph_path + "/ReadLidarPCL",
-            inputName="inputs:lidarPrim",
-            targetPrimPaths=["/carter/chassis_link/carter_lidar"],
-        )
 
         # Enable highLod for Lidar
         omni.kit.commands.execute(
@@ -182,6 +179,9 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
                         ("ReadLidarPCL", "omni.isaac.range_sensor.IsaacReadLidarPointCloud"),
                         ("PublishPCL", "omni.isaac.ros_bridge.ROS1PublishPointCloud"),
                     ],
+                    keys.SET_VALUES: [
+                        ("ReadLidarPCL.inputs:lidarPrim", [usdrt.Sdf.Path("/carter/chassis_link/carter_lidar")])
+                    ],
                     keys.CONNECT: [
                         ("OnPlaybackTick.outputs:tick", "ReadLidarPCL.inputs:execIn"),
                         ("ReadLidarPCL.outputs:execOut", "PublishPCL.inputs:execIn"),
@@ -192,12 +192,6 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
             )
         except Exception as e:
             print(e)
-
-        set_target_prims(
-            primPath=graph_path + "/ReadLidarPCL",
-            inputName="inputs:lidarPrim",
-            targetPrimPaths=["/carter/chassis_link/carter_lidar"],
-        )
 
         self._point_cloud_data = None
 

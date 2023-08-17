@@ -18,7 +18,7 @@
                 "default": true
             },
             "conveyorPrim": {
-                "type": "bundle",
+                "type": "target",
                 "description" : "the prim reference to the conveyor"
             },
             "velocity": {

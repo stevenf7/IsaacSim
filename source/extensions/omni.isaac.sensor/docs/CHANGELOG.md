@@ -1,4 +1,7 @@
 # Changelog
+## [7.4.1] - 2023-08-15
+### Added 
+- Changed isaac sensor node prim from bundle to target type 
 
 ## [7.4.0] - 2023-08-15
 ### Changed
@@ -11,6 +14,8 @@
 ### Added
 - Add function to camera.py to scrap all Camera objects in the scene 
 - Added IsaacCreateRTXLidarScanBuffer Node
+- Changed contact sensor and IMU node prim from bundle to target type 
+
 ## [7.2.1] - 2023-08-10
 ### Added 
 - docstrings to Camera class for functions adding annotators 

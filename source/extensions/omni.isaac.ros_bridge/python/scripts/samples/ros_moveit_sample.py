@@ -16,11 +16,11 @@ import omni.appwindow
 import omni.ext
 import omni.graph.core as og
 import omni.kit.commands
+import usdrt.Sdf
 from omni.isaac.core import PhysicsContext
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.prims import create_prim
 from omni.isaac.core.utils.viewports import set_camera_view
-from omni.isaac.core_nodes.scripts.utils import set_target_prims
 from omni.isaac.ui.menu import make_menu_item_description
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from pxr import Gf
@@ -82,19 +82,13 @@ class Extension(omni.ext.IExt):
                         # Setting the /Franka target prim to Articulation Controller node
                         ("ArticulationController.inputs:usePath", True),
                         ("ArticulationController.inputs:robotPath", franka_stage_path),
+                        ("PublishJointState.inputs:targetPrims", [usdrt.Sdf.Path(franka_stage_path)]),
+                        ("PublishTF.inputs:targetPrims", [usdrt.Sdf.Path(franka_stage_path)]),
                     ],
                 },
             )
         except Exception as e:
             print(e)
-
-        # Setting the /Franka target prim to Publish JointState node
-        set_target_prims(primPath="/ActionGraph/PublishJointState", targetPrimPaths=[franka_stage_path])
-
-        # Setting the /Franka target prim to Publish Transform Tree node
-        set_target_prims(
-            primPath="/ActionGraph/PublishTF", inputName="inputs:targetPrims", targetPrimPaths=[franka_stage_path]
-        )
 
         pass
 

@@ -54,13 +54,13 @@ class OgnSurfaceGripper:
 
     @staticmethod
     def compute(db) -> bool:
-        if db.inputs.enabled and db.inputs.ParentRigidBody and db.inputs.GripPosition:
+        if db.inputs.enabled and len(db.inputs.ParentRigidBody) > 0 and len(db.inputs.GripPosition) > 0:
             if db.inputs.onStep:
                 # update internal state properties
                 stage = omni.usd.get_context().get_stage()
-                parent = stage.GetPrimAtPath(db.inputs.ParentRigidBody.path)
+                parent = stage.GetPrimAtPath(db.inputs.ParentRigidBody[0].GetString())
                 if parent:
-                    grip_point = stage.GetPrimAtPath(db.inputs.GripPosition.path)
+                    grip_point = stage.GetPrimAtPath(db.inputs.GripPosition[0].GetString())
                     db.internal_state._sgp.parentPath = str(parent.GetPath())
                     db.internal_state._sgp.d6JointPath = db.internal_state._sgp.parentPath + "/d6FixedJoint"
                     db.internal_state._sgp.gripThreshold = db.inputs.GripThreshold

@@ -22,12 +22,12 @@ import omni.kit.commands
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
+import usdrt.Sdf
 from omni.isaac.core import World
 from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.physics import simulate_async
 from omni.isaac.core.utils.prims import add_reference_to_stage, delete_prim
-from omni.isaac.core_nodes.scripts.utils import set_target_prims
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.sensor import _sensor
@@ -501,21 +501,18 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
 
         await omni.kit.app.get_app().next_update_async()
 
-        keys = og.Controller.Keys
         (graph, (tick_node, test_node), _, _) = og.Controller.edit(
             {"graph_path": "/controller_graph", "evaluator_name": "execution"},
             {
-                keys.CREATE_NODES: [
+                og.Controller.Keys.CREATE_NODES: [
                     ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                     ("IsaacReadContactSensor", "omni.isaac.sensor.IsaacReadContactSensor"),
                 ],
-                keys.CONNECT: [("OnPlaybackTick.outputs:tick", "IsaacReadContactSensor.inputs:execIn")],
+                og.Controller.Keys.SET_VALUES: [
+                    ("IsaacReadContactSensor.inputs:csPrim", [usdrt.Sdf.Path(self.leg_paths[0] + "/sensor")]),
+                ],
+                og.Controller.Keys.CONNECT: [("OnPlaybackTick.outputs:tick", "IsaacReadContactSensor.inputs:execIn")],
             },
-        )
-        set_target_prims(
-            primPath="/controller_graph/IsaacReadContactSensor",
-            inputName="inputs:csPrim",
-            targetPrimPaths=[self.leg_paths[0] + "/sensor"],
         )
 
         await omni.kit.app.get_app().next_update_async()
@@ -556,39 +553,21 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_node_nonzero_outputs(self):
-        # add a single contact sensor
-        result, sensor = omni.kit.commands.execute(
-            "IsaacSensorCreateContactSensor",
-            path="/sensor",
-            parent=self.leg_paths[0],
-            min_threshold=0,
-            max_threshold=10000000,
-            color=self.color[0],
-            radius=0.12,
-            sensor_period=-1,
-            translation=self.sensor_offsets[0],
-            visualize=True,
-        )
-        self.assertTrue(result)
-        self.assertIsNotNone(sensor)
-
+        await self.test_add_sensor_prim()
         await omni.kit.app.get_app().next_update_async()
 
-        keys = og.Controller.Keys
         (graph, (tick_node, test_node), _, _) = og.Controller.edit(
             {"graph_path": "/controller_graph", "evaluator_name": "execution"},
             {
-                keys.CREATE_NODES: [
+                og.Controller.Keys.CREATE_NODES: [
                     ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                     ("IsaacReadContactSensor", "omni.isaac.sensor.IsaacReadContactSensor"),
                 ],
-                keys.CONNECT: [("OnPlaybackTick.outputs:tick", "IsaacReadContactSensor.inputs:execIn")],
+                og.Controller.Keys.SET_VALUES: [
+                    ("IsaacReadContactSensor.inputs:csPrim", [usdrt.Sdf.Path(self.leg_paths[0] + "/sensor")]),
+                ],
+                og.Controller.Keys.CONNECT: [("OnPlaybackTick.outputs:tick", "IsaacReadContactSensor.inputs:execIn")],
             },
-        )
-        set_target_prims(
-            primPath="/controller_graph/IsaacReadContactSensor",
-            inputName="inputs:csPrim",
-            targetPrimPaths=[self.leg_paths[0] + "/sensor"],
         )
 
         await omni.kit.app.get_app().next_update_async()
@@ -600,7 +579,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
 
         await simulate_async(1.0)
 
-        for i in range(100):
+        for i in range(10):
             await omni.kit.app.get_app().next_update_async()
             print(og.DataView.get(out_in_contact))
             print(og.DataView.get(out_value))

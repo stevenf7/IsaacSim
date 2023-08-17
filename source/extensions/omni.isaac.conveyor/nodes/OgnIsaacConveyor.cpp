@@ -17,10 +17,10 @@
 #include <omni/usd/UsdContext.h>
 ///
 
+#include <omni/fabric/FabricUSD.h>
 #include <omni/usd/UsdUtils.h>
 #include <pxr/pxr.h>
 #include <pxr/usd/usdPhysics/rigidBodyAPI.h>
-
 
 namespace omni
 {
@@ -66,7 +66,18 @@ public:
             {
                 pxr::UsdStagePtr stage = omni::usd::UsdContext::getContext()->getStage();
                 state.mVelocity = db.inputs.velocity();
-                auto conveyor = stage->GetPrimAtPath(pxr::SdfPath(db.inputs.conveyorPrim.path()));
+                const auto& prim = db.inputs.conveyorPrim();
+                UsdPrim conveyor;
+                if (prim.size() > 0)
+                {
+                    conveyor = stage->GetPrimAtPath(omni::fabric::toSdfPath(prim[0]));
+                }
+                else
+                {
+                    db.logError("no prim path found for the conveyor");
+                    return false;
+                }
+
                 pxr::UsdPhysicsRigidBodyAPI physics_conveyor(conveyor);
                 if (physics_conveyor)
                 {

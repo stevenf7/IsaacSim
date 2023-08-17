@@ -15,11 +15,11 @@ import omni.graph.core as og
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.   .org/3/library/unittest.html
 import omni.kit.test
+import usdrt.Sdf
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.rotations import quat_to_euler_angles
 from omni.isaac.core.utils.stage import open_stage_async
-from omni.isaac.core_nodes.scripts.utils import set_target_prims
 from omni.isaac.dynamic_control import _dynamic_control
 
 from .robot_helpers import init_robot_sim, setup_robot_og
@@ -108,20 +108,12 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
                 keys.SET_VALUES: [
                     ("QuinticPathPlanner.inputs:targetPosition", (-5, -5, 0)),
                     ("GetPrimLocalToWorldTransform.inputs:usePath", False),
+                    (self.graph_path + "/computeOdom.inputs:chassisPrim", [usdrt.Sdf.Path("/carter_v2/chassis_link")]),
+                    ("GetPrimLocalToWorldTransform.inputs:prim", [usdrt.Sdf.Path("/carter_v2/chassis_link")]),
                 ],
             },
         )
 
-        set_target_prims(
-            primPath=self.graph_path + "/computeOdom",
-            inputName="inputs:chassisPrim",
-            targetPrimPaths=["/carter_v2/chassis_link"],
-        )
-        set_target_prims(
-            primPath=self.graph_path + "/GetPrimLocalToWorldTransform",
-            inputName="inputs:prim",
-            targetPrimPaths=["/carter_v2/chassis_link"],
-        )
         pass
 
     # After running each test

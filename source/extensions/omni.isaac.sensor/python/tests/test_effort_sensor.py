@@ -90,7 +90,7 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
     async def test_sensor_reading(self):
         await self.createSimpleArticulation()
 
-        self.effort_sensor = EffortSensor("/Articulation/Arm", "RevoluteJoint")
+        self.effort_sensor = EffortSensor("/Articulation/Arm/RevoluteJoint")
         self.my_world.play()
         # let physics warm up
         await omni.kit.app.get_app().next_update_async()
@@ -135,7 +135,7 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
     async def test_sensor_period(self):
         await self.createSimpleArticulation()
 
-        self.effort_sensor = EffortSensor("/Articulation/Arm", "RevoluteJoint", 1 / 10)  # 10 hz
+        self.effort_sensor = EffortSensor("/Articulation/Arm/RevoluteJoint", 1 / 10)  # 10 hz
         self.my_world.play()
         # print(self.effort_sensor.sensor_period)
 
@@ -171,7 +171,7 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
 
         await self.createSimpleArticulation()
 
-        self.effort_sensor = EffortSensor("/Articulation/Arm", "RevoluteJoint", 1 / 30)  # running at 30 Hz
+        self.effort_sensor = EffortSensor("/Articulation/Arm/RevoluteJoint", 1 / 30)  # running at 30 Hz
         self.my_world.play()
         # print(self.effort_sensor.sensor_period)
 
@@ -195,7 +195,7 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
     async def test_change_to_wrong_dof_name_in_play(self):
         await self.createSimpleArticulation()
 
-        self.effort_sensor = EffortSensor("/Articulation/Arm", "RevoluteJoint")
+        self.effort_sensor = EffortSensor("/Articulation/Arm/RevoluteJoint")
         self.my_world.play()
         # print(self.effort_sensor.sensor_period)
 

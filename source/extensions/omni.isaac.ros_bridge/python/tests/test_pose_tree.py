@@ -20,6 +20,7 @@ import omni.graph.core as og
 import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd
+import usdrt.Sdf
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.physics import simulate_async
 from omni.isaac.core_nodes.scripts.utils import set_target_prims
@@ -103,7 +104,18 @@ class TestRosPoseTree(omni.kit.test.AsyncTestCase):
                         ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
                         ("PublishTF", "omni.isaac.ros_bridge.ROS1PublishTransformTree"),
                     ],
-                    og.Controller.Keys.SET_VALUES: [("PublishTF.inputs:topicName", "/tf_test")],
+                    og.Controller.Keys.SET_VALUES: [
+                        ("PublishTF.inputs:topicName", "/tf_test"),
+                        (
+                            "PublishTF.inputs:targetPrims",
+                            [
+                                usdrt.Sdf.Path("/panda"),
+                                usdrt.Sdf.Path("/cube"),
+                                usdrt.Sdf.Path("/panda/panda_hand/geometry"),
+                                usdrt.Sdf.Path("/panda/panda_hand"),
+                            ],
+                        ),
+                    ],
                     og.Controller.Keys.CONNECT: [
                         ("OnPlaybackTick.outputs:tick", "PublishTF.inputs:execIn"),
                         ("ReadSimTime.outputs:simulationTime", "PublishTF.inputs:timeStamp"),
@@ -112,11 +124,6 @@ class TestRosPoseTree(omni.kit.test.AsyncTestCase):
             )
         except Exception as e:
             print(e)
-        set_target_prims(
-            primPath="/ActionGraph/PublishTF",
-            inputName="inputs:targetPrims",
-            targetPrimPaths=["/panda", "/cube", "/panda/panda_hand/geometry", "/panda/panda_hand"],
-        )
         # add target prims robot and cube
 
         self._timeline.play()
@@ -191,7 +198,18 @@ class TestRosPoseTree(omni.kit.test.AsyncTestCase):
                         ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
                         ("PublishTF", "omni.isaac.ros_bridge.ROS1PublishTransformTree"),
                     ],
-                    og.Controller.Keys.SET_VALUES: [("PublishTF.inputs:topicName", "/tf_test")],
+                    og.Controller.Keys.SET_VALUES: [
+                        ("PublishTF.inputs:topicName", "/tf_test"),
+                        (
+                            "PublishTF.inputs:targetPrims",
+                            [
+                                usdrt.Sdf.Path("/panda"),
+                                usdrt.Sdf.Path("/cube0/cube"),
+                                usdrt.Sdf.Path("/cube1/cube"),
+                                usdrt.Sdf.Path("/cube2/cube"),
+                            ],
+                        ),
+                    ],
                     og.Controller.Keys.CONNECT: [
                         ("OnPlaybackTick.outputs:tick", "PublishTF.inputs:execIn"),
                         ("ReadSimTime.outputs:simulationTime", "PublishTF.inputs:timeStamp"),
@@ -200,11 +218,7 @@ class TestRosPoseTree(omni.kit.test.AsyncTestCase):
             )
         except Exception as e:
             print(e)
-        set_target_prims(
-            primPath="/ActionGraph/PublishTF",
-            inputName="inputs:targetPrims",
-            targetPrimPaths=["/panda", "/cube0/cube", "/cube1/cube", "/cube2/cube"],
-        )
+
         # add target prims robot and cube
 
         self._timeline.play()

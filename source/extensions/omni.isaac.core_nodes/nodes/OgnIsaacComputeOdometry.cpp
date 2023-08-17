@@ -16,6 +16,7 @@
 #include <carb/events/EventsUtils.h>
 #include <carb/logging/Logger.h>
 
+#include <omni/fabric/FabricUSD.h>
 #include <omni/isaac/core_nodes/CoreNodes.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/utils/BaseResetNode.h>
@@ -59,11 +60,19 @@ public:
         auto& state = db.internalState<OgnIsaacComputeOdometry>();
         if (state.mFirstFrame)
         {
+            const auto& prim = db.inputs.chassisPrim();
+            const char* primPath;
+            if (prim.size() > 0)
+            {
+                primPath = omni::fabric::toSdfPath(prim[0]).GetText();
+            }
+            else
+            {
+                db.logError("no prim path found");
+                return false;
+            }
 
             state.mFirstFrame = false;
-
-            const char* primPath = db.inputs.chassisPrim.path();
-
             // Find our stage
             long stageId = context.iContext->getStageId(context);
             auto stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));

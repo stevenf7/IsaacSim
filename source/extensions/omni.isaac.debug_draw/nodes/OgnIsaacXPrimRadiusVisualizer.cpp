@@ -12,6 +12,7 @@
 // clang-format off
 #include "UsdPCH.h"
 // clang-format on
+#include <omni/fabric/FabricUSD.h>
 #include <omni/isaac/debug_draw/PrimitiveDrawingHelper.h>
 #include <omni/isaac/utils/BaseResetNode.h>
 #include <omni/isaac/utils/Pose.h>
@@ -49,7 +50,17 @@ public:
 
     static bool compute(OgnIsaacXPrimRadiusVisualizerDatabase& db)
     {
-        auto primPath = pxr::SdfPath(db.inputs.xPrim.path());
+        const auto& input_prim = db.inputs.xPrim();
+        pxr::SdfPath primPath;
+        if (input_prim.size() > 0)
+        {
+            primPath = omni::fabric::toSdfPath(input_prim[0]);
+        }
+        else
+        {
+            db.logError("no prim path found");
+            return false;
+        }
         auto& state = db.internalState<OgnIsaacXPrimRadiusVisualizer>();
         state.mRadius = db.inputs.radius();
         state.mThickness = db.inputs.thickness();

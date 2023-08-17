@@ -28,7 +28,6 @@ class EffortSensor(Articulation):
     def __init__(
         self,
         prim_path: str,
-        dof_name: str,
         sensor_period: float = -1,
         use_latest_data: bool = False,
         enabled: bool = True,
@@ -37,7 +36,6 @@ class EffortSensor(Articulation):
         self.sensor_time = 0
         self.sensor_period = sensor_period
         self.enabled = enabled
-        self.dof_name = dof_name
         self.use_latest_data = use_latest_data
         self.step_size = 0
         self.data_buffer_size = 10
@@ -47,7 +45,11 @@ class EffortSensor(Articulation):
         self.physics_num_steps = 0
         self.is_initialized = False
         self.dof = None
-        super().__init__(prim_path=prim_path, name=prim_path)
+
+        self.body_prim_path = "/".join(prim_path.split("/")[:-1])
+        self.dof_name = prim_path.split("/")[-1]
+
+        super().__init__(prim_path=self.body_prim_path, name=prim_path)
         self.initialize_callbacks()
         return
 

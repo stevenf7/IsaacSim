@@ -10,6 +10,7 @@
 import numpy
 import omni.graph.core as og
 import omni.timeline
+import usdrt.Sdf
 from omni.isaac.core_nodes import BaseResetNode
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.sensor import _sensor
@@ -55,8 +56,8 @@ class OgnIsaacReadContactSensor:
         state = db.internal_state
 
         if not state.initialized:
-            if db.inputs.csPrim.valid:
-                state.cs_path = db.inputs.csPrim.path
+            if len(db.inputs.csPrim) > 0:
+                state.cs_path = db.inputs.csPrim[0].GetString()
 
                 result = state.init_compute()
                 if not result:

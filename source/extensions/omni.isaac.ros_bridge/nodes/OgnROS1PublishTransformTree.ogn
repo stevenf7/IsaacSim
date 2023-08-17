@@ -16,12 +16,12 @@
                 "description": "The input execution port"
             },
             "parentPrim":{
-                "type": "bundle",
+                "type": "target",
                 "description": "Prim used as parent frame for poses, leave blank to use World",
                 "optional": true
             },
             "targetPrims":{
-                "type": "bundle",
+                "type": "target",
                 "description": "Target prims to publish poses for, if prim is an articulation, the entire articulation tree will be published"
             },
             "nodeNamespace": {

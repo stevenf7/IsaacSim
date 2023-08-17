@@ -24,7 +24,7 @@
                 "description": "Current rotation of the robot as a quaternion (recommended to use Get Prim Local to World Transform node)"
             },
             "targetPrim":{
-                "type": "bundle",
+                "type": "target",
                 "optional": true,
                 "description": "USD prim reference to the target position/orientation prim"
             },

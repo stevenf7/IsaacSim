@@ -1,5 +1,7 @@
 # Changelog
-
+## [0.3.11] - 2023-08-10
+### Changed
+- Changed conveyor prim node input type from bundle to target
 ## [0.3.10] - 2023-06-13
 ### Changed
 - Update to kit 105.1, build system update, omni.usd.utils -> omni.usd, usdPhysics -> pxr/usd/usdPhysics

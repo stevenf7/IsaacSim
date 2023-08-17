@@ -19,11 +19,11 @@
                 "default": true
             },
             "ParentRigidBody": {
-                "type": "bundle",
+                "type": "target",
                 "description" : "The rigid body that is used as a surface Gripper"
             },
             "GripPosition": {
-                "type": "bundle",
+                "type": "target",
                 "description" : "The point at which objects will be gripped"
             },
             "GripThreshold":{

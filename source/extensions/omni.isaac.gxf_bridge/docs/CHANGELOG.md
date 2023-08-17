@@ -1,4 +1,7 @@
 # Changelog
+## [0.13.1] - 2023-08-15
+### Changed
+- Switch from bundle to target for the prim inputs for omnigraph nodes
 
 ## [0.13.0] - 2023-08-11
 ### Changed

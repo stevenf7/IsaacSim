@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.14.1] - 2023-08-15
+### Changed
+- Changed targetPrim datatype from bundle to target in omnigraph
+
 ## [1.14.0] - 2023-08-11
 ### Changed
 - Image and pcl nodes support gpu/cpu ptr data

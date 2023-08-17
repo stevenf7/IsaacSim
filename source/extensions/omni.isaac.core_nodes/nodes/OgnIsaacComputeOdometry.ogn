@@ -14,7 +14,7 @@
                 "description": "The input execution port"
             },
             "chassisPrim":{
-                "type": "bundle",
+                "type": "target",
                 "description": "Usd prim reference to the articulation root or rigid body prim"
             }
         },

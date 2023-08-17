@@ -43,12 +43,20 @@ public:
             db.logError("Could not find USD stage %ld", stageId);
             return false;
         }
-        const pxr::UsdPrim thisPrim = stage->GetPrimAtPath(pxr::SdfPath(state.mThisPrimPath));
-        // Finding target prims
-        pxr::TfToken targetPrimInputs =
-            omni::fabric::toTfToken(OgnGXFPoseTreeFrameMapBuilderAttributes::inputs::targetPrims.m_token);
-        const pxr::UsdRelationship targetRel = thisPrim.GetRelationship(targetPrimInputs);
-        targetRel.GetTargets(&state.mPrims);
+        //  Finding target prims
+        const auto& targetPrims = db.inputs.targetPrims();
+
+        if (targetPrims.size() > 0)
+        {
+            state.mPrims.resize(targetPrims.size());
+            std::transform(targetPrims.begin(), targetPrims.end(), state.mPrims.begin(),
+                           [](TargetPath path) { return omni::fabric::toSdfPath(path); });
+        }
+        else
+        {
+            db.logError("Please specify atleast one target prim for the ROS pose tree component");
+            return false;
+        }
 
         auto frameNames = db.inputs.frameNames();
 

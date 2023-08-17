@@ -1,5 +1,7 @@
 # Changelog
-
+## [1.13.1] - 2023-08-10
+### Changed
+- Changed omnigraph targetPrim types from bundle to target
 ## [1.13.0] - 2023-08-03
 ### Changed
 - Image and PCL publishers to use ptrs instead of arrays when possible to reduce memory copies

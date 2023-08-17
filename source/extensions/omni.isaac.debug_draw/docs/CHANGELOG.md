@@ -1,4 +1,7 @@
 # Changelog
+## [0.4.1] - 2023-08-15
+### Changed
+- Changed prim input type from bundle to target for xPrim Axis and Radius visualizer
 
 ## [0.4.0] - 2023-08-15
 ### Changed

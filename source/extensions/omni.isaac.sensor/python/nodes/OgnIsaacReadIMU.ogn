@@ -15,7 +15,7 @@
                 "description": "The input execution port"
             },            
             "imuPrim": {
-                "type": "bundle",
+                "type": "target",
                 "description": "Usd prim reference to the IMU prim",
                 "metadata": {
                     "uiName": "IMU Prim"
