@@ -174,11 +174,16 @@ class TestViewports(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(rotate_prop.Get()[1], 0, delta=0.01)
         self.assertAlmostEqual(rotate_prop.Get()[2], 135, delta=0.01)
 
+        set_camera_view(eye=np.array([0, 0, 0]), target=np.array([0, 0, 1]), camera_prim_path="/OmniverseKit_Persp")
+        set_camera_view(eye=np.array([0, 0, 0]), target=np.array([0, 0, 1]), camera_prim_path="/OmniverseKit_Top")
+        set_camera_view(eye=np.array([0, 0, 0]), target=np.array([0, 0, 1]), camera_prim_path="/OmniverseKit_Right")
+        set_camera_view(eye=np.array([0, 0, 0]), target=np.array([0, 0, 1]), camera_prim_path="/OmniverseKit_Front")
+
     async def test_set_camera_view_camera_prim(self):
         # create a camera prim using omni.isaac.sensor
         import numpy as np
         from omni.isaac.sensor import Camera
-        from pxr import Gf
+        from pxr import Gf, UsdGeom
 
         viewport_api = get_active_viewport()
         camera_prim_path = "/Camera"
@@ -208,3 +213,20 @@ class TestViewports(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(rotate_prop.Get().GetImaginary()[2], 0.820, delta=0.01)
 
         camera = None
+
+        stage = omni.usd.get_context().get_stage()
+        camera_rot_xyz = stage.DefinePrim("/World/Camera_RotXYZ", "Camera")
+        UsdGeom.Xformable(camera_rot_xyz).AddTranslateOp().Set((0.0, 0.0, 0.0))
+        UsdGeom.Xformable(camera_rot_xyz).AddRotateXYZOp().Set((0.0, 0.0, 0.0))
+
+        camera_rot_yxz = stage.DefinePrim("/World/Camera_RotYXZ", "Camera")
+        UsdGeom.Xformable(camera_rot_yxz).AddTranslateOp().Set((0.0, 0.0, 1.0))
+        UsdGeom.Xformable(camera_rot_yxz).AddRotateYXZOp().Set((0.0, 0.0, 0.0))
+
+        camera_orient = stage.DefinePrim("/World/Camera_Orient", "Camera")
+        UsdGeom.Xformable(camera_orient).AddTranslateOp().Set((0.0, 0.0, 2.0))
+        UsdGeom.Xformable(camera_orient).AddOrientOp().Set(Gf.Quatf(1.0, 0.0, 0.0, 0.0))
+
+        set_camera_view(eye=np.array([0, 0, 0]), target=np.array([0, 0, 1]), camera_prim_path=camera_rot_xyz.GetPath())
+        set_camera_view(eye=np.array([0, 0, 0]), target=np.array([0, 0, 1]), camera_prim_path=camera_rot_yxz.GetPath())
+        set_camera_view(eye=np.array([0, 0, 0]), target=np.array([0, 0, 1]), camera_prim_path=camera_orient.GetPath())
