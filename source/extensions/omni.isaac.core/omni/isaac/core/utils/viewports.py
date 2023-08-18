@@ -61,32 +61,82 @@ def set_camera_view(
     if (camera_target[0:1] != camera_position[0:1]).all():
         camera_state.set_target_world(Gf.Vec3d(camera_target[0], camera_target[1], camera_target[2]), True)
     else:
-        rotate_prop = prim.GetAttribute(
-            "xformOp:rotateXYZ" if camera_prim_path == "/OmniverseKit_Persp" else "xformOp:orient"
-        )
-        old_rotate = rotate_prop.Get()
-        new_rotate = (
-            Gf.Vec3f(0, (180 if camera_target[2] >= camera_position[2] else 0), 0)
-            if camera_prim_path == "/OmniverseKit_Persp"
-            else Gf.Quatd(
+        if prim.GetAttribute("xformOp:orient"):
+            rotate_prop = prim.GetAttribute("xformOp:orient")
+            quat = [
                 0 if camera_target[2] >= camera_position[2] else 1,
                 0,
                 1 if camera_target[2] >= camera_position[2] else 0,
                 0,
-            )
-        )
-        # (C, XS, YS, ZS) where C = cos(theta/2) and S = sin(theta/2)
+            ]
+            if rotate_prop.GetTypeName() == Sdf.ValueTypeNames.Quatd:
+                new_rotate = Gf.Quatd(*quat)
+            elif rotate_prop.GetTypeName() == Sdf.ValueTypeNames.Quatf:
+                new_rotate = Gf.Quatf(*quat)
+            else:
+                carb.log_warn("unknown orient type")
+                return
+        else:
+            up_down = 180 if camera_target[2] >= camera_position[2] else 0
+            xyz_zyx = [0, up_down, 0]
+            xzy_zxy = [0, 0, up_down]
+            yxz_yzx = [up_down, 0, 0]
 
+            rot = (
+                xyz_zyx
+                if prim.GetAttribute("xformOp:rotateXYZ") or prim.GetAttribute("xformOp:rotateZYX")
+                else (
+                    xzy_zxy
+                    if prim.GetAttribute("xformOp:rotateXZY") or prim.GetAttribute("xformOp:rotateZXY")
+                    else (
+                        yxz_yzx
+                        if prim.GetAttribute("xformOp:rotateYXZ") or prim.GetAttribute("xformOp:rotateYZX")
+                        else None
+                    )
+                )
+            )
+
+            if rot is None:
+                carb.log_warn("no orient or rotate attributes found")
+                return
+
+            rotate_prop = (
+                prim.GetAttribute("xformOp:rotateXYZ")
+                or prim.GetAttribute("xformOp:rotateXZY")
+                or prim.GetAttribute("xformOp:rotateZXY")
+                or prim.GetAttribute("xformOp:rotateZYX")
+                or prim.GetAttribute("xformOp:rotateYXZ")
+                or prim.GetAttribute("xformOp:rotateYZX")
+            )
+
+            if rotate_prop is None:
+                carb.log_warn("no rotate attributes found")
+                return
+            elif rotate_prop.GetTypeName() == Sdf.ValueTypeNames.Double3:
+                new_rotate = Gf.Vec3d(*rot)
+            elif rotate_prop.GetTypeName() == Sdf.ValueTypeNames.Float3:
+                new_rotate = Gf.Vec3f(*rot)
+            else:
+                carb.log_warn("unknown rotation type")
+                return
         omni.kit.commands.create(
             "ChangePropertyCommand",
             prop_path=rotate_prop.GetPath(),
             value=new_rotate,
-            prev=old_rotate,
+            prev=rotate_prop.Get(),
             timecode=Usd.TimeCode.Default(),
-            type_to_create_if_not_exist=(
-                Sdf.ValueTypeNames.Vector3d if camera_prim_path == "/OmniverseKit_Persp" else Sdf.ValueTypeNames.Quatd
-            ),
+            type_to_create_if_not_exist=(rotate_prop.GetTypeName()),
         ).do()
+
+        if prim.GetAttribute("xformOp:scale"):
+            omni.kit.commands.create(
+                "ChangePropertyCommand",
+                prop_path=prim.GetAttribute("xformOp:scale").GetPath(),
+                value=Gf.Vec3d(1, 1, 1),
+                prev=prim.GetAttribute("xformOp:scale").Get(),
+                timecode=Usd.TimeCode.Default(),
+                type_to_create_if_not_exist=(prim.GetAttribute("xformOp:scale").GetTypeName()),
+            ).do()
 
     return
 
@@ -227,7 +277,7 @@ def add_aov_to_viewport(viewport_api, aov_name: str):
     if hasattr(viewport_api, "legacy_window"):
         return viewport_api.legacy_window.add_aov(aov_name)
 
-    from pxr import Usd, UsdRender
+    from pxr import Usd
 
     stage = viewport_api.stage
     render_product_path = viewport_api.render_product_path
