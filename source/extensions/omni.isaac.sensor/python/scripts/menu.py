@@ -7,10 +7,12 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import sys
+import json
+import os
 import weakref
 
 import omni.kit.commands
+from omni.isaac.core.utils.extensions import get_extension_path
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.prims import create_prim, set_prim_visibility
 from omni.isaac.core.utils.stage import get_next_free_path
@@ -67,17 +69,49 @@ class IsaacSensorMenu:
                 ],
             ),
         ]
+
+        rtx_lidar_sub_menu = [
+            make_menu_item_description(
+                ext_id, "Rotating", lambda a=weakref.proxy(self): a._add_rtx_lidar("Rotating", "Example_Rotary")
+            ),
+            make_menu_item_description(
+                ext_id,
+                "Solid State",
+                lambda a=weakref.proxy(self): a._add_rtx_lidar("Solid_State", "Example_Solid_State"),
+            ),
+        ]
+
+        config_dir_path = get_extension_path(ext_id) + "/data/lidar_configs"
+        config_dirs = [x for x in os.listdir(config_dir_path) if os.path.isdir(config_dir_path + "/" + x)]
+        print(config_dirs)
+        config_dirs.sort()
+
+        for d in config_dirs:
+            if d is None:
+                continue
+            sub_menu = []
+            n = d.title()
+            d = config_dir_path + "/" + d
+            config_files = os.listdir(d)
+            config_files.sort()
+            for file in config_files:
+                if file.endswith(".json"):
+                    data = json.load(open(d + "/" + file))
+                    config_name = data["name"]
+                    sub_menu.append(
+                        make_menu_item_description(
+                            ext_id,
+                            config_name,
+                            lambda a=weakref.proxy(self), name=config_name: a._add_rtx_lidar(name, file[:-5]),
+                        )
+                    )
+            if len(sub_menu) > 0:
+                rtx_lidar_sub_menu.append(MenuItemDescription(name=n, sub_menu=sub_menu))
+
         menu_items.append(
             MenuItemDescription(
                 name="RTX Lidar",
-                sub_menu=[
-                    make_menu_item_description(
-                        ext_id, "Rotating", lambda a=weakref.proxy(self): a._add_rtx_rotating_lidar()
-                    ),
-                    make_menu_item_description(
-                        ext_id, "Solid State", lambda a=weakref.proxy(self): a._add_rtx_solid_lidar()
-                    ),
-                ],
+                sub_menu=rtx_lidar_sub_menu,
             )
         )
         self._menu_items = [
@@ -139,6 +173,18 @@ class IsaacSensorMenu:
             path="/rtx_lidar",
             parent=self._get_stage_and_path(),
             config="Example_Solid_State",
+            translation=Gf.Vec3d(0, 0, 0),
+            orientation=Gf.Quatd(0.5, 0.5, -0.5, -0.5),
+        )
+        # Make lidar invisible on stage as camera
+        set_prim_visibility(prim=prim, visible=False)
+
+    def _add_rtx_lidar(self, name, config_name, *args, **kwargs):
+        _, prim = omni.kit.commands.execute(
+            "IsaacSensorCreateRtxLidar",
+            path="/" + name,
+            parent=self._get_stage_and_path(),
+            config=config_name,
             translation=Gf.Vec3d(0, 0, 0),
             orientation=Gf.Quatd(0.5, 0.5, -0.5, -0.5),
         )
