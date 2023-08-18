@@ -1,4 +1,8 @@
 # Changelog
+## [7.5.0] - 2023-08-16
+### Added
+- Added menu items for more RTX Lidar sensor configs
+
 ## [7.4.1] - 2023-08-15
 ### Added 
 - Changed isaac sensor node prim from bundle to target type 
