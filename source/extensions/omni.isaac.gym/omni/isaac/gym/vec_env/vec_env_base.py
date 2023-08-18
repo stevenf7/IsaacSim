@@ -28,6 +28,7 @@ class VecEnvBase(gym.Env):
         enable_livestream: bool = False,
         enable_viewport: bool = False,
         launch_simulation_app: bool = True,
+        experience: str = None
     ) -> None:
         """Initializes RL and task parameters.
 
@@ -37,17 +38,19 @@ class VecEnvBase(gym.Env):
             enable_livestream (bool): Whether to enable running with livestream.
             enable_viewport (bool): Whether to enable rendering in headless mode.
             launch_simulation_app (bool): Whether to launch the simulation app (required if launching from python). Defaults to True.
+            experience (str): Path to the desired kit app file. Defaults to None, which will automatically choose the most suitable app file.
         """
 
         if launch_simulation_app:
-            experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.gym.kit'
-            if headless:
-                if enable_livestream:
-                    experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.gym.kit'
-                elif enable_viewport:
-                    experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.gym.kit'
-                else:
-                    experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.gym.headless.kit'
+            if experience is None:
+                experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.gym.kit'
+                if headless:
+                    if enable_livestream:
+                        experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.gym.kit'
+                    elif enable_viewport:
+                        experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.gym.kit'
+                    else:
+                        experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.gym.headless.kit'
 
             self._simulation_app = SimulationApp(
                 {"headless": headless, "physics_gpu": sim_device}, experience=experience

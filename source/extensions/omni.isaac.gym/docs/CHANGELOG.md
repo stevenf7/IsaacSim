@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.7.1] - 2023-08-18
+### Changed
+- Allow passing app file as argument to VecEnvBase
+
 ## [0.7.0] - 2023-07-26
 ### Changed
 - Update app files for gym
