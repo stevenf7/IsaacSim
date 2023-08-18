@@ -26,22 +26,25 @@ def main():
     )
     parser.add_argument("--headless", action="store_false", help="Run sim in headless mode.")
     group = parser.add_mutually_exclusive_group()
-    group.add_argument("-n", "--num_frames", type=int, default=60, help="Number of frames to run simulation for.")
+    group.add_argument("-n", "--num-frames", type=int, default=60, help="Number of frames to run simulation for.")
     group.add_argument(
-        "--run_indefinitely", action="store_true", help="True to run simulation indefinitely, False otherwise."
+        "--run-indefinitely", action="store_true", help="True to run simulation indefinitely, False otherwise."
     )
     parser.add_argument("-r", "--rate", type=int, default=60, help="Frame rate (Hz)")
-    parser.add_argument("--use_default_atlas", action="store_true", help="Use default atlas entity/component.")
+    parser.add_argument("--use-default-atlas", action="store_true", help="Use default atlas entity/component.")
     parser.add_argument(
-        "--use_default_clock", action="store_true", help="Use default scheduler entity/clock component."
+        "--use-default-clock", action="store_true", help="Use default scheduler entity/clock component."
     )
     parser.add_argument(
-        "--tcp_server_addr",
+        "--use-release-assets", action="store_true", help="Use release assets instead of release candidate assets."
+    )
+    parser.add_argument(
+        "--tcp-server-addr",
         default="127.0.0.1",
         help="TCP server address - for scenes creating GXF app from OmniGraph.",
     )
     parser.add_argument(
-        "--tcp_server_port",
+        "--tcp-server-port",
         type=int,
         default=7000,
         help="TCP server port - for scenes creating GXF app from OmniGraph.",
@@ -50,15 +53,16 @@ def main():
         "--robot", choices=ROBOT_ASSET_PATHS.keys(), default=None, help="Type of robot to place or move in scene"
     )
     parser.add_argument(
-        "--initial_pos",
+        "--initial-pos",
         type=float,
         nargs=2,
         default=[0.0, 0.0],
         help="Initial (x, y) position of robot in world coordinates.",
     )
     parser.add_argument(
-        "--initial_yaw", type=float, default=0.0, help="Initial yaw position of robot in world coordinates (degrees)."
+        "--initial-yaw", type=float, default=0.0, help="Initial yaw position of robot in world coordinates (degrees)."
     )
+    parser.add_argument("--status-file", type=str, default=STATUS_FILE_PATH, help="Path to status file.")
 
     parser.add_argument("scene", type=str, help="Path to scene in Nucleus server")
     parser.add_argument("yaml_path", type=str, nargs="*", help="Path to GXF app YAML file.")
@@ -83,10 +87,17 @@ def main():
     assets_root_path = nucleus.get_assets_root_path()
     if assets_root_path is None:
         carb.log_error("Could not find Isaac Sim assets folder")
+        with open(args.status_file, "w") as status_file:
+            status_file.write("Could not find Isaac Sim assets folder.\n")
         simulation_app.close()
         sys.exit(1)
 
-    omni.usd.get_context().open_stage(assets_root_path + args.scene, None)
+    result = omni.usd.get_context().open_stage(assets_root_path + args.scene, None)
+    if not result:
+        with open(args.status_file, "w") as status_file:
+            status_file.write("Could not find provided scene in Nucleus.\n")
+        simulation_app.close()
+        sys.exit(1)
 
     # Wait two frames so that stage starts loading
     simulation_app.update()
@@ -116,6 +127,23 @@ def main():
     package_path = os.path.abspath(app_folder)
     script_path = os.path.join(package_path, "tools", "isaac_amr")
 
+    # Place or move robot in scene:
+    if args.robot:
+        robot_prim_path = ROBOT_PRIM_PATHS[args.robot]
+        if args.use_release_assets:
+            robot_asset_path = ROBOT_ASSET_PATHS[args.robot]
+        else:
+            robot_asset_path = ROBOT_ASSET_PATHS_RELEASE_CANDIDATE[args.robot]
+        if not prims.get_prim_at_path(robot_prim_path):
+            # Create the robot in the scene
+            add_reference_to_stage(usd_path=f"{assets_root_path}{robot_asset_path}", prim_path=robot_prim_path)
+        # move the robot
+        _ = XFormPrim(
+            prim_path=robot_prim_path,
+            translation=np.array(args.initial_pos + [0.0]),
+            orientation=rotations.gf_rotation_to_np_array(Gf.Rotation(Gf.Vec3d(0, 0, 1), args.initial_yaw)),
+        )
+
     if not args.yaml_path:
         # Iterate over prims in the stage to see if a GXF YAML node is present
         gxf_yaml_node_present = False
@@ -140,7 +168,10 @@ def main():
                     break
         if not gxf_yaml_node_present:
             carb.log_error("No GXF graph YAMLs provided as arguments, and no GXF YAML node found in loaded scene.")
-            carb.log_error("Failed to create GXF application, exiting.")
+            with open(args.status_file, "w") as status_file:
+                status_file.write(
+                    "No GXF graph YAMLs provided as arguments, and no GXF YAML node found in loaded scene.\n"
+                )
             simulation_app.close()
             sys.exit(1)
     else:
@@ -180,22 +211,10 @@ def main():
 
         if not status:
             carb.log_error("Failed to create GXF application, exiting.")
+            with open(args.status_file, "w") as status_file:
+                status_file.write("Failed to create GXF application, exiting.\n")
             simulation_app.close()
             sys.exit(1)
-
-    # Place or move robot in scene:
-    if args.robot:
-        robot_asset_path = ROBOT_ASSET_PATHS[args.robot]
-        robot_prim_path = ROBOT_PRIM_PATHS[args.robot]
-        if not prims.get_prim_at_path(robot_prim_path):
-            # Create the robot in the scene
-            add_reference_to_stage(usd_path=f"{assets_root_path}{robot_asset_path}", prim_path=robot_prim_path)
-        # move the robot
-        _ = XFormPrim(
-            prim_path=robot_prim_path,
-            translation=np.array(args.initial_pos + [0.0]),
-            orientation=rotations.gf_rotation_to_np_array(Gf.Rotation(Gf.Vec3d(0, 0, 1), args.initial_yaw)),
-        )
 
     simulation_app.update()
     simulation_app.update()

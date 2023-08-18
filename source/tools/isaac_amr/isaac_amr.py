@@ -19,7 +19,11 @@ DEFAULT_ALLOCATOR_YAML = "isaac_sim_allocator.yaml"
 
 # Asset and prim paths for GXF robot assets
 ROBOT_ASSET_PATHS = {"carter_v2_3": "/Isaac/Samples/Isaac_AMR/Robots/carter_v2_3_gxf.usd"}
+ROBOT_ASSET_PATHS_RELEASE_CANDIDATE = {"carter_v2_3": "/Projects/isaac_amr_envoy/Release/Robots/carter_v2_3_gxf.usd"}
 ROBOT_PRIM_PATHS = {"carter_v2_3": "/carter_v2_3"}
+
+# File in which status will be stored
+STATUS_FILE_PATH = "/tmp/run_script_status.log"
 
 
 def set_yaml_addr_port(yaml: List[dict], address: str, port: int) -> bool:
