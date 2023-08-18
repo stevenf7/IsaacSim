@@ -22,9 +22,11 @@ from omni.isaac.ui.ui_utils import btn_builder, cb_builder, dropdown_builder, ge
 class FrankaCortexExtension(BaseSampleExtension):
     def on_startup(self, ext_id: str):
         super().on_startup(ext_id)
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        sample_behaviors_id = ext_manager.get_enabled_extension_id("omni.isaac.cortex.sample_behaviors")
         behavior_path = (
-            omni.kit.app.get_app().get_extension_manager().get_extension_path(ext_id)
-            + "/omni/isaac/examples/cortex/behaviors/franka"
+            omni.kit.app.get_app().get_extension_manager().get_extension_path(sample_behaviors_id)
+            + "/omni/isaac/cortex/sample_behaviors/franka"
         )
 
         self.behavior_map = {

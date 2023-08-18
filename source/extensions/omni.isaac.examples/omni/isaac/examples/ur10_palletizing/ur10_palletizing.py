@@ -20,7 +20,7 @@ from omni.isaac.core.utils.stage import add_reference_to_stage
 from omni.isaac.cortex.cortex_rigid_prim import CortexRigidPrim
 from omni.isaac.cortex.cortex_utils import get_assets_root_path
 from omni.isaac.cortex.robot import CortexUr10
-from omni.isaac.examples.cortex.behaviors.ur10 import bin_stacking_behavior as behavior
+from omni.isaac.cortex.sample_behaviors.ur10 import bin_stacking_behavior as behavior
 from omni.isaac.examples.cortex.cortex_base import CortexBase
 
 

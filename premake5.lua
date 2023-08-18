@@ -294,6 +294,7 @@ group "exts"
     include ("source/extensions/omni.isaac.core_archive")
     include ("source/extensions/omni.isaac.core_nodes")
     include ("source/extensions/omni.isaac.cortex")
+    include ("source/extensions/omni.isaac.cortex.sample_behaviors")
     include ("source/extensions/omni.isaac.conveyor")
     include ("source/extensions/omni.isaac.diff_usd")
     include ("source/extensions/omni.isaac.debug_draw")
