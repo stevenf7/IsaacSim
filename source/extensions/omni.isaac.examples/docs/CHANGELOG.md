@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.7.0] - 2023-08-15
+### Removed
+- Moved Cortex Behaviors to omni.isaac.cortex.sample_behaviors
 ## [1.6.5] - 2023-08-07
 ### Fixed
 - Incorrect scaling factor in Omnigraph Keyboard example

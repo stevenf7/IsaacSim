@@ -15,7 +15,7 @@ import random
 
 import numpy as np
 import omni.isaac.cortex.math_util as math_util
-import omni.isaac.examples.cortex.behaviors.ur10.bin_stacking_behavior as behavior
+import omni.isaac.cortex.sample_behaviors.ur10.bin_stacking_behavior as behavior
 from omni.isaac.core.objects import VisualCapsule, VisualSphere
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.tasks import BaseTask
