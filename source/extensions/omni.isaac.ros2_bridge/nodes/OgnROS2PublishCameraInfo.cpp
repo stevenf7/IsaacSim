@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -88,7 +88,7 @@ public:
         float fx, fy, cy, cx;
 
         fx = width * db.inputs.focalLength() / db.inputs.horizontalAperture();
-        fy = height * db.inputs.focalLength() / (db.inputs.horizontalAperture() * (float(height) / width));
+        fy = height * db.inputs.focalLength() / db.inputs.verticalAperture();
         cx = width * 0.5f;
         cy = height * 0.5f;
 
