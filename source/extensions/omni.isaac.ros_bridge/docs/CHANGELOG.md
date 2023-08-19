@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.14.2] - 2023-08-18
+### Fixed
+- Pixel are square in 105.1 Vertical aperture is not used, and based off of horizontal
+
 ## [1.14.1] - 2023-08-15
 ### Changed
 - Changed targetPrim datatype from bundle to target in omnigraph
