@@ -471,7 +471,7 @@ class FlipBin(DfStateMachineDecider):
                     MoveToFlipStation(),
                     DfSetLockState(set_locked_to=True, decider=self),
                     OpenSuctionGripper(),
-                    ReleaseFlipStationBin(duration=0.65),
+                    ReleaseFlipStationBin(),
                     DfSetLockState(set_locked_to=False, decider=self),
                 ]
             )
@@ -528,21 +528,15 @@ class MoveToFlipStation(DfState):
 
 
 class ReleaseFlipStationBin(DfState):
-    def __init__(self, duration):
-        self.duration = duration
-
     def enter(self):
         self.entry_time = time.time()
 
+        # Get some info about the current end-effector transform.
         fk_T = self.context.robot.arm.get_fk_T()
         fk_R, fk_p = math_util.unpack_T(fk_T)
         ax, ay, az = math_util.unpack_R(fk_R)
 
-        home_config = self.context.robot.default_config
-        home_T = self.context.robot.arm.get_fk_T(config=home_config)
-        home_R, home_p = math_util.unpack_T(home_T)
-
-        v = normalized(np.array([-1.0, -0.3, 0.0]))
+        v = normalized(np.array([-1.0, -0.3, 0.0]))  # Hard-coded vector pointing approx toward base.
         toward_base_alpha = 0.2
         target_p = fk_p - 0.3 * ax + toward_base_alpha * v
         self.target_p = target_p
@@ -554,6 +548,10 @@ class ReleaseFlipStationBin(DfState):
         target_az = np.cross(target_ax, target_ay)
         target_R = math_util.pack_R(target_ax, target_ay, target_az)
 
+        # This target pose is a little below the bin, but off to the side with the end
+        # effector angled horizontally. It gets the end-effector out of the flip station
+        # collision region and allows us to turn on that obstacle for now moving to pick
+        # the bin.
         self.target_pose = PosePq(target_p, math_util.matrix_to_quat(target_R))
         motion_command = MotionCommand(
             target_pose=self.target_pose,
@@ -563,7 +561,10 @@ class ReleaseFlipStationBin(DfState):
         self.context.robot.arm.send(motion_command)
 
     def step(self):
-        if time.time() - self.entry_time >= self.duration:
+        # Exit (return None) when the end-effector is within 15cm of the target position.
+        fk_p = self.context.robot.arm.get_fk_p()
+        dist_to_target = np.linalg.norm(self.target_pose.p - fk_p)
+        if dist_to_target < 0.15:
             return None
         return self
 
