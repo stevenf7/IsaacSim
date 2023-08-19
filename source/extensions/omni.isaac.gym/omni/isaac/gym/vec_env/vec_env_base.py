@@ -28,7 +28,7 @@ class VecEnvBase(gym.Env):
         enable_livestream: bool = False,
         enable_viewport: bool = False,
         launch_simulation_app: bool = True,
-        experience: str = None
+        experience: str = None,
     ) -> None:
         """Initializes RL and task parameters.
 
