@@ -25,6 +25,7 @@ import omni.kit.test
 import omni.replicator.core as rep
 import omni.usd
 from omni.isaac.core.objects import VisualCuboid
+from omni.isaac.core.utils.prims import delete_prim
 from omni.isaac.core.utils.render_product import create_hydra_texture
 from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
 from pxr import UsdGeom, UsdPhysics
@@ -35,7 +36,6 @@ class TestRTXSolildStateLidar(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         self._settings = carb.settings.acquire_settings_interface()
-        self._texture = None
         await create_new_stage_async()
 
         await update_stage_async()
@@ -49,7 +49,6 @@ class TestRTXSolildStateLidar(omni.kit.test.AsyncTestCase):
         pass
 
     async def tearDown(self):
-        self._texture = None
         self._usd_context = omni.usd.get_context()
         self._usd_context.close_stage()
         for _ in range(10):
@@ -73,7 +72,7 @@ class TestRTXSolildStateLidar(omni.kit.test.AsyncTestCase):
 
         config = "Example_Solid_State"
         _, sensor = omni.kit.commands.execute("IsaacSensorCreateRtxLidar", path="/sensor", parent=None, config=config)
-        self._texture, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathString)
+        texture, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathString)
         rv = "RtxLidar"
         writer = rep.writers.get(rv + "DebugDrawPointCloud")
         writer.attach([render_product_path])
@@ -85,5 +84,10 @@ class TestRTXSolildStateLidar(omni.kit.test.AsyncTestCase):
 
         # cleanup and shutdown
         omni.timeline.get_timeline_interface().stop()
+        writer.detach()
+        await update_stage_async()
+        delete_prim(sensor.GetPath())
+        await update_stage_async()
+        texture = None
 
     pass

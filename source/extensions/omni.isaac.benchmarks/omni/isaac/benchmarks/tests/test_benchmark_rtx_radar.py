@@ -15,10 +15,12 @@ from pxr import Gf
 
 from ..utils.base_isaac_benchmark import BaseIsaacBenchmark
 
-TEST_NUM_APP_UPDATES = 60 * 10
+# TODOMTC - Radar appears to not allow allow multiple, but the transoform for each one is the same.
+#           and the results only appear to last for the first few frames.
+TEST_NUM_APP_UPDATES = 10
 
 
-class TestBenchmarkRtxLidar(BaseIsaacBenchmark):
+class TestBenchmarkRtxRadar(BaseIsaacBenchmark):
     async def setUp(self):
         await super().setUp()
         pass
@@ -28,8 +30,8 @@ class TestBenchmarkRtxLidar(BaseIsaacBenchmark):
         pass
 
     # ----------------------------------------------------------------------
-    async def benchmark_rtx_lidar(self, n_sensor):
-        self.test_run.test_name = f"rtx_lidar_{n_sensor}"
+    async def benchmark_rtx_radar(self, n_sensor):
+        self.test_run.test_name = f"rtx_radar_{n_sensor}"
         self.set_phase("loading")
         self.start_runtime()
         scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
@@ -39,27 +41,24 @@ class TestBenchmarkRtxLidar(BaseIsaacBenchmark):
         writers = []
         sensors = []
         for i in range(n_sensor):
-            lidar_type = "Rotary"
-            if i % 2:
-                lidar_type = "Solid_State"
-            lidar_path = "/World/Rtx" + lidar_type + "Lidar_" + str(i)
-            sensor_translation = Gf.Vec3f([-8, 13 + i * 2.0, 2.0])  # these positions are used for full_warehouse.usd
-            # make sure to test rotary and solid state together.
-            lidar_config = "Example_" + lidar_type
+            radar_path = "/World/RtxRadar_" + str(i)
+            sensor_translation = Gf.Vec3f(
+                [-0.937, -2.0 + i * 2.0, 0.8940]
+            )  # these positions are used for full_warehouse.usd
 
             _, sensor = omni.kit.commands.execute(
-                "IsaacSensorCreateRtxLidar",
-                path=lidar_path,
+                "IsaacSensorCreateRtxRadar",
+                path=radar_path,
                 parent=None,
-                config=lidar_config,
+                config="Example",
                 translation=sensor_translation,
-                orientation=Gf.Quatd(0.5, 0.5, -0.5, -0.5),  # Gf.Quatd is w,i,j,k
+                orientation=Gf.Quatd(0.6283473, 0.6283473, -0.3243142, -0.3243142),  # Gf.Quatd is w,i,j,k
             )
             sensors.append(sensor)
             texture, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathString)
             hydra_textures.append(texture)
             # Create the post process graph that publishes the render var
-            writer = rep.writers.get("Writer" + "IsaacPrintRTXLidarInfo" + "Test")
+            writer = rep.writers.get("Writer" + "IsaacPrintRTXRadarInfo" + "Test")
             writer.attach([render_product_path])
             writers.append(writer)
 
@@ -79,7 +78,6 @@ class TestBenchmarkRtxLidar(BaseIsaacBenchmark):
         await self.store_measurements()
 
         timeline.stop()
-
         for writer in writers:
             writer.detach()
         await omni.kit.app.get_app().next_update_async()
@@ -92,14 +90,14 @@ class TestBenchmarkRtxLidar(BaseIsaacBenchmark):
             texture = None
         await omni.kit.app.get_app().next_update_async()
 
-    async def test_benchmark_1_rtx_lidar(self):
-        await self.benchmark_rtx_lidar(1)
+    async def test_benchmark_1_rtx_radar(self):
+        await self.benchmark_rtx_radar(1)
 
-    async def test_benchmark_2_rtx_lidar(self):
-        await self.benchmark_rtx_lidar(2)
+    async def test_benchmark_2_rtx_radar(self):
+        await self.benchmark_rtx_radar(2)
 
-    async def test_benchmark_4_rtx_lidar(self):
-        await self.benchmark_rtx_lidar(4)
+    async def test_benchmark_4_rtx_radar(self):
+        await self.benchmark_rtx_radar(4)
 
-    async def test_benchmark_8_rtx_lidar(self):
-        await self.benchmark_rtx_lidar(8)
+    async def test_benchmark_8_rtx_radar(self):
+        await self.benchmark_rtx_radar(8)

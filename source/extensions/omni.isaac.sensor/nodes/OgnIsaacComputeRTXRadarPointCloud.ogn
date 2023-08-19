@@ -21,9 +21,9 @@
                 "description": "Pointer to Radar render result.",
                 "uiName": "Data Pointer"
             },
-            "transform": {
-                "type": "matrixd[4]",
-                "description": "The matrix to transform the points by"
+            "renderProductPath": {
+                "type": "token",
+                "description": "Path of the renderProduct to wait for being rendered"
             }
         },
         "outputs": {

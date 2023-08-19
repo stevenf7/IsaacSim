@@ -1,4 +1,13 @@
 # Changelog
+## [0.18.0] - 2023-08-17
+
+### Added
+- test_benchmark_rtx_radar test
+### Changed
+- test_benchmark_rtx_lidar uses both Rotary and Solid_State to test
+
+### Fixed
+- test_benchmark_rtx_lidar crash when multiple tests run
 
 ## [0.17.4] - 2023-08-10
 

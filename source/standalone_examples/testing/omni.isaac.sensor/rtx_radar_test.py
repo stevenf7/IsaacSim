@@ -82,11 +82,6 @@ if len(sys.argv) >= 2:
             (-3.0258131660928367, 0, 0),
             physics=False,
         )
-        # omni.kit.commands.execute('CreateAndBindMdlMaterialFromLibrary',
-        #    mdl_name='OmniGlass.mdl',
-        #    mtl_name='glass',
-        #    mtl_created_list=['/World/Looks/glass'],
-        #    bind_selected_prims=['/World/cube_5'])
         omni.kit.commands.execute(
             "CreateMdlMaterialPrim",
             mtl_url="omniverse://ov-isaac-dev/NVIDIA/Materials/OmniSurface/Glass/OmniSurface_Glass.mdl",
@@ -100,13 +95,6 @@ if len(sys.argv) >= 2:
             strength=None,
         )
 
-        # omni.kit.commands.execute('CreateUsdAttributeOnPath',
-        #    attr_path=Sdf.Path('/World/Looks/OmniSurface_Glass.SensorMaterialIndex'),
-        #    attr_type=Sdf.ValueTypeNames.Int,
-        #    custom=False,
-        #    variability=Sdf.VariabilityUniform,
-        #    attr_value=5)
-
     elif geo_type == "floor":
         stage.add_reference_to_stage(
             assets_root_path + "/Users/mcarlson@nvidia.com/Environments/Simple_Warehouse/just_floor.usd", "/background"
@@ -114,9 +102,9 @@ if len(sys.argv) >= 2:
     elif geo_type == "floora":
         stage.add_reference_to_stage("/home/mcarlson/data/just_floor/just_floor0.usda", "/background")
 
-lidar_config = "Example_Rotary"
+radar_config = "Example"
 if len(sys.argv) >= 3:
-    lidar_config = sys.argv[2]
+    radar_config = sys.argv[2]
 
 omni.kit.commands.execute(
     "CreatePrim", prim_type="DomeLight", attributes={"inputs:intensity": 1000, "inputs:texture:format": "latlong"}
@@ -133,27 +121,16 @@ simulation_app.update()
 
 i = printinc(i)
 _, sensor = omni.kit.commands.execute(
-    "IsaacSensorCreateRtxLidar",
+    "IsaacSensorCreateRtxRadar",
     path="/sensor",
     parent=None,
-    config=lidar_config,
+    config=radar_config,
     translation=(0, 0, 1.0),
-    orientation=Gf.Quatd(0.5, 0.5, -0.5, -0.5),  # Gf.Quatd is w,i,j,k
+    orientation=Gf.Quatd(0.6283473, 0.6283473, -0.3243142, -0.3243142),  # Gf.Quatd is w,i,j,k
 )
-
-if 0:
-    _, sensor2 = omni.kit.commands.execute(
-        "IsaacSensorCreateRtxLidar",
-        path="/sensor2",
-        parent=None,
-        config=lidar_config,
-        translation=(0, -1, 1.0),
-        orientation=Gf.Quatd(0.5, 0.5, -0.5, -0.5),  # Gf.Quatd is w,i,j,k
-    )
 
 i = printinc(i)
 _, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathString)
-# _, render_product_path2 = create_hydra_texture([1, 1], sensor2.GetPath().pathString)
 
 # Create the debug draw pipeline in the post process graph
 from omni.syntheticdata import sensors
@@ -162,21 +139,13 @@ i = printinc(i)
 simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=1.0)
 if 1:
     i = printinc(i)
-    # writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud" + "Buffer")
-    # writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
-    # writer = rep.writers.get("Writer" + "IsaacReadRTXLidarData")
-    writer = rep.writers.get("Writer" + "IsaacPrintRTXLidarInfo" + "")
+    writer = rep.writers.get("Writer" + "IsaacPrintRTXRadarInfo" + "")
 
     i = printinc(i)
-    writer.attach([render_product_path])  # , render_product_path2])
+    writer.attach([render_product_path])
 else:
-    # print("try RtxSensorCpuExportRaw")
-
     sensors.get_synthetic_data().activate_node_template(
-        "RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud",
-        # "RtxSensorCpu" + "ExportRaw",
-        # "RtxLidar" + "DebugDrawPointCloud",
-        # "RtxSensorCpuIsaacReadRTXLidarData",
+        "RtxSensorCpu" + "IsaacComputeRTXRadarPointCloud",
         0,
         [render_product_path],
     )

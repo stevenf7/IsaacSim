@@ -22,6 +22,7 @@ import omni.kit.test
 import omni.replicator.core as rep
 import omni.usd
 from omni.isaac.core.objects import VisualCuboid
+from omni.isaac.core.utils.prims import delete_prim
 from omni.isaac.core.utils.render_product import create_hydra_texture
 from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
 
@@ -31,7 +32,6 @@ class TestRTXRotaryLidar(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         self._settings = carb.settings.acquire_settings_interface()
-        self._texture = None
         await create_new_stage_async()
         await update_stage_async()
         # This needs to be set so that kit updates match physics updates
@@ -44,7 +44,6 @@ class TestRTXRotaryLidar(omni.kit.test.AsyncTestCase):
         pass
 
     async def tearDown(self):
-        self._texture = None
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
@@ -70,7 +69,7 @@ class TestRTXRotaryLidar(omni.kit.test.AsyncTestCase):
 
         config = "Example_Rotary"
         _, sensor = omni.kit.commands.execute("IsaacSensorCreateRtxLidar", path="/sensor", parent=None, config=config)
-        self._texture, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathString)
+        texture, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathString)
         rv = "RtxLidar"
         writer = rep.writers.get(rv + "DebugDrawPointCloud")
         writer.attach([render_product_path])
@@ -78,8 +77,14 @@ class TestRTXRotaryLidar(omni.kit.test.AsyncTestCase):
         await update_stage_async()
 
         omni.timeline.get_timeline_interface().play()
-        for i in range(10):
+        for i in range(60):
             await update_stage_async()
         omni.timeline.get_timeline_interface().stop()
+
+        writer.detach()
+        await update_stage_async()
+        delete_prim(sensor.GetPath())
+        await update_stage_async()
+        texture = None
 
     pass
