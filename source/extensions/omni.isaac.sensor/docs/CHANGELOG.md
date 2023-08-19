@@ -28,7 +28,8 @@
 ## [7.4.1] - 2023-08-15
 ### Added 
 - Changed isaac sensor node prim from bundle to target type 
-
+### Fixed
+- Vertical Aperture used from reading the horizonal aperture usd property and multiplying it by resolution ratio to conform to the square pixels asumption in place. (Camera class)
 ## [7.4.0] - 2023-08-15
 ### Changed
 - RTX point cloud node returns width and height of buffer

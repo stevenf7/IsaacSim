@@ -366,7 +366,7 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
         camera = stage.GetPrimAtPath(viewport_api.get_active_camera())
         focal_length = camera.GetAttribute("focalLength").Get()
         horiz_aperture = camera.GetAttribute("horizontalAperture").Get()
-        vert_aperture = camera.GetAttribute("verticalAperture").Get()
+        vert_aperture = camera.GetAttribute("horizontalAperture").Get() * (float(height) / width)
         # Pixels are square so we can also do:
         # vert_aperture = height / width * horiz_aperture
         near, far = camera.GetAttribute("clippingRange").Get()

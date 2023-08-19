@@ -945,6 +945,8 @@ class Camera(BaseSensor):
             value (Optional[float], optional): Emulates sensor/film width on a camera. Defaults to None.
         """
         self.prim.GetAttribute("horizontalAperture").Set(value * 10.0)
+        (width, height) = self.get_resolution()
+        self.prim.GetAttribute("verticalAperture").Set((value * 10.0) * (float(height) / width))
         return
 
     def get_vertical_aperture(self) -> float:
@@ -961,6 +963,8 @@ class Camera(BaseSensor):
             value (Optional[float], optional): Emulates sensor/film height on a camera. Defaults to None.
         """
         self.prim.GetAttribute("verticalAperture").Set(value * 10.0)
+        (width, height) = self.get_resolution()
+        self.prim.GetAttribute("horizontalAperture").Set((value * 10.0) * (float(width) / height))
         return
 
     def get_clipping_range(self) -> Tuple[float, float]:

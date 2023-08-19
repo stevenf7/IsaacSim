@@ -320,9 +320,9 @@ def get_intrinsics_matrix(viewport_api: Any) -> np.ndarray:
     stage = get_current_stage()
     prim = stage.GetPrimAtPath(viewport_api.get_active_camera())
     focal_length = prim.GetAttribute("focalLength").Get()
-    horizontal_aperture = prim.GetAttribute("horizontalAperture").Get()
-    vertical_aperture = prim.GetAttribute("verticalAperture").Get()
     (width, height) = viewport_api.get_texture_resolution()
+    horizontal_aperture = prim.GetAttribute("horizontalAperture").Get()
+    vertical_aperture = horizontal_aperture * (float(height) / width)
     fx = width * focal_length / horizontal_aperture
     fy = height * focal_length / vertical_aperture
     cx = width * 0.5
@@ -364,7 +364,7 @@ def set_intrinsics_matrix(viewport_api: Any, intrinsics_matrix: np.ndarray, foca
     (width, height) = viewport_api.get_texture_resolution()
 
     horizontal_aperture = width * focal_length / fx
-    vertical_aperture = height * focal_length / fy
+    vertical_aperture = horizontal_aperture * (height / width)
     # TODO: this should be set_attr_val
     # We have to do it this way because the camera might be on a different layer (default cameras are on session layer),
     # and this is the simplest way to set the property on the right layer.

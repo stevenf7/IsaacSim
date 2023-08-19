@@ -88,7 +88,7 @@ public:
         float fx, fy, cy, cx;
 
         fx = width * db.inputs.focalLength() / db.inputs.horizontalAperture();
-        fy = height * db.inputs.focalLength() / db.inputs.verticalAperture();
+        fy = height * db.inputs.focalLength() / (db.inputs.horizontalAperture() * (float(height) / width));
         cx = width * 0.5f;
         cy = height * 0.5f;
 

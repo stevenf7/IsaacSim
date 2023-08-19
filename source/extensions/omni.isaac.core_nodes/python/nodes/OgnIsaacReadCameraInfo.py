@@ -52,7 +52,9 @@ class OgnIsaacReadCameraInfo:
         db.outputs.focalLength = camera.GetAttribute("focalLength").Get()
 
         db.outputs.horizontalAperture = camera.GetAttribute("horizontalAperture").Get()
-        db.outputs.verticalAperture = camera.GetAttribute("verticalAperture").Get()
+        db.outputs.verticalAperture = camera.GetAttribute("horizontalAperture").Get() * (
+            float(db.outputs.height) / db.outputs.width
+        )
 
         db.outputs.horizontalOffset = camera.GetAttribute("horizontalApertureOffset").Get()
         db.outputs.verticalOffset = camera.GetAttribute("verticalApertureOffset").Get()

@@ -52,7 +52,7 @@ public:
         float fx, fy, cx, cy;
 
         fx = width * db.inputs.focalLength() / db.inputs.horizontalAperture();
-        fy = height * db.inputs.focalLength() / db.inputs.verticalAperture();
+        fy = height * db.inputs.focalLength() / (db.inputs.horizontalAperture() * (static_cast<float>(height) / width));
         cx = width * 0.5f;
         cy = height * 0.5f;
         {

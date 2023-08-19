@@ -158,7 +158,7 @@ private:
         // Populate intrinsics
         const auto& focalLength = db.inputs.focalLength();
         const auto& horizontalAperture = db.inputs.horizontalAperture();
-        const auto& verticalAperture = db.inputs.verticalAperture();
+        const auto& verticalAperture = horizontalAperture * (float(height) / width);
         const auto& cameraFisheyeParams = db.inputs.cameraFisheyeParams();
         const std::string projectionType = db.tokenToString(db.inputs.projectionType());
         const std::string physicalDistortionModel = db.tokenToString(db.inputs.physicalDistortionModel());
@@ -264,9 +264,9 @@ private:
         message.pose_frame_uid->uid = state.findFrameUid(frame_name.c_str());
         state.setIntrinsicsCameraImage(
             message.intrinsics_info, message.distortion_info, width, height, db.inputs.focalLength(),
-            db.inputs.horizontalAperture(), db.inputs.verticalAperture(), db.tokenToString(db.inputs.projectionType()),
-            db.inputs.cameraFisheyeParams(), db.tokenToString(db.inputs.physicalDistortionModel()),
-            db.inputs.physicalDistortionCoefficients());
+            db.inputs.horizontalAperture(), db.inputs.horizontalAperture() * (float(height) / width),
+            db.tokenToString(db.inputs.projectionType()), db.inputs.cameraFisheyeParams(),
+            db.tokenToString(db.inputs.physicalDistortionModel()), db.inputs.physicalDistortionCoefficients());
 
         const size_t totalBytes = height * width * sizeof(T) * channels;
         memcpy(static_cast<T*>(message.image_tensor_view.element_wise_begin()), &dataAsCPU[0], totalBytes);
