@@ -489,14 +489,6 @@ void ImuSensor::onPhysicsStep()
         //               mReadingPair[1].lin_acc_y, mReadingPair[1].lin_acc_z, mReadingPair[1].ang_vel_x,
         //               mReadingPair[1].ang_vel_y, mReadingPair[1].ang_vel_z, mReadingPair[1].orientation.w,
         //               mReadingPair[1].orientation.x, mReadingPair[1].orientation.y, mReadingPair[1].orientation.z);
-
-        if (mFirst)
-        {
-            mInitPair = mSensorReadings[0];
-            mFirst = false;
-        }
-
-
         if (mProps.sensorPeriod <= mTimeDelta)
         {
             mSensorTime = mSensorReadings[0].time;
@@ -554,9 +546,9 @@ void ImuSensor::onComponentChange()
 
     // size of the raw data must be 2 times larger than the max rolling avg size
     // also the buffer should be sufficiently large (20)
-    if (this->mRawBufferSize < 2 * max_rolling_size && max_rolling_size > 10)
+    if (this->mRawBufferSize != 2 * max_rolling_size)
     {
-        this->mRawBufferSize = 2 * max_rolling_size;
+        this->mRawBufferSize = std::max(2 * max_rolling_size, 20);
         mRawBuffer.resize(mRawBufferSize, IsRawData());
         mSensorReadings.resize(mRawBufferSize, IsReading());
     }
@@ -640,7 +632,6 @@ void ImuSensor::onComponentChange()
 void ImuSensor::onStop()
 {
     reset();
-    mFirst = true;
 
     mLineDrawing->clear();
     if (mVisualize)

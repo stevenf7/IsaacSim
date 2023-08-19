@@ -15,11 +15,9 @@ from omni.isaac.sensor.scripts.effort_sensor import EffortSensor
 
 class OgnIsaacReadEffortSensorInternalState(BaseResetNode):
     def __init__(self):
-        self.first = True
         super().__init__(initialize=False)
 
     def custom_reset(self):
-        self.first = True
         if self.effort_sensor is not None:
             # reset the effort sensor callbacks
             self.effort_sensor._stage_open_callback_fn()
@@ -73,6 +71,10 @@ class OgnIsaacReadEffortSensor:
                 db.log_warn(f"Failed to create sensor at {state.prim_path} for joint {state.dof_name}")
                 return False
 
+        if not len(db.inputs.prim) > 0:
+            db.log_warn(f"Failed to create sensor, prim path missing")
+            return False
+
         state.prim_path = db.inputs.prim[0].GetString()
         parent_path = "/".join(state.prim_path.split("/")[:-1])
         dof_name = state.prim_path.split("/")[-1]
@@ -80,16 +82,10 @@ class OgnIsaacReadEffortSensor:
         if state.parent_path != parent_path:
             state.parent_path = parent_path
             state.dof_name = dof_name
-            try:
-                # if change prim path, need to delete, and recreate the effort sensor
-                state.custom_reset
-                state.initialized = False
-                return True
-            except:
-                db.outputs.sensorTime = 0
-                db.outputs.value = 0
-                db.log_warn(f"Effort sensor error, invalid art: {state.prim_path} or dof name: {state.dof_name}")
-                return False
+            # if change prim path, need to delete, and recreate the effort sensor
+            state.custom_reset()
+            state.initialized = False
+            return True
 
         elif state.dof_name != dof_name:
             state.dof_name = dof_name
@@ -101,6 +97,8 @@ class OgnIsaacReadEffortSensor:
                 db.log_warn(f"Effort sensor error, invalid dof name: {state.dof_name}")
                 return False
 
+        state.effort_sensor.sensor_period = state.sensor_period
+        state.effort_sensor.use_latest_data = state.use_latest_data
         state.effort_sensor.enabled = state.enabled
 
         sensor_reading = state.effort_sensor.get_sensor_reading()

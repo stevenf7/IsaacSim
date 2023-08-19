@@ -93,15 +93,12 @@ private:
     // moving average past n orientation values
     int mOrientationFilterSize = 1;
 
-    IsReading mInitPair; // Data obtained on simulation timestamp
-
     // Data obtained at the last sensor period frame for intnerpolation
     std::vector<IsReading> mSensorReadingsSensorFrame; // IsReading at the measurement sensorperiod
 
     std::vector<IsReading> mSensorReadings; // Sensor readings in sensor timestamps
     double mUnitScale{ 1.0 };
     float mSensorTime{ 0 };
-    bool mFirst{ true };
     bool mPreviousEnabled{ true };
     pxr::GfVec3f mGravity;
     omni::physx::IPhysx* mPhysXInterface = nullptr;

@@ -110,7 +110,7 @@ class EffortSensor(Articulation):
             if efforts is None or len(efforts) != 1:
                 self.sensor_reading_buffer[0].value = 0
                 self.sensor_reading_buffer[0].is_valid = False
-                carb.log_error(
+                carb.log_warn(
                     f"Effort sensor error, none or multiple efforts found for path:  {self.prim_path} with joint {self.dof_name}"
                 )
 
@@ -124,7 +124,7 @@ class EffortSensor(Articulation):
                 self.interpolation_buffer = copy.deepcopy(self.sensor_reading_buffer)
                 self.sensor_time += self.sensor_period
 
-    def get_sensor_reading(self, interpolation_function=None) -> EsSensorReading():
+    def get_sensor_reading(self, interpolation_function=None, use_latest_data=False) -> EsSensorReading():
         sensor_reading = EsSensorReading()
         if self.enabled:
             # case 1: get latest reading when sensor freq is higher
@@ -133,6 +133,7 @@ class EffortSensor(Articulation):
             if (
                 self.sensor_period <= self.step_size
                 or self.use_latest_data
+                or use_latest_data
                 or self.sensor_time + self.sensor_period < self.sensor_reading_buffer[1].time
             ):
                 sensor_reading = self.sensor_reading_buffer[0]
@@ -141,7 +142,12 @@ class EffortSensor(Articulation):
                 if not self.sensor_reading_buffer[0].is_valid:
                     sensor_reading = EsSensorReading()
 
-                elif self.sensor_time < self.sensor_reading_buffer[1].time:
+                elif (
+                    self.sensor_period > self.step_size
+                    and not self.use_latest_data
+                    and not use_latest_data
+                    and self.sensor_time + self.sensor_period < self.sensor_reading_buffer[1].time
+                ):
                     carb.log_warn("sensor time out of sync, using latest data")
 
             # case 2: use interpolated data
@@ -182,15 +188,16 @@ class EffortSensor(Articulation):
 
     def update_dof_name(self, dof_name: str) -> None:
         if self.physics_num_steps <= 2:
-            carb.log_error("unable to update path, please call again after 3 physics steps")
+            carb.log_warn("unable to update path, please call again after 3 physics steps")
             return
         self.dof_name = dof_name
         try:
             self.dof = self.get_dof_index(self.dof_name)
         except:
-            carb.log_error("unable to find joint corresponding to the dof name, disabling sensor")
+            carb.log_warn("unable to find joint corresponding to the dof name, disabling sensor")
             self.dof = None
 
     def change_buffer_size(self, new_buffer_size: int) -> None:
-        self.sensor_reading_buffer = np.array(self.sensor_reading_buffer).resize(new_buffer_size).tolist()
-        self.interpolation_buffer = np.array(self.interpolation_buffer).resize(new_buffer_size).tolist()
+        self.sensor_reading_buffer = np.resize(np.array(self.sensor_reading_buffer), new_buffer_size).tolist()
+        self.interpolation_buffer = np.resize(np.array(self.interpolation_buffer), new_buffer_size).tolist()
+        self.data_buffer_size = new_buffer_size

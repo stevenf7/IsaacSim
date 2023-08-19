@@ -1,4 +1,16 @@
 # Changelog
+## [7.5.1] - 2023-08-17
+### Added
+- Effort sensor standalone example
+- Sensor buffer size test for effort sensor and IMU
+
+### Changed
+- Effort sensor omnigraph node update sensor params
+- Unified input param names for get_sensor_reading across sensors
+
+### Fixed
+- Sensor buffer bug for effort sensor and IMU
+
 ## [7.5.0] - 2023-08-16
 ### Added
 - Added menu items for more RTX Lidar sensor configs

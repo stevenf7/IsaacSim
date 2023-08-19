@@ -24,6 +24,7 @@ from omni.isaac.core.objects import DynamicCuboid
 from omni.isaac.core.objects.ground_plane import GroundPlane
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.rotations import quat_to_euler_angles
 from omni.isaac.dynamic_control import _dynamic_control
 
@@ -719,3 +720,53 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             self.assertFalse(latest_sensor_reading.is_valid)
             self.assertEqual(latest_sensor_reading.time, 0)
         pass
+
+    async def test_change_buffer_size(self):
+        self.filter_wdith = 20
+        self.actual_buffer_length = 20
+
+        def custom_function(sensorReadings: List[_sensor.IsSensorReading], time: float) -> _sensor.IsSensorReading:
+            override_sensor_reading = _sensor.IsSensorReading()
+            self.actual_buffer_length = len(sensorReadings)
+            return override_sensor_reading
+
+        await self.test_add_sensor_prim()
+        result, sensor = omni.kit.commands.execute(
+            "IsaacSensorCreateImuSensor",
+            path="/custom_sensor",
+            parent=self.sphere_path,
+            sensor_period=1 / (self._sensor_rate / 2),  # 30hz, half of physics rate
+            translation=self.sensor_offsets[4],
+            orientation=self.sensor_quatd[4],
+            visualize=False,
+        )
+        self.assertTrue(result)
+        self.assertIsNotNone(sensor)
+
+        await omni.kit.app.get_app().next_update_async()
+        self.my_world.play()
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+
+        imu_sensor = get_prim_at_path(self.sphere_path + "/custom_sensor")
+        for i in range(10):  # Simulate 10 steps
+            self.filter_wdith += 1
+            imu_sensor.GetAttribute("linearAccelerationFilterWidth").Set(self.filter_wdith)
+            await omni.kit.app.get_app().next_update_async()
+            await omni.kit.app.get_app().next_update_async()
+
+            custom_reading = self._is.get_sensor_reading(self.sphere_path + "/custom_sensor", custom_function)
+
+            # the sensor readings length is 2 times the size of the highest filter width, unless if the filter widths are under 10, then it is 20
+            self.assertEqual(self.actual_buffer_length, 2 * self.filter_wdith)
+
+        # set the rolling averages to something small, check the rolling average size doesn't go below 20
+        imu_sensor.GetAttribute("linearAccelerationFilterWidth").Set(2)
+        imu_sensor.GetAttribute("angularVelocityFilterWidth").Set(2)
+        imu_sensor.GetAttribute("orientationFilterWidth").Set(2)
+
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+
+        custom_reading = self._is.get_sensor_reading(self.sphere_path + "/custom_sensor", custom_function)
+        self.assertEqual(self.actual_buffer_length, 20)
