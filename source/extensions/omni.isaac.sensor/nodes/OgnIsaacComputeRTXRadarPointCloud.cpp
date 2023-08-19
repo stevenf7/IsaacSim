@@ -21,6 +21,7 @@
 #include <omni/math/linalg/matrix.h>
 #include <omni/math/linalg/quat.h>
 #include <omni/sensors/radar/IRadarPCConverter.h>
+#include <pxr/usd/usdGeom/xformCache.h>
 
 #include <OgnIsaacComputeRTXRadarPointCloudDatabase.h>
 #include <iostream>
@@ -59,7 +60,7 @@ public:
     // If the node fails we want to cleanup the output
     static bool returnCleanly(OgnIsaacComputeRTXRadarPointCloudDatabase& db, bool passThroughValue, int dbv)
     {
-        pxr::GfMatrix4d T = db.inputs.transform();
+        pxr::GfMatrix4d T = db.outputs.transform();
         T.SetIdentity();
         db.outputs.dataPtr() = 0;
         db.outputs.bufferSize() = 0;
@@ -103,8 +104,16 @@ public:
         const RadarDetection* detections = reinterpret_cast<const RadarDetection*>(
             input + sizeof(RadarPointCloud) - MAX_DETS_PER_SCAN * sizeof(RadarDetection));
 
+        pxr::GfMatrix4d T{ 1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1. };
+
+        pxr::UsdPrim prim =
+            omni::isaac::utils::getCameraPrimFromRenderProduct(db.tokenToString(db.inputs.renderProductPath()));
+        if (prim.IsValid())
+        {
+            pxr::UsdGeomXformCache xformCache;
+            T = xformCache.GetLocalToWorldTransform(prim);
+        }
         // take out ISO 8855 to world transform.
-        pxr::GfMatrix4d T = db.inputs.transform();
         T.SetRotateOnly(pxr::GfMatrix3d(0, 0, -1, -1, 0, 0, 0, 1, 0) *
                         pxr::GfMatrix3d(T[0][0], T[0][1], T[0][2], T[1][0], T[1][1], T[1][2], T[2][0], T[2][1], T[2][2]));
         db.outputs.transform() = T;

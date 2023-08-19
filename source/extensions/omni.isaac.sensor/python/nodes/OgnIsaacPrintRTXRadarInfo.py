@@ -95,11 +95,37 @@ class OgnIsaacPrintRTXRadarInfo:
         # raw dataPtr scan start after 8 bytes
         scan_p = db.inputs.dataPtr + 8
         scan = ctypes.cast(scan_p, ctypes.POINTER(radarPointCloud))
+        numDetections = scan.contents.numDetections
+        if db.inputs.testMode:
+            # print a unique id for the node to see how many are running, and the number of detections for each
+            print(f"Print Node ID_{id(db.inputs)} has {numDetections} detections")
+            return True
+
+        print("-------------------- NEW FRAME ------------------------------------------")
+        print("-------------------- scan:")
         printRadarPointCloud(scan[0])
+        if numDetections == 0:
+            return True
 
         detections_p = scan_p + ctypes.sizeof(radarPointCloud)
         detections = ctypes.cast(detections_p, ctypes.POINTER(radarDetection))
+
+        print("-------------------- first and last detection:")
         printRadarDetection(detections[0])
         printRadarDetection(detections[scan.contents.numDetections - 1])
+
+        # Materials don't work on radar
+        # objId2mats = {}
+        # for d in range(numDetections):
+        #    oid = detections[d].objId
+        #    mat = detections[d].matId
+        #    if oid in objId2mats:
+        #        if not mat in objId2mats[oid]:
+        #            objId2mats[oid].append(mat)
+        #    else:
+        #        objId2mats[oid] = [mat]
+        #
+        # for oid in objId2mats:
+        #    print(f"{object_id_to_prim_path(oid)} has mats {objId2mats[oid]}")
 
         return True

@@ -29,20 +29,25 @@ namespace utils
 
 static const PXR_NS::TfToken kIsaacNameOveride("isaac:nameOverride");
 
-inline pxr::UsdAttribute getCameraAttributeFromRenderProduct(const std::string& attributeString,
-                                                             const std::string& renderProductPathString)
+inline pxr::UsdPrim getCameraPrimFromRenderProduct(const std::string& renderProductPathString)
 {
     pxr::UsdStagePtr stage = omni::usd::UsdContext::getContext()->getStage();
     omni::usd::IPathAbi* iPath = carb::getCachedInterface<omni::usd::IPathAbi>();
     omni::usd::IRenderProductPrimFactory* iPrimFactory = carb::getCachedInterface<omni::usd::IRenderProductPrimFactory>();
     if (!stage || !iPath || !iPrimFactory)
-        return pxr::UsdAttribute();
+        return pxr::UsdPrim();
     omni::usd::PathH renderProductPathH = iPath->getHandle(renderProductPathString.c_str());
     omni::usd::IRenderProductPrimPtr rp =
         iPrimFactory->createPrimFromStage(omni::usd::UsdContext::getContext()->getStageId(), renderProductPathH);
     if (!rp)
-        return pxr::UsdAttribute();
-    pxr::UsdPrim cameraPrim = stage->GetPrimAtPath(pxr::SdfPath(iPath->getText(rp->getCameraPath())));
+        return pxr::UsdPrim();
+    return stage->GetPrimAtPath(pxr::SdfPath(iPath->getText(rp->getCameraPath())));
+}
+
+inline pxr::UsdAttribute getCameraAttributeFromRenderProduct(const std::string& attributeString,
+                                                             const std::string& renderProductPathString)
+{
+    pxr::UsdPrim cameraPrim = getCameraPrimFromRenderProduct(renderProductPathString);
     if (!cameraPrim.IsValid())
         return pxr::UsdAttribute();
     return cameraPrim.GetAttribute(pxr::TfToken(attributeString.c_str()));

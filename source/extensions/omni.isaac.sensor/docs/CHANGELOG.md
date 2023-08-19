@@ -1,4 +1,14 @@
 # Changelog
+## [8.0.0] - 2023-08-17
+### Added 
+- testMode to IsaacPrintRTXRadarInfo
+- Writers for radar point cloud node
+### Changed
+- RtxSensorCpuIsaacComputeRTXRadarPointCloud template to Annotator
+- Radar Point Cloud creator now gets transform from render_product
+- changed PrintRTX templates to Writers
+### Removed
+- RtxRadarGetPrimLocalToWorldTransform
 ## [7.5.1] - 2023-08-17
 ### Added
 - Effort sensor standalone example

@@ -20,6 +20,11 @@
                 "type": "uint64",
                 "description": "Pointer to Radar render result",
                 "uiName": "Radar render result"
+            },
+            "testMode":{
+                "type": "bool",
+                "description": "Print less for benchmark tests",
+                "uiName": "Test Mode prints less"
             }
         }
     }

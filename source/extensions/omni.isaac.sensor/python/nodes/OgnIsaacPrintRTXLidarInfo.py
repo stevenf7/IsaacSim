@@ -193,7 +193,7 @@ class OgnIsaacPrintRTXLidarInfo:
         print("-------------------- NEW FRAME ------------------------------------------")
         print("-------------------- params:")
         print(params2string(params[0]))
-        if params.contents.numTicks == 0:
+        if nt == 0:
             return True
         ticks_p = params_p + ctypes.sizeof(lidarAsyncParameter)
         ticks = fillTicks(ticks_p, params.contents.numTicks)

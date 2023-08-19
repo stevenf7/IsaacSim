@@ -94,7 +94,6 @@ class Extension(omni.ext.IExt):
             )
             self.registered_template.append(template)
 
-        ### RtxLidar Point Cloud Print Info
         annotator_name = "RtxSensorCpu" + "IsaacCreateRTXLidarScanBuffer"
         AnnotatorRegistry.register_annotator_from_node(
             name=annotator_name,
@@ -144,32 +143,37 @@ class Extension(omni.ext.IExt):
         )
         self.registered_annotators.append(annotator_name)
 
-        ### RtxLidar Point Cloud Print Info
-        template_name = "RtxSensorCpu" + "IsaacPrintRTXLidarInfo"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                    "omni.isaac.sensor.IsaacPrintRTXLidarInfo",
-                    [omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu" + "ExportRaw")],
-                ),
-                template_name=template_name,
-            )
-            self.registered_template.append(template)
+        ### RtxLidar Point Cloud Print Info Writer
+        rep.writers.register_node_writer(
+            name="Writer" + "IsaacPrintRTXLidarInfo",
+            node_type_id="omni.isaac.sensor.IsaacPrintRTXLidarInfo",
+            annotators=[omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu" + "ExportRaw")],
+            category="omni.isaac.sensor",
+        )
+        ### Add test one for benchmarks
+        rep.writers.register_node_writer(
+            name="Writer" + "IsaacPrintRTXLidarInfo" + "Test",
+            node_type_id="omni.isaac.sensor.IsaacPrintRTXLidarInfo",
+            annotators=[omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu" + "ExportRaw")],
+            testMode=True,
+            category="omni.isaac.sensor",
+        )
 
-        ### RtxLidar Point Cloud Print Info
-        template_name = "Test" + "IsaacPrintRTXLidarInfo"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                    "omni.isaac.sensor.IsaacPrintRTXLidarInfo",
-                    [omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu" + "ExportRaw")],
-                    {"inputs:testMode": True},
-                ),
-                template_name=template_name,
-            )
-            self.registered_template.append(template)
+        ### RtxRadar Point Cloud Print Info Writer
+        rep.writers.register_node_writer(
+            name="Writer" + "IsaacPrintRTXRadarInfo",
+            node_type_id="omni.isaac.sensor.IsaacPrintRTXRadarInfo",
+            annotators=[omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu" + "ExportRaw")],
+            category="omni.isaac.sensor",
+        )
+        ### Add test one for benchmarks
+        rep.writers.register_node_writer(
+            name="Writer" + "IsaacPrintRTXRadarInfo" + "Test",
+            node_type_id="omni.isaac.sensor.IsaacPrintRTXRadarInfo",
+            annotators=[omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu" + "ExportRaw")],
+            testMode=True,
+            category="omni.isaac.sensor",
+        )
 
         ### RtxLidar Flat Scan
         annotator_name = "RtxSensorCpu" + "IsaacComputeRTXLidarFlatScan"
@@ -206,67 +210,24 @@ class Extension(omni.ext.IExt):
             category="omni.isaac.sensor",
         )
 
-        # RTX lidar Debug Draw Writer template version for debugging mostly.
-        template_name = "Template" + "RtxLidar" + "DebugDrawPointCloud"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                    "omni.isaac.debug_draw.DebugDrawPointCloud",
-                    [
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud"
-                        )
-                    ],
-                ),
-                template_name=template_name,
-            )
-            self.registered_template.append(template)
-
-        ### Get Transform for Radar
-        template_name = "RtxRadar" + "GetPrimLocalToWorldTransform"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                    "omni.graph.nodes.GetPrimLocalToWorldTransform",
-                    [],
-                    {"inputs:primPath": "/sensor"},
-                ),
-                template_name=template_name,
-            )
-            self.registered_template.append(template)
-
         ### RtxRadar Point Cloud
-        template_name = "RtxSensorCpu" + "IsaacComputeRTXRadarPointCloud"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                    "omni.isaac.sensor.IsaacComputeRTXRadarPointCloud",
-                    [
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu" + "ExportRaw"),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "RtxRadar" + "GetPrimLocalToWorldTransform",
-                            attributes_mapping={"outputs:localToWorldTransform": "inputs:transform"},
-                        ),
-                    ],
-                ),
-                template_name=template_name,
-            )
-            self.registered_template.append(template)
+        annotator_name = "RtxSensorCpu" + "IsaacComputeRTXRadarPointCloud"
+        AnnotatorRegistry.register_annotator_from_node(
+            name=annotator_name,
+            input_rendervars=["RtxSensorCpu" + "ExportRaw"],
+            node_type_id="omni.isaac.sensor.IsaacComputeRTXRadarPointCloud",
+            output_data_type=np.float32,
+            output_channels=3,
+        )
+        self.registered_annotators.append(annotator_name)
 
         # RTX radar Debug Draw Writer
         rep.writers.register_node_writer(
             name="RtxRadar" + "DebugDrawPointCloud",
             node_type_id=f"omni.isaac.debug_draw.DebugDrawPointCloud",
-            annotators=[
-                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    "RtxSensorCpu" + "IsaacComputeRTXRadarPointCloud"
-                )
-            ],
+            annotators=["RtxSensorCpu" + "IsaacComputeRTXRadarPointCloud"],
             # hard to see radar points... so make them more visible.
-            width=0.2,
+            size=0.2,
             color=[1, 0.2, 0.3, 1],
             category="omni.isaac.sensor",
         )
