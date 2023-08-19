@@ -236,3 +236,26 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
         self.assertNotEqual(reading.time, 0)
         self.assertNotEqual(reading.value, 0)
         self.assertEqual(reading.is_valid, True)
+
+    async def test_change_buffer_size(self):
+        await self.createSimpleArticulation()
+
+        self.effort_sensor = EffortSensor("/Articulation/Arm/RevoluteJoint", sensor_period=1)
+        self.my_world.play()
+        # print(self.effort_sensor.sensor_period)
+
+        # let physics warm up
+        for i in range(10):
+            await omni.kit.app.get_app().next_update_async()
+
+        self.effort_sensor.change_buffer_size(20)
+
+        self.assertEqual(self.effort_sensor.data_buffer_size, 20)
+        self.assertEqual(len(self.effort_sensor.interpolation_buffer), 20)
+        self.assertEqual(len(self.effort_sensor.sensor_reading_buffer), 20)
+
+        self.effort_sensor.change_buffer_size(5)
+
+        self.assertEqual(self.effort_sensor.data_buffer_size, 5)
+        self.assertEqual(len(self.effort_sensor.interpolation_buffer), 5)
+        self.assertEqual(len(self.effort_sensor.sensor_reading_buffer), 5)

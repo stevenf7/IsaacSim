@@ -205,10 +205,10 @@ PYBIND11_MODULE(_sensor, m)
                 Args:
                     arg0 (:obj:`char*`): the sensor path
                     arg1 (:obj:`std::function<IsReading(std::vector<IsRawData>, float)>&`): interpolation function
-                    arg2 (:obj:`bool`): getLatestValue
+                    arg2 (:obj:`bool`): use_latest_data
                 Returns:
                     :obj:`numpy.array`: The reading for the current sensor period.)pbdoc",
-             py::arg("sensor_path"), py::arg("getLatestValue") = false)
+             py::arg("sensor_path"), py::arg("use_latest_data") = false)
         .def("is_contact_sensor", wrapInterfaceFunction(&ContactSensorInterface::isContactSensor),
              R"pbdoc(   
                 Args:
@@ -247,33 +247,33 @@ PYBIND11_MODULE(_sensor, m)
                     :obj:`numpy.array`: The list of readings for the sensor ready on the buffer.)pbdoc")
         .def("get_sensor_reading",
              [](const ImuSensorInterface* li, const char* sensor_path,
-                std::function<IsReading(std::vector<IsReading>, float)> interpolateFunction = nullptr,
-                bool getLatestValue = false) -> py::object
+                std::function<IsReading(std::vector<IsReading>, float)> interpolation_function = nullptr,
+                bool use_latest_data = false) -> py::object
              {
                  if (!li)
                  {
                      return py::none();
                  }
                  IsReading data = IsReading();
-                 if (interpolateFunction)
+                 if (interpolation_function)
                  {
                      data = li->getSensorReading(
-                         sensor_path, carb::wrapPythonCallback(std::move(interpolateFunction)), getLatestValue);
+                         sensor_path, carb::wrapPythonCallback(std::move(interpolation_function)), use_latest_data);
                  }
                  else
                  {
-                     data = li->getSensorReading(sensor_path, nullptr, getLatestValue);
+                     data = li->getSensorReading(sensor_path, nullptr, use_latest_data);
                  }
                  return py::cast(data);
              },
              R"pbdoc(   
                 Args:
                     arg0 (:obj:`char*`): the sensor path
-                    arg1 (:obj:`std::function<IsReading(std::vector<IsReading>, float)>&`): interpolation function
-                    arg2 (:obj:`bool`): getLatestValue
+                    arg1 (:obj:`std::function<IsReading(std::vector<IsReading>, float)>&`): interpolation_function
+                    arg2 (:obj:`bool`): use_latest_data
                 Returns:
                     :obj:`numpy.array`: The reading for the current sensor period.)pbdoc",
-             py::arg("sensor_path"), py::arg("interpolateFunction") = nullptr, py::arg("getLatestValue") = false)
+             py::arg("sensor_path"), py::arg("interpolation_function") = nullptr, py::arg("use_latest_data") = false)
         .def("get_sensor_sim_reading", wrapInterfaceFunction(&ImuSensorInterface::getSensorSimReading),
              R"pbdoc(   
                 Args:
