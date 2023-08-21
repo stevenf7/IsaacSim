@@ -29,10 +29,8 @@ from .robot_helpers import init_robot_sim, setup_robot_og
 class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
-        print("drive goal")
         self._timeline = omni.timeline.get_timeline_interface()
 
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
         self.dc = _dynamic_control.acquire_dynamic_control_interface()
 
         self._assets_root_path = get_assets_root_path()
@@ -113,6 +111,7 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
                 ],
             },
         )
+        omni.timeline.get_timeline_interface().set_time_codes_per_second(60)
 
         pass
 
@@ -127,7 +126,6 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
 
     # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_quintic_planner(self):
-
         # Start Simulation and wait
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
@@ -152,7 +150,6 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_check_goal_2d(self):
-
         # Start Simulation and wait
         self._timeline.play()
 
@@ -192,7 +189,6 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_stanley_control_pid(self):
-
         # Start Simulation and wait
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()

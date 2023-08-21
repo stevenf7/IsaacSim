@@ -1,5 +1,10 @@
 # Changelog
+## [1.10.4] - 2023-08-21
+### Fixed
+- Fixed drive_goal_carter_v2 tests to use the correct timecode setting
+
 ## [1.10.3] - 2023-08-09
+### Changed
 - Changed unit tests as the prim types of omnigraph nodes have been changed from bundle to target
 
 ## [1.10.2] - 2023-08-09
@@ -10,7 +15,6 @@
 ## [1.10.1] - 2023-06-12
 ### Changed
 - Update to kit 105.1, omni.usd.utils renamed omni.usd
-
 
 ## [1.10.0] 2023-02-24
 ### Added
