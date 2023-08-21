@@ -33,6 +33,7 @@ writeTarget.kit = true
 "omni.isaac.quadruped" = {}
 "omni.isaac.wheeled_robots" = {}
 "omni.isaac.cortex" = {}
+"omni.isaac.cortex.sample_behaviors" = {}
 
 [[python.module]]
 name = "omni.isaac.examples.tests"
