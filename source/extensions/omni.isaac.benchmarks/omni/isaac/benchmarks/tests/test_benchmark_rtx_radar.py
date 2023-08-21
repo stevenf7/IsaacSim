@@ -17,7 +17,7 @@ from ..utils.base_isaac_benchmark import BaseIsaacBenchmark
 
 # TODOMTC - Radar appears to not allow allow multiple, but the transoform for each one is the same.
 #           and the results only appear to last for the first few frames.
-TEST_NUM_APP_UPDATES = 10
+TEST_NUM_APP_UPDATES = 60 * 10
 
 
 class TestBenchmarkRtxRadar(BaseIsaacBenchmark):
