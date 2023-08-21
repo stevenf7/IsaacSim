@@ -416,26 +416,37 @@ class LulaTaskSpaceTrajectoryGenerator:
         return self.compute_task_space_trajectory_from_path_spec(path_spec, frame_name)
 
     def compute_task_space_trajectory_from_path_spec(
-        self, task_space_path_spec: lula.TaskSpacePathSpec, frame_name: str
+        self, path_spec: Union[lula.CompositePathSpec, lula.TaskSpacePathSpec], frame_name: str
     ) -> LulaTrajectory:
         """Return a LulaTrajectory that follows the path specified by the provided TaskSpacePathSpec
 
         Args:
-            task_space_path_spec (lula.TaskSpacePathSpec): An object describing a taskspace path
+            task_space_path_spec (lula.TaskSpacePathSpec, lula.CompositePathSpec): An object describing a taskspace path
             frame_name (str): Name of the end effector frame
 
         Returns:
             LulaTrajectory: Instance of the omni.isaac.motion_generation.Trajectory class.  If no trajectory could be generated, None is returned.
         """
 
-        c_space_path = lula.convert_task_space_path_spec_to_c_space(
-            task_space_path_spec, self._lula_kinematics, frame_name, self._path_conversion_config
-        )
+        if isinstance(path_spec, lula.CompositePathSpec):
+            c_space_path = lula.convert_composite_path_spec_to_c_space(
+                path_spec, self._lula_kinematics, frame_name, self._path_conversion_config
+            )
+        elif isinstance(path_spec, lula.TaskSpacePathSpec):
+            c_space_path = lula.convert_task_space_path_spec_to_c_space(
+                path_spec, self._lula_kinematics, frame_name, self._path_conversion_config
+            )
+        else:
+            carb.log_error("Provided path_spec was not of type lula.CompositePathSpec or lula.TaskSpacePathSpec")
+            return None
 
         if c_space_path is None:
             return None
 
         trajectory = self._c_space_trajectory_generator.generate_trajectory(c_space_path.waypoints())
+
+        if trajectory is None:
+            return None
 
         return LulaTrajectory(trajectory, self.get_active_joints())
 
