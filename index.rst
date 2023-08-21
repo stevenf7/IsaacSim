@@ -30,6 +30,7 @@ Isaac Sim: Extensions API
    :glob: 
 
    source/extensions/omni.isaac.urdf/docs/index
+   source/extensions/omni.isaac.mjcf/docs/index
    source/extensions/omni.isaac.shapenet/docs/index
 
 .. toctree::

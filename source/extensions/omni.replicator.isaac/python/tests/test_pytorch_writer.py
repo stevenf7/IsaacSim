@@ -18,7 +18,6 @@ import omni.replicator.core as rep
 import omni.usd
 import torch
 from omni.replicator.isaac.scripts.writers.pytorch_listener import PytorchListener
-from omni.replicator.isaac.scripts.writers.pytorch_writer import PytorchWriter
 from PIL import Image
 
 
