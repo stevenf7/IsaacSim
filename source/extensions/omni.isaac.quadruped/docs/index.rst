@@ -2,16 +2,6 @@ Quadruped Robots [omni.isaac.quadruped]
 #######################################
 
 
-Quadruped 
-======================
-
-.. automodule:: omni.isaac.quadruped.quadruped 
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
-
-
 Quadruped Controller
 =======================
 

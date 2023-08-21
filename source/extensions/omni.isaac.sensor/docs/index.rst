@@ -24,7 +24,7 @@ IMU sensor
     :exclude-members:
 
 Effort sensor
-============
+=============
 
 .. automodule:: omni.isaac.sensor.scripts.effort_sensor
     :inherited-members:

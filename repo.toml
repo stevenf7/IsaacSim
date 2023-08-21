@@ -173,10 +173,10 @@ copyright_start = 2018
 # Add all extensions to docs sys.path
 python_paths = [
   "${root}/_build/${platform}/${config}/exts/*",
-  "${root}/_build/${platform}/${config}/kit/exts/*",
+  # "${root}/_build/${platform}/${config}/kit/exts/*",
   "${root}/_build/${platform}/${config}/kit/extscore/*",
   "${root}/_build/${platform}/${config}/kit/kernel/py",
-  "${root}/_build/${platform}/${config}/kit/plugins/bindings-python/",
+  # "${root}/_build/${platform}/${config}/kit/plugins/bindings-python/",
   "${root}/_build/${platform}/${config}/kit/exts/omni.kit.pip_archive/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.isaac.core_archive/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.isaac.ml_archive/pip_prebundle",
@@ -184,13 +184,25 @@ python_paths = [
   "${root}/_build/${platform}/${config}/exts/omni.isaac.ocs2/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.pip.compute/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.pip.cloud/pip_prebundle",
-  "${root}/_build/${platform}/${config}/exts/omni.usd.schema.isaac/plugins",
-  "${root}/_build/${platform}/${config}/extscache/*",
-  "${root}/_build/${platform}/${config}/extsPhysics/*",
+  "${root}/_build/${platform}/${config}/exts/omni.usd.schema.isaac/plugins/IsaacSensorSchema**",
+  "${root}/_build/${platform}/${config}/exts/omni.usd.schema.isaac/plugins/RangeSensorSchema**",
+  # "${root}/_build/${platform}/${config}/extscache/*",
+  "${root}/_build/${platform}/${config}/extsPhysics/**",
+  "${root}/_build/${platform}/${config}/extscache/omni.usd**",
+  "${root}/_build/${platform}/${config}/kit/exts/omni.usd**",
+  "${root}/_build/${platform}/${config}/kit/exts/omni.kit**",
+  "${root}/_build/${platform}/${config}/kit/exts/omni.hydra**",
+  "${root}/_build/${platform}/${config}/kit/exts/omni.appwindow**",
+  "${root}/_build/${platform}/${config}/kit/exts/omni.timeline**",
+  "${root}/_build/${platform}/${config}/kit/exts/omni.syntheticdata**",
+  "${root}/_build/${platform}/${config}/extscache/omni.pip.torch*/torch-2-0-1",
+  "${root}/_build/${platform}/${config}/extscache/omni.warp**",
+  # "${root}/_build/${platform}/${config}/extscache/omni.replicator**",
 ]
 library_paths = [
   "$root/_build/$platform/$config",
-  "$root/_build/$platform/$config/exts/omni.usd.schema.isaac/bin",
+  "$root/_build/$platform/$config/exts/omni.usd.schema.isaac/plugins/IsaacSensorSchenma/lib",
+  "$root/_build/$platform/$config/exts/omni.usd.schema.isaac/plugins/RangeSensorSchema/lib",
   "$root/_build/$platform/$config/kit",
   "$root/_build/$platform/$config/kit/kernel/plugins",
   "$root/_build/$platform/$config/kit/libs/iray",
@@ -212,7 +224,7 @@ sphinx_conf_py_extra = """
     html_static_path = [
         "docs/media/NVIDIA-LogoBlack.svg",
     ]
-    autodoc_mock_imports = ["carb", "pxr.PhysxSchema", "pxr.PhysicsSchemaTools",  "omni.physx", "omni.physics", "omni.replicator.core", "warp", "torch"]
+    autodoc_mock_imports = ["omni.ui", "usdrt",  "omni.kit.window", "omni.kit.helper", "omni.kit.ui", "omni.graph", "omni.replicator.core"]
 
 """
 
@@ -226,6 +238,7 @@ sphinx_exclude_patterns = [
     "**/omni.isaac.core_archive",
     "**/omni.isaac.ml_archive",
     "**/omni.pip.compute",
+    "**/omni.pip.cloud",
     "**/omni.isaac.gxf_bridge",     #TODO
     "**/omni.isaac.examples",     #TODO?
     "**/omni.isaac.ros2_bridge-humble",
