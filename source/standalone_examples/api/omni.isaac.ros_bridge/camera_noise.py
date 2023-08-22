@@ -28,7 +28,6 @@ import omni.syntheticdata._syntheticdata as sd
 import warp as wp
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils import extensions, nucleus, stage
-from omni.isaac.core.utils.prims import set_targets
 from omni.isaac.core.utils.render_product import set_camera_prim_path
 from omni.kit.viewport.utility import get_active_viewport
 from pxr import Gf, Usd, UsdGeom
