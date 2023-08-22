@@ -5,11 +5,23 @@ from urllib.request import urlopen
 
 def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
     parser.description = "Update extensions cache (omni.isaac.sim.extscache.kit)."
+    parser.add_argument(
+        "-o",
+        "--offline",
+        dest="offline",
+        required=False,
+        default=False,
+        help="Do not update the cache from Create. (default: will update the cache from Create)",
+        action="store_true",
+    )
 
     def run_repo_tool(options: Dict, config: Dict):
         print(
             'Please review the output of this script at ./source/apps/omni.isaac.sim.extscache.kit before committing changes to the repo. Run "./build.sh -u -r" to update the cache. See the results of the cache update at the bottom of the omni.isaac.sim.extscache.kit file. To make changes to the configuration of this script, edit ./repo.toml.'
         )
+
+        if options.offline:
+            print("Running in offline mode")
 
         # Read config info from ./repo.toml
         tool_config = config["repo_update_extscache"]
@@ -68,9 +80,66 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         # Get the names of extensions that should be excluded from the cache, even if they are in Create
         exclude = tool_config["exclude"]
 
-        # Read the extensions from Create
-        # exacts contains the "Exact Version dependencies" list from Create, enableds contains the "enabled" list from Create
-        exacts, enableds = read_source(tool_config["url"])
+        # Read the current dependencies from the cache
+        dest_file = open(tool_config["output_file"], "r")
+        dest_file_lines = dest_file.readlines()
+        dest_file.close()
+        commentline = 120 * "#" + "\n"
+
+        enableds = dict()
+        exacts = dict()
+
+        if not options.offline:
+            # Read the extensions from Create
+            # exacts contains the "Exact Version dependencies" list from Create, enableds contains the "enabled" list from Create
+            exacts, enableds = read_source(tool_config["url"])
+        else:
+            reached_enableds = False
+            reached_exacts = False
+            prev_line_os = False
+            for line in dest_file_lines:
+                if (reached_enableds or reached_exacts) and line.startswith(commentline):
+                    break
+                elif not reached_enableds and not reached_exacts and line.startswith("# Extensions from Create"):
+                    reached_enableds = True
+                    continue
+                elif reached_enableds and not reached_exacts:
+                    if line == "\n":
+                        continue
+                    elif line.startswith("# Additional Create Extensions"):
+                        reached_exacts = True
+                        continue
+                    else:
+                        line = line[0:-1].strip()  # remove the comment and trailing whitespaces
+                        (dep, _, ver) = line.partition(" = ")  # separate the extension name from the version
+                        dep = dep[1:-1]  # remove the quotes
+                        (ver, _, _) = ver[1:-1].partition(", ")  # remove the curly braces, comma, and "exact = true"
+                        (_, _, ver) = ver.partition(' = "')  # remove the "version = " text
+                        ver = ver[:-1]  # remove the trailing quote
+                        if dep in enableds:  # if the dependency is already in the dict, print an error
+                            print("ERROR: duplicate exact dependency: " + dep)
+                        else:  # otherwise, add it to the dict
+                            enableds[dep] = ver
+                        continue
+                elif reached_exacts:
+                    if line == "\n" or prev_line_os:
+                        prev_line_os = False
+                        continue
+                    elif line.startswith("# Windows only") or line.startswith("# Linux only"):
+                        prev_line_os = True
+                        continue
+                    else:
+                        line = line[0:-1].strip()  # remove the comment and trailing whitespaces
+                        (dep, _, ver) = line.partition(" = ")  # separate the extension name from the version
+                        dep = dep[1:-1]  # remove the quotes
+                        (ver, _, _) = ver[1:-1].partition(", ")  # remove the curly braces, comma, and "exact = true"
+                        (_, _, ver) = ver.partition(' = "')  # remove the "version = " text
+                        ver = ver[:-1]  # remove the trailing quote
+                        if dep in exacts:  # if the dependency is already in the dict, print an error
+                            print("ERROR: duplicate exact dependency: " + dep)
+                        else:  # otherwise, add it to the dict
+                            exacts[dep] = ver
+                        continue
 
         # Add the Create extensions to the list of dependencies
         deps.append(("Extensions from Create", enableds))
@@ -80,14 +149,8 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         windows = dict()
         linux = dict()
 
-        # Read the current dependencies from the cache
-        dest_file = open(tool_config["output_file"], "r")
-        dest_file_lines = dest_file.readlines()
-        dest_file.close()
-
         # Used to store the new text that will be written to omni.isaac.sim.extscache.kit
         output = []
-        commentline = 120 * "#" + "\n"
 
         # If there are dependencies currently in omni.isaac.sim.extscache.kit that were manually added to the top of the file, keep them
         for line in dest_file_lines:
@@ -111,7 +174,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
             dep, _, info = line.partition(" = ")
             dep = dep[1:-1]
             info = info[1:-2].split(", ")
-            if len(info) != 3 and len(info) != 2:
+            if len(info) not in [2, 3]:
                 print("ERROR: invalid dependency: " + line + " (ignore if this line is intentionally added)")
                 continue
 
