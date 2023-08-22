@@ -24,9 +24,9 @@ CONFIG = {"renderer": "RayTracedLighting", "headless": False}
 # and creation of ROS components
 simulation_app = SimulationApp(CONFIG)
 import omni.graph.core as og
+import usdrt.Sdf
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils import extensions, nucleus, prims, rotations, stage, viewports
-from omni.isaac.core.utils.prims import set_targets
 from pxr import Gf
 
 # enable ROS bridge extension
@@ -102,26 +102,14 @@ try:
                 # Setting the /Franka target prim to Articulation Controller node
                 ("ArticulationController.inputs:usePath", True),
                 ("ArticulationController.inputs:robotPath", FRANKA_STAGE_PATH),
+                ("PublishJointState.inputs:targetPrim", [usdrt.Sdf.Path(FRANKA_STAGE_PATH)]),
+                ("PublishTF.inputs:targetPrims", [usdrt.Sdf.Path(FRANKA_STAGE_PATH)]),
             ],
         },
     )
 except Exception as e:
     print(e)
 
-
-# Setting the /Franka target prim to Publish JointState node
-set_targets(
-    prim=stage.get_current_stage().GetPrimAtPath("/ActionGraph/PublishJointState"),
-    attribute="inputs:targetPrim",
-    target_prim_paths=[FRANKA_STAGE_PATH],
-)
-
-# Setting the /Franka target prim to Publish Transform Tree node
-set_targets(
-    prim=stage.get_current_stage().GetPrimAtPath("/ActionGraph/PublishTF"),
-    attribute="inputs:targetPrims",
-    target_prim_paths=[FRANKA_STAGE_PATH],
-)
 
 simulation_app.update()
 

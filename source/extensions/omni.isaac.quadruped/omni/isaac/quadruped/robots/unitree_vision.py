@@ -15,7 +15,7 @@ import numpy as np
 import omni.graph.core as og
 import omni.kit.commands
 import omni.usd
-from omni.isaac.core.utils.prims import set_targets
+import usdrt.Sdf
 from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.quadruped.robots import Unitree
 from omni.kit.viewport.utility import get_active_viewport, get_viewport_from_window_name
@@ -142,15 +142,10 @@ class UnitreeVision(Unitree):
                         ("cameraHelperInfo.inputs:nodeNamespace", "/isaac_a1"),
                         ("cameraHelperInfo.inputs:topicName", camera[0] + "/camera_info"),
                         ("cameraHelperInfo.inputs:type", "camera_info"),
+                        ("setCamera.inputs:cameraPrim", [usdrt.Sdf.Path(camera_path)]),
                     ],
                 },
             )
-            set_targets(
-                prim=self._stage.GetPrimAtPath(graph_path + "/setCamera"),
-                attribute="inputs:cameraPrim",
-                target_prim_paths=[camera_path],
-            )
-
             self.camera_graphs.append(camera_graph)
 
         self.viewports = []

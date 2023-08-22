@@ -24,9 +24,9 @@ simulation_app = SimulationApp(CONFIG)
 import omni
 import omni.graph.core as og
 import omni.replicator.core as rep
+import usdrt.Sdf
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils import extensions, nucleus, stage
-from omni.isaac.core.utils.prims import set_targets
 from omni.kit.viewport.utility import get_active_viewport
 from pxr import Gf, Usd, UsdGeom
 
@@ -113,14 +113,9 @@ keys = og.Controller.Keys
             ("cameraHelperDepth.inputs:frameId", "sim_camera"),
             ("cameraHelperDepth.inputs:topicName", "depth"),
             ("cameraHelperDepth.inputs:type", "depth"),
+            ("setCamera.inputs:cameraPrim", [usdrt.Sdf.Path(CAMERA_STAGE_PATH)]),
         ],
     },
-)
-
-set_targets(
-    prim=stage.get_current_stage().GetPrimAtPath(ROS_CAMERA_GRAPH_PATH + "/setCamera"),
-    attribute="inputs:cameraPrim",
-    target_prim_paths=[CAMERA_STAGE_PATH],
 )
 
 # Run the ROS Camera graph once to generate ROS image publishers in SDGPipeline
