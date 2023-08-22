@@ -1,4 +1,8 @@
 # Changelog
+## [5.1.0] - 2023-08-21
+### Fixed
+- lula.TaskSpaceTrajectoryGenerator.compute_task_space_trajectory_from_path_spec() was not able to handle lula composite path specs
+
 ## [5.0.0] - 2023-08-15
 ### Changed
 - Breaking Change: Updated ArticulationTrajectory, PathPlannerVisualizer, and ArticulationKinematics to use ArticulationSubset.make_articulation_action()

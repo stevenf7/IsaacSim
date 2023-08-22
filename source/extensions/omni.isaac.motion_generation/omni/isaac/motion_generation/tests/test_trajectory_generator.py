@@ -289,16 +289,29 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
 
         ee_frame = "ee_link"
 
-        path, pos_targets, orient_targets = await self._build_rect_path()
+        # Test that composite path specs work:
+        task_space_spec, pos_targets, orient_targets = await self._build_rect_path()
+        c_space_spec = lula.create_c_space_path_spec(np.array([0, 0, 0, 0, 0, 0]))
+        c_space_spec.add_c_space_waypoint(np.array([0, 0.5, -2.0, -1.28, 5.13, -4.71]))
+
+        initial_c_space_robot_pose = np.array([0, 0, 0, 0, 0, 0])
+        composite_path_spec = lula.create_composite_path_spec(initial_c_space_robot_pose)
+
+        transition_mode = lula.CompositePathSpec.TransitionMode.FREE
+        composite_path_spec.add_task_space_path_spec(task_space_spec, transition_mode)
+
+        transition_mode = lula.CompositePathSpec.TransitionMode.FREE
+        composite_path_spec.add_c_space_path_spec(c_space_spec, transition_mode)
 
         await self._test_lula_task_space_trajectory_generator(
-            usd_path, robot_name, robot_prim_path, ee_frame, pos_targets, orient_targets, path
+            usd_path, robot_name, robot_prim_path, ee_frame, pos_targets, orient_targets, composite_path_spec
         )
+        # end composite spec test
 
-        path, pos_targets, orient_targets = await self._build_circle_path_with_rotations()
+        task_space_spec, pos_targets, orient_targets = await self._build_circle_path_with_rotations()
 
         await self._test_lula_task_space_trajectory_generator(
-            usd_path, robot_name, robot_prim_path, ee_frame, pos_targets, orient_targets, path
+            usd_path, robot_name, robot_prim_path, ee_frame, pos_targets, orient_targets, task_space_spec
         )
 
     async def test_lula_task_space_traj_gen_cobotta(self):
