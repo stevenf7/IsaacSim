@@ -13,8 +13,8 @@
         <package name="nv_ros2" version="humble_20230601_a898270-linux64_release" platforms="linux-x86_64"/>
     </dependency>
     <dependency name="lula" linkPath="../_build/target-deps/lula">
-        <package name="lula" version="v0.9.0_c769a80.linux-x86_64.release" platforms="linux-x86_64"/>
-        <package name="lula" version="v0.9.0_build1.windows-x86_64.release" platforms="windows-x86_64"/>
+        <package name="lula" version="v0.9.1_34e9840.linux-x86_64.release" platforms="linux-x86_64"/>
+        <package name="lula" version="v0.9.1_build1.windows-x86_64.release" platforms="windows-x86_64"/>
     </dependency>
     <dependency name="ocs2" linkPath="../_build/target-deps/ocs2">
         <package name="ocs2" version="v11.0_b01f3d7.linux-x86_64.release" platforms="linux-x86_64"/>

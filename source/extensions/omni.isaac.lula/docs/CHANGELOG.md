@@ -1,6 +1,13 @@
 # Changelog
 
-## [2.0.0] - 2023-08.06
+## [2.1.0] - 2023-08-22
+
+### Changed
+
+- Upgraded Lula from release 0.9.0 to release 0.9.1.  This adds support for prefixing Lula log messages with a user-provided string and also improves behavior of the IK solver for revolute joints that have a large span between their upper and lower joint limits (i.e., larger than 2 pi).
+- Added "[Lula]" prefix to all Lula log messages.
+
+## [2.0.0] - 2023-08-06
 
 ### Changed
 
