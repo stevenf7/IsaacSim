@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -9,7 +9,6 @@
 
 
 import os.path
-import sys
 import typing
 
 import carb.settings
@@ -28,7 +27,15 @@ class Version:
         self.buildtag = ""
 
 
-def parse_version(full_version: Version):
+def parse_version(full_version: str) -> Version:
+    """Parse a version string into a version object
+
+    Args:
+        full_version (str): full version string read from a VERSION file
+
+    Returns:
+        Version: Parsed version object
+    """
     parsed_version = Version()
     if "+" in full_version:
         full_version, parsed_version.buildtag = full_version.split("+")
@@ -43,23 +50,17 @@ def parse_version(full_version: Version):
 
 
 def get_version() -> typing.Tuple[str, str, str, str, str, str, str, str]:
-    """Retrieve version from file
+    """Retrieve version from the App VERSION file
 
     Returns:
-        Core version (str)
-        Pre-release tag and build number (str)
-        Major version (str)
-        Minor version (str)
-        Patch version (str)
-        Pre-release tag (str)
-        Build number (str)
-        Build tag (str)
+        typing.Tuple[str, str, str, str, str, str, str, str]: [Core version, Pre-release tag and build number, Major version, Minor version, Patch version, Pre-release tag, Build number, Build tag]
     """
+
     app_folder = carb.settings.get_settings().get_as_string("/app/folder")
     if not app_folder:
         app_folder = carb.tokens.get_tokens_interface().resolve("${app}")
     app_start_folder = os.path.normpath(os.path.join(app_folder, os.pardir))
-    with open(f"{app_start_folder}/VERSION") as f:
+    with open(f"{app_start_folder}/VERSION", encoding="UTF-8") as f:
         app_version = f.readline().strip()
         parsed_version = parse_version(app_version)
     return (

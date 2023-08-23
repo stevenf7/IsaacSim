@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.2] - 2023-08-22
+
+### Fixed
+- Docs and docstrings
+
 ## [1.0.1] - 2023-08-11
 
 ### Fixed
@@ -8,4 +13,4 @@
 ## [1.0.0] - 2022-05-12
 
 ### Added
-- Added first version of version.
+- Added first version of extension.
