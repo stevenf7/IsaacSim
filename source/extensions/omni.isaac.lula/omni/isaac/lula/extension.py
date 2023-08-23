@@ -21,12 +21,13 @@ if os.name == "nt":
     os.add_dll_directory(lula_dir.__str__())
 
 
-from lula import LogLevel, set_log_level
+from lula import LogLevel, set_default_logger_prefix, set_log_level
 
 
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id):
         set_log_level(LogLevel.WARNING)
+        set_default_logger_prefix("[Lula] ")
 
     def on_shutdown(self):
         pass
