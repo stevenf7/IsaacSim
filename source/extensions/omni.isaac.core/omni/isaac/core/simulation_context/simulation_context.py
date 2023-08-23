@@ -107,9 +107,6 @@ class SimulationContext:
         self._backend = backend
         self._device = device
         self._settings = carb.settings.get_settings()
-        if self._device is not None and "cuda" in self._device:
-            device_id = self._settings.get_as_int("/physics/cudaDevice")
-            self._device = f"cuda:{device_id}"
         self._timeline = omni.timeline.get_timeline_interface()
         self._timeline.set_auto_update(True)
         self._dynamic_control = _dynamic_control.acquire_dynamic_control_interface()
@@ -119,6 +116,7 @@ class SimulationContext:
         self._timeline_callback_functions = dict()
         self._render_callback_functions = dict()
         self._loop_runner = None
+        self._physics_context = None
         if self._set_defaults:
             if self._initial_rendering_dt is None:
                 self._initial_rendering_dt = 1.0 / 60.0
@@ -170,15 +168,6 @@ class SimulationContext:
             carb.log_info("Simulation Context is defined already, returning the previously defined one")
         return SimulationContext._instance
 
-    def __del__(self):
-        if hasattr(self, "_physics_sim_view"):
-            del self._physics_sim_view
-        SimulationContext._instance = None
-        SimulationContext._sim_context_initialized = False
-        self.clear_all_callbacks()
-        self._stage_open_callback = None
-        return
-
     """
     Instance handling.
     """
@@ -191,7 +180,14 @@ class SimulationContext:
     def clear_instance(cls):
         """[summary]"""
         if SimulationContext._instance is not None:
-            SimulationContext._instance.__del__()
+            if hasattr(SimulationContext._instance, "_physics_sim_view"):
+                del SimulationContext._instance._physics_sim_view
+            SimulationContext._instance.clear_all_callbacks()
+            SimulationContext._instance._stage_open_callback = None
+            SimulationContext._instance._physics_timer_callback = None
+            SimulationContext._instance._event_timer_callback = None
+            SimulationContext._instance = None
+            SimulationContext._sim_context_initialized = False
         return
 
     """
@@ -250,7 +246,10 @@ class SimulationContext:
         Returns:
             str: [description]
         """
-        return self._device
+        if self._physics_context:
+            return self._physics_context._device
+        else:
+            return None
 
     @property
     def backend_utils(self):
@@ -455,25 +454,13 @@ class SimulationContext:
             # rendering dt is zero, but physics is not, call step and then render
             elif self.get_rendering_dt() == 0 and self.get_physics_dt() != 0:
                 if self.is_playing():
-                    if self._physics_sim_view is not None:
-                        self._physics_sim_view.flush()
                     self._physics_context._step(current_time=self.current_time)
-                    # if self._physics_sim_view is not None:
-                    #     self._physics_sim_view.clear_forces()
                 self.render()
             else:
-                if self._physics_sim_view is not None:
-                    self._physics_sim_view.flush()
                 self._app.update()
-                # if self._physics_sim_view is not None:
-                #     self._physics_sim_view.clear_forces()
         else:
             if self.is_playing():
-                if self._physics_sim_view is not None:
-                    self._physics_sim_view.flush()
                 self._physics_context._step(current_time=self.current_time)
-                # if self._physics_sim_view is not None:
-                #     self._physics_sim_view.clear_forces()
         return
 
     def render(self) -> None:

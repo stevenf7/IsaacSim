@@ -27,7 +27,7 @@ class TestRigidPrimPose(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         World.clear_instance()
         await create_new_stage_async()
-        self._my_world = World()
+        self._my_world = World(device="cpu")
         await self._my_world.initialize_simulation_context_async()
         pass
 

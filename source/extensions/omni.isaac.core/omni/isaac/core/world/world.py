@@ -110,22 +110,18 @@ class World(SimulationContext):
         self._data_logger = DataLogger()
         return
 
-    def __del__(self):
-        if self._world_initialized:
-            if hasattr(self, "_scene"):
-                del self._scene
-                gc.collect()
-        World._world_initialized = False
-        SimulationContext.__del__(self)
-        return
-
     """
     Instance handling.
     """
 
     @classmethod
     def clear_instance(cls):
-        SimulationContext.clear_instance()
+        if World._world_initialized:
+            if hasattr(SimulationContext._instance, "_scene"):
+                del SimulationContext._instance._scene
+                gc.collect()
+            World._world_initialized = False
+            SimulationContext.clear_instance()
         return
 
     """

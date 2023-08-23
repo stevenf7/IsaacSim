@@ -1,4 +1,11 @@
 # Changelog
+
+## [2.8.0] - 2023-08-23
+### Fixed
+- Fixed gpu device parsing.
+- Added gpu flushing as a physics callback to handle the extension workflow and the standalone one alike.
+- Removed the destructor calls from SimulationContext and World for possible bugs concerning them being Singeltons.
+
 ## [2.7.7] - 2023-09-18
 ### Fixed
 - GeometryPrimView.is_collision_enabled to read values set through USD and not the class
