@@ -165,6 +165,9 @@ class RandomScenario(torch.utils.data.IterableDataset):
         if not self.use_s3 and self.test:
             clean_output_dir(self._output_folder)
 
+        self._carb_settings = carb.settings.get_settings()
+        self._carb_settings.set("/omni/replicator/captureOnPlay", False)
+
         signal.signal(signal.SIGINT, self._handle_exit)
 
     def _handle_exit(self, *args, **kwargs):
@@ -187,8 +190,8 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self.render_product = rep.create.render_product(self.camera, (config_data["WIDTH"], config_data["HEIGHT"]))
 
         camera_node = self.camera.node
-        camera_rig_path = rep.utils.get_node_targets(camera_node, "inputs:prims")[0]
-        self.camera_path = str(camera_rig_path) + "/Camera"
+        camera_rig_path = str(rep.utils.get_node_targets(camera_node, "inputs:prims")[0])
+        self.camera_path = camera_rig_path + "/Camera"
 
         with rep.get.prims(prim_types=["Camera"]):
             rep.modify.pose(
@@ -450,13 +453,6 @@ class RandomScenario(torch.utils.data.IterableDataset):
         if self.cur_idx == self.num_mesh:  # MESH datset generation complete, switch to DOME dataset
             print(f"Starting DOME dataset generation of {self.num_dome} frames..")
 
-            if rep.orchestrator.get_is_started():
-                rep.orchestrator.stop()  # This is necessary to ensure that the first new frame will have been randomized
-
-            # Increase subframes to 3 to clear the frames in flight and ensure dome light texture is loaded
-            # See known issues: https://docs.omniverse.nvidia.com/prod_extensions/prod_extensions/ext_replicator.html
-            rep.settings.carb_settings("/omni/replicator/RTSubframes", 3)
-
             # Hide the FlyingDistractors used for the MESH dataset
             self.mesh_distractors.set_visible(False)
 
@@ -479,8 +475,8 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
         # Step physics, avoid objects overlapping each other
         timeline.get_timeline_interface().play()
-        world.step(render=False)
-        world.step(render=False)
+
+        kit.app.update()
 
         print(f"ID: {self.cur_idx}/{self.train_size - 1}")
         rep.orchestrator.step()
