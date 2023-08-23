@@ -1,4 +1,8 @@
 # Changelog
+## [0.5.0] - 2023-08-22
+### Changed
+- Added testMode and removed depthTest (it did nothing) from DebugDrawPointCloud node.
+
 ## [0.4.1] - 2023-08-15
 ### Changed
 - Changed prim input type from bundle to target for xPrim Axis and Radius visualizer

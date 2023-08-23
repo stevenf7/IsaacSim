@@ -59,6 +59,7 @@ public:
                 db.logError("DebugDrawPointCloud Buffer is invalid, but should have %d vertices.", numVerts);
             return false;
         }
+
         auto& state = db.internalState<OgnDebugDrawPointCloud>();
 
         const carb::ColorRgba* color = (const carb::ColorRgba*)db.inputs.color().data();
@@ -66,7 +67,8 @@ public:
         state.m_pointDrawing->clear();
         state.m_pointDrawing->clear();
 
-        if (numVerts > 0)
+
+        if (!db.inputs.testMode() && numVerts > 0)
         {
             state.m_pointDrawing->setVertices(input, numVerts);
             state.m_pointDrawing->setColor(*color);

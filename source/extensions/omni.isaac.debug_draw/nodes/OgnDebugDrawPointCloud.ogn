@@ -15,14 +15,6 @@
                 "type": "execution",
                 "description": "The input execution port"
             },
-            "depthTest": {
-                "type": "bool",
-                "metadata": {
-                    "uiName": "Depth Test Points"
-                },
-                "description": ["If true, the points will not render when behind other objects."],
-                "default": true
-            },
             "transform": {
                 "type": "matrixd[4]",
                 "description": "The matrix to transform the points by"
@@ -44,7 +36,10 @@
                 "type": "float",
                 "description": "Size of points",
                 "default": 0.02
-
+            },
+            "testMode":{
+                "type": "bool",
+                "description": "Act as Writer with no rendering"
             }
         },
         "state": {
