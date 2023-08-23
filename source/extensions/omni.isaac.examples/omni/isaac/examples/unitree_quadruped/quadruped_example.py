@@ -58,6 +58,10 @@ class QuadrupedExample(BaseSample):
             restitution=0.01,
         )
         self._a1 = world.scene.add(Unitree(prim_path="/World/A1", name="A1", position=np.array([0, 0, 0.400])))
+        timeline = omni.timeline.get_timeline_interface()
+        self._event_timer_callback = timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
+            int(omni.timeline.TimelineEventType.STOP), self._timeline_timer_callback_fn
+        )
         return
 
     async def setup_post_load(self) -> None:
@@ -76,8 +80,8 @@ class QuadrupedExample(BaseSample):
 
     async def setup_post_reset(self) -> None:
         await self._world.play_async()
-        self._a1.check_dc_interface()
         self._a1.set_state(self._a1._default_a1_state)
+        self._a1.post_reset()
         return
 
     def on_physics_step(self, step_size) -> None:
@@ -116,3 +120,7 @@ class QuadrupedExample(BaseSample):
                 self._enter_toggled = False
         # since no error, we are fine :)
         return True
+
+    def _timeline_timer_callback_fn(self, event) -> None:
+        self._a1.post_reset()
+        return

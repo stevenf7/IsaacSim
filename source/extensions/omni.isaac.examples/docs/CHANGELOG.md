@@ -1,4 +1,7 @@
 # Changelog
+## [1.7.1] - 2023-08-22
+### Fixed
+- Fixed quadruped example error after reset or stop
 
 ## [1.7.0] - 2023-08-15
 ### Removed

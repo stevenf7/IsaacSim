@@ -75,7 +75,7 @@ class TestA1(omni.kit.test.AsyncTestCase):
         await self.spawn_a1()
         await omni.kit.app.get_app().next_update_async()
 
-        self._a1 = self._a1 = self._world.scene.get_object("A1")
+        self._a1 = self._world.scene.get_object("A1")
         await omni.kit.app.get_app().next_update_async()
         self.assertEqual(self._a1.num_dof, 12)
         self.assertTrue(get_prim_at_path("/World/A1").IsValid(), True)
@@ -91,7 +91,7 @@ class TestA1(omni.kit.test.AsyncTestCase):
 
         await self.spawn_a1()
         await omni.kit.app.get_app().next_update_async()
-        self._a1 = self._a1 = self._world.scene.get_object("A1")
+        self._a1 = self._world.scene.get_object("A1")
 
         self.start_pos = np.array(self._a1.get_world_pose()[0])
 

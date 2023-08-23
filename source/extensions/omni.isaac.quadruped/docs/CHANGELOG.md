@@ -1,4 +1,7 @@
 # Changelog
+## [1.3.2] - 2023-08-22
+### Fixed
+- Fixed robot articulation bug after stop or reset
 
 ## [1.3.1] - 2023-06-07
 

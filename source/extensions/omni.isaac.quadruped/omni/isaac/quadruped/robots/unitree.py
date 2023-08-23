@@ -18,6 +18,7 @@ from omni.isaac.core.articulations import Articulation
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
 from omni.isaac.core.utils.stage import get_current_stage, get_stage_units
+from omni.isaac.core_nodes.bindings import _omni_isaac_core_nodes
 from omni.isaac.quadruped.controllers import A1QPController
 from omni.isaac.quadruped.utils.a1_classes import A1Command, A1Measurement, A1State
 from omni.isaac.sensor import ContactSensor, IMUSensor, _sensor
@@ -140,6 +141,8 @@ class Unitree(Articulation):
         self._qp_controller.setup()
         self._dof_control_modes: List[int] = list()
 
+        self.robot_initialized = False
+        self.core_nodes = _omni_isaac_core_nodes.acquire_interface()
         return
 
     def set_state(self, state: A1State) -> None:
@@ -262,6 +265,13 @@ class Unitree(Articulation):
             goal = self._goal
         else:
             self._goal = goal
+
+        # Articulation requires a few steps to warm up before it can be initialized
+        if self.core_nodes.get_physics_num_steps() <= 2:
+            return
+        elif not self.robot_initialized:
+            self.initialize()
+
         self.update()
         self._qp_controller.set_target_command(goal)
 
@@ -293,6 +303,7 @@ class Unitree(Articulation):
         self.set_state(self._default_a1_state)
         for i in range(4):
             self._contact_sensors[i].initialize()
+        self.robot_initialized = True
         return
 
     def post_reset(self) -> None:
@@ -305,4 +316,5 @@ class Unitree(Articulation):
             self._contact_sensors[i].post_reset()
         self._qp_controller.reset()
         self.set_state(self._default_a1_state)
+        self.robot_initialized = False
         return
