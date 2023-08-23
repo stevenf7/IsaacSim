@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.0] - 2023-08-22
+
+### Changed
+- Resized widgets to fit in screen 
+### Removed 
+- gui_utils.py
+- All functions moved into extension.py 
+
 ## [0.1.2] - 2023-08-15
 
 ### Added

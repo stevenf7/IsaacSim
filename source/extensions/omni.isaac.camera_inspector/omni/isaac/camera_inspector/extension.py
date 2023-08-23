@@ -22,12 +22,11 @@ from omni.isaac.core.utils.viewports import create_viewport_for_camera
 from omni.isaac.sensor import get_all_camera_objects
 from omni.isaac.ui.element_wrappers import TextBlock
 from omni.isaac.ui.menu import make_menu_item_description
-from omni.isaac.ui.ui_utils import btn_builder, get_style, setup_ui_headers
+from omni.isaac.ui.style import COLOR_W, COLOR_X, COLOR_Y, COLOR_Z
+from omni.isaac.ui.ui_utils import BUTTON_WIDTH, add_line_rect_flourish, btn_builder, get_style, setup_ui_headers
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from omni.kit.viewport.window import get_viewport_window_instances
 from omni.kit.window.property.templates import LABEL_WIDTH
-
-from . import gui_utils
 
 EXTENSION_NAME = "Camera Inspector"
 SUPPORTED_AXES = ["world", "usd", "ros"]
@@ -42,7 +41,11 @@ class Extension(omni.ext.IExt):
 
         # Build Window
         self._window = ui.Window(
-            title=EXTENSION_NAME, width=500, height=500, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
+            title=EXTENSION_NAME,
+            height=500,
+            width=500,
+            visible=False,
+            dockPreference=ui.DockPreference.LEFT_BOTTOM,  # width_changed_fn=self._on_refresh
         )
         self._window.set_visibility_changed_fn(self._on_window)
 
@@ -57,6 +60,8 @@ class Extension(omni.ext.IExt):
         add_menu_items(self._menu_items, "Isaac Utils")
         self._all_cameras = []
         self._all_viewports = []
+
+        self.colors = {"X": COLOR_X, "Y": COLOR_Y, "Z": COLOR_Z, "W": COLOR_W}
 
         # Selection
         self._selected_axis_world = SUPPORTED_AXES[0]
@@ -86,7 +91,6 @@ class Extension(omni.ext.IExt):
         self._window.visible = not self._window.visible
 
     def _build_ui(self):
-        # if not self._window:
         with self._window.frame:
             with ui.VStack(spacing=5, height=0):
 
@@ -115,7 +119,7 @@ class Extension(omni.ext.IExt):
     # Callbacks
     ##################################
 
-    def _on_refresh(self):
+    def _on_refresh(self, width=None):
         """Get all cameras in the scene and add them to the camera manager."""
         self._all_cameras = get_all_camera_objects()
         self._all_viewports = list(get_viewport_window_instances())
@@ -135,17 +139,17 @@ class Extension(omni.ext.IExt):
                 )
 
     def _on_camera_changed_event(self, option):
-        option = self._task_ui_elements["Camera Names"].get_item_value_model().as_int
+        option = self._task_ui_elements["Combo Camera"].get_item_value_model().as_int
         if option < len(self._all_cameras):
             self._selected_camera = self._all_cameras[option]
         else:
             err = f"Selected option {option} not available; available cameras: {[camera.name for camera in self._all_cameras]}"
-            raise ValueError(err)
+            carb.log_warn(err)
 
         self._update_camera_stats_ui()
 
     def _on_viewport_changed_event(self, option):
-        option = self._task_ui_elements["Viewport Names"].get_item_value_model().as_int
+        option = self._task_ui_elements["Combo Viewport"].get_item_value_model().as_int
         if option < len(self._all_viewports):
             self._selected_viewport = self._all_viewports[option]
         else:
@@ -196,28 +200,27 @@ class Extension(omni.ext.IExt):
         setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
 
     def _build_camera_pane(self):
-        frame = ui.CollapsableFrame(
+        self._frame = ui.CollapsableFrame(
             title="Cameras",
-            width=ui.Fraction(1),
             height=0,
+            name="subFrame",
             collapsed=False,
             style=get_style(),
             horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
             vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
         )
-        with frame:
+        with self._frame:
             with ui.VStack(style=get_style(), spacing=5, height=0):
                 dict = {
-                    "label": "Get all cameras in the scene",
-                    "type": "button",
+                    "label": "Get all cameras",
                     "text": "Refresh",
                     "tooltip": "Finds all cameras in the scene and adds them to the camera manager.",
                     "on_clicked_fn": self._on_refresh,
                 }
                 self._task_ui_elements["refresh_btn"] = btn_builder(**dict)
-                self._task_ui_elements["refresh_btn"].enabled = True
-                frame.visible = True
-                label_width = LABEL_WIDTH - 80
+
+                # self._task_ui_elements["refresh_btn"].enabled = True
+                # self._frame.visible = True
 
                 self._task_ui_elements["CameraTextField"] = TextBlock(
                     "Camera State",
@@ -225,59 +228,20 @@ class Extension(omni.ext.IExt):
                     tooltip="Prints camera state to this field",
                     include_copy_button=True,
                 )
-                with ui.HStack():
 
-                    # Add a button for human input source
-                    self._camera_names_builder_config = {
-                        "label": "Camera",
-                        "default_val": 0,
-                        "items": self._all_cameras,
-                        "tooltip": "Select the camera",
-                        "on_clicked_fn": self._on_camera_changed_event,
-                        "add_line": False,
-                        "label_width": label_width,
-                        "width": ui.Fraction(100),
-                    }
-                    self._task_ui_elements["Camera Names"] = gui_utils.customized_dropdown_builder(
-                        **self._camera_names_builder_config
-                    )
+                self._build_camera_viewport_dropdown(
+                    button_text="Create Viewport",
+                    label_text="Viewport",
+                    button_fn=self._on_create_viewport,
+                    dropdown_fn=self._on_viewport_changed_event,
+                )
 
-                    self._open_viewport_btn_config = {
-                        "type": "button",
-                        "text": "Create Viewport",
-                        "tooltip": "Create Viewport for Current Camera",
-                        "on_clicked_fn": self._on_create_viewport,
-                    }
-
-                    self._task_ui_elements["Create Viewport button"] = btn_builder(**self._open_viewport_btn_config)
-                    self._task_ui_elements["Create Viewport button"].enabled = True
-
-                with ui.HStack():
-                    # Add a button for human input source
-                    self._viewport_names_builder_config = {
-                        "label": "Viewport",
-                        "default_val": 0,
-                        "items": self._all_viewports,
-                        "tooltip": "Select the viewport",
-                        "on_clicked_fn": self._on_viewport_changed_event,
-                        "add_line": False,
-                        "label_width": label_width,
-                        "width": ui.Fraction(100),
-                    }
-                    self._task_ui_elements["Viewport Names"] = gui_utils.customized_dropdown_builder(
-                        **self._viewport_names_builder_config
-                    )
-
-                    # change this to display current camera more clearly
-                    self._open_viewport_btn_config = {
-                        "type": "button",
-                        "text": "Assign Camera to Viewport",
-                        "tooltip": "Assign the current camera to the viewport",
-                        "on_clicked_fn": self._on_assign_camera,
-                    }
-
-                    self._task_ui_elements["Assign camera button"] = btn_builder(**self._open_viewport_btn_config)
-                    self._task_ui_elements["Assign camera button"].enabled = True
+                self._build_camera_viewport_dropdown(
+                    button_text="Assign Camera",
+                    label_text="Camera",
+                    button_fn=self._on_assign_camera,
+                    dropdown_fn=self._on_camera_changed_event,
+                )
 
                 self._camera_axes_builder_config = {
                     "label": "World Camera Axis",
@@ -286,46 +250,131 @@ class Extension(omni.ext.IExt):
                     "tooltip": "Select the axis to use",
                     "on_clicked_fn": self._on_axis_changed_event,
                     "add_line": False,
-                    "label_width": label_width + 40,
-                    "width": ui.Fraction(100),
                 }
-                self._task_ui_elements["World Camera Axis"] = gui_utils.customized_dropdown_builder(
+                self._task_ui_elements["World Camera Axis"] = self._build_single_dropdown(
                     **self._camera_axes_builder_config
                 )
 
-                world_transform_models = gui_utils.custom_pos_quat_builder(label_width=label_width, label="World")
+                world_transform_models = self._build_pos_quat_display(label="World")  # label_width=label_width
                 self._task_ui_elements["World Camera Position"] = world_transform_models[0:3]
                 self._task_ui_elements["World Camera Orientation"] = world_transform_models[3:7]
 
                 self._camera_axes_builder_config["label"] = "Local Camera Axis"
-                self._task_ui_elements["Local Camera Axis"] = gui_utils.customized_dropdown_builder(
+                self._task_ui_elements["Local Camera Axis"] = self._build_single_dropdown(
                     **self._camera_axes_builder_config
                 )
 
-                local_transform_models = gui_utils.custom_pos_quat_builder(label_width=label_width, label="Local")
+                local_transform_models = self._build_pos_quat_display(label="Local")
                 self._task_ui_elements["Local Camera Position"] = local_transform_models[0:3]
                 self._task_ui_elements["Local Camera Orientation"] = local_transform_models[3:7]
+
+    def _build_camera_viewport_dropdown(
+        self,
+        button_text,
+        label_text,
+        button_fn=None,
+        dropdown_fn=None,
+    ):
+        with ui.HStack(style=get_style()):
+            ui.Label(label_text, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER)
+
+            self._task_ui_elements[f"Combo {label_text}"] = ui.ComboBox(
+                0, *self._all_viewports, name="ComboBox", alignment=ui.Alignment.LEFT_CENTER
+            ).model
+
+            self._task_ui_elements["Assign camera button"] = ui.Button(
+                button_text.upper(),
+                name="Button",
+                width=BUTTON_WIDTH,
+                clicked_fn=button_fn,
+                style=get_style(),
+                alignment=ui.Alignment.LEFT_CENTER,
+            )
+
+            add_line_rect_flourish(draw_line=False)
+
+            def on_clicked_wrapper(model, val):
+                dropdown_fn(model.get_item_value_model().as_int)
+
+            self._task_ui_elements[f"Combo {label_text}"].add_item_changed_fn(on_clicked_wrapper)
+
+    def _build_single_dropdown(
+        self,
+        label="",
+        default_val=0,
+        items=[],
+        tooltip="",
+        on_clicked_fn=None,
+        add_line=False,
+        label_width=LABEL_WIDTH,
+    ):
+        with ui.HStack():
+            ui.Label(label, width=label_width, alignment=ui.Alignment.LEFT_CENTER, tooltip=tooltip)
+            combo_box = ui.ComboBox(default_val, *items, name="ComboBox", alignment=ui.Alignment.LEFT_CENTER).model
+            add_line_rect_flourish(add_line)
+
+            def on_clicked_wrapper(model, val):
+                on_clicked_fn(model.get_item_value_model().as_int)
+
+            if on_clicked_fn is not None:
+                combo_box.add_item_changed_fn(on_clicked_wrapper)
+
+        return combo_box
+
+    def _build_pos_quat_display(self, label="World"):
+        models = []
+
+        def _build_model(label, all_axis):
+            with ui.HStack():
+                with ui.HStack(width=LABEL_WIDTH):
+                    ui.Label(label, name="transform", width=50)
+                    ui.Spacer()
+
+                for axis in all_axis:
+                    with ui.HStack():
+                        with ui.ZStack(width=15):
+                            ui.Rectangle(
+                                width=15,
+                                height=20,
+                                style={
+                                    "background_color": self.colors[axis],
+                                    "border_radius": 3,
+                                    "corner_flag": ui.CornerFlag.LEFT,
+                                },
+                            )
+                            ui.Label(
+                                axis, name="transform_label", alignment=ui.Alignment.CENTER, style={"color": 0xFFFFFFFF}
+                            )
+                        model = ui.FloatDrag(name="transform", enabled=False).model
+
+                        models.append(model)
+                        ui.Spacer(width=4)
+
+        _build_model(f"{label} Position", all_axis=["X", "Y", "Z"])
+        _build_model(f"{label} Orientation", all_axis=["W", "X", "Y", "Z"])
+
+        return models
 
     ##################################
     # UI Updaters
     ##################################
     def _update_camera_dropdown(self):
         # Remove all old camera names
-        for child in self._task_ui_elements["Camera Names"].get_item_children():
-            self._task_ui_elements["Camera Names"].remove_item(child)
+        for child in self._task_ui_elements["Combo Camera"].get_item_children():
+            self._task_ui_elements["Combo Camera"].remove_item(child)
 
         # add all cameras to the dropdown
         for camera in self._all_cameras:
-            self._task_ui_elements["Camera Names"].append_child_item(None, ui.SimpleStringModel(camera.name))
+            self._task_ui_elements["Combo Camera"].append_child_item(None, ui.SimpleStringModel(camera.name))
 
     def _update_viewport_dropdown(self):
         # Remove all old viewport names
-        for child in self._task_ui_elements["Viewport Names"].get_item_children():
-            self._task_ui_elements["Viewport Names"].remove_item(child)
+        for child in self._task_ui_elements["Combo Viewport"].get_item_children():
+            self._task_ui_elements["Combo Viewport"].remove_item(child)
 
         # add all viewports to the dropdown
         for viewport in self._all_viewports:
-            self._task_ui_elements["Viewport Names"].append_child_item(None, ui.SimpleStringModel(viewport.name))
+            self._task_ui_elements["Combo Viewport"].append_child_item(None, ui.SimpleStringModel(viewport.name))
 
     def _update_camera_stats_ui(self, e: carb.events.IEvent = None):
         # if camera prim path has been updated, set self._selected_camera to None
