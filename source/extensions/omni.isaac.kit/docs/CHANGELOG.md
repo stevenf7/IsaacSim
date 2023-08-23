@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.3] - 2023-08-22
+### Fixed
+- Missing comma in sync load options
+- various linter issues
+### Added
+- Faulthandler enabled to print callstack on crash
+
 ## [1.4.2] - 2023-06-21
 ### Fixed
 - app framework not working in docker/root environments

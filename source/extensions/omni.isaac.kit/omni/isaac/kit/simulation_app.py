@@ -11,10 +11,10 @@ from __future__ import annotations  # This allows us to hint types that do not y
 
 import argparse
 import builtins
+import faulthandler
 import os
 import re
 import sys
-import warnings
 
 import carb
 import omni.kit.app
@@ -103,6 +103,8 @@ class SimulationApp:
     """
 
     def __init__(self, launch_config: dict = None, experience: str = "") -> None:
+        # Enable callstack on crash
+        faulthandler.enable()
         # Sanity check to see if any extra omniverse modules are loaded
         # Warn users if so because this will usually cause issues.
         # Base list of modules that can be loaded before kit app starts, might need to be updated in the future
@@ -152,7 +154,7 @@ class SimulationApp:
             if item not in ok_list:
                 result.append(item)
         # Made this a warning instead of an error as the above list might be incomplete
-        if len(result):
+        if len(result) > 0:
             carb.log_warn(
                 f"Modules: {result} were loaded before SimulationApp was started and might not be loaded correctly."
             )
@@ -190,7 +192,7 @@ class SimulationApp:
         self._start_app()
 
         # once app starts, we can set settings
-        from .utils import create_new_stage, open_stage, set_carb_setting, set_livesync_stage
+        from .utils import create_new_stage, open_stage, set_livesync_stage
 
         self._carb_settings = carb.settings.get_settings()
         # apply render settings specified in config
@@ -212,7 +214,7 @@ class SimulationApp:
             create_new_stage()
 
         self.livesync_usd = self.config.get("livesync_usd")
-        if self.livesync_usd != None:
+        if self.livesync_usd is not None:
             print("Saving a temp livesync stage at ", self.livesync_usd, " ...", end="")
             if set_livesync_stage(self.livesync_usd, True):
                 print("Done.")
@@ -231,7 +233,7 @@ class SimulationApp:
         from omni.kit.window.title import get_main_window_title
 
         window_title = get_main_window_title()
-        app_version_core, app_version_prerel, _, _, _, _, _, _ = get_version()
+        app_version_core, _, _, _, _, _, _, _ = get_version()
         window_title.set_app_version(app_version_core)
 
         self._wait_for_viewport()
@@ -247,11 +249,8 @@ class SimulationApp:
                 + "ERROR: Python exiting while SimulationApp was still running, Please call close() on the SimulationApp object to exit cleanly"
                 + "\033[0m"
             )
-        pass
 
-    """
-    Private methods
-    """
+    ### Private methods
 
     def _start_app(self) -> None:
         """Launch the Omniverse application."""
@@ -264,7 +263,7 @@ class SimulationApp:
             f'--/persistent/app/viewport/displayOptions={self.config["display_options"]}',  # hide extra stuff in viewport
             # Forces kit to not render until all USD files are loaded
             f'--/rtx/materialDb/syncLoads={self.config["sync_loads"]}',
-            f'--/rtx/hydra/materialSyncLoads={self.config["sync_loads"]}'
+            f'--/rtx/hydra/materialSyncLoads={self.config["sync_loads"]}',
             f'--/omni.kit.plugin/syncUsdLoads={self.config["sync_loads"]}',
             f'--/app/renderer/resolution/width={self.config["width"]}',
             f'--/app/renderer/resolution/height={self.config["height"]}',
@@ -284,7 +283,7 @@ class SimulationApp:
         # parse any extra command line args here
         # user script should provide its own help, otherwise we default to printing the kit app help output
         parser = argparse.ArgumentParser(add_help=False)
-        parsed_args, unknown_args = parser.parse_known_args()
+        _, unknown_args = parser.parse_known_args()
         # is user did not request portable root,
         # we still run apps as portable to prevent them writing extra files to user directory
         if "--portable-root" not in unknown_args:
@@ -294,9 +293,8 @@ class SimulationApp:
 
         # get the effective uid of this process, if its root, then we automatically add the allow root flag
         # if the flag is already in unknown_args, we don't need to add it again.
-        if sys.platform.startswith("linux"):
-            if os.geteuid() == 0 and "--allow-root" not in unknown_args:
-                args.append("--allow-root")
+        if sys.platform.startswith("linux") and os.geteuid() == 0 and "--allow-root" not in unknown_args:
+            args.append("--allow-root")
 
         # pass all extra arguments onto the main kit app
         print("Starting kit application with the following args: ", args)
@@ -408,24 +406,20 @@ class SimulationApp:
             while viewport_api.frame_info.get("viewport_handle", None) is None:
                 self._app.update()
                 frame += 1
-        except:
+        except Exception:
             pass
 
         # once we load, we need a few frames so everything docks itself
         for _ in range(10):
             self._app.update()
-        return
 
-    """
-    Public methods
-    """
+    ### Public methods
 
     def update(self) -> None:
         """
         Convenience function to step the application forward one frame
         """
         self._app.update()
-        return
 
     def set_setting(self, setting: str, value) -> None:
         """
@@ -460,7 +454,7 @@ class SimulationApp:
             if rep.orchestrator.get_status() not in [rep.orchestrator.Status.STOPPED, rep.orchestrator.Status.STOPPING]:
                 rep.orchestrator.stop()
             rep.orchestrator.wait_until_complete()
-        except:
+        except Exception:
             pass
         # workaround for exit issues, clean the stage first:
         if omni.usd.get_context().can_close_stage():
