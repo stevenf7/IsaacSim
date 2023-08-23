@@ -61,6 +61,7 @@ Isaac Sim: Extensions API
    source/extensions/omni.replicator.isaac/docs/index
    source/extensions/omni.isaac.conveyor/docs/index
    source/extensions/omni.isaac.examples_nodes/docs/index
+   source/extensions/omni.isaac.version/docs/index
 
 
 

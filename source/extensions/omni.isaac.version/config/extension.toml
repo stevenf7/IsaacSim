@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.1"
+version = "1.0.2"
 category = "Other"
 title = "Isaac Sim Version"
 description = "Isaac Sim Version"
@@ -19,3 +19,6 @@ icon = "data/icon.png"
 
 [[python.module]]
 name = "omni.isaac.version"
+
+[[python.module]]
+name = "omni.isaac.version.tests"
