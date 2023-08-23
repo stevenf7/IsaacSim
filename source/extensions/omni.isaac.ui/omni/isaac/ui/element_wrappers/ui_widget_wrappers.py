@@ -1974,6 +1974,9 @@ class XYPlot(UIWidgetWrapper):
         if x_max is None:
             x_max = self._get_ragged_data_max(self._x_data)
 
+        if x_min >= x_max:
+            return [[0, 1]] * len(self._y_data), [[]] * len(self._y_data), 0, 1
+
         spacing = (x_max - x_min) / self._num_points_per_plot
         x_val_range = np.arange(x_min, x_max + spacing - 0.00001, spacing)
 
@@ -2094,7 +2097,11 @@ class XYPlot(UIWidgetWrapper):
         y_max = self.get_y_max()
         y_min = self.get_y_min()
 
-        num_decimals_x = int(max(0, np.log10(5 / (self._x_max - self._x_min)) + 2))
+        if x_max == x_min or y_max == y_min:
+            # Can only happen when the user is intentionally trying to break things
+            return
+
+        num_decimals_x = int(max(0, np.log10(5 / (x_max - x_min)) + 2))
         num_decimals_y = int(max(0, np.log10(5 / (y_max - y_min)) + 2))
 
         x_value = np.round((x_max - x_min) * (x - x_pos) / width + x_min, decimals=num_decimals_x)
@@ -2206,6 +2213,10 @@ class XYPlot(UIWidgetWrapper):
             if high == low:
                 high = low + 0.0001
 
+                # Handle float overflow
+                if high == low:
+                    return
+
             num_fields = len(self._x_axis_float_fields)
             spacing = (high - low) / num_fields
             num_decimals = int(max(0, np.log10(5 / (high - low)) + 2))
@@ -2220,6 +2231,10 @@ class XYPlot(UIWidgetWrapper):
 
             if high == low:
                 high = low + 0.0001
+
+                # Handle float overflow
+                if high == low:
+                    return
 
             num_fields = len(self._y_axis_float_fields)
             spacing = (high - low) / num_fields

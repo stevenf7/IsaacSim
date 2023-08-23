@@ -1,4 +1,9 @@
 # Changelog
+## [0.13.1] - 2023-08-22
+### Fixed
+- Fixed possible errors in UI Plotting Tool that can be caused by spamming updates to violate x_max > x_min on X axis.
+    Fixed error when floats are overflowed, which allowed x_min to equal x_max for high numbers
+
 ## [0.13.0] - 2023-08-15
 ### Fixed
 - Added extra frame of waiting when using LoadButton and ResetButton after core.World.reset().
