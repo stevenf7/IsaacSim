@@ -12,8 +12,8 @@ from omni.isaac.kit import SimulationApp
 # URDF import, configuration and simulation sample
 kit = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
 import omni.kit.commands
+from omni.isaac.core.articulations import Articulation
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
-from omni.isaac.dynamic_control import _dynamic_control
 from pxr import Gf, PhysxSchema, Sdf, UsdLux, UsdPhysics
 
 # Setting up import configuration:
@@ -81,19 +81,17 @@ right_wheel_drive.GetDampingAttr().Set(15000)
 left_wheel_drive.GetStiffnessAttr().Set(0)
 right_wheel_drive.GetStiffnessAttr().Set(0)
 
-# dynamic control can also be used to interact with the imported urdf.
-dc = _dynamic_control.acquire_dynamic_control_interface()
-
 # Start simulation
 omni.timeline.get_timeline_interface().play()
 # perform one simulation step so physics is loaded and dynamic control works.
 kit.update()
-art = dc.get_articulation(stage_path)
+art = Articulation(prim_path=stage_path)
+art.initialize()
 
-if art == _dynamic_control.INVALID_HANDLE:
+if not art.handles_initialized:
     print(f"{stage_path} is not an articulation")
 else:
-    print(f"Got articulation {stage_path} with handle {art}")
+    print(f"Got articulation {stage_path} with handle {art.articulation_handle}")
 
 # perform simulation
 for frame in range(100):
