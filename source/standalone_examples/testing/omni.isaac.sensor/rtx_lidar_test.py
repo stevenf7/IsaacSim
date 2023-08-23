@@ -70,7 +70,7 @@ if len(sys.argv) >= 2:
             assets_root_path + "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd", "/background"
         )
     elif geo_type == "cubes":
-        add_cube(stage.get_current_stage(), "/World/cxube_x1", (1, 20, 1), (5, 0, 0), physics=False)
+        add_cube(stage.get_current_stage(), "/World/cxube_x1", (1, 20, 5), (5, 0, 0), physics=False)
         add_cube(stage.get_current_stage(), "/World/cxube_x2", (1, 20, 1), (-5, 0, 0), physics=False)
         add_cube(stage.get_current_stage(), "/World/cxube_x3", (20, 1, 1), (0, 5, 0), physics=False)
         add_cube(stage.get_current_stage(), "/World/cxube_x4", (20, 1, 1), (0, -5, 0), physics=False)
@@ -162,10 +162,11 @@ i = printinc(i)
 simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=1.0)
 if 1:
     i = printinc(i)
-    # writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud" + "Buffer")
+    writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud" + "Buffer")
+    writer.initialize(testMode=True)
     # writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
     # writer = rep.writers.get("Writer" + "IsaacReadRTXLidarData")
-    writer = rep.writers.get("Writer" + "IsaacPrintRTXLidarInfo" + "")
+    # writer = rep.writers.get("Writer" + "IsaacPrintRTXLidarInfo" + "")
 
     i = printinc(i)
     writer.attach([render_product_path])  # , render_product_path2])
@@ -210,3 +211,29 @@ simulation_context.stop()
 
 i = printinc(i)
 simulation_app.close()
+"""
+from omni.isaac.core.utils import stage
+from pxr import UsdGeom, Gf
+
+#omni.kit.commands.execute('ToolbarPlayButtonClicked')
+
+UsdGeom.Cube.Define(stage.get_current_stage(), "/World/cube_1").AddTranslateOp().Set((5, 5, 0))
+import omni.kit.commands
+_, sensorR = omni.kit.commands.execute(
+    "IsaacSensorCreateRtxLidar",
+    path="/sensorR",
+    parent=None,
+    config="Example_Solid_State",
+    translation=(0, 0, 1.0),
+    orientation=Gf.Quatd(0.5, 0.5, -0.5, -0.5), 
+)
+from omni.isaac.core.utils.render_product import create_hydra_texture
+_, render_product_pathR = create_hydra_texture([1, 1], sensorR.GetPath().pathString)
+
+
+import omni.replicator.core as rep
+# Create the debug draw pipeline in the post process graph
+writerR = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
+writerR.attach([render_product_pathR])
+
+"""

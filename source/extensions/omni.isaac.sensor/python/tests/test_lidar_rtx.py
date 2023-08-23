@@ -122,6 +122,19 @@ class TestRotatingLidarRtx(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.all(np.linalg.norm(data["data"], axis=1) > 0))
         annotator.detach()
 
+    async def test_read_buffer_annotator(self):
+
+        annotator = rep.AnnotatorRegistry.get_annotator("RtxSensorCpu" + "IsaacCreateRTXLidarScanBuffer")
+        annotator.attach([self._my_lidar.get_render_product_path()])
+
+        self._timeline.play()
+        for i in range(20):
+            await update_stage_async()
+        data = annotator.get_data()
+        # TODO: Improve Test
+        self.assertTrue(np.all(np.linalg.norm(data["data"], axis=1) > 0))
+        annotator.detach()
+
     async def test_data_acquisition(self):
         for i in range(20):
             await update_stage_async()

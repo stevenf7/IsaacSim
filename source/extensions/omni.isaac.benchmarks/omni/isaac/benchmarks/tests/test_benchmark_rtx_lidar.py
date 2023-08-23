@@ -59,7 +59,8 @@ class TestBenchmarkRtxLidar(BaseIsaacBenchmark):
             texture, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathString)
             hydra_textures.append(texture)
             # Create the post process graph that publishes the render var
-            writer = rep.writers.get("Writer" + "IsaacPrintRTXLidarInfo" + "Test")
+            writer = rep.writers.get("Writer" + "IsaacPrintRTXLidarInfo")
+            writer.initialize(testMode=True)
             writer.attach([render_product_path])
             writers.append(writer)
 

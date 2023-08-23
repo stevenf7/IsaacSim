@@ -11,6 +11,8 @@
 #include <UsdPCH.h>
 // clang-format on
 
+#include <carb/tasking/ITasking.h>
+
 #include <internal/omni/sensors/lidar/LidarReturnHelper.h>
 #include <omni/isaac/utils/Buffer.h>
 #include <omni/isaac/utils/ScopedCudaDevice.h>
@@ -66,7 +68,14 @@ private:
     isaac::utils::HostBufferBase<float> hostAzimuthScanBuffer;
     isaac::utils::HostBufferBase<float> hostElevationScanBuffer;
     isaac::utils::HostBufferBase<uint32_t> hostObjectIdScanBuffer;
-    isaac::utils::HostBufferBase<uint32_t> hostIndexScanBuffer;
+    // when keep only positive distance is true, we ouput smaller arrays.
+    isaac::utils::HostBufferBase<uint32_t> hostIndexShrunkBuffer;
+    isaac::utils::HostBufferBase<float3> hostPcShrunkBuffer;
+    isaac::utils::HostBufferBase<float> hostDistanceShrunkBuffer;
+    isaac::utils::HostBufferBase<float> hostIntensityShrunkBuffer;
+    isaac::utils::HostBufferBase<float> hostAzimuthShrunkBuffer;
+    isaac::utils::HostBufferBase<float> hostElevationShrunkBuffer;
+    isaac::utils::HostBufferBase<uint32_t> hostObjectIdShrunkBuffer;
 
     isaac::utils::DeviceBufferBase<float3> pcBuffer; // 3d point cloud
     isaac::utils::DeviceBufferBase<float> distanceBuffer;
@@ -75,18 +84,21 @@ private:
     isaac::utils::DeviceBufferBase<float> elevationBuffer;
 
     // TODOMTC EmitterProfile only need distanceCorrectionM, horOffsetM, vertOffsetM for GPU
+    // TODOMTC Solid State does not work correctly.
 
 public:
     static bool compute(OgnIsaacCreateRTXLidarScanBufferDatabase& db)
     {
         // std::cout << "EnterCompute -------------------\n";
         // TODOMTC Streams?  each node should have it's own stream?
-        CARB_PROFILE_ZONE(0, "Create RTX Lidar 360 Buffer");
+        CARB_PROFILE_ZONE(0, "Create RTX Lidar Scan Buffer");
         // safe or passthrough values so we can return without worry anywhere in compute.
         db.outputs.exec() = db.inputs.exec();
         db.outputs.dataPtr() = 0;
         db.outputs.cudaDeviceIndex() = -1; // db.inputs.cudaDeviceIndex();
         db.outputs.bufferSize() = 0;
+        db.outputs.width() = 0;
+        db.outputs.height() = 1;
         auto& matrixOutput = *reinterpret_cast<omni::math::linalg::matrix4d*>(&db.outputs.transform());
         matrixOutput.SetIdentity();
 
@@ -125,7 +137,7 @@ public:
         if (numTicks + startTick > ticksPerScan)
         {
             numTicks = ticksPerScan - startTick;
-            CARB_LOG_WARN("WARNING -  You lost a little scan data!");
+            CARB_LOG_WARN_ONCE("WARNING -  You lost a little scan data!");
         }
         const uint32_t numReturns = numTicks * numChannels * numEchos;
         const uint32_t returnsPerScan = ticksPerScan * numChannels * numEchos;
@@ -161,6 +173,7 @@ public:
                                         parameterHost->async.frameEnd.orientation[2] };
         matrixOutput.SetRotateOnly(pose);
         matrixOutput.SetTranslateOnly(posM);
+        // TODOMTC Transform applied to previous buffer values is newer, either store transforms, or apply here.
 
         db.outputs.returnsPerScan() = returnsPerScan;
         db.outputs.ticksPerScan() = ticksPerScan;
@@ -181,7 +194,15 @@ public:
         state.hostElevationScanBuffer.resize(returnsPerScan, 0);
         state.hostObjectIdScanBuffer.resize(returnsPerScan, 0);
         if (keepOnlyPositiveDistance)
-            state.hostIndexScanBuffer.resize(returnsPerScan, 0);
+        {
+            state.hostIndexShrunkBuffer.resize(returnsPerScan, 0);
+            state.hostPcShrunkBuffer.resize(returnsPerScan, make_float3(0.0f, 0.0f, 0.0f));
+            state.hostDistanceShrunkBuffer.resize(returnsPerScan, 0);
+            state.hostIntensityShrunkBuffer.resize(returnsPerScan, 0);
+            state.hostAzimuthShrunkBuffer.resize(returnsPerScan, 0);
+            state.hostElevationShrunkBuffer.resize(returnsPerScan, 0);
+            state.hostObjectIdShrunkBuffer.resize(returnsPerScan, 0);
+        }
 
         // these should be noop if buffers are not changed in size or cuda device.
         // state.pcScanBuffer.setDevice(cudaDeviceIndex);
@@ -252,15 +273,89 @@ public:
             cudaDeviceSynchronize();
         }
         db.outputs.exec() = db.inputs.exec();
-        db.outputs.dataPtr() = reinterpret_cast<uint64_t>(state.hostPcScanBuffer.data());
-        db.outputs.bufferSize() = state.hostPcScanBuffer.sizeInBytes();
-        db.outputs.intensityPtr() = reinterpret_cast<uint64_t>(state.hostIntensityScanBuffer.data());
-        db.outputs.distancePtr() = reinterpret_cast<uint64_t>(state.hostDistanceScanBuffer.data());
-        db.outputs.azimuthPtr() = reinterpret_cast<uint64_t>(state.hostAzimuthScanBuffer.data());
-        db.outputs.elevationPtr() = reinterpret_cast<uint64_t>(state.hostElevationScanBuffer.data());
-        db.outputs.objectIdPtr() = reinterpret_cast<uint64_t>(state.hostObjectIdScanBuffer.data());
         if (keepOnlyPositiveDistance)
-            db.outputs.indexPtr() = reinterpret_cast<uint64_t>(state.hostIndexScanBuffer.data());
+        {
+            auto tasking = carb::getCachedInterface<carb::tasking::ITasking>();
+            int outSize = 0;
+            const float* distScan = state.hostDistanceScanBuffer.data();
+            uint32_t* ib = state.hostIndexShrunkBuffer.data(); // index buffer
+// preform sequential stream compaction
+#if 1
+            const int rps = returnsPerScan;
+            for (int i = 0; i < rps; ++i) // starts as max size.
+            {
+                if (distScan[i] > 0.f)
+                {
+                    ib[outSize] = i;
+                    ++outSize;
+                }
+            }
+#else
+            std::atomic<int> outSizeAtomic(0);
+            int rps = returnsPerScan;
+            int tps = ticksPerScan;
+            int tickSize = numChannels * numEchos;
+            tasking->parallelFor(0, tps,
+                                 [&outSizeAtomic, tickSize, distScan, ib](int i)
+                                 {
+                                     int start_i = i * tickSize;
+                                     int end_i = (i + 1) * tickSize;
+                                     for (int j = start_i; j < end_i; ++j)
+                                     {
+                                         if (distScan[j] > 0.f)
+                                         {
+                                             ib[outSizeAtomic.fetch_add(1)] = j;
+                                         }
+                                     }
+                                 });
+            outSize = outSizeAtomic;
+#endif
+
+            db.outputs.returnsPerScan() = outSize;
+            db.outputs.bufferSize() = outSize * sizeof(float3);
+            db.outputs.width() = static_cast<uint32_t>(outSize);
+            db.outputs.indexPtr() = reinterpret_cast<uint64_t>(ib);
+// fill the others
+// need to wait for futures?
+#define _GATHER_OUTPUT(BUFF_NAME)                                                                                      \
+    tasking->addTask(carb::tasking::Priority::eDefault, {},                                                            \
+                     [ib, outSize, shrunkBuff = state.host##BUFF_NAME##ShrunkBuffer.data(),                            \
+                      scanBuffer = state.host##BUFF_NAME##ScanBuffer.data()]                                           \
+                     {                                                                                                 \
+                         for (int i = 0; i < outSize; ++i)                                                             \
+                         {                                                                                             \
+                             shrunkBuff[i] = scanBuffer[ib[i]];                                                        \
+                         }                                                                                             \
+                     })
+
+            _GATHER_OUTPUT(Pc);
+            _GATHER_OUTPUT(Distance);
+            _GATHER_OUTPUT(Intensity);
+            _GATHER_OUTPUT(Azimuth);
+            _GATHER_OUTPUT(Elevation);
+            _GATHER_OUTPUT(ObjectId);
+
+#undef _GATHER_OUTPUT
+
+            db.outputs.distancePtr() = reinterpret_cast<uint64_t>(state.hostDistanceShrunkBuffer.data());
+            db.outputs.dataPtr() = reinterpret_cast<uint64_t>(state.hostPcShrunkBuffer.data());
+            db.outputs.intensityPtr() = reinterpret_cast<uint64_t>(state.hostIntensityShrunkBuffer.data());
+            db.outputs.azimuthPtr() = reinterpret_cast<uint64_t>(state.hostAzimuthShrunkBuffer.data());
+            db.outputs.elevationPtr() = reinterpret_cast<uint64_t>(state.hostElevationShrunkBuffer.data());
+            db.outputs.objectIdPtr() = reinterpret_cast<uint64_t>(state.hostObjectIdShrunkBuffer.data());
+        }
+        else
+        {
+            db.outputs.bufferSize() = state.hostPcScanBuffer.sizeInBytes();
+            db.outputs.width() = static_cast<uint32_t>(state.hostPcScanBuffer.size());
+            db.outputs.distancePtr() = reinterpret_cast<uint64_t>(state.hostDistanceScanBuffer.data());
+
+            db.outputs.dataPtr() = reinterpret_cast<uint64_t>(state.hostPcScanBuffer.data());
+            db.outputs.intensityPtr() = reinterpret_cast<uint64_t>(state.hostIntensityScanBuffer.data());
+            db.outputs.azimuthPtr() = reinterpret_cast<uint64_t>(state.hostAzimuthScanBuffer.data());
+            db.outputs.elevationPtr() = reinterpret_cast<uint64_t>(state.hostElevationScanBuffer.data());
+            db.outputs.objectIdPtr() = reinterpret_cast<uint64_t>(state.hostObjectIdScanBuffer.data());
+        }
 
         return true;
     }

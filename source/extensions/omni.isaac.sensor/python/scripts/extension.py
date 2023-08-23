@@ -94,14 +94,6 @@ class Extension(omni.ext.IExt):
             )
             self.registered_template.append(template)
 
-        annotator_name = "RtxSensorCpu" + "IsaacCreateRTXLidarScanBuffer"
-        AnnotatorRegistry.register_annotator_from_node(
-            name=annotator_name,
-            input_rendervars=["RtxSensorCpu" + "ExportRaw"],
-            node_type_id="omni.isaac.sensor.IsaacCreateRTXLidarScanBuffer",
-        )
-        self.registered_annotators.append(annotator_name)
-
         ### Add sync gate
         template_name = "RtxSensorCpu" + "IsaacSimulationGate"
         if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
@@ -143,19 +135,21 @@ class Extension(omni.ext.IExt):
         )
         self.registered_annotators.append(annotator_name)
 
+        annotator_name = "RtxSensorCpu" + "IsaacCreateRTXLidarScanBuffer"
+        AnnotatorRegistry.register_annotator_from_node(
+            name=annotator_name,
+            input_rendervars=["RtxSensorCpu" + "ExportRaw"],
+            node_type_id="omni.isaac.sensor.IsaacCreateRTXLidarScanBuffer",
+            output_data_type=np.float32,
+            output_channels=3,
+        )
+        self.registered_annotators.append(annotator_name)
+
         ### RtxLidar Point Cloud Print Info Writer
         rep.writers.register_node_writer(
             name="Writer" + "IsaacPrintRTXLidarInfo",
             node_type_id="omni.isaac.sensor.IsaacPrintRTXLidarInfo",
             annotators=[omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu" + "ExportRaw")],
-            category="omni.isaac.sensor",
-        )
-        ### Add test one for benchmarks
-        rep.writers.register_node_writer(
-            name="Writer" + "IsaacPrintRTXLidarInfo" + "Test",
-            node_type_id="omni.isaac.sensor.IsaacPrintRTXLidarInfo",
-            annotators=[omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu" + "ExportRaw")],
-            testMode=True,
             category="omni.isaac.sensor",
         )
 
@@ -164,14 +158,6 @@ class Extension(omni.ext.IExt):
             name="Writer" + "IsaacPrintRTXRadarInfo",
             node_type_id="omni.isaac.sensor.IsaacPrintRTXRadarInfo",
             annotators=[omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu" + "ExportRaw")],
-            category="omni.isaac.sensor",
-        )
-        ### Add test one for benchmarks
-        rep.writers.register_node_writer(
-            name="Writer" + "IsaacPrintRTXRadarInfo" + "Test",
-            node_type_id="omni.isaac.sensor.IsaacPrintRTXRadarInfo",
-            annotators=[omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu" + "ExportRaw")],
-            testMode=True,
             category="omni.isaac.sensor",
         )
 

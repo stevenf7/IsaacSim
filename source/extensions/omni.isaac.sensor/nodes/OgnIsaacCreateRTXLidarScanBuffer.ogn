@@ -6,7 +6,7 @@
             "This node creates a full scan buffer for RTX Lidar sensor."
         ],
         "metadata": {
-            "uiName": "Isaac create RTX Lidar 360 Point buffer"
+            "uiName": "Isaac Create RTX Lidar Scan Buffer"
         },
         "categoryDefinitions": "config/CategoryDefinition.json",
         "categories": "isaacSensor",
@@ -16,7 +16,7 @@
                 "type": "execution",
                 "description": "The input execution port"
             },
-            "dataPtr": {
+            "dataPtr":{
                 "type": "uint64",
                 "description": "Pointer to LiDAR render result.",
                 "uiName": "Data Pointer"
@@ -60,7 +60,7 @@
             "dataPtr": {
                 "type": "uint64",
                 "description": "Pointer to LiDAR render result.",
-                "uiName": "Data Pointer"
+                "uiName": "Point Cloud Data"
             },
             "cudaDeviceIndex": {
                 "type": "int",
@@ -118,7 +118,18 @@
             "renderProductPath": {
                 "type": "token",
                 "description": "Config is gotten from this"
+            },
+            "height":{
+                "type": "uint",
+                "description": "Height of point cloud buffer, will always return 1",
+                "default": 1
+            },
+            "width":{
+                "type": "uint",
+                "description": "3 x Width or number of points in point cloud buffer",
+                "default": 0
             }
+
         }
     }
 }
