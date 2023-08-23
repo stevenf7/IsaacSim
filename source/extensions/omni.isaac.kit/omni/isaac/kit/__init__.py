@@ -30,6 +30,6 @@ else:
         carb.log_warn(
             "Interactive python shell detected but ISAAC_JUPYTER_KERNEL was not set. Problems with asyncio may occur"
         )
-    except:
+    except Exception:
         # We are probably not in an interactive shell
         pass

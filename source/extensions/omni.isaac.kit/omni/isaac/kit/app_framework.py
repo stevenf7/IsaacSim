@@ -35,9 +35,8 @@ class AppFramework:
         argv.insert(0, os.path.abspath(__file__))
 
         # allow root so apps don't fail when running in docker/root environments
-        if sys.platform.startswith("linux"):
-            if os.geteuid() == 0 and "--allow-root" not in argv:
-                argv.append("--allow-root")
+        if sys.platform.startswith("linux") and os.geteuid() == 0 and "--allow-root" not in argv:
+            argv.append("--allow-root")
         self._app.startup(name, app_root, argv)
 
     def update(self) -> None:
@@ -45,7 +44,6 @@ class AppFramework:
         Convenience function to step the application forward one frame
         """
         self._app.update()
-        return
 
     def close(self):
         """Close the running Omniverse Toolkit."""
