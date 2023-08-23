@@ -83,7 +83,6 @@ class IsaacSensorMenu:
 
         config_dir_path = get_extension_path(ext_id) + "/data/lidar_configs"
         config_dirs = [x for x in os.listdir(config_dir_path) if os.path.isdir(config_dir_path + "/" + x)]
-        print(config_dirs)
         config_dirs.sort()
 
         for d in config_dirs:
