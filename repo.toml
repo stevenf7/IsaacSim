@@ -846,6 +846,7 @@ override = [
   "omni.kit.livestream.webrtc-2.2.0",
   "omni.warp-0.10.1",
   "omni.warp.core-0.10.1",
+  "omni.warehouse_creator-0.3.4",
 ]
 
 output_file = "${root}/source/apps/omni.isaac.sim.extscache.kit"
