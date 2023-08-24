@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0] - 2023-08-22
+### Added
+- Base RLTask and domain randomization utils are now part of omni.isaac.gym
+
+### Changed
+- Use async calls for pre and post physics steps in MT workflow
+
 ## [0.7.1] - 2023-08-18
 ### Changed
 - Allow passing app file as argument to VecEnvBase
