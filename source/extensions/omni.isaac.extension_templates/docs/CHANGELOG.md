@@ -1,4 +1,8 @@
 # Changelog
+## [1.4.1] - 2023-08-24
+### Fixed
+- Fixed bug in Template generator on Windows where user could specify a file path ending in "/".
+
 ## [1.4.0] - 2023-08-15
 ### Fixed
 - Fixed bug in Loaded Scenario Template where XFormPrim no longer accepts an Sdf.Path

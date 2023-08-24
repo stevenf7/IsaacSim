@@ -129,7 +129,7 @@ class Extension(omni.ext.IExt):
                     path = self._models["configuration_tooling_path"].get_value_as_string()
                     title = self._models["configuration_tooling_title"].get_value_as_string()
 
-                    if path != "" and path[-1] != os.sep and title.strip(" ") != "":
+                    if path != "" and path[-1] != "/" and path[-1] != "\\" and title.strip(" ") != "":
                         self._models["configuration_tooling_generate"].enabled = True
                         self.write_status("Ready to Generate Configuration Tooling Extension Template")
                     else:
@@ -193,7 +193,7 @@ class Extension(omni.ext.IExt):
                     path = self._models["loaded_scenario_path"].get_value_as_string()
                     title = self._models["loaded_scenario_title"].get_value_as_string()
 
-                    if path != "" and path[-1] != os.sep and title.strip(" ") != "":
+                    if path != "" and path[-1] != "/" and path[-1] != "\\" and title.strip(" ") != "":
                         self._models["loaded_scenario_generate"].enabled = True
                         self.write_status("Ready to Generate Loaded Scenario Extension Template")
                     else:
@@ -259,7 +259,8 @@ class Extension(omni.ext.IExt):
 
                     if (
                         path != ""
-                        and path[-1] != os.sep
+                        and path[-1] != "/"
+                        and path[-1] != "\\"
                         and title.strip(" ") != ""
                         and not ("-" in title or "\\" in title or '"' in title)
                     ):
