@@ -202,7 +202,7 @@ class VecEnvMT(VecEnvBase):
                     actions = self.get_actions()
                     if actions is None:
                         continue
-                    self._task.pre_physics_step(actions)
+                    await self._task.pre_physics_step_async(actions)
                     self._world._physics_sim_view.flush()
                     for _ in range(self._task.control_frequency_inv - 1):
                         self._world._physics_context._step(current_time=self._world.current_time)
@@ -215,7 +215,7 @@ class VecEnvMT(VecEnvBase):
                         self._world._physics_context._step(current_time=self._world.current_time)
                     self.sim_frame_count = (self.sim_frame_count + 1) % update_freq
 
-                    obs, rew, reset, extras = self._task.post_physics_step()
+                    obs, rew, reset, extras = await self._task.post_physics_step_async()
                     states = self._task.get_states()
                     data = self._collect_data(obs, rew, reset, extras, states)
                     self.send_data(data)
