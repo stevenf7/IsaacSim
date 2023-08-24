@@ -1,4 +1,8 @@
 # Changelog
+## [0.13.2] - 2023-08-23
+### Added
+- OgnGXFPublishAckermannDynamicState, OgnGXFSubscribeAckermannControl nodes to interface with
+  GXF application configured for Ackermann steering.
 ## [0.13.1] - 2023-08-15
 ### Changed
 - Switch from bundle to target for the prim inputs for omnigraph nodes
