@@ -178,7 +178,40 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
     def _setup_world(self):
         """Populate scene with assets and prepare for synthetic data generation."""
-        # Setup camera in simulation
+        self._setup_camera()
+
+        rep.settings.set_render_rtx_realtime()
+
+        # Allow flying distractors to float
+        world.get_physics_context().set_gravity(0.0)
+
+        collision_box = self._setup_collision_box()
+
+        # Render a frame to ensure the Replicator Camera's underlying USD attributes are populated.
+        world.render()
+
+        world.scene.add(collision_box)
+
+        self._setup_distractors(collision_box)
+
+        self._setup_train_objects()
+
+        if not self.test:
+            self._setup_randomizers()
+
+        while is_stage_loading():
+            kit.app.update()
+
+        # setup writer
+        self.writer_helper.register_pose_annotator(config_data=config_data)
+        self.writer = self.writer_helper.setup_writer(config_data=config_data, writer_config=self.writer_config)
+        self.writer.attach([self.render_product])
+
+        world.play()
+
+        self.dome_distractors.set_visible(False)
+
+    def _setup_camera(self):
         focal_length = config_data["HORIZONTAL_APERTURE"] * config_data["F_X"] / config_data["WIDTH"]
 
         # Setup camera and render product
@@ -204,14 +237,11 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
         self.rig = XFormPrim(prim_path=camera_rig_path)
 
-        rep.settings.set_render_rtx_realtime()
-
-        # Allow flying distractors to float
-        world.get_physics_context().set_gravity(0.0)
-
+    def _setup_collision_box(self):
         # Create a collision box in view of the camera, allowing distractors placed in the box to be within
         # [MIN_DISTANCE, MAX_DISTANCE] of the camera. The collision box will be placed in front of the camera,
         # regardless of CAMERA_ROTATION or CAMERA_RIG_ROTATION.
+
         self.fov_x = 2 * math.atan(config_data["WIDTH"] / (2 * config_data["F_X"]))
         self.fov_y = 2 * math.atan(config_data["HEIGHT"] / (2 * config_data["F_Y"]))
         theta_x = self.fov_x / 2.0
@@ -235,16 +265,13 @@ class RandomScenario(torch.utils.data.IterableDataset):
         collision_box_rotation_from_camera = np.array([0, 0, 0])
         collision_box_orientation_from_camera = euler_angles_to_quat(collision_box_rotation_from_camera, degrees=True)
 
-        # Render a frame to ensure the Replicator Camera's underlying USD attributes are populated.
-        world.render()
-
         # Get the desired pose of the collision box from a pose defined locally with respect to the camera.
         camera_prim = world.stage.GetPrimAtPath(self.camera_path)
         collision_box_center, collision_box_orientation = get_world_pose_from_relative(
             camera_prim, collision_box_translation_from_camera, collision_box_orientation_from_camera
         )
 
-        collision_box = CollisionBox(
+        return CollisionBox(
             collision_box_path,
             collision_box_name,
             position=collision_box_center,
@@ -253,8 +280,8 @@ class RandomScenario(torch.utils.data.IterableDataset):
             height=collision_box_height,
             depth=collision_box_depth,
         )
-        world.scene.add(collision_box)
 
+    def _setup_distractors(self, collision_box):
         # List of distractor objects should not contain objects that are being used for training
         train_objects = [object["part_name"] for object in OBJECTS_TO_GENERATE]
         distractor_mesh_filenames = [
@@ -327,22 +354,6 @@ class RandomScenario(torch.utils.data.IterableDataset):
                 fraction_glass=config_data["DOME_FRACTION_GLASS"],
             )
             self.dome_distractors.add(dome_object_set)
-
-        self._setup_train_objects()
-
-        if not self.test:
-            self._setup_randomizers()
-
-        while is_stage_loading():
-            kit.app.update()
-
-        self.writer_helper.register_pose_annotator(config_data=config_data)
-        self.writer = self.writer_helper.setup_writer(config_data=config_data, writer_config=self.writer_config)
-        self.writer.attach([self.render_product])
-
-        world.play()
-
-        self.dome_distractors.set_visible(False)
 
     def _setup_train_objects(self):
         # Add the part to train the network on
