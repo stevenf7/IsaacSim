@@ -70,6 +70,8 @@ CONFIG_FILE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), CONF
 with open(CONFIG_FILE_PATH) as f:
     config_data = yaml.full_load(f)
 
+OBJECTS_TO_GENERATE = config_data["OBJECTS_TO_GENERATE"]
+
 kit = SimulationApp(launch_config=config_data["CONFIG"])
 
 import math
@@ -253,10 +255,16 @@ class RandomScenario(torch.utils.data.IterableDataset):
         )
         world.scene.add(collision_box)
 
-        usd_path_list = [
-            f"{self.ycb_asset_path}{usd_filename_prefix}.usd" for usd_filename_prefix in config_data["MESH_FILENAMES"]
+        # List of distractor objects should not contain objects that are being used for training
+        train_objects = [object["part_name"] for object in OBJECTS_TO_GENERATE]
+        distractor_mesh_filenames = [
+            file_name for file_name in config_data["MESH_FILENAMES"] if file_name not in train_objects
         ]
-        mesh_list = [f"_{usd_filename_prefix[1:]}" for usd_filename_prefix in config_data["MESH_FILENAMES"]]
+
+        usd_path_list = [
+            f"{self.ycb_asset_path}{usd_filename_prefix}.usd" for usd_filename_prefix in distractor_mesh_filenames
+        ]
+        mesh_list = [f"_{usd_filename_prefix[1:]}" for usd_filename_prefix in distractor_mesh_filenames]
 
         if self.num_mesh > 0:
             # Distractors for the MESH dataset
@@ -320,38 +328,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
             )
             self.dome_distractors.add(dome_object_set)
 
-        # Add the part to train the network on
-        part_name = "003_cracker_box"
-        ref_path = self.asset_path + part_name + ".usd"
-        prim_type = f"_{part_name[1:]}"
-        path = "/World/" + prim_type
-        mesh_path = path + "/" + prim_type
-        name = "train_part"
-
-        self.train_part_mesh_path_to_prim_path_map[mesh_path] = path
-
-        train_part = DynamicObject(
-            usd_path=ref_path,
-            prim_path=path,
-            mesh_path=mesh_path,
-            name=name,
-            position=np.array([0.0, 0.0, 0.0]),
-            scale=np.array(config_data["OBJECT_SCALE"]),
-            mass=1.0,
-        )
-
-        train_part.prim.GetAttribute("physics:rigidBodyEnabled").Set(False)
-
-        self.train_parts.append(train_part)
-
-        # Add semantic information
-        mesh_prim = world.stage.GetPrimAtPath(mesh_path)
-        add_update_semantics(mesh_prim, prim_type)
-
-        if self.writer_helper == YCBVideoWriter:
-            # Save the vertices of the part in '.xyz' format. This will be used in one of PoseCNN's loss functions
-            coord_prim = world.stage.GetPrimAtPath(path)
-            self.writer_helper.save_mesh_vertices(mesh_prim, coord_prim, prim_type, self._output_folder)
+        self._setup_train_objects()
 
         if not self.test:
             self._setup_randomizers()
@@ -366,6 +343,50 @@ class RandomScenario(torch.utils.data.IterableDataset):
         world.play()
 
         self.dome_distractors.set_visible(False)
+
+    def _setup_train_objects(self):
+        # Add the part to train the network on
+        train_part_idx = 0
+        for object in OBJECTS_TO_GENERATE:
+            for prim_idx in range(object["num"]):
+                part_name = object["part_name"]
+                ref_path = self.asset_path + part_name + ".usd"
+                prim_type = object["prim_type"]
+
+                if self.writer_helper == YCBVideoWriter and prim_type not in config_data["CLASS_NAME_TO_INDEX"]:
+                    raise Exception(f"Train object {prim_type} is not in CLASS_NAME_TO_INDEX in config.yaml.")
+
+                path = "/World/" + prim_type + f"_{prim_idx}"
+
+                mesh_path = path + "/" + prim_type
+                name = f"train_part_{train_part_idx}"
+
+                self.train_part_mesh_path_to_prim_path_map[mesh_path] = path
+
+                train_part = DynamicObject(
+                    usd_path=ref_path,
+                    prim_path=path,
+                    mesh_path=mesh_path,
+                    name=name,
+                    position=np.array([0.0, 0.0, 0.0]),
+                    scale=config_data["OBJECT_SCALE"],
+                    mass=1.0,
+                )
+
+                train_part.prim.GetAttribute("physics:rigidBodyEnabled").Set(True)
+
+                self.train_parts.append(train_part)
+
+                # Add semantic information
+                mesh_prim = world.stage.GetPrimAtPath(mesh_path)
+                add_update_semantics(mesh_prim, prim_type)
+
+                train_part_idx += 1
+
+                if prim_idx == 0 and self.writer_helper == YCBVideoWriter:
+                    # Save the vertices of the part in '.xyz' format. This will be used in one of PoseCNN's loss functions
+                    coord_prim = world.stage.GetPrimAtPath(path)
+                    self.writer_helper.save_mesh_vertices(mesh_prim, coord_prim, prim_type, self._output_folder)
 
     def _setup_randomizers(self):
         """Add domain randomization with Replicator Randomizers"""

@@ -9,6 +9,13 @@ CONFIG:
 # Index of part in array of classes in PoseCNN training
 CLASS_NAME_TO_INDEX:
   _03_cracker_box: 1
+  _35_power_drill: 2
+
+# prim_type is determined by the usd file. 
+# To determine, open the usd file in Isaac Sim and see the prim path. If you load it in /World, the path will be /World/<prim_type>
+OBJECTS_TO_GENERATE: 
+- { part_name: 003_cracker_box, num: 2, prim_type: _03_cracker_box } 
+- { part_name: 035_power_drill, num: 1, prim_type: _35_power_drill }
 
 # Maximum force component to apply to objects to keep them in motion
 FORCE_RANGE: 30
@@ -85,11 +92,11 @@ MESH_FILENAMES:
 - 005_tomato_soup_can
 - 006_mustard_bottle
 - 007_tuna_fish_can
-- '008_pudding_box'
-- '009_gelatin_box'
+- 008_pudding_box
+- 009_gelatin_box
 - 010_potted_meat_can
 - 011_banana
-- '019_pitcher_base'
+- 019_pitcher_base
 - 021_bleach_cleanser
 - 024_bowl
 - 025_mug
