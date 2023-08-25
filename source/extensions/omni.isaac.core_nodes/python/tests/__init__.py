@@ -6,8 +6,8 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-
 # scan_for_test_modules = True
+from .test_annotators import *
 from .test_articulation_controller import *
 from .test_compute_odometry import *
 from .test_core_nodes import *
