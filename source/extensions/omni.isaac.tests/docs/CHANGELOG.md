@@ -1,3 +1,8 @@
+## [1.11.0] 2023-08-24
+### Added
+- test_randomizer_snippets.py containing replicator alternative randomizer examples from the docs 
+- Missing utility snippet from the docs
+
 # Changelog
 ## [1.10.4] - 2023-08-21
 ### Fixed
