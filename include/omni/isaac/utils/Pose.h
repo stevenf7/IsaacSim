@@ -49,13 +49,24 @@ static usdrt::GfMatrix4d computeWorldXformNoCache(pxr::UsdStageRefPtr usdStage,
 
         if (usdrtXformable.HasWorldXform())
         {
-            usdrt::GfVec3d worldPos{};
-            usdrt::GfQuatf worldOrient{};
-            usdrt::GfVec3f worldScale{};
-            usdrtXformable.GetWorldPositionAttr().Get(&worldPos, usdrt::UsdTimeCode(timecode.GetValue()));
-            usdrtXformable.GetWorldOrientationAttr().Get(&worldOrient, usdrt::UsdTimeCode(timecode.GetValue()));
-            usdrtXformable.GetWorldScaleAttr().Get(&worldScale, usdrt::UsdTimeCode(timecode.GetValue()));
-
+            usdrt::GfVec3d worldPos(0);
+            usdrt::GfQuatf worldOrient(1);
+            usdrt::GfVec3f worldScale(1);
+            auto worldPositionAttribute = usdrtXformable.GetWorldPositionAttr();
+            if (worldPositionAttribute.HasValue())
+            {
+                usdrtXformable.GetWorldPositionAttr().Get(&worldPos, usdrt::UsdTimeCode(timecode.GetValue()));
+            }
+            auto worldOrientationAttribute = usdrtXformable.GetWorldOrientationAttr();
+            if (worldOrientationAttribute.HasValue())
+            {
+                usdrtXformable.GetWorldOrientationAttr().Get(&worldOrient, usdrt::UsdTimeCode(timecode.GetValue()));
+            }
+            auto worldScaleAttribute = usdrtXformable.GetWorldScaleAttr();
+            if (worldScaleAttribute.HasValue())
+            {
+                usdrtXformable.GetWorldScaleAttr().Get(&worldScale, usdrt::UsdTimeCode(timecode.GetValue()));
+            }
             usdrt::GfMatrix4d rot, scale, result{};
             scale.SetScale(usdrt::GfVec3d(worldScale));
             rot.SetRotate(usdrt::GfQuatd(worldOrient));

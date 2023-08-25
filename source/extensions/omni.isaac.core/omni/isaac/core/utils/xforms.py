@@ -89,8 +89,14 @@ def _get_world_pose_transform_w_scale(prim_path):
     xformable_prim = usdrt.Rt.Xformable(fabric_prim)
     if xformable_prim.HasWorldXform():
         world_pos = xformable_prim.GetWorldPositionAttr().Get(usdrt.Usd.TimeCode.Default())
+        if world_pos is None:
+            world_pos = usdrt.Gf.Vec3d(0)
         world_orientation = xformable_prim.GetWorldOrientationAttr().Get(usdrt.Usd.TimeCode.Default())
+        if world_orientation is None:
+            world_orientation = usdrt.Gf.Quatf(1)
         world_scale = xformable_prim.GetWorldScaleAttr().Get(usdrt.Usd.TimeCode.Default())
+        if world_scale is None:
+            world_scale = usdrt.Gf.Vec3d(1)
         scale = usdrt.Gf.Matrix4d()
         rot = usdrt.Gf.Matrix4d()
         scale.SetScale(usdrt.Gf.Vec3d(world_scale))
