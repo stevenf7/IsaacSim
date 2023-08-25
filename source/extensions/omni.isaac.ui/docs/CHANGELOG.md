@@ -1,4 +1,8 @@
 # Changelog
+## [0.13.2] - 2023-08-22
+### Fixed
+- Fixed possible errors in UI Plotting Tool where x_min is set arbitrarily close to x_max beyond what was a hard-coded constant.
+
 ## [0.13.1] - 2023-08-22
 ### Fixed
 - Fixed possible errors in UI Plotting Tool that can be caused by spamming updates to violate x_max > x_min on X axis.

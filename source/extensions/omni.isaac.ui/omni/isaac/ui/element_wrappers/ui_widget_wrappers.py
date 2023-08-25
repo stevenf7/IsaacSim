@@ -1974,11 +1974,11 @@ class XYPlot(UIWidgetWrapper):
         if x_max is None:
             x_max = self._get_ragged_data_max(self._x_data)
 
-        if x_min >= x_max:
+        if x_max <= x_min:
             return [[0, 1]] * len(self._y_data), [[]] * len(self._y_data), 0, 1
 
         spacing = (x_max - x_min) / self._num_points_per_plot
-        x_val_range = np.arange(x_min, x_max + spacing - 0.00001, spacing)
+        x_val_range = np.arange(x_min, x_max + 0.5 * spacing, spacing)
 
         y_vals = []
         x_fracs = []
