@@ -18,7 +18,7 @@ from omni.isaac.core.objects.ground_plane import GroundPlane
 from omni.isaac.core.robots import Robot
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import get_current_stage, open_stage_async
-from omni.isaac.core.utils.viewports import get_viewport_names
+from omni.isaac.core.utils.viewports import set_camera_view
 from omni.kit.viewport.utility import get_active_viewport
 from pxr import Sdf, UsdLux
 
@@ -37,6 +37,12 @@ class TestAnnotators(omni.kit.test.AsyncTestCase):
         action_registry = omni.kit.actions.core.get_action_registry()
         self._action = action_registry.get_action("omni.kit.viewport.actions", "toggle_grid_visibility")
         self._action.execute(viewport_api=self._viewport_api, visible=False)
+        self._stage = omni.usd.get_context().get_stage()
+        self._timeline = omni.timeline.get_timeline_interface()
+        self._stage.SetTimeCodesPerSecond(60)
+        self._timeline.set_target_framerate(60)
+        set_camera_view(eye=[-6, -15.5, 6.5], target=[-6, 10.5, -1], camera_prim_path="/OmniverseKit_Persp")
+        await omni.kit.app.get_app().next_update_async()
 
     # ----------------------------------------------------------------------
     async def tearDown(self):
@@ -60,14 +66,9 @@ class TestAnnotators(omni.kit.test.AsyncTestCase):
         annotator.attach([self._render_product_path])
 
         self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
+        await omni.syntheticdata.sensors.next_render_simulation_async(self._render_product_path, 1)
         data = annotator.get_data()
-        self.assertAlmostEqual(data["simulationTime"], 0.1666666753590107)
+        self.assertAlmostEqual(data["simulationTime"], 0.03333333507180214)
         # print(data)
         annotator.detach()
 
@@ -96,12 +97,7 @@ class TestAnnotators(omni.kit.test.AsyncTestCase):
         annotator.attach([self._render_product_path])
 
         self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
+        await omni.syntheticdata.sensors.next_render_simulation_async(self._render_product_path, 1)
         data = annotator.get_data()
         self.assertTrue(np.all(data["data"] == 255))
         annotator.detach()
@@ -114,12 +110,7 @@ class TestAnnotators(omni.kit.test.AsyncTestCase):
         annotator.attach([self._render_product_path])
 
         self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
+        await omni.syntheticdata.sensors.next_render_simulation_async(self._render_product_path, 1)
         data = annotator.get_data()
         self.assertTrue(np.all(np.linalg.norm(data["data"], axis=1) > 0))
 

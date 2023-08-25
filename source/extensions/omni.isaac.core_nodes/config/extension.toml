@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.4.1"
+version = "1.4.2"
 category = "Simulation"
 title = "Isaac Sim Core OmniGraph Nodes"
 description = "Core"
@@ -37,6 +37,11 @@ include = ["*.ogn", "*.py"]
 exclude = ["Ogn*Database.py"]
 
 [[test]]
+
+dependencies = [
+    "omni.kit.viewport.actions"
+]
+
 stdoutFailPatterns.exclude = [
     "*Invalid Bundle object in Py_Bundle in getPrimPath*", # Per node tests won't have valid bundles
 ]

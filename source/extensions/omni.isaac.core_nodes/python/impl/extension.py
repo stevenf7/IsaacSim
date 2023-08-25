@@ -87,7 +87,7 @@ class Extension(omni.ext.IExt):
         annotator_name = "IsaacReadCameraInfo"
         AnnotatorRegistry.register_annotator_from_node(
             name=annotator_name,
-            input_rendervars=["RenderProductCameraPrimPath"],
+            input_rendervars=["PostProcessDispatch"],
             node_type_id="omni.isaac.core_nodes.IsaacReadCameraInfo",
         )
         self.registered_annotators.append(annotator_name)
@@ -218,12 +218,6 @@ class Extension(omni.ext.IExt):
             input_rendervars=[
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                     rv + "Ptr",
-                    attributes_mapping={
-                        "outputs:dataPtr": "inputs:dataPtr",
-                        "outputs:width": "inputs:width",
-                        "outputs:height": "inputs:height",
-                        "outputs:format": "inputs:format",
-                    },
                 ),
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                     "IsaacReadCameraInfo",
