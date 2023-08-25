@@ -115,8 +115,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         return
 
     async def test_projection(self):
-        for i in range(100):
-            await update_stage_async()
+        await omni.syntheticdata.sensors.next_render_simulation_async(self.camera.get_render_product_path(), 100)
         points_2d = self.camera.get_image_coords_from_world_points(
             np.array([self.cube_3.get_world_pose()[0], self.cube_2.get_world_pose()[0]])
         )
@@ -130,22 +129,16 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         return
 
     async def test_data_acquisition(self):
-        for i in range(100):
-            await update_stage_async()
+        await omni.syntheticdata.sensors.next_render_simulation_async(self.camera.get_render_product_path(), 1)
         self.camera.resume()
         for annotator in self.camera.supported_annotators:
             getattr(self.camera, "add_{}_to_frame".format(annotator))()
             # frequency is set to 20, rendering rate is set to 120, so do 6 updates to make sure always have a frame
-            await update_stage_async()
-            await update_stage_async()
-            await update_stage_async()
-            await update_stage_async()
-            await update_stage_async()
-            await update_stage_async()
+            await omni.syntheticdata.sensors.next_render_simulation_async(self.camera.get_render_product_path(), 10)
             data = self.camera.get_current_frame()
             self.assertTrue(len(data[annotator]) > 0, f"{annotator}")
             getattr(self.camera, "remove_{}_from_frame".format(annotator))()
-            await update_stage_async()
+            await omni.syntheticdata.sensors.next_render_simulation_async(self.camera.get_render_product_path(), 1)
             data = self.camera.get_current_frame()
             self.assertTrue(annotator not in data.keys(), f"{annotator}")
         return
@@ -223,12 +216,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         self.viewport_camera.add_pointcloud_to_frame()
         self.viewport_camera.initialize()
 
-        await update_stage_async()
-        await update_stage_async()
-        await update_stage_async()
-        await update_stage_async()
-        await update_stage_async()
-        await update_stage_async()
+        await omni.syntheticdata.sensors.next_render_simulation_async(self.viewport_camera.get_render_product_path(), 1)
         self.assertEqual(self.viewport_camera.get_rgba().size, 256 * 256 * 4)
         self.assertEqual(self.viewport_camera.get_rgb().size, 256 * 256 * 3)
         self.assertEqual(self.viewport_camera.get_depth().size, 256 * 256 * 1)
