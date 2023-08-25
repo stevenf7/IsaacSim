@@ -396,3 +396,35 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
         prim_range = prim_bbox.ComputeAlignedRange()
         prim_size = prim_range.GetSize()
         pass
+
+    async def test_apply_semantics_on_entire_stage(self):
+        import omni.kit.commands
+
+        omni.kit.commands.execute("CreateMeshPrimCommand", prim_type="Cone")
+
+        ### Code Start
+        import omni.usd
+        from omni.isaac.core.utils.semantics import add_update_semantics
+
+        def remove_prefix(name, prefix):
+            if name.startswith(prefix):
+                return name[len(prefix) :]
+            return name
+
+        def remove_numerical_suffix(name):
+            suffix = name.split("_")[-1]
+            if suffix.isnumeric():
+                return name[: -len(suffix) - 1]
+            return name
+
+        def remove_underscores(name):
+            return name.replace("_", "")
+
+        stage = omni.usd.get_context().get_stage()
+        for prim in stage.Traverse():
+            if prim.GetTypeName() == "Mesh":
+                label = str(prim.GetPrimPath()).split("/")[-1]
+                label = remove_prefix(label, "SM_")
+                label = remove_numerical_suffix(label)
+                label = remove_underscores(label)
+                add_update_semantics(prim, semantic_label=label, type_label="class")
