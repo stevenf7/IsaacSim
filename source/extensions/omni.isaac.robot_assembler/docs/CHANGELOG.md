@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.2] - 2023-08-11
+### Added
+- Added index.rst for Sphinx autodoc
+
 ## [1.1.1] - 2023-08-08
 ### Fixed
 - Switch from ui.Window to ScrollingWindow wrapper for extension because scrolling was broken

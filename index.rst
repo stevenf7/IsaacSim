@@ -44,6 +44,7 @@ Isaac Sim: Extensions API
    source/extensions/omni.isaac.universal_robots/docs/index
    source/extensions/omni.isaac.quadruped/docs/index
    source/extensions/omni.isaac.manipulators/docs/index
+   source/extensions/omni.isaac.robot_assembler/docs/index
 
 .. toctree::
    :maxdepth: 1

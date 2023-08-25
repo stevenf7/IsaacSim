@@ -32,19 +32,49 @@ class AssembledBodies:
 
     @property
     def base_path(self) -> str:
+        """Prim path of the base body
+
+        Returns:
+            str: Prim path of the base body
+        """
         return self._base_path
 
     @property
     def attach_path(self) -> str:
+        """Prim path of the floating (attach) body
+
+        Returns:
+            str: Prim path of the floating (attach) body
+        """
         return self._attach_path
 
     @property
     def fixed_joint(self) -> UsdPhysics.FixedJoint:
+        """USD fixed joint linking base and floating body together
+
+        Returns:
+            UsdPhysics.FixedJoint: USD fixed joint linking base and floating body together
+        """
         return self._fixed_joint
 
     @property
     def root_joints(self) -> List[UsdPhysics.Joint]:
+        """Root joints that tie the floating body to the USD stage.  These are disabled in an assembled body,
+        and will be re-enabled by the disassemble() function.
+
+        Returns:
+            List[UsdPhysics.Joint]: Root joints that tie the floating body to the USD stage.
+        """
         return self._root_joints
+
+    @property
+    def collision_mask(self) -> Usd.Relationship:
+        """A Usd Relationship masking collisions between the two assembled bodies
+
+        Returns:
+            Usd.Relationship: A Usd Relationship masking collisions between the two assembled bodies
+        """
+        return self._collision_mask
 
     def is_assembled(self) -> bool:
         """The composed robots are currently composed together.  I.e. the disassemble() function has not been called.
@@ -55,7 +85,7 @@ class AssembledBodies:
         return self._is_assembled
 
     def disassemble(self):
-        """disassemble composed robots.  This can only be done one time, and it will result in all non-trivial functions in this class returning immediately."""
+        """Disassemble composed robots.  This can only be done one time, and it will result in all non-trivial functions in this class returning immediately."""
         if not self.is_assembled():
             carb.log_warn("Cannot disassemble a robot that has already been disassembled")
             return
@@ -94,14 +124,14 @@ class AssembledBodies:
         return translation, orientation
 
     def set_fixed_joint_transform(self, translation: np.array, orientation: np.array):
-        """Set the transform between mount frames in the composed robot.
+        """Set the transform between mount frames in the composed body.
 
         Args:
-            translation (np.array): Local translation relative to mount frame on base robot.
-            orientation (np.array): Local quaternion orientation relative to mount frame on base robot.
+            translation (np.array): Local translation relative to mount frame on base body.
+            orientation (np.array): Local quaternion orientation relative to mount frame on base body.
         """
         if not self.is_assembled():
-            carb.log_warn("Fixed joint no longer exists in composed robot.  Robots have been disassembled.")
+            carb.log_warn("Fixed joint no longer exists in composed robot.  Rigid Bodies have been disassembled.")
             return
         fixed_joint = self.fixed_joint
         fixed_joint.GetLocalPos0Attr().Set(Gf.Vec3f(*translation.astype(float)))
@@ -143,23 +173,49 @@ class AssembledRobot:
 
     @property
     def base_path(self) -> str:
+        """Prim path of the base body
+
+        Returns:
+            str: Prim path of the base body
+        """
         return self.assembled_robots.base_path
 
     @property
     def attach_path(self) -> str:
+        """Prim path of the floating (attach) body
+
+        Returns:
+            str: Prim path of the floating (attach) body
+        """
         return self.assembled_robots.attach_path
 
     @property
     def fixed_joint(self) -> UsdPhysics.FixedJoint:
+        """USD fixed joint linking base and floating body together
+
+        Returns:
+            UsdPhysics.FixedJoint: USD fixed joint linking base and floating body together
+        """
         return self.assembled_robots.fixed_joint
 
     @property
     def root_joints(self) -> List[UsdPhysics.Joint]:
+        """Root joints that tie the floating body to the USD stage.  These are disabled in an assembled body,
+        and will be re-enabled by the disassemble() function.
+
+        Returns:
+            List[UsdPhysics.Joint]: Root joints that tie the floating body to the USD stage.
+        """
         return self.assembled_robots.root_joints
 
     @property
-    def collision_group_paths(self) -> List[str]:
-        return self.assembled_robots.collision_group_paths
+    def collision_mask(self) -> Usd.Relationship:
+        """A Usd Relationship masking collisions between the two assembled robots
+
+        Returns:
+            Usd.Relationship: A Usd Relationship masking collisions between the two assembled robots
+        """
+        return self.assembled_robots.collision_mask
 
     def is_assembled(self) -> bool:
         """The composed robots are currently composed together.  I.e. the disassemble() function has not been called.
@@ -170,7 +226,7 @@ class AssembledRobot:
         return self.assembled_robots.is_assembled()
 
     def disassemble(self):
-        """disassemble composed robots.  This can only be done one time, and it will result in all non-trivial functions in this class returning immediately."""
+        """Disassemble composed robots.  This can only be done one time, and it will result in all non-trivial functions in this class returning immediately."""
         if not self.assembled_robots.is_assembled():
             carb.log_warn("Cannot disassemble a robot that has already been disassembled")
             return
@@ -183,9 +239,20 @@ class AssembledRobot:
         self.assembled_robots.disassemble()
 
     def get_fixed_joint_transform(self):
+        """Get the transform between mount frames in composed robot.
+
+        Returns:
+            Tuple[np.array, np.array]: translation with shape (3,) and orientation with shape (4,)
+        """
         return self.assembled_robots.get_fixed_joint_transform()
 
     def set_fixed_joint_transform(self, translation: np.array, orientation: np.array):
+        """Set the transform between mount frames in the composed robot.
+
+        Args:
+            translation (np.array): Local translation relative to mount frame on base robot.
+            orientation (np.array): Local quaternion orientation relative to mount frame on base robot.
+        """
         self.assembled_robots.set_fixed_joint_transform(translation, orientation)
 
 
@@ -193,7 +260,16 @@ class RobotAssembler:
     def __init__(self):
         self._timeline = omni.timeline.get_timeline_interface()
 
-    def mask_collisions(self, prim_path_a, prim_path_b):
+    def mask_collisions(self, prim_path_a: str, prim_path_b: str) -> Usd.Relationship:
+        """Mask collisions between two prims.  All nested prims will also be included.
+
+        Args:
+            prim_path_a (str): Path to a prim
+            prim_path_b (str): Path to a prim
+
+        Returns:
+            Usd.Relationship: A relationship filtering collisions between prim_path_a and prim_path_b
+        """
         filteringPairsAPI = UsdPhysics.FilteredPairsAPI.Apply(get_prim_at_path(prim_path_a))
         rel = filteringPairsAPI.CreateFilteredPairsRel()
         rel.AddTarget(Sdf.Path(prim_path_b))
@@ -201,14 +277,29 @@ class RobotAssembler:
 
     def assemble_rigid_bodies(
         self,
-        base_path,
-        attach_path,
-        base_mount_frame,
-        attach_mount_frame,
+        base_path: str,
+        attach_path: str,
+        base_mount_frame: str,
+        attach_mount_frame: str,
         fixed_joint_offset: np.array = np.zeros(3),
         fixed_joint_orient: np.array = np.array([1, 0, 0, 0]),
-        mask_all_collisions=True,
-    ):
+        mask_all_collisions: bool = True,
+    ) -> AssembledBodies:
+        """Assemble two rigid bodies into one physical structure
+
+        Args:
+            base_robot_path (str): Path to base robot.
+            attach_robot_path (str): Path to attach robot.  The attach robot will be unrooted from the stage and attached only to the base robot
+            base_robot_mount_frame (str): Relative path to frame in base robot where there is the desired attach point.
+            attach_robot_mount_frame (str): Relative path to frame in the attach robot where there is the desired attach point.
+            fixed_joint_offset (np.array, optional): Fixed offset between attach points. Defaults to np.zeros(3).
+            fixed_joint_orient (np.array, optional): Fixed orientation between attach points. Defaults to np.array([1, 0, 0, 0]).
+            mask_all_collisions (bool, optional): Mask all collisions between attach robot and base robot.  This is necessary when setting single_robot=False to prevent Physics constraint
+                violations from the new fixed joint.  Advanced users may set this flag to False and use the mask_collisions() function separately for more customizable behavior.  Defaults to True.
+
+        Returns:
+            AssembledBodies: An object representing the assembled bodies. This object can detach the composed robots and edit the fixed joint transform.
+        """
         # Make mount_frames if they are not specified
         if base_mount_frame == "":
             base_mount_path = base_path + "/assembler_mount_frame"
@@ -287,7 +378,7 @@ class RobotAssembler:
                 Setting this flag to True may resolve unstable physics behavior when teleporting the robot base.  Defaults to False.
 
         Returns:
-            AssembledRobot: An object representing the composed robot.  This object can detach the composed robots and edit the fixed joint transform.
+            AssembledRobot: An object representing the assembled robot.  This object can detach the composed robots and edit the fixed joint transform.
         """
         assemblage = self.assemble_rigid_bodies(
             base_robot_path,
@@ -319,7 +410,19 @@ class RobotAssembler:
         target1: str = None,
         fixed_joint_offset: np.array = np.zeros(3),
         fixed_joint_orient: np.array = np.array([1, 0, 0, 0]),
-    ):
+    ) -> UsdPhysics.FixedJoint:
+        """Create a fixed joint between two bodies
+
+        Args:
+            prim_path (str): Prim path at which to place new fixed joint.
+            target0 (str, optional): Prim path of frame at which to attach fixed joint. Defaults to None.
+            target1 (str, optional): Prim path of frame at which to attach fixed joint. Defaults to None.
+            fixed_joint_offset (np.array, optional): Translational offset of fixed joint between frames. Defaults to np.zeros(3).
+            fixed_joint_orient (np.array, optional): Rotational offset of fixed joint between frames (quaternion). Defaults to np.array([1, 0, 0, 0]).
+
+        Returns:
+            UsdPhysics.FixedJoint: A USD fixed joint
+        """
         fixed_joint_path = prim_path + "/AssemblerFixedJoint"
         fixed_joint_path = find_unique_string_name(fixed_joint_path, lambda x: not is_prim_path_valid(x))
 
@@ -337,7 +440,13 @@ class RobotAssembler:
 
         return fixed_joint
 
-    def convert_prim_to_rigid_body(self, prim_path):
+    def convert_prim_to_rigid_body(self, prim_path: str) -> None:
+        """Convert a prim to a rigid body by applying the UsdPhysics.RigidBodyAPI
+        Also sets physics:kinematicEnabled property to true to prevent falling from gravity without needing a fixed joint.
+
+        Args:
+            prim_path (str): Path to prim to convert.
+        """
         prim_to_convert = get_prim_at_path(prim_path)
         if get_prim_object_type(prim_path) == "articulation":
             carb.log_warn("Cannot convert Articulation to Rigid Body")
