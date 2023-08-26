@@ -1,4 +1,7 @@
 # Changelog
+## [1.14.3] - 2023-08-25
+- Changed log error to log warning for when the target prim is not found in the omnigraph node
+- Changed test_camera test to expect identical fx and fy as vertical aperture is computed from horizontal aperture. 
 
 ## [1.14.2] - 2023-08-18
 ### Fixed

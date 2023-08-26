@@ -54,7 +54,7 @@ public:
         }
         else
         {
-            db.logError("no prim path");
+            db.logWarning("no prim path");
             return false;
         }
 

@@ -43,10 +43,11 @@ class TestViewports(omni.kit.test.AsyncTestCase):
         viewport_api.set_texture_resolution((800, 600))
         await omni.kit.app.get_app().next_update_async()
         matrix = get_intrinsics_matrix(viewport_api)
-        omni.kit.commands.execute(
-            "ChangeProperty", prop_path=Sdf.Path("/OmniverseKit_Persp.verticalAperture"), value=6, prev=0
-        )
 
+        # Square pixel, vertical aperture is computed from horizontal aperture
+        # omni.kit.commands.execute(
+        #     "ChangeProperty", prop_path=Sdf.Path("/OmniverseKit_Persp.verticalAperture"), value=6, prev=0
+        # )
         omni.kit.commands.execute(
             "ChangeProperty", prop_path=Sdf.Path("/OmniverseKit_Persp.horizontalAperture"), value=6, prev=0
         )
@@ -54,9 +55,10 @@ class TestViewports(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         matrix = get_intrinsics_matrix(viewport_api)
 
+        # Square pixel, fy = fx
         self.assertAlmostEqual(matrix[0, 0], 2419, delta=1)
         self.assertAlmostEqual(matrix[0, 2], 400, delta=1)
-        self.assertAlmostEqual(matrix[1, 1], 1814, delta=1)
+        self.assertAlmostEqual(matrix[1, 1], 2419, delta=1)
         self.assertAlmostEqual(matrix[1, 2], 300, delta=1)
         pass
 
@@ -65,13 +67,15 @@ class TestViewports(omni.kit.test.AsyncTestCase):
         viewport_api.set_texture_resolution((800, 600))
         await omni.kit.app.get_app().next_update_async()
         matrix = get_intrinsics_matrix(viewport_api)
-        matrix = np.array([[3871, 0.0, 400.0], [0.0, 2177, 300.0], [0.0, 0.0, 1.0]])
+
+        # fx, fy should be the same (square pixels)
+        matrix = np.array([[3871, 0.0, 400.0], [0.0, 3871, 300.0], [0.0, 0.0, 1.0]])
         set_intrinsics_matrix(viewport_api, matrix)
         await omni.kit.app.get_app().next_update_async()
         matrix = get_intrinsics_matrix(viewport_api)
         self.assertAlmostEqual(matrix[0, 0], 3871, delta=1)
         self.assertAlmostEqual(matrix[0, 2], 400, delta=1)
-        self.assertAlmostEqual(matrix[1, 1], 2177, delta=1)
+        self.assertAlmostEqual(matrix[1, 1], 3871, delta=1)
         self.assertAlmostEqual(matrix[1, 2], 300, delta=1)
         pass
 

@@ -235,9 +235,10 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
             "ChangeProperty", prop_path=Sdf.Path("/OmniverseKit_Persp.horizontalAperture"), value=6.0, prev=0
         )
 
-        omni.kit.commands.execute(
-            "ChangeProperty", prop_path=Sdf.Path("/OmniverseKit_Persp.verticalAperture"), value=4.5, prev=0
-        )
+        # Square pixels, vertical apertures are computed by the horizontal aperture
+        # omni.kit.commands.execute(
+        #     "ChangeProperty", prop_path=Sdf.Path("/OmniverseKit_Persp.verticalAperture"), value=4.5, prev=0
+        # )
 
         def spin():
             rclpy.spin_once(node, timeout_sec=0.1)
@@ -283,9 +284,10 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
             "ChangeProperty", prop_path=Sdf.Path("/OmniverseKit_Persp.horizontalAperture"), value=6, prev=0
         )
 
-        omni.kit.commands.execute(
-            "ChangeProperty", prop_path=Sdf.Path("/OmniverseKit_Persp.verticalAperture"), value=6, prev=0
-        )
+        # Square pixels, vertical apertures are computed by the horizontal aperture
+        # omni.kit.commands.execute(
+        #     "ChangeProperty", prop_path=Sdf.Path("/OmniverseKit_Persp.verticalAperture"), value=6, prev=0
+        # )
 
         await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
@@ -297,7 +299,7 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
                 await simulate_async(1, callback=spin)
 
         self.assertAlmostEqual(self._camera_info.p[0], 2419, delta=1)
-        self.assertAlmostEqual(self._camera_info.p[5], 1814, delta=1)
+        self.assertAlmostEqual(self._camera_info.p[5], 2419, delta=1)
         self.assertGreaterEqual(self._camera_info.header.stamp.sec, 1)
 
         self.assertIsNotNone(self._rgb)

@@ -1,4 +1,8 @@
 # Changelog
+## [0.3.12] - 2023-08-25
+### Changed
+- Changed log error to log warning for when the target prim is not found in the omnigraph node
+
 ## [0.3.11] - 2023-08-10
 ### Changed
 - Changed conveyor prim node input type from bundle to target

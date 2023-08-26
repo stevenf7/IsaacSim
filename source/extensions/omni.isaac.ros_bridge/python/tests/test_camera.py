@@ -234,9 +234,9 @@ class TestRosCamera(omni.kit.test.AsyncTestCase):
             "ChangeProperty", prop_path=Sdf.Path("/OmniverseKit_Persp.horizontalAperture"), value=6.0, prev=0
         )
 
-        omni.kit.commands.execute(
-            "ChangeProperty", prop_path=Sdf.Path("/OmniverseKit_Persp.verticalAperture"), value=4.5, prev=0
-        )
+        # omni.kit.commands.execute(
+        #     "ChangeProperty", prop_path=Sdf.Path("/OmniverseKit_Persp.verticalAperture"), value=4.5, prev=0
+        # )
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
@@ -277,9 +277,10 @@ class TestRosCamera(omni.kit.test.AsyncTestCase):
             "ChangeProperty", prop_path=Sdf.Path("/OmniverseKit_Persp.horizontalAperture"), value=6, prev=0
         )
 
-        omni.kit.commands.execute(
-            "ChangeProperty", prop_path=Sdf.Path("/OmniverseKit_Persp.verticalAperture"), value=6, prev=0
-        )
+        # Vertical apertures are computed off of horizontal aperture.
+        # omni.kit.commands.execute(
+        #     "ChangeProperty", prop_path=Sdf.Path("/OmniverseKit_Persp.verticalAperture"), value=6, prev=0
+        # )
 
         await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
@@ -290,7 +291,9 @@ class TestRosCamera(omni.kit.test.AsyncTestCase):
                 await simulate_async(1)
 
         self.assertAlmostEqual(self._camera_info.P[0], 2419, delta=1)
-        self.assertAlmostEqual(self._camera_info.P[5], 1814, delta=1)
+
+        # Fy = Fx, square pixels
+        self.assertAlmostEqual(self._camera_info.P[5], 2419, delta=1)
         self.assertGreaterEqual(self._camera_info.header.stamp.secs, 1)
 
         self.assertIsNotNone(self._rgb)
