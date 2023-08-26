@@ -154,6 +154,18 @@ class TestRotatingLidarRtx(omni.kit.test.AsyncTestCase):
             await omni.syntheticdata.sensors.next_render_simulation_async(self._my_lidar.get_render_product_path(), 1)
             data = self._my_lidar.get_current_frame()
             self.assertTrue(annotator not in data.keys())
+
+        self.assertTrue(self._my_lidar.get_horizontal_resolution() > 0)
+        self.assertTrue(self._my_lidar.get_horizontal_fov() > 0)
+        self.assertTrue(self._my_lidar.get_num_rows() > 0)
+        self.assertTrue(self._my_lidar.get_num_cols() > 0)
+        self.assertTrue(self._my_lidar.get_rotation_frequency() > 0)
+        low, high = self._my_lidar.get_depth_range()
+        self.assertTrue(low == 0)
+        self.assertTrue(high > 0)
+        low, high = self._my_lidar.get_azimuth_range()
+        self.assertTrue(low > 0)
+        self.assertTrue(high > 0)
         return
 
     async def test_visualization(self):
@@ -187,17 +199,17 @@ class TestRotatingLidarRtx(omni.kit.test.AsyncTestCase):
         await self.my_world.reset_async()
         return
 
-    async def test_get_properties(self):
-        await omni.syntheticdata.sensors.next_render_simulation_async(self._my_lidar.get_render_product_path(), 10)
-        self.assertTrue(self._my_lidar.get_horizontal_resolution() > 0)
-        self.assertTrue(self._my_lidar.get_horizontal_fov() > 0)
-        self.assertTrue(self._my_lidar.get_num_rows() > 0)
-        self.assertTrue(self._my_lidar.get_num_cols() > 0)
-        self.assertTrue(self._my_lidar.get_rotation_frequency() > 0)
-        low, high = self._my_lidar.get_depth_range()
-        self.assertTrue(low == 0)
-        self.assertTrue(high > 0)
-        low, high = self._my_lidar.get_azimuth_range()
-        self.assertTrue(low > 0)
-        self.assertTrue(high > 0)
-        return
+    # async def test_get_properties(self):
+    #     await omni.syntheticdata.sensors.next_render_simulation_async(self._my_lidar.get_render_product_path(), 10)
+    #     self.assertTrue(self._my_lidar.get_horizontal_resolution() > 0)
+    #     self.assertTrue(self._my_lidar.get_horizontal_fov() > 0)
+    #     self.assertTrue(self._my_lidar.get_num_rows() > 0)
+    #     self.assertTrue(self._my_lidar.get_num_cols() > 0)
+    #     self.assertTrue(self._my_lidar.get_rotation_frequency() > 0)
+    #     low, high = self._my_lidar.get_depth_range()
+    #     self.assertTrue(low == 0)
+    #     self.assertTrue(high > 0)
+    #     low, high = self._my_lidar.get_azimuth_range()
+    #     self.assertTrue(low > 0)
+    #     self.assertTrue(high > 0)
+    #     return
