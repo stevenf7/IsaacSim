@@ -7,7 +7,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import sys
 
 from .test_camera_sensor import *
 from .test_contact_sensor import *

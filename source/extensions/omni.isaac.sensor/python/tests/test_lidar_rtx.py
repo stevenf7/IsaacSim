@@ -102,8 +102,7 @@ class TestRotatingLidarRtx(omni.kit.test.AsyncTestCase):
         annotator.attach([self._my_lidar.get_render_product_path()])
 
         self._timeline.play()
-        for i in range(20):
-            await update_stage_async()
+        await omni.syntheticdata.sensors.next_render_simulation_async(self._my_lidar.get_render_product_path(), 1)
         data = annotator.get_data()
         # TODO: Improve Test
         self.assertEqual(len(data["intensities"]), len(data["azimuths"]))
@@ -115,8 +114,7 @@ class TestRotatingLidarRtx(omni.kit.test.AsyncTestCase):
         annotator.attach([self._my_lidar.get_render_product_path()])
 
         self._timeline.play()
-        for i in range(20):
-            await update_stage_async()
+        await omni.syntheticdata.sensors.next_render_simulation_async(self._my_lidar.get_render_product_path(), 1)
         data = annotator.get_data()
         # TODO: Improve Test
         self.assertTrue(np.all(np.linalg.norm(data["data"], axis=1) > 0))
@@ -128,37 +126,32 @@ class TestRotatingLidarRtx(omni.kit.test.AsyncTestCase):
         annotator.attach([self._my_lidar.get_render_product_path()])
 
         self._timeline.play()
-        for i in range(20):
-            await update_stage_async()
+        await omni.syntheticdata.sensors.next_render_simulation_async(self._my_lidar.get_render_product_path(), 1)
         data = annotator.get_data()
         # TODO: Improve Test
         self.assertTrue(np.all(np.linalg.norm(data["data"], axis=1) > 0))
         annotator.detach()
 
     async def test_data_acquisition(self):
-        for i in range(20):
-            await update_stage_async()
+        await omni.syntheticdata.sensors.next_render_simulation_async(self._my_lidar.get_render_product_path(), 1)
         for annotator in ["linear_depth_data", "point_cloud_data", "intensities_data"]:
             getattr(self._my_lidar, "add_{}_to_frame".format(annotator))()
-            await update_stage_async()
-            await update_stage_async()
-            await update_stage_async()
+            await omni.syntheticdata.sensors.next_render_simulation_async(self._my_lidar.get_render_product_path(), 10)
             data = self._my_lidar.get_current_frame()
             self.assertTrue(annotator in data.keys())
             self.assertTrue(data[annotator].shape[0] > 0)
             getattr(self._my_lidar, "remove_{}_from_frame".format(annotator))()
-            await update_stage_async()
+            await omni.syntheticdata.sensors.next_render_simulation_async(self._my_lidar.get_render_product_path(), 1)
             data = self._my_lidar.get_current_frame()
             self.assertTrue(annotator not in data.keys())
         for annotator in ["elevation", "azimuth", "range"]:
             getattr(self._my_lidar, "add_{}_data_to_frame".format(annotator))()
-            await update_stage_async()
-            await update_stage_async()
+            await omni.syntheticdata.sensors.next_render_simulation_async(self._my_lidar.get_render_product_path(), 10)
             data = self._my_lidar.get_current_frame()
             self.assertTrue(annotator in data.keys())
             self.assertTrue(data[annotator].shape[0] > 0)
             getattr(self._my_lidar, "remove_{}_data_from_frame".format(annotator))()
-            await update_stage_async()
+            await omni.syntheticdata.sensors.next_render_simulation_async(self._my_lidar.get_render_product_path(), 1)
             data = self._my_lidar.get_current_frame()
             self.assertTrue(annotator not in data.keys())
         return
@@ -179,10 +172,7 @@ class TestRotatingLidarRtx(omni.kit.test.AsyncTestCase):
         current_time = data["rendering_time"]
         current_step = data["rendering_frame"]
         self._my_lidar.pause()
-        await update_stage_async()
-        await update_stage_async()
-        await update_stage_async()
-        await update_stage_async()
+        await omni.syntheticdata.sensors.next_render_simulation_async(self._my_lidar.get_render_product_path(), 2)
         data = self._my_lidar.get_current_frame()
         self.assertTrue(data["rendering_time"] == current_time)
         self.assertTrue(data["rendering_frame"] == current_step)
@@ -198,16 +188,7 @@ class TestRotatingLidarRtx(omni.kit.test.AsyncTestCase):
         return
 
     async def test_get_properties(self):
-        await update_stage_async()
-        await update_stage_async()
-        await update_stage_async()
-        await update_stage_async()
-        await update_stage_async()
-        await update_stage_async()
-        await update_stage_async()
-        await update_stage_async()
-        await update_stage_async()
-        await update_stage_async()
+        await omni.syntheticdata.sensors.next_render_simulation_async(self._my_lidar.get_render_product_path(), 10)
         self.assertTrue(self._my_lidar.get_horizontal_resolution() > 0)
         self.assertTrue(self._my_lidar.get_horizontal_fov() > 0)
         self.assertTrue(self._my_lidar.get_num_rows() > 0)
