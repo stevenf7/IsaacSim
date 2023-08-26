@@ -3,6 +3,12 @@
 ### Changed
 - Updated view port unit test to accept identical fx and fy
 
+## [2.7.2] - 2023-08-25
+
+### Fixed
+- Add default values for World transform attributes when fetching fabric in _get_world_pose_transform_w_scale method
+
+
 ## [2.7.1] - 2023-08-16
 
 ### Fixed
