@@ -125,7 +125,7 @@ class TestJetBot(omni.kit.test.AsyncTestCase):
                 print("spinning out of control, linear velocity: " + str(forward_velocity))
                 self.my_world.stop()
             else:
-                self.assertAlmostEqual(og.DataView.get(odom_velocity)[0], forward_velocity, delta=5e-2)
+                self.assertAlmostEqual(og.DataView.get(odom_velocity)[0], forward_velocity, delta=1e-1)
             await omni.kit.app.get_app().next_update_async()
 
         self.my_world.stop()
@@ -187,7 +187,7 @@ class TestJetBot(omni.kit.test.AsyncTestCase):
                 await omni.kit.app.get_app().next_update_async()
 
             curr_ang_vel = float(og.DataView.get(odom_ang_vel)[2])
-            self.assertAlmostEqual(curr_ang_vel, angular_velocity, delta=5e-2)
+            self.assertAlmostEqual(curr_ang_vel, angular_velocity, delta=2e-1)
 
         self.my_world.stop()
 

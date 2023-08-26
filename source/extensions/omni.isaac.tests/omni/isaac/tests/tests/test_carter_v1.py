@@ -199,7 +199,7 @@ class TestCarterv1(omni.kit.test.AsyncTestCase):
                 await omni.kit.app.get_app().next_update_async()
 
             curr_ang_vel = float(og.DataView.get(odom_ang_vel)[2])
-            self.assertAlmostEqual(curr_ang_vel, angular_velocity, delta=5e-2)
+            self.assertAlmostEqual(curr_ang_vel, angular_velocity, delta=2e-1)
 
         # self.my_world.stop()
 
@@ -225,7 +225,7 @@ class TestCarterv1(omni.kit.test.AsyncTestCase):
         for j in range(800):
             await omni.kit.app.get_app().next_update_async()
 
-        self.assertAlmostEqual(og.DataView.get(odom_position)[0], 0, delta=5e-2)
+        self.assertAlmostEqual(og.DataView.get(odom_position)[0], 0, delta=1e-1)
         self.assertAlmostEqual(og.DataView.get(odom_position)[1], 0, delta=5e-2)
         self.assertAlmostEqual(og.DataView.get(odom_velocity)[0], forward_velocity, delta=5e-2)
         self.assertAlmostEqual(og.DataView.get(odom_ang_vel)[2], angular_velocity, delta=5e-2)

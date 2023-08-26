@@ -7,6 +7,8 @@
 ## [1.10.4] - 2023-08-21
 ### Fixed
 - Fixed drive_goal_carter_v2 tests to use the correct timecode setting
+### Changed
+- Changed test accel, test spin, and test circle thresholds for the carter v1, v2 and jetbot
 
 ## [1.10.3] - 2023-08-09
 ### Changed
