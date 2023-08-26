@@ -1,4 +1,7 @@
 # Changelog
+## [2.7.2] - 2023-08-25
+### Changed
+- Updated view port unit test to accept identical fx and fy
 
 ## [2.7.1] - 2023-08-16
 

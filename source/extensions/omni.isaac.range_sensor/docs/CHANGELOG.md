@@ -1,4 +1,8 @@
 # Changelog
+## [0.8.7] - 2023-08-25
+### Changed
+- Changed log error to log warning for when the target prim is not found in the omnigraph node
+
 ## [0.8.6] - 2023-08-17
 ### Fixed
 - Fixed blackness in sensor examples

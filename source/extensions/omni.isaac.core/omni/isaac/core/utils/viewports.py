@@ -365,6 +365,7 @@ def set_intrinsics_matrix(viewport_api: Any, intrinsics_matrix: np.ndarray, foca
 
     horizontal_aperture = width * focal_length / fx
     vertical_aperture = horizontal_aperture * (height / width)
+    print(vertical_aperture)
     # TODO: this should be set_attr_val
     # We have to do it this way because the camera might be on a different layer (default cameras are on session layer),
     # and this is the simplest way to set the property on the right layer.

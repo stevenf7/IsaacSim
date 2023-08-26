@@ -1,4 +1,8 @@
 # Changelog
+## [1.4.3] - 2023-08-25
+### Changed
+- Changed log error to log warning for when the target prim is not found in the omnigraph node
+
 ## [1.4.2] - 2023-08-24
 ### Fixed
 - Fixed camera info is empty bug in test_camera

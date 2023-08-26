@@ -59,7 +59,7 @@ public:
         }
         else
         {
-            db.logError("no prim path found");
+            db.logWarning("no prim path found");
             return false;
         }
 
