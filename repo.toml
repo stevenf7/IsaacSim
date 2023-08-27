@@ -841,8 +841,8 @@ exclude = [
 
 # please provide extensions in the format "extension.name-version" or {dep = "extension.name-version", tag = "tag"}
 override = [
-  "omni.kit.livestream.core-2.2.0",
-  "omni.kit.livestream.webrtc-2.2.0",
+  "omni.kit.livestream.core-2.2.1",
+  "omni.kit.livestream.webrtc-2.2.1",
   "omni.warp-0.10.1",
   "omni.warp.core-0.10.1",
   "omni.warehouse_creator-0.3.4",
