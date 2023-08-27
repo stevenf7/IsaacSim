@@ -5,13 +5,11 @@
 
 ## [0.13.1] - 2023-08-22
 ### Fixed
-- Fixed possible errors in UI Plotting Tool that can be caused by spamming updates to violate x_max > x_min on X axis.
-    Fixed error when floats are overflowed, which allowed x_min to equal x_max for high numbers
+- Fixed possible errors in UI Plotting Tool that can be caused by spamming updates to violate x_max > x_min on X axis. Fixed error when floats are overflowed, which allowed x_min to equal x_max for high numbers
 
 ## [0.13.0] - 2023-08-15
 ### Fixed
-- Added extra frame of waiting when using LoadButton and ResetButton after core.World.reset().
-    The extra frame resolves possible differences in rendered object position and queried position.
+- Added extra frame of waiting when using LoadButton and ResetButton after core.World.reset(). The extra frame resolves possible differences in rendered object position and queried position.
 
 ## [0.12.1] - 2023-08-09
 ### Changed
@@ -38,9 +36,7 @@
 
 ## [0.10.0] - 2023-06-27
 ### Fixed
-- Enforce argument types in setter functions for UI Widget Wrappers by casting [int,float,bool] args to their required type explicitly
-    This handles undesirable behavior that arises when numpy types such as np.float are passed instead of primitive types.  
-    For example, the FloatField displays the value 0.0:np.float as 1.0.
+- Enforce argument types in setter functions for UI Widget Wrappers by casting [int,float,bool] args to their required type explicitly. This handles undesirable behavior that arises when numpy types such as np.float are passed instead of primitive types. For example, the FloatField displays the value 0.0:np.float as 1.0.
 
 ## [0.9.0] - 2023-05-03
 ### Added
