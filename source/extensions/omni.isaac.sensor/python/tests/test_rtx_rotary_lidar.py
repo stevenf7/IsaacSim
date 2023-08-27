@@ -23,7 +23,6 @@ import omni.replicator.core as rep
 import omni.usd
 from omni.isaac.core.objects import VisualCuboid
 from omni.isaac.core.utils.prims import delete_prim
-from omni.isaac.core.utils.render_product import create_hydra_texture
 from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
 
 
@@ -69,7 +68,8 @@ class TestRTXRotaryLidar(omni.kit.test.AsyncTestCase):
 
         config = "Example_Rotary"
         _, sensor = omni.kit.commands.execute("IsaacSensorCreateRtxLidar", path="/sensor", parent=None, config=config)
-        texture, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathString)
+        texture = rep.create.render_product(sensor.GetPath().pathString, resolution=[1, 1])
+        render_product_path = texture.path
         rv = "RtxLidar"
         writer = rep.writers.get(rv + "DebugDrawPointCloud")
         writer.attach([render_product_path])
@@ -77,14 +77,13 @@ class TestRTXRotaryLidar(omni.kit.test.AsyncTestCase):
         await update_stage_async()
 
         omni.timeline.get_timeline_interface().play()
-        for i in range(60):
-            await update_stage_async()
+        await omni.syntheticdata.sensors.next_render_simulation_async(render_product_path, 60)
         omni.timeline.get_timeline_interface().stop()
 
         writer.detach()
         await update_stage_async()
         delete_prim(sensor.GetPath())
         await update_stage_async()
-        texture = None
+        texture.destroy()
 
     pass

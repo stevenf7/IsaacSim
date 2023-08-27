@@ -1,4 +1,8 @@
 # Changelog
+
+## [8.1.1] - 2023-08-22
+### Fixed
+- Improved unit test stability
 ## [8.1.0] - 2023-08-22
 ### Fixed
 - keepOnlyPositiveDistance now works on CreateRTXLidarScanBuffer node### Added 
