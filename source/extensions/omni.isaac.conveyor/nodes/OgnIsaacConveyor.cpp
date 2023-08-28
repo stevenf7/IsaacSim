@@ -74,7 +74,7 @@ public:
                 }
                 else
                 {
-                    db.logWarning("no prim path found for the conveyor");
+                    db.logError("no prim path found for the conveyor");
                     return false;
                 }
 
