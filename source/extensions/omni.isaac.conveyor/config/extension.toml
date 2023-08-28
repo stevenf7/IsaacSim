@@ -45,3 +45,6 @@ dependencies=[
 "usdrt.scenegraph",
 ]
     
+stdoutFailPatterns.exclude = [
+ "*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_conveyor_IsaacConveyor: [/TestGraph] no prim path found for the conveyor"
+]

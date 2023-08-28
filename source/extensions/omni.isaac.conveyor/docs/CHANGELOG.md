@@ -1,7 +1,7 @@
 # Changelog
-## [0.3.12] - 2023-08-25
+## [0.3.12] - 2023-08-28
 ### Changed
-- Changed log error to log warning for when the target prim is not found in the omnigraph node
+- added standard out fail pattern for the expected no prim found edge case for the ogn test
 
 ## [0.3.11] - 2023-08-10
 ### Changed
