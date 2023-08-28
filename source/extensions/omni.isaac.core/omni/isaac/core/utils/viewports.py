@@ -47,41 +47,57 @@ def set_camera_view(
         carb.log_warn("could not get active viewport, cannot set camera view")
         return
 
+    # get all inputs
     camera_position = np.asarray(eye, dtype=np.double)
     camera_target = np.asarray(target, dtype=np.double)
     prim = viewport_api.stage.GetPrimAtPath(camera_prim_path)
 
+    # check if center of interest property exists, create if not
     coi_prop = prim.GetProperty("omni:kit:centerOfInterest")
     if not coi_prop or not coi_prop.IsValid():
         prim.CreateAttribute(
             "omni:kit:centerOfInterest", Sdf.ValueTypeNames.Vector3d, True, Sdf.VariabilityUniform
         ).Set(Gf.Vec3d(0, 0, -10))
+
+    # set camera prim position
     camera_state = ViewportCameraState(camera_prim_path, viewport_api)
     camera_state.set_position_world(Gf.Vec3d(camera_position[0], camera_position[1], camera_position[2]), True)
-    if (camera_target[0:1] != camera_position[0:1]).all():
+
+    # if camera target is not directly above or below camera, set target using omni.kit.viewport.utility
+    if (camera_target[0:2] != camera_position[0:2]).any():
         camera_state.set_target_world(Gf.Vec3d(camera_target[0], camera_target[1], camera_target[2]), True)
     else:
+        # if camera has an orient property, set it to look at target
         if prim.GetAttribute("xformOp:orient"):
             rotate_prop = prim.GetAttribute("xformOp:orient")
+            # set orientation quaternion based on if camera is looking up or down
             quat = [
                 0 if camera_target[2] >= camera_position[2] else 1,
                 0,
                 1 if camera_target[2] >= camera_position[2] else 0,
                 0,
             ]
+
+            # save new rotate property as double or float quaternion based on original rotate property type
             if rotate_prop.GetTypeName() == Sdf.ValueTypeNames.Quatd:
                 new_rotate = Gf.Quatd(*quat)
             elif rotate_prop.GetTypeName() == Sdf.ValueTypeNames.Quatf:
                 new_rotate = Gf.Quatf(*quat)
             else:
+                # if rotate property is not float or double quaternion, log warning and return
                 carb.log_warn("unknown orient type")
                 return
         else:
+            # else, use rotate property to set camera orientation
+            # use up_down to determine if camera is looking up or down
             up_down = 180 if camera_target[2] >= camera_position[2] else 0
+
+            # set potential rotate properties based on which rotate property could be used
             xyz_zyx = [0, up_down, 0]
             xzy_zxy = [0, 0, up_down]
             yxz_yzx = [up_down, 0, 0]
 
+            # check which rotate property is being used
             rot = (
                 xyz_zyx
                 if prim.GetAttribute("xformOp:rotateXYZ") or prim.GetAttribute("xformOp:rotateZYX")
@@ -96,10 +112,12 @@ def set_camera_view(
                 )
             )
 
+            # if no rotate property is found, log warning and return
             if rot is None:
                 carb.log_warn("no orient or rotate attributes found")
                 return
 
+            # set new rotate property
             rotate_prop = (
                 prim.GetAttribute("xformOp:rotateXYZ")
                 or prim.GetAttribute("xformOp:rotateXZY")
@@ -109,16 +127,21 @@ def set_camera_view(
                 or prim.GetAttribute("xformOp:rotateYZX")
             )
 
+            # save new rotate property as double or float vector based on original rotate property type
             if rotate_prop is None:
-                carb.log_warn("no rotate attributes found")
+                # if no rotate property is found, log warning and return
+                carb.log_warn("no orient or rotate attributes found")
                 return
             elif rotate_prop.GetTypeName() == Sdf.ValueTypeNames.Double3:
                 new_rotate = Gf.Vec3d(*rot)
             elif rotate_prop.GetTypeName() == Sdf.ValueTypeNames.Float3:
                 new_rotate = Gf.Vec3f(*rot)
             else:
+                # if rotate property is not float3 or double3, log warning and return
                 carb.log_warn("unknown rotation type")
                 return
+
+        # set new rotate property
         omni.kit.commands.create(
             "ChangePropertyCommand",
             prop_path=rotate_prop.GetPath(),
@@ -128,6 +151,7 @@ def set_camera_view(
             type_to_create_if_not_exist=(rotate_prop.GetTypeName()),
         ).do()
 
+        # set scale property to (1, 1, 1) to prevent weird near-infinite scale (scale doesn't affect anything)
         if prim.GetAttribute("xformOp:scale"):
             omni.kit.commands.create(
                 "ChangePropertyCommand",

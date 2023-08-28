@@ -1,4 +1,8 @@
 # Changelog
+## [2.7.3] - 2023-08-28
+### Fixed
+- Updated utils.viewports.set_camera_view to check both x and y of the position and target
+
 ## [2.7.2] - 2023-08-25
 ### Changed
 - Updated view port unit test to accept identical fx and fy
