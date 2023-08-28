@@ -3,7 +3,7 @@
 
 ### Changed
 - duration of test_benchmark_rtx_radar test from 10 app updates to 600
- 
+
 ## [0.18.0] - 2023-08-17
 
 ### Added

@@ -5,7 +5,7 @@
 - custom names for render products
 - render products are destroyed after each recording (OM-87164)
 - select all and toggle all buttons for writer annotator parameters
-  
+
 ### Changed
 - increased render product max resolution to 16kx8k
 

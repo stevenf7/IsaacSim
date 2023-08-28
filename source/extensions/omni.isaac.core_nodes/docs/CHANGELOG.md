@@ -58,11 +58,9 @@
 - getSimulationTimeMonotonicAtSwhFrame now getSimulationTimeMonotonicAtTime with rational time
 - getSystemTimeAtSwhFrame now getSystemTimeAtTime with rational time
 - [SENSOR NAME]IsaacSimulationGate nodes to [RENDERVAR]IsaacSimulationGate to match synthetic data standard
-
-### Depricated
-- get_sim_time_at_swh_frame
-- get_sim_time_monotonic_at_swh_frame
-- get_system_time_at_swh_frame
+- deprecated get_sim_time_at_swh_frame
+- deprecated get_sim_time_monotonic_at_swh_frame
+- deprecated get_system_time_at_swh_frame
 
 ### Removed
 - IsaacReadSystemTime node
