@@ -68,7 +68,7 @@ public:
             }
             else
             {
-                db.logWarning("no prim path found");
+                db.logError("Omnigraph Error: no chasis prim found");
                 return false;
             }
 

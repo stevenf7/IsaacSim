@@ -58,7 +58,7 @@ public:
         }
         else
         {
-            db.logWarning("no prim path found");
+            db.logError("Omnigraph Error: no input prim found for visualization");
             return false;
         }
         auto& state = db.internalState<OgnIsaacXPrimRadiusVisualizer>();
