@@ -81,9 +81,9 @@ repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir.."/omni/isaac/sensor" },
 }
 -- sensor material and configrations
-repo_build.prebuild_copy {
+repo_build.prebuild_link {
     -- needs to be here because material_files folder location is hard coded to %(app}../data/material_files)
-    {"%{root}/data/sensors/materials/","%{root}/_build/%{platform}/%{config}/data" },
-    {"%{root}/data/sensors/","%{root}/_build/%{platform}/%{config}/data/sensors" },
+    {"%{root}/data/sensors/materials/material_files","%{root}/_build/%{platform}/%{config}/data/material_files" },
+    {"%{root}/data/sensors","%{root}/_build/%{platform}/%{config}/data/sensors" },
 }
 

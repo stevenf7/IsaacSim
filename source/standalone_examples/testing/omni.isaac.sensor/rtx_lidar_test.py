@@ -163,7 +163,7 @@ simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 /
 if 1:
     i = printinc(i)
     writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud" + "Buffer")
-    writer.initialize(testMode=True)
+    # writer.initialize(testMode=True)
     # writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
     # writer = rep.writers.get("Writer" + "IsaacReadRTXLidarData")
     # writer = rep.writers.get("Writer" + "IsaacPrintRTXLidarInfo" + "")

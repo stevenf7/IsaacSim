@@ -11,6 +11,9 @@
 #include <UsdPCH.h>
 // clang-format on
 
+#include "LidarNodeUtils.h"
+#include "omni/isaac/utils/UsdUtilities.h"
+
 #include <carb/tasking/ITasking.h>
 
 #include <internal/omni/sensors/lidar/LidarReturnHelper.h>
@@ -19,6 +22,7 @@
 #include <omni/math/linalg/matrix.h>
 #include <omni/math/linalg/quat.h>
 #include <omni/sensors/lidar/LidarParameterType.h>
+#include <omni/sensors/lidar/LidarProfileTypes.h>
 #include <omni/sensors/lidar/LidarReturnTypes.h>
 
 #include <OgnIsaacCreateRTXLidarScanBufferDatabase.h>
@@ -53,6 +57,11 @@ const size_t sizeofLidarReturn = sizeof(float) * 10 + sizeof(uint32_t) * 5; // s
 class OgnIsaacCreateRTXLidarScanBuffer
 {
 private:
+    std::string config;
+    LidarScanType scanType{ LidarScanType::kUnknown };
+    LidarSolidStateProfile solidStateProfile;
+    LidarRotaryProfile rotaryProfile;
+    uint32_t lostReturns{ 0 };
     // xxxScanBuffer holds the whole scan, and xxxBuffer holds only the current data from dataPtr()
     // isaac::utils::DeviceBufferBase<float3> pcScanBuffer; // 3d point cloud
     // isaac::utils::DeviceBufferBase<float> distanceScanBuffer; // pass through but needed to compute pc
@@ -129,19 +138,10 @@ public:
         LidarParameterType* parameterHost =
             omni::sensors::nv::lidar::fillStructsFromBuffer(dataHost, lidarReturnsHost, lidarTicksHost);
         const uint32_t ticksPerScan = parameterHost->async.ticksPerScan;
-        const uint32_t startTick = parameterHost->async.startTick;
         uint32_t numTicks = parameterHost->async.numTicks;
         const uint32_t numChannels = parameterHost->async.numChannels;
         const uint32_t numEchos = parameterHost->async.numEchos;
-        // is there ever a buffer that is part in this scan and part in the next?  If so, truncate and lose data.
-        if (numTicks + startTick > ticksPerScan)
-        {
-            numTicks = ticksPerScan - startTick;
-            CARB_LOG_WARN_ONCE("WARNING -  You lost a little scan data!");
-        }
-        const uint32_t numReturns = numTicks * numChannels * numEchos;
-        const uint32_t returnsPerScan = ticksPerScan * numChannels * numEchos;
-        const uint32_t scanLoc = startTick * numChannels * numEchos;
+
         // TODOMTC MAKE THIS WORK.
         // You can shrink into an earlier scan location by using the index. So to write a first set of scans...
         // or just only shrink at the end
@@ -162,18 +162,66 @@ public:
             }
         }
         // TODOMTC db.outputs.cudaDeviceIndex() = cudaDeviceIndex;
+        std::string curConfig = "";
+        pxr::UsdAttribute configAttr = omni::isaac::utils::getCameraAttributeFromRenderProduct(
+            "sensorModelConfig", db.tokenToString(db.inputs.renderProductPath()));
+        if (configAttr.IsValid())
+        {
+            omni::isaac::utils::safeGetAttribute(configAttr, curConfig);
+        }
+        updateLidarConfig(curConfig, state.config, state.scanType, state.rotaryProfile, state.solidStateProfile);
 
-        // async.pose is [X, Y, Z, W].
-        // quatd is i,j,k,w, but constructor is quatd(w, i, j, k)
-        omni::math::linalg::vec3d posM{ parameterHost->async.frameEnd.posM[0], parameterHost->async.frameEnd.posM[1],
-                                        parameterHost->async.frameEnd.posM[2] };
-        omni::math::linalg::quatd pose{ parameterHost->async.frameEnd.orientation[3],
-                                        parameterHost->async.frameEnd.orientation[0],
-                                        parameterHost->async.frameEnd.orientation[1],
-                                        parameterHost->async.frameEnd.orientation[2] };
-        matrixOutput.SetRotateOnly(pose);
-        matrixOutput.SetTranslateOnly(posM);
+        getTransformFromLidarAsyncParameter(parameterHost->async, matrixOutput);
+
+        // startTick is 0 for all solid state, so use the fist emitter Id.  This will usually be 0, unless one of the
+        // previous frames ran over, then it will start at the length of the run over... for now we can just mod the
+        // run over, but TODOMTC deal with lidarReturnsHost.emitterIds[0] == 1 etc...
+        const uint32_t startTick = state.scanType == LidarScanType::kSolidState ? lidarReturnsHost.emitterIds[0] :
+                                                                                  parameterHost->async.startTick;
         // TODOMTC Transform applied to previous buffer values is newer, either store transforms, or apply here.
+        // the returnsPerScan computation differ depending on what type of lidar you have.
+        // numChannels is always the numEmitters in a rotary, and it is variable in solid state.
+        uint32_t numReturns = numTicks * numChannels * numEchos;
+        const uint32_t returnsPerScan = state.scanType == LidarScanType::kSolidState ?
+                                            state.solidStateProfile.numberOfEmitters * numEchos :
+                                            ticksPerScan * numChannels * numEchos;
+
+        const uint32_t scanLoc =
+            state.scanType == LidarScanType::kSolidState ? startTick * numEchos : startTick * numChannels * numEchos;
+
+        // TODOMTC deal with this spillover.
+        // is there ever a buffer that is part in this scan and part in the next?  If so, truncate and lose data.
+        if (scanLoc + numReturns > returnsPerScan)
+        {
+            uint32_t fullNumReturns = numReturns;
+            numReturns = returnsPerScan - scanLoc;
+            if (state.lostReturns != fullNumReturns - numReturns)
+            {
+                state.lostReturns = fullNumReturns - numReturns;
+                CARB_LOG_WARN("WARNING - numReturns = %i, but has been truncated to %i.  You lost %i returns!",
+                              int(fullNumReturns), int(numReturns), int(fullNumReturns - numReturns));
+            }
+        }
+
+        // TODOMTC what if the buffer that is adding in is longer than returnsPerScan once it is concatenated from
+        // scanLoc?
+        /*
+        if (state.scanType == LidarScanType::kSolidState)
+        {
+            std::cout << "scanType = SolidState\n";
+        }
+        else if (state.scanType == LidarScanType::kRotary)
+        {
+            std::cout << "scanType = Rotary\n";
+        }
+        else
+        {
+            std::cout << "scanType = Unknown\n";
+        }
+        std::cout << "returnsPerScan = " << returnsPerScan << "\n";
+        std::cout << "startTick = " << startTick << "\n";
+        std::cout << "scanLoc = " << scanLoc << "\n";
+        */
 
         db.outputs.returnsPerScan() = returnsPerScan;
         db.outputs.ticksPerScan() = ticksPerScan;
@@ -327,6 +375,16 @@ public:
                              shrunkBuff[i] = scanBuffer[ib[i]];                                                        \
                          }                                                                                             \
                      })
+
+#define _GATHER_OUTPUT_SEQUENTIAL(BUFF_NAME)                                                                           \
+    {                                                                                                                  \
+        const auto* scanBuffer = state.host##BUFF_NAME##ScanBuffer.data();                                             \
+        auto* shrunkBuff = state.host##BUFF_NAME##ShrunkBuffer.data();                                                 \
+        for (int i = 0; i < outSize; ++i)                                                                              \
+        {                                                                                                              \
+            shrunkBuff[i] = scanBuffer[ib[i]];                                                                         \
+        }                                                                                                              \
+    }
 
             _GATHER_OUTPUT(Pc);
             _GATHER_OUTPUT(Distance);
