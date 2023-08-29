@@ -96,7 +96,8 @@ class TestRosSemanticLabels(omni.kit.test.AsyncTestCase):
         # Add Small Warehouse environment to the stage
         (result, error) = await open_stage_async(self._assets_root_path + BACKGROUND_USD_PATH)
         await omni.kit.app.get_app().next_update_async()
-        viewport_window = omni.kit.viewport.utility.get_active_viewport_window()
+        viewport_api = omni.kit.viewport.utility.get_active_viewport()
+        render_product_path = viewport_api.get_render_product_path()
         try:
             og.Controller.edit(
                 {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
@@ -108,7 +109,7 @@ class TestRosSemanticLabels(omni.kit.test.AsyncTestCase):
                         ("ClockPublisher", "omni.isaac.ros_bridge.ROS1PublishClock"),
                     ],
                     og.Controller.Keys.SET_VALUES: [
-                        ("CameraHelper.inputs:viewport", viewport_window.title),
+                        ("CameraHelper.inputs:renderProductPath", render_product_path),
                         ("CameraHelper.inputs:topicName", "semantic_segmentation"),
                         ("CameraHelper.inputs:type", "semantic_segmentation"),
                         ("CameraHelper.inputs:enableSemanticLabels", True),
@@ -160,11 +161,9 @@ class TestRosSemanticLabels(omni.kit.test.AsyncTestCase):
 
             return False
 
-        viewport_api = omni.kit.viewport.utility.get_active_viewport()
-
         # Set active camera on viewport
         viewport_api.set_active_camera("/Root/Camera")
-
+        await omni.kit.app.get_app().next_update_async()
         # Point Camera towards blank wall
         set_camera_view(eye=np.array([0, -5, 3]), target=np.array([0, -10, 3]), camera_prim_path="/Root/Camera")
         await omni.kit.app.get_app().next_update_async()
@@ -172,23 +171,21 @@ class TestRosSemanticLabels(omni.kit.test.AsyncTestCase):
         self.assertIsNone(self._label_data)
         self._timeline.play()
 
-        await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api)
-
+        await omni.syntheticdata.sensors.next_render_simulation_async(render_product_path, 1)
         await simulate_async(1)
         self._timeline.stop()
-        await omni.kit.app.get_app().next_update_async()
 
         self.assertIsNotNone(self._label_data)
         self.assertIsNotNone(self._clock_data)
 
         labels_dict = json.loads(self._label_data)
-
+        print(labels_dict)
         self.assertTrue(find_class(labels_dict, "wall"))
         self.assertFalse(find_class(labels_dict, "klt_bin"))
         self.assertFalse(find_class(labels_dict, "pallet"))
 
         self.assertTrue(find_timestamp(labels_dict, self._clock_data))
-
+        await omni.kit.app.get_app().next_update_async()
         # Point Camera towards bins
         set_camera_view(eye=np.array([0, 0, 3]), target=np.array([-9.32, 10, 3]), camera_prim_path="/Root/Camera")
         await omni.kit.app.get_app().next_update_async()
@@ -198,19 +195,16 @@ class TestRosSemanticLabels(omni.kit.test.AsyncTestCase):
         self.assertIsNone(self._label_data)
 
         self._timeline.play()
-
-        await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api)
-
-        await simulate_async(1)
-
-        self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
+        await omni.syntheticdata.sensors.next_render_simulation_async(render_product_path, 1)
+        await simulate_async(1)
+        self._timeline.stop()
 
         self.assertIsNotNone(self._label_data)
         self.assertIsNotNone(self._clock_data)
 
         labels_dict = json.loads(self._label_data)
-
+        print(labels_dict)
         self.assertTrue(find_class(labels_dict, "wall"))
         self.assertTrue(find_class(labels_dict, "klt_bin"))
         self.assertTrue(find_class(labels_dict, "pallet"))

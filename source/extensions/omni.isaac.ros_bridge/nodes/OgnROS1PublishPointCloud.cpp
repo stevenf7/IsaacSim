@@ -93,6 +93,8 @@ public:
                 point_cloud_msg.width = db.inputs.data.size();
                 point_cloud_msg.row_step = point_cloud_msg.point_step * db.inputs.data.size();
                 size_t totalBytes = point_cloud_msg.row_step;
+
+                point_cloud_msg.data.resize(totalBytes);
                 // data is on host as ogn data, copy from cpu
                 memcpy(&point_cloud_msg.data[0], reinterpret_cast<const uint8_t*>(db.inputs.data.cpu().data()),
                        totalBytes);
@@ -105,6 +107,7 @@ public:
                 point_cloud_msg.width = db.inputs.bufferSize() / point_cloud_msg.point_step;
                 point_cloud_msg.row_step = db.inputs.bufferSize();
                 size_t totalBytes = point_cloud_msg.row_step;
+                point_cloud_msg.data.resize(totalBytes);
 
                 omni::isaac::utils::ScopedDevice(db.inputs.cudaDeviceIndex());
                 auto src = reinterpret_cast<void*>(db.inputs.dataPtr());

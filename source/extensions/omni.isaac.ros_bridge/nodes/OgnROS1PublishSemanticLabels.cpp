@@ -11,10 +11,11 @@
 
 #include <carb/graphics/GraphicsTypes.h>
 
+#include <nlohmann/json.hpp>
 #include <omni/isaac/ros/RosNode.h>
 
 #include <OgnROS1PublishSemanticLabelsDatabase.h>
-
+#include <string>
 
 class OgnROS1PublishSemanticLabels : public RosNode
 {
@@ -46,33 +47,41 @@ public:
 
             return true;
         }
-
-        // size_t bytes = db.inputs.data().size();
-        // size_t numBbox = bytes / sizeof(Bbox3DData);
-        // const Bbox3DData* bboxData = reinterpret_cast<const Bbox3DData*>(db.inputs.data().data());
         std_msgs::String msg;
 
-        msg.data = db.inputs.idToLabels();
+        nlohmann::json json;
         ros::Time timeObj;
         timeObj.fromSec(db.inputs.timeStamp());
 
         std::stringstream ss;
-        // if the string is just {} don't add comma
-        if (msg.data.size() > 2)
-        {
-            ss << ", ";
-        }
-        ss << "\"time_stamp\": {\"secs\": \"" << timeObj.sec << "\", \"nsecs\": \"" << timeObj.nsec << "\"}";
 
-        if (msg.data[msg.data.size() - 1] == '}')
+
+        // idToLabels is used by semantics node
+        if (db.inputs.idToLabels().length() > 0)
         {
-            msg.data.insert(msg.data.size() - 1, ss.str());
+            json = nlohmann::json::parse(db.inputs.idToLabels());
         }
         else
         {
-            db.logWarning("Invalid JSON format found. Omitting timestamp data.");
+            for (size_t i = 0; i < db.inputs.ids().size(); i++)
+            {
+                std::string label = db.tokenToString(db.inputs.labels()[i]);
+                if (label.rfind("class:", 0) == 0)
+                {
+                    label = label.erase(0, 6);
+                    json[std::to_string(db.inputs.ids()[i])]["class"] = label;
+                }
+                else
+                {
+                    json[std::to_string(db.inputs.ids()[i])] = label;
+                }
+            }
         }
+        json["time_stamp"] = {};
+        json["time_stamp"]["secs"] = timeObj.sec;
+        json["time_stamp"]["nsecs"] = timeObj.nsec;
 
+        msg.data = json.dump();
         state.mPublisher->publish(msg);
 
         return true;

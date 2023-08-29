@@ -172,9 +172,9 @@ public:
                 mPointsData.push_back(point * mUnitScale);
             }
 
-            db.outputs.pointCloudData().resize(mPointsData.size());
+            db.outputs.data().resize(mPointsData.size());
 
-            memcpy(db.outputs.pointCloudData().data(), &mPointsData[0], mPointsData.size() * sizeof(GfVec3f));
+            memcpy(db.outputs.data().data(), &mPointsData[0], mPointsData.size() * sizeof(GfVec3f));
 
             db.outputs.execOut() = kExecutionAttributeStateEnabled;
 
@@ -198,7 +198,21 @@ public:
             mNumBeamsRemainingPCL = numBeamsTotal - numBeamsOffset;
         }
     }
-
+    static bool updateNodeVersion(const GraphContextObj& context, const NodeObj& nodeObj, int oldVersion, int newVersion)
+    {
+        if (oldVersion < newVersion)
+        {
+            const INode* const iNode = nodeObj.iNode;
+            if (oldVersion < 2)
+            {
+                iNode->removeAttribute(nodeObj, "outputs:pointCloudData");
+                CARB_LOG_ERROR(
+                    "outputs:pointCloudData renamed to outputs:data, downstream connections will need to be re-connected");
+            }
+            return true;
+        }
+        return false;
+    }
     virtual void reset()
     {
         mResetPCL = true;
