@@ -53,7 +53,7 @@ struct LidarAsyncParameter
 {
     uint32_t numTicks; /**< number of ticks (sensor positions) in this trace data */
     float scanFrequency; /**< sensor frequency in hz */
-    uint32_t ticksPerScan; /**< number of ticks of one full scan of the sensor */
+    uint32_t ticksPerScan; /**< number of ticks of one full scan of the sensor TODOMTC Not for Solid State it isn't */
     std::size_t maxSizeBuffer; /**< maximum possible size of the lidar trace data in bytes (can be used for
                                 * initialization)
                                 */

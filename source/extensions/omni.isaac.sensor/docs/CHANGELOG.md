@@ -1,11 +1,15 @@
 # Changelog
 
-## [8.1.1] - 2023-08-22
+## [8.1.1] - 2023-08-24
 ### Fixed
+-  CreateRTXLidarScanBuffer works on Solid State Lidar
 - Improved unit test stability
+### Changed
+- Cleaned up IsaacComputeRTXLidarPointCloud, no intended functional changes.
+
 ## [8.1.0] - 2023-08-22
 ### Fixed
-- keepOnlyPositiveDistance now works on CreateRTXLidarScanBuffer node### Added 
+- keepOnlyPositiveDistance now works on CreateRTXLidarScanBuffer node 
 
 ## [8.0.0] - 2023-08-17
 ### Added 

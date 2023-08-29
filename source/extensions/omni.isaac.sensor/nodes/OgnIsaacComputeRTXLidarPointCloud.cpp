@@ -10,6 +10,7 @@
 #include <UsdPCH.h>
 // clang-format on
 
+#include "LidarNodeUtils.h"
 #include "omni/isaac/utils/UsdUtilities.h"
 
 #include <carb/InterfaceUtils.h>
@@ -19,13 +20,11 @@
 #include <internal/omni/sensors/lidar/LidarIntensityMapping.h>
 #include <internal/omni/sensors/lidar/LidarReturnHelper.h>
 #include <internal/omni/sensors/lidar/LidarSettings.h>
-#include <omni/isaac/utils/BaseResetNode.h>
+#include <omni/isaac/utils/Buffer.h>
 #include <omni/math/linalg/matrix.h>
-#include <omni/math/linalg/quat.h>
 #include <omni/sensors/LidarPointsConvert.h>
-#include <omni/sensors/lidar/ILidarProfileReader.h>
-#include <omni/sensors/lidar/ILidarProfileReaderFactory.h>
 #include <omni/sensors/lidar/LidarParameterType.h>
+#include <omni/sensors/lidar/LidarProfileTypes.h>
 #include <omni/sensors/lidar/LidarReturnTypes.h>
 
 // #include <tbb/atomic.h>
@@ -110,52 +109,33 @@ inline void convertReturnToPoint(unsigned int idx,
         point.azimuth -= Deg2Rad(360.f);
 }
 
-class OgnIsaacComputeRTXLidarPointCloud : public BaseResetNode
+class OgnIsaacComputeRTXLidarPointCloud
 {
 public:
-    static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    static bool compute(OgnIsaacComputeRTXLidarPointCloudDatabase& db)
     {
-        auto& state =
-            OgnIsaacComputeRTXLidarPointCloudDatabase::sInternalState<OgnIsaacComputeRTXLidarPointCloud>(nodeObj);
-        state.mDataPtr.reset();
-        state.mLidarDeleted = false;
-        state.mConfig = "";
-        state.mScanType = LidarScanType::kUnknown;
-    }
-
-    // If the node fails we want to cleanup the output
-    static bool returnCleanly(OgnIsaacComputeRTXLidarPointCloudDatabase& db, bool passThroughReturnValue, int dbv)
-    {
+        CARB_PROFILE_ZONE(0, "Compute RTX Lidar PointCloud");
+        // safe or passthrough values so we can return without worry anywhere in compute.
+        db.outputs.exec() = db.inputs.exec();
+        db.outputs.dataPtr() = 0;
+        db.outputs.cudaDeviceIndex() = -1; // db.inputs.cudaDeviceIndex();
+        db.outputs.bufferSize() = 0;
+        db.outputs.width() = 0;
+        db.outputs.height() = 1;
         auto& matrixOutput = *reinterpret_cast<omni::math::linalg::matrix4d*>(&db.outputs.transform());
         matrixOutput.SetIdentity();
-        db.outputs.dataPtr() = 0;
-        db.outputs.bufferSize() = 0;
-        db.outputs.cudaDeviceIndex() = -1; // db.inputs.cudaDeviceIndex();
+
         db.outputs.intensity().resize(0);
         db.outputs.range().resize(0);
         db.outputs.azimuth().resize(0);
         db.outputs.elevation().resize(0);
-        db.outputs.width() = 0;
-        db.outputs.height() = 1;
 
-        db.outputs.exec() = passThroughReturnValue ? kExecutionAttributeStateEnabled : kExecutionAttributeStateDisabled;
-#if __DEBUG_PRINT_ON
-        std::cout << dbv << "}";
-#endif
-        return passThroughReturnValue;
-    }
-
-    static bool compute(OgnIsaacComputeRTXLidarPointCloudDatabase& db)
-    {
-        CARB_PROFILE_ZONE(0, "Compute RTX Lidar PointCloud");
-#if __DEBUG_PRINT_ON
-        std::cout << "LC[";
-#endif
         uint8_t* input = reinterpret_cast<uint8_t*>(db.inputs.dataPtr());
         if (!input)
         {
-            return returnCleanly(db, true, 1);
+            return true;
         }
+        auto& state = db.internalState<OgnIsaacComputeRTXLidarPointCloud>();
 
         // fill the structure of arrays
         LidarTicks lidarTicks;
@@ -169,10 +149,8 @@ public:
 
         if (numTicks == 0 || numChannels * numEchos == 0)
         {
-            return returnCleanly(db, true, 2);
+            return true;
         }
-
-        auto& state = db.internalState<OgnIsaacComputeRTXLidarPointCloud>();
 
         std::string curConfig = "";
         pxr::UsdAttribute configAttr = omni::isaac::utils::getCameraAttributeFromRenderProduct(
@@ -181,43 +159,9 @@ public:
         {
             omni::isaac::utils::safeGetAttribute(configAttr, curConfig);
         }
+        updateLidarConfig(curConfig, state.config, state.scanType, state.rotaryProfile, state.solidStateProfile);
 
-        if (curConfig != state.mConfig)
-        {
-            state.mConfig = curConfig;
-            if (curConfig != "")
-            {
-                state.mLidarDeleted = false;
-                const std::string json = omni::sensors::nv::lidar::getProfileJsonAtPaths(curConfig);
-                omni::sensors::lidar::ILidarProfileReaderPtr profileReader =
-                    carb::getFramework()
-                        ->acquireInterface<omni::sensors::lidar::ILidarProfileReaderFactory>()
-                        ->createInstance();
-                if (profileReader)
-                {
-                    profileReader->init(json.c_str());
-                    state.mScanType = profileReader->lidarScanType();
-                    if (state.mScanType == LidarScanType::kSolidState)
-                    {
-                        profileReader->update((void*)&state.mSolidStateProfile);
-                    }
-                    else if (state.mScanType == LidarScanType::kRotary)
-                    {
-                        profileReader->update((void*)&state.mRotaryProfile);
-                    }
-                }
-            }
-            else
-            {
-                // config switched from valid to ""
-                state.mLidarDeleted = true;
-                return returnCleanly(db, true, 3);
-            }
-        }
-
-        if (state.mLidarDeleted)
-            return returnCleanly(db, true, 4);
-        if (curConfig == "" || state.mScanType == LidarScanType::kUnknown)
+        if (state.scanType == LidarScanType::kUnknown)
         {
             if (curConfig == "")
             {
@@ -231,18 +175,7 @@ public:
             }
         }
 
-        // async.pose is [X, Y, Z, W].
-        // quatd is i,j,k,w, but constructor is quatd(w, i, j, k)
-        omni::math::linalg::vec3d posM{ parameter->async.frameEnd.posM[0], parameter->async.frameEnd.posM[1],
-                                        parameter->async.frameEnd.posM[2] };
-        omni::math::linalg::quatd pose{ parameter->async.frameEnd.orientation[3],
-                                        parameter->async.frameEnd.orientation[0],
-                                        parameter->async.frameEnd.orientation[1],
-                                        parameter->async.frameEnd.orientation[2] };
-        auto& matrixOutput = *reinterpret_cast<omni::math::linalg::matrix4d*>(&db.outputs.transform());
-        matrixOutput.SetIdentity();
-        matrixOutput.SetRotateOnly(pose);
-        matrixOutput.SetTranslateOnly(posM);
+        getTransformFromLidarAsyncParameter(parameter->async, matrixOutput);
 
         bool keepOnlyPositiveDistance = db.inputs.keepOnlyPositiveDistance();
         size_t outSize = maxSize;
@@ -258,8 +191,9 @@ public:
             }
         }
 
-        state.mDataPtr = boost::make_shared<pxr::GfVec3f[]>(outSize);
-        db.outputs.dataPtr() = reinterpret_cast<uint64_t>(state.mDataPtr.get());
+        state.hostPcBuffer.resize(outSize, make_float3(0.0f, 0.0f, 0.0f));
+        float3* dataPtr = state.hostPcBuffer.data();
+        db.outputs.dataPtr() = reinterpret_cast<uint64_t>(dataPtr);
         db.outputs.bufferSize() = outSize * sizeof(pxr::GfVec3f);
         db.outputs.cudaDeviceIndex() = -1; // TODO
         db.outputs.width() = static_cast<uint32_t>(outSize);
@@ -283,10 +217,10 @@ public:
         // Solid state lidar only give out points for one tick at a time. see:
         //     drivesim code base LidarPCConverterHelper.h
         // NOTE: in Drivesim code, Solid State lidar does not use profile or emitterProfile ATM.
-        const LidarBaseProfile* profile = state.mScanType == LidarScanType::kRotary ?
-                                              reinterpret_cast<const LidarBaseProfile*>(&state.mRotaryProfile) :
+        const LidarBaseProfile* profile = state.scanType == LidarScanType::kRotary ?
+                                              reinterpret_cast<const LidarBaseProfile*>(&state.rotaryProfile) :
                                               nullptr;
-        // uint32_t numTicks = state.mScanType == LidarScanType::kRotary ? numTicks : 1;
+        // uint32_t numTicks = state.scanType == LidarScanType::kRotary ? numTicks : 1;
         uint32_t atomicOutIdx = 0;
         for (uint32_t tick = 0; tick < numTicks; tick++)
         {
@@ -303,8 +237,8 @@ public:
                         const uint32_t outIdx = keepOnlyPositiveDistance ? atomicOutIdx++ : pointIdx;
                         // NOTE: in drivesim, emitterProfile is not used for Solid State lidar.
                         const EmitterProfile* emitterProfile =
-                            state.mScanType == LidarScanType::kRotary ?
-                                &state.mRotaryProfile.emitterStates[lidarTicks.states[tick]]
+                            state.scanType == LidarScanType::kRotary ?
+                                &state.rotaryProfile.emitterStates[lidarTicks.states[tick]]
                                      .emitterProfiles[lidarReturns.emitterIds[pointIdx]] :
                                 nullptr;
 
@@ -313,9 +247,9 @@ public:
                         p.x += accuracyErrorPosition.x;
                         p.y += accuracyErrorPosition.y;
                         p.z += accuracyErrorPosition.z;
-                        state.mDataPtr[outIdx][0] = p.x;
-                        state.mDataPtr[outIdx][1] = p.y;
-                        state.mDataPtr[outIdx][2] = p.z;
+                        dataPtr[outIdx].x = p.x;
+                        dataPtr[outIdx].y = p.y;
+                        dataPtr[outIdx].z = p.z;
 
 #define _ASSIGN_OUT(outputName, index, comp, src) db_outputs_##outputName[index] comp = p.src
 
@@ -330,30 +264,17 @@ public:
             }
         }
 
-        db.outputs.exec() = kExecutionAttributeStateEnabled;
-
-#if __DEBUG_PRINT_ON
-        std::cout << "]";
-#endif
 
         return true;
     }
 
-    virtual void reset()
-    {
-        mConfig = "";
-        mScanType = LidarScanType::kUnknown;
-        mLidarDeleted = false;
-        mDataPtr.reset();
-    }
 
 private:
-    bool mLidarDeleted;
-    boost::shared_ptr<pxr::GfVec3f[]> mDataPtr;
-    std::string mConfig;
-    LidarScanType mScanType{ LidarScanType::kUnknown };
-    LidarSolidStateProfile mSolidStateProfile;
-    LidarRotaryProfile mRotaryProfile;
+    isaac::utils::HostBufferBase<float3> hostPcBuffer;
+    std::string config;
+    LidarScanType scanType{ LidarScanType::kUnknown };
+    LidarSolidStateProfile solidStateProfile;
+    LidarRotaryProfile rotaryProfile;
 };
 
 REGISTER_OGN_NODE()
