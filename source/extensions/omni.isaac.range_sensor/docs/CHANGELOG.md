@@ -1,4 +1,10 @@
 # Changelog
+
+## [1.0.0] - 2023-08-28
+### Changed
+- Output of IsaacReadLidarPointCloud changed from pointCloudData to data
+
+
 ## [0.8.7] - 2023-08-25
 ### Changed
 - Changed log error to log warning for when the target prim is not found in the omnigraph node

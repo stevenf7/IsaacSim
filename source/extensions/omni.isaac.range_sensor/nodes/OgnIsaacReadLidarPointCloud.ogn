@@ -1,6 +1,6 @@
 {
     "IsaacReadLidarPointCloud": {
-        "version": 1,
+        "version": 2,
         "icon": "icons/isaac-sim.svg",
         "description": [
             "This node reads from the lidar sensor and holds point cloud data buffers for a full scan"
@@ -25,7 +25,7 @@
                 "type": "execution",
                 "description": "Output execution triggers when lidar sensor has completed a full scan"
             },
-            "pointCloudData":{
+            "data":{
                 "type": "pointf[3][]",
                 "description": "Buffer of 3d points containing point cloud data",
                 "memoryType": "cpu",

@@ -32,6 +32,7 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
         "%{root}/_build/target-deps/omni_client_library/include",
         "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/include",
         "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/RangeSensorSchema/include",
+        "%{root}/_build/target-deps/nlohmann-json/include",
      }
      libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",

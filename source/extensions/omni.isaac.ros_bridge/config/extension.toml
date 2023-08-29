@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.14.3"
+version = "1.14.5"
 category = "Simulation"
 title = "ROS Bridge"
 description = "ROS Bridge"
@@ -78,6 +78,6 @@ stdoutFailPatterns.exclude = [
     "*[Error] [omni.graph] AttributeError: Attempted to get array size of non-array attribute inputs:jointNames*",
     "*Error: * UsdRelationship not supported in GetPrimArrayAttr*",
     "*removePath called on non-existent path*",
-    "*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_ros_bridge_ROS1PublishImage: Width 0 or height 0 is not valid*",
-    "*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_ros_bridge_ROS1PublishLaserScan: Number of rows must be equal to 1. High LOD not supported for LaserScan, only 2D Lidar Supported for LaserScan. Please disable Lidar High LOD setting*",
+    "*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_ros_bridge_ROS1PublishImage: [/TestGraph] Width 0 or height 0 is not valid*",
+    "*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_ros_bridge_ROS1PublishLaserScan: [/TestGraph] Number of rows must be equal to 1. High LOD not supported for LaserScan, only 2D Lidar Supported for LaserScan. Please disable Lidar High LOD setting*",
 ]

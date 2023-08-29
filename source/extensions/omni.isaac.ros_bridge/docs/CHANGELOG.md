@@ -1,5 +1,12 @@
 # Changelog
-## [1.14.3] - 2023-08-25
+
+## [1.14.5] - 2023-08-26
+### Fixed
+- CUDA error in PCL publisher
+- Semantic publisher not correctly publishing bbox, semantics, instances
+
+## [1.14.4] - 2023-08-25
+### Changed
 - Changed log error to log warning for when the target prim is not found in the omnigraph node
 - Changed test_camera test to expect identical fx and fy as vertical aperture is computed from horizontal aperture. 
 
