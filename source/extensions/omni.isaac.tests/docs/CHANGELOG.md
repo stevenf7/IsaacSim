@@ -1,3 +1,7 @@
+## [1.11.] 2023-08-29
+### Fixed
+- test_randomizer_snippets.py to use await instead of ensure_future
+
 ## [1.11.0] 2023-08-24
 ### Added
 - test_randomizer_snippets.py containing replicator alternative randomizer examples from the docs 
