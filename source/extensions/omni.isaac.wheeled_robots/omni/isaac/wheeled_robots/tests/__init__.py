@@ -6,8 +6,5 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-"""
-Presence of this file allows the tests directory to be imported as a module so that all of its contents
-can be scanned to automatically add tests that are placed into this directory.
-"""
+
 scan_for_test_modules = True
