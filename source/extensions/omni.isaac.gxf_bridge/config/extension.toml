@@ -74,3 +74,9 @@ exclude = ["*/pygxf*", "*/bin", "*/__pycache__/*", "*/.git/*"]
 [fswatcher.patterns]
 include = ["*.ogn", "*.py", "*.toml"]
 exclude = ["Ogn*Database.py"]
+
+[[test]]
+stdoutFailPatterns.exclude = [
+    "*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_gxf_bridge_GXFPoseTreeFrameMapBuilder: [/TestGraph] Please specify atleast one target prim for the ROS pose tree component*",
+    "*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_gxf_bridge_GXFPublishPoseTree: [/TestGraph] Please specify atleast one target prim for the ROS pose tree component*",
+]

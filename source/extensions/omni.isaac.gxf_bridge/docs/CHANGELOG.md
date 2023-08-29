@@ -1,4 +1,8 @@
 # Changelog
+## [0.13.3] - 2023-08-29
+### Fixed
+- added standard out fail pattern for the expected no prim found edge cases for the ogn test
+
 ## [0.13.2] - 2023-08-23
 ### Added
 - OgnGXFPublishAckermannDynamicState, OgnGXFSubscribeAckermannControl nodes to interface with

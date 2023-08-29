@@ -1,6 +1,8 @@
 # Changelog
-
-## [8.1.1] - 2023-08-24
+## [8.1.2] - 2023-08-28
+### Changed
+- Added standard out fail pattern for the expected no prim found edge case for the ogn test
+## [8.1.1] - 2023-08-22
 ### Fixed
 -  CreateRTXLidarScanBuffer works on Solid State Lidar
 - Improved unit test stability

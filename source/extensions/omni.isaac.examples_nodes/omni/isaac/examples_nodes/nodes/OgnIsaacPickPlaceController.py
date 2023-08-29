@@ -110,7 +110,8 @@ class OgnIsaacPickPlaceController:
                 if db.inputs.usePath:
                     state.robot_prim_path = db.inputs.robotPrimPath
                 else:
-                    if len(db.inputs.targetPrim.path) == None:
+                    if len(db.inputs.targetPrim.path) == 0:
+                        db.log_error("Omnigraph Error: target prim cannot be empty when use path is selected")
                         return False
                     else:
                         state.robot_prim_path = db.inputs.targetPrim[0].GetString()

@@ -61,18 +61,18 @@ class OgnIsaacReadEffortSensor:
                 state.parent_path = "/".join(state.prim_path.split("/")[:-1])
                 state.dof_name = state.prim_path.split("/")[-1]
             else:
-                db.log_warn(f"Failed to create sensor, prim path missing")
+                db.log_error(f"Failed to create effort sensor, unable to find prim path")
                 return False
 
             result = state.init_compute()
             if not result:
                 db.outputs.sensorTime = 0
                 db.outputs.value = 0
-                db.log_warn(f"Failed to create sensor at {state.prim_path} for joint {state.dof_name}")
+                db.log_error(f"Failed to create sensor at {state.prim_path} for joint {state.dof_name}")
                 return False
 
         if not len(db.inputs.prim) > 0:
-            db.log_warn(f"Failed to create sensor, prim path missing")
+            db.log_error(f"Failed to create effort sensor, unable to find prim path")
             return False
 
         state.prim_path = db.inputs.prim[0].GetString()

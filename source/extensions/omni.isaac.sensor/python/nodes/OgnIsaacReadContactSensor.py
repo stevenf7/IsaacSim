@@ -82,7 +82,7 @@ class OgnIsaacReadContactSensor:
                 db.outputs.inContact = False
                 db.outputs.value = 0
                 db.outputs.sensorTime = 0
-                db.log_warn("Invalid contact sensor prim")
+                db.log_error("Invalid contact sensor prim")
                 return False
             return True
 
