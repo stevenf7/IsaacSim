@@ -137,12 +137,12 @@ project_ext_bindings ({
 
 
 repo_build.prebuild_link {
-    { "python/scripts", ext.target_dir.."/omni/isaac/debug_draw/scripts" },
-    { "python/tests", ext.target_dir.."/omni/isaac/debug_draw/tests" },
+    { "python/scripts", ogn.python_target_path.."/scripts" },
+    { "python/tests", ogn.python_tests_target_path },
     { "docs", ext.target_dir.."/docs" },
     { "data", ext.target_dir.."/data" },
 }
 
 repo_build.prebuild_copy {
-    { "python/*.py", ext.target_dir.."/omni/isaac/debug_draw" },
+    { "python/__init__.py", ogn.python_target_path },
 }

@@ -50,13 +50,13 @@ class TestSimulationContextCrash(omni.kit.test.AsyncTestCase):
         # Start Simulation and wait
         self._timeline.play()
         await update_stage_async()
-
         self._robot = Robot(robot_prim_path)
         self._robot.initialize()
         # Initializing World after creating a robot will cause undefined behavior if timeline is playing
         world = World()
         # initializing causes timeline to stop if playing
         await world.initialize_simulation_context_async()
-        self.assertTrue(world.is_playing(), False)
+        await update_stage_async()
+        self.assertEquals(world.is_playing(), False)
         # Make sure this call doesn't crash due to invalid physx handles
         self._robot.disable_gravity()
