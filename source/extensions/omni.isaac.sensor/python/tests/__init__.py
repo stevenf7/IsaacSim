@@ -20,3 +20,5 @@ from .test_rtx_rotary_lidar import *
 
 # TODO, solid state test causes other tests to fail
 # from .test_rtx_solid_state_lidar import *
+
+scan_for_test_modules = True

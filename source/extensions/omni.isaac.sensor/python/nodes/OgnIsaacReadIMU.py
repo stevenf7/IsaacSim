@@ -76,7 +76,7 @@ class OgnIsaacReadIMU:
                 db.outputs.angVel = [0.0, 0.0, 0.0]
                 db.outputs.orientation = [0.0, 0.0, 0.0, 1.0]
                 db.outputs.sensorTime = 0.0
-                db.log_warn("Invalid Imu sensor prim")
+                db.log_error("Invalid Imu sensor prim")
                 return False
 
         else:

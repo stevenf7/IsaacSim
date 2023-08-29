@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "8.1.1"
+version = "8.1.2"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Support physics based sensors, such as contact sensors and imu sensors"
@@ -78,4 +78,7 @@ dependencies = [
 stdoutFailPatterns.exclude = [
     # This is excluded in at least 3 kit tests.
     "*Missing call to destroyResourceBindingSignature()*",
+    '*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_sensor_IsaacReadContactSensor: [/TestGraph] OmniGraph Error: Invalid contact sensor prim*',
+    '*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_sensor_IsaacReadEffortSensor: [/TestGraph] OmniGraph Error: Failed to create effort sensor, unable to find prim path*',
+    '*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_sensor_IsaacReadIMU: [/TestGraph] OmniGraph Error: Invalid Imu sensor prim*',
 ]

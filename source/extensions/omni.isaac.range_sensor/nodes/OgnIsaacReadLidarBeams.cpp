@@ -60,7 +60,7 @@ public:
             }
             else
             {
-                db.logWarning("no prim path found for the lidar");
+                db.logError("no prim path found for the lidar");
                 return false;
             }
 
