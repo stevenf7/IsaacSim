@@ -28,7 +28,6 @@ class TestRandomizerSnippets(omni.kit.test.AsyncTestCase):
         # In some cases the test will end before the asset is loaded, in this case wait for assets to load
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await omni.kit.app.get_app().next_update_async()
-        pass
 
     async def test_randomizing_a_light_source(self):
         import asyncio
@@ -94,7 +93,8 @@ class TestRandomizerSnippets(omni.kit.test.AsyncTestCase):
 
         num_frames = 10
         lights = sphere_lights(10)
-        asyncio.ensure_future(run_randomizations_async(num_frames=num_frames, lights=lights, delay=0.2))
+        # asyncio.ensure_future(run_randomizations_async(num_frames=num_frames, lights=lights, delay=0.2))
+        await run_randomizations_async(num_frames=num_frames, lights=lights, delay=0.2)
 
     async def test_randomizing_textures(self):
         import asyncio
@@ -221,7 +221,8 @@ class TestRandomizerSnippets(omni.kit.test.AsyncTestCase):
         ]
 
         num_frames = 10
-        asyncio.ensure_future(run_randomizations_async(num_frames, materials, textures, delay=0.2))
+        # asyncio.ensure_future(run_randomizations_async(num_frames, materials, textures, delay=0.2))
+        await run_randomizations_async(num_frames, materials, textures, delay=0.2)
 
     async def test_chained_randomizations(self):
         import asyncio
@@ -350,6 +351,7 @@ class TestRandomizerSnippets(omni.kit.test.AsyncTestCase):
             assets_root_path + "/NVIDIA/Assets/Skies/Clear/mealie_road_4k.hdr",
             assets_root_path + "/NVIDIA/Assets/Skies/Clear/qwantani_4k.hdr",
         ]
-        asyncio.ensure_future(
-            run_randomizations_async(num_frames, dome_light, dome_textures, pallet_prim, bin_prim, delay=0.2)
-        )
+        # asyncio.ensure_future(
+        #     run_randomizations_async(num_frames, dome_light, dome_textures, pallet_prim, bin_prim, delay=0.2)
+        # )
+        await run_randomizations_async(num_frames, dome_light, dome_textures, pallet_prim, bin_prim, delay=0.2)
