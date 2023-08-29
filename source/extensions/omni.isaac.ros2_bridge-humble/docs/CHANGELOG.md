@@ -1,6 +1,6 @@
 # Changelog
 ## [1.13.3] - 2023-08-25
-- Changed log error to log warning for when the target prim is not found in the omnigraph node
+- Added standard out fail pattern for the expected no prim found edge cases for the ogn test
 - Changed test_camera test to expect identical fx and fy as vertical aperture is computed from horizontal aperture. 
 ## [1.13.2] - 2023-08-18
 ### Fixed
