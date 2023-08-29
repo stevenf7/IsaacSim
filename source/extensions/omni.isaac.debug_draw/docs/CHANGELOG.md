@@ -1,7 +1,7 @@
 # Changelog
 ## [0.5.1] - 2023-08-25
 ### Changed
-- Changed log error to log warning for when the target prim is not found in the omnigraph node
+- added stdout fail pattern for the expected no prim found edge case for the ogn test
 ## [0.5.0] - 2023-08-22
 ### Changed
 - Added testMode and removed depthTest (it did nothing) from DebugDrawPointCloud node.

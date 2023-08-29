@@ -48,7 +48,7 @@ class OgnIsaacCreateRenderProduct:
     def compute(db) -> bool:
         state = db.internal_state
         if len(db.inputs.cameraPrim) == 0:
-            db.log_warn(f"Camera prim must be specified")
+            db.log_error(f"Camera prim must be specified")
             return False
         if state.factory is None:
             state.factory = omni.hydratexture.acquire_hydra_texture_factory_interface()

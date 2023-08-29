@@ -43,5 +43,8 @@ dependencies = [
 ]
 
 stdoutFailPatterns.exclude = [
-    "*Invalid Bundle object in Py_Bundle in getPrimPath*", # Per node tests won't have valid bundles
+    '*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_core_nodes_IsaacComputeOdometry: [/TestGraph] Omnigraph Error: no chasis prim found*',
+    '*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_core_nodes_IsaacCreateRenderProduct: [/TestGraph] OmniGraph Error: Camera prim must be specified*',
+    '*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_core_nodes_IsaacSetCameraOnRenderProduct: [/TestGraph] OmniGraph Error: Camera prim must be specified*',
+    '*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_core_nodes_IsaacArticulationController: [/TestGraph] Omnigraph Error: No robot prim found for the articulation controller*',
 ]
