@@ -24,6 +24,8 @@
 #include <omni/sensors/lidar/LidarParameterType.h>
 #include <omni/sensors/lidar/LidarProfileTypes.h>
 #include <omni/sensors/lidar/LidarReturnTypes.h>
+#include <thrust/copy.h>
+#include <thrust/device_ptr.h>
 
 #include <OgnIsaacCreateRTXLidarScanBufferDatabase.h>
 
@@ -62,14 +64,6 @@ private:
     LidarSolidStateProfile solidStateProfile;
     LidarRotaryProfile rotaryProfile;
     uint32_t lostReturns{ 0 };
-    // xxxScanBuffer holds the whole scan, and xxxBuffer holds only the current data from dataPtr()
-    // isaac::utils::DeviceBufferBase<float3> pcScanBuffer; // 3d point cloud
-    // isaac::utils::DeviceBufferBase<float> distanceScanBuffer; // pass through but needed to compute pc
-    // isaac::utils::DeviceBufferBase<float> intensityScanBuffer; // pass through
-    // isaac::utils::DeviceBufferBase<float> azimuthScanBuffer;
-    // isaac::utils::DeviceBufferBase<float> elevationScanBuffer;
-    // isaac::utils::DeviceBufferBase<uint32_t> objectIdScanBuffer; // pass through
-    // isaac::utils::DeviceBufferBase<uint32_t> indexScanBuffer;
 
     isaac::utils::HostBufferBase<float3> hostPcScanBuffer; // TODO pass out gpu or use managed memory.
     isaac::utils::HostBufferBase<float> hostDistanceScanBuffer;
@@ -93,7 +87,6 @@ private:
     isaac::utils::DeviceBufferBase<float> elevationBuffer;
 
     // TODOMTC EmitterProfile only need distanceCorrectionM, horOffsetM, vertOffsetM for GPU
-    // TODOMTC Solid State does not work correctly.
 
 public:
     static bool compute(OgnIsaacCreateRTXLidarScanBufferDatabase& db)
@@ -118,7 +111,7 @@ public:
         db.outputs.objectIdPtr() = 0;
         db.outputs.indexPtr() = 0; // only if keepOnlyPositiveDistance
 
-        db.outputs.returnsPerScan() = 0;
+        db.outputs.numReturnsPerScan() = 0;
         db.outputs.ticksPerScan() = 0;
         db.outputs.numChannels() = 0;
         db.outputs.numEchos() = 0;
@@ -138,13 +131,9 @@ public:
         LidarParameterType* parameterHost =
             omni::sensors::nv::lidar::fillStructsFromBuffer(dataHost, lidarReturnsHost, lidarTicksHost);
         const uint32_t ticksPerScan = parameterHost->async.ticksPerScan;
-        uint32_t numTicks = parameterHost->async.numTicks;
+        const uint32_t numTicks = parameterHost->async.numTicks;
         const uint32_t numChannels = parameterHost->async.numChannels;
         const uint32_t numEchos = parameterHost->async.numEchos;
-
-        // TODOMTC MAKE THIS WORK.
-        // You can shrink into an earlier scan location by using the index. So to write a first set of scans...
-        // or just only shrink at the end
 
         if (numTicks == 0 || numChannels * numEchos == 0)
         {
@@ -171,62 +160,31 @@ public:
         }
         updateLidarConfig(curConfig, state.config, state.scanType, state.rotaryProfile, state.solidStateProfile);
 
-        getTransformFromLidarAsyncParameter(parameterHost->async, matrixOutput);
-
-        // startTick is 0 for all solid state, so use the fist emitter Id.  This will usually be 0, unless one of the
-        // previous frames ran over, then it will start at the length of the run over... for now we can just mod the
-        // run over, but TODOMTC deal with lidarReturnsHost.emitterIds[0] == 1 etc...
-        const uint32_t startTick = state.scanType == LidarScanType::kSolidState ? lidarReturnsHost.emitterIds[0] :
-                                                                                  parameterHost->async.startTick;
         // TODOMTC Transform applied to previous buffer values is newer, either store transforms, or apply here.
-        // the returnsPerScan computation differ depending on what type of lidar you have.
+        getTransformFromLidarAsyncParameter(parameterHost->async, matrixOutput); // TODOMTC use moving transoforms?
+
+        // startLocFullScan is the location in a full scan buffer of first element in the incoming data.
+        //   startTick is 0 for all solid state, so use the fist emitter Id.  This will usually be 0, unless one of the
+        //   previous frames ran over, then it will start at the length of the run over... for now we can just mod the
+        //   run over, but TODOMTC deal with lidarReturnsHost.emitterIds[0] == 1 etc...
+        bool isSolidState = state.scanType == LidarScanType::kSolidState;
+        const uint32_t startLocFullScan =
+            numEchos * (isSolidState ? lidarReturnsHost.emitterIds[0] : parameterHost->async.startTick * numChannels);
+
+        // numReturns is the number returns held in the incoming data
+        const uint32_t numReturnsInput = numTicks * numChannels * numEchos;
+
+        // numReturnsPerScan is the number or returns in a full scan
+        // the numReturnsPerScan computation differ depending on what type of lidar you have.
         // numChannels is always the numEmitters in a rotary, and it is variable in solid state.
-        uint32_t numReturns = numTicks * numChannels * numEchos;
-        const uint32_t returnsPerScan = state.scanType == LidarScanType::kSolidState ?
-                                            state.solidStateProfile.numberOfEmitters * numEchos :
-                                            ticksPerScan * numChannels * numEchos;
+        const uint32_t numReturnsPerScan =
+            numEchos * (isSolidState ? state.solidStateProfile.numberOfEmitters : ticksPerScan * numChannels);
 
-        const uint32_t scanLoc =
-            state.scanType == LidarScanType::kSolidState ? startTick * numEchos : startTick * numChannels * numEchos;
-
-        // TODOMTC deal with this spillover.
-        // is there ever a buffer that is part in this scan and part in the next?  If so, truncate and lose data.
-        if (scanLoc + numReturns > returnsPerScan)
-        {
-            uint32_t fullNumReturns = numReturns;
-            numReturns = returnsPerScan - scanLoc;
-            if (state.lostReturns != fullNumReturns - numReturns)
-            {
-                state.lostReturns = fullNumReturns - numReturns;
-                CARB_LOG_WARN("WARNING - numReturns = %i, but has been truncated to %i.  You lost %i returns!",
-                              int(fullNumReturns), int(numReturns), int(fullNumReturns - numReturns));
-            }
-        }
-
-        // TODOMTC what if the buffer that is adding in is longer than returnsPerScan once it is concatenated from
-        // scanLoc?
-        /*
-        if (state.scanType == LidarScanType::kSolidState)
-        {
-            std::cout << "scanType = SolidState\n";
-        }
-        else if (state.scanType == LidarScanType::kRotary)
-        {
-            std::cout << "scanType = Rotary\n";
-        }
-        else
-        {
-            std::cout << "scanType = Unknown\n";
-        }
-        std::cout << "returnsPerScan = " << returnsPerScan << "\n";
-        std::cout << "startTick = " << startTick << "\n";
-        std::cout << "scanLoc = " << scanLoc << "\n";
-        */
-
-        db.outputs.returnsPerScan() = returnsPerScan;
-        db.outputs.ticksPerScan() = ticksPerScan;
-        db.outputs.numChannels() = numChannels;
+        db.outputs.numReturnsPerScan() = numReturnsPerScan;
+        db.outputs.ticksPerScan() = isSolidState ? 1 : ticksPerScan;
+        db.outputs.numChannels() = isSolidState ? state.solidStateProfile.numberOfEmitters : numChannels;
         db.outputs.numEchos() = numEchos;
+
         bool keepOnlyPositiveDistance = db.inputs.keepOnlyPositiveDistance();
         float accuracyErrorAzimuthDeg = db.inputs.accuracyErrorAzimuthDeg();
         float accuracyErrorElevationDeg = db.inputs.accuracyErrorElevationDeg();
@@ -235,31 +193,22 @@ public:
 
         // std::cout << "Before resize  -------------------\n";
         // TODO PASS OUT A GPU INSTEAD OF USING THIS, OR AT LEAST USE MANAGED MEMORY.
-        state.hostPcScanBuffer.resize(returnsPerScan, make_float3(0.0f, 0.0f, 0.0f));
-        state.hostDistanceScanBuffer.resize(returnsPerScan, 0);
-        state.hostIntensityScanBuffer.resize(returnsPerScan, 0);
-        state.hostAzimuthScanBuffer.resize(returnsPerScan, 0);
-        state.hostElevationScanBuffer.resize(returnsPerScan, 0);
-        state.hostObjectIdScanBuffer.resize(returnsPerScan, 0);
+        state.hostPcScanBuffer.resize(numReturnsPerScan, make_float3(0.0f, 0.0f, 0.0f));
+        state.hostDistanceScanBuffer.resize(numReturnsPerScan, 0);
+        state.hostIntensityScanBuffer.resize(numReturnsPerScan, 0);
+        state.hostAzimuthScanBuffer.resize(numReturnsPerScan, 0);
+        state.hostElevationScanBuffer.resize(numReturnsPerScan, 0);
+        state.hostObjectIdScanBuffer.resize(numReturnsPerScan, 0);
         if (keepOnlyPositiveDistance)
         {
-            state.hostIndexShrunkBuffer.resize(returnsPerScan, 0);
-            state.hostPcShrunkBuffer.resize(returnsPerScan, make_float3(0.0f, 0.0f, 0.0f));
-            state.hostDistanceShrunkBuffer.resize(returnsPerScan, 0);
-            state.hostIntensityShrunkBuffer.resize(returnsPerScan, 0);
-            state.hostAzimuthShrunkBuffer.resize(returnsPerScan, 0);
-            state.hostElevationShrunkBuffer.resize(returnsPerScan, 0);
-            state.hostObjectIdShrunkBuffer.resize(returnsPerScan, 0);
+            state.hostIndexShrunkBuffer.resize(numReturnsPerScan, 0);
+            state.hostPcShrunkBuffer.resize(numReturnsPerScan, make_float3(0.0f, 0.0f, 0.0f));
+            state.hostDistanceShrunkBuffer.resize(numReturnsPerScan, 0);
+            state.hostIntensityShrunkBuffer.resize(numReturnsPerScan, 0);
+            state.hostAzimuthShrunkBuffer.resize(numReturnsPerScan, 0);
+            state.hostElevationShrunkBuffer.resize(numReturnsPerScan, 0);
+            state.hostObjectIdShrunkBuffer.resize(numReturnsPerScan, 0);
         }
-
-        // these should be noop if buffers are not changed in size or cuda device.
-        // state.pcScanBuffer.setDevice(cudaDeviceIndex);
-        // state.distanceScanBuffer.setDevice(cudaDeviceIndex);
-        // state.intensityScanBuffer.setDevice(cudaDeviceIndex);
-        // state.azimuthScanBuffer.setDevice(cudaDeviceIndex);
-        // state.elevationScanBuffer.setDevice(cudaDeviceIndex);
-        // state.objectIdScanBuffer.setDevice(cudaDeviceIndex);
-        // state.indexScanBuffer.setDevice(cudaDeviceIndex);
 
         state.pcBuffer.setDevice(cudaDeviceIndex);
         state.distanceBuffer.setDevice(cudaDeviceIndex);
@@ -267,69 +216,86 @@ public:
         state.azimuthBuffer.setDevice(cudaDeviceIndex);
         state.elevationBuffer.setDevice(cudaDeviceIndex);
 
-        // state.pcScanBuffer.resize(returnsPerScan);
-        // state.distanceScanBuffer.resize(returnsPerScan);
-        // state.intensityScanBuffer.resize(returnsPerScan);
-        // state.azimuthScanBuffer.resize(returnsPerScan);
-        // state.elevationScanBuffer.resize(returnsPerScan);
-        // state.objectIdScanBuffer.resize(returnsPerScan);
-        // state.indexScanBuffer.resize(returnsPerScan);
+        state.pcBuffer.resize(numReturnsInput);
+        state.distanceBuffer.resize(numReturnsInput);
+        state.intensityBuffer.resize(numReturnsInput);
+        state.azimuthBuffer.resize(numReturnsInput);
+        state.elevationBuffer.resize(numReturnsInput);
 
-        state.pcBuffer.resize(numReturns);
-        state.distanceBuffer.resize(numReturns);
-        state.intensityBuffer.resize(numReturns);
-        state.azimuthBuffer.resize(numReturns);
-        state.elevationBuffer.resize(numReturns);
+        // If the number or returns is greater then the returns left to fill in the scan, then we need to roll over the
+        // remaining to the start
+        uint32_t numReturns = numReturnsInput;
+        uint32_t numSpilloverReturns = 0;
+        if (startLocFullScan + numReturnsInput > numReturnsPerScan)
+        {
+            numReturns = numReturnsPerScan - startLocFullScan;
+            numSpilloverReturns = numReturnsInput - numReturns;
+        }
+
 
         // std::cout << "Before cuda calls  -------------------\n";
         // These do nothing if the device and size are the same the last time we called this.
         {
             isaac::utils::ScopedDevice scopedDevice(cudaDeviceIndex);
-            state.distanceBuffer.copyAsync(lidarReturnsHost.distances, numReturns, cudaMemcpyHostToDevice);
+            state.distanceBuffer.copyAsync(lidarReturnsHost.distances, numReturnsInput, cudaMemcpyHostToDevice);
             // objectId
-            cudaMemcpyAsync(&state.hostObjectIdScanBuffer.data()[scanLoc], lidarReturnsHost.objectIds,
+            cudaMemcpyAsync(&state.hostObjectIdScanBuffer.data()[startLocFullScan], lidarReturnsHost.objectIds,
                             numReturns * sizeof(float), cudaMemcpyHostToHost);
+            cudaMemcpyAsync(&state.hostObjectIdScanBuffer.data()[0], lidarReturnsHost.objectIds + numReturns,
+                            numSpilloverReturns * sizeof(float), cudaMemcpyHostToHost);
+
             // distance
-            cudaMemcpyAsync(&state.hostDistanceScanBuffer.data()[scanLoc], lidarReturnsHost.distances,
+            cudaMemcpyAsync(&state.hostDistanceScanBuffer.data()[startLocFullScan], lidarReturnsHost.distances,
                             numReturns * sizeof(float), cudaMemcpyHostToHost);
+            cudaMemcpyAsync(&state.hostDistanceScanBuffer.data()[0], lidarReturnsHost.distances + numReturns,
+                            numSpilloverReturns * sizeof(float), cudaMemcpyHostToHost);
             // intensity
             // TODOMTC Map intensity?
-            cudaMemcpyAsync(&state.hostIntensityScanBuffer.data()[scanLoc], lidarReturnsHost.intensities,
+            cudaMemcpyAsync(&state.hostIntensityScanBuffer.data()[startLocFullScan], lidarReturnsHost.intensities,
                             numReturns * sizeof(float), cudaMemcpyHostToHost);
+            cudaMemcpyAsync(&state.hostIntensityScanBuffer.data()[0], lidarReturnsHost.intensities + numReturns,
+                            numSpilloverReturns * sizeof(float), cudaMemcpyHostToHost);
 
-            state.elevationBuffer.copyAsync(lidarReturnsHost.elevations, numReturns, cudaMemcpyHostToDevice);
+            state.elevationBuffer.copyAsync(lidarReturnsHost.elevations, numReturnsInput, cudaMemcpyHostToDevice);
             elevation(state.elevationBuffer.data(), state.pcBuffer.data(), state.intensityBuffer.data(),
-                      accuracyErrorElevationDeg, numReturns, cudaDeviceIndex);
+                      accuracyErrorElevationDeg, numReturnsInput, cudaDeviceIndex);
             // elevation
-            cudaMemcpyAsync(&state.hostElevationScanBuffer.data()[scanLoc], state.elevationBuffer.data(),
+            cudaMemcpyAsync(&state.hostElevationScanBuffer.data()[startLocFullScan], state.elevationBuffer.data(),
                             numReturns * sizeof(float), cudaMemcpyDeviceToHost);
+            cudaMemcpyAsync(&state.hostElevationScanBuffer.data()[0], state.elevationBuffer.data() + numReturns,
+                            numSpilloverReturns * sizeof(float), cudaMemcpyDeviceToHost);
 
-            state.azimuthBuffer.copyAsync(lidarReturnsHost.azimuths, numReturns, cudaMemcpyHostToDevice);
-            azimuthRightHanded(state.azimuthBuffer.data(), state.pcBuffer.data(), accuracyErrorAzimuthDeg, numReturns,
-                               cudaDeviceIndex);
+            state.azimuthBuffer.copyAsync(lidarReturnsHost.azimuths, numReturnsInput, cudaMemcpyHostToDevice);
+            azimuthRightHanded(state.azimuthBuffer.data(), state.pcBuffer.data(), accuracyErrorAzimuthDeg,
+                               numReturnsInput, cudaDeviceIndex);
             // azimuth
-            cudaMemcpyAsync(&state.hostAzimuthScanBuffer.data()[scanLoc], state.azimuthBuffer.data(),
+            cudaMemcpyAsync(&state.hostAzimuthScanBuffer.data()[startLocFullScan], state.azimuthBuffer.data(),
                             numReturns * sizeof(float), cudaMemcpyDeviceToHost);
+            cudaMemcpyAsync(&state.hostAzimuthScanBuffer.data()[0], state.azimuthBuffer.data() + numReturns,
+                            numSpilloverReturns * sizeof(float), cudaMemcpyDeviceToHost);
 
 
-            pointCloud(state.pcBuffer.data(), state.intensityBuffer.data(), state.distanceBuffer.data(), numReturns,
-                       cudaDeviceIndex);
+            pointCloud(state.pcBuffer.data(), state.intensityBuffer.data(), state.distanceBuffer.data(),
+                       numReturnsInput, cudaDeviceIndex);
             // point cloud
-            cudaMemcpyAsync(&state.hostPcScanBuffer.data()[scanLoc], state.pcBuffer.data(), numReturns * sizeof(float3),
-                            cudaMemcpyDeviceToHost);
+            cudaMemcpyAsync(&state.hostPcScanBuffer.data()[startLocFullScan], state.pcBuffer.data(),
+                            numReturns * sizeof(float3), cudaMemcpyDeviceToHost);
+            cudaMemcpyAsync(&state.hostPcScanBuffer.data()[0], state.pcBuffer.data() + numReturns,
+                            numSpilloverReturns * sizeof(float3), cudaMemcpyDeviceToHost);
 
             cudaDeviceSynchronize();
         }
         db.outputs.exec() = db.inputs.exec();
+        // TODOMTC Move this to the GPU
+        // TODOMTC output GPU data.
         if (keepOnlyPositiveDistance)
         {
             auto tasking = carb::getCachedInterface<carb::tasking::ITasking>();
             int outSize = 0;
             const float* distScan = state.hostDistanceScanBuffer.data();
             uint32_t* ib = state.hostIndexShrunkBuffer.data(); // index buffer
-// preform sequential stream compaction
-#if 1
-            const int rps = returnsPerScan;
+            // preform sequential stream compaction
+            const int rps = numReturnsPerScan;
             for (int i = 0; i < rps; ++i) // starts as max size.
             {
                 if (distScan[i] > 0.f)
@@ -338,28 +304,6 @@ public:
                     ++outSize;
                 }
             }
-#else
-            std::atomic<int> outSizeAtomic(0);
-            int rps = returnsPerScan;
-            int tps = ticksPerScan;
-            int tickSize = numChannels * numEchos;
-            tasking->parallelFor(0, tps,
-                                 [&outSizeAtomic, tickSize, distScan, ib](int i)
-                                 {
-                                     int start_i = i * tickSize;
-                                     int end_i = (i + 1) * tickSize;
-                                     for (int j = start_i; j < end_i; ++j)
-                                     {
-                                         if (distScan[j] > 0.f)
-                                         {
-                                             ib[outSizeAtomic.fetch_add(1)] = j;
-                                         }
-                                     }
-                                 });
-            outSize = outSizeAtomic;
-#endif
-
-            db.outputs.returnsPerScan() = outSize;
             db.outputs.bufferSize() = outSize * sizeof(float3);
             db.outputs.width() = static_cast<uint32_t>(outSize);
             db.outputs.indexPtr() = reinterpret_cast<uint64_t>(ib);

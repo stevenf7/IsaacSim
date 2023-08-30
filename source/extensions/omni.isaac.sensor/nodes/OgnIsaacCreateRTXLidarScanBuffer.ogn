@@ -99,9 +99,9 @@
                 "type": "uint64",
                 "description": "Index into the full array if keepOnlyPositiveDistance ((startTick+tick)*numChannels*numEchos + channel*numEchos + echo)" 
             },
-            "returnsPerScan": {
+            "numReturnsPerScan": {
                 "type": "uint",
-                "description": "Number of returns in the scan, changes based on keepOnlyPositiveDistance"
+                "description": "Number of returns in the full scan"
             },
             "ticksPerScan": {
                 "type": "uint",

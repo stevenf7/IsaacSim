@@ -14,6 +14,7 @@
 #include <carb/cudainterop/CudaInterop.h>
 
 #include <cuda.h>
+#include <iostream>
 #include <vector>
 
 namespace omni
@@ -125,6 +126,20 @@ public:
     {
         ScopedDevice scopedDevice(mDevice);
         CUDA_CHECK(cudaMemcpyAsync(mBuffer, src, size * sizeof(T), kind));
+    }
+    void debugPrint(const std::string& start, const std::string& end)
+    {
+        ScopedDevice scopedDevice(mDevice);
+        printf("%s", start.c_str());
+        std::vector<T> hostBuffer(mSize);
+        CUDA_CHECK(cudaMemcpyAsync(hostBuffer.data(), mBuffer, mSize * sizeof(T), cudaMemcpyDeviceToHost));
+        for (size_t i; i < mSize; ++i)
+        {
+            std::cout << hostBuffer[i];
+            if (i != mSize - 1)
+                std::cout << ", ";
+        }
+        printf("%s", end.c_str());
     }
 
 private:
