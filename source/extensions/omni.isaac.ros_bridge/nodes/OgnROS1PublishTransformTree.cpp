@@ -82,7 +82,7 @@ public:
             }
             else
             {
-                db.logWarning("Please specify atleast one target prim for the ROS pose tree component");
+                db.logError("Please specify atleast one target prim for the ROS pose tree component");
                 return false;
             }
             // Finding Parent Prim

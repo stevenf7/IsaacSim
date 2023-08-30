@@ -54,7 +54,7 @@ public:
         }
         else
         {
-            db.logWarning("no prim path");
+            db.logError("Could not find target prim");
             return false;
         }
 
