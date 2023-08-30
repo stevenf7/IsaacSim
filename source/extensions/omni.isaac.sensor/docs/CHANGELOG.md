@@ -1,4 +1,11 @@
 # Changelog
+## [9.0.0] - 2023-08-29
+### Added 
+- Sick_TiM781 lidar config file.
+### Changed
+- on CreateRTXLidarScanBuffer returnsPerScan output to numReturnsPerScan
+### Fixed
+-  CreateRTXLidarScanBuffer works when input data wraps around the output buffer
 ## [8.1.2] - 2023-08-28
 ### Changed
 - Added standard out fail pattern for the expected no prim found edge case for the ogn test

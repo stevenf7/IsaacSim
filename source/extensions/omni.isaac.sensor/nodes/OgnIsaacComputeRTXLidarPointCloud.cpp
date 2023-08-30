@@ -13,13 +13,7 @@
 #include "LidarNodeUtils.h"
 #include "omni/isaac/utils/UsdUtilities.h"
 
-#include <carb/InterfaceUtils.h>
-
-#include <boost/make_shared.hpp>
-#include <boost/shared_ptr.hpp>
-#include <internal/omni/sensors/lidar/LidarIntensityMapping.h>
 #include <internal/omni/sensors/lidar/LidarReturnHelper.h>
-#include <internal/omni/sensors/lidar/LidarSettings.h>
 #include <omni/isaac/utils/Buffer.h>
 #include <omni/math/linalg/matrix.h>
 #include <omni/sensors/LidarPointsConvert.h>

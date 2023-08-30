@@ -137,7 +137,7 @@ _, sensor = omni.kit.commands.execute(
     path="/sensor",
     parent=None,
     config=lidar_config,
-    translation=(0, 0, 1.0),
+    translation=(0, 0, -0.04),
     orientation=Gf.Quatd(0.5, 0.5, -0.5, -0.5),  # Gf.Quatd is w,i,j,k
 )
 
