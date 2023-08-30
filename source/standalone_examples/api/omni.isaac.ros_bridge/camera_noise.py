@@ -81,19 +81,19 @@ set_camera_prim_path(render_product_path, CAMERA_STAGE_PATH)
 def image_gaussian_noise_warp(
     data_in: wp.array(dtype=wp.uint8, ndim=3),
     data_out: wp.array(dtype=wp.uint8, ndim=3),
-    kernel_seed: int,
+    seed: int,
     sigma: float = 25.0,
 ):
     i, j = wp.tid()
-    state = wp.rand_init(kernel_seed, wp.tid())
+    state = wp.rand_init(seed, wp.tid())
     data_out[i, j, 0] = wp.uint8(wp.int32(data_in[i, j, 0]) + wp.int32(sigma * wp.randn(state)))
     data_out[i, j, 1] = wp.uint8(wp.int32(data_in[i, j, 1]) + wp.int32(sigma * wp.randn(state)))
     data_out[i, j, 2] = wp.uint8(wp.int32(data_in[i, j, 2]) + wp.int32(sigma * wp.randn(state)))
 
 
 # CPU noise kernel
-def image_gaussian_noise_np(data_in: np.ndarray, kernel_seed, sigma: float = 25.0):
-    np.random.seed(kernel_seed)
+def image_gaussian_noise_np(data_in: np.ndarray, seed: int, sigma: float = 25.0):
+    np.random.seed(seed)
     return data_in + sigma * np.random.randn(*data_in.shape)
 
 
@@ -107,7 +107,7 @@ rep.annotators.register(
     name="rgb_gaussian_noise",
     annotator=rep.annotators.augment_compose(
         source_annotator=rgba_to_rgb_annotator,
-        augmentations=[rep.Augmentation.from_function(image_gaussian_noise_warp, kernel_seed=1234, sigma=25)],
+        augmentations=[rep.Augmentation.from_function(image_gaussian_noise_warp, seed=1234, sigma=25)],
     ),
 )
 
