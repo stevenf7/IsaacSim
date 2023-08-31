@@ -32,6 +32,12 @@
                 "default": true,
                 "uiName": "Keep Only Positive Distance"
             },
+            "transformPoints": {
+                "type": "bool",
+                "description": "Transform point cloud to world coordinates",
+                "default": true,
+                "uiName": "Output in World Coordinates"
+            },
             "accuracyErrorAzimuthDeg": {
                 "type": "float",
                 "description": "Accuracy error of azimuth in degrees applied to all points equally",

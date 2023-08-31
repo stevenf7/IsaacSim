@@ -104,8 +104,9 @@ original_stdout = sys.stdout
 for config in configs:
     hz = config["hz"]
     resolution = config["resolution"]
-    name = f"{model}_{channels}ch{hz}hz{resolution}res"
-    file_name = f"../data/lidar_configs/{brand}/{name}.json"
+    name = f"{model} {channels} {hz}hz @ {resolution} resolution"
+    file_name = f"{model}_{channels}ch{hz}hz{resolution}res"
+    file_name = f"../data/lidar_configs/{brand}/{file_name}.json"
     os.makedirs(os.path.dirname(file_name), exist_ok=True)
     with open(file_name, "w") as f:
         comment_count = 0

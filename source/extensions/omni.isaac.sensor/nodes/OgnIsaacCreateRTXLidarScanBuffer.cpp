@@ -32,6 +32,7 @@
 extern "C" void azimuthRightHanded(float* srcDest, float3* scratch, float accuracyError, int N, int cdi);
 extern "C" void elevation(float* srcDest, float3* scratch, float* scratch2, float accuracyError, int N, int cdi);
 extern "C" void pointCloud(float3* srcDest, const float* cosEle, const float* dist, int N, int cdi);
+extern "C" void transformPointCloud(float3* srcDest, const double* transform, int N, int cdi);
 
 namespace omni
 {
@@ -160,13 +161,11 @@ public:
         }
         updateLidarConfig(curConfig, state.config, state.scanType, state.rotaryProfile, state.solidStateProfile);
 
-        // TODOMTC Transform applied to previous buffer values is newer, either store transforms, or apply here.
-        getTransformFromLidarAsyncParameter(parameterHost->async, matrixOutput); // TODOMTC use moving transoforms?
+        getTransformFromLidarAsyncParameter(parameterHost->async, matrixOutput); // TODOMTC interp moving transforms?
 
         // startLocFullScan is the location in a full scan buffer of first element in the incoming data.
         //   startTick is 0 for all solid state, so use the fist emitter Id.  This will usually be 0, unless one of the
-        //   previous frames ran over, then it will start at the length of the run over... for now we can just mod the
-        //   run over, but TODOMTC deal with lidarReturnsHost.emitterIds[0] == 1 etc...
+        //   previous frames ran over, then it will start at the length of the run over.
         bool isSolidState = state.scanType == LidarScanType::kSolidState;
         const uint32_t startLocFullScan =
             numEchos * (isSolidState ? lidarReturnsHost.emitterIds[0] : parameterHost->async.startTick * numChannels);
@@ -277,6 +276,8 @@ public:
 
             pointCloud(state.pcBuffer.data(), state.intensityBuffer.data(), state.distanceBuffer.data(),
                        numReturnsInput, cudaDeviceIndex);
+            if (db.inputs.transformPoints())
+                transformPointCloud(state.pcBuffer.data(), matrixOutput.data(), numReturnsInput, cudaDeviceIndex);
             // point cloud
             cudaMemcpyAsync(&state.hostPcScanBuffer.data()[startLocFullScan], state.pcBuffer.data(),
                             numReturns * sizeof(float3), cudaMemcpyDeviceToHost);

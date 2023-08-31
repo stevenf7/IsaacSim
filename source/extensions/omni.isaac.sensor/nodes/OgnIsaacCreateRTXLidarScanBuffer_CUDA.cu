@@ -106,3 +106,29 @@ extern "C" void pointCloud(float3 *srcDest, const float *cosEle, const float* di
 
     pointCloudKernel<<<nb, nt>>>(srcDest, cosEle, dist, N);
 }
+
+
+// srdDest has the transformed point cloud position at the end.
+__global__ void pointTransformCloudKernel(float3 *srcDest, float3 r0, float3 r1, float3 r2, float3 t, int N)
+{
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx >= N) return;
+
+    srcDest[idx] = make_float3(r0.x * srcDest[idx].x + r1.x * srcDest[idx].y + r2.x * srcDest[idx].z + t.x,
+                               r0.y * srcDest[idx].x + r1.y * srcDest[idx].y + r2.y * srcDest[idx].z + t.y,
+                               r0.z * srcDest[idx].x + r1.z * srcDest[idx].y + r2.z * srcDest[idx].z + t.z);
+}
+
+
+extern "C" void transformPointCloud(float3* srcDest, const double* t, int N, int cdi)
+{
+    cudaDeviceProp prop;
+    cudaGetDeviceProperties(&prop, cdi);
+    const int nt = prop.maxThreadsPerBlock;
+    const int nb = (N + nt - 1) / nt;
+
+    float3 rotation[3]{make_float3(t[0], t[1], t[2]), make_float3(t[4], t[5], t[6]), make_float3(t[8], t[9], t[10])};
+    float3 translation = make_float3(t[12], t[13], t[14]);
+
+    pointTransformCloudKernel<<<nb, nt>>>(srcDest, rotation[0], rotation[1], rotation[2], translation, N);
+}

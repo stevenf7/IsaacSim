@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "9.0.0"
+version = "9.1.0"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Support physics based sensors, such as contact sensors and imu sensors"
@@ -57,10 +57,13 @@ recursive = false
 [settings]
 app.sensors.nv.lidar.profileBaseFolder=[
     "${app}/../data/sensors/lidar/",
-    "${app}/../exts/omni.isaac.sensor/data/lidar_configs/sick/",
-    "${app}/../exts/omni.isaac.sensor/data/lidar_configs/ouster/",
-    "${app}/../exts/omni.isaac.sensor/data/lidar_configs/hesai/",
-    "${app}/../exts/omni.isaac.sensor/data/lidar_configs/slamtec/",
+    "${app}/../exts/omni.isaac.sensor/data/lidar_configs/HESAI/",
+    "${app}/../exts/omni.isaac.sensor/data/lidar_configs/NVIDIA/",
+    "${app}/../exts/omni.isaac.sensor/data/lidar_configs/Ouster/",
+    "${app}/../exts/omni.isaac.sensor/data/lidar_configs/SICK/",
+    "${app}/../exts/omni.isaac.sensor/data/lidar_configs/SLAMTEC/",
+    "${app}/../exts/omni.isaac.sensor/data/lidar_configs/Velodyne/",
+    "${app}/../exts/omni.isaac.sensor/data/lidar_configs/ZVISION/",
     "${app}/../exts/omni.isaac.sensor/data/lidar_configs/"]
 app.sensors.nv.radar.runWithoutMBVH = true
 # sensor material mapping is hard coded for now, and this is needed to enable sensor materials.
