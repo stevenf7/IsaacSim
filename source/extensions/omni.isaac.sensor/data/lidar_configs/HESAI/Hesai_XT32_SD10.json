@@ -3,7 +3,7 @@
     "_comment3": "parameters without comments are assumed correct, but will ultimately need checking",
     "class": "sensor",
     "type": "lidar",
-    "name": "XT32-SD10", "_comment0": "Hesai PandarXT-32 configured for standard at 10Hz",
+    "name": "PandarXT-32 10hz", "_comment0": "Hesai PandarXT-32 configured for standard at 10Hz",
     "driveWorksId": "GENERIC", "_comment1": "Using generic, because no LidarDWId in drivesim-ov/include/omni/sensors/lidar/LidarProfileTypes.h",
     "profile":
     {

@@ -2,7 +2,7 @@
     "_comment2": "parameters obtained from https://bucket-download.slamtec.com/0a0d6c01df6ac91016de7e1f558e262474a4be43/SLAMTEC_rplidar_datasheet_S2E_v1.3_en.pdf",
     "class": "sensor",
     "type": "lidar",
-    "name": "RPLIDAR_S2E", "_comment0": "SLAMTEC RPLIDAR S2E configured for standard at 10Hz",
+    "name": "RPLIDAR S2E", "_comment0": "SLAMTEC RPLIDAR S2E configured for standard at 10Hz",
     "driveWorksId": "GENERIC",
     "profile":
     {

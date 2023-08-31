@@ -18,7 +18,7 @@ from omni.isaac.core.utils.prims import create_prim, set_prim_visibility
 from omni.isaac.core.utils.stage import get_next_free_path
 from omni.isaac.ui.menu import make_menu_item_description
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
-from pxr import Gf
+from pxr import Gf, Tf
 
 
 class IsaacSensorMenu:
@@ -89,7 +89,7 @@ class IsaacSensorMenu:
             if d is None:
                 continue
             sub_menu = []
-            n = d.title()
+            n = d
             d = config_dir_path + "/" + d
             config_files = os.listdir(d)
             config_files.sort()
@@ -181,7 +181,7 @@ class IsaacSensorMenu:
     def _add_rtx_lidar(self, name, config_name, *args, **kwargs):
         _, prim = omni.kit.commands.execute(
             "IsaacSensorCreateRtxLidar",
-            path="/" + name,
+            path="/" + Tf.MakeValidIdentifier(name),
             parent=self._get_stage_and_path(),
             config=config_name,
             translation=Gf.Vec3d(0, 0, 0),

@@ -1,7 +1,7 @@
 {
   "class": "sensor",
   "type": "lidar",
-  "name": "Example Solid State",
+  "name": "Simple Solid State",
   "driveWorksId": "GENERIC",
   "profile":
   {

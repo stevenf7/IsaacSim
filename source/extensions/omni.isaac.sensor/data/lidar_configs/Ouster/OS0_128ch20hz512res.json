@@ -3,7 +3,7 @@
     "comment2" : "parameters without comments are assumed correct, but will ultimately need checking",
     "class": "sensor",
     "type": "lidar",
-    "name": "OS0_128ch20hz512res", "comment3" : "ouster OS0 128 channels @ 20Hz 512 horizontal resolution",
+    "name": "OS0 128 20hz @ 512 resolution", "comment3" : "ouster OS0 128 channels @ 20Hz 512 horizontal resolution",
     "driveWorksId": "GENERIC",
     "profile":
     {

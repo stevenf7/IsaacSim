@@ -1,4 +1,12 @@
 # Changelog
+
+## [9.1.0] - 2023-08-30
+### Added 
+- transformPoints setting on IsaacCreateRTXLidarScanBuffer to enable correct world transformed points.
+- Velodyne and ZVISION RTX lidar config files.
+### Changed
+- The layout of the add sensors menu.
+
 ## [9.0.0] - 2023-08-29
 ### Added 
 - Sick_TiM781 lidar config file.

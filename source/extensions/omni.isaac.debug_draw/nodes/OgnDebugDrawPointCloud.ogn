@@ -37,6 +37,12 @@
                 "description": "Size of points",
                 "default": 0.02
             },
+            "doTransform": {
+                "type": "bool",
+                "description": "Translate and Rotate point cloud by transform",
+                "default": true,
+                "uiName": "Do Transform"
+            },
             "testMode":{
                 "type": "bool",
                 "description": "Act as Writer with no rendering"

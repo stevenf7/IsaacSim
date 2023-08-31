@@ -3,7 +3,7 @@
     "comment2" : "parameters without comments are assumed correct, but will ultimately need checking",
     "class": "sensor",
     "type": "lidar",
-    "name": "OS1_32ch20hz1024res", "comment3" : "Ouster OS1 32 channels @ 20Hz 1024 horizontal resolution",
+    "name": "OS1 32 20hz @ 512 resolution", "comment3" : "Ouster OS1 32 channels @ 20Hz 512 horizontal resolution",
     "driveWorksId": "GENERIC",
     "profile":
     {
@@ -44,7 +44,7 @@
         "scanRatesHz": [10.0, 20.0],
         "scanRateBaseHz": 20.0,
         
-        "reportRateBaseHz": 20480,
+        "reportRateBaseHz": 10240,
         
         "numberOfEmitters": 32,
         
@@ -54,7 +54,7 @@
             "azimuthDeg": [4.23, 1.41, -1.4, -4.21, 4.22, 1.42, -1.41, -4.22, 4.23, 1.41, -1.42, -4.21, 4.23, 1.42, -1.4, -4.2, 4.23, 1.41, -1.39, -4.21, 4.25, 1.43, -1.41, -4.22, 4.24, 1.44, -1.41, -4.22, 4.23, 1.42, -1.38, -4.22],
             "comment20" : "beam_altitude_angles from get_beam_intrinsics",
             "elevationDeg": [22.1, 20.67, 19.25, 17.82, 16.4, 14.97, 13.55, 12.12, 10.69, 9.27, 7.84, 6.42, 4.99, 3.56, 2.14, 0.71, -0.71, -2.14, -3.56, -4.99, -6.42, -7.84, -9.27, -10.69, -12.12, -13.55, -14.97, -16.4, -17.82, -19.25, -20.67, -22.1],
-            "fireTimeNs": [762, 2287, 3812, 5337, 6862, 8387, 9912, 11437, 12962, 14487, 16012, 17537, 19062, 20587, 22112, 23637, 25162, 26687, 28212, 29737, 31262, 32787, 34312, 35837, 37362, 38887, 40412, 41937, 43462, 44987, 46512, 48037]
+            "fireTimeNs": [1525, 4576, 7627, 10678, 13729, 16780, 19831, 22882, 25933, 28984, 32035, 35086, 38137, 41188, 44239, 47290, 50341, 53392, 56443, 59494, 62545, 65596, 68647, 71698, 74749, 77800, 80851, 83902, 86953, 90004, 93055, 96106]
         },
         
         "intensityMappingType": "LINEAR"

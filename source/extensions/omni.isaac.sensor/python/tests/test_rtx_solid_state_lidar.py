@@ -12,7 +12,6 @@
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 
 import asyncio
-import sys
 
 import carb
 import carb.tokens
@@ -27,7 +26,6 @@ import omni.usd
 from omni.isaac.core.objects import VisualCuboid
 from omni.isaac.core.utils.prims import delete_prim
 from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
-from pxr import UsdGeom, UsdPhysics
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -48,17 +46,11 @@ class TestRTXSolildStateLidar(omni.kit.test.AsyncTestCase):
         pass
 
     async def tearDown(self):
-        self._usd_context = omni.usd.get_context()
-        self._usd_context.close_stage()
-        for _ in range(10):
-            await omni.kit.app.get_app().next_update_async()
-        omni.usd.release_all_hydra_engines(self._usd_context)
-        for _ in range(10):
-            await omni.kit.app.get_app().next_update_async()
-
-        # renderer = "rtx"
-        # if renderer not in self._usd_context.get_attached_hydra_engine_names():
-        #     omni.usd.add_hydra_engine(renderer, self._usd_context)
+        await omni.kit.app.get_app().next_update_async()
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            print("tearDown, assets still loading, waiting to finish...")
+            await asyncio.sleep(1.0)
+        await omni.kit.app.get_app().next_update_async()
 
         self._settings = None
 

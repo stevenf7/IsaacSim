@@ -76,7 +76,7 @@ public:
             // if there is no transform input, then don't use it.
             auto& nodeObj = db.abi_node();
             const AttributeObj attr = nodeObj.iNode->getAttributeByToken(nodeObj, inputs::transform.m_token);
-            if (attr.iAttribute->getUpstreamConnectionCount(attr))
+            if (db.inputs.doTransform() && attr.iAttribute->getUpstreamConnectionCount(attr))
             {
                 state.m_pointDrawing->transformVertices(db.inputs.transform().data());
             }

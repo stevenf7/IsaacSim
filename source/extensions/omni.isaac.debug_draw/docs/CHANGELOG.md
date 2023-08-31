@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.6.0] - 2023-08-30
+### Added
+- doTransform to DebugDrawPointCloud node, set to false it ignores the input transform
+
 ## [0.5.1] - 2023-08-25
 ### Changed
 - added stdout fail pattern for the expected no prim found edge case for the ogn test
