@@ -414,6 +414,7 @@ repo_build.prebuild_copy {
     {"source/scripts/isaac-sim.docker*${shell_ext}",  "_build/%{platform}/%{config}"},
     {"source/apps/omni.isaac.sim.python.kit",  "_build/%{platform}/%{config}/apps"},
     {"source/scripts/vscode/%{platform}",  "_build/%{platform}/%{config}/.vscode"},
+    {"source/scripts/telemetry/*",  "_build/%{platform}/%{config}/config"},
 }
 
 group "python_samples"
