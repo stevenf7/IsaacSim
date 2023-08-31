@@ -137,7 +137,9 @@ ext_folders = [
 
 # Apps to run and precache
 apps = [
-    "${root}/_build/$platform/$config/apps/omni.isaac.sim.extscache.kit"
+    "${root}/_build/$platform/$config/apps/omni.isaac.sim.extscache.kit",
+    "${root}/_build/$platform/$config/apps/omni.isaac.sim.extscache.headless.native.kit",
+    "${root}/_build/$platform/$config/apps/omni.isaac.sim.extscache.headless.webrtc.kit"
 ]
 
 # Registries to use
@@ -791,7 +793,13 @@ sysconfig_path = "${root}/_build/${platform}/${config}/kit/python/lib/python3.10
 url = "https://gitlab-master.nvidia.com/omniverse/ov-create/-/raw/release/2023.2/source/apps/omni.create.full.kit"
 
 deps_for_isaac = [
+  "omni.kit.livestream.core-2.2.1",
   "omni.kit.livestream.native-2.3.0",
+  "omni.kit.streamsdk.plugins-2.2.1",
+  "omni.kit.livestream.webrtc-2.3.6",
+  "omni.services.streamclient.webrtc-1.3.8",
+  "omni.services.streaming.manager-0.3.8",
+  "omni.services.streamclient.websocket-2.0.0",
   "omni.replicator.composer-1.2.13",
   "omni.replicator.replicator_yaml-2.0.1",
   "omni.replicator.core-1.10.3",
