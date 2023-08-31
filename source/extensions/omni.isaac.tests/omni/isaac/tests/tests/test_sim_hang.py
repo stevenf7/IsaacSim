@@ -44,8 +44,8 @@ class TestHangBugs(omni.kit.test.AsyncTestCase):
 
         carb.settings.get_settings().set_bool("/app/file/ignoreUnsavedOnExit", True)
         carb.settings.get_settings().set_bool("/app/settings/persistent", False)
-        carb.settings.get_settings().set_bool("/app/asyncRendering", True)
-        carb.settings.get_settings().set_bool("/app/asyncRenderingLowLatency", True)
+        carb.settings.get_settings().set_bool("/app/asyncRendering", False)
+        carb.settings.get_settings().set_bool("/app/asyncRenderingLowLatency", False)
 
         pass
 

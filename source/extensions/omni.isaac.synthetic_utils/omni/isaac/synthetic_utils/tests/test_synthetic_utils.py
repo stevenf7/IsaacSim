@@ -51,7 +51,7 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
         carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
-        carb.settings.get_settings().set("/app/asyncRendering", True)
+        carb.settings.get_settings().set("/app/asyncRendering", False)
         carb.settings.get_settings().set("/app/hydraEngine/waitIdle", True)
         carb.settings.get_settings().set("/rtx/hydra/enableSemanticSchema", True)
         await omni.kit.app.get_app().next_update_async()
