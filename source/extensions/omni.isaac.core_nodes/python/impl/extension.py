@@ -79,8 +79,8 @@ class Extension(omni.ext.IExt):
         annotator_name = "IsaacNoop"
         AnnotatorRegistry.register_annotator_from_node(
             name=annotator_name,
-            input_rendervars=["RenderProductCameraPrimPath"],
-            node_type_id="omni.graph.nodes.Noop",
+            input_rendervars=["PostProcessDispatch"],
+            node_type_id="omni.syntheticdata.SdNoOp",
         )
         self.registered_annotators.append(annotator_name)
 

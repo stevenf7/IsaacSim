@@ -50,6 +50,14 @@ class TestAnnotators(omni.kit.test.AsyncTestCase):
         pass
 
     # ----------------------------------------------------------------------
+    async def test_noop(self):
+        annotator = rep.AnnotatorRegistry.get_annotator("IsaacNoop")
+        annotator.attach([self._render_product_path])
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+        annotator.detach()
+
     # async def test_read_camera_info(self):
     #     annotator = rep.AnnotatorRegistry.get_annotator("IsaacReadCameraInfo")
     #     annotator.attach([self._render_product_path])

@@ -75,6 +75,11 @@ class BaseWriterNode(BaseResetNode):
                     if request.activate:
                         request.writer.attach(request.render_product_path)
                         self.post_attach(request.writer, request.render_product_path)
+                        ### WAR to make sure the graph is not deleted on stop
+                        noop = rep.AnnotatorRegistry.get_annotator(
+                            "IsaacNoop",
+                        )
+                        noop.attach([request.render_product_path])
                         carb.log_info(f"Attaching:\n{request}")
                     else:
                         request.writer.detach()
