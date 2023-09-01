@@ -4,6 +4,8 @@
 ## [1.5.0] - 2023-08-31
 ### Changed
 - Added a default noop node to SDG pipeline helper nodes so that the graph is not deleted on stop
+### Fixed
+- ReadTimes node not passing execution state properly
 
 ## [1.4.3] - 2023-08-25
 ### Changed
