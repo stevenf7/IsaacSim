@@ -1,4 +1,10 @@
 # Changelog
+
+
+## [1.5.0] - 2023-08-31
+### Changed
+- Added a default noop node to SDG pipeline helper nodes so that the graph is not deleted on stop
+
 ## [1.4.3] - 2023-08-25
 ### Changed
 - added stdout fail pattern for the expected no prim found edge case for the ogn test
