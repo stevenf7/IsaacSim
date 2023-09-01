@@ -73,7 +73,8 @@ public:
             db.outputs.durationDenominator() = -1;
             db.outputs.sampleTimeOffsetInSimFrames() = 0;
             db.outputs.externalTimeOfSimNs() = -1;
-            return false;
+            db.outputs.execOut() = ExecutionAttributeState::kExecutionAttributeStateEnabled;
+            return true;
         }
         auto renderProductTimesAOV =
             omni::usd::hydra::getRenderVarFromProduct(renderProduct, db.tokens.IsaacFabricTimes.token);

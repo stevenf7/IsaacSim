@@ -52,7 +52,6 @@ import rospy
 from rosgraph_msgs.msg import Clock
 
 clock_topic = "sim_time"
-system_clock_topic = "system_time"
 manual_clock_topic = "manual_time"
 
 simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=1.0)
@@ -64,29 +63,23 @@ try:
         {
             og.Controller.Keys.CREATE_NODES: [
                 ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
-                ("ReadSystemTime", "omni.isaac.core_nodes.IsaacReadTimes"),
                 ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                 ("PublishClock", "omni.isaac.ros_bridge.ROS1PublishClock"),
-                ("PublishSystemClock", "omni.isaac.ros_bridge.ROS1PublishClock"),
                 ("OnImpulseEvent", "omni.graph.action.OnImpulseEvent"),
                 ("PublishManualClock", "omni.isaac.ros_bridge.ROS1PublishClock"),
             ],
             og.Controller.Keys.CONNECT: [
-                # Connecting execution of OnPlaybackTick node to PublishClock and PublishSystemClock to automatically publish each frame
+                # Connecting execution of OnPlaybackTick node to PublishClock  to automatically publish each frame
                 ("OnPlaybackTick.outputs:tick", "PublishClock.inputs:execIn"),
-                ("OnPlaybackTick.outputs:tick", "PublishSystemClock.inputs:execIn"),
                 # Connecting execution of OnImpulseEvent node to PublishManualClock so it will only publish when an impulse event is triggered
                 ("OnImpulseEvent.outputs:execOut", "PublishManualClock.inputs:execIn"),
                 # Connecting simulationTime data of ReadSimTime to the clock publisher nodes
                 ("ReadSimTime.outputs:simulationTime", "PublishClock.inputs:timeStamp"),
                 ("ReadSimTime.outputs:simulationTime", "PublishManualClock.inputs:timeStamp"),
-                # Connecting systemTime data of ReadSystemTime to the system clock publisher node
-                ("ReadSystemTime.outputs:systemTime", "PublishSystemClock.inputs:timeStamp"),
             ],
             og.Controller.Keys.SET_VALUES: [
                 # Assigning topic names to clock publishers
                 ("PublishClock.inputs:topicName", clock_topic),
-                ("PublishSystemClock.inputs:topicName", system_clock_topic),
                 ("PublishManualClock.inputs:topicName", manual_clock_topic),
             ],
         },
@@ -104,10 +97,6 @@ def sim_clock_callback(data):
     print("sim time:", data.clock.to_sec())
 
 
-def system_clock_callback(data):
-    print("system time:", data.clock.to_sec())
-
-
 def manual_clock_callback(data):
     print("manual stepped sim time:", data.clock.to_sec())
 
@@ -116,7 +105,6 @@ def manual_clock_callback(data):
 rospy.init_node("isaac_sim_clock", anonymous=True, disable_signals=True, log_level=rospy.ERROR)
 # create subscribers
 sim_clock_sub = rospy.Subscriber(clock_topic, Clock, sim_clock_callback)
-system_clock_sub = rospy.Subscriber(system_clock_topic, Clock, system_clock_callback)
 manual_clock_sub = rospy.Subscriber(manual_clock_topic, Clock, manual_clock_callback)
 time.sleep(1.0)
 # need to initialize physics getting any articulation..etc
@@ -130,7 +118,7 @@ for frame in range(20):
     # publish manual clock every 10 frames
     if frame % 10 == 0:
         og.Controller.set(og.Controller.attribute("/ActionGraph/OnImpulseEvent.state:enableImpulse"), True)
-        simulation_context.render()  # This updates rendering/app loop which calls the system and sim clocks
+        simulation_context.render()  # This updates rendering/app loop which calls the sim clock
 
     simulation_context.step(render=False)  # runs with a non-realtime clock
     # This sleep is to make this sample run a bit more deterministically for the subscriber callback
@@ -151,7 +139,6 @@ for frame in range(20):
 
 # cleanup and shutdown
 sim_clock_sub.unregister()
-system_clock_sub.unregister()
 manual_clock_sub.unregister()
 simulation_context.stop()
 

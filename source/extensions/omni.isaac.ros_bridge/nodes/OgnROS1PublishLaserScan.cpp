@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -57,12 +57,11 @@ public:
             return true;
         }
 
-        state.publishLidar(db);
-        return true;
+        return state.publishLidar(db);
     }
 
 
-    void publishLidar(OgnROS1PublishLaserScanDatabase& db)
+    bool publishLidar(OgnROS1PublishLaserScanDatabase& db)
     {
         CARB_PROFILE_ZONE(0, "Lidar 2D Pub");
 
@@ -70,12 +69,18 @@ public:
         sensor_msgs::LaserScan laser_msg;
         laser_msg.header.seq = 0;
         laser_msg.header.frame_id = mFrameId;
+        size_t buffSize = db.inputs.numCols() * db.inputs.numRows();
 
+        if (buffSize == 0)
+        {
+            return false;
+        }
         if (db.inputs.numRows() != 1)
         {
             db.logError(
-                "Number of rows must be equal to 1. High LOD not supported for LaserScan, only 2D Lidar Supported for LaserScan. Please disable Lidar High LOD setting");
-            return;
+                "Number of rows (%d) must be equal to 1. High LOD not supported for LaserScan, only 2D Lidar Supported for LaserScan. Please disable Lidar High LOD setting",
+                db.inputs.numRows());
+            return false;
         }
 
         if (db.inputs.timeStamp() >= 0.0)
@@ -95,25 +100,24 @@ public:
         laser_msg.range_min = db.inputs.depthRange()[0];
         laser_msg.range_max = db.inputs.depthRange()[1];
 
-        size_t buffSize = db.inputs.numCols() * db.inputs.numRows();
 
         if (!db.inputs.linearDepthData.isValid() || !db.inputs.intensitiesData.isValid())
         {
             db.logError("Buffers are invalid");
-            return;
+            return false;
         }
 
         if (db.inputs.linearDepthData.size() != db.inputs.intensitiesData.size())
         {
             db.logError("Linear Depth data and Intensities data sizes do not match");
-            return;
+            return false;
         }
 
         if (buffSize != db.inputs.linearDepthData.size())
         {
             db.logError("Lidar data with %d rows and %d columns does not match input buffer array size of %d",
                         db.inputs.numRows(), db.inputs.numCols(), db.inputs.linearDepthData.size());
-            return;
+            return false;
         }
 
         laser_msg.ranges.resize(buffSize);
@@ -126,6 +130,7 @@ public:
         laser_msg.time_increment = (db.inputs.horizontalFov() / 360.0 * laser_msg.scan_time) / laser_msg.ranges.size();
 
         mPublisher->publish(laser_msg);
+        return true;
     }
 
     virtual void release(const NodeObj& nodeObj)

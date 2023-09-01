@@ -35,7 +35,6 @@ class TestRosClock(omni.kit.test.AsyncTestCase):
 
         await omni.usd.get_context().new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
-        self._timeline.set_auto_update(True)
         self._stage = omni.usd.get_context().get_stage()
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.ros_bridge")
@@ -167,7 +166,8 @@ class TestRosClock(omni.kit.test.AsyncTestCase):
                     ("RosPublisher", "omni.isaac.ros_bridge.ROS1PublishClock"),
                 ],
                 keys.CONNECT: [
-                    ("OnTick.outputs:tick", "RosPublisher.inputs:execIn"),
+                    ("OnTick.outputs:tick", "IsaacClock.inputs:execIn"),
+                    ("IsaacClock.outputs:execOut", "RosPublisher.inputs:execIn"),
                     ("IsaacClock.outputs:systemTime", "RosPublisher.inputs:timeStamp"),
                 ],
             },
@@ -182,7 +182,7 @@ class TestRosClock(omni.kit.test.AsyncTestCase):
         self._timeline.play()
 
         await simulate_async(1.0)
-        # TODO105self.assertAlmostEqual(self._time_sec, time.time(), delta=0.5) systemTime is double(uint64(-1))
+        self.assertAlmostEqual(self._time_sec, time.time(), delta=0.5)
         self._timeline.stop()
         clock_sub.unregister()
         pass
