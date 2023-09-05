@@ -96,12 +96,15 @@ class IsaacSensorMenu:
             for file in config_files:
                 if file.endswith(".json"):
                     data = json.load(open(d + "/" + file))
-                    config_name = data["name"]
+                    ui_name = data["name"]
+                    file_name = file[:-5]
                     sub_menu.append(
                         make_menu_item_description(
                             ext_id,
-                            config_name,
-                            lambda a=weakref.proxy(self), name=config_name: a._add_rtx_lidar(name, file[:-5]),
+                            ui_name,
+                            lambda a=weakref.proxy(self), name=ui_name, config_name=file_name: a._add_rtx_lidar(
+                                name, config_name
+                            ),
                         )
                     )
             if len(sub_menu) > 0:
