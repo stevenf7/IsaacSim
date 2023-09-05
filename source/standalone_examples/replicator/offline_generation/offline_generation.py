@@ -23,12 +23,11 @@ from omni.isaac.kit import SimulationApp
 config = {
     "launch_config": {
         "renderer": "RayTracedLighting",
-        "headless": True,
+        "headless": False,
     },
     "resolution": [1024, 1024],
     "rt_subframes": 1,
-    "num_frames": 40,
-    "nucleus_server": "",
+    "num_frames": 20,
     "env_url": "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd",
     "scope_name": "/MyScope",
     "writer": "BasicWriter",
@@ -61,12 +60,10 @@ config = {
     },
 }
 
-# Parse any command line arguments
+# Check if there are any config files (yaml or json) are passed as arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("--config", required=False, help="Include specific config parameters (json or yaml))")
 args, unknown = parser.parse_known_args()
-
-# Load any config parameters from the given file
 args_config = {}
 if args.config and os.path.isfile(args.config):
     print("File exist")
@@ -96,15 +93,12 @@ import offline_generation_utils
 # Late import of runtime modules (the SimulationApp needs to be created before loading the modules)
 import omni.replicator.core as rep
 import omni.usd
+from omni.isaac.core import World
 from omni.isaac.core.utils import prims
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.core.utils.stage import get_current_stage, open_stage
 from pxr import Gf
-
-# Increase subframes if shadows/ghosting appears of moving objects
-# See known issues: https://docs.omniverse.nvidia.com/prod_extensions/prod_extensions/ext_replicator.html#known-issues
-rep.settings.carb_settings("/omni/replicator/RTSubframes", config["rt_subframes"])
 
 # Get server path
 assets_root_path = get_assets_root_path()
@@ -117,6 +111,14 @@ print(f"Loading Stage {config['env_url']}")
 if not open_stage(assets_root_path + config["env_url"]):
     carb.log_error(f"Could not open stage{config['env_url']}, closing application..")
     simulation_app.close()
+
+# Create the isaac sim world to run any physics simulations
+world = World(physics_dt=1.0 / 90.0, stage_units_in_meters=1.0)
+
+# Disable capture on play and async rendering
+carb.settings.get_settings().set("/omni/replicator/captureOnPlay", False)
+carb.settings.get_settings().set("/omni/replicator/asyncRendering", False)
+carb.settings.get_settings().set("/app/asyncRendering", False)
 
 if config["clear_previous_semantics"]:
     stage = get_current_stage()
@@ -133,9 +135,9 @@ forklift_prim = prims.create_prim(
 
 # Spawn the pallet in front of the forklift with a random offset on the Y axis
 forklift_tf = omni.usd.get_world_transform_matrix(forklift_prim)
-pallet_offset_tf = Gf.Matrix4d().SetTranslate(Gf.Vec3d(0, random.uniform(-1.2, -2.4), 0))
+pallet_offset_tf = Gf.Matrix4d().SetTranslate(Gf.Vec3d(0, random.uniform(-1.2, -2), 0))
 pallet_pos_gf = (pallet_offset_tf * forklift_tf).ExtractTranslation()
-forklift_quat_gf = forklift_tf.ExtractRotation().GetQuaternion()
+forklift_quat_gf = forklift_tf.ExtractRotationQuat()
 forklift_quat_xyzw = (forklift_quat_gf.GetReal(), *forklift_quat_gf.GetImaginary())
 
 pallet_prim = prims.create_prim(
@@ -145,9 +147,6 @@ pallet_prim = prims.create_prim(
     usd_path=assets_root_path + config["pallet"]["url"],
     semantic_label=config["pallet"]["class"],
 )
-
-# Run a simulation before generating data
-offline_generation_utils.simulate_falling_objects(forklift_prim, assets_root_path, config)
 
 # Register randomizers graphs
 offline_generation_utils.register_scatter_boxes(pallet_prim, assets_root_path, config)
@@ -159,14 +158,14 @@ foklift_pos_gf = forklift_tf.ExtractTranslation()
 driver_cam_pos_gf = foklift_pos_gf + Gf.Vec3d(0.0, 0.0, 1.9)
 
 driver_cam = rep.create.camera(
-    focus_distance=400.0, focal_length=24.0, clipping_range=(0.1, 10000000.0), name="DriverCamera"
+    focus_distance=400.0, focal_length=24.0, clipping_range=(0.1, 10000000.0), name="DriverCam"
 )
 
 # Camera looking at the pallet
-pallet_cam = rep.create.camera(name="PalletCamera")
+pallet_cam = rep.create.camera(name="PalletCam")
 
 # Camera looking at the forklift from a top view with large min clipping to see the scene through the ceiling
-top_view_cam = rep.create.camera(clipping_range=(6.0, 1000000.0), name="TopCamera")
+top_view_cam = rep.create.camera(clipping_range=(6.0, 1000000.0), name="TopCam")
 
 # Generate graph nodes to be triggered every frame
 with rep.trigger.on_frame():
@@ -208,12 +207,19 @@ print(f"Output directory={config['writer_config']['output_dir']}")
 # Setup the writer
 writer = rep.WriterRegistry.get(config["writer"])
 writer.initialize(**config["writer_config"])
+forklift_rp = rep.create.render_product(top_view_cam, config["resolution"], name="TopView")
 driver_rp = rep.create.render_product(driver_cam, config["resolution"], name="DriverView")
 pallet_rp = rep.create.render_product(pallet_cam, config["resolution"], name="PalletView")
-forklift_rp = rep.create.render_product(top_view_cam, config["resolution"], name="TopView")
-writer.attach([driver_rp, forklift_rp, pallet_rp])
+writer.attach([forklift_rp, driver_rp, pallet_rp])
 
-# Run the generated randomization graphs
+# Run a simulation before generating data
+offline_generation_utils.simulate_falling_objects(world, forklift_prim, assets_root_path, config)
+
+# Increase subframes if shadows/ghosting appears on quickly moving objects,
+# see: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/subframes_examples.html
+rep.settings.carb_settings("/omni/replicator/RTSubframes", config["rt_subframes"])
+
+# Run the SDG
 rep.orchestrator.run_until_complete(num_frames=config["num_frames"])
 
 simulation_app.close()

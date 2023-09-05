@@ -463,11 +463,20 @@ group "python_samples"
     python_sample_test("tests-nativepython-omni.isaac.ros_bridge.carter_stereo", "standalone_examples/api/omni.isaac.ros_bridge/carter_stereo.py", "--test")
     -- Replicator data samples:
     python_sample_test("tests-nativepython-replicator.offline_generation", "standalone_examples/replicator/offline_generation/offline_generation.py")
+    python_sample_test("tests-nativepython-replicator.offline_generation_basic_writer", "standalone_examples/replicator/offline_generation/offline_generation.py", "--config standalone_examples/replicator/offline_generation/config/config_basic_writer.yaml")
+    python_sample_test("tests-nativepython-replicator.offline_generation_default_writer", "standalone_examples/replicator/offline_generation/offline_generation.py", "--config standalone_examples/replicator/offline_generation/config/config_default_writer.json")
+    python_sample_test("tests-nativepython-replicator.offline_generation_kitti_writer", "standalone_examples/replicator/offline_generation/offline_generation.py", "--config standalone_examples/replicator/offline_generation/config/config_kitti_writer.yaml")
     python_sample_test("tests-nativepython-replicator.offline_pose_generation", "standalone_examples/replicator/offline_pose_generation/offline_pose_generation.py")
     python_sample_test("tests-nativepython-replicator.offline_pose_generation_ycbvideo", "standalone_examples/replicator/offline_pose_generation/offline_pose_generation.py", "--num_mesh 3 --num_dome 3 --writer YCBVideo --output_folder _out_ycb")
     python_sample_test("tests-nativepython-replicator.offline_pose_generation_ycbvideo_output_check", "standalone_examples/replicator/offline_pose_generation/offline_pose_generation.py", "--test --writer YCBVideo --output_folder _out_ycb_test")
     python_sample_test("tests-nativepython-replicator.offline_pose_generation_dope", "standalone_examples/replicator/offline_pose_generation/offline_pose_generation.py", "--num_mesh 3 --num_dome 3 --writer DOPE --output_folder _out_dope")
     python_sample_test("tests-nativepython-replicator.offline_pose_generation_dope_output_check", "standalone_examples/replicator/offline_pose_generation/offline_pose_generation.py", "--test --writer DOPE --output_folder _out_dope_test")
+    python_sample_test("tests-nativepython-replicator.writer_augmentation_numpy", "standalone_examples/replicator/augmentation/writer_augmentation.py", "--num_frames 1")
+    python_sample_test("tests-nativepython-replicator.writer_augmentation_warp", "standalone_examples/replicator/augmentation/writer_augmentation.py", "--num_frames 1 --use_warp")
+    python_sample_test("tests-nativepython-replicator.annotator_augmentation_numpy", "standalone_examples/replicator/augmentation/annotator_augmentation.py", "--num_frames 1")
+    python_sample_test("tests-nativepython-replicator.annotator_augmentation_warp", "standalone_examples/replicator/augmentation/annotator_augmentation.py", "--num_frames 1 --use_warp")
+    python_sample_test("tests-nativepython-replicator.amr_navigation", "standalone_examples/replicator/amr_navigation.py", "--num_frames 3 --env_interval 1")
+    python_sample_test("tests-nativepython-replicator.amr_navigation_use_temp_rp", "standalone_examples/replicator/amr_navigation.py", "--num_frames 3 --env_interval 1 --use_temp_rp")
     -- Replicator Composer tests
     -- SceneBlox tests
     python_sample_test("tests-nativepython-scene_blox.generate_scene", "tools/scene_blox/src/scene_blox/generate_scene.py", "--save_path _out_scene_blox")
