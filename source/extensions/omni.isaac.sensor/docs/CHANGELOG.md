@@ -1,9 +1,15 @@
 # Changelog
 
+## [9.1.1] - 2023-09-01
+### Fixed 
+- RtxLidarDebugDrawPointCloudBuffer writer to use correct default transform
+- RTX Lidar Menu setting wrong config parameter on sensor prim
+
 ## [9.1.0] - 2023-08-30
 ### Added 
 - transformPoints setting on IsaacCreateRTXLidarScanBuffer to enable correct world transformed points.
 - Velodyne and ZVISION RTX lidar config files.
+
 ### Changed
 - The layout of the add sensors menu.
 
