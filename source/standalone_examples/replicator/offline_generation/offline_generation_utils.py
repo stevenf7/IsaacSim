@@ -29,39 +29,35 @@ def remove_previous_semantics(stage, recursive: bool = False):
 
 
 # Run a simulation
-def simulate_falling_objects(forklift_prim, assets_root_path, config, num_sim_steps=250, num_boxes=8):
+def simulate_falling_objects(world, forklift_prim, assets_root_path, config, max_sim_steps=250, num_boxes=8):
     # Create a simulation ready world
     world = World(physics_dt=1.0 / 90.0, stage_units_in_meters=1.0)
 
-    # Choose a random spawn offset relative to the given prim
-    prim_tf = omni.usd.get_world_transform_matrix(forklift_prim)
-    spawn_offset_tf = Gf.Matrix4d().SetTranslate(Gf.Vec3d(random.uniform(-0.5, 0.5), random.uniform(3, 3.5), 0))
-    spawn_pos_gf = (spawn_offset_tf * prim_tf).ExtractTranslation()
+    # Set a random relative offset to the pallet using the forklift transform as a base frame
+    forklift_tf = omni.usd.get_world_transform_matrix(forklift_prim)
+    pallet_offset_tf = Gf.Matrix4d().SetTranslate(Gf.Vec3d(random.uniform(-1, 1), random.uniform(-4, -3.5), 0))
+    pallet_pos = (pallet_offset_tf * forklift_tf).ExtractTranslation()
 
-    # Spawn pallet prim
+    # Spawn pallet prim at a relative random offset to the forklift
     pallet_prim_name = "SimulatedPallet"
     pallet_prim = prims.create_prim(
         prim_path=f"/World/{pallet_prim_name}",
         usd_path=assets_root_path + config["pallet"]["url"],
         semantic_label=config["pallet"]["class"],
+        translation=pallet_pos,
+        orientation=euler_angles_to_quat([0, 0, random.uniform(0, math.pi)]),
     )
 
-    # Get the height of the pallet
-    bb_cache = create_bbox_cache()
-    curr_spawn_height = bb_cache.ComputeLocalBound(pallet_prim).GetRange().GetSize()[2] * 1.1
+    # Wrap the pallet as a simulation ready rigid prim a
+    pallet_rigid_prim = RigidPrim(prim_path=str(pallet_prim.GetPrimPath()), name=pallet_prim_name)
 
-    # Wrap the pallet prim as a rigid prim to be able to simulate it
-    pallet_rigid_prim = RigidPrim(
-        prim_path=str(pallet_prim.GetPrimPath()),
-        name=pallet_prim_name,
-        position=spawn_pos_gf + Gf.Vec3d(0, 0, curr_spawn_height),
-    )
-
-    # Make sure physics are enabled on the rigid prim
+    # Enable physics and add to isaacsim world scene
     pallet_rigid_prim.enable_rigid_body_physics()
-
-    # Register rigid prim with the scene
     world.scene.add(pallet_rigid_prim)
+
+    # Use the height of the pallet as a spawn base for the boxes
+    bb_cache = create_bbox_cache()
+    spawn_height = bb_cache.ComputeLocalBound(pallet_prim).GetRange().GetSize()[2] * 1.1
 
     # Spawn boxes falling on the pallet
     for i in range(num_boxes):
@@ -73,14 +69,14 @@ def simulate_falling_objects(forklift_prim, assets_root_path, config, num_sim_st
             semantic_label=config["cardbox"]["class"],
         )
 
-        # Add the height of the box to the current spawn height
-        curr_spawn_height += bb_cache.ComputeLocalBound(box_prim).GetRange().GetSize()[2] * 1.1
+        # Get the next spawn height for the box
+        spawn_height += bb_cache.ComputeLocalBound(box_prim).GetRange().GetSize()[2] * 1.1
 
         # Wrap the cardbox prim into a rigid prim to be able to simulate it
         box_rigid_prim = RigidPrim(
             prim_path=str(box_prim.GetPrimPath()),
             name=cardbox_prim_name,
-            position=spawn_pos_gf + Gf.Vec3d(random.uniform(-0.2, 0.2), random.uniform(-0.2, 0.2), curr_spawn_height),
+            position=pallet_pos + Gf.Vec3d(random.uniform(-0.2, 0.2), random.uniform(-0.2, 0.2), spawn_height),
             orientation=euler_angles_to_quat([0, 0, random.uniform(0, math.pi)]),
         )
 
@@ -90,15 +86,15 @@ def simulate_falling_objects(forklift_prim, assets_root_path, config, num_sim_st
         # Register rigid prim with the scene
         world.scene.add(box_rigid_prim)
 
-    # Reset world after adding simulated assets for physics handles to be propagated properly
+    # Reset the world to handle the physics of the newly created rigid prims
     world.reset()
 
     # Simulate the world for the given number of steps or until the highest box stops moving
     last_box = world.scene.get_object(f"SimulatedCardbox_{num_boxes - 1}")
-    for i in range(num_sim_steps):
+    for i in range(max_sim_steps):
         world.step(render=False)
         if last_box and np.linalg.norm(last_box.get_linear_velocity()) < 0.001:
-            print(f"Simulation stopped after {i} steps")
+            print(f"Falling objects simulation finished at step {i}..")
             break
 
 
@@ -144,11 +140,11 @@ def register_scatter_boxes(pallet_prim, assets_root_path, config):
 
 # Register the place cones randomizer graph
 def register_cone_placement(forklift_prim, assets_root_path, config):
-    # Helper function to get the combined bounds of the forklift and pallet
+    # Get the bottom corners of the oriented bounding box (OBB) of the forklift
     bb_cache = create_bbox_cache()
-
     centroid, axes, half_extent = compute_obb(bb_cache, forklift_prim.GetPrimPath())
-    obb_corners = get_obb_corners(centroid, axes, half_extent * 1.2)
+    larger_xy_extent = (half_extent[0] * 1.4, half_extent[1] * 1.4, half_extent[2])
+    obb_corners = get_obb_corners(centroid, axes, larger_xy_extent)
     bottom_corners = [
         obb_corners[0].tolist(),
         obb_corners[2].tolist(),
@@ -156,7 +152,7 @@ def register_cone_placement(forklift_prim, assets_root_path, config):
         obb_corners[6].tolist(),
     ]
 
-    # Orient the cone using the OBB
+    # Orient the cone using the OBB (Oriented Bounding Box)
     obb_quat = Gf.Matrix3d(axes).ExtractRotation().GetQuaternion()
     obb_quat_xyzw = (obb_quat.GetReal(), *obb_quat.GetImaginary())
     obb_euler = quat_to_euler_angles(np.array(obb_quat_xyzw), degrees=True)
