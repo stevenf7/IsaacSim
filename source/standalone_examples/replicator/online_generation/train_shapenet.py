@@ -46,7 +46,7 @@ def main(args):
     train_loader = DataLoader(train_set, batch_size=2, collate_fn=lambda x: tuple(zip(*x)))
 
     # Setup Model
-    model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=False, num_classes=1 + len(args.categories))
+    model = torchvision.models.detection.maskrcnn_resnet50_fpn(weights=None, num_classes=1 + len(args.categories))
     model = model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
 
