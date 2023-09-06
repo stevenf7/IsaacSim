@@ -18,6 +18,8 @@
 
 ### Changed
 - The layout of the add sensors menu.
+### Fixed
+- Added force threshold unit test for the contact sensor, now contact forces smaller than the min threshold will be treated as no contact
 
 ## [9.0.0] - 2023-08-29
 ### Added 
