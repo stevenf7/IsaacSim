@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.0] - 2023-09-05
+### Changed
+- Renamed Create > Isaac > Sensor > Lidar to PhysX Lidar
+
 ## [1.0.0] - 2023-08-28
 ### Changed
 - Output of IsaacReadLidarPointCloud changed from pointCloudData to data

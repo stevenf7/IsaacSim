@@ -1,5 +1,11 @@
 # Changelog
 
+## [9.2.0] - 2023-09-05
+### Added
+- Sensing GMSL2 RGBD sensors
+### Fixed
+- Scale issues with Orbbec RGBD sensors
+
 ## [9.1.1] - 2023-09-01
 ### Fixed 
 - RtxLidarDebugDrawPointCloudBuffer writer to use correct default transform

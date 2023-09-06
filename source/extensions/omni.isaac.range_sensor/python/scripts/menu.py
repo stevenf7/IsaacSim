@@ -20,7 +20,7 @@ class RangeSensorMenu:
     def __init__(self, ext_id: str):
         menu_items = [
             MenuItemDescription(
-                name="Lidar",
+                name="PhysX Lidar",
                 sub_menu=[
                     make_menu_item_description(ext_id, "Rotating", lambda a=weakref.proxy(self): a._add_lidar()),
                     make_menu_item_description(ext_id, "Generic", lambda a=weakref.proxy(self): a._add_generic()),
