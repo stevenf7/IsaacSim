@@ -924,6 +924,52 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
             self.assertEqual(latest_sensor_reading.time, 0)
         pass
 
+    async def test_sensor_threshold(self):
+        await self.test_add_sensor_prim()
+        await omni.kit.app.get_app().next_update_async()
+
+        # note, expected reading is around 0.57
+        min_threshold = [0.0, 50.0, 0.0, 0.0]
+        max_threshold = [100.0, 100.0, 100.0, 0.1]
+
+        # create four sensors with custom thresholds
+        for i in range(4):
+            result, sensor = omni.kit.commands.execute(
+                "IsaacSensorCreateContactSensor",
+                path="/custom_sensor",
+                parent=self.leg_paths[i],
+                min_threshold=min_threshold[i],
+                max_threshold=max_threshold[i],
+                color=self.color[i],
+                radius=0.12,
+                sensor_period=0,
+                translation=self.sensor_offsets[i],
+                visualize=True,
+            )
+            self.assertTrue(result)
+            self.assertIsNotNone(sensor)
+
+        await omni.kit.app.get_app().next_update_async()
+        self.my_world.play()
+        # give it some time to reach the ground first
+        await simulate_async(1.0)
+
+        sensor_0 = self._cs.get_sensor_reading(self.leg_paths[0] + "/custom_sensor")  # expect contact
+        sensor_1 = self._cs.get_sensor_reading(self.leg_paths[1] + "/custom_sensor")  # expect no contact
+        sensor_2 = self._cs.get_sensor_reading(self.leg_paths[2] + "/custom_sensor")  # expect proper reading
+        sensor_3 = self._cs.get_sensor_reading(self.leg_paths[3] + "/custom_sensor")  # expect 0.1
+
+        print(f"sensor 0: {float(sensor_0.value)}")  # val
+        print(f"sensor 1: {float(sensor_1.value)}")  # no val
+        print(f"sensor 2: {float(sensor_2.value)}")  # val
+        print(f"sensor 3: {float(sensor_3.value)}")  # val
+        self.assertTrue(sensor_0.inContact)
+        self.assertFalse(sensor_1.inContact)
+        self.assertGreater(float(sensor_2.value), 0.1)
+        self.assertAlmostEqual(float(sensor_3.value), 0.1, delta=1e-5)
+
+        pass
+
     # async def test_cubes_touching_then_not_touching_restart(self):
     #     # TODO: not working on windows:
     #     if sys.platform == "win32":

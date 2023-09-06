@@ -276,7 +276,7 @@ void ContactSensor::processRawContacts(CsRawData* rawContact, const size_t& size
             // Check if the distance from sensor to contact position is within sensor radius
             if (mProps.radius < 0.0f || distance.GetLength() < static_cast<double>(mProps.radius))
             {
-                mReadingPair[index].inContact = mReadingPair[index].inContact || true;
+                mReadingPair[index].inContact = true;
                 // compute force from impulse (F = i/dt) and add to sensor output
                 totalImpulse += pxr::GfVec3d(static_cast<double>(rawContact[i].impulse.x),
                                              static_cast<double>(rawContact[i].impulse.y),
@@ -289,6 +289,13 @@ void ContactSensor::processRawContacts(CsRawData* rawContact, const size_t& size
         }
         mReadingPair[index].value =
             std::min(static_cast<float>((totalImpulse.GetLength()) / rawContact[0].dt), mProps.maxThreshold);
+
+        // if force reading is lower than the min threshold, override to no contact
+        if (mReadingPair[index].value < mProps.minThreshold)
+        {
+            mReadingPair[index].value = 0;
+            mReadingPair[index].inContact = false;
+        }
     }
 }
 
