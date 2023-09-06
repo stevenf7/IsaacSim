@@ -18,6 +18,11 @@
             "frameNames": {
                 "type": "token[]",
                 "description": "Vector of pose tree frame names corresponding to each prim."
+            },
+            "poseTreeNamespace": {
+                "type": "string",
+                "description": "Namespace prepended to frame names with trailing '/', eg. 'robot/imu'. Should be unique to each robot.",
+                "default": "robot"
             }
         },
         "outputs": {

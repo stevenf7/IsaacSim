@@ -60,8 +60,6 @@ project_ext_plugin(ext, "omni.isaac.gxf_bridge.plugin")
     }
     runpathdirs { ext.target_dir.."/gxf/lib", ext.target_dir.."/lib" }
 
-    -- linkoptions{"-Wl,--whole-archive %{root}/_build/target-deps/isaac_engine/lib/libkj.a -Wl,--no-whole-archive"}
-
     filter { "configurations:debug" }
         defines { "_DEBUG" }
     filter { "configurations:release" }

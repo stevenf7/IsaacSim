@@ -54,7 +54,7 @@ public:
         }
         else
         {
-            db.logError("Please specify atleast one target prim for the ROS pose tree component");
+            db.logError("Please specify atleast one target prim for the GXF pose tree component");
             return false;
         }
 
@@ -73,7 +73,11 @@ public:
         for (int i = 0; i < (int)frameNames.size(); ++i)
         {
             db.outputs.frameNamesMap()[2 * i] = db.stringToToken(state.mPrims[i].GetString().c_str());
-            db.outputs.frameNamesMap()[2 * i + 1] = frameNames[i];
+            // Prepend frame names with namespace and '/' separator.
+            std::string frameName(db.inputs.poseTreeNamespace());
+            frameName += '/';
+            frameName += db.tokenToString(frameNames[i]);
+            db.outputs.frameNamesMap()[2 * i + 1] = db.stringToToken(frameName.c_str());
         }
 
 

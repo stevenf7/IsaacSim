@@ -101,22 +101,23 @@ public:
         const double current_time = db.inputs.timeStamp();
         if (encoding == db.tokens.Type_RGB8)
         {
-            success = publishColorImage<nvidia::gxf::VideoFormat::GXF_VIDEO_FORMAT_RGB>(
+            success = publishCameraMessage<nvidia::gxf::VideoFormat::GXF_VIDEO_FORMAT_RGB>(
                 db, height, width, state.mDataOnCPU.data(), current_time);
         }
         else if (encoding == db.tokens.Type_U8)
         {
-            success = publishColorImage<nvidia::gxf::VideoFormat::GXF_VIDEO_FORMAT_GRAY>(
+            success = publishCameraMessage<nvidia::gxf::VideoFormat::GXF_VIDEO_FORMAT_GRAY>(
                 db, height, width, state.mDataOnCPU.data(), current_time);
         }
         else if (encoding == db.tokens.Type_U16)
         {
-            publishColorImage<nvidia::gxf::VideoFormat::GXF_VIDEO_FORMAT_GRAY16>(
+            success = publishCameraMessage<nvidia::gxf::VideoFormat::GXF_VIDEO_FORMAT_GRAY16>(
                 db, height, width, state.mDataOnCPU.data(), current_time);
         }
         else if (encoding == db.tokens.Type_F32)
         {
-            success = publishDepthImage<float>(db, height, width, 1, state.mDataOnCPU.data(), current_time);
+            success = publishCameraMessage<nvidia::gxf::VideoFormat::GXF_VIDEO_FORMAT_D32F>(
+                db, height, width, state.mDataOnCPU.data(), current_time);
         }
         else
         {
@@ -129,7 +130,7 @@ public:
 
 private:
     template <nvidia::gxf::VideoFormat Format>
-    static bool publishColorImage(
+    static bool publishCameraMessage(
         OgnGXFPublishImageDatabase& db, int height, int width, const uint8_t* dataAsCPU, double time_seconds)
     {
         auto& state = db.internalState<OgnGXFPublishImage>();
@@ -245,90 +246,6 @@ private:
         return (result == GXF_SUCCESS);
     }
 
-    template <typename T>
-    static bool publishDepthImage(
-        OgnGXFPublishImageDatabase& db, int height, int width, int channels, const uint8_t* dataAsCPU, double time)
-    {
-        auto& state = db.internalState<OgnGXFPublishImage>();
-        auto maybe_message = nvidia::isaac::CreateCameraImageMessage<T>(
-            state.getGxfContext(), state.mAllocator, { height, width, channels });
-        if (!maybe_message)
-        {
-
-            db.logError("could not create image message, %d", maybe_message.error());
-            return false;
-        }
-        auto message = std::move(maybe_message.value());
-        state.setMetadata(time, message.timestamp);
-        const std::string frame_name = db.inputs.poseFrame();
-        message.pose_frame_uid->uid = state.findFrameUid(frame_name.c_str());
-        state.setIntrinsicsCameraImage(
-            message.intrinsics_info, message.distortion_info, width, height, db.inputs.focalLength(),
-            db.inputs.horizontalAperture(), db.inputs.horizontalAperture() * (float(height) / width),
-            db.tokenToString(db.inputs.projectionType()), db.inputs.cameraFisheyeParams(),
-            db.tokenToString(db.inputs.physicalDistortionModel()), db.inputs.physicalDistortionCoefficients());
-
-        const size_t totalBytes = height * width * sizeof(T) * channels;
-        memcpy(static_cast<T*>(message.image_tensor_view.element_wise_begin()), &dataAsCPU[0], totalBytes);
-
-        const gxf_result_t result = state.publish(db.inputs.outputEntity(), db.inputs.outputComponent(), message.entity);
-        return (result == GXF_SUCCESS);
-    }
-
-    void setMetadata(const double time_seconds, const nvidia::gxf::Handle<nvidia::gxf::Timestamp>& msgTimestamp)
-    {
-        msgTimestamp->pubtime = static_cast<int64_t>(time_seconds * 1e9);
-        msgTimestamp->acqtime = static_cast<int64_t>(time_seconds * 1e9);
-    }
-
-    void setIntrinsicsCameraImage(const nvidia::gxf::Handle<::nvidia::isaac::geometry::PinholeD>& intrinsics,
-                                  const nvidia::gxf::Handle<::nvidia::isaac::geometry::CameraDistortionInfo>& distIntrinsics,
-                                  const int width,
-                                  const int height,
-                                  float focalLength,
-                                  float horizontalAperture,
-                                  float verticalAperture,
-                                  const std::string projectionType,
-                                  const omni::graph::core::ogn::const_array<float>& cameraFisheyeParams,
-                                  const std::string physicalDistortionModel,
-                                  const omni::graph::core::ogn::const_array<float>& physicalDistortionCoefficients)
-    {
-        intrinsics->dimensions[0] = height; // rows
-        intrinsics->dimensions[1] = width; // columns
-        intrinsics->focal[0] = height * focalLength / verticalAperture;
-        intrinsics->focal[1] = width * focalLength / horizontalAperture;
-        intrinsics->center[0] = height * 0.5;
-        intrinsics->center[1] = width * 0.5;
-        if (physicalDistortionModel.find("rationalPolynomial") != std::string::npos &&
-            physicalDistortionCoefficients.size() == 8)
-        {
-
-            distIntrinsics->model = ::nvidia::isaac::geometry::DistortionModel::kPolynomial;
-            auto data = physicalDistortionCoefficients.data();
-            const std::array<double, ::nvidia::isaac::geometry::CameraDistortionInfo::kMaxNumCoefficients>
-                distortionCoefficients{ data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7] };
-        }
-        else
-        {
-            if (cameraFisheyeParams.size() == 19)
-            {
-                auto data = cameraFisheyeParams.data();
-                const std::array<double, ::nvidia::isaac::geometry::CameraDistortionInfo::kMaxNumCoefficients>
-                    distortionCoefficients{ data[5], data[6], data[7], data[8], data[9] };
-                distIntrinsics->distortion_coefficients = distortionCoefficients;
-            }
-            else
-            {
-                const std::array<double, ::nvidia::isaac::geometry::CameraDistortionInfo::kMaxNumCoefficients>
-                    distortionCoefficients{ 0, 0, 0, 0, 0 };
-                distIntrinsics->distortion_coefficients = distortionCoefficients;
-            }
-
-            distIntrinsics->model = (projectionType.find("fisheye") != std::string::npos ?
-                                         ::nvidia::isaac::geometry::DistortionModel::kFisheye :
-                                         ::nvidia::isaac::geometry::DistortionModel::kPerspective);
-        }
-    }
     omni::isaac::utils::DeviceBuffer mBuffer;
     omni::isaac::utils::HostBuffer mDataOnCPU;
 };
