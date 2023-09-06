@@ -1,4 +1,4 @@
-// Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -7,9 +7,8 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
-#include "rosgraph_msgs/msg/clock.hpp"
 
-#include <omni/isaac/ros/Ros2Node.h>
+#include <include/Ros2Node.h>
 
 #include <OgnROS2SubscribeClockDatabase.h>
 
@@ -36,19 +35,21 @@ public:
         {
             const std::string& topicName = db.inputs.topicName();
             std::string fullTopicName = addTopicPrefix(db.inputs.nodeNamespace(), topicName);
-            if (!validateTopic(fullTopicName))
+            if (!state.mFactory->validateTopic(fullTopicName))
             {
                 return false;
             }
-            state.mCallback = [&state, &db](const rosgraph_msgs::msg::Clock::SharedPtr msg)
-            { state.subCallback(msg, db); };
 
-            state.mSubscriber = state.mNodeHandle->create_subscription<rosgraph_msgs::msg::Clock>(
-                fullTopicName, db.inputs.queueSize(), state.mCallback);
+            state.mMessage = state.mFactory->CreateClockMessage();
+
+
+            state.mSubscriber = state.mFactory->CreateSubscriber(
+                state.mNodeHandle.get(), fullTopicName.c_str(), state.mMessage->getTypeSupportHandle());
+
             return true;
         }
 
-        return true;
+        return state.subscriberCallback(db);
     }
 
     static void release(const NodeObj& nodeObj)
@@ -66,20 +67,30 @@ public:
     virtual void reset()
     {
         mSubscriber.reset(); // This should be reset before we reset the handle.
-        mCallback = nullptr;
+        // mCallback = nullptr;
         Ros2Node::reset();
     }
 
-    void subCallback(const rosgraph_msgs::msg::Clock::SharedPtr msg, OgnROS2SubscribeClockDatabase& db)
+    bool subscriberCallback(OgnROS2SubscribeClockDatabase& db)
     {
-        db.outputs.timeStamp() = rclcpp::Time(msg->clock).seconds();
-        db.outputs.execOut() = kExecutionAttributeStateEnabled;
+        auto& state = db.internalState<OgnROS2SubscribeClock>();
+
+
+        // std::cout << "Subscriber callback..";
+
+        if (state.mSubscriber->spin(state.mMessage->ptr()))
+        {
+            state.mMessage->setData(db.outputs.timeStamp());
+            db.outputs.execOut() = kExecutionAttributeStateEnabled;
+            return true;
+        }
+
+        return false;
     }
 
-
 private:
-    std::shared_ptr<rclcpp::Subscription<rosgraph_msgs::msg::Clock>> mSubscriber = nullptr;
-    std::function<void(const rosgraph_msgs::msg::Clock::SharedPtr)> mCallback;
+    std::shared_ptr<Ros2Subscriber> mSubscriber = nullptr;
+    std::shared_ptr<Ros2ClockMessage> mMessage = nullptr;
 };
 
 REGISTER_OGN_NODE()

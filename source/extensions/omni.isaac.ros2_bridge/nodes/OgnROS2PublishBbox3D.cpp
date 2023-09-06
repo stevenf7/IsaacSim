@@ -7,12 +7,9 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
-#include "Eigen/Eigen"
-#include "vision_msgs/msg/detection3_d_array.hpp"
-
 #include <carb/graphics/GraphicsTypes.h>
 
-#include <omni/isaac/ros/Ros2Node.h>
+#include <include/Ros2Node.h>
 
 #include <OgnROS2PublishBbox3DDatabase.h>
 
@@ -54,65 +51,34 @@ public:
 
             std::string fullTopicName = addTopicPrefix(db.inputs.nodeNamespace(), topicName);
 
-            if (!validateTopic(fullTopicName))
+            if (!state.mFactory->validateTopic(fullTopicName))
             {
                 return false;
             }
-            state.mPublisher = state.mNodeHandle->create_publisher<vision_msgs::msg::Detection3DArray>(
-                topicName, db.inputs.queueSize());
+            state.mMessage = state.mFactory->CreateBoundingBox3DMessage();
 
+            state.mPublisher =
+                state.mFactory->CreatePublisher(state.mNodeHandle.get(), fullTopicName.c_str(),
+                                                state.mMessage->getTypeSupportHandle(), db.inputs.queueSize());
             state.mFrameId = db.inputs.frameId();
 
             return true;
         }
 
+        return state.publishDetectionArray(db);
+    }
+
+    bool publishDetectionArray(OgnROS2PublishBbox3DDatabase& db)
+    {
+        auto& state = db.internalState<OgnROS2PublishBbox3D>();
         size_t bytes = db.inputs.data().size();
         size_t numBbox = bytes / sizeof(Bbox3DData);
         const Bbox3DData* bboxData = reinterpret_cast<const Bbox3DData*>(db.inputs.data().data());
 
-        vision_msgs::msg::Detection3DArray msg;
-        msg.header.frame_id = state.mFrameId;
 
-        if (db.inputs.timeStamp() >= 0.0)
-        {
-            msg.header.stamp = rclcpp::Time(int64_t(db.inputs.timeStamp() * 1e9));
-        }
-        else
-        {
-            db.logWarning("Timestamp is invalid. Timestamp will be neglected for all published ROS Image messages");
-            return false;
-        }
-
-        msg.detections.resize(numBbox);
-        for (size_t i = 0; i < numBbox; i++)
-        {
-            const Bbox3DData& box = bboxData[i];
-            auto mat = pxr::GfMatrix4d(box.transform);
-            auto transform = pxr::GfTransform(mat);
-
-            auto trans = transform.GetTranslation();
-            auto rot = transform.GetRotation().GetQuaternion();
-            auto scale = transform.GetScale();
-
-            msg.detections[i].bbox.center.position.x = trans[0];
-            msg.detections[i].bbox.center.position.y = trans[1];
-            msg.detections[i].bbox.center.position.z = trans[2];
-            auto imag = rot.GetImaginary();
-
-            msg.detections[i].bbox.center.orientation.x = imag[0];
-            msg.detections[i].bbox.center.orientation.y = imag[1];
-            msg.detections[i].bbox.center.orientation.z = imag[2];
-            msg.detections[i].bbox.center.orientation.w = rot.GetReal();
-
-            msg.detections[i].bbox.size.x = (box.x_max - box.x_min) * scale[0];
-            msg.detections[i].bbox.size.y = (box.y_max - box.y_min) * scale[1];
-            msg.detections[i].bbox.size.z = (box.z_max - box.z_min) * scale[2];
-            msg.detections[i].results.resize(1);
-            msg.detections[i].results[0].id = std::to_string(box.semanticId);
-            msg.detections[i].results[0].score = 1.0;
-        }
-
-        state.mPublisher->publish(msg);
+        state.mMessage->fillHeader(db.inputs.timeStamp(), state.mFrameId);
+        state.mMessage->fillBboxData(bboxData, numBbox);
+        state.mPublisher.get()->publish(state.mMessage->ptr());
 
         return true;
     }
@@ -130,7 +96,8 @@ public:
     }
 
 private:
-    std::shared_ptr<rclcpp::Publisher<vision_msgs::msg::Detection3DArray>> mPublisher;
+    std::shared_ptr<Ros2Publisher> mPublisher = nullptr;
+    std::shared_ptr<Ros2BoundingBox3DMessage> mMessage = nullptr;
 
     std::string mFrameId = "sim_camera";
 };

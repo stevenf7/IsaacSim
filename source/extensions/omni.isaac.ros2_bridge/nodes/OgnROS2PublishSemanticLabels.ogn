@@ -40,6 +40,18 @@
                 "description": "Time in seconds to use when publishing the message",
                 "default" : 0.0
             },
+            "ids": {
+                "type": "uint[]",
+                "description": "Unoccluded semantic u ids (or color, if `colorize` is set to True)."
+            },
+            "labels": {
+                "type": "token[]",
+                "description": "Prim path of the prim."
+            },
+            "semantics": {
+                "type": "token[]",
+                "description": "Semantic labels that correspeond to the ids."
+            },
             "idToLabels": {
                 "description": "Mapping from id to semantic labels.",
                 "type": "string"

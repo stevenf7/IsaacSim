@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -11,9 +11,8 @@
 #include <UsdPCH.h>
 // clang-format on
 
-#include "nav_msgs/msg/odometry.hpp"
 
-#include <omni/isaac/ros/Ros2Node.h>
+#include <include/Ros2Node.h>
 
 #include <OgnROS2PublishOdometryDatabase.h>
 
@@ -78,14 +77,15 @@ public:
 
             std::string fullTopicName = addTopicPrefix(db.inputs.nodeNamespace(), topicName);
 
-            if (!validateTopic(fullTopicName))
+            if (!state.mFactory->validateTopic(fullTopicName))
             {
                 return false;
             }
+            state.mMessage = state.mFactory->CreateOdomMessage();
 
             state.mPublisher =
-                state.mNodeHandle->create_publisher<nav_msgs::msg::Odometry>(fullTopicName, db.inputs.queueSize());
-
+                state.mFactory->CreatePublisher(state.mNodeHandle.get(), fullTopicName.c_str(),
+                                                state.mMessage->getTypeSupportHandle(), db.inputs.queueSize());
 
             state.mOdomFrameId = db.inputs.odomFrameId();
             state.mChassisFrameId = db.inputs.chassisFrameId();
@@ -101,55 +101,20 @@ public:
 
     void publishOdom(OgnROS2PublishOdometryDatabase& db)
     {
-        nav_msgs::msg::Odometry odomMsg;
 
-        if (db.inputs.timeStamp() >= 0.0)
-        {
-            odomMsg.header.stamp = rclcpp::Time(int64_t(db.inputs.timeStamp() * 1e9));
-        }
-        else
-        {
-            db.logWarning("Timestamp is invalid. Timestamp will be neglected for all published ROS Odom messages");
-        }
-
-        odomMsg.header.frame_id = mOdomFrameId;
-        odomMsg.child_frame_id = mChassisFrameId;
+        auto& state = db.internalState<OgnROS2PublishOdometry>();
 
         auto& linVel = db.inputs.linearVelocity();
-        float measuredSpeedFront =
-            static_cast<float>(pxr::GfDot(pxr::GfVec3d(linVel[0], linVel[1], linVel[2]), mRobotFront) * mUnitScale);
-
-        float measuredSpeedSide =
-            static_cast<float>(pxr::GfDot(pxr::GfVec3d(linVel[0], linVel[1], linVel[2]), mRobotSide) * mUnitScale);
-
         auto& angVel = db.inputs.angularVelocity();
-
-        // odometry messages
-        odomMsg.twist.twist.linear.x = measuredSpeedFront;
-        odomMsg.twist.twist.linear.y = measuredSpeedSide;
-
-        if (mZUp)
-        {
-            odomMsg.twist.twist.angular.z = angVel[2]; // Get Z component of angular velocity
-        }
-        else
-        {
-            odomMsg.twist.twist.angular.y = angVel[1]; // Get Y component of angular velocity
-        }
-
         auto& position = db.inputs.position();
-
-        odomMsg.pose.pose.position.x = position[0];
-        odomMsg.pose.pose.position.y = position[1];
-        odomMsg.pose.pose.position.z = position[2];
-
         auto& orientation = db.inputs.orientation();
-        odomMsg.pose.pose.orientation.x = orientation.GetImaginary()[0];
-        odomMsg.pose.pose.orientation.y = orientation.GetImaginary()[1];
-        odomMsg.pose.pose.orientation.z = orientation.GetImaginary()[2];
-        odomMsg.pose.pose.orientation.w = orientation.GetReal();
 
-        mPublisher->publish(odomMsg);
+
+        state.mMessage->fillHeader(db.inputs.timeStamp(), state.mOdomFrameId);
+        state.mMessage->fillData(
+            state.mChassisFrameId, linVel, angVel, mRobotFront, mRobotSide, mUnitScale, mZUp, position, orientation);
+
+        state.mPublisher.get()->publish(state.mMessage->ptr());
     }
 
     virtual void release(const NodeObj& nodeObj)
@@ -166,7 +131,8 @@ public:
 
 
 private:
-    std::shared_ptr<rclcpp::Publisher<nav_msgs::msg::Odometry>> mPublisher = nullptr;
+    std::shared_ptr<Ros2Publisher> mPublisher = nullptr;
+    std::shared_ptr<Ros2OdomMessage> mMessage = nullptr;
 
     double mUnitScale;
     bool mZUp = true;

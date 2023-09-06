@@ -12,14 +12,13 @@
 // clang-format on
 
 #include "omni/isaac/utils/UsdUtilities.h"
-#include "sensor_msgs/msg/joint_state.hpp"
 
 #include <carb/Framework.h>
 #include <carb/Types.h>
 
+#include <include/Ros2Node.h>
 #include <omni/fabric/FabricUSD.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
-#include <omni/isaac/ros/Ros2Node.h>
 #include <omni/isaac/utils/Math.h>
 
 #include <OgnROS2PublishJointStateDatabase.h>
@@ -101,82 +100,36 @@ public:
             // Setup ROS publisher
             const std::string& topicName = db.inputs.topicName();
             std::string fullTopicName = addTopicPrefix(db.inputs.nodeNamespace(), topicName);
-            if (!validateTopic(fullTopicName))
+            if (!state.mFactory->validateTopic(fullTopicName))
             {
                 return false;
             }
+            state.mMessage = state.mFactory->CreateJointStateMessage();
+
             state.mPublisher =
-                state.mNodeHandle->create_publisher<sensor_msgs::msg::JointState>(fullTopicName, db.inputs.queueSize());
+                state.mFactory->CreatePublisher(state.mNodeHandle.get(), fullTopicName.c_str(),
+                                                state.mMessage->getTypeSupportHandle(), db.inputs.queueSize());
 
             return true;
         }
 
-        state.publishJointStates(db);
-        return true;
+        return state.publishJointStates(db);
     }
 
 
-    void publishJointStates(OgnROS2PublishJointStateDatabase& db)
+    bool publishJointStates(OgnROS2PublishJointStateDatabase& db)
     {
+        auto& state = db.internalState<OgnROS2PublishJointState>();
+
         double stageUnits = 1.0 / mUnitScale;
-        sensor_msgs::msg::JointState msg;
-
-        if (db.inputs.timeStamp() >= 0.0)
-        {
-            msg.header.stamp = rclcpp::Time(int64_t(db.inputs.timeStamp() * 1e9));
-        }
-        else
-        {
-            db.logError("Timestamp is invalid");
-            return;
-        }
-
         double dt = db.inputs.timeStamp() - mPreviousTimeStamp;
         mPreviousTimeStamp = db.inputs.timeStamp();
 
-        mDynamicControlPtr->wakeUpArticulation(mArticulationHandle);
-        size_t num_dofs = mDynamicControlPtr->getArticulationDofCount(mArticulationHandle);
-        mDofProps.resize(num_dofs);
-        mDynamicControlPtr->getArticulationDofProperties(mArticulationHandle, mDofProps.data());
-        mStates =
-            mDynamicControlPtr->getArticulationDofStates(mArticulationHandle, omni::isaac::dynamic_control::kDcStateAll);
 
-        mPrevJointPosition.resize(num_dofs);
-        mCalculatedJointVelocity.resize(num_dofs);
-
-        if (mStates != nullptr)
-        {
-            for (size_t j = 0; j < num_dofs; j++)
-            {
-                // calculate velocity
-                mCalculatedJointVelocity[j] = static_cast<float>((mStates[j].pos - mPrevJointPosition[j]) / dt);
-                mPrevJointPosition[j] = mStates[j].pos;
-
-                omni::isaac::dynamic_control::DcHandle dof =
-                    mDynamicControlPtr->getArticulationDof(mArticulationHandle, j);
-                if (dof)
-                {
-                    msg.name.push_back(mDynamicControlPtr->getDofName(dof));
-                }
-                if (mDofProps[j].type == omni::isaac::dynamic_control::DcDofType::eTranslation)
-                {
-                    msg.position.push_back(omni::isaac::utils::math::roundNearest(mStates[j].pos * stageUnits, 10000.0)); // m
-                    msg.velocity.push_back(omni::isaac::utils::math::roundNearest(
-                        mCalculatedJointVelocity[j] * stageUnits, 10000.0)); // m/s
-                    msg.effort.push_back(
-                        omni::isaac::utils::math::roundNearest(mStates[j].effort * stageUnits, 10000.0)); // N
-                }
-                else
-                {
-                    msg.position.push_back(omni::isaac::utils::math::roundNearest(mStates[j].pos, 10000.0)); // rad
-                    msg.velocity.push_back(
-                        omni::isaac::utils::math::roundNearest(mCalculatedJointVelocity[j], 10000.0)); // rad/s
-                    msg.effort.push_back(omni::isaac::utils::math::roundNearest(
-                        mStates[j].effort * stageUnits * stageUnits, 10000.0)); // N*m
-                }
-            }
-            mPublisher->publish(msg);
-        }
+        state.mMessage->fillData(db.inputs.timeStamp(), mDynamicControlPtr, mArticulationHandle, mDofProps,
+                                 mPrevJointPosition, mCalculatedJointVelocity, dt, stageUnits);
+        state.mPublisher.get()->publish(state.mMessage->ptr());
+        return true;
     }
 
 
@@ -199,7 +152,8 @@ public:
     }
 
 private:
-    std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::JointState>> mPublisher = nullptr;
+    std::shared_ptr<Ros2Publisher> mPublisher = nullptr;
+    std::shared_ptr<Ros2JointStateMessage> mMessage = nullptr;
 
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
     omni::isaac::dynamic_control::DcHandle mArticulationHandle = omni::isaac::dynamic_control::kDcInvalidHandle;

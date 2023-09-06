@@ -12,13 +12,12 @@
 // clang-format on
 
 #include "omni/isaac/utils/UsdUtilities.h"
-#include "sensor_msgs/msg/joint_state.hpp"
 
 #include <carb/Framework.h>
 #include <carb/Types.h>
 
+#include <include/Ros2Node.h>
 #include <omni/fabric/FabricUSD.h>
-#include <omni/isaac/ros/Ros2Node.h>
 
 #include <OgnROS2SubscribeJointStateDatabase.h>
 
@@ -51,88 +50,136 @@ public:
             // Setup ROS publisher
             const std::string& topicName = db.inputs.topicName();
             std::string fullTopicName = addTopicPrefix(db.inputs.nodeNamespace(), topicName);
-            if (!validateTopic(fullTopicName))
+            if (!state.mFactory->validateTopic(fullTopicName))
             {
                 return false;
             }
-            state.mCallback = [&state, &db](const sensor_msgs::msg::JointState::SharedPtr& msg)
-            { state.subCallback(msg, db); };
 
-            state.mSubscriber = state.mNodeHandle->create_subscription<sensor_msgs::msg::JointState>(
-                fullTopicName, db.inputs.queueSize(), state.mCallback);
+            state.mMessage = state.mFactory->CreateJointStateMessage();
+
+            state.mSubscriber = state.mFactory->CreateSubscriber(
+                state.mNodeHandle.get(), fullTopicName.c_str(), state.mMessage->getTypeSupportHandle());
+
             return true;
         }
 
+        return state.subscriberCallback(db);
+
+        // return true;
+    }
+
+
+    bool subscriberCallback(OgnROS2SubscribeJointStateDatabase& db)
+    {
+        auto& state = db.internalState<OgnROS2SubscribeJointState>();
+
+
+        if (state.mSubscriber->spin(state.mMessage->ptr()))
+        {
+            size_t num_actuators = 0;
+            state.mMessage->getActuators(num_actuators);
+
+            if (num_actuators == 0)
+            {
+                db.logWarning("No joints found");
+                return false;
+            }
+
+            // Check if all sub-message size match size of actuators before setting data
+            if (state.mMessage->checkValid())
+            {
+                db.outputs.positionCommand().resize(num_actuators);
+                db.outputs.velocityCommand().resize(num_actuators);
+                db.outputs.effortCommand().resize(num_actuators);
+                db.outputs.jointNames().resize(num_actuators);
+
+                state.mMessage->getData(mJointNames, db.outputs.positionCommand().data(),
+                                        db.outputs.velocityCommand().data(), db.outputs.effortCommand().data(),
+                                        db.outputs.timeStamp());
+
+                for (size_t i = 0; i < num_actuators; i++)
+                {
+                    db.outputs.jointNames().at(i) = db.stringToToken(mJointNames[i]);
+                }
+
+                db.outputs.execOut() = kExecutionAttributeStateEnabled;
+            }
+
+            else
+            {
+                db.logWarning("Please ensure size of position, velocity and effort arrays match the number of actuators");
+                return false;
+            }
+        }
         return true;
     }
 
 
-    void subCallback(const sensor_msgs::msg::JointState::SharedPtr& msg, OgnROS2SubscribeJointStateDatabase& db)
-    {
-        const size_t num_actuators = msg->name.size();
+    // void subCallback(const sensor_msgs::msg::JointState::SharedPtr& msg, OgnROS2SubscribeJointStateDatabase& db)
+    // {
+    //     const size_t num_actuators = msg->name.size();
 
-        if (num_actuators == 0)
-        {
-            db.logWarning("No joints found");
-            return;
-        }
+    //     if (num_actuators == 0)
+    //     {
+    //         db.logWarning("No joints found");
+    //         return;
+    //     }
 
-        db.outputs.jointNames().resize(num_actuators);
+    //     db.outputs.jointNames().resize(num_actuators);
 
-        // Copy joint names and convert to token array
-        std::transform(msg->name.begin(), msg->name.end(), db.outputs.jointNames().begin(),
-                       [db](std::string name) { return db.stringToToken(name.c_str()); });
+    //     // Copy joint names and convert to token array
+    //     std::transform(msg->name.begin(), msg->name.end(), db.outputs.jointNames().begin(),
+    //                    [db](std::string name) { return db.stringToToken(name.c_str()); });
 
-        if (msg->position.size() > 0)
-        {
-            if (msg->position.size() != num_actuators)
-            {
-                db.logError("size of joint position array does not match number of joints");
-                return;
-            }
-            db.outputs.positionCommand().resize(num_actuators);
-            std::memcpy(db.outputs.positionCommand().data(), msg->position.data(), num_actuators * sizeof(double));
-        }
-        else
-        {
-            db.outputs.positionCommand().resize(0);
-        }
+    //     if (msg->position.size() > 0)
+    //     {
+    //         if (msg->position.size() != num_actuators)
+    //         {
+    //             db.logError("size of joint position array does not match number of joints");
+    //             return;
+    //         }
+    //         db.outputs.positionCommand().resize(num_actuators);
+    //         std::memcpy(db.outputs.positionCommand().data(), msg->position.data(), num_actuators * sizeof(double));
+    //     }
+    //     else
+    //     {
+    //         db.outputs.positionCommand().resize(0);
+    //     }
 
-        if (msg->velocity.size() != 0)
-        {
-            if (msg->velocity.size() != num_actuators)
-            {
-                db.logError("size of joint velocity array does not match number of joints");
-                return;
-            }
-            db.outputs.velocityCommand().resize(num_actuators);
-            std::memcpy(db.outputs.velocityCommand().data(), msg->velocity.data(), num_actuators * sizeof(double));
-        }
-        else
-        {
-            db.outputs.velocityCommand().resize(0);
-        }
+    //     if (msg->velocity.size() != 0)
+    //     {
+    //         if (msg->velocity.size() != num_actuators)
+    //         {
+    //             db.logError("size of joint velocity array does not match number of joints");
+    //             return;
+    //         }
+    //         db.outputs.velocityCommand().resize(num_actuators);
+    //         std::memcpy(db.outputs.velocityCommand().data(), msg->velocity.data(), num_actuators * sizeof(double));
+    //     }
+    //     else
+    //     {
+    //         db.outputs.velocityCommand().resize(0);
+    //     }
 
-        if (msg->effort.size() != 0)
-        {
-            if (msg->effort.size() != num_actuators)
-            {
-                db.logError("size of effort array does not match number of joints");
-                return;
-            }
+    //     if (msg->effort.size() != 0)
+    //     {
+    //         if (msg->effort.size() != num_actuators)
+    //         {
+    //             db.logError("size of effort array does not match number of joints");
+    //             return;
+    //         }
 
-            db.outputs.effortCommand().resize(num_actuators);
-            std::memcpy(db.outputs.effortCommand().data(), msg->effort.data(), num_actuators * sizeof(double));
-        }
-        else
-        {
-            db.outputs.effortCommand().resize(0);
-        }
+    //         db.outputs.effortCommand().resize(num_actuators);
+    //         std::memcpy(db.outputs.effortCommand().data(), msg->effort.data(), num_actuators * sizeof(double));
+    //     }
+    //     else
+    //     {
+    //         db.outputs.effortCommand().resize(0);
+    //     }
 
-        db.outputs.timeStamp() = rclcpp::Time(msg->header.stamp).seconds();
 
-        db.outputs.execOut() = kExecutionAttributeStateEnabled;
-    }
+    //     db.outputs.execOut() = kExecutionAttributeStateEnabled;
+    // }
 
     static bool updateNodeVersion(const GraphContextObj& context, const NodeObj& nodeObj, int oldVersion, int newVersion)
     {
@@ -164,13 +211,16 @@ public:
         db.outputs.effortCommand.resize(0);
 
         mSubscriber.reset(); // This should be reset before we reset the handle.
-        mCallback = nullptr;
+        // mCallback = nullptr;
         Ros2Node::reset();
     }
 
 private:
-    std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::JointState>> mSubscriber = nullptr;
-    std::function<void(const sensor_msgs::msg::JointState::SharedPtr)> mCallback;
+    std::shared_ptr<Ros2Subscriber> mSubscriber = nullptr;
+    std::shared_ptr<Ros2JointStateMessage> mMessage = nullptr;
+
+    // Names will be extracted as strings and later converted to tokens
+    std::vector<char*> mJointNames;
 
     GraphContextObj mContextObj;
     NodeObj mNodeObj;

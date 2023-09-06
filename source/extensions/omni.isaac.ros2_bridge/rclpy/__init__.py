@@ -15,7 +15,10 @@ import omni.ext
 
 class Extension(omni.ext.IExt):
     def on_startup(self):
-        sys.path.append(os.path.join(os.path.dirname(__file__)))
+        ros_distro = os.environ.get("ROS_DISTRO")
+        if ros_distro in ["humble", "foxy"] and f"{ros_distro}/rclpy" in os.path.join(os.path.dirname(__file__)):
+            sys.path.append(os.path.join(os.path.dirname(__file__)))
+            return
 
     def on_shutdown(self):
         sys.path.remove(os.path.join(os.path.dirname(__file__)))

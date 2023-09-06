@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -11,9 +11,8 @@
 #include <UsdPCH.h>
 // clang-format on
 
-#include "sensor_msgs/msg/imu.hpp"
 
-#include <omni/isaac/ros/Ros2Node.h>
+#include <include/Ros2Node.h>
 
 #include <OgnROS2PublishImuDatabase.h>
 
@@ -59,15 +58,16 @@ public:
 
             std::string fullTopicName = addTopicPrefix(db.inputs.nodeNamespace(), topicName);
 
-            if (!validateTopic(fullTopicName))
+            if (!state.mFactory->validateTopic(fullTopicName))
             {
                 return false;
             }
 
+            state.mMessage = state.mFactory->CreateImuMessage();
+
             state.mPublisher =
-                state.mNodeHandle->create_publisher<sensor_msgs::msg::Imu>(fullTopicName, db.inputs.queueSize());
-
-
+                state.mFactory->CreatePublisher(state.mNodeHandle.get(), fullTopicName.c_str(),
+                                                state.mMessage->getTypeSupportHandle(), db.inputs.queueSize());
             state.mFrameId = db.inputs.frameId();
 
             return true;
@@ -81,57 +81,45 @@ public:
 
     void publishImu(OgnROS2PublishImuDatabase& db)
     {
-        sensor_msgs::msg::Imu msg;
 
-        if (db.inputs.timeStamp() >= 0.0)
-        {
-            msg.header.stamp = rclcpp::Time(int64_t(db.inputs.timeStamp() * 1e9));
-        }
-        else
-        {
-            db.logWarning("Timestamp is invalid. Timestamp will be neglected for all published ROS IMU messages");
-        }
-
-        msg.header.frame_id = mFrameId;
+        auto& state = db.internalState<OgnROS2PublishImu>();
+        state.mMessage->fillHeader(db.inputs.timeStamp(), state.mFrameId);
 
         if (!db.inputs.publishLinearAcceleration())
         {
-            msg.linear_acceleration_covariance[0] = -1;
+            state.mMessage->fillAccel(true);
         }
         else
         {
             auto& linAccel = db.inputs.linearAcceleration();
-            msg.linear_acceleration.x = linAccel[0];
-            msg.linear_acceleration.y = linAccel[1];
-            msg.linear_acceleration.z = linAccel[2];
+            std::vector<double> accel{ linAccel[0], linAccel[1], linAccel[2] };
+            state.mMessage->fillAccel(false, accel);
         }
 
         if (!db.inputs.publishAngularVelocity())
         {
-            msg.angular_velocity_covariance[0] = -1;
+            state.mMessage->fillVelo(true);
         }
         else
         {
             auto& angVel = db.inputs.angularVelocity();
-            msg.angular_velocity.x = angVel[0];
-            msg.angular_velocity.y = angVel[1];
-            msg.angular_velocity.z = angVel[2];
+            std::vector<double> velo{ angVel[0], angVel[1], angVel[2] };
+            state.mMessage->fillVelo(false, velo);
         }
 
         if (!db.inputs.publishOrientation())
         {
-            msg.orientation_covariance[0] = -1;
+            state.mMessage->fillOrient(true);
         }
         else
         {
             auto& orientation = db.inputs.orientation();
-            msg.orientation.x = orientation.GetImaginary()[0];
-            msg.orientation.y = orientation.GetImaginary()[1];
-            msg.orientation.z = orientation.GetImaginary()[2];
-            msg.orientation.w = orientation.GetReal();
+            std::vector<double> orient{ orientation.GetImaginary()[0], orientation.GetImaginary()[1],
+                                        orientation.GetImaginary()[2], orientation.GetReal() };
+            state.mMessage->fillOrient(false, orient);
         }
 
-        mPublisher->publish(msg);
+        state.mPublisher.get()->publish(state.mMessage->ptr());
     }
 
     virtual void release(const NodeObj& nodeObj)
@@ -148,7 +136,8 @@ public:
 
 
 private:
-    std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::Imu>> mPublisher = nullptr;
+    std::shared_ptr<Ros2Publisher> mPublisher = nullptr;
+    std::shared_ptr<Ros2ImuMessage> mMessage = nullptr;
     std::string mFrameId = "sim_imu";
 };
 

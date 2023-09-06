@@ -100,7 +100,7 @@ class TestRos2PointCloud(omni.kit.test.AsyncTestCase):
                     keys.CONNECT: [
                         ("OnPlaybackTick.outputs:tick", "ReadLidarPCL.inputs:execIn"),
                         ("ReadLidarPCL.outputs:execOut", "PublishPCL.inputs:execIn"),
-                        ("ReadLidarPCL.outputs:pointCloudData", "PublishPCL.inputs:pointCloudData"),
+                        ("ReadLidarPCL.outputs:data", "PublishPCL.inputs:data"),
                         ("ReadSimTime.outputs:simulationTime", "PublishPCL.inputs:timeStamp"),
                     ],
                 },
@@ -182,7 +182,7 @@ class TestRos2PointCloud(omni.kit.test.AsyncTestCase):
                     keys.CONNECT: [
                         ("OnPlaybackTick.outputs:tick", "ReadLidarPCL.inputs:execIn"),
                         ("ReadLidarPCL.outputs:execOut", "PublishPCL.inputs:execIn"),
-                        ("ReadLidarPCL.outputs:pointCloudData", "PublishPCL.inputs:pointCloudData"),
+                        ("ReadLidarPCL.outputs:data", "PublishPCL.inputs:data"),
                         ("ReadSimTime.outputs:simulationTime", "PublishPCL.inputs:timeStamp"),
                     ],
                 },

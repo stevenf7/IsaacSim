@@ -11,9 +11,8 @@
 #include <UsdPCH.h>
 // clang-format on
 
-#include "sensor_msgs/msg/camera_info.hpp"
 
-#include <omni/isaac/ros/Ros2Node.h>
+#include <include/Ros2Node.h>
 
 #include <OgnROS2PublishCameraInfoDatabase.h>
 
@@ -21,14 +20,15 @@
 class OgnROS2PublishCameraInfo : public Ros2Node
 {
 public:
-    // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
-    // {
-    //     auto& state = OgnROS2PublishCameraInfoDatabase::sInternalState<OgnROS2PublishCameraInfo>(nodeObj);
-    // }
+    static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    {
+        // auto& state = OgnROS2PublishCameraInfoDatabase::sInternalState<OgnROS2PublishCameraInfo>(nodeObj);
+    }
 
     static bool compute(OgnROS2PublishCameraInfoDatabase& db)
     {
         auto& state = db.internalState<OgnROS2PublishCameraInfo>();
+        // std::cout << "Call publish method..." << std::endl;
 
         // spin once calls reset automatically if it was not successful
         const auto& nodeObj = db.abi_node();
@@ -37,48 +37,37 @@ public:
         {
             return false;
         }
-
         // Publisher was not valid, create a new one
         if (!state.mPublisher)
         {
-            // Setup ROS publisher
             const std::string& topicName = db.inputs.topicName();
-
             std::string fullTopicName = addTopicPrefix(db.inputs.nodeNamespace(), topicName);
-
-            if (!validateTopic(fullTopicName))
+            if (!state.mFactory->validateTopic(fullTopicName))
             {
                 return false;
             }
-
+            state.mMessage = state.mFactory->CreateCameraInfoMessage();
             state.mPublisher =
-                state.mNodeHandle->create_publisher<sensor_msgs::msg::CameraInfo>(fullTopicName, db.inputs.queueSize());
-
-            state.mFrameId = db.inputs.frameId();
+                state.mFactory->CreatePublisher(state.mNodeHandle.get(), fullTopicName.c_str(),
+                                                state.mMessage->getTypeSupportHandle(), db.inputs.queueSize());
 
             return true;
         }
+        state.publishCameraInfo(db);
+
+        return true;
+    }
+
+    void publishCameraInfo(OgnROS2PublishCameraInfoDatabase& db)
+    {
+        auto& state = db.internalState<OgnROS2PublishCameraInfo>();
 
 
-        sensor_msgs::msg::CameraInfo cam_info_msg;
-        cam_info_msg.header.frame_id = state.mFrameId;
-
-        if (db.inputs.timeStamp() >= 0.0)
-        {
-            cam_info_msg.header.stamp = rclcpp::Time(int64_t(db.inputs.timeStamp() * 1e9));
-        }
-        else
-        {
-            db.logWarning("Timestamp is invalid. Timestamp will be neglected for all published ROS CameraInfo messages");
-        }
+        state.mMessage->fillHeader(db.inputs.timeStamp(), state.mFrameId);
 
         auto& height = db.inputs.height();
         auto& width = db.inputs.width();
-
-        cam_info_msg.height = height;
-        cam_info_msg.width = width;
-
-
+        state.mMessage->fillHeightWidthDistortion(height, width, db.tokenToString(db.inputs.projectionType()));
         // ROS image: conventions
         // origin of frame should be optical center of camera
         // +x should point to the right in the image
@@ -91,16 +80,13 @@ public:
         fy = height * db.inputs.focalLength() / db.inputs.verticalAperture();
         cx = width * 0.5f;
         cy = height * 0.5f;
+        double k_arr[] = { fx, 0, cx, 0, fy, cy, 0, 0, 1 };
+        state.mMessage->fillIntrisicArray(k_arr, 9);
 
-        cam_info_msg.k = { fx, 0, cx, 0, fy, cy, 0, 0, 1 };
+        double p_arr[] = { fx, 0, cx, db.inputs.stereoOffset()[0], 0, fy, cy, db.inputs.stereoOffset()[1], 0, 0, 1, 0 };
+        state.mMessage->fillProjectionArray(p_arr, 12);
 
-        cam_info_msg.p = { fx, 0, cx, db.inputs.stereoOffset()[0], 0, fy, cy, db.inputs.stereoOffset()[1], 0, 0, 1, 0 };
-
-        cam_info_msg.distortion_model = db.tokenToString(db.inputs.projectionType());
-
-        state.mPublisher->publish(cam_info_msg);
-
-        return true;
+        state.mPublisher.get()->publish(state.mMessage->ptr());
     }
 
     virtual void release(const NodeObj& nodeObj)
@@ -117,7 +103,8 @@ public:
 
 
 private:
-    std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::CameraInfo>> mPublisher = nullptr;
+    std::shared_ptr<Ros2Publisher> mPublisher = nullptr;
+    std::shared_ptr<Ros2CameraInfoMessage> mMessage = nullptr;
 
     std::string mFrameId = "sim_camera";
 };

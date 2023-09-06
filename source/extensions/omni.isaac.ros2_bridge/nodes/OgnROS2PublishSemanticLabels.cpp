@@ -7,11 +7,11 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
-#include "std_msgs/msg/string.hpp"
 
 #include <carb/graphics/GraphicsTypes.h>
 
-#include <omni/isaac/ros/Ros2Node.h>
+#include <include/Ros2Node.h>
+#include <nlohmann/json.hpp>
 
 #include <OgnROS2PublishSemanticLabelsDatabase.h>
 
@@ -41,45 +41,65 @@ public:
 
             std::string fullTopicName = addTopicPrefix(db.inputs.nodeNamespace(), topicName);
 
-            if (!validateTopic(fullTopicName))
+            if (!state.mFactory->validateTopic(fullTopicName))
             {
                 return false;
             }
-            state.mPublisher =
-                state.mNodeHandle->create_publisher<std_msgs::msg::String>(topicName, db.inputs.queueSize());
 
+            state.mMessage = state.mFactory->CreateSemanticLabelMessage();
+
+            state.mPublisher =
+                state.mFactory->CreatePublisher(state.mNodeHandle.get(), fullTopicName.c_str(),
+                                                state.mMessage->getTypeSupportHandle(), db.inputs.queueSize());
 
             return true;
         }
 
-        // size_t bytes = db.inputs.data().size();
-        // size_t numBbox = bytes / sizeof(Bbox3DData);
-        // const Bbox3DData* bboxData = reinterpret_cast<const Bbox3DData*>(db.inputs.data().data());
+        return state.publishSemanticLabels(db);
+    }
 
-        std_msgs::msg::String msg;
+    bool publishSemanticLabels(OgnROS2PublishSemanticLabelsDatabase& db)
+    {
 
-        msg.data = db.inputs.idToLabels();
+        auto& state = db.internalState<OgnROS2PublishSemanticLabels>();
+        nlohmann::json json;
 
-        builtin_interfaces::msg::Time timeObj = rclcpp::Time(int64_t(db.inputs.timeStamp() * 1e9));
-
-        std::stringstream ss;
-        // if the string is just {} don't add comma
-        if (msg.data.size() > 2)
+        if (db.inputs.idToLabels().length() > 0)
         {
-            ss << ", ";
-        }
-        ss << "\"time_stamp\": {\"sec\": \"" << timeObj.sec << "\", \"nanosec\": \"" << timeObj.nanosec << "\"}";
-
-        if (msg.data[msg.data.size() - 1] == '}')
-        {
-            msg.data.insert(msg.data.size() - 1, ss.str());
+            json = nlohmann::json::parse(db.inputs.idToLabels());
         }
         else
         {
-            db.logWarning("Invalid JSON format found. Omitting timestamp data.");
+            for (size_t i = 0; i < db.inputs.ids().size(); i++)
+            {
+                std::string label = db.tokenToString(db.inputs.labels()[i]);
+                if (label.rfind("class:", 0) == 0)
+                {
+                    label = label.erase(0, 6);
+                    json[std::to_string(db.inputs.ids()[i])]["class"] = label;
+                }
+                else
+                {
+                    json[std::to_string(db.inputs.ids()[i])] = label;
+                }
+            }
+        }
+        json["time_stamp"] = {};
+        const auto result =
+            std::div(static_cast<int64_t>(db.inputs.timeStamp() * 1e9), static_cast<int64_t>(1000000000L));
+        if (result.rem >= 0)
+        {
+            json["time_stamp"]["sec"] = static_cast<std::int32_t>(result.quot);
+            json["time_stamp"]["nanosec"] = static_cast<std::uint32_t>(result.rem);
+        }
+        else
+        {
+            json["time_stamp"]["sec"] = static_cast<std::int32_t>(result.quot - 1);
+            json["time_stamp"]["nanosec"] = static_cast<std::uint32_t>(1000000000L + result.rem);
         }
 
-        state.mPublisher->publish(msg);
+        state.mMessage->fillData(json.dump());
+        state.mPublisher.get()->publish(state.mMessage->ptr());
 
         return true;
     }
@@ -97,7 +117,8 @@ public:
     }
 
 private:
-    std::shared_ptr<rclcpp::Publisher<std_msgs::msg::String>> mPublisher;
+    std::shared_ptr<Ros2Publisher> mPublisher = nullptr;
+    std::shared_ptr<Ros2SemanticLabelMessage> mMessage = nullptr;
 };
 
 REGISTER_OGN_NODE()

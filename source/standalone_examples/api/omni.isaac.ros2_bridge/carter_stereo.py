@@ -14,12 +14,6 @@ from omni.isaac.kit import SimulationApp
 
 parser = argparse.ArgumentParser(description="Carter Stereo Example")
 parser.add_argument("--test", action="store_true")
-parser.add_argument(
-    "--ros2_bridge",
-    default="omni.isaac.ros2_bridge",
-    nargs="?",
-    choices=["omni.isaac.ros2_bridge", "omni.isaac.ros2_bridge-humble"],
-)
 args, unknown = parser.parse_known_args()
 
 # Example ROS2 bridge sample showing manual control over messages
@@ -32,7 +26,7 @@ from omni.isaac.core.utils.nucleus import get_assets_root_path
 from pxr import Sdf
 
 # enable ROS2 bridge extension
-enable_extension(args.ros2_bridge)
+enable_extension("omni.isaac.ros2_bridge")
 
 # Locate assets root folder to load sample
 assets_root_path = get_assets_root_path()

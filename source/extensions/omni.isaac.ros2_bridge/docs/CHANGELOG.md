@@ -1,5 +1,14 @@
 # Changelog
+
+## [2.0.0] - 2023-09-06
+- Re-written to use rclc APIs
+- User must source their local ROS2 workspace in the terminal before starting isaac sim
+- Foxy and humble are supported
+- The ROS_DISTRO env variable is used to determine what ROS backend to use
+- The separate Humble bridge extension has been removed
+
 ## [1.13.3] - 2023-08-25
+### Changes
 - added stdout fail pattern for the expected no prim found edge case for the ogn test
 - Changed test_camera test to expect identical fx and fy as vertical aperture is computed from horizontal aperture. 
 

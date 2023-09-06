@@ -1,0 +1,94 @@
+// Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
+//
+// NVIDIA CORPORATION and its licensors retain all intellectual property
+// and proprietary rights in and to this software, related documentation
+// and any modifications thereto. Any use, reproduction, disclosure or
+// distribution of this software and related documentation without an express
+// license agreement from NVIDIA CORPORATION is strictly prohibited.
+//
+#pragma once
+#include <carb/extras/Library.h>
+#include <carb/logging/Log.h>
+
+// #include <dlfcn.h>
+#include <vector>
+namespace omni
+{
+namespace isaac
+{
+namespace utils
+{
+
+
+class LibraryLoader
+{
+public:
+    std::string loadedLibraryFile;
+    carb::extras::LibraryHandle loadedLibrary = carb::extras::kInvalidLibraryHandle;
+
+    LibraryLoader(std::string library)
+    {
+        {
+#ifdef _MSC_VER
+            std::string libraryPath = library + ".dll";
+#else
+            std::string libraryPath = "lib" + library + ".so";
+#endif
+            loadedLibraryFile = libraryPath;
+            // printf("Loading %s\n", libraryPath.c_str());
+            // loadedLibrary = dlopen(libraryPath.c_str(), RTLD_NOW | RTLD_GLOBAL);
+            loadedLibrary = carb::extras::loadLibrary(libraryPath.c_str(), carb::extras::fLibFlagNow);
+
+            if (loadedLibrary == carb::extras::kInvalidLibraryHandle)
+            {
+                CARB_LOG_ERROR("Could not load the dynamic library from %s. Error: %s", libraryPath.c_str(),
+                               carb::extras::getLastLoadLibraryError().c_str());
+                loadedLibrary = carb::extras::kInvalidLibraryHandle;
+            }
+        }
+    }
+
+    ~LibraryLoader()
+    {
+        if (loadedLibrary)
+        {
+            // printf("Destructor for %s \n", loadedLibraryFile.c_str());
+            // dlclose(loadedLibrary);
+            carb::extras::unloadLibrary(loadedLibrary);
+        }
+        loadedLibrary = carb::extras::kInvalidLibraryHandle;
+    }
+
+    template <typename T>
+    T getSymbol(std::string symbol)
+    {
+        return carb::extras::getLibrarySymbol<T>(loadedLibrary, symbol.c_str());
+    }
+
+
+private:
+};
+
+class MultiLibraryLoader
+{
+public:
+    ~MultiLibraryLoader()
+    {
+        loadedLibraries.clear();
+    }
+
+    std::shared_ptr<LibraryLoader> LoadLibrary(const std::string library)
+    {
+        auto loadedLib = std::make_shared<LibraryLoader>(library);
+        loadedLibraries.emplace_back(loadedLib);
+        return loadedLib;
+    }
+
+private:
+    std::vector<std::shared_ptr<LibraryLoader>> loadedLibraries;
+};
+
+
+}
+}
+}

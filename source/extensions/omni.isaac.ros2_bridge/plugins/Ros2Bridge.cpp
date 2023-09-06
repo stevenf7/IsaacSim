@@ -20,19 +20,19 @@
 #include <pxr/usd/usd/inherits.h>
 // clang-format on
 
-#include "rclcpp/rclcpp.hpp"
-
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
 #include <carb/dictionary/DictionaryUtils.h>
 #include <carb/logging/Log.h>
 #include <carb/tasking/ITasking.h>
 
+#include <include/Ros2Bridge.h>
+#include <include/Ros2Factory.h>
 #include <omni/graph/core/iComputeGraph.h>
 #include <omni/graph/core/ogn/Registration.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
-#include <omni/isaac/ros2_bridge/Ros2Bridge.h>
+#include <omni/isaac/utils/LibraryLoader.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/kit/syntheticdata/SyntheticData.h>
 #include <omni/physx/IPhysx.h>
@@ -63,17 +63,20 @@ namespace
 {
 omni::kit::IStageUpdate* g_stageUpdate = nullptr;
 omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
+std::shared_ptr<Ros2HandleBase> g_defaultHandle;
+std::shared_ptr<omni::isaac::utils::LibraryLoader> g_factoryLoader;
+
+Ros2Factory* g_Factory;
 
 void onResume(float currentTime, void* userData)
 {
-    if (!rclcpp::ok())
+    if (!g_defaultHandle->is_valid())
     {
-        CARB_LOG_INFO("rclcpp::init()");
+        CARB_LOG_INFO("rcl::init()");
         int argc = 0;
         char** argv = nullptr;
-        using rclcpp::contexts::get_global_default_context;
-        get_global_default_context()->init(argc, argv);
-        // rclcpp::Time::init();
+
+        g_defaultHandle->init(argc, argv);
     }
     else
     {
@@ -84,18 +87,44 @@ void onResume(float currentTime, void* userData)
 void onStop(void* userData)
 {
 
-    if (rclcpp::ok())
+    if (g_defaultHandle->is_valid())
     {
-        CARB_LOG_INFO("rclcpp::shutdown()");
-        // rclcpp::Time::shutdown();
-        rclcpp::shutdown();
+        CARB_LOG_INFO("rcl::shutdown()");
+        g_defaultHandle->shutdown();
     }
 }
+
+uint64_t const CARB_ABI getDefaultContextHandle()
+{
+    return reinterpret_cast<uint64_t>(&g_defaultHandle);
+}
+
+Ros2Factory* const CARB_ABI getFactory()
+{
+    return g_Factory;
+}
+
+
 }
 
 
 CARB_EXPORT void carbOnPluginStartup()
 {
+    char* rosDistro = getenv("ROS_DISTRO");
+    if (rosDistro && strcmp(rosDistro, "foxy") == 0)
+    {
+        g_factoryLoader = std::make_shared<omni::isaac::utils::LibraryLoader>("omni.isaac.ros2_bridge.foxy");
+    }
+    else if (rosDistro && strcmp(rosDistro, "humble") == 0)
+    {
+        g_factoryLoader = std::make_shared<omni::isaac::utils::LibraryLoader>("omni.isaac.ros2_bridge.humble");
+    }
+    else
+    {
+        CARB_LOG_ERROR("Unsupported ROS_DISTRO or ROS_DISTRO env var not specified: %s", rosDistro);
+        return;
+    }
+
 
     g_stageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>();
 
@@ -105,6 +134,29 @@ CARB_EXPORT void carbOnPluginStartup()
     desc.onStop = onStop;
     desc.order = 100;
     g_stageUpdateNode = g_stageUpdate->createStageUpdateNode(desc);
+
+    if (g_factoryLoader)
+    {
+        typedef Ros2Factory* (*createFactory_binding)(void);
+        createFactory_binding createFactory = (g_factoryLoader->getSymbol<createFactory_binding>("createFactory"));
+
+        // typedef __typeof__(createFactory) createFactory_binding;
+        // std::function<createFactory_binding> createFactory;
+        // createFactory = reinterpret_cast<createFactory_binding*>(dlsym(g_factoryLoader->loadedLibrary,
+        // "createFactory"));
+
+        if (createFactory)
+        {
+            g_Factory = (Ros2Factory*)createFactory();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Could not load ROS2 Bridge");
+            return;
+        }
+    }
+
+    g_defaultHandle = g_Factory->CreateHandle();
 
     INITIALIZE_OGN_NODES()
 }
@@ -116,8 +168,14 @@ CARB_EXPORT void carbOnPluginShutdown()
         g_stageUpdate->destroyStageUpdateNode(g_stageUpdateNode);
         g_stageUpdateNode = nullptr;
     }
+    g_defaultHandle.reset();
 
     RELEASE_OGN_NODES()
+    g_factoryLoader.reset();
+    if (g_Factory)
+    {
+        delete g_Factory;
+    }
 }
 
 void fillInterface(omni::isaac::ros2_bridge::Ros2Bridge& iface)
@@ -125,6 +183,8 @@ void fillInterface(omni::isaac::ros2_bridge::Ros2Bridge& iface)
     using namespace omni::isaac::ros2_bridge;
 
     memset(&iface, 0, sizeof(iface));
+    iface.getDefaultContextHandle = getDefaultContextHandle;
+    iface.getFactory = getFactory;
 }
 
 #ifdef _WIN32

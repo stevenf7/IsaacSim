@@ -1,4 +1,4 @@
-// Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -7,19 +7,20 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
-#include "rosgraph_msgs/msg/clock.hpp"
+#include <carb/extras/Library.h>
 
-#include <omni/isaac/ros/Ros2Node.h>
+#include <include/Ros2Factory.h>
+#include <include/Ros2Node.h>
 
 #include <OgnROS2PublishClockDatabase.h>
 
 class OgnROS2PublishClock : public Ros2Node
 {
 public:
-    // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
-    // {
-    //     auto& state = OgnROS2PublishClockDatabase::sInternalState<OgnROS2PublishClock>(nodeObj);
-    // }
+    static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    {
+        // auto& state = OgnROS2PublishClockDatabase::sInternalState<OgnROS2PublishClock>(nodeObj);
+    }
 
     static bool compute(OgnROS2PublishClockDatabase& db)
     {
@@ -36,21 +37,36 @@ public:
         {
             const std::string& topicName = db.inputs.topicName();
             std::string fullTopicName = addTopicPrefix(db.inputs.nodeNamespace(), topicName);
-            if (!validateTopic(fullTopicName))
+            if (!state.mFactory->validateTopic(fullTopicName))
             {
                 return false;
             }
-
+            state.mMessage = state.mFactory->CreateClockMessage();
             state.mPublisher =
-                state.mNodeHandle->create_publisher<rosgraph_msgs::msg::Clock>(fullTopicName, db.inputs.queueSize());
+                state.mFactory->CreatePublisher(state.mNodeHandle.get(), fullTopicName.c_str(),
+                                                state.mMessage->getTypeSupportHandle(), db.inputs.queueSize());
+
             return true;
         }
 
-        // publish the input string to topic
-        rosgraph_msgs::msg::Clock time_msg;
-        time_msg.clock = rclcpp::Time(int64_t(db.inputs.timeStamp() * 1e9));
+        return state.publishClock(db);
+        // return true;
+    }
 
-        state.mPublisher.get()->publish(time_msg);
+    bool publishClock(OgnROS2PublishClockDatabase& db)
+    {
+        auto& state = db.internalState<OgnROS2PublishClock>();
+
+        // std::cout << "Creating message next...." << std::endl;
+
+
+        // std::cout << "Filling Message... " << std::endl;
+        state.mMessage->fill(db.inputs.timeStamp());
+
+        // std::cout << "Publishing message" << std::endl;
+        state.mPublisher.get()->publish(state.mMessage->ptr());
+
+        // std::cout << "Message published..." << std::endl;
 
         return true;
     }
@@ -68,7 +84,8 @@ public:
     }
 
 private:
-    std::shared_ptr<rclcpp::Publisher<rosgraph_msgs::msg::Clock>> mPublisher = nullptr;
+    std::shared_ptr<Ros2Publisher> mPublisher = nullptr;
+    std::shared_ptr<Ros2ClockMessage> mMessage = nullptr;
 };
 
 REGISTER_OGN_NODE()

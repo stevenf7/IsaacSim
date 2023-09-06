@@ -6,9 +6,8 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
-#include "rcl/init_options.h"
-#include "rclcpp/rclcpp.hpp"
-
+#include <include/Ros2Bridge.h>
+#include <include/Ros2Factory.h>
 #include <omni/isaac/core_nodes/CoreNodes.h>
 #include <omni/isaac/utils/BaseResetNode.h>
 
@@ -20,8 +19,11 @@ public:
     static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
     {
         auto& state = OgnROS2ContextDatabase::sInternalState<OgnROS2Context>(nodeObj);
-        state.mContext = std::make_shared<rclcpp::Context>();
         state.mCoreNodeFramework = carb::getCachedInterface<omni::isaac::core_nodes::CoreNodes>();
+        omni::isaac::ros2_bridge::Ros2Bridge* mRos2Bridge =
+            carb::getCachedInterface<omni::isaac::ros2_bridge::Ros2Bridge>();
+        Ros2Factory* mFactory = mRos2Bridge->getFactory();
+        state.mContext = mFactory->CreateHandle();
     }
     static bool compute(OgnROS2ContextDatabase& db)
     {
@@ -36,11 +38,7 @@ public:
 
         if (!state.mContext->is_valid())
         {
-            rcl_init_options_t initOptions = rcl_get_zero_initialized_init_options();
-            if (rcl_init_options_init(&initOptions, rcl_get_default_allocator()) != RCL_RET_OK)
-            {
-                return false;
-            }
+
             // Set the Domain ID of the context
             state.mDomain = db.inputs.domain_id();
             const bool useDomainIDEnvVar = db.inputs.useDomainIDEnvVar();
@@ -79,30 +77,14 @@ public:
                     CARB_LOG_INFO("ROS_DOMAIN_ID not found. Using input value of %zd", state.mDomain);
                 }
             }
-#ifdef _MSC_VER
-            rcl_init_options_get_rmw_init_options(&initOptions)->domain_id = state.mDomain;
-#else
-            if (rcl_init_options_set_domain_id(&initOptions, state.mDomain) != RCL_RET_OK)
-            {
-                return false;
-            }
-#endif
-            // default context already initializes logging, no need to init here as well.
-            auto rclcppOptions = rclcpp::InitOptions(initOptions);
-            rclcppOptions.auto_initialize_logging(false);
 
-            state.mContext->init(0, nullptr, rclcppOptions);
+            state.mContext->init(0, nullptr, true, state.mDomain);
             // We cast the shared ptr directly (and not the pointer inside of it)
             // This allows us to keep track of the shared pointer properly.
             state.mHandle = state.mCoreNodeFramework->addHandle(&state.mContext);
             // CARB_LOG_WARN("GEN CONTEXT %" PRIu64 "\n", state.mHandle);
 
             db.outputs.context() = state.mHandle;
-            auto temp
-#if !defined(_WIN32)
-                __attribute__((unused))
-#endif
-                = rcl_init_options_fini(&initOptions);
             return true;
         }
         return true;
@@ -139,7 +121,7 @@ public:
     }
 
 private:
-    std::shared_ptr<rclcpp::Context> mContext = nullptr;
+    std::shared_ptr<Ros2HandleBase> mContext = nullptr;
     bool mCleanup = false;
     size_t mDomain = 0;
     uint64_t mHandle;
