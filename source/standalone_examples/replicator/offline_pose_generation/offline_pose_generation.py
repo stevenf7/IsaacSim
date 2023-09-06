@@ -224,8 +224,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
         self.render_product = rep.create.render_product(self.camera, (config_data["WIDTH"], config_data["HEIGHT"]))
 
-        camera_node = self.camera.node
-        camera_rig_path = str(rep.utils.get_node_targets(camera_node, "inputs:prims")[0])
+        camera_rig_path = str(rep.utils.get_node_targets(self.camera.node, "inputs:primsIn")[0])
         self.camera_path = camera_rig_path + "/Camera"
 
         with rep.get.prims(prim_types=["Camera"]):
