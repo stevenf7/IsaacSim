@@ -1,4 +1,15 @@
 # Changelog
+## [1.0.0] - 2023-09-06
+### Changed
+- OgnGXFPoseTreeFrameMapBuilder accepts poseTreeNamespace argument (default = "robot")
+- poseTreeNamespace is prepended to all frame names published by robot with trailing
+  '/', eg. 'carter/imu' if frame name is 'imu' and namespace is 'carter'.
+- OgnGXFPublishImage now publishes depth images using Camera message with
+  GXF_VIDEO_FORMAT_D32F. This will break interface with Isaac 2.0 and Isaac 2.1.
+- Updates Isaac AMR dependency
+### Fixed
+- GXF bridge no longer crashed when user destroys app without server ever having connected
+  to client
 ## [0.13.3] - 2023-08-29
 ### Fixed
 - added standard out fail pattern for the expected no prim found edge cases for the ogn test
