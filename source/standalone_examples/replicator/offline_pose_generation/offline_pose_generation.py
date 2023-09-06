@@ -216,7 +216,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
         # Setup camera and render product
         self.camera = rep.create.camera(
-            position=(0, 0, -config_data["MAX_DISTANCE"]),
+            position=(0, 0, 0),
             rotation=np.array(config_data["CAMERA_RIG_ROTATION"]),
             focal_length=focal_length,
             clipping_range=(0.01, 10000),
@@ -257,7 +257,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
         # Collision box is centered between MIN_DISTANCE and MAX_DISTANCE, with translation relative to camera in the z
         # direction being negative due to cameras in Isaac Sim having coordinates of -z out, +y up, and +x right.
         collision_box_translation_from_camera = np.array(
-            [0, 0, -(config_data["MIN_DISTANCE"] + config_data["MAX_DISTANCE"]) / 2.0]
+            [0, 0, (config_data["MIN_DISTANCE"] + config_data["MAX_DISTANCE"]) / 2.0]
         )
 
         # Collision box has no rotation with respect to the camera.
