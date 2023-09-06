@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.11.0] - 2023-09-06
+
+### Changed
+- Added Replicator YAML menu item
+
 ## [0.10.0] - 2023-08-08
 
 ### Changed

@@ -395,6 +395,7 @@ class CreateSetupExtension(omni.ext.IExt):
                 [
                     MenuLayout.Item("Synthetic Data Recorder", source="Replicator/Synthetic Data Recorder"),
                     MenuLayout.Item("Semantics Schema Editor", source="Replicator/Semantics Schema Editor"),
+                    MenuLayout.Item("ReplicatorYAML", source="Replicator/ReplicatorYAML"),
                     MenuLayout.Item("Composer", source="Replicator/Composer"),
                     MenuLayout.Seperator(),
                 ],
