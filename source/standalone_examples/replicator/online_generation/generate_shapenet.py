@@ -255,6 +255,8 @@ class RandomObjects(torch.utils.data.IterableDataset):
         # Create mapping from categories to index
         bboxes = torch.tensor(gt_bbox[["x_min", "y_min", "x_max", "y_max"]].tolist(), device="cuda")
         id_to_labels = gt["boundingBox2DTight"]["info"]["idToLabels"]
+        # Remove any label duplicates of form: {'0': {'class': 'class_name,class_name'}} to {'0': {'class': 'class_name'}}
+        id_to_labels = {k: {"class": v["class"].split(",")[0]} for k, v in id_to_labels.items()}
         prim_paths = gt["boundingBox2DTight"]["info"]["primPaths"]
 
         # For each bounding box, map semantic label to label index
