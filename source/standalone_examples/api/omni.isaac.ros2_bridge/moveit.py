@@ -14,16 +14,6 @@ import carb
 import numpy as np
 from omni.isaac.kit import SimulationApp
 
-parser = argparse.ArgumentParser(description="Ros2 Bridge Sample")
-parser.add_argument(
-    "--ros2_bridge",
-    default="omni.isaac.ros2_bridge",
-    nargs="?",
-    choices=["omni.isaac.ros2_bridge", "omni.isaac.ros2_bridge-humble"],
-)
-args, unknown = parser.parse_known_args()
-
-
 FRANKA_STAGE_PATH = "/Franka"
 FRANKA_USD_PATH = "/Isaac/Robots/Franka/franka_alt_fingers.usd"
 BACKGROUND_STAGE_PATH = "/background"
@@ -41,7 +31,7 @@ from omni.isaac.core.utils import extensions, nucleus, prims, rotations, stage, 
 from pxr import Gf
 
 # enable ROS2 bridge extension
-extensions.enable_extension(args.ros2_bridge)
+extensions.enable_extension("omni.isaac.ros2_bridge")
 
 simulation_context = SimulationContext(stage_units_in_meters=1.0)
 

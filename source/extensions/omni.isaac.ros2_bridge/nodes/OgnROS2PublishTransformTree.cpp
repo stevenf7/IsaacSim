@@ -11,12 +11,11 @@
 #include <UsdPCH.h>
 // clang-format on
 
-#include "tf2_msgs/msg/tf_message.hpp"
 
+#include <include/Ros2Node.h>
 #include <omni/fabric/FabricUSD.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/ros/Conversions.h>
-#include <omni/isaac/ros/Ros2Node.h>
 #include <omni/isaac/utils/PoseTree.h>
 #include <omni/usd/UsdUtils.h>
 
@@ -110,63 +109,74 @@ public:
 
             std::string fullTopicName = addTopicPrefix(db.inputs.nodeNamespace(), topicName);
 
-            if (!validateTopic(fullTopicName))
+            if (!state.mFactory->validateTopic(fullTopicName))
             {
                 return false;
             }
 
+            state.mMessage = state.mFactory->CreateTfTreeMessage();
+
             state.mPublisher =
-                state.mNodeHandle->create_publisher<tf2_msgs::msg::TFMessage>(fullTopicName, db.inputs.queueSize());
+                state.mFactory->CreatePublisher(state.mNodeHandle.get(), fullTopicName.c_str(),
+                                                state.mMessage->getTypeSupportHandle(), db.inputs.queueSize());
 
             return true;
         }
 
-        state.publishTF(db, context);
+        return state.publishTF(db, context);
 
         return true;
     }
 
-    void publishTF(OgnROS2PublishTransformTreeDatabase& db, const GraphContextObj& context)
+    bool publishTF(OgnROS2PublishTransformTreeDatabase& db, const GraphContextObj& context)
     {
         //  Find our stage
         long stageId = context.iContext->getStageId(context);
         auto stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
 
+        auto& state = db.internalState<OgnROS2PublishTransformTree>();
 
         if (!stage)
         {
             db.logError("Could not find USD stage %ld", stageId);
-            return;
+            return false;
         }
 
-        tf2_msgs::msg::TFMessage tf_msg;
-        geometry_msgs::msg::TransformStamped msg;
 
-        if (db.inputs.timeStamp() >= 0.0)
-        {
-            msg.header.stamp = rclcpp::Time(int64_t(db.inputs.timeStamp() * 1e9));
-        }
-        else
-        {
-            db.logWarning("Timestamp is invalid. Timestamp will be neglected for all published ROS TF messages");
-        }
+        const double time = db.inputs.timeStamp();
+        std::vector<tfMessageStruct> tfMsg_vec;
 
+        double stageUnits = mStageUnits;
+
+        // TODO: Define tfmessagevec as state member and load with this
 
         std::function<void(const std::string&, const std::string&, const physx::PxTransform&)> addPoseLambda =
-            [this, &msg, &tf_msg](
+            [stageUnits, &tfMsg_vec, &time](
                 const std::string& parent_frame, const std::string& child_frame, const physx::PxTransform& t)
         {
-            msg.header.frame_id = parent_frame;
-            msg.child_frame_id = child_frame;
-            msg.transform = omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(
-                t, static_cast<float>(mStageUnits));
+            tfMessageStruct currentMsg;
+            currentMsg.timeStamp = time;
+            currentMsg.childFrame = child_frame;
+            currentMsg.parentFrame = parent_frame;
 
-            tf_msg.transforms.push_back(msg);
+            currentMsg.trans_x = t.p.x * static_cast<float>(stageUnits);
+            currentMsg.trans_y = t.p.y * static_cast<float>(stageUnits);
+            currentMsg.trans_z = t.p.z * static_cast<float>(stageUnits);
+
+            currentMsg.quat_x = t.q.x;
+            currentMsg.quat_y = t.q.y;
+            currentMsg.quat_z = t.q.z;
+            currentMsg.quat_w = t.q.w;
+
+            tfMsg_vec.push_back(currentMsg);
         };
 
         mPoseTree->processAllFrames(addPoseLambda);
 
-        mPublisher->publish(tf_msg);
+        state.mMessage->fillData(time, tfMsg_vec);
+
+        state.mPublisher.get()->publish(state.mMessage->ptr());
+        return true;
     }
 
     virtual void release(const NodeObj& nodeObj)
@@ -184,7 +194,8 @@ public:
 
 
 private:
-    std::shared_ptr<rclcpp::Publisher<tf2_msgs::msg::TFMessage>> mPublisher = nullptr;
+    std::shared_ptr<Ros2Publisher> mPublisher = nullptr;
+    std::shared_ptr<Ros2TfTreeMessage> mMessage = nullptr;
 
     const char* mThisPrimPath = nullptr;
 

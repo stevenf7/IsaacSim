@@ -31,41 +31,49 @@ class ROS2BridgeExtension(omni.ext.IExt):
 
         # WAR for incorrect extension trying to be started
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        if "omni.isaac.ros2_bridge-humble" == ext_id.rsplit("-", 1)[0]:
-            ext_manager.set_extension_enabled("omni.isaac.ros2_bridge-humble", False)
-            carb.log_error(f"{ext_id} bridge extension cannot be enabled if omni.isaac.ros2_bridge is enabled")
-            return
 
         self._extension_path = ext_manager.get_extension_path(ext_id)
-        for b in ["omni.isaac.ros_bridge", "omni.isaac.ros2_bridge", "omni.isaac.ros2_bridge-humble"]:
+        for b in ["omni.isaac.ros_bridge", "omni.isaac.ros2_bridge"]:
             if b != BRIDGE_NAME and ext_manager.is_extension_enabled(b):
                 carb.log_error(f"{BRIDGE_PREFIX} bridge extension cannot be enabled if {b} is enabled")
                 ext_manager.set_extension_enabled(BRIDGE_NAME, False)
 
                 return
-        # load plugin interfaces
-        try:
-            carb.get_framework().load_plugins(
-                loaded_file_wildcards=["omni.isaac.ros2_bridge.plugin"],
-                search_paths=[os.path.abspath(os.path.join(self._extension_path, "bin"))],
-            )
-            from omni.isaac.ros2_bridge import _ros2_bridge
 
-            self._module = _ros2_bridge
-            self._ros2bridge = self._module.acquire_ros2_bridge_interface()
-        except Exception as e:
-            carb.log_error(e)
-            carb.log_error(
-                "Cannot load ROS2 bridge after loading ROS2 humble bridge, please restart Isaac Sim and only enable/use one of the ROS2 bridges"
-            )
-            ext_manager.set_extension_enabled(BRIDGE_NAME, False)
-            return
         # ROS2 uses LD_LIBRARY_PATH to load libraries at runtime so set it here before the plugin loads.
+        ros_distro = os.environ.get("ROS_DISTRO")
+        if ros_distro is None:
+            carb.log_error(
+                "ROS_DISTRO env var not found, Please source ROS2 Foxy, or Humble, before enabling this extension"
+            )
+            ext_manager.set_extension_enabled("omni.isaac.ros2_bridge", False)
+            return
+        elif ros_distro not in ["humble", "foxy"]:
+            carb.log_error(f"ROS_DISTRO of {ros_distro} is currently not supported")
+            ext_manager.set_extension_enabled("omni.isaac.ros2_bridge", False)
+            return
 
-        if os.environ.get("LD_LIBRARY_PATH"):
-            os.environ["LD_LIBRARY_PATH"] = os.environ.get("LD_LIBRARY_PATH") + ":" + self._extension_path + "/bin"
-        else:
-            os.environ["LD_LIBRARY_PATH"] = self._extension_path + "/bin"
+        if sys.platform == "win32":
+            if os.environ.get("PATH"):
+                os.environ["PATH"] = os.environ.get("PATH") + ";" + self._extension_path + "/bin"
+                print(os.environ.get("PATH"))
+            else:
+                os.environ["PATH"] = self._extension_path + "/bin"
+
+        if sys.platform == "linux":
+            if os.environ.get("LD_LIBRARY_PATH"):
+                os.environ["LD_LIBRARY_PATH"] = os.environ.get("LD_LIBRARY_PATH") + ":" + self._extension_path + "/bin"
+            else:
+                os.environ["LD_LIBRARY_PATH"] = self._extension_path + "/bin"
+
+        carb.get_framework().load_plugins(
+            loaded_file_wildcards=["omni.isaac.ros2_bridge.plugin"],
+            search_paths=[os.path.abspath(os.path.join(self._extension_path, "bin"))],
+        )
+        from omni.isaac.ros2_bridge import _ros2_bridge
+
+        self._module = _ros2_bridge
+        self._ros2bridge = self._module.acquire_ros2_bridge_interface()
 
         self.register_nodes()
 
@@ -101,7 +109,7 @@ class ROS2BridgeExtension(omni.ext.IExt):
             name=f"{rv}{BRIDGE_PREFIX}PublishImage",
             node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
             annotators=[
-                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(rv + "Ptr"),
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(rv + "ExportRawArray"),
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                     "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
                 ),
@@ -128,7 +136,7 @@ class ROS2BridgeExtension(omni.ext.IExt):
             name=f"{BRIDGE_PREFIX}PublishInstanceSegmentation",
             node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
             annotators=[
-                "instance_segmentation_fast",
+                "instance_segmentation",
                 f'{omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("InstanceSegmentation")}IsaacSimulationGate',
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                     "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
@@ -157,7 +165,7 @@ class ROS2BridgeExtension(omni.ext.IExt):
             node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishBbox2D",
             annotators=[
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    "bounding_box_2d_tight_fast", attributes_mapping={"input:semanticTypes": ["class"]}
+                    "bounding_box_2d_tight", attributes_mapping={"input:semanticTypes": ["class"]}
                 ),
                 f'{omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("BoundingBox2DTight")}IsaacSimulationGate',
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
@@ -173,7 +181,7 @@ class ROS2BridgeExtension(omni.ext.IExt):
             node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishBbox2D",
             annotators=[
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    "bounding_box_2d_loose_fast",
+                    "bounding_box_2d_loose",
                     attributes_mapping={"input:semanticTypes": ["class"], "outputs:data": "inputs:data"},
                 ),
                 f'{omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("BoundingBox2DLoose")}IsaacSimulationGate',
@@ -189,7 +197,7 @@ class ROS2BridgeExtension(omni.ext.IExt):
             node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishBbox3D",
             annotators=[
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    "bounding_box_3d_fast",
+                    "bounding_box_3d",
                     attributes_mapping={"input:semanticTypes": ["class"], "outputs:data": "inputs:data"},
                 ),
                 f'{omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("BoundingBox3D")}IsaacSimulationGate',
@@ -214,19 +222,19 @@ class ROS2BridgeExtension(omni.ext.IExt):
         )
         # outputs that we can publish labels for
         label_names = {
-            "instance_segmentation_fast": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
+            "instance_segmentation": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
                 "InstanceSegmentation"
             ),
             "semantic_segmentation": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
                 "SemanticSegmentation"
             ),
-            "bounding_box_2d_tight_fast": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
+            "bounding_box_2d_tight": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
                 "BoundingBox2DTight"
             ),
-            "bounding_box_2d_loose_fast": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
+            "bounding_box_2d_loose": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
                 "BoundingBox2DLoose"
             ),
-            "bounding_box_3d_fast": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("BoundingBox3D"),
+            "bounding_box_3d": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("BoundingBox3D"),
         }
         for annotator, annotator_name in label_names.items():
             rep.writers.register_node_writer(

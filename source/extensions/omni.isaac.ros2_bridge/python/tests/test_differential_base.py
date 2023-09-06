@@ -250,6 +250,7 @@ class TestRos2DifferentialBase(omni.kit.test.AsyncTestCase):
 
         self._timeline.stop()
         spin()
+        print("End of test")
         pass
 
     # add carter and ROS topic from scratch
@@ -413,8 +414,8 @@ class TestRos2DifferentialBase(omni.kit.test.AsyncTestCase):
                         ("diffController.inputs:wheelDistance", 0.5),
                         ("artController.inputs:jointNames", ["left_wheel", "right_wheel"]),
                         ("artController.inputs:usePath", False),
-                        ("computeOdom.inputs:chassisPrim", ["/carter"]),
-                        ("artController.inputs:chassisPrim", ["/carter"]),
+                        ("computeOdom.inputs:chassisPrim", [usdrt.Sdf.Path("/carter")]),
+                        ("artController.inputs:targetPrim", [usdrt.Sdf.Path("/carter")]),
                     ],
                 },
             )

@@ -243,7 +243,6 @@ sphinx_exclude_patterns = [
     "**/omni.pip.cloud",
     "**/omni.isaac.gxf_bridge",     #TODO
     "**/omni.isaac.examples",     #TODO?
-    "**/omni.isaac.ros2_bridge-humble",
     "**/omni.isaac.repl",
     "**/omni.isaac.tests",
     "**/omni.isaac.utils_manager",
@@ -707,7 +706,6 @@ etm_emails = ["hmazhar@nvidia.com"]
 cpp.files.exclude = [
     "source/extensions/omni.isaac.ros_bridge/isaac_ros_messages/**",
     "source/extensions/omni.isaac.ros2_bridge/isaac_ros2_messages/**",
-    "source/extensions/omni.isaac.ros2_bridge-humble/isaac_ros2_messages/**"
 ]
 
 python.files.exclude = [
@@ -741,7 +739,6 @@ ogn_exts_includes = [
     "omni.isaac.range_sensor",
     "omni.isaac.ros_bridge",
     "omni.isaac.ros2_bridge",
-    "omni.isaac.ros2_bridge-humble",
     "omni.isaac.wheeled_robots",
     "omni.replicator.isaac",
 ]

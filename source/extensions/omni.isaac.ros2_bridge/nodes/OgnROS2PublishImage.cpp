@@ -7,18 +7,16 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
-#include "sensor_msgs/image_encodings.hpp"
-#include "sensor_msgs/msg/image.hpp"
-
 #include <carb/graphics/GraphicsTypes.h>
 
-#include <omni/isaac/ros/Ros2Node.h>
+#include <include/Ros2Node.h>
 #include <omni/isaac/utils/Buffer.h>
 #include <omni/isaac/utils/ScopedCudaDevice.h>
 
 #include <OgnROS2PublishImageDatabase.h>
 
 extern "C" void textureFloatCopyToRawBuffer(cudaTextureObject_t, uint8_t*, uint32_t, uint32_t, cudaStream_t);
+
 
 class OgnROS2PublishImage : public Ros2Node
 {
@@ -47,79 +45,60 @@ public:
 
             std::string fullTopicName = addTopicPrefix(db.inputs.nodeNamespace(), topicName);
 
-            if (!validateTopic(fullTopicName))
+            if (!state.mFactory->validateTopic(fullTopicName))
             {
                 return false;
             }
 
+            state.mMessage = state.mFactory->CreateImageMessage();
             state.mPublisher =
-                state.mNodeHandle->create_publisher<sensor_msgs::msg::Image>(fullTopicName, db.inputs.queueSize());
-
+                state.mFactory->CreatePublisher(state.mNodeHandle.get(), fullTopicName.c_str(),
+                                                state.mMessage->getTypeSupportHandle(), db.inputs.queueSize());
             state.mFrameId = db.inputs.frameId();
 
             return true;
         }
 
-        // Setup ROS Image Message
-        sensor_msgs::msg::Image& msg = state.msg;
-        msg.header.frame_id = state.mFrameId;
+        return state.publishImage(db);
+    }
 
-        if (db.inputs.timeStamp() >= 0.0)
+
+    bool publishImage(OgnROS2PublishImageDatabase& db)
+    {
+
+        auto& state = db.internalState<OgnROS2PublishImage>();
+
+        state.mMessage = state.mFactory->CreateImageMessage();
+
+        state.mMessage->fillHeader(db.inputs.timeStamp(), state.mFrameId);
+
+        if (db.inputs.width() == 0 || db.inputs.height() == 0)
         {
-            msg.header.stamp = rclcpp::Time(int64_t(db.inputs.timeStamp() * 1e9));
-        }
-        else
-        {
-            db.logWarning("Timestamp is invalid. Timestamp will be neglected for all published ROS Image messages");
+            db.logError("Width %d or height %d is not valid", db.inputs.width(), db.inputs.height());
             return false;
         }
 
-        msg.width = db.inputs.width();
-        msg.height = db.inputs.height();
-        if (msg.width == 0 || msg.height == 0)
-        {
-            db.logError("Width %d or height %d is not valid", msg.width, msg.height);
-            return false;
-        }
-
-        msg.encoding = db.tokenToString(db.inputs.encoding());
-
-        int channels = 0;
-        int bitDepth = 0;
-        try
-        {
-            channels = sensor_msgs::image_encodings::numChannels(msg.encoding);
-            bitDepth = sensor_msgs::image_encodings::bitDepth(msg.encoding);
-        }
-        catch (std::exception& e)
-        {
-            db.logError("%s", e.what());
-            return false;
-        }
-        int byteDepth = bitDepth / 8;
-
-        msg.step = msg.width * channels * byteDepth;
-
-        size_t totalBytes = msg.step * msg.height;
-        msg.data.resize(totalBytes);
+        std::string encoding = db.tokenToString(db.inputs.encoding());
+        state.mMessage->generateBuffer(db.inputs.height(), db.inputs.width(), encoding);
+        size_t totalBytes = state.mMessage->getTotalBytes();
+        void* dataPtr = state.mMessage->getDataPtr();
 
         if (db.inputs.cudaDeviceIndex() == -1)
         {
             if (db.inputs.dataPtr() != 0 && totalBytes == db.inputs.bufferSize())
             {
                 // Data is on host as ptr, buffer size matches
-                memcpy(&msg.data[0], reinterpret_cast<void*>(db.inputs.dataPtr()), totalBytes);
+                memcpy(dataPtr, reinterpret_cast<void*>(db.inputs.dataPtr()), totalBytes);
             }
             else if (db.inputs.dataPtr() == 0 && totalBytes == db.inputs.data.size())
             {
                 // data is on host as ogn data, copy from cpu
-                memcpy(&msg.data[0], reinterpret_cast<const uint8_t*>(db.inputs.data.cpu().data()), totalBytes);
+                memcpy(dataPtr, reinterpret_cast<const uint8_t*>(db.inputs.data.cpu().data()), totalBytes);
             }
             else
             {
-                db.logError(
-                    "image format with bit depth %d and expected size %d bytes does not match input buffer Size of %d bytes",
-                    bitDepth, totalBytes, db.inputs.bufferSize());
+                db.logError("image format and expected size %d bytes does not match input buffer Size of %d bytes",
+                            totalBytes, db.inputs.bufferSize());
                 db.logError("dataPtr null and expected size %d bytes does not match input data Size of %d bytes",
                             totalBytes, db.inputs.data.size());
                 return false;
@@ -145,10 +124,11 @@ public:
                     {
                         state.mBuffer.setDevice(db.inputs.cudaDeviceIndex());
                         state.mBuffer.resize(db.inputs.width() * db.inputs.height() * sizeof(float));
-                        textureFloatCopyToRawBuffer(srcTexObj, state.mBuffer.data(), msg.width, msg.height, 0);
+                        textureFloatCopyToRawBuffer(
+                            srcTexObj, state.mBuffer.data(), db.inputs.width(), db.inputs.height(), 0);
                         CUDA_CHECK(cudaGetLastError());
                         auto src = reinterpret_cast<void*>(state.mBuffer.data());
-                        CUDA_CHECK(cudaMemcpy(&msg.data[0], src, totalBytes, cudaMemcpyDeviceToHost));
+                        CUDA_CHECK(cudaMemcpy(dataPtr, src, totalBytes, cudaMemcpyDeviceToHost));
                     }
                     break;
 
@@ -160,12 +140,12 @@ public:
             }
             else
             {
-                CUDA_CHECK(cudaMemcpy(&msg.data[0], reinterpret_cast<void*>(db.inputs.dataPtr()),
-                                      db.inputs.bufferSize(), cudaMemcpyDeviceToHost));
+                CUDA_CHECK(cudaMemcpy(dataPtr, reinterpret_cast<void*>(db.inputs.dataPtr()), db.inputs.bufferSize(),
+                                      cudaMemcpyDeviceToHost));
             }
         }
 
-        state.mPublisher->publish(msg);
+        state.mPublisher.get()->publish(state.mMessage->ptr());
 
         return true;
     }
@@ -183,10 +163,10 @@ public:
     }
 
 private:
-    std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::Image>> mPublisher = nullptr;
+    std::shared_ptr<Ros2Publisher> mPublisher = nullptr;
+    std::shared_ptr<Ros2ImageMessage> mMessage = nullptr;
 
     std::string mFrameId = "sim_camera";
-    sensor_msgs::msg::Image msg;
     omni::isaac::utils::DeviceBuffer mBuffer;
 };
 

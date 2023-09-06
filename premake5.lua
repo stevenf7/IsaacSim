@@ -376,7 +376,6 @@ group "exts"
         include ("source/extensions/omni.isaac.ocs2")
         include ("source/extensions/omni.isaac.gxf_bridge")
         include ("source/extensions/omni.isaac.ros_bridge")
-        include ("source/extensions/omni.isaac.ros2_bridge-humble")
     end
 
 

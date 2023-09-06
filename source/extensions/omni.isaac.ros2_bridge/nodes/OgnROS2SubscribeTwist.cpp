@@ -1,4 +1,4 @@
-// Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -7,9 +7,8 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
-#include "geometry_msgs/msg/twist.hpp"
 
-#include <omni/isaac/ros/Ros2Node.h>
+#include <include/Ros2Node.h>
 
 #include <OgnROS2SubscribeTwistDatabase.h>
 
@@ -37,19 +36,21 @@ public:
         {
             const std::string& topicName = db.inputs.topicName();
             std::string fullTopicName = addTopicPrefix(db.inputs.nodeNamespace(), topicName);
-            if (!validateTopic(fullTopicName))
+            if (!state.mFactory->validateTopic(fullTopicName))
             {
                 return false;
             }
-            state.mCallback = [&state, &db](const geometry_msgs::msg::Twist::SharedPtr msg)
-            { state.subCallback(msg, db); };
 
-            state.mSubscriber = state.mNodeHandle->create_subscription<geometry_msgs::msg::Twist>(
-                fullTopicName, db.inputs.queueSize(), state.mCallback);
+            state.mMessage = state.mFactory->CreateTwistMessage();
+
+            state.mSubscriber = state.mFactory->CreateSubscriber(
+                state.mNodeHandle.get(), fullTopicName.c_str(), state.mMessage->getTypeSupportHandle());
+
+
             return true;
         }
 
-        return true;
+        return state.subscriberCallback(db);
     }
 
     static void release(const NodeObj& nodeObj)
@@ -67,31 +68,31 @@ public:
     virtual void reset()
     {
         mSubscriber.reset(); // This should be reset before we reset the handle.
-        mCallback = nullptr;
         Ros2Node::reset();
     }
 
-    void subCallback(const geometry_msgs::msg::Twist::SharedPtr& msg, OgnROS2SubscribeTwistDatabase& db)
+
+    bool subscriberCallback(OgnROS2SubscribeTwistDatabase& db)
     {
-        auto& linVel = db.outputs.linearVelocity();
+        auto& state = db.internalState<OgnROS2SubscribeTwist>();
 
-        linVel[0] = msg->linear.x;
-        linVel[1] = msg->linear.y;
-        linVel[2] = msg->linear.z;
 
-        auto& angVel = db.outputs.angularVelocity();
+        if (state.mSubscriber->spin(state.mMessage->ptr()))
+        {
+            auto& linVel = db.outputs.linearVelocity();
+            auto& angVel = db.outputs.angularVelocity();
 
-        angVel[0] = msg->angular.x;
-        angVel[1] = msg->angular.y;
-        angVel[2] = msg->angular.z;
+            state.mMessage->getData(linVel, angVel);
+            db.outputs.execOut() = kExecutionAttributeStateEnabled;
+            return true;
+        }
 
-        db.outputs.execOut() = kExecutionAttributeStateEnabled;
+        return false;
     }
 
-
 private:
-    std::shared_ptr<rclcpp::Subscription<geometry_msgs::msg::Twist>> mSubscriber = nullptr;
-    std::function<void(const geometry_msgs::msg::Twist::SharedPtr)> mCallback;
+    std::shared_ptr<Ros2Subscriber> mSubscriber = nullptr;
+    std::shared_ptr<Ros2TwistMessage> mMessage = nullptr;
 };
 
 REGISTER_OGN_NODE()

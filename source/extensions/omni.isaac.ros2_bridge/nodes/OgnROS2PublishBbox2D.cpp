@@ -7,11 +7,10 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
-#include "vision_msgs/msg/detection2_d_array.hpp"
-
 #include <carb/graphics/GraphicsTypes.h>
 
-#include <omni/isaac/ros/Ros2Node.h>
+#include <include/Ros2Factory.h>
+#include <include/Ros2Node.h>
 
 #include <OgnROS2PublishBbox2DDatabase.h>
 
@@ -50,52 +49,37 @@ public:
 
             std::string fullTopicName = addTopicPrefix(db.inputs.nodeNamespace(), topicName);
 
-            if (!validateTopic(fullTopicName))
+            if (!state.mFactory->validateTopic(fullTopicName))
             {
                 return false;
             }
-            state.mPublisher = state.mNodeHandle->create_publisher<vision_msgs::msg::Detection2DArray>(
-                fullTopicName, db.inputs.queueSize());
+
+            state.mMessage = state.mFactory->CreateBoundingBox2DMessage();
+
+            state.mPublisher =
+                state.mFactory->CreatePublisher(state.mNodeHandle.get(), fullTopicName.c_str(),
+                                                state.mMessage->getTypeSupportHandle(), db.inputs.queueSize());
 
             state.mFrameId = db.inputs.frameId();
 
             return true;
         }
 
+        return state.publishDetectionArray(db);
+    }
+
+    bool publishDetectionArray(OgnROS2PublishBbox2DDatabase& db)
+    {
+
+        auto& state = db.internalState<OgnROS2PublishBbox2D>();
         size_t bytes = db.inputs.data().size();
         size_t numBbox = bytes / sizeof(Bbox2DData);
+
         const Bbox2DData* bboxData = reinterpret_cast<const Bbox2DData*>(db.inputs.data().data());
 
-        vision_msgs::msg::Detection2DArray msg;
-        msg.header.frame_id = state.mFrameId;
-
-        if (db.inputs.timeStamp() >= 0.0)
-        {
-            msg.header.stamp = rclcpp::Time(int64_t(db.inputs.timeStamp() * 1e9));
-        }
-        else
-        {
-            db.logWarning("Timestamp is invalid. Timestamp will be neglected for all published ROS Image messages");
-            return false;
-        }
-
-        msg.detections.resize(numBbox);
-        for (size_t i = 0; i < numBbox; i++)
-        {
-            const Bbox2DData& box = bboxData[i];
-
-            msg.detections[i].bbox.center.theta = 0;
-            msg.detections[i].bbox.center.x = (box.x_max + box.x_min) / 2.0;
-            msg.detections[i].bbox.center.y = (box.y_max + box.y_min) / 2.0;
-            msg.detections[i].bbox.size_x = box.x_max - box.x_min;
-            msg.detections[i].bbox.size_y = box.y_max - box.y_min;
-            msg.detections[i].results.resize(1);
-            msg.detections[i].results[0].id = std::to_string(box.semanticId);
-            msg.detections[i].results[0].score = 1.0;
-        }
-
-        state.mPublisher->publish(msg);
-
+        state.mMessage->fillHeader(db.inputs.timeStamp(), state.mFrameId);
+        state.mMessage->fillBboxData(bboxData, numBbox);
+        state.mPublisher.get()->publish(state.mMessage->ptr());
         return true;
     }
 
@@ -112,7 +96,8 @@ public:
     }
 
 private:
-    std::shared_ptr<rclcpp::Publisher<vision_msgs::msg::Detection2DArray>> mPublisher;
+    std::shared_ptr<Ros2Publisher> mPublisher = nullptr;
+    std::shared_ptr<Ros2BoundingBox2DMessage> mMessage = nullptr;
 
     std::string mFrameId = "sim_camera";
 };

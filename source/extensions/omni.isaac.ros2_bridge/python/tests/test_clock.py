@@ -42,7 +42,8 @@ class TestRos2BridgeCommands(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         self._stage = omni.usd.get_context().get_stage()
         self._timeline = omni.timeline.get_timeline_interface()
-        self._timeline.set_auto_update(True)
+        self._stage.SetTimeCodesPerSecond(self._physics_rate)
+        self._timeline.set_target_framerate(self._physics_rate)
         rclpy.init()
         await omni.kit.app.get_app().next_update_async()
         pass
@@ -162,7 +163,8 @@ class TestRos2BridgeCommands(omni.kit.test.AsyncTestCase):
                     ("RosPublisher", "omni.isaac.ros2_bridge.ROS2PublishClock"),
                 ],
                 keys.CONNECT: [
-                    ("OnTick.outputs:tick", "RosPublisher.inputs:execIn"),
+                    ("OnTick.outputs:tick", "IsaacClock.inputs:execIn"),
+                    ("IsaacClock.outputs:execOut", "RosPublisher.inputs:execIn"),
                     ("IsaacClock.outputs:systemTime", "RosPublisher.inputs:timeStamp"),
                 ],
             },

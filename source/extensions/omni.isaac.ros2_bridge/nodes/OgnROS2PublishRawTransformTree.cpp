@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -11,9 +11,8 @@
 #include <UsdPCH.h>
 // clang-format on
 
-#include "tf2_msgs/msg/tf_message.hpp"
 
-#include <omni/isaac/ros/Ros2Node.h>
+#include <include/Ros2Node.h>
 
 #include <OgnROS2PublishRawTransformTreeDatabase.h>
 
@@ -47,13 +46,16 @@ public:
 
             std::string fullTopicName = addTopicPrefix(db.inputs.nodeNamespace(), topicName);
 
-            if (!validateTopic(fullTopicName))
+            if (!state.mFactory->validateTopic(fullTopicName))
             {
                 return false;
             }
 
+            state.mMessage = state.mFactory->CreateRawTfTreeMessage();
+
             state.mPublisher =
-                state.mNodeHandle->create_publisher<tf2_msgs::msg::TFMessage>(fullTopicName, db.inputs.queueSize());
+                state.mFactory->CreatePublisher(state.mNodeHandle.get(), fullTopicName.c_str(),
+                                                state.mMessage->getTypeSupportHandle(), db.inputs.queueSize());
 
             state.mParentFrameId = db.inputs.parentFrameId();
             state.mChildFrameId = db.inputs.childFrameId();
@@ -61,42 +63,21 @@ public:
             return true;
         }
 
-        state.publishTF(db);
-
-        return true;
+        return state.publishTF(db);
     }
 
-    void publishTF(OgnROS2PublishRawTransformTreeDatabase& db)
+    bool publishTF(OgnROS2PublishRawTransformTreeDatabase& db)
     {
-        tf2_msgs::msg::TFMessage tfMsg;
-        geometry_msgs::msg::TransformStamped msg;
-
-        if (db.inputs.timeStamp() >= 0.0)
-        {
-            msg.header.stamp = rclcpp::Time(int64_t(db.inputs.timeStamp() * 1e9));
-        }
-        else
-        {
-            db.logWarning("Timestamp is invalid. Timestamp will be neglected for all published ROS TF messages");
-        }
-
-        msg.header.frame_id = mParentFrameId;
-        msg.child_frame_id = mChildFrameId;
-
+        auto& state = db.internalState<OgnROS2PublishRawTransformTree>();
 
         auto& translation = db.inputs.translation();
-        msg.transform.translation.x = translation[0];
-        msg.transform.translation.y = translation[1];
-        msg.transform.translation.z = translation[2];
-
         auto& rotation = db.inputs.rotation();
-        msg.transform.rotation.x = rotation.GetImaginary()[0];
-        msg.transform.rotation.y = rotation.GetImaginary()[1];
-        msg.transform.rotation.z = rotation.GetImaginary()[2];
-        msg.transform.rotation.w = rotation.GetReal();
 
-        tfMsg.transforms.push_back(msg);
-        mPublisher->publish(tfMsg);
+
+        state.mMessage->fillData(db.inputs.timeStamp(), state.mParentFrameId, state.mChildFrameId, translation, rotation);
+        state.mPublisher.get()->publish(state.mMessage->ptr());
+
+        return true;
     }
 
     virtual void release(const NodeObj& nodeObj)
@@ -113,7 +94,8 @@ public:
 
 
 private:
-    std::shared_ptr<rclcpp::Publisher<tf2_msgs::msg::TFMessage>> mPublisher = nullptr;
+    std::shared_ptr<Ros2Publisher> mPublisher = nullptr;
+    std::shared_ptr<Ros2RawTfTreeMessage> mMessage = nullptr;
 
     std::string mParentFrameId = "odom";
     std::string mChildFrameId = "base_link";

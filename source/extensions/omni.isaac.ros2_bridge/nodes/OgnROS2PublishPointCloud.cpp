@@ -15,12 +15,9 @@
 // clang-format off
 #include <UsdPCH.h>
 // clang-format on
-
 #include "omni/isaac/utils/UsdUtilities.h"
-#include "pcl_conversions/pcl_conversions.h"
-#include "sensor_msgs/msg/point_cloud2.hpp"
 
-#include <omni/isaac/ros/Ros2Node.h>
+#include <include/Ros2Node.h>
 #include <omni/isaac/utils/ScopedCudaDevice.h>
 
 #include <OgnROS2PublishPointCloudDatabase.h>
@@ -54,13 +51,16 @@ public:
 
             std::string fullTopicName = addTopicPrefix(db.inputs.nodeNamespace(), topicName);
 
-            if (!validateTopic(fullTopicName))
+            if (!state.mFactory->validateTopic(fullTopicName))
             {
                 return false;
             }
 
+            state.mMessage = state.mFactory->CreatePointCloudMessage();
+
             state.mPublisher =
-                state.mNodeHandle->create_publisher<sensor_msgs::msg::PointCloud2>(fullTopicName, db.inputs.queueSize());
+                state.mFactory->CreatePublisher(state.mNodeHandle.get(), fullTopicName.c_str(),
+                                                state.mMessage->getTypeSupportHandle(), db.inputs.queueSize());
 
             state.mFrameId = db.inputs.frameId();
 
@@ -70,40 +70,38 @@ public:
         return state.publishLidar(db);
     }
 
-
     bool publishLidar(OgnROS2PublishPointCloudDatabase& db)
     {
+
         CARB_PROFILE_ZONE(0, "Lidar Point Cloud Pub");
 
-        // Setup ROS PointCloud2 Message
-        sensor_msgs::msg::PointCloud2 point_cloud_msg;
-        point_cloud_msg.is_dense = true;
-        point_cloud_msg.header.frame_id = mFrameId;
-        point_cloud_msg.height = 1;
-        point_cloud_msg.point_step = sizeof(float3);
-        point_cloud_msg.width = 0;
-        point_cloud_msg.row_step = 0;
+        auto& state = db.internalState<OgnROS2PublishPointCloud>();
+
+        size_t height = 1;
+        uint32_t point_step = sizeof(GfVec3f);
+        size_t width = 0;
+        size_t row_step = 0;
 
         if (db.inputs.cudaDeviceIndex() == -1)
         {
             if (db.inputs.dataPtr() != 0)
             {
-                point_cloud_msg.width = db.inputs.bufferSize() / point_cloud_msg.point_step;
-                point_cloud_msg.row_step = db.inputs.bufferSize();
-                size_t totalBytes = point_cloud_msg.row_step;
-
-                point_cloud_msg.data.resize(totalBytes);
+                width = db.inputs.bufferSize() / point_step;
+                row_step = db.inputs.bufferSize();
+                size_t totalBytes = row_step;
+                state.mMessage->fillMetadata(mFrameId, db.inputs.timeStamp(), width, height, point_step);
                 // Data is on host as ptr, buffer size matches
-                memcpy(&point_cloud_msg.data[0], reinterpret_cast<void*>(db.inputs.dataPtr()), totalBytes);
+                memcpy(state.mMessage->getDataPtr(), reinterpret_cast<void*>(db.inputs.dataPtr()), totalBytes);
             }
 
             else if (db.inputs.dataPtr() == 0)
             {
-                point_cloud_msg.width = db.inputs.data.size();
-                point_cloud_msg.row_step = point_cloud_msg.point_step * db.inputs.data.size();
-                size_t totalBytes = point_cloud_msg.row_step;
+                width = db.inputs.data.size();
+                row_step = point_step * db.inputs.data.size();
+                size_t totalBytes = row_step;
+                state.mMessage->fillMetadata(mFrameId, db.inputs.timeStamp(), width, height, point_step);
                 // data is on host as ogn data, copy from cpu
-                memcpy(&point_cloud_msg.data[0], reinterpret_cast<const uint8_t*>(db.inputs.data.cpu().data()),
+                memcpy(state.mMessage->getDataPtr(), reinterpret_cast<const uint8_t*>(db.inputs.data.cpu().data()),
                        totalBytes);
             }
         }
@@ -111,40 +109,28 @@ public:
         {
             if (db.inputs.dataPtr() != 0)
             {
-                point_cloud_msg.width = db.inputs.bufferSize() / point_cloud_msg.point_step;
-                point_cloud_msg.row_step = db.inputs.bufferSize();
-                size_t totalBytes = point_cloud_msg.row_step;
+                width = db.inputs.bufferSize() / point_step;
+                row_step = db.inputs.bufferSize();
+                size_t totalBytes = row_step;
+                state.mMessage->fillMetadata(mFrameId, db.inputs.timeStamp(), width, height, point_step);
 
                 omni::isaac::utils::ScopedDevice(db.inputs.cudaDeviceIndex());
                 auto src = reinterpret_cast<void*>(db.inputs.dataPtr());
-                CUDA_CHECK(cudaMemcpy(&point_cloud_msg.data[0], src, db.inputs.bufferSize(), cudaMemcpyDeviceToHost));
+                CUDA_CHECK(cudaMemcpy(state.mMessage->getDataPtr(), src, db.inputs.bufferSize(), cudaMemcpyDeviceToHost));
             }
         }
+        state.mPublisher.get()->publish(state.mMessage->ptr());
 
-        pcl::PCLPointCloud2 pcl_pc2;
-        pcl_pc2.fields.clear();
-        pcl::for_each_type<typename pcl::traits::fieldList<pcl::PointXYZ>::type>(
-            pcl::detail::FieldAdder<pcl::PointXYZ>(pcl_pc2.fields));
-        pcl_conversions::fromPCL(pcl_pc2.fields, point_cloud_msg.fields);
-
-        if (db.inputs.timeStamp() >= 0.0)
-        {
-            point_cloud_msg.header.stamp = rclcpp::Time(int64_t(db.inputs.timeStamp() * 1e9));
-        }
-        else
-        {
-            db.logWarning("Timestamp is invalid. Timestamp will be neglected for all published ROS PointCloud2 messages");
-        }
-
-        mPublisher->publish(point_cloud_msg);
         return true;
     }
+
 
     virtual void release(const NodeObj& nodeObj)
     {
         auto& state = OgnROS2PublishPointCloudDatabase::sInternalState<OgnROS2PublishPointCloud>(nodeObj);
         state.reset();
     }
+
 
     virtual void reset()
     {
@@ -154,7 +140,8 @@ public:
 
 
 private:
-    std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::PointCloud2>> mPublisher = nullptr;
+    std::shared_ptr<Ros2Publisher> mPublisher = nullptr;
+    std::shared_ptr<Ros2PointCloudMessage> mMessage = nullptr;
 
     std::string mFrameId = "sim_lidar";
 };

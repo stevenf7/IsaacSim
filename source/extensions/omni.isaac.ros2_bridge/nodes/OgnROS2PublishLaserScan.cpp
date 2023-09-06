@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -11,9 +11,8 @@
 #include <UsdPCH.h>
 // clang-format on
 
-#include "sensor_msgs/msg/laser_scan.hpp"
 
-#include <omni/isaac/ros/Ros2Node.h>
+#include <include/Ros2Node.h>
 
 #include <OgnROS2PublishLaserScanDatabase.h>
 
@@ -46,87 +45,83 @@ public:
 
             std::string fullTopicName = addTopicPrefix(db.inputs.nodeNamespace(), topicName);
 
-            if (!validateTopic(fullTopicName))
+            if (!state.mFactory->validateTopic(fullTopicName))
             {
                 return false;
             }
+            state.mMessage = state.mFactory->CreateLaserScanMessage();
 
             state.mPublisher =
-                state.mNodeHandle->create_publisher<sensor_msgs::msg::LaserScan>(fullTopicName, db.inputs.queueSize());
-
+                state.mFactory->CreatePublisher(state.mNodeHandle.get(), fullTopicName.c_str(),
+                                                state.mMessage->getTypeSupportHandle(), db.inputs.queueSize());
             state.mFrameId = db.inputs.frameId();
+
 
             return true;
         }
 
-        state.publishLidar(db);
-        return true;
+        return state.publishLidar(db);
     }
 
 
-    void publishLidar(OgnROS2PublishLaserScanDatabase& db)
+    bool publishLidar(OgnROS2PublishLaserScanDatabase& db)
     {
         CARB_PROFILE_ZONE(0, "Lidar 2D Pub");
 
-        // Setup ROS Lidar Message
-        sensor_msgs::msg::LaserScan laser_msg;
-        laser_msg.header.frame_id = mFrameId;
+        auto& state = db.internalState<OgnROS2PublishLaserScan>();
 
+        size_t buffSize = db.inputs.numCols() * db.inputs.numRows();
+        if (buffSize == 0)
+        {
+            return false;
+        }
         if (db.inputs.numRows() != 1)
         {
             db.logError(
                 "Number of rows must be equal to 1. High LOD not supported for LaserScan, only 2D Lidar Supported for LaserScan. Please disable Lidar High LOD setting");
-            return;
+            return false;
         }
-
-        if (db.inputs.timeStamp() >= 0.0)
-        {
-            laser_msg.header.stamp = rclcpp::Time(int64_t(db.inputs.timeStamp() * 1e9));
-        }
-        else
-        {
-            db.logWarning("Timestamp is invalid. Timestamp will be neglected for all published ROS LaserScan messages");
-        }
-
-        laser_msg.angle_min = db.inputs.azimuthRange()[0];
-        laser_msg.angle_max = db.inputs.azimuthRange()[1];
 
         float rotationRate = db.inputs.rotationRate();
-        laser_msg.scan_time = rotationRate ? 1.0f / rotationRate : 0.0f;
-        laser_msg.range_min = db.inputs.depthRange()[0];
-        laser_msg.range_max = db.inputs.depthRange()[1];
-
-        size_t buffSize = db.inputs.numCols() * db.inputs.numRows();
 
         if (!db.inputs.linearDepthData.isValid() || !db.inputs.intensitiesData.isValid())
         {
             db.logError("Buffers are invalid");
-            return;
+            return false;
         }
 
         if (db.inputs.linearDepthData.size() != db.inputs.intensitiesData.size())
         {
             db.logError("Linear Depth data and Intensities data sizes do not match");
-            return;
+            return false;
         }
 
         if (buffSize != db.inputs.linearDepthData.size())
         {
             db.logError("Lidar data with %d rows and %d columns does not match input buffer array size of %d",
                         db.inputs.numRows(), db.inputs.numCols(), db.inputs.linearDepthData.size());
-            return;
+            return false;
         }
 
-        laser_msg.ranges.resize(buffSize);
-        laser_msg.ranges.assign(db.inputs.linearDepthData().begin(), db.inputs.linearDepthData().end());
+        const float* rangePoints = static_cast<const float*>(db.inputs.linearDepthData().data());
+        float* rangeData = (float*)malloc(sizeof(float) * buffSize);
+        memcpy(rangeData, rangePoints, sizeof(float) * buffSize);
 
-        laser_msg.intensities.resize(buffSize);
-        laser_msg.intensities.assign(db.inputs.intensitiesData().begin(), db.inputs.intensitiesData().end());
+        const uint8_t* intensityPointsCpu = static_cast<const uint8_t*>(db.inputs.intensitiesData().data());
+        float* intensityData = (float*)malloc(sizeof(float) * buffSize);
 
-        laser_msg.angle_increment = static_cast<float>(db.inputs.horizontalResolution() * M_PI / 180.0f);
-        laser_msg.time_increment = (db.inputs.horizontalFov() / 360.0f * laser_msg.scan_time) / laser_msg.ranges.size();
+        for (size_t i = 0; i < buffSize; i++)
+        {
+            intensityData[i] = static_cast<float>(intensityPointsCpu[i]);
+        }
 
-        mPublisher->publish(laser_msg);
+        state.mMessage->fillData(state.mFrameId, db.inputs.timeStamp(), db.inputs.azimuthRange(), rotationRate,
+                                 db.inputs.depthRange(), buffSize, rangeData, intensityData,
+                                 db.inputs.horizontalResolution(), db.inputs.horizontalFov());
+
+        state.mPublisher.get()->publish(state.mMessage->ptr());
+
+        return true;
     }
 
     virtual void release(const NodeObj& nodeObj)
@@ -143,9 +138,12 @@ public:
 
 
 private:
-    std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::LaserScan>> mPublisher = nullptr;
+    std::shared_ptr<Ros2Publisher> mPublisher = nullptr;
+    std::shared_ptr<Ros2LaserScanMessage> mMessage = nullptr;
 
     std::string mFrameId = "sim_lidar";
+    std::vector<float> range_data;
+    std::vector<float> intensities_data;
 };
 
 REGISTER_OGN_NODE()
