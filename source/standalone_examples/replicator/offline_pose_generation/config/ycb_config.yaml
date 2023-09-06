@@ -14,7 +14,7 @@ CLASS_NAME_TO_INDEX:
 # prim_type is determined by the usd file. 
 # To determine, open the usd file in Isaac Sim and see the prim path. If you load it in /World, the path will be /World/<prim_type>
 OBJECTS_TO_GENERATE: 
-- { part_name: 003_cracker_box, num: 2, prim_type: _03_cracker_box } 
+- { part_name: 003_cracker_box, num: 1, prim_type: _03_cracker_box } 
 - { part_name: 035_power_drill, num: 1, prim_type: _35_power_drill }
 
 # Maximum force component to apply to objects to keep them in motion
