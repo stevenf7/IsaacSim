@@ -45,6 +45,7 @@ class IsaacSensorMenu:
                             prim_path=get_next_free_path("/Gemini", None),
                             prim_type="Camera",
                             usd_path=get_assets_root_path() + "/Isaac/Sensors/Orbbec/Gemini 2/orbbec_gemini2_V1.0.usd",
+                            scale=[0.1, 0.1, 0.1],
                         ),
                     ),
                     make_menu_item_description(
@@ -55,6 +56,7 @@ class IsaacSensorMenu:
                             prim_type="Camera",
                             usd_path=get_assets_root_path()
                             + "/Isaac/Sensors/Orbbec/FemtoMega/orbbec_femtomega_v1.0.usd",
+                            scale=[0.1, 0.1, 0.1],
                         ),
                     ),
                     make_menu_item_description(
@@ -64,6 +66,76 @@ class IsaacSensorMenu:
                             prim_path=get_next_free_path("/Hawk", None),
                             prim_type="Camera",
                             usd_path=get_assets_root_path() + "/Isaac/Sensors/NVIDIA/Hawk/hawk1_1.usd",
+                        ),
+                    ),
+                    make_menu_item_description(
+                        ext_id,
+                        "Sensing SG2-OX03CC-5200-GMSL2-H100F1",
+                        lambda a=weakref.proxy(self): create_prim(
+                            prim_path=get_next_free_path("/SG2_OX03CC_5200_GMSL2_H100F1", None),
+                            prim_type="Camera",
+                            usd_path=get_assets_root_path()
+                            + "/Users/imadan@nvidia.com/Sensors/Sensing/Camera_SG2_OX03CC_5200_GMSL2_H100F1.usd",
+                        ),
+                    ),
+                    make_menu_item_description(
+                        ext_id,
+                        "Sensing SG2-OX03CC-5200-GMSL2-H60YA",
+                        lambda a=weakref.proxy(self): create_prim(
+                            prim_path=get_next_free_path("/SG2_OX03CC_5200_GMSL2_H60YA", None),
+                            prim_type="Camera",
+                            usd_path=get_assets_root_path()
+                            + "/Users/imadan@nvidia.com/Sensors/Sensing/Camera_SG2_OX03CC_5200_GMSL2_H60YA.usd",
+                        ),
+                    ),
+                    make_menu_item_description(
+                        ext_id,
+                        "Sensing SG3-ISX031C-GMSL2-H190X",
+                        lambda a=weakref.proxy(self): create_prim(
+                            prim_path=get_next_free_path("/SG3_ISX031C_GMSL2_H190X", None),
+                            prim_type="Camera",
+                            usd_path=get_assets_root_path()
+                            + "/Users/imadan@nvidia.com/Sensors/Sensing/Camera_SG3_ISX031C_GMSL2_H190X.usd",
+                        ),
+                    ),
+                    make_menu_item_description(
+                        ext_id,
+                        "Sensing SG5-IMX490C-5300-GMSL2-H110SA",
+                        lambda a=weakref.proxy(self): create_prim(
+                            prim_path=get_next_free_path("/SG5_IMX490C_5300_GMSL2_H110SA", None),
+                            prim_type="Camera",
+                            usd_path=get_assets_root_path()
+                            + "/Users/imadan@nvidia.com/Sensors/Sensing/Camera_SG5_IMX490C_5300_GMSL2_H110SA.usd",
+                        ),
+                    ),
+                    make_menu_item_description(
+                        ext_id,
+                        "Sensing SG8-AR0820C-5300-GMSL2-H120Y1A",
+                        lambda a=weakref.proxy(self): create_prim(
+                            prim_path=get_next_free_path("/SG8_AR0820C_5300_GMSL2_H120Y1A", None),
+                            prim_type="Camera",
+                            usd_path=get_assets_root_path()
+                            + "/Users/imadan@nvidia.com/Sensors/Sensing/Camera_SG8_AR0820C_5300_GMSL2_H120Y1A.usd",
+                        ),
+                    ),
+                    make_menu_item_description(
+                        ext_id,
+                        "Sensing SG8-AR0820C-5300-GMSL2-H30S1A",
+                        lambda a=weakref.proxy(self): create_prim(
+                            prim_path=get_next_free_path("/SG8_AR0820C_5300_GMSL2_H30S1A", None),
+                            prim_type="Camera",
+                            usd_path=get_assets_root_path()
+                            + "/Users/imadan@nvidia.com/Sensors/Sensing/Camera_SG8_AR0820C_5300_GMSL2_H30S1A.usd",
+                        ),
+                    ),
+                    make_menu_item_description(
+                        ext_id,
+                        "Sensing SG8-AR0820C-5300-GMSL2-H60SA",
+                        lambda a=weakref.proxy(self): create_prim(
+                            prim_path=get_next_free_path("/SG8_AR0820C_5300_GMSL2_H60SA", None),
+                            prim_type="Camera",
+                            usd_path=get_assets_root_path()
+                            + "/Users/imadan@nvidia.com/Sensors/Sensing/Camera_SG8_AR0820C_5300_GMSL2_H60SA.usd",
                         ),
                     ),
                 ],
