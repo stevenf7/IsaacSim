@@ -1,0 +1,256 @@
+# Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto. Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+#
+
+import os
+import pathlib
+from pathlib import Path
+
+import omni.timeline
+import omni.ui as ui
+from omni.isaac.core.utils.stage import open_stage
+from omni.isaac.ui.element_wrappers import Button, CheckBox, CollapsableFrame, StringField
+from omni.isaac.ui.ui_utils import get_style
+from omni.usd import StageEventType
+
+# Work around a (not understood) issue on Windows where the lula python extension module (pyd file)
+# is loaded properly but the DLLs on which it depends are not, despite being in the same directory.
+if os.name == "nt":
+    file_dir = pathlib.Path(os.path.dirname(os.path.abspath(__file__)))
+    exporter_urdf_dir = file_dir.joinpath(pathlib.Path("../../../pip_prebundle")).resolve()
+    os.add_dll_directory(exporter_urdf_dir.__str__())
+
+import nvidia.srl.tools.logger as logger
+from nvidia.srl.from_usd.to_urdf import UsdToUrdf
+
+
+class UIBuilder:
+    def __init__(self):
+        # Frames are sub-windows that can contain multiple UI elements
+        self.frames = []
+        # UI elements created using a UIElementWrapper instance
+        self.wrapped_ui_elements = []
+
+        # Get access to the timeline to control stop/pause/play programmatically
+        self._timeline = omni.timeline.get_timeline_interface()
+
+        self.log_level = logger.level_from_name("INFO")
+
+        # Run initialization for the provided example
+        self._on_init()
+
+    def _on_init(self):
+        self._data_params = dict()
+        self._data_params["input_path"] = None
+        self._data_params["output_path"] = None
+        self._data_params["mesh_dir"] = None
+        self._data_params["root"] = None
+        self._data_params["visualize_collision_meshes"] = False
+        self._data_params["use_absolute_paths"] = False
+
+    ###################################################################################
+    #           The Functions Below Are Called Automatically By extension.py
+    ###################################################################################
+
+    def on_menu_callback(self):
+        """Callback for when the UI is opened from the toolbar.
+        This is called directly after build_ui().
+        """
+        pass
+
+    def on_timeline_event(self, event):
+        """Callback for Timeline events (Play, Pause, Stop)
+
+        Args:
+            event (omni.timeline.TimelineEventType): Event Type
+        """
+        if event.type == int(omni.timeline.TimelineEventType.STOP):
+            # When the user hits the stop button through the UI, they will inevitably discover edge cases where things break
+            # For complete robustness, the user should resolve those edge cases here
+            # In general, for extensions based off this template, there is no value to having the user click the play/stop
+            # button instead of using the Load/Reset/Run buttons provided.
+            self._scenario_state_btn.reset()
+            self._scenario_state_btn.enabled = False
+
+    def on_physics_step(self, step: float):
+        """Callback for Physics Step.
+        Physics steps only occur when the timeline is playing
+
+        Args:
+            step (float): Size of physics step
+        """
+        pass
+
+    def on_stage_event(self, event):
+        """Callback for Stage Events
+
+        Args:
+            event (omni.usd.StageEventType): Event Type
+        """
+        if event.type == int(StageEventType.OPENED):
+            # If the user opens a new stage, the extension should completely reset
+            self._reset_extension()
+
+    def cleanup(self):
+        """
+        Called when the stage is closed or the extension is hot reloaded.
+        Perform any necessary cleanup such as removing active callback functions
+        Buttons imported from omni.isaac.ui.element_wrappers implement a cleanup function that should be called
+        """
+        for ui_elem in self.wrapped_ui_elements:
+            ui_elem.cleanup()
+
+    def build_ui(self):
+        """
+        Build a custom UI tool to run your extension.
+        This function will be called any time the UI window is closed and reopened.
+        """
+
+        def is_usd_or_urdf_path(file_path: str):
+            # Filter file paths shown in the file picker to only be USD or Python files
+            _, ext = os.path.splitext(file_path.lower())
+            return ext == ".usd" or ext == ".urdf"
+
+        with ui.VStack(style=get_style(), spacing=5, height=0):
+            input_field = StringField(
+                "USD Path",
+                default_value="",
+                tooltip="Path to the USD file to be exported",
+                read_only=False,
+                multiline_okay=False,
+                on_value_changed_fn=self._on_input_field_value_changed_fn,
+                use_folder_picker=True,
+                item_filter_fn=is_usd_or_urdf_path,
+                folder_dialog_title="select a USD file",
+                folder_button_title="Select File",
+            )
+            self.wrapped_ui_elements.append(input_field)
+
+            output_field = StringField(
+                "Output File",
+                default_value="",
+                tooltip="Path to where the URDF file will be created",
+                read_only=False,
+                multiline_okay=False,
+                on_value_changed_fn=self._on_output_field_value_changed_fn,
+                use_folder_picker=True,
+                item_filter_fn=is_usd_or_urdf_path,
+                folder_dialog_title="Set Output File",
+                folder_button_title="Select File",
+            )
+            self.wrapped_ui_elements.append(output_field)
+
+            button = Button("", "Export", on_click_fn=self._on_export_button_clicked_fn)
+
+            self.wrapped_ui_elements.append(button)
+
+            frame = CollapsableFrame(
+                title="Advanced Options",
+                collapsed=True,
+            )
+            self.wrapped_ui_elements.append(frame)
+            with frame:
+                with ui.VStack(style=get_style(), spacing=5, height=0):
+                    mesh_field = StringField(
+                        "Mesh Directory Path",
+                        default_value="",
+                        tooltip="Type a string or use the file picker to set a value",
+                        read_only=False,
+                        multiline_okay=False,
+                        on_value_changed_fn=self._on_mesh_field_value_changed_fn,
+                        use_folder_picker=True,
+                        item_filter_fn=is_usd_or_urdf_path,
+                    )
+                    self.wrapped_ui_elements.append(mesh_field)
+
+                    root_path_field = StringField(
+                        "Root Prim Path",
+                        default_value="",
+                        tooltip='Root path of the robot to be exported ("None" takes the default prim)',
+                        read_only=False,
+                        multiline_okay=False,
+                        on_value_changed_fn=self._on_root_field_value_changed_fn,
+                        use_folder_picker=False,
+                        item_filter_fn=None,
+                    )
+                    self.wrapped_ui_elements.append(root_path_field)
+
+                    stage_visualize_collisions_check_box = CheckBox(
+                        "Visualize Collisions",
+                        default_value=False,
+                        tooltip="add or remove visualization meshes for colliders",
+                        on_click_fn=self._on_visualize_collisions_check_box_click_fn,
+                    )
+                    self.wrapped_ui_elements.append(stage_visualize_collisions_check_box)
+
+                    stage_use_absolute_paths_check_box = CheckBox(
+                        "Use Absolute Paths",
+                        default_value=False,
+                        tooltip="use absolute or relative mesh paths in the URDF file",
+                        on_click_fn=self._on_use_absolute_paths_check_box_click_fn,
+                    )
+                    self.wrapped_ui_elements.append(stage_use_absolute_paths_check_box)
+
+    def _on_input_field_value_changed_fn(self, new_value: str):
+        self._data_params["input_path"] = new_value
+
+    def _on_output_field_value_changed_fn(self, new_value: str):
+        self._data_params["output_path"] = new_value
+
+    def _on_root_field_value_changed_fn(self, new_value: str):
+        self._data_params["root"] = new_value
+
+    def _on_mesh_field_value_changed_fn(self, new_value: str):
+        self._data_params["mesh_dir"] = new_value
+
+    def _on_visualize_collisions_check_box_click_fn(self, value: bool):
+        self._data_params["visualize_collision_meshes"] = value
+
+    def _on_use_absolute_paths_check_box_click_fn(self, value: bool):
+        self._data_params["use_absolute_paths"] = value
+
+    def _on_export_button_clicked_fn(self):
+        root = self._data_params["root"]
+        if root == "":
+            root = None
+
+        usd_to_urdf_kwargs = {
+            "node_names_to_remove": None,
+            "edge_names_to_remove": None,
+            "root": root,
+            "parent_link_is_body_1": False,
+            "log_level": self.log_level,
+        }
+
+        usd_path = self._data_params["input_path"]
+        if usd_path == "":
+            usd_path = None
+
+        if usd_path is None:
+            stage = omni.usd.get_context().get_stage()
+            usd_to_urdf = UsdToUrdf(stage, **usd_to_urdf_kwargs)
+        else:
+            usd_to_urdf = UsdToUrdf.init_from_file(usd_path, **usd_to_urdf_kwargs)
+
+        urdf_output_path = self._data_params["output_path"]
+        if urdf_output_path == "" or urdf_output_path is None:
+            urdf_output_path = usd_to_urdf._graph.name + ".urdf"
+
+        mesh_dir = self._data_params["mesh_dir"]
+        if mesh_dir == "":
+            mesh_dir = None
+
+        usd_to_urdf.save_to_file(
+            urdf_output_path=urdf_output_path,
+            visualize_collision_meshes=self._data_params["visualize_collision_meshes"],
+            mesh_dir=mesh_dir,
+            use_absolute_path=self._data_params["use_absolute_paths"],
+        )
+
+    def _reset_extension(self):
+        pass

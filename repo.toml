@@ -44,6 +44,7 @@ fetch.pip.files_to_pull = [
     "${root}/deps/pip_ocs2.toml",
     "${root}/deps/pip_repl.toml",
     "${root}/deps/pip_compute.toml",
+    "${root}/deps/pip_usd_to_urdf.toml",
     "${root}/deps/pip_onshape.toml",
     "${root}/deps/pip_cloud.toml",
 ]
@@ -69,6 +70,7 @@ vscode.python_env.PYTHONPATH= [
   "$root/_build/$platform/$config/kit/kernel/py",
   "$root/_build/$platform/$config/kit/plugins/bindings-python/",
   "$root/_build/$platform/$config/exts/omni.isaac.lula/pip_prebundle",
+  "$root/_build/$platform/$config/exts/omni.exporter.urdf/pip_prebundle",
   "$root/_build/$platform/$config/kit/exts/omni.kit.pip_archive/pip_prebundle",
   "$root/_build/$platform/$config/exts/omni.isaac.core_archive/pip_prebundle",
   "$root/_build/$platform/$config/exts/omni.isaac.ml_archive/pip_prebundle",
@@ -83,6 +85,7 @@ vscode.python_env.PATH= [
   "$root/_build/$platform/$config/exts/omni.usd.schema.isaac/plugins/IsaacSensorSchema/lib",
   "$root/_build/$platform/$config/exts/omni.usd.schema.isaac/plugins/RangeSensorSchema/lib",
   "$root/_build/$platform/$config/exts/omni.isaac.lula/pip_prebundle",
+  "$root/_build/$platform/$config/exts/omni.exporter.urdf/pip_prebundle",
   "$root/_build/$platform/$config/kit",
   "$root/_build/$platform/$config/kit/kernel/plugins",
   "$root/_build/$platform/$config/kit/libs/iray",

@@ -1,0 +1,18 @@
+# the scene converter is a python tool created by the SRL to export USD to URDF
+[[dependency]]
+python = "../_build/target-deps/python"
+packages = [
+    "lxml==4.9.3",
+    "nvidia-srl-base==0.6.0",
+    "nvidia-srl-math==0.7.0",
+    "nvidia-srl-usd==0.9.0",
+    "nvidia-srl-usd-to-urdf==0.3.1",
+    "setuptools_scm==7.1.0",
+]
+target = "../_build/target-deps/isaac_usd_to_urdf_prebundle"
+platforms = ["*-x86_64"]
+download_only = false
+install_dependencies = false
+append_to_install_folder = true
+gather_licenses_path = "../_build/PACKAGE-LICENSES/PIP-prebundled-LICENSES.txt"
+extra_args = ["--index-url", "https://gitlab-master.nvidia.com/api/v4/groups/4131/-/packages/pypi/simple"]
