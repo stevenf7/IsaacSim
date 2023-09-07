@@ -6,7 +6,7 @@ packages = [
     "nvidia-srl-base==0.6.0",
     "nvidia-srl-math==0.7.0",
     "nvidia-srl-usd==0.9.0",
-    "nvidia-srl-usd-to-urdf==0.3.1",
+    "nvidia-srl-usd-to-urdf==0.3.2",
     "setuptools_scm==7.1.0",
 ]
 target = "../_build/target-deps/isaac_usd_to_urdf_prebundle"
