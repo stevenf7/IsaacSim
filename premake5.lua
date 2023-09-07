@@ -350,6 +350,8 @@ group "exts"
     include ("source/extensions/omni.isaac.scene_blox")
     include ("source/extensions/omni.pip.compute")
     include ("source/extensions/omni.pip.cloud")
+    include ("source/extensions/omni.exporter.urdf")
+    
     if build_with_omni_sensors then
         include ("source/extensions/omni.sensors.fov_preview_visualization")
         include ("source/extensions/omni.sensors.nv.beams")
