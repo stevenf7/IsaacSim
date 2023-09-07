@@ -1,4 +1,7 @@
 # Changelog
+## [9.3.0] - 2023-09-06
+### Changed
+- Updated USD path for NVIDIA Hawk RGBD sensor
 
 ## [9.2.0] - 2023-09-05
 ### Added
