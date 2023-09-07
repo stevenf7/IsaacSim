@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.8.1] - 2023-09-01
+### Changed
+- Move domain randomization util back to OIGE
+- Keep lightweight interface for RLTask
+
 ## [0.8.0] - 2023-08-22
 ### Added
 - Base RLTask and domain randomization utils are now part of omni.isaac.gym
