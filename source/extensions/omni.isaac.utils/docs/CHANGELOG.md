@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.0] - 2023-09-06
+### Changed
+- updated Create > Isaac > Robots menu
+
 ## [0.4.0] - 2023-08-17
 ### Added
 - getCameraPrimFromRenderProduct function
