@@ -29,13 +29,13 @@ def remove_previous_semantics(stage, recursive: bool = False):
 
 
 # Run a simulation
-def simulate_falling_objects(world, forklift_prim, assets_root_path, config, max_sim_steps=250, num_boxes=8):
-    # Create a simulation ready world
+def simulate_falling_objects(forklift_prim, assets_root_path, config, max_sim_steps=250, num_boxes=8):
+    # Create the isaac sim world to run any physics simulations
     world = World(physics_dt=1.0 / 90.0, stage_units_in_meters=1.0)
 
     # Set a random relative offset to the pallet using the forklift transform as a base frame
     forklift_tf = omni.usd.get_world_transform_matrix(forklift_prim)
-    pallet_offset_tf = Gf.Matrix4d().SetTranslate(Gf.Vec3d(random.uniform(-1, 1), random.uniform(-4, -3.5), 0))
+    pallet_offset_tf = Gf.Matrix4d().SetTranslate(Gf.Vec3d(random.uniform(-1, 1), random.uniform(-4, -3.6), 0))
     pallet_pos = (pallet_offset_tf * forklift_tf).ExtractTranslation()
 
     # Spawn pallet prim at a relative random offset to the forklift
@@ -143,7 +143,7 @@ def register_cone_placement(forklift_prim, assets_root_path, config):
     # Get the bottom corners of the oriented bounding box (OBB) of the forklift
     bb_cache = create_bbox_cache()
     centroid, axes, half_extent = compute_obb(bb_cache, forklift_prim.GetPrimPath())
-    larger_xy_extent = (half_extent[0] * 1.4, half_extent[1] * 1.4, half_extent[2])
+    larger_xy_extent = (half_extent[0] * 1.3, half_extent[1] * 1.3, half_extent[2])
     obb_corners = get_obb_corners(centroid, axes, larger_xy_extent)
     bottom_corners = [
         obb_corners[0].tolist(),

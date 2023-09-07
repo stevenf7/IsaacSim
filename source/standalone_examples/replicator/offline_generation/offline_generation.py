@@ -26,7 +26,7 @@ config = {
         "headless": False,
     },
     "resolution": [1024, 1024],
-    "rt_subframes": 1,
+    "rt_subframes": 2,
     "num_frames": 20,
     "env_url": "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd",
     "scope_name": "/MyScope",
@@ -93,7 +93,6 @@ import offline_generation_utils
 # Late import of runtime modules (the SimulationApp needs to be created before loading the modules)
 import omni.replicator.core as rep
 import omni.usd
-from omni.isaac.core import World
 from omni.isaac.core.utils import prims
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
@@ -111,9 +110,6 @@ print(f"Loading Stage {config['env_url']}")
 if not open_stage(assets_root_path + config["env_url"]):
     carb.log_error(f"Could not open stage{config['env_url']}, closing application..")
     simulation_app.close()
-
-# Create the isaac sim world to run any physics simulations
-world = World(physics_dt=1.0 / 90.0, stage_units_in_meters=1.0)
 
 # Disable capture on play and async rendering
 carb.settings.get_settings().set("/omni/replicator/captureOnPlay", False)
@@ -133,9 +129,9 @@ forklift_prim = prims.create_prim(
     semantic_label=config["forklift"]["class"],
 )
 
-# Spawn the pallet in front of the forklift with a random offset on the Y axis
+# Spawn the pallet in front of the forklift with a random offset on the Y (pallet's forward) axis
 forklift_tf = omni.usd.get_world_transform_matrix(forklift_prim)
-pallet_offset_tf = Gf.Matrix4d().SetTranslate(Gf.Vec3d(0, random.uniform(-1.2, -2), 0))
+pallet_offset_tf = Gf.Matrix4d().SetTranslate(Gf.Vec3d(0, random.uniform(-1.2, -1.8), 0))
 pallet_pos_gf = (pallet_offset_tf * forklift_tf).ExtractTranslation()
 forklift_quat_gf = forklift_tf.ExtractRotationQuat()
 forklift_quat_xyzw = (forklift_quat_gf.GetReal(), *forklift_quat_gf.GetImaginary())
@@ -213,11 +209,14 @@ pallet_rp = rep.create.render_product(pallet_cam, config["resolution"], name="Pa
 writer.attach([forklift_rp, driver_rp, pallet_rp])
 
 # Run a simulation before generating data
-offline_generation_utils.simulate_falling_objects(world, forklift_prim, assets_root_path, config)
+offline_generation_utils.simulate_falling_objects(forklift_prim, assets_root_path, config)
 
-# Increase subframes if shadows/ghosting appears on quickly moving objects,
+# Increase subframes if materials are not loaded on time or ghosting rendering artifacts appear on quickly moving objects,
 # see: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/subframes_examples.html
-rep.settings.carb_settings("/omni/replicator/RTSubframes", config["rt_subframes"])
+if config["rt_subframes"] > 1:
+    rep.settings.carb_settings("/omni/replicator/RTSubframes", config["rt_subframes"])
+else:
+    carb.log_warn("RTSubframes is set to 1, consider increasing it if materials are not loaded on time")
 
 # Run the SDG
 rep.orchestrator.run_until_complete(num_frames=config["num_frames"])
