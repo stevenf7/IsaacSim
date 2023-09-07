@@ -65,7 +65,7 @@ class IsaacSensorMenu:
                         lambda a=weakref.proxy(self): create_prim(
                             prim_path=get_next_free_path("/Hawk", None),
                             prim_type="Camera",
-                            usd_path=get_assets_root_path() + "/Isaac/Sensors/NVIDIA/Hawk/hawk1_1.usd",
+                            usd_path=get_assets_root_path() + "/Isaac/Sensors/NVIDIA/Hawk/hawk_v1.1_nominal.usd",
                         ),
                     ),
                     make_menu_item_description(
