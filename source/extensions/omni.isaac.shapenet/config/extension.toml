@@ -4,7 +4,7 @@ order = 0
 
 [package]
 # Loads models from: https://shapenet.org/
-version = "2.0.3"
+version = "2.1.0"
 title = "Isaac Shapenet"
 category = "Isaac"
 description="An extension that allows you to load shapenet models into the scene from a local database"
@@ -15,7 +15,6 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
-"omni.kit.pipapi" = {}
 "omni.kit.uiapp" = {}
 "omni.kit.asset_converter" = {}
 "omni.kit.commands" = {}
@@ -23,13 +22,11 @@ writeTarget.kit = true
 "omni.kit.widget.settings" = {}
 "omni.physx" = {}
 "omni.isaac.ui" = {}
+"omni.kit.pip_archive" = {} # certifi
 
 [[python.module]]
 name = "omni.isaac.shapenet"
 
-[python.pipapi]
-requirements = ["certifi==2021.5.30"]
-use_online_index = true
 
 [[test]]
 args = ["--/exts/omni.kit.renderer.core/compatibilityMode=true"]
