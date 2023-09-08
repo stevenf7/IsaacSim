@@ -158,7 +158,7 @@ size_t ImuSensor::getNumReadings()
     return size;
 }
 
-IsReading ImuSensor::getSensorReadings(size_t& num_readings)
+IsReading ImuSensor::getSensorReadings(size_t& numReadings, const bool& readGravity)
 {
     CARB_LOG_WARN_ONCE(
         "*** Deprecation alert: IMU getSensorReadings function is deprecated and will be removed in the next update");
@@ -170,22 +170,23 @@ IsReading ImuSensor::getSensorReadings(size_t& num_readings)
             "*** warning: IMU sensor frequency is higher than physics frequency, returning the latest physics value");
     }
 
-    IsReading reading = getSensorReading();
+    IsReading reading = getSensorReading(nullptr, false, readGravity);
 
     if (reading.is_valid)
     {
-        num_readings = 1;
+        numReadings = 1;
     }
     else
     {
-        num_readings = 0;
+        numReadings = 0;
     }
 
     return reading;
 }
 
 IsReading ImuSensor::getSensorReading(const std::function<IsReading(std::vector<IsReading>, float)>& interpolateFunction,
-                                      const bool& getLatestValue)
+                                      const bool& getLatestValue,
+                                      const bool& readGravity)
 {
     if (mProps.sensorPeriod > 0 && mProps.sensorPeriod < mTimeDelta && mTimeDelta - mProps.sensorPeriod > 0.001)
     {
@@ -258,11 +259,18 @@ IsReading ImuSensor::getSensorReading(const std::function<IsReading(std::vector<
                 sensorReading = interpolateFunction(mSensorReadingsSensorFrame, mSensorTime);
             }
         }
+
+        if (readGravity)
+        {
+            sensorReading.lin_acc_x += static_cast<float>(mGravitySensorFrame[0]);
+            sensorReading.lin_acc_y += static_cast<float>(mGravitySensorFrame[1]);
+            sensorReading.lin_acc_z += static_cast<float>(mGravitySensorFrame[2]);
+        }
     }
     return sensorReading;
 }
 
-IsReading ImuSensor::getSimSensorReading()
+IsReading ImuSensor::getSimSensorReading(const bool& readGravity)
 {
     CARB_LOG_WARN_ONCE(
         "*** Deprecation alert: IMU getSensorSimReading function is deprecated and will be removed in the next update");
@@ -272,7 +280,7 @@ IsReading ImuSensor::getSimSensorReading()
         CARB_LOG_WARN_ONCE(
             "*** warning: IMU sensor frequency is higher than physics frequency, returning the latest physics value");
     }
-    return mSensorReadings[0];
+    return getSensorReading(nullptr, true, readGravity);
 }
 
 void ImuSensor::reset()
@@ -319,74 +327,33 @@ void ImuSensor::onPhysicsStep()
         ::physx::PxVec3 ang_vel = rigid->getAngularVelocity();
         ::physx::PxVec3 lin_vel = rigid->getLinearVelocity();
 
+        // v_w linear velocity in world frame
+        // w_w angular velocity in world frame
+        omni::math::linalg::vec3d w_w = omni::math::linalg::vec3d(ang_vel.x, ang_vel.y, ang_vel.z);
+        omni::math::linalg::vec3d v_w = omni::math::linalg::vec3d(lin_vel.x, lin_vel.y, lin_vel.z);
 
-        /*  *transform velocities in the rigid body frame to that in the sensor frame according to mProps*
-         *  notation used here follows book "Modern Robotics" (Kevin Lynch)
-         *  we denote world frame as w, body frame as a, sensor frame as b
-         *  R_ab rotates a vector in frame b into frame a
-         *  R_ab and q_ab are the same rotation, R is the rotation matrix while q is the quaternion
-         *  we use T_wa to represent R_wa, p_wa together in a 4x4 homogeneous matrix
-         *
-         *  p_wb represents the position of b in frame w
-         *  for example, p_wa is the global position of frame a,
-         *  and p_ab is the transformation from body frame to sensor frame
-         *
-         *  so the global position of sensor frame is p_wb = p_wa + Rwa*p_ab
-         *  global rotation of sensor frame is R_wb = R_wa*R_ab
-         *  velocities of body frame in world frame are w_wa(w) and v_wa(v)
-         *  velocity of sensor frame in world frame: v_wb = v_wa + R_wa*skew(w_a)*p_ab = v + skew(w)*R_wa*p_ab
-         *
-         *  finally, velocity of sensor frame in sensor frame  v_b = R_wb^T*v_wb
-         *  w_b is the body angular velocity of frame b in frame b, w_b = R_wb^T*w_wa
-         */
-        pxr::GfVec3d w(
-            static_cast<double>(ang_vel.x), static_cast<double>(ang_vel.y), static_cast<double>(ang_vel.z)); // w_wa
-                                                                                                             // parent
-        pxr::GfVec3d v(
-            static_cast<double>(lin_vel.x), static_cast<double>(lin_vel.y), static_cast<double>(lin_vel.z)); // v_wa
-                                                                                                             // parent
+        // Get transformation matrix from body to world
+        usdrt::GfMatrix4d R_bw =
+            omni::isaac::utils::pose::computeWorldXformNoCache(mStage, mUsdrtStage, mPrim.GetPath()).GetOrthonormalized();
 
-        ::physx::PxTransform T_wa = rigid->getGlobalPose(); // parent pose
+        // Inverse to get transformation matrix from world to body
+        usdrt::GfMatrix4d R_wb = R_bw.GetInverse();
 
-        pxr::GfVec3d p_wa(static_cast<double>(T_wa.p.x), static_cast<double>(T_wa.p.y),
-                          static_cast<double>(T_wa.p.z)); // parent world position
+        // sensor orientation in world frame
+        usdrt::GfMatrix3d R_w = mProps.orientation * R_bw.ExtractRotationMatrix();
+        omni::math::linalg::quatd q_wb = R_w.ExtractRotation();
 
-        pxr::GfRotation R_wa(pxr::GfQuatd(
-            static_cast<double>(T_wa.q.w), pxr::GfVec3d(static_cast<double>(T_wa.q.x), static_cast<double>(T_wa.q.y),
-                                                        static_cast<double>(T_wa.q.z)))); // parent orientation
-
-        pxr::GfVec3d p_ab(static_cast<double>(mProps.position.x), static_cast<double>(mProps.position.y), // sensor
-                                                                                                          // relative
-                                                                                                          // position
-                          static_cast<double>(mProps.position.z));
-        pxr::GfQuatd q_ab( // sensor relative orientation
-            static_cast<double>(mProps.orientation.w),
-            pxr::GfVec3d(static_cast<double>(mProps.orientation.x), static_cast<double>(mProps.orientation.y),
-                         static_cast<double>(mProps.orientation.z)));
-
-        pxr::GfRotation R_ab(q_ab); // sensor relative orientation in rotation
-        pxr::GfRotation R_wb = R_wa * R_ab; // R_world * R_relative
-        pxr::GfVec3d p_wab = R_wa.TransformDir(p_ab);
-        // velocity of sensor frame in world frame
-        pxr::GfVec3d v_wb =
-            v + pxr::GfMatrix3d(0.0, -w[2], w[1], w[2], 0.0, -w[0], -w[1], w[0], 0.0) * p_wab; // convert w to
-                                                                                               // a
-                                                                                               // skew-symmetric
-                                                                                               // form
-        // rotation of sensor frame in quaternion
-        pxr::GfQuatd q_wb = R_wb.GetQuat();
         // velocity of sensor frame in sensor frame
-        pxr::GfVec3d v_b = R_wb.GetInverse().TransformDir(v_wb);
-        // angular velocity of sensor frame in sensor frame
-        pxr::GfVec3d w_b = R_wb.GetInverse().TransformDir(w);
+        omni::math::linalg::vec3d v_b = R_wb.TransformDir(v_w);
 
+        // angular velocity of sensor frame in sensor frame
+        omni::math::linalg::vec3d w_b = R_wb.TransformDir(w_w);
 
         // gravity that the IMU experience in sensor frame
-        pxr::GfVec3d g_b = R_wb.GetInverse().TransformDir(mGravity);
+        mGravitySensorFrame = R_wb.TransformDir(mGravity);
 
         // we then finite diff v_b to get a_b, to reduce noise, average multiple finite diffs
         // save raw data into a buffer list , buffer 0 always saves the latest velocities
-
         if (!mRawBuffer.empty())
         {
             mRawBuffer.pop_back();
@@ -451,10 +418,11 @@ void ImuSensor::onPhysicsStep()
         mSensorReadings[0].lin_acc_x = static_cast<float>(tmp_sum_x / mLinearAccelerationFilterSize);
         mSensorReadings[0].lin_acc_y = static_cast<float>(tmp_sum_y / mLinearAccelerationFilterSize);
         mSensorReadings[0].lin_acc_z = static_cast<float>(tmp_sum_z / mLinearAccelerationFilterSize);
-        // add gravity
-        mSensorReadings[0].lin_acc_x += static_cast<float>(g_b[0]);
-        mSensorReadings[0].lin_acc_y += static_cast<float>(g_b[1]);
-        mSensorReadings[0].lin_acc_z += static_cast<float>(g_b[2]);
+
+        // // add gravity
+        // mSensorReadings[0].lin_acc_x += static_cast<float>(g_b[0]);
+        // mSensorReadings[0].lin_acc_y += static_cast<float>(g_b[1]);
+        // mSensorReadings[0].lin_acc_z += static_cast<float>(g_b[2]);
 
         // Log raw buffer:
         // CARB_LOG_INFO("mRawBuffer [%f, %f, %f, %f, %f, %f, %f, %f, %f, %f]", mRawBuffer[0].lin_vel_x,
@@ -518,7 +486,7 @@ bool ImuSensor::findValidParent()
         // go to parent
         tempPrim = tempPrim.GetParent();
     }
-    CARB_LOG_ERROR("Error, Parent prim is not found or is invalid");
+    CARB_LOG_ERROR("IMU Sensor Error: Parent prim is not found or is invalid");
     return false;
 }
 
@@ -552,26 +520,26 @@ void ImuSensor::onComponentChange()
         mRawBuffer.resize(mRawBufferSize, IsRawData());
         mSensorReadings.resize(mRawBufferSize, IsReading());
     }
+    pxr::GfQuatd sensor_quat(0.0);
+    mPrim.GetPrim().GetAttribute(pxr::TfToken("xformOp:orient")).Get(&sensor_quat);
+    sensor_quat.Normalize();
 
     pxr::GfVec3d position(0.0);
     mPrim.GetPrim().GetAttribute(pxr::TfToken("xformOp:translate")).Get(&position);
-    mProps.position = omni::isaac::utils::conversions::asCarbFloat3(position);
 
-    pxr::GfQuatd orientation(0.0);
-    mPrim.GetPrim().GetAttribute(pxr::TfToken("xformOp:orient")).Get(&orientation);
-    double real = orientation.GetReal();
-    const double* imaginary = orientation.GetImaginary().GetArray();
 
-    mProps.orientation.w = static_cast<float>(real);
-    mProps.orientation.x = static_cast<float>(imaginary[0]);
-    mProps.orientation.y = static_cast<float>(imaginary[1]);
-    mProps.orientation.z = static_cast<float>(imaginary[2]);
+    omni::math::linalg::quatd rotate(
+        sensor_quat.GetReal(),
+        omni::math::linalg::vec3d(sensor_quat.GetImaginary().GetArray()[0], sensor_quat.GetImaginary().GetArray()[1],
+                                  sensor_quat.GetImaginary().GetArray()[2]));
+
+    mProps.orientation.SetRotate(rotate);
 
     findValidParent();
 
     mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
     // gravity that the IMU experiences in world frame
-    pxr::GfVec3f dir = pxr::GfVec3f(0, 0, -1.0f);
+    omni::math::linalg::vec3d dir = omni::math::linalg::vec3d(0, 0, -1.0f);
     float mag = 9.80665f;
     mGravity = mag / mUnitScale * -dir;
     // If a scene exists we try reading gravity from it
@@ -592,14 +560,18 @@ void ImuSensor::onComponentChange()
             if (physxScenePtr)
             {
                 ::physx::PxVec3 gravity = physxScenePtr->getGravity();
-                mGravity = -pxr::GfVec3f(gravity.x, gravity.y, gravity.z) / mUnitScale;
+                mGravity = -omni::math::linalg::vec3d(gravity.x, gravity.y, gravity.z) / mUnitScale;
             }
             else
             {
                 // Fallback onto USD values
                 isaac::utils::safeGetAttribute(scene.GetGravityMagnitudeAttr(), mag);
-                isaac::utils::safeGetAttribute(scene.GetGravityDirectionAttr(), dir);
-                mGravity = mag / mUnitScale * -dir;
+                pxr::GfVec3f dir_attr;
+                isaac::utils::safeGetAttribute(scene.GetGravityDirectionAttr(), dir_attr); // (0, 0, -1.0f)
+
+                dir.Set(static_cast<double>(dir_attr.GetArray()[0]), static_cast<double>(dir_attr.GetArray()[1]),
+                        static_cast<double>(dir_attr.GetArray()[2]));
+                mGravity = static_cast<double>(mag) / mUnitScale * -dir;
             }
         }
     }

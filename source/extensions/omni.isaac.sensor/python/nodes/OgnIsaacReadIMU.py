@@ -80,7 +80,7 @@ class OgnIsaacReadIMU:
                 return False
 
         else:
-            reading = state._is.get_sensor_reading(state.imu_path, None, db.inputs.useLatestData)
+            reading = state._is.get_sensor_reading(state.imu_path, None, db.inputs.useLatestData, db.inputs.readGravity)
             if reading.is_valid:
                 # next pass
                 if state.first:

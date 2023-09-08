@@ -24,8 +24,10 @@ from omni.isaac.core.objects import DynamicCuboid
 from omni.isaac.core.objects.ground_plane import GroundPlane
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.physics import simulate_async
 from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.rotations import quat_to_euler_angles
+from omni.isaac.core.utils.transformations import get_relative_transform
 from omni.isaac.dynamic_control import _dynamic_control
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
@@ -149,15 +151,18 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         self.my_world.play()
         await omni.kit.app.get_app().next_update_async()
 
-        for i in range(120):
+        for i in range(60):
             await omni.kit.app.get_app().next_update_async()
-            sensor_reading = self._is.get_sensor_readings(self.leg_paths[0] + "/sensor")
+            sensor_reading = self._is.get_sensor_readings(self.sphere_path + "/sensor")
 
             sensor_reading = sensor_reading[-1]
             # print(sensor_reading["lin_acc_x"], "\t", sensor_reading["ang_vel_x"])
             self.assertIsNotNone(sensor_reading["lin_acc_x"])
             self.assertIsNotNone(sensor_reading["ang_vel_x"])
             self.assertIsNotNone(sensor_reading["orientation"])
+        sensor_reading_no_gravity = self._is.get_sensor_readings(self.sphere_path + "/sensor", read_gravity=False)[-1]
+        self.assertAlmostEqual(sensor_reading["lin_acc_z"], 9.81, delta=0.1)
+        self.assertAlmostEqual(sensor_reading_no_gravity["lin_acc_z"], 0, delta=0.1)
         pass
 
     async def test_get_sensor_sim_reading(self):
@@ -165,13 +170,15 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         self.my_world.play()
-        for i in range(20):
-            await omni.kit.app.get_app().next_update_async()
-            sensor_reading = self._is.get_sensor_sim_reading(self.leg_paths[0] + "/sensor")
-            # print(sensor_reading.lin_acc_x, "\t", sensor_reading.ang_vel_x)
-            self.assertIsNotNone(sensor_reading.lin_acc_x)
-            self.assertIsNotNone(sensor_reading.ang_vel_x)
-            self.assertIsNotNone(sensor_reading.orientation)
+        await simulate_async(1)
+        sensor_reading = self._is.get_sensor_sim_reading(self.sphere_path + "/sensor", read_gravity=True)
+        sensor_reading_no_gravity = self._is.get_sensor_sim_reading(self.sphere_path + "/sensor", read_gravity=False)
+
+        self.assertIsNotNone(sensor_reading.lin_acc_x)
+        self.assertIsNotNone(sensor_reading.ang_vel_x)
+        self.assertIsNotNone(sensor_reading.orientation)
+        self.assertAlmostEqual(sensor_reading.lin_acc_z, 9.81, delta=0.1)
+        self.assertAlmostEqual(sensor_reading_no_gravity.lin_acc_z, 0, delta=0.1)
         pass
 
     async def test_orientation_imu(self):
@@ -215,6 +222,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             state["pos"] = new_state
             self._dc.set_articulation_dof_states(art, state, _dynamic_control.STATE_POS)
             self._dc.set_articulation_dof_position_targets(art, new_state)
+            await omni.kit.app.get_app().next_update_async()
             await omni.kit.app.get_app().next_update_async()
 
             sim_orientation_reading = quat_to_euler_angles(
@@ -278,7 +286,6 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
 
             self._dc.set_articulation_dof_states(art, state, _dynamic_control.STATE_VEL)
             self._dc.set_articulation_dof_velocity_targets(art, new_state)
-
             await omni.kit.app.get_app().next_update_async()
             ang_vel_z_sim = self._is.get_sensor_sim_reading(self.slider_path + "/slider_imu").ang_vel_z
             ang_vel_z_readings = self._is.get_sensor_readings(self.slider_path + "/slider_imu")[0]["ang_vel_z"]
@@ -405,13 +412,23 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         for i in range(20):
             await omni.kit.app.get_app().next_update_async()
             sensor_reading = self._is.get_sensor_sim_reading(self.sphere_path + "/sensor")
+            sensor_reading_no_gravity = self._is.get_sensor_reading(
+                self.sphere_path + "/sensor", use_latest_data=True, read_gravity=False
+            )
             # print(sensor_reading.lin_acc_x, "\t", sensor_reading.lin_acc_y, "\t", sensor_reading.lin_acc_z)
         self.assertAlmostEqual(sensor_reading.lin_acc_z, 0, delta=0.1)
+        self.assertAlmostEqual(sensor_reading_no_gravity.lin_acc_z, -9.81, delta=0.1)
+
         for i in range(100):
             await omni.kit.app.get_app().next_update_async()
             sensor_reading = self._is.get_sensor_sim_reading(self.sphere_path + "/sensor")
+            sensor_reading_no_gravity = self._is.get_sensor_reading(
+                self.sphere_path + "/sensor", use_latest_data=True, read_gravity=False
+            )
             # print(sensor_reading.lin_acc_x, "\t", sensor_reading.lin_acc_y, "\t", sensor_reading.lin_acc_z)
         self.assertAlmostEqual(sensor_reading.lin_acc_z, 9.81, delta=0.1)
+        self.assertAlmostEqual(sensor_reading_no_gravity.lin_acc_z, 0, delta=0.1)
+
         pass
 
     async def test_gravity_moon_m(self):
@@ -507,12 +524,10 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         for i in range(20):
             await omni.kit.app.get_app().next_update_async()
             sensor_reading = self._is.get_sensor_sim_reading(cube_path + "/sensor")
-            # print(sensor_reading.lin_acc_x, "\t", sensor_reading.lin_acc_y, "\t", sensor_reading.lin_acc_z)
         self.assertAlmostEqual(sensor_reading.lin_acc_z, 0, delta=0.1)
         for i in range(100):
             await omni.kit.app.get_app().next_update_async()
             sensor_reading = self._is.get_sensor_sim_reading(cube_path + "/sensor")
-            # print(sensor_reading.lin_acc_x, "\t", sensor_reading.lin_acc_y, "\t", sensor_reading.lin_acc_z)
         self.assertAlmostEqual(sensor_reading.lin_acc_z, 9.81, delta=0.1)
         omni.timeline.get_timeline_interface().stop()
         pass
@@ -672,8 +687,12 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
 
         for i in range(10):  # Simulate 10 steps
             await omni.kit.app.get_app().next_update_async()
-            custom_reading = self._is.get_sensor_reading(self.sphere_path + "/custom_sensor", custom_function)
-            sensor_reading = self._is.get_sensor_reading(self.sphere_path + "/custom_sensor")
+
+            # The effect of gravity is applied after the interpolation function
+            custom_reading = self._is.get_sensor_reading(
+                self.sphere_path + "/custom_sensor", custom_function, read_gravity=False
+            )
+            sensor_reading = self._is.get_sensor_reading(self.sphere_path + "/custom_sensor", read_gravity=False)
 
             self.assertEqual(custom_reading.time, sensor_reading.time)
             self.assertEqual(custom_reading.lin_acc_x, -100)
@@ -770,3 +789,53 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
 
         custom_reading = self._is.get_sensor_reading(self.sphere_path + "/custom_sensor", custom_function)
         self.assertEqual(self.actual_buffer_length, 20)
+
+    async def test_imu_rigidbody_grandparent(self):
+        await self.createAnt()
+        cube = self.my_world.scene.add(DynamicCuboid(prim_path="/World/Cube", position=np.array([10, 0, 0])))
+
+        xform = self.my_world.scene.add(
+            XFormPrim(prim_path="/World/Cube/xform", name="xform", translation=np.array([10, 0, 0]))
+        )
+
+        result, sensor = omni.kit.commands.execute(
+            "IsaacSensorCreateImuSensor",
+            path="/custom_sensor",
+            parent="/World/Cube/xform",
+            sensor_period=0,
+            translation=self.sensor_offsets[4],
+            orientation=self.sensor_quatd[4],
+            visualize=False,
+        )
+
+        await omni.kit.app.get_app().next_update_async()
+        self.my_world.play()
+        await simulate_async(0.5)
+        custom_reading = self._is.get_sensor_reading("/World/Cube/xform/custom_sensor")
+        print(custom_reading.lin_acc_x)
+        print(custom_reading.lin_acc_y)
+        print(custom_reading.lin_acc_z)
+
+        self.assertAlmostEqual(custom_reading.lin_acc_z, 9.81, delta=0.1)
+
+        self.my_world.stop()
+        await omni.kit.app.get_app().next_update_async()
+
+        # Rotate the parent cube about y by -90 degree
+        # The x axis points upward
+        cube.set_local_pose(orientation=np.array([0.70711, 0.0, -0.70711, 0.0]))
+        self.my_world.play()
+        await omni.kit.app.get_app().next_update_async()
+
+        await simulate_async(0.5)
+        custom_reading = self._is.get_sensor_reading("/World/Cube/xform/custom_sensor")
+        print(custom_reading.lin_acc_x)
+        print(custom_reading.lin_acc_y)
+        print(custom_reading.lin_acc_z)
+        self.assertAlmostEqual(custom_reading.lin_acc_x, 9.81, delta=0.1)
+
+        # rotated -90 degress abouty, check if this is correct
+        self.assertAlmostEquals(custom_reading.orientation.w, 0.70711, delta=1e-4)
+        self.assertAlmostEquals(custom_reading.orientation.x, 0.0, delta=1e-4)
+        self.assertAlmostEquals(custom_reading.orientation.y, -0.70711, delta=1e-4)
+        self.assertAlmostEquals(custom_reading.orientation.z, 0.0, delta=1e-4)

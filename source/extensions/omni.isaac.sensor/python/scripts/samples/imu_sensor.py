@@ -114,7 +114,7 @@ class Imu_sensor_demo(omni.ext.IExt):
                                     ui.Label(self.acc_names[i], width=LABEL_WIDTH, tooltip="acceleration in m/s^2")
                                     # ui.Spacer(height=0, width=10)
                                     style["secondary_color"] = self.colors[i]
-                                    self.sliders.append(ui.FloatDrag(min=0.0, max=15.0, step=0.001, style=style))
+                                    self.sliders.append(ui.FloatDrag(min=-15.0, max=15.0, step=0.001, style=style))
                                     self.sliders[-1].enabled = False
                                     ui.Spacer(width=20)
                             for j in range(3):
@@ -122,7 +122,7 @@ class Imu_sensor_demo(omni.ext.IExt):
                                     ui.Label(self.gyro_names[j], width=LABEL_WIDTH, tooltip="angular velocity in rad/s")
                                     # ui.Spacer(height=0, width=10)
                                     style["secondary_color"] = self.colors[3 + j]
-                                    self.sliders.append(ui.FloatDrag(min=0.0, max=15.0, step=0.001, style=style))
+                                    self.sliders.append(ui.FloatDrag(min=-15.0, max=15.0, step=0.001, style=style))
                                     self.sliders[-1].enabled = False
                                     ui.Spacer(width=20)
                             for k in range(4):

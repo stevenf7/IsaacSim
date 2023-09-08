@@ -110,8 +110,8 @@ class IMUSensor(BaseSensor):
     def initialize(self, physics_sim_view=None) -> None:
         BaseSensor.initialize(self, physics_sim_view=physics_sim_view)
 
-    def get_current_frame(self) -> dict:
-        imu_sensor_reading = self._imu_sensor_interface.get_sensor_reading(self.prim_path)
+    def get_current_frame(self, read_gravity=True) -> dict:
+        imu_sensor_reading = self._imu_sensor_interface.get_sensor_reading(self.prim_path, read_gravity=read_gravity)
         if imu_sensor_reading.is_valid:
             self._current_frame["lin_acc"] = self._backend_utils.create_tensor_from_list(
                 [

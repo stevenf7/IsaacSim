@@ -69,6 +69,9 @@ class TestIMU(omni.kit.test.AsyncTestCase):
         data = self._imu.get_current_frame()
         for key in ["time", "physics_step", "lin_acc", "ang_vel", "orientation"]:
             self.assertTrue(key in data.keys())
+        data = self._imu.get_current_frame(read_gravity=False)
+        for key in ["time", "physics_step", "lin_acc", "ang_vel", "orientation"]:
+            self.assertTrue(key in data.keys())
         return
 
     async def test_pause_resume(self):

@@ -140,7 +140,7 @@ CsReading ContactSensor::getSimSensorReading()
     return mReadingPair[mCurrent];
 }
 
-CsReading ContactSensor::getSensorReadings(size_t& num_readings)
+CsReading ContactSensor::getSensorReadings(size_t& numReadings)
 {
     CARB_PROFILE_ZONE(0, "ContactSensor::getSensorReadings");
     CARB_LOG_WARN_ONCE(
@@ -157,11 +157,11 @@ CsReading ContactSensor::getSensorReadings(size_t& num_readings)
 
     if (reading.is_valid)
     {
-        num_readings = 1;
+        numReadings = 1;
     }
     else
     {
-        num_readings = 0;
+        numReadings = 0;
     }
 
     return reading;

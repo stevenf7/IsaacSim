@@ -57,7 +57,7 @@ public:
 
     CsReading getSimSensorReading();
 
-    CsReading getSensorReadings(size_t& num_readings);
+    CsReading getSensorReadings(size_t& numReadings);
 
     CsReading getSensorReading(const bool& getLatestValue = false);
 
