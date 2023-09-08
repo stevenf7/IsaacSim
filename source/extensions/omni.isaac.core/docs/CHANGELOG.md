@@ -1,5 +1,9 @@
 # Changelog
 ## [2.7.3] - 2023-08-28
+### Changed
+- Added warnings to OgnIsaacReadFilePath
+
+## [2.7.3] - 2023-08-28
 ### Fixed
 - Updated utils.viewports.set_camera_view to check both x and y of the position and target
 
@@ -21,7 +25,7 @@
 
 ## [2.7.0] - 2023-08-11
 ### Added
-- Add function create_viewport_for_camera() to viewports.py 
+- Add function create_viewport_for_camera() to viewports.py
 
 ## [2.6.0] - 2023-08-03
 ### Added
@@ -82,8 +86,8 @@
 
 ## [1.48.0] - 2023-04-18
 ### Changed
-- Add function get_transform_with_normalized_rotation to utils.transformation.py 
-- Function returns transformation matrix after removing scale factor 
+- Add function get_transform_with_normalized_rotation to utils.transformation.py
+- Function returns transformation matrix after removing scale factor
 
 ## [1.47.0] - 2023-03-31
 ### Changed

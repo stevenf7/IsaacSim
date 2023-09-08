@@ -51,6 +51,7 @@ public:
         }
         if (!state.mContext->isActivated())
         {
+            // Parse GXF app YAML strings
             const auto& graph = db.inputs.graph();
             std::vector<std::string> graphStrings;
             if (graph.type().baseType == BaseDataType::eUChar && graph.type().arrayDepth == 1)
@@ -58,7 +59,7 @@ public:
                 auto val = db.inputs.graph().template get<uint8_t[]>();
                 if (!val)
                 {
-                    db.logError("Unable to resolve input type");
+                    db.logError("Failed to resolve input type, expecting string.");
                     return false;
                 }
 
@@ -72,7 +73,7 @@ public:
                     auto val = db.inputs.graph().template get<OgnToken>();
                     if (!val)
                     {
-                        db.logError("Unable to resolve input type");
+                        db.logError("Failed to resolve input type, expecting token.");
                         return false;
                     }
                     graphStrings.push_back(std::string(db.tokenToString(*val)));
@@ -82,7 +83,7 @@ public:
                     auto val = db.inputs.graph().template get<OgnToken[]>();
                     if (!val)
                     {
-                        db.logError("Unable to resolve input type");
+                        db.logError("Failed to resolve input type, expecting 1d token[].");
                         return false;
                     }
                     const auto graphTokens = *val;
@@ -92,15 +93,17 @@ public:
                 }
                 else if (graph.type().arrayDepth == 2)
                 {
-                    db.logError("array of array as input not supported");
+                    db.logError("Failed to resolve input, 2d token[][] not supported");
                     return false;
                 }
             }
             else
             {
-                db.logError("Type must be string, token or roken[]");
+                db.logError("Type must be string, token or token[]");
                 return false;
             }
+
+            // Parse GXF context severity
             gxf_severity_t severity = gxf_severity_t::GXF_SEVERITY_INFO;
 
             if (db.inputs.severity() == db.tokens.none)
@@ -123,50 +126,59 @@ public:
             {
                 severity = gxf_severity_t::GXF_SEVERITY_DEBUG;
             }
-            else if (db.inputs.severity() == db.tokens.debug)
+            else if (db.inputs.severity() == db.tokens.verbose)
             {
                 severity = gxf_severity_t::GXF_SEVERITY_VERBOSE;
             }
+
+            // Create GXF context
             gxf_result_t result;
             result = state.mContext->create();
             if (result)
             {
-                db.logError("Graph not created");
+                db.logError("Failed to create GXF context.");
                 state.mContext->destroy();
                 return false;
             }
+
+            // Set GXF context severity
             state.mContext->setSeverity(severity);
 
+            // Load GXF manifest
             result = state.mContext->loadManifest(state.mExtensionPath + "/lib", "manifest.yaml");
             if (result)
             {
-                db.logError("manifest not loaded");
+                db.logError("Failed to load GXF manifest.");
                 state.mContext->destroy();
                 return false;
             }
+
+            // Load GXF graphs from strings
             result = state.mContext->loadGraphsFromString(graphStrings);
             if (result)
             {
-                db.logError("specified graphs not loaded");
+                db.logError("Failed to load specified GXF graph(s).");
                 state.mContext->destroy();
                 return false;
             }
+
+            // Load internal graphs - allocator used to build composite messages
             std::vector<std::string> internalGraphs;
             internalGraphs.push_back(state.mExtensionPath + "/data/config/isaac_sim_allocator.yaml");
-
             result = state.mContext->loadGraphsFromFile(internalGraphs);
             if (result)
             {
-                db.logError("isaac_sim_allocator graph not loaded");
+                db.logError("Failed to load isaac_sim_allocator.yaml.");
                 state.mContext->destroy();
                 return false;
             }
 
+            // Start GXF application
             result = state.mContext->start(db.inputs.clockEntity(), db.inputs.clockComponent(), db.inputs.atlasEntity(),
                                            db.inputs.atlasComponent());
             if (result)
             {
-                db.logError("graph not started");
+                db.logError("Failed to start GXF application.");
                 state.mContext->stop();
                 state.mContext->destroy();
                 return false;

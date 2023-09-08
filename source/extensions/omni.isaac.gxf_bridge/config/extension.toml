@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.0"
+version = "1.1.0"
 title = "GXF Bridge"
 description = "Communication bridge for the Isaac SDK GXF backend"
 authors = ["Isaac Sim Team"]
@@ -29,6 +29,8 @@ writeTarget.platform = true
 "omni.isaac.core_archive" = {} # construct
 "usdrt.scenegraph" = {}
 
+[settings]
+exts."omni.isaac.gxf_bridge".yamlBaseFolder = "${app}/../exts/omni.isaac.gxf_bridge/data/yaml/"
 
 [[python.module]]
 name = "omni.isaac.gxf_bridge"
@@ -55,18 +57,6 @@ path = "lib/libnppial.so"
 
 [[native.library]]
 path = "lib/libnppidei.so"
-
-# [[native.library]]
-# path = "lib/libgxf_core.so"
-
-# [[native.library]]
-# path = "lib/libnppif.so"
-
-# [[native.library]]
-# path = "lib/libnppig.so"
-
-# [[native.library]]
-# path = "lib/libnpps.so"
 
 [fswatcher.paths]
 exclude = ["*/pygxf*", "*/bin", "*/__pycache__/*", "*/.git/*"]

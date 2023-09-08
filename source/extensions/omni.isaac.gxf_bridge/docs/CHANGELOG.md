@@ -1,4 +1,17 @@
 # Changelog
+## [1.1.0] - 2023-09-07
+### Added
+- exts."omni.isaac.gxf_bridge".yamlBaseFolder setting
+- OgnGXFGetYAMLFilePath - looks inside new setting to find user-provided YAML file path
+### Removed
+- Create/Destroy Application UI
+### Changed
+- GXF Bridge now operates solely using OmniGraph nodes - user should specify
+  OgnGXFGetYAMLFilePath, OgnIsaacReadFilePath, and ToToken OR GXFYAML to load a YAML file,
+  and start graph using OGNGXFContext.
+- Updates comments, warnings, and errors in OgnGXFContext
+- Renames data/config/tcp_server.yaml to data/yaml/carter_v2_3.yaml
+
 ## [1.0.0] - 2023-09-06
 ### Changed
 - OgnGXFPoseTreeFrameMapBuilder accepts poseTreeNamespace argument (default = "robot")
@@ -10,6 +23,7 @@
 ### Fixed
 - GXF bridge no longer crashed when user destroys app without server ever having connected
   to client
+
 ## [0.13.3] - 2023-08-29
 ### Fixed
 - added standard out fail pattern for the expected no prim found edge cases for the ogn test

@@ -83,7 +83,7 @@ gxf_result_t GxfContext::loadManifest(const std::string& basePath, const std::st
     }
     else
     {
-        CARB_LOG_WARN("Create context first");
+        CARB_LOG_WARN("Create context before attempting to load manifest.");
     }
     return GXF_SUCCESS;
 }
@@ -95,7 +95,7 @@ gxf_result_t GxfContext::loadGraphsFromFile(const std::vector<std::string>& grap
         gxf_result_t result;
         for (auto& graph : graphFiles)
         {
-            CARB_LOG_INFO("Loading Graph: %s", graph.c_str());
+            CARB_LOG_INFO("Loading graph: %s", graph.c_str());
             if ((result = GxfGraphLoadFile(*mContext.get(), graph.c_str())))
             {
                 CARB_LOG_ERROR("GxfLoadGraph failed");
@@ -105,7 +105,7 @@ gxf_result_t GxfContext::loadGraphsFromFile(const std::vector<std::string>& grap
     }
     else
     {
-        CARB_LOG_WARN("Create context first");
+        CARB_LOG_WARN("Create context before attempting to load graphs.");
     }
     return GXF_SUCCESS;
 }
@@ -117,17 +117,17 @@ gxf_result_t GxfContext::loadGraphsFromString(const std::vector<std::string>& gr
         gxf_result_t result;
         for (auto& graph : graphStrings)
         {
-            CARB_LOG_INFO("Parsing Graph: %s", graph.c_str());
+            CARB_LOG_INFO("Parsing graph: %s", graph.c_str());
             if ((result = GxfGraphParseString(*mContext.get(), graph.c_str())))
             {
-                CARB_LOG_ERROR("GxfGraphParseString failed");
+                CARB_LOG_ERROR("GxfGraphParseString failed.");
                 return GXF_FAILURE;
             }
         }
     }
     else
     {
-        CARB_LOG_WARN("Create context first");
+        CARB_LOG_WARN("Create context before attempting to load graphs.");
     }
     return GXF_SUCCESS;
 }

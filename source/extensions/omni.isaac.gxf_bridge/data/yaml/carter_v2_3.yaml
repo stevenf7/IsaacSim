@@ -1,6 +1,6 @@
 %YAML 1.2
 ---
-# Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
 
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -239,7 +239,8 @@ components:
           - pose_frame_uid_serializer
           - composite_uid_serializer
           - multimedia_component_serializer
-    - type: nvidia::gxf::TcpServer
+    - name: tcp_server
+      type: nvidia::gxf::TcpServer
       parameters:
           receivers:
           - channel_primary_clock
