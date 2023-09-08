@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.1.0] - 2023-09-06
+### Fixed
+- Remove explicit certifi dependency and use omni.kit.pip_archive
+
 ## [2.0.3] - 2023-08-09
 ### Fixed
 - Switch from ui.Window to ScrollingWindow wrapper for extension because scrolling was broken
