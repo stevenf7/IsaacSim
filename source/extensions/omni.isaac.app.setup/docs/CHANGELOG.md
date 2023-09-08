@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.11.1] - 2023-09-06
+
+### Changed
+- Deprecation label for Replicator/Composer menu item
+
 ## [0.11.0] - 2023-09-06
 
 ### Changed
