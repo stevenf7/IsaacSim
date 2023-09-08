@@ -1,0 +1,31 @@
+{
+    "GXFGetYAMLFilePath": {
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",
+        "description": "Dynamically generates path to YAML file in app.gxf_bridge.yamlBaseFolder.",
+        "language": "Python",
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacGxf",
+        "metadata": {
+            "uiName": "GXF Get YAML File Path"
+        },
+        "inputs": {
+            "path": {
+                "type": "path",
+                "description": "Path to GXF app YAML file, relative to app.gxf_bridge.yamlBaseFolder setting.",
+                "metadata": {
+                    "uiName": "Input Path"
+                }
+            }
+        },
+        "outputs": {
+            "path": {
+                "type": "path",
+                "description": "Absolute path to input GXF app YAML file, if it exists.",
+                "metadata": {
+                    "uiName": "Output Path"
+                }
+            }
+        }
+    }
+}
