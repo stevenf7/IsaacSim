@@ -12,6 +12,7 @@
 #include <carb/Defines.h>
 #include <carb/Types.h>
 
+#include <usdrt/gf/matrix.h>
 // #include <PxActor.h>
 #include <limits>
 
@@ -65,9 +66,7 @@ struct CsRawData
  */
 struct IsProperties
 {
-    carb::Float3 position{ 0.0f, 0.0f, 0.0f }; //<! Position relative to the parent body where the sensor is placed.
-    carb::Float4 orientation{ 0.0f, 0.0f, 0.0f, 0.0f }; //<! quaternion orientation relative to the parent body where
-                                                        // the sensor is placed.
+    usdrt::GfMatrix3d orientation; //<! orientation matrix relative to the parent body where the sensor is placed.
     float sensorPeriod{ 0.0f }; //<! Sensor reading speed, in seconds. Zero means sync with simulation timestep.
 };
 /**

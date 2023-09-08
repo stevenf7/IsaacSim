@@ -106,6 +106,30 @@ static usdrt::GfMatrix4d computeWorldXformNoCache(pxr::UsdStageRefPtr usdStage,
         return localMat * parentXform;
     }
 }
+/**
+ * @brief Get the relative transform matrix from the source prim ot the target prim
+ *
+ * @param sourcePrim: source prim from which frame to compute the relative transform
+ * @param targetPrim: target prim to which fram to compute the relative transform
+ *
+ * @return usdrt/Gf/Matrix4d
+ */
+inline usdrt::GfMatrix4d getRelativeTransform(pxr::UsdStageRefPtr usdStage,
+                                              usdrt::UsdStageRefPtr usdrtStage,
+                                              const pxr::SdfPath& sourcePrim,
+                                              const pxr::SdfPath& targetPrim)
+{
+    pxr::UsdStagePtr stage = omni::usd::UsdContext::getContext()->getStage();
+    // column major transform matrix
+    usdrt::GfMatrix4d sourceToWorldColumnMajorTransform = computeWorldXformNoCache(usdStage, usdrtStage, sourcePrim);
+    usdrt::GfMatrix4d targetToWorldColumnMajorTransform = computeWorldXformNoCache(usdStage, usdrtStage, targetPrim);
+
+    usdrt::GfMatrix4d worldToTargetColumnMajorTransform = targetToWorldColumnMajorTransform.GetInverse();
+    usdrt::GfMatrix4d sourceToTargetColumnMajorTransform =
+        worldToTargetColumnMajorTransform * sourceToWorldColumnMajorTransform;
+
+    return sourceToTargetColumnMajorTransform;
+}
 
 }
 }

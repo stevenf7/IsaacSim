@@ -160,14 +160,14 @@ omni::isaac::sensor::CsRawData* CARB_ABI CsGetSensorRawData(const char* primPath
     return data;
 }
 
-omni::isaac::sensor::CsReading CARB_ABI CsGetSensorReadings(const char* primPath, size_t& num_readings)
+omni::isaac::sensor::CsReading CARB_ABI CsGetSensorReadings(const char* primPath, size_t& numReadings)
 {
     omni::isaac::sensor::ContactSensor* sensor =
         gIsaacSensorManager->getContactSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
     omni::isaac::sensor::CsReading data = omni::isaac::sensor::CsReading();
     if (sensor)
     {
-        data = sensor->getSensorReadings(num_readings);
+        data = sensor->getSensorReadings(numReadings);
     }
     return data;
 }
@@ -177,12 +177,12 @@ size_t CARB_ABI CsGetSensorReadingsSize(const char* primPath)
     omni::isaac::sensor::ContactSensor* sensor =
         gIsaacSensorManager->getContactSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
 
-    size_t num_readings = 0;
+    size_t numReadings = 0;
     if (sensor)
     {
-        sensor->getSensorReadings(num_readings);
+        sensor->getSensorReadings(numReadings);
     }
-    return num_readings;
+    return numReadings;
 }
 
 omni::isaac::sensor::CsReading CARB_ABI CsGetSensorSimReading(const char* primPath)
@@ -236,14 +236,16 @@ bool CARB_ABI isImuSensor(const char* primPath)
     }
 }
 
-omni::isaac::sensor::IsReading CARB_ABI IsGetSensorReadings(const char* primPath, size_t& num_readings)
+omni::isaac::sensor::IsReading CARB_ABI IsGetSensorReadings(const char* primPath,
+                                                            size_t& numReadings,
+                                                            const bool& readGravity)
 {
     omni::isaac::sensor::ImuSensor* sensor =
         gIsaacSensorManager->getImuSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
     omni::isaac::sensor::IsReading data = omni::isaac::sensor::IsReading();
     if (sensor)
     {
-        data = sensor->getSensorReadings(num_readings);
+        data = sensor->getSensorReadings(numReadings, readGravity);
     }
     return data;
 }
@@ -252,26 +254,27 @@ omni::isaac::sensor::IsReading CARB_ABI IsGetSensorReading(
     const char* primPath,
     const std::function<omni::isaac::sensor::IsReading(std::vector<omni::isaac::sensor::IsReading>, float)>&
         interpolateFunction = {},
-    const bool& getLatestValue = false)
+    const bool& getLatestValue = false,
+    const bool& readGravity = true)
 {
     omni::isaac::sensor::ImuSensor* sensor =
         gIsaacSensorManager->getImuSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
     omni::isaac::sensor::IsReading data = omni::isaac::sensor::IsReading();
     if (sensor)
     {
-        data = sensor->getSensorReading(interpolateFunction, getLatestValue);
+        data = sensor->getSensorReading(interpolateFunction, getLatestValue, readGravity);
     }
     return data;
 }
 
-omni::isaac::sensor::IsReading CARB_ABI IsGetSensorSimReading(const char* primPath)
+omni::isaac::sensor::IsReading CARB_ABI IsGetSensorSimReading(const char* primPath, const bool& readGravity = true)
 {
     omni::isaac::sensor::ImuSensor* sensor =
         gIsaacSensorManager->getImuSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
     omni::isaac::sensor::IsReading data;
     if (sensor)
     {
-        data = sensor->getSimSensorReading();
+        data = sensor->getSimSensorReading(readGravity);
     }
     return data;
 }
@@ -281,12 +284,12 @@ size_t CARB_ABI IsGetSensorReadingsSize(const char* primPath)
     omni::isaac::sensor::ImuSensor* sensor =
         gIsaacSensorManager->getImuSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
 
-    size_t num_readings = 0;
+    size_t numReadings = 0;
     if (sensor)
     {
-        sensor->getSensorReadings(num_readings);
+        sensor->getSensorReadings(numReadings);
     }
-    return num_readings;
+    return numReadings;
 }
 }
 

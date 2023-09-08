@@ -25,6 +25,11 @@
                 "type": "bool",
                 "description": "True to use the latest data from the physics step, False to use the data measured by the sensor",
                 "default": false
+            },
+            "readGravity": {
+                "type": "bool",
+                "description": "True to read gravitational acceleration in the measurement, False to ignore gravitational acceleration",
+                "default": true
             }
         },
         "outputs": {

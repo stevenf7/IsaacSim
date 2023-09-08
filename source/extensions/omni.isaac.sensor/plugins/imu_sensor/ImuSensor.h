@@ -52,13 +52,16 @@ public:
 
     size_t getNumReadings(); //<! Gets length of accumulated readings
 
-    IsReading getSensorReadings(size_t& num_readings); //<! Gets accumulated array of readings from last
-                                                       // simulation step to current step.
+    IsReading getSensorReadings(size_t& numReadings, const bool& readGravity = true); //<! Gets accumulated array of
+                                                                                      // readings from last
+                                                                                      // simulation step to current
+                                                                                      // step.
 
     IsReading getSensorReading(const std::function<IsReading(std::vector<IsReading>, float)>& interpolateFunction = nullptr,
-                               const bool& getLatestValue = false);
+                               const bool& getLatestValue = false,
+                               const bool& readGravity = true);
 
-    IsReading getSimSensorReading();
+    IsReading getSimSensorReading(const bool& readGravity = true);
 
     void reset();
     // finite diff data in mRawReadingList, save in mReadingPair
@@ -100,7 +103,8 @@ private:
     double mUnitScale{ 1.0 };
     float mSensorTime{ 0 };
     bool mPreviousEnabled{ true };
-    pxr::GfVec3f mGravity;
+    omni::math::linalg::vec3d mGravitySensorFrame;
+    omni::math::linalg::vec3d mGravity;
     omni::physx::IPhysx* mPhysXInterface = nullptr;
 };
 

@@ -204,8 +204,7 @@ PYBIND11_MODULE(_sensor, m)
              R"pbdoc(   
                 Args:
                     arg0 (:obj:`char*`): the sensor path
-                    arg1 (:obj:`std::function<IsReading(std::vector<IsRawData>, float)>&`): interpolation function
-                    arg2 (:obj:`bool`): use_latest_data
+                    arg1 (:obj:`bool`): use_latest_data
                 Returns:
                     :obj:`numpy.array`: The reading for the current sensor period.)pbdoc",
              py::arg("sensor_path"), py::arg("use_latest_data") = false)
@@ -228,14 +227,14 @@ PYBIND11_MODULE(_sensor, m)
                 Returns:
                     :obj:`int`: Number of readings ready on the buffer.)pbdoc")
         .def("get_sensor_readings",
-             [](const ImuSensorInterface* li, const char* sensor_path) -> py::object
+             [](const ImuSensorInterface* li, const char* sensor_path, bool read_gravity = true) -> py::object
              {
                  if (!li)
                  {
                      return py::none();
                  }
                  size_t num_data = 0;
-                 IsReading data = li->getSensorReadings(sensor_path, num_data);
+                 IsReading data = li->getSensorReadings(sensor_path, num_data, read_gravity);
                  return py::array(py::buffer_info(&data, sizeof(IsReading), py::format_descriptor<IsReading>::format(),
                                                   1, { num_data }, { sizeof(IsReading) }));
              },
@@ -244,11 +243,12 @@ PYBIND11_MODULE(_sensor, m)
                 Args:
                     arg0 (:obj:`char*`): the sensor path
                 Returns:
-                    :obj:`numpy.array`: The list of readings for the sensor ready on the buffer.)pbdoc")
+                    :obj:`numpy.array`: The list of readings for the sensor ready on the buffer.)pbdoc",
+             py::arg("sensor_path"), py::arg("read_gravity") = true)
         .def("get_sensor_reading",
              [](const ImuSensorInterface* li, const char* sensor_path,
                 std::function<IsReading(std::vector<IsReading>, float)> interpolation_function = nullptr,
-                bool use_latest_data = false) -> py::object
+                bool use_latest_data = false, bool read_gravity = true) -> py::object
              {
                  if (!li)
                  {
@@ -257,12 +257,12 @@ PYBIND11_MODULE(_sensor, m)
                  IsReading data = IsReading();
                  if (interpolation_function)
                  {
-                     data = li->getSensorReading(
-                         sensor_path, carb::wrapPythonCallback(std::move(interpolation_function)), use_latest_data);
+                     data = li->getSensorReading(sensor_path, carb::wrapPythonCallback(std::move(interpolation_function)),
+                                                 use_latest_data, read_gravity);
                  }
                  else
                  {
-                     data = li->getSensorReading(sensor_path, nullptr, use_latest_data);
+                     data = li->getSensorReading(sensor_path, nullptr, use_latest_data, read_gravity);
                  }
                  return py::cast(data);
              },
@@ -271,15 +271,19 @@ PYBIND11_MODULE(_sensor, m)
                     arg0 (:obj:`char*`): the sensor path
                     arg1 (:obj:`std::function<IsReading(std::vector<IsReading>, float)>&`): interpolation_function
                     arg2 (:obj:`bool`): use_latest_data
+                    arg3 (:obj:`bool`): read_gravity
                 Returns:
                     :obj:`numpy.array`: The reading for the current sensor period.)pbdoc",
-             py::arg("sensor_path"), py::arg("interpolation_function") = nullptr, py::arg("use_latest_data") = false)
+             py::arg("sensor_path"), py::arg("interpolation_function") = nullptr, py::arg("use_latest_data") = false,
+             py::arg("read_gravity") = true)
         .def("get_sensor_sim_reading", wrapInterfaceFunction(&ImuSensorInterface::getSensorSimReading),
              R"pbdoc(   
                 Args:
                     arg0 (:obj:`char*`): the sensor path
+                    arg1 (:obj:`bool`): reading gravity, true to include gravitational acceleration in the measurement
                 Returns:
-                    :obj:`numpy.array`: The reading for the current simulation time.)pbdoc")
+                    :obj:`numpy.array`: The reading for the current simulation time.)pbdoc",
+             py::arg("sensor_path"), py::arg("read_gravity") = true)
         .def("is_imu_sensor", wrapInterfaceFunction(&ImuSensorInterface::isImuSensor),
              R"pbdoc(   
                 Args:
