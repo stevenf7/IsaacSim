@@ -122,3 +122,6 @@ ogn.rst
 output
 
 !schema.usda
+
+# ignore crash logs from streaming client sessions
+NvStreamer-*.etli
