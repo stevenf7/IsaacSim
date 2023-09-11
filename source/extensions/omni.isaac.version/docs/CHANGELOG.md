@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.3] - 2023-09-11
+
+### Fixed
+- Scan for test modules instead of importing them
+
 ## [1.0.2] - 2023-08-22
 
 ### Fixed
