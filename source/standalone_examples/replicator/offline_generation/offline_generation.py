@@ -37,8 +37,7 @@ config = {
         "bounding_box_2d_tight": True,
         "semantic_segmentation": True,
         "distance_to_image_plane": True,
-        # OM-100140
-        # "bounding_box_3d": True,
+        "bounding_box_3d": True,
         "occlusion": True,
     },
     "clear_previous_semantics": True,
