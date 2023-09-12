@@ -1,4 +1,8 @@
-## [1.11.] 2023-08-29
+## [1.12.0] 2023-08-28
+### Added
+- test_forklift_articulations.py for testing drive & lift of Forklift C model
+
+## [1.11.1] 2023-08-29
 ### Fixed
 - test_randomizer_snippets.py to use await instead of ensure_future
 
