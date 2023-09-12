@@ -22,7 +22,6 @@ from itertools import cycle
 import carb.settings
 import omni.client
 import omni.kit.app
-import omni.physx as _physx
 import omni.replicator.core as rep
 import omni.timeline
 import omni.usd
@@ -45,7 +44,7 @@ class NavSDGDemo:
         self._cycled_env_urls = None
         self._env_interval = 1
         self._timeline = None
-        self._physx_sub = None
+        self._timeline_sub = None
         self._stage_event_sub = None
         self._stage = None
         self._trigger_distance = 2.0
@@ -56,7 +55,6 @@ class NavSDGDemo:
         self._render_products = []
         self._use_temp_rp = False
         self._in_running_state = False
-        self._in_sdg_state = False
 
     def start(
         self,
@@ -65,31 +63,33 @@ class NavSDGDemo:
         env_urls=[],
         env_interval=3,
         use_temp_rp=False,
+        seed=None,
     ):
         print(f"[NavSDGDemo] Starting")
+        if seed is not None:
+            random.seed(seed)
         self._num_frames = num_frames
         self._out_dir = out_dir if out_dir is not None else os.path.join(os.getcwd(), "_out_nav_sdg_demo")
         self._cycled_env_urls = cycle(env_urls)
         self._env_interval = env_interval
-        # TODO OM-108036
-        self._use_temp_rp = False
-        # self._use_temp_rp = use_temp_rp
+        self._use_temp_rp = use_temp_rp
         self._frame_counter = 0
-        self._in_sdg_state = False
         self._trigger_distance = 2.0
         self._load_env()
         self._randomize_dolly_pose()
         self._randomize_dolly_light()
         self._randomize_prop_poses()
         self._setup_sdg()
-        self._physx_sub = _physx.get_physx_interface().subscribe_physics_step_events(self._on_physics_step)
+        self._timeline = omni.timeline.get_timeline_interface()
+        self._timeline.play()
+        self._timeline_sub = self._timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
+            int(omni.timeline.TimelineEventType.CURRENT_TIME_TICKED), self._on_timeline_event
+        )
         self._stage_event_sub = (
             omni.usd.get_context()
             .get_stage_event_stream()
             .create_subscription_to_pop_by_type(int(omni.usd.StageEventType.CLOSING), self._on_stage_closing_event)
         )
-        self._timeline = omni.timeline.get_timeline_interface()
-        self._timeline.play()
         self._in_running_state = True
 
     def clear(self):
@@ -102,10 +102,13 @@ class NavSDGDemo:
         self._dolly_light = None
         self._timeline = None
         self._frame_counter = 0
+        if self._stage_event_sub:
+            self._stage_event_sub.unsubscribe()
         self._stage_event_sub = None
-        # TODO OM-108036
-        # self._physx_sub = None
-        # self._destroy_render_products()
+        if self._timeline_sub:
+            self._timeline_sub.unsubscribe()
+        self._timeline_sub = None
+        self._destroy_render_products()
         self._in_running_state = False
 
     def is_running(self):
@@ -118,7 +121,7 @@ class NavSDGDemo:
         self.clear()
 
     def _load_env(self):
-        # Fresh stage with custom physics scene
+        # Fresh stage with custom physics scene for carter's navigation
         create_new_stage()
         self._stage = omni.usd.get_context().get_stage()
         self._add_physics_scene()
@@ -180,10 +183,10 @@ class NavSDGDemo:
         physx_scene.GetBroadphaseTypeAttr().Set("MBP")
 
     def _randomize_dolly_pose(self):
-        min_dist_from_carter = 4.0
-        carter_loc = self._carter_nav_origin.GetAttribute("xformOp:translate").Get()
+        min_dist_from_carter = 4
+        carter_loc = self._carter_chassis.GetAttribute("xformOp:translate").Get()
         for _ in range(100):
-            x, y = random.uniform(-7.0, 7.0), random.uniform(-8.0, 8.0)
+            x, y = random.uniform(-6, 6), random.uniform(-6, 6)
             dist = (Gf.Vec2f(x, y) - Gf.Vec2f(carter_loc[0], carter_loc[1])).GetLength()
             if dist > min_dist_from_carter:
                 self._dolly.GetAttribute("xformOp:translate").Set((x, y, 0))
@@ -218,6 +221,7 @@ class NavSDGDemo:
             self._setup_render_products()
 
     def _setup_render_products(self):
+        print(f"[NavSDGDemo] Creating render products")
         rp_left = rep.create.render_product(
             "/NavWorld/CarterNav/chassis_link/stereo_cam_left/stereo_cam_left_sensor_frame/camera_sensor_left",
             (512, 512),
@@ -236,29 +240,30 @@ class NavSDGDemo:
         self._writer.attach(self._render_products)
 
     def _destroy_render_products(self):
-        print(f"[NavSDGDemo] Wait for writer to finish writing")
-        rep.orchestrator.wait_until_complete()
-        print(f"[NavSDGDemo] Detaching writer")
+        print(f"[NavSDGDemo] Destroying render products")
         if self._writer:
             self._writer.detach()
-        print(f"[NavSDGDemo] Destroying render products")
         for rp in self._render_products:
             rp.destroy()
         self._render_products.clear()
 
     def _run_sdg(self):
         if self._use_temp_rp:
-            print(f"[NavSDGDemo] Creating temporary render products for frame {self._frame_counter}")
             self._setup_render_products()
-        rep.orchestrator.step(rt_subframes=16)
+            # TODO OM-109114 - dummy step call because the first frame is not written
+            rep.orchestrator.step(rt_subframes=16, pause_timeline=False)
+        rep.orchestrator.step(rt_subframes=16, pause_timeline=False)
+        rep.orchestrator.wait_until_complete()
         if self._use_temp_rp:
-            print(f"[NavSDGDemo] Destroying temporary render products for frame {self._frame_counter}")
             self._destroy_render_products()
 
     async def _run_sdg_async(self):
         if self._use_temp_rp:
             self._setup_render_products()
-        await rep.orchestrator.step_async(rt_subframes=16)
+            # TODO OM-109114 - dummy step call because the first frame is not written
+            await rep.orchestrator.step_async(rt_subframes=16, pause_timeline=False)
+        await rep.orchestrator.step_async(rt_subframes=16, pause_timeline=False)
+        await rep.orchestrator.wait_until_complete_async()
         if self._use_temp_rp:
             self._destroy_render_products()
 
@@ -284,20 +289,19 @@ class NavSDGDemo:
             self._load_next_env()
         # Set a new random distance from which to take capture the next frame
         self._trigger_distance = random.uniform(1.75, 2.5)
-        self._in_sdg_state = False
         self._timeline.play()
+        self._timeline_sub = self._timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
+            int(omni.timeline.TimelineEventType.CURRENT_TIME_TICKED), self._on_timeline_event
+        )
 
-    def _on_physics_step(self, dt):
-        if self._in_sdg_state:
-            return
+    def _on_timeline_event(self, e: carb.events.IEvent):
         carter_loc = self._carter_chassis.GetAttribute("xformOp:translate").Get()
         dolly_loc = self._dolly.GetAttribute("xformOp:translate").Get()
         dist = (Gf.Vec2f(dolly_loc[0], dolly_loc[1]) - Gf.Vec2f(carter_loc[0], carter_loc[1])).GetLength()
         if dist < self._trigger_distance:
             print(f"[NavSDGDemo] Capturing frame no. {self._frame_counter}")
-            # Pausing the timeline has a delay, so we set a flag to avoid triggers durint the data capture
             self._timeline.pause()
-            self._in_sdg_state = True
+            self._timeline_sub.unsubscribe()
             if self._is_running_in_script_editor():
                 import asyncio
 
@@ -328,6 +332,7 @@ nav_demo.start(
     env_urls=ENV_URLS,
     env_interval=args.env_interval,
     use_temp_rp=args.use_temp_rp,
+    seed=124,
 )
 
 while simulation_app.is_running() and nav_demo.is_running():
