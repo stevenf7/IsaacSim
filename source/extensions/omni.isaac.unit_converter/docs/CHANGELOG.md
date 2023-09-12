@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.7] - 2023-09-11
+### Fixed
+- UsdLux api change from Light to LightApi
+
 ## [0.1.6] - 2023-02-08
 ### Fixed
 - included payloads as well as references when scaling

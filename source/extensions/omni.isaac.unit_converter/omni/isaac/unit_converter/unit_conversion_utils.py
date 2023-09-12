@@ -306,12 +306,12 @@ def set_stage_meters_per_unit(
         #     if len(str(prim.GetPath()).split("/")) > 2:
         #         deltas.add("/" + str(prim.GetPath()).split("/")[1])
         # print(prim.GetPrimStack())
-        if UsdPhysics.Joint(prim) or UsdGeom.Camera(prim) or UsdLux.Light(prim):
+        if UsdPhysics.Joint(prim) or UsdGeom.Camera(prim) or UsdLux.LightAPI(prim):
             for child in Usd.PrimRange(prim):
                 if child != prim:
                     print(child)
                     ignore_prim.add(child)
-        if stage_recursive and not (UsdPhysics.Joint(prim) or UsdGeom.Camera(prim) or UsdLux.Light(prim)):
+        if stage_recursive and not (UsdPhysics.Joint(prim) or UsdGeom.Camera(prim) or UsdLux.LightAPI(prim)):
             for layer in prim.GetPrimStack():
                 if (
                     layer.layer.identifier != stage.GetRootLayer().identifier
@@ -361,7 +361,7 @@ def set_stage_meters_per_unit(
             scale_mesh(prim, scale, add_missing_scale)
             for child in Usd.PrimRange(prim):
                 ignore_prim.add(child)
-        if UsdLux.Light(prim) and prim not in ignore_prim:
+        if UsdLux.LightAPI(prim) and prim not in ignore_prim:
             scale_mesh(prim, scale, add_missing_scale)
         if UsdGeom.Cube(prim):
             scale_cube(prim, scale, make_delta)
