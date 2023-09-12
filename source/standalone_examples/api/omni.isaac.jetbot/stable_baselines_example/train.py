@@ -9,11 +9,9 @@
 
 import argparse
 
+import carb
 import torch as th
 from env import JetBotEnv
-from stable_baselines3 import PPO
-from stable_baselines3.common.callbacks import CheckpointCallback
-from stable_baselines3.ppo import MlpPolicy
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
@@ -22,6 +20,24 @@ args, unknown = parser.parse_known_args()
 log_dir = "./cnn_policy"
 # set headles to false to visualize training
 my_env = JetBotEnv(headless=True)
+
+# in test mode we manually install sb3
+if args.test is True:
+    import omni.kit.pipapi
+
+    omni.kit.pipapi.install("stable-baselines3==2.0.0", module="stable_baselines3")
+
+# import stable baselines
+try:
+    from stable_baselines3 import PPO
+    from stable_baselines3.common.callbacks import CheckpointCallback
+    from stable_baselines3.ppo import MlpPolicy
+except Exception as e:
+    carb.log_error(e)
+    carb.log_error(
+        "please install stable-baselines3 in the current python environment or run the following to install into the builtin python environment ./python.sh -m pip install stable-baselines3 "
+    )
+    exit()
 
 
 policy_kwargs = dict(activation_fn=th.nn.ReLU, net_arch=[dict(vf=[128, 128, 128], pi=[128, 128, 128])])

@@ -7,6 +7,18 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+# import stable baselines
+import carb
+
+try:
+    from stable_baselines3 import PPO
+except Exception as e:
+    carb.log_error(e)
+    carb.log_error(
+        "please install stable-baselines3 in the current python environment or run the following to install into the builtin python environment ./python.sh -m pip install stable-baselines3 "
+    )
+    exit()
+
 # create isaac environment
 from omni.isaac.gym.vec_env import VecEnvBase
 
@@ -17,9 +29,6 @@ from cartpole_task import CartpoleTask
 
 task = CartpoleTask(name="Cartpole")
 env.set_task(task, backend="torch")
-
-# import stable baselines
-from stable_baselines3 import PPO
 
 # create agent from stable baselines
 model = PPO(

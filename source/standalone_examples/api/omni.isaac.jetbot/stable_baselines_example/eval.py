@@ -7,8 +7,18 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import carb
 from env import JetBotEnv
-from stable_baselines3 import PPO
+
+try:
+    from stable_baselines3 import PPO
+except Exception as e:
+    carb.log_error(e)
+    carb.log_error(
+        "please install stable-baselines3 in the current python environment or run the following to install into the builtin python environment ./python.sh -m pip install stable-baselines3 "
+    )
+    exit()
+
 
 policy_path = "./cnn_policy/jetbot_policy.zip"
 
