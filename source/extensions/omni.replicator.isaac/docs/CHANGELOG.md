@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.10.0] - 2023-09-12
+### Changed 
+- Improved pytorch writer performance
+
+
 ## [1.9.1] - 2023-08-08
 
 ### Fixed 
