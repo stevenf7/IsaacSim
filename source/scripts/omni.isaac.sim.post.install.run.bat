@@ -6,13 +6,13 @@ echo "Isaac Sim Post-Installation Script"
 echo Creating extension_examples symlink...
 cmd /C "%~dp0omni.isaac.sim.create_junction.bat" >%~dp0omni.isaac.sim.post.install.log 2>&1
 
-@REM Install default Python packages
-@REM @REM Run "setx ISAACSIM_SKIP_PIPINSTALL Y" to skip pip install step
-@If Not Defined ISAACSIM_SKIP_PIPINSTALL (
-    echo Installing Python packages... Please wait...
-    call "%~dp0python.bat" -m pip install -r "%~dp0requirements.txt" >>%~dp0omni.isaac.sim.post.install.log 2>&1
-    echo "Python packages installed." >>%~dp0omni.isaac.sim.post.install.log 2>&1
-)
+@REM @REM Install default Python packages
+@REM @REM @REM Run "setx ISAACSIM_SKIP_PIPINSTALL Y" to skip pip install step
+@REM @If Not Defined ISAACSIM_SKIP_PIPINSTALL (
+@REM     echo Installing Python packages... Please wait...
+@REM     call "%~dp0python.bat" -m pip install -r "%~dp0requirements.txt" >>%~dp0omni.isaac.sim.post.install.log 2>&1
+@REM     echo "Python packages installed." >>%~dp0omni.isaac.sim.post.install.log 2>&1
+@REM )
 
 @REM @REM Warm up shader cache
 @REM @REM Run "setx ISAACSIM_SKIP_WARMUP Y" to skip warm up
