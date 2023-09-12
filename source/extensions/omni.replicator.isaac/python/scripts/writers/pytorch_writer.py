@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import carb
 import torch
 import warp as wp
 from omni.replicator.core import AnnotatorRegistry, BackendDispatch, Writer, WriterRegistry
@@ -26,10 +27,10 @@ class PytorchWriter(Writer):
                           If not specified, the writer will not write rgb data as png and only ping the
                           listener with batched tensors.
         device (str): device in which the pytorch tensor data will reside. Can be "cpu", "cuda", or any
-                      other format that pytorch supports for devices.
+                      other format that pytorch supports for devices. Default is "cuda".
     """
 
-    def __init__(self, listener: PytorchListener, output_dir: str = None, device: str = "cpu"):
+    def __init__(self, listener: PytorchListener, output_dir: str = None, device: str = "cuda"):
         # If output directory is specified, writer will write annotated data to the given directory
         if output_dir:
             self.backend = BackendDispatch({"paths": {"out_dir": output_dir}})
@@ -54,10 +55,11 @@ class PytorchWriter(Writer):
         if self._output_dir:
             # Write RGB data to output directory as png
             self._write_rgb(data)
-        pytorch_rgb = self._convert_to_pytorch(data)
+        pytorch_rgb = self._convert_to_pytorch(data).to(self.device)
         self.listener.write_data({"pytorch_rgb": pytorch_rgb, "device": self.device})
         self._frame_id += 1
 
+    @carb.profiler.profile
     def _write_rgb(self, data: dict) -> None:
         for annotator in data.keys():
             if annotator.startswith("LdrColor"):
@@ -68,18 +70,16 @@ class PytorchWriter(Writer):
                     img_data = img_data.numpy()
                 self._backend.write_image(file_path, img_data)
 
+    @carb.profiler.profile
     def _convert_to_pytorch(self, data: dict) -> torch.Tensor:
         if data is None:
             raise Exception("Data is Null")
 
-        data_tensor = None
+        data_tensors = []
         for annotator in data.keys():
             if annotator.startswith("LdrColor"):
-                if data_tensor is None:
-                    data_tensor = torch.tensor(data[annotator], dtype=torch.int32, device=self.device).unsqueeze(0)
-                else:
-                    rgb_tensor = torch.tensor(data[annotator], dtype=torch.int32, device=self.device).unsqueeze(0)
-                    data_tensor = torch.cat((data_tensor, rgb_tensor), dim=0)
+                data_tensors.append(wp.to_torch(data[annotator]).unsqueeze(0))
+        data_tensor = torch.cat(data_tensors, dim=0)
         return data_tensor
 
 
