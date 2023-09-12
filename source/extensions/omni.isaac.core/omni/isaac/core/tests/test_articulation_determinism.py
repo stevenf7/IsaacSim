@@ -15,7 +15,7 @@ import omni.kit.test
 from omni.isaac.core import SimulationContext, World
 from omni.isaac.core.robots import Robot
 from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.utils.stage import open_stage_async, update_stage_async
+from omni.isaac.core.utils.stage import add_reference_to_stage, open_stage_async, update_stage_async
 from omni.isaac.core.utils.types import ArticulationAction
 
 
@@ -67,7 +67,9 @@ class TestArticulationDeterminism(omni.kit.test.AsyncTestCase):
         (result, error) = await open_stage_async(self._assets_root_path + "/Isaac/Robots/Franka/franka.usd")
         omni.usd.get_context().get_stage().SetTimeCodesPerSecond(60)
         robot_prim_path = "/panda"
-        World()  # Create a new default world to reset any physics settings.
+        my_world = World()  # Create a new default world to reset any physics settings.
+        await my_world.initialize_simulation_context_async()
+        await update_stage_async()
         # Start Simulation and wait
         self._timeline.play()
         await update_stage_async()
