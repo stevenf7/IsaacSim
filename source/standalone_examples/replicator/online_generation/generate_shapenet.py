@@ -232,7 +232,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
 
     def __next__(self):
         # Step - trigger a randomization and a render
-        self.rep.orchestrator.step()
+        self.rep.orchestrator.step(rt_subframes=4)
 
         # Collect Groundtruth
         gt = {
@@ -300,6 +300,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
 if __name__ == "__main__":
     "Typical usage"
     import argparse
+    import struct
 
     import matplotlib.pyplot as plt
 
@@ -336,7 +337,7 @@ if __name__ == "__main__":
 
     dataset = RandomObjects(args.root, args.categories, max_asset_size=args.max_asset_size)
     from omni.isaac.shapenet import utils
-    from omni.isaac.synthetic_utils import visualization
+    from omni.replicator.core import random_colours
 
     categories = [utils.LABEL_TO_SYNSET.get(c, c) for c in args.categories]
 
@@ -359,7 +360,11 @@ if __name__ == "__main__":
         axes[0].imshow(np_image)
 
         num_instances = len(target["boxes"])
-        colours = visualization.random_colours(num_instances)
+        # Create random colors for each instance as rgb float lists
+        colours = random_colours(num_instances, num_channels=3)
+        colours = colours.astype(float) / 255.0
+        colours = colours.tolist()
+
         overlay = np.zeros_like(np_image)
         for mask, colour in zip(target["masks"].cpu().numpy(), colours):
             overlay[mask, :3] = colour
@@ -367,7 +372,17 @@ if __name__ == "__main__":
         axes[1].imshow(overlay)
         mapping = {i + 1: cat for i, cat in enumerate(categories)}
         labels = [utils.SYNSET_TO_LABEL[mapping[label.item()]] for label in target["labels"]]
-        visualization.plot_boxes(ax, target["boxes"].tolist(), labels=labels, colours=colours)
+        for bb, label, colour in zip(target["boxes"].tolist(), labels, colours):
+            maxint = 2 ** (struct.Struct("i").size * 8 - 1) - 1
+            # if a bbox is not visible, do not draw
+            if bb[0] != maxint and bb[1] != maxint:
+                x = bb[0]
+                y = bb[1]
+                w = bb[2] - x
+                h = bb[3] - y
+                box = plt.Rectangle((x, y), w, h, fill=False, edgecolor=colour)
+                ax.add_patch(box)
+                ax.text(bb[0], bb[1], label, fontdict={"family": "sans-serif", "color": colour, "size": 10})
 
         plt.draw()
         plt.pause(0.01)

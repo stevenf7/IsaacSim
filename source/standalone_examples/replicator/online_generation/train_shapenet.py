@@ -36,10 +36,12 @@ def main(args):
 
     signal.signal(signal.SIGINT, handle_exit)
 
+    import struct
+
     import torch
     import torchvision
     from omni.isaac.shapenet import utils
-    from omni.isaac.synthetic_utils import visualization
+    from omni.replicator.core import random_colours
     from torch.utils.data import DataLoader
 
     # Setup data
@@ -100,7 +102,10 @@ def main(args):
 
                 score_filter = [i for i in range(len(pred["scores"])) if pred["scores"][i] > score_thresh]
                 num_instances = len(score_filter)
-                colours = visualization.random_colours(num_instances, enable_random=False)
+                # Create random colors for each instance as rgb float lists
+                colours = random_colours(num_instances, num_channels=3)
+                colours = colours.astype(float) / 255.0
+                colours = colours.tolist()
 
                 overlay = np.zeros_like(np_image)
                 for mask, colour in zip(pred["masks"], colours):
@@ -112,7 +117,17 @@ def main(args):
                 args.categories = [utils.LABEL_TO_SYNSET.get(c, c) for c in args.categories]
                 mapping = {i + 1: cat for i, cat in enumerate(args.categories)}
                 labels = [utils.SYNSET_TO_LABEL[mapping[label.item()]] for label in pred["labels"]]
-                visualization.plot_boxes(axes[1], pred["boxes"].cpu().numpy(), labels=labels, colours=colours)
+                for bb, label, colour in zip(pred["boxes"].cpu().numpy(), labels, colours):
+                    maxint = 2 ** (struct.Struct("i").size * 8 - 1) - 1
+                    # if a bbox is not visible, do not draw
+                    if bb[0] != maxint and bb[1] != maxint:
+                        x = bb[0]
+                        y = bb[1]
+                        w = bb[2] - x
+                        h = bb[3] - y
+                        box = plt.Rectangle((x, y), w, h, fill=False, edgecolor=colour)
+                        ax.add_patch(box)
+                        ax.text(bb[0], bb[1], label, fontdict={"family": "sans-serif", "color": colour, "size": 10})
 
                 plt.draw()
                 fig_name = os.path.join(out_dir, f"train_image_{i}.png")
