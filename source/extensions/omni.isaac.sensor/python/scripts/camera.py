@@ -15,6 +15,7 @@ import numpy as np
 import omni
 import omni.graph.core as og
 import omni.replicator.core as rep
+import omni.syntheticdata._syntheticdata as _syntheticdata
 from omni.isaac.core.prims.base_sensor import BaseSensor
 from omni.isaac.core.utils.carb import get_carb_setting
 from omni.isaac.core.utils.prims import (
@@ -203,15 +204,10 @@ class Camera(BaseSensor):
             self._camera_prim = UsdGeom.Camera(define_prim(prim_path=prim_path, prim_type="Camera"))
             if orientation is None:
                 orientation = [1, 0, 0, 0]
-        if render_product_path:
-            self._render_product_path = render_product_path
-            self.set_resolution(resolution)
-            set_camera_prim_path(self._render_product_path, prim_path)
-        else:
-            self._render_product = rep.create.render_product(prim_path, resolution=resolution)
-            self._render_product_path = self._render_product.path
-        self._rgb_annotator = rep.AnnotatorRegistry.get_annotator("rgb")
-        self._rgb_annotator.attach([self._render_product_path])
+        self._render_product_path = render_product_path
+        self._resolution = resolution
+        self._render_product = None
+        self._rgb_annotator = None
         self._supported_annotators = [
             "normals",
             "motion_vectors",
@@ -264,9 +260,12 @@ class Camera(BaseSensor):
         self._current_frame["rendering_time"] = 0
         self._current_frame["rendering_frame"] = 0
         self._core_nodes_interface = _omni_isaac_core_nodes.acquire_interface()
+        self._sdg_interface = _syntheticdata.acquire_syntheticdata_interface()
 
         self._elapsed_time = 0
         self._previous_time = None
+        self._og_controller = og.Controller()
+        self._sdg_graph_pipeline = self._og_controller.graph("/Render/PostProcess/SDGPipeline")
         return
 
     def __del__(self):
@@ -359,10 +358,26 @@ class Camera(BaseSensor):
             physics_sim_view (_type_, optional): _description_. Defaults to None.
         """
         BaseSensor.initialize(self, physics_sim_view=physics_sim_view)
+        if self._render_product_path:
+
+            self.set_resolution(self._resolution)
+            set_camera_prim_path(self._render_product_path, self.prim_path)
+        else:
+            self._render_product = rep.create.render_product(self.prim_path, resolution=self._resolution)
+            self._render_product_path = self._render_product.path
+        self._rgb_annotator = rep.AnnotatorRegistry.get_annotator("rgb")
+        self._fabric_time_annotator = rep.AnnotatorRegistry.get_annotator("ReferenceTime")
+        self._rgb_annotator.attach([self._render_product_path])
+        self._fabric_time_annotator.attach([self._render_product_path])
         self._acquisition_callback = (
-            omni.kit.app.get_app_interface()
-            .get_update_event_stream()
-            .create_subscription_to_pop(self._data_acquisition_callback)
+            omni.usd.get_context()
+            .get_rendering_event_stream()
+            .create_subscription_to_pop_by_type(
+                int(omni.usd.StageRenderingEventType.NEW_FRAME),
+                self._data_acquisition_callback,
+                name="omni.isaac.camera.acquisition_callback",
+                order=1000,
+            )
         )
         width, height = self.get_resolution()
         self._current_frame["rgba"] = self._backend_utils.create_zeros_tensor(
@@ -403,9 +418,14 @@ class Camera(BaseSensor):
     def resume(self) -> None:
         """resumes data collection and updating the data frame"""
         self._acquisition_callback = (
-            omni.kit.app.get_app_interface()
-            .get_update_event_stream()
-            .create_subscription_to_pop(self._data_acquisition_callback)
+            omni.usd.get_context()
+            .get_rendering_event_stream()
+            .create_subscription_to_pop_by_type(
+                int(omni.usd.StageRenderingEventType.NEW_FRAME),
+                self._data_acquisition_callback,
+                name="omni.isaac.camera.acquisition_callback",
+                order=0,
+            )
         )
         return
 
@@ -421,30 +441,25 @@ class Camera(BaseSensor):
         """
         return self._acquisition_callback is None
 
-    # TODO105 : ASYNCRENDERING VALIDATION
     def _data_acquisition_callback(self, event: carb.events.IEvent):
-        frame_number = (
-            og.Controller()
-            .node("/Render/PostProcess/SDGPipeline/PostProcessDispatcher")
-            .get_attribute("outputs:referenceTimeNumerator")
-            .get()
+        parsed_payload = self._sdg_interface.parse_rendered_simulation_event(
+            event.payload["product_path_handle"], event.payload["results"]
         )
-        current_time = self._core_nodes_interface.get_sim_time_at_swh_frame(frame_number)
-        if self._previous_time is not None:
-            # print("current time, previous time:",current_time, self._previous_time)
-            self._elapsed_time += current_time - self._previous_time
-
-        if self._frequency < 0 or self._elapsed_time >= self.get_dt():
-            # print("leftover time, elapsed:", current_time % self.get_dt(), self._elapsed_time)
-            self._elapsed_time = 0
-            self._current_frame["rendering_frame"] = frame_number
-            self._current_frame["rgba"] = self._rgb_annotator.get_data()
-            self._current_frame["rendering_time"] = current_time
-            for key in self._current_frame:
-                if key not in ["rgba", "rendering_time", "rendering_frame"]:
-                    # to be added: conversion to each backend
-                    self._current_frame[key] = self._custom_annotators[key].get_data()
-        self._previous_time = current_time
+        if parsed_payload[0] == self._render_product_path:
+            self._og_controller.evaluate_sync(graph_id=self._sdg_graph_pipeline)
+            frame_number = self._fabric_time_annotator.get_data()["referenceTimeNumerator"]
+            current_time = self._core_nodes_interface.get_sim_time_at_swh_frame(frame_number)
+            if self._previous_time is not None:
+                self._elapsed_time += current_time - self._previous_time
+            if self._frequency < 0 or self._elapsed_time >= self.get_dt():
+                self._elapsed_time = 0
+                self._current_frame["rendering_frame"] = frame_number
+                self._current_frame["rgba"] = self._rgb_annotator.get_data()
+                self._current_frame["rendering_time"] = current_time
+                for key in self._current_frame:
+                    if key not in ["rgba", "rendering_time", "rendering_frame"]:
+                        self._current_frame[key] = self._custom_annotators[key].get_data()
+            self._previous_time = current_time
         return
 
     def set_resolution(self, value: Tuple[int, int]) -> None:
@@ -1037,7 +1052,8 @@ class Camera(BaseSensor):
         Returns:
             float: Emulates sensor/film height on a camera.
         """
-        aperture = self.prim.GetAttribute("verticalAperture").Get() / 10.0
+        (width, height) = self.get_resolution()
+        aperture = (self.prim.GetAttribute("horizontalAperture").Get() / 10.0) * (float(width) / height)
         return aperture
 
     def set_vertical_aperture(self, value: float) -> None:
@@ -1354,7 +1370,7 @@ class Camera(BaseSensor):
             raise Exception("pinhole projection type is not set to be able to use get_intrinsics_matrix method.")
         focal_length = self.get_focal_length()
         horizontal_aperture = self.get_horizontal_aperture()
-        vertical_aperture = self.get_horizontal_aperture()
+        vertical_aperture = self.get_vertical_aperture()
         (width, height) = self.get_resolution()
         fx = width * focal_length / horizontal_aperture
         fy = height * focal_length / vertical_aperture

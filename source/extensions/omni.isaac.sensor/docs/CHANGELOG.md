@@ -1,5 +1,9 @@
 # Changelog
-
+## [9.6.2] - 2023-09-27
+### Changed
+- updated data acquisition callback for Camera objects to be on the next frame event
+- Used frameTime annotator instead of the dispather node inputs for better accuracy in the data acquisition callback
+- Moved initializing render products to the initialize method in Camera to reduce overhead and decoupling the usage of pose utils and render product related methods 
 ## [9.6.1] - 2023-09-26
 ### Fixed
 - Fixed bug with horizontal resolution divison
