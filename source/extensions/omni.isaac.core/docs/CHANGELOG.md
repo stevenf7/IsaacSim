@@ -1,5 +1,11 @@
 # Changelog
-## [2.7.5] - 2023-08-28
+
+## [2.7.6] - 2023-09-13
+### Fixed
+- None in numpy arrays in current numpy version 1.25.2 gets converted to nan, propagated this change to ArticulationController.apply_action 
+
+
+## [2.7.5] - 2023-09-12
 ### Changed
 - Changed get_world_pose fabric util to check for the attribute before getting it to avoid warnings
 

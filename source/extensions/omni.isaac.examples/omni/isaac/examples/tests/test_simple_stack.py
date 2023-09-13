@@ -53,7 +53,7 @@ class TestSimpleStackExampleExtension(omni.kit.test.AsyncTestCase):
         await self._sample._on_stacking_event_async()
         await update_stage_async()
         # run for 2500 frames and print time
-        for i in range(500):
+        for i in range(1000):
             await update_stage_async()
         pass
 

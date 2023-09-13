@@ -25,6 +25,7 @@ from omni.isaac.core.utils.stage import (
     get_current_stage,
     update_stage_async,
 )
+from omni.isaac.core.utils.types import ArticulationAction
 from pxr import PhysxSchema, UsdPhysics
 
 
@@ -56,6 +57,26 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
         franka.get_applied_action()
         await self._my_world.stop_async()
         self.assertTrue(franka.get_applied_action() is None)
+
+    async def test_apply_partial_articulation(self, add_view_to_scene=True):
+        World.clear_instance()
+        await create_new_stage_async()
+        self._my_world = World(stage_units_in_meters=1.0, backend="numpy", device="cpu")
+        await self._my_world.initialize_simulation_context_async()
+        await omni.kit.app.get_app().next_update_async()
+        self._my_world.scene.add_default_ground_plane()
+        assets_root_path = get_assets_root_path()
+        asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+        add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
+        my_franka = self._my_world.scene.add(Articulation(prim_path="/World/Franka", name="franka"))
+        await self._my_world.reset_async()
+        joint_positions = my_franka.get_joint_positions()
+        joint_targets = [None] * 9
+        joint_targets[7:] = joint_positions[7:]
+        my_franka.apply_action(ArticulationAction(joint_positions=joint_targets))
+        await update_stage_async()
+        await update_stage_async()
+        await self._my_world.stop_async()
 
     async def test_dof_efforts(self, add_view_to_scene=True):
         assets_root_path = get_assets_root_path()
