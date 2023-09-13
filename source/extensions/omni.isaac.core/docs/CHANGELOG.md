@@ -1,5 +1,9 @@
 # Changelog
-## [2.7.3] - 2023-08-28
+## [2.7.5] - 2023-08-28
+### Changed
+- Changed get_world_pose fabric util to check for the attribute before getting it to avoid warnings
+
+## [2.7.4] - 2023-08-28
 ### Changed
 - Added warnings to OgnIsaacReadFilePath
 
