@@ -1,0 +1,78 @@
+{
+    "AckermannSteering": {
+        "version": 1,
+        "description": "Ackermann Steering Geometry",
+        "language": "Python",
+        "categories": {
+            "isaacSim": "Ackermann steering for robots in Isaac Sim"
+        },
+        "metadata": {
+            "uiName": "Ackermann Steering"
+        },
+        "$comment": "",
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "The input execution"
+            },
+            "accel": {
+                "type": "double",
+                "description": "Desired acceleration for the robot"
+            },
+            "curvature": {
+                "type": "double",
+                "description": "Desired curvature for the robot, equal to 1/radius of curvature. By default it is positive for turning right and negative for turning left for front wheel drive"
+            },
+            "linearVelocity": {
+                "type": "vectord[3]",
+                "description": "Current linear velocity of the robot"
+            },
+            "wheelBase": {
+                "type": "double",
+                "description": "Distance between the front and rear axles of the robot"
+            },
+            "trackWidth": {
+                "type": "double",
+                "description": "Distance between the left and right rear wheels of the robot"
+            },
+            "turningWheelRadius": {
+                "type": "double",
+                "description": "Radius of the front wheels of the robot"
+            },
+            "maxWheelVelocity": {
+                "type": "double",
+                "description": "Maximum angular velocity of the robot wheel (rad/s)"
+            },
+            "invertCurvature": {
+                "type": "bool",
+                "description": "Flips the sign of the curvature, Set to true for rear wheel drive"
+            },
+            "maxWheelRotation": {
+                "type": "double",
+                "description": "Maximum angle of rotation for the front wheels in degrees"
+            },
+            "DT": {
+                "type": "double",
+                "description": "Delta time for the simulation step"
+            }
+        },
+        "outputs": {
+            "execOut": {
+                "type": "execution",
+                "description": "The output execution"
+            },
+            "leftWheelAngle": {
+                "type": "double",
+                "description": "Angle for the left turning wheel in degrees"
+            },
+            "rightWheelAngle": {
+                "type": "double",
+                "description": "Angle for the right turning wheel in degrees"
+            },
+            "wheelRotationVelocity": {
+                "type": "double",
+                "description": "Angular velocity for the turning wheels in rad/s"
+            }
+        }
+    }
+}

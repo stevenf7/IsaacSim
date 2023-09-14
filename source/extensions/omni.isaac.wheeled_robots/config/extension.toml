@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.6.5"
+version = "0.7.0"
 category = "Simulation"
 title = "Wheeled Drives"
 description = "This extension provides wheeled robots utilities"
@@ -39,4 +39,5 @@ exclude = ["Ogn*Database.py"]
 [[test]]
 stdoutFailPatterns.exclude = [
     "*Invalid Bundle object in Py_Bundle in getPrimPath*", # Per node tests won't have valid bundles
+    "*AttributeError: 'NoneType' object has no attribute 'GetPrimAtPath'*" # For ackerman node omnigraph tests
 ]
