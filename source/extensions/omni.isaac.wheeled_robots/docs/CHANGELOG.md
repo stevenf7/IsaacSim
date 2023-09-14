@@ -1,4 +1,8 @@
 # Changelog
+## [0.7.0] - 2023-09-06
+### Added
+- Ackermann Steering OmniGraph node
+
 ## [0.6.5] - 2023-08-10
 ### Fixed
 - Changed robot prim types from bundle to target in Omnigraph
