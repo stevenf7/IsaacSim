@@ -7,6 +7,8 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+from __future__ import annotations
+
 import builtins
 import gc
 
@@ -156,29 +158,14 @@ class SimulationContext:
         self._physics_sim_view = None
         return
 
-    def __new__(
-        cls,
-        physics_dt: Optional[float] = None,
-        rendering_dt: Optional[float] = None,
-        stage_units_in_meters: Optional[float] = None,
-        physics_prim_path: str = "/physicsScene",
-        sim_params: dict = None,
-        set_defaults: bool = True,
-        backend: str = "numpy",
-        device: Optional[str] = None,
-    ) -> None:
-        """[summary]
-
-        Args:
-            physics_dt (float, optional): [description]. Defaults to 1.0 / 60.0.
-            rendering_dt (float, optional): [description]. Defaults to 1.0 / 60.0.
-            stage_units_in_meters (float, optional): [description]. Defaults to 1.0.
+    def __new__(cls, *args, **kwargs) -> SimulationContext:
+        """Makes the class a singleton.
 
         Returns:
-            [type]: [description]
+            SimulationContext: The instance of the simulation context.
         """
         if SimulationContext._instance is None:
-            SimulationContext._instance = object.__new__(cls)
+            SimulationContext._instance = super(SimulationContext, cls).__new__(cls)
         else:
             carb.log_info("Simulation Context is defined already, returning the previously defined one")
         return SimulationContext._instance

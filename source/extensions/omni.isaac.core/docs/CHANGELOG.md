@@ -12,6 +12,8 @@
 ## [2.7.4] - 2023-08-28
 ### Changed
 - Added warnings to OgnIsaacReadFilePath
+### Fixed
+- Fixed the ``__new__`` method in the :class:`SimulationContext` class to work for inherited class.
 
 ## [2.7.3] - 2023-08-28
 ### Fixed
@@ -28,10 +30,8 @@
 
 
 ## [2.7.1] - 2023-08-16
-
 ### Fixed
 - Vertical Aperture used from reading the horizonal aperture usd property and multiplying it by resolution ratio to conform to the square pixels asumption in place. (setting and getting intrinsics in viewports utils)
-
 
 ## [2.7.0] - 2023-08-11
 ### Added
