@@ -185,8 +185,10 @@ class Extension(omni.ext.IExt):
             MenuItemDescription(name="Kinova", sub_menu=menu_kinova),
             make_menu_item_description(
                 ext_id,
-                "Kuka 210",
-                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Kuka/KR210/kr210.usd", "/Kuka_210"),
+                "Kuka KR210_L150",
+                lambda a=weakref.proxy(self): a.create_asset(
+                    "/Isaac/Robots/Kuka/KR210_L150/kr210_l150.usd", "/kuka_kr210"
+                ),
             ),
             make_menu_item_description(
                 ext_id,

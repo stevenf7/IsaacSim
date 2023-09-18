@@ -345,7 +345,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
     async def test_rmpflow_kr210(self):
         assets_root_path = get_assets_root_path()
-        usd_path = assets_root_path + "/Isaac/Robots/Kuka/KR210/kr210.usd"
+        usd_path = assets_root_path + "/Isaac/Robots/Kuka/KR210_L150/kr210_l150.usd"
         robot_name = "Kuka_KR210"
         robot_prim_path = "/kuka_kr210"
 
