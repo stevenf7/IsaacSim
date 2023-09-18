@@ -1,4 +1,8 @@
 # Changelog
+## [5.1.1] - 2023-09-13
+### Fixed
+- Updated path of Kuka KR210 robot in test case to match update to Nucleus Server
+
 ## [5.1.0] - 2023-08-21
 ### Fixed
 - lula.TaskSpaceTrajectoryGenerator.compute_task_space_trajectory_from_path_spec() was not able to handle lula composite path specs

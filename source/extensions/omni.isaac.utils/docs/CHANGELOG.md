@@ -1,4 +1,8 @@
 # Changelog
+## [0.5.1] - 2023-09-13
+### Fixed
+- Updated path of Kuka KR210 robot to match update to Nucleus Server
+- Updated name of Kuka KR210 robot in Create menu.
 
 ## [0.5.0] - 2023-09-06
 ### Changed
