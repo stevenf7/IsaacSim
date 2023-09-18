@@ -43,22 +43,22 @@ class TestScene(omni.kit.test.AsyncTestCase):
     @unittest.expectedFailure
     async def test_clear_instance(self):
         await create_new_stage_async()
-        my_world = World()
+        my_world = World(device="cpu")
         self.assertTrue(my_world.instance() is not None)
 
         my_world.clear_instance()
 
         # All future creations of World() call __del__ right after __new__
-        my_world = World()
+        my_world = World(device="cpu")
         self.assertTrue(my_world.instance() is not None)
 
         # The test doesn't get here, but part of the bug is that all future world creations will self delete.
-        my_world = World()
+        my_world = World(device="cpu")
         self.assertTrue(my_world.instance() is not None)
 
     async def test_create_new_stage(self):
         await create_new_stage_async()
-        my_world = World()
+        my_world = World(device="cpu")
         await my_world.initialize_simulation_context_async()
         await omni.kit.app.get_app().next_update_async()
         cube_1 = my_world.scene.add(
@@ -99,7 +99,7 @@ class TestScene(omni.kit.test.AsyncTestCase):
 
     async def test_clear_world(self):
         await create_new_stage_async()
-        my_world = World(stage_units_in_meters=1.0)
+        my_world = World(stage_units_in_meters=1.0, device="cpu")
         await my_world.initialize_simulation_context_async()
         await update_stage_async()
         my_world.scene.add_default_ground_plane()
@@ -150,7 +150,7 @@ class TestScene(omni.kit.test.AsyncTestCase):
 
     async def test_clear_scene_ref(self):
         await create_new_stage_async()
-        my_world = World(stage_units_in_meters=1.0)
+        my_world = World(stage_units_in_meters=1.0, device="cpu")
         await my_world.initialize_simulation_context_async()
         await update_stage_async()
         my_world.scene.add_default_ground_plane()
@@ -173,7 +173,7 @@ class TestScene(omni.kit.test.AsyncTestCase):
 
     async def test_clear_prim_view(self):
         await create_new_stage_async()
-        my_world = World(stage_units_in_meters=1.0)
+        my_world = World(stage_units_in_meters=1.0, device="cpu")
         await my_world.initialize_simulation_context_async()
         await update_stage_async()
         my_world.scene.add_default_ground_plane()
