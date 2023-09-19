@@ -1,4 +1,8 @@
 # Changelog
+## [2.7.7] - 2023-09-18
+### Fixed
+- GeometryPrimView.is_collision_enabled to read values set through USD and not the class
+- GeometryPrimView.get_physics_visual_materials typo to use physics material rather than visual material
 
 ## [2.7.6] - 2023-09-13
 ### Fixed

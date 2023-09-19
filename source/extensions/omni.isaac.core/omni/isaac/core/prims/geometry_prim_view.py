@@ -492,7 +492,10 @@ class GeometryPrimView(XFormPrimView):
         indices = self._backend_utils.to_list(indices)
         for i in indices:
             if self._collision_apis[i] is None:
-                continue
+                if self.prims[i].HasAPI(UsdPhysics.CollisionAPI):
+                    self._collision_apis[i] = UsdPhysics.CollisionAPI(self.prims[i])
+                else:
+                    continue
             self._collision_apis[i].GetCollisionEnabledAttr().Set(False)
         return
 
@@ -511,12 +514,16 @@ class GeometryPrimView(XFormPrimView):
             Union[np.ndarray, torch.Tensor, wp.indexedarray]: True if collision is enabled. Shape is (M,).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        collisions = np.zeros(shape=indices.shape[0], dtype=np.bool, device=self._device)
+        collisions = np.zeros(shape=indices.shape[0], dtype=np.bool)
         write_idx = 0
         indices = self._backend_utils.to_list(indices)
         for i in indices:
             if self._collision_apis[i] is None:
-                collisions[write_idx] = False
+                if self.prims[i].HasAPI(UsdPhysics.CollisionAPI):
+                    self._collision_apis[i] = UsdPhysics.CollisionAPI(self.prims[i])
+                    collisions[write_idx] = self._collision_apis[i].GetCollisionEnabledAttr().Get()
+                else:
+                    collisions[write_idx] = False
             else:
                 collisions[write_idx] = self._collision_apis[i].GetCollisionEnabledAttr().Get()
             write_idx += 1
@@ -658,7 +665,7 @@ class GeometryPrimView(XFormPrimView):
                 else:
                     self._binding_apis[i] = UsdShade.MaterialBindingAPI.Apply(self._prims[i])
             if self._applied_physics_materials[i] is not None:
-                result[write_idx] = self._applied_visual_materials[i]
+                result[write_idx] = self._applied_physics_materials[i]
                 write_idx += 1
             else:
                 physics_binding = self._binding_apis[i].GetDirectBinding(materialPurpose="physics")
