@@ -54,7 +54,7 @@ public:
         }
         else
         {
-            db.logError("Please specify atleast one target prim for the GXF pose tree component");
+            db.logError("Please specify at least one target prim for the GXF pose tree component");
             return false;
         }
 

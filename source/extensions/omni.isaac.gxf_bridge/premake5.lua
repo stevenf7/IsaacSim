@@ -14,7 +14,7 @@ project_ext_plugin(ext, "omni.isaac.gxf_bridge.plugin")
     add_ogn_dependencies(ogn, {"python/nodes"})
 
     include_physx()
-    -- NOTE: CUDA dependencies must be brought in via isaac_gxf package, due to patch made to CUDA cmath in Isaac to 
+    -- NOTE: CUDA dependencies must be brought in via isaac_gxf package, due to patch made to CUDA cmath in Isaac to
     --       ensure C++17 compatibility
 
     includedirs {
@@ -52,7 +52,7 @@ project_ext_plugin(ext, "omni.isaac.gxf_bridge.plugin")
 
     links {
         "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace", "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
-        "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "omni.usd", 
+        "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "omni.usd",
         "rangeSensorSchema", "physxSchema"
     }
     links{
@@ -78,8 +78,8 @@ project_ext_bindings {
 }
 
 repo_build.prebuild_link {
-    { "python/scripts", ext.target_dir.."/omni/isaac/gxf_bridge/scripts" },
-    { "python/tests", ext.target_dir.."/omni/isaac/gxf_bridge/tests" },
+    { "python/scripts", ogn.python_target_path.."/scripts" },
+    { "python/tests", ogn.python_tests_target_path },
     { "docs", ext.target_dir.."/docs" },
     { "data", ext.target_dir.."/data" },
     { "%{root}/_build/target-deps/isaac_gxf/lib", ext.target_dir.."/lib/" },
@@ -87,5 +87,5 @@ repo_build.prebuild_link {
 }
 
 repo_build.prebuild_copy {
-    { "python/*.py", ext.target_dir.."/omni/isaac/gxf_bridge" },
+    { "python/__init__.py", ogn.python_target_path },
 }

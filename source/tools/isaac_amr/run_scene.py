@@ -8,14 +8,12 @@
 #
 
 import argparse
-import os
 import sys
 import time
 
 import carb
 import numpy as np
-import yaml
-from isaac_amr import *
+from isaac_amr import GXF_BRIDGE_EXTENSION_NAME, STATUS_FILE_PATH
 from omni.isaac.kit import SimulationApp
 
 
@@ -50,7 +48,7 @@ def main():
         help="TCP server port - for scenes creating GXF app from OmniGraph.",
     )
     parser.add_argument(
-        "--robot", choices=ROBOT_ASSET_PATHS.keys(), default=None, help="Type of robot to place or move in scene"
+        "--robot", choices=["carter_v2_3"], default=None, help="Type of robot to place or move in scene"
     )
     parser.add_argument(
         "--initial-pos",
@@ -72,16 +70,14 @@ def main():
     # Create simulation application
     simulation_app = SimulationApp({"renderer": "RayTracedLighting", "headless": args.headless})
 
-    import omni
-    import omni.kit.commands
     from omni.isaac.core import SimulationContext
-    from omni.isaac.core.prims import XFormPrim
-    from omni.isaac.core.utils import extensions, nucleus, prims, rotations
-    from omni.isaac.core.utils.stage import add_reference_to_stage, traverse_stage
+    from omni.isaac.core.utils import extensions, nucleus, rotations
+    from omni.isaac.core.utils.stage import add_reference_to_stage
     from pxr import Gf
 
     # Enable GXF bridge extension
     extensions.enable_extension(GXF_BRIDGE_EXTENSION_NAME)
+    from omni.isaac.gxf_bridge import AmrAssetTier, GxfRobot, GxfRobotType
 
     # Open the specified USD scene
     assets_root_path = nucleus.get_assets_root_path()
@@ -92,7 +88,8 @@ def main():
         simulation_app.close()
         sys.exit(1)
 
-    result = omni.usd.get_context().open_stage(assets_root_path + args.scene, None)
+    scene_path = assets_root_path + args.scene
+    result = add_reference_to_stage(usd_path=scene_path, prim_path="/World")
     if not result:
         with open(args.status_file, "w") as status_file:
             status_file.write("Could not find provided scene in Nucleus.\n")
@@ -115,106 +112,38 @@ def main():
         physics_dt=1.0 / args.rate, rendering_dt=1.0 / args.rate, stage_units_in_meters=1.0
     )
 
-    # Get path to GXF bridge extension
-    ext_manager = omni.kit.app.get_app().get_extension_manager()
-    ext_id = ext_manager.get_enabled_extension_id(GXF_BRIDGE_EXTENSION_NAME)
-    gxf_extension_path = ext_manager.get_extension_path(ext_id)
-    gxf_extension_lib = os.path.join(gxf_extension_path, "lib")
-    gxf_app_config_path = os.path.join(gxf_extension_path, "data", "config")
-
-    # Get path to directory containing this script
-    app_folder = carb.tokens.get_tokens_interface().resolve("${app}/../")
-    package_path = os.path.abspath(app_folder)
-    script_path = os.path.join(package_path, "tools", "isaac_amr")
-
     # Place or move robot in scene:
     if args.robot:
-        robot_prim_path = ROBOT_PRIM_PATHS[args.robot]
-        if args.use_release_assets:
-            robot_asset_path = ROBOT_ASSET_PATHS[args.robot]
+        prim_path = "/" + args.robot
+
+        if args.robot == "carter_v2_3":
+            robot_type = GxfRobotType.CARTER_V2_3
+        elif args.robot == "carter_v2_4":
+            robot_type = GxfRobotType.CARTER_V2_4
         else:
-            robot_asset_path = ROBOT_ASSET_PATHS_RELEASE_CANDIDATE[args.robot]
-        if not prims.get_prim_at_path(robot_prim_path):
-            # Create the robot in the scene
-            add_reference_to_stage(usd_path=f"{assets_root_path}{robot_asset_path}", prim_path=robot_prim_path)
-        # move the robot
-        _ = XFormPrim(
-            prim_path=robot_prim_path,
-            translation=np.array(args.initial_pos + [0.0]),
-            orientation=rotations.gf_rotation_to_np_array(Gf.Rotation(Gf.Vec3d(0, 0, 1), args.initial_yaw)),
-        )
-
-    if not args.yaml_path:
-        # Iterate over prims in the stage to see if a GXF YAML node is present
-        gxf_yaml_node_present = False
-        for stage_prim in traverse_stage():
-            if stage_prim.HasAttribute("node:type"):
-                type_attr = stage_prim.GetAttribute("node:type")
-                value = type_attr.Get()
-                if "omni.isaac.gxf_bridge.GXFYAML" in value:
-                    gxf_yaml_node_present = True
-                    graph = list(yaml.safe_load_all(stage_prim.GetAttribute("inputs:yaml").Get()))
-                    if set_yaml_addr_port(graph, args.tcp_server_addr, args.tcp_server_port):
-                        stage_prim.GetAttribute("inputs:yaml").Get()
-                        carb.log_info(
-                            f"Set TcpServer component address to {args.tcp_server_addr}, port to {args.tcp_server_port}."
-                        )
-                    stage_prim.GetAttribute("inputs:yaml").Set(yaml.dump_all(graph))
-                    if not os.path.exists("tmp"):
-                        os.mkdir("tmp")
-                    combined_yaml_path = os.path.join("tmp", "combined_graph.yaml")
-                    with open(combined_yaml_path, "w") as cgy:
-                        cgy.write(yaml.dump_all(graph))
-                    break
-        if not gxf_yaml_node_present:
-            carb.log_error("No GXF graph YAMLs provided as arguments, and no GXF YAML node found in loaded scene.")
+            carb.log_error(f"Incorrect robot_type provided: {args.robot}.")
             with open(args.status_file, "w") as status_file:
-                status_file.write(
-                    "No GXF graph YAMLs provided as arguments, and no GXF YAML node found in loaded scene.\n"
-                )
+                status_file.write(f"Incorrect robot_type provided: {args.robot}.")
             simulation_app.close()
             sys.exit(1)
-    else:
-        # Assemble list of GXF app YAMLs
-        gxf_app_yaml_paths = []
-        if args.use_default_atlas:
-            gxf_app_yaml_paths.append(os.path.join(script_path, DEFAULT_ATLAS_YAML))
-        if args.use_default_clock:
-            gxf_app_yaml_paths.append(os.path.join(script_path, DEFAULT_CLOCK_YAML))
-        gxf_app_yaml_paths.extend(args.yaml_path)
-        gxf_app_yaml_paths.append(os.path.join(gxf_app_config_path, DEFAULT_ALLOCATOR_YAML))
 
-        # Combine YAMLs into a single graph
-        combined_yaml = []
-        for yaml_path in gxf_app_yaml_paths:
-            with open(yaml_path, "r") as yp:
-                combined_yaml.extend(yaml.safe_load_all(yp))
+        if args.use_release_assets:
+            asset_tier = AmrAssetTier.EXTERNAL_RELEASE
+        else:
+            asset_tier = AmrAssetTier.RELEASE_CANDIDATE
 
-        # Update TCP server port and address
-        if set_yaml_addr_port(combined_yaml, args.tcp_server_addr, args.tcp_server_port):
-            carb.log_info(f"Set TcpServer component address to {args.tcp_server_addr}, port to {args.tcp_server_port}.")
-
-        # Write combined & updated YAML into a single file
-        if not os.path.exists("tmp"):
-            os.mkdir("tmp")
-        combined_yaml_path = os.path.join("tmp", "combined_graph.yaml")
-        with open(combined_yaml_path, "w") as cgy:
-            cgy.write(yaml.safe_dump_all(combined_yaml))
-
-        # Create GXF application
-        result, status = omni.kit.commands.execute(
-            "RobotEngineBridgeGxfCreateApplication",
-            base_path=gxf_extension_lib,
-            manifest_file="manifest.yaml",
-            graph_files=[combined_yaml_path],
+        translation = np.array(args.initial_pos + [0.0])
+        orientation = rotations.gf_rotation_to_np_array(Gf.Rotation(Gf.Vec3d(0, 0, 1), args.initial_yaw))
+        # Add robot
+        robot = GxfRobot(
+            prim_path=prim_path,
+            name=args.robot,
+            robot_type=robot_type,
+            asset_tier=asset_tier,
+            translation=translation,
+            orientation=orientation,
         )
-
-        if not status:
-            carb.log_error("Failed to create GXF application, exiting.")
-            with open(args.status_file, "w") as status_file:
-                status_file.write("Failed to create GXF application, exiting.\n")
-            simulation_app.close()
-            sys.exit(1)
+        robot.set_tcp_server_params(address=args.tcp_server_addr, port=args.tcp_server_port)
 
     simulation_app.update()
     simulation_app.update()
@@ -233,10 +162,7 @@ def main():
             time.sleep(0.01)
             frame = frame + 1
 
-    # Bring down the GXF application and close the simulation
-    if args.yaml_path:
-        result, status = omni.kit.commands.execute("RobotEngineBridgeGxfDestroyApplication")
-
+    simulation_context.stop()
     simulation_app.close()
 
 
