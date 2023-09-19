@@ -8,7 +8,7 @@
 #
 import copy
 import math
-from typing import List, Optional, Sequence, Tuple
+from typing import List, Optional, Sequence, Tuple, Callable
 
 import carb
 import numpy as np
@@ -47,6 +47,75 @@ W_U_TRANSFORM = np.array([[0, 0, -1, 0], [-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 
 # from World camera convention to USD camera convention
 U_W_TRANSFORM = np.array([[0, -1, 0, 0], [0, 0, 1, 0], [-1, 0, 0, 0], [0, 0, 0, 1]])
 
+def point_to_theta(camera_matrix, x, y):
+    """This helper function returns the theta angle of the point."""
+    ((fx,_,cx),(_,fy,cy),(_,_,_)) = camera_matrix
+    pt_x, pt_y, pt_z  = (x-cx)/fx, (y-cy)/fy, 1.0
+    r2 = pt_x * pt_x + pt_y * pt_y
+    theta = np.arctan2(np.sqrt(r2), 1.0)
+    return theta
+
+
+def distort_point_rational_polynomial(camera_matrix, distortion_model, x, y):
+    """This helper function distorts point(s) using rational polynomial model.
+    It should be equivalent to the following reference that uses OpenCV:
+    
+    def distort_point_rational_polynomial(x, y)
+        import cv2
+        ((fx,_,cx),(_,fy,cy),(_,_,_)) = camera_matrix
+        pt_x, pt_y, pt_z  = (x-cx)/fx, (y-cy)/fy, np.full(x.shape, 1.0)
+        points3d = np.stack((pt_x, pt_y, pt_z), axis = -1)
+        rvecs, tvecs = np.array([0.0,0.0,0.0]), np.array([0.0,0.0,0.0])
+        cameraMatrix, distCoeffs = np.array(camera_matrix), np.array(distortion_coefficients)
+        points, jac = cv2.projectPoints(points3d, rvecs, tvecs, cameraMatrix, distCoeffs)
+        return np.array([points[:,0,0], points[:,0,1]])
+    """
+    ((fx,_,cx),(_,fy,cy),(_,_,_)) = camera_matrix
+    K, P = list(distortion_model[:2]) + list(distortion_model[4:]), list(distortion_model[2:4])
+    pt_x, pt_y  = (x-cx)/fx, (y-cy)/fy
+    r2 = pt_x * pt_x + pt_y * pt_y
+    r_x = pt_x * ((1 + K[0] * r2 + K[1] * r2 *r2 + K[2] * r2 * r2 * r2) /
+                (1 + K[3] * r2 + K[4] * r2 * r2 + K[5] * r2 * r2 * r2)) + \
+                2 * P[0] * pt_x * pt_y + P[1] * (r2 + 2 * pt_x * pt_x)
+
+    r_y = pt_y * ((1 + K[0] * r2 + K[1] * r2 * r2 + K[2] * r2 * r2 * r2) /
+                (1 + K[3] * r2 + K[4] * r2 * r2 + K[5] * r2 * r2 * r2)) + \
+                2 * P[1] * pt_x * pt_y + P[0] * (r2 + 2 * pt_y * pt_y)
+    return np.array([fx * r_x + cx, fy * r_y + cy])
+
+
+def distort_point_kannala_brandt(camera_matrix, distortion_model, x, y):
+    """This helper function distorts point(s) using Kannala Brandt fisheye model.
+    It should be equivalent to the following reference that uses OpenCV:
+    
+    def distort_point_kannala_brandt2(camera_matrix, distortion_model, x, y):
+        import cv2
+        ((fx,_,cx),(_,fy,cy),(_,_,_)) = camera_matrix
+        pt_x, pt_y, pt_z  = (x-cx)/fx, (y-cy)/fy, np.full(x.shape, 1.0)
+        points3d = np.stack((pt_x, pt_y, pt_z), axis = -1)
+        rvecs, tvecs = np.array([0.0,0.0,0.0]), np.array([0.0,0.0,0.0])
+        cameraMatrix, distCoeffs = np.array(camera_matrix), np.array(distortion_model)
+        points, jac = cv2.fisheye.projectPoints(np.expand_dims(points3d, 1), rvecs, tvecs, cameraMatrix, distCoeffs)
+        return np.array([points[:,0,0], points[:,0,1]])
+    """
+    ((fx,_,cx),(_,fy,cy),(_,_,_)) = camera_matrix
+    pt_x, pt_y, pt_z  = (x-cx)/fx, (y-cy)/fy, 1.0
+    r2 = pt_x * pt_x + pt_y * pt_y
+    r = np.sqrt(r2)
+    theta = np.arctan2(r, 1.0)
+
+    t3 = theta * theta * theta
+    t5 = t3 * theta * theta
+    t7 = t5 * theta * theta
+    t9 = t7 * theta * theta
+    k1, k2, k3, k4 = list(distortion_model[:4])
+    theta_d = theta + k1 * t3 + k2 * t5 + k3 * t7 + k4 * t9
+
+    inv_r = 1.0/r  # if r > 1e-8 else 1.0
+    cdist = theta_d * inv_r # if r > 1e-8 else 1.0
+
+    r_x, r_y = pt_x * cdist, pt_y * cdist
+    return np.array([fx * r_x + cx, fy * r_y + cy])   
 
 class Camera(BaseSensor):
     """Provides high level functions to deal with a camera prim and its attributes/ properties.
@@ -1083,6 +1152,122 @@ class Camera(BaseSensor):
                 if polynomial[i]:
                     self.prim.GetAttribute("fthetaPoly" + (chr(ord("A") + i))).Set(float(polynomial[i]))
         return
+
+    def set_matching_fisheye_polynomial_properties(
+        self,
+        nominal_width: float,
+        nominal_height: float,
+        optical_centre_x: float,
+        optical_centre_y: float,
+        max_fov: Optional[float],
+        distortion_model: Sequence[float],
+        distortion_fn: Callable,
+    ) -> None:
+        """Approximates given distortion with ftheta fisheye polynomial coefficients.
+        Args:
+            nominal_width (float): Rendered Width (pixels)
+            nominal_height (float): Rendered Height (pixels)
+            optical_centre_x (float): Horizontal Render Position (pixels)
+            optical_centre_y (float): Vertical Render Position (pixels)
+            max_fov (Optional[float]): maximum field of view (pixels)
+            distortion_model (Sequence[float]): distortion model coefficients
+            distortion_fn (Callable): distortion function that takes points and returns distorted points
+        """
+        if "fisheye" not in self.get_projection_type():
+            raise Exception(
+                "fisheye projection type is not set to allow use set_matching_fisheye_polynomial_properties method."
+            )
+
+        cx, cy = optical_centre_x, optical_centre_y
+        fx = nominal_width * self.get_focal_length() / self.get_horizontal_aperture()
+        fy = nominal_height * self.get_focal_length() / self.get_vertical_aperture()
+        camera_matrix = np.array([[fx,.0,cx],[.0,fy,cy],[.0,.0,.0]])
+
+        # Fit the fTheta model for the points on the diagonals.
+        X = np.concatenate([np.linspace(0,nominal_width, nominal_width), 
+                            np.linspace(0, nominal_width, nominal_width)])
+        Y = np.concatenate([np.linspace(0,nominal_height, nominal_width), 
+                            np.linspace(nominal_height, 0, nominal_width)])
+        theta = point_to_theta(camera_matrix, X, Y)
+        r = np.linalg.norm(distortion_fn(camera_matrix, distortion_model, X, Y) - np.array([[cx], [cy]]), axis=0)
+        fthetaPoly = np.polyfit(r, theta, deg=4)
+
+        for i, coefficient in enumerate(fthetaPoly[::-1]):      # Reverse the order of the coefficients
+            self.prim.GetAttribute("fthetaPoly" + (chr(ord("A") + i))).Set(float(coefficient))
+
+        self.prim.GetAttribute("fthetaWidth").Set(nominal_width)
+        self.prim.GetAttribute("fthetaHeight").Set(nominal_height)
+        self.prim.GetAttribute("fthetaCx").Set(optical_centre_x)
+        self.prim.GetAttribute("fthetaCy").Set(optical_centre_y)
+
+        if max_fov:
+            self.prim.GetAttribute("fthetaMaxFov").Set(max_fov)
+        return
+
+
+    def set_rational_polynomial_properties(
+        self,
+        nominal_width: float,
+        nominal_height: float,
+        optical_centre_x: float,
+        optical_centre_y: float,
+        max_fov: Optional[float],
+        distortion_model: Sequence[float],
+    ) -> None:
+        """Approximates rational polynomial distortion with ftheta fisheye polynomial coefficients.
+        Args:
+            nominal_width (float): Rendered Width (pixels)
+            nominal_height (float): Rendered Height (pixels)
+            optical_centre_x (float): Horizontal Render Position (pixels)
+            optical_centre_y (float): Vertical Render Position (pixels)
+            max_fov (Optional[float]): maximum field of view (pixels)
+            distortion_model (Sequence[float]): rational polynomial distortion model coefficients 
+                                                (k1, k2, p1, p2, k3, k4, k5, k6)
+        """
+
+        self.set_matching_fisheye_polynomial_properties(
+            nominal_width, nominal_height, optical_centre_x, optical_centre_y, max_fov, distortion_model,
+            distort_point_rational_polynomial
+        )
+
+        # Store the original distortion model parameters, the order is: k1, k2, k3, k4, k5, p1, p2
+        K, P = list(distortion_model[:2]) + list(distortion_model[4:]), list(distortion_model[2:4])
+        self.prim.CreateAttribute("physicalDistortionModel", Sdf.ValueTypeNames.String).Set("rationalPolynomial")
+        self.prim.CreateAttribute("physicalDistortionCoefficients", Sdf.ValueTypeNames.FloatArray, False).Set(K + P)
+        return
+
+    def set_kannala_brandt_properties(
+        self,
+        nominal_width: float,
+        nominal_height: float,
+        optical_centre_x: float,
+        optical_centre_y: float,
+        max_fov: Optional[float],
+        distortion_model: Sequence[float],
+    ) -> None:
+        """Approximates kannala brandt distortion with ftheta fisheye polynomial coefficients.
+        Args:
+            nominal_width (float): Rendered Width (pixels)
+            nominal_height (float): Rendered Height (pixels)
+            optical_centre_x (float): Horizontal Render Position (pixels)
+            optical_centre_y (float): Vertical Render Position (pixels)
+            max_fov (Optional[float]): maximum field of view (pixels)
+            distortion_model (Sequence[float]): kannala brandt generic distortion model coefficients 
+                                                (k1, k2, k3, k4)
+        """
+
+        self.set_matching_fisheye_polynomial_properties(
+            nominal_width, nominal_height, optical_centre_x, optical_centre_y, max_fov, distortion_model,
+            distort_point_kannala_brandt
+        )
+        
+        # Store the original distortion model parameters
+        K, P = list(distortion_model[:2]) + list(distortion_model[4:]), list(distortion_model[2:4])
+        self.prim.CreateAttribute("physicalDistortionModel", Sdf.ValueTypeNames.String).Set("kannalaBrandt")
+        self.prim.CreateAttribute("physicalDistortionCoefficients", Sdf.ValueTypeNames.FloatArray, False).Set(
+            distortion_model)
+        return
+
 
     def get_fisheye_polynomial_properties(self) -> Tuple[float, float, float, float, float, List]:
         """

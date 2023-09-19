@@ -1,4 +1,10 @@
 # Changelog
+## [9.4.0] - 2023-09-18
+### Added 
+- Support, samples for OpenCV calibration models
+### Changed
+- Added Kannala Brandt and Rational Polynomial tests for the camera properties test
+
 ## [9.3.0] - 2023-09-06
 ### Changed
 - Updated USD path for NVIDIA Hawk RGBD sensor
@@ -34,6 +40,7 @@
 - on CreateRTXLidarScanBuffer returnsPerScan output to numReturnsPerScan
 ### Fixed
 -  CreateRTXLidarScanBuffer works when input data wraps around the output buffer
+
 ## [8.1.2] - 2023-08-28
 ### Changed
 - Added standard out fail pattern for the expected no prim found edge case for the ogn test
