@@ -74,7 +74,7 @@ public:
                 if (!state.mFoundLevelChannelId)
                 {
 
-                    if (abs(lidarReturns.elevations[pointIdx]) > abs(state.mElevationDiff))
+                    if (abs(lidarReturns.elevations[pointIdx]) >= abs(state.mElevationDiff))
                     {
                         state.mFoundLevelChannelId = true;
                         return true;
@@ -90,14 +90,15 @@ public:
 
                         if (!state.mFoundStartAzimuth)
                         {
-                            if (lidarReturns.azimuths[pointIdx] > state.mStartAzimuth)
+                            if (lidarReturns.azimuths[pointIdx] >= state.mStartAzimuth)
                             {
                                 state.mFoundStartAzimuth = true;
 
                                 state.mRanges.clear();
                                 state.mIntensities.clear();
-
-                                state.mRanges.push_back(lidarReturns.distances[pointIdx]);
+                                float range = lidarReturns.distances[pointIdx] *
+                                              ::cosf(Deg2Rad(lidarReturns.elevations[pointIdx]));
+                                state.mRanges.push_back(range);
                                 state.mIntensities.push_back((uint8_t)(lidarReturns.intensities[pointIdx] * 255));
                             }
                             state.mStartAzimuth = lidarReturns.azimuths[pointIdx];
@@ -105,7 +106,7 @@ public:
                         }
                         else
                         {
-                            if (lidarReturns.azimuths[pointIdx] < state.mPrevAzimuth)
+                            if (lidarReturns.azimuths[pointIdx] <= state.mPrevAzimuth)
                             {
                                 if (abs(lidarReturns.azimuths[pointIdx] - state.mPrevAzimuth) <
                                     db.outputs.horizontalFov() * 0.9)
@@ -162,7 +163,9 @@ public:
                                 state.mRanges.clear();
                                 state.mIntensities.clear();
                             }
-                            state.mRanges.push_back(lidarReturns.distances[pointIdx]);
+                            float range =
+                                lidarReturns.distances[pointIdx] * ::cosf(Deg2Rad(lidarReturns.elevations[pointIdx]));
+                            state.mRanges.push_back(range);
                             state.mIntensities.push_back((uint8_t)(lidarReturns.intensities[pointIdx] * 255));
                             state.mPrevAzimuth = lidarReturns.azimuths[pointIdx];
                         }
