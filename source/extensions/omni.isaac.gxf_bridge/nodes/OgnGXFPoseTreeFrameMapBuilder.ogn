@@ -6,7 +6,7 @@
             "This node maps USD prims to pose tree frame names."
         ],
         "metadata": {
-            "uiName": "GXF Build Pose Tree Frame map"
+            "uiName": "GXF Build Pose Tree Frame Map"
         },
         "categoryDefinitions": "config/CategoryDefinition.json",
         "categories": "isaacGxf:publisher",
@@ -21,8 +21,8 @@
             },
             "poseTreeNamespace": {
                 "type": "string",
-                "description": "Namespace prepended to frame names with trailing '/', eg. 'robot/imu'. Should be unique to each robot.",
-                "default": "robot"
+                "description": "Namespace prepended to frame names with trailing '/', eg. 'robot_gt/imu'. Should be unique to each robot.",
+                "default": "robot_gt"
             }
         },
         "outputs": {

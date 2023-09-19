@@ -1,4 +1,4 @@
-# Copyright (c) 2023, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -7,8 +7,5 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import sys
-
-if sys.platform != "win32":
-    from .test_amr_nucleus import *
-    from .test_gxf_robot import *
+from .amr_nucleus import *
+from .gxf_robot import *

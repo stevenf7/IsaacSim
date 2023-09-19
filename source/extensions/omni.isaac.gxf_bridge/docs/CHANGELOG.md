@@ -1,4 +1,12 @@
 # Changelog
+## [1.2.0] - 2023-09-13
+### Added
+- High-level API for AMR applications, bundled under omni.isaac.gxf_bridge modules
+- exts."omni.isaac.gxf_bridge".supportedAMRReleases setting to support maintaining asset compatibility between Isaac
+  Sim and Isaac AMR versions
+### Changed
+- Updated default value for OgnGXFPoseTreeFrameMapBuilder:inputs:poseTreeNamespace to 'robot_gt'
+
 ## [1.1.0] - 2023-09-07
 ### Added
 - exts."omni.isaac.gxf_bridge".yamlBaseFolder setting

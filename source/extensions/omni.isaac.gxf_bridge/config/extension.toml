@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.1.0"
+version = "1.2.0"
 title = "GXF Bridge"
 description = "Communication bridge for the Isaac SDK GXF backend"
 authors = ["Isaac Sim Team"]
@@ -31,6 +31,7 @@ writeTarget.platform = true
 
 [settings]
 exts."omni.isaac.gxf_bridge".yamlBaseFolder = "${app}/../exts/omni.isaac.gxf_bridge/data/yaml/"
+exts."omni.isaac.gxf_bridge".supportedAMRReleases = ["2.0"]
 
 [[python.module]]
 name = "omni.isaac.gxf_bridge"
@@ -67,6 +68,10 @@ exclude = ["Ogn*Database.py"]
 
 [[test]]
 stdoutFailPatterns.exclude = [
-    "*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_gxf_bridge_GXFPoseTreeFrameMapBuilder: [/TestGraph] Please specify atleast one target prim for the ROS pose tree component*",
-    "*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_gxf_bridge_GXFPublishPoseTree: [/TestGraph] Please specify atleast one target prim for the ROS pose tree component*",
+    "*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_gxf_bridge_GXFGetYAMLFilePath: [/TestGraph] OmniGraph Error: Input path cannot be empty.*",
+    "*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_gxf_bridge_GXFPoseTreeFrameMapBuilder: [/TestGraph] Please specify at least one target prim for the GXF pose tree component*",
+    "*[Error] [omni.isaac.gxf_bridge.plugin] Cannot set context*",
+    "*[Error] [omni.isaac.gxf_bridge.scripts.amr_nucleus] Could not find path on Nucleus server:*",
+    "*[Error] [omni.isaac.gxf_bridge.scripts.amr_nucleus] Isaac * not supported by current version of Isaac Sim GXF Bridge Extension.*",
+    "*[Error] [omni.isaac.gxf_bridge.scripts.amr_nucleus] Unexpected asset tier.*",
 ]
