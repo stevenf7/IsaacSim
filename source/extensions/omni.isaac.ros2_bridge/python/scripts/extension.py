@@ -74,7 +74,9 @@ class ROS2BridgeExtension(omni.ext.IExt):
 
         self._module = _ros2_bridge
         self._ros2bridge = self._module.acquire_ros2_bridge_interface()
-
+        if self._ros2bridge.get_startup_status() is False:
+            carb.log_error(f"ROS2 Bridge startup failed")
+            ext_manager.set_extension_enabled("omni.isaac.ros2_bridge", False)
         self.register_nodes()
 
     def on_shutdown(self):

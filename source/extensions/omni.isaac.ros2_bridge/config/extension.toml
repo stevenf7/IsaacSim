@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.0.0"
+version = "2.1.0"
 category = "Simulation"
 title = "ROS2 Bridge"
 description = "ROS2 Bridge"
@@ -29,7 +29,7 @@ icon = "data/icon.png"
 "usdrt.scenegraph" = {}
 
 [settings]
-exts."omni.isaac.ros2_bridge".ros_distro = "foxy" # This setting specified which ros distro to fallback onto if none were sourced. 
+exts."omni.isaac.ros2_bridge".ros_distro = "humble" # This setting specified which ros distro to fallback onto if none were sourced. 
 
 [[python.module]]
 name = "omni.isaac.ros2_bridge"
