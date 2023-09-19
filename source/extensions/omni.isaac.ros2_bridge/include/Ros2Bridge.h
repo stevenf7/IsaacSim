@@ -30,6 +30,7 @@ struct Ros2Bridge
     CARB_PLUGIN_INTERFACE("omni::isaac::ros2_bridge::Ros2Bridge", 0, 2);
     uint64_t const(CARB_ABI* getDefaultContextHandle)();
     Ros2Factory* const(CARB_ABI* getFactory)();
+    bool const(CARB_ABI* getStartupStatus)();
 };
 }
 }

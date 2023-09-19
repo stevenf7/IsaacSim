@@ -1,6 +1,15 @@
 # Changelog
 
+## [2.1.0] - 2023-09-18
+### Fixed
+- error when shutting down extension
+- properly handle case where ROS2 bridge carb plugin did not startup correctly
+
+### Changed
+- load system rclpy, fallback onto internal rclpy if its not found
+
 ## [2.0.0] - 2023-09-06
+### Changed
 - Re-written to use rclc APIs
 - User must source their local ROS2 workspace in the terminal before starting isaac sim
 - Foxy and humble are supported
@@ -8,7 +17,7 @@
 - The separate Humble bridge extension has been removed
 
 ## [1.13.3] - 2023-08-25
-### Changes
+### Changed
 - added stdout fail pattern for the expected no prim found edge case for the ogn test
 - Changed test_camera test to expect identical fx and fy as vertical aperture is computed from horizontal aperture. 
 

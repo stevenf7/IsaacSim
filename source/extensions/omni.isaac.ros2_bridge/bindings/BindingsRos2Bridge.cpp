@@ -35,8 +35,8 @@ PYBIND11_MODULE(_ros2_bridge, m)
     m.doc() = "Isaac ROS2 bridge bindings";
 
     {
-        defineInterfaceClass<Ros2Bridge>(
-            m, "Ros2Bridge", "acquire_ros2_bridge_interface", "release_ros2_bridge_interface");
+        defineInterfaceClass<Ros2Bridge>(m, "Ros2Bridge", "acquire_ros2_bridge_interface", "release_ros2_bridge_interface")
+            .def("get_startup_status", wrapInterfaceFunction(&Ros2Bridge::getStartupStatus));
     }
 }
 }

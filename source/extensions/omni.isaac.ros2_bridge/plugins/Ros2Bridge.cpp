@@ -66,7 +66,7 @@ omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
 std::shared_ptr<Ros2HandleBase> g_defaultHandle;
 std::shared_ptr<omni::isaac::utils::LibraryLoader> g_factoryLoader;
 
-Ros2Factory* g_Factory;
+Ros2Factory* g_Factory = nullptr;
 
 void onResume(float currentTime, void* userData)
 {
@@ -102,6 +102,15 @@ uint64_t const CARB_ABI getDefaultContextHandle()
 Ros2Factory* const CARB_ABI getFactory()
 {
     return g_Factory;
+}
+
+bool const CARB_ABI getStartupStatus()
+{
+    if (g_Factory)
+    {
+        return true;
+    }
+    return false;
 }
 
 
@@ -151,7 +160,8 @@ CARB_EXPORT void carbOnPluginStartup()
         }
         else
         {
-            CARB_LOG_ERROR("Could not load ROS2 Bridge");
+            CARB_LOG_ERROR(
+                "Could not load ROS2 Bridge due to missing library dependencies, please make sure your sourced ROS2 workspace has the correct packages/libraries installed");
             return;
         }
     }
@@ -175,6 +185,7 @@ CARB_EXPORT void carbOnPluginShutdown()
     if (g_Factory)
     {
         delete g_Factory;
+        g_Factory = nullptr;
     }
 }
 
@@ -185,6 +196,7 @@ void fillInterface(omni::isaac::ros2_bridge::Ros2Bridge& iface)
     memset(&iface, 0, sizeof(iface));
     iface.getDefaultContextHandle = getDefaultContextHandle;
     iface.getFactory = getFactory;
+    iface.getStartupStatus = getStartupStatus;
 }
 
 #ifdef _WIN32
