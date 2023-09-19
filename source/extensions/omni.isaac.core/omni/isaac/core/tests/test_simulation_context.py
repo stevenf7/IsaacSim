@@ -15,6 +15,7 @@ from omni.isaac.core.utils.stage import create_new_stage_async, get_stage_units,
 class TestSimulationContext(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
+        await create_new_stage_async()
         World.clear_instance()
         pass
 
@@ -29,7 +30,7 @@ class TestSimulationContext(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         # try to delete the previous one
-        my_world_2.__del__()
+        my_world_2.clear_instance()
         self.assertTrue(my_world_1.instance() is None)
         my_world_3 = World()
         self.assertTrue(my_world_1 != my_world_3)

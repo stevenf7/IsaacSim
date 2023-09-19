@@ -76,23 +76,55 @@ class PhysicsContext(object):
         self._physx_interface = omni.physx.acquire_physx_interface()
         self._physx_sim_interface = omni.physx.get_physx_simulation_interface()
         self._use_gpu_pipeline = False
+        self._use_gpu = False
         self._use_fabric = False
+        self._device = device
+        if self._device is None:
+            # infer the device
+            self._use_gpu_pipeline = self._carb_settings.get_as_bool("/physics/suppressReadback")
+            self._use_gpu = self._use_gpu_pipeline
+            if self._use_gpu_pipeline:
+                device_id = self._carb_settings.get_as_int("/physics/cudaDevice")
+                if device_id < 0:
+                    self._carb_settings.set_int("/physics/cudaDevice", 0)
+                    device_id = 0
+                self._device = f"cuda:{device_id}"
+        elif "cuda" in self._device.lower():
+            self._use_gpu_pipeline = True
+            self._use_gpu = True
+            parsed_device = self._device.split(":")
+            if len(parsed_device) == 1:
+                device_id = self._carb_settings.get_as_int("/physics/cudaDevice")
+                if device_id < 0:
+                    self._carb_settings.set_int("/physics/cudaDevice", 0)
+                    device_id = 0
+                self._device = f"cuda:{device_id}"
+            else:
+                self._carb_settings.set_int("/physics/cudaDevice", int(parsed_device[1]))
+        elif "cpu" == self._device.lower():
+            self._carb_settings.set_bool("/physics/suppressReadback", False)
+            self._use_gpu_pipeline = False
+            self._use_gpu = self._use_gpu_pipeline
+        else:
+            raise Exception("Device {} is not supported.".format(self._device))
+
+        if self._use_gpu:
+            self.set_broadphase_type("GPU")
+            self.enable_gpu_dynamics(flag=True)
+            self.enable_fabric(True)
+        else:
+            self.set_broadphase_type("MBP")
+            self.enable_gpu_dynamics(flag=False)
 
         if sim_params is None and set_defaults:
             meters_per_unit = get_stage_units()
             self.set_gravity(value=-9.81 / meters_per_unit)
             self.enable_ccd(flag=True)
             self.enable_stablization(flag=True)
-            if device is not None and "cuda" in device:
-                # we are combining sim device and pipeline here
+            if self._use_gpu_pipeline:
                 self._carb_settings.set_bool("/physics/suppressReadback", True)
-                self.set_broadphase_type("GPU")
-                self.enable_gpu_dynamics(flag=True)
-                self.enable_fabric(True)
             else:
                 self._carb_settings.set_bool("/physics/suppressReadback", False)
-                self.set_broadphase_type(broadcast_type="MBP")
-                self.enable_gpu_dynamics(flag=False)
             self.set_solver_type(solver_type="TGS")
             self.set_physics_dt(dt=1.0 / 60.0)
 
@@ -117,13 +149,6 @@ class PhysicsContext(object):
             if "use_fabric" in sim_params.keys() and sim_params["use_fabric"]:
                 self._use_fabric = True
                 self.enable_fabric(True)
-
-            if "use_gpu" in sim_params.keys():
-                self.enable_gpu_dynamics(sim_params["use_gpu"])
-                if sim_params["use_gpu"]:
-                    self.set_broadphase_type("GPU")
-                else:
-                    self.set_broadphase_type("MBP")
 
             if "enable_scene_query_support" in sim_params.keys():
                 self.set_enable_scene_query_support(sim_params["enable_scene_query_support"])
@@ -150,7 +175,6 @@ class PhysicsContext(object):
             if "gpu_max_num_partitions" in sim_params.keys():
                 self.set_gpu_max_num_partitions(sim_params["gpu_max_num_partitions"])
             if "solver_type" in sim_params.keys():
-                # TODO: double check this with kelly
                 if sim_params["solver_type"] == 0:
                     self.set_solver_type("PGS")
                 else:
@@ -184,6 +208,14 @@ class PhysicsContext(object):
     @property
     def prim_path(self):
         return self._prim_path
+
+    @property
+    def device(self) -> str:
+        return self._device
+
+    @property
+    def use_gpu_sim(self):
+        return self._use_gpu
 
     @property
     def use_gpu_pipeline(self):

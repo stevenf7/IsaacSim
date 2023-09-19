@@ -67,7 +67,7 @@ class TestArticulationDeterminism(omni.kit.test.AsyncTestCase):
         (result, error) = await open_stage_async(self._assets_root_path + "/Isaac/Robots/Franka/franka.usd")
         omni.usd.get_context().get_stage().SetTimeCodesPerSecond(60)
         robot_prim_path = "/panda"
-        my_world = World()  # Create a new default world to reset any physics settings.
+        my_world = World(device="cpu")  # Create a new default world to reset any physics settings.
         await my_world.initialize_simulation_context_async()
         await update_stage_async()
         # Start Simulation and wait
