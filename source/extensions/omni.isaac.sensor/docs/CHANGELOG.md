@@ -1,4 +1,10 @@
 # Changelog
+## [9.4.1] - 2023-09-19
+### Changed
+- IsaacComputeRTXLidarFlatScan now works with single emitter lidar configs like RPLIDAR_S2E
+### Fixed
+- IsaacComputeRTXLidarFlatScan range projected to 0 elevation
+
 ## [9.4.0] - 2023-09-18
 ### Added 
 - Support, samples for OpenCV calibration models
