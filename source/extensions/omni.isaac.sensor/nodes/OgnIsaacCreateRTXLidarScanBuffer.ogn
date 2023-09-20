@@ -56,6 +56,72 @@
             "renderProductPath": {
                 "type": "token",
                 "description": "Config is gotten from this"
+            },
+            "outputIntensity": {
+                "type": "bool",
+                "description": "Create an output array for the Intensity.",
+                "default": true,
+                "uiName": "Output The Intensity"
+            },
+            "outputDistance": {
+                "type": "bool",
+                "description": "Create an output array for the Distance.",
+                "default": true,
+                "uiName": "Output The Distance"
+            },
+            "outputObjectId": {
+                "type": "bool",
+                "description": "Create an output array for the ObjectId.",
+                "default": false,
+                "uiName": "Output The ObjectId"
+            },
+            "outputVelocity": {
+                "type": "bool",
+                "description": "Create an output array for the Velocity.",
+                "default": false,
+                "uiName": "Output The Velocity"
+            },
+            "outputAzimuth": {
+                "type": "bool",
+                "description": "Create an output array for the Azimuth.",
+                "default": false,
+                "uiName": "Output The Azimuth"
+            },
+            "outputElevation": {
+                "type": "bool",
+                "description": "Create an output array for the Elevation.",
+                "default": false,
+                "uiName": "Output The Elevation"
+            },
+            "outputNormal": {
+                "type": "bool",
+                "description": "Create an output array for the Normals.",
+                "default": false,
+                "uiName": "Output The Normals"
+            },
+            "outputTimestamp": {
+                "type": "bool",
+                "description": "Create an output array for the Timestamp.",
+                "default": false,
+                "uiName": "Output The Timestamp"
+            },
+            "outputEmitterId": {
+                "type": "bool",
+                "description": "Create an output array for the EmitterId.",
+                "default": false,
+                "uiName": "Output The EmitterId"
+            },
+            "outputBeamId": {
+                "type": "bool",
+                "description": "Create an output array for the BeamId.",
+                "default": false,
+                "uiName": "Output The BeamId"
+            },
+            "outputMaterialId": {
+                "type": "bool",
+                "description": "Create an output array for the MaterialId.",
+                "default": false,
+                "uiName": "Output The MaterialId"
             }
         },
         "outputs": {
@@ -81,29 +147,89 @@
                 "type": "matrixd[4]",
                 "description": "The transform matrix from lidar to world coordinates"
             },
-            "intensityPtr":{
-                "type": "uint64",
-                "description": "intensity [0,1]"
+            "intensityPtr":{"type": "uint64",
+                "description": "intensity [0,1]"},
+                "intensityType":{
+                    "type": "float",
+                    "default": 4,"description": "","metadata": {"hidden": "true"}},"intensityBufferSize":{"type": "uint64","description": "","metadata": {"hidden": "true"
+                }
             },
-            "distancePtr":{
-                "type": "uint64",
-                "description": "range in m"
+            "distancePtr":{"type": "uint64",
+                "description": "range in m"},
+                "distanceType":{
+                    "type": "float",
+                    "default": 4,"description": "","metadata": {"hidden": "true"}},"distanceBufferSize":{"type": "uint64","description": "","metadata": {"hidden": "true"
+                }
             },
-            "azimuthPtr":{
-                "type": "uint64",
-                "description": "azimuth in rad [-pi,pi]"
+            "azimuthPtr":{"type": "uint64",
+                "description": "azimuth in rad [-pi,pi]"},
+                "azimuthType":{
+                    "type": "float",
+                    "default": 4,"description": "","metadata": {"hidden": "true"}},"azimuthBufferSize":{"type": "uint64","description": "","metadata": {"hidden": "true"
+                }
             },
-            "elevationPtr":{
-                "type": "uint64",
-                "description": "elevation in rad [-pi/2, pi/2]"
+            "elevationPtr":{"type": "uint64",
+                "description": "elevation in rad [-pi/2, pi/2]"},
+                "elevationType":{
+                    "type": "float",
+                    "default": 4,"description": "","metadata": {"hidden": "true"}},"elevationBufferSize":{"type": "uint64","description": "","metadata": {"hidden": "true"
+                }
             },
-            "objectIdPtr":{
-                "type": "uint64",
-                "description": "ObjectId for getting usd prim information"
+            "velocityPtr":{"type": "uint64",
+                "description": "elevation in rad [-pi/2, pi/2]"},
+                "velocityType":{
+                    "type": "float[3]",
+                    "default": [4,0,0],"description": "","metadata": {"hidden": "true"}},"velocityBufferSize":{"type": "uint64","description": "","metadata": {"hidden": "true"
+                }
             },
-            "indexPtr":{
-                "type": "uint64",
-                "description": "Index into the full array if keepOnlyPositiveDistance ((startTick+tick)*numChannels*numEchos + channel*numEchos + echo)" 
+            "objectIdPtr":{"type": "uint64",
+                "description": "ObjectId for getting usd prim information"},
+                "objectIdType":{
+                    "type": "uint",
+                    "default": 4,"description": "","metadata": {"hidden": "true"}},"objectIdBufferSize":{"type": "uint64","description": "","metadata": {"hidden": "true"
+                }
+            },
+            "normalPtr":{"type": "uint64",
+                "description": "Normal at the hit location"},
+                "normalType":{
+                    "type": "float[3]",
+                    "default": [4,0,0],"description": "","metadata": {"hidden": "true"}},"normalBufferSize":{"type": "uint64","description": "","metadata": {"hidden": "true"
+                }
+            },
+            "timestampPtr":{"type": "uint64",
+                "description": "timestamp in ns"},
+                "timestampType":{
+                    "type": "uint64",
+                    "default": 8,"description": "","metadata": {"hidden": "true"}},"timestampBufferSize":{"type": "uint64","description": "","metadata": {"hidden": "true"
+                }
+            },
+            "emitterIdPtr":{"type": "uint64",
+                "description": "emitterId"},
+                "emitterIdType":{
+                    "type": "uint",
+                    "default": 4,"description": "","metadata": {"hidden": "true"}},"emitterIdBufferSize":{"type": "uint64","description": "","metadata": {"hidden": "true"
+                }
+            },
+            "beamIdPtr":{"type": "uint64",
+                "description": "beamId"},
+                "beamIdType":{
+                    "type": "uint",
+                    "default": 4,"description": "","metadata": {"hidden": "true"}},"beamIdBufferSize":{"type": "uint64","description": "","metadata": {"hidden": "true"
+                }
+            },
+            "materialIdPtr":{"type": "uint64",
+                "description": "materialId at hit location"},
+                "materialIdType":{
+                    "type": "uint",
+                    "default": 4,"description": "","metadata": {"hidden": "true"}},"materialIdBufferSize":{"type": "uint64","description": "","metadata": {"hidden": "true"
+                }
+            },
+            "indexPtr":{"type": "uint64",
+                "description": "Index into the full array if keepOnlyPositiveDistance ((startTick+tick)*numChannels*numEchos + channel*numEchos + echo)"},
+                "indexType":{
+                    "type": "uint",
+                    "default": 4,"description": "","metadata": {"hidden": "true"}},"indexBufferSize":{"type": "uint64","description": "","metadata": {"hidden": "true"
+                }
             },
             "numReturnsPerScan": {
                 "type": "uint",

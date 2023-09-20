@@ -24,6 +24,25 @@ from omni.isaac.core.utils.render_product import create_hydra_texture
 from pxr import Gf, Sdf, UsdGeom, UsdPhysics
 
 
+class MyCustomWriter(rep.Writer):
+    def __init__(self, output_dir: str):
+        self.version = "0.0.2"
+        self._frame_id = 0
+        self.annotators = ["RtxSensorCpuIsaacCreateRTXLidarScanBuffer"]
+
+    def on_final_frame(self):
+        self.backend.sync_pending_paths()
+
+    def write(self, data):
+        print("Frame number - {}".format(self._frame_id))
+        print(data["RtxSensorCpuIsaacCreateRTXLidarScanBuffer"])  # ["data"])
+        print("*****************")
+        self._frame_id += 1
+
+
+rep.WriterRegistry.register(MyCustomWriter)
+
+
 def printinc(i):
     print(f"{i}")
     return i + 1
@@ -61,9 +80,11 @@ if assets_root_path is None:
 i = printinc(i)
 simulation_app.update()
 
-
+geo_type = "cubes"
 if len(sys.argv) >= 2:
     geo_type = sys.argv[1]
+
+if 1:
     if geo_type == "warehouse":
         # Loading the simple_room environment
         stage.add_reference_to_stage(
@@ -107,12 +128,12 @@ if len(sys.argv) >= 2:
         #    variability=Sdf.VariabilityUniform,
         #    attr_value=5)
 
-    elif geo_type == "floor":
-        stage.add_reference_to_stage(
-            assets_root_path + "/Users/mcarlson@nvidia.com/Environments/Simple_Warehouse/just_floor.usd", "/background"
+    elif geo_type == "sphere":
+        omni.kit.commands.execute(
+            "CreatePrimWithDefaultXform",
+            prim_type="Sphere",
+            attributes={"radius": 5, "extent": [(-5, -5, -5), (5, 5, 5)]},
         )
-    elif geo_type == "floora":
-        stage.add_reference_to_stage("/home/mcarlson/data/just_floor/just_floor0.usda", "/background")
 
 lidar_config = "Example_Rotary"
 if len(sys.argv) >= 3:
@@ -160,16 +181,18 @@ from omni.syntheticdata import sensors
 
 i = printinc(i)
 simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=1.0)
+writer = None
 if 1:
     i = printinc(i)
     writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud" + "Buffer")
     # writer.initialize(testMode=True)
     # writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
     # writer = rep.writers.get("Writer" + "IsaacReadRTXLidarData")
-    # writer = rep.writers.get("Writer" + "IsaacPrintRTXLidarInfo" + "")
 
     i = printinc(i)
     writer.attach([render_product_path])  # , render_product_path2])
+    # writer2 = rep.writers.get("Writer" + "IsaacPrintRTXLidarInfo" + "")
+    # writer2.attach([render_product_path])  # , render_product_path2])
 else:
     # print("try RtxSensorCpuExportRaw")
 
@@ -200,8 +223,38 @@ i = printinc(i)
 simulation_context.play()
 
 i = printinc(i)
+if 0:
+    # Use custom writer to see what the output of the annotator looks like
+    class MyCustomWriter(rep.Writer):
+        def __init__(self, output_dir: str):
+            self.version = "0.0.2"
+            self._frame_id = 0
+            self.annotators = ["RtxSensorCpuIsaacCreateRTXLidarScanBuffer"]
+
+        def on_final_frame(self):
+            self.backend.sync_pending_paths()
+
+        def write(self, data):
+            print("Frame number - {}".format(self._frame_id))
+            all_data = data["RtxSensorCpuIsaacCreateRTXLidarScanBuffer"]
+            vel = ["velocity"]
+            print(all_data)  # ["data"])
+            print("*****************")
+            self._frame_id += 1
+
+    rep.WriterRegistry.register(MyCustomWriter)
+
+    writer = rep.WriterRegistry.get("MyCustomWriter")
+    writer.initialize(output_dir="")
+    writer.attach([render_product_path])
+
+
+annotator = rep.AnnotatorRegistry.get_annotator("RtxSensorCpuIsaacCreateRTXLidarScanBuffer")
+annotator.attach([render_product_path])
 while simulation_app.is_running():
     simulation_app.update()
+    # data = annotator.get_data()
+    # print(data)
     # break
 
 # cleanup and shutdown
@@ -212,6 +265,7 @@ simulation_context.stop()
 i = printinc(i)
 simulation_app.close()
 """
+# Snippet of similar code to use in script editor.
 from omni.isaac.core.utils import stage
 from pxr import UsdGeom, Gf
 

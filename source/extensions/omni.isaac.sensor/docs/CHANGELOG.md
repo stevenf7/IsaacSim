@@ -1,4 +1,9 @@
 # Changelog
+## [9.5.0] - 2023-09-18
+### Added
+- IsaacPrintRTXLidarInfo outputs largest velocity length
+- IsaacCreateRTXLidarScanBuffer node outputs all possible lidar data based on output flags on node.
+
 ## [9.4.1] - 2023-09-19
 ### Changed
 - IsaacComputeRTXLidarFlatScan now works with single emitter lidar configs like RPLIDAR_S2E
