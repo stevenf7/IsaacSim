@@ -11,4 +11,5 @@ from .test_annotators import *
 from .test_articulation_controller import *
 from .test_compute_odometry import *
 from .test_core_nodes import *
+from .test_create_render_product import *
 from .test_create_viewport import *
