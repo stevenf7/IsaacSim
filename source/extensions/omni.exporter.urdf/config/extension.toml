@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.0"
+version = "0.1.1"
 category = "Simulation"
 title = "Isaac USD to URDF exporter"
 description = "Extension that exports USD files to URDF"
@@ -19,6 +19,10 @@ writeTarget.platform = true # pip prebundle makes this extension os specific
 [dependencies]
 "omni.kit.test" = {}
 "omni.kit.pip_archive" = {}
+"omni.kit.commands" = {}
+"omni.physx" = {}
+"omni.timeline" = {}
+"omni.isaac.ui" = {}
 
 [[python.module]]
 path = "pip_prebundle"
