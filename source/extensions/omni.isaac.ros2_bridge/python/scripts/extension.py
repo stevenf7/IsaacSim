@@ -41,14 +41,18 @@ class ROS2BridgeExtension(omni.ext.IExt):
                 return
 
         # ROS2 uses LD_LIBRARY_PATH to load libraries at runtime so set it here before the plugin loads.
+        backup_ros_distro = carb.settings.get_settings().get_as_string("/exts/omni.isaac.ros2_bridge/ros_distro")
         ros_distro = os.environ.get("ROS_DISTRO")
         if ros_distro is None:
-            carb.log_error(
+            carb.log_warn(
                 "ROS_DISTRO env var not found, Please source ROS2 Foxy, or Humble, before enabling this extension"
             )
-            ext_manager.set_extension_enabled("omni.isaac.ros2_bridge", False)
-            return
-        elif ros_distro not in ["humble", "foxy"]:
+            carb.log_warn(f"Using backup internal ROS2 {backup_ros_distro} distro")
+            ros_distro = backup_ros_distro
+            os.environ["ROS_DISTRO"] = ros_distro
+            # os.environ["RMW_IMPLEMENTATION"] = "rmw_fastrtps_cpp"
+
+        if ros_distro not in ["humble", "foxy"]:
             carb.log_error(f"ROS_DISTRO of {ros_distro} is currently not supported")
             ext_manager.set_extension_enabled("omni.isaac.ros2_bridge", False)
             return
@@ -62,10 +66,11 @@ class ROS2BridgeExtension(omni.ext.IExt):
 
         if sys.platform == "linux":
             if os.environ.get("LD_LIBRARY_PATH"):
-                os.environ["LD_LIBRARY_PATH"] = os.environ.get("LD_LIBRARY_PATH") + ":" + self._extension_path + "/bin"
+                os.environ["LD_LIBRARY_PATH"] = (
+                    os.environ.get("LD_LIBRARY_PATH") + ":" + self._extension_path + f"/{ros_distro}/lib"
+                )
             else:
-                os.environ["LD_LIBRARY_PATH"] = self._extension_path + "/bin"
-
+                os.environ["LD_LIBRARY_PATH"] = self._extension_path + f"/{ros_distro}/lib"
         carb.get_framework().load_plugins(
             loaded_file_wildcards=["omni.isaac.ros2_bridge.plugin"],
             search_paths=[os.path.abspath(os.path.join(self._extension_path, "bin"))],

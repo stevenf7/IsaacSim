@@ -16,7 +16,7 @@ import omni.kit
 
 
 class Extension(omni.ext.IExt):
-    def on_startup(self):
+    def on_startup(self, ext_id):
         ros_distro = os.environ.get("ROS_DISTRO")
         if ros_distro in ["humble", "foxy"] and f"{ros_distro}/rclpy" in os.path.join(os.path.dirname(__file__)):
             omni.kit.app.get_app().print_and_log("Attempting to load system rclpy")
@@ -24,6 +24,7 @@ class Extension(omni.ext.IExt):
                 import rclpy
 
                 rclpy.init()
+                rclpy.shutdown()
                 omni.kit.app.get_app().print_and_log("rclpy loaded")
             except Exception as e:
                 carb.log_warn(f"Could not import system rclpy: {e}")
@@ -33,9 +34,16 @@ class Extension(omni.ext.IExt):
                     import rclpy
 
                     rclpy.init()
+                    rclpy.shutdown()
                     omni.kit.app.get_app().print_and_log("rclpy loaded")
                 except Exception as e:
                     carb.log_warn(f"could not import internal rclpy: {e}")
+                    ext_manager = omni.kit.app.get_app().get_extension_manager()
+                    self._extension_path = ext_manager.get_extension_path(ext_id)
+                    carb.log_warn(
+                        f"To use the Internal rclpy included with the extension please set: \nRMW_IMPLEMENTATION=rmw_fastrtps_cpp\nand\nLD_LIBRARY_PATH=$LD_LIBRARY_PATH:{self._extension_path}/{ros_distro}/lib\nBefore starting Isaac Sim"
+                    )
+
             return
 
     def on_shutdown(self):
