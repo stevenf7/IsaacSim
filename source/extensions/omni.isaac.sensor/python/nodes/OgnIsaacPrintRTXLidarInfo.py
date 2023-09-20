@@ -211,6 +211,7 @@ class OgnIsaacPrintRTXLidarInfo:
         objId2mats = {}
         num0dist = 0
         num0inte = 0
+        maxlen = 0.0
         for t in range(nt):
             for c in range(nc):
                 for e in range(ne):
@@ -221,6 +222,14 @@ class OgnIsaacPrintRTXLidarInfo:
                     if not returns.intensities[x]:
                         num0inte = num0inte + 1
                         continue
+
+                    vellen = (
+                        returns.velocities[x][0] * returns.velocities[x][0]
+                        + returns.velocities[x][1] * returns.velocities[x][1]
+                        + returns.velocities[x][2] * returns.velocities[x][2]
+                    )
+                    if vellen > maxlen:
+                        maxlen = vellen
                     oid = returns.objectIds[x]
                     mat = returns.materialIds[x]
                     if oid in objId2mats:
@@ -231,6 +240,7 @@ class OgnIsaacPrintRTXLidarInfo:
 
         print(f"num 0 dist = {num0dist}")
         print(f"num 0 inte = {num0inte}")
+        print(f"max vel length^2 = {maxlen}")
         for oid in objId2mats:
             print(f"{object_id_to_prim_path(oid)} has mats {objId2mats[oid]}")
 

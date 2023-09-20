@@ -49,7 +49,7 @@ mkdir -p data/sensors/materials
 cp -rflv $OMNI_SENSORS_FOLDER/data/sensors/materials/material_files data/sensors/materials/.
 mkdir -p data/sensors/lidar
 cp -flv $OMNI_SENSORS_FOLDER/data/sensors/lidar/Example*.json data/sensors/lidar/.
-cp -flv $OMNI_SENSORS_FOLDER/data/sensors/lidar/Vel*.json source/extensions/omni.isaac.sensor/data/lidar_configs/Velodyne/.
+cp -flv $OMNI_SENSORS_FOLDER/data/sensors/lidar/Velodyne_VLS128.json source/extensions/omni.isaac.sensor/data/lidar_configs/Velodyne/.
 mkdir -p data/sensors/radar/wpm_dmat_approx
 mkdir -p data/sensors/radar/dmat_approx
 cp -flv $OMNI_SENSORS_FOLDER/data/sensors/radar/wpm_dmat_approx/Example.json data/sensors/radar/wpm_dmat_approx/.
