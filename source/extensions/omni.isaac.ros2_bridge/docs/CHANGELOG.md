@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.2.0] - 2023-09-20
+### Changed
+- Load internal ROS2 libs when ROS2 is not sourced
+- Print warning telling user how to source ROS2 to use internal libs with rclpy
+
+
 ## [2.1.0] - 2023-09-18
 ### Fixed
 - error when shutting down extension

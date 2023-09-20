@@ -26,13 +26,13 @@ public:
     std::string loadedLibraryFile;
     carb::extras::LibraryHandle loadedLibrary = carb::extras::kInvalidLibraryHandle;
 
-    LibraryLoader(std::string library)
+    LibraryLoader(std::string library, std::string prefix = "", bool test = false)
     {
         {
 #ifdef _MSC_VER
             std::string libraryPath = library + ".dll";
 #else
-            std::string libraryPath = "lib" + library + ".so";
+            std::string libraryPath = prefix + "lib" + library + ".so";
 #endif
             loadedLibraryFile = libraryPath;
             // printf("Loading %s\n", libraryPath.c_str());
@@ -41,8 +41,17 @@ public:
 
             if (loadedLibrary == carb::extras::kInvalidLibraryHandle)
             {
-                CARB_LOG_ERROR("Could not load the dynamic library from %s. Error: %s", libraryPath.c_str(),
-                               carb::extras::getLastLoadLibraryError().c_str());
+                if (test)
+                {
+                    CARB_LOG_WARN("Could not load the dynamic library from %s. Error: %s", libraryPath.c_str(),
+                                  carb::extras::getLastLoadLibraryError().c_str());
+                }
+                else
+                {
+                    CARB_LOG_ERROR("Could not load the dynamic library from %s. Error: %s", libraryPath.c_str(),
+                                   carb::extras::getLastLoadLibraryError().c_str());
+                }
+
                 loadedLibrary = carb::extras::kInvalidLibraryHandle;
             }
         }
@@ -77,9 +86,9 @@ public:
         loadedLibraries.clear();
     }
 
-    std::shared_ptr<LibraryLoader> LoadLibrary(const std::string library)
+    std::shared_ptr<LibraryLoader> LoadLibrary(const std::string library, std::string prefix = "")
     {
-        auto loadedLib = std::make_shared<LibraryLoader>(library);
+        auto loadedLib = std::make_shared<LibraryLoader>(library, prefix);
         loadedLibraries.emplace_back(loadedLib);
         return loadedLib;
     }

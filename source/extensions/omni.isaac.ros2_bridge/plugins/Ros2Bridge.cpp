@@ -25,7 +25,10 @@
 #include <carb/dictionary/DictionaryUtils.h>
 #include <carb/logging/Log.h>
 #include <carb/tasking/ITasking.h>
+#include <carb/tokens/ITokens.h>
+#include <carb/tokens/TokensUtils.h>
 
+#include <experimental/filesystem>
 #include <include/Ros2Bridge.h>
 #include <include/Ros2Factory.h>
 #include <omni/graph/core/iComputeGraph.h>
@@ -43,7 +46,6 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-
 const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.ros2_bridge.plugin", "Isaac ROS2 bridge", "NVIDIA",
                                                   carb::PluginHotReload::eDisabled, "dev" };
 
@@ -55,7 +57,8 @@ CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       omni::isaac::range_sensor::LidarSensorInterface,
                       omni::syntheticdata::SyntheticData,
                       omni::physx::IPhysx,
-                      carb::tasking::ITasking)
+                      carb::tasking::ITasking,
+                      carb::tokens::ITokens)
 DECLARE_OGN_NODES()
 
 // private stuff
@@ -65,8 +68,9 @@ omni::kit::IStageUpdate* g_stageUpdate = nullptr;
 omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
 std::shared_ptr<Ros2HandleBase> g_defaultHandle;
 std::shared_ptr<omni::isaac::utils::LibraryLoader> g_factoryLoader;
-
+omni::isaac::utils::MultiLibraryLoader g_backupLibLoader;
 Ros2Factory* g_Factory = nullptr;
+std::string g_extensionPath;
 
 void onResume(float currentTime, void* userData)
 {
@@ -119,19 +123,86 @@ bool const CARB_ABI getStartupStatus()
 
 CARB_EXPORT void carbOnPluginStartup()
 {
+    std::vector<std::string> lib_list = {
+        "rcutils",
+        "rosidl_runtime_c",
+        "rmw",
+        "rcl_yaml_param_parser",
+        "ament_index_cpp",
+        "rcpputils",
+        "rmw_implementation",
+        "rcl_logging_interface",
+        "rcl_logging_spdlog",
+        "tracetools",
+        "rosidl_typesupport_c",
+        "builtin_interfaces__rosidl_generator_c",
+        "builtin_interfaces__rosidl_typesupport_c",
+        "rcl_interfaces__rosidl_typesupport_c",
+        "rcl_interfaces__rosidl_generator_c",
+        "rcl",
+        "action_msgs__rosidl_typesupport_c",
+        "std_msgs__rosidl_generator_c",
+        "geometry_msgs__rosidl_generator_c",
+        "geometry_msgs__rosidl_typesupport_c",
+        "unique_identifier_msgs__rosidl_generator_c",
+        "unique_identifier_msgs__rosidl_typesupport_c",
+        "tf2_msgs__rosidl_typesupport_c",
+        "tf2_msgs__rosidl_generator_c",
+        "nav_msgs__rosidl_typesupport_c",
+        "nav_msgs__rosidl_generator_c",
+        "std_msgs__rosidl_typesupport_c",
+        "std_msgs__rosidl_generator_c",
+        "rosgraph_msgs__rosidl_typesupport_c",
+        "rosgraph_msgs__rosidl_generator_c",
+        "sensor_msgs__rosidl_typesupport_c",
+        "sensor_msgs__rosidl_generator_c",
+        "vision_msgs__rosidl_typesupport_c",
+        "vision_msgs__rosidl_generator_c",
+        "rcl_action",
+        "lifecycle_msgs__rosidl_generator_c",
+        "lifecycle_msgs__rosidl_typesupport_c",
+        "rcl_lifecycle",
+        //   "rmw_fastrtps_shared_cpp",
+        //    "fastrtps",
+        //    "rosidl_typesupport_fastrtps_c",
+        //    "rosidl_typesupport_fastrtps_cpp",
+        //    "fastcdr",
+        //    "rmw_dds_common",
+        //    "rosidl_typesupport_cpp"
+        //    "rmw_dds_common__rosidl_typesupport_cpp",
+        //    "rmw_fastrtps_cpp",
+    };
+
     char* rosDistro = getenv("ROS_DISTRO");
-    if (rosDistro && strcmp(rosDistro, "foxy") == 0)
-    {
-        g_factoryLoader = std::make_shared<omni::isaac::utils::LibraryLoader>("omni.isaac.ros2_bridge.foxy");
-    }
-    else if (rosDistro && strcmp(rosDistro, "humble") == 0)
-    {
-        g_factoryLoader = std::make_shared<omni::isaac::utils::LibraryLoader>("omni.isaac.ros2_bridge.humble");
-    }
-    else
+    // attempt to load a ros library
+    // if it fails, force load internal distro
+    if (rosDistro && strcmp(rosDistro, "foxy") != 0 && strcmp(rosDistro, "humble") != 0)
     {
         CARB_LOG_ERROR("Unsupported ROS_DISTRO or ROS_DISTRO env var not specified: %s", rosDistro);
         return;
+    }
+    else
+    {
+        auto temp_loader = std::make_shared<omni::isaac::utils::LibraryLoader>("rosidl_runtime_c", "", true);
+        if (temp_loader->loadedLibrary == carb::extras::kInvalidLibraryHandle)
+        {
+            CARB_LOG_WARN(
+                "Loading librosidl_runtime_c.so from sourced ROS_DISTRO failed, falling back to internal libraries");
+            std::string bridgePath = "${app}";
+
+            carb::tokens::ITokens* tokens = carb::getCachedInterface<carb::tokens::ITokens>();
+            g_extensionPath = carb::tokens::resolveString(tokens, bridgePath.c_str());
+            std::experimental::filesystem::path p = g_extensionPath;
+            g_extensionPath =
+                p.parent_path().string() + "/exts/omni.isaac.ros2_bridge/" + std::string(rosDistro) + "/lib/";
+            // CARB_LOG_ERROR("PATHA %s", g_extensionPath.c_str());
+            for (std::string lib : lib_list)
+            {
+                g_backupLibLoader.LoadLibrary(lib, g_extensionPath);
+            }
+        }
+        g_factoryLoader =
+            std::make_shared<omni::isaac::utils::LibraryLoader>("omni.isaac.ros2_bridge." + std::string(rosDistro));
     }
 
 
