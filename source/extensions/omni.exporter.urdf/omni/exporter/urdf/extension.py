@@ -14,7 +14,6 @@ import weakref
 
 import omni.ext
 import omni.kit.commands
-import omni.physx as _physx
 import omni.timeline
 import omni.ui as ui
 import omni.usd
@@ -71,8 +70,6 @@ class Extension(omni.ext.IExt):
 
         # Events
         self._usd_context = omni.usd.get_context()
-        self._physxIFace = _physx.acquire_physx_interface()
-        self._physx_subscription = None
         self._stage_event_sub = None
         self._timeline = omni.timeline.get_timeline_interface()
 
@@ -129,21 +126,11 @@ class Extension(omni.ext.IExt):
         self.ui_builder.on_menu_callback()
 
     def _on_timeline_event(self, event):
-        if event.type == int(omni.timeline.TimelineEventType.PLAY):
-            if not self._physx_subscription:
-                self._physx_subscription = self._physxIFace.subscribe_physics_step_events(self._on_physics_step)
-        elif event.type == int(omni.timeline.TimelineEventType.STOP):
-            self._physx_subscription = None
-
         self.ui_builder.on_timeline_event(event)
-
-    def _on_physics_step(self, step):
-        self.ui_builder.on_physics_step(step)
 
     def _on_stage_event(self, event):
         if event.type == int(StageEventType.OPENED) or event.type == int(StageEventType.CLOSED):
             # stage was opened or closed, cleanup
-            self._physx_subscription = None
             self.ui_builder.cleanup()
 
         self.ui_builder.on_stage_event(event)

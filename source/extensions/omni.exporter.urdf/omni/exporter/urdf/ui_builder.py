@@ -77,15 +77,6 @@ class UIBuilder:
             self._scenario_state_btn.reset()
             self._scenario_state_btn.enabled = False
 
-    def on_physics_step(self, step: float):
-        """Callback for Physics Step.
-        Physics steps only occur when the timeline is playing
-
-        Args:
-            step (float): Size of physics step
-        """
-        pass
-
     def on_stage_event(self, event):
         """Callback for Stage Events
 
