@@ -27,19 +27,6 @@ class OgnIsaacReadContactSensorInternalState(BaseResetNode):
         self.cs_path = ""
         pass
 
-    def init_compute(self):
-        cs_name_len = len(self.cs_path) - self.cs_path.rfind("/")
-
-        dc = _dynamic_control.acquire_dynamic_control_interface()
-        if (
-            self._cs.is_contact_sensor(self.cs_path)
-            and dc.peek_object_type(self.cs_path[:-cs_name_len]) != _dynamic_control.OBJECT_NONE
-        ):
-            self.initialized = True
-            return True
-        else:
-            return False
-
 
 class OgnIsaacReadContactSensor:
     """
@@ -52,39 +39,17 @@ class OgnIsaacReadContactSensor:
 
     @staticmethod
     def compute(db) -> bool:
-
         state = db.internal_state
 
-        if not state.initialized:
-            if len(db.inputs.csPrim) > 0:
-                state.cs_path = db.inputs.csPrim[0].GetString()
+        if len(db.inputs.csPrim) > 0:
+            state.cs_path = db.inputs.csPrim[0].GetString()
 
-                result = state.init_compute()
-                if not result:
-                    db.outputs.inContact = False
-                    db.outputs.value = 0
-                    db.outputs.sensorTime = 0
-                    db.log_error("Prim is not a contact sensor or is not attached to rigid body")
-                    return False
-
-                reading = state._cs.get_sensor_reading(state.cs_path)
-                if reading.is_valid:
-                    db.outputs.inContact = reading.inContact
-                    db.outputs.value = reading.value
-                    db.outputs.sensorTime = reading.time
-                else:
-                    db.outputs.inContact = False
-                    db.outputs.value = 0
-                    db.outputs.sensorTime = 0
-                    db.log_warn("Invalid contact sensor measurement, is it enabled?")
-                    return False
-            else:
-                db.outputs.inContact = False
-                db.outputs.value = 0
-                db.outputs.sensorTime = 0
-                db.log_error("Invalid contact sensor prim")
-                return False
-            return True
+        else:
+            db.outputs.inContact = False
+            db.outputs.value = 0
+            db.outputs.sensorTime = 0
+            db.log_error("Invalid contact sensor prim")
+            return False
 
         reading = state._cs.get_sensor_reading(state.cs_path)
         if reading.is_valid:

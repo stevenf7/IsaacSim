@@ -68,9 +68,9 @@
             }, 
             "orientation": {
                 "type": "quatd[4]",
-                "description": "Relative orientation as quaternion",
+                "description": "Sensor orientation as quaternion",
                 "metadata": {
-                    "uiName": "Relative Orientation Quaternion"
+                    "uiName": "Sensor Orientation Quaternion"
                 },
                 "default": [
                     0.0, 

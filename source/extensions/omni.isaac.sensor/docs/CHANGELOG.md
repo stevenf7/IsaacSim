@@ -4,6 +4,7 @@
 - IsaacComputeRTXLidarFlatScan now works with single emitter lidar configs like RPLIDAR_S2E
 ### Fixed
 - IsaacComputeRTXLidarFlatScan range projected to 0 elevation
+- IMU and contact sensor read omnigraph nodes can now support parents from multiple levels up.
 
 ## [9.4.0] - 2023-09-18
 ### Added 
