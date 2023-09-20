@@ -40,7 +40,7 @@ class PytorchWriter(Writer):
             self._output_dir = None
         self._frame_id = 0
 
-        self.annotators = [AnnotatorRegistry.get_annotator("LdrColor", device="cuda")]
+        self.annotators = [AnnotatorRegistry.get_annotator("LdrColor", device="cuda", do_array_copy=False)]
         self.listener = listener
         self.device = device
         self.version = __version__
