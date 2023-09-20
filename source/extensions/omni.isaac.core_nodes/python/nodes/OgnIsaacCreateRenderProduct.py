@@ -26,11 +26,11 @@ class OgnIsaacCreateRenderProductInternalState(BaseResetNode):
         super().__init__(initialize=False)
 
     def on_stage_event(self, event: carb.events.IEvent):
-        if event.type == int(omni.usd.StageEventType.SIMULATION_STOP_PLAY):
+        if event.type == int(omni.timeline.TimelineEventType.STOP):
             if self.hydra_texture:
                 self.hydra_texture.updates_enabled = False
             self.initialized = False
-        elif event.type == int(omni.usd.StageEventType.SIMULATION_START_PLAY):
+        elif event.type == int(omni.timeline.TimelineEventType.PLAY):
             if self.hydra_texture:
                 self.hydra_texture.updates_enabled = True
 
@@ -47,6 +47,14 @@ class OgnIsaacCreateRenderProduct:
     @staticmethod
     def compute(db) -> bool:
         state = db.internal_state
+        if db.inputs.enabled is False:
+            if state.hydra_texture is not None:
+                state.hydra_texture.updates_enabled = False
+            return False
+        else:
+            if state.hydra_texture is not None:
+                state.hydra_texture.updates_enabled = True
+
         if len(db.inputs.cameraPrim) == 0:
             db.log_error(f"Camera prim must be specified")
             return False
@@ -63,6 +71,12 @@ class OgnIsaacCreateRenderProduct:
                     name, db.inputs.width, db.inputs.height, "", db.inputs.cameraPrim[0].GetString(), "rtx", True, True
                 )
             db.outputs.renderProductPath = state.render_product_path
+
+            state.rp_sub = (
+                omni.timeline.get_timeline_interface()
+                .get_timeline_event_stream()
+                .create_subscription_to_pop(state.on_stage_event, name="IsaacSimOGNCoreNodesRPEventHandler")
+            )
         db.outputs.execOut = omni.graph.core.ExecutionAttributeState.ENABLED
         return True
 
@@ -77,3 +91,4 @@ class OgnIsaacCreateRenderProduct:
         if state is not None:
             state.hydra_texture = None
             state.hydra_texture_factory = None
+            state.rp_sub = None

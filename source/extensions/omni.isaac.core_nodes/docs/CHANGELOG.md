@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.6.0] - 2023-09-19
+### Changed
+- Add enabled flag to create render product node
 
 ## [1.5.0] - 2023-08-31
 ### Changed

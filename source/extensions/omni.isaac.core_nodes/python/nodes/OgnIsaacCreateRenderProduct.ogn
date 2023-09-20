@@ -27,6 +27,11 @@
             "cameraPrim":{
                 "type": "target",
                 "description": "Usd prim reference to the camera associated with this render product"
+            },
+            "enabled": {
+                "type": "bool",
+                "description": "Set to false to disable downstream execution and RP creation",
+                "default": true
             }
 
         },

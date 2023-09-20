@@ -41,7 +41,7 @@ class TestAnnotators(omni.kit.test.AsyncTestCase):
         self._timeline = omni.timeline.get_timeline_interface()
         self._stage.SetTimeCodesPerSecond(60)
         self._timeline.set_target_framerate(60)
-        set_camera_view(eye=[-6, -15.5, 6.5], target=[-6, 10.5, -1], camera_prim_path="/OmniverseKit_Persp")
+        set_camera_view(eye=[-6, 0, 6.5], target=[-6, 0, -1], camera_prim_path="/OmniverseKit_Persp")
         await omni.kit.app.get_app().next_update_async()
 
     # ----------------------------------------------------------------------
