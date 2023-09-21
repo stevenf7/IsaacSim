@@ -313,6 +313,18 @@ ziponly = false
 package_per_config = true
 "platform:linux-x86_64".archive_format = "7z" # Use 7z on linux
 
+[repo_package.packages.isaac-sim-binaryscan]
+root = "_build/$${platform}/$${config}"
+omniverse_flow_version_scheme = true
+ziponly = false
+"platform:linux-x86_64".archive_format = "7z" # Use 7z on linux
+"platform:windows-x86_64".archive_format = "7z"
+package_per_config = true
+append_config = true
+replace_authors_in_kit_extensions = true
+strip_package_infos = true
+windows_max_path_length = 220 #TODO: changed from default of 180 to make builds pass
+
 # to generate test runner package for isaac sim
 [repo_package.packages.test_runner]
 omniverse_flow_version_scheme = true

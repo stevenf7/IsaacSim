@@ -25,6 +25,15 @@ command = "publish_internal_packages"
 entry_point = "${config_root}/tools/repoman/publish_internal_packages.py:setup_repo_tool"
 
 
+########################################################################################################################
+# Isaac Sim binaryscan package publish tool
+########################################################################################################################
+
+[publish_binaryscan_packages]
+command = "publish_binaryscan_packages"
+entry_point = "${config_root}/tools/repoman/publish_binaryscan_packages.py:setup_repo_tool"
+
+
 
 ########################################################################################################################
 # Isaac Sim package publish tool

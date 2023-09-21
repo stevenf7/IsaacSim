@@ -129,6 +129,66 @@ files_exclude = [
 
 ]
 
+[isaac-sim-binaryscan.release]
+files = [
+    ["**"]
+]
+files_exclude = [
+    ["**/*.pyc"],
+    ["**/*.pdb"],
+    ["**/*.exp"],
+    ["apps/exts.deps.generated.kit"],
+    ["apps/omni.isaac.sim.extscache.*"],
+    ["apps/omni.isaac.sim.splash.kit"],
+    ["exts/omni.isaac.internal_tools"],
+    ["tests/tests-python-omni.isaac.internal_tools.*"],
+    ["tests/tests-internal*"],
+    ["tests/tests-docker*"],
+    ["dockertests/**"],
+    ["kit/**"],
+    ["extscache/**"],
+    ["standalone_examples/testing/**"],
+    ["exts/omni.isaac.core_archive/pip_prebundle/bin/**"], # OM-84922
+]
+
+[isaac-sim-binaryscan.linux-x86_64]
+files = [
+    ["../../docs/isaac_sim/latest/**", "docs/py/"] # linux ext api docs
+]
+files_strip = [
+    ["**/*.so"],
+]
+
+files_strip_exclude = [
+    ["kit/exts/omni.kit.pip_archive/pip_prebundle/PIL/**"],
+    ["exts/omni.pip.compute/pip_prebundle/scipy/**"],
+    ["exts/omni.isaac.ocs2/pip_prebundle/lib/**"],
+    ["extscache/omni.pip.torch**"]
+]
+
+files_exclude = [
+    ["kit/**"],
+    ["extscache/**"],
+    ["isaac-sim.xr.steamvr.sh"], # Remove XR support for Linux
+    ["apps/omni.isaac.sim.xr.steamvr.kit"] # Remove XR support for Linux
+]
+
+[isaac-sim-binaryscan.windows-x86_64]
+files = [
+    # WAR: repo_fileutils fails to package folder starting with dot on windows unless specified explicitly. The reason is that
+    # python's std glob module doesn't support finding them. Fixing that turned out to be quite hard.
+    # Isaac Sim: This doesn't exist in non launcher versions of kit sdk package
+    # ["kit/exts/omni.kit.pip_archive/pip_prebundle/numpy/.libs"],
+    ["exts/omni.pip.compute/pip_prebundle/scipy/_lib"],
+    # ["../../docs/isaac_sim/latest/**", "docs/py/"] # windows ext api docs
+]
+files_exclude = [
+    ["kit/**"],
+    ["extscache/**"],
+    ["standalone_examples/cortex/**"], # Cortex not shipped on windows
+    ["standalone_examples/api/omni.isaac.ros_bridge**"] # ROS1 not shipped on windows
+]
+
 ########################################################################################################################
 # test_runner package
 ########################################################################################################################
