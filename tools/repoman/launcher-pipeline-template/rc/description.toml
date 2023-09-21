@@ -47,16 +47,16 @@ description = [
 
 [[links]]
 title = "System Requirements"
-url = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/requirements.html"
+url = "https://docs.omniverse.nvidia.com/isaacsim/latest/requirements.html"
 [[links]]
 title = "Release Notes"
-url = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/release_notes.html"
+url = "https://docs.omniverse.nvidia.com/isaacsim/latest/release_notes.html"
 [[links]]
 title = "Documentation"
-url = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html"
+url = "https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html"
 [[links]]
 title = "Tutorials"
-url = "https://www.nvidia.com/en-us/on-demand/search/?facet.mimetype[]=event%20session&page=1&q=isaac%20sim&sort=date"
+url = "https://www.nvidia.com/en-us/on-demand/playlist/playList-63b157fe-95fe-4b93-8b9b-d731be32ec29/"
 [[links]]
 title = "Forums"
 url = "https://forums.developer.nvidia.com/c/omniverse/simulation/69"
