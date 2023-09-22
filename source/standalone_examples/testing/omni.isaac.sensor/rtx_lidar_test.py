@@ -24,25 +24,6 @@ from omni.isaac.core.utils.render_product import create_hydra_texture
 from pxr import Gf, Sdf, UsdGeom, UsdPhysics
 
 
-class MyCustomWriter(rep.Writer):
-    def __init__(self, output_dir: str):
-        self.version = "0.0.2"
-        self._frame_id = 0
-        self.annotators = ["RtxSensorCpuIsaacCreateRTXLidarScanBuffer"]
-
-    def on_final_frame(self):
-        self.backend.sync_pending_paths()
-
-    def write(self, data):
-        print("Frame number - {}".format(self._frame_id))
-        print(data["RtxSensorCpuIsaacCreateRTXLidarScanBuffer"])  # ["data"])
-        print("*****************")
-        self._frame_id += 1
-
-
-rep.WriterRegistry.register(MyCustomWriter)
-
-
 def printinc(i):
     print(f"{i}")
     return i + 1
@@ -136,6 +117,7 @@ if 1:
         )
 
 lidar_config = "Example_Rotary"
+lidar_config = "RPLIDAR_S2E"
 if len(sys.argv) >= 3:
     lidar_config = sys.argv[2]
 
@@ -249,12 +231,22 @@ if 0:
     writer.attach([render_product_path])
 
 
-annotator = rep.AnnotatorRegistry.get_annotator("RtxSensorCpuIsaacCreateRTXLidarScanBuffer")
-annotator.attach([render_product_path])
+# annotator = rep.AnnotatorRegistry.get_annotator("RtxSensorCpuIsaacCreateRTXLidarScanBuffer")
+# annotator.attach([render_product_path])
+annotatorFlat = rep.AnnotatorRegistry.get_annotator("RtxSensorCpuIsaacComputeRTXLidarFlatScan")
+annotatorFlat.attach([render_product_path])
+# annotatorLaser = rep.AnnotatorRegistry.get_annotator("RtxSensorCpuIsaacCreateRTXLidarLaserScan")
+# annotatorLaser.attach([render_product_path])
 while simulation_app.is_running():
     simulation_app.update()
-    # data = annotator.get_data()
-    # print(data)
+    dataFlat = annotatorFlat.get_data()
+    print("___Flat Data___")
+    print(f'Len Flat {len(dataFlat["linearDepthData"])}')
+    print(dataFlat)
+    # dataLaser = annotatorLaser.get_data()
+    # print("~~~Laser Data~~")
+    # print(f'Len Laser {len(dataLaser["linearDepthData"])}')
+    # print(dataLaser)
     # break
 
 # cleanup and shutdown

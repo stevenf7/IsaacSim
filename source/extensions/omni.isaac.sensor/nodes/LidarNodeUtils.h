@@ -14,7 +14,7 @@
 #include <omni/sensors/lidar/LidarProfileTypes.h>
 
 void getTransformFromLidarAsyncParameter(const LidarAsyncParameter& parm, omni::math::linalg::matrix4d& matrixOutput);
-void updateLidarConfig(std::string inConfig,
+bool updateLidarConfig(std::string inConfig,
                        std::string& config,
                        LidarScanType& scanType,
                        LidarRotaryProfile& rotaryProfile,

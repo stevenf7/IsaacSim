@@ -24,6 +24,10 @@
             "bufferSize": {
                 "type": "uint64",
                 "description": "Size (in bytes) of the buffer (0 if the input is a texture)"
+            },
+            "renderProductPath": {
+                "type": "token",
+                "description": "Config is gotten from this"
             }
         },
         "outputs": {
@@ -75,7 +79,7 @@
             },
             "azimuthRange": {
                 "type": "float[2]",
-                "description": "The azimuth range [min, max]",
+                "description": "The azimuth range [min, max] in radians.",
                 "default": [0.0, 0.0]
             }
         }
