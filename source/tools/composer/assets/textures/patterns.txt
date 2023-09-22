@@ -1,1 +1,1 @@
-/NVIDIA/Assets/Isaac/2022.2.1/Isaac/Materials/Textures/Patterns
+/NVIDIA/Assets/Isaac/2023.1.0/Isaac/Materials/Textures/Patterns
