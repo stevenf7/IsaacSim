@@ -28,7 +28,6 @@ icon = "data/icon.png"
 "omni.kit.pip_archive" = {} # pulls in numpy
 "omni.syntheticdata" = {}
 "omni.isaac.range_sensor" = {}
-"omni.isaac.synthetic_utils" = {}
 "omni.kit.asset_converter" = {}
 "omni.isaac.wheeled_robots" = {}
 

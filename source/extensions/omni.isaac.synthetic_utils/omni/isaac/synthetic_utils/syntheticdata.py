@@ -26,6 +26,7 @@ import builtins
 import math
 import time
 import typing
+import warnings
 
 import carb
 import numpy as np
@@ -38,12 +39,11 @@ class SyntheticDataHelper:
         ext_manager = self.app.get_extension_manager()
         ext_manager.set_extension_enabled("omni.syntheticdata", True)
 
-        import omni.syntheticdata._syntheticdata as sd  # Must be imported after getting app interface
         from omni.syntheticdata import helpers, sensors
 
-        self.sd = sd
+        self.sd = omni.syntheticdata._syntheticdata
 
-        self.sd_interface = self.sd.acquire_syntheticdata_interface()
+        self.sd_interface = omni.syntheticdata._syntheticdata.acquire_syntheticdata_interface()
         self.carb_settings = carb.settings.acquire_settings_interface()
         self.sensor_helper_lib = sensors
         self.generic_helper_lib = helpers
@@ -63,15 +63,15 @@ class SyntheticDataHelper:
         }
 
         self.sensor_types = {
-            "rgb": self.sd.SensorType.Rgb,
-            "depth": self.sd.SensorType.DistanceToImagePlane,
-            "depthLinear": self.sd.SensorType.DistanceToImagePlane,
-            "instanceSegmentation": self.sd.SensorType.InstanceSegmentation,
-            "semanticSegmentation": self.sd.SensorType.SemanticSegmentation,
-            "boundingBox2DTight": self.sd.SensorType.BoundingBox2DTight,
-            "boundingBox2DLoose": self.sd.SensorType.BoundingBox2DLoose,
-            "boundingBox3D": self.sd.SensorType.BoundingBox3D,
-            "occlusion": self.sd.SensorType.Occlusion,
+            "rgb": omni.syntheticdata._syntheticdata.SensorType.Rgb,
+            "depth": omni.syntheticdata._syntheticdata.SensorType.DistanceToImagePlane,
+            "depthLinear": omni.syntheticdata._syntheticdata.SensorType.DistanceToImagePlane,
+            "instanceSegmentation": omni.syntheticdata._syntheticdata.SensorType.InstanceSegmentation,
+            "semanticSegmentation": omni.syntheticdata._syntheticdata.SensorType.SemanticSegmentation,
+            "boundingBox2DTight": omni.syntheticdata._syntheticdata.SensorType.BoundingBox2DTight,
+            "boundingBox2DLoose": omni.syntheticdata._syntheticdata.SensorType.BoundingBox2DLoose,
+            "boundingBox3D": omni.syntheticdata._syntheticdata.SensorType.BoundingBox3D,
+            "occlusion": omni.syntheticdata._syntheticdata.SensorType.Occlusion,
         }
 
         self.sensor_state = {s: False for s in list(self.sensor_helpers.keys())}
@@ -215,54 +215,27 @@ class SyntheticDataHelper:
 
     def get_semantic_id_map(self, semantic_labels: list = []) -> dict:
         """
-        Get map of semantic ID from label
+        [Deprecated] Get map of semantic ID from label
         """
-
-        output = {}
-        if len(semantic_labels) > 0:
-            for label in semantic_labels:
-                idx = self.sd_interface.get_semantic_segmentation_id_from_data("class", label)
-                output[label] = idx
-        return output
+        warnings.warn(
+            "This function is deprecated, use omni.replicator annotators to access semantic data", DeprecationWarning
+        )
+        return {}
 
     def get_semantic_label_map(self, semantic_ids: list = []) -> dict:
         """
-        Get map of semantic label from ID
+        [Deprecated] Get map of semantic label from ID
         """
-        output = {}
-        if len(semantic_ids) > 0:
-            for idx in semantic_ids:
-                label = self.sd_interface.get_semantic_segmentation_data_from_id(idx)
-                output[idx] = label
-        return output
+        warnings.warn(
+            "This function is deprecated, use omni.replicator annotators to access semantic data", DeprecationWarning
+        )
+        return {}
 
     def get_mapped_semantic_data(
         self, semantic_data: list = [[]], user_semantic_label_map: dict = {}, remap_using_base_class=False
     ) -> dict:
-        """Map semantic segmentation data to IDs specified by user
-
-        Usage:
-
-        gt = get_groundtruth()
-        user_semantic_label_map ={"cone":4, "cylinder":5, "cube":6}
-        mapped_data = get_mapped_semantic_data(gt["semanticSegmentation"], user_semantic_label_map)
-
-        Args:
-            semantic_data (list, optional): Raw semantic image. Defaults to [[]].
-            user_semantic_label_map (dict, optional): Dictionary of label to id pairs. Defaults to {}.
-            remap_using_base_class (bool, optional): If multiple class labels are found, use the topmost one. Defaults to False.
-
-        Returns:
-            dict: [description]
-        """
-
-        semantic_data_np = np.array(semantic_data)
-        unique_semantic_ids = list(np.unique(semantic_data_np))
-        unique_semantic_labels_map = self.get_semantic_label_map(unique_semantic_ids)
-        for unique_id, unique_label in unique_semantic_labels_map.items():
-            label = unique_label
-            if remap_using_base_class:
-                label = unique_label.split(":")[-1]
-            if label in user_semantic_label_map:
-                semantic_data_np[np.where(semantic_data == unique_id)] = user_semantic_label_map[label]
-        return semantic_data_np.tolist()
+        """[Deprecated] Map semantic segmentation data to IDs specified by user"""
+        warnings.warn(
+            "This function is deprecated, use omni.replicator annotators to access semantic data", DeprecationWarning
+        )
+        return {}
