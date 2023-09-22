@@ -19,7 +19,6 @@ writeTarget.kit = true
 "omni.kit.uiapp" = {}
 "omni.physx" = {}
 "omni.isaac.dynamic_control" = {}
-"omni.isaac.synthetic_utils" = {}
 "omni.isaac.ui" = {}
 "omni.isaac.core" = {}
 "omni.isaac.franka" = {}
