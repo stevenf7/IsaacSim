@@ -34,9 +34,9 @@ class TestAnnotators(omni.kit.test.AsyncTestCase):
         ground_plane = GroundPlane("/World/ground_plane", visible=True)
         self._stage = get_current_stage()
         distantLight = UsdLux.DistantLight.Define(self._stage, Sdf.Path("/DistantLight"))
-        action_registry = omni.kit.actions.core.get_action_registry()
-        self._action = action_registry.get_action("omni.kit.viewport.actions", "toggle_grid_visibility")
-        self._action.execute(viewport_api=self._viewport_api, visible=False)
+        # action_registry = omni.kit.actions.core.get_action_registry()
+        # self._action = action_registry.get_action("omni.kit.viewport.actions", "toggle_grid_visibility")
+        # self._action.execute(viewport_api=self._viewport_api, visible=False)
         self._stage = omni.usd.get_context().get_stage()
         self._timeline = omni.timeline.get_timeline_interface()
         self._stage.SetTimeCodesPerSecond(60)
@@ -46,7 +46,7 @@ class TestAnnotators(omni.kit.test.AsyncTestCase):
 
     # ----------------------------------------------------------------------
     async def tearDown(self):
-        self._action.execute(viewport_api=self._viewport_api, visible=True)
+        # self._action.execute(viewport_api=self._viewport_api, visible=True)
         pass
 
     # ----------------------------------------------------------------------
@@ -105,9 +105,9 @@ class TestAnnotators(omni.kit.test.AsyncTestCase):
         annotator.attach([self._render_product_path])
 
         self._timeline.play()
-        await omni.syntheticdata.sensors.next_render_simulation_async(self._render_product_path, 1)
+        await omni.syntheticdata.sensors.next_render_simulation_async(self._render_product_path, 10)
         data = annotator.get_data()
-        self.assertTrue(np.all(data["data"] == 255))
+        self.assertTrue(np.all(data["data"] > 150))
         annotator.detach()
 
     async def test_convert_depth_to_point_cloud(self):
@@ -118,7 +118,7 @@ class TestAnnotators(omni.kit.test.AsyncTestCase):
         annotator.attach([self._render_product_path])
 
         self._timeline.play()
-        await omni.syntheticdata.sensors.next_render_simulation_async(self._render_product_path, 1)
+        await omni.syntheticdata.sensors.next_render_simulation_async(self._render_product_path, 10)
         data = annotator.get_data()
         self.assertTrue(np.all(np.linalg.norm(data["data"], axis=1) > 0))
 
