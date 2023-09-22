@@ -93,7 +93,6 @@ class NavSDGDemo:
         self._in_running_state = True
 
     def clear(self):
-        self._stage = None
         self._cycled_env_urls = None
         self._carter_nav_origin = None
         self._carter_chassis = None
@@ -109,6 +108,7 @@ class NavSDGDemo:
             self._timeline_sub.unsubscribe()
         self._timeline_sub = None
         self._destroy_render_products()
+        self._stage = None
         self._in_running_state = False
 
     def is_running(self):
@@ -228,15 +228,13 @@ class NavSDGDemo:
             name="left_sensor",
             force_new=True,
         )
-        # TODO OM-108036
-        self._render_products = [rp_left]
-        # rp_right = rep.create.render_product(
-        #     "/NavWorld/CarterNav/chassis_link/stereo_cam_right/stereo_cam_right_sensor_frame/camera_sensor_right",
-        #     (512, 512),
-        #     name="right_sensor",
-        #     force_new=True,
-        # )
-        # self._render_products = [rp_left, rp_right]
+        rp_right = rep.create.render_product(
+            "/NavWorld/CarterNav/chassis_link/stereo_cam_right/stereo_cam_right_sensor_frame/camera_sensor_right",
+            (512, 512),
+            name="right_sensor",
+            force_new=True,
+        )
+        self._render_products = [rp_left, rp_right]
         self._writer.attach(self._render_products)
 
     def _destroy_render_products(self):
@@ -246,12 +244,12 @@ class NavSDGDemo:
         for rp in self._render_products:
             rp.destroy()
         self._render_products.clear()
+        if self._stage.GetPrimAtPath("/Replicator"):
+            omni.kit.commands.execute("DeletePrimsCommand", paths=["/Replicator"])
 
     def _run_sdg(self):
         if self._use_temp_rp:
             self._setup_render_products()
-            # TODO OM-109114 - dummy step call because the first frame is not written
-            rep.orchestrator.step(rt_subframes=16, pause_timeline=False)
         rep.orchestrator.step(rt_subframes=16, pause_timeline=False)
         rep.orchestrator.wait_until_complete()
         if self._use_temp_rp:
@@ -260,8 +258,6 @@ class NavSDGDemo:
     async def _run_sdg_async(self):
         if self._use_temp_rp:
             self._setup_render_products()
-            # TODO OM-109114 - dummy step call because the first frame is not written
-            await rep.orchestrator.step_async(rt_subframes=16, pause_timeline=False)
         await rep.orchestrator.step_async(rt_subframes=16, pause_timeline=False)
         await rep.orchestrator.wait_until_complete_async()
         if self._use_temp_rp:
