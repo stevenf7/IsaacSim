@@ -18,8 +18,6 @@ from omni.isaac.ui.element_wrappers import Button, CheckBox, CollapsableFrame, S
 from omni.isaac.ui.ui_utils import get_style
 from omni.usd import StageEventType
 
-# Work around a (not understood) issue on Windows where the lula python extension module (pyd file)
-# is loaded properly but the DLLs on which it depends are not, despite being in the same directory.
 if os.name == "nt":
     file_dir = pathlib.Path(os.path.dirname(os.path.abspath(__file__)))
     exporter_urdf_dir = file_dir.joinpath(pathlib.Path("../../../pip_prebundle")).resolve()
@@ -41,7 +39,6 @@ class UIBuilder:
 
         self.log_level = logger.level_from_name("INFO")
 
-        # Run initialization for the provided example
         self._on_init()
 
     def _on_init(self):
@@ -53,55 +50,24 @@ class UIBuilder:
         self._data_params["visualize_collision_meshes"] = False
         self._data_params["use_absolute_paths"] = False
 
-    ###################################################################################
-    #           The Functions Below Are Called Automatically By extension.py
-    ###################################################################################
-
     def on_menu_callback(self):
-        """Callback for when the UI is opened from the toolbar.
-        This is called directly after build_ui().
-        """
         pass
 
     def on_timeline_event(self, event):
-        """Callback for Timeline events (Play, Pause, Stop)
-
-        Args:
-            event (omni.timeline.TimelineEventType): Event Type
-        """
         if event.type == int(omni.timeline.TimelineEventType.STOP):
-            # When the user hits the stop button through the UI, they will inevitably discover edge cases where things break
-            # For complete robustness, the user should resolve those edge cases here
-            # In general, for extensions based off this template, there is no value to having the user click the play/stop
-            # button instead of using the Load/Reset/Run buttons provided.
             self._scenario_state_btn.reset()
             self._scenario_state_btn.enabled = False
 
     def on_stage_event(self, event):
-        """Callback for Stage Events
-
-        Args:
-            event (omni.usd.StageEventType): Event Type
-        """
         if event.type == int(StageEventType.OPENED):
             # If the user opens a new stage, the extension should completely reset
             self._reset_extension()
 
     def cleanup(self):
-        """
-        Called when the stage is closed or the extension is hot reloaded.
-        Perform any necessary cleanup such as removing active callback functions
-        Buttons imported from omni.isaac.ui.element_wrappers implement a cleanup function that should be called
-        """
         for ui_elem in self.wrapped_ui_elements:
             ui_elem.cleanup()
 
     def build_ui(self):
-        """
-        Build a custom UI tool to run your extension.
-        This function will be called any time the UI window is closed and reopened.
-        """
-
         def is_usd_or_urdf_path(file_path: str):
             # Filter file paths shown in the file picker to only be USD or Python files
             _, ext = os.path.splitext(file_path.lower())
