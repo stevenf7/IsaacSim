@@ -7,6 +7,8 @@ CONFIG:
   height: 512
 CLASS_NAME_TO_INDEX:
   _03_cracker_box: 1
+OBJECTS_TO_GENERATE:
+- { part_name: 003_cracker_box, num: 1, prim_type: _03_cracker_box }
 FORCE_RANGE: 30
 WIDTH: 512
 HEIGHT: 512
