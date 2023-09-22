@@ -2,6 +2,10 @@
 ## [9.5.1] - 2023-09-20
 ### Fixed
 - ComputeRTXLidarFlatScan now uses lidar config for more accurate output
+### Changed
+- RGBD menu updated to include manufacturer sub-menu
+- Updated usd paths for Sensing assets
+- Changed base prim type for sensors from Camera to Xform (real camera sensor should be inside of the default prim)
 
 ## [9.5.0] - 2023-09-18
 ### Added
