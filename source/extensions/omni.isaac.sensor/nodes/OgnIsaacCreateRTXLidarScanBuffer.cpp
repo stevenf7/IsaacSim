@@ -213,7 +213,7 @@ public:
         const uint32_t startLocFullScan =
             numEchos * (isSolidState ? lidarReturnsHost.emitterIds[0] : parameterHost->async.startTick * numChannels);
 
-        // numReturns is the number returns held in the incoming data
+        // numReturnsInput is the number returns held in the incoming data
         const uint32_t numReturnsInput = numTicks * numChannels * numEchos;
 
         // numReturnsPerScan is the number or returns in a full scan

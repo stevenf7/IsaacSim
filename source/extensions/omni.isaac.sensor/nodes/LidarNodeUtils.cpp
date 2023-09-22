@@ -31,7 +31,8 @@ void getTransformFromLidarAsyncParameter(const LidarAsyncParameter& parm, omni::
 }
 
 // if inConfig and config are different, then the profile needs to be updated, and if there is an error, then
-void updateLidarConfig(std::string inConfig,
+// return true only if config was updated.
+bool updateLidarConfig(std::string inConfig,
                        std::string& config,
                        LidarScanType& scanType,
                        LidarRotaryProfile& rotaryProfile,
@@ -39,7 +40,7 @@ void updateLidarConfig(std::string inConfig,
 {
     if (inConfig == config)
     {
-        return;
+        return false;
     }
 
     config = inConfig;
@@ -47,18 +48,18 @@ void updateLidarConfig(std::string inConfig,
     if (config == "")
     {
         scanType = LidarScanType::kUnknown;
-        return;
+        return false;
     }
 
     const std::string json = omni::sensors::nv::lidar::getProfileJsonAtPaths(inConfig);
     omni::sensors::lidar::ILidarProfileReaderPtr profileReader =
         carb::getCachedInterface<omni::sensors::lidar::ILidarProfileReaderFactory>()->createInstance();
 
+    bool updated{ false };
     if (profileReader)
     {
         profileReader->init(json.c_str());
         scanType = profileReader->lidarScanType();
-        bool updated{ false };
         if (scanType == LidarScanType::kSolidState)
         {
             updated = profileReader->update((void*)&solidStateProfile);
@@ -76,4 +77,5 @@ void updateLidarConfig(std::string inConfig,
     {
         scanType = LidarScanType::kUnknown;
     }
+    return updated;
 }
