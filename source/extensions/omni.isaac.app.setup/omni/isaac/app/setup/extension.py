@@ -262,19 +262,13 @@ class CreateSetupExtension(omni.ext.IExt):
 
         ref_guide_menu = editor_menu.add_item(self.HELP_REFERENCE_GUIDE_MENU, None, priority=-23)
         ref_guide_menu_action = omni.kit.menu.utils.add_action_to_menu(
-            self.HELP_REFERENCE_GUIDE_MENU,
-            lambda *_: self._open_browser(REFERENCE_GUIDE_URL),
-            "OpenRefGuide",
-            (0, Key.F3),
+            self.HELP_REFERENCE_GUIDE_MENU, lambda *_: self._open_browser(REFERENCE_GUIDE_URL), "OpenRefGuide"
         )
         self.menus.append((ref_guide_menu, ref_guide_menu_action))
 
         manual_url_path = editor_menu.add_item(self.HELP_SCRIPTING_MANUAL, None, priority=-21)
         manual_url_path_action = omni.kit.menu.utils.add_action_to_menu(
-            self.HELP_SCRIPTING_MANUAL,
-            lambda *_: self._open_browser(MANUAL_URL),
-            "OpenManual",
-            (0, Key.F1),
+            self.HELP_SCRIPTING_MANUAL, lambda *_: self._open_browser(MANUAL_URL), "OpenManual"
         )
         self.menus.append((manual_url_path, manual_url_path_action))
 
@@ -406,10 +400,9 @@ class CreateSetupExtension(omni.ext.IExt):
                     MenuLayout.Item(self.HELP_REFERENCE_GUIDE_MENU),
                     MenuLayout.Item(self.HELP_SCRIPTING_MANUAL),
                     MenuLayout.Item(self.HELP_FORUMS_URL),
-                    MenuLayout.Seperator(),
                     MenuLayout.Item(self.HELP_KIT_MANUAL),
                     MenuLayout.Item(self.HELP_UI_DOCS),
-                    MenuLayout.Item("Reference Guide", remove=True),
+                    MenuLayout.Item("USD Reference Guide", remove=True),
                     MenuLayout.Item("Discover Kit SDK", remove=True),
                     MenuLayout.Item("Developers Manual", remove=True),
                 ],

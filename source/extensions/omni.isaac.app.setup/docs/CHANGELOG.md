@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.11.2] - 2023-09-21
+
+### Removed
+- Remove hotkeys for Help menu
+
 ## [0.11.1] - 2023-09-06
 
 ### Changed
