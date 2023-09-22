@@ -21,7 +21,7 @@
         },
         "outputs": {
             "fileContents": {
-                "type": "string",
+                "type": ["string", "token"],
                 "description": "Output contents of file at path, returns empty string if file is not found",
                 "metadata": {
                     "uiName": "Output File Contents"
