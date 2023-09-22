@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.9.0] - 2023-08-28
+### Added
+- Add missing GPU collision stack size API in physics context
+
 ## [2.8.0] - 2023-08-23
 ### Fixed
 - Fixed gpu device parsing.

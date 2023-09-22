@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.8.2] - 2023-09-19
+### Changed
+- Add device ID to cuda device
+
 ## [0.8.1] - 2023-09-01
 ### Changed
 - Move domain randomization util back to OIGE

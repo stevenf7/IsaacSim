@@ -85,10 +85,20 @@ class VecEnvBase(gym.Env):
 
         from omni.isaac.core.world import World
 
-        device = "cpu"
-        if sim_params and "use_gpu_pipeline" in sim_params:
-            if sim_params["use_gpu_pipeline"]:
-                device = "cuda"
+        # parse device based on sim_param settings
+        if sim_params and "sim_device" in sim_params:
+            device = sim_params["sim_device"]
+        else:
+            device = "cpu"
+            physics_device_id = carb.settings.get_settings().get_as_int("/physics/cudaDevice")
+            gpu_id = 0 if physics_device_id < 0 else physics_device_id
+            if sim_params and "use_gpu_pipeline" in sim_params:
+                # GPU pipeline must use GPU simulation
+                if sim_params["use_gpu_pipeline"]:
+                    device = "cuda:" + str(gpu_id)
+            elif sim_params and "use_gpu" in sim_params:
+                if sim_params["use_gpu"]:
+                    device = "cuda:" + str(gpu_id)
 
         self._world = World(
             stage_units_in_meters=1.0, rendering_dt=rendering_dt, backend=backend, sim_params=sim_params, device=device

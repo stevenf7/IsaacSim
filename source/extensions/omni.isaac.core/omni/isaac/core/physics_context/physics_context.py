@@ -174,6 +174,8 @@ class PhysicsContext(object):
                 self.set_gpu_temp_buffer_capacity(sim_params["gpu_temp_buffer_capacity"])
             if "gpu_max_num_partitions" in sim_params.keys():
                 self.set_gpu_max_num_partitions(sim_params["gpu_max_num_partitions"])
+            if "gpu_collision_stack_size" in sim_params.keys():
+                self.set_gpu_collision_stack_size(sim_params["gpu_collision_stack_size"])
             if "solver_type" in sim_params.keys():
                 if sim_params["solver_type"] == 0:
                     self.set_solver_type("PGS")
@@ -1022,4 +1024,34 @@ class PhysicsContext(object):
         """
         if not is_prim_path_valid(self._prim_path):
             raise Exception("The Physics Context's physics scene path is invalid, you need to reinit Physics Context")
-        return self._physx_scene_api.gpu_max_num_partitions().Get()
+        return self._physx_scene_api.GetGpuMaxNumPartitionsAttr().Get()
+
+    def set_gpu_collision_stack_size(self, value: int) -> None:
+        """[summary]
+
+        Args:
+            value (int): [description]
+
+        Raises:
+            Exception: [description]
+        """
+        if not is_prim_path_valid(self._prim_path):
+            raise Exception("The Physics Context's physics scene path is invalid, you need to reinit Physics Context")
+        if self._physx_scene_api.GetGpuCollisionStackSizeAttr().Get() is None:
+            self._physx_scene_api.CreateGpuCollisionStackSizeAttr(value)
+        else:
+            self._physx_scene_api.GetGpuCollisionStackSizeAttr().Set(value)
+        return
+
+    def get_gpu_collision_stack_size(self) -> int:
+        """[summary]
+
+        Raises:
+            Exception: [description]
+
+        Returns:
+            int: [description]
+        """
+        if not is_prim_path_valid(self._prim_path):
+            raise Exception("The Physics Context's physics scene path is invalid, you need to reinit Physics Context")
+        return self._physx_scene_api.GetGpuCollisionStackSizeAttr().Get()
