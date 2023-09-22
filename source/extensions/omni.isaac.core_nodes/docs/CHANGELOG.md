@@ -1,4 +1,7 @@
 # Changelog
+## [1.6.1] - 2023-09-21
+### Changed
+- Read file node will return False if file path does not exist or is invalid
 
 ## [1.6.0] - 2023-09-19
 ### Changed

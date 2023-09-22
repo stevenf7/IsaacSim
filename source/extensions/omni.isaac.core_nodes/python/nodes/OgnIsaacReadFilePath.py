@@ -24,8 +24,10 @@ class OgnIsaacReadFilePath:
         db.outputs.fileContents = ""
         if len(db.inputs.path) == 0:
             db.log_warn("Empty input path, returning empty string.")
+            return False
         elif not exists(db.inputs.path):
             db.log_warn(f"Could not find file at {db.inputs.path}, returning empty string.")
+            return False
         else:
             with open(db.inputs.path, "r") as f:
                 db.outputs.fileContents = f.read()
