@@ -38,7 +38,7 @@ struct LidarSensorInterface
     float*(CARB_ABI* getZenithData)(const char* sensorPath);
     float*(CARB_ABI* getAzimuthData)(const char* sensorPath);
     carb::Float3*(CARB_ABI* getPointCloud)(const char* sensorPath);
-    uint16_t*(CARB_ABI* getSemanticData)(const char* sensorPath);
+    std::vector<std::string>(CARB_ABI* getPrimData)(const char* sensorPath);
     bool(CARB_ABI* isLidarSensor)(const char* sensorPath);
     uint64_t(CARB_ABI* getSequenceNumber)(const char* sensorPath);
     carb::Float2(CARB_ABI* getAzimuthRange)(const char* sensorPath);

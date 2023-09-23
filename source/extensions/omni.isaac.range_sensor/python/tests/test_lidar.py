@@ -334,9 +334,11 @@ class TestLidar(omni.kit.test.AsyncTestCase):
 
         # Get semantic data of hit points, and check that we get two non-zero semantic IDs
         semantic = self._lidar.get_semantic_data(lidarPath)
+        prim_data = self._lidar.get_prim_data(lidarPath)
 
-        # print(np.unique(semantic))
-        self.assertEqual(len(np.unique(semantic)), 3)
+        # semantic IDs are deprecated, use prim paths to access semantics instead
+        self.assertEqual(len(np.unique(semantic)), 0)
+        self.assertEqual(len(np.unique(prim_data)), 3)
         self._timeline.play()
 
     # test currently not working

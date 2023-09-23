@@ -269,21 +269,29 @@ PYBIND11_MODULE(_range_sensor, m)
         .def("get_semantic_data",
              [](const LidarSensorInterface* li, const char* sensorPath) -> py::object
              {
+                 CARB_LOG_WARN(
+                     "Lidar get_semantic_data is deprecated and will not return any data, use get_prim_data and access semantics via usd");
+                 return py::array();
+             },
+             R"pbdoc([Deprecated]
+                Args: 
+                    arg0 (:obj:`str`): USD path to sensor as a string
+                
+                Returns:
+                    :obj:`numpy.ndarray`: The semantic id of the hit for each beam in uint16)pbdoc")
+        .def("get_prim_data",
+             [](const LidarSensorInterface* li, const char* sensorPath) -> py::object
+             {
                  if (!li)
                      return py::none();
-                 uint16_t* data = li->getSemanticData(sensorPath);
-                 int rows = li->getNumRows(sensorPath);
-                 int numColsTicked = li->getNumColsTicked(sensorPath);
-                 return py::array(py::buffer_info(data, sizeof(uint16_t), py::format_descriptor<uint16_t>::value, 2,
-                                                  { numColsTicked, rows }, { sizeof(uint16_t) * rows, sizeof(uint16_t) }));
+                 return py::list(py::cast(li->getPrimData(sensorPath)));
              },
              R"pbdoc(
                 Args: 
                     arg0 (:obj:`str`): USD path to sensor as a string
                 
                 Returns:
-                    :obj:`numpy.ndarray`: The semantic id of the hit for each beam in uint16)pbdoc")
-
+                    :obj:`list`: The prim path of the hit for each beam as a string)pbdoc")
         .def("is_lidar_sensor", wrapInterfaceFunction(&LidarSensorInterface::isLidarSensor),
              R"pbdoc(
                 Args: 

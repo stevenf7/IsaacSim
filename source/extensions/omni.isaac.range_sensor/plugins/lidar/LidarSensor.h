@@ -10,8 +10,6 @@
 #pragma once
 
 #include "../core/RangeSensorComponent.h"
-#include "semanticAPI/semanticsAPI.h"
-#include "semanticAPI/tokens.h"
 
 #include <extensions/PxSceneQueryExt.h>
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
@@ -89,9 +87,9 @@ public:
         return mLastAzimuth;
     }
 
-    std::vector<uint16_t>& getSemanticData()
+    std::vector<std::string>& getPrimData()
     {
-        return mLastSemanticID;
+        return mLastPrimData;
     }
 
     carb::Float2 getAzimuthRange()
@@ -162,36 +160,7 @@ private:
                     if (enableSemantics)
                     {
                         const char* hitActorName = raycastHit.actor->getName();
-                        pxr::UsdPrim hitActor = mStage->GetPrimAtPath(pxr::SdfPath(hitActorName));
-                        auto schemas = hitActor.GetAppliedSchemas();
-                        for (int schema_idx = 0; schema_idx < int(schemas.size()); schema_idx++)
-                        {
-                            std::string temp = schemas[schema_idx].GetString();
-
-                            if (temp.rfind("SemanticsAPI", 0) == 0)
-                            {
-                                std::string name = temp.substr(temp.find(":") + 1);
-
-                                std::string semanticData = "", semanticType = "";
-                                auto semanticTypeAttr =
-                                    hitActor.GetAttribute(pxr::TfToken("semantic:" + name + ":params:semanticType"));
-                                auto semanticDataAttr =
-                                    hitActor.GetAttribute(pxr::TfToken("semantic:" + name + ":params:semanticData"));
-                                if (semanticTypeAttr && semanticDataAttr)
-                                {
-                                    semanticTypeAttr.Get(&semanticType);
-                                    semanticDataAttr.Get(&semanticData);
-                                    if (semanticType == "class")
-                                    {
-                                        mSemanticID[i] = mSyntheticDataPtr->getSemanticIdFromData(
-                                            semanticType.c_str(), semanticData.c_str());
-
-                                        // CARB_LOG_WARN("%s : %d", semanticData.c_str(), mSemanticID[i]);
-                                        break;
-                                    }
-                                }
-                            }
-                        }
+                        mPrimData[i] = hitActorName;
                     }
                     if (drawPoints)
                     {
@@ -203,9 +172,6 @@ private:
                         // set ratio for color.  should be zero at mMinDepth and unity at mMaxDepth
                         auto ratio =
                             (mLinearDepth[i] - mMinDepth * mMetersPerUnit) / ((mMaxDepth - mMinDepth) * mMetersPerUnit);
-                        if (enableSemantics && mSemanticID[i] != 0)
-                            ratio = mSemanticToRandomID[mSemanticID[i] % mNumSemanticIDs] /
-                                    static_cast<float>(mNumSemanticIDs);
 
                         data.position = hitPos;
                         data.color = omni::isaac::utils::color::distToRgba(ratio);
@@ -314,8 +280,7 @@ private:
 
     omni::syntheticdata::SyntheticData* mSyntheticDataPtr = nullptr;
     bool mEnableSemantics;
-    std::vector<uint16_t> mSemanticID, mSemanticToRandomID, mLastSemanticID;
-    const int mNumSemanticIDs = 256;
+    std::vector<std::string> mPrimData, mLastPrimData;
 };
 
 
