@@ -138,21 +138,11 @@ void LidarSensor::onComponentChange()
     mLastLinearDepth.assign(mRows * mMaxColsPerTick, 0);
     mLastBeamTime.assign(mRows * mMaxColsPerTick, 0);
     mLastHitPos.assign(mRows * mCols, { 0, 0, 0 });
-    mLastSemanticID.assign(mRows * mCols, 0);
+    mLastPrimData.assign(mRows * mCols, std::string());
     mLastCol = 0;
     mLastNumColsTicked = 0;
     mRemainingTime = 0.0f;
-
-    mSemanticID.assign(mRows * mCols, 0);
-    if (mSemanticToRandomID.size() == 0)
-    {
-        mSemanticToRandomID.resize(mNumSemanticIDs);
-        std::iota(mSemanticToRandomID.begin(), mSemanticToRandomID.end(), 1);
-
-        std::mt19937 g;
-        g.seed(0); // This forces all lidars to have the same color scheme
-        std::shuffle(mSemanticToRandomID.begin(), mSemanticToRandomID.end(), g);
-    }
+    mPrimData.assign(mRows * mCols, std::string());
 }
 
 
@@ -174,7 +164,7 @@ void LidarSensor::dumpData(int start, int stop, double dt)
     mLastBeamTime.resize(mRows * colsToTick);
     mLastIntensity.resize(mRows * colsToTick);
     mLastAzimuth.resize(colsToTick);
-    mLastSemanticID.resize(mRows * colsToTick);
+    mLastPrimData.resize(mRows * colsToTick);
 
     std::copy(mAzimuth.begin() + start, mAzimuth.begin() + (start + unwrappedSize), mLastAzimuth.begin());
     std::copy(mDepth.begin() + start * mRows, mDepth.begin() + (start + unwrappedSize) * mRows, mLastDepth.begin());
@@ -189,8 +179,8 @@ void LidarSensor::dumpData(int start, int stop, double dt)
     std::copy(mIntensity.begin() + start * mRows, mIntensity.begin() + (start + unwrappedSize) * mRows,
               mLastIntensity.begin());
 
-    std::copy(mSemanticID.begin() + start * mRows, mSemanticID.begin() + (start + unwrappedSize) * mRows,
-              mLastSemanticID.begin());
+    std::copy(
+        mPrimData.begin() + start * mRows, mPrimData.begin() + (start + unwrappedSize) * mRows, mLastPrimData.begin());
 
     // We wrapped around
     if (wrappedSize > 0)
@@ -204,8 +194,8 @@ void LidarSensor::dumpData(int start, int stop, double dt)
                   mLastLinearDepth.begin() + unwrappedSize * mRows);
         std::copy(mIntensity.begin(), mIntensity.begin() + wrappedSize * mRows,
                   mLastIntensity.begin() + unwrappedSize * mRows);
-        std::copy(mSemanticID.begin(), mSemanticID.begin() + wrappedSize * mRows,
-                  mLastSemanticID.begin() + unwrappedSize * mRows);
+        std::copy(
+            mPrimData.begin(), mPrimData.begin() + wrappedSize * mRows, mLastPrimData.begin() + unwrappedSize * mRows);
     }
 }
 
@@ -221,7 +211,7 @@ void LidarSensor::preTick()
 void LidarSensor::tick()
 {
     // Clear active semantic IDs each frame
-    mSemanticID.assign(mRows * mCols, 0);
+    mPrimData.assign(mRows * mCols, std::string());
 
     mLineDrawing->clear();
     mPointDrawing->clear();

@@ -1,4 +1,13 @@
 # Changelog
+
+## [2.0.0] - 2023-09-22
+### Removed
+- get_semantic_data returns an empty array
+
+### Added
+- get_prim_data, returns the prim path for each lidar hit, use this to access semantic data on a prim
+
+
 ## [1.1.0] - 2023-09-05
 ### Changed
 - Renamed Create > Isaac > Sensor > Lidar to PhysX Lidar
