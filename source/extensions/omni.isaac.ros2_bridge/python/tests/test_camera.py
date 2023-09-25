@@ -509,9 +509,9 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
 
         # there should be 3 bboxes
         self.assertEqual(len(detections), 3)
-        self.assertEqual(detections[0].results[0].id, "0")
-        self.assertEqual(detections[1].results[0].id, "1")
-        self.assertEqual(detections[2].results[0].id, "2")
+        self.assertEqual(detections[0].results[0].hypothesis.class_id, "0")
+        self.assertEqual(detections[1].results[0].hypothesis.class_id, "1")
+        self.assertEqual(detections[2].results[0].hypothesis.class_id, "2")
 
         self.assertEqual(detections[0].bbox.size.x, 1.5)
         self.assertEqual(detections[0].bbox.size.y, 1)
@@ -544,9 +544,9 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
         print(detections[1].results)
         print(detections[2].results)
 
-        self.assertEqual(detections[0].results[0].id, "0")
-        self.assertEqual(detections[1].results[0].id, "1")
-        self.assertEqual(detections[2].results[0].id, "2")
+        self.assertEqual(detections[0].results[0].hypothesis.class_id, "0")
+        self.assertEqual(detections[1].results[0].hypothesis.class_id, "1")
+        self.assertEqual(detections[2].results[0].hypothesis.class_id, "2")
 
         self.assertEqual(detections[0].bbox.size_x, 340.0)
         self.assertEqual(detections[0].bbox.size_y, 201.0)
@@ -556,24 +556,24 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
 
         self.assertEqual(detections[2].bbox.size_x, 169.0)
         self.assertEqual(detections[2].bbox.size_y, 511.0)
-        self.assertEqual(detections[0].bbox.center.x, 1023.0)
-        self.assertEqual(detections[0].bbox.center.y, 460.5)
+        self.assertEqual(detections[0].bbox.center.position.x, 1023.0)
+        self.assertEqual(detections[0].bbox.center.position.y, 460.5)
         self.assertEqual(detections[0].bbox.center.theta, 0)
 
-        self.assertEqual(detections[1].bbox.center.x, 339.0)
-        self.assertEqual(detections[1].bbox.center.y, 470.5)
+        self.assertEqual(detections[1].bbox.center.position.x, 339.0)
+        self.assertEqual(detections[1].bbox.center.position.y, 470.5)
         self.assertEqual(detections[1].bbox.center.theta, 0)
 
-        self.assertEqual(detections[2].bbox.center.x, 639.5)
-        self.assertEqual(detections[2].bbox.center.y, 444.5)
+        self.assertEqual(detections[2].bbox.center.position.x, 639.5)
+        self.assertEqual(detections[2].bbox.center.position.y, 444.5)
         self.assertEqual(detections[2].bbox.center.theta, 0)
 
         detections = self._bbox_2d_loose.detections
         self.assertEqual(len(detections), 3)
 
-        self.assertEqual(detections[0].results[0].id, "0")
-        self.assertEqual(detections[1].results[0].id, "1")
-        self.assertEqual(detections[2].results[0].id, "2")
+        self.assertEqual(detections[0].results[0].hypothesis.class_id, "0")
+        self.assertEqual(detections[1].results[0].hypothesis.class_id, "1")
+        self.assertEqual(detections[2].results[0].hypothesis.class_id, "2")
 
         self.assertEqual(detections[0].bbox.size_x, 340.0)
         self.assertEqual(detections[0].bbox.size_y, 201.0)
@@ -584,16 +584,16 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
         self.assertEqual(detections[2].bbox.size_x, 169.0)
         self.assertEqual(detections[2].bbox.size_y, 511.0)
 
-        self.assertEqual(detections[0].bbox.center.x, 1023.0)
-        self.assertEqual(detections[0].bbox.center.y, 460.5)
+        self.assertEqual(detections[0].bbox.center.position.x, 1023.0)
+        self.assertEqual(detections[0].bbox.center.position.y, 460.5)
         self.assertEqual(detections[0].bbox.center.theta, 0)
 
-        self.assertEqual(detections[1].bbox.center.x, 339.0)
-        self.assertEqual(detections[1].bbox.center.y, 470.5)
+        self.assertEqual(detections[1].bbox.center.position.x, 339.0)
+        self.assertEqual(detections[1].bbox.center.position.y, 470.5)
         self.assertEqual(detections[1].bbox.center.theta, 0)
 
-        self.assertEqual(detections[2].bbox.center.x, 639.5)
-        self.assertEqual(detections[2].bbox.center.y, 444.5)
+        self.assertEqual(detections[2].bbox.center.position.x, 639.5)
+        self.assertEqual(detections[2].bbox.center.position.y, 444.5)
         self.assertEqual(detections[2].bbox.center.theta, 0)
 
         node.destroy_node()

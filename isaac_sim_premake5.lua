@@ -232,7 +232,11 @@ function define_test_experience(name, args)
         create_test_experience_runner(name, config_path, config, kit_sdk_config, extra_args)
     end
 end
-
+ROS2_EXTRA = [[
+export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+INTERNAL_LIBS=$(readlink -f $SCRIPT_DIR/../exts/omni.isaac.ros2_bridge/humble/lib)
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$INTERNAL_LIBS
+]]
 -- Write experience running .bat/.sh file, like _build\windows-x86_64\release\example.helloext.app.bat
 function create_test_experience_runner(name, config_path, config, kit_sdk_config, extra_args, executable)
     local os_target = os.target()
@@ -246,7 +250,7 @@ function create_test_experience_runner(name, config_path, config, kit_sdk_config
         local kit_bin_relative = path.normalize(path.getrelative(bat_file_dir, kit_bin_abs)):gsub("/", "\\")
         local config_path = (is_string_empty(config_path) and "") or "\"%%~dp0"..config_path.."\""
         local f = io.open(bat_file_path, 'w')
-        f:write(string.format(KIT_RUNNER_SHELL_TEMPLATE[os_target], kit_bin_relative, executable, config_path, extra_args))
+        f:write(string.format(KIT_TEST_SHELL_TEMPLATE[os_target], "", kit_bin_relative, executable, config_path, extra_args))
         f:close()
     else
         local executable = executable or "kit"
@@ -266,7 +270,12 @@ function create_test_experience_runner(name, config_path, config, kit_sdk_config
         local kit_bin_relative = path.normalize(path.getrelative(sh_file_dir, kit_bin_abs))
         local config_path = (is_string_empty(config_path) and "") or "\"$SCRIPT_DIR/"..config_path.."\""
         local f = io.open(sh_file_path, 'w')
-        f:write(string.format(KIT_RUNNER_SHELL_TEMPLATE[os_target], kit_bin_relative, executable, config_path, extra_args))
+        if name =="tests-python-omni.isaac.ros2_bridge" then
+            extra = ROS2_EXTRA
+        else
+            extra = ""
+        end
+        f:write(string.format(KIT_TEST_SHELL_TEMPLATE[os_target], extra, kit_bin_relative, executable, config_path, extra_args))
         f:close()
         os.chmod(sh_file_path, 755)
     end
@@ -363,6 +372,28 @@ exec "$SCRIPT_DIR/%s/%s" %s %s "$@"
 ]],
 }
 
+KIT_TEST_SHELL_TEMPLATE = {
+    ["windows"] = [[
+@echo off
+setlocal
+REM %s
+call "%%~dp0%s\%s" %s %s %%*
+]],
+    ["linux"] = [[
+#!/bin/bash
+set -e
+SCRIPT_DIR=$(dirname ${BASH_SOURCE})
+export RESOURCE_NAME="IsaacSim"
+%s
+exec "$SCRIPT_DIR/%s/%s" %s %s "$@"
+]],
+    ["macosx"] = [[
+#!/bin/bash
+set -e
+SCRIPT_DIR=$(dirname ${BASH_SOURCE})
+exec "$SCRIPT_DIR/%s/%s" %s %s "$@"
+]],
+}
 
 function python_script_test(name, script)
     for _, config in ipairs(ALL_CONFIGS) do

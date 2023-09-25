@@ -212,6 +212,8 @@ repo_build.prebuild_link {
 
 repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir.."/omni/isaac/ros2_bridge" },
+    { "rclpy/*.py", ext.target_dir.."/foxy/rclpy" },
+    { "rclpy/*.py", ext.target_dir.."/humble/rclpy" },
 }
 
 if os.target() == "linux" then
@@ -221,14 +223,11 @@ if os.target() == "linux" then
         { "%{root}/_build/target-deps/nv_ros2/lib/python3.10/site-packages", ext.target_dir.."/foxy/rclpy" },
         { "%{root}/_build/target-deps/nv_ros2_humble/lib/python3.10/site-packages", ext.target_dir.."/humble/rclpy" },
         { "%{root}/_build/target-deps/nv_ros2_humble/local/lib/python3.10/dist-packages", ext.target_dir.."/humble/rclpy" },
-        { "rclpy/*.py", ext.target_dir.."/foxy/rclpy" },
-        { "rclpy/*.py", ext.target_dir.."/humble/rclpy" },
 
     }
 end
 
 if os.target() == "windows" then
     -- repo_build.prebuild_copy {
-    --     { "%{root}/_build/target-deps/nv_ros2/bin/**", ext.target_dir.."/bin" },
     -- }
 end

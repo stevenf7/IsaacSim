@@ -28,21 +28,23 @@ class Extension(omni.ext.IExt):
                 omni.kit.app.get_app().print_and_log("rclpy loaded")
             except Exception as e:
                 carb.log_warn(f"Could not import system rclpy: {e}")
-                omni.kit.app.get_app().print_and_log("Attempting to load internal rclpy")
-                sys.path.append(os.path.join(os.path.dirname(__file__)))
-                try:
-                    import rclpy
+                if sys.platform == "linux":
+                    omni.kit.app.get_app().print_and_log("Attempting to load internal rclpy")
+                    sys.path.append(os.path.join(os.path.dirname(__file__)))
 
-                    rclpy.init()
-                    rclpy.shutdown()
-                    omni.kit.app.get_app().print_and_log("rclpy loaded")
-                except Exception as e:
-                    carb.log_warn(f"could not import internal rclpy: {e}")
-                    ext_manager = omni.kit.app.get_app().get_extension_manager()
-                    self._extension_path = ext_manager.get_extension_path(ext_id)
-                    carb.log_warn(
-                        f"To use the Internal rclpy included with the extension please set: \nRMW_IMPLEMENTATION=rmw_fastrtps_cpp\nand\nLD_LIBRARY_PATH=$LD_LIBRARY_PATH:{self._extension_path}/{ros_distro}/lib\nBefore starting Isaac Sim"
-                    )
+                    try:
+                        import rclpy
+
+                        rclpy.init()
+                        rclpy.shutdown()
+                        omni.kit.app.get_app().print_and_log("rclpy loaded")
+                    except Exception as e:
+                        carb.log_warn(f"could not import internal rclpy: {e}")
+                        ext_manager = omni.kit.app.get_app().get_extension_manager()
+                        self._extension_path = ext_manager.get_extension_path(ext_id)
+                        carb.log_warn(
+                            f"To use the Internal rclpy included with the extension please set: \nRMW_IMPLEMENTATION=rmw_fastrtps_cpp\nand\nLD_LIBRARY_PATH=$LD_LIBRARY_PATH:{self._extension_path}/{ros_distro}/lib\nBefore starting Isaac Sim"
+                        )
 
             return
 

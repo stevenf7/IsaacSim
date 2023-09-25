@@ -40,7 +40,6 @@ class ROS2BridgeExtension(omni.ext.IExt):
 
                 return
 
-        # ROS2 uses LD_LIBRARY_PATH to load libraries at runtime so set it here before the plugin loads.
         backup_ros_distro = carb.settings.get_settings().get_as_string("/exts/omni.isaac.ros2_bridge/ros_distro")
         ros_distro = os.environ.get("ROS_DISTRO")
         if ros_distro is None:
@@ -60,17 +59,11 @@ class ROS2BridgeExtension(omni.ext.IExt):
         if sys.platform == "win32":
             if os.environ.get("PATH"):
                 os.environ["PATH"] = os.environ.get("PATH") + ";" + self._extension_path + "/bin"
-                print(os.environ.get("PATH"))
+                # WAR: sys.path on windows is missing PYTHONPATH variables, causing rclpy to not be found
+                sys.path.extend(os.environ.get("PYTHONPATH").split(";"))
             else:
                 os.environ["PATH"] = self._extension_path + "/bin"
 
-        if sys.platform == "linux":
-            if os.environ.get("LD_LIBRARY_PATH"):
-                os.environ["LD_LIBRARY_PATH"] = (
-                    os.environ.get("LD_LIBRARY_PATH") + ":" + self._extension_path + f"/{ros_distro}/lib"
-                )
-            else:
-                os.environ["LD_LIBRARY_PATH"] = self._extension_path + f"/{ros_distro}/lib"
         carb.get_framework().load_plugins(
             loaded_file_wildcards=["omni.isaac.ros2_bridge.plugin"],
             search_paths=[os.path.abspath(os.path.join(self._extension_path, "bin"))],
