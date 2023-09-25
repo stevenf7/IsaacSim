@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.2.1] - 2023-09-22
+### Fixed
+- missing ros2 libs when running using internal libs
+- windows startup issues
+- rclpy not working on windows
+
 ## [2.2.0] - 2023-09-20
 ### Changed
 - Load internal ROS2 libs when ROS2 is not sourced
