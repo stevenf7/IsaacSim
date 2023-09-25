@@ -1,7 +1,7 @@
 #!/bin/bash
-#  The drivesim codebase holds the omni.sensors extensions.  Normal workflow is to build those extensions there, but
+#   The drivesim codebase holds the omni.sensors extensions.  Normal workflow is to build those extensions there, but
 # in order to share those extensions with isaac-sim, it is necessary to build with the same kit version as isaac-sim.
-#  This script copies over all the omni.sensors extensions from a drivesim repo to the isaac-sim one.  In the 
+#   This script copies over all the omni.sensors extensions from a drivesim repo to the isaac-sim one.  In the 
 # premake5.lua file, you will want to set build_with_omni_sensors=true.
 # using drivesim-ov hash: c5ef2973b27adc0ea9f2a73dff0860d8dd43e1fc
 

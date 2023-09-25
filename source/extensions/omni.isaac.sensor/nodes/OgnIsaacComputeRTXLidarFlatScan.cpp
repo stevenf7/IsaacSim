@@ -111,8 +111,9 @@ public:
             }
             if (minElevation != 0.0f)
             {
-                CARB_LOG_WARN("IsaacComputeRTXLidarFlatScan: lowest elevation emitter is %f, not 0.",
-                              state.rotaryProfile.emitterStates[0].emitterProfiles[state.emitterToOutput].elevationDeg);
+                CARB_LOG_WARN_ONCE(
+                    "IsaacComputeRTXLidarFlatScan: lowest elevation emitter is %f, not 0.",
+                    state.rotaryProfile.emitterStates[0].emitterProfiles[state.emitterToOutput].elevationDeg);
             }
             float startAzimuth = state.emitterProfile->azimuthDeg;
             db.outputs.azimuthRange() = {
