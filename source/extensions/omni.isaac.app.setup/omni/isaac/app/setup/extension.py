@@ -31,7 +31,7 @@ from omni.kit.window.title import get_main_window_title
 
 DOCS_URL = "https://docs.omniverse.nvidia.com"
 REFERENCE_GUIDE_URL = DOCS_URL + "/isaacsim"
-ASSETS_GUIDE_URL = DOCS_URL + "/app_isaacsim/app_isaacsim/install_basic.html#isaac-sim-first-run"
+ASSETS_GUIDE_URL = DOCS_URL + "/isaacsim/latest/install_workstation.html"
 MANUAL_URL = "https://docs.omniverse.nvidia.com/py/isaacsim/index.html"
 FORUMS_URL = "https://forums.developer.nvidia.com/c/omniverse/simulation/69"
 KIT_MANUAL_URL = DOCS_URL + "/py/kit/index.html"
