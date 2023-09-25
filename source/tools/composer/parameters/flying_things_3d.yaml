@@ -59,12 +59,11 @@ background_plane:
   obj_model: /NVIDIA/Assets/Isaac/2022.2.1/Isaac/Props/Shapes/plane.usd
 
   obj_material: Choice(["assets/materials/materials.txt"])
-  obj_texture_rot: Uniform(0, 360)
 
   obj_count: 1
   obj_size_enabled: True
-  obj_size: 5000
-  obj_distance: Uniform(30, 40)
+  obj_size: 500
+  obj_distance: Uniform(80, 100)
 
   obj_horiz_fov_loc: 0
   obj_vert_fov_loc: 0
@@ -93,8 +92,8 @@ distant_light:
 
   light_count: 1
   light_color: Uniform((0, 0, 0), (1, 1, 1))
-  light_intensity: Uniform(2000, 10000)
-  light_rot: Normal((0, 0, 0), (20, 20, 20))
+  light_intensity: Uniform(9000, 10000)
+  light_rot: Uniform((0, 30, 0), (0, 90, 0))
 
 # light at camera coordinate
 camera_light:
