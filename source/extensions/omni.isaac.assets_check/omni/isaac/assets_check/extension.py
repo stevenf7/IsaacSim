@@ -23,7 +23,7 @@ from omni.isaac.ui.menu import make_menu_item_description
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 
 DOCS_URL = "https://docs.omniverse.nvidia.com"
-ASSETS_GUIDE_URL = DOCS_URL + "/app_isaacsim/app_isaacsim/install_basic.html#isaac-sim-first-run"
+ASSETS_GUIDE_URL = DOCS_URL + "/isaacsim/latest/install_workstation.html"
 
 
 class Extension(omni.ext.IExt):
