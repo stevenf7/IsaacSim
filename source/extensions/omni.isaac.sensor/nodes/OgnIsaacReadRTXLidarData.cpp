@@ -11,11 +11,13 @@
 #include <UsdPCH.h>
 // clang-format on
 
+#include "LidarNodeUtils.h"
+#include "omni/isaac/utils/UsdUtilities.h"
+
 #include <carb/InterfaceUtils.h>
 
 #include <internal/omni/sensors/lidar/LidarReturnHelper.h>
 #include <internal/omni/sensors/lidar/LidarSettings.h>
-#include <omni/isaac/utils/BaseResetNode.h>
 #include <omni/sensors/lidar/LidarParameterType.h>
 #include <omni/sensors/lidar/LidarReturn.h>
 #include <omni/sensors/lidar/LidarReturnTypes.h>
@@ -29,8 +31,13 @@ namespace isaac
 namespace sensor
 {
 
-class OgnIsaacReadRTXLidarData : public BaseResetNode
+class OgnIsaacReadRTXLidarData
 {
+private:
+    std::string config;
+    LidarScanType scanType{ LidarScanType::kUnknown };
+    LidarRotaryProfile rotaryProfile;
+    LidarSolidStateProfile solidStateProfile;
 
 public:
     static bool compute(OgnIsaacReadRTXLidarDataDatabase& db)
@@ -42,6 +49,8 @@ public:
         {
             return true;
         }
+        auto& state = db.internalState<OgnIsaacReadRTXLidarData>();
+
         // fill the structure of arrays
         LidarTicks lidarTicks;
         LidarReturns lidarReturns;
@@ -70,6 +79,24 @@ public:
                 }
             }
         }
+        std::string curConfig = "";
+        pxr::UsdAttribute configAttr = omni::isaac::utils::getCameraAttributeFromRenderProduct(
+            "sensorModelConfig", db.tokenToString(db.inputs.renderProductPath()));
+        if (configAttr.IsValid())
+        {
+            omni::isaac::utils::safeGetAttribute(configAttr, curConfig);
+        }
+        updateLidarConfig(curConfig, state.config, state.scanType, state.rotaryProfile, state.solidStateProfile);
+
+        db.outputs.depthRange() = {
+            state.scanType == LidarScanType::kSolidState ? state.solidStateProfile.nearRangeM :
+                                                           state.rotaryProfile.nearRangeM,
+            state.scanType == LidarScanType::kSolidState ? state.solidStateProfile.farRangeM :
+                                                           state.rotaryProfile.farRangeM,
+        };
+        // state.rotaryProfile.reportRateBaseHz; // 3600 for a 10Hz lidar that fires one tick per degree.
+        // state.rotaryProfile.scanRateBaseHz; // 10 for a 10Hz lidar
+
 
 #define _DEF_OUT_VAR(outName, outSz)                                                                                   \
     auto& outName = db.outputs.outName();                                                                              \

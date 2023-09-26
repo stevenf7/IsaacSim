@@ -25,12 +25,21 @@
                 "description": "Keep points only if the return distance is > 0",
                 "default": true,
                 "uiName": "Keep Only Positive Distance"
+            },
+            "renderProductPath": {
+                "type": "token",
+                "description": "Config is gotten from this"
             }
         },
         "outputs": {
             "exec": {
                 "type": "execution",
                 "description": "Output execution triggers when lidar sensor has data"
+            },
+            "depthRange": {
+                "type": "float[2]",
+                "description": "The min and max range for sensor to detect a hit [min, max]",
+                "default": [0, 0]
             },
             "tickAzimuths":{
                 "type": "float[]",
