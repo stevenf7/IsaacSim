@@ -27,7 +27,10 @@
             },
             "targetPrims":{
                 "type": "target",
-                "description": "Target prims to publish poses for, if prim is an articulation, the entire articulation tree will be published"
+                "description": "Target prims to publish poses for, if prim is an articulation, the entire articulation tree will be published",
+                "metadata": { 
+                    "allowMultiInputs": "1"
+                } 
             },
             "nodeNamespace": {
                 "type": "string",

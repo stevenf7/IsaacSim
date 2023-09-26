@@ -69,16 +69,16 @@ class IsaacSensorMenu:
                         ],
                     ),
                     MenuItemDescription(
-                        name="NVIDIA",
+                        name="LeopardImaging",
                         sub_menu=[
                             make_menu_item_description(
                                 ext_id,
-                                "NVIDIA Hawk",
+                                "Hawk",
                                 lambda a=weakref.proxy(self): create_prim(
                                     prim_path=get_next_free_path("/Hawk", None),
                                     prim_type="Xform",
                                     usd_path=get_assets_root_path()
-                                    + "/Isaac/Sensors/NVIDIA/Hawk/hawk_v1.1_nominal.usd",
+                                    + "/Isaac/Sensors/LeopardImaging/Hawk/hawk_v1.1_nominal.usd",
                                 ),
                             ),
                         ],

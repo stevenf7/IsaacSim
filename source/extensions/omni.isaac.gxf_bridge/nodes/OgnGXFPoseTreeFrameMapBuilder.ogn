@@ -13,7 +13,10 @@
         "inputs": {
             "targetPrims": {
                 "type": "target",
-                "description": "Target prims for which poses will be published. If prim is an articulation, the entire articulation tree will be published."
+                "description": "Target prims for which poses will be published. If prim is an articulation, the entire articulation tree will be published.",
+                "metadata": { 
+                    "allowMultiInputs": "1"
+                } 
             },
             "frameNames": {
                 "type": "token[]",

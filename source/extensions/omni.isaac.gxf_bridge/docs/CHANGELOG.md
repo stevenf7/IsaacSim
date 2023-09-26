@@ -1,4 +1,8 @@
 # Changelog
+## [1.2.1] - 2023-09-25
+### Fixed
+- Pose tree and pose tree frame map builder nodes can accept multiple target prims as input
+
 ## [1.2.0] - 2023-09-13
 ### Added
 - High-level API for AMR applications, bundled under omni.isaac.gxf_bridge modules

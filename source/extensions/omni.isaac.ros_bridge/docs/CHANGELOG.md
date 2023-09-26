@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.14.6] - 2023-09-25
+### Fixed
+- Transform tree node can accept multiple target prims as input
+
 ## [1.14.5] - 2023-08-26
 ### Fixed
 - CUDA error in PCL publisher
