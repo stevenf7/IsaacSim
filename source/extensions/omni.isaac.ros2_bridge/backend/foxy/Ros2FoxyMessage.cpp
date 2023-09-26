@@ -54,7 +54,7 @@ void Ros2ClockMessageFoxy::setData(double& timeStamp)
     }
 
     rosgraph_msgs__msg__Clock* time_msg = static_cast<rosgraph_msgs__msg__Clock*>(msg);
-    timeStamp = time_msg->clock.sec;
+    timeStamp = time_msg->clock.sec + time_msg->clock.nanosec / 1e9;
 }
 
 

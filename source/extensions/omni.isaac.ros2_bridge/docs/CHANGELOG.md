@@ -9,6 +9,7 @@
 - missing ros2 libs when running using internal libs
 - windows startup issues
 - rclpy not working on windows
+- clock subscriber not properly getting time
 
 ## [2.2.0] - 2023-09-20
 ### Changed
