@@ -133,7 +133,7 @@ while simulation_app.is_running():
             kaya_controller.reset()
             jetbot_controller.reset()
         observations = my_world.get_observations()
-        actions = controllers[0].forward(observations=observations, end_effector_offset=np.array([0, 0, -0.015]))
+        actions = controllers[0].forward(observations=observations, end_effector_offset=np.array([0, 0, 0]))
         articulation_controllers[0].apply_action(actions)
         actions = controllers[1].forward(observations=observations, end_effector_offset=np.array([0, 0, 0.02]))
         articulation_controllers[1].apply_action(actions)

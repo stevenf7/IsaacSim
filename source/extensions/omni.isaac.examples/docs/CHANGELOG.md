@@ -1,4 +1,8 @@
 # Changelog
+
+## [1.7.2] - 2023-09-26
+### Fixed
+- Changed end offector offset in pick and place examples using Franka to [0, 0, 0] instead of [0, 0, -0.015]
 ## [1.7.1] - 2023-08-22
 ### Fixed
 - Fixed quadruped example error after reset or stop
