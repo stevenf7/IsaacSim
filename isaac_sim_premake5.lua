@@ -466,6 +466,7 @@ docker run --name isaac-sim --entrypoint bash --gpus all -e "ACCEPT_EULA=Y" --rm
 -v $SCRIPT_DIR/..:/isaac-sim:rw \
 -e "OMNI_USER=dockeruser" -e "OMNI_PASS=dockeruser" \
 -e "OMNI_SERVER=omniverse://isaac-dev.ov.nvidia.com" \
+-e "PRIVACY_CONSENT=Y" -e "PRIVACY_USERID=dockeruser" \
 gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/isaac-sim:latest-develop \
 -c "%s %s"
         ]], script, extra_args))
