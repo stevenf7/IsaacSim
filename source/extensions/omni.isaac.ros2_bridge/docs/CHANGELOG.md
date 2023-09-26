@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.2] - 2023-09-25
+### Fixed
+- Transform tree node can accept multiple target prims as input
+
 ## [2.2.1] - 2023-09-22
 ### Fixed
 - missing ros2 libs when running using internal libs
