@@ -6,11 +6,11 @@
         <package name="onshape_client" version="20230614_fc9d61f"/>
     </dependency>
     <dependency name="nv_ros2" linkPath="../_build/target-deps/nv_ros2">
-        <package name="nv_ros2" version="foxy_20230924_bebd7af-linux64_release" platforms="linux-x86_64"/>
+        <package name="nv_ros2" version="foxy_20230925_20ebeb1-linux64_release" platforms="linux-x86_64"/>
         <package name="nv_ros2" version="foxy_20230906_win64_release.7z" platforms="windows-x86_64"/>
     </dependency>
     <dependency name="nv_ros2_humble" linkPath="../_build/target-deps/nv_ros2_humble">
-        <package name="nv_ros2" version="humble_20230924_bebd7af-linux64_release" platforms="linux-x86_64"/>
+        <package name="nv_ros2" version="humble_20230925_20ebeb1-linux64_release" platforms="linux-x86_64"/>
         <package name="nv_ros2" version="humble_20230906_win64_release.7z" platforms="windows-x86_64"/>
     </dependency>
     <dependency name="lula" linkPath="../_build/target-deps/lula">
