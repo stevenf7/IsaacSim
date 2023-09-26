@@ -1,4 +1,10 @@
 # Changelog
+
+
+## [9.6.0] - 2023-09-25
+### Added
+- depthRange output to IsaacReadRTXLidarData
+
 ## [9.5.1] - 2023-09-20
 ### Fixed
 - ComputeRTXLidarFlatScan now uses lidar config for more accurate output
