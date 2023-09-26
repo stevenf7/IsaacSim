@@ -133,9 +133,11 @@ CARB_EXPORT void carbOnPluginStartup()
         "rcpputils",
         "rmw_implementation",
         "rcl_logging_interface",
+#ifndef _WIN32
         "spdlog",
-        "rcl_logging_spdlog",
         "tracetools",
+#endif
+        "rcl_logging_spdlog",
         "rosidl_typesupport_c",
         "builtin_interfaces__rosidl_generator_c",
         "builtin_interfaces__rosidl_typesupport_c",
@@ -188,8 +190,14 @@ CARB_EXPORT void carbOnPluginStartup()
         auto temp_loader = std::make_shared<omni::isaac::utils::LibraryLoader>("rosidl_runtime_c", "", true);
         if (temp_loader->loadedLibrary == carb::extras::kInvalidLibraryHandle)
         {
+#ifdef _WIN32
+            CARB_LOG_WARN(
+                "Loading rosidl_runtime_c.dll from sourced ROS_DISTRO failed, falling back to internal libraries");
+#else
             CARB_LOG_WARN(
                 "Loading librosidl_runtime_c.so from sourced ROS_DISTRO failed, falling back to internal libraries");
+#endif
+
             std::string bridgePath = "${app}";
 
             carb::tokens::ITokens* tokens = carb::getCachedInterface<carb::tokens::ITokens>();

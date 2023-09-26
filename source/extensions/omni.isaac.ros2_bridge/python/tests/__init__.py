@@ -9,13 +9,12 @@
 
 import sys
 
-if sys.platform != "win32":
-    from .test_camera import *
-    from .test_clock import *
-    from .test_differential_base import *
-    from .test_lidar import *
-    from .test_point_cloud import *
-    from .test_pose_tree import *
-    from .test_rclpy import *
-    from .test_rtx_sensor import *
-    from .test_semantic_labels import *
+from .test_camera import *
+from .test_clock import *
+from .test_differential_base import *
+from .test_lidar import *
+from .test_point_cloud import *
+from .test_pose_tree import *
+from .test_rclpy import *
+from .test_rtx_sensor import *
+from .test_semantic_labels import *

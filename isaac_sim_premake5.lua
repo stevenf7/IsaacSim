@@ -232,14 +232,28 @@ function define_test_experience(name, args)
         create_test_experience_runner(name, config_path, config, kit_sdk_config, extra_args)
     end
 end
-ROS2_EXTRA = [[
+ROS2_EXTRA = {
+    ["windows"] =[[
+set RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+pushd %~dp0\..\exts
+set basedir=%cd%\omni.isaac.ros2_bridge\humble\lib
+popd
+set PATH=%PATH%%basedir%
+]],
+["linux"] =[[
 export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 INTERNAL_LIBS=$(readlink -f $SCRIPT_DIR/../exts/omni.isaac.ros2_bridge/humble/lib)
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$INTERNAL_LIBS
 ]]
+}
 -- Write experience running .bat/.sh file, like _build\windows-x86_64\release\example.helloext.app.bat
 function create_test_experience_runner(name, config_path, config, kit_sdk_config, extra_args, executable)
     local os_target = os.target()
+    if name =="tests-python-omni.isaac.ros2_bridge" then
+        extra = ROS2_EXTRA[os_target]
+    else
+        extra = ""
+    end
     if os_target == "windows" then
         local executable = executable or "kit.exe"
         local bat_file_dir = root.."/_build/windows-x86_64/"..config.."/tests"
@@ -250,7 +264,7 @@ function create_test_experience_runner(name, config_path, config, kit_sdk_config
         local kit_bin_relative = path.normalize(path.getrelative(bat_file_dir, kit_bin_abs)):gsub("/", "\\")
         local config_path = (is_string_empty(config_path) and "") or "\"%%~dp0"..config_path.."\""
         local f = io.open(bat_file_path, 'w')
-        f:write(string.format(KIT_TEST_SHELL_TEMPLATE[os_target], "", kit_bin_relative, executable, config_path, extra_args))
+        f:write(string.format(KIT_TEST_SHELL_TEMPLATE[os_target], extra, kit_bin_relative, executable, config_path, extra_args))
         f:close()
     else
         local executable = executable or "kit"
@@ -270,11 +284,6 @@ function create_test_experience_runner(name, config_path, config, kit_sdk_config
         local kit_bin_relative = path.normalize(path.getrelative(sh_file_dir, kit_bin_abs))
         local config_path = (is_string_empty(config_path) and "") or "\"$SCRIPT_DIR/"..config_path.."\""
         local f = io.open(sh_file_path, 'w')
-        if name =="tests-python-omni.isaac.ros2_bridge" then
-            extra = ROS2_EXTRA
-        else
-            extra = ""
-        end
         f:write(string.format(KIT_TEST_SHELL_TEMPLATE[os_target], extra, kit_bin_relative, executable, config_path, extra_args))
         f:close()
         os.chmod(sh_file_path, 755)
@@ -376,7 +385,7 @@ KIT_TEST_SHELL_TEMPLATE = {
     ["windows"] = [[
 @echo off
 setlocal
-REM %s
+%s
 call "%%~dp0%s\%s" %s %s %%*
 ]],
     ["linux"] = [[

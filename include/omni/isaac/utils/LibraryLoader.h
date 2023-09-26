@@ -30,7 +30,7 @@ public:
     {
         {
 #ifdef _MSC_VER
-            std::string libraryPath = library + ".dll";
+            std::string libraryPath = prefix + library + ".dll";
 #else
             std::string libraryPath = prefix + "lib" + library + ".so";
 #endif

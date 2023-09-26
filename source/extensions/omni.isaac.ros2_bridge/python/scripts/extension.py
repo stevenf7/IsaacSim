@@ -60,7 +60,8 @@ class ROS2BridgeExtension(omni.ext.IExt):
             if os.environ.get("PATH"):
                 os.environ["PATH"] = os.environ.get("PATH") + ";" + self._extension_path + "/bin"
                 # WAR: sys.path on windows is missing PYTHONPATH variables, causing rclpy to not be found
-                sys.path.extend(os.environ.get("PYTHONPATH").split(";"))
+                if os.environ.get("PYTHONPATH") is not None:
+                    sys.path.extend(os.environ.get("PYTHONPATH").split(";"))
             else:
                 os.environ["PATH"] = self._extension_path + "/bin"
 
