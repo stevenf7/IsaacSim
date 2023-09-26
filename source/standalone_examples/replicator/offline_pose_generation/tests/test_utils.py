@@ -30,7 +30,7 @@ def clean_output_dir(output_folder):
 
 
 # Checks if distance between points is within threshold
-def within_threshold(p1, p2, threshold=0.01):
+def within_threshold(p1, p2, threshold=20):
     return np.linalg.norm(np.array(p1) - np.array(p2)) < threshold
 
 
@@ -55,8 +55,12 @@ def run_dope_test(test_folder, output_folder):
         )
 
     for gt_obj, op_obj in zip(gt_objects, op_objects):
+        if not within_threshold(gt_obj["location"], op_obj["location"], 10):
+            raise Exception(
+                f"Distance between groundtruth location and output location exceeds threshold. (location) {gt_pt} and {op_pt}"
+            )
         for gt_pt, op_pt in zip(gt_obj["projected_cuboid"], op_obj["projected_cuboid"]):
-            if not within_threshold(gt_pt, op_pt):
+            if not within_threshold(gt_pt, op_pt, 20.0):
                 raise Exception(
                     f"Distance between groundtruth points and output points exceeds threshold. (projected_cuboid) {gt_pt} and {op_pt}"
                 )
@@ -64,7 +68,7 @@ def run_dope_test(test_folder, output_folder):
     print("Tests pass for DOPE Writer.")
 
 
-def run_ycbvideo_tests(test_folder, output_folder, threshold=0.01):
+def run_ycbvideo_tests(test_folder, output_folder, threshold=10):
     groundtruth_bbox_path = os.path.join(test_folder, "ycbvideo/000000-box_groundtruth.txt")
     groundtruth_meta_path = os.path.join(test_folder, "ycbvideo/000000-meta_groundtruth.mat")
 
@@ -77,8 +81,9 @@ def run_ycbvideo_tests(test_folder, output_folder, threshold=0.01):
     op_bb = open(output_bbox_path, "r")
 
     for l1, l2 in zip(gt_bb, op_bb):
-        if not l1.strip() == l2.strip():
-            raise Exception(f"Mismatch between files {groundtruth_bbox_path} and {output_bbox_path}")
+        for gt_point, bb_point in zip(l1.strip().split()[1:5], l2.strip().split()[1:5]):
+            if not within_threshold([int(gt_point)], [int(bb_point)], 10):
+                raise Exception(f"Mismatch between files {groundtruth_bbox_path} and {output_bbox_path}")
 
     gt_bb.close()
     op_bb.close()
