@@ -26,19 +26,28 @@ def gf_quat_to_tensor(orientation: typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternio
     return quat
 
 
-def euler_angles_to_quats(euler_angles: wp.types.array, degrees: bool = False, device=None) -> wp.types.array:
+def euler_angles_to_quats(
+    euler_angles: wp.types.array, degrees: bool = False, extrinsic: bool = True, device=None
+) -> wp.types.array:
     """Vectorized version of converting euler angles to quaternion (scalar first)
 
     Args:
-        euler_angles (wp.types.array): euler angles with shape (N, 3) representation XYZ
+        euler_angles (wp.types.array): euler angles with shape (N, 3)
+        extrinsic (bool, optional): True if the euler angles follows the extrinsic angles
+                   convention (equivilant to ZYX ordering) and False if it follows
+                   the intrinsic angles conventions (equivilant to XYZ ordering).
+                   Defaults to True.
         degrees (bool, optional): True if degrees, False if radians. Defaults to False.
 
     Returns:
         wp.types.array: quaternions representation of the angles (N, 4) - scalar first.
     """
-
+    if extrinsic:
+        order = "xyz"
+    else:
+        order = "XYZ"
     euler_torch = wp.to_torch(euler_angles)
-    rot = Rotation.from_euler("xyz", euler_torch.cpu().numpy(), degrees=degrees)
+    rot = Rotation.from_euler(order, euler_torch.cpu().numpy(), degrees=degrees)
     result = rot.as_quat()[:, [3, 0, 1, 2]]
     result = wp.array(result, dtype=wp.float32, device=device)
 

@@ -31,18 +31,28 @@ def gf_quat_to_tensor(orientation: typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternio
     return quat
 
 
-def euler_angles_to_quats(euler_angles: torch.Tensor, degrees: bool = False, device=None) -> torch.Tensor:
+def euler_angles_to_quats(
+    euler_angles: torch.Tensor, degrees: bool = False, extrinsic: bool = True, device=None
+) -> torch.Tensor:
     """Vectorized version of converting euler angles to quaternion (scalar first)
 
     Args:
-        euler_angles (typing.Union[np.ndarray, torch.Tensor]): euler angles with shape (N, 3) representation XYZ
+        euler_angles (typing.Union[np.ndarray, torch.Tensor]): euler angles with shape (N, 3)
         degrees (bool, optional): True if degrees, False if radians. Defaults to False.
+        extrinsic (bool, optional): True if the euler angles follows the extrinsic angles
+                   convention (equivilant to ZYX ordering) and False if it follows
+                   the intrinsic angles conventions (equivilant to XYZ ordering).
+                   Defaults to True.
 
     Returns:
         typing.Union[np.ndarray, torch.Tensor]: quaternions representation of the angles (N, 4) - scalar first.
     """
+    if extrinsic:
+        order = "xyz"
+    else:
+        order = "XYZ"
     # TODO: implement a torch version
-    rot = Rotation.from_euler("xyz", euler_angles.cpu().numpy(), degrees=degrees)
+    rot = Rotation.from_euler(order, euler_angles.cpu().numpy(), degrees=degrees)
     result = rot.as_quat()[:, [3, 0, 1, 2]]
     result = torch.from_numpy(np.asarray(result, dtype=np.float32)).float().to(device)
     return result
@@ -169,27 +179,99 @@ def get_basis_vector(q, v):
 
 
 @torch.jit.script
-def get_euler_xyz(q):
-    qw, qx, qy, qz = 0, 1, 2, 3
-    # roll (x-axis rotation)
-    sinr_cosp = 2.0 * (q[:, qw] * q[:, qx] + q[:, qy] * q[:, qz])
-    cosr_cosp = q[:, qw] * q[:, qw] - q[:, qx] * q[:, qx] - q[:, qy] * q[:, qy] + q[:, qz] * q[:, qz]
-    roll = torch.atan2(sinr_cosp, cosr_cosp)
-
-    # pitch (y-axis rotation)
-    sinp = 2.0 * (q[:, qw] * q[:, qy] - q[:, qz] * q[:, qx])
-    pitch = torch.where(torch.abs(sinp) >= 1, copysign(np.pi / 2.0, sinp), torch.asin(sinp))
-
-    # yaw (z-axis rotation)
-    siny_cosp = 2.0 * (q[:, qw] * q[:, qz] + q[:, qx] * q[:, qy])
-    cosy_cosp = q[:, qw] * q[:, qw] + q[:, qx] * q[:, qx] - q[:, qy] * q[:, qy] - q[:, qz] * q[:, qz]
-    yaw = torch.atan2(siny_cosp, cosy_cosp)
-
-    return roll % (2 * np.pi), pitch % (2 * np.pi), yaw % (2 * np.pi)
+def quat_to_rot_matrices(quat):
+    nq = torch.linalg.vecdot(quat, quat, dim=1)
+    singularities = nq < 1e-10
+    result = torch.zeros(quat.shape[0], 3, 3, device=quat.device)
+    result[singularities] = torch.eye(3, device=quat.device).reshape((1, 3, 3)).repeat(sum(singularities), 1, 1)
+    non_singular = quat[torch.logical_not(singularities)] * torch.sqrt(2.0 / nq).reshape((-1, 1)).repeat(1, 4)
+    non_singular = torch.einsum("bi,bj->bij", non_singular, non_singular)
+    result[torch.logical_not(singularities), 0, 0] = 1.0 - non_singular[:, 2, 2] - non_singular[:, 3, 3]
+    result[torch.logical_not(singularities), 0, 1] = non_singular[:, 1, 2] - non_singular[:, 3, 0]
+    result[torch.logical_not(singularities), 0, 2] = non_singular[:, 1, 3] + non_singular[:, 2, 0]
+    result[torch.logical_not(singularities), 1, 0] = non_singular[:, 1, 2] + non_singular[:, 3, 0]
+    result[torch.logical_not(singularities), 1, 1] = 1.0 - non_singular[:, 1, 1] - non_singular[:, 3, 3]
+    result[torch.logical_not(singularities), 1, 2] = non_singular[:, 2, 3] - non_singular[:, 1, 0]
+    result[torch.logical_not(singularities), 2, 0] = non_singular[:, 1, 3] - non_singular[:, 2, 0]
+    result[torch.logical_not(singularities), 2, 1] = non_singular[:, 2, 3] + non_singular[:, 1, 0]
+    result[torch.logical_not(singularities), 2, 2] = 1.0 - non_singular[:, 1, 1] - non_singular[:, 2, 2]
+    return result
 
 
 @torch.jit.script
-def quat_from_euler_xyz(roll, pitch, yaw):
+def matrices_to_euler_angles(mat, extrinsic: bool = True):
+    _POLE_LIMIT = 1.0 - 1e-6
+    if extrinsic:
+        north_pole = mat[:, 2, 0] > _POLE_LIMIT
+        south_pole = mat[:, 2, 0] < -_POLE_LIMIT
+        result = torch.zeros(mat.shape[0], 3, device=mat.device)
+        result[north_pole, 0] = 0.0
+        result[north_pole, 1] = -np.pi / 2
+        result[north_pole, 2] = torch.arctan2(mat[north_pole, 0, 1], mat[north_pole, 0, 2])
+        result[south_pole, 0] = 0.0
+        result[south_pole, 1] = np.pi / 2
+        result[south_pole, 2] = torch.arctan2(mat[south_pole, 0, 1], mat[south_pole, 0, 2])
+        result[torch.logical_not(torch.logical_or(south_pole, north_pole)), 0] = torch.arctan2(
+            mat[torch.logical_not(torch.logical_or(south_pole, north_pole)), 2, 1],
+            mat[torch.logical_not(torch.logical_or(south_pole, north_pole)), 2, 2],
+        )
+        result[torch.logical_not(torch.logical_or(south_pole, north_pole)), 1] = -torch.arcsin(
+            mat[torch.logical_not(torch.logical_or(south_pole, north_pole)), 2, 0]
+        )
+        result[torch.logical_not(torch.logical_or(south_pole, north_pole)), 2] = torch.arctan2(
+            mat[torch.logical_not(torch.logical_or(south_pole, north_pole)), 1, 0],
+            mat[torch.logical_not(torch.logical_or(south_pole, north_pole)), 0, 0],
+        )
+    else:
+        north_pole = mat[:, 2, 0] > _POLE_LIMIT
+        south_pole = mat[:, 2, 0] < -_POLE_LIMIT
+        result = torch.zeros(mat.shape[0], 3, device=mat.device)
+        result[north_pole, 0] = torch.arctan2(mat[north_pole, 1, 0], mat[north_pole, 1, 1])
+        result[north_pole, 1] = np.pi / 2
+        result[north_pole, 2] = 0.0
+        result[south_pole, 0] = torch.arctan2(mat[south_pole, 1, 0], mat[south_pole, 1, 1])
+        result[south_pole, 1] = -np.pi / 2
+        result[south_pole, 2] = 0.0
+        result[torch.logical_not(torch.logical_or(south_pole, north_pole)), 0] = -torch.arctan2(
+            mat[torch.logical_not(torch.logical_or(south_pole, north_pole)), 1, 2],
+            mat[torch.logical_not(torch.logical_or(south_pole, north_pole)), 2, 2],
+        )
+        result[torch.logical_not(torch.logical_or(south_pole, north_pole)), 1] = torch.arcsin(
+            mat[torch.logical_not(torch.logical_or(south_pole, north_pole)), 0, 2]
+        )
+        result[torch.logical_not(torch.logical_or(south_pole, north_pole)), 2] = -torch.arctan2(
+            mat[torch.logical_not(torch.logical_or(south_pole, north_pole)), 0, 1],
+            mat[torch.logical_not(torch.logical_or(south_pole, north_pole)), 0, 0],
+        )
+    return result
+
+
+@torch.jit.script
+def get_euler_xyz(q, extrinsic: bool = True):
+    if extrinsic:
+        qw, qx, qy, qz = 0, 1, 2, 3
+        # roll (x-axis rotation)
+        sinr_cosp = 2.0 * (q[:, qw] * q[:, qx] + q[:, qy] * q[:, qz])
+        cosr_cosp = q[:, qw] * q[:, qw] - q[:, qx] * q[:, qx] - q[:, qy] * q[:, qy] + q[:, qz] * q[:, qz]
+        roll = torch.atan2(sinr_cosp, cosr_cosp)
+
+        # pitch (y-axis rotation)
+        sinp = 2.0 * (q[:, qw] * q[:, qy] - q[:, qz] * q[:, qx])
+        pitch = torch.where(torch.abs(sinp) >= 1, copysign(np.pi / 2.0, sinp), torch.asin(sinp))
+
+        # yaw (z-axis rotation)
+        siny_cosp = 2.0 * (q[:, qw] * q[:, qz] + q[:, qx] * q[:, qy])
+        cosy_cosp = q[:, qw] * q[:, qw] + q[:, qx] * q[:, qx] - q[:, qy] * q[:, qy] - q[:, qz] * q[:, qz]
+        yaw = torch.atan2(siny_cosp, cosy_cosp)
+
+        return roll % (2 * np.pi), pitch % (2 * np.pi), yaw % (2 * np.pi)
+    else:
+        result = matrices_to_euler_angles(quat_to_rot_matrices(q), extrinsic=False)
+        return result[:, 0], result[:, 1], result[:, 2]
+
+
+@torch.jit.script
+def quat_from_euler_xyz(roll, pitch, yaw, extrinsic: bool = True):
     cy = torch.cos(yaw * 0.5)
     sy = torch.sin(yaw * 0.5)
     cr = torch.cos(roll * 0.5)
@@ -197,10 +279,16 @@ def quat_from_euler_xyz(roll, pitch, yaw):
     cp = torch.cos(pitch * 0.5)
     sp = torch.sin(pitch * 0.5)
 
-    qw = cy * cr * cp + sy * sr * sp
-    qx = cy * sr * cp - sy * cr * sp
-    qy = cy * cr * sp + sy * sr * cp
-    qz = sy * cr * cp - cy * sr * sp
+    if extrinsic:
+        qw = cy * cr * cp + sy * sr * sp
+        qx = cy * sr * cp - sy * cr * sp
+        qy = cy * cr * sp + sy * sr * cp
+        qz = sy * cr * cp - cy * sr * sp
+    else:
+        qw = -sr * sp * sy + cr * cp * cy
+        qx = sr * cp * cy + sp * sy * cr
+        qy = -sr * sy * cp + sp * cr * cy
+        qz = sr * sp * cy + sy * cr * cp
 
     return torch.stack([qw, qx, qy, qz], dim=-1)
 
@@ -253,11 +341,11 @@ def compute_heading_and_up(torso_rotation, inv_start_rot, to_target, vec0, vec1,
 
 
 @torch.jit.script
-def compute_rot(torso_quat, velocity, ang_velocity, targets, torso_positions):
+def compute_rot(torso_quat, velocity, ang_velocity, targets, torso_positions, extrinsic: bool = True):
     vel_loc = quat_rotate_inverse(torso_quat, velocity)
     angvel_loc = quat_rotate_inverse(torso_quat, ang_velocity)
 
-    roll, pitch, yaw = get_euler_xyz(torso_quat)
+    roll, pitch, yaw = get_euler_xyz(torso_quat, extrinsic=extrinsic)
 
     walk_target_angle = torch.atan2(targets[:, 2] - torso_positions[:, 2], targets[:, 0] - torso_positions[:, 0])
     angle_to_target = walk_target_angle - yaw

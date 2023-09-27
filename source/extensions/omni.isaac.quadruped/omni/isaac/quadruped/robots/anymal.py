@@ -168,7 +168,7 @@ class Anymal(Articulation):
         # height_scanner
         rpy = -quat_to_euler_angles(q_IB)
         rpy[:2] = 0.0
-        yaw_rot = np.array(Gf.Matrix3f(euler_to_rot_matrix(rpy)))
+        yaw_rot = np.transpose(euler_to_rot_matrix(rpy))
 
         world_scan_points = np.matmul(yaw_rot, self._scan_points.T).T + pos_IB
 

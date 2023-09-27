@@ -27,7 +27,7 @@ import osqp
 from numpy import linalg
 from omni.isaac.core.controllers.base_controller import BaseController
 from omni.isaac.core.utils.math import cross
-from omni.isaac.core.utils.rotations import euler_to_rot_matrix, quat_to_rot_matrix
+from omni.isaac.core.utils.rotations import euler_angles_to_quat, quat_to_rot_matrix
 from omni.isaac.core.utils.types import ArticulationAction
 from pxr import Gf
 from scipy import sparse
@@ -101,7 +101,13 @@ class HolonomicController(BaseController):
 
             mecanum_angle = self.mecanum_angles[i]
             mecanum_radius = self.wheel_radius[i]
-            m_rot = euler_to_rot_matrix(Gf.Vec3d(*self.up_axis.tolist()) * mecanum_angle, True)
+            m_rot = Gf.Rotation(
+                Gf.Quatf(
+                    *euler_angles_to_quat(
+                        Gf.Vec3d(*self.up_axis.tolist()) * mecanum_angle, degrees=True, extrinsic=True
+                    )
+                )
+            )
             j_axis = Gf.Vec3f(
                 m_rot.TransformDir(Gf.Matrix4f(joint_pose).TransformDir(Gf.Vec3d(*self.wheel_axis.tolist())))
             ).GetNormalized()

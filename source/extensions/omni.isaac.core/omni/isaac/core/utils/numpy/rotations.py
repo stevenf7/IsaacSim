@@ -28,17 +28,27 @@ def gf_quat_to_tensor(orientation: typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternio
     return quat
 
 
-def euler_angles_to_quats(euler_angles: np.ndarray, degrees: bool = False, device=None) -> np.ndarray:
+def euler_angles_to_quats(
+    euler_angles: np.ndarray, degrees: bool = False, extrinsic: bool = True, device=None
+) -> np.ndarray:
     """Vectorized version of converting euler angles to quaternion (scalar first)
 
     Args:
         euler_angles np.ndarray: euler angles with shape (N, 3) or (3,) representation XYZ in extrinsic coordinates
+        extrinsic (bool, optional): True if the euler angles follows the extrinsic angles
+                   convention (equivilant to ZYX ordering) and False if it follows
+                   the intrinsic angles conventions (equivilant to XYZ ordering).
+                   Defaults to True.
         degrees (bool, optional): True if degrees, False if radians. Defaults to False.
 
     Returns:
         np.ndarray: quaternions representation of the angles (N, 4) or (4,) - scalar first.
     """
-    rot = Rotation.from_euler("xyz", euler_angles, degrees=degrees)
+    if extrinsic:
+        order = "xyz"
+    else:
+        order = "XYZ"
+    rot = Rotation.from_euler(order, euler_angles, degrees=degrees)
     result = rot.as_quat()
     if len(result.shape) == 1:
         result = result[[3, 0, 1, 2]]
@@ -47,22 +57,32 @@ def euler_angles_to_quats(euler_angles: np.ndarray, degrees: bool = False, devic
     return result
 
 
-def quats_to_euler_angles(quaternions: np.ndarray, degrees: bool = False, device=None) -> np.ndarray:
+def quats_to_euler_angles(
+    quaternions: np.ndarray, degrees: bool = False, extrinsic: bool = True, device=None
+) -> np.ndarray:
     """Vectorized version of converting quaternions (scalar first) to euler angles
 
     Args:
         quaternions (np.ndarray): quaternions with shape (N, 4) or (4,) - scalar first
         degrees (bool, optional): Return euler angles in degrees if True, radians if False. Defaults to False.
+        extrinsic (bool, optional): True if the euler angles follows the extrinsic angles
+                   convention (equivilant to ZYX ordering) and False if it follows
+                   the intrinsic angles conventions (equivilant to XYZ ordering).
+                   Defaults to True.
 
     Returns:
         np.ndarray: Euler angles in extrinsic coordinates XYZ order with shape (N, 3) or (3,) corresponding to the quaternion rotations
     """
+    if extrinsic:
+        order = "xyz"
+    else:
+        order = "XYZ"
     if len(quaternions.shape) == 1:
         q = quaternions[[1, 2, 3, 0]]
     else:
         q = quaternions[:, [1, 2, 3, 0]]
     rot = Rotation.from_quat(q)
-    result = rot.as_euler("xyz", degrees)
+    result = rot.as_euler(order, degrees)
     return result
 
 
