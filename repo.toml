@@ -678,10 +678,9 @@ branch_name = "develop"
 
 [repo_publish_exts]
 enabled = true
-# only publish release versions
-kit_path = "${root}/_build/$platform/release/kit/kit${exe_ext}"
+kit_path = "${root}/_build/$platform/$config/kit/kit${exe_ext}"
 
-publish_root = "${root}/_build/$platform/release"
+publish_root = "${root}/_build/$platform/$config"
 
 ext_folders = [
   "${publish_root}/exts"
@@ -689,7 +688,19 @@ ext_folders = [
 
 # Extensions to publish, include and exclude among those discovered by kit. Wildcards are supported.
 exts.include = [
-    "omni.sensors.*",
+    "omni.isaac.version",
+    "omni.isaac.dynamic_control",
+    "omni.isaac.core",
+    "omni.isaac.core_nodes",
+    "omni.isaac.core_archive",
+    "omni.isaac.ui",
+    "omni.isaac.debug_draw",
+    "omni.isaac.range_sensor",
+    "omni.isaac.sensor",
+    "omni.usd.schema.isaac",
+    "omni.isaac.ml_archive",
+    "omni.pip.compute",
+    "omni.pip.cloud",
 ]
 exts.exclude = []
 
