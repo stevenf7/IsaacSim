@@ -60,30 +60,21 @@ def gaussian_noise_depth_np(data_in, sigma: float, seed: int):
 
 
 rep.AnnotatorRegistry.register_augmentation(
-    "gn_depth_np_sigma_v1", rep.Augmentation.from_function(gaussian_noise_depth_np, sigma=0.01, seed=None)
+    "gn_depth_np_sigma", rep.annotators.Augmentation.from_function(gaussian_noise_depth_np, sigma=0.01, seed=None)
 )
 
-rep.AnnotatorRegistry.register_augmentation(
-    "gn_depth_np_sigma_v2", rep.Augmentation.from_function(gaussian_noise_depth_np, sigma=0.25, seed=None)
-)
 
-# TODO cannot use wp.float32 (OM-104909)
 @wp.kernel
 def gaussian_noise_depth_wp(
-    data_in: wp.array2d(dtype=wp.uint8), data_out: wp.array2d(dtype=wp.uint8), sigma: float, seed: int
+    data_in: wp.array2d(dtype=wp.float32), data_out: wp.array2d(dtype=wp.float32), sigma: float, seed: int
 ):
     i, j = wp.tid()
     state = wp.rand_init(seed, wp.tid())
-    # data_out[i, j] = data_in[i, j] + sigma * wp.randn(state)
-    data_out[i, j] = data_in[i, j]
+    data_out[i, j] = data_in[i, j] + sigma * wp.randn(state)
 
 
 rep.AnnotatorRegistry.register_augmentation(
-    "gn_depth_wp_sigma_v1", rep.Augmentation.from_function(gaussian_noise_depth_wp, sigma=0.01, seed=None)
-)
-
-rep.AnnotatorRegistry.register_augmentation(
-    "gn_depth_wp_sigma_v2", rep.Augmentation.from_function(gaussian_noise_depth_wp, sigma=0.25, seed=None)
+    "gn_depth_wp", rep.annotators.Augmentation.from_function(gaussian_noise_depth_wp, sigma=0.01, seed=None)
 )
 
 # Helper functions for writing images from annotator data
@@ -93,7 +84,9 @@ def write_rgb(data, path):
 
 
 def write_depth(data, path):
-    # Normalize, handle any nan values, and convert to from float32 to 8-bit int array
+    # Convert to numpy (if warp), normalize, handle any nan values, and convert to from float32 to 8-bit int array
+    if isinstance(data, wp.array):
+        data = data.numpy()
     normalized_array = (data - np.min(data)) / (np.max(data) - np.min(data))
     normalized_array = np.nan_to_num(normalized_array)
     integer_array = (normalized_array * 255).astype(np.uint8)
@@ -120,17 +113,13 @@ rp = rep.create.render_product(cam, (512, 512))
 
 # Get the local augmentations, either from function or from the registry
 rgb_to_bgr_augm = None
-gn_depth_augm_1 = None
-gn_depth_augm_2 = None
+gn_depth_augm = None
 if USE_WARP:
-    rgb_to_bgr_augm = rep.Augmentation.from_function(rgb_to_bgr_wp)
-    gn_depth_augm_1 = rep.AnnotatorRegistry.get_augmentation("gn_depth_wp_sigma_v1")
-    gn_depth_augm_2 = rep.AnnotatorRegistry.get_augmentation("gn_depth_wp_sigma_v2")
+    rgb_to_bgr_augm = rep.annotators.Augmentation.from_function(rgb_to_bgr_wp)
+    gn_depth_augm = rep.AnnotatorRegistry.get_augmentation("gn_depth_wp")
 else:
-    rgb_to_bgr_augm = rep.Augmentation.from_function(rgb_to_bgr_np)
-    gn_depth_augm_1 = rep.AnnotatorRegistry.get_augmentation("gn_depth_np_sigma_v1")
-    gn_depth_augm_2 = rep.AnnotatorRegistry.get_augmentation("gn_depth_np_sigma_v2")
-
+    rgb_to_bgr_augm = rep.annotators.Augmentation.from_function(rgb_to_bgr_np)
+    gn_depth_augm = rep.AnnotatorRegistry.get_augmentation("gn_depth_np")
 
 # Output directories
 out_dir = os.path.join(os.getcwd(), "_out_augm_annot")
@@ -147,16 +136,16 @@ rep.annotators.register(
 
 rgb_to_bgr_annot = rep.AnnotatorRegistry.get_annotator("rgb_to_bgr_augm")
 depth_annot_1 = rep.AnnotatorRegistry.get_annotator("distance_to_camera")
-depth_annot_1.augment(gn_depth_augm_1)
+depth_annot_1.augment(gn_depth_augm)
 depth_annot_2 = rep.AnnotatorRegistry.get_annotator("distance_to_camera")
-depth_annot_2.augment(gn_depth_augm_2)
+depth_annot_2.augment(gn_depth_augm, sigma=0.02)
 
-rgb_to_bgr_annot.attach([rp])
-depth_annot_1.attach([rp])
-depth_annot_2.attach([rp])
+rgb_to_bgr_annot.attach(rp)
+depth_annot_1.attach(rp)
+depth_annot_2.attach(rp)
 
 
-# Generate a replicator graph causing the cube to rotate every frame capture
+# Generate a replicator graph to rotate the cube every capture frame
 with rep.trigger.on_frame():
     with red_cube:
         rep.randomizer.rotation()
@@ -174,8 +163,8 @@ for i in range(NUM_FRAMES):
     depth_data_1 = depth_annot_1.get_data()
     depth_data_2 = depth_annot_2.get_data()
     write_rgb(rgb_data, os.path.join(out_dir, f"annot_rgb_{i}"))
-    write_depth(depth_data_1, os.path.join(out_dir, f"annot_depth_{i}_v1"))
-    write_depth(depth_data_2, os.path.join(out_dir, f"annot_depth_{i}_v2"))
+    write_depth(depth_data_1, os.path.join(out_dir, f"annot_depth_1_{i}"))
+    write_depth(depth_data_2, os.path.join(out_dir, f"annot_depth_2_{i}"))
 
 print(
     f"The duration for capturing {NUM_FRAMES} frames using '{'warp' if USE_WARP else 'numpy'}' was: {time.time() - start_time:.4f} seconds, with an average of {(time.time() - start_time) / NUM_FRAMES:.4f} seconds per frame."
