@@ -60,7 +60,7 @@ def gaussian_noise_depth_np(data_in, sigma: float, seed: int):
 
 
 rep.AnnotatorRegistry.register_augmentation(
-    "gn_depth_np_sigma", rep.annotators.Augmentation.from_function(gaussian_noise_depth_np, sigma=0.01, seed=None)
+    "gn_depth_np_sigma", rep.annotators.Augmentation.from_function(gaussian_noise_depth_np, sigma=0.1, seed=None)
 )
 
 
@@ -74,7 +74,7 @@ def gaussian_noise_depth_wp(
 
 
 rep.AnnotatorRegistry.register_augmentation(
-    "gn_depth_wp", rep.annotators.Augmentation.from_function(gaussian_noise_depth_wp, sigma=0.01, seed=None)
+    "gn_depth_wp", rep.annotators.Augmentation.from_function(gaussian_noise_depth_wp, sigma=0.1, seed=None)
 )
 
 # Helper functions for writing images from annotator data
@@ -138,7 +138,7 @@ rgb_to_bgr_annot = rep.AnnotatorRegistry.get_annotator("rgb_to_bgr_augm")
 depth_annot_1 = rep.AnnotatorRegistry.get_annotator("distance_to_camera")
 depth_annot_1.augment(gn_depth_augm)
 depth_annot_2 = rep.AnnotatorRegistry.get_annotator("distance_to_camera")
-depth_annot_2.augment(gn_depth_augm, sigma=0.02)
+depth_annot_2.augment(gn_depth_augm, sigma=0.5)
 
 rgb_to_bgr_annot.attach(rp)
 depth_annot_1.attach(rp)
