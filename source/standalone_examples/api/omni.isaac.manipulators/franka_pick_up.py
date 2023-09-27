@@ -83,7 +83,7 @@ while simulation_app.is_running():
             picking_position=cube.get_local_pose()[0],
             placing_position=np.array([-0.3, -0.3, 0.0515 / 2.0]),
             current_joint_positions=my_franka.get_joint_positions(),
-            end_effector_offset=np.array([0, 0.005, -0.015]),
+            end_effector_offset=np.array([0, 0.005, 0]),
         )
         if my_controller.is_done():
             print("done picking and placing")

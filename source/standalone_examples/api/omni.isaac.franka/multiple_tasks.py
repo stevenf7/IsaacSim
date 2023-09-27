@@ -55,7 +55,7 @@ while simulation_app.is_running():
                 picking_position=observations[cube_names[i]]["position"],
                 placing_position=observations[cube_names[i]]["target_position"],
                 current_joint_positions=observations[frankas[i].name]["joint_positions"],
-                end_effector_offset=np.array([0, 0, -0.015]),
+                end_effector_offset=np.array([0, 0, 0]),
             )
             articulation_controllers[i].apply_action(actions)
 

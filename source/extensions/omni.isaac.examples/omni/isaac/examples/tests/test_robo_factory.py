@@ -9,6 +9,7 @@
 
 import asyncio
 
+import numpy as np
 import omni.kit
 
 # NOTE:
@@ -53,8 +54,14 @@ class TestRoboFactoryExampleExtension(omni.kit.test.AsyncTestCase):
         await self._sample._on_start_stacking_event_async()
         await update_stage_async()
         # run for 2500 frames and print time
-        for i in range(500):
+        for i in range(2000):
             await update_stage_async()
+        cube_names = self._sample._tasks[0].get_cube_names()
+        task_observations = self._sample._tasks[0].get_observations()
+        for cube_name in cube_names:
+            self.assertTrue(
+                np.isclose(task_observations[cube_name]["position"][0:2], np.array([0.5, -2.5]), atol=1e-2).all()
+            )
         pass
 
     async def test_reset(self):
