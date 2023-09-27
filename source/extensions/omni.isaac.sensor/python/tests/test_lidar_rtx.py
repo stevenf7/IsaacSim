@@ -161,10 +161,10 @@ class TestRotatingLidarRtx(omni.kit.test.AsyncTestCase):
         self.assertTrue(self._my_lidar.get_num_cols() > 0)
         self.assertTrue(self._my_lidar.get_rotation_frequency() > 0)
         low, high = self._my_lidar.get_depth_range()
-        self.assertTrue(low == 0)
+        self.assertTrue(low == 1.0)
         self.assertTrue(high > 0)
         low, high = self._my_lidar.get_azimuth_range()
-        self.assertTrue(low > 0)
+        self.assertTrue(low < 0)
         self.assertTrue(high > 0)
         return
 
