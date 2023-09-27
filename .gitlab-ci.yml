@@ -1,5 +1,5 @@
 pages:
-  tags: 
+  tags:
     - pages
   image:
     alpine:latest
@@ -24,6 +24,14 @@ pages:
 
 stages:
   - test
+
+include:
+  - project: "omniverse/devplat/gitlab/templates/common/compliance"
+    file: "modules/omniverse-repo-compliance.gitlab-ci.yml"
+    ref: "v1_latest"
+
+variables:
+    OSEC_NSPECT_ID: "NSPECT-8CX1-LP1G"
 
 # include:
 #   - project: 'omniverse/sectools/omni-pulse'

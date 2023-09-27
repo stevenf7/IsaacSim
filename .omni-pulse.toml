@@ -1,0 +1,15 @@
+[omni_pulse_config]
+omit_package_patterns=[
+    # OM-110718 add omni-pulse scan config
+    # OSEC-625 Connect SDK  False vulnerabilities
+    # libprometheus is not used with the Connect SDK and is a false vulnerability.
+    # Protobuf is not used and is a false vulnerability.
+    # Python 3.8.x is not used with the Connect SDK and is a false vulnerability.
+    # Python 3.7, 3.9, and 3.10 are used by Connect SDK, though we do not redistribute them directly (they are not shipped in our packages).
+    # We build against them & provide repo/premake tooling that would allow others to easily fetch these python packages
+    # So we're excluding all occurrences of Lua/libprometheus, Protobuf, xz utils, and Python 3.8 in the recursive packman dependency tree from being scanned.
+    'libprometheus@*',
+    'protobuf@*',
+    'python@3.8.*',
+    'xz@*'
+    ]
