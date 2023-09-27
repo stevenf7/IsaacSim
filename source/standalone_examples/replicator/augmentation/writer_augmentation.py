@@ -64,22 +64,21 @@ def gaussian_noise_depth_np(data_in, sigma: float, seed: int):
 
 
 rep.AnnotatorRegistry.register_augmentation(
-    "gn_depth_np", rep.annotators.Augmentation.from_function(gaussian_noise_depth_np, sigma=0.003, seed=None)
+    "gn_depth_np", rep.annotators.Augmentation.from_function(gaussian_noise_depth_np, sigma=0.1, seed=None)
 )
 
-# TODO cannot use wp.float32 (OM-104909)
+
 @wp.kernel
 def gaussian_noise_depth_wp(
-    data_in: wp.array2d(dtype=wp.uint8), data_out: wp.array2d(dtype=wp.uint8), sigma: float, seed: int
+    data_in: wp.array2d(dtype=wp.float32), data_out: wp.array2d(dtype=wp.float32), sigma: float, seed: int
 ):
     i, j = wp.tid()
     state = wp.rand_init(seed, wp.tid())
-    # data_out[i, j] = data_in[i, j] + sigma * wp.randn(state)
-    data_out[i, j] = data_in[i, j]
+    data_out[i, j] = data_in[i, j] + sigma * wp.randn(state)
 
 
 rep.AnnotatorRegistry.register_augmentation(
-    "gn_depth_wp", rep.annotators.Augmentation.from_function(gaussian_noise_depth_wp, sigma=0.003, seed=None)
+    "gn_depth_wp", rep.annotators.Augmentation.from_function(gaussian_noise_depth_wp, sigma=0.1, seed=None)
 )
 
 # Setup the environment and update the app a couple of times to fully load texture/materials

@@ -37,7 +37,7 @@ SCALE_MIN = 15
 SCALE_MAX = 40
 
 # Default rendering parameters
-RENDER_CONFIG = {"renderer": "PathTracing", "samples_per_pixel_per_frame": 12, "headless": False}
+RENDER_CONFIG = {"headless": False}
 
 
 class RandomObjects(torch.utils.data.IterableDataset):
