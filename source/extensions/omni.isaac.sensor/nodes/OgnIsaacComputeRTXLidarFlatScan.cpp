@@ -128,7 +128,7 @@ public:
             // state.rotaryProfile.scanRateBaseHz; // 10 for a 10Hz lidar
             uint32_t numTicksPerRotation = state.rotaryProfile.reportRateBaseHz / state.rotaryProfile.scanRateBaseHz;
             db.outputs.horizontalFov() = 360.0;
-            db.outputs.horizontalResolution() = static_cast<float>(360 / numTicksPerRotation);
+            db.outputs.horizontalResolution() = static_cast<float>(360.0 / numTicksPerRotation);
             db.outputs.numRows() = 1;
             db.outputs.numCols() = numTicksPerRotation;
             db.outputs.rotationRate() = static_cast<float>(state.rotaryProfile.scanRateBaseHz);
