@@ -7,7 +7,7 @@
         "categories":{
             "isaacSim": "Surface Gripper inside Isaac Sim"
         },
-        "scheduling": "compute-on-request",
+        "scheduling": ["compute-on-request", "usd-write"],
         "metadata": {
             "uiName": "Surface Gripper"
         },
@@ -93,16 +93,6 @@
             "GripBroken":{
                 "type":"execution",
                 "description":"triggered when surface gripper unexpectedly breaks open"
-            }
-        },
-        "state": {
-            "Close": {
-                "type": "bool",
-                "description": "call to close gripper"
-            },
-            "Open": {
-                "type": "bool",
-                "description": "call to Open gripper"
             }
         }
 

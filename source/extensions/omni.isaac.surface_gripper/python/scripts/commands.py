@@ -70,11 +70,11 @@ class CreateSurfaceGripper(omni.kit.commands.Command):
             {"graph_path": self._prim_path, "evaluator_name": "execution"},
             {
                 keys.CREATE_NODES: [
-                    ("OnTick", "omni.graph.action.OnTick"),
+                    ("impulse_monitor", "omni.graph.action.OnImpulseEvent"),
                     ("SurfaceGripperNode", "omni.isaac.surface_gripper.SurfaceGripper"),
                 ],
                 keys.SET_VALUES: [],
-                keys.CONNECT: [("OnTick.outputs:tick", "SurfaceGripperNode.inputs:onStep")],
+                keys.CONNECT: [("impulse_monitor.outputs:execOut", "SurfaceGripperNode.inputs:onStep")],
             },
         )
         if self._surface_gripper_prim_selected:

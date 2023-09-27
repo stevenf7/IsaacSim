@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.5.0] - 2023-09-26
+### Changed 
+- Updated ogn node to prevent issue where it would only call for close on first attempt.
+- Automatically move gripper origin out of collision body, with a warning to tell how much to push it forward 
 ## [0.4.1] - 2023-08-11
 ### Changed 
 - Updated ogn node prims types from bundle to ogn
