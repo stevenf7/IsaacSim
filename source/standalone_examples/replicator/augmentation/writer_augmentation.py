@@ -33,7 +33,7 @@ NUM_FRAMES = args.num_frames
 USE_WARP = args.use_warp
 ENV_URL = "/Isaac/Environments/Grid/default_environment.usd"
 
-# Enable annotator scripts
+# Enable scripts
 carb.settings.get_settings().set_bool("/app/omni.graph.scriptnode/opt_in", True)
 
 # Gaussian noise augmentation on rgba data in numpy (CPU) and warp (GPU)
@@ -64,7 +64,7 @@ def gaussian_noise_depth_np(data_in, sigma: float, seed: int):
 
 
 rep.AnnotatorRegistry.register_augmentation(
-    "gn_depth_np", rep.Augmentation.from_function(gaussian_noise_depth_np, sigma=0.003, seed=None)
+    "gn_depth_np", rep.annotators.Augmentation.from_function(gaussian_noise_depth_np, sigma=0.003, seed=None)
 )
 
 # TODO cannot use wp.float32 (OM-104909)
@@ -79,7 +79,7 @@ def gaussian_noise_depth_wp(
 
 
 rep.AnnotatorRegistry.register_augmentation(
-    "gn_depth_wp", rep.Augmentation.from_function(gaussian_noise_depth_wp, sigma=0.003, seed=None)
+    "gn_depth_wp", rep.annotators.Augmentation.from_function(gaussian_noise_depth_wp, sigma=0.003, seed=None)
 )
 
 # Setup the environment and update the app a couple of times to fully load texture/materials
@@ -100,17 +100,17 @@ cam = rep.create.camera(position=(0, 0, 5), look_at=(0, 0, 0))
 rp = rep.create.render_product(cam, (512, 512))
 
 # Access default annotators from replicator
-rgb_to_hsv_augm = rep.Augmentation.from_function(rep.aug_rgb_to_hsv)
-hsv_to_rgb_augm = rep.Augmentation.from_function(rep.aug_hsv_to_rgb)
+rgb_to_hsv_augm = rep.annotators.Augmentation.from_function(rep.augmentations_default.aug_rgb_to_hsv)
+hsv_to_rgb_augm = rep.annotators.Augmentation.from_function(rep.augmentations_default.aug_hsv_to_rgb)
 
 # Access the custom annotators as functions or from the registry
 gn_rgb_augm = None
 gn_depth_augm = None
 if USE_WARP:
-    gn_rgb_augm = rep.Augmentation.from_function(gaussian_noise_rgb_wp, sigma=6.0, seed=None)
+    gn_rgb_augm = rep.annotators.Augmentation.from_function(gaussian_noise_rgb_wp, sigma=6.0, seed=None)
     gn_depth_augm = rep.AnnotatorRegistry.get_augmentation("gn_depth_wp")
 else:
-    gn_rgb_augm = rep.Augmentation.from_function(gaussian_noise_rgb_np, sigma=6.0, seed=None)
+    gn_rgb_augm = rep.annotators.Augmentation.from_function(gaussian_noise_rgb_np, sigma=6.0, seed=None)
     gn_depth_augm = rep.AnnotatorRegistry.get_augmentation("gn_depth_np")
 
 # Create a writer and apply the augmentations to its corresponding annotators
@@ -118,15 +118,11 @@ out_dir = os.path.join(os.getcwd(), "_out_augm_writer")
 writer = rep.WriterRegistry.get("BasicWriter")
 writer.initialize(output_dir=out_dir, rgb=True, distance_to_camera=True)
 
-for annot in writer.annotators:
-    if annot.get_name().startswith("rgb"):
-        orig_name = annot.get_name()
-        annot.augment_compose([rgb_to_hsv_augm, gn_rgb_augm, hsv_to_rgb_augm])
-        annot._name = orig_name
-    if annot.get_name().startswith("distance_to_camera"):
-        orig_name = annot.get_name()
-        annot.augment(gn_depth_augm)
-        annot._name = orig_name
+augmented_rgb_annot = rep.annotators.get("rgb").augment_compose(
+    [rgb_to_hsv_augm, gn_rgb_augm, hsv_to_rgb_augm], name="rgb"
+)
+writer.add_annotator(augmented_rgb_annot)
+writer.augment_annotator("distance_to_camera", gn_depth_augm)
 
 # Attach render product to writer
 writer.attach([rp])
