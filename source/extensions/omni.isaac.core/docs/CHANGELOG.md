@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.9.1] - 2023-09-26
+### Fixed
+- Fixed a bug in a rigid_prim_view unit test 
+
 ## [2.9.0] - 2023-08-28
 ### Added
 - Add missing GPU collision stack size API in physics context
