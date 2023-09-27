@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.10.1] - 2023-09-26
+### Fixed 
+- Fix error when AOVs return data on different devices
+
 ## [1.10.0] - 2023-09-12
 ### Changed 
 - Improved pytorch writer performance
