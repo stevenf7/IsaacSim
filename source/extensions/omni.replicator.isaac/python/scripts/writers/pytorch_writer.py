@@ -79,6 +79,11 @@ class PytorchWriter(Writer):
         for annotator in data.keys():
             if annotator.startswith("LdrColor"):
                 data_tensors.append(wp.to_torch(data[annotator]).unsqueeze(0))
+
+        # Move all tensors to the same device for concatenation
+        device = "cuda:0" if self.device == "cuda" else self.device
+        data_tensors = [t.to(device) for t in data_tensors]
+
         data_tensor = torch.cat(data_tensors, dim=0)
         return data_tensor
 
