@@ -371,6 +371,7 @@ call "%%~dp0%s\%s" %s %s %%*
 set -e
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 export RESOURCE_NAME="IsaacSim"
+export OLD_PYTHONPATH=$PYTHONPATH
 exec "$SCRIPT_DIR/%s/%s" %s %s "$@"
 ]],
     ["macosx"] = [[

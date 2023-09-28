@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.2.3] - 2023-09-27
+
+### Changed
+- Made several warnings into print and log statements 
+
+### Fixed
+- rclpy not working in script editor
+
 ## [2.2.2] - 2023-09-25
 ### Fixed
 - Transform tree node can accept multiple target prims as input

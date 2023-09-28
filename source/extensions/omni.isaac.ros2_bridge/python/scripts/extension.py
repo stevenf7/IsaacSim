@@ -46,7 +46,7 @@ class ROS2BridgeExtension(omni.ext.IExt):
             carb.log_warn(
                 "ROS_DISTRO env var not found, Please source ROS2 Foxy, or Humble, before enabling this extension"
             )
-            carb.log_warn(f"Using backup internal ROS2 {backup_ros_distro} distro")
+            omni.kit.app.get_app().print_and_log(f"Using backup internal ROS2 {backup_ros_distro} distro")
             ros_distro = backup_ros_distro
             os.environ["ROS_DISTRO"] = ros_distro
             # os.environ["RMW_IMPLEMENTATION"] = "rmw_fastrtps_cpp"

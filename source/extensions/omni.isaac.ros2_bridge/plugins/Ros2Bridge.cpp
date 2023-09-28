@@ -36,6 +36,7 @@
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
 #include <omni/isaac/utils/LibraryLoader.h>
+#include <omni/kit/IApp.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/kit/syntheticdata/SyntheticData.h>
 #include <omni/physx/IPhysx.h>
@@ -123,6 +124,7 @@ bool const CARB_ABI getStartupStatus()
 
 CARB_EXPORT void carbOnPluginStartup()
 {
+    omni::kit::IApp* app = carb::getCachedInterface<omni::kit::IApp>();
     std::vector<std::string> lib_list = {
         "rcutils",
         "rosidl_runtime_c",
@@ -191,11 +193,11 @@ CARB_EXPORT void carbOnPluginStartup()
         if (temp_loader->loadedLibrary == carb::extras::kInvalidLibraryHandle)
         {
 #ifdef _WIN32
-            CARB_LOG_WARN(
-                "Loading rosidl_runtime_c.dll from sourced ROS_DISTRO failed, falling back to internal libraries");
+            app->printAndLog(
+                "Loading rosidl_runtime_c.dll from sourced ROS_DISTRO failed, falling back to internal libraries.");
 #else
-            CARB_LOG_WARN(
-                "Loading librosidl_runtime_c.so from sourced ROS_DISTRO failed, falling back to internal libraries");
+            app->printAndLog(
+                "Loading librosidl_runtime_c.so from sourced ROS_DISTRO failed, falling back to internal libraries.");
 #endif
 
             std::string bridgePath = "${app}";

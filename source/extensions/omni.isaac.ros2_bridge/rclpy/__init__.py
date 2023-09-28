@@ -20,6 +20,13 @@ class Extension(omni.ext.IExt):
         ros_distro = os.environ.get("ROS_DISTRO")
         if ros_distro in ["humble", "foxy"] and f"{ros_distro}/rclpy" in os.path.join(os.path.dirname(__file__)):
             omni.kit.app.get_app().print_and_log("Attempting to load system rclpy")
+            ament_prefix = os.environ.get("AMENT_PREFIX_PATH")
+            if ament_prefix is not None:
+                for python_path in os.environ.get("OLD_PYTHONPATH").split(":"):
+                    for ament_path in ament_prefix.split(":"):
+                        if python_path.startswith(os.path.abspath(ament_path) + os.sep):
+                            sys.path.append(os.path.join(python_path))
+                            break
             try:
                 import rclpy
 
@@ -27,7 +34,7 @@ class Extension(omni.ext.IExt):
                 rclpy.shutdown()
                 omni.kit.app.get_app().print_and_log("rclpy loaded")
             except Exception as e:
-                carb.log_warn(f"Could not import system rclpy: {e}")
+                omni.kit.app.get_app().print_and_log(f"Could not import system rclpy: {e}")
                 omni.kit.app.get_app().print_and_log("Attempting to load internal rclpy")
                 sys.path.append(os.path.join(os.path.dirname(__file__)))
 
@@ -38,18 +45,26 @@ class Extension(omni.ext.IExt):
                     rclpy.shutdown()
                     omni.kit.app.get_app().print_and_log("rclpy loaded")
                 except Exception as e:
-                    carb.log_warn(f"could not import internal rclpy: {e}")
+                    omni.kit.app.get_app().print_and_log(f"Could not import internal rclpy: {e}")
                     ext_manager = omni.kit.app.get_app().get_extension_manager()
                     self._extension_path = ext_manager.get_extension_path(ext_id)
                     if sys.platform == "linux":
-                        carb.log_warn(
-                            f"To use the Internal rclpy included with the extension please set: \nRMW_IMPLEMENTATION=rmw_fastrtps_cpp\nand\nLD_LIBRARY_PATH=$LD_LIBRARY_PATH:{self._extension_path}/{ros_distro}/lib\nBefore starting Isaac Sim"
+                        omni.kit.app.get_app().print_and_log(
+                            f"To use the Internal rclpy included with the extension please set: \nRMW_IMPLEMENTATION=rmw_fastrtps_cpp\nLD_LIBRARY_PATH=$LD_LIBRARY_PATH:{self._extension_path}/{ros_distro}/lib\nBefore starting Isaac Sim"
                         )
                     else:
-                        carb.log_warn(
-                            f"To use the Internal rclpy included with the extension please set: \nRMW_IMPLEMENTATION=rmw_fastrtps_cpp\nand\nPATH=$PATH;{self._extension_path}/{ros_distro}/lib\nBefore starting Isaac Sim"
+                        omni.kit.app.get_app().print_and_log(
+                            f"To use the Internal rclpy included with the extension please set: \nRMW_IMPLEMENTATION=rmw_fastrtps_cpp\nPATH=$PATH;{self._extension_path}/{ros_distro}/lib\nBefore starting Isaac Sim"
                         )
+                try:
+                    import rclpy
 
+                    rclpy.init()
+                    rclpy.shutdown()
+                except Exception as e:
+                    carb.log_warn(
+                        f"Could not import rclpy\nThe ROS 2 bridge will load, Omnigraph Nodes will work but rlclpy and related imports will not be available."
+                    )
             return
 
     def on_shutdown(self):
