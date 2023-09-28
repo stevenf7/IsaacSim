@@ -251,9 +251,9 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
             orientation=rot_utils.euler_angles_to_quats(np.array([0, 90, 0]), degrees=True),
             render_product_path=render_product_path,
         )
+        self.viewport_camera.initialize()
         self.viewport_camera.add_distance_to_image_plane_to_frame()
         self.viewport_camera.add_pointcloud_to_frame()
-        self.viewport_camera.initialize()
 
         await omni.syntheticdata.sensors.next_render_simulation_async(self.viewport_camera.get_render_product_path(), 1)
         self.assertEqual(self.viewport_camera.get_rgba().size, 256 * 256 * 4)
