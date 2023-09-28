@@ -14,6 +14,11 @@
                 "type": "execution",
                 "description": "Triggering this causes the sensor pipeline to be generated"
             },
+            "enabled": {
+                "type": "bool",
+                "description": "True to enable the camera helper, False to disable",
+                "default": true
+            },
             "nodeNamespace": {
                 "type": "string",
                 "description": "Namespace of ROS1 Node, prepends any published/subscribed topic by the node namespace",
