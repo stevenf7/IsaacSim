@@ -124,7 +124,7 @@ class Contact_sensor_demo(omni.ext.IExt):
     def _on_update(self, dt):
         if self._timeline.is_playing() and self.sliders:
             for i in range(4):
-                reading = self._cs.get_sensor_readings(self.leg_paths[i] + "/sensor")
+                reading = self._cs.get_sensor_reading(self.leg_paths[i] + "/sensor")
                 if reading.is_valid:
                     self.sliders[i].model.set_value(
                         float(reading.value) * self.meters_per_unit

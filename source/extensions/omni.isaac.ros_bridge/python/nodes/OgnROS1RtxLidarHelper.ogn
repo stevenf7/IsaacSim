@@ -14,6 +14,11 @@
                 "type" : "execution",
                 "description": "Triggering this causes the sesnor pipeline to be generated"
             },
+            "enabled": {
+                "type": "bool",
+                "description": "True to enable the lidar helper, False to disable",
+                "default": true
+            },
             "context" : {
                 "type" : "uint64",
                 "description": "ROS context handle, default of zero will use the global context",

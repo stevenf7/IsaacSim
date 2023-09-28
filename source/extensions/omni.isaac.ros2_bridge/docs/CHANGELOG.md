@@ -1,4 +1,7 @@
 # Changelog
+## [2.2.3] - 2023-09-26
+### Added
+- Added enable flag for the lidar and camera helper
 
 ## [2.2.2] - 2023-09-25
 ### Fixed

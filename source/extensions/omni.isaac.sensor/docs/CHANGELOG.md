@@ -7,7 +7,7 @@
 ## [9.6.1] - 2023-09-26
 ### Fixed
 - Fixed bug with horizontal resolution divison
-
+- Fixed contact sensor sample
 ## [9.6.0] - 2023-09-25
 ### Added
 - depthRange output to IsaacReadRTXLidarData

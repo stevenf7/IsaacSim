@@ -14,6 +14,11 @@
                 "type": "execution",
                 "description": "Triggering this causes the sensor pipeline to be generated"
             },
+            "enabled": {
+                "type": "bool",
+                "description": "True to enable the camera helper, False to disable",
+                "default": true
+            },
             "context": {
                 "type": "uint64",
                 "description": "ROS2 context handle, Default of zero will use the default global context",
