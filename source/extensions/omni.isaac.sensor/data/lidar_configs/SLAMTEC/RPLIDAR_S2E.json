@@ -33,11 +33,8 @@
         "elevationErrorMean": 0.0,
         "elevationErrorStd": 0.0,
     
-    
-        "reportTypes": "Strongest, Last, Dual",
         "maxReturns": 1,
     
-        "scanRatesHz": [10.0],
         "scanRateBaseHz": 10.0,
     
         "reportRateBaseHz": 32000,

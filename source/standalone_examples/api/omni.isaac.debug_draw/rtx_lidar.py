@@ -57,7 +57,7 @@ _, sensor = omni.kit.commands.execute(
     parent=None,
     config=lidar_config,
     translation=(0, 0, 1.0),
-    orientation=Gf.Quatd(0.5, 0.5, -0.5, -0.5),  # Gf.Quatd is w,i,j,k
+    orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),  # Gf.Quatd is w,i,j,k
 )
 _, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathString)
 
@@ -65,7 +65,7 @@ simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 /
 simulation_app.update()
 
 # Create the debug draw pipeline in the post process graph
-writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
+writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud" + "Buffer")
 writer.attach([render_product_path])
 
 simulation_app.update()

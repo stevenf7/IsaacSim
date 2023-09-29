@@ -23,11 +23,7 @@
     "minReflectanceRange": 270.0,
     "wavelengthNm": 1550.0,
     "pulseTimeNs": 6,
-    "reportTypes": "Strongest, Last, Dual",
     "maxReturns": 2,
-    "scanRatesHz": [
-      10.0
-    ],
     "scanRateBaseHz": 10.0,
     "reportRateBaseHz": 10,
     "numberOfEmitters": 108000,

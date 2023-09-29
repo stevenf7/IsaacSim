@@ -38,10 +38,8 @@
         "comment17" : "This adds jitter to the distance or the return but stays along the ray",
         "rangeAccuracyM": 0.03, "comment18" : "OPTICAL PERFORMANCE- Range Accuracy ±3 cm for lambertian targets, ±10 cm for retroreflectors",
         
-        "reportTypes": "Strongest, Second Strongest",
         "maxReturns": 2,
         
-        "scanRatesHz": [10.0, 20.0],
         "scanRateBaseHz": 10.0,
         
         "reportRateBaseHz": 5120,

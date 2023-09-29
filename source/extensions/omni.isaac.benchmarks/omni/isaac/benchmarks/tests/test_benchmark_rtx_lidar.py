@@ -53,7 +53,7 @@ class TestBenchmarkRtxLidar(BaseIsaacBenchmark):
                 parent=None,
                 config=lidar_config,
                 translation=sensor_translation,
-                orientation=Gf.Quatd(0.5, 0.5, -0.5, -0.5),  # Gf.Quatd is w,i,j,k
+                orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),  # Gf.Quatd is w,i,j,k
             )
             sensors.append(sensor)
             texture, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathString)

@@ -52,7 +52,7 @@ class TestBenchmarkRtxRadar(BaseIsaacBenchmark):
                 parent=None,
                 config="Example",
                 translation=sensor_translation,
-                orientation=Gf.Quatd(0.6283473, 0.6283473, -0.3243142, -0.3243142),  # Gf.Quatd is w,i,j,k
+                orientation=Gf.Quatd(0.70711, 0.70711, 0, 0),  # Gf.Quatd is w,i,j,k
             )
             sensors.append(sensor)
             texture, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathString)

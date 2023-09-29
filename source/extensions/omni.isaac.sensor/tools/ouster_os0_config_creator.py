@@ -173,10 +173,8 @@ for config in configs:
             f'        "rangeAccuracyM": 0.03, {comment("OPTICAL PERFORMANCE- Range Accuracy ±3 cm for lambertian targets, ±10 cm for retroreflectors")},'
         )
         print("        ")
-        print('        "reportTypes": "Strongest, Second Strongest",')
         print('        "maxReturns": 2,')
         print("        ")
-        print('        "scanRatesHz": [10.0, 20.0],')
         print(f'        "scanRateBaseHz": {hz}.0,')
         print("        ")
         print(f'        "reportRateBaseHz": {hz*resolution},')
