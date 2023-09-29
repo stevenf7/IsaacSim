@@ -26,7 +26,7 @@
             },
             "frameId": {
                 "type": "string",
-                "description": "FrameId for ROS1 message",
+                "description": "FrameId for ROS1 message, the nodeNamespace will be prefixed to the frame id",
                 "default": "sim_camera"
             },
             "topicName": {
