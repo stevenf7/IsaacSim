@@ -657,9 +657,11 @@ class Camera(BaseSensor):
     def add_normals_to_frame(self) -> None:
         """Attach the normals annotator to this camera.
         The normals annotator returns:
+
             np.array
             shape: (width, height, 4)
             dtype: np.float32
+
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#normals
         """
         if self._custom_annotators["normals"] is None:
@@ -677,9 +679,11 @@ class Camera(BaseSensor):
     def add_motion_vectors_to_frame(self) -> None:
         """Attach the motion vectors annotator to this camera.
         The motion vectors annotator returns:
+
             np.array
             shape: (width, height, 4)
             dtype: np.float32
+
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#motion-vectors
         """
         if self._custom_annotators["motion_vectors"] is None:
@@ -697,6 +701,7 @@ class Camera(BaseSensor):
     def add_occlusion_to_frame(self) -> None:
         """Attach the occlusion annotator to this camera.
         The occlusion annotator returns:
+
             np.array
             shape: (num_objects, 1)
             dtype: np.dtype([("instanceId", "<u4"), ("semanticId", "<u4"), ("occlusionRatio", "<f4")])
@@ -716,9 +721,11 @@ class Camera(BaseSensor):
     def add_distance_to_image_plane_to_frame(self) -> None:
         """Attach the distance_to_image_plane annotator to this camera.
         The distance_to_image_plane annotator returns:
+
             np.array
             shape: (width, height, 1)
             dtype: np.float32
+
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#distance-to-image-plane
         """
         if self._custom_annotators["distance_to_image_plane"] is None:
@@ -738,9 +745,11 @@ class Camera(BaseSensor):
     def add_distance_to_camera_to_frame(self) -> None:
         """Attach the distance_to_camera_to_frame annotator to this camera.
         The distance_to_camera_to_frame annotator returns:
+
             np.array
             shape: (width, height, 1)
             dtype: np.float32
+
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#distance-to-camera
         """
         if self._custom_annotators["distance_to_camera"] is None:
@@ -758,16 +767,20 @@ class Camera(BaseSensor):
     def add_bounding_box_2d_tight_to_frame(self) -> None:
         """Attach the bounding_box_2d_tight annotator to this camera.
         The bounding_box_2d_tight annotator returns:
+
             np.array
             shape: (num_objects, 1)
             dtype: np.dtype([
+
                                 ("semanticId", "<u4"),
                                 ("x_min", "<i4"),
                                 ("y_min", "<i4"),
                                 ("x_max", "<i4"),
                                 ("y_max", "<i4"),
                                 ("occlusionRatio", "<f4"),
+
                             ])
+
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#bounding-box-2d-tight
         """
 
@@ -788,16 +801,20 @@ class Camera(BaseSensor):
     def add_bounding_box_2d_loose_to_frame(self) -> None:
         """Attach the bounding_box_2d_loose annotator to this camera.
         The bounding_box_2d_loose annotator returns:
+
             np.array
             shape: (num_objects, 1)
             dtype: np.dtype([
+
                                 ("semanticId", "<u4"),
                                 ("x_min", "<i4"),
                                 ("y_min", "<i4"),
                                 ("x_max", "<i4"),
                                 ("y_max", "<i4"),
                                 ("occlusionRatio", "<f4"),
+
                             ])
+
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#bounding-box-2d-loose
         """
         if self._custom_annotators["bounding_box_2d_loose"] is None:
@@ -830,9 +847,11 @@ class Camera(BaseSensor):
     def add_semantic_segmentation_to_frame(self) -> None:
         """Attach the semantic_segmentation annotator to this camera.
         The semantic_segmentation annotator returns:
+
             np.array
             shape: (width, height, 1) or (width, height, 4) if `colorize` is set to true
             dtype: np.uint32 or np.uint8 if `colorize` is set to true
+
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#semantic-segmentation
         """
         if self._custom_annotators["semantic_segmentation"] is None:
@@ -852,9 +871,11 @@ class Camera(BaseSensor):
     def add_instance_id_segmentation_to_frame(self) -> None:
         """Attach the instance_id_segmentation annotator to this camera.
         The instance_id_segmentation annotator returns:
+
             np.array
             shape: (width, height, 1) or (width, height, 4) if `colorize` is set to true
             dtype: np.uint32 or np.uint8 if `colorize` is set to true
+
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#instance-id-segmentation
         """
         if self._custom_annotators["instance_id_segmentation"] is None:
@@ -875,9 +896,11 @@ class Camera(BaseSensor):
         """Attach the instance_segmentation annotator to this camera.
         The main difference between instance id segmentation and instance segmentation are that instance segmentation annotator goes down the hierarchy to the lowest level prim which has semantic labels, which instance id segmentation always goes down to the leaf prim.
         The instance_segmentation annotator returns:
+
             np.array
             shape: (width, height, 1) or (width, height, 4) if `colorize` is set to true
             dtype: np.uint32 or np.uint8 if `colorize` is set to true
+
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#instance-segmentation
         """
         if self._custom_annotators["instance_segmentation"] is None:
@@ -897,9 +920,11 @@ class Camera(BaseSensor):
     def add_pointcloud_to_frame(self, include_unlabelled: bool = False):
         """Attach the pointcloud annotator to this camera.
         The pointcloud annotator returns:
+
             np.array
             shape: (num_points, 3)
             dtype: np.float32
+
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#point-cloud
         """
         if self._custom_annotators["pointcloud"] is None:
@@ -1160,8 +1185,7 @@ class Camera(BaseSensor):
             optical_centre_x (Optional[float]): Horizontal Render Position (pixels)
             optical_centre_y (Optional[float]): Vertical Render Position (pixels)
             max_fov (Optional[float]): maximum field of view (pixels)
-            polynomial (Optional[Sequence[float]]): polynomial equation coefficients
-                                                    (sequence of 5 numbers) starting from A0, A1, A2, A3, A4
+            polynomial (Optional[Sequence[float]]): polynomial equation coefficients (sequence of 5 numbers) starting from A0, A1, A2, A3, A4
         """
         if "fisheye" not in self.get_projection_type():
             raise Exception(
@@ -1250,8 +1274,7 @@ class Camera(BaseSensor):
             optical_centre_x (float): Horizontal Render Position (pixels)
             optical_centre_y (float): Vertical Render Position (pixels)
             max_fov (Optional[float]): maximum field of view (pixels)
-            distortion_model (Sequence[float]): rational polynomial distortion model coefficients
-                                                (k1, k2, p1, p2, k3, k4, k5, k6)
+            distortion_model (Sequence[float]): rational polynomial distortion model coefficients (k1, k2, p1, p2, k3, k4, k5, k6)
         """
 
         self.set_matching_fisheye_polynomial_properties(
@@ -1286,8 +1309,7 @@ class Camera(BaseSensor):
             optical_centre_x (float): Horizontal Render Position (pixels)
             optical_centre_y (float): Vertical Render Position (pixels)
             max_fov (Optional[float]): maximum field of view (pixels)
-            distortion_model (Sequence[float]): kannala brandt generic distortion model coefficients
-                                                (k1, k2, k3, k4)
+            distortion_model (Sequence[float]): kannala brandt generic distortion model coefficients (k1, k2, k3, k4)
         """
 
         self.set_matching_fisheye_polynomial_properties(
@@ -1331,10 +1353,8 @@ class Camera(BaseSensor):
     def set_shutter_properties(self, delay_open: Optional[float] = None, delay_close: Optional[float] = None) -> None:
         """
         Args:
-            delay_open (Optional[float], optional): Used with Motion Blur to control blur amount,
-                                                    increased values delay shutter opening. Defaults to None.
-            delay_close (Optional[float], optional): Used with Motion Blur to control blur amount,
-                                                    increased values forward the shutter close. Defaults to None.
+            delay_open (Optional[float], optional): Used with Motion Blur to control blur amount, increased values delay shutter opening. Defaults to None.
+            delay_close (Optional[float], optional): Used with Motion Blur to control blur amount, increased values forward the shutter close. Defaults to None.
         """
         if delay_open:
             self.prim.GetAttribute("shutter:open").Set(delay_open)
