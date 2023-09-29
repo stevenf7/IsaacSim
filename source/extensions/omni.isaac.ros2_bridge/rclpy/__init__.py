@@ -21,7 +21,7 @@ class Extension(omni.ext.IExt):
         if ros_distro in ["humble", "foxy"] and f"{ros_distro}/rclpy" in os.path.join(os.path.dirname(__file__)):
             omni.kit.app.get_app().print_and_log("Attempting to load system rclpy")
             ament_prefix = os.environ.get("AMENT_PREFIX_PATH")
-            if ament_prefix is not None:
+            if ament_prefix is not None and os.environ.get("OLD_PYTHONPATH") is not None:
                 for python_path in os.environ.get("OLD_PYTHONPATH").split(":"):
                     for ament_path in ament_prefix.split(":"):
                         if python_path.startswith(os.path.abspath(ament_path) + os.sep):
