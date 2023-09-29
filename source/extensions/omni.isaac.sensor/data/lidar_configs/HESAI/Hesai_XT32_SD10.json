@@ -34,11 +34,8 @@
         "elevationErrorMean": 0.0,
         "elevationErrorStd": 0.0000,
     
-    
-        "reportTypes": "Strongest, Last, Dual",
         "maxReturns": 2,
     
-        "scanRatesHz": [5.0, 10.0, 20.0],
         "scanRateBaseHz": 10.0,
     
         "reportRateBaseHz": 20000, "_commentC": "p.13 10Hz * angle (360°)/ horizontal resolution (0.18°) ",

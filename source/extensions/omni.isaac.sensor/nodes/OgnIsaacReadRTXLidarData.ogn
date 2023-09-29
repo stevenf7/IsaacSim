@@ -36,6 +36,21 @@
                 "type": "execution",
                 "description": "Output execution triggers when lidar sensor has data"
             },
+            "numTicks":{
+                "type": "uint",
+                "description": "The number of ticks in the output",
+                "default": 0
+            },
+            "numChannels":{
+                "type": "uint",
+                "description": "The number of emitter firings per tick",
+                "default": 0
+            },
+            "numEchos":{
+                "type": "uint",
+                "description": "The number of returns per single channel firing",
+                "default": 0
+            },
             "depthRange": {
                 "type": "float[2]",
                 "description": "The min and max range for sensor to detect a hit [min, max]",

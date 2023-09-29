@@ -155,7 +155,7 @@ class TestROS2RTXSensor(omni.kit.test.AsyncTestCase):
             path="/sim_lidar",
             parent=None,
             config=config,
-            orientation=Gf.Quatd(0.5, 0.5, -0.5, -0.5),
+            orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),
         )
         # texture, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathString)
         viewport_api.set_active_camera(sensor.GetPath().pathString)

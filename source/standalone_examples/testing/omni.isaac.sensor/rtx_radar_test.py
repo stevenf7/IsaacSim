@@ -126,7 +126,7 @@ _, sensor = omni.kit.commands.execute(
     parent=None,
     config=radar_config,
     translation=(0, 0, 1.0),
-    orientation=Gf.Quatd(0.6283473, 0.6283473, -0.3243142, -0.3243142),  # Gf.Quatd is w,i,j,k
+    orientation=Gf.Quatd(0.70711, 0.70711, 0, 0),  # Gf.Quatd is w,i,j,k
 )
 
 i = printinc(i)

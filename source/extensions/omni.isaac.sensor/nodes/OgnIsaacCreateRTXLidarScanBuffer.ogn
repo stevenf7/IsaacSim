@@ -147,86 +147,86 @@
                 "type": "matrixd[4]",
                 "description": "The transform matrix from lidar to world coordinates"
             },
-            "intensityPtr":{"type": "uint64",
+            "intensityPtr":{"uiName": "intensity","type": "uint64",
                 "description": "intensity [0,1]"},
-                "intensityType":{
+                "intensityDataType":{
                     "type": "float",
                     "default": 4,"description": "","metadata": {"hidden": "true"}},"intensityBufferSize":{"type": "uint64","description": "","metadata": {"hidden": "true"
                 }
             },
-            "distancePtr":{"type": "uint64",
+            "distancePtr":{"uiName": "distance","type": "uint64",
                 "description": "range in m"},
-                "distanceType":{
+                "distanceDataType":{
                     "type": "float",
                     "default": 4,"description": "","metadata": {"hidden": "true"}},"distanceBufferSize":{"type": "uint64","description": "","metadata": {"hidden": "true"
                 }
             },
-            "azimuthPtr":{"type": "uint64",
+            "azimuthPtr":{"uiName": "azimuth","type": "uint64",
                 "description": "azimuth in rad [-pi,pi]"},
-                "azimuthType":{
+                "azimuthDataType":{
                     "type": "float",
                     "default": 4,"description": "","metadata": {"hidden": "true"}},"azimuthBufferSize":{"type": "uint64","description": "","metadata": {"hidden": "true"
                 }
             },
-            "elevationPtr":{"type": "uint64",
+            "elevationPtr":{"uiName": "elevation","type": "uint64",
                 "description": "elevation in rad [-pi/2, pi/2]"},
-                "elevationType":{
+                "elevationDataType":{
                     "type": "float",
                     "default": 4,"description": "","metadata": {"hidden": "true"}},"elevationBufferSize":{"type": "uint64","description": "","metadata": {"hidden": "true"
                 }
             },
-            "velocityPtr":{"type": "uint64",
+            "velocityPtr":{"uiName": "velocity","type": "uint64",
                 "description": "elevation in rad [-pi/2, pi/2]"},
-                "velocityType":{
+                "velocityDataType":{
                     "type": "float[3]",
                     "default": [4,0,0],"description": "","metadata": {"hidden": "true"}},"velocityBufferSize":{"type": "uint64","description": "","metadata": {"hidden": "true"
                 }
             },
-            "objectIdPtr":{"type": "uint64",
+            "objectIdPtr":{"uiName": "objectId","type": "uint64",
                 "description": "ObjectId for getting usd prim information"},
-                "objectIdType":{
+                "objectIdDataType":{
                     "type": "uint",
                     "default": 4,"description": "","metadata": {"hidden": "true"}},"objectIdBufferSize":{"type": "uint64","description": "","metadata": {"hidden": "true"
                 }
             },
-            "normalPtr":{"type": "uint64",
+            "normalPtr":{"uiName": "normal","type": "uint64",
                 "description": "Normal at the hit location"},
-                "normalType":{
+                "normalDataType":{
                     "type": "float[3]",
                     "default": [4,0,0],"description": "","metadata": {"hidden": "true"}},"normalBufferSize":{"type": "uint64","description": "","metadata": {"hidden": "true"
                 }
             },
-            "timestampPtr":{"type": "uint64",
+            "timestampPtr":{"uiName": "timestamp","type": "uint64",
                 "description": "timestamp in ns"},
-                "timestampType":{
+                "timestampDataType":{
                     "type": "uint64",
                     "default": 8,"description": "","metadata": {"hidden": "true"}},"timestampBufferSize":{"type": "uint64","description": "","metadata": {"hidden": "true"
                 }
             },
-            "emitterIdPtr":{"type": "uint64",
+            "emitterIdPtr":{"uiName": "emitterId","type": "uint64",
                 "description": "emitterId"},
-                "emitterIdType":{
+                "emitterIdDataType":{
                     "type": "uint",
                     "default": 4,"description": "","metadata": {"hidden": "true"}},"emitterIdBufferSize":{"type": "uint64","description": "","metadata": {"hidden": "true"
                 }
             },
-            "beamIdPtr":{"type": "uint64",
+            "beamIdPtr":{"uiName": "beamId","type": "uint64",
                 "description": "beamId"},
-                "beamIdType":{
+                "beamIdDataType":{
                     "type": "uint",
                     "default": 4,"description": "","metadata": {"hidden": "true"}},"beamIdBufferSize":{"type": "uint64","description": "","metadata": {"hidden": "true"
                 }
             },
-            "materialIdPtr":{"type": "uint64",
+            "materialIdPtr":{"uiName": "materialId","type": "uint64",
                 "description": "materialId at hit location"},
-                "materialIdType":{
+                "materialIdDataType":{
                     "type": "uint",
                     "default": 4,"description": "","metadata": {"hidden": "true"}},"materialIdBufferSize":{"type": "uint64","description": "","metadata": {"hidden": "true"
                 }
             },
-            "indexPtr":{"type": "uint64",
+            "indexPtr":{"uiName": "index","type": "uint64",
                 "description": "Index into the full array if keepOnlyPositiveDistance ((startTick+tick)*numChannels*numEchos + channel*numEchos + echo)"},
-                "indexType":{
+                "indexDataType":{
                     "type": "uint",
                     "default": 4,"description": "","metadata": {"hidden": "true"}},"indexBufferSize":{"type": "uint64","description": "","metadata": {"hidden": "true"
                 }

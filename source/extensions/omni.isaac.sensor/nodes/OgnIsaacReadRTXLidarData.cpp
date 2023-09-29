@@ -58,6 +58,9 @@ public:
         const uint32_t numTicks = parameter->async.numTicks;
         const uint32_t numChannels = parameter->async.numChannels;
         const uint32_t numEchos = parameter->async.numEchos;
+        db.outputs.numTicks() = numTicks;
+        db.outputs.numChannels() = numChannels;
+        db.outputs.numEchos() = numEchos;
 
         if (numTicks == 0 || numChannels * numEchos == 0)
         {
@@ -127,7 +130,6 @@ public:
         memcpy(tickStates.data(), lidarTicks.states, numTicks * sizeof(uint32_t));
         memcpy(tickTimestamps.data(), lidarTicks.timestamps, numTicks * sizeof(uint64_t));
 
-        uint32_t atomicOutIdx = 0;
         if (!keepOnlyPositiveDistance)
         {
             memcpy(azimuths.data(), lidarReturns.azimuths, maxSize * sizeof(float));
@@ -159,16 +161,16 @@ public:
         }
         else
         {
+            uint32_t i = 0;
+            uint32_t idx = 0;
             for (uint32_t tick = 0; tick < numTicks; tick++)
             {
                 for (uint32_t channelId = 0; channelId < numChannels; ++channelId)
                 {
                     for (uint32_t echoId = 0; echoId < numEchos; ++echoId)
                     {
-                        const uint32_t idx{ idxOfReturn(channelId, echoId, numEchos, numChannels, tick) };
-                        if (lidarReturns.distances[atomicOutIdx] > 0.f)
+                        if (lidarReturns.distances[idx] > 0.f)
                         {
-                            const uint32_t i = atomicOutIdx++;
                             azimuths[i] = lidarReturns.azimuths[idx];
                             elevations[i] = lidarReturns.elevations[idx];
                             distances[i] = lidarReturns.distances[idx];
@@ -187,7 +189,9 @@ public:
                             ticks[i] = tick;
                             channels[i] = channelId;
                             echos[i] = echoId;
+                            i++;
                         }
+                        idx++;
                     }
                 }
             }

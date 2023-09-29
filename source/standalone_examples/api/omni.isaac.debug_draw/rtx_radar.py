@@ -57,7 +57,7 @@ _, sensor = omni.kit.commands.execute(
     parent=None,
     config=radar_config,
     translation=(-0.937, 1.745, 0.8940),
-    orientation=Gf.Quatd(0.6283473, 0.6283473, -0.3243142, -0.3243142),  # Gf.Quatd is w,i,j,k
+    orientation=Gf.Quatd(0.70711, 0.70711, 0, 0),  # Gf.Quatd is w,i,j,k
 )
 _, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathString)
 

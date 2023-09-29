@@ -1,4 +1,13 @@
 # Changelog
+## [9.7.0] - 2023-09-28
+### Added
+- numEchos, numChannels, and numTicks output to IsaacReadRTXLidarData
+### Changed
+- changed IU names for CreateRTXLidarScanBuffer outputs to be more user friendly.
+- set default RXT sensor space to be the same as isaac-sim so rotations in IsaacSensorCreateRtxLidar make sense
+### Fixed
+- Fixed bug with ReadRTXLidarData node output when using keepOnlyPositiveDistance.
+
 ## [9.6.2] - 2023-09-27
 ### Changed
 - updated data acquisition callback for Camera objects to be on the next frame event

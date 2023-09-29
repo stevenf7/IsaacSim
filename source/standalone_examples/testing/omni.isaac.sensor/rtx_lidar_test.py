@@ -72,6 +72,7 @@ if 1:
             assets_root_path + "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd", "/background"
         )
     elif geo_type == "cubes":
+        # add_cube(stage.get_current_stage(), "/World/cxube_x2", (1, 20, 1000), (-5, 0, 500), physics=True)
         add_cube(stage.get_current_stage(), "/World/cxube_x1", (1, 20, 5), (5, 0, 0), physics=False)
         add_cube(stage.get_current_stage(), "/World/cxube_x2", (1, 20, 1), (-5, 0, 0), physics=False)
         add_cube(stage.get_current_stage(), "/World/cxube_x3", (20, 1, 1), (0, 5, 0), physics=False)
@@ -116,8 +117,8 @@ if 1:
             attributes={"radius": 5, "extent": [(-5, -5, -5), (5, 5, 5)]},
         )
 
-lidar_config = "Example_Rotary"
 lidar_config = "RPLIDAR_S2E"
+lidar_config = "Example_Rotary"
 if len(sys.argv) >= 3:
     lidar_config = sys.argv[2]
 
@@ -141,7 +142,7 @@ _, sensor = omni.kit.commands.execute(
     parent=None,
     config=lidar_config,
     translation=(0, 0, -0.04),
-    orientation=Gf.Quatd(0.5, 0.5, -0.5, -0.5),  # Gf.Quatd is w,i,j,k
+    orientation=Gf.Quatd(1, 0, 0, 0),  # Gf.Quatd is w,i,j,k
 )
 
 if 0:
@@ -151,7 +152,7 @@ if 0:
         parent=None,
         config=lidar_config,
         translation=(0, -1, 1.0),
-        orientation=Gf.Quatd(0.5, 0.5, -0.5, -0.5),  # Gf.Quatd is w,i,j,k
+        orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),  # Gf.Quatd is w,i,j,k
     )
 
 i = printinc(i)
@@ -166,7 +167,7 @@ simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 /
 writer = None
 if 1:
     i = printinc(i)
-    writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud" + "Buffer")
+    writer = rep.writers.get("" + "RtxLidar" + "DebugDrawPointCloud" + "Buffer")
     # writer.initialize(testMode=True)
     # writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
     # writer = rep.writers.get("Writer" + "IsaacReadRTXLidarData")
@@ -230,23 +231,29 @@ if 0:
     writer.initialize(output_dir="")
     writer.attach([render_product_path])
 
+annoNames = [
+    "RtxSensorCpuIsaacReadRTXLidarData",
+    "RtxSensorCpuIsaacComputeRTXLidarPointCloud",
+    "RtxSensorCpuIsaacCreateRTXLidarScanBuffer",
+    "RtxSensorCpuIsaacComputeRTXLidarFlatScan",
+]
+annotators = {}
+for anno in annoNames:
+    annotators[anno] = rep.AnnotatorRegistry.get_annotator(anno)
+    # annotators[anno].initialize(keepOnlyPositiveDistance=True)
+    annotators[anno].attach([render_product_path])
 
-# annotator = rep.AnnotatorRegistry.get_annotator("RtxSensorCpuIsaacCreateRTXLidarScanBuffer")
-# annotator.attach([render_product_path])
-annotatorFlat = rep.AnnotatorRegistry.get_annotator("RtxSensorCpuIsaacComputeRTXLidarFlatScan")
-annotatorFlat.attach([render_product_path])
-# annotatorLaser = rep.AnnotatorRegistry.get_annotator("RtxSensorCpuIsaacCreateRTXLidarLaserScan")
-# annotatorLaser.attach([render_product_path])
 while simulation_app.is_running():
     simulation_app.update()
-    dataFlat = annotatorFlat.get_data()
-    print("___Flat Data___")
-    print(f'Len Flat {len(dataFlat["linearDepthData"])}')
-    print(dataFlat)
-    # dataLaser = annotatorLaser.get_data()
-    # print("~~~Laser Data~~")
-    # print(f'Len Laser {len(dataLaser["linearDepthData"])}')
-    # print(dataLaser)
+    if simulation_context.is_playing():
+        for anno in annotators:
+            print(f"~~~{anno} Data~~")
+            data = annotators[anno].get_data()
+            for entry in data:
+                print(f"{entry}: ", end="")
+                if hasattr(data[entry], "__len__"):
+                    print(f"len {len(data[entry])}::", end="")
+                print(data[entry])
     # break
 
 # cleanup and shutdown
@@ -271,7 +278,7 @@ _, sensorR = omni.kit.commands.execute(
     parent=None,
     config="Example_Solid_State",
     translation=(0, 0, 1.0),
-    orientation=Gf.Quatd(0.5, 0.5, -0.5, -0.5), 
+    orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0), 
 )
 from omni.isaac.core.utils.render_product import create_hydra_texture
 _, render_product_pathR = create_hydra_texture([1, 1], sensorR.GetPath().pathString)
@@ -282,4 +289,74 @@ import omni.replicator.core as rep
 writerR = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
 writerR.attach([render_product_pathR])
 
+
+~~~RtxSensorCpuIsaacReadRTXLidarData Data~~
+azimuths: len 44314::[177.01157 177.01157 177.01157 ... 242.93082 242.93082 242.93082]
+beamIds: len 44314::[  1   2   3 ... 120 121 122]
+channels: len 44314::[  1   2   3 ... 120 121 122]
+deltaTimes: len 44314::[    0     0     0 ... 24500 24500 24500]
+depthRange: len 2::[  1. 200.]
+distances: len 44314::[3.0346003 3.0229354 3.0139177 ... 5.07317   5.077657  5.082088 ]
+echos: len 44314::[0 0 0 ... 0 0 0]
+elevations: len 44314::[-14.19 -13.39 -12.58 ...   4.35   5.16   5.97]
+emitterIds: len 44314::[  1   2   3 ... 120 121 122]
+hitPointNormals: len 44314::[[ 1.0000000e+00  0.0000000e+00 -1.5259022e-05]
+intensities: len 44314::[0.02724689 0.02596358 0.02481198 ... 0.02654433 0.02537464 0.02885798]
+materialIds: len 44314::[31 31 31 ... 31 31 31]
+numChannels: 128
+numEchos: 2
+numTicks: 600
+objectIds: len 44314::[0 1 0 ... 5 0 5]
+tickAzimuths: len 600::[180.01157 180.07787 180.182
+ticks: len 44314::[  0   0   0 ... 599 599 599]
+tickStates: len 600::[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+tickTimestamps: len 600::[9069989788 9070017565 9070045343 9070073
+velocities: len 44314::[[ 1.0000000e+00  0.0000000e+00 -1.5259022e-05]
+
+
+~~~RtxSensorCpuIsaacComputeRTXLidarPointCloud Data~~
+data: len 88546::[[-2.938008   -0.15337963 -0.7438964 ]
+ [-2.9367614  -0.15331456 -0.70004576]
+ [-2.9375618  -0.15335634 -0.656439  ]
+ ...
+ [-2.3034332   4.500231    0.3845605 ]
+ [-2.3026571   4.4987154   0.4563726 ]
+ [-2.3034947   4.500352    0.5286904 ]]
+info: len 5::{'azimuth': array([ 3.0894349,  3.0894349,  3.0894349, ..., -2.043243 , -2.043243 ,
+       -2.043243 ], dtype=float32), 'elevation': array([ 3.0894349,  3.0894349,  3.0894349, ..., -2.043243 , -2.043243 ,
+       -2.043243 ], dtype=float32), 'intensity': array([0.06, 0.06, 0.06, ..., 0.06, 0.06, 0.07], dtype=float32), 'range': array([3.0346003, 3.0229354, 3.0139177, ..., 5.07317  , 5.077657 ,
+       5.082088 ], dtype=float32), 'transform': array([ 1.  ,  0.  ,  0.  ,  0.  ,  0.  ,  1.  ,  0.  ,  0.  ,  0.  ,
+        0.  ,  1.  ,  0.  , -0.  , -0.  , -0.04,  1.  ])}
+~~~RtxSensorCpuIsaacCreateRTXLidarScanBuffer Data~~
+azimuth: len 0::[]
+beamId: len 0::[]
+data: len 321971::[[ 4.4973907   0.23550124 -1.2467233 ]
+ [ 4.5007486   0.23567706 -1.1795878 ]
+ [ 4.4981613   0.23554158 -1.1122507 ]
+ ...
+ [ 4.5021296  -0.22803627  0.624865  ]
+ [ 4.496782   -0.22776538  0.68844694]
+ [ 4.501388   -0.22799872  0.7547338 ]]
+distance: len 321971::[4.6624207 4.648757  4.63019   ... 4.5566673 4.561092  4.5766892]
+elevation: len 0::[]
+emitterId: len 0::[]
+index: len 321971::[     0      2      4 ... 921594 921596 921598]
+intensity: len 321971::[0.02719191 0.02366566 0.03149656 ... 0.03051874 0.02764517 0.0292189 ]
+materialId: len 0::[]
+normal: len 0::[]
+objectId: len 0::[]
+timestamp: len 0::[]
+velocity: len 0::[]
+info: len 6::{'numChannels': 128, 'numEchos': 2, 'numReturnsPerScan': 921600, 'renderProductPath': '/Render/RenderProduct_Isaac', 'ticksPerScan': 3600, 'transform': array([ 1.  ,  0.  ,  0.  ,  0.  ,  0.  ,  1.  ,  0.  ,  0.  ,  0.  ,
+        0.  ,  1.  ,  0.  , -0.  , -0.  , -0.04,  1.  ])}
+~~~RtxSensorCpuIsaacComputeRTXLidarFlatScan Data~~
+azimuthRange: len 2::[-0.05235988  6.2308254 ]
+depthRange: len 2::[  1. 200.]
+horizontalFov: 360.0
+horizontalResolution: 0.10000000149011612
+intensitiesData: len 3600::[7 7 6 ... 7 7 7]
+linearDepthData: len 3600::[4.502088  4.505737  4.5078583 ... 4.500911  4.5038576 4.505473 ]
+numCols: 3600
+numRows: 1
+rotationRate: 10.0
 """

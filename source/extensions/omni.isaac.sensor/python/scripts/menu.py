@@ -256,7 +256,7 @@ class IsaacSensorMenu:
             parent=self._get_stage_and_path(),
             config="Example_Rotary",
             translation=Gf.Vec3d(0, 0, 0),
-            orientation=Gf.Quatd(0.5, 0.5, -0.5, -0.5),
+            orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),
         )
         # Make lidar invisible on stage as camera
         set_prim_visibility(prim=prim, visible=False)
@@ -268,7 +268,7 @@ class IsaacSensorMenu:
             parent=self._get_stage_and_path(),
             config="Example_Solid_State",
             translation=Gf.Vec3d(0, 0, 0),
-            orientation=Gf.Quatd(0.5, 0.5, -0.5, -0.5),
+            orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),
         )
         # Make lidar invisible on stage as camera
         set_prim_visibility(prim=prim, visible=False)
@@ -280,7 +280,7 @@ class IsaacSensorMenu:
             parent=self._get_stage_and_path(),
             config=config_name,
             translation=Gf.Vec3d(0, 0, 0),
-            orientation=Gf.Quatd(0.5, 0.5, -0.5, -0.5),
+            orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),
         )
         # Make lidar invisible on stage as camera
         set_prim_visibility(prim=prim, visible=False)
