@@ -8,6 +8,9 @@
 ### Fixed
 - Fixed bug with ReadRTXLidarData node output when using keepOnlyPositiveDistance.
 
+## [9.6.3] - 2023-09-29
+### Fixed
+- Add the allowedToken metadata for the cameraProjectionType attribute in cameras if it wasn't set already.
 ## [9.6.2] - 2023-09-27
 ### Changed
 - updated data acquisition callback for Camera objects to be on the next frame event
