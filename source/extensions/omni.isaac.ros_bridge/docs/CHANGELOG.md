@@ -2,6 +2,7 @@
 ## [1.14.7] - 2023-09-26
 ### Added
 - Added enable flag for the lidar and camera helper
+- Improved description for the frame ID for the camera and lidar helper
 
 ## [1.14.6] - 2023-09-25
 ### Fixed

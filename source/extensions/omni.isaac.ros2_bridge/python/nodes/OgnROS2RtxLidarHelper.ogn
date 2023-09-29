@@ -31,7 +31,7 @@
             },
             "frameId": { 
                 "type" : "string",
-                "description" : "FrameID for the ROS2 message",
+                "description" : "FrameID for the ROS2 message, the nodeNamespace will not be prefixed to the frame id",
                 "default" : "sim_lidar"
             },
             "topicName": {
