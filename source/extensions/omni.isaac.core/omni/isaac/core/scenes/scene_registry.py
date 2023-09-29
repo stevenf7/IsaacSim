@@ -55,6 +55,31 @@ class SceneRegistry(object):
         self._rigid_contact_views = dict()
         self._articulated_views = dict()
         self._robot_views = dict()
+
+        self._all_object_dicts = [
+            self._rigid_objects,
+            self._geometry_objects,
+            self._articulated_systems,
+            self._robots,
+            self._xforms,
+            self._sensors,
+            self._xform_prim_views,
+            self._deformable_prims,
+            self._deformable_prim_views,
+            self._deformable_materials,
+            self._deformable_material_views,
+            self._cloth_prims,
+            self._cloth_prim_views,
+            self._particle_systems,
+            self._particle_system_views,
+            self._particle_materials,
+            self._particle_material_views,
+            self._geometry_prim_views,
+            self._rigid_prim_views,
+            self._rigid_contact_views,
+            self._articulated_views,
+            self._robot_views,
+        ]
         return
 
     @property
@@ -477,27 +502,10 @@ class SceneRegistry(object):
         Returns:
             bool: [description]
         """
-        if (
-            name in self._robots
-            or name in self._articulated_systems
-            or name in self._articulated_views
-            or name in self._rigid_objects
-            or name in self._geometry_objects
-            or name in self._xforms
-            or name in self._sensors
-            or name in self._rigid_contact_views
-            or name in self._rigid_prim_views
-            or name in self._geometry_prim_views
-            or name in self._robot_views
-            or name in self._xform_prim_views
-            or name in self._cloth_prims
-            or name in self._cloth_prim_views
-            or name in self._particle_system_views
-            or name in self._particle_material_views
-        ):
-            return True
-        else:
-            return False
+        for object_dict in self._all_object_dicts:
+            if name in object_dict:
+                return True
+        return False
 
     def remove_object(self, name: str) -> None:
         """[summary]
@@ -512,62 +520,11 @@ class SceneRegistry(object):
             NotImplementedError: [description]
             Exception: [description]
         """
-        if name in self._robots:
-            del self._robots[name]
-            return
-        elif name in self._articulated_systems:
-            del self._articulated_systems[name]
-            return
-        elif name in self._articulated_views:
-            del self._articulated_views[name]
-            return
-        elif name in self._rigid_objects:
-            del self._rigid_objects[name]
-            return
-        elif name in self._geometry_objects:
-            del self._geometry_objects[name]
-            return
-        elif name in self._geometry_prim_views:
-            del self._geometry_prim_views[name]
-            return
-        elif name in self._sensors:
-            del self._sensors[name]
-            return
-        elif name in self._xforms:
-            del self._xforms[name]
-            return
-        elif name in self._xform_prim_views:
-            del self._xform_prim_views[name]
-            return
-        elif name in self._cloth_prims:
-            del self._cloth_prims[name]
-            return
-        elif name in self._cloth_prim_views:
-            del self._cloth_prim_views[name]
-            return
-        elif name in self._particle_systems:
-            del self._particle_systems[name]
-            return
-        elif name in self._particle_system_views:
-            del self._particle_system_views[name]
-            return
-        elif name in self._particle_materials:
-            del self._particle_materials[name]
-            return
-        elif name in self._particle_material_views:
-            del self._particle_material_views[name]
-            return
-        elif name in self._robot_views:
-            del self._robot_views[name]
-            return
-        elif name in self._rigid_prim_views:
-            del self._rigid_prim_views[name]
-            return
-        elif name in self._rigid_contact_views:
-            del self._rigid_contact_views[name]
-            return
-        else:
-            raise Exception("Cannot remove object {} from the scene since it doesn't exist".format(name))
+        for object_dict in self._all_object_dicts:
+            if name in object_dict:
+                del object_dict[name]
+                return
+        raise Exception("Cannot remove object {} from the scene since it doesn't exist".format(name))
 
     def get_object(self, name: str) -> XFormPrim:
         """[summary]
@@ -582,39 +539,7 @@ class SceneRegistry(object):
         Returns:
             XFormPrim: [description]
         """
-        if name in self._robots:
-            return self._robots[name]
-        elif name in self._articulated_systems:
-            return self._articulated_systems[name]
-        elif name in self._articulated_views:
-            return self._articulated_views[name]
-        elif name in self._rigid_objects:
-            return self._rigid_objects[name]
-        elif name in self._rigid_prim_views:
-            return self._rigid_prim_views[name]
-        elif name in self._rigid_contact_views:
-            return self._rigid_contact_views[name]
-        elif name in self._geometry_prim_views:
-            return self._geometry_prim_views[name]
-        elif name in self._geometry_objects:
-            return self._geometry_objects[name]
-        elif name in self._sensors:
-            return self._sensors[name]
-        elif name in self._xforms:
-            return self._xforms[name]
-        elif name in self._xform_prim_views:
-            return self._xform_prim_views[name]
-        elif name in self._cloth_prims:
-            return self._cloth_prims[name]
-        elif name in self._cloth_prim_views:
-            return self._cloth_prim_views[name]
-        elif name in self._particle_systems:
-            return self._particle_systems[name]
-        elif name in self._particle_system_views:
-            return self._particle_system_views[name]
-        elif name in self._particle_materials:
-            return self._particle_materials[name]
-        elif name in self._particle_material_views:
-            return self._particle_material_views[name]
-        elif name in self._robot_views:
-            return self._robot_views[name]
+        for object_dict in self._all_object_dicts:
+            if name in object_dict:
+                return object_dict[name]
+        return None

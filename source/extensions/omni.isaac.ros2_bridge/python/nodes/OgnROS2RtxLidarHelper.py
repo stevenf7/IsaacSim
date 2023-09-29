@@ -42,6 +42,13 @@ class OgnROS2RtxLidarHelper:
 
     @staticmethod
     def compute(db) -> bool:
+        if db.inputs.enabled is False:
+            if db.internal_state.initialized is False:
+                return True
+            else:
+                db.internal_state.custom_reset()
+                return True
+
         if db.internal_state.initialized is False:
             db.internal_state.initialized = True
             stage = omni.usd.get_context().get_stage()

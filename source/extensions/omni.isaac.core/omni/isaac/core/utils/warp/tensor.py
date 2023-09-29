@@ -87,7 +87,11 @@ def move_data(data, device):
     if isinstance(data, wp.types.array):
         return data.to(device)
     elif isinstance(data, wp.types.indexedarray):
-        return data.to(device)
+        indices = data.indices
+        if str(device) != str(data.device):
+            return wp.indexedarray(data.contiguous().to(device), indices=[None])
+        else:
+            return data.to(device)
 
 
 def tensor_cat(data, device=None, dim=-1):

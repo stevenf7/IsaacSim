@@ -493,6 +493,7 @@ group "python_samples"
     -- tests that are not shipped
     python_sample_test("tests-internalnativepython-omni.isaac.core.hello_world", "standalone_examples/testing/omni.isaac.core/hello_world.py", "--test")
     python_sample_test("tests-internalnativepython-omni.isaac.core.test_time_stepping", "standalone_examples/testing/omni.isaac.core/test_time_stepping.py")
+    python_sample_test("tests-internalnativepython-omni.isaac.core.test_articulation_root", "standalone_examples/testing/omni.isaac.core/test_articulation_root.py")
     python_sample_test("tests-internalnativepython-omni.isaac.core.test_save_stage", "standalone_examples/testing/omni.isaac.core/test_save_stage.py")
     python_sample_test("tests-internalnativepython-omni.isaac.core.test_delete_in_contact", "standalone_examples/testing/omni.isaac.core/test_delete_in_contact.py")
     python_sample_test("tests-internalnativepython-omni.isaac.core.test_articulation_determinism", "standalone_examples/testing/omni.isaac.core/test_articulation_determinism.py")

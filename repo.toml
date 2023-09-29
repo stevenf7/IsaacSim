@@ -678,10 +678,9 @@ branch_name = "develop"
 
 [repo_publish_exts]
 enabled = true
-# only publish release versions
-kit_path = "${root}/_build/$platform/release/kit/kit${exe_ext}"
+kit_path = "${root}/_build/$platform/$config/kit/kit${exe_ext}"
 
-publish_root = "${root}/_build/$platform/release"
+publish_root = "${root}/_build/$platform/$config"
 
 ext_folders = [
   "${publish_root}/exts"
@@ -689,7 +688,19 @@ ext_folders = [
 
 # Extensions to publish, include and exclude among those discovered by kit. Wildcards are supported.
 exts.include = [
-    "omni.sensors.*",
+    "omni.isaac.version",
+    "omni.isaac.dynamic_control",
+    "omni.isaac.core",
+    "omni.isaac.core_nodes",
+    "omni.isaac.core_archive",
+    "omni.isaac.ui",
+    "omni.isaac.debug_draw",
+    "omni.isaac.range_sensor",
+    "omni.isaac.sensor",
+    "omni.usd.schema.isaac",
+    "omni.isaac.ml_archive",
+    "omni.pip.compute",
+    "omni.pip.cloud",
 ]
 exts.exclude = []
 
@@ -813,8 +824,8 @@ deps_for_isaac = [
   "omni.services.streaming.manager-0.3.8",
   "omni.services.streamclient.websocket-2.0.0",
   "omni.replicator.composer-1.2.16",
-  "omni.replicator.replicator_yaml-2.0.1",
-  "omni.replicator.core-1.10.8",
+  "omni.replicator.replicator_yaml-2.0.3",
+  "omni.replicator.core-1.10.9",
   "omni.sensors.fov_preview_visualization-0.1.0-isaacsim.3",
   "omni.sensors.nv.beams-0.1.2-isaacsim.3",
   "omni.sensors.nv.camera-0.6.0-isaacsim.3",

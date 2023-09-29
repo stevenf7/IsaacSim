@@ -17,7 +17,7 @@ import warp as wp
 from omni.isaac.core.prims.rigid_contact_view import RigidContactView
 from omni.isaac.core.prims.xform_prim_view import XFormPrimView
 from omni.isaac.core.utils.prims import get_prim_parent
-from omni.isaac.core.utils.types import DynamicsViewState
+from omni.isaac.core.utils.types import DynamicsViewState, XFormPrimViewState
 from pxr import Gf, PhysxSchema, Usd, UsdGeom, UsdPhysics
 
 
@@ -128,24 +128,10 @@ class RigidPrimView(XFormPrimView):
             RigidPrimView.set_masses(self, masses)
         if densities is not None:
             RigidPrimView.set_densities(self, densities)
-        self._dynamics_default_state = None
-        if not self._non_root_link:
-            linear_velocities = self.get_linear_velocities()
-            angular_velocities = self.get_angular_velocities()
-            if self._backend == "warp":
-                self._dynamics_default_state = DynamicsViewState(
-                    self._default_state.positions,
-                    self._default_state.orientations,
-                    linear_velocities.data,
-                    angular_velocities.data,
-                )
-            else:
-                self._dynamics_default_state = DynamicsViewState(
-                    self._default_state.positions,
-                    self._default_state.orientations,
-                    linear_velocities,
-                    angular_velocities,
-                )
+        self._dynamics_default_state = DynamicsViewState(
+            positions=None, linear_velocities=None, orientations=None, angular_velocities=None
+        )
+        self._apply_rigid_body_apis()
         self._track_contact_forces = track_contact_forces or len(contact_filter_prim_paths_expr) != 0
         if self._track_contact_forces:
             self._contact_view = RigidContactView(
@@ -192,6 +178,28 @@ class RigidPrimView(XFormPrimView):
         self._physics_sim_view = physics_sim_view
         self._physics_view = physics_sim_view.create_rigid_body_view(self._regex_prim_paths.replace(".*", "*"))
         self._num_shapes = self._physics_view.max_shapes
+        if not self._non_root_link:
+            default_positions, default_orientations = self.get_world_poses()
+            linear_velocities = self.get_linear_velocities()
+            angular_velocities = self.get_angular_velocities()
+            if self._backend == "warp":
+                self._default_state = XFormPrimViewState(
+                    positions=default_positions.data, orientations=default_orientations.data
+                )
+                self._dynamics_default_state = DynamicsViewState(
+                    self._default_state.positions,
+                    self._default_state.orientations,
+                    linear_velocities.data,
+                    angular_velocities.data,
+                )
+            else:
+                self._default_state = XFormPrimViewState(positions=default_positions, orientations=default_orientations)
+                self._dynamics_default_state = DynamicsViewState(
+                    self._default_state.positions,
+                    self._default_state.orientations,
+                    linear_velocities,
+                    angular_velocities,
+                )
         carb.log_info("Rigid Prim View Device: {}".format(self._device))
         if self._track_contact_forces:
             self._contact_view.initialize(self._physics_sim_view)
@@ -204,6 +212,15 @@ class RigidPrimView(XFormPrimView):
         if event.type == int(omni.timeline.TimelineEventType.STOP):
             self._physics_view = None
             self._invalidate_physics_handle_event = None
+        return
+
+    def _apply_rigid_body_apis(self):
+        for i in range(self.count):
+            if self._prims[i].HasAPI(UsdPhysics.RigidBodyAPI):
+                rigid_api = UsdPhysics.RigidBodyAPI(self._prims[i])
+            else:
+                rigid_api = UsdPhysics.RigidBodyAPI.Apply(self._prims[i])
+            self._rigid_body_apis[i] = rigid_api
         return
 
     def set_world_poses(
@@ -1228,13 +1245,13 @@ class RigidPrimView(XFormPrimView):
                                                                                  Defaults to None (i.e: all prims in the view).
         """
         XFormPrimView.set_default_state(self, positions=positions, orientations=orientations)
-        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if self._non_root_link:
             return
         if positions is not None:
             if indices is None:
                 self._dynamics_default_state.positions = positions
             else:
+                indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
                 if self._backend == "warp":
                     self._dynamics_default_state.positions = self._backend_utils.assign(
                         positions, self._dynamics_default_state.positions, indices
@@ -1245,6 +1262,7 @@ class RigidPrimView(XFormPrimView):
             if indices is None:
                 self._dynamics_default_state.orientations = orientations
             else:
+                indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
                 if self._backend == "warp":
                     self._dynamics_default_state.orientations = self._backend_utils.assign(
                         orientations, self._dynamics_default_state.orientations, indices
@@ -1255,6 +1273,7 @@ class RigidPrimView(XFormPrimView):
             if indices is None:
                 self._dynamics_default_state.linear_velocities = linear_velocities
             else:
+                indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
                 if self._backend == "warp":
                     self._dynamics_default_state.linear_velocities = self._backend_utils.assign(
                         linear_velocities, self._dynamics_default_state.linear_velocities, indices
@@ -1265,6 +1284,7 @@ class RigidPrimView(XFormPrimView):
             if indices is None:
                 self._dynamics_default_state.angular_velocities = angular_velocities
             else:
+                indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
                 if self._backend == "warp":
                     self._dynamics_default_state.angular_velocities = self._backend_utils.assign(
                         angular_velocities, self._dynamics_default_state.angular_velocities, indices

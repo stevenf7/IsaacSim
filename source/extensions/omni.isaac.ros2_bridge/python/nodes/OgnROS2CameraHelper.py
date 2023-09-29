@@ -42,6 +42,13 @@ class OgnROS2CameraHelper:
 
     @staticmethod
     def compute(db) -> bool:
+        if db.inputs.enabled is False:
+            if db.internal_state.initialized is False:
+                return True
+            else:
+                db.internal_state.custom_reset()
+                return True
+
         sensor_type = db.inputs.type
         if db.internal_state.initialized is False:
             db.internal_state.initialized = True

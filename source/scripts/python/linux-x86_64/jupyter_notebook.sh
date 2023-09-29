@@ -21,7 +21,7 @@ source ${SCRIPT_DIR}/setup_python_env.sh
 python_exe=${SCRIPT_DIR}/kit/python/bin/python3
 printf "Performing setup...\n"
 # install jupyter as a dependency so the env supports running notebooks
-${python_exe} -m pip install jupyter
+${python_exe} -m pip install --upgrade --upgrade-strategy only-if-needed jupyter
 printf "Setup complete\n"
 #runtime configure kernelspec based on current python exe path
 kernel_dir=$(mktemp -d)

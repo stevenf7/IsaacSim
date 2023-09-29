@@ -17,7 +17,7 @@ import torch
 import warp as wp
 from omni.isaac.core.prims.xform_prim_view import XFormPrimView
 from omni.isaac.core.utils.prims import get_prim_at_path, get_prim_parent, get_prim_property, set_prim_property
-from omni.isaac.core.utils.types import ArticulationActions, JointsState
+from omni.isaac.core.utils.types import ArticulationActions, JointsState, XFormPrimViewState
 from pxr import PhysxSchema, Usd, UsdGeom, UsdPhysics
 
 
@@ -221,6 +221,13 @@ class ArticulationView(XFormPrimView):
             self._default_kps, self._default_kds = self.get_gains(clone=True)
             default_actions = self.get_applied_actions(clone=True)
             # TODO: implement effort part
+            default_positions, default_orientations = self.get_world_poses()
+            if self._backend == "warp":
+                self._default_state = XFormPrimViewState(
+                    positions=default_positions.data, orientations=default_orientations.data
+                )
+            else:
+                self._default_state = XFormPrimViewState(positions=default_positions, orientations=default_orientations)
             if self._default_joints_state is None:
                 self._default_joints_state = JointsState(positions=None, velocities=None, efforts=None)
             if self._default_joints_state.positions is None:
