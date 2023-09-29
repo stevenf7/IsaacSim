@@ -6,6 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+from omni.isaac.core.materials.deformable_material import DeformableMaterial, DeformableMaterialView
 from omni.isaac.core.materials.omni_glass import OmniGlass
 from omni.isaac.core.materials.omni_pbr import OmniPBR
 from omni.isaac.core.materials.particle_material import ParticleMaterial
