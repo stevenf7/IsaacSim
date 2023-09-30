@@ -235,7 +235,24 @@ class Camera(BaseSensor):
         elif orientation is not None:
             self.set_local_pose(orientation=orientation)
         if self.prim.GetAttribute("cameraProjectionType").Get() is None:
-            self.prim.CreateAttribute("cameraProjectionType", Sdf.ValueTypeNames.Token)
+            attr = self.prim.CreateAttribute("cameraProjectionType", Sdf.ValueTypeNames.Token)
+            # The allowed tokens are not set in kit except with the first interaction with the dropdown menu
+            # setting it here for now.
+            if attr.GetMetadata("allowedTokens") is None:
+                attr.SetMetadata(
+                    "allowedTokens",
+                    [
+                        "pinhole",
+                        "fisheyeOrthographic",
+                        "fisheyeEquidistant",
+                        "fisheyeEquisolid",
+                        "fisheyePolynomial",
+                        "fisheyeSpherical",
+                        "fisheyeKannalaBrandtK3",
+                        "fisheyeRadTanThinPrism",
+                        "omniDirectionalStereo",
+                    ],
+                )
         properties = [
             "fthetaPolyA",
             "fthetaPolyB",
