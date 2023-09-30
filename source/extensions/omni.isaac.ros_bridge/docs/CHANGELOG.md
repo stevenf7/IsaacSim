@@ -1,4 +1,8 @@
 # Changelog
+## [1.14.8] - 2023-09-29
+### Added
+- Removed context field from OgnROS1RtxLidarHelper OG node
+
 ## [1.14.7] - 2023-09-26
 ### Added
 - Added enable flag for the lidar and camera helper
