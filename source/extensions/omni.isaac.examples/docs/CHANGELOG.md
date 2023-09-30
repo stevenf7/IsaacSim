@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.7.3] - 2023-09-29
+### Fixed
+-  collision groups and num_bolts for nut and bolt extension
+
 ## [1.7.2] - 2023-09-26
 ### Fixed
 - Changed end offector offset in pick and place examples using Franka to [0, 0, 0] instead of [0, 0, -0.015]

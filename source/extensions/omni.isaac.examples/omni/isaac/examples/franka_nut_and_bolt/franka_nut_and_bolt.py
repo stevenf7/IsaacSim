@@ -13,6 +13,7 @@ from omni.isaac.core.physics_context.physics_context import PhysicsContext
 from omni.isaac.core.prims.geometry_prim import GeometryPrim
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.stage import add_reference_to_stage
 from omni.isaac.examples.base_sample import BaseSample
 from omni.isaac.franka.franka import Franka
@@ -96,8 +97,8 @@ class FrankaNutAndBolt(BaseSample):
             "pipe": self.asset_folder + "SubUSDs/Pipe/Pipe.usd",
         }
 
-        self._num_bolts = 15
-        self._num_nuts = 6
+        self._num_bolts = 6
+        self._num_nuts = 12
         self._sim_dt = 1.0 / self._time_steps_per_second
         self._fsm_update_dt = 1.0 / self._fsm_update_rate
 
@@ -207,14 +208,14 @@ class FrankaNutAndBolt(BaseSample):
         self._bolt_physics_material = PhysicsMaterial(
             prim_path="/World/PhysicsMaterials/BoltMaterial",
             name="bolt_material_physics",
-            static_friction=0.2,
-            dynamic_friction=0.2,
+            static_friction=0.1,
+            dynamic_friction=0.1,
         )
         self._nut_physics_material = PhysicsMaterial(
             prim_path="/World/PhysicsMaterials/NutMaterial",
             name="nut_material_physics",
-            static_friction=0.2,
-            dynamic_friction=0.2,
+            static_friction=0.1,
+            dynamic_friction=0.1,
         )
         self._vibra_table_physics_material = PhysicsMaterial(
             prim_path="/World/PhysicsMaterials/VibraTableMaterial",
@@ -306,6 +307,8 @@ class FrankaNutAndBolt(BaseSample):
         self._vibra_table_visual_xform.set_world_pose(position=self._vibra_top_offset)
         self._vibra_table_visual_xform.set_default_state(position=self._vibra_top_offset)
         self._vibra_table_visual_xform.set_local_scale(np.array([self._table_scale]))
+        # not clear why this makes a difference for the position (new bug although no change to code)
+        self._vibra_table_visual_xform.prim.SetInstanceable(True)
 
         # collision
         self._vibra_table_collision_ref_geom = self._world.scene.get_object(f"vibra_table_collision_ref_geom")
@@ -404,8 +407,8 @@ class FrankaNutAndBolt(BaseSample):
         self._franka.set_default_state(position=franka_pos)
         self._franka.gripper.open()
 
-        self._convexIncludeRel.AddTarget(self._franka.prim_path + "/panda_leftfinger")
-        self._convexIncludeRel.AddTarget(self._franka.prim_path + "/panda_rightfinger")
+        self._frankaHandIncludeRel.AddTarget(self._franka.prim_path + "/panda_leftfinger")
+        self._frankaHandIncludeRel.AddTarget(self._franka.prim_path + "/panda_rightfinger")
 
         franka_left_finger = self._world.stage.GetPrimAtPath(
             "/World/env/franka/panda_leftfinger/geometry/panda_leftfinger"
@@ -438,22 +441,34 @@ class FrankaNutAndBolt(BaseSample):
         self._scene.set_gpu_found_lost_pairs_capacity(10 * 1024)
         self._scene.set_gpu_heap_capacity(64 * 1024 * 1024)
         self._scene.set_gpu_found_lost_aggregate_pairs_capacity(10 * 1024)
+        # added because of new errors regarding collisionstacksize
+        physxSceneAPI = PhysxSchema.PhysxSceneAPI.Apply(get_prim_at_path("/physicsScene"))
+        physxSceneAPI.CreateGpuCollisionStackSizeAttr().Set(76000000)  # or whatever min is needed
 
+        # group to include SDF mesh of nut only
         self._meshCollisionGroup = UsdPhysics.CollisionGroup.Define(
             self._world.scene.stage, "/World/collisionGroups/meshColliders"
         )
         collectionAPI = Usd.CollectionAPI.Apply(self._meshCollisionGroup.GetPrim(), "colliders")
         self._nutMeshIncludeRel = collectionAPI.CreateIncludesRel()
+        # group to include all convex collision (nut convex, pipe, table, vibrating table, other small assets on the table)
         self._convexCollisionGroup = UsdPhysics.CollisionGroup.Define(
             self._world.scene.stage, "/World/collisionGroups/convexColliders"
         )
         collectionAPI = Usd.CollectionAPI.Apply(self._convexCollisionGroup.GetPrim(), "colliders")
         self._convexIncludeRel = collectionAPI.CreateIncludesRel()
+        # group to include bolt prim only (only has SDF mesh)
         self._boltCollisionGroup = UsdPhysics.CollisionGroup.Define(
             self._world.scene.stage, "/World/collisionGroups/boltColliders"
         )
         collectionAPI = Usd.CollectionAPI.Apply(self._boltCollisionGroup.GetPrim(), "colliders")
         self._boltMeshIncludeRel = collectionAPI.CreateIncludesRel()
+        # group to include the franka hands prims only
+        self._frankaHandCollisionGroup = UsdPhysics.CollisionGroup.Define(
+            self._world.scene.stage, "/World/collisionGroups/frankaHandColliders"
+        )
+        collectionAPI = Usd.CollectionAPI.Apply(self._frankaHandCollisionGroup.GetPrim(), "colliders")
+        self._frankaHandIncludeRel = collectionAPI.CreateIncludesRel()
 
         # invert group logic so only groups that filter each-other will collide:
         self._scene.set_invert_collision_group_filter(True)
@@ -462,13 +477,17 @@ class FrankaNutAndBolt(BaseSample):
         filteredRel = self._meshCollisionGroup.CreateFilteredGroupsRel()
         filteredRel.AddTarget("/World/collisionGroups/boltColliders")
 
-        # # the convex hull nuts should collide with each other, the vibra table, and the grippers
+        # # the convex hull nuts should collide with other nuts, the vibra table, table, pipe and small assets on the table.
+        # It should also collide with the franka grippers
         filteredRel = self._convexCollisionGroup.CreateFilteredGroupsRel()
         filteredRel.AddTarget("/World/collisionGroups/convexColliders")
+        filteredRel.AddTarget("/World/collisionGroups/frankaHandColliders")
 
         # # the SDF mesh bolt only collides with the SDF mesh nut colliders
+        # and with the franka grippers
         filteredRel = self._boltCollisionGroup.CreateFilteredGroupsRel()
         filteredRel.AddTarget("/World/collisionGroups/meshColliders")
+        filteredRel.AddTarget("/World/collisionGroups/frankaHandColliders")
 
     async def setup_pre_reset(self):
         return
