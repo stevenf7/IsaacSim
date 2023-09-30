@@ -19,11 +19,6 @@
                 "description": "True to enable the lidar helper, False to disable",
                 "default": true
             },
-            "context" : {
-                "type" : "uint64",
-                "description": "ROS context handle, default of zero will use the global context",
-                "default" : 0
-            },
             "nodeNamespace" : {
                 "type" : "string",
                 "description" : "Namespace of ROS1 Node, prepends and published/subscribed topic by the node namespace",
