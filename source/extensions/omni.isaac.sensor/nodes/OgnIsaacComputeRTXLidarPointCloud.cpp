@@ -250,7 +250,7 @@ public:
                         _ASSIGN_OUT(intensity, outIdx, , intensity);
                         _ASSIGN_OUT(range, outIdx, , range);
                         _ASSIGN_OUT(azimuth, outIdx, , azimuth);
-                        _ASSIGN_OUT(elevation, outIdx, , azimuth);
+                        _ASSIGN_OUT(elevation, outIdx, , elevation);
 
 #undef _ASSIGN_OUT
                     }
