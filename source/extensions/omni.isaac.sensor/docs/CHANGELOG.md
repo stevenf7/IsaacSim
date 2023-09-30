@@ -1,4 +1,10 @@
 # Changelog
+
+## [9.7.1] - 2023-09-29
+### Fixed
+- Fixed elevation output for ComputeRTXLidarPointCloud node.
+
+
 ## [9.7.0] - 2023-09-28
 ### Added
 - numEchos, numChannels, and numTicks output to IsaacReadRTXLidarData
