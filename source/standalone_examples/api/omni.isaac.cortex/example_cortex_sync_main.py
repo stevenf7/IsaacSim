@@ -112,6 +112,7 @@ def main():
     if decider_network:
         decider_network.context.add_monitor(context_monitor.monitor)
 
+    world.add_decider_network(decider_network)
     world.run(simulation_app)
     simulation_app.close()
 
