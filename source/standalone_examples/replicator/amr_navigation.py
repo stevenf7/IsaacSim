@@ -36,7 +36,7 @@ class NavSDGDemo:
     PROPS_URL = "/Isaac/Props/YCB/Axis_Aligned_Physics"
 
     def __init__(self):
-        self._carter_nav_origin = None
+        self._carter_chassis = None
         self._carter_nav_target = None
         self._dolly = None
         self._dolly_light = None
@@ -94,7 +94,6 @@ class NavSDGDemo:
 
     def clear(self):
         self._cycled_env_urls = None
-        self._carter_nav_origin = None
         self._carter_chassis = None
         self._carter_nav_target = None
         self._dolly = None
@@ -132,7 +131,6 @@ class NavSDGDemo:
 
         # Carter
         add_reference_to_stage(usd_path=assets_root_path + self.CARTER_URL, prim_path="/NavWorld/CarterNav")
-        self._carter_nav_origin = self._stage.GetPrimAtPath("/NavWorld/CarterNav")
         self._carter_nav_target = self._stage.GetPrimAtPath("/NavWorld/CarterNav/targetXform")
         self._carter_chassis = self._stage.GetPrimAtPath("/NavWorld/CarterNav/chassis_link")
 
