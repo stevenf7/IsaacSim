@@ -16,3 +16,14 @@ aws s3 sync $SCRIPT_DIR/Isaac_AMR s3://omniverse-content-staging/Assets/Isaac/20
 
 echo run aws s3 sync $SCRIPT_DIR/Isaac_AMR s3://omniverse-content-production/Assets/Isaac/2022.2.1/Isaac/Samples/Isaac_AMR --delete
 aws s3 sync $SCRIPT_DIR/Isaac_AMR s3://omniverse-content-production/Assets/Isaac/2022.2.1/Isaac/Samples/Isaac_AMR --delete
+
+echo Removing $SCRIPT_DIR/carter_v2_4.usd...
+rm $SCRIPT_DIR/carter_v2_4.usd
+echo run $OMNICLI cp omniverse://isaac-dev.ov.nvidia.com/Isaac/Robots/Carter/carter_v2_4.usd $SCRIPT_DIR/carter_v2_4.usd
+$OMNICLI copy omniverse://isaac-dev.ov.nvidia.com/Isaac/Robots/Carter/carter_v2_4.usd $SCRIPT_DIR/carter_v2_4.usd
+
+echo run aws s3 cp $SCRIPT_DIR/carter_v2_4.usd s3://omniverse-content-staging/Assets/Isaac/2022.2.1/Isaac/Robots/Carter/carter_v2_4.usd
+aws s3 cp $SCRIPT_DIR/carter_v2_4.usd s3://omniverse-content-staging/Assets/Isaac/2022.2.1/Isaac/Robots/Carter/carter_v2_4.usd
+
+echo run aws s3 cp $SCRIPT_DIR/carter_v2_4.usd s3://omniverse-content-production/Assets/Isaac/2022.2.1/Isaac/Robots/Carter/carter_v2_4.usd
+aws s3 cp $SCRIPT_DIR/carter_v2_4.usd s3://omniverse-content-production/Assets/Isaac/2022.2.1/Isaac/Robots/Carter/carter_v2_4.usd
