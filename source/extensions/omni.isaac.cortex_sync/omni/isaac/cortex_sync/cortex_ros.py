@@ -271,13 +271,14 @@ def pack_motion_command_ros_msg(
     msg.header.seq = msg_id
     msg.header.stamp = stamp
 
-    msg.q = action.joint_positions
-    msg.qd = action.joint_velocities
-    msg.qdd = []  # Note, change to np.zeros(len(qd)) if using older builds of cortex_control_franka
-    msg.names = joint_names
-    msg.t = stamp
+    if action:
+        msg.q = action.joint_positions
+        msg.qd = action.joint_velocities
+        msg.qdd = []  # Note, change to np.zeros(len(qd)) if using older builds of cortex_control_franka
+        msg.names = joint_names
+        msg.t = stamp
 
-    return msg
+        return msg
 
 
 def make_gripper_command_ros_pub(topic: str) -> rospy.Publisher:
@@ -620,10 +621,11 @@ class CortexSimRobotRos:
         msg.header.stamp = rospy.Time.now()
 
         msg.name = names
-        msg.position = joint_state.positions
-        msg.velocity = joint_state.velocities
-        msg.effort = []
-        self._joint_state_pub.publish(msg)
+        if joint_state:
+            msg.position = joint_state.positions
+            msg.velocity = joint_state.velocities
+            msg.effort = []
+            self._joint_state_pub.publish(msg)
 
     def _on_simulation_step(self, step: float) -> None:
         """The physics callback which processes all messages.
