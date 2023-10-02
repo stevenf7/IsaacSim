@@ -565,15 +565,8 @@ class PhysicsContext(object):
         )
 
     def _step(self, current_time: float) -> None:
-        self._physx_interface.update_simulation(elapsedStep=self.get_physics_dt(), currentTime=current_time)
-        self._physx_interface.update_transformations(
-            updateToFastCache=get_carb_setting(self._carb_settings, "/persistent/physics/useFastCache"),
-            updateToUsd=get_carb_setting(self._carb_settings, "/persistent/physics/updateToUsd"),
-            updateVelocitiesToUsd=get_carb_setting(self._carb_settings, "/persistent/physics/updateVelocitiesToUsd"),
-            outputVelocitiesLocalSpace=get_carb_setting(
-                self._carb_settings, "/persistent/physics/outputVelocitiesLocalSpace"
-            ),
-        )
+        self._physx_sim_interface.simulate(self.get_physics_dt(), current_time)
+        self._physx_sim_interface.fetch_results()
         return
 
     def set_invert_collision_group_filter(self, invert_collision_group_filter: bool) -> None:
