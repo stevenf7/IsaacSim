@@ -310,8 +310,8 @@ class NavSDGDemo:
 
 ENV_URLS = [
     "/Isaac/Environments/Grid/default_environment.usd",
-    "/Isaac/Environments/Grid/gridroom_black.usd",
     "/Isaac/Environments/Simple_Warehouse/warehouse.usd",
+    "/Isaac/Environments/Grid/gridroom_black.usd",
 ]
 
 parser = argparse.ArgumentParser()
