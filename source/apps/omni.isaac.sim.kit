@@ -39,12 +39,14 @@ framerate_limit = 120
 # FOR DEVELOPMENT #
 registries = [
     { name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default" },
+    { name = "kit/sdk", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/sdk/${kit_version_short}/${kit_git_hash}" },
 ]
 postToSlack = false
 # # FOR PRODUCTION #
 # registries = [
-#     { name = "kit/public", url = "https://d1aiacozzchaiq.cloudfront.net/exts/kit/public/104.0/"},
-#     { name = "kit/community", url = "https://dw290v42wisod.cloudfront.net/exts/kit/community" }
+# 	{ name = "kit/default", url = "https://ovextensionsprod.blob.core.windows.net/exts/kit/prod/shared" },
+# 	{ name = "kit/sdk", url = "https://ovextensionsprod.blob.core.windows.net/exts/kit/prod/sdk/${kit_version_short}/${kit_git_hash}" },
+# 	{ name = "kit/community", url = "https://dw290v42wisod.cloudfront.net/exts/kit/community" },
 # ]
 
 [settings.exts."omni.kit.window.content_browser"]
