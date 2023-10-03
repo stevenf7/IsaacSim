@@ -97,6 +97,7 @@ class SimulationContext:
             return
         SimulationContext._sim_context_initialized = True
         self._app = omni.kit.app.get_app_interface()
+        self._extension_manager = omni.kit.app.get_app().get_extension_manager()
         self._framework = carb.get_framework()
         self._initial_stage_units_in_meters = stage_units_in_meters
         self._initial_physics_dt = physics_dt
@@ -110,6 +111,7 @@ class SimulationContext:
         self._timeline = omni.timeline.get_timeline_interface()
         self._timeline.set_auto_update(True)
         self._dynamic_control = _dynamic_control.acquire_dynamic_control_interface()
+        self._physx_fabric_interface = None
         self._physics_callback_functions = dict()
         self._physics_functions = dict()
         self._stage_callback_functions = dict()
@@ -117,6 +119,7 @@ class SimulationContext:
         self._render_callback_functions = dict()
         self._loop_runner = None
         self._physics_context = None
+        self._current_time = 0
         if self._set_defaults:
             if self._initial_rendering_dt is None:
                 self._initial_rendering_dt = 1.0 / 60.0
@@ -465,6 +468,13 @@ class SimulationContext:
 
     def render(self) -> None:
         """Refreshes the Isaac Sim app rendering components including UI elements and view ports..etc."""
+        if self._physx_fabric_interface is None:
+            if self.current_time > 0 and self._extension_manager.is_extension_enabled("omni.physx.fabric"):
+                from omni.physxfabric import get_physx_fabric_interface
+
+                self._physx_fabric_interface = get_physx_fabric_interface()
+        if self._physx_fabric_interface:
+            self._physx_fabric_interface.update(self._physics_context.get_physics_dt(), self.current_time)
         set_carb_setting(self._settings, "/app/player/playSimulations", False)
         self._app.update()
         set_carb_setting(self._settings, "/app/player/playSimulations", True)

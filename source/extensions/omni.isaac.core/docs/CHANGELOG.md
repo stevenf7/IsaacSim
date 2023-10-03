@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.9.3] - 2023-09-29
+### Fixed
+- Propagate physX to Fabric when stepping physX and kit seperatly
+
 ## [2.9.2] - 2023-09-27
 ### Fixed
 - Articulation Root mismatch with the default state in ArticulationView
