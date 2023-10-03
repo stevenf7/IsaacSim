@@ -145,6 +145,8 @@ class PhysicsContext(object):
                 self._carb_settings.set_bool("/physics/suppressReadback", sim_params["use_gpu_pipeline"])
                 if sim_params["use_gpu_pipeline"]:
                     self._use_gpu_pipeline = True
+            else:
+                self._carb_settings.set_bool("/physics/suppressReadback", self._use_gpu_pipeline)
 
             if "use_fabric" in sim_params.keys() and sim_params["use_fabric"]:
                 self._use_fabric = True

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.8.3] - 2023-09-26
+### Changed
+- Enable fabric in app file since updateToUsd is set to False
+
 ## [0.8.2] - 2023-09-19
 ### Changed
 - Add device ID to cuda device
