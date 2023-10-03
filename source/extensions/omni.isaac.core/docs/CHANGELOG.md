@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.9.4] - 2023-09-26
+### Fixed
+- Correctly set GPU pipeline when it is missing from SimConfig
+
 ## [2.9.3] - 2023-09-29
 ### Fixed
 - Propagate physX to Fabric when stepping physX and kit seperatly
