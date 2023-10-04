@@ -1,6 +1,6 @@
 # Changelog
 
-## [2.9.4] - 2023-09-26
+## [2.9.4] - 2023-09-30
 ### Fixed
 - Correctly set GPU pipeline when it is missing from SimConfig
 

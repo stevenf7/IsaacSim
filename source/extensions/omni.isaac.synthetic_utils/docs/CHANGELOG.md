@@ -1,7 +1,7 @@
 # Changelog
 
 ## [0.5.0] - 2023-09-12
-### Chnged
+### Changed
 - deprecated in favor of omni.replicator.core, omni.syntheticdata and omni.isaac.sensor
 
 ## [0.4.3] - 2023-01-19
