@@ -1,5 +1,9 @@
 # Changelog
 
+## [9.7.2] - 2023-10-03
+### Fixed
+- Fixed WriterReadRTXLidarData Synthetic Data writer so it sets the render_product_path correctly. 
+
 ## [9.7.1] - 2023-09-29
 ### Fixed
 - Fixed elevation output for ComputeRTXLidarPointCloud node.

@@ -107,14 +107,6 @@ class Extension(omni.ext.IExt):
             )
             self.registered_template.append(template)
 
-        # RTX lidar Read RtxLidar Data
-        rep.writers.register_node_writer(
-            name="Writer" + "IsaacReadRTXLidarData",
-            node_type_id="omni.isaac.sensor.IsaacReadRTXLidarData",
-            annotators=[omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu" + "ExportRaw")],
-            category="omni.isaac.sensor",
-        )
-
         ### Read RtxLidar Data
         annotator_name = "RtxSensorCpu" + "IsaacReadRTXLidarData"
         AnnotatorRegistry.register_annotator_from_node(
@@ -123,6 +115,16 @@ class Extension(omni.ext.IExt):
             node_type_id="omni.isaac.sensor.IsaacReadRTXLidarData",
         )
         self.registered_annotators.append(annotator_name)
+
+        # RTX lidar Read RtxLidar Data
+        rep.writers.register_node_writer(
+            name="Writer" + "IsaacReadRTXLidarData",
+            node_type_id="omni.isaac.sensor.IsaacReadRTXLidarData",
+            annotators=[
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu" + "IsaacReadRTXLidarData")
+            ],
+            category="omni.isaac.sensor",
+        )
 
         ### RtxLidar Point Cloud
         annotator_name = "RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud"
