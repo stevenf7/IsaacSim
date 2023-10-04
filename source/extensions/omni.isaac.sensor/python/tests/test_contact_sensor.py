@@ -436,7 +436,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
             sensor_reading = self._cs.get_sensor_reading(self.leg_paths[0] + "/sensor")
             print(
                 "sensor_reading: "
-                + str(sensor_reading.inContact)
+                + str(sensor_reading.in_contact)
                 + " "
                 + str(sensor_reading.value)
                 + " "
@@ -447,7 +447,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
                 init_reading = sensor_reading
                 print(
                     "init_reading: "
-                    + str(init_reading.inContact)
+                    + str(init_reading.in_contact)
                     + " "
                     + str(init_reading.value)
                     + " "
@@ -465,14 +465,14 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
 
         print(
             "sensor_reading: "
-            + str(sensor_reading.inContact)
+            + str(sensor_reading.in_contact)
             + " "
             + str(sensor_reading.value)
             + " "
             + str(sensor_reading.time)
         )
 
-        self.assertEqual(init_reading.inContact, sensor_reading.inContact)
+        self.assertEqual(init_reading.in_contact, sensor_reading.in_contact)
         self.assertEqual(init_reading.value, sensor_reading.value)
         self.assertEqual(init_reading.time, sensor_reading.time)
 
@@ -614,8 +614,8 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
             post_reading = self._cs.get_sensor_reading(self.leg_paths[0] + "/sensor")
 
-        self.assertEqual(pre_reading.inContact, 0)
-        self.assertEqual(post_reading.inContact, 0)
+        self.assertEqual(pre_reading.in_contact, 0)
+        self.assertEqual(post_reading.in_contact, 0)
 
         pass
 

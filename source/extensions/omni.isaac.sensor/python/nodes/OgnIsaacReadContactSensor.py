@@ -53,7 +53,7 @@ class OgnIsaacReadContactSensor:
 
         reading = state._cs.get_sensor_reading(state.cs_path)
         if reading.is_valid:
-            db.outputs.inContact = reading.inContact
+            db.outputs.inContact = reading.in_contact
             db.outputs.value = reading.value
             db.outputs.sensorTime = reading.time
         else:
