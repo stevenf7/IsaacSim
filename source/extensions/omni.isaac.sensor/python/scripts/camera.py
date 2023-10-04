@@ -28,6 +28,7 @@ from omni.isaac.core.utils.prims import (
 )
 from omni.isaac.core.utils.render_product import get_resolution, set_camera_prim_path, set_resolution
 from omni.isaac.core_nodes.bindings import _omni_isaac_core_nodes
+from omni.isaac.IsaacSensorSchema import IsaacRtxLidarSensorAPI
 from pxr import Sdf, Usd, UsdGeom, Vt
 
 # transforms are read from right to left
@@ -1479,7 +1480,7 @@ class Camera(BaseSensor):
         return self.get_horizontal_fov() * (height / float(width))
 
 
-def get_all_camera_objects(root_prim: str = "/World"):
+def get_all_camera_objects(root_prim: str = "/"):
     """Retrieve omni.isaac.sensor Camera objects for each camera in the scene.
 
     Args:
@@ -1493,6 +1494,7 @@ def get_all_camera_objects(root_prim: str = "/World"):
     camera_prims = get_all_matching_child_prims(
         prim_path=root_prim, predicate=lambda prim: get_prim_type_name(prim) == "Camera"
     )
+    camera_prims = [prim for prim in camera_prims if not prim.HasAPI(IsaacRtxLidarSensorAPI)]
 
     # Create a "Camera" object for them
     camera_objects = []
