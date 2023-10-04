@@ -28,8 +28,8 @@ Quadruped Utilities
 
 .. automodule:: omni.isaac.quadruped.utils
     :inherited-members:
-    :imported-members:
     :members:
     :undoc-members:
     :exclude-members:
+    :noindex:
 

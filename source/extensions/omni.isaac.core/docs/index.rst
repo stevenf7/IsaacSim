@@ -3,57 +3,288 @@ Core [omni.isaac.core]
 
 
 Articulations
+--------------
+
+Articulation
 =============
 
-.. automodule:: omni.isaac.core.articulations
+.. autoclass:: omni.isaac.core.articulations.Articulation
     :inherited-members:
-    :imported-members:
     :members:
     :undoc-members:
     :exclude-members:
 
-Controllers
-===========
+ArticulationView
+=================
 
-.. automodule:: omni.isaac.core.controllers
+.. autoclass:: omni.isaac.core.articulations.ArticulationView
     :inherited-members:
-    :imported-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+ArticulationController
+========================
+
+.. autoclass:: omni.isaac.core.controllers.ArticulationController
+    :inherited-members:
     :members:
     :undoc-members:
     :exclude-members:
 
 Loggers
-=======
+--------------
 
-.. automodule:: omni.isaac.core.loggers
-    :imported-members:
+DataLogger
+========================
+
+.. autoclass:: omni.isaac.core.loggers.DataLogger
+    :inherited-members:
     :members:
     :undoc-members:
     :exclude-members:
 
 Materials
-=========
+--------------
 
-.. automodule:: omni.isaac.core.materials
+Visual Material
+========================
+
+.. autoclass:: omni.isaac.core.materials.VisualMaterial
     :inherited-members:
-    :imported-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+
+Preview Surface
+========================
+
+.. autoclass:: omni.isaac.core.materials.PreviewSurface
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+OmniPBR Material
+========================
+
+.. autoclass:: omni.isaac.core.materials.OmniPBR
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Omni Glass Material
+========================
+
+.. autoclass:: omni.isaac.core.materials.OmniGlass
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Physics Material
+========================
+
+.. autoclass:: omni.isaac.core.materials.PhysicsMaterial
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+
+Particle Material
+========================
+
+.. autoclass:: omni.isaac.core.materials.ParticleMaterial
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Particle Material View
+========================
+
+.. autoclass:: omni.isaac.core.materials.ParticleMaterialView
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Deformable Material
+=========================
+
+.. autoclass:: omni.isaac.core.materials.DeformableMaterial
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Deformable Material View
+=========================
+
+.. autoclass:: omni.isaac.core.materials.DeformableMaterialView
+    :inherited-members:
     :members:
     :undoc-members:
     :exclude-members:
 
 Objects
-=========
+--------------
 
-.. automodule:: omni.isaac.core.objects
+from omni.isaac.core.objects.cone import DynamicCone, FixedCone, VisualCone
+from omni.isaac.core.objects.cuboid import DynamicCuboid, FixedCuboid, VisualCuboid
+from omni.isaac.core.objects.cylinder import DynamicCylinder, FixedCylinder, VisualCylinder
+from omni.isaac.core.objects.sphere import DynamicSphere, FixedSphere, VisualSphere
+
+Ground Plane
+=============
+
+.. autoclass:: omni.isaac.core.objects.GroundPlane
     :inherited-members:
-    :imported-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Fixed Capsule
+==============
+
+.. autoclass:: omni.isaac.core.objects.FixedCapsule
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Visual Capsule
+==============
+
+.. autoclass:: omni.isaac.core.objects.VisualCapsule
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Dynamic Capsule
+================
+
+.. autoclass:: omni.isaac.core.objects.DynamicCapsule
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Fixed Cone
+==========
+
+.. autoclass:: omni.isaac.core.objects.FixedCone
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Visual Cone
+============
+
+.. autoclass:: omni.isaac.core.objects.VisualCone
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Dynamic Cone
+============
+
+.. autoclass:: omni.isaac.core.objects.DynamicCone
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Fixed Cuboid
+=============
+
+.. autoclass:: omni.isaac.core.objects.FixedCuboid
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Visual Cuboid
+==============
+
+.. autoclass:: omni.isaac.core.objects.VisualCuboid
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Dynamic Cuboid
+===============
+
+.. autoclass:: omni.isaac.core.objects.DynamicCuboid
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Fixed Cylinder
+==================
+
+.. autoclass:: omni.isaac.core.objects.FixedCylinder
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Visual Cylinder
+==================
+
+.. autoclass:: omni.isaac.core.objects.VisualCylinder
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Dynamic Cylinder
+==================
+
+.. autoclass:: omni.isaac.core.objects.DynamicCylinder
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Fixed Sphere
+===============
+
+.. autoclass:: omni.isaac.core.objects.FixedSphere
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Visual Sphere
+===============
+
+.. autoclass:: omni.isaac.core.objects.VisualSphere
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Dynamic Sphere
+================
+
+.. autoclass:: omni.isaac.core.objects.DynamicSphere
+    :inherited-members:
     :members:
     :undoc-members:
     :exclude-members:
 
 
 Physics Context
-================
+----------------
 
 .. automodule:: omni.isaac.core.physics_context
     :inherited-members:
@@ -63,29 +294,137 @@ Physics Context
     :exclude-members:
 
 
-
 Prims
+--------------
+
+Base Sensor
 ================
 
-.. automodule:: omni.isaac.core.prims
-    :imported-members:
+.. autoclass:: omni.isaac.core.prims.BaseSensor
     :inherited-members:
     :members:
     :undoc-members:
     :exclude-members:
+
+XForm Prim
+================
+
+.. autoclass:: omni.isaac.core.prims.XFormPrim
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+XForm Prim View
+===================
+
+.. autoclass:: omni.isaac.core.prims.XFormPrimView
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Geometry Prim
+================
+
+.. autoclass:: omni.isaac.core.prims.GeometryPrim
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Geometry Prim View
+===================
+
+.. autoclass:: omni.isaac.core.prims.GeometryPrimView
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Rigid Prim
+===================
+
+.. autoclass:: omni.isaac.core.prims.RigidPrim
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Rigid Prim View
+===================
+
+.. autoclass:: omni.isaac.core.prims.RigidPrimView
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Rigid Contact View
+===================
+
+.. autoclass:: omni.isaac.core.prims.RigidContactView
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Cloth Prim
+===================
+
+.. autoclass:: omni.isaac.core.prims.ClothPrim
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Cloth Prim View
+===================
+.. autoclass:: omni.isaac.core.prims.ClothPrimView
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Particle System
+===================
+.. autoclass:: omni.isaac.core.prims.ParticleSystem
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Particle System View
+=====================
+.. autoclass:: omni.isaac.core.prims.ParticleSystemView
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
 
 Robots
-================
+--------------
 
-.. automodule:: omni.isaac.core.robots
+Robot
+===================
+.. autoclass:: omni.isaac.core.robots.Robot
     :inherited-members:
-    :imported-members:
     :members:
     :undoc-members:
     :exclude-members:
 
+Robot View
+=====================
+.. autoclass:: omni.isaac.core.robots.RobotView
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+
 Scenes
-================
+--------------
 
 .. automodule:: omni.isaac.core.scenes
     :inherited-members:
@@ -95,7 +434,7 @@ Scenes
     :exclude-members:
 
 Simulation Context
-==================
+-------------------
 
 .. automodule:: omni.isaac.core.simulation_context
     :inherited-members:
@@ -105,7 +444,7 @@ Simulation Context
     :exclude-members:
 
 World
-================
+--------------
 
 .. automodule:: omni.isaac.core.world
     :inherited-members:
@@ -115,31 +454,44 @@ World
     :exclude-members:
 
 Tasks
-================
+--------------
 
-.. automodule:: omni.isaac.core.tasks
+Base Task
+=====================
+.. autoclass:: omni.isaac.core.tasks.BaseTask
     :inherited-members:
-    :imported-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Follow Target
+=====================
+.. autoclass:: omni.isaac.core.tasks.FollowTarget
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Pick and Place
+=====================
+.. autoclass:: omni.isaac.core.tasks.PickPlace
+    :inherited-members:
     :members:
     :undoc-members:
     :exclude-members:
 
 
-Numpy Utils
-================
-
-.. automodule:: omni.isaac.core.utils.numpy
+Stacking
+=====================
+.. autoclass:: omni.isaac.core.tasks.Stacking
+    :inherited-members:
     :members:
     :undoc-members:
     :exclude-members:
 
-Torch Utils
-================
+Utils
+--------------
 
-.. automodule:: omni.isaac.core.utils.torch
-    :members:
-    :undoc-members:
-    :exclude-members:
 
 Bounds Utils
 ================
@@ -309,3 +661,110 @@ XForms Utils
     :undoc-members:
     :exclude-members:
 
+Numpy Utils
+--------------
+
+Rotations
+================
+
+.. automodule:: omni.isaac.core.utils.numpy.rotations
+    :members:
+    :undoc-members:
+    :exclude-members:
+    :noindex:
+
+Maths
+================
+
+.. automodule:: omni.isaac.core.utils.numpy.maths
+    :members:
+    :undoc-members:
+    :exclude-members:
+    :noindex:
+
+Tensor
+================
+
+.. automodule:: omni.isaac.core.utils.numpy.tensor
+    :members:
+    :undoc-members:
+    :exclude-members:
+    :noindex:
+
+Transformations
+================
+
+.. automodule:: omni.isaac.core.utils.numpy.transformations
+    :members:
+    :undoc-members:
+    :exclude-members:
+    :noindex:
+
+Torch Utils
+--------------
+
+Rotations
+================
+
+.. automodule:: omni.isaac.core.utils.torch.rotations
+    :members:
+    :undoc-members:
+    :exclude-members:
+    :noindex:
+
+Maths
+================
+
+.. automodule:: omni.isaac.core.utils.torch.maths
+    :members:
+    :undoc-members:
+    :exclude-members:
+    :noindex:
+
+Tensor
+================
+
+.. automodule:: omni.isaac.core.utils.torch.tensor
+    :members:
+    :undoc-members:
+    :exclude-members:
+    :noindex:
+
+Transformations
+================
+
+.. automodule:: omni.isaac.core.utils.torch.transformations
+    :members:
+    :undoc-members:
+    :exclude-members:
+    :noindex:
+
+Warp Utils
+--------------
+
+Rotations
+================
+
+.. automodule:: omni.isaac.core.utils.torch.rotations
+    :members:
+    :undoc-members:
+    :exclude-members:
+    :noindex:
+
+Tensor
+================
+
+.. automodule:: omni.isaac.core.utils.torch.tensor
+    :members:
+    :undoc-members:
+    :exclude-members:
+    :noindex:
+
+Transformations
+================
+
+.. automodule:: omni.isaac.core.utils.torch.transformations
+    :members:
+    :undoc-members:
+    :exclude-members:
+    :noindex:
