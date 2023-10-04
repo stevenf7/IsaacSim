@@ -1,4 +1,8 @@
 # Changelog
+
+## [2.3.0] - 2023-10-03
+### Fixed
+- Windows message for setting PATH
 ## [2.3.0] - 2023-09-26
 ### Added
 - Added enable flag for the lidar and camera helper
