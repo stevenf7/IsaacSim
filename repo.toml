@@ -841,8 +841,8 @@ deps_for_isaac = [
   "omni.sensors.nv.wpm-0.1.2-isaacsim.3",
   "omni.services.transport.server.tcp_socket-1.0.2",
   "semantics.schema.editor-0.3.4",
-  "omni.importer.mjcf-1.0.1",
-  "omni.importer.urdf-1.1.0",
+  "omni.importer.mjcf-1.1.0",
+  "omni.importer.urdf-1.1.3",
   "omni.anim.people-0.1.10"
 ]
 
