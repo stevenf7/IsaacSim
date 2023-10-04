@@ -54,7 +54,7 @@ class Extension(omni.ext.IExt):
                         )
                     else:
                         omni.kit.app.get_app().print_and_log(
-                            f"To use the Internal rclpy included with the extension please set: \nRMW_IMPLEMENTATION=rmw_fastrtps_cpp\nPATH=$PATH;{self._extension_path}/{ros_distro}/lib\nBefore starting Isaac Sim"
+                            f"To use the Internal rclpy included with the extension please set: \nRMW_IMPLEMENTATION=rmw_fastrtps_cpp\nPATH=%PATH%;{self._extension_path}/{ros_distro}/lib\nBefore starting Isaac Sim"
                         )
                 try:
                     import rclpy
