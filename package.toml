@@ -55,6 +55,10 @@ files_exclude = [
     ["extscache/omni.kit.nvdf.telemetry*"],
     ["extscache/omni.kit.usdstats*"],
     ["extscache/omni.kit.profiler.tracy*"],
+    # GXF Bridge related items
+    ["exts/omni.isaac.gxf_bridge"],
+    ["tests/tests-python-omni.isaac.gxf_bridge.*"],
+    ["tools/isaac_amr"],
 
 ]
 
@@ -83,6 +87,10 @@ files_exclude = [
     ["extscache/omni.kit.nvdf.telemetry*"],
     ["extscache/omni.kit.usdstats*"],
     ["extscache/omni.kit.profiler.tracy*"],
+    # GXF Bridge related items
+    ["exts/omni.isaac.gxf_bridge"],
+    ["tests/tests-python-omni.isaac.gxf_bridge.*"],
+    ["tools/isaac_amr"],
 
 ]
 
@@ -149,6 +157,10 @@ files_exclude = [
     ["extscache/**"],
     ["standalone_examples/testing/**"],
     ["exts/omni.isaac.core_archive/pip_prebundle/bin/**"], # OM-84922
+    # GXF Bridge related items
+    ["exts/omni.isaac.gxf_bridge"],
+    ["tests/tests-python-omni.isaac.gxf_bridge.*"],
+    ["tools/isaac_amr"],
 ]
 
 [isaac-sim-binaryscan.linux-x86_64]
