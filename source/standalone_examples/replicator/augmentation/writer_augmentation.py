@@ -114,6 +114,7 @@ else:
 
 # Create a writer and apply the augmentations to its corresponding annotators
 out_dir = os.path.join(os.getcwd(), "_out_augm_writer")
+print(f"Writing data to: {out_dir}")
 writer = rep.WriterRegistry.get("BasicWriter")
 writer.initialize(output_dir=out_dir, rgb=True, distance_to_camera=True)
 
