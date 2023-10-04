@@ -60,7 +60,7 @@ def gaussian_noise_depth_np(data_in, sigma: float, seed: int):
 
 
 rep.AnnotatorRegistry.register_augmentation(
-    "gn_depth_np_sigma", rep.annotators.Augmentation.from_function(gaussian_noise_depth_np, sigma=0.1, seed=None)
+    "gn_depth_np", rep.annotators.Augmentation.from_function(gaussian_noise_depth_np, sigma=0.1, seed=None)
 )
 
 
@@ -87,8 +87,8 @@ def write_depth(data, path):
     # Convert to numpy (if warp), normalize, handle any nan values, and convert to from float32 to 8-bit int array
     if isinstance(data, wp.array):
         data = data.numpy()
+    data = np.nan_to_num(data, posinf=0.0, neginf=0.0, copy=False)
     normalized_array = (data - np.min(data)) / (np.max(data) - np.min(data))
-    normalized_array = np.nan_to_num(normalized_array)
     integer_array = (normalized_array * 255).astype(np.uint8)
     depth_img = Image.fromarray(integer_array, mode="L")
     depth_img.save(path + ".png")
@@ -123,6 +123,7 @@ else:
 
 # Output directories
 out_dir = os.path.join(os.getcwd(), "_out_augm_annot")
+print(f"Writing data to: {out_dir}")
 os.makedirs(out_dir, exist_ok=True)
 
 # Register the annotator together with its augmentation
