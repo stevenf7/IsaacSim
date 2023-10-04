@@ -278,15 +278,22 @@ class SelectorWindow:
                     package_path = os.path.abspath(app_folder)
                     ui.Label("Package Path:", width=0)
                     ui.Spacer(width=5)
-                    ui.StringField(tooltip=textwrap.fill(package_path, 60), read_only=True).model.set_value(
-                        package_path
-                    )
+                    ui.StringField(
+                        tooltip=textwrap.fill(package_path, 60),
+                        read_only=True,
+                        style={
+                            "background_color": DARK_GRAY,
+                            "Tooltip": {
+                                "color": 0xFFFFFFFF,
+                            },
+                        },
+                    ).model.set_value(package_path)
                     ui.Button(
                         width=25,
                         height=25,
                         style={
                             "color": 0xFF000000,
-                            "Button": {"background_color": GRAY},
+                            "Button": {"background_color": DARK_GRAY},
                             "Button:hovered": {"background_color": LIGHT_GRAY},
                         },
                         image_url=f"{ICON_PATH}/copy.svg",
