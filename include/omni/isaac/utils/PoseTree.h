@@ -161,13 +161,13 @@ public:
 
                 ::physx::PxTransform body1Pose = getXformPose(primPath);
 
-                
+
                 if (prim.IsA<pxr::UsdGeomCamera>() && !prim.HasAPI<pxr::IsaacSensorIsaacRtxLidarSensorAPI>())
                 {
-                        // Regular camera (not RTXLidar), Rotate 180 degrees about x-axis
-                        // pxr::GfMatrix4d(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1);
-                        ::physx::PxQuat omniTCamera(1, 0, 0, 0);
-                        body1Pose = body1Pose * ::physx::PxTransform(omniTCamera);
+                    // Regular camera (not RTXLidar), Rotate 180 degrees about x-axis
+                    // pxr::GfMatrix4d(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1);
+                    ::physx::PxQuat omniTCamera(1, 0, 0, 0);
+                    body1Pose = body1Pose * ::physx::PxTransform(omniTCamera);
                 }
 
                 if (!mParentPath.IsEmpty())
