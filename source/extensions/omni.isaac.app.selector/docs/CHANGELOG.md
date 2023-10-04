@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.3.1] - 2023-08-16
+
+### Fixed
+- Make it clearer that text box for package path is not editable
+
 ## [2.3.0] - 2023-08-16
 
 ### Changed
