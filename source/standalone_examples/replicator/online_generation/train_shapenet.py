@@ -20,7 +20,7 @@ import signal
 
 import matplotlib.pyplot as plt
 import numpy as np
-from generate_shapenet import RandomObjects
+from generate_shapenet import LABEL_TO_SYNSET, SYNSET_TO_LABEL, RandomObjects
 
 
 def main(args):
@@ -40,7 +40,6 @@ def main(args):
 
     import torch
     import torchvision
-    from omni.isaac.shapenet import utils
     from omni.replicator.core import random_colours
     from torch.utils.data import DataLoader
 
@@ -114,9 +113,9 @@ def main(args):
                 axes[1].imshow(overlay, alpha=0.5)
                 # If ShapeNet categories are specified with their names, convert to synset ID
                 # Remove this if using with a different dataset than ShapeNet
-                args.categories = [utils.LABEL_TO_SYNSET.get(c, c) for c in args.categories]
+                args.categories = [LABEL_TO_SYNSET.get(c, c) for c in args.categories]
                 mapping = {i + 1: cat for i, cat in enumerate(args.categories)}
-                labels = [utils.SYNSET_TO_LABEL[mapping[label.item()]] for label in pred["labels"]]
+                labels = [SYNSET_TO_LABEL[mapping[label.item()]] for label in pred["labels"]]
                 for bb, label, colour in zip(pred["boxes"].cpu().numpy(), labels, colours):
                     maxint = 2 ** (struct.Struct("i").size * 8 - 1) - 1
                     # if a bbox is not visible, do not draw

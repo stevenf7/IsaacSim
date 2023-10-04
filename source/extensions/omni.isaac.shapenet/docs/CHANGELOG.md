@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.1.1] - 2023-10-04
+### Added
+- Deprecation warning to UI and shapenet_convert
+
 ## [2.1.0] - 2023-09-06
 ### Fixed
 - Remove explicit certifi dependency and use omni.kit.pip_archive

@@ -27,6 +27,48 @@ import numpy as np
 import torch
 from omni.isaac.kit import SimulationApp
 
+LABEL_TO_SYNSET = {
+    "table": "04379243",
+    "monitor": "03211117",
+    "phone": "04401088",
+    "watercraft": "04530566",
+    "chair": "03001627",
+    "lamp": "03636649",
+    "speaker": "03691459",
+    "bench": "02828884",
+    "plane": "02691156",
+    "bathtub": "02808440",
+    "bookcase": "02871439",
+    "bag": "02773838",
+    "basket": "02801938",
+    "bowl": "02880940",
+    "bus": "02924116",
+    "cabinet": "02933112",
+    "camera": "02942699",
+    "car": "02958343",
+    "dishwasher": "03207941",
+    "file": "03337140",
+    "knife": "03624134",
+    "laptop": "03642806",
+    "mailbox": "03710193",
+    "microwave": "03761084",
+    "piano": "03928116",
+    "pillow": "03938244",
+    "pistol": "03948459",
+    "printer": "04004475",
+    "rocket": "04099429",
+    "sofa": "04256520",
+    "washer": "04554684",
+    "rifle": "04090263",
+    "can": "02946921",
+    "bottle": "02876657",
+    "bowl": "02880940",
+    "earphone": "03261776",
+    "mug": "03797390",
+}
+
+SYNSET_TO_LABEL = {v: k for k, v in LABEL_TO_SYNSET.items()}
+
 # Setup default variables
 RESOLUTION = (1024, 1024)
 OBJ_LOC_MIN = (-50, 5, -50)
@@ -67,13 +109,9 @@ class RandomObjects(torch.utils.data.IterableDataset):
         assert (split > 0) and (split <= 1.0)
 
         self.kit = SimulationApp(RENDER_CONFIG)
-        from omni.isaac.core.utils.extensions import enable_extension
-
-        enable_extension("omni.isaac.shapenet")
 
         import omni.replicator.core as rep
         import warp as wp
-        from omni.isaac.shapenet import utils
 
         self.rep = rep
         self.wp = wp
@@ -87,7 +125,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
 
         # If ShapeNet categories are specified with their names, convert to synset ID
         # Remove this if using with a different dataset than ShapeNet
-        category_ids = [utils.LABEL_TO_SYNSET.get(c, c) for c in categories]
+        category_ids = [LABEL_TO_SYNSET.get(c, c) for c in categories]
         self.categories = category_ids
         self.range_num_assets = (num_assets_min, max(num_assets_min, num_assets_max))
         try:
@@ -334,10 +372,9 @@ if __name__ == "__main__":
             exit()
 
     dataset = RandomObjects(args.root, args.categories, max_asset_size=args.max_asset_size)
-    from omni.isaac.shapenet import utils
     from omni.replicator.core import random_colours
 
-    categories = [utils.LABEL_TO_SYNSET.get(c, c) for c in args.categories]
+    categories = [LABEL_TO_SYNSET.get(c, c) for c in args.categories]
 
     # Iterate through dataset and visualize the output
     plt.ion()
@@ -369,7 +406,7 @@ if __name__ == "__main__":
 
         axes[1].imshow(overlay)
         mapping = {i + 1: cat for i, cat in enumerate(categories)}
-        labels = [utils.SYNSET_TO_LABEL[mapping[label.item()]] for label in target["labels"]]
+        labels = [SYNSET_TO_LABEL[mapping[label.item()]] for label in target["labels"]]
         for bb, label, colour in zip(target["boxes"].tolist(), labels, colours):
             maxint = 2 ** (struct.Struct("i").size * 8 - 1) - 1
             # if a bbox is not visible, do not draw

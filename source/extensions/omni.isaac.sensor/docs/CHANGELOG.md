@@ -1,5 +1,9 @@
 # Changelog
 
+## [9.7.3] - 2023-10-03
+### Changed
+- Changed default prim path for get_all_camera_objects() to be "/" instead of "/World"
+
 ## [9.7.2] - 2023-10-03
 ### Fixed
 - Fixed WriterReadRTXLidarData Synthetic Data writer so it sets the render_product_path correctly. 

@@ -255,7 +255,7 @@ class Extension(omni.ext.IExt):
                     **self._camera_axes_builder_config
                 )
 
-                world_transform_models = self._build_pos_quat_display(label="World")  # label_width=label_width
+                world_transform_models = self._build_pos_quat_display(label="World")
                 self._task_ui_elements["World Camera Position"] = world_transform_models[0:3]
                 self._task_ui_elements["World Camera Orientation"] = world_transform_models[3:7]
 
