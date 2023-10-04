@@ -55,6 +55,12 @@ class ShapenetMenu:
             with self._window.frame:
                 with ui.VStack():
                     with ui.HStack(height=20):
+                        ui.Label(
+                            "[DEPRECATED] The ShapeNet Loader will be removed next release. You may import ShapeNet models as you would any other OBJ file.",
+                            width=0,
+                            style={"font_size": 18, "color": 0xFF2F2FFF},
+                        )
+                    with ui.HStack(height=20):
                         self._models["add_button"] = ui.Button(
                             "Add A Model", width=0, clicked_fn=lambda b=None: self._settings_ui._on_add_model_fn()
                         )

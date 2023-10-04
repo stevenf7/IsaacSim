@@ -115,6 +115,7 @@ def shapenet_convert(categories=None, max_models=50, load_materials=False):
     import asyncio
     import pprint
 
+    print("[DEPRECATION WARNING] the omni.isaac.shapenet extension will be removed next release.")
     if categories is None:
         print("The following categories and id's are supported:")
         pprint.pprint(LABEL_TO_SYNSET)
