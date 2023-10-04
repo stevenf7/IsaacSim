@@ -4,10 +4,10 @@ order = 0
 
 [package]
 # Loads models from: https://shapenet.org/
-version = "2.1.0"
+version = "2.1.1"
 title = "Isaac Shapenet"
 category = "Isaac"
-description="An extension that allows you to load shapenet models into the scene from a local database"
+description="[DEPRECATED] An extension that allows you to load shapenet models into the scene from a local database"
 authors = ["Mark Carlson <mcarlson@nvidia.com>"]
 keywords = ["kit", "shapenet", "data"]
 changelog = "docs/CHANGELOG.md"

@@ -13,7 +13,6 @@ extensions = [
     "omni.isaac.unit_converter",
     "omni.isaac.ui_template",
     "omni.isaac.synthetic_recorder",
-    "omni.isaac.shapenet",
     "omni.isaac.sensor",
     "omni.isaac.ros_bridge",
     "omni.isaac.ros2_bridge",
