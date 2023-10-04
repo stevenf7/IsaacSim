@@ -102,7 +102,7 @@ class ContactSensor(BaseSensor):
         cs_sensor_reading = self._contact_sensor_interface.get_sensor_reading(self.prim_path)
         cs_raw_data = self._contact_sensor_interface.get_contact_sensor_raw_data(self.prim_path)
         if cs_sensor_reading.is_valid:
-            self._current_frame["in_contact"] = bool(cs_sensor_reading.inContact)
+            self._current_frame["in_contact"] = bool(cs_sensor_reading.in_contact)
             self._current_frame["force"] = float(cs_sensor_reading.value)
             self._current_frame["time"] = float(cs_sensor_reading.time)
             # self._current_frame["physics_step"] = float(self._number_of_physics_steps)

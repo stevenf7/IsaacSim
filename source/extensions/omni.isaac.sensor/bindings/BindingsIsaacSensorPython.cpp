@@ -104,7 +104,10 @@ PYBIND11_MODULE(_sensor, m)
         .def_readwrite("time", &CsReading::time, "timestamp of the reading, in seconds . (:obj:`float`)")
         .def_readwrite("value", &CsReading::value, "sensor force reading value. (:obj:`float`)")
         .def_readwrite(
-            "inContact", &CsReading::inContact, "boolean that flags if the sensor registers a contact. (:obj:`bool`)")
+            "inContact", &CsReading::inContact,
+            "**Deprecation Alert, inContact will be renamed to in_contact. boolean that flags if the sensor registers a contact. (:obj:`bool`)")
+        .def_readwrite(
+            "in_contact", &CsReading::inContact, "boolean that flags if the sensor registers a contact. (:obj:`bool`)")
         .def_readwrite("is_valid", &CsReading::is_valid, "validity of the data. (:obj:`bool`)");
 
     py::class_<IsReading>(m, "IsSensorReading", "Imu Sensor Reading")

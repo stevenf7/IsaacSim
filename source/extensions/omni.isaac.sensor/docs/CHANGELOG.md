@@ -1,4 +1,7 @@
 # Changelog
+## [9.8.0] - 2023-10-04
+### Changed
+- Changed sensor type member names to adhere to naming conventions, inContact to in_contact
 
 ## [9.7.3] - 2023-10-03
 ### Changed
