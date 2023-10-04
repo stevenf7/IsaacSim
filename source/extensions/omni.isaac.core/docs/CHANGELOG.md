@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.10.0] - 2023-10-04
+### Added
+- euler_to_rot_matrix returns the pre multiplicative matrix and not the post multiplicative one as before and in numpy format intead of Gf.Rotation.
+- added extrinsic argument to torch rotation utils: compute_rot, quat_from_euler_xyz, get_euler_xyz, euler_angles_to_quats
+- added methods to torch rotation utils: quat_to_rot_matrices, matrices_to_euler_angles
+- added extrinsic argument to numpy rotation utils: quats_to_euler_angles, euler_angles_to_quats
+- added extrinsic argument to rotation utils: euler_angles_to_quat, quat_to_euler_angles, matrix_to_euler_angles, euler_to_rot_matrix
+- 
 ## [2.9.4] - 2023-09-30
 ### Fixed
 - Correctly set GPU pipeline when it is missing from SimConfig

@@ -229,7 +229,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
                 np.array(self._is.get_sensor_sim_reading(self.arm_path + "/arm_imu").orientation), True
             )[0]
             orientation_readings = quat_to_euler_angles(
-                np.array(self._is.get_sensor_readings(self.arm_path + "/arm_imu")[0]["orientation"]), True
+                np.array(self._is.get_sensor_readings(self.arm_path + "/arm_imu")[0]["orientation"].tolist()), True
             )[0]
             orientation = quat_to_euler_angles(
                 np.array(self._is.get_sensor_reading(self.arm_path + "/arm_imu").orientation), True
