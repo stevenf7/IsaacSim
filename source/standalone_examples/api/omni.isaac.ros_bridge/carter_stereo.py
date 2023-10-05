@@ -64,14 +64,14 @@ simulation_context = SimulationContext(stage_units_in_meters=1.0)
 ros_cameras_graph_path = "/World/Carter_ROS/ROS_Cameras"
 
 # Enabling rgb and depth image publishers for left camera. Cameras will automatically publish images each frame
-og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_left.inputs:condition"), True)
-og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_left_rgb.inputs:condition"), True)
-og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_left_depth.inputs:condition"), True)
+og.Controller.set(
+    og.Controller.attribute(ros_cameras_graph_path + "/isaac_create_render_product_left.inputs:enabled"), True
+)
 
 # Enabling rgb and depth image publishers for right camera. Cameras will automatically publish images each frame
-og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_right.inputs:condition"), True)
-og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_right_rgb.inputs:condition"), True)
-og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_right_depth.inputs:condition"), True)
+og.Controller.set(
+    og.Controller.attribute(ros_cameras_graph_path + "/isaac_create_render_product_right.inputs:enabled"), True
+)
 
 
 simulation_context.play()

@@ -54,17 +54,17 @@ simulation_context = SimulationContext(stage_units_in_meters=1.0)
 ros_cameras_graph_path = "/World/Carter_ROS/ROS_Cameras"
 
 # Enabling rgb and depth image publishers for left camera. Cameras will automatically publish images each frame
-og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_left.inputs:condition"), True)
-og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_left_rgb.inputs:condition"), True)
-og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_left_depth.inputs:condition"), True)
+og.Controller.set(
+    og.Controller.attribute(ros_cameras_graph_path + "/isaac_create_render_product_left.inputs:enabled"), True
+)
 
 simulation_context.play()
 simulation_context.step()
 
 # Enabling rgb and depth image publishers for right camera after left cameras are initialized. Cameras will automatically publish images each frame
-og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_right.inputs:condition"), True)
-og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_right_rgb.inputs:condition"), True)
-og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_right_depth.inputs:condition"), True)
+og.Controller.set(
+    og.Controller.attribute(ros_cameras_graph_path + "/isaac_create_render_product_right.inputs:enabled"), True
+)
 
 # Simulate for one second to warm up sim and let everything settle
 for frame in range(60):

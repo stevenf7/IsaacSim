@@ -175,8 +175,12 @@ async def add_carter_ros():
     import omni.graph.core as og
 
     ros_cameras_graph_path = "/Carter/ROS_Cameras"
-    og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_left.inputs:condition"), False)
-    og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_right.inputs:condition"), False)
+    og.Controller.set(
+        og.Controller.attribute(ros_cameras_graph_path + "/isaac_create_render_product_left.inputs:enabled"), False
+    )
+    og.Controller.set(
+        og.Controller.attribute(ros_cameras_graph_path + "/isaac_create_render_product_right.inputs:enabled"), False
+    )
 
     stage = omni.usd.get_context().get_stage()
 

@@ -238,7 +238,7 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
         graph_path = "/Carter/ROS_Cameras"
 
         # Disabling left camera rgb image publisher
-        og.Controller.attribute(graph_path + "/enable_camera_left_rgb.inputs:condition").set(False)
+        og.Controller.attribute(graph_path + "/isaac_create_render_product_left.inputs:enabled").set(False)
 
         # Add Point Cloud publisher in ROS Camera
         try:
@@ -248,10 +248,10 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
                 {
                     keys.CREATE_NODES: [("depthToPCL", "omni.isaac.ros_bridge.ROS1CameraHelper")],
                     keys.CONNECT: [
-                        (graph_path + "/isaac_set_camera_left.outputs:execOut", "depthToPCL.inputs:execIn"),
+                        (graph_path + "/isaac_create_render_product_left.outputs:execOut", "depthToPCL.inputs:execIn"),
                         (graph_path + "/camera_frameId_left.inputs:value", "depthToPCL.inputs:frameId"),
                         (
-                            graph_path + "/isaac_get_viewport_render_product_left.outputs:renderProductPath",
+                            graph_path + "/isaac_create_render_product_left.outputs:renderProductPath",
                             "depthToPCL.inputs:renderProductPath",
                         ),
                     ],
@@ -265,7 +265,9 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
             print(e)
 
         # Enable left camera pipeline
-        og.Controller.set(og.Controller.attribute(graph_path + "/enable_camera_left.inputs:condition"), True)
+        og.Controller.set(
+            og.Controller.attribute(graph_path + "/isaac_create_render_product_left.inputs:enabled"), True
+        )
 
         # acquire the viewport window
         viewport_api = get_active_viewport()
