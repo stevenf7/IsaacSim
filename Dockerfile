@@ -25,7 +25,7 @@
 #
 # Run container:
 # docker run --name isaac-sim --entrypoint bash -it --gpus all -e "ACCEPT_EULA=Y" --rm --network=host \
-#   -v ~/docker/isaac-sim/cache/kit:/isaac-sim/kit/cache/Kit:rw \
+#   -v ~/docker/isaac-sim/cache/kit:/isaac-sim/kit/cache:rw \
 #   -v ~/docker/isaac-sim/cache/ov:/root/.cache/ov:rw \
 #   -v ~/docker/isaac-sim/cache/pip:/root/.cache/pip:rw \
 #   -v ~/docker/isaac-sim/cache/glcache:/root/.cache/nvidia/GLCache:rw \

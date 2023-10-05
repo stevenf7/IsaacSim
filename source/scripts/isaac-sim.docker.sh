@@ -49,7 +49,7 @@ docker run --name isaac-sim --entrypoint bash --gpus all -e "ACCEPT_EULA=${accep
 	-e "OMNI_USER=${omni_user}" -e "OMNI_PASS=${omni_password}" \
 	-e "OMNI_SERVER=${omni_server}" \
     -e "PRIVACY_CONSENT=${privacy_consent}" -e "PRIVACY_USERID=${privacy_userid}" \
-    -v ~/docker/isaac-sim/kit/cache/Kit:/isaac-sim/kit/cache/Kit:rw \
+    -v ~/docker/isaac-sim/kit/cache/Kit:/isaac-sim/kit/cache:rw \
 	-v ~/docker/isaac-sim/cache/ov:/root/.cache/ov:rw \
 	-v ~/docker/isaac-sim/cache/pip:/root/.cache/pip:rw \
 	-v ~/docker/isaac-sim/cache/glcache:/root/.cache/nvidia/GLCache:rw \
