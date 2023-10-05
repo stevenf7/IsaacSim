@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.5.2] - 2023-10-04
+### Fixed
+- Broken asset paths
+
 ## [0.5.1] - 2023-09-13
 ### Fixed
 - Updated path of Kuka KR210 robot to match update to Nucleus Server
