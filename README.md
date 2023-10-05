@@ -290,7 +290,7 @@ To run the container and start Isaac Sim as a headless app:
 ```bash
 docker run --name isaac-sim --entrypoint bash -it --gpus all -e "ACCEPT_EULA=Y" --rm --network=host \
   -e "PRIVACY_CONSENT=Y" -e "PRIVACY_USERID=<nv_email>" \
-  -v ~/docker/isaac-sim/cache/kit:/isaac-sim/kit/cache/Kit:rw \
+  -v ~/docker/isaac-sim/cache/kit:/isaac-sim/kit/cache:rw \
   -v ~/docker/isaac-sim/cache/ov:/root/.cache/ov:rw \
   -v ~/docker/isaac-sim/cache/pip:/root/.cache/pip:rw \
   -v ~/docker/isaac-sim/cache/glcache:/root/.cache/nvidia/GLCache:rw \
@@ -299,7 +299,7 @@ docker run --name isaac-sim --entrypoint bash -it --gpus all -e "ACCEPT_EULA=Y" 
   -v ~/docker/isaac-sim/data:/root/.local/share/ov/data:rw \
   -v ~/docker/isaac-sim/documents:/root/Documents:rw \
   isaac-sim:<version_tag> \
-  ./isaac-sim.headless.native.sh --/persistent/isaac/asset_root/default="omniverse://isaac-dev.ov.nvidia.com" --allow-root
+  ./isaac-sim.headless.native.sh --/persistent/isaac/asset_root/default="omniverse://isaac-dev.ov.nvidia.com" --allow-root -v
 ```
 
 To run the container and start Isaac Sim as a windowed app:
@@ -310,7 +310,7 @@ docker run --name isaac-sim --entrypoint bash -it --gpus all -e "ACCEPT_EULA=Y" 
   -e "PRIVACY_CONSENT=Y" -e "PRIVACY_USERID=<nv_email>" \
   -v $HOME/.Xauthority:/root/.Xauthority \
   -e DISPLAY \
-  -v ~/docker/isaac-sim/cache/kit:/isaac-sim/kit/cache/Kit:rw \
+  -v ~/docker/isaac-sim/cache/kit:/isaac-sim/kit/cache:rw \
   -v ~/docker/isaac-sim/cache/ov:/root/.cache/ov:rw \
   -v ~/docker/isaac-sim/cache/pip:/root/.cache/pip:rw \
   -v ~/docker/isaac-sim/cache/glcache:/root/.cache/nvidia/GLCache:rw \
