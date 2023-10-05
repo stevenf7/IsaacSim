@@ -56,11 +56,9 @@ simulation_context = SimulationContext(stage_units_in_meters=1.0)
 carter_ros_3_cameras_graph_path = "/World/Carter_ROS_3/ROS_Cameras"
 
 # Enabling rgb image publishers for left camera in Carter 3. Cameras will automatically publish images each frame
+
 og.Controller.set(
-    og.Controller.attribute(carter_ros_3_cameras_graph_path + "/enable_camera_left_rgb.inputs:condition"), True
-)
-og.Controller.set(
-    og.Controller.attribute(carter_ros_3_cameras_graph_path + "/enable_camera_left.inputs:condition"), True
+    og.Controller.attribute(carter_ros_3_cameras_graph_path + "/isaac_create_render_product_left.inputs:enabled"), True
 )
 
 simulation_app.update()

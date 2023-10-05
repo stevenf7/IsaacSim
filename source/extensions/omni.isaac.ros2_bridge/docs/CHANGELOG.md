@@ -1,6 +1,10 @@
 # Changelog
 
-## [2.3.0] - 2023-10-03
+## [2.3.2] - 2023-10-04
+### Fixed
+- Carter 1 Unit tests
+
+## [2.3.1] - 2023-10-03
 ### Fixed
 - Windows message for setting PATH
 ## [2.3.0] - 2023-09-26
