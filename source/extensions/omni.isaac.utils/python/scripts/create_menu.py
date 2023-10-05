@@ -301,9 +301,7 @@ class Extension(omni.ext.IExt):
             make_menu_item_description(
                 ext_id,
                 "Evobot",
-                lambda a=weakref.proxy(self): a.create_asset(
-                    "/Users/imadan@nvidia.com/Robots/Evobot/EvoBot.usd", "/Evobot"
-                ),
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Evobot/evobot.usd", "/Evobot"),
             ),
             make_menu_item_description(
                 ext_id,
@@ -326,13 +324,6 @@ class Extension(omni.ext.IExt):
                 "Idealworks iw.hub",
                 lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Robots/Transporter/transporter_sensors.usd", "/iw_hub"
-                ),
-            ),
-            make_menu_item_description(
-                ext_id,
-                "iRobot Create 3",
-                lambda a=weakref.proxy(self): a.create_asset(
-                    "/Users/imadan@nvidia.com/Robots/iRobot/Create 3/iRobot_Create3.usd", "/Create3"
                 ),
             ),
             MenuItemDescription(name="NVIDIA", sub_menu=menu_nvidia),
