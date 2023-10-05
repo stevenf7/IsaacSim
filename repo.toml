@@ -843,7 +843,7 @@ deps_for_isaac = [
   "semantics.schema.editor-0.3.4",
   "omni.importer.mjcf-1.1.0",
   "omni.importer.urdf-1.1.3",
-  "omni.anim.people-0.1.10"
+  "omni.anim.people-0.1.11"
 ]
 
 deps_for_testing = [
