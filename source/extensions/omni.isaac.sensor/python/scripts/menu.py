@@ -34,7 +34,7 @@ class IsaacSensorMenu:
                         sub_menu=[
                             make_menu_item_description(
                                 ext_id,
-                                "Intel Realsense",
+                                "Intel Realsense D455",
                                 lambda a=weakref.proxy(self): create_prim(
                                     prim_path=get_next_free_path("/Realsense", None),
                                     prim_type="Xform",

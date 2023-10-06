@@ -1,4 +1,7 @@
 # Changelog
+## [9.8.1] - 2023-10-05
+### Fixed
+- Realsense D455 menu
 ## [9.8.0] - 2023-10-04
 ### Changed
 - Changed sensor type member names to adhere to naming conventions, inContact to in_contact
@@ -10,6 +13,7 @@
 ## [9.7.2] - 2023-10-03
 ### Fixed
 - Fixed WriterReadRTXLidarData Synthetic Data writer so it sets the render_product_path correctly. 
+
 
 ## [9.7.1] - 2023-09-29
 ### Fixed
