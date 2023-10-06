@@ -1,4 +1,4 @@
-/NVIDIA/Assets/Isaac/20./Isaac/Environments/Hospital/Props/S_WetFloorSign.usd
+/NVIDIA/Assets/Isaac/2023.1.0/Isaac/Environments/Hospital/Props/S_WetFloorSign.usd
 /NVIDIA/Assets/Isaac/2023.1.0/Isaac/Environments/Hospital/Props/SM_BedSideTable_01b.usd
 /NVIDIA/Assets/Isaac/2023.1.0/Isaac/Environments/Hospital/Props/SM_Book_01c.usd
 /NVIDIA/Assets/Isaac/2023.1.0/Isaac/Environments/Hospital/Props/SM_BooksSet_26.usd
