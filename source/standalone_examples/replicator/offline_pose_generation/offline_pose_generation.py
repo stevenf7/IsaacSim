@@ -77,17 +77,15 @@ kit = SimulationApp(launch_config=config_data["CONFIG"])
 import math
 
 import omni.replicator.core as rep
-import omni.timeline as timeline
 from omni.isaac.core import World
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.core.utils.semantics import add_update_semantics
-from omni.isaac.core.utils.stage import is_stage_loading
 from omni.replicator.isaac.scripts.writers import DOPEWriter, YCBVideoWriter
-from omni.syntheticdata import SyntheticData
 
-world = World()
+# Since the simulation is mostly collision checking, a larger physics dt can be used to speed up the object movements
+world = World(physics_dt=1.0 / 30.0)
 world.reset()
 
 from flying_distractors.collision_box import CollisionBox
@@ -167,8 +165,11 @@ class RandomScenario(torch.utils.data.IterableDataset):
         if not self.use_s3 and self.test:
             clean_output_dir(self._output_folder)
 
+        # Disable capture on play and async rendering
         self._carb_settings = carb.settings.get_settings()
         self._carb_settings.set("/omni/replicator/captureOnPlay", False)
+        self._carb_settings.set("/app/asyncRendering", False)
+        self._carb_settings.set("/omni/replicator/asyncRendering", False)
 
         signal.signal(signal.SIGINT, self._handle_exit)
 
@@ -187,9 +188,6 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
         collision_box = self._setup_collision_box()
 
-        # Render a frame to ensure the Replicator Camera's underlying USD attributes are populated.
-        world.render()
-
         world.scene.add(collision_box)
 
         self._setup_distractors(collision_box)
@@ -199,15 +197,17 @@ class RandomScenario(torch.utils.data.IterableDataset):
         if not self.test:
             self._setup_randomizers()
 
-        while is_stage_loading():
+        # Generate the replicator graphs without triggering any writing
+        rep.orchestrator.preview()
+
+        # Update the app a few times to make sure the materials are fully loaded and world scene objects are registered
+        for _ in range(5):
             kit.app.update()
 
-        # setup writer
+        # Setup writer
         self.writer_helper.register_pose_annotator(config_data=config_data)
         self.writer = self.writer_helper.setup_writer(config_data=config_data, writer_config=self.writer_config)
         self.writer.attach([self.render_product])
-
-        world.play()
 
         self.dome_distractors.set_visible(False)
 
@@ -498,6 +498,9 @@ class RandomScenario(torch.utils.data.IterableDataset):
             # Randomize the dome backgrounds
             self._setup_dome_randomizers()
 
+            # Generate the replicator graphs for the DOME dataset without triggering any writing
+            rep.orchestrator.preview()
+
         # Randomize the distractors by applying forces to them and changing their materials
         self.current_distractors.apply_force_to_assets(config_data["FORCE_RANGE"])
         self.current_distractors.randomize_asset_glass_color()
@@ -506,13 +509,12 @@ class RandomScenario(torch.utils.data.IterableDataset):
         for train_part in self.train_parts:
             self.randomize_movement_in_view(train_part)
 
-        # Step physics, avoid objects overlapping each other
-        timeline.get_timeline_interface().play()
-
-        kit.app.update()
+        # Simulate the applied forces for a couple of frames
+        for _ in range(50):
+            world.step(render=False)
 
         print(f"ID: {self.cur_idx}/{self.train_size - 1}")
-        rep.orchestrator.step()
+        rep.orchestrator.step(rt_subframes=4)
         self.cur_idx += 1
 
         # Check if last frame has been reached
