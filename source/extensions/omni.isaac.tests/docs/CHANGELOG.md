@@ -1,3 +1,9 @@
+# Changelog
+
+## [1.13.0] 2023-10-05
+### Changed
+- Changed carter and drive goal carter unit tests to use the NOVA carter (V2.4) asset
+
 ## [1.12.0] 2023-08-28
 ### Added
 - test_forklift_articulations.py for testing drive & lift of Forklift C model
@@ -11,7 +17,6 @@
 - test_randomizer_snippets.py containing replicator alternative randomizer examples from the docs 
 - Missing utility snippet from the docs
 
-# Changelog
 ## [1.10.4] - 2023-08-21
 ### Fixed
 - Fixed drive_goal_carter_v2 tests to use the correct timecode setting
