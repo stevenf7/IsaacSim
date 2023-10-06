@@ -1,0 +1,96 @@
+{
+    "GXFPublishRTXRangeScan": {
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",
+        "description": [
+            "This node publishes range scan messages to Isaac SDK"
+        ],
+        "metadata": {
+            "uiName": "GXF Publish RTX Range Scan"
+        },
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacGxf:publisher",
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "The input execution port"
+            },
+            "context": {
+                "type": "uint64",
+                "description": "GXF context handle. Default of zero will use the default global context",
+                "default": 0
+            },
+            "outputEntity": {
+                "type": "string",
+                "description": "Name of entity containing publishing component."
+            },
+            "outputComponent": {
+                "type": "string",
+                "description": "Name of component publishing message."
+            },
+            "poseFrame": {
+                "type": "string",
+                "description": "Name of message pose frame in Atlas.",
+                "default" : "robot/lidar"
+            },
+            "tickTimestamps":{
+                "type": "uint64[]",
+                "description": "timestamp of the tick in Ns",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "numBeams": {
+                "type": "uint64",
+                "description": "The number of lidar beams being output",
+                "default": 0
+            },
+            "depthRange": {
+                "type": "float[2]",
+                "description": "The min and max range for sensor to detect a hit [min, max]",
+                "default": [0, 0]
+            },
+            "azimuths":{
+                "type": "float[]",
+                "description": "azimuth in rad [-pi,pi]",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "elevations":{
+                "type": "float[]",
+                "description": "elevation in rad [-pi/2, pi/2]",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "distances":{
+                "type": "float[]",
+                "description": "distance in m",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "intensities":{
+                "type": "float[]",
+                "description": "intensity [0,1]",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "deltaTimes":{
+                "type": "uint[]",
+                "description": "delta time in ns from the head (relative to tick timestamp)",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "ticks":{
+                "type": "uint[]",
+                "description": "tick of point",
+                "memoryType": "cpu",
+                "default": []
+            }
+        },
+        "outputs": {
+            "execOut": {
+                "type": "execution",
+                "description": "Output execution trigger"
+            }
+        }
+    }
+}

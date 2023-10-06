@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.2.1"
+version = "1.3.0"
 title = "GXF Bridge"
 description = "Communication bridge for the Isaac SDK GXF backend"
 authors = ["Isaac Sim Team"]

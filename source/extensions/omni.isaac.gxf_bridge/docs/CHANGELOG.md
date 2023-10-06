@@ -1,4 +1,10 @@
 # Changelog
+
+## [1.3.0] - 2023-09-25
+### Added
+- RTX Lidar helper
+- ReadRTXRangeScan node to publish RTX lidar data
+
 ## [1.2.1] - 2023-09-25
 ### Fixed
 - Pose tree and pose tree frame map builder nodes can accept multiple target prims as input
