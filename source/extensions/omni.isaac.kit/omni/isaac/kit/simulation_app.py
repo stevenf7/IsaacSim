@@ -454,6 +454,9 @@ class SimulationApp:
             if rep.orchestrator.get_status() not in [rep.orchestrator.Status.STOPPED, rep.orchestrator.Status.STOPPING]:
                 rep.orchestrator.stop()
             rep.orchestrator.wait_until_complete()
+
+            # Disable capture on play to avoid replicator engaging on any new timeline events
+            rep.orchestrator.set_capture_on_play(False)
         except Exception:
             pass
         # workaround for exit issues, clean the stage first:
