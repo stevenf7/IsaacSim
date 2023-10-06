@@ -23,7 +23,7 @@
             "keepOnlyPositiveDistance": {
                 "type": "bool",
                 "description": "Keep points only if the return distance is > 0",
-                "default": true,
+                "default": false,
                 "uiName": "Keep Only Positive Distance"
             },
             "renderProductPath": {
@@ -51,6 +51,11 @@
                 "description": "The number of returns per single channel firing",
                 "default": 0
             },
+            "numBeams": {
+                "type": "uint64",
+                "description": "The number of lidar beams being output",
+                "default": 0
+            },
             "depthRange": {
                 "type": "float[2]",
                 "description": "The min and max range for sensor to detect a hit [min, max]",
@@ -58,7 +63,7 @@
             },
             "tickAzimuths":{
                 "type": "float[]",
-                "description": "azimuth origin of a tick in rad [-pi,pi]",
+                "description": "azimuth origin of a tick in deg [0, 360)",
                 "memoryType": "cpu",
                 "default": []
             },
@@ -76,13 +81,13 @@
             },
             "azimuths":{
                 "type": "float[]",
-                "description": "azimuth in rad [-pi,pi]",
+                "description": "azimuth in deg [0, 360)",
                 "memoryType": "cpu",
                 "default": []
             },
             "elevations":{
                 "type": "float[]",
-                "description": "elevation in rad [-pi/2, pi/2]",
+                "description": "elevation in deg [-90, 90]",
                 "memoryType": "cpu",
                 "default": []
             },

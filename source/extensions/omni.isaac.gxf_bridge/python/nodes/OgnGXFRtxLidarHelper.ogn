@@ -1,0 +1,52 @@
+{
+    "GXFRtxLidarHelper" : {
+        "version" : 1,
+        "icon" : "icons/isaac-sim.svg",
+        "description" : "Handles automation of Lidar Sensor pipeline",
+        "language" : "Python",
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacGxf",
+        "metadata" : {
+            "uiName" : "GXF RTX Lidar Helper"
+        },
+        "inputs": {
+            "execIn" : {
+                "type" : "execution",
+                "description": "Triggering this causes the sesnor pipeline to be generated"
+            },
+            "enabled": {
+                "type": "bool",
+                "description": "True to enable the lidar helper, False to disable",
+                "default": true
+            },
+            "context": {
+                "type": "uint64",
+                "description": "GXF context handle, Default of zero will use the default global context",
+                "default" : 0
+            },
+            "outputEntity": {
+                "type": "string",
+                "description": "The name of the entity used to publish data"
+            },
+            "outputComponent": {
+                "type": "string",
+                "description": "The name of the component used to publish data"
+            },
+            "poseFrame": {
+                "type": "string",
+                "description": "FrameId for Atlas",
+                "default" : "robot/lidar"
+            },
+            "renderProductPath" : {
+                "type" : "token",
+                "description" : "Name of the render product path to publish lidar data"
+            },
+            "resetSimulationTimeOnStop": {
+                "type": "bool",
+                "description": "If True the simulation time will reset when stop is pressed, False means time increases monotonically",
+                "uiName": "Reset Time On Stop",
+                "default": true
+            }
+        }
+    }
+}
