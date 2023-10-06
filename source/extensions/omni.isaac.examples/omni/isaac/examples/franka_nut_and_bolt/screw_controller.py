@@ -56,7 +56,7 @@ class ScrewController(BaseController):
         self._t = 0
         self._events_dt = events_dt
         if self._events_dt is None:
-            self._events_dt = [0.005, 0.1, 0.05, 0.005, 0.1, 0.01]
+            self._events_dt = [0.005, 0.05, 0.05, 0.005, 0.05, 0.01]
         else:
             if not isinstance(self._events_dt, np.ndarray) and not isinstance(self._events_dt, list):
                 raise Exception("events dt need to be list or numpy array")
@@ -170,7 +170,7 @@ class ScrewController(BaseController):
             self._event = (self._event + 1) % 6
             self._t = 0
             if self._event == 5:
-                if not self._start and (bolt_position[2] - self._screw_position[2] > 0.0198):
+                if not self._start and (bolt_position[2] - self._screw_position[2] > 0.02):
                     self.pause()
                     return ArticulationAction(joint_positions=[None] * current_joint_positions.shape[0])
                 if self._start:
