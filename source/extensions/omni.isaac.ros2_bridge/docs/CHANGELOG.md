@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.3.3] - 2023-10-05
+### Fixed
+- Bug with  ROS2 windows loading internal libs
+
 ## [2.3.2] - 2023-10-04
 ### Fixed
 - Carter 1 Unit tests
