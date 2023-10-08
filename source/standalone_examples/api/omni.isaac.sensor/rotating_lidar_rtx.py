@@ -36,10 +36,11 @@ if assets_root_path is None:
     carb.log_error("Could not find Isaac Sim assets folder")
     simulation_app.close()
     sys.exit()
-asset_path = assets_root_path + "/Isaac/Robots/Carter/carter_v2.usd"
+asset_path = assets_root_path + "/Isaac/Robots/Carter/carter_v2_4_sensors.usd"
 my_carter = my_world.scene.add(
     WheeledRobot(
         prim_path="/World/Carter",
+        robot_path="Carter_V24",
         name="my_carter",
         wheel_dof_names=["joint_wheel_left", "joint_wheel_right"],
         create_robot=True,
@@ -49,7 +50,9 @@ my_carter = my_world.scene.add(
 )
 
 # config_file_name="Example_Rotary"
-my_lidar = my_world.scene.add(LidarRtx(prim_path="/World/Carter/chassis_link/stereo_cam_right/lidar", name="lidar"))
+my_lidar = my_world.scene.add(
+    LidarRtx(prim_path="/World/Carter/Carter_V24/chassis_link/front_hawk/right/lidar_rig/lidar", name="lidar")
+)
 
 cube_1 = my_world.scene.add(
     DynamicCuboid(prim_path="/World/cube", name="cube_1", position=np.array([2, 2, 2.5]), scale=np.array([20, 0.2, 5]))
