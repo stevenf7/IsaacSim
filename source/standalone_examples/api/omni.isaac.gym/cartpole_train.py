@@ -19,6 +19,15 @@ except Exception as e:
     )
     exit()
 
+try:
+    import tensorboard
+except Exception as e:
+    carb.log_error(e)
+    carb.log_error(
+        "please install tensorboard in the current python environment or run the following to install into the builtin python environment ./python.sh -m pip install tensorboard"
+    )
+    exit()
+
 # create isaac environment
 from omni.isaac.gym.vec_env import VecEnvBase
 
