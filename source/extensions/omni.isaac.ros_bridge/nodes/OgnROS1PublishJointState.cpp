@@ -12,6 +12,7 @@
 // clang-format on
 
 #include "omni/isaac/utils/UsdUtilities.h"
+#include "pxr/usd/usdPhysics/joint.h"
 #include "sensor_msgs/JointState.h"
 
 #include <carb/Framework.h>
@@ -23,7 +24,6 @@
 #include <omni/isaac/utils/Math.h>
 
 #include <OgnROS1PublishJointStateDatabase.h>
-
 
 class OgnROS1PublishJointState : public RosNode
 {
@@ -109,12 +109,12 @@ public:
             return true;
         }
 
-        state.publishJointStates(db);
+        state.publishJointStates(db, context);
         return true;
     }
 
 
-    void publishJointStates(OgnROS1PublishJointStateDatabase& db)
+    void publishJointStates(OgnROS1PublishJointStateDatabase& db, const GraphContextObj& context)
     {
         double stageUnits = 1.0 / mUnitScale;
         sensor_msgs::JointState msg;
@@ -143,6 +143,9 @@ public:
         mPrevJointPosition.resize(num_dofs);
         mCalculatedJointVelocity.resize(num_dofs);
 
+        long stageId = context.iContext->getStageId(context);
+        auto stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
+
         if (mStates != nullptr)
         {
             for (int j = 0; j < num_dofs; j++)
@@ -153,25 +156,38 @@ public:
 
                 omni::isaac::dynamic_control::DcHandle dof =
                     mDynamicControlPtr->getArticulationDof(mArticulationHandle, j);
+
                 if (dof)
                 {
                     msg.name.push_back(mDynamicControlPtr->getDofName(dof));
+
+                    // sign check
+                    mParentName = mDynamicControlPtr->getRigidBodyName(mDynamicControlPtr->getDofParentBody(dof));
+                    const char* jointPath = mDynamicControlPtr->getDofPath(dof);
+                    pxr::SdfPathVector targets;
+                    pxr::UsdPhysicsJoint joint = pxr::UsdPhysicsJoint::Get(stage, pxr::SdfPath(jointPath));
+                    joint.GetBody0Rel().GetTargets(&targets);
+                    const char* body0Name = targets.at(0).GetName().c_str();
+                    signCheck = (strcmp(mParentName, body0Name) == 0) ? 1 : -1;
+                    // printf("signCheck %d\n", signCheck);
                 }
+
                 if (mDofProps[j].type == omni::isaac::dynamic_control::DcDofType::eTranslation)
                 {
-                    msg.position.push_back(omni::isaac::utils::math::roundNearest(mStates[j].pos * stageUnits, 10000.0)); // m
+                    msg.position.push_back(
+                        omni::isaac::utils::math::roundNearest(mStates[j].pos * stageUnits * signCheck, 10000.0)); // m
                     msg.velocity.push_back(omni::isaac::utils::math::roundNearest(
-                        mCalculatedJointVelocity[j] * stageUnits, 10000.0)); // m/s
-                    msg.effort.push_back(
-                        omni::isaac::utils::math::roundNearest(mStates[j].effort * stageUnits, 10000.0)); // N
+                        mCalculatedJointVelocity[j] * stageUnits * signCheck, 10000.0)); // m/s
+                    msg.effort.push_back(omni::isaac::utils::math::roundNearest(
+                        mStates[j].effort * stageUnits * signCheck, 10000.0)); // N
                 }
                 else
                 {
-                    msg.position.push_back(omni::isaac::utils::math::roundNearest(mStates[j].pos, 10000.0)); // rad
-                    msg.velocity.push_back(
-                        omni::isaac::utils::math::roundNearest(mCalculatedJointVelocity[j], 10000.0)); // rad/s
+                    msg.position.push_back(omni::isaac::utils::math::roundNearest(mStates[j].pos * signCheck, 10000.0)); // rad
+                    msg.velocity.push_back(omni::isaac::utils::math::roundNearest(
+                        mCalculatedJointVelocity[j] * signCheck, 10000.0)); // rad/s
                     msg.effort.push_back(omni::isaac::utils::math::roundNearest(
-                        mStates[j].effort * stageUnits * stageUnits, 10000.0)); // N*m
+                        mStates[j].effort * stageUnits * stageUnits * signCheck, 10000.0)); // N*m
                 }
             }
             mPublisher->publish(msg);
@@ -208,6 +224,9 @@ private:
     std::vector<float> mCalculatedJointVelocity;
     omni::isaac::dynamic_control::DcDofState* mStates = nullptr;
     std::vector<omni::isaac::dynamic_control::DcDofProperties> mDofProps;
+
+    const char* mParentName;
+    int signCheck = 1;
 
     double mUnitScale = 1;
     double mPreviousTimeStamp = 0;

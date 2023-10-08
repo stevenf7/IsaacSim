@@ -10,8 +10,8 @@
 // clang-format off
 #include "UsdPCH.h"
 // clang-format on
-
 #include "Ros2Foxy.h"
+#include "pxr/usd/usdPhysics/joint.h"
 #include "sensor_msgs/image_encodings.hpp"
 
 #include <carb/logging/Log.h>
@@ -605,6 +605,7 @@ const void* Ros2JointStateMessageFoxy::getTypeSupportHandle()
 void Ros2JointStateMessageFoxy::fillData(const double& timeStamp,
                                          omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr,
                                          omni::isaac::dynamic_control::DcHandle mArticulationHandle,
+                                         pxr::UsdStageWeakPtr mStage,
                                          std::vector<omni::isaac::dynamic_control::DcDofProperties>& mDofProps,
                                          std::vector<float>& mPrevJointPosition,
                                          std::vector<float>& mCalculatedJointVelocity,
@@ -644,30 +645,41 @@ void Ros2JointStateMessageFoxy::fillData(const double& timeStamp,
             mPrevJointPosition[j] = mStates[j].pos;
 
             omni::isaac::dynamic_control::DcHandle dof = mDynamicControlPtr->getArticulationDof(mArticulationHandle, j);
+            int signCheck = 1;
+
             if (dof)
             {
                 Ros2BackendFoxy::set_string(mDynamicControlPtr->getDofName(dof), jointState_msg->name.data[j]);
+
+                const char* mParentName = mDynamicControlPtr->getRigidBodyName(mDynamicControlPtr->getDofParentBody(dof));
+                const char* jointPath = mDynamicControlPtr->getDofPath(dof);
+                pxr::SdfPathVector targets;
+                pxr::UsdPhysicsJoint joint = pxr::UsdPhysicsJoint::Get(mStage, pxr::SdfPath(jointPath));
+                joint.GetBody0Rel().GetTargets(&targets);
+                const char* body0Name = targets.at(0).GetName().c_str();
+                signCheck = (strcmp(mParentName, body0Name) == 0) ? 1 : -1;
             }
             if (mDofProps[j].type == omni::isaac::dynamic_control::DcDofType::eTranslation)
             {
                 jointState_msg->position.data[j] =
-                    omni::isaac::utils::math::roundNearest(mStates[j].pos * stageUnits, 10000.0); // m
+                    omni::isaac::utils::math::roundNearest(mStates[j].pos * stageUnits * signCheck, 10000.0); // m
 
-                jointState_msg->velocity.data[j] =
-                    omni::isaac::utils::math::roundNearest(mCalculatedJointVelocity[j] * stageUnits, 10000.0); // m/s
+                jointState_msg->velocity.data[j] = omni::isaac::utils::math::roundNearest(
+                    mCalculatedJointVelocity[j] * stageUnits * signCheck, 10000.0); // m/s
 
                 jointState_msg->effort.data[j] =
-                    omni::isaac::utils::math::roundNearest(mStates[j].effort * stageUnits, 10000.0); // N
+                    omni::isaac::utils::math::roundNearest(mStates[j].effort * stageUnits * signCheck, 10000.0); // N
             }
             else
             {
-                jointState_msg->position.data[j] = omni::isaac::utils::math::roundNearest(mStates[j].pos, 10000.0); // rad
+                jointState_msg->position.data[j] =
+                    omni::isaac::utils::math::roundNearest(mStates[j].pos * signCheck, 10000.0); // rad
 
                 jointState_msg->velocity.data[j] =
-                    omni::isaac::utils::math::roundNearest(mCalculatedJointVelocity[j], 10000.0); // rad/s
+                    omni::isaac::utils::math::roundNearest(mCalculatedJointVelocity[j] * signCheck, 10000.0); // rad/s
 
-                jointState_msg->effort.data[j] =
-                    omni::isaac::utils::math::roundNearest(mStates[j].effort * stageUnits * stageUnits, 10000.0); // N*m
+                jointState_msg->effort.data[j] = omni::isaac::utils::math::roundNearest(
+                    mStates[j].effort * stageUnits * stageUnits * signCheck, 10000.0); // N*m
             }
         }
     }

@@ -14,6 +14,7 @@ if sys.platform != "win32":
     from .test_clock import *
     from .test_core import *
     from .test_differential_base import *
+    from .test_joint_state import *
     from .test_lidar import *
     from .test_point_cloud import *
     from .test_pose_tree import *

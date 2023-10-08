@@ -113,11 +113,11 @@ public:
             return true;
         }
 
-        return state.publishJointStates(db);
+        return state.publishJointStates(db, context);
     }
 
 
-    bool publishJointStates(OgnROS2PublishJointStateDatabase& db)
+    bool publishJointStates(OgnROS2PublishJointStateDatabase& db, const GraphContextObj& context)
     {
         auto& state = db.internalState<OgnROS2PublishJointState>();
 
@@ -125,8 +125,10 @@ public:
         double dt = db.inputs.timeStamp() - mPreviousTimeStamp;
         mPreviousTimeStamp = db.inputs.timeStamp();
 
+        long stageId = context.iContext->getStageId(context);
+        mStage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
 
-        state.mMessage->fillData(db.inputs.timeStamp(), mDynamicControlPtr, mArticulationHandle, mDofProps,
+        state.mMessage->fillData(db.inputs.timeStamp(), mDynamicControlPtr, mArticulationHandle, mStage, mDofProps,
                                  mPrevJointPosition, mCalculatedJointVelocity, dt, stageUnits);
         state.mPublisher.get()->publish(state.mMessage->ptr());
         return true;
@@ -143,6 +145,7 @@ public:
     {
         mResetJointState = true;
         mStates = nullptr;
+        mStage = nullptr;
         mDofProps.clear();
         mPrevJointPosition.clear();
         mCalculatedJointVelocity.clear();
@@ -155,6 +158,7 @@ private:
     std::shared_ptr<Ros2Publisher> mPublisher = nullptr;
     std::shared_ptr<Ros2JointStateMessage> mMessage = nullptr;
 
+    pxr::UsdStageWeakPtr mStage = nullptr;
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
     omni::isaac::dynamic_control::DcHandle mArticulationHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
     pxr::SdfPath mArticulationPath;
