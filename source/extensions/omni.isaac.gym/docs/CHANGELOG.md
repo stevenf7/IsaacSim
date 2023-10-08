@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.8.4] - 2023-10-06
+### Fixed
+- Close app if sim is terminated
+- Handle ctrl+c events on shutdown
+
 ## [0.8.3] - 2023-09-26
 ### Changed
 - Enable fabric in app file since updateToUsd is set to False
