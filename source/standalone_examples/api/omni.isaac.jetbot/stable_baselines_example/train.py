@@ -26,6 +26,7 @@ if args.test is True:
     import omni.kit.pipapi
 
     omni.kit.pipapi.install("stable-baselines3==2.0.0", module="stable_baselines3")
+    omni.kit.pipapi.install("tensorboard")
 
 # import stable baselines
 try:
@@ -35,10 +36,18 @@ try:
 except Exception as e:
     carb.log_error(e)
     carb.log_error(
-        "please install stable-baselines3 in the current python environment or run the following to install into the builtin python environment ./python.sh -m pip install stable-baselines3 "
+        "please install stable-baselines3 in the current python environment or run the following to install into the builtin python environment ./python.sh -m pip install stable-baselines3"
     )
     exit()
 
+try:
+    import tensorboard
+except Exception as e:
+    carb.log_error(e)
+    carb.log_error(
+        "please install tensorboard in the current python environment or run the following to install into the builtin python environment ./python.sh -m pip install tensorboard"
+    )
+    exit()
 
 policy_kwargs = dict(activation_fn=th.nn.ReLU, net_arch=[dict(vf=[128, 128, 128], pi=[128, 128, 128])])
 policy = MlpPolicy
