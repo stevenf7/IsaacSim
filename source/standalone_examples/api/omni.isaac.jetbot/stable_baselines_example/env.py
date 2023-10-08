@@ -136,7 +136,7 @@ class JetBotEnv(gymnasium.Env):
         jetbot_linear_velocity = self.jetbot.get_linear_velocity()
         jetbot_angular_velocity = self.jetbot.get_angular_velocity()
         goal_world_position, _ = self.goal.get_world_pose()
-        return np.concatenate(
+        obs = np.concatenate(
             [
                 jetbot_world_position,
                 jetbot_world_orientation,
@@ -145,6 +145,7 @@ class JetBotEnv(gymnasium.Env):
                 goal_world_position,
             ]
         )
+        return obs
 
     def render(self, mode="human"):
         return
