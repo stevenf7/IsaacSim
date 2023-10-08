@@ -46,7 +46,7 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
 
      links {
         "gf", "sdf", "usdGeom", "usdUtils", "omni.usd", "actionlib", "tf2", "tf2_ros", "roscpp" , "rangeSensorSchema",
-        "carb", "isaacSensorSchema"
+        "carb", "isaacSensorSchema", "usdPhysics"
     }
 
     filter { "configurations:debug" }

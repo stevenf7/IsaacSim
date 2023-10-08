@@ -156,6 +156,7 @@ public:
     virtual void fillData(const double& timeStamp,
                           omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr,
                           omni::isaac::dynamic_control::DcHandle mArticulationHandle,
+                          pxr::UsdStageWeakPtr mStage,
                           std::vector<omni::isaac::dynamic_control::DcDofProperties>& mDofProps,
                           std::vector<float>& mPrevJointPosition,
                           std::vector<float>& mCalculatedJointVelocity,

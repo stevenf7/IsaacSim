@@ -5,8 +5,11 @@
 - Bug with  ROS2 windows loading internal libs
 
 ## [2.3.2] - 2023-10-04
+### Added
+- Tests for JointState Publisher
 ### Fixed
 - Carter 1 Unit tests
+- JointState Publisher sign correction when a joint's parents are in reversed order 
 
 ## [2.3.1] - 2023-10-03
 ### Fixed

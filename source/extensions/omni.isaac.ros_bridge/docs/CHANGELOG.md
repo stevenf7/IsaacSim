@@ -1,8 +1,13 @@
 # Changelog
 
 ## [1.14.9] - 2023-10-04
+
+### Added
+- Tests for JointState Publisher
 ### Fixed
 - Carter 1 Unit tests
+- JointState Publisher sign correction when a joint's parents are in reversed order 
+
 
 ## [1.14.8] - 2023-09-29
 ### Added
