@@ -1,4 +1,7 @@
 # Changelog
+## [0.5.3] - 2023-10-06
+### Added
+- Carter V2.4 asset path, removed Carter V2 and V2.3
 
 ## [0.5.2] - 2023-10-04
 ### Fixed

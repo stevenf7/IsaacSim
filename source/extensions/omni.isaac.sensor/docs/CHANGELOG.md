@@ -1,7 +1,11 @@
 # Changelog
-## [9.8.1] - 2023-10-05
+
+## [9.8.1] - 2023-10-06
 ### Fixed
 - Realsense D455 menu
+### Changed
+- Updated assets to use carter v2.4
+
 ## [9.8.0] - 2023-10-04
 ### Changed
 - Changed sensor type member names to adhere to naming conventions, inContact to in_contact

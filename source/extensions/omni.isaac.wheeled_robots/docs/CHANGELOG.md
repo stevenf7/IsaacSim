@@ -1,4 +1,8 @@
 # Changelog
+## [0.7.1] - 2023-10-06
+### Changed
+- wheeled robot class can now accept a relative path from the default prim to the robot prim when the robot is not the default prim
+
 ## [0.7.0] - 2023-09-06
 ### Added
 - Ackermann Steering OmniGraph node

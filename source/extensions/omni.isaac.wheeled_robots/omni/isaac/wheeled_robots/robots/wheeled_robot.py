@@ -6,6 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+import re
 from typing import Optional
 
 import carb
@@ -20,6 +21,7 @@ class WheeledRobot(Robot):
 
     Args:
         prim_path (str): [description]
+        robot_path (str): relative path from prim path to the robot.
         name (str): [description]
         wheel_dof_names ([str, str]): name of the wheels, [left,right].
         wheel_dof_indices: ([int, int]): indices of the wheels, [left, right]
@@ -32,6 +34,7 @@ class WheeledRobot(Robot):
     def __init__(
         self,
         prim_path: str,
+        robot_path: Optional[str] = None,
         wheel_dof_names: Optional[str] = None,
         wheel_dof_indices: Optional[int] = None,
         name: str = "wheeled_robot",
@@ -50,6 +53,13 @@ class WheeledRobot(Robot):
                     carb.log_error("no valid usd path defined to create new robot")
             else:
                 carb.log_error("no prim at path %s", prim_path)
+
+        if robot_path is not None:
+            robot_path = "/" + robot_path
+            # regex: remove all prefixing "/", need at least one prefix "/" to work 
+            robot_path = re.sub("^([^\/]*)\/*", "", "/" + robot_path)
+            prim_path = prim_path + "/" + robot_path
+
         super().__init__(
             prim_path=prim_path, name=name, position=position, orientation=orientation, articulation_controller=None
         )
