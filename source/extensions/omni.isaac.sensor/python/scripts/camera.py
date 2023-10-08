@@ -1494,13 +1494,22 @@ def get_all_camera_objects(root_prim: str = "/"):
     camera_prims = get_all_matching_child_prims(
         prim_path=root_prim, predicate=lambda prim: get_prim_type_name(prim) == "Camera"
     )
+    # Filter LiDAR sensors
     camera_prims = [prim for prim in camera_prims if not prim.HasAPI(IsaacRtxLidarSensorAPI)]
+
+    camera_names = []
+    for prim in camera_prims:
+        camera_path_split = get_prim_path(prim).split("/")
+        camera_names.append(camera_path_split[-1])
+
+    # check if camera names are unique, if not, use full camera prim path when naming Camera object
+    use_camera_names = len(set(camera_names)) == len(camera_names)
 
     # Create a "Camera" object for them
     camera_objects = []
-    for prim in camera_prims:
-        camera_path_split = get_prim_path(prim).split("/")
-        camera = Camera(prim_path=get_prim_path(prim), name=camera_path_split[-1])
+    for i, prim in enumerate(camera_prims):
+        camera_name = camera_names[i] if use_camera_names else get_prim_path(prim)
+        camera = Camera(prim_path=get_prim_path(prim), name=camera_name)
         camera_objects.append(camera)
 
     return camera_objects

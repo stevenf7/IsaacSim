@@ -1,5 +1,9 @@
 # Changelog
 
+## [9.9.0] - 2023-10-08
+### Changed
+- get_all_camera_objects() now ensures that camera names are unique 
+
 ## [9.8.1] - 2023-10-06
 ### Fixed
 - Realsense D455 menu
