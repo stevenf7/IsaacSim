@@ -274,13 +274,10 @@ class Extension(omni.ext.IExt):
             ),
             make_menu_item_description(
                 ext_id,
-                "Carter V2",
-                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Carter/carter_v2.usd", "/Carter_v2"),
-            ),
-            make_menu_item_description(
-                ext_id,
-                "Carter V2.3",
-                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Carter/carter_v2_3.usd", "/Carter_v2_3"),
+                "Carter V2.4",
+                lambda a=weakref.proxy(self): a.create_asset(
+                    "/Isaac/Robots/Carter/carter_v2_4_sensors.usd", "/Carter_V24"
+                ),
             ),
             make_menu_item_description(
                 ext_id,

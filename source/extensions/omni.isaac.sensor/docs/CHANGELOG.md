@@ -1,4 +1,15 @@
 # Changelog
+
+## [9.9.0] - 2023-10-08
+### Changed
+- get_all_camera_objects() now ensures that camera names are unique 
+
+## [9.8.1] - 2023-10-06
+### Fixed
+- Realsense D455 menu
+### Changed
+- Updated assets to use carter v2.4
+
 ## [9.8.0] - 2023-10-04
 ### Changed
 - Changed sensor type member names to adhere to naming conventions, inContact to in_contact
@@ -10,6 +21,7 @@
 ## [9.7.2] - 2023-10-03
 ### Fixed
 - Fixed WriterReadRTXLidarData Synthetic Data writer so it sets the render_product_path correctly. 
+
 
 ## [9.7.1] - 2023-09-29
 ### Fixed
@@ -40,6 +52,7 @@
 ## [9.6.0] - 2023-09-25
 ### Added
 - depthRange output to IsaacReadRTXLidarData
+- numBeams output to IsaacReadRTXLidarData
 
 ## [9.5.1] - 2023-09-20
 ### Fixed

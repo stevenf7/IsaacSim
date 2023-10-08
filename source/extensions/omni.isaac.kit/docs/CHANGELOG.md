@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.4] - 2023-10-06
+### FIXED
+- Fix potential error on Kit shutdown when Replicator capture on play is enabled
+
 ## [1.4.3] - 2023-08-22
 ### Fixed
 - Missing comma in sync load options

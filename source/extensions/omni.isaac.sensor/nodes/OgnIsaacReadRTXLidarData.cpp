@@ -99,7 +99,7 @@ public:
         };
         // state.rotaryProfile.reportRateBaseHz; // 3600 for a 10Hz lidar that fires one tick per degree.
         // state.rotaryProfile.scanRateBaseHz; // 10 for a 10Hz lidar
-
+        db.outputs.numBeams() = outSize;
 
 #define _DEF_OUT_VAR(outName, outSz)                                                                                   \
     auto& outName = db.outputs.outName();                                                                              \

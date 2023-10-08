@@ -1,8 +1,19 @@
 # Changelog
 
+## [2.3.4] - 2023-10-07
+### Changed
+- Set ROS2 Context node to read ROS_DOMAIN_ID from env vars by default
+
+## [2.3.3] - 2023-10-05
+### Fixed
+- Bug with  ROS2 windows loading internal libs
+
 ## [2.3.2] - 2023-10-04
+### Added
+- Tests for JointState Publisher
 ### Fixed
 - Carter 1 Unit tests
+- JointState Publisher sign correction when a joint's parents are in reversed order 
 
 ## [2.3.1] - 2023-10-03
 ### Fixed

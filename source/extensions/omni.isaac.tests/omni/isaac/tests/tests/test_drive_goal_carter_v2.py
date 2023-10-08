@@ -40,15 +40,8 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
 
         self._extension_path = get_extension_path_from_name("omni.isaac.tests")
 
-        # setup carter_v2:
-
-        # open local carter_v2
-        # (result, error) = await omni.usd.get_context().open_stage_async(
-        #     self._extension_path + "/data/tests/carter_v2.usd"
-        # )
-
         # add in carter (from nucleus)
-        self.usd_path = self._assets_root_path + "/Isaac/Robots/Carter/carter_v2.usd"
+        self.usd_path = self._assets_root_path + "/Isaac/Robots/Carter/carter_v2_4.usd"
         (result, error) = await open_stage_async(self.usd_path)
 
         # Make sure the stage loaded
@@ -57,7 +50,7 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
         # setup omnigraph
         self.graph_path = "/ActionGraph"
         (graph, _) = setup_robot_og(
-            self.graph_path, "joint_wheel_left", "joint_wheel_right", "/carter_v2", 0.14, 0.4132
+            self.graph_path, "joint_wheel_left", "joint_wheel_right", "/World/Carter_V24", 0.14, 0.4132
         )
 
         keys = og.Controller.Keys
@@ -106,8 +99,11 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
                 keys.SET_VALUES: [
                     ("QuinticPathPlanner.inputs:targetPosition", (-5, -5, 0)),
                     ("GetPrimLocalToWorldTransform.inputs:usePath", False),
-                    (self.graph_path + "/computeOdom.inputs:chassisPrim", [usdrt.Sdf.Path("/carter_v2/chassis_link")]),
-                    ("GetPrimLocalToWorldTransform.inputs:prim", [usdrt.Sdf.Path("/carter_v2/chassis_link")]),
+                    (
+                        self.graph_path + "/computeOdom.inputs:chassisPrim",
+                        [usdrt.Sdf.Path("/World/Carter_V24/chassis_link")],
+                    ),
+                    ("GetPrimLocalToWorldTransform.inputs:prim", [usdrt.Sdf.Path("/World/Carter_V24/chassis_link")]),
                 ],
             },
         )
@@ -153,7 +149,7 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
         # Start Simulation and wait
         self._timeline.play()
 
-        await init_robot_sim(self.dc, "/carter_v2")
+        await init_robot_sim(self.dc, "/World/Carter_V24")
 
         # Get position and rotation data provided to node, then set target equal to pos/rot and check for reachedGoal booleans
         pos = og.Controller.attribute(self.graph_path + "/GetTranslation.outputs:translation").get()
@@ -193,7 +189,7 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
 
-        await init_robot_sim(self.dc, "/carter_v2")
+        await init_robot_sim(self.dc, "/World/Carter_V24")
 
         # allow time for carter to move from origin and start driving
         for i in range(20):

@@ -1,8 +1,12 @@
 # Changelog
+## [1.7.3] - 2023-09-29
+### Fixed
+- Fixed nut slipping from Franka hand for nut and bolt extension
+- Changed num of bolts to two in nut and bolt extension
 
 ## [1.7.3] - 2023-09-29
 ### Fixed
--  collision groups and num_bolts for nut and bolt extension
+- Fixed collision groups and num_bolts for nut and bolt extension
 
 ## [1.7.2] - 2023-09-26
 ### Fixed

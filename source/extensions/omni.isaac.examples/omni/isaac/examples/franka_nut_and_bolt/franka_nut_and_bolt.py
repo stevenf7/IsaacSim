@@ -59,7 +59,7 @@ class FrankaNutAndBolt(BaseSample):
         self._bolt_radius = 0.11
         self._pipe_pos_on_table = np.array([0.2032, 0.381, 0.0])
         self._bolt_z_offset_to_pipe = 0.08
-        self._gripper_to_nut_offset = np.array([0.0, 0.0, 0.005])
+        self._gripper_to_nut_offset = np.array([0.0, 0.0, 0.0075])
         self._top_of_bolt = (
             np.array([0.0, 0.0, self._bolt_length + (self._nut_height / 2)]) + self._gripper_to_nut_offset
         )
@@ -97,7 +97,7 @@ class FrankaNutAndBolt(BaseSample):
             "pipe": self.asset_folder + "SubUSDs/Pipe/Pipe.usd",
         }
 
-        self._num_bolts = 6
+        self._num_bolts = 2
         self._num_nuts = 12
         self._sim_dt = 1.0 / self._time_steps_per_second
         self._fsm_update_dt = 1.0 / self._fsm_update_rate
@@ -208,20 +208,20 @@ class FrankaNutAndBolt(BaseSample):
         self._bolt_physics_material = PhysicsMaterial(
             prim_path="/World/PhysicsMaterials/BoltMaterial",
             name="bolt_material_physics",
-            static_friction=0.1,
-            dynamic_friction=0.1,
+            static_friction=0.2,
+            dynamic_friction=0.2,
         )
         self._nut_physics_material = PhysicsMaterial(
             prim_path="/World/PhysicsMaterials/NutMaterial",
             name="nut_material_physics",
-            static_friction=0.1,
-            dynamic_friction=0.1,
+            static_friction=0.2,
+            dynamic_friction=0.2,
         )
         self._vibra_table_physics_material = PhysicsMaterial(
             prim_path="/World/PhysicsMaterials/VibraTableMaterial",
             name="vibra_table_material_physics",
-            static_friction=0.3,
-            dynamic_friction=0.3,
+            static_friction=0.2,
+            dynamic_friction=0.2,
         )
         self._franka_finger_physics_material = PhysicsMaterial(
             prim_path="/World/PhysicsMaterials/FrankaFingerMaterial",
@@ -406,7 +406,9 @@ class FrankaNutAndBolt(BaseSample):
         self._franka.set_world_pose(position=franka_pos)
         self._franka.set_default_state(position=franka_pos)
         self._franka.gripper.open()
-
+        kps = np.array([6000000.0, 600000.0, 6000000.0, 600000.0, 25000.0, 15000.0, 25000.0, 10000.0, 10000.0])
+        kds = np.array([600000.0, 60000.0, 300000.0, 30000.0, 3000.0, 3000.0, 3000.0, 4000.0, 4000.0])
+        self._franka.get_articulation_controller().set_gains(kps=kps, kds=kds, save_to_usd=True)
         self._frankaHandIncludeRel.AddTarget(self._franka.prim_path + "/panda_leftfinger")
         self._frankaHandIncludeRel.AddTarget(self._franka.prim_path + "/panda_rightfinger")
 

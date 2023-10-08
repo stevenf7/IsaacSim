@@ -119,6 +119,20 @@ class Extension(omni.ext.IExt):
             category=BRIDGE_NAME,
         )
 
+        # RTX lidar Range Scan publisher
+        rep.writers.register_node_writer(
+            name=f"RtxLidar{BRIDGE_PREFIX}PublishRTXRangeScan",
+            node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishRTXRangeScan",
+            annotators=[
+                "RtxSensorCpu" + "IsaacReadRTXLidarData",
+                "PostProcessDispatchIsaacSimulationGate",
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
+                ),
+            ],
+            category=BRIDGE_NAME,
+        )
+
     def unregister_nodes(self):
         for writer in rep.WriterRegistry.get_writers(category=BRIDGE_NAME):
             rep.writers.unregister_writer(writer)

@@ -23,6 +23,8 @@ class OgnDifferentialControllerInternalState(BaseResetNode):
         self.max_linear_speed = 1.0e20
         self.max_angular_speed = 1.0e20
         self.max_wheel_speed = 1.0e20
+        self.store_joint_actions = None
+        self.outputs = None
         super().__init__(initialize=False)
 
     def initialize_controller(self) -> None:
@@ -39,11 +41,27 @@ class OgnDifferentialControllerInternalState(BaseResetNode):
     def forward(self, command: np.ndarray) -> ArticulationAction:
         return self.controller_handle.forward(command)
 
+    def custom_reset(self):
+        if self.initialized:
+            if self.store_joint_actions.joint_positions is not None:
+                self.outputs.positionCommand = [0.0, 0.0]
+            if self.store_joint_actions.joint_velocities is not None:
+                self.outputs.velocityCommand = [0.0, 0.0]
+            if self.store_joint_actions.joint_efforts is not None:
+                self.outputs.effortCommand = [0.0, 0.0]
+
 
 class OgnDifferentialController:
     """
     nodes for moving an articulated robot with joint commands
     """
+
+    @staticmethod
+    def initialize(graph_context, node):
+        # Store db.outputs in a private variable of State class so we can modify the output on simulation Stop
+        db = OgnDifferentialControllerDatabase(node)
+        state = OgnDifferentialControllerDatabase.per_node_internal_state(node)
+        state.outputs = db.outputs
 
     @staticmethod
     def internal_state():
@@ -79,6 +97,8 @@ class OgnDifferentialController:
                 db.outputs.velocityCommand = joint_actions.joint_velocities
             if joint_actions.joint_efforts is not None:
                 db.outputs.effortCommand = joint_actions.joint_efforts
+
+            state.store_joint_actions = joint_actions
 
         except Exception as error:
             db.log_error(str(error))

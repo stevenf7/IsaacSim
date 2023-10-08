@@ -58,8 +58,8 @@ public:
         message.pose_frame_uid->uid = maybe_frame.value();
 
         // Populate message beam info
-        const auto horizontalResolutionRad = db.inputs.horizontalResolution() * M_PI / 180.0f;
-        const auto verticalResolutionRad = db.inputs.verticalResolution() * M_PI / 180.0f;
+        const auto horizontalResolutionRad = nvidia::isaac::DegToRad(db.inputs.horizontalResolution());
+        const auto verticalResolutionRad = nvidia::isaac::DegToRad(db.inputs.verticalResolution());
 
         for (int i = 0, ray_idx = 0; i < db.inputs.numCols(); i++)
         {
@@ -81,18 +81,10 @@ public:
             }
         }
 
-        // Fill in meta data
-        message.info->delta_time = 0.0;
-        message.info->invalid_range = 0.0;
-        message.info->out_of_range = static_cast<double>(db.inputs.depthRange()[1]);
-
         state.publish(db.inputs.outputEntity(), db.inputs.outputComponent(), std::move(message.entity));
         db.outputs.execOut() = kExecutionAttributeStateEnabled;
         return true;
     }
-
-private:
-    uint64_t schema_uid_;
 };
 
 REGISTER_OGN_NODE()
