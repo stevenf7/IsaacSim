@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.3.4] - 2023-10-07
+### Changed
+- Set ROS2 Context node to read ROS_DOMAIN_ID from env vars by default
+
 ## [2.3.3] - 2023-10-05
 ### Fixed
 - Bug with  ROS2 windows loading internal libs

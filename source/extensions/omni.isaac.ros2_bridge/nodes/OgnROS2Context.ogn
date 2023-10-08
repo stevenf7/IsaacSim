@@ -19,7 +19,7 @@
             "useDomainIDEnvVar": {
                 "type": "bool",
                 "description": "Set to true to use ROS_DOMAIN_ID environment variable if set. Defaults to domain_id if not found",
-                "default": false
+                "default": true
             }
         },
         "outputs": {
