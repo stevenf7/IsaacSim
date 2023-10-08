@@ -56,7 +56,7 @@ class WheeledRobot(Robot):
 
         if robot_path is not None:
             robot_path = "/" + robot_path
-            # regex: remove all prefixing "/", need at least one prefix "/" to work 
+            # regex: remove all prefixing "/", need at least one prefix "/" to work
             robot_path = re.sub("^([^\/]*)\/*", "", "/" + robot_path)
             prim_path = prim_path + "/" + robot_path
 

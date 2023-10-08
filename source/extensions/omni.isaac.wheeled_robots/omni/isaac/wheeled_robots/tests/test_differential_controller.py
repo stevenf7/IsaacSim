@@ -54,19 +54,25 @@ class TestDifferentialControllerNode(ogts.OmniGraphTestCase):
     async def setUp(self):
         """Set up  test environment, to be torn down when done"""
         await omni.usd.get_context().new_stage_async()
+        self._timeline = omni.timeline.get_timeline_interface()
 
     # ----------------------------------------------------------------------
     async def tearDown(self):
         """Get rid of temporary data used by the test"""
         await omni.kit.stage_templates.new_stage_async()
+        self._timeline = None
 
     # ----------------------------------------------------------------------
     async def test_differential_controller_node(self):
-        (test_diff_graph, [diff_node], _, _) = og.Controller.edit(
-            {"graph_path": "/ActionGraph"},
+        (test_diff_graph, [play_node, diff_node], _, _) = og.Controller.edit(
+            {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [
-                    ("DifferentialController", "omni.isaac.wheeled_robots.DifferentialController")
+                    ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                    ("DifferentialController", "omni.isaac.wheeled_robots.DifferentialController"),
+                ],
+                og.Controller.Keys.CONNECT: [
+                    ("OnPlaybackTick.outputs:tick", "DifferentialController.inputs:execIn"),
                 ],
                 og.Controller.Keys.SET_VALUES: [
                     ("DifferentialController.inputs:wheelRadius", 0.03),
@@ -77,6 +83,43 @@ class TestDifferentialControllerNode(ogts.OmniGraphTestCase):
             },
         )
 
-        await og.Controller.evaluate(test_diff_graph)
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await simulate_async(0.05, 60)
         self.assertEqual(og.Controller(og.Controller.attribute("outputs:velocityCommand", diff_node)).get()[0], 8.125)
         self.assertEqual(og.Controller(og.Controller.attribute("outputs:velocityCommand", diff_node)).get()[1], 11.875)
+
+    async def test_differential_controller_node_reset(self):
+        (test_diff_graph, [play_node, diff_node], _, _) = og.Controller.edit(
+            {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
+            {
+                og.Controller.Keys.CREATE_NODES: [
+                    ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                    ("DifferentialController", "omni.isaac.wheeled_robots.DifferentialController"),
+                ],
+                og.Controller.Keys.CONNECT: [
+                    ("OnPlaybackTick.outputs:tick", "DifferentialController.inputs:execIn"),
+                ],
+                og.Controller.Keys.SET_VALUES: [
+                    ("DifferentialController.inputs:wheelRadius", 0.03),
+                    ("DifferentialController.inputs:wheelDistance", 0.1125),
+                    ("DifferentialController.inputs:linearVelocity", 0.3),
+                    ("DifferentialController.inputs:angularVelocity", 1.0),
+                ],
+            },
+        )
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await simulate_async(0.05, 60)
+
+        self.assertEqual(og.Controller(og.Controller.attribute("outputs:velocityCommand", diff_node)).get()[0], 8.125)
+        self.assertEqual(og.Controller(og.Controller.attribute("outputs:velocityCommand", diff_node)).get()[1], 11.875)
+
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+
+        await simulate_async(0.05, 60)
+        self.assertEqual(og.Controller(og.Controller.attribute("outputs:velocityCommand", diff_node)).get()[0], 0.0)
+        self.assertEqual(og.Controller(og.Controller.attribute("outputs:velocityCommand", diff_node)).get()[1], 0.0)
