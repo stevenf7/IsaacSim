@@ -8,6 +8,7 @@
 #
 
 import os
+import signal
 
 import carb
 import gymnasium as gym
@@ -67,8 +68,15 @@ class VecEnvBase(gym.Env):
                 enable_extension("omni.kit.livestream.native")
                 enable_extension("omni.services.streaming.manager")
 
+            # handle ctrl+c event
+            signal.signal(signal.SIGINT, self.signal_handler)
+
         self._render = not headless or enable_livestream or enable_viewport
         self.sim_frame_count = 0
+        self._world = None
+
+    def signal_handler(self, sig, frame):
+        self.close()
 
     def set_task(self, task, backend="numpy", sim_params=None, init_sim=True, rendering_dt=1.0 / 60.0) -> None:
         """Creates a World object and adds Task to World.
@@ -138,6 +146,9 @@ class VecEnvBase(gym.Env):
     def close(self) -> None:
         """Closes simulation."""
 
+        if self._world:
+            self._world.stop()
+
         # bypass USD warnings on stage close
         self._simulation_app.close()
         return
@@ -169,10 +180,17 @@ class VecEnvBase(gym.Env):
             dones(Union[numpy.ndarray, torch.Tensor]): Buffer of resets/dones data.
             info(dict): Dictionary of extras data.
         """
+
+        if not self._world.is_playing():
+            self.close()
+
         self._task.pre_physics_step(actions)
         self._world.step(render=self._render)
 
         self.sim_frame_count += 1
+
+        if not self._world.is_playing():
+            self.close()
 
         observations = self._task.get_observations()
         rewards = self._task.calculate_metrics()
