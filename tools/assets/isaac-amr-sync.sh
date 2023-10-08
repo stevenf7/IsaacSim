@@ -43,3 +43,6 @@ aws s3 sync $TEMP_DIR/amr-2022.2.1/Carter_V2_4/ s3://omniverse-content-staging/A
 
 echo run aws s3 sync s3://omniverse-content-staging/Assets/Isaac/2022.2.1/Isaac/Robots/Carter/Carter_V2_4/ s3://omniverse-content-production/Assets/Isaac/2022.2.1/Isaac/Robots/Carter/Carter_V2_4/ --delete
 aws s3 sync s3://omniverse-content-staging/Assets/Isaac/2022.2.1/Isaac/Robots/Carter/Carter_V2_4/ s3://omniverse-content-production/Assets/Isaac/2022.2.1/Isaac/Robots/Carter/Carter_V2_4/ --delete
+
+echo !! Completed!
+
