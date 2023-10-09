@@ -87,7 +87,9 @@ def write_depth(data, path):
     # Convert to numpy (if warp), normalize, handle any nan values, and convert to from float32 to 8-bit int array
     if isinstance(data, wp.array):
         data = data.numpy()
-    data = np.nan_to_num(data, posinf=0.0, neginf=0.0, copy=False)
+    # Replace any -inf and inf values with nan, then calculate the mean value and replace nan with the mean
+    data[np.isinf(data)] = np.nan
+    data = np.nan_to_num(data, nan=np.nanmean(data), copy=False)
     normalized_array = (data - np.min(data)) / (np.max(data) - np.min(data))
     integer_array = (normalized_array * 255).astype(np.uint8)
     depth_img = Image.fromarray(integer_array, mode="L")
