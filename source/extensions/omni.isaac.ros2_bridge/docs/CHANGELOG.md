@@ -1,4 +1,7 @@
 # Changelog
+## [2.3.6] - 2023-10-09
+### Fixed
+- Joint State Subscriber supports input state messages with only one mode of drive specified
 
 ## [2.3.5] - 2023-10-09
 ### Fixed
