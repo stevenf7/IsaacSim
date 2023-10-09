@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.3.5] - 2023-10-09
+### Fixed
+- Moveit Tutorial had incorrect OG input name
+
 ## [2.3.4] - 2023-10-07
 ### Changed
 - Set ROS2 Context node to read ROS_DOMAIN_ID from env vars by default

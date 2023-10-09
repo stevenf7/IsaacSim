@@ -131,10 +131,8 @@ CARB_EXPORT void carbOnPluginStartup()
         "rmw",
         "yaml",
         "rcl_yaml_param_parser",
-        "ament_index_cpp",
         "rcpputils",
         "rmw_implementation",
-        "rcl_logging_interface",
 #ifndef _WIN32
         "spdlog",
         "tracetools",
@@ -167,7 +165,6 @@ CARB_EXPORT void carbOnPluginStartup()
         "rcl_action",
         "lifecycle_msgs__rosidl_generator_c",
         "lifecycle_msgs__rosidl_typesupport_c",
-        "rcl_lifecycle",
         //   "rmw_fastrtps_shared_cpp",
         //    "fastrtps",
         //    "rosidl_typesupport_fastrtps_c",
@@ -180,6 +177,14 @@ CARB_EXPORT void carbOnPluginStartup()
     };
 
     char* rosDistro = getenv("ROS_DISTRO");
+
+    if (strcmp(rosDistro, "humble") == 0)
+    {
+        lib_list.insert(lib_list.begin() + 5, std::string("ament_index_cpp"));
+        lib_list.insert(lib_list.begin() + 8, std::string("rcl_logging_interface"));
+        lib_list.insert(lib_list.end(), std::string("rcl_lifecycle"));
+    }
+
     // attempt to load a ros library
     // if it fails, force load internal distro
     if (rosDistro && strcmp(rosDistro, "foxy") != 0 && strcmp(rosDistro, "humble") != 0)

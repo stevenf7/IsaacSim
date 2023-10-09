@@ -1,5 +1,10 @@
 # Changelog
 
+
+## [1.14.10] - 2023-10-09
+### Fixed
+- Moveit Tutorial had incorrect OG input name
+
 ## [1.14.9] - 2023-10-04
 
 ### Added

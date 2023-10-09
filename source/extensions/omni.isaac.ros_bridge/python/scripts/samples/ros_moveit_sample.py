@@ -82,7 +82,7 @@ class Extension(omni.ext.IExt):
                         # Setting the /Franka target prim to Articulation Controller node
                         ("ArticulationController.inputs:usePath", True),
                         ("ArticulationController.inputs:robotPath", franka_stage_path),
-                        ("PublishJointState.inputs:targetPrims", [usdrt.Sdf.Path(franka_stage_path)]),
+                        ("PublishJointState.inputs:targetPrim", [usdrt.Sdf.Path(franka_stage_path)]),
                         ("PublishTF.inputs:targetPrims", [usdrt.Sdf.Path(franka_stage_path)]),
                     ],
                 },
