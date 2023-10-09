@@ -85,7 +85,7 @@ class Extension(omni.ext.IExt):
                         ("ArticulationController.inputs:robotPath", franka_stage_path),
                         ("PublishJointState.inputs:topicName", "isaac_joint_states"),
                         ("SubscribeJointState.inputs:topicName", "isaac_joint_commands"),
-                        ("PublishJointState.inputs:targetPrims", [usdrt.Sdf.Path(franka_stage_path)]),
+                        ("PublishJointState.inputs:targetPrim", [usdrt.Sdf.Path(franka_stage_path)]),
                         ("PublishTF.inputs:targetPrims", [usdrt.Sdf.Path(franka_stage_path)]),
                     ],
                 },

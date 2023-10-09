@@ -37,9 +37,9 @@ class Extension(omni.ext.IExt):
                 omni.kit.app.get_app().print_and_log(f"Could not import system rclpy: {e}")
                 omni.kit.app.get_app().print_and_log("Attempting to load internal rclpy")
                 sys.path.append(os.path.join(os.path.dirname(__file__)))
+                ext_manager = omni.kit.app.get_app().get_extension_manager()
+                self._extension_path = ext_manager.get_extension_path(ext_id)
                 if sys.platform == "win32":
-                    ext_manager = omni.kit.app.get_app().get_extension_manager()
-                    self._extension_path = ext_manager.get_extension_path(ext_id)
                     if os.environ.get("PATH"):
                         os.environ["PATH"] = os.environ.get("PATH") + ";" + self._extension_path + f"/{ros_distro}/lib"
                     else:
