@@ -709,7 +709,7 @@ bool Ros2JointStateMessageHumble::checkValid()
 
     const size_t num_actuators = jointState_msg->name.size;
 
-    if (jointState_msg->position.size != num_actuators || jointState_msg->velocity.size != num_actuators ||
+    if (jointState_msg->position.size != num_actuators && jointState_msg->velocity.size != num_actuators &&
         jointState_msg->effort.size != num_actuators)
     {
         return false;
@@ -745,9 +745,18 @@ void Ros2JointStateMessageHumble::getData(std::vector<char*>& jointNames,
     }
 
     // resize for the array was called before fillData in the subscriber callback
-    std::memcpy(positionCommand, jointState_msg->position.data, num_actuators * sizeof(double));
-    std::memcpy(velocityCommand, jointState_msg->velocity.data, num_actuators * sizeof(double));
-    std::memcpy(effortCommand, jointState_msg->effort.data, num_actuators * sizeof(double));
+    if (jointState_msg->position.size == num_actuators)
+    {
+        std::memcpy(positionCommand, jointState_msg->position.data, num_actuators * sizeof(double));
+    }
+    if (jointState_msg->velocity.size == num_actuators)
+    {
+        std::memcpy(velocityCommand, jointState_msg->velocity.data, num_actuators * sizeof(double));
+    }
+    if (jointState_msg->effort.size == num_actuators)
+    {
+        std::memcpy(effortCommand, jointState_msg->effort.data, num_actuators * sizeof(double));
+    }
 
     timeStamp = jointState_msg->header.stamp.sec;
 
