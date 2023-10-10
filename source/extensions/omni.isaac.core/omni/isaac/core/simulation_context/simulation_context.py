@@ -480,6 +480,20 @@ class SimulationContext:
         set_carb_setting(self._settings, "/app/player/playSimulations", True)
         return
 
+    async def render_async(self) -> None:
+        """Refreshes the Isaac Sim app rendering components including UI elements and view ports..etc."""
+        if self._physx_fabric_interface is None:
+            if self.current_time > 0 and self._extension_manager.is_extension_enabled("omni.physx.fabric"):
+                from omni.physxfabric import get_physx_fabric_interface
+
+                self._physx_fabric_interface = get_physx_fabric_interface()
+        if self._physx_fabric_interface:
+            self._physx_fabric_interface.update(self._physics_context.get_physics_dt(), self.current_time)
+        set_carb_setting(self._settings, "/app/player/playSimulations", False)
+        await omni.kit.app.get_app().next_update_async()
+        set_carb_setting(self._settings, "/app/player/playSimulations", True)
+        return
+
     def clear(self) -> None:
         """Clears the current stage leaving the PhysicsScene only if under /World."""
 
@@ -531,7 +545,8 @@ class SimulationContext:
     async def play_async(self) -> None:
         """Starts playing simulation."""
         self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
+        self.get_physics_context().warm_start()
+        await self.render_async()
         return
 
     def play(self) -> None:
