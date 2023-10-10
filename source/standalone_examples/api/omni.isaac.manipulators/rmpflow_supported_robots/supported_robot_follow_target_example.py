@@ -18,6 +18,7 @@ from omni.isaac.core import World
 from omni.isaac.core.objects import cuboid
 from omni.isaac.core.robots import Robot
 from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.prims import create_prim
 from omni.isaac.core.utils.stage import add_reference_to_stage
 from omni.isaac.motion_generation.articulation_motion_policy import ArticulationMotionPolicy
 from omni.isaac.motion_generation.interface_config_loader import (
@@ -54,6 +55,9 @@ usd_path = get_assets_root_path() + args.usd_path
 prim_path = "/my_robot"
 
 add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
+
+light_prim = create_prim("/DistantLight", "DistantLight")
+light_prim.GetAttribute("inputs:intensity").Set(5000)
 
 my_world = World(stage_units_in_meters=1.0)
 
