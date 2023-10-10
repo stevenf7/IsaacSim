@@ -36,12 +36,12 @@ if assets_root_path is None:
     carb.log_error("Could not find Isaac Sim assets folder")
     simulation_app.close()
     sys.exit()
-asset_path = assets_root_path + "/Isaac/Robots/Carter/carter_v2.usd"
+asset_path = assets_root_path + "/Isaac/Robots/Carter/carter_v1.usd"
 my_carter = my_world.scene.add(
     WheeledRobot(
         prim_path="/World/Carter",
         name="my_carter",
-        wheel_dof_names=["joint_wheel_left", "joint_wheel_right"],
+        wheel_dof_names=["left_wheel", "right_wheel"],
         create_robot=True,
         usd_path=asset_path,
         position=np.array([0, 0.0, 0.5]),
@@ -49,7 +49,9 @@ my_carter = my_world.scene.add(
 )
 
 my_lidar = my_world.scene.add(
-    RotatingLidarPhysX(prim_path="/World/Carter/chassis_link/stereo_cam_right/lidar", name="lidar")
+    RotatingLidarPhysX(
+        prim_path="/World/Carter/chassis_link/lidar", name="lidar", translation=np.array([-0.06, 0, 0.38])
+    )
 )
 
 cube_1 = my_world.scene.add(
@@ -62,7 +64,7 @@ cube_2 = my_world.scene.add(
     )
 )
 
-my_controller = DifferentialController(name="simple_control", wheel_radius=0.04295, wheel_base=0.4132)
+my_controller = DifferentialController(name="simple_control", wheel_radius=0.24, wheel_base=0.56)
 
 my_world.reset()
 my_lidar.add_depth_data_to_frame()

@@ -48,7 +48,7 @@ class TestBenchmarkRobotsCarter(BaseIsaacBenchmark):
         self.set_phase("loading")
         self.start_runtime()
 
-        robot_path = "/Isaac/Robots/Carter/carter_v2.usd"
+        robot_path = "/Isaac/Robots/Carter/carter_v1.usd"
         scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
         await self.fully_load_stage(self.assets_root_path + scene_path)
         stage = omni.usd.get_context().get_stage()
@@ -58,16 +58,14 @@ class TestBenchmarkRobotsCarter(BaseIsaacBenchmark):
         cameras = []
         for i in range(n_robot):
             robot_prim_path = "/Robots/Robot_" + str(i)
-            robot_camera_prim_path = (
-                robot_prim_path + "/chassis_link/stereo_cam_right/stereo_cam_right_sensor_frame/camera_sensor_right"
-            )
+            robot_camera_prim_path = robot_prim_path + "/chassis_link/camera_mount/carter_camera_stereo_right"
             robot_usd_path = self.assets_root_path + robot_path
             # position the robot robot
             MAX_IN_LINE = 10
             robot_position = np.array([-2 * (i % MAX_IN_LINE), -2 * np.floor(i / MAX_IN_LINE), 0])
             current_robot = WheeledRobot(
                 prim_path=robot_prim_path,
-                wheel_dof_names=["joint_wheel_left", "joint_wheel_right"],
+                wheel_dof_names=["left_wheel", "right_wheel"],
                 create_robot=True,
                 usd_path=robot_usd_path,
                 position=robot_position,
