@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.10.1] - 2023-10-08
+### Fixed
+- Apply physics warm start in async play and add render_async
+
 ## [2.10.0] - 2023-10-04
 ### Added
 - euler_to_rot_matrix returns the pre multiplicative matrix and not the post multiplicative one as before and in numpy format intead of Gf.Rotation.
