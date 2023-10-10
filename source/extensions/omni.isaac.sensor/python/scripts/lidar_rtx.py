@@ -214,24 +214,6 @@ class LidarRtx(BaseSensor):
     def is_paused(self) -> bool:
         return self._acquisition_callback is None
 
-    def get_world_pose(self) -> Tuple[np.ndarray, np.ndarray]:
-        position, orientation = BaseSensor.get_world_pose(self)
-        return position, orientation
-
-    def set_world_pose(
-        self, position: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
-    ) -> None:
-        return BaseSensor.set_world_pose(self, position, orientation)
-
-    def get_local_pose(self) -> None:
-        translation, orientation = BaseSensor.get_local_pose(self)
-        return translation, orientation
-
-    def set_local_pose(
-        self, translation: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
-    ) -> None:
-        return BaseSensor.set_local_pose(self, translation, orientation)
-
     # TODO105 : ASYNCRENDERING VALIDATION
     def _data_acquisition_callback(self, event: carb.events.IEvent):
         self._current_frame["rendering_frame"] = (
