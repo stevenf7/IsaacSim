@@ -1,5 +1,10 @@
 # Changelog
 
+
+## [1.0.3] - 2023-10-10
+### Fixed
+- Fix typos in UR10 bin stacking behavior waypoints - Cross products now use both primary and secondary axes accordingly;
+
 ## [1.0.2] - 2023-08-25
 ### Fixed
 - Cleanup extra dependencies

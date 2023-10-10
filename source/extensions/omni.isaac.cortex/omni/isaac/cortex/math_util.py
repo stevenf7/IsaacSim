@@ -25,7 +25,12 @@ from typing import Optional, Sequence, Tuple
 import numpy as np
 from numpy.linalg import norm
 from omni.isaac.core.utils.math import normalized
-from omni.isaac.core.utils.rotations import euler_angles_to_quat, matrix_to_euler_angles, quat_to_rot_matrix
+from omni.isaac.core.utils.rotations import (
+    euler_angles_to_quat,
+    matrix_to_euler_angles,
+    quat_to_rot_matrix,
+    rot_matrix_to_quat,
+)
 from omni.isaac.core.utils.stage import get_stage_units
 
 
@@ -111,7 +116,7 @@ def matrix_to_quat(mat: np.ndarray) -> np.ndarray:
 
     Returns: The quaternion corresponding to the provided rotation matrix.
     """
-    return euler_angles_to_quat(matrix_to_euler_angles(mat))
+    return rot_matrix_to_quat(mat)
 
 
 class Quaternion:
