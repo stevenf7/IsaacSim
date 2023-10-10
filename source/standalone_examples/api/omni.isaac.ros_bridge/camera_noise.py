@@ -76,44 +76,52 @@ simulation_app.update()
 render_product_path = get_active_viewport().get_render_product_path()
 set_camera_prim_path(render_product_path, CAMERA_STAGE_PATH)
 
-# GPU Noise Kernel for illustrative purposes
+# GPU Noise Kernel for illustrative purposes, input is rgba, outputs rgb
 @wp.kernel
 def image_gaussian_noise_warp(
-    data_in: wp.array(dtype=wp.uint8, ndim=3),
-    data_out: wp.array(dtype=wp.uint8, ndim=3),
-    seed: int,
-    sigma: float = 25.0,
+    data_in: wp.array3d(dtype=wp.uint8), data_out: wp.array3d(dtype=wp.uint8), seed: int, sigma: float = 0.5
 ):
     i, j = wp.tid()
-    state = wp.rand_init(seed, wp.tid())
-    data_out[i, j, 0] = wp.uint8(wp.int32(data_in[i, j, 0]) + wp.int32(sigma * wp.randn(state)))
-    data_out[i, j, 1] = wp.uint8(wp.int32(data_in[i, j, 1]) + wp.int32(sigma * wp.randn(state)))
-    data_out[i, j, 2] = wp.uint8(wp.int32(data_in[i, j, 2]) + wp.int32(sigma * wp.randn(state)))
+    dim_i = data_out.shape[0]
+    dim_j = data_out.shape[1]
+    pixel_id = i * dim_i + j
+    state_r = wp.rand_init(seed, pixel_id + (dim_i * dim_j * 0))
+    state_g = wp.rand_init(seed, pixel_id + (dim_i * dim_j * 1))
+    state_b = wp.rand_init(seed, pixel_id + (dim_i * dim_j * 2))
+
+    data_out[i, j, 0] = wp.uint8(float(data_in[i, j, 0]) + (255.0 * sigma * wp.randn(state_r)))
+    data_out[i, j, 1] = wp.uint8(float(data_in[i, j, 1]) + (255.0 * sigma * wp.randn(state_g)))
+    data_out[i, j, 2] = wp.uint8(float(data_in[i, j, 2]) + (255.0 * sigma * wp.randn(state_b)))
 
 
-# CPU noise kernel
-def image_gaussian_noise_np(data_in: np.ndarray, seed: int, sigma: float = 25.0):
-    np.random.seed(seed)
-    return data_in + sigma * np.random.randn(*data_in.shape)
-
-
-# get render car name for rgb data
-rv_rgb = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
-rgba_to_rgb_annotator = f"{rv_rgb}IsaacConvertRGBAToRGB"
-
-# register new augmented annotator that adds noise to rgb
-# the image_gaussian_noise_warp variable can be replaced with image_gaussian_noise_np to use the cpu version
+# register new augmented annotator that adds noise to rgba and then outputs to rgb to the ROS publisher can publish
 rep.annotators.register(
     name="rgb_gaussian_noise",
     annotator=rep.annotators.augment_compose(
-        source_annotator=rgba_to_rgb_annotator,
-        augmentations=[rep.Augmentation.from_function(image_gaussian_noise_warp, seed=1234, sigma=25)],
+        source_annotator=rep.annotators.get("rgb", device="cuda"),
+        augmentations=[
+            rep.annotators.Augmentation.from_function(
+                image_gaussian_noise_warp, sigma=0.1, seed=1234, data_out_shape=(-1, -1, 3)
+            ),
+        ],
     ),
 )
 
-# replace the existing IsaacConvertRGBAToRGB annotator with the new noise augmented annotator
-writer = rep.writers.get(f"{rv_rgb}" + "ROS1PublishImage")
-writer.annotators[0] = "rgb_gaussian_noise"
+# Create a new writer with the augmented image
+rep.writers.register_node_writer(
+    name=f"CustomROS1PublishImage",
+    node_type_id="omni.isaac.ros_bridge.ROS1PublishImage",
+    annotators=[
+        "rgb_gaussian_noise",
+        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+            "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
+        ),
+    ],
+    category="custom",
+)
+
+# Create the new writer and attach to our render product
+writer = rep.writers.get(f"CustomROS1PublishImage")
 writer.initialize(topicName="rgb_augmented", frameId="sim_camera")
 writer.attach([render_product_path])
 

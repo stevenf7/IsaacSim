@@ -165,15 +165,18 @@ CARB_EXPORT void carbOnPluginStartup()
         "rcl_action",
         "lifecycle_msgs__rosidl_generator_c",
         "lifecycle_msgs__rosidl_typesupport_c",
-        //   "rmw_fastrtps_shared_cpp",
-        //    "fastrtps",
-        //    "rosidl_typesupport_fastrtps_c",
-        //    "rosidl_typesupport_fastrtps_cpp",
-        //    "fastcdr",
-        //    "rmw_dds_common",
-        //    "rosidl_typesupport_cpp"
-        //    "rmw_dds_common__rosidl_typesupport_cpp",
-        //    "rmw_fastrtps_cpp",
+        // "fastcdr",
+        // "tinyxml2",
+        // "crypto",
+        // "ssl",
+        // "fastrtps",
+        // "rmw_dds_common",
+        // "rmw_fastrtps_shared_cpp",
+        // "rosidl_typesupport_fastrtps_c",
+        // "rosidl_typesupport_fastrtps_cpp",
+        // "rosidl_typesupport_cpp",
+        // "rmw_dds_common__rosidl_typesupport_cpp",
+        // "rmw_fastrtps_cpp",
     };
 
     char* rosDistro = getenv("ROS_DISTRO");

@@ -55,11 +55,11 @@ class Extension(omni.ext.IExt):
                     omni.kit.app.get_app().print_and_log(f"Could not import internal rclpy: {e}")
                     if sys.platform == "linux":
                         omni.kit.app.get_app().print_and_log(
-                            f"To use the Internal rclpy included with the extension please set: \nRMW_IMPLEMENTATION=rmw_fastrtps_cpp\nLD_LIBRARY_PATH=$LD_LIBRARY_PATH:{self._extension_path}/{ros_distro}/lib\nBefore starting Isaac Sim"
+                            f"To use the internal libraries included with the extension please set: \nRMW_IMPLEMENTATION=rmw_fastrtps_cpp\nLD_LIBRARY_PATH=$LD_LIBRARY_PATH:{self._extension_path}/{ros_distro}/lib\nBefore starting Isaac Sim"
                         )
                     else:
                         omni.kit.app.get_app().print_and_log(
-                            f"To use the Internal rclpy included with the extension please set: \nRMW_IMPLEMENTATION=rmw_fastrtps_cpp\nPATH=%PATH%;{self._extension_path}/{ros_distro}/lib\nBefore starting Isaac Sim"
+                            f"To use the internal libraries included with the extension please set: \nRMW_IMPLEMENTATION=rmw_fastrtps_cpp\nPATH=%PATH%;{self._extension_path}/{ros_distro}/lib\nBefore starting Isaac Sim"
                         )
                 try:
                     import rclpy
@@ -67,8 +67,9 @@ class Extension(omni.ext.IExt):
                     rclpy.init()
                     rclpy.shutdown()
                 except Exception as e:
+                    carb.log_warn("Could not import rclpy")
                     carb.log_warn(
-                        f"Could not import rclpy\nThe ROS 2 bridge will load, Omnigraph Nodes will work but rlclpy and related imports will not be available."
+                        "Omnigraph nodes cannot publish/subscribe and rlclpy and related imports will not be available."
                     )
             return
 
