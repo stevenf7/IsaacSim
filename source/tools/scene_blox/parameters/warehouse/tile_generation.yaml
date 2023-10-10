@@ -6,7 +6,7 @@ fixed_prims:
   - prim_path: /World/cameras
     usd: /Isaac/Samples/Scene_Blox/Warehouse_Tiles/cameras.usd
   - prim_path: /World/end_close
-    usd: /Isaac/Environments/Modular_Warehouse/Props/SM_WarehousEnd_A2_01.usd
+    usd: /Isaac/Samples/Scene_Blox/Warehouse_Tiles/Props/SM_WarehousEnd_A2_01.usd
     world_pose:
       position: [2.00, -58.00, 0]
       orientation: [0, 0, 0]
