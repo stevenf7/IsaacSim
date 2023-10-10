@@ -26,18 +26,6 @@ from omni.isaac.core_nodes.bindings import _omni_isaac_core_nodes
 from omni.isaac.IsaacSensorSchema import IsaacRtxLidarSensorAPI
 from omni.syntheticdata import sensors
 
-# transforms are read from right to left
-# U_I_TRANSFORM means transformation matrix from I frame to U frame
-# U indicates the USD camera convention (computer graphics community)
-# I indicates the Isaac camera convention (robotics community)
-# from USD camera convention to Isaac camera convention
-
-# from USD camera convention to Isaac camera convention
-I_U_TRANSFORM = np.array([[0, 0, -1, 0], [-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]])
-
-# from Isaac camera convention to USD camera convention
-U_I_TRANSFORM = np.array([[0, -1, 0, 0], [0, 0, 1, 0], [-1, 0, 0, 0], [0, 0, 0, 1]])
-
 
 class LidarRtx(BaseSensor):
     def __init__(
@@ -227,53 +215,21 @@ class LidarRtx(BaseSensor):
         return self._acquisition_callback is None
 
     def get_world_pose(self) -> Tuple[np.ndarray, np.ndarray]:
-        position, orientation_u = BaseSensor.get_world_pose(self)
-        world_i_lidar_u_R = self._backend_utils.quats_to_rot_matrices(orientation_u)
-        u_i_R = self._backend_utils.create_tensor_from_list(
-            U_I_TRANSFORM[:3, :3].tolist(), dtype="float32", device=self._device
-        )
-        orientation_world_frame = self._backend_utils.rot_matrices_to_quats(
-            self._backend_utils.matmul(world_i_lidar_u_R, u_i_R)
-        )
-        return position, orientation_world_frame
+        position, orientation = BaseSensor.get_world_pose(self)
+        return position, orientation
 
     def set_world_pose(
         self, position: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
     ) -> None:
-        if orientation is not None:
-            orientation = self._backend_utils.convert(orientation, device=self._device)
-            world_i_lidar_i_R = self._backend_utils.quats_to_rot_matrices(orientation)
-            i_u_R = self._backend_utils.create_tensor_from_list(
-                I_U_TRANSFORM[:3, :3].tolist(), dtype="float32", device=self._device
-            )
-            orientation = self._backend_utils.rot_matrices_to_quats(
-                self._backend_utils.matmul(world_i_lidar_i_R, i_u_R)
-            )
         return BaseSensor.set_world_pose(self, position, orientation)
 
     def get_local_pose(self) -> None:
-        translation, orientation_lidar_frame = BaseSensor.get_local_pose(self)
-        parent_i_lidar_u_R = self._backend_utils.quats_to_rot_matrices(orientation_lidar_frame)
-        u_i_R = self._backend_utils.create_tensor_from_list(
-            U_I_TRANSFORM[:3, :3].tolist(), dtype="float32", device=self._device
-        )
-        orientation_world_frame = self._backend_utils.rot_matrices_to_quats(
-            self._backend_utils.matmul(parent_i_lidar_u_R, u_i_R)
-        )
-        return translation, orientation_world_frame
+        translation, orientation = BaseSensor.get_local_pose(self)
+        return translation, orientation
 
     def set_local_pose(
         self, translation: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
     ) -> None:
-        if orientation is not None:
-            orientation = self._backend_utils.convert(orientation, device=self._device)
-            parent_i_lidar_i_R = self._backend_utils.quats_to_rot_matrices(orientation)
-            i_u_R = self._backend_utils.create_tensor_from_list(
-                I_U_TRANSFORM[:3, :3].tolist(), dtype="float32", device=self._device
-            )
-            orientation = self._backend_utils.rot_matrices_to_quats(
-                self._backend_utils.matmul(parent_i_lidar_i_R, i_u_R)
-            )
         return BaseSensor.set_local_pose(self, translation, orientation)
 
     # TODO105 : ASYNCRENDERING VALIDATION

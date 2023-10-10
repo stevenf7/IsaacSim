@@ -1,4 +1,8 @@
 # Changelog
+## [9.9.1] - 2023-10-09
+### Fixed
+- removed extra frame transformation in the LidarRtx wrapper
+- changed physX lidar tests and samples to use Carter V1
 
 ## [9.9.0] - 2023-10-08
 ### Changed
