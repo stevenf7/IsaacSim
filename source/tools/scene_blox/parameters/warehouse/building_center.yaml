@@ -3,7 +3,7 @@ generated:
   - name: "structure"
     path: structure
     usd_config:
-      root: /Isaac/Environments/Modular_Warehouse/Props/
+      root: /Isaac/Samples/Scene_Blox/Warehouse_Tiles/Props/
       search_depth: 0
       filter: SM_WarehouseMiddle.*
     position:
