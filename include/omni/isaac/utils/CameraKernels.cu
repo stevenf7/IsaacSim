@@ -248,5 +248,8 @@ extern "C" void textureFloatCopyToRawBuffer(cudaTextureObject_t srcTexObj,
                                             unsigned int dstHeight,
                                             cudaStream_t stream)
 {
-    textureCopyToRawBuffer<float>(srcTexObj, dstBuffer, dstWidth, dstHeight, stream);
+    if (dstWidth * dstHeight > 0 && dstBuffer != nullptr)
+    {
+        textureCopyToRawBuffer<float>(srcTexObj, dstBuffer, dstWidth, dstHeight, stream);
+    }
 }
