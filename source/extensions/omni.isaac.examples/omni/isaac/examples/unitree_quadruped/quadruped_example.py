@@ -18,8 +18,8 @@ class QuadrupedExample(BaseSample):
     def __init__(self) -> None:
         super().__init__()
         self._world_settings["stage_units_in_meters"] = 1.0
-        self._world_settings["physics_dt"] = 1.0 / 400.0
-        self._world_settings["rendering_dt"] = 20.0 / 400.0
+        self._world_settings["physics_dt"] = 1.0 / 300.0
+        self._world_settings["rendering_dt"] = 15.0 / 300.0
         self._enter_toggled = 0
         self._base_command = [0.0, 0.0, 0.0, 0]
         self._event_flag = False
@@ -27,17 +27,17 @@ class QuadrupedExample(BaseSample):
         # bindings for keyboard to command
         self._input_keyboard_mapping = {
             # forward command
-            "NUMPAD_8": [1.5, 0.0, 0.0],
-            "UP": [1.5, 0.0, 0.0],
+            "NUMPAD_8": [5, 0.0, 0.0],
+            "UP": [5, 0.0, 0.0],
             # back command
-            "NUMPAD_2": [-1.5, 0.0, 0.0],
-            "DOWN": [-1.5, 0.0, 0.0],
+            "NUMPAD_2": [-5, 0.0, 0.0],
+            "DOWN": [-5, 0.0, 0.0],
             # left command
-            "NUMPAD_6": [0.0, -1.0, 0.0],
-            "RIGHT": [0.0, -1.0, 0.0],
+            "NUMPAD_6": [0.0, -4.0, 0.0],
+            "RIGHT": [0.0, -4.0, 0.0],
             # right command
-            "NUMPAD_4": [0.0, 1.0, 0.0],
-            "LEFT": [0.0, 1.0, 0.0],
+            "NUMPAD_4": [0.0, 4.0, 0.0],
+            "LEFT": [0.0, 4.0, 0.0],
             # yaw command (positive)
             "NUMPAD_7": [0.0, 0.0, 1.0],
             "N": [0.0, 0.0, 1.0],
@@ -57,7 +57,14 @@ class QuadrupedExample(BaseSample):
             dynamic_friction=0.2,
             restitution=0.01,
         )
-        self._a1 = world.scene.add(Unitree(prim_path="/World/A1", name="A1", position=np.array([0, 0, 0.400])))
+        self._a1 = world.scene.add(
+            Unitree(
+                prim_path="/World/A1",
+                name="A1",
+                position=np.array([0, 0, 0.400]),
+                physics_dt=self._world_settings["physics_dt"],
+            )
+        )
         timeline = omni.timeline.get_timeline_interface()
         self._event_timer_callback = timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
             int(omni.timeline.TimelineEventType.STOP), self._timeline_timer_callback_fn

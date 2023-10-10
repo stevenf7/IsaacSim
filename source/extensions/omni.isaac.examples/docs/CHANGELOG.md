@@ -1,5 +1,8 @@
 # Changelog
-## [1.7.3] - 2023-09-29
+## [1.7.5] - 2023-10-09
+### Changed
+- Increased quadruped example gain and physics rate, added notes in the description.
+## [1.7.4] - 2023-09-29
 ### Fixed
 - Fixed nut slipping from Franka hand for nut and bolt extension
 - Changed num of bolts to two in nut and bolt extension

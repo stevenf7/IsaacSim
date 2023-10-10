@@ -17,7 +17,10 @@ class QuadrupedExampleExtension(BaseSampleExtension):
     def on_startup(self, ext_id: str):
         super().on_startup(ext_id)
 
-        overview = "This Example shows how to simulate an Unitree A1 quadruped in Isaac Sim."
+        overview = "This Example shows quadruped simulation in Isaac Sim. Currently there is a performance issue with "
+        overview += (
+            "the quadruped gait controller; it's being investigated and will be improved in an upcoming release."
+        )
         overview += "\n\tKeybord Input:"
         overview += "\n\t\tup arrow / numpad 8: Move Forward"
         overview += "\n\t\tdown arrow/ numpad 2: Move Reverse"
