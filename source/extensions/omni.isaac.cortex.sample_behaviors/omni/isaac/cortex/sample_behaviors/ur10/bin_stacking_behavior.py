@@ -369,7 +369,7 @@ class ReachToPlace(MoveWithNavObs):
 
         target_ax = np.array([0.0, 0.0, -1.0])
         target_az = np.array([0.0, -1.0, 0.0])
-        target_ay = np.cross(target_az, target_az)
+        target_ay = np.cross(target_az, target_ax)
         self.target_R = math_util.pack_R(target_ax, target_ay, target_az)
 
     def step(self):
@@ -543,9 +543,9 @@ class ReleaseFlipStationBin(DfState):
         self.ax = ax
         self.v = v
 
-        target_ax = normalized(np.array([1.0, -0.0, 0.0]))
-        target_ay = ay
-        target_az = np.cross(target_ax, target_ay)
+        target_ax = normalized(np.array([0.0, -0.0, 1.0]))
+        target_ay = normalized(np.array([0.0, -1.0, 0.0]))
+        target_az = np.cross(target_ay, target_ax)
         target_R = math_util.pack_R(target_ax, target_ay, target_az)
 
         # This target pose is a little below the bin, but off to the side with the end

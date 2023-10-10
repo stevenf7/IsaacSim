@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.5] - 2023-10-10
+
+### Fixed
+- Conversion from Rotation matrix Quaternion uses direct method
+
 ## [0.3.4] - 2023-06-12
 
 ### Fixed
