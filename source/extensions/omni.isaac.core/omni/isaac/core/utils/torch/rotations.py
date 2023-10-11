@@ -40,7 +40,7 @@ def euler_angles_to_quats(
         euler_angles (typing.Union[np.ndarray, torch.Tensor]): euler angles with shape (N, 3)
         degrees (bool, optional): True if degrees, False if radians. Defaults to False.
         extrinsic (bool, optional): True if the euler angles follows the extrinsic angles
-                   convention (equivilant to ZYX ordering) and False if it follows
+                   convention (equivilant to ZYX ordering but returned in the reverse) and False if it follows
                    the intrinsic angles conventions (equivilant to XYZ ordering).
                    Defaults to True.
 

@@ -36,7 +36,7 @@ def euler_angles_to_quats(
     Args:
         euler_angles np.ndarray: euler angles with shape (N, 3) or (3,) representation XYZ in extrinsic coordinates
         extrinsic (bool, optional): True if the euler angles follows the extrinsic angles
-                   convention (equivilant to ZYX ordering) and False if it follows
+                   convention (equivilant to ZYX ordering but returned in the reverse) and False if it follows
                    the intrinsic angles conventions (equivilant to XYZ ordering).
                    Defaults to True.
         degrees (bool, optional): True if degrees, False if radians. Defaults to False.
@@ -66,12 +66,12 @@ def quats_to_euler_angles(
         quaternions (np.ndarray): quaternions with shape (N, 4) or (4,) - scalar first
         degrees (bool, optional): Return euler angles in degrees if True, radians if False. Defaults to False.
         extrinsic (bool, optional): True if the euler angles follows the extrinsic angles
-                   convention (equivilant to ZYX ordering) and False if it follows
+                   convention (equivilant to ZYX ordering but returned in the reverse) and False if it follows
                    the intrinsic angles conventions (equivilant to XYZ ordering).
                    Defaults to True.
 
     Returns:
-        np.ndarray: Euler angles in extrinsic coordinates XYZ order with shape (N, 3) or (3,) corresponding to the quaternion rotations
+        np.ndarray: Euler angles in extrinsic or intrinsic coordinates XYZ order with shape (N, 3) or (3,) corresponding to the quaternion rotations
     """
     if extrinsic:
         order = "xyz"
