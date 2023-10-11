@@ -30,6 +30,7 @@ else:
         carb.log_warn(
             "Interactive python shell detected but ISAAC_JUPYTER_KERNEL was not set. Problems with asyncio may occur"
         )
+        carb.log_warn("Please use Isaac Sim Python 3 kernel instead of the default Python 3 Kernel")
     except Exception:
         # We are probably not in an interactive shell
         pass
