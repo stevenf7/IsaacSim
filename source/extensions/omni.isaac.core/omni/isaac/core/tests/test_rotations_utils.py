@@ -9,7 +9,13 @@
 
 import numpy as np
 import omni.kit.test
-from omni.isaac.core.utils.rotations import euler_angles_to_quat, quat_to_euler_angles
+from omni.isaac.core.utils.rotations import (
+    euler_angles_to_quat,
+    euler_to_rot_matrix,
+    matrix_to_euler_angles,
+    quat_to_euler_angles,
+    rot_matrix_to_quat,
+)
 from scipy.spatial.transform import Rotation
 
 
@@ -27,8 +33,6 @@ class TestRotations(omni.kit.test.AsyncTestCase):
         rot = Rotation.from_euler("xyz", [roll, pitch, yaw], degrees=False)
 
         x, y, z, w = rot.as_quat()
-        print([w, x, y, z])
-        print(euler_angles_to_quat(np.array([roll, pitch, yaw])))
         self.assertTrue(
             np.all(np.isclose(euler_angles_to_quat(np.array([roll, pitch, yaw])), np.array([w, x, y, z]), atol=1e-05))
         )
@@ -46,6 +50,13 @@ class TestRotations(omni.kit.test.AsyncTestCase):
                     atol=1e-05,
                 )
             )
+            or np.all(
+                np.isclose(
+                    euler_angles_to_quat(quat_to_euler_angles(np.array([w, x, y, z]))),
+                    -1 * np.array([w, x, y, z]),
+                    atol=1e-05,
+                )
+            )
         )
         roll, pitch, yaw = [0.94965366, 2.3579875, 1.43057573]
         rot = Rotation.from_euler("xyz", [roll, pitch, yaw], degrees=False)
@@ -58,5 +69,34 @@ class TestRotations(omni.kit.test.AsyncTestCase):
                     atol=1e-05,
                 )
             )
+            or np.all(
+                np.isclose(
+                    euler_angles_to_quat(quat_to_euler_angles(np.array([w, x, y, z]))),
+                    -1 * np.array([w, x, y, z]),
+                    atol=1e-05,
+                )
+            )
         )
         pass
+
+    async def test_euler_angles_to_matrix_to_quat(self):
+        gt_quat = np.array([-0.5, -0.5, -0.5, 0.5])
+        quat = rot_matrix_to_quat(
+            euler_to_rot_matrix(matrix_to_euler_angles(np.array([[0, 1, 0], [0, 0, -1], [-1, 0, 0]])))
+        )
+        self.assertTrue(
+            np.all(
+                np.isclose(
+                    gt_quat,
+                    quat,
+                    atol=1e-05,
+                )
+            )
+            or np.all(
+                np.isclose(
+                    -1 * gt_quat,
+                    quat,
+                    atol=1e-05,
+                )
+            )
+        )

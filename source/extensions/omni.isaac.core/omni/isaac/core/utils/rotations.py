@@ -82,31 +82,31 @@ def quat_to_rot_matrix(quat: np.ndarray) -> np.ndarray:
 
 
 def matrix_to_euler_angles(mat: np.ndarray, degrees: bool = False, extrinsic: bool = True) -> np.ndarray:
-    """Convert rotation matrix to Euler XYZ or ZYX angles.
+    """Convert rotation matrix to Euler XYZ extrinsic or intrinsic angles.
 
     Args:
         mat (np.ndarray): A 3x3 rotation matrix.
         degrees (bool, optional): Whether returned angles should be in degrees.
         extrinsic (bool, optional): True if the rotation matrix follows the extrinsic matrix
-                   convention (equivilant to ZYX ordering) and False if it follows
+                   convention (equivilant to ZYX ordering but returned in the reverse) and False if it follows
                    the intrinsic matrix conventions (equivilant to XYZ ordering).
                    Defaults to True.
 
     Returns:
-        np.ndarray: Euler XYZ angles if extrinsic is False and Euler ZYX angles if extrinsic is True.
+        np.ndarray: Euler XYZ angles (intrinsic form) if extrinsic is False and Euler XYZ angles (extrinsic form) if extrinsic is True.
     """
     if extrinsic:
         if mat[2, 0] > _POLE_LIMIT:
             roll = np.arctan2(mat[0, 1], mat[0, 2])
             pitch = -np.pi / 2
             yaw = 0.0
-            return np.array([yaw, pitch, roll])
+            return np.array([roll, pitch, yaw])
 
         if mat[2, 0] < -_POLE_LIMIT:
             roll = np.arctan2(mat[0, 1], mat[0, 2])
             pitch = np.pi / 2
             yaw = 0.0
-            return np.array([yaw, pitch, roll])
+            return np.array([roll, pitch, yaw])
 
         roll = np.arctan2(mat[2, 1], mat[2, 2])
         pitch = -np.arcsin(mat[2, 0])
@@ -146,14 +146,17 @@ def euler_to_rot_matrix(euler_angles: np.ndarray, degrees: bool = False, extrins
         euler_angles (np.ndarray): Euler angles.
         degrees (bool, optional): Whether passed angles are in degrees.
         extrinsic (bool, optional): True if the euler angles follows the extrinsic angles
-                   convention (equivilant to ZYX ordering) and False if it follows
+                   convention (equivilant to ZYX ordering but returned in the reverse) and False if it follows
                    the intrinsic angles conventions (equivilant to XYZ ordering).
                    Defaults to True.
 
     Returns:
         np.ndarray:  A 3x3 rotation matrix in its extrinsic or intrinsic form depends on the extrinsic argument.
     """
-    roll, pitch, yaw = euler_angles
+    if extrinsic:
+        yaw, pitch, roll = euler_angles
+    else:
+        roll, pitch, yaw = euler_angles
     if degrees:
         roll = math.radians(roll)
         pitch = math.radians(pitch)
@@ -167,9 +170,9 @@ def euler_to_rot_matrix(euler_angles: np.ndarray, degrees: bool = False, extrins
     if extrinsic:
         return np.array(
             [
-                [(cp * cy), ((cy * sp * sr) - (cr * sy)), ((cr * cy * sp) + (sr * sy))],
-                [(cp * sy), ((cr * cy) + (sr * sp * sy)), ((cr * sp * sy) - (cy * sr))],
-                [-sp, (cp * sr), (cr * cp)],
+                [(cp * cr), ((cr * sp * sy) - (cy * sr)), ((cr * cy * sp) + (sr * sy))],
+                [(cp * sr), ((cy * cr) + (sr * sp * sy)), ((cy * sp * sr) - (cr * sy))],
+                [-sp, (cp * sy), (cy * cp)],
             ]
         )
     else:
@@ -189,25 +192,25 @@ def quat_to_euler_angles(quat: np.ndarray, degrees: bool = False, extrinsic: boo
         quat (np.ndarray): Input quaternion (w, x, y, z).
         degrees (bool, optional): Whether returned angles should be in degrees. Defaults to False.
         extrinsic (bool, optional): True if the euler angles follows the extrinsic angles
-                   convention (equivilant to ZYX ordering) and False if it follows
+                   convention (equivilant to ZYX ordering but returned in the reverse) and False if it follows
                    the intrinsic angles conventions (equivilant to XYZ ordering).
                    Defaults to True.
 
 
     Returns:
-        np.ndarray: Euler XYZ angles if extrinsic is False and Euler ZYX angles if extrinsic is True.
+        np.ndarray: Euler XYZ angles (intrinsic form) if extrinsic is False and Euler XYZ angles (extrinsic form) if extrinsic is True.
     """
     return matrix_to_euler_angles(quat_to_rot_matrix(quat), degrees=degrees, extrinsic=extrinsic)
 
 
 def euler_angles_to_quat(euler_angles: np.ndarray, degrees: bool = False, extrinsic: bool = True) -> np.ndarray:
-    """Convert Euler XYZ or ZYX angles to quaternion.
+    """Convert Euler angles to quaternion.
 
     Args:
         euler_angles (np.ndarray):  Euler XYZ angles.
         degrees (bool, optional): Whether input angles are in degrees. Defaults to False.
         extrinsic (bool, optional): True if the euler angles follows the extrinsic angles
-                   convention (equivilant to ZYX ordering) and False if it follows
+                   convention (equivilant to ZYX ordering but returned in the reverse) and False if it follows
                    the intrinsic angles conventions (equivilant to XYZ ordering).
                    Defaults to True.
 
