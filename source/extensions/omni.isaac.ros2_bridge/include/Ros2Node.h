@@ -113,7 +113,10 @@ public:
 
         size_t start_idx = 0;
         size_t start_topic_idx = 0;
-
+        if (topic_name.size() == 0)
+        {
+            return full_topic_name;
+        }
         if (prefix.size() > 0)
         {
             for (size_t i = 0; !(::isalnum(prefix[i])); i++)
