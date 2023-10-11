@@ -13,8 +13,10 @@ import time
 
 import carb
 import numpy as np
-from isaac_amr import GXF_BRIDGE_EXTENSION_NAME, STATUS_FILE_PATH
 from omni.isaac.kit import SimulationApp
+
+GXF_BRIDGE_EXTENSION_NAME = "omni.isaac.gxf_bridge"
+STATUS_FILE_PATH = "/tmp/run_script_status.log"
 
 
 def main():
@@ -48,7 +50,10 @@ def main():
         help="TCP server port - for scenes creating GXF app from OmniGraph.",
     )
     parser.add_argument(
-        "--robot", choices=["carter_v2_3"], default=None, help="Type of robot to place or move in scene"
+        "--robot",
+        choices=["carter_v2_3", "carter_v2_4"],
+        default="carter_v2_4",
+        help="Type of robot to place or move in scene",
     )
     parser.add_argument(
         "--initial-pos",
