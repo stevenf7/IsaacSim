@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.10.2] - 2023-10-12
+### Fixed
+- Bug in ArticulationController with np.isnan
+
 ## [2.10.1] - 2023-10-10
 ### Fixed
 - Fixed bug in matrix_to_euler_angles, euler_to_rot_matrix

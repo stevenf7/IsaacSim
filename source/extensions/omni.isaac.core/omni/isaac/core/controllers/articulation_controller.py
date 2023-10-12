@@ -59,7 +59,9 @@ class ArticulationController(object):
             joint_positions = self._articulation_view._backend_utils.expand_dims(joint_positions, 0)
             if control_actions.joint_indices is None:
                 for i in range(control_actions.get_length()):
-                    if joint_positions[0][i] is None or np.isnan(joint_positions[0][i]):
+                    if joint_positions[0][i] is None or np.isnan(
+                        self._articulation_view._backend_utils.to_numpy(joint_positions[0][i])
+                    ):
                         joint_positions[0][i] = applied_actions.joint_positions[i]
         joint_velocities = control_actions.joint_velocities
         if control_actions.joint_velocities is not None:
