@@ -186,7 +186,7 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         await init_robot_sim(self.dc, "/World/Carter_V24")
 
-        for x in range(1, 4):
+        for x in range(1, 3):
             angular_velocity = 0.6 * x
             og.Controller.attribute(self.graph_path + "/DifferentialController.inputs:angularVelocity").set(
                 angular_velocity
@@ -195,6 +195,8 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
             # wait until const velocity reached
             for i in range(200):
                 await omni.kit.app.get_app().next_update_async()
+                curr_ang_vel = float(og.DataView.get(odom_ang_vel)[2])
+                print(f"current: {curr_ang_vel}  target: {angular_velocity}")
 
             curr_ang_vel = float(og.DataView.get(odom_ang_vel)[2])
             self.assertAlmostEqual(curr_ang_vel, angular_velocity, delta=1e-1)

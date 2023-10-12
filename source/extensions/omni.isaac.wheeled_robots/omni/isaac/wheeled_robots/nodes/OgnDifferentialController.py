@@ -83,10 +83,18 @@ class OgnDifferentialController:
 
                 if db.inputs.maxLinearSpeed > 0:
                     state.max_linear_speed = db.inputs.maxLinearSpeed
+                elif db.inputs.maxLinearSpeed == 0:
+                    state.max_linear_speed = 1.0e20
+
                 if db.inputs.maxAngularSpeed > 0:
                     state.max_angular_speed = db.inputs.maxAngularSpeed
+                elif db.inputs.maxAngularSpeed == 0:
+                    state.max_angular_speed = 1.0e20
+
                 if db.inputs.maxWheelSpeed > 0:
                     state.max_wheel_speed = db.inputs.maxWheelSpeed
+                elif db.inputs.maxWheelSpeed == 0:
+                    state.max_wheel_speed = 1.0e20
 
                 state.initialize_controller()
 
