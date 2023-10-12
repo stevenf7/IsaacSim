@@ -82,6 +82,14 @@
                 "type":"float[2]",
                 "description": "Stereo offset (Tx, Ty) used when publishing the camera info topic",
                 "default": [0.0, 0.0]
+            },
+            "physicalDistortionModel": {
+                "type": "token",
+                "description": "physical distortion model used for approximation, if blank projectionType is used"
+            },
+            "physicalDistortionCoefficients": {
+                "type": "float[]",
+                "description": "physical distortion model used for approximation, physicalDistortionModel must be set to use these coefficients"
             }
         }
     }

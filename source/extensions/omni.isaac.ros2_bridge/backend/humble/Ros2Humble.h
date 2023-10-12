@@ -71,9 +71,10 @@ public:
     virtual ~Ros2CameraInfoMessageHumble();
     virtual const void* getTypeSupportHandle();
     virtual void fillHeader(const double timestamp, const std::string& frame_id);
-    virtual void fillHeightWidthDistortion(const uint32_t height, const uint32_t width, const std::string& distort_model);
+    virtual void fillHeightWidth(const uint32_t height, const uint32_t width);
     virtual void fillIntrisicArray(const double k_arr[], const int numElem);
     virtual void fillProjectionArray(const double p_arr[], const int numElem);
+    virtual void fillDistortionModel(std::vector<double>& distort_array, const std::string& distort_model);
 };
 
 class Ros2ImageMessageHumble : public Ros2ImageMessage, Ros2BackendHumble

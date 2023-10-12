@@ -95,11 +95,10 @@ class Ros2CameraInfoMessage : public Ros2Message
 {
 public:
     virtual void fillHeader(const double timestamp, const std::string& frame_id) = 0;
-    virtual void fillHeightWidthDistortion(const uint32_t height,
-                                           const uint32_t width,
-                                           const std::string& distort_model) = 0;
+    virtual void fillHeightWidth(const uint32_t height, const uint32_t width) = 0;
     virtual void fillIntrisicArray(const double k_arr[], const int numElem) = 0;
     virtual void fillProjectionArray(const double p_arr[], const int numElem) = 0;
+    virtual void fillDistortionModel(std::vector<double>& distort_array, const std::string& distort_model) = 0;
 };
 
 class Ros2ImageMessage : public Ros2Message

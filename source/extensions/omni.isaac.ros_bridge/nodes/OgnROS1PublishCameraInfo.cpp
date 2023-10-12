@@ -95,7 +95,23 @@ public:
 
         cam_info_msg.P = { fx, 0, cx, db.inputs.stereoOffset()[0], 0, fy, cy, db.inputs.stereoOffset()[1], 0, 0, 1, 0 };
 
-        cam_info_msg.distortion_model = db.tokenToString(db.inputs.projectionType());
+
+        std::string physicalDistortion = db.tokenToString(db.inputs.physicalDistortionModel());
+
+        if (physicalDistortion.length() > 0)
+        {
+            for (u_int32_t i = 0; i < db.inputs.physicalDistortionCoefficients().size(); i++)
+            {
+                cam_info_msg.D.push_back(db.inputs.physicalDistortionCoefficients()[i]);
+            }
+
+            cam_info_msg.distortion_model = physicalDistortion;
+        }
+        else
+        {
+            // TODO: Handle fisheye coeffieicents?
+            cam_info_msg.distortion_model = db.tokenToString(db.inputs.projectionType());
+        }
 
         state.mPublisher->publish(cam_info_msg);
 

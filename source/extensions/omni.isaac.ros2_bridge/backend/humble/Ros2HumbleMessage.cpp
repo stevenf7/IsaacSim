@@ -180,9 +180,7 @@ void Ros2CameraInfoMessageHumble::fillHeader(const double timestamp, const std::
     Ros2BackendHumble::set_header(frame_id, static_cast<int64_t>(timestamp * 1e9), camInfo_msg->header);
 }
 
-void Ros2CameraInfoMessageHumble::fillHeightWidthDistortion(const uint32_t height,
-                                                            const uint32_t width,
-                                                            const std::string& distort_model)
+void Ros2CameraInfoMessageHumble::fillHeightWidth(const uint32_t height, const uint32_t width)
 {
     if (!msg)
     {
@@ -193,7 +191,6 @@ void Ros2CameraInfoMessageHumble::fillHeightWidthDistortion(const uint32_t heigh
 
     camInfo_msg->height = height;
     camInfo_msg->width = width;
-    Ros2BackendHumble::set_string(distort_model, camInfo_msg->distortion_model);
 }
 
 void Ros2CameraInfoMessageHumble::fillIntrisicArray(const double k_arr[], const int numElem)
@@ -207,6 +204,25 @@ void Ros2CameraInfoMessageHumble::fillIntrisicArray(const double k_arr[], const 
     memcpy(camInfo_msg->k, k_arr, numElem * sizeof(double));
 }
 
+void Ros2CameraInfoMessageHumble::fillDistortionModel(std::vector<double>& distort_array, const std::string& distort_model)
+{
+    if (!msg)
+    {
+        return;
+    }
+
+    sensor_msgs__msg__CameraInfo* camInfo_msg = static_cast<sensor_msgs__msg__CameraInfo*>(msg);
+    if (distort_array.size() > 0)
+    {
+        camInfo_msg->d.data = (double*)malloc(distort_array.size() * sizeof(double));
+
+        camInfo_msg->d.size = distort_array.size();
+        camInfo_msg->d.capacity = distort_array.size();
+        memcpy(camInfo_msg->d.data, distort_array.data(), distort_array.size() * sizeof(double));
+    }
+    Ros2BackendHumble::set_string(distort_model, camInfo_msg->distortion_model);
+}
+
 void Ros2CameraInfoMessageHumble::fillProjectionArray(const double p_arr[], const int numElem)
 {
     if (!msg)
@@ -217,6 +233,7 @@ void Ros2CameraInfoMessageHumble::fillProjectionArray(const double p_arr[], cons
     sensor_msgs__msg__CameraInfo* camInfo_msg = static_cast<sensor_msgs__msg__CameraInfo*>(msg);
     memcpy(camInfo_msg->p, p_arr, numElem * sizeof(double));
 }
+
 
 Ros2CameraInfoMessageHumble::~Ros2CameraInfoMessageHumble()
 {

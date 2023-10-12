@@ -67,7 +67,7 @@ public:
 
         auto& height = db.inputs.height();
         auto& width = db.inputs.width();
-        state.mMessage->fillHeightWidthDistortion(height, width, db.tokenToString(db.inputs.projectionType()));
+        state.mMessage->fillHeightWidth(height, width);
         // ROS image: conventions
         // origin of frame should be optical center of camera
         // +x should point to the right in the image
@@ -85,7 +85,23 @@ public:
 
         double p_arr[] = { fx, 0, cx, db.inputs.stereoOffset()[0], 0, fy, cy, db.inputs.stereoOffset()[1], 0, 0, 1, 0 };
         state.mMessage->fillProjectionArray(p_arr, 12);
+        std::string physicalDistortion = db.tokenToString(db.inputs.physicalDistortionModel());
 
+        if (physicalDistortion.length() > 0)
+        {
+            std::vector<double> coeff;
+            for (u_int32_t i = 0; i < db.inputs.physicalDistortionCoefficients().size(); i++)
+            {
+                coeff.push_back(db.inputs.physicalDistortionCoefficients()[i]);
+            }
+            state.mMessage->fillDistortionModel(coeff, physicalDistortion);
+        }
+        else
+        {
+            // TODO: Handle fisheye coeffieicents?
+            std::vector<double> empty;
+            state.mMessage->fillDistortionModel(empty, db.tokenToString(db.inputs.projectionType()));
+        }
         state.mPublisher.get()->publish(state.mMessage->ptr());
     }
 
