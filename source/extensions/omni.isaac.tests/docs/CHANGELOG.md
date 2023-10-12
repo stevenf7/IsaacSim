@@ -1,4 +1,7 @@
 # Changelog
+## [1.13.1] 2023-10-11
+### Changed
+- Modified target angular velocity for the spin test as the old values are above the speed limit
 
 ## [1.13.0] 2023-10-05
 ### Changed

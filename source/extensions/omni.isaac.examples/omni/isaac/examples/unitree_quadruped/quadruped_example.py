@@ -18,8 +18,8 @@ class QuadrupedExample(BaseSample):
     def __init__(self) -> None:
         super().__init__()
         self._world_settings["stage_units_in_meters"] = 1.0
-        self._world_settings["physics_dt"] = 1.0 / 300.0
-        self._world_settings["rendering_dt"] = 15.0 / 300.0
+        self._world_settings["physics_dt"] = 1.0 / 350.0
+        self._world_settings["rendering_dt"] = 10.0 / 350.0
         self._enter_toggled = 0
         self._base_command = [0.0, 0.0, 0.0, 0]
         self._event_flag = False
