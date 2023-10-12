@@ -82,6 +82,14 @@ class FrankaNutAndBolt(BaseSample):
         self._solver_type = "TGS"
         self._ik_damping = 0.1
 
+        self._num_bolts = 2
+        self._num_nuts = 12
+        self._sim_dt = 1.0 / self._time_steps_per_second
+        self._fsm_update_dt = 1.0 / self._fsm_update_rate
+
+        return
+
+    def setup_scene(self):
         # setup asset paths:
         self.nucleus_server = get_assets_root_path()
         self.asset_folder = self.nucleus_server + "/Isaac/Samples/Examples/FrankaNutBolt/"
@@ -97,14 +105,6 @@ class FrankaNutAndBolt(BaseSample):
             "pipe": self.asset_folder + "SubUSDs/Pipe/Pipe.usd",
         }
 
-        self._num_bolts = 2
-        self._num_nuts = 12
-        self._sim_dt = 1.0 / self._time_steps_per_second
-        self._fsm_update_dt = 1.0 / self._fsm_update_rate
-
-        return
-
-    def setup_scene(self):
         world = self.get_world()
 
         world.scene.add_default_ground_plane()

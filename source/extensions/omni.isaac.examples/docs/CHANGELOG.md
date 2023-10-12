@@ -1,7 +1,13 @@
 # Changelog
+
+## [1.7.6] - 2023-10-12
+### Fixed
+- Hang on startup due to franka nut and bolt querying nucleus
+
 ## [1.7.5] - 2023-10-09
 ### Changed
 - Increased quadruped example gain and physics rate, added notes in the description.
+
 ## [1.7.4] - 2023-09-29
 ### Fixed
 - Fixed nut slipping from Franka hand for nut and bolt extension
