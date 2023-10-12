@@ -90,7 +90,7 @@ public:
         if (physicalDistortion.length() > 0)
         {
             std::vector<double> coeff;
-            for (u_int32_t i = 0; i < db.inputs.physicalDistortionCoefficients().size(); i++)
+            for (size_t i = 0; i < db.inputs.physicalDistortionCoefficients().size(); i++)
             {
                 coeff.push_back(db.inputs.physicalDistortionCoefficients()[i]);
             }

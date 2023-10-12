@@ -100,7 +100,7 @@ public:
 
         if (physicalDistortion.length() > 0)
         {
-            for (u_int32_t i = 0; i < db.inputs.physicalDistortionCoefficients().size(); i++)
+            for (size_t i = 0; i < db.inputs.physicalDistortionCoefficients().size(); i++)
             {
                 cam_info_msg.D.push_back(db.inputs.physicalDistortionCoefficients()[i]);
             }
