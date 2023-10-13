@@ -53,6 +53,9 @@ public:
 
             return true;
         }
+
+        state.mFrameId = db.inputs.frameId();
+
         state.publishCameraInfo(db);
 
         return true;
@@ -61,7 +64,6 @@ public:
     void publishCameraInfo(OgnROS2PublishCameraInfoDatabase& db)
     {
         auto& state = db.internalState<OgnROS2PublishCameraInfo>();
-
 
         state.mMessage->fillHeader(db.inputs.timeStamp(), state.mFrameId);
 
