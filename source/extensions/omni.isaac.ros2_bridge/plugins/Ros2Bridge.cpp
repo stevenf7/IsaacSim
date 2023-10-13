@@ -111,7 +111,7 @@ Ros2Factory* const CARB_ABI getFactory()
 
 bool const CARB_ABI getStartupStatus()
 {
-    if (g_Factory)
+    if (g_Factory && g_defaultHandle)
     {
         return true;
     }
@@ -255,6 +255,19 @@ CARB_EXPORT void carbOnPluginStartup()
                 "Could not load ROS2 Bridge due to missing library dependencies, please make sure your sourced ROS2 workspace has the correct packages/libraries installed");
             return;
         }
+    }
+    // Test handle to make sure we can init
+    {
+        auto handle = g_Factory->CreateHandle();
+        handle->init(0, nullptr);
+        if (!handle->is_valid())
+        {
+            handle->shutdown();
+            CARB_LOG_ERROR(
+                "Could not load ROS2 Bridge due to missing library dependencies, please make sure your sourced ROS2 workspace has the correct packages/libraries installed");
+            return;
+        }
+        handle->shutdown();
     }
 
     g_defaultHandle = g_Factory->CreateHandle();

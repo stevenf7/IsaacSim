@@ -68,9 +68,6 @@ class Extension(omni.ext.IExt):
                     rclpy.shutdown()
                 except Exception as e:
                     carb.log_warn("Could not import rclpy")
-                    carb.log_warn(
-                        "Omnigraph nodes cannot publish/subscribe and rlclpy and related imports will not be available."
-                    )
             return
 
     def on_shutdown(self):

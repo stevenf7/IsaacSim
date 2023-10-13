@@ -74,6 +74,14 @@ class ROS2BridgeExtension(omni.ext.IExt):
         self._module = _ros2_bridge
         self._ros2bridge = self._module.acquire_ros2_bridge_interface()
         if self._ros2bridge.get_startup_status() is False:
+            if sys.platform == "linux":
+                omni.kit.app.get_app().print_and_log(
+                    f"To use the internal libraries included with the extension please set: \nRMW_IMPLEMENTATION=rmw_fastrtps_cpp\nLD_LIBRARY_PATH=$LD_LIBRARY_PATH:{self._extension_path}/{ros_distro}/lib\nBefore starting Isaac Sim"
+                )
+            else:
+                omni.kit.app.get_app().print_and_log(
+                    f"To use the internal libraries included with the extension please set: \nRMW_IMPLEMENTATION=rmw_fastrtps_cpp\nPATH=%PATH%;{self._extension_path}/{ros_distro}/lib\nBefore starting Isaac Sim"
+                )
             carb.log_error(f"ROS2 Bridge startup failed")
             ext_manager.set_extension_enabled("omni.isaac.ros2_bridge", False)
         self.register_nodes()
