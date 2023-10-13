@@ -1,6 +1,10 @@
 # Changelog
 
 
+## [1.0.4] - 2023-10-12
+### Fixed
+- Fix invalid Rotation Matrix in UR10 bin stacking behavior waypoints
+
 ## [1.0.3] - 2023-10-10
 ### Fixed
 - Fix typos in UR10 bin stacking behavior waypoints - Cross products now use both primary and secondary axes accordingly;
