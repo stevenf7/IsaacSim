@@ -68,7 +68,11 @@ void Ros2HandleHumble::init(int argc, char const* const* argv, bool setDomainId,
 }
 bool Ros2HandleHumble::is_valid()
 {
-    return rcl_context_is_valid(mContext.get());
+    if (mContext.get())
+    {
+        return rcl_context_is_valid(mContext.get());
+    }
+    return false;
 }
 bool Ros2HandleHumble::shutdown(const char* shutdown_reason)
 {

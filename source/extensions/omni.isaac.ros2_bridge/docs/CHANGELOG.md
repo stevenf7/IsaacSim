@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.3.7] - 2023-10-11
+### Changed
+- Disable extension if rclpy cannot load
+
 ## [2.3.6] - 2023-10-09
 ### Fixed
 - Joint State Subscriber supports input state messages with only one mode of drive specified
