@@ -274,9 +274,9 @@ class Extension(omni.ext.IExt):
             ),
             make_menu_item_description(
                 ext_id,
-                "Carter V2.4",
+                "Nova Carter",
                 lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/Carter/carter_v2_4_sensors.usd", "/Carter_V24"
+                    "/Isaac/Robots/Carter/carter_v2_4_sensors.usd", "/Nova_Carter"
                 ),
             ),
             make_menu_item_description(
