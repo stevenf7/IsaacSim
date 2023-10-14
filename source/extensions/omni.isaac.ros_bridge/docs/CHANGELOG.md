@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.14.11] - 2023-10-13
+### Fixed
+- CameraInfo publisher now includes identity Rectification matrix
 
 ## [1.14.10] - 2023-10-09
 ### Fixed

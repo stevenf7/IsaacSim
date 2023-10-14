@@ -95,6 +95,8 @@ public:
 
         cam_info_msg.P = { fx, 0, cx, db.inputs.stereoOffset()[0], 0, fy, cy, db.inputs.stereoOffset()[1], 0, 0, 1, 0 };
 
+        cam_info_msg.R = { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
+
 
         std::string physicalDistortion = db.tokenToString(db.inputs.physicalDistortionModel());
 

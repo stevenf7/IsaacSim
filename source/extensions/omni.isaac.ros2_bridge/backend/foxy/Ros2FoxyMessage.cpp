@@ -231,6 +231,16 @@ void Ros2CameraInfoMessageFoxy::fillProjectionArray(const double p_arr[], const 
     memcpy(camInfo_msg->p, p_arr, numElem * sizeof(double));
 }
 
+void Ros2CameraInfoMessageFoxy::fillRectificationArray(const double r_arr[], const int numElem)
+{
+    if (!msg)
+    {
+        return;
+    }
+
+    sensor_msgs__msg__CameraInfo* camInfo_msg = static_cast<sensor_msgs__msg__CameraInfo*>(msg);
+    memcpy(camInfo_msg->r, r_arr, numElem * sizeof(double));
+}
 Ros2CameraInfoMessageFoxy::~Ros2CameraInfoMessageFoxy()
 {
     if (!msg)
