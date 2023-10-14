@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.3.2] - 2023-10-13
+
+### Fixed
+- source bash when starting sim so env vars are properly set
+
 ## [2.3.1] - 2023-08-16
 
 ### Fixed
