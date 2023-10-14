@@ -24,12 +24,17 @@ toggleable = false
 name = "omni.isaac.app.setup"
 
 
+[settings."filter:platform"."windows-x86_64"]
+isaac.startup.ros_bridge_extension = ""
+[settings."filter:platform"."linux-x86_64"]
+isaac.startup.ros_bridge_extension = "omni.isaac.ros2_bridge"
+
 [[test]]
 dependencies = [
    "omni.rtx.settings.core", "omni.pip.cloud", "omni.replicator.core"
 ]
 
-[settings."filter:platform"."windows-x86_64"]
-isaac.startup.ros_bridge_extension = ""
-[settings."filter:platform"."linux-x86_64"]
-isaac.startup.ros_bridge_extension = "omni.isaac.ros2_bridge"
+stdoutFailPatterns.exclude = [
+    "*[omni.isaac.ros2_bridge.plugin]*", # Ada multi gpu doesn't support this yet
+    "*[omni.isaac.ros2_bridge.scripts.extension]*", # Ada multi gpu doesn't support this yet
+]
