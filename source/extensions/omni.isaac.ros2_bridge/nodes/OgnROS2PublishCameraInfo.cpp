@@ -89,6 +89,9 @@ public:
         state.mMessage->fillProjectionArray(p_arr, 12);
         std::string physicalDistortion = db.tokenToString(db.inputs.physicalDistortionModel());
 
+        double r_arr[] = { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
+        state.mMessage->fillRectificationArray(r_arr, 9);
+
         if (physicalDistortion.length() > 0)
         {
             std::vector<double> coeff;

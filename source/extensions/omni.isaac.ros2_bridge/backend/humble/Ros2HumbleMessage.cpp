@@ -234,6 +234,17 @@ void Ros2CameraInfoMessageHumble::fillProjectionArray(const double p_arr[], cons
     memcpy(camInfo_msg->p, p_arr, numElem * sizeof(double));
 }
 
+void Ros2CameraInfoMessageHumble::fillRectificationArray(const double r_arr[], const int numElem)
+{
+    if (!msg)
+    {
+        return;
+    }
+
+    sensor_msgs__msg__CameraInfo* camInfo_msg = static_cast<sensor_msgs__msg__CameraInfo*>(msg);
+    memcpy(camInfo_msg->r, r_arr, numElem * sizeof(double));
+}
+
 
 Ros2CameraInfoMessageHumble::~Ros2CameraInfoMessageHumble()
 {

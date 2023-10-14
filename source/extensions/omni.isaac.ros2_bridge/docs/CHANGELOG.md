@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.3.8] - 2023-10-13
+### Fixed
+- CameraInfo publisher now includes identity Rectification matrix
+
 ## [2.3.7] - 2023-10-11
 ### Changed
 - Disable extension if rclpy cannot load

@@ -74,6 +74,7 @@ public:
     virtual void fillHeightWidth(const uint32_t height, const uint32_t width);
     virtual void fillIntrisicArray(const double k_arr[], const int numElem);
     virtual void fillProjectionArray(const double p_arr[], const int numElem);
+    virtual void fillRectificationArray(const double r_arr[], const int numElem);
     virtual void fillDistortionModel(std::vector<double>& distort_array, const std::string& distort_model);
 };
 
