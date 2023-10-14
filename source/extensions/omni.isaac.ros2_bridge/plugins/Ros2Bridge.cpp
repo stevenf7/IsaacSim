@@ -256,7 +256,8 @@ CARB_EXPORT void carbOnPluginStartup()
             return;
         }
     }
-    // Test handle to make sure we can init
+// Test handle to make sure we can init
+#ifndef _MSC_VER
     {
         auto handle = g_Factory->CreateHandle();
         handle->init(0, nullptr);
@@ -269,6 +270,7 @@ CARB_EXPORT void carbOnPluginStartup()
         }
         handle->shutdown();
     }
+#endif
 
     g_defaultHandle = g_Factory->CreateHandle();
 
