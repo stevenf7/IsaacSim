@@ -55,7 +55,7 @@ def start_app(app_id: str, app_version: str, app_become_new_default=False, persi
     else:
         if _settings.get(SHOW_CONSOLE_SETTING):
             kwargs["shell"] = True
-            run_args = f"gnome-terminal -- bash -c \"{str(' '.join(run_args))}\""
+            run_args = f"gnome-terminal -- bash -i -c \"{str(' '.join(run_args))}\""
     omni.kit.app.get_app().print_and_log(f"Starting: {run_args}")
     subprocess.Popen(run_args, **kwargs)
 
