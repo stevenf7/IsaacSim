@@ -2,6 +2,9 @@
 
 ## [2.3.2] - 2023-10-13
 
+### Changed
+- Set ROS bridge field to blank so users can pick if they want to start with ROS1/ROS2
+
 ### Fixed
 - source bash when starting sim so env vars are properly set
 
