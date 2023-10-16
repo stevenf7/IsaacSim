@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.5] - 2023-10-16
+### Changed
+- Add flag to SimulationApp close to skip replicator wait for complete
+
 ## [1.4.4] - 2023-10-06
 ### FIXED
 - Fix potential error on Kit shutdown when Replicator capture on play is enabled

@@ -150,7 +150,7 @@ class VecEnvBase(gym.Env):
             self._world.stop()
 
         # bypass USD warnings on stage close
-        self._simulation_app.close()
+        self._simulation_app.close(wait_for_replicator=False)
         return
 
     def seed(self, seed=-1):

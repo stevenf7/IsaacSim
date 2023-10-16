@@ -445,7 +445,7 @@ class SimulationApp:
         # Set rtx settings renderer settings
         self._set_render_settings(default=False)
 
-    def close(self) -> None:
+    def close(self, wait_for_replicator=True) -> None:
         """Close the running Omniverse Toolkit."""
         try:
             # make sure that any replicator workflows finish rendering/writing
@@ -453,7 +453,8 @@ class SimulationApp:
 
             if rep.orchestrator.get_status() not in [rep.orchestrator.Status.STOPPED, rep.orchestrator.Status.STOPPING]:
                 rep.orchestrator.stop()
-            rep.orchestrator.wait_until_complete()
+            if wait_for_replicator:
+                rep.orchestrator.wait_until_complete()
 
             # Disable capture on play to avoid replicator engaging on any new timeline events
             rep.orchestrator.set_capture_on_play(False)

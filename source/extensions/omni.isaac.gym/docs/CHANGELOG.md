@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.8.5] - 2023-10-16
+### Changed
+- Skip replicator wait for complete on shutdown to avoid hang
+
 ## [0.8.4] - 2023-10-06
 ### Fixed
 - Close app if sim is terminated
