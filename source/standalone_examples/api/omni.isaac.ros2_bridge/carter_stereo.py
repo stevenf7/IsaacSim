@@ -51,7 +51,7 @@ print("Loading Complete")
 
 simulation_context = SimulationContext(stage_units_in_meters=1.0)
 
-ros_cameras_graph_path = "/World/Carter_v2_4_ROS2/front_hawk"
+ros_cameras_graph_path = "/World/Carter_v2_4_ROS/front_hawk"
 
 # Enabling rgb and depth image publishers for left camera. Cameras will automatically publish images each frame
 og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/left_camera_render_product.inputs:enabled"), True)
