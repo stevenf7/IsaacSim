@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.7.8] - 2023-10-17
+### Fixed
+- Changed end offector offset for Franka Stacking Controller in robo party example to [0, 0, 0] instead of [0, 0, -0.015]
+
 ## [1.7.7] - 2023-10-12
 ### Fixed
 - Fixed nut tying issue on Windows

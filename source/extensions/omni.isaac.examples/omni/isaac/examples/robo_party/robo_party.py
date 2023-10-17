@@ -137,7 +137,7 @@ class RoboParty(BaseSample):
 
     def _on_start_party_physics_step(self, step_size):
         observations = self._world.get_observations()
-        actions = self._controllers[0].forward(observations=observations, end_effector_offset=np.array([0, 0, -0.015]))
+        actions = self._controllers[0].forward(observations=observations, end_effector_offset=np.array([0, 0, 0]))
         self._articulation_controllers[0].apply_action(actions)
         actions = self._controllers[1].forward(observations=observations, end_effector_offset=np.array([0, 0, 0.02]))
         self._articulation_controllers[1].apply_action(actions)
