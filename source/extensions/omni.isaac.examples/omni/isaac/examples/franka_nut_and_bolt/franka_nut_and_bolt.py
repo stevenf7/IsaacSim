@@ -59,7 +59,7 @@ class FrankaNutAndBolt(BaseSample):
         self._bolt_radius = 0.11
         self._pipe_pos_on_table = np.array([0.2032, 0.381, 0.0])
         self._bolt_z_offset_to_pipe = 0.08
-        self._gripper_to_nut_offset = np.array([0.0, 0.0, 0.0075])
+        self._gripper_to_nut_offset = np.array([0.0, 0.0, 0.005])
         self._top_of_bolt = (
             np.array([0.0, 0.0, self._bolt_length + (self._nut_height / 2)]) + self._gripper_to_nut_offset
         )

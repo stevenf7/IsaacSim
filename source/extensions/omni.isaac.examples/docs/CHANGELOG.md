@@ -1,4 +1,7 @@
 # Changelog
+## [1.7.7] - 2023-10-12
+### Fixed
+- Fixed nut tying issue on Windows
 
 ## [1.7.6] - 2023-10-12
 ### Fixed
