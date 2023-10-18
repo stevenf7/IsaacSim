@@ -172,6 +172,9 @@ copyright_start = 2018
 # Use python from kit sdk
 # python_path =  "${root}/_build/${platform}/${config}/python${shell_ext}"
 
+# out api docs are not versioned
+version_selector_enabled = false
+
 # Move api docs to build directory
 # docs_dst = "${root}/_build/${platform}/${config}/docs"
 
@@ -271,6 +274,14 @@ sphinx_exclude_patterns = [
     ".nvidia-omniverse",
     "_build",
 ]
+
+[repo_docs.editions.production]
+protocol = "s3"
+formats_to_publish = ["html"]
+bucket_name = "omniverse-docs-production"
+region = "us-west-1"
+bucket_dir = "py/isaacsim/"
+s3_exclude_patterns = []
 
 ########################################################################################################################
 # Build Number
