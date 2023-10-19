@@ -67,7 +67,11 @@ void Ros2HandleFoxy::init(int argc, char const* const* argv, bool setDomainId, s
 }
 bool Ros2HandleFoxy::is_valid()
 {
-    return rcl_context_is_valid(mContext.get());
+    if (mContext.get())
+    {
+        return rcl_context_is_valid(mContext.get());
+    }
+    return false;
 }
 bool Ros2HandleFoxy::shutdown(const char* shutdown_reason)
 {

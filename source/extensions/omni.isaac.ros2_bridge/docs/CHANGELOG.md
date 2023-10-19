@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.3.9] - 2023-10-17
+### Fixed
+- Added fix for foxy backend to match humble backend
+
 ## [2.3.8] - 2023-10-13
 ### Fixed
 - CameraInfo publisher now includes identity Rectification matrix
