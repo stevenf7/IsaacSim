@@ -58,18 +58,19 @@ class Roscore(object):
         try:
             rosgraph.Master("/rostopic").getPid()
         except:
-            carb.log_warn("ROS master is not running")
+            omni.kit.app.get_app().print_and_log("ROS master is not running")
             return False
         else:
-            carb.log_warn("ROS master is already running")
+            omni.kit.app.get_app().print_and_log("ROS master is already running")
             return True
 
     def _startup(self, python_path, ros_path, prefix):
-        omni.kit.app.get_app().print_and_log("Starting Roscore...")
+
         ros_env = {}
         if self._check_running() == True:
-            carb.log_info("Roscore already running, not starting internal roscore")
+            omni.kit.app.get_app().print_and_log("Roscore already running, not starting internal roscore")
             return
+        omni.kit.app.get_app().print_and_log("Starting Roscore...")
         # Get ros env parameters from bash setup script
         try:
             self.bash_process = subprocess.check_output(
@@ -103,16 +104,17 @@ class Roscore(object):
     def shutdown(self):
         if Roscore.__initialized is False:
             # Shutdown was already called
+            omni.kit.app.get_app().print_and_log("shutdown already called")
             return
         if self.roscore_pid is not None and self.roscore_process is not None:
-            carb.log_warn("Try to kill child pids of roscore pid: " + str(self.roscore_pid))
+            omni.kit.app.get_app().print_and_log("Try to kill child pids of roscore pid: " + str(self.roscore_pid))
             kill_child_processes(self.roscore_pid)
             self.roscore_process.terminate()
-            carb.log_warn("waiting for process to finish: " + str(self.roscore_pid))
+            omni.kit.app.get_app().print_and_log("waiting for process to finish: " + str(self.roscore_pid))
             self.roscore_process.wait()  # important to prevent from zombie process
             self.roscore_process = None
             self.roscore_pid = None
-            carb.log_warn("Roscore shutdown complete")
+            omni.kit.app.get_app().print_and_log("Roscore shutdown complete")
         else:
             carb.log_warn("Roscore was not started by this object or already shutdown, couldn't stop")
         Roscore.__initialized = False

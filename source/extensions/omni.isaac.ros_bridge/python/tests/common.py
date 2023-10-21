@@ -73,7 +73,7 @@ def set_rotate(prim, rot_mat):
 
 
 async def wait_for_rosmaster_async():
-    carb.log_warn("Waiting for rosmaster to start")
+    omni.kit.app.get_app().print_and_log("Waiting for rosmaster to start")
     import rosgraph
 
     tries = 0
@@ -86,16 +86,16 @@ async def wait_for_rosmaster_async():
             tries = tries + 1
             rosgraph.Master("/rostopic").getPid()
         except:
-            carb.log_warn("ROS master is not running yet...")
+            omni.kit.app.get_app().print_and_log("ROS master is not running yet...")
             await asyncio.sleep(1.0)
             continue
         else:
-            carb.log_warn("ROS master is running, continuing")
+            omni.kit.app.get_app().print_and_log("ROS master is running, continuing")
             break
 
 
 def wait_for_rosmaster():
-    carb.log_warn("Waiting for rosmaster to start")
+    omni.kit.app.get_app().print_and_log("Waiting for rosmaster to start")
     import rosgraph
 
     tries = 0
@@ -108,11 +108,11 @@ def wait_for_rosmaster():
             tries = tries + 1
             rosgraph.Master("/rostopic").getPid()
         except:
-            carb.log_warn("ROS master is not running yet...")
+            omni.kit.app.get_app().print_and_log("ROS master is not running yet...")
             time.sleep(1.0)
             continue
         else:
-            carb.log_warn("ROS master is running, continuing")
+            omni.kit.app.get_app().print_and_log("ROS master is running, continuing")
             break
 
 
