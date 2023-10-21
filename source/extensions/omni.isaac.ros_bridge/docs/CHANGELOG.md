@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.14.12] - 2023-10-20
+### Fixed
+- Logging levels for roscore helper
+
 ## [1.14.11] - 2023-10-13
 ### Fixed
 - CameraInfo publisher now includes identity Rectification matrix

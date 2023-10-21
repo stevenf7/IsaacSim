@@ -127,6 +127,7 @@ while simulation_app.is_running():
 simulation_context.stop()
 
 if args.test:
+    roscore.shutdown()
     roscore = None
 
 simulation_app.close()
