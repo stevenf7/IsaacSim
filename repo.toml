@@ -888,8 +888,6 @@ override = [
   "omni.kit.livestream.webrtc-2.2.1",
   "omni.warp-0.10.1",
   "omni.warp.core-0.10.1",
-  "omni.warehouse_creator-0.3.4",
-  "omni.anim.graph.core-105.1.14",
   "omni.kit.converter.ogc-1.1.22",
 ]
 
