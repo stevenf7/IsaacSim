@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.0] - 2023-10-24
+
+### Changed
+- Update to latest loop runner code from kit-sdk and set default settings
+
 ## [1.0.2] - 2023-06-12
 
 ### Changed
