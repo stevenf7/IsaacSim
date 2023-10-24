@@ -27,9 +27,11 @@
 #include <iostream>
 
 #define FMT_HEADER_ONLY 1
+#include "RunLoopSynchronizer.h"
 #include "fmt/include/fmt/format.h"
 
-static constexpr char kAppRunLoops[] = "/isaac/app/runLoops";
+static constexpr char kAppRunLoops[] = "/app/runLoops";
+static constexpr char kSyncToPresentGlobal[] = "/app/runLoopsGlobal/syncToPresent";
 
 // clang-format off
 const struct carb::PluginImplDesc kPluginImpl = {
@@ -63,8 +65,120 @@ namespace kit
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-const uint64_t kProfilerMask = 1;
+constexpr const uint64_t kProfilerMask = 1;
 const double kDefaultFrequency = 60;
+
+/**
+ * @brief This class is a high precision timer that is specific to the Windows
+ * operating system. It is designed to be efficient in terms of CPU usage, and
+ * provides a more accurate way to measure sleep time than the chrono
+ * sleep_until function. The class utilizes the Win32 timer and calculates the
+ * average error in sleep time, which is then used to minimize the amount of
+ * time spent in a sleep state, and instead uses a spin lock to wait for the
+ * remaining time. Overall, this class is ideal for applications that require
+ * precise timing.
+ */
+class PrecisionSleep
+{
+public:
+    PrecisionSleep()
+    {
+#if CARB_PLATFORM_WINDOWS
+        m_timer = CreateWaitableTimer(NULL, FALSE, NULL);
+#endif
+    }
+
+    ~PrecisionSleep()
+    {
+#if CARB_PLATFORM_WINDOWS
+        CloseHandle(m_timer);
+#endif
+    }
+
+    void sleep(const high_resolution_clock::time_point& waitUntil)
+    {
+        using namespace std::chrono;
+        // We use doubles because we use a lot of math to compute and balance
+        // the error. Even though the error in nanoseconds is a big number, with
+        // time, we multiply it by a tiny number. We want to maintain precision.
+        double sleepDurationNs =
+            static_cast<double>(duration_cast<nanoseconds>(waitUntil - high_resolution_clock::now()).count());
+        double sleepDurationErrorCorrectedNs = sleepDurationNs - m_estimateWakeUpDelayNs;
+        int64_t dueNs = static_cast<int64_t>(sleepDurationErrorCorrectedNs);
+
+        // This loop waits a bit less than sleepDuration and adjusts the average
+        // wake up error.
+        while (dueNs > 100)
+        {
+
+#if CARB_PLATFORM_WINDOWS
+            LARGE_INTEGER due;
+            due.QuadPart = -dueNs / 100;
+#else
+            timespec due;
+            due.tv_sec = dueNs / 1000000000;
+            due.tv_nsec = dueNs % 1000000000;
+#endif
+
+            high_resolution_clock::time_point beforeSleep = high_resolution_clock::now();
+            {
+                CARB_PROFILE_ZONE(kProfilerMask, "Timer %" PRId64 "ns. Error is %.1fns", dueNs, m_estimateWakeUpDelayNs);
+#if CARB_PLATFORM_WINDOWS
+                // Use Windows SetWaitableTimerEx and WaitForSingleObject to sleep
+                SetWaitableTimerEx(m_timer, &due, 0, NULL, NULL, NULL, 0);
+                WaitForSingleObject(m_timer, INFINITE);
+#else
+                // Use posix nanosleep to sleep
+                nanosleep(&due, &due);
+#endif
+            }
+            high_resolution_clock::time_point afterSleep = high_resolution_clock::now();
+
+            // Using Welford's algorithm to have the average of esimate delay
+            // error on fly:
+            // https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford%27s_online_algorithm
+
+            int64_t observedWaitNs = duration_cast<nanoseconds>(afterSleep - beforeSleep).count();
+
+            ++m_count;
+            double error = observedWaitNs - sleepDurationErrorCorrectedNs;
+
+            // Double because we deal with a huge number m_count
+            double delta = error - m_mean;
+            m_mean += delta / m_count;
+            m_m2 += delta * (error - m_mean);
+
+            double stddev = sqrt(m_m2 / (m_count - 1));
+
+            m_estimateWakeUpDelayNs = m_mean + stddev;
+
+            // It's possible we need to sleep more. It happens during first several frames.
+            sleepDurationNs = static_cast<double>(duration_cast<nanoseconds>(waitUntil - afterSleep).count());
+            sleepDurationErrorCorrectedNs = sleepDurationNs - m_estimateWakeUpDelayNs;
+            dueNs = static_cast<int64_t>(sleepDurationErrorCorrectedNs);
+        }
+
+        {
+            CARB_PROFILE_ZONE(kProfilerMask, "Spin Lock");
+            // Spin the rest of the time
+            while (waitUntil - high_resolution_clock::now() > high_resolution_clock::duration::zero())
+            {
+                CARB_HARDWARE_PAUSE();
+            }
+        }
+    }
+
+#if CARB_PLATFORM_WINDOWS
+    HANDLE m_timer;
+#endif
+    // 5e5 is initial value. It's possible to set any value, it will be
+    // balanced to something like ~475726
+    double m_estimateWakeUpDelayNs = 5e5;
+    uint64_t m_count = 1;
+
+    double m_mean = 5e5;
+    double m_m2 = 0;
+};
 
 class RunLoopThread
 {
@@ -76,6 +190,19 @@ public:
     std::atomic<bool> quit = { false };
     std::atomic<bool> running = { false };
 
+    // Rate limiting:
+    bool rateLimitEnabled = false;
+    bool rateLimitUseBusyLoop = false;
+    bool rateLimitUsePrecisionSleep = false;
+    bool syncToPresent = false;
+    bool syncToPresentGlobal = false;
+    microseconds minLoopTime;
+
+    // Sliding maximum parameters:
+    bool useSlidingMaximum = false;
+    size_t slidingMaximumCount = 60;
+    size_t slidingMaximumOutlierCount = 6;
+    float slidingMaximumToleranceFactor = 2.0f;
 
     RunLoopThread(const std::string& name_) : name(name_), m_runloopIterationCount(0)
     {
@@ -104,18 +231,36 @@ public:
                                             } });
     }
 
-    // TODO105 : ASYNCRENDERING VALIDATION
     void update()
     {
         // Calculate dt
         auto startTime = high_resolution_clock::now();
         double dt = duration_cast<microseconds>(startTime - m_lastUpdateTime).count() * 0.000001;
         m_lastUpdateTime = startTime;
-
         if (mIsManualDt)
+        {
             dt = mDeltaTime;
+        }
+        CARB_PROFILE_EVENT(kProfilerMask, carb::profiler::InstantType::Thread, "[%s] frame event", name.c_str());
+
+#if 0 // For perf debugging - disable by default
+        std::time_t t = std::time(nullptr);
+        std::tm tm;
+        localtime_s(&tm, &t);
+        std::cout << "RunLoop Update [ " << name << "]" << " @ " << std::put_time(&tm, "%c %Z") << std::endl;
+#endif
+
+        this->_initialize();
 
         updateSettings();
+
+        // We should only do this if we can guarantee we never fall below the rate limited FPS.
+        // DriveSim would want something like this, but they do their own RunLoopRunner. For now disable this
+        // if (this->rateLimitEnabled)
+        //{
+        //    // If rate limit is enabled, we set dt to rateLimitFrequency
+        //    dt = this->minLoopTime.count() * 0.000001;
+        //}
 
         // Send pre-update to all listeners
         {
@@ -163,13 +308,108 @@ public:
             this->loop->messageBus->pump();
         }
 
+        if (m_runLoopSynchronizer && m_runLoopSynchronizer->isActive())
+        {
+            CARB_PROFILE_ZONE(kProfilerMask, "Synchronize with present thread");
+            auto elapsed = high_resolution_clock::now() - startTime;
+            float elapsedNs = static_cast<float>(duration_cast<nanoseconds>(elapsed).count());
+            m_runLoopSynchronizer->wait(elapsedNs, useSlidingMaximum ? slidingMaximumCount : 0,
+                                        slidingMaximumOutlierCount, slidingMaximumToleranceFactor);
+        }
+        else
+        {
+            CARB_PROFILE_ZONE(kProfilerMask, "Rate limit sleep");
+            auto elapsed = high_resolution_clock::now() - startTime;
+            if (this->rateLimitEnabled && duration_cast<microseconds>(elapsed) < this->minLoopTime)
+            {
+                auto waitUntil = startTime + this->minLoopTime;
+                if (rateLimitUseBusyLoop)
+                {
+                    while (high_resolution_clock::now() < waitUntil)
+                    {
+                        ;
+                    }
+                }
+                else if (rateLimitUsePrecisionSleep)
+                {
+                    m_windowsSleep.sleep(waitUntil);
+                }
+                else
+                {
+                    std::this_thread::sleep_until(waitUntil);
+                }
+            }
+        }
+
+        // Mark frame completion for this RunLoop. NOTE: This name *must* contain "frame" for Tracy's import chrome tool
+        // to recognize it as a frame message since chrome-tracing doesn't have a frame marker.
+        // See: https://github.com/wolfpld/tracy/issues/456
+        CARB_PROFILE_FRAME(0, "Frame: %s", name.c_str());
+
         m_runloopIterationCount++;
     }
 
     void updateSettings()
     {
-    }
+        auto settings = getCachedInterface<settings::ISettings>();
+        if (!settings)
+            return;
 
+        if (!m_minLoopTimeString.length())
+        {
+            m_minLoopTimeString = fmt::format("{0}/{1}/rateLimitFrequency", kAppRunLoops, name);
+            m_rateLimitEnabledString = fmt::format("{0}/{1}/rateLimitEnabled", kAppRunLoops, name);
+            m_rateLimitUseBusyLoopString = fmt::format("{0}/{1}/rateLimitUseBusyLoop", kAppRunLoops, name);
+            m_rateLimitUsePrecisionSleepString = fmt::format("{0}/{1}/rateLimitUsePrecisionSleep", kAppRunLoops, name);
+            m_syncToPresent = fmt::format("{0}/{1}/syncToPresent", kAppRunLoops, name);
+            m_slidingMaximumEnabledPath = fmt::format("{0}/{1}/slidingMaximum/enabled", kAppRunLoops, name);
+            m_slidingMaximumCountPath = fmt::format("{0}/{1}/slidingMaximum/count", kAppRunLoops, name);
+            m_slidingMaximumOutlierCountPath = fmt::format("{0}/{1}/slidingMaximum/outlierCount", kAppRunLoops, name);
+            m_slidingMaximumToleranceFactorPath =
+                fmt::format("{0}/{1}/slidingMaximum/outlierTolerance", kAppRunLoops, name);
+
+            settings->setDefaultBool(m_rateLimitEnabledString.c_str(), false);
+            settings->setDefaultBool(m_rateLimitUseBusyLoopString.c_str(), false);
+            settings->setDefaultFloat(m_minLoopTimeString.c_str(), kDefaultFrequency);
+            settings->setDefaultBool(m_rateLimitUsePrecisionSleepString.c_str(), false);
+            settings->setDefaultBool(m_syncToPresent.c_str(), true);
+            settings->setDefaultBool(m_slidingMaximumEnabledPath.c_str(), false);
+            settings->setDefaultInt(m_slidingMaximumCountPath.c_str(), 60);
+            settings->setDefaultInt(m_slidingMaximumOutlierCountPath.c_str(), 6);
+            settings->setDefaultFloat(m_slidingMaximumToleranceFactorPath.c_str(), 2.0f);
+
+            static struct SetDefaultOnce
+            {
+                SetDefaultOnce()
+                {
+                    getCachedInterface<settings::ISettings>()->setDefaultBool(kSyncToPresentGlobal, false);
+                }
+            } setDefaultOnce;
+        }
+
+        const double freq = settings->getAsFloat64(m_minLoopTimeString.c_str());
+        minLoopTime = duration_cast<microseconds>(seconds(1) / freq);
+        rateLimitEnabled = settings->getAsBool(m_rateLimitEnabledString.c_str());
+        rateLimitUseBusyLoop = settings->getAsBool(m_rateLimitUseBusyLoopString.c_str());
+        rateLimitUsePrecisionSleep = settings->getAsBool(m_rateLimitUsePrecisionSleepString.c_str());
+        syncToPresent = settings->getAsBool(m_syncToPresent.c_str());
+        syncToPresentGlobal = settings->getAsBool(kSyncToPresentGlobal);
+        useSlidingMaximum = settings->getAsBool(m_slidingMaximumEnabledPath.c_str());
+
+        if (useSlidingMaximum)
+        {
+            slidingMaximumCount = static_cast<size_t>(settings->getAsInt(m_slidingMaximumCountPath.c_str()));
+            slidingMaximumOutlierCount =
+                static_cast<size_t>(settings->getAsInt(m_slidingMaximumOutlierCountPath.c_str()));
+            slidingMaximumToleranceFactor = settings->getAsFloat(m_slidingMaximumToleranceFactorPath.c_str());
+        }
+
+        if (m_runLoopSynchronizer)
+        {
+            m_runLoopSynchronizer->setTargetFPS(freq);
+            m_runLoopSynchronizer->setActive(syncToPresent && syncToPresentGlobal);
+        }
+    }
     void setManualStepSize(double dt)
     {
         mDeltaTime = dt;
@@ -180,8 +420,40 @@ public:
     }
 
 private:
+    void _initialize()
+    {
+        if (m_initialized)
+        {
+            return;
+        }
+
+        // Setup present thread from the runloop thread. If we setup it from
+        // constructor it's possible we have infinity lock.
+        if (!m_runLoopSynchronizer && name != "present")
+        {
+            m_runLoopSynchronizer = std::make_unique<RunLoopSynchronizer>();
+        }
+
+        m_initialized = true;
+    }
+
     high_resolution_clock::time_point m_lastUpdateTime;
+
     std::unique_ptr<std::thread> m_thread;
+    std::string m_minLoopTimeString;
+    std::string m_rateLimitEnabledString;
+    std::string m_rateLimitUseBusyLoopString;
+    std::string m_rateLimitUsePrecisionSleepString;
+    std::string m_syncToPresent;
+    std::string m_slidingMaximumEnabledPath;
+    std::string m_slidingMaximumCountPath;
+    std::string m_slidingMaximumOutlierCountPath;
+    std::string m_slidingMaximumToleranceFactorPath;
+
+    std::unique_ptr<RunLoopSynchronizer> m_runLoopSynchronizer;
+
+    bool m_initialized = false;
+
     // Variables for storing and handling manually set dt
     double mDeltaTime;
     bool mIsManualDt = false;
@@ -206,8 +478,10 @@ private:
     //      IEventStream::push(EventType type, ValuesT&&... values)
     //
     int64_t m_runloopIterationCount;
-};
 
+    PrecisionSleep m_windowsSleep;
+};
+// public so we can access it in setters
 std::map<std::string, std::unique_ptr<RunLoopThread>> m_runLoops;
 
 class RunLoopRunnerImpl : public omni::kit::IRunLoopRunner
@@ -264,19 +538,7 @@ public:
     virtual void onRemoveRunLoop(const char* name, RunLoop* loop, bool bBlock) override
     {
         bool bRequestedQuit = false;
-        // If the main thread is quitting, stop all threads
-        if (std::string(name) == kRunLoopDefault)
-        {
-            {
-                std::unique_lock<std::mutex> lock(m_mutex);
-                for (auto& l : m_runLoops)
-                {
-                    l.second->quit = true;
-                }
-            }
-            bRequestedQuit = true;
-        }
-        else
+
         {
             std::unique_lock<std::mutex> lock(m_mutex);
             auto it = m_runLoops.find(name);

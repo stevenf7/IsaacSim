@@ -1,6 +1,6 @@
 [package]
-# Semantic Versionning is used: https://semver.org/
-version = "1.0.2"
+# Semantic Versioning is used: https://semver.org/
+version = "1.1.0"
 category = "Internal"
 authors = ["Isaac Sim team"]
 title = "Isaac Loop Runner"
@@ -18,3 +18,21 @@ name = "omni.kit.loop"
 [[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
+
+
+[settings]
+# Don't sync threads to the present thread
+app.runLoopsGlobal.syncToPresent = false
+
+# Frequency limit can be enabled per run loop:
+app.runLoops.main.rateLimitEnabled = true
+app.runLoops.main.rateLimitFrequency = 120
+app.runLoops.main.rateLimitUseBusyLoop = false
+
+app.runLoops.present.rateLimitEnabled = true
+app.runLoops.present.rateLimitFrequency = 120
+app.runLoops.present.rateLimitUseBusyLoop = false
+
+app.runLoops.rendering_0.rateLimitEnabled = true
+app.runLoops.rendering_0.rateLimitFrequency = 120
+app.runLoops.rendering_0.rateLimitUseBusyLoop = false
