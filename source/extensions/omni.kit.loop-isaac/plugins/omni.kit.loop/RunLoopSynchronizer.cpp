@@ -2,7 +2,7 @@
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
-// and any modifications thereto.  Any use, reproduction, disclosure or
+// and any modifications thereto. Any use, reproduction, disclosure or
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
@@ -11,12 +11,15 @@
 #include <carb/profiler/Profile.h>
 #include <carb/settings/ISettings.h>
 #include <carb/tasking/TaskingUtils.h>
+
 #include <omni/kit/IApp.h>
 
 #include <chrono>
 #include <math.h>
 
+// clang-format off
 #include "RunLoopSynchronizer.h"
+// clang-format on
 
 namespace omni
 {
@@ -284,8 +287,8 @@ RunLoopSynchronizer::RunLoopSynchronizer()
         carb::settings::ISettings* settings = carb::getCachedInterface<carb::settings::ISettings>();
         m_presentThreadEnabledSubscription = settings->subscribeToNodeChangeEvents(
             kPresentThreadEnabledSettingsPath,
-            [](const carb::dictionary::Item* changedItem, carb::dictionary::ChangeEventType changeEventType,
-               void* userData) {
+            [](const carb::dictionary::Item* changedItem, carb::dictionary::ChangeEventType changeEventType, void* userData)
+            {
                 if (changeEventType == carb::dictionary::ChangeEventType::eChanged)
                 {
                     // Create or remove present thread.
