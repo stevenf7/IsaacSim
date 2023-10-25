@@ -249,7 +249,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$INTERNAL_LIBS
 -- Write experience running .bat/.sh file, like _build\windows-x86_64\release\example.helloext.app.bat
 function create_test_experience_runner(name, config_path, config, kit_sdk_config, extra_args, executable)
     local os_target = os.target()
-    if name =="tests-python-omni.isaac.ros2_bridge" then
+    if string.find(name, "ros2_bridge") then
         extra = ROS2_EXTRA[os_target]
     else
         extra = ""
@@ -297,6 +297,12 @@ function python_sample_test(name, sample_path, args)
     end
 end
 function create_python_sample_runner(name, sample_path, config, extra_args)
+    local os_target = os.target()
+    if string.find(name, "ros2_bridge") then
+        extra = ROS2_EXTRA[os_target]
+    else
+        extra = ""
+    end
     if os.target() == "linux" then
         local sh_file_dir = root.."/_build/linux-x86_64/"..config.."/tests"
         local sh_file_path = sh_file_dir.."/"..name..".sh"
@@ -308,10 +314,11 @@ set -e
 echo "##teamcity[testStarted name='%s']"
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 SAMPLE_DIR=$SCRIPT_DIR/../
+%s
 "$SCRIPT_DIR/../python.sh" -m pip install -r $SCRIPT_DIR/../requirements.txt
 "$SCRIPT_DIR/../python.sh" $SAMPLE_DIR/%s %s $@
 echo "##teamcity[testFinished name='%s']"
-        ]], name, sample_path, extra_args, sample_path, name))
+        ]], name, extra, sample_path, extra_args, name))
         f:close()
         os.chmod(sh_file_path, 755)
     else
@@ -324,10 +331,11 @@ echo "##teamcity[testFinished name='%s']"
 @echo off
 setlocal
 echo "##teamcity[testStarted name='%s']"
+%s
 call "%%~dp0..\python.bat" -m pip install -r "%%~dp0..\requirements.txt"
 call "%%~dp0..\python.bat" "%%~dp0..\%s" %s %%*
 echo "##teamcity[testFinished name='%s']"
-        ]], name, sample_path, extra_args, sample_path, name))
+        ]], name, extra, sample_path, extra_args, name))
         f:close()
     end
 end
@@ -352,7 +360,7 @@ SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 SAMPLE_DIR=$SCRIPT_DIR/../
 "$SCRIPT_DIR/../jupyter_notebook.sh" test $SAMPLE_DIR/%s %s $@
 echo "##teamcity[testFinished name='%s']"
-        ]], name, sample_path, extra_args, sample_path, name))
+        ]], name, sample_path, extra_args, name))
         f:close()
         os.chmod(sh_file_path, 755)
     end
