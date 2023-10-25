@@ -1,7 +1,13 @@
 # Changelog
+
+## [0.18.3] - 2023-10-24
+### Changed
+- Added --no-window and --allow-root by default for testing
+
 ## [0.18.2] - 2023-10-09
 ### Changed
 - changed carter bench mark tests from Carter V2 to Carter V1
+
 ## [0.18.1] - 2023-08-21
 
 ### Changed
