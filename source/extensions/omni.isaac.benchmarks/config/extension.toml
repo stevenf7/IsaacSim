@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.18.2"
+version = "0.18.3"
 category = "Simulation"
 title = "Benchmark"
 description = "This extension provides benchmarking utilities"
@@ -58,7 +58,7 @@ dependencies = [
 #    "omni.kit.usdstats"
 ]
 timeout=12000
-args = ["--/app/fastShutdown=1", "--vulkan"] # we can use fast shutdown because metrics are not uploaded
+args = ["--no-window", "--allow-root", "--/app/fastShutdown=1", "--vulkan"] # we can use fast shutdown because metrics are not uploaded
 
 stdoutFailPatterns.exclude = [
     "*NGX EvaluateFeature failed*", # Ada multi gpu doesn't support this yet
