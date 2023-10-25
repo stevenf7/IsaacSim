@@ -40,7 +40,7 @@ description = [
   "- Isaac Sim supports various robotics applications including navigation, manipulation, and AI applications through Python and ROS.",
   "- For AI applications, Isaac Sim provides extensive tools such as Isaac Replicator for synthetic data generation and domain randomization, Isaac Gym for reinforcement learning.",
   "- For development tools Isaac Sim includes Isaac core API, Isaac Orbit and Cortex. Isaac Core API, is a robotics abstraction layer which hides the USD complexity, Isaac Orbit provides ready development environment, and Cortex for high level decision programing.",
-  "- Isaac Sim comes up with extensions for building a warehouse such as  sim-ready assets, conveyor tools, peoples and CuOpt for logistics and route optimization",
+  "- Isaac Sim comes with extensions for building a warehouse such as sim-ready assets, conveyor tools, people and CuOpt for logistics and route optimization",
 ]
 
 #array of links for more info on product
