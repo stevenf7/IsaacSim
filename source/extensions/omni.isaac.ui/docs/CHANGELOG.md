@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.13.3] - 2023-08-25
+### Fixed
+- Error when using load button due to physics context initialization issue
+
 ## [0.13.2] - 2023-08-22
 ### Fixed
 - Fixed possible errors in UI Plotting Tool where x_min is set arbitrarily close to x_max beyond what was a hard-coded constant.
