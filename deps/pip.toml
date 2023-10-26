@@ -48,7 +48,7 @@ packages = [
     "numpy-quaternion==2022.4.3",           # SWIPAT filed under: https://nvbugs/3430427
     "numba==0.57.0",                        # SWIPAT filed under: https://nvbugs/3430475
     "webbot==0.34",                         # SWIPAT filed under: https://nvbugs/3430513
-    "selenium==4.8.3",                      # SWIPAT filed under: https://nvbugs/3430533
+    "selenium==4.14.0",                     # SWIPAT filed under: https://nvbugs/3430533
     "construct==2.10.68",                   # SWIPAT filed under: https://nvbugs/3433745
     "llvmlite==0.40.0",                     # SWIPAT filed under: https://nvbugs/3433740
     "nest_asyncio==1.5.6",                  # SWIPAT filed under: https://nvbugs/3433748
