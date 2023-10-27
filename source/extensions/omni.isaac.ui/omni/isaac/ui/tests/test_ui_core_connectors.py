@@ -15,8 +15,15 @@ import omni.kit.test
 import omni.kit.ui_test as ui_test
 import omni.timeline
 import omni.ui as ui
-from omni.isaac.core.objects.cuboid import VisualCuboid
-from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
+from omni.isaac.core.articulations import Articulation
+from omni.isaac.core.objects.cuboid import FixedCuboid, VisualCuboid
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.stage import (
+    add_reference_to_stage,
+    create_new_stage,
+    create_new_stage_async,
+    update_stage_async,
+)
 from omni.isaac.core.world import World
 from omni.isaac.ui.element_wrappers.core_connectors import LoadButton, ResetButton
 
@@ -61,10 +68,21 @@ class TestUICoreConnectors(omni.kit.test.AsyncTestCase):
 
         def setup_scene_fn():
             self.setup_scene_called = True
-            self.cuboid = VisualCuboid("/cuboid", size=0.1, position=np.array([1, 0, 0]))
 
-            world = World()
-            world.scene.add(self.cuboid)
+            robot_prim_path = "/ur10e"
+            path_to_robot_usd = get_assets_root_path() + "/Isaac/Robots/UniversalRobots/ur10e/ur10e.usd"
+
+            create_new_stage()
+            add_reference_to_stage(path_to_robot_usd, robot_prim_path)
+
+            art = Articulation(robot_prim_path)
+            cuboid = FixedCuboid(
+                "/Scenario/cuboid", position=np.array([0.3, 0.3, 0.5]), size=0.05, color=np.array([255, 0, 0])
+            )
+
+            world = World.instance()
+            world.scene.add(art)
+            world.scene.add(cuboid)
 
         def setup_post_load_fn():
             self.setup_post_load_called = True
