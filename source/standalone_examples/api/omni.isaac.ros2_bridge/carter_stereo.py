@@ -53,30 +53,23 @@ simulation_context = SimulationContext(stage_units_in_meters=1.0)
 
 ros_cameras_graph_path = "/World/Carter_v2_4_ROS/front_hawk"
 
-# Enabling rgb and depth image publishers for left camera. Cameras will automatically publish images each frame
+# Enabling rgb image publishers for left camera. Cameras will automatically publish images each frame
 og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/left_camera_render_product.inputs:enabled"), True)
 
 simulation_context.play()
 simulation_context.step()
 
-# Enabling rgb and depth image publishers for right camera after left cameras are initialized. Cameras will automatically publish images each frame
+# Enabling rgb image publishers for right camera after left cameras are initialized. Cameras will automatically publish images each frame
 og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/right_camera_render_product.inputs:enabled"), True)
 
 # Simulate for one second to warm up sim and let everything settle
 for frame in range(60):
     simulation_context.step()
 
-# Dock the second camera window
-left_viewport = omni.ui.Workspace.get_window("Viewport")
-right_viewport = omni.ui.Workspace.get_window("Viewport 2")
-if right_viewport is not None and left_viewport is not None:
-    right_viewport.dock_in(left_viewport, omni.ui.DockPosition.RIGHT)
-right_viewport = None
-left_viewport = None
 
-# Create a rostopic to publish message to spin robot in place
-# Note that this is not the system level rclpy, but one compiled for omniverse
+# Create a ROS publisher to publish message to spin robot in place
 
+# If system level rclpy is sourced in bashrc or terminal, it is imported otherwise backup rclpy libraries shipped with Isaac sim is used
 import rclpy
 
 rclpy.init()
