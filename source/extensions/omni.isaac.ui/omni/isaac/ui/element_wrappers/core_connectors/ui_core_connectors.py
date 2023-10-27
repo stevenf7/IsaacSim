@@ -186,10 +186,12 @@ class LoadButton(UIWidgetWrapper):
 
             # Create a new World instance with user-defined settings.  See self.set_world_settings()
             world = World(**self._world_settings)
-            await world.initialize_simulation_context_async()
+
             # Call user function to put assets on the stage and add them to the World
             if self.setup_scene_fn is not None:
                 self.setup_scene_fn()
+
+            await world.initialize_simulation_context_async()
 
             await world.reset_async()
             await update_stage_async()

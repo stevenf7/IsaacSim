@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.13.4] - 2023-08-26
+### Fixed
+- Error when user setup function creates a new stage
+
 ## [0.13.3] - 2023-08-25
 ### Fixed
 - Error when using load button due to physics context initialization issue
