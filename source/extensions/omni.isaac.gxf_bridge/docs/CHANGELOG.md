@@ -1,8 +1,11 @@
 # Changelog
+## [1.4.2] - 2023-10-30
+### Added
+- better warning output for GXFRtxLidarHelper
+
 ## [1.4.1] - 2023-10-09
 ### Added
 - carter_v2_4.yaml to support Carter 2.4 asset
-
 
 ## [1.4.0] - 2023-09-26
 ### Added

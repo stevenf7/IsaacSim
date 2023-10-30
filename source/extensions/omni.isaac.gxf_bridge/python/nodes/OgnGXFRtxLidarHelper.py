@@ -61,20 +61,25 @@ class OgnGXFRtxLidarHelper:
                     return False
                 if stage.GetPrimAtPath(render_product_path) is None:
                     # Invalid Render Product Path
-                    carb.log_warn("Render product not created yet, retrying on next call")
+                    carb.log_warn("Render product {render_product_path} prim not created yet, retrying on next call")
                     db.internal_state.initialized = False
                     return False
                 else:
-                    prim = stage.GetPrimAtPath(get_camera_prim_path(render_product_path))
+                    ppath = get_camera_prim_path(render_product_path)
+                    prim = stage.GetPrimAtPath(ppath)
                     if prim.IsA(UsdGeom.Camera):
                         if prim.HasAPI(IsaacSensorSchema.IsaacRtxLidarSensorAPI):
                             db.internal_state.render_product_path = render_product_path
                             db.internal_state.sensor = "lidar"
                         else:
+                            carb.log_warn("Camera {ppath} is not valid RTX Lidar")
                             db.internal_state.sensor = None
+                    else:
+                        print(f"{ppath} is not Camera.")
+                        db.internal_state.sensor = None
 
                 if db.internal_state.sensor is None:
-                    carb.log_warn("Active camera for Render product is not an RTX Lidar")
+                    carb.log_warn("No active camera for Render product {render_product_path}.")
                     db.internal_state.initialized = False
                     return False
 
