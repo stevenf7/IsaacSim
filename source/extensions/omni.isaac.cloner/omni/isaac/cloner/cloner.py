@@ -278,7 +278,7 @@ class Cloner:
                         op_order_spec = Sdf.AttributeSpec(
                             env_spec, UsdGeom.Tokens.xformOpOrder, Sdf.ValueTypeNames.TokenArray
                         )
-                    op_order_spec.default = Vt.TokenArray({"xformOp:translate", "xformOp:orient", "xformOp:scale"})
+                    op_order_spec.default = Vt.TokenArray(["xformOp:translate", "xformOp:orient", "xformOp:scale"])
 
         if replicate_physics and has_clones:
             self.replicate_physics(source_prim_path, prim_paths, base_env_path, root_path)

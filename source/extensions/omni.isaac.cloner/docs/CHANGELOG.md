@@ -1,5 +1,10 @@
 # Changelog
 
+
+## [0.7.1] - 2023-10-31
+### Fixed
+- Fixed the order in which xformop is set while cloning. Earlier a set was passed instead of list.
+
 ## [0.7.0] - 2023-07-26
 ### Added
 - Exposed API for retrieving clone transorms from GridCloner
