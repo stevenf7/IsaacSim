@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.11.0] - 2023-10-31
+### Added
+- test for get_joint_position in test_articulation to catch the sign switch that happens when articulation joints have different body0 and body1 than expected.
+
 ## [2.10.2] - 2023-10-12
 ### Fixed
 - Bug in ArticulationController with np.isnan
