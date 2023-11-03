@@ -179,7 +179,7 @@ def get_basis_vector(q, v):
 
 
 @torch.jit.script
-def quat_to_rot_matrices(quat):
+def quats_to_rot_matrices(quat):
     nq = torch.linalg.vecdot(quat, quat, dim=1)
     singularities = nq < 1e-10
     result = torch.zeros(quat.shape[0], 3, 3, device=quat.device)
@@ -196,6 +196,11 @@ def quat_to_rot_matrices(quat):
     result[torch.logical_not(singularities), 2, 1] = non_singular[:, 2, 3] + non_singular[:, 1, 0]
     result[torch.logical_not(singularities), 2, 2] = 1.0 - non_singular[:, 1, 1] - non_singular[:, 2, 2]
     return result
+
+
+@torch.jit.script
+def quat_to_rot_matrices(quat):
+    return quats_to_rot_matrices(quat)
 
 
 @torch.jit.script

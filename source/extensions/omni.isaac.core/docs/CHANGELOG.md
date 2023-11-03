@@ -4,6 +4,9 @@
 ### Added
 - test for get_joint_position in test_articulation to catch the sign switch that happens when articulation joints have different body0 and body1 than expected.
 
+### Fixed
+- renamed utils.torch.rotations quat_to_rot_matrices to quats_to_rot_matrices to be consistent with numpy, originally named function is now a redirect function
+
 ## [2.10.2] - 2023-10-12
 ### Fixed
 - Bug in ArticulationController with np.isnan
