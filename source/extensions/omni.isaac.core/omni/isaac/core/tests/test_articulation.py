@@ -19,6 +19,7 @@ from omni.isaac.core import World
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.core.articulations import Articulation
 from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.stage import (
     add_reference_to_stage,
     create_new_stage_async,
@@ -114,3 +115,34 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
         forces = franka.get_measured_joint_forces()
         await self._my_world.stop_async()
         self.assertEqual(forces.shape, torch.Size([franka._articulation_view.num_bodies, 6]))
+
+    async def test_articulation_joint_signs(self):
+        assets_root_path = get_assets_root_path()
+        asset_path = assets_root_path + "/Isaac/Robots/Simple/articulation_3_joints.usd"
+        add_reference_to_stage(usd_path=asset_path, prim_path="/World/Articulation")
+        test_art = self._my_world.scene.add(Articulation(prim_path="/World/Articulation", name="test_art"))
+        await self._my_world.reset_async()
+        # test_position = torch.Tensor([0.14, 0.5, -0.14])
+        test_position = test_art.get_joint_positions()
+        self._my_world.step_async()
+        self._my_world._physics_sim_view.flush()
+        await omni.kit.app.get_app().next_update_async()
+
+        center_rev_drive = UsdPhysics.DriveAPI.Get(
+            get_prim_at_path("/World/Articulation/Arm/CenterRevoluteJoint"), "angular"
+        )
+        center_rev_position = center_rev_drive.GetTargetPositionAttr().Get()
+
+        distal_rev_drive = UsdPhysics.DriveAPI.Get(
+            get_prim_at_path("/World/Articulation/DistalPivot/DistalRevoluteJoint"), "angular"
+        )
+        distal_rev_position = distal_rev_drive.GetTargetPositionAttr().Get()
+
+        prismatic_drive = UsdPhysics.DriveAPI.Get(
+            get_prim_at_path("/World/Articulation/Slider/PrismaticJoint"), "linear"
+        )
+        prismatic_position = prismatic_drive.GetTargetPositionAttr().Get()
+
+        self.assertAlmostEqual(torch.rad2deg(test_position[0]), center_rev_position, delta=0.1)
+        self.assertAlmostEqual(test_position[1], prismatic_position, delta=0.1)
+        self.assertAlmostEqual(torch.rad2deg(test_position[2]), distal_rev_position, delta=0.1)
