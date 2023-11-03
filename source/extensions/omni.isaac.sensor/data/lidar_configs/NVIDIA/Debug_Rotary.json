@@ -1,0 +1,55 @@
+{
+    "class": "sensor",
+    "type": "lidar",
+    "name": "Debug Rotary",
+    "driveWorksId": "GENERIC",
+    "profile":
+    {
+        "scanType": "rotary",
+        "intensityProcessing": "normalization",
+        "rayType": "IDEALIZED",
+        "nearRangeM": 0.05, "_comment4": "(A) p.28, 50 mm",
+        "farRangeM": 200.0, 
+  
+        "startAzimuthDeg": 0.0,
+        "endAzimuthDeg": 360.0,
+  
+        "upElevationDeg": 0, "_comment6": "Is 2D Lidar",
+        "downElevationDeg": 0,
+    
+        "rangeResolutionM": 0.004, 
+    
+        "rangeAccuracyM": 0.004,
+
+        "avgPowerW": 0.0092, "_comment61": "(A)p.168",
+        "minReflectance": 0.1,  "_comment9": "p.2 Scanning range At 10% remission 8 m",
+        "minReflectanceRange": 9.0,
+        "wavelengthNm": 845.0, "_commentA": "(A)p.167",
+        "pulseTimeNs": 4, "_commentA1": "(A)p.168",
+  
+        "azimuthErrorMean": 0.0, "_commentB": "(B)p.50 Measurement error Statistical (1 σ): < 20 mm 2) Systematic: ± 60 mm 2)",
+        "azimuthErrorStd": 0.025, "_commentB1": "(A)p.168",
+        "elevationErrorMean": 0.0,
+        "elevationErrorStd": 0.0000,
+    
+    
+        "maxReturns": 2,
+    
+        "scanRateBaseHz": 6.0,
+    
+        "reportRateBaseHz": 216, "_commentC": "36 * 6",
+    
+        "numberOfEmitters": 1, "_commentD": "(A) p.15",
+    
+        "emitters":
+        {
+          "azimuthDeg": [0],
+          "elevationDeg": [0],
+          "fireTimeNs": [0]
+        },
+    
+        "intensityMappingType": "LINEAR"
+    }
+}
+  
+    
