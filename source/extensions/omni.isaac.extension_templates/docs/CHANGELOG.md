@@ -1,4 +1,11 @@
 # Changelog
+## [1.5.0] - 2023-10-27
+### Add
+- Add Scripting Template to demonstrate programming script-like behavior through a standalone UI extension.
+
+### Changed
+- Modifies extension.py to massively reduce code duplication.
+
 ## [1.4.1] - 2023-08-24
 ### Fixed
 - Fixed bug in Template generator on Windows where user could specify a file path ending in "/".
