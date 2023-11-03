@@ -27,8 +27,6 @@ from .template_generator import TemplateGenerator
 
 EXTENSION_NAME = "Generate Extension Templates"
 
-MAX_DOF_NUM = 100
-
 
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
@@ -75,11 +73,19 @@ class Extension(omni.ext.IExt):
 
                 self._build_info_ui()
 
-                self._build_configuration_tooling_template_ui()
+                self._build_template_ui(
+                    "Configuration Tooling Template", self._template_generator.generate_configuration_tooling_template
+                )
 
-                self._build_loaded_scenario_template_ui()
+                self._build_template_ui(
+                    "Loaded Scenario Template", self._template_generator.generate_loaded_scenario_template
+                )
 
-                self._build_component_library_ui()
+                self._build_template_ui("Scripting Template", self._template_generator.generate_scripting_template)
+
+                self._build_template_ui(
+                    "UI Component Library", self._template_generator.generate_component_library_template
+                )
 
                 self._build_status_panel()
 
@@ -100,9 +106,12 @@ class Extension(omni.ext.IExt):
 
     def _build_info_ui(self):
         title = EXTENSION_NAME
-        doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html"
+        doc_link = "https://docs.omniverse.nvidia.com/isaacsim/latest/advanced_tutorials/tutorial_extension_templates.html#isaac-sim-app-tutorial-extension-templates"
 
-        overview = "Generate Extension Templates"
+        overview = (
+            "Generate Extension Templates to get started building and programming standalone UI-based extensions in "
+            + "Isaac Sim."
+        )
 
         setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
 
@@ -111,9 +120,9 @@ class Extension(omni.ext.IExt):
         with self._status_frame:
             self._status_block = TextBlock("Status", "", num_lines=3, include_copy_button=False)
 
-    def _build_configuration_tooling_template_ui(self):
+    def _build_template_ui(self, template_name, generate_fun):
         frame = ui.CollapsableFrame(
-            title="Configuration Tooling Template",
+            title=template_name,
             height=0,
             collapsed=True,
             style=get_style(),
@@ -122,87 +131,28 @@ class Extension(omni.ext.IExt):
             vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
         )
 
-        with frame:
-            with ui.VStack(style=get_style(), spacing=5, height=0):
-
-                def control_generate_btn(model=None):
-                    path = self._models["configuration_tooling_path"].get_value_as_string()
-                    title = self._models["configuration_tooling_title"].get_value_as_string()
-
-                    if path != "" and path[-1] != "/" and path[-1] != "\\" and title.strip(" ") != "":
-                        self._models["configuration_tooling_generate"].enabled = True
-                        self.write_status("Ready to Generate Configuration Tooling Extension Template")
-                    else:
-                        self._models["configuration_tooling_generate"].enabled = False
-                        self.write_status(
-                            "Cannot Generate Extension Template Without a Title and Valid Path.  The Path must not end in a '/'."
-                        )
-
-                self._models["configuration_tooling_path"] = str_builder(
-                    label="Extension Path",
-                    tooltip="Directory where the extension template will be populated. The path must not end in a slash.",
-                    use_folder_picker=True,
-                    item_filter_fn=lambda item: item.is_folder,
-                    folder_dialog_title="Select Path",
-                    folder_button_title="Select",
-                )
-                self._models["configuration_tooling_path"].add_value_changed_fn(control_generate_btn)
-
-                self._models["configuration_tooling_title"] = str_builder(
-                    label="Extension Title",
-                    default_val="",
-                    tooltip="Title of Extension that will show up on Isaac Sim Toolbar",
-                )
-                self._models["configuration_tooling_title"].add_value_changed_fn(control_generate_btn)
-
-                self._models["configuration_tooling_description"] = str_builder(
-                    label="Extension Description", default_val="", tooltip="Short description of extension"
-                )
-
-                def on_generate_extension(model=None, val=None):
-                    path = self._models["configuration_tooling_path"].get_value_as_string()
-                    title = self._models["configuration_tooling_title"].get_value_as_string()
-                    description = self._models["configuration_tooling_description"].get_value_as_string()
-                    self._template_generator.generate_configuration_tooling_template(path, title, description)
-
-                    self.write_status(f"Created new extension '{title}' at {path} from Configuration Tooling Template")
-
-                self._models["configuration_tooling_generate"] = btn_builder(
-                    label="Generate Extension",
-                    text="Generate Extension",
-                    tooltip="Generate Configuration Tooling Extension Template",
-                    on_clicked_fn=on_generate_extension,
-                )
-                self._models["configuration_tooling_generate"].enabled = False
-
-    def _build_loaded_scenario_template_ui(self):
-        frame = ui.CollapsableFrame(
-            title="Loaded Scenario Template",
-            height=0,
-            collapsed=True,
-            style=get_style(),
-            style_type_name_override="CollapsableFrame",
-            horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
-            vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
-        )
+        path_field = template_name + "_path"
+        title_field = template_name + "_title"
+        generate_btn = template_name + "_generate"
+        description_field = template_name + "_description"
 
         with frame:
             with ui.VStack(style=get_style(), spacing=5, height=0):
 
                 def control_generate_btn(model=None):
-                    path = self._models["loaded_scenario_path"].get_value_as_string()
-                    title = self._models["loaded_scenario_title"].get_value_as_string()
+                    path = self._models[path_field].get_value_as_string()
+                    title = self._models[title_field].get_value_as_string()
 
                     if path != "" and path[-1] != "/" and path[-1] != "\\" and title.strip(" ") != "":
-                        self._models["loaded_scenario_generate"].enabled = True
-                        self.write_status("Ready to Generate Loaded Scenario Extension Template")
+                        self._models[generate_btn].enabled = True
+                        self.write_status(f"Ready to Generate {template_name}")
                     else:
-                        self._models["loaded_scenario_generate"].enabled = False
+                        self._models[generate_btn].enabled = False
                         self.write_status(
                             "Cannot Generate Extension Template Without a Title and Valid Path.  The Path must not end in a '/'."
                         )
 
-                self._models["loaded_scenario_path"] = str_builder(
+                self._models[path_field] = str_builder(
                     label="Extension Path",
                     tooltip="Directory where the extension template will be populated.  The path must not end in a slash",
                     use_folder_picker=True,
@@ -210,104 +160,34 @@ class Extension(omni.ext.IExt):
                     folder_dialog_title="Select Path",
                     folder_button_title="Select",
                 )
-                self._models["loaded_scenario_path"].add_value_changed_fn(control_generate_btn)
+                self._models[path_field].add_value_changed_fn(control_generate_btn)
 
-                self._models["loaded_scenario_title"] = str_builder(
+                self._models[title_field] = str_builder(
                     label="Extension Title",
                     default_val="",
                     tooltip="Title of Extension that will show up on Isaac Sim Toolbar",
                 )
-                self._models["loaded_scenario_title"].add_value_changed_fn(control_generate_btn)
+                self._models[title_field].add_value_changed_fn(control_generate_btn)
 
-                self._models["loaded_scenario_description"] = str_builder(
+                self._models[description_field] = str_builder(
                     label="Extension Description", default_val="", tooltip="Short description of extension"
                 )
 
                 def on_generate_extension(model=None, val=None):
-                    path = self._models["loaded_scenario_path"].get_value_as_string()
-                    title = self._models["loaded_scenario_title"].get_value_as_string()
-                    description = self._models["loaded_scenario_description"].get_value_as_string()
-                    self._template_generator.generate_loaded_scenario_template(path, title, description)
+                    path = self._models[path_field].get_value_as_string()
+                    title = self._models[title_field].get_value_as_string()
+                    description = self._models[description_field].get_value_as_string()
+                    generate_fun(path, title, description)
 
-                    self.write_status(f"Created new extension '{title}' at {path} from Loaded Scenario Template")
+                    self.write_status(f"Created new extension '{title}' at {path} from {template_name}")
 
-                self._models["loaded_scenario_generate"] = btn_builder(
+                self._models[generate_btn] = btn_builder(
                     label="Generate Extension",
                     text="Generate Extension",
-                    tooltip="Generate Loaded Scenario Extension Template",
+                    tooltip=f"Generate {template_name}",
                     on_clicked_fn=on_generate_extension,
                 )
-                self._models["loaded_scenario_generate"].enabled = False
-
-    def _build_component_library_ui(self):
-        frame = ui.CollapsableFrame(
-            title="UI Component Library",
-            height=0,
-            collapsed=True,
-            style=get_style(),
-            style_type_name_override="CollapsableFrame",
-            horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
-            vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
-        )
-
-        with frame:
-            with ui.VStack(style=get_style(), spacing=5, height=0):
-
-                def control_generate_btn(model=None):
-                    path = self._models["component_library_path"].get_value_as_string()
-                    title = self._models["component_library_title"].get_value_as_string()
-
-                    if (
-                        path != ""
-                        and path[-1] != "/"
-                        and path[-1] != "\\"
-                        and title.strip(" ") != ""
-                        and not ("-" in title or "\\" in title or '"' in title)
-                    ):
-                        self._models["component_library_generate"].enabled = True
-                        self.write_status("Ready to Generate UI Component Library Extension Template")
-                    else:
-                        self._models["component_library_generate"].enabled = False
-                        self.write_status(
-                            "Cannot Generate Extension Template Without a Valid Title and Valid Path.  The Path must not end in a '/'. The Title must not contain double quotes: \", dashes: -, or backslashes: \\."
-                        )
-
-                self._models["component_library_path"] = str_builder(
-                    label="Extension Path",
-                    tooltip="Directory where the extension template will be populated.  The path must not end in a slash",
-                    use_folder_picker=True,
-                    item_filter_fn=lambda item: item.is_folder,
-                    folder_dialog_title="Select Path",
-                    folder_button_title="Select",
-                )
-                self._models["component_library_path"].add_value_changed_fn(control_generate_btn)
-
-                self._models["component_library_title"] = str_builder(
-                    label="Extension Title",
-                    default_val="",
-                    tooltip="Title of Extension that will show up on Isaac Sim Toolbar",
-                )
-                self._models["component_library_title"].add_value_changed_fn(control_generate_btn)
-
-                self._models["component_library_description"] = str_builder(
-                    label="Extension Description", default_val="", tooltip="Short description of extension"
-                )
-
-                def on_generate_extension(model=None, val=None):
-                    path = self._models["component_library_path"].get_value_as_string()
-                    title = self._models["component_library_title"].get_value_as_string()
-                    description = self._models["component_library_description"].get_value_as_string()
-                    self._template_generator.generate_component_library_template(path, title, description)
-
-                    self.write_status(f"Created new extension '{title}' at {path} from UI Component Library Template")
-
-                self._models["component_library_generate"] = btn_builder(
-                    label="Generate Extension",
-                    text="Generate Extension",
-                    tooltip="Generate UI Component Library Extension Template",
-                    on_clicked_fn=on_generate_extension,
-                )
-                self._models["component_library_generate"].enabled = False
+                self._models[generate_btn].enabled = False
 
     def write_status(self, status, collapsed=False, visible=True):
         self._status_block.set_text(status)

@@ -123,6 +123,23 @@ class TemplateGenerator:
 
         self._replace_keywords(replace_keywords, [os.path.join(target_dir, "global_variables.py")])
 
+    def generate_scripting_template(self, file_path, extension_title, extension_description):
+        self._write_common_data(file_path, extension_title, extension_description)
+
+        python_package_name = self._get_python_package_name(extension_title)
+
+        source_dir = os.path.join(self._extension_path, "template_source_files", "scripting_workflow")
+        target_dir = os.path.join(file_path, python_package_name)
+
+        new_paths = self._copy_directory_contents(source_dir, target_dir)
+
+        replace_keywords = {
+            "{EXTENSION_TITLE}": '"' + extension_title + '"',
+            "{EXTENSION_DESCRIPTION}": '"' + extension_description + '"',
+        }
+
+        self._replace_keywords(replace_keywords, [os.path.join(target_dir, "global_variables.py")])
+
     def generate_component_library_template(self, file_path, extension_title, extension_description):
         self._write_common_data(file_path, extension_title, extension_description)
 
