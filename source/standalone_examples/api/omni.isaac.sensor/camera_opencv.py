@@ -57,6 +57,10 @@ camera = Camera(
     orientation=rot_utils.euler_angles_to_quats(np.array([0, 90, 0]), degrees=True),
 )
 
+# Setup the scene and render a frame
+world.reset()
+camera.initialize()
+
 # Calculate the focal length and aperture size from the camera matrix
 ((fx, _, cx), (_, fy, cy), (_, _, _)) = camera_matrix
 horizontal_aperture = pixel_size * 1e-3 * width
@@ -77,10 +81,6 @@ camera.set_clipping_range(0.05, 1.0e5)
 # Set the distortion coefficients
 camera.set_projection_type("fisheyePolynomial")
 camera.set_rational_polynomial_properties(width, height, cx, cy, diagonal_fov, distortion_coefficients)
-
-# Setup the scene and render a frame
-world.reset()
-camera.initialize()
 
 # Get the rendered frame and save it to a file
 for i in range(100):
