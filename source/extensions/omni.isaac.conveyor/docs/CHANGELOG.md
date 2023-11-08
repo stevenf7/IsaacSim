@@ -1,4 +1,8 @@
 # Changelog
+## [0.3.13] - 2023-11-01
+### Fixed
+- Error when Node starts for the first time if it doesn't have a Texture translate attribute.
+
 ## [0.3.12] - 2023-08-28
 ### Changed
 - added standard out fail pattern for the expected no prim found edge case for the ogn test
