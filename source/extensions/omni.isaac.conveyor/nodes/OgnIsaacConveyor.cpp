@@ -100,12 +100,17 @@ public:
                         physics_conveyor.GetVelocityAttr().Set(direction * state.mVelocity);
                     }
                 }
+                else
+                {
+                    db.logError("Selected Prim is not a Rigid Body");
+                    return false;
+                }
 
                 if (state.mOnStart)
                 {
+                    state.mOnStart = false;
                     state.mShaders.clear();
                     state.mShadersStart.clear();
-                    pxr::SdfChangeBlock changeBlock;
                     for (auto m : pxr::UsdPrimRange(conveyor))
                     {
                         if (pxr::UsdGeomImageable(m))
@@ -118,9 +123,9 @@ public:
                                 if (!attr)
                                 {
                                     pxr::UsdEditContext context(stage, stage->GetRootLayer());
-                                    attr = prim.CreateAttribute(
-                                        pxr::TfToken("inputs:texture_translate"), pxr::SdfValueTypeNames->Float2, true);
-                                    attr.Set(pxr::GfVec2f(0.00001f, 0.0f));
+                                    attr = prim.CreateAttribute(pxr::TfToken("inputs:texture_translate"),
+                                                                pxr::SdfValueTypeNames->Float2, false);
+                                    attr.Set(pxr::GfVec2f(0.00000f, 0.0f));
                                 }
                                 // attr = prim.GetAttribute(pxr::TfToken("inputs:texture_translate"));
                                 if (attr)
@@ -130,7 +135,7 @@ public:
                                     pxr::GfVec2f tx;
                                     attr.Get(&tx);
                                     state.mShadersStart.push_back(tx);
-                                    tx[0] += 0.0001f;
+                                    tx[0] += 0.0000f;
                                     attr.Set(tx);
                                 }
                             }
@@ -140,6 +145,7 @@ public:
 
                 if (state.mOnEnd)
                 {
+                    pxr::SdfChangeBlock changeBlock;
                     for (size_t i = 0; i < state.mShaders.size(); i++)
                     {
                         state.mShaders[i].Set(state.mShadersStart[i]);
