@@ -51,10 +51,6 @@
     <dependency name="omni-isaacsim-schema" linkPath="../_build/target-deps/omni-isaacsim-schema/${platform}/${config}">
         <package name="omni-isaacsim-schema" version="2.1.0+isaacsim.0.24ac08dc.local.${platform}.${config}"/>
     </dependency>
-    <dependency name="rapidjson" linkPath="../_build/target-deps/rapidjson">
-        <!-- for omni.sensors-->
-        <package name="rapidjson" version="5.2.1-5-b4cf59b6" />
-    </dependency>
     <dependency name="nlohmann-json" linkPath="../_build/target-deps/nlohmann-json">
         <package name="nlohmann-json" version="3.7.3-3fff8cd2-repackaged"/>
    </dependency>
