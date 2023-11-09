@@ -4,7 +4,7 @@ set -e
 
 OMNICLI=~/.local/share/ov/pkg/prod-connectsample-203.0.0/omnicli.sh
 TEMP_DIR="$(dirname "$(realpath $0)")"/../../_assets
-ISAAC_VER=2023.1.0
+ISAAC_VER=2023.1.1
 
 #echo run $OMNICLI copy omniverse://ov-isaac-dev/Isaac/Samples $TEMP_DIR/Isaac/Samples
 #$OMNICLI copy omniverse://ov-isaac-dev/Isaac/Samples $TEMP_DIR/Isaac/Samples
@@ -62,9 +62,9 @@ aws s3 sync $TEMP_DIR/nv-staging/NVIDIA/Assets/Skies s3://omniverse-content-stag
 aws s3 sync $TEMP_DIR/nv-staging/NVIDIA/Assets/Vegetation s3://omniverse-content-staging/Assets/Isaac/$ISAAC_VER/NVIDIA/Assets/Vegetation --delete
 
 
-echo !! Sync Staging to Production...
+# echo !! Sync Staging to Production...
 
-echo run aws s3 sync s3://omniverse-content-staging/Assets/Isaac/$ISAAC_VER s3://omniverse-content-production/Assets/Isaac/$ISAAC_VER --delete
-aws s3 sync s3://omniverse-content-staging/Assets/Isaac/$ISAAC_VER s3://omniverse-content-production/Assets/Isaac/$ISAAC_VER --delete
+# echo run aws s3 sync s3://omniverse-content-staging/Assets/Isaac/$ISAAC_VER s3://omniverse-content-production/Assets/Isaac/$ISAAC_VER --delete
+# aws s3 sync s3://omniverse-content-staging/Assets/Isaac/$ISAAC_VER s3://omniverse-content-production/Assets/Isaac/$ISAAC_VER --delete
 
 echo !! Completed!
