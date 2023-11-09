@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.12.0] - 2023-11-09
+### Changed
+- Update asset paths to 2023.1.1
+
 ## [2.11.0] - 2023-10-31
 ### Added
 - test for get_joint_position in test_articulation to catch the sign switch that happens when articulation joints have different body0 and body1 than expected.
@@ -26,7 +30,7 @@
 - added methods to torch rotation utils: quat_to_rot_matrices, matrices_to_euler_angles
 - added extrinsic argument to numpy rotation utils: quats_to_euler_angles, euler_angles_to_quats
 - added extrinsic argument to rotation utils: euler_angles_to_quat, quat_to_euler_angles, matrix_to_euler_angles, euler_to_rot_matrix
-- 
+-
 ## [2.9.4] - 2023-09-30
 ### Fixed
 - Correctly set GPU pipeline when it is missing from SimConfig
@@ -41,7 +45,7 @@
 
 ## [2.9.1] - 2023-09-26
 ### Fixed
-- Fixed a bug in a rigid_prim_view unit test 
+- Fixed a bug in a rigid_prim_view unit test
 ## [2.9.0] - 2023-08-28
 ### Added
 - Add missing GPU collision stack size API in physics context
@@ -59,7 +63,7 @@
 
 ## [2.7.6] - 2023-09-13
 ### Fixed
-- None in numpy arrays in current numpy version 1.25.2 gets converted to nan, propagated this change to ArticulationController.apply_action 
+- None in numpy arrays in current numpy version 1.25.2 gets converted to nan, propagated this change to ArticulationController.apply_action
 
 
 ## [2.7.5] - 2023-09-12

@@ -351,7 +351,7 @@ group "exts"
     include ("source/extensions/omni.pip.compute")
     include ("source/extensions/omni.pip.cloud")
     include ("source/extensions/omni.exporter.urdf")
-    
+
     if build_with_omni_sensors then
         include ("source/extensions/omni.sensors.fov_preview_visualization")
         include ("source/extensions/omni.sensors.nv.beams")
@@ -484,7 +484,7 @@ group "python_samples"
     -- FOR DEVELOPMENT --
     local nucleus_server = "isaac-dev.ov.nvidia.com"
     -- -- FOR PRODUCTION --
-    -- local nucleus_server = "localhost/NVIDIA/Assets/Isaac/2023.1.0"
+    -- local nucleus_server = "localhost/NVIDIA/Assets/Isaac/2023.1.1"
     python_sample_test("tests-nativepython-replicator.composer.warehouse_1", "tools/composer/src/main.py", "--input parameters/warehouse.yaml --num-scenes 5 --headless --output warehouse_1_out --overwrite --nucleus-server "..nucleus_server)
     python_sample_test("tests-nativepython-replicator.composer.warehouse_2", "tools/composer/src/main.py", "--input parameters/warehouse.yaml --visualize-models --headless --output warehouse_2_out --overwrite --nucleus-server "..nucleus_server)
     python_sample_test("tests-nativepython-replicator.composer.flying_things_3d", "tools/composer/src/main.py", "--input parameters/flying_things_3d.yaml --num-scenes 5 --headless --output flying_things_3d_out --overwrite --nucleus-server "..nucleus_server)
