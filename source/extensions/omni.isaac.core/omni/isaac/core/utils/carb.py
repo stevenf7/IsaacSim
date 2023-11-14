@@ -24,6 +24,16 @@ def set_carb_setting(carb_settings: carb.settings.ISettings, setting: str, value
 
     Raises:
         TypeError: If the type of value does not match setting type.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> import carb
+        >>> import omni.isaac.core.utils.carb as carb_utils
+        >>>
+        >>> settings = carb.settings.get_settings()
+        >>> carb_utils.set_carb_setting(settings, "/persistent/physics/updateToUsd", True)
     """
     if isinstance(value, str):
         carb_settings.set_string(setting, value)
@@ -46,5 +56,16 @@ def get_carb_setting(carb_settings: carb.settings.ISettings, setting: str) -> An
 
     Returns:
         Any: Value for the setting.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> import carb
+        >>> import omni.isaac.core.utils.carb as carb_utils
+        >>>
+        >>> settings = carb.settings.get_settings()
+        >>> carb_utils.get_carb_setting(settings, "/persistent/physics/updateToUsd")
+        False
     """
     return carb_settings.get(setting)

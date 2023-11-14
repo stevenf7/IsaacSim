@@ -10,7 +10,20 @@
 from pxr import UsdGeom
 
 AXES_INDICES = {"X": 0, "x": 0, "Y": 1, "y": 1, "Z": 2, "z": 2}
-"""Mapping from axis name to axis ID."""
+"""Mapping from axis name to axis ID
+
+Example:
+
+.. code-block:: python
+
+    >>> import omni.isaac.core.utils.constants as constants_utils
+    >>>
+    >>> # get the x-axis index
+    >>> constants_utils.AXES_INDICES['x']
+    0
+    >>> constants_utils.AXES_INDICES['X']
+    0
+"""
 
 AXES_TOKEN = {
     "X": UsdGeom.Tokens.x,
@@ -20,4 +33,13 @@ AXES_TOKEN = {
     "Z": UsdGeom.Tokens.z,
     "z": UsdGeom.Tokens.z,
 }
-"""Mapping from axis name to axis USD token."""
+"""Mapping from axis name to axis USD token
+
+    >>> import omni.isaac.core.utils.constants as constants_utils
+    >>>
+    >>> # get the x-axis USD token
+    >>> constants_utils.AXES_TOKEN['x']
+    X
+    >>> constants_utils.AXES_TOKEN['X']
+    X
+"""
