@@ -1,3 +1,7 @@
+.. |br| raw:: html
+
+    <br>
+
 Core [omni.isaac.core]
 ######################################################
 
@@ -492,17 +496,36 @@ Stacking
 Utils
 --------------
 
+|
 
 Bounds Utils
 ================
+
+Utils for computing the Axis-Aligned Bounding Box (AABB) and the Oriented Bounding Box (OBB) of a prim.
+
+* The AABB is the smallest cuboid that can completely contain the prim it represents.
+  It is defined by the following 3D coordinates: :math:`(x_{min}, y_{min}, z_{min}, x_{max}, y_{max}, z_{max})`.
+* Unlike the AABB, which is aligned with the coordinate axes, the OBB can be oriented at any angle in 3D space.
 
 .. automodule:: omni.isaac.core.utils.bounds
     :members:
     :undoc-members:
     :exclude-members:
 
+|
+
 Carb Utils
 ================
+
+Carb settings is a generalized subsystem designed to provide a simple to use interface to Kit's various subsystems,
+which can be automated, enumerated, serialized and so on.
+
+The most common types of settings are:
+
+* Persistent (saved between sessions): ``"/persistent/<setting>"``
+  |br| (e.g., ``"/persistent/physics/updateToUsd"``)
+* Application: ``"/app/<setting>"`` (e.g., ``"/app/viewport/grid/enabled"``)
+* Extension: ``"/exts/<extension>/<setting>"`` (e.g., ``"/exts/omni.kit.debug.python/host"``)
 
 .. automodule:: omni.isaac.core.utils.carb
     :members:
@@ -516,6 +539,8 @@ Collisions Utils
     :members:
     :undoc-members:
     :exclude-members:
+
+|
 
 Constants Utils
 ==================
@@ -533,8 +558,12 @@ Distance Metrics Utils
     :undoc-members:
     :exclude-members:
 
+|
+
 Extensions Utils
 ==================
+
+Utilities for enabling and disabling extensions from the Extension Manager and knowing their locations
 
 .. automodule:: omni.isaac.core.utils.extensions
     :members:
@@ -548,6 +577,8 @@ Math Utils
     :members:
     :undoc-members:
     :exclude-members:
+
+|
 
 Mesh Utils
 ==================
@@ -565,6 +596,8 @@ Nucleus Utils
     :undoc-members:
     :exclude-members:
 
+|
+
 Physics Utils
 ==================
 
@@ -572,6 +605,8 @@ Physics Utils
     :members:
     :undoc-members:
     :exclude-members:
+
+|
 
 Prims Utils
 ==================
@@ -612,6 +647,8 @@ Semantics Utils
     :members:
     :undoc-members:
     :exclude-members:
+
+|
 
 Stage Utils
 =====================

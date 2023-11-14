@@ -26,6 +26,28 @@ def get_mesh_vertices_relative_to(mesh_prim: UsdGeom.Mesh, coord_prim: Usd.Prim)
 
     Returns:
         np.ndarray: vertices of the mesh in the coordinate system of the given prim. Shape is (N, 3).
+
+    Example:
+
+    .. code-block:: python
+
+        >>> import omni.isaac.core.utils.mesh as mesh_utils
+        >>> import omni.isaac.core.utils.stage as stage_utils
+        >>>
+        >>> # 1 stage unit length cube centered at (0.0, 0.0, 0.0)
+        >>> mesh_prim = stage_utils.get_current_stage().GetPrimAtPath("/World/Cube")
+        >>> # 1 stage unit diameter sphere centered at (1.0, 1.0, 1.0)
+        >>> coord_prim = stage_utils.get_current_stage().GetPrimAtPath("/World/Sphere")
+        >>>
+        >>> mesh_utils.get_mesh_vertices_relative_to(mesh_prim, coord_prim)
+        [[-1.5 -1.5 -0.5]
+         [-0.5 -1.5 -0.5]
+         [-1.5 -0.5 -0.5]
+         [-0.5 -0.5 -0.5]
+         [-1.5 -1.5 -1.5]
+         [-0.5 -1.5 -1.5]
+         [-1.5 -0.5 -1.5]
+         [-0.5 -0.5 -1.5]]
     """
 
     # Vertices of the mesh in the mesh's coordinate system

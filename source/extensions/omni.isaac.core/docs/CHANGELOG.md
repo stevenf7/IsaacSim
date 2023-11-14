@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.12.1] - 2023-11-14
+### Changed
+- Add examples to doctrings, fix type annotations, and improve description.
+  Affected modules: omni.isaac.core.utils (bounds, carb, constants, extension, mesh, physics, prim, stage)
+
 ## [2.12.0] - 2023-11-09
 ### Changed
 - Update asset paths to 2023.1.1

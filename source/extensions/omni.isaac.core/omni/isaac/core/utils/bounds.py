@@ -31,6 +31,16 @@ def recompute_extents(
 
     Raises:
         ValueError: If prim is not of UsdGeom.Boundable type
+
+    Example:
+
+    .. code-block:: python
+
+        >>> import omni.isaac.core.utils.bounds as bounds_utils
+        >>> import omni.isaac.core.utils.stage as stage_utils
+        >>>
+        >>> prim = stage_utils.get_current_stage().GetPrimAtPath("/World/Cube")
+        >>> bounds_utils.recompute_extents(prim)
     """
     #
     def update_extents(prim: UsdGeom.Boundable, time: Usd.TimeCode = Usd.TimeCode.Default()):
@@ -69,12 +79,23 @@ def create_bbox_cache(time: Usd.TimeCode = Usd.TimeCode.Default(), use_extents_h
 
     Returns:
         UsdGeom.BboxCache: Initialized bbox cache
+
+    Example:
+
+    .. code-block:: python
+
+        >>> import omni.isaac.core.utils.bounds as bounds_utils
+        >>>
+        >>> bounds_utils.create_bbox_cache()
+        <pxr.UsdGeom.BBoxCache object at 0x7f6720b8bc90>
     """
     return UsdGeom.BBoxCache(time=time, includedPurposes=[UsdGeom.Tokens.default_], useExtentsHint=use_extents_hint)
 
 
 def compute_aabb(bbox_cache: UsdGeom.BBoxCache, prim_path: str, include_children: bool = False) -> np.array:
-    """Compute an AABB for a given prim_path, a combined AABB is computed if include_children is True
+    """Compute an Axis-Aligned Bounding Box (AABB) for a given ``prim_path``
+
+    A combined AABB is computed if ``include_children`` is True
 
     Args:
         bbox_cache (UsdGeom.BboxCache): Existing Bounding box cache to use for computation
@@ -83,6 +104,22 @@ def compute_aabb(bbox_cache: UsdGeom.BBoxCache, prim_path: str, include_children
 
     Returns:
         np.array: Bounding box for this prim, [min x, min y, min z, max x, max y, max z]
+
+    Example:
+
+    .. code-block:: python
+
+        >>> import omni.isaac.core.utils.bounds as bounds_utils
+        >>>
+        >>> # 1 stage unit length cube centered at (0.0, 0.0, 0.0)
+        >>> cache = bounds_utils.create_bbox_cache()
+        >>> bounds_utils.compute_aabb(cache, prim_path="/World/Cube")
+        [-0.5 -0.5 -0.5  0.5  0.5  0.5]
+        >>>
+        >>> # the same cube rotated 45 degrees around the z-axis
+        >>> cache = bounds_utils.create_bbox_cache()
+        >>> bounds_utils.compute_aabb(cache, prim_path="/World/Cube")
+        [-0.70710678  -0.70710678  -0.5  0.70710678  0.70710678  0.5]
     """
     total_bounds = Gf.BBox3d()
     prim = get_prim_at_path(prim_path)
@@ -99,7 +136,7 @@ def compute_aabb(bbox_cache: UsdGeom.BBoxCache, prim_path: str, include_children
 
 
 def compute_combined_aabb(bbox_cache: UsdGeom.BBoxCache, prim_paths: typing.List[str]) -> np.array:
-    """Computes a combined AABB given a list of prim paths
+    """Computes a combined Axis-Aligned Bounding Box (AABB) given a list of prim paths
 
     Args:
         bbox_cache (UsdGeom.BboxCache): Existing Bounding box cache to use for computation
@@ -107,6 +144,18 @@ def compute_combined_aabb(bbox_cache: UsdGeom.BBoxCache, prim_paths: typing.List
 
     Returns:
         np.array: Bounding box for input prims, [min x, min y, min z, max x, max y, max z]
+
+    Example:
+
+    .. code-block:: python
+
+        >>> import omni.isaac.core.utils.bounds as bounds_utils
+        >>>
+        >>> # 1 stage unit length cube centered at (0.0, 0.0, 0.0)
+        >>> # with a 1 stage unit diameter sphere centered at (-0.5, 0.5, 0.5)
+        >>> cache = bounds_utils.create_bbox_cache()
+        >>> bounds_utils.compute_combined_aabb(cache, prim_paths=["/World/Cube", "/World/Sphere"])
+        [-1.  -0.5 -0.5  0.5  1.   1. ]
     """
     total_bounds = Gf.BBox3d()
     for prim_path in prim_paths:
@@ -120,6 +169,12 @@ def compute_combined_aabb(bbox_cache: UsdGeom.BBoxCache, prim_paths: typing.List
 def compute_obb(bbox_cache: UsdGeom.BBoxCache, prim_path: str) -> typing.Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Computes the Oriented Bounding Box (OBB) of a prim
 
+    .. note::
+
+        * The OBB does not guarantee the smallest possible bounding box, it rotates and scales the default AABB.
+        * The rotation matrix incorporates any scale factors applied to the object.
+        * The `half_extent` values do not include these scaling effects.
+
     Args:
         bbox_cache (UsdGeom.BBoxCache): USD Bounding Box Cache object to use for computation
         prim_path (str): Prim path to compute OBB for
@@ -130,11 +185,35 @@ def compute_obb(bbox_cache: UsdGeom.BBoxCache, prim_path: str) -> typing.Tuple[n
             - The axes of the OBB as a 2D NumPy array, where each row represents a different axis.
             - The half extent of the OBB as a NumPy array.
 
-    # NOTE:
-    # The OBB does not guarantee the smallest possible bounding box, it rotates and scales the default AABB
-    # The rotation matrix incorporates any scale factors applied to the object.
-    # The `half_extent` values do not include these scaling effects.
+    Example:
 
+    .. code-block:: python
+
+        >>> import omni.isaac.core.utils.bounds as bounds_utils
+        >>>
+        >>> # 1 stage unit length cube centered at (0.0, 0.0, 0.0)
+        >>> cache = bounds_utils.create_bbox_cache()
+        >>> centroid, axes, half_extent = bounds_utils.compute_obb(cache, prim_path="/World/Cube")
+        >>> centroid
+        [0. 0. 0.]
+        >>> axes
+        [[1. 0. 0.]
+         [0. 1. 0.]
+         [0. 0. 1.]]
+        >>> half_extent
+        [0.5 0.5 0.5]
+        >>>
+        >>> # the same cube rotated 45 degrees around the z-axis
+        >>> cache = bounds_utils.create_bbox_cache()
+        >>> centroid, axes, half_extent = bounds_utils.compute_obb(cache, prim_path="/World/Cube")
+        >>> centroid
+        [0. 0. 0.]
+        >>> axes
+        [[ 0.70710678  0.70710678  0.        ]
+         [-0.70710678  0.70710678  0.        ]
+         [ 0.          0.          1.        ]]
+        >>> half_extent
+        [0.5 0.5 0.5]
     """
     # Compute the BBox3d for the prim
     prim = get_prim_at_path(prim_path)
@@ -167,14 +246,33 @@ def get_obb_corners(centroid: np.ndarray, axes: np.ndarray, half_extent: np.ndar
 
     Returns:
         np.ndarray: NumPy array of shape (8, 3) containing each corner location of the OBB
-        c0 = min_x, min_y, min_z;
-        c1 = min_x, min_y, max_z;
-        c2 = min_x, max_y, min_z;
-        c3 = min_x, max_y, max_z;
-        c4 = max_x, min_y, min_z;
-        c5 = max_x, min_y, max_z;
-        c6 = max_x, max_y, min_z;
-        c7 = max_x, max_y, max_z;
+
+        :math:`c_0 = (x_{min}, y_{min}, z_{min})`
+        |br| :math:`c_1 = (x_{min}, y_{min}, z_{max})`
+        |br| :math:`c_2 = (x_{min}, y_{max}, z_{min})`
+        |br| :math:`c_3 = (x_{min}, y_{max}, z_{max})`
+        |br| :math:`c_4 = (x_{max}, y_{min}, z_{min})`
+        |br| :math:`c_5 = (x_{max}, y_{min}, z_{max})`
+        |br| :math:`c_6 = (x_{max}, y_{max}, z_{min})`
+        |br| :math:`c_7 = (x_{max}, y_{max}, z_{max})`
+
+    Example:
+
+    .. code-block:: python
+
+        >>> import omni.isaac.core.utils.bounds as bounds_utils
+        >>>
+        >>> cache = bounds_utils.create_bbox_cache()
+        >>> centroid, axes, half_extent = bounds_utils.compute_obb(cache, prim_path="/World/Cube")
+        >>> bounds_utils.get_obb_corners(centroid, axes, half_extent)
+        [[-0.5 -0.5 -0.5]
+         [-0.5 -0.5  0.5]
+         [-0.5  0.5 -0.5]
+         [-0.5  0.5  0.5]
+         [ 0.5 -0.5 -0.5]
+         [ 0.5 -0.5  0.5]
+         [ 0.5  0.5 -0.5]
+         [ 0.5  0.5  0.5]]
     """
     corners = [
         centroid - axes[0] * half_extent[0] - axes[1] * half_extent[1] - axes[2] * half_extent[2],
@@ -198,6 +296,32 @@ def compute_obb_corners(bbox_cache: UsdGeom.BBoxCache, prim_path: str) -> np.nda
 
     Returns:
         np.ndarray: NumPy array of shape (8, 3) containing each corner location of the OBB
+
+        :math:`c_0 = (x_{min}, y_{min}, z_{min})`
+        |br| :math:`c_1 = (x_{min}, y_{min}, z_{max})`
+        |br| :math:`c_2 = (x_{min}, y_{max}, z_{min})`
+        |br| :math:`c_3 = (x_{min}, y_{max}, z_{max})`
+        |br| :math:`c_4 = (x_{max}, y_{min}, z_{min})`
+        |br| :math:`c_5 = (x_{max}, y_{min}, z_{max})`
+        |br| :math:`c_6 = (x_{max}, y_{max}, z_{min})`
+        |br| :math:`c_7 = (x_{max}, y_{max}, z_{max})`
+
+    Example:
+
+    .. code-block:: python
+
+        >>> import omni.isaac.core.utils.bounds as bounds_utils
+        >>>
+        >>> cache = bounds_utils.create_bbox_cache()
+        >>> bounds_utils.compute_obb_corners(cache, prim_path="/World/Cube")
+        [[-0.5 -0.5 -0.5]
+         [-0.5 -0.5  0.5]
+         [-0.5  0.5 -0.5]
+         [-0.5  0.5  0.5]
+         [ 0.5 -0.5 -0.5]
+         [ 0.5 -0.5  0.5]
+         [ 0.5  0.5 -0.5]
+         [ 0.5  0.5  0.5]]
     """
     centroid, axis, half_extent = compute_obb(bbox_cache, prim_path)
     return get_obb_corners(centroid, axis, half_extent)
