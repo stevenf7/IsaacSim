@@ -27,7 +27,6 @@ namespace sensor
  */
 struct CsProperties
 {
-    carb::Float3 position{ 0.0f, 0.0f, 0.0f }; //<! Position relative to the parent body where the sensor is placed.
     float radius{ 0.0f }; //<! Radius from the sensor position. negative values indicate it's a full body sensor.
     float minThreshold{ 0.0f }; //<! Minimum force that the sensor can read. Forces below this value will not trigger a
                                 // reading.

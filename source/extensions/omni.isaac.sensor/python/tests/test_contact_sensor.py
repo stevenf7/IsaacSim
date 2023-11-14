@@ -25,6 +25,7 @@ import omni.kit.test
 import usdrt.Sdf
 from omni.isaac.core import World
 from omni.isaac.core.prims.rigid_prim import RigidPrim
+from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.physics import simulate_async
 from omni.isaac.core.utils.prims import add_reference_to_stage, delete_prim
@@ -968,6 +969,42 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         self.assertGreater(float(sensor_2.value), 0.1)
         self.assertAlmostEqual(float(sensor_3.value), 0.1, delta=1e-5)
 
+        pass
+
+    async def test_sensor_with_skip_parents(self):
+        await self.test_add_sensor_prim()
+        await omni.kit.app.get_app().next_update_async()
+
+        # create four sensors with in an Xform. The offset needed to reach the tip of the leg is (40,0,0)
+        # Break this down to (20,0,0) to the xform, (20,0,0) to the sensor.
+        for i in range(4):
+            xform = XFormPrim(self.leg_paths[i] + "/xform", translation=Gf.Vec3d(20, 0, 0))
+
+            result, sensor = omni.kit.commands.execute(
+                "IsaacSensorCreateContactSensor",
+                path="/xform/custom_sensor",
+                parent=self.leg_paths[i],
+                min_threshold=0.0,
+                max_threshold=100.0,
+                color=self.color[i],
+                radius=0.12,
+                sensor_period=0,
+                translation=Gf.Vec3d(20, 0, 0),
+                visualize=True,
+            )
+            self.assertTrue(result)
+            self.assertIsNotNone(sensor)
+
+        await omni.kit.app.get_app().next_update_async()
+        self.my_world.play()
+        # give it some time to reach the ground first
+        await simulate_async(1.0)
+
+        # all four sensors should have proper reading
+        for i in range(4):
+            sensor_reading = self._cs.get_sensor_reading(self.leg_paths[i] + "/xform/custom_sensor")  # expect contact
+            self.assertTrue(sensor_reading.inContact)
+            self.assertGreater(float(sensor_reading.value), 0.1)
         pass
 
     # async def test_cubes_touching_then_not_touching_restart(self):

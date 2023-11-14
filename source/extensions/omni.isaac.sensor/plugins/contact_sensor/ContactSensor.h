@@ -73,8 +73,6 @@ public:
 
     void setContactReportApi();
 
-    pxr::GfVec3d findParentScale();
-
     bool findValidParent();
 
     void onComponentChange();
