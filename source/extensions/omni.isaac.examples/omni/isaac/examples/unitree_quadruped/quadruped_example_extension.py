@@ -36,7 +36,7 @@ class QuadrupedExampleExtension(BaseSampleExtension):
             submenu_name="",
             name="Quadruped",
             title="Unitree A1 Quadruped Example",
-            doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/ext_omni_isaac_quadruped.html",
+            doc_link="https://docs.omniverse.nvidia.com/isaacsim/latest/features/robots_simulation/ext_omni_isaac_quadruped.html",
             overview=overview,
             file_path=os.path.abspath(__file__),
             sample=QuadrupedExample(),

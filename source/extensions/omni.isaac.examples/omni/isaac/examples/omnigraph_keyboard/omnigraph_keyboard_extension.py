@@ -28,7 +28,7 @@ class OmnigraphKeyboardExtension(BaseSampleExtension):
             submenu_name="",
             name="Omnigraph Keyboard",
             title="NVIDIA Omnigraph Scripting Example",
-            doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/tutorial_advanced_input_devices.html",
+            doc_link="https://docs.omniverse.nvidia.com/isaacsim/latest/gui_tutorials/tutorial_advanced_input_devices.html",
             overview=overview,
             file_path=os.path.abspath(__file__),
             sample=OmnigraphKeyboard(),

@@ -25,7 +25,7 @@ class BinStackingExtension(BaseSampleExtension):
             submenu_name="",
             name="UR10 Palletizing",
             title="UR10 Palletizing",
-            doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/menu_examples.html?",
+            doc_link="https://docs.omniverse.nvidia.com/isaacsim/latest/replicator_tutorials/tutorial_replicator_ur10_palletizing.html#isaac-sim-app-tutorial-replicator-ur10-palletizing",
             overview="This Example shows how to do Palletizing using UR10 robot and Cortex behaviors in Isaac Sim.\n\nPress the 'Open in IDE' button to view the source code.",
             sample=BinStacking(self.on_diagnostics),
             file_path=os.path.abspath(__file__),

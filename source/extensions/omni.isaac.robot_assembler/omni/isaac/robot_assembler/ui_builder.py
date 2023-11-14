@@ -189,7 +189,7 @@ class UIBuilder:
 
     def _make_info_frame(self):
         title = EXTENSION_TITLE
-        doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html"
+        doc_link = "https://docs.omniverse.nvidia.com/isaacsim/latest/advanced_tutorials/tutorial_advanced_assembling_robots.html"
 
         overview = "This Extension allows the user to assemble together one or more Articulations and Rigid Bodies."
         overview += "  This may include mounting a robot to a base, or mounting a gripper to an arm."

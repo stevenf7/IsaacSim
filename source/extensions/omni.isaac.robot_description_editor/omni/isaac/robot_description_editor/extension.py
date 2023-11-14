@@ -514,7 +514,7 @@ class Extension(omni.ext.IExt):
 
     def _build_info_ui(self):
         title = EXTENSION_NAME
-        doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html"
+        doc_link = "https://docs.omniverse.nvidia.com/isaacsim/latest/advanced_tutorials/tutorial_motion_generation_robot_description_editor.html"
 
         overview = "This utility is used to help generate a Lula robot_description.yaml file required to use Lula-based algorithms like RmpFlow, RRT, and Lula Kinematics.  "
         overview += "A Lula robot_description file contains a collision sphere representation of the robot that is used for collision avoidance, and information that is required to interpret the robot URDF.\n\n"

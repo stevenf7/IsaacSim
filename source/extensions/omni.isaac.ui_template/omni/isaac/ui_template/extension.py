@@ -107,7 +107,7 @@ class Extension(omni.ext.IExt):
                 with ui.VStack(spacing=5, height=0):
 
                     title = "Isaac Sim Example UI"
-                    doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html"
+                    doc_link = "https://docs.omniverse.nvidia.com/isaacsim/latest/index.html"
 
                     overview = (
                         "The Example UI shows how to use Isaac Sim's robotics-centric UI tools for your own extensions."

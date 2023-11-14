@@ -75,7 +75,7 @@ class Extension(omni.ext.IExt):
             with self._window.frame:
                 with ui.VStack(spacing=5, height=0):
                     title = "Surface Gripper Example"
-                    doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/ext_omni_isaac_surface_gripper.html"
+                    doc_link = "https://docs.omniverse.nvidia.com/isaacsim/latest/features/robots_simulation/ext_omni_isaac_surface_gripper.html"
 
                     overview = "This Example shows how to simulate a suction-cup gripper in Isaac Sim. "
                     overview += "It simulates suction by creating a Joint between two bodies when the parent and child bodies are close at the gripper's point of contact."

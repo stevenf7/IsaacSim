@@ -1,4 +1,8 @@
 # Changelog
+## [1.5.1] - 2023-11-13
+### Fixed
+- Updated documentation link
+
 ## [1.5.0] - 2023-10-27
 ### Add
 - Add Scripting Template to demonstrate programming script-like behavior through a standalone UI extension.

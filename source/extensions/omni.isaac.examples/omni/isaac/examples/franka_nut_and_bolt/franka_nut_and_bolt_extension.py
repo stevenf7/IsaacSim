@@ -21,7 +21,7 @@ class FrankaNutAndBoltExtension(BaseSampleExtension):
             submenu_name="",
             name="Franka Nut and Bolt",
             title="Franka Nut and Bolt",
-            doc_link="",
+            doc_link="https://docs.omniverse.nvidia.com/isaacsim/latest/advanced_tutorials/tutorial_advanced_sdf_nut_and_bolt.html#franka-nut-and-bolt-tutorial",
             overview="Franka robot arms picking and screwing nuts onto bolts",
             file_path=os.path.abspath(__file__),
             sample=FrankaNutAndBolt(),

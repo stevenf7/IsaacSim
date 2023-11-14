@@ -72,7 +72,7 @@ class Extension(omni.ext.IExt):
 
     def _build_info_ui(self):
         title = EXTENSION_NAME
-        doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/ext_omni_isaac_partition.html"
+        doc_link = "https://docs.omniverse.nvidia.com/isaacsim/latest/ext_omni_isaac_partition.html"
 
         overview = (
             "The Partition utility is used to convert a large USD stage to a stage with "

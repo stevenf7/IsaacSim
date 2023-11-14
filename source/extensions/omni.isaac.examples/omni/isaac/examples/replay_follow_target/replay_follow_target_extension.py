@@ -24,7 +24,7 @@ class ReplayFollowTargetExtension(BaseSampleExtension):
             submenu_name="",
             name="Replay Follow Target",
             title="Replay Follow Target Task",
-            doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/tutorial_advanced_data_logging.html",
+            doc_link="https://docs.omniverse.nvidia.com/isaacsim/latest/core_api_tutorials/tutorial_advanced_data_logging.html",
             overview="This Example shows how to use data logging to replay data collected\n\n from the follow target extension example.\n\n Press the 'Open in IDE' button to view the source code.",
             sample=ReplayFollowTarget(),
             file_path=os.path.abspath(__file__),
