@@ -216,52 +216,10 @@ void ContactSensor::processRawContacts(CsRawData* rawContact, const size_t& size
 
     if (size > static_cast<size_t>(0))
     {
-
-        uint64_t actor = rawContact[0].body0;
-        if (rawContact[0].body0 != asInt(mParentPrim.GetPath())) // If Parent is on index 1
-            actor = rawContact[0].body1;
-        pxr::SdfPath actorPath(omni::isaac::utils::getSdfPathFromUint64(actor));
-        // CARB_LOG_INFO("getting PxActor");
-        pxr::GfTransform parentPose;
-        pxr::GfVec3d pose(static_cast<double>(mProps.position.x), static_cast<double>(mProps.position.y),
-                          static_cast<double>(mProps.position.z));
-        ::physx::PxActor* pxActor =
-            (::physx::PxActor*)mPhysXInterfacePtr->getPhysXPtr(actorPath, omni::physx::PhysXType::ePTActor);
-        // CARB_LOG_INFO("used Physx interface");
-        pxr::GfVec3d dp;
-        if (pxActor)
-        {
-            // CARB_LOG_INFO("Found PxActor");
-            ::physx::PxRigidDynamic* rd = (::physx::PxRigidDynamic*)pxActor;
-            ::physx::PxTransform _pose = rd->getGlobalPose();
-            auto gv = (rd->getLinearVelocity());
-            dp = pxr::GfVec3d(static_cast<double>(gv.x), static_cast<double>(gv.y), static_cast<double>(gv.z));
-            parentPose.SetTranslation(pxr::GfVec3d(
-                static_cast<double>(_pose.p.x), static_cast<double>(_pose.p.y), static_cast<double>(_pose.p.z)));
-            parentPose.SetRotation(
-                pxr::GfRotation(pxr::GfQuatd(static_cast<double>(_pose.q.w),
-                                             pxr::GfVec3d(static_cast<double>(_pose.q.x), static_cast<double>(_pose.q.y),
-                                                          static_cast<double>(_pose.q.z)))));
-        }
-        else
-        {
-            // CARB_LOG_WARN("PxLink");
-            ::physx::PxArticulationLink* link = (::physx::PxArticulationLink*)mPhysXInterfacePtr->getPhysXPtr(
-                actorPath, omni::physx::PhysXType::ePTLink);
-            ::physx::PxTransform _pose = link->getGlobalPose();
-            auto gv = link->getLinearVelocity();
-            dp = pxr::GfVec3d(static_cast<double>(gv.x), static_cast<double>(gv.y), static_cast<double>(gv.z));
-
-
-            parentPose.SetTranslation(pxr::GfVec3d(
-                static_cast<double>(_pose.p.x), static_cast<double>(_pose.p.y), static_cast<double>(_pose.p.z)));
-            parentPose.SetRotation(
-                pxr::GfRotation(pxr::GfQuatd(static_cast<double>(_pose.q.w),
-                                             pxr::GfVec3d(static_cast<double>(_pose.q.x), static_cast<double>(_pose.q.y),
-                                                          static_cast<double>(_pose.q.z)))));
-        }
-
-        pose = parentPose.GetMatrix().Transform(pose);
+        usdrt::GfMatrix4d usdTransform =
+            omni::isaac::utils::pose::computeWorldXformNoCache(mStage, mUsdrtStage, mPrim.GetPath());
+        const double* sensor_pose = usdTransform.ExtractTranslation().GetArray();
+        pxr::GfVec3d pose(sensor_pose[0], sensor_pose[1], sensor_pose[2]);
         pxr::GfVec3d totalImpulse(0.0, 0.0, 0.0);
         for (size_t i = 0; i < size; ++i)
         {
@@ -269,12 +227,12 @@ void ContactSensor::processRawContacts(CsRawData* rawContact, const size_t& size
             // CARB_LOG_WARN("contact Pose: %f %f %f", contactPoint[0], contactPoint[1], contactPoint[2]);
             // CARB_LOG_WARN("sensor Pose: %f %f %f", pose[0],pose[1], pose[2]);
             auto d = pxr::GfVec3d(0.0f); // dp*rawContact->dt; Pending update on physics contact position being delayed
-                                         // a few frames
+                                         // a few frames dp is the linear vel of the parent
             auto distance = pose - contactPoint - d;
             // pose.GetLength(), mProps.radius);
 
             // Check if the distance from sensor to contact position is within sensor radius
-            if (mProps.radius < 0.0f || distance.GetLength() < static_cast<double>(mProps.radius))
+            if (mProps.radius <= 0.0f || distance.GetLength() < static_cast<double>(mProps.radius))
             {
                 mReadingPair[index].inContact = true;
                 // compute force from impulse (F = i/dt) and add to sensor output
@@ -306,7 +264,7 @@ void ContactSensor::onPhysicsStep()
     mLineDrawing->draw();
     if (mContactManagerPtr == nullptr)
     {
-        CARB_LOG_ERROR("ContactManager not found");
+        CARB_LOG_ERROR("*** error: ContactManager not found");
         return;
     }
 
@@ -345,7 +303,7 @@ void ContactSensor::setContactReportApi()
 {
     if (!mParentPrim.GetPrim().IsValid())
     {
-        CARB_LOG_ERROR("failed to set Contact Report API, parent prim is invalid or not found");
+        CARB_LOG_ERROR("*** error: failed to set Contact Report API, parent prim is invalid or not found");
         return;
     }
 
@@ -373,42 +331,6 @@ void ContactSensor::setContactReportApi()
     contactReportAPI.GetThresholdAttr().Set(thresholds[0]);
 }
 
-pxr::GfVec3d ContactSensor::findParentScale()
-{
-    if (!mParentPrim.IsValid())
-    {
-        CARB_LOG_ERROR("Failed to find parent scale, Parent Prim is invalid or not found");
-    }
-    pxr::UsdPrim tempPrim = mPrim.GetPrim();
-    pxr::GfVec3d tempScale(1);
-    pxr::GfVec3d zeroScale(0);
-    std::vector<pxr::GfVec3d> parentScales;
-
-    while (tempPrim.IsValid() && tempPrim.GetName().GetString() != "/")
-    {
-        tempPrim.GetAttribute(pxr::TfToken("xformOp:scale")).Get(&tempScale);
-        tempPrim = tempPrim.GetParent();
-        parentScales.push_back(tempScale);
-    }
-
-    double x_scale = 1;
-    double y_scale = 1;
-    double z_scale = 1;
-
-    for (unsigned int i = 0; i < parentScales.size(); i++)
-    {
-        const double* scale = parentScales[i].GetArray();
-        if (scale[0] > 0 && scale[1] > 0 && scale[2] > 0)
-        {
-            x_scale *= scale[0];
-            y_scale *= scale[1];
-            z_scale *= scale[2];
-        }
-    }
-    tempScale.Set(x_scale, y_scale, z_scale);
-    return tempScale;
-}
-
 bool ContactSensor::findValidParent()
 {
     pxr::UsdPrim tempPrim = this->mStage->GetPrimAtPath(this->mPrim.GetPath()).GetParent();
@@ -420,14 +342,14 @@ bool ContactSensor::findValidParent()
         if (rigidBodyEnabled)
         {
             mParentPrim = tempPrim;
-            findParentScale();
+            // findParentScale();
             setContactReportApi();
             return true;
         }
         // go to parent
         tempPrim = tempPrim.GetParent();
     }
-    CARB_LOG_ERROR("Error, Parent prim is not found or is invalid");
+    CARB_LOG_ERROR("*** error: contact sensor parent prim is not found or is invalid");
     return false;
 }
 
@@ -447,13 +369,7 @@ void ContactSensor::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetColorAttr(), mColor);
     isaac::utils::safeGetAttribute(typedPrim.GetSensorPeriodAttr(), sensorPeriod);
 
-    pxr::GfVec3d position(0.0);
-    mPrim.GetPrim().GetAttribute(pxr::TfToken("xformOp:translate")).Get(&position);
-
-    pxr::GfVec3d parentScale = findParentScale();
     setContactReportApi();
-    const double* pos = position.GetArray();
-    const double* scale = parentScale.GetArray();
     const float* thresholds = thresholdAttr.GetArray();
 
     // contact sensor props
@@ -462,18 +378,11 @@ void ContactSensor::onComponentChange()
     mProps.radius = radius;
     mProps.sensorPeriod = sensorPeriod;
 
-    carb::Float3 mPropPos = { static_cast<float>(pos[0] * scale[0]), static_cast<float>(pos[1] * scale[1]),
-                              static_cast<float>(pos[2] * scale[2]) };
-    mProps.position = mPropPos;
-
-    // CARB_LOG_WARN("relative position (stage unit): %f %f %f", mProps.position.x, mProps.position.y,
-    // mProps.position.z);
     if (mVisualize && mEnabled)
     {
         CARB_LOG_WARN_ONCE("*** Deprecation Alert: visualization through USD will be removed in the next release!");
         draw();
     }
-
 
     if (mPreviousEnabled != this->mEnabled)
     {

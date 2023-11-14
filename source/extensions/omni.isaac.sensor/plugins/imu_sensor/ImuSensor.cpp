@@ -486,7 +486,7 @@ bool ImuSensor::findValidParent()
         // go to parent
         tempPrim = tempPrim.GetParent();
     }
-    CARB_LOG_ERROR("IMU Sensor Error: Parent prim is not found or is invalid");
+    CARB_LOG_ERROR("*** error: Parent prim is not found or is invalid");
     return false;
 }
 

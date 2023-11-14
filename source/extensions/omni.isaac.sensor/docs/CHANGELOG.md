@@ -1,4 +1,9 @@
 # Changelog
+
+## [9.10.0] - 2023-11-03
+### Fixed
+- Contact Sensor can now measure force correctly when the rigid body is not its direct parent
+
 ## [9.9.2] - 2023-11-13
 ### Fixed
 - Updated documentation link
