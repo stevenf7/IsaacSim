@@ -1,4 +1,7 @@
 # Changelog
+## [1.7.9] - 2023-11-13
+### Fixed
+- Updated documentation links for the examples
 
 ## [1.7.8] - 2023-10-17
 ### Fixed

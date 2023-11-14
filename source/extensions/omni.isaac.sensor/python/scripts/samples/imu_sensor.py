@@ -87,7 +87,7 @@ class Imu_sensor_demo(omni.ext.IExt):
                 with ui.VStack(spacing=5, height=0):
 
                     title = "IMU Sensor Example"
-                    doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/ext_omni_isaac_sensor.html#imu-example"
+                    doc_link = "https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/isaac_sim_sensors_physics_based_imu.html"
 
                     overview = "This Example shows the output of the IMU sensor. "
                     overview += "The IMU sensor reads motion of the body of the robot and output simulated accelerometer and gyroscope readings"

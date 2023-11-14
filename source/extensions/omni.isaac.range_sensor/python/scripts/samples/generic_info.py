@@ -67,9 +67,7 @@ class Extension(omni.ext.IExt):
         with self._window.frame:
             with ui.VStack(spacing=5, height=0):
                 title = "Read a Generic Range Sensor Data Stream"
-                doc_link = (
-                    "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/ext_omni_isaac_range_sensor.html"
-                )
+                doc_link = "https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/ext_omni_isaac_range_sensor.html"
 
                 overview = "This sample demonstrates the Generic range sensor python API for Isaac Sim. It shows how to create an Generic Range Sensor, set its properties, and read data streaming from it. "
                 overview += "First press the 'Load Sensor' button and then press PLAY to simulate."

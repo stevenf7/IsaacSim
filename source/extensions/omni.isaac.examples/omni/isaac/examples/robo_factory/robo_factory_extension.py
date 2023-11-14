@@ -24,7 +24,7 @@ class RoboFactoryExtension(BaseSampleExtension):
             submenu_name="",
             name="RoboFactory",
             title="RoboFactory",
-            doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html",
+            doc_link="https://docs.omniverse.nvidia.com/isaacsim/latest/core_api_tutorials/tutorial_core_adding_multiple_robots.html",
             overview="This Example shows how to run multiple tasks in the same scene.\n\nPress the 'Open in IDE' button to view the source code.",
             sample=RoboFactory(),
             file_path=os.path.abspath(__file__),

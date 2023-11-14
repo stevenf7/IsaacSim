@@ -1,4 +1,7 @@
 # Changelog
+## [2.0.1] - 2023-11-13
+### Fixed
+- Updated documentation link
 
 ## [2.0.0] - 2023-09-22
 ### Removed

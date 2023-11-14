@@ -25,7 +25,7 @@ class PathPlanningExtension(BaseSampleExtension):
             submenu_name="",
             name="Path Planning",
             title="Path Planning Task",
-            doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html",
+            doc_link="https://docs.omniverse.nvidia.com/isaacsim/latest/advanced_tutorials/tutorial_motion_generation_rrt.html#isaac-sim-app-tutorial-motion-generation-rrt",
             overview="This Example shows how to plan a path through a complicated static environment with the Franka robot in Isaac Sim.\n\nPress the 'Open in IDE' button to view the source code.",
             sample=PathPlanning(),
             file_path=os.path.abspath(__file__),

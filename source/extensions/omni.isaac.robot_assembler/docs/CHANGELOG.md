@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.3] - 2023-11-13
+### Fixed
+- Updated documentation link
+
 ## [1.1.2] - 2023-08-11
 ### Added
 - Added index.rst for Sphinx autodoc

@@ -1,4 +1,8 @@
 # Changelog
+## [9.9.2] - 2023-11-13
+### Fixed
+- Updated documentation link
+
 ## [9.9.1] - 2023-10-09
 ### Fixed
 - removed extra frame transformation in the LidarRtx wrapper

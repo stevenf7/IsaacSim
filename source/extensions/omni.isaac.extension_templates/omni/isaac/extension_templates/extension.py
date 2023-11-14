@@ -106,7 +106,9 @@ class Extension(omni.ext.IExt):
 
     def _build_info_ui(self):
         title = EXTENSION_NAME
-        doc_link = "https://docs.omniverse.nvidia.com/isaacsim/latest/advanced_tutorials/tutorial_extension_templates.html#isaac-sim-app-tutorial-extension-templates"
+        doc_link = (
+            "https://docs.omniverse.nvidia.com/isaacsim/latest/advanced_tutorials/tutorial_extension_templates.html"
+        )
 
         overview = (
             "Generate Extension Templates to get started building and programming standalone UI-based extensions in "

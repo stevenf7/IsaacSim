@@ -404,7 +404,9 @@ class Extension(omni.ext.IExt):
 
     def _build_info_ui(self):
         title = EXTENSION_NAME
-        doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html"
+        doc_link = (
+            "https://docs.omniverse.nvidia.com/isaacsim/latest/advanced_tutorials/tutorial_configure_rmpflow_denso.html"
+        )
 
         overview = "This utility is used to help generate and refine the collision sphere representation of a robot.  "
         overview += "Select the Articulation for which you would like to edit spheres from the dropdown menu.  Then select a link from the robot Articulation to begin using the Sphere Editor."

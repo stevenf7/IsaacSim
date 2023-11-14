@@ -445,7 +445,7 @@ class Extension(omni.ext.IExt):
 
     def _build_info_ui(self):
         title = EXTENSION_NAME
-        doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html"
+        doc_link = "https://docs.omniverse.nvidia.com/isaacsim/latest/features/robots_simulation/ext_omni_isaac_gain_tuner.html"
 
         overview = "This utility is used to help tune the gains of an articulation.  "
         overview += "Select the Articulation you would like to tune from the dropdown menu."

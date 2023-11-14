@@ -192,7 +192,7 @@ class Extension(omni.ext.IExt):
 
     def _build_info_ui(self):
         title = EXTENSION_NAME
-        doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html"
+        doc_link = "https://docs.omniverse.nvidia.com/isaacsim/latest/gui_tutorials/tutorial_gui_camera_sensors.html"
 
         overview = "This utility is used to inspect cameras in the scene.  "
         overview += "\n\nPress the 'Open in IDE' button to view the source code."
