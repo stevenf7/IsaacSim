@@ -10,6 +10,7 @@
 from typing import List
 
 import carb
+import numpy as np
 import omni.ui as ui
 from omni.kit.property.usd.usd_attribute_model import UsdAttributeModel
 from omni.kit.property.usd.usd_property_widget import UsdPropertiesWidget, UsdPropertyUiEntry
@@ -80,7 +81,11 @@ class CustomDataWidget(SimplePropertyWidget):
             error.set_value("Valid, changes saved")
             self._prim.SetCustomData(decoder.decode(t.get_value_as_string()))
 
-        j = json.dumps(self._prim.GetCustomData(), sort_keys=False, indent=4)
+        custom_data = self._prim.GetCustomData()
+        for key in custom_data:
+            custom_data[key] = np.array(custom_data[key]).tolist()
+
+        j = json.dumps(custom_data, sort_keys=False, indent=4)
 
         data.set_value(j)
         data.add_value_changed_fn(lambda m: validate(m))
