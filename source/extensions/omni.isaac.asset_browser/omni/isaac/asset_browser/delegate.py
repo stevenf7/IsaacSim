@@ -1,11 +1,11 @@
-# Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2022-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
-# and any modifications thereto. Any use, reproduction, disclosure or
+# and any modifications thereto.  Any use, reproduction, disclosure or
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
-#
+
 import asyncio
 from pathlib import Path
 from typing import Optional
@@ -13,10 +13,11 @@ from typing import Optional
 import carb
 import omni.kit.app
 import omni.ui as ui
-from omni.kit.browser.core import create_drop_helper
+from omni.kit.browser.core import DetailItem, create_drop_helper
 from omni.kit.browser.folder.core import FolderDetailDelegate
 
-from .model import AssetBrowserModel, AssetDetailItem
+from .context_menu import ContextMenu
+from .model import AssetBrowserModel
 
 CURRENT_PATH = Path(__file__).parent
 ICON_PATH = CURRENT_PATH.parent.parent.parent.parent.joinpath("icons")
@@ -34,13 +35,16 @@ class AssetDetailDelegate(FolderDetailDelegate):
 
         self._dragging_url = None
         self._settings = carb.settings.get_settings()
-        self._context_menu: Optional[ui.Menu] = None
-        self._action_item: Optional[AssetDetailItem] = None
+        self._context_menu: Optional[ContextMenu] = None
+        self._action_item: Optional[DetailItem] = None
 
         self._instanceable_categories = self._settings.get("/exts/omni.isaac.asset_browser/instanceable")
         if self._instanceable_categories:
             self._drop_helper = create_drop_helper(
-                pickable=True, add_outline=True, on_drop_accepted_fn=self._on_drop_accepted, on_drop_fn=self._on_drop
+                pickable=True,
+                add_outline=True,
+                on_drop_accepted_fn=self._on_drop_accepted,
+                on_drop_fn=self._on_drop,
             )
 
     def destroy(self):
@@ -51,10 +55,9 @@ class AssetDetailDelegate(FolderDetailDelegate):
         """Set default sky thumbnail if thumbnail is None"""
         if item.thumbnail is None:
             return f"{ICON_PATH}/usd_stage_256.png"
-        else:
-            return item.thumbnail
+        return item.thumbnail
 
-    def on_drag(self, item: AssetDetailItem) -> str:
+    def on_drag(self, item: DetailItem) -> str:
         """Could be dragged to viewport window"""
         thumbnail = self.get_thumbnail(item)
         icon_size = 128
@@ -88,10 +91,10 @@ class AssetDetailDelegate(FolderDetailDelegate):
         return item.url
 
     def _on_drop_accepted(self, url):
-        # Only hanlder dragging from asset browser
+        # Only handle dragging from asset browser
         return url == self._dragging_url
 
-    def _on_drop(self, url, target, viewport_name, context_name):
+    def _on_drop(self, url, target, viewport_name, context_name):  # pylint: disable=useless-return
         saved_instanceable = self._settings.get("/persistent/app/stage/instanceableOnCreatingReference")
         if not saved_instanceable and url == self._dragging_url:
             # Enable instanceable for viewport asset drop handler
@@ -106,32 +109,14 @@ class AssetDetailDelegate(FolderDetailDelegate):
 
         self._dragging_url = None
         # Let viewport do asset dropping
-        return None
+        return None  # noqa: R501
 
-    def on_right_click(self, item: AssetDetailItem) -> None:
+    def on_right_click(self, item: DetailItem) -> None:
         """Show context menu"""
         self._action_item = item
         if self._context_menu is None:
-            try:
-                import omni.kit.tool.collect
-
-                self._context_menu = ui.Menu("Asset browser context menu")
-                with self._context_menu:
-                    ui.MenuItem("Collect", triggered_fn=self._collect)
-            except ImportError:
-                carb.log_warn("Plese enable omni.kit.tool.collect first to collect.")
+            self._context_menu = ContextMenu()
 
         if self._context_menu:
+            self._context_menu.url = self._action_item.url
             self._context_menu.show()
-
-    def _collect(self):
-        try:
-            import omni.kit.tool.collect
-
-            collect_instance = omni.kit.tool.collect.get_instance()
-            collect_instance.collect(self._action_item.url)
-            collect_instance = None
-        except ImportError:
-            carb.log_warn("Failed to import collect module (omni.kit.tool.collect). Please enable it first.")
-        except AttributeError:
-            carb.log_warn("Require omni.kit.tool.collect v2.0.5 or later!")

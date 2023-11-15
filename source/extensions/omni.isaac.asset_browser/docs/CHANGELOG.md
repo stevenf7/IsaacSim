@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.0] - 2023-11-13
+
+### Changed
+
+- Update based on omni.kit.browser.asset-1.3.7
+
 ## [0.3.2] - 2023-11-09
 
 ### Changed

@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.3.2"
+version = "0.4.0"
 category = "Rendering"
 title = "Isaac Sim Asset Browser"
 description = "A browser for Isaac Sim assets"
@@ -20,9 +20,13 @@ feature = true
 [dependencies]
 "omni.kit.browser.folder.core" = {}
 "omni.kit.commands" = {}
+"omni.kit.menu.utils" = {}
 "omni.usd" = {}
 "omni.kit.viewport.utility" = { }
 "omni.kit.tool.collect" = { optional=true }
+"omni.kit.menu.stage" = { optional=true }
+"omni.kit.clipboard" = { optional=true }
+
 
 # Main python module this extension provides, it will be publicly available as "import omni.isaac.asset_browser".
 [[python.module]]
@@ -39,11 +43,38 @@ exts."omni.isaac.asset_browser".folders = [
     "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/2023.1.1/Isaac/Sensors",
 ]
 exts."omni.isaac.asset_browser".instanceable = []
-exts."omni.isaac.asset_browser".data.timeout = 5
+exts."omni.isaac.asset_browser".data.timeout = 10
 exts."omni.isaac.asset_browser".visible_after_startup = true
+
+[[trigger]]
+menu.name = "Window/Browsers/Isaac"
+menu.window = "Isaac Assets (Beta)"
+
 
 [[test]]
 dependencies = [
     "omni.kit.renderer.core",
     "omni.kit.renderer.capture",
+    "omni.kit.tool.collect",
+    "omni.kit.menu.stage",
+    "omni.kit.ui_test",
+    "omni.usd",
+    "omni.kit.clipboard",
+]
+
+args = [
+    "--no-window",
+    "--/app/window/dpiScaleOverride=1.0",
+    "--/app/window/scaleToMonitor=false",
+    "--/app/menu/legacy_mode=false",
+    "--/exts/omni.kit.browser.asset/folders/0='http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/2023.1.0/Isaac/Robots'",
+    "--/exts/omni.kit.browser.asset/folders/1=''",
+    "--/exts/omni.kit.browser.asset/folders/2=''",
+    "--/exts/omni.kit.browser.asset/visible_after_startup=true",
+]
+
+[documentation]
+pages = [
+    "docs/Overview.md",
+    "docs/CHANGELOG.md",
 ]
