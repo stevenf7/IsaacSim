@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.1] - 2023-11-15
+
+### Changed
+
+- Fix missing default icon
+
 ## [0.4.0] - 2023-11-13
 
 ### Changed
