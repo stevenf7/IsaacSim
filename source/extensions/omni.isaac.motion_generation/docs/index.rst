@@ -108,11 +108,3 @@ Motion Policy Base Controller
     :undoc-members:
     :exclude-members:
 
-Wheel Base Pose Controller
-===========================
-
-.. automodule:: omni.isaac.motion_generation.wheel_base_pose_controller
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:

@@ -22,5 +22,4 @@ from omni.isaac.motion_generation.motion_policy_interface import MotionPolicy
 from omni.isaac.motion_generation.path_planner_visualizer import PathPlannerVisualizer
 from omni.isaac.motion_generation.path_planning_interface import PathPlanner
 from omni.isaac.motion_generation.trajectory import Trajectory
-from omni.isaac.motion_generation.wheel_base_pose_controller import WheelBasePoseController
 from omni.isaac.motion_generation.world_interface import WorldInterface
