@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.7.2] - 2023-11-10
+### Fixed
+- Fixed error with GridCloner when offsets are passed
+- Add test case with position and orientation offsets for GridCloner
 
 ## [0.7.1] - 2023-10-31
 ### Fixed
