@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
-source "$SCRIPT_DIR/../../../../repo.sh" build -x -rd
-source "$SCRIPT_DIR/../../../../repo.sh" publish_exts -c release
-source "$SCRIPT_DIR/../../../../repo.sh" publish_exts -c debug
+"$SCRIPT_DIR/../../../../repo.sh" build -x -rd
+"$SCRIPT_DIR/../../../../repo.sh" publish_exts -c release
+"$SCRIPT_DIR/../../../../repo.sh" publish_exts -c debug
 
 # keeping manual command below for reference
 # ../build.sh
