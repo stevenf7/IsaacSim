@@ -1,4 +1,9 @@
 # Changelog
+
+## [6.0.0] - 2023-11-13
+### Changed
+- Moved wheel base pose controller to wheeled robots extension
+
 ## [5.1.1] - 2023-09-13
 ### Fixed
 - Updated path of Kuka KR210 robot in test case to match update to Nucleus Server
