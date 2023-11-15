@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.2] - 2023-11-14
+
+### Changed
+- Prim Custom Data field can support arrays now
+
 ## [0.2.1] - 2023-06-12
 
 ### Changed
