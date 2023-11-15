@@ -54,7 +54,7 @@ class GridCloner(Cloner):
         """
         # check if inputs are valid
         if position_offsets is not None:
-            if len(position_offsets) != len(prim_paths):
+            if len(position_offsets) != num_clones:
                 raise ValueError("Dimension mismatch between position_offsets and prim_paths!")
             # convert to numpy array
             if isinstance(position_offsets, torch.Tensor):
@@ -62,7 +62,7 @@ class GridCloner(Cloner):
             elif not isinstance(position_offsets, np.ndarray):
                 position_offsets = np.asarray(position_offsets)
         if orientation_offsets is not None:
-            if len(orientation_offsets) != len(prim_paths):
+            if len(orientation_offsets) != num_clones:
                 raise ValueError("Dimension mismatch between orientation_offsets and prim_paths!")
             # convert to numpy array
             if isinstance(orientation_offsets, torch.Tensor):
@@ -107,13 +107,12 @@ class GridCloner(Cloner):
                     * orientation
                 )
 
-            else:
-                orientation = [
-                    orientation.GetReal(),
-                    orientation.GetImaginary()[0],
-                    orientation.GetImaginary()[1],
-                    orientation.GetImaginary()[2],
-                ]
+            orientation = [
+                orientation.GetReal(),
+                orientation.GetImaginary()[0],
+                orientation.GetImaginary()[1],
+                orientation.GetImaginary()[2],
+            ]
 
             positions.append(translation)
             orientations.append(orientation)

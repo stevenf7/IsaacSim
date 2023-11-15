@@ -342,3 +342,48 @@ class TestSimpleCloner(omni.kit.test.AsyncTestCase):
         self.assertTrue(stage.GetPrimAtPath(f"/World/envs/env_0/Sphere").IsValid() == False)
         self.assertTrue(stage.GetPrimAtPath(f"/World/envs/env_1/Cube").IsValid() == True)
         self.assertTrue(stage.GetPrimAtPath(f"/World/envs/env_1/Sphere").IsValid() == True)
+
+    async def test_grid_cloner_offsets(self):
+        stage = omni.usd.get_context().get_stage()
+
+        # create our base environment with one cube
+        base_env_path = "/World/envs"
+
+        cloner = GridCloner(spacing=3)
+        cloner.define_base_env(base_env_path + "/env_0")
+        UsdGeom.Xform.Define(stage, base_env_path + "/env_0")
+        prim = stage.DefinePrim(base_env_path + "/env_0/Ant", "Xform")
+        prim.GetReferences().AddReference(get_assets_root_path() + "/Isaac/Robots/Ant/ant_instanceable.usd")
+
+        target_paths = cloner.generate_paths("/World/envs/env", 100)
+
+        position_offsets = [[0, 0, 1.0]] * 100
+        orientation_offsets = [[0, 0, 0, 1.0]] * 100
+
+        # clone the cube at target paths
+        target_translations = cloner.clone(
+            source_prim_path="/World/envs/env_0",
+            prim_paths=target_paths,
+            replicate_physics=True,
+            base_env_path="/World/envs",
+            copy_from_source=False,
+            position_offsets=position_offsets,
+            orientation_offsets=orientation_offsets,
+        )
+
+        for i in range(100):
+            self.assertTrue(stage.GetPrimAtPath(f"/World/envs/env_{i}") is not None)
+            self.assertTrue(
+                stage.GetPrimAtPath(f"/World/envs/env_{i}/Ant/torso").HasAPI(UsdPhysics.ArticulationRootAPI)
+            )
+            self.assertTrue(
+                stage.GetPrimAtPath(f"/World/envs/env_{i}").GetAttribute("xformOp:translate").Get()
+                == Gf.Vec3d(*target_translations[i])
+            )
+            self.assertTrue(
+                stage.GetPrimAtPath(f"/World/envs/env_{i}").GetAttribute("xformOp:translate").Get()[2] == 1.0
+            )
+            self.assertTrue(
+                stage.GetPrimAtPath(f"/World/envs/env_{i}").GetAttribute("xformOp:orient").Get()
+                == Gf.Quatd(0.0, Gf.Vec3d(0.0, 0.0, 1.0))
+            )

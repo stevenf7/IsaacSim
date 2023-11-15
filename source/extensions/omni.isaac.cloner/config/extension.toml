@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.7.1"
+version = "0.7.2"
 category = "Simulation"
 title = "Isaac Sim Cloner"
 description = "Cloner"
