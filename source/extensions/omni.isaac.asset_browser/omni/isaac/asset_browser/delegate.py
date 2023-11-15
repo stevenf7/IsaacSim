@@ -20,7 +20,7 @@ from .context_menu import ContextMenu
 from .model import AssetBrowserModel
 
 CURRENT_PATH = Path(__file__).parent
-ICON_PATH = CURRENT_PATH.parent.parent.parent.parent.joinpath("icons")
+ICON_PATH = CURRENT_PATH.parent.parent.parent.parent.joinpath("omni.isaac.asset_browser/icons")
 
 
 class AssetDetailDelegate(FolderDetailDelegate):
