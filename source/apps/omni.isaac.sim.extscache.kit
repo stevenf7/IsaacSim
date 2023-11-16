@@ -32,9 +32,12 @@
 "omni.sensors.nv.wpm" = {version = "0.1.2-isaacsim.2023.1.1", exact = true}
 "omni.services.transport.server.tcp_socket" = {version = "1.0.2", exact = true}
 "semantics.schema.editor" = {version = "0.3.4", exact = true}
+"semantics.schema.property" = {version = "1.0.2", exact = true}
 "omni.importer.mjcf" = {version = "1.1.0", exact = true}
 "omni.importer.urdf" = {version = "1.1.3", exact = true}
 "omni.anim.people" = {version = "0.1.11", exact = true}
+"omni.replicator.character.core" = {version = "0.1.0", exact = true}
+"omni.replicator.character.ui" = {version = "0.1.0", exact = true}
 
 # Testing dependencies
 # internal only, used for benchmarking, removed from package
@@ -154,7 +157,7 @@
 "omni.kit.tool.asset_exporter" = {version = "1.2.12", exact = true}
 "omni.kit.tool.asset_importer" = {version = "2.4.28", exact = true}
 "omni.kit.tool.collect" = {version = "2.2.2", exact = true}
-"omni.kit.tool.measure" = {version = "105.1.41", exact = true}
+"omni.kit.tool.measure" = {version = "105.1.1", exact = true}
 "omni.kit.tool.remove_unused.controller" = {version = "0.1.3", exact = true}
 "omni.kit.tool.remove_unused.core" = {version = "0.1.1", exact = true}
 "omni.kit.tools.mergemesh" = {version = "0.1.6", exact = true}
@@ -187,27 +190,27 @@
 "omni.kit.window.section" = {version = "105.1.4", exact = true}
 "omni.kit.window.sequencer" = {version = "103.4.2-dev.3", exact = true}
 "omni.kit.window.usddebug" = {version = "1.0.1", exact = true}
-"omni.kit.xr.advertise" = {version = "105.1.0-171", exact = true}
-"omni.kit.xr.core" = {version = "105.1.0-171", exact = true}
-"omni.kit.xr.profile.ar" = {version = "105.1.0-171", exact = true}
-"omni.kit.xr.profile.common" = {version = "105.1.0-171", exact = true}
-"omni.kit.xr.profile.tabletar" = {version = "105.1.0-171", exact = true}
-"omni.kit.xr.profile.vr" = {version = "105.1.0-171", exact = true}
-"omni.kit.xr.sceneview_utils" = {version = "105.1.0-171", exact = true}
-"omni.kit.xr.system.cloudxr" = {version = "105.1.0-171", exact = true}
-"omni.kit.xr.system.openxr" = {version = "105.1.0-171", exact = true}
-"omni.kit.xr.system.playback" = {version = "105.1.0-171", exact = true}
-"omni.kit.xr.system.simulatedxr" = {version = "105.1.0-171", exact = true}
-"omni.kit.xr.system.steamvr" = {version = "105.1.0-171", exact = true}
-"omni.kit.xr.telemetry" = {version = "105.1.0-171", exact = true}
-"omni.kit.xr.ui.config.common" = {version = "105.1.0-171", exact = true}
-"omni.kit.xr.ui.config.generic" = {version = "105.1.0-171", exact = true}
-"omni.kit.xr.ui.config.htcvive" = {version = "105.1.0-171", exact = true}
-"omni.kit.xr.ui.config.magicleap" = {version = "105.1.0-171", exact = true}
-"omni.kit.xr.ui.config.metaquest" = {version = "105.1.0-171", exact = true}
-"omni.kit.xr.ui.stage.common" = {version = "105.1.0-171", exact = true}
-"omni.kit.xr.ui.window.profile" = {version = "105.1.0-171", exact = true}
-"omni.kit.xr.ui.window.viewport" = {version = "105.1.0-171", exact = true}
+"omni.kit.xr.advertise" = {version = "105.1.0-184", exact = true}
+"omni.kit.xr.core" = {version = "105.1.0-184", exact = true}
+"omni.kit.xr.profile.ar" = {version = "105.1.0-184", exact = true}
+"omni.kit.xr.profile.common" = {version = "105.1.0-184", exact = true}
+"omni.kit.xr.profile.tabletar" = {version = "105.1.0-184", exact = true}
+"omni.kit.xr.profile.vr" = {version = "105.1.0-184", exact = true}
+"omni.kit.xr.sceneview_utils" = {version = "105.1.0-184", exact = true}
+"omni.kit.xr.system.cloudxr" = {version = "105.1.0-184", exact = true}
+"omni.kit.xr.system.openxr" = {version = "105.1.0-184", exact = true}
+"omni.kit.xr.system.playback" = {version = "105.1.0-184", exact = true}
+"omni.kit.xr.system.simulatedxr" = {version = "105.1.0-184", exact = true}
+"omni.kit.xr.system.steamvr" = {version = "105.1.0-184", exact = true}
+"omni.kit.xr.telemetry" = {version = "105.1.0-184", exact = true}
+"omni.kit.xr.ui.config.common" = {version = "105.1.0-184", exact = true}
+"omni.kit.xr.ui.config.generic" = {version = "105.1.0-184", exact = true}
+"omni.kit.xr.ui.config.htcvive" = {version = "105.1.0-184", exact = true}
+"omni.kit.xr.ui.config.magicleap" = {version = "105.1.0-184", exact = true}
+"omni.kit.xr.ui.config.metaquest" = {version = "105.1.0-184", exact = true}
+"omni.kit.xr.ui.stage.common" = {version = "105.1.0-184", exact = true}
+"omni.kit.xr.ui.window.profile" = {version = "105.1.0-184", exact = true}
+"omni.kit.xr.ui.window.viewport" = {version = "105.1.0-184", exact = true}
 "omni.no_code_ui.bundle" = {version = "1.0.15", exact = true}
 "omni.ocean" = {version = "0.4.4", exact = true}
 "omni.paint.brush.attributes" = {version = "1.3.1", exact = true}
@@ -257,21 +260,23 @@
 "omni.usd.schema.scene.visualization" = {version = "2.0.2", exact = true}
 "omni.vdb_timesample_editor" = {version = "0.1.8", exact = true}
 "omni.warehouse_creator" = {version = "0.3.5", exact = true}
-"omni.warp" = {version = "0.10.1", exact = true}
-"omni.warp.core" = {version = "0.10.1", exact = true}
+"omni.warp" = {version = "1.0.0-beta.2", exact = true}
+"omni.warp.core" = {version = "1.0.0-beta.2", exact = true}
 
 # Additional Create Extensions
 "omni.anim.motion_path.core" = {version = "1.1.3", exact = true}
 "omni.anim.motion_path.ui" = {version = "1.1.3", exact = true}
 "omni.asset_validator.core" = {version = "0.9.0", exact = true}
 "omni.graph.bundle.action" = {version = "2.0.4", exact = true}
-"omni.kit.converter.cad" = {version = "200.0.0-rc.4", exact = true}
-"omni.kit.converter.cad_core" = {version = "200.0.0-rc.3", exact = true}
+"omni.kit.converter.cad" = {version = "200.1.0-rc.18", exact = true}
+"omni.kit.converter.cad_core" = {version = "200.1.0-rc.22", exact = true}
+"omni.kit.converter.common" = {version = "200.1.0-rc.4", exact = true}
+"omni.kit.converter.jt_core" = {version = "200.1.0-rc.15", exact = true}
 "omni.kit.converter.lib3mf" = {version = "1.1.3", exact = true}
 "omni.kit.pointclouds" = {version = "1.1.2", exact = true}
 "omni.kit.property.sequence" = {version = "0.3.0", exact = true}
-"omni.kit.sequencer.core" = {version = "103.4.1", exact = true}
-"omni.kit.sequencer.usd" = {version = "103.4.2", exact = true}
+"omni.kit.sequencer.core" = {version = "103.4.0", exact = true}
+"omni.kit.sequencer.usd" = {version = "103.4.0", exact = true}
 "omni.scene.optimizer.bundle" = {version = "105.1.8", exact = true}
 "omni.scene.optimizer.core" = {version = "105.1.8", exact = true}
 "omni.scene.optimizer.ui" = {version = "105.1.3", exact = true}
@@ -294,7 +299,7 @@
 # BEGIN GENERATED PART (Remove from 'BEGIN' to 'END' to regenerate)
 ########################################################################################################################
 
-# Kit SDK Version: 105.1+release.130815.04872a84.tc
+# Kit SDK Version: 105.1+release.132450.4cef06e9.tc
 
 # Exact Version dependencies:
 # 	omni.anim.curve-105.23.0
@@ -360,9 +365,11 @@
 # 	omni.kit.browser.sample-1.4.6
 # 	omni.kit.browser.showcase-1.0.4
 # 	omni.kit.browser.texture-1.2.1
-# 	omni.kit.converter.cad-200.0.0-rc.4
-# 	omni.kit.converter.cad_core-200.0.0-rc.3
+# 	omni.kit.converter.cad-200.1.0-rc.18
+# 	omni.kit.converter.cad_core-200.1.0-rc.22
+# 	omni.kit.converter.common-200.1.0-rc.4
 # 	omni.kit.converter.geojson-0.0.10
+# 	omni.kit.converter.jt_core-200.1.0-rc.15
 # 	omni.kit.converter.lib3mf-1.1.3
 # 	omni.kit.converter.ogc-1.1.22
 # 	omni.kit.core.collection-0.1.6
@@ -410,8 +417,8 @@
 # 	omni.kit.scripting-105.1.1
 # 	omni.kit.search.files-1.0.4
 # 	omni.kit.search.service-0.1.11
-# 	omni.kit.sequencer.core-103.4.1
-# 	omni.kit.sequencer.usd-103.4.2
+# 	omni.kit.sequencer.core-103.4.0
+# 	omni.kit.sequencer.usd-103.4.0
 # 	omni.kit.stage_column.payload-1.0.12
 # 	omni.kit.stage_column.variant-1.0.13
 # 	omni.kit.stagerecorder.bundle-105.0.2
@@ -426,7 +433,7 @@
 # 	omni.kit.tool.asset_exporter-1.2.12
 # 	omni.kit.tool.asset_importer-2.4.28
 # 	omni.kit.tool.collect-2.2.2
-# 	omni.kit.tool.measure-105.1.41
+# 	omni.kit.tool.measure-105.1.1
 # 	omni.kit.tool.remove_unused.controller-0.1.3
 # 	omni.kit.tool.remove_unused.core-0.1.1
 # 	omni.kit.tools.mergemesh-0.1.6
@@ -445,6 +452,7 @@
 # 	omni.kit.widget.extended_searchfield-1.0.26
 # 	omni.kit.widget.material_preview-1.0.8
 # 	omni.kit.widget.sliderbar-1.0.10
+# 	omni.kit.widget.spinner-1.0.5
 # 	omni.kit.widget.timeline-105.0.1
 # 	omni.kit.widget.zoombar-1.0.5
 # 	omni.kit.widgets.custom-1.0.6
@@ -457,27 +465,27 @@
 # 	omni.kit.window.section-105.1.4
 # 	omni.kit.window.sequencer-103.4.2-dev.3
 # 	omni.kit.window.usddebug-1.0.1
-# 	omni.kit.xr.advertise-105.1.0-171
-# 	omni.kit.xr.core-105.1.0-171
-# 	omni.kit.xr.profile.ar-105.1.0-171
-# 	omni.kit.xr.profile.common-105.1.0-171
-# 	omni.kit.xr.profile.tabletar-105.1.0-171
-# 	omni.kit.xr.profile.vr-105.1.0-171
-# 	omni.kit.xr.sceneview_utils-105.1.0-171
-# 	omni.kit.xr.system.cloudxr-105.1.0-171
-# 	omni.kit.xr.system.openxr-105.1.0-171
-# 	omni.kit.xr.system.playback-105.1.0-171
-# 	omni.kit.xr.system.simulatedxr-105.1.0-171
-# 	omni.kit.xr.system.steamvr-105.1.0-171
-# 	omni.kit.xr.telemetry-105.1.0-171
-# 	omni.kit.xr.ui.config.common-105.1.0-171
-# 	omni.kit.xr.ui.config.generic-105.1.0-171
-# 	omni.kit.xr.ui.config.htcvive-105.1.0-171
-# 	omni.kit.xr.ui.config.magicleap-105.1.0-171
-# 	omni.kit.xr.ui.config.metaquest-105.1.0-171
-# 	omni.kit.xr.ui.stage.common-105.1.0-171
-# 	omni.kit.xr.ui.window.profile-105.1.0-171
-# 	omni.kit.xr.ui.window.viewport-105.1.0-171
+# 	omni.kit.xr.advertise-105.1.0-184
+# 	omni.kit.xr.core-105.1.0-184
+# 	omni.kit.xr.profile.ar-105.1.0-184
+# 	omni.kit.xr.profile.common-105.1.0-184
+# 	omni.kit.xr.profile.tabletar-105.1.0-184
+# 	omni.kit.xr.profile.vr-105.1.0-184
+# 	omni.kit.xr.sceneview_utils-105.1.0-184
+# 	omni.kit.xr.system.cloudxr-105.1.0-184
+# 	omni.kit.xr.system.openxr-105.1.0-184
+# 	omni.kit.xr.system.playback-105.1.0-184
+# 	omni.kit.xr.system.simulatedxr-105.1.0-184
+# 	omni.kit.xr.system.steamvr-105.1.0-184
+# 	omni.kit.xr.telemetry-105.1.0-184
+# 	omni.kit.xr.ui.config.common-105.1.0-184
+# 	omni.kit.xr.ui.config.generic-105.1.0-184
+# 	omni.kit.xr.ui.config.htcvive-105.1.0-184
+# 	omni.kit.xr.ui.config.magicleap-105.1.0-184
+# 	omni.kit.xr.ui.config.metaquest-105.1.0-184
+# 	omni.kit.xr.ui.stage.common-105.1.0-184
+# 	omni.kit.xr.ui.window.profile-105.1.0-184
+# 	omni.kit.xr.ui.window.viewport-105.1.0-184
 # 	omni.no_code_ui.bundle-1.0.15
 # 	omni.ocean-0.4.4
 # 	omni.paint.brush.attributes-1.3.1
@@ -494,6 +502,8 @@
 # 	omni.product_configurator.panel-1.0.15
 # 	omni.product_configurator.utils-1.2.2
 # 	omni.ramp-105.1.14
+# 	omni.replicator.character.core-0.1.0
+# 	omni.replicator.character.ui-0.1.0
 # 	omni.replicator.composer-1.2.17
 # 	omni.replicator.core-1.10.10
 # 	omni.replicator.replicator_yaml-2.0.4
@@ -556,6 +566,7 @@
 # 	omni.warp-0.10.1
 # 	omni.warp.core-0.10.1
 # 	semantics.schema.editor-0.3.4
+# 	semantics.schema.property-1.0.2
 
 # Version lock for all dependencies:
 [settings.app.exts]
