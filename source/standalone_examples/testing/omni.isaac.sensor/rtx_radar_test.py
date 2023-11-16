@@ -20,7 +20,6 @@ import omni.kit.viewport.utility
 import omni.replicator.core as rep
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils import nucleus, stage
-from omni.isaac.core.utils.render_product import create_hydra_texture
 from pxr import Gf, Sdf, UsdGeom, UsdPhysics
 
 
@@ -130,25 +129,17 @@ _, sensor = omni.kit.commands.execute(
 )
 
 i = printinc(i)
-_, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathString)
 
+hydra_texture = rep.create.render_product(sensor.GetPath(), [1, 1], name="Isaac")
 # Create the debug draw pipeline in the post process graph
 from omni.syntheticdata import sensors
 
 i = printinc(i)
 simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=1.0)
-if 1:
-    i = printinc(i)
-    writer = rep.writers.get("Writer" + "IsaacPrintRTXRadarInfo" + "")
+writer = rep.writers.get("Writer" + "IsaacPrintRTXRadarInfo" + "")
 
-    i = printinc(i)
-    writer.attach([render_product_path])
-else:
-    sensors.get_synthetic_data().activate_node_template(
-        "RtxSensorCpu" + "IsaacComputeRTXRadarPointCloud",
-        0,
-        [render_product_path],
-    )
+i = printinc(i)
+writer.attach([hydra_texture])
 
 
 # disable_extension("omni.replicator.core")
