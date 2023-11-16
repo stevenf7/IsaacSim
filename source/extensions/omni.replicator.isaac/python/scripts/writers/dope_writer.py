@@ -60,6 +60,7 @@ class DOPEWriter(Writer):
         self._output_dir = output_dir
         self._frame_id = 0
         self._image_output_format = image_output_format
+        self._last_frame_is_valid = True
         self.annotators = []
         self.class_to_index = class_name_to_index_map
         self.index_to_class = {i: c for c, i in class_name_to_index_map.items()}
@@ -160,6 +161,10 @@ class DOPEWriter(Writer):
         Args:
             data: A dictionary containing the annotator data for the current frame.
         """
+        if not self._check_frame_validity(data):
+            print(f"No training data in frame {self._frame_id} (object(s) fully occluded), skipping writing..")
+            return
+
         for annotator in data.keys():
             annotator_split = annotator.split("-")
             render_product_path = ""
@@ -216,6 +221,32 @@ class DOPEWriter(Writer):
         buf = io.BytesIO()
         buf.write(json.dumps(output, indent=2, cls=NumpyEncoder).encode())
         self._backend.write_blob(file_path, buf.getvalue())
+
+    def _check_frame_validity(self, data: dict) -> bool:
+        """Check and flag frame as valid if training data is present in the frame.
+
+        Args:
+            data (dict): The frame data to check.
+
+        Returns:
+            bool: True if frame is valid, False otherwise.
+        """
+        self._last_frame_is_valid = False
+        if "dope" in data and "data" in data["dope"]:
+            for val in data["dope"]["data"]:
+                if val["visibility"] > 0.0:
+                    self._last_frame_is_valid = True
+                    break
+
+        return self._last_frame_is_valid
+
+    def is_last_frame_valid(self) -> bool:
+        """Checks if the last frame was valid (training data was present).
+
+        Returns:
+            bool: True if the last frame was valid, False otherwise.
+        """
+        return self._last_frame_is_valid
 
 
 WriterRegistry.register(DOPEWriter)

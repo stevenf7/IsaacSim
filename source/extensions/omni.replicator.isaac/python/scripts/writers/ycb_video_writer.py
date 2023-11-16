@@ -83,6 +83,7 @@ class YCBVideoWriter(Writer):
         self._frame_id = 0
         self._image_output_format = image_output_format
         self._output_data_format = {}
+        self._last_frame_is_valid = True
         self.annotators = []
         self.version = __version__
         self.class_to_index = class_name_to_index_map
@@ -215,6 +216,9 @@ class YCBVideoWriter(Writer):
         Args:
             data: A dictionary containing the annotator data for the current frame.
         """
+        if not self._check_frame_validity(data):
+            print(f"No training data in frame {self._frame_id} (object(s) fully occluded), skipping writing..")
+            return
 
         for annotator in data.keys():
             annotator_split = annotator.split("-")
@@ -504,6 +508,29 @@ class YCBVideoWriter(Writer):
             for i in range(self.num_frames):
                 train_file_str = f"{vid_dir_basename}/{i:06d}\n"
                 f.write(train_file_str)
+
+    def _check_frame_validity(self, data: dict) -> bool:
+        """Check and flag frame as valid if training data is present in the frame.
+
+        Args:
+            data (dict): The frame data to check.
+
+        Returns:
+            bool: True if frame is valid, False otherwise.
+        """
+        try:
+            self._last_frame_is_valid = data["pose"]["data"].size > 0
+        except KeyError:
+            self._last_frame_is_valid = False
+        return self._last_frame_is_valid
+
+    def is_last_frame_valid(self) -> bool:
+        """Checks if the last frame was valid (training data was present).
+
+        Returns:
+            bool: True if the last frame was valid, False otherwise.
+        """
+        return self._last_frame_is_valid
 
 
 WriterRegistry.register(YCBVideoWriter)
