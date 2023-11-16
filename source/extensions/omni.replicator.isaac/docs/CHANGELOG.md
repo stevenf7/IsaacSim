@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.10.2] - 2023-11-16
+### Added 
+- DOPE and YCBWriter will write to disk only if there is valid data (target(s) is not fully occluded in view)
+
 ## [1.10.1] - 2023-09-26
 ### Fixed 
 - Fix error when AOVs return data on different devices

@@ -515,7 +515,10 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
         print(f"ID: {self.cur_idx}/{self.train_size - 1}")
         rep.orchestrator.step(rt_subframes=4)
-        self.cur_idx += 1
+
+        # Check that there was valid training data in the last frame (target object(s) visible to camera)
+        if self.writer.is_last_frame_valid():
+            self.cur_idx += 1
 
         # Check if last frame has been reached
         if self.cur_idx >= self.train_size:
