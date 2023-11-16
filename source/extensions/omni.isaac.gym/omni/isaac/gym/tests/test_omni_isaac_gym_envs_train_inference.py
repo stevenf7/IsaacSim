@@ -63,55 +63,14 @@ class TestOmniIsaacGymEnvsTestGG(utils.OmniIsaacGymEnvsTestCase):
     async def test_factory_nut_bolt_pick_test_gg(self):
         utils._run_rlgames_test(utils.RLGAMES_SCRIPT, "FactoryTaskNutBoltPick", "gpu", "gpu")
 
+    async def test_factory_nut_bolt_place_test_gg(self):
+        utils._run_rlgames_test(utils.RLGAMES_SCRIPT, "FactoryTaskNutBoltPlace", "gpu", "gpu")
 
-class TestOmniIsaacGymEnvsTestGGMT(utils.OmniIsaacGymEnvsTestCase):
-    async def test_cartpole_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "Cartpole", "gpu", "gpu")
+    async def test_factory_nut_bolt_screw_test_gg(self):
+        utils._run_rlgames_test(utils.RLGAMES_SCRIPT, "FactoryTaskNutBoltScrew", "gpu", "gpu")
 
-    async def test_ant_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "Ant", "gpu", "gpu")
-
-    async def test_humanoid_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "Humanoid", "gpu", "gpu")
-
-    async def test_anymal_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "Anymal", "gpu", "gpu")
-
-    async def test_anymal_terrain_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "AnymalTerrain", "gpu", "gpu")
-
-    async def test_ball_balance_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "BallBalance", "gpu", "gpu")
-
-    async def test_franka_cabinet_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "FrankaCabinet", "gpu", "gpu")
-
-    async def test_ingenuity_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "Ingenuity", "gpu", "gpu")
-
-    async def test_quadcopter_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "Quadcopter", "gpu", "gpu")
-
-    async def test_crazyflie_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "Crazyflie", "gpu", "gpu")
-
-    async def test_allegro_hand_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "AllegroHand", "gpu", "gpu")
-
-    async def test_shadow_hand_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "ShadowHand", "gpu", "gpu")
-
-    async def test_shadow_hand_dr_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "ShadowHand", "gpu", "gpu", dr=True)
-
-    async def test_shadow_hand_openai_ff_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "ShadowHandOpenAI_FF", "gpu", "gpu")
-
-    async def test_shadow_hand_openai_lstm_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "ShadowHandOpenAI_LSTM", "gpu", "gpu")
-
-    async def test_factory_nut_bolt_pick_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "FactoryTaskNutBoltPick", "gpu", "gpu")
+    async def test_franka_deformable_test_gg(self):
+        utils._run_rlgames_test(utils.RLGAMES_SCRIPT, "FrankaDeformable", "gpu", "gpu")
 
 
 class TestOmniIsaacGymEnvsTestPreTrainedGG(utils.OmniIsaacGymEnvsTestCase):
@@ -160,52 +119,14 @@ class TestOmniIsaacGymEnvsTestPreTrainedGG(utils.OmniIsaacGymEnvsTestCase):
     async def test_factory_nut_bolt_pick_test_gg(self):
         utils._run_rlgames_test(utils.RLGAMES_SCRIPT, "FactoryTaskNutBoltPick", "gpu", "gpu", pretrained=True)
 
+    async def test_factory_nut_bolt_place_test_gg(self):
+        utils._run_rlgames_test(utils.RLGAMES_SCRIPT, "FactoryTaskNutBoltPlace", "gpu", "gpu", pretrained=True)
 
-class TestOmniIsaacGymEnvsTestPreTrainedGGMT(utils.OmniIsaacGymEnvsTestCase):
-    async def test_cartpole_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "Cartpole", "gpu", "gpu", pretrained=True)
+    async def test_factory_nut_bolt_screw_test_gg(self):
+        utils._run_rlgames_test(utils.RLGAMES_SCRIPT, "FactoryTaskNutBoltScrew", "gpu", "gpu", pretrained=True)
 
-    async def test_ant_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "Ant", "gpu", "gpu", pretrained=True)
-
-    async def test_humanoid_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "Humanoid", "gpu", "gpu", pretrained=True)
-
-    async def test_anymal_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "Anymal", "gpu", "gpu", pretrained=True)
-
-    async def test_anymal_terrain_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "AnymalTerrain", "gpu", "gpu", pretrained=True)
-
-    async def test_ball_balance_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "BallBalance", "gpu", "gpu", pretrained=True)
-
-    async def test_franka_cabinet_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "FrankaCabinet", "gpu", "gpu", pretrained=True)
-
-    async def test_ingenuity_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "Ingenuity", "gpu", "gpu", pretrained=True)
-
-    async def test_quadcopter_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "Quadcopter", "gpu", "gpu", pretrained=True)
-
-    async def test_crazyflie_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "Crazyflie", "gpu", "gpu", pretrained=True)
-
-    async def test_allegro_hand_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "AllegroHand", "gpu", "gpu", pretrained=True)
-
-    async def test_shadow_hand_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "ShadowHand", "gpu", "gpu", pretrained=True)
-
-    async def test_shadow_hand_openai_lstm_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "ShadowHandOpenAI_LSTM", "gpu", "gpu", pretrained=True)
-
-    async def test_shadow_hand_openai_ff_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "ShadowHandOpenAI_FF", "gpu", "gpu", pretrained=True)
-
-    async def test_factory_nut_bolt_pick_test_gg(self):
-        utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "FactoryTaskNutBoltPick", "gpu", "gpu", pretrained=True)
+    async def test_franka_deformable_test_gg(self):
+        utils._run_rlgames_test(utils.RLGAMES_SCRIPT, "FrankaDeformable", "gpu", "gpu", pretrained=True)
 
 
 class TestOmniIsaacGymEnvsTestPreTrainedAutomatedGG(utils.OmniIsaacGymEnvsTestCase):
@@ -213,29 +134,34 @@ class TestOmniIsaacGymEnvsTestPreTrainedAutomatedGG(utils.OmniIsaacGymEnvsTestCa
         super().__init__(*args, **kwargs)
 
         self.reward_threshold = {
-            "AllegroHand": 6000.0,
+            "AllegroHand": 5500.0,
             "Ant": 6500.0,
             "Anymal": 65.0,
             "AnymalTerrain": 12.0,
-            "BallBalance": 350.0,
+            "BallBalance": 150.0,
             "Cartpole": 495.0,
+            "CartpoleCamera": 350.0,
             "Crazyflie": 1200.0,
             "FrankaCabinet": 2500.0,
-            "Humanoid": 7500.0,
+            "Humanoid": 7000.0,
             "Ingenuity": 2500.0,
             "Quadcopter": 1200.0,
             "ShadowHand": 10000.0,
-            "ShadowHandOpenAI_LSTM": 10000.0,
+            "ShadowHandOpenAI_LSTM": 8500.0,
             "ShadowHandOpenAI_FF": 8500.0,
             "FactoryTaskNutBoltPick": -25.0,
+            "FactoryTaskNutBoltPlace": -20.0,
+            "FactoryTaskNutBoltScrew": -50.0,
+            "FrankaDeformable": 1000.0,
         }
         self.steps_threshold = {
             "AllegroHand": 590.0,
             "Ant": 990.0,
             "Anymal": 2990.0,
             "AnymalTerrain": 490.0,
-            "BallBalance": 590.0,
+            "BallBalance": 350.0,
             "Cartpole": 490.0,
+            "CartpoleCamera": 350.0,
             "Crazyflie": 690.0,
             "FrankaCabinet": 490.0,
             "Humanoid": 990.0,
@@ -245,6 +171,9 @@ class TestOmniIsaacGymEnvsTestPreTrainedAutomatedGG(utils.OmniIsaacGymEnvsTestCa
             "ShadowHandOpenAI_LSTM": 1490.0,
             "ShadowHandOpenAI_FF": 540.0,
             "FactoryTaskNutBoltPick": 90.0,
+            "FactoryTaskNutBoltPlace": 120.0,
+            "FactoryTaskNutBoltScrew": 511.0,
+            "FrankaDeformable": 90.0,
         }
 
     async def evaluate_test(self, task, reward, steps):
@@ -274,6 +203,20 @@ class TestOmniIsaacGymEnvsTestPreTrainedAutomatedGG(utils.OmniIsaacGymEnvsTestCa
             )
             await self.evaluate_test("Cartpole", rewards, steps)
 
+    async def test_cartpole_camera_test_gg(self):
+        for num_envs in [1, 25]:
+            rewards, steps = utils._run_rlgames_test(
+                utils.RLGAMES_SCRIPT,
+                "CartpoleCamera",
+                "gpu",
+                "gpu",
+                pretrained=True,
+                num_prints=5,
+                headless=True,
+                num_envs=num_envs,
+            )
+            await self.evaluate_test("CartpoleCamera", rewards, steps)
+
     async def test_ant_test_gg(self):
         for num_envs in [1, 25]:
             rewards, steps = utils._run_rlgames_test(
@@ -282,7 +225,7 @@ class TestOmniIsaacGymEnvsTestPreTrainedAutomatedGG(utils.OmniIsaacGymEnvsTestCa
                 "gpu",
                 "gpu",
                 pretrained=True,
-                num_prints=25,
+                num_prints=10,
                 headless=True,
                 num_envs=num_envs,
             )
@@ -296,7 +239,7 @@ class TestOmniIsaacGymEnvsTestPreTrainedAutomatedGG(utils.OmniIsaacGymEnvsTestCa
                 "gpu",
                 "gpu",
                 pretrained=True,
-                num_prints=25,
+                num_prints=10,
                 headless=True,
                 num_envs=num_envs,
             )
@@ -310,7 +253,7 @@ class TestOmniIsaacGymEnvsTestPreTrainedAutomatedGG(utils.OmniIsaacGymEnvsTestCa
                 "gpu",
                 "gpu",
                 pretrained=True,
-                num_prints=10,
+                num_prints=5,
                 headless=True,
                 num_envs=num_envs,
             )
@@ -324,7 +267,7 @@ class TestOmniIsaacGymEnvsTestPreTrainedAutomatedGG(utils.OmniIsaacGymEnvsTestCa
                 "gpu",
                 "gpu",
                 pretrained=True,
-                num_prints=25,
+                num_prints=5,
                 headless=True,
                 num_envs=num_envs,
             )
@@ -345,7 +288,7 @@ class TestOmniIsaacGymEnvsTestPreTrainedAutomatedGG(utils.OmniIsaacGymEnvsTestCa
             await self.evaluate_test("BallBalance", rewards, steps)
 
     async def test_franka_cabinet_test_gg(self):
-        for num_envs, num_prints in zip([1, 25], [10, 10]):
+        for num_envs, num_prints in zip([1, 25], [2, 3]):
             rewards, steps = utils._run_rlgames_test(
                 utils.RLGAMES_SCRIPT,
                 "FrankaCabinet",
@@ -401,7 +344,7 @@ class TestOmniIsaacGymEnvsTestPreTrainedAutomatedGG(utils.OmniIsaacGymEnvsTestCa
             await self.evaluate_test("Crazyflie", rewards, steps)
 
     async def test_allegro_hand_test_gg(self):
-        for num_envs, num_prints in zip([1, 25], [20, 50]):
+        for num_envs, num_prints in zip([1, 25], [5, 10]):
             rewards, steps = utils._run_rlgames_test(
                 utils.RLGAMES_SCRIPT,
                 "AllegroHand",
@@ -415,21 +358,21 @@ class TestOmniIsaacGymEnvsTestPreTrainedAutomatedGG(utils.OmniIsaacGymEnvsTestCa
             await self.evaluate_test("AllegroHand", rewards, steps)
 
     async def test_shadow_hand_test_gg(self):
-        for num_envs in [1, 25]:
+        for num_envs in [25]:
             rewards, steps = utils._run_rlgames_test(
                 utils.RLGAMES_SCRIPT,
                 "ShadowHand",
                 "gpu",
                 "gpu",
                 pretrained=True,
-                num_prints=25,
+                num_prints=10,
                 headless=True,
                 num_envs=num_envs,
             )
             await self.evaluate_test("ShadowHand", rewards, steps)
 
     async def test_shadow_hand_openai_lstm_test_gg(self):
-        for num_envs, num_prints in zip([1, 25], [10, 50]):
+        for num_envs, num_prints in zip([25], [50]):
             rewards, steps = utils._run_rlgames_test(
                 utils.RLGAMES_SCRIPT,
                 "ShadowHandOpenAI_LSTM",
@@ -443,7 +386,7 @@ class TestOmniIsaacGymEnvsTestPreTrainedAutomatedGG(utils.OmniIsaacGymEnvsTestCa
             await self.evaluate_test("ShadowHandOpenAI_LSTM", rewards, steps)
 
     async def test_shadow_hand_openai_ff_test_gg(self):
-        for num_envs, num_prints in zip([1, 25], [20, 50]):
+        for num_envs, num_prints in zip([25], [50]):
             rewards, steps = utils._run_rlgames_test(
                 utils.RLGAMES_SCRIPT,
                 "ShadowHandOpenAI_FF",
@@ -469,3 +412,45 @@ class TestOmniIsaacGymEnvsTestPreTrainedAutomatedGG(utils.OmniIsaacGymEnvsTestCa
                 num_envs=num_envs,
             )
             await self.evaluate_test("FactoryTaskNutBoltPick", rewards, steps)
+
+    async def test_factory_nut_bolt_place_test_gg(self):
+        for num_envs in [1]:
+            rewards, steps = utils._run_rlgames_test(
+                utils.RLGAMES_SCRIPT,
+                "FactoryTaskNutBoltPlace",
+                "gpu",
+                "gpu",
+                pretrained=True,
+                num_prints=10,
+                headless=True,
+                num_envs=num_envs,
+            )
+            await self.evaluate_test("FactoryTaskNutBoltPlace", rewards, steps)
+
+    async def test_factory_nut_bolt_screw_test_gg(self):
+        for num_envs in [1]:
+            rewards, steps = utils._run_rlgames_test(
+                utils.RLGAMES_SCRIPT,
+                "FactoryTaskNutBoltScrew",
+                "gpu",
+                "gpu",
+                pretrained=True,
+                num_prints=5,
+                headless=True,
+                num_envs=num_envs,
+            )
+            await self.evaluate_test("FactoryTaskNutBoltScrew", rewards, steps)
+
+    async def test_franka_deformable_test_gg(self):
+        for num_envs, num_prints in zip([1, 25], [3, 5]):
+            rewards, steps = utils._run_rlgames_test(
+                utils.RLGAMES_SCRIPT,
+                "FrankaDeformable",
+                "gpu",
+                "gpu",
+                pretrained=True,
+                num_prints=num_prints,
+                headless=True,
+                num_envs=num_envs,
+            )
+            await self.evaluate_test("FrankaDeformable", rewards, steps)

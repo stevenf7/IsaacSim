@@ -288,6 +288,7 @@ group "exts"
     include ("source/extensions/omni.isaac.assets_check")
     include ("source/extensions/omni.isaac.benchmark_environments")
     include ("source/extensions/omni.isaac.benchmarks")
+    include ("source/extensions/omni.isaac.gym.benchmark")
     include ("source/extensions/omni.isaac.cloner")
     include ("source/extensions/omni.isaac.robot_description_editor")
     include ("source/extensions/omni.isaac.core")
@@ -373,6 +374,7 @@ group "exts"
     -- Linux Only
     if os.target() == "linux" then
         include ("source/extensions/omni.isaac.benchmarks")
+        include ("source/extensions/omni.isaac.gym.benchmark")
         include ("source/extensions/omni.isaac.repl")
         include ("source/extensions/omni.isaac.cortex_sync")
         include ("source/extensions/omni.isaac.ocs2")

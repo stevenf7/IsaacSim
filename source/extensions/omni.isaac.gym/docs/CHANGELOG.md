@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.9.5] - 2023-11-10
+### Changed
+- Improve test coverage
+- Update outdated MT tests to use extension workflow
+
 ## [0.8.5] - 2023-10-16
 ### Changed
 - Skip replicator wait for complete on shutdown to avoid hang
