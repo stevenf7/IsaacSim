@@ -9,14 +9,13 @@
 
 import numpy as np
 import omni.kit.test
+from omni.isaac.benchmark.services.base_isaac_benchmark import BaseIsaacBenchmark
 from omni.isaac.core import PhysicsContext
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.sensor import Camera
 from omni.isaac.wheeled_robots.robots import WheeledRobot
 from omni.kit.viewport.utility import get_active_viewport
-
-from ..utils.base_isaac_benchmark import BaseIsaacBenchmark
 
 # from parameterized import parameterized
 

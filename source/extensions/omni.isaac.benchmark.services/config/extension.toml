@@ -1,0 +1,28 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.1.0"
+category = "Simulation"
+title = "Benchmark Services"
+description = "This extension provides benchmarking utilities"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.benchmark.services"
+keywords = ["isaac", "benchmark", "analyze"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+icon = "data/icon.png"
+writeTarget.kit = true
+
+[dependencies]
+"omni.kit.testing.services" = {}
+"omni.kit.nvdf.telemetry" = {}
+
+[[python.module]]
+name = "omni.isaac.benchmark.services"
+
+[settings]
+exts."omni.isaac.benchmark.services".metrics.nvdataflow_default_test_suite_name = "Isaac Sim Benchmarks"
+# uncomment and set this to output metrics to a specific folder
+# exts."omni.isaac.benchmark.services".metrics.metrics_output_folder=""

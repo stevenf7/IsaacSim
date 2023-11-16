@@ -9,10 +9,9 @@
 
 import omni.kit.test
 import omni.replicator.core as rep
+from omni.isaac.benchmark.services.base_isaac_benchmark import BaseIsaacBenchmark
 from omni.isaac.core.utils.prims import delete_prim
 from pxr import Gf
-
-from ..utils.base_isaac_benchmark import BaseIsaacBenchmark
 
 # TODOMTC - Radar appears to not allow allow multiple, but the transoform for each one is the same.
 #           and the results only appear to last for the first few frames.

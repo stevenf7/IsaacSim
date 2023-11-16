@@ -514,7 +514,7 @@ kind = "glob_and_exec"
 path = "${test_root}/tests"
   [[repo_test.suites.pythontests.group]]
   include = ["tests-python*${shell_ext}"]
-  exclude = ["tests-python-omni.isaac.gym${shell_ext}", "tests-python-omni.isaac.internal_tools*${shell_ext}", "tests-python-omni.isaac.benchmarks*${shell_ext}"]
+  exclude = ["tests-python-omni.isaac.gym${shell_ext}", "tests-python-omni.isaac.internal_tools*${shell_ext}", "tests-python-omni.isaac.benchmarks*${shell_ext}", "tests-python-omni.isaac.benchmark.services*${shell_ext}"]
   args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
   tc_report_enabled = false
   timeout = 960
@@ -550,13 +550,13 @@ include = ["tests-python-omni.isaac*${shell_ext}"]
 [[repo_test.suites.pythontests.bucket]]
 name = "9"
 include = ["*"]
-exclude =["tests-python-omni.isaac.internal_tools*${shell_ext}", "tests-python-omni.isaac.benchmarks*${shell_ext}"]
+exclude =["tests-python-omni.isaac.internal_tools*${shell_ext}", "tests-python-omni.isaac.benchmarks*${shell_ext}", "tests-python-omni.isaac.benchmark.services*${shell_ext}"]
 
 [repo_test.suites.internalpythontests]
 kind = "glob_and_exec"
 path = "${test_root}/tests"
   [[repo_test.suites.internalpythontests.group]]
-  include = ["tests-python-omni.isaac.internal_tools*${shell_ext}", "tests-python-omni.isaac.benchmarks*${shell_ext}"]
+  include = ["tests-python-omni.isaac.internal_tools*${shell_ext}", "tests-python-omni.isaac.benchmarks*${shell_ext}", "tests-python-omni.isaac.benchmark.services*${shell_ext}"]
   exclude =[]
   args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
   tc_report_enabled = false

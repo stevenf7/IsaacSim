@@ -287,6 +287,7 @@ group "exts"
     include ("source/extensions/omni.isaac.camera_inspector")
     include ("source/extensions/omni.isaac.assets_check")
     include ("source/extensions/omni.isaac.benchmark_environments")
+    include ("source/extensions/omni.isaac.benchmark.services")
     include ("source/extensions/omni.isaac.benchmarks")
     include ("source/extensions/omni.isaac.gym.benchmark")
     include ("source/extensions/omni.isaac.cloner")
