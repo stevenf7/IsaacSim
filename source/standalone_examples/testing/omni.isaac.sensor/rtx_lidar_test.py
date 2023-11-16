@@ -20,7 +20,6 @@ import omni.kit.viewport.utility
 import omni.replicator.core as rep
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils import nucleus, stage
-from omni.isaac.core.utils.render_product import create_hydra_texture
 from pxr import Gf, Sdf, UsdGeom, UsdPhysics
 
 
@@ -156,37 +155,22 @@ if 0:
     )
 
 i = printinc(i)
-_, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathString)
-# _, render_product_path2 = create_hydra_texture([1, 1], sensor2.GetPath().pathString)
+hydra_texture = rep.create.render_product(sensor.GetPath(), [1, 1], name="Isaac")
 
 # Create the debug draw pipeline in the post process graph
 from omni.syntheticdata import sensors
 
 i = printinc(i)
 simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=1.0)
-writer = None
-if 1:
-    i = printinc(i)
-    writer = rep.writers.get("" + "RtxLidar" + "DebugDrawPointCloud" + "Buffer")
-    # writer.initialize(testMode=True)
-    # writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
-    # writer = rep.writers.get("Writer" + "IsaacReadRTXLidarData")
 
-    i = printinc(i)
-    writer.attach([render_product_path])  # , render_product_path2])
-    # writer2 = rep.writers.get("Writer" + "IsaacPrintRTXLidarInfo" + "")
-    # writer2.attach([render_product_path])  # , render_product_path2])
-else:
-    # print("try RtxSensorCpuExportRaw")
+i = printinc(i)
+writer = rep.writers.get("" + "RtxLidar" + "DebugDrawPointCloud" + "Buffer")
+# writer.initialize(testMode=True)
+# writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
+# writer = rep.writers.get("Writer" + "IsaacReadRTXLidarData")
 
-    sensors.get_synthetic_data().activate_node_template(
-        "RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud",
-        # "RtxSensorCpu" + "ExportRaw",
-        # "RtxLidar" + "DebugDrawPointCloud",
-        # "RtxSensorCpuIsaacReadRTXLidarData",
-        0,
-        [render_product_path],
-    )
+i = printinc(i)
+writer.attach([hydra_texture])  # , render_product_path2])
 
 
 # disable_extension("omni.replicator.core")
@@ -229,7 +213,7 @@ if 0:
 
     writer = rep.WriterRegistry.get("MyCustomWriter")
     writer.initialize(output_dir="")
-    writer.attach([render_product_path])
+    writer.attach([hydra_texture])
 
 annoNames = [
     "RtxSensorCpuIsaacReadRTXLidarData",
@@ -241,7 +225,7 @@ annotators = {}
 for anno in annoNames:
     annotators[anno] = rep.AnnotatorRegistry.get_annotator(anno)
     # annotators[anno].initialize(keepOnlyPositiveDistance=True)
-    annotators[anno].attach([render_product_path])
+    annotators[anno].attach([hydra_texture])
 
 while simulation_app.is_running():
     simulation_app.update()
@@ -280,14 +264,13 @@ _, sensorR = omni.kit.commands.execute(
     translation=(0, 0, 1.0),
     orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0), 
 )
-from omni.isaac.core.utils.render_product import create_hydra_texture
-_, render_product_pathR = create_hydra_texture([1, 1], sensorR.GetPath().pathString)
 
+hydra_textureR = rep.create.render_product(sensorR.GetPath(), [1, 1], name="Isaac")
 
 import omni.replicator.core as rep
 # Create the debug draw pipeline in the post process graph
 writerR = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
-writerR.attach([render_product_pathR])
+writerR.attach([hydra_textureR])
 
 
 ~~~RtxSensorCpuIsaacReadRTXLidarData Data~~

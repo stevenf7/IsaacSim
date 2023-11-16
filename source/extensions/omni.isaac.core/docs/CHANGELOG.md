@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.0.0] - 2023-11-15
+### Changed
+- Removed create_hydra_texture; use rep.create.render_product from omni.replicator.core instead.
+
+
 ## [2.12.1] - 2023-11-14
 ### Changed
 - Add examples to doctrings, fix type annotations, and improve description.

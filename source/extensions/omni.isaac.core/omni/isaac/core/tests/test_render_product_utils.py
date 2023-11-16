@@ -7,10 +7,9 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import carb
 import omni.kit.test
+import omni.replicator.core as rep
 from omni.isaac.core.utils.render_product import *
-from pxr import Gf
 
 
 class TestStage(omni.kit.test.AsyncTestCase):
@@ -25,19 +24,19 @@ class TestStage(omni.kit.test.AsyncTestCase):
 
     async def test_hydra_texture(self):
         await omni.kit.app.get_app().next_update_async()
-        texture, path = create_hydra_texture((512, 512), "/OmniverseKit_Persp")
+        hydra_texture = rep.create.render_product("/OmniverseKit_Persp", [512, 512], name="Isaac")
         await omni.kit.app.get_app().next_update_async()
-        self.assertEqual(get_camera_prim_path(path), "/OmniverseKit_Persp")
-        add_aov(path, "RtxSensorCpu")
+        self.assertEqual(get_camera_prim_path(hydra_texture.path), "/OmniverseKit_Persp")
+        add_aov(hydra_texture.path, "RtxSensorCpu")
         await omni.kit.app.get_app().next_update_async()
-        camera_prim_path = get_camera_prim_path(path)
-        set_camera_prim_path(path, "/OmniverseKit_Top")
+        camera_prim_path = get_camera_prim_path(hydra_texture.path)
+        set_camera_prim_path(hydra_texture.path, "/OmniverseKit_Top")
         await omni.kit.app.get_app().next_update_async()
-        self.assertEqual(get_camera_prim_path(path), "/OmniverseKit_Top")
-        self.assertEqual(get_resolution(path), (512, 512))
+        self.assertEqual(get_camera_prim_path(hydra_texture.path), "/OmniverseKit_Top")
+        self.assertEqual(get_resolution(hydra_texture.path), (512, 512))
         await omni.kit.app.get_app().next_update_async()
-        set_resolution(path, (1024, 1024))
+        set_resolution(hydra_texture.path, (1024, 1024))
         await omni.kit.app.get_app().next_update_async()
-        self.assertEqual(get_resolution(path), (1024, 1024))
-        texture = None
+        self.assertEqual(get_resolution(hydra_texture.path), (1024, 1024))
+        hydra_texture = None
         await omni.kit.app.get_app().next_update_async()

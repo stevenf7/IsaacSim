@@ -10,7 +10,6 @@
 import omni.kit.test
 import omni.replicator.core as rep
 from omni.isaac.core.utils.prims import delete_prim
-from omni.isaac.core.utils.render_product import create_hydra_texture
 from pxr import Gf
 
 from ..utils.base_isaac_benchmark import BaseIsaacBenchmark
@@ -56,12 +55,12 @@ class TestBenchmarkRtxLidar(BaseIsaacBenchmark):
                 orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),  # Gf.Quatd is w,i,j,k
             )
             sensors.append(sensor)
-            texture, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathString)
-            hydra_textures.append(texture)
+            hydra_texture = rep.create.render_product(sensor.GetPath(), [1, 1], name="Isaac")
+            hydra_textures.append(hydra_texture)
             # Create the post process graph that publishes the render var
             writer = rep.writers.get("Writer" + "IsaacPrintRTXLidarInfo")
             writer.initialize(testMode=True)
-            writer.attach([render_product_path])
+            writer.attach([hydra_texture])
             writers.append(writer)
 
             await omni.kit.app.get_app().next_update_async()

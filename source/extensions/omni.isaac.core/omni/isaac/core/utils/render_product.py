@@ -7,32 +7,19 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-
+import warnings
 from typing import Tuple
 
-import omni.usd
 from omni.isaac.core.utils.prims import set_prim_hide_in_stage_window, set_prim_no_delete
 from omni.isaac.core.utils.stage import get_current_stage
 from pxr import Gf, Sdf, Usd, UsdRender
 
 
 def create_hydra_texture(resolution: Tuple[int], camera_prim_path: str):
-    """Create a hydra texture and return the texture and the render product path
-
-    Args:
-        resolution (Tuple[int]): Resolution used to create the render product
-        camera_prim_path (str): Camera prim to attach to render product
-
-    Returns:
-        hydra_texture, str: returns the hydratexture and render product prim path
-    """
-    stage = get_current_stage()
-    with Usd.EditContext(stage, stage.GetSessionLayer()):
-        factory = omni.hydratexture.acquire_hydra_texture_factory_interface()
-        render_product_path = omni.usd.get_stage_next_free_path(stage, "/Render/RenderProduct_Isaac", False)
-        name = render_product_path.split("/Render/RenderProduct_")[-1]
-        texture = factory.create_hydra_texture(name, resolution[0], resolution[1], "", camera_prim_path, "rtx")
-        return texture, render_product_path
+    warnings.warn(
+        "This function is deprecated, use omni.replicator.core.create.render_product instead", DeprecationWarning
+    )
+    return None, None
 
 
 def add_aov(render_product_path: str, aov_name: str):

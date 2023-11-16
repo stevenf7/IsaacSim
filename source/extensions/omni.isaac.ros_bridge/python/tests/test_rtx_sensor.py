@@ -24,7 +24,6 @@ import omni.kit.test
 import omni.replicator.core as rep
 import usdrt.Sdf
 from omni.isaac.core.utils.physics import simulate_async
-from omni.isaac.core.utils.render_product import create_hydra_texture
 from omni.isaac.core.utils.viewports import add_aov_to_viewport
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
@@ -134,7 +133,6 @@ class TestROS1RTXSensor(omni.kit.test.AsyncTestCase):
         await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api)
 
         _, sensor = omni.kit.commands.execute("IsaacSensorCreateRtxRadar", path="/sensor", parent=None)
-        # texture, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathString)
         viewport_api.set_active_camera(sensor.GetPath().pathString)
 
         await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api)
@@ -165,7 +163,6 @@ class TestROS1RTXSensor(omni.kit.test.AsyncTestCase):
             config=config,
             orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),
         )
-        # texture, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathString)
         viewport_api.set_active_camera(sensor.GetPath().pathString)
         # in order for the sensor to generate data properly we let the viewport know that it should create a buffer for the associated render variable.
         # add_aov_to_viewport(viewport_api, "RtxSensorCpu")
