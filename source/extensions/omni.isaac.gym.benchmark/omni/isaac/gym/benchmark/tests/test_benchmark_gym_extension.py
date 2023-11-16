@@ -10,7 +10,7 @@
 import omni.kit
 import omni.kit.test
 import omni.timeline
-from omni.isaac.benchmarks.utils.base_isaac_benchmark import BaseIsaacBenchmark
+from omni.isaac.benchmark.services.base_isaac_benchmark import BaseIsaacBenchmark
 from omniisaacgymenvs import RLExtension, get_instance
 
 MAX_ITERATIONS = 10

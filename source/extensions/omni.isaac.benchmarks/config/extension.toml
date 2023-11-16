@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.18.3"
+version = "0.18.4"
 category = "Simulation"
 title = "Benchmark"
 description = "This extension provides benchmarking utilities"
@@ -16,6 +16,7 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
+"omni.isaac.benchmark.services" = {}
 "omni.physx" = {}
 "omni.isaac.core" = {}
 "omni.isaac.core_nodes" = {}
@@ -26,9 +27,6 @@ writeTarget.kit = true
 "omni.isaac.range_sensor" = {}
 "omni.isaac.sensor" = {}
 "omni.isaac.wheeled_robots" = {}
-"omni.kit.testing.services" = {}
-"omni.kit.nvdf.telemetry" = {}
-# "omni.kit.usdstats" = {}
 "omni.hydra.rtx"= {}
 "omni.kit.viewport.utility"= {}
 "omni.kit.viewport.window"= {}
@@ -39,27 +37,20 @@ writeTarget.kit = true
 "omni.isaac.ros_bridge" = {}
 
 [[python.module]]
-name = "omni.isaac.benchmarks"
-
-[[python.module]]
 name = "omni.isaac.benchmarks.tests"
 
 [settings]
-exts."omni.isaac.benchmarks".metrics.nvdataflow_default_test_suite_name = "Isaac Sim Benchmarks"
 # uncomment and set this to output metrics to a specific folder
-# exts."omni.isaac.benchmarks".metrics.metrics_output_folder=""
-[[test]]
+# exts."omni.isaac.benchmark.services".metrics.metrics_output_folder=""
 
+[[test]]
 # these are not cached
 dependencies = [
-    # "omni.kit.testing.metrics_uploader",
     "omni.kit.testing.services",
     "omni.kit.nvdf.telemetry",
-#    "omni.kit.usdstats"
 ]
 timeout=12000
 args = ["--no-window", "--allow-root", "--/app/fastShutdown=1", "--vulkan"] # we can use fast shutdown because metrics are not uploaded
-
 stdoutFailPatterns.exclude = [
     "*NGX EvaluateFeature failed*", # Ada multi gpu doesn't support this yet
     "*Failed to evaluate DLSS feature*", # Ada multi gpu doesn't support this yet

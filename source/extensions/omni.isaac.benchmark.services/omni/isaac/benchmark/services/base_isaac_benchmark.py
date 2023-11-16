@@ -118,7 +118,7 @@ class BaseIsaacBenchmark(omni.kit.test.AsyncTestCase):
         metrics_metadata_filename_out = os.path.join(self._metrics_output_folder, "metadata.json")
         if not os.path.exists(metrics_metadata_filename_out):
             nvdataflow_test_suite_name = self.settings.get(
-                "/exts/omni.isaac.benchmarks/metrics/nvdataflow_default_test_suite_name"
+                "/exts/omni.isaac.benchmark.services/metrics/nvdataflow_default_test_suite_name"
             )
             if not nvdataflow_test_suite_name:
                 exit()

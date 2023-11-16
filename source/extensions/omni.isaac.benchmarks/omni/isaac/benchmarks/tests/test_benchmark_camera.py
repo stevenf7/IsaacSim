@@ -9,12 +9,11 @@
 
 import numpy as np
 import omni.kit.test
+from omni.isaac.benchmark.services.base_isaac_benchmark import BaseIsaacBenchmark
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.core.utils.stage import is_stage_loading
 from omni.isaac.sensor import Camera
 from omni.kit.viewport.utility import get_active_viewport
-
-from ..utils.base_isaac_benchmark import BaseIsaacBenchmark
 
 TEST_NUM_APP_UPDATES = 60 * 10
 

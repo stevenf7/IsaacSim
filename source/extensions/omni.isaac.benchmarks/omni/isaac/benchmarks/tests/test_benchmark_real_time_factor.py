@@ -8,9 +8,8 @@
 #
 
 import omni.kit.test
+from omni.isaac.benchmark.services.base_isaac_benchmark import BaseIsaacBenchmark
 from omni.isaac.core_nodes.bindings import _omni_isaac_core_nodes
-
-from ..utils.base_isaac_benchmark import BaseIsaacBenchmark
 
 TEST_NUM_APP_UPDATES = 60 * 10
 

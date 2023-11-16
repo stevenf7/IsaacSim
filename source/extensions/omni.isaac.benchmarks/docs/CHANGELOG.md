@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.18.4] - 2023-11-15
+### Changed
+- Now dependent on omni.isaac.benchmark.services
+### Removed
+- Removed utils module since omni.isaac.benchmark.services is now a dependency
+
 ## [0.18.3] - 2023-10-24
 ### Changed
 - Added --no-window and --allow-root by default for testing
@@ -63,7 +69,7 @@
 
 ### Changed
 - use sync stage load function to get better behavior
-- reuse viewport rp for first camera. 
+- reuse viewport rp for first camera.
 
 ## [0.14.0] - 2023-07-04
 
@@ -86,7 +92,7 @@
 
 ### Fixed
 - unrolled scene generation benchmark loops
-- sdg using step_async loop + wait_until_complete_async to make sure data is written to disk in the benchmark phase 
+- sdg using step_async loop + wait_until_complete_async to make sure data is written to disk in the benchmark phase
 
 ## [0.13.0] - 2023-06-30
 

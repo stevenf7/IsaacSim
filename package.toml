@@ -56,6 +56,7 @@ files_exclude = [
     ["extscache/omni.kit.usdstats*"],
     ["extscache/omni.kit.profiler.tracy*"],
     ["exts/omni.isaac.benchmarks"],
+    ["exts/omni.isaac.benchmark.services"],
     # GXF Bridge related items
     ["exts/omni.isaac.gxf_bridge"],
     ["tests/tests-python-omni.isaac.gxf_bridge.*"],
@@ -89,6 +90,7 @@ files_exclude = [
     ["extscache/omni.kit.usdstats*"],
     ["extscache/omni.kit.profiler.tracy*"],
     ["exts/omni.isaac.benchmarks"],
+    ["exts/omni.isaac.benchmark.services"],
     # GXF Bridge related items
     ["exts/omni.isaac.gxf_bridge"],
     ["tests/tests-python-omni.isaac.gxf_bridge.*"],
@@ -160,6 +162,7 @@ files_exclude = [
     ["standalone_examples/testing/**"],
     ["exts/omni.isaac.core_archive/pip_prebundle/bin/**"], # OM-84922
     ["exts/omni.isaac.benchmarks"],
+    ["exts/omni.isaac.benchmark.services"],
     # GXF Bridge related items
     ["exts/omni.isaac.gxf_bridge"],
     ["tests/tests-python-omni.isaac.gxf_bridge.*"],

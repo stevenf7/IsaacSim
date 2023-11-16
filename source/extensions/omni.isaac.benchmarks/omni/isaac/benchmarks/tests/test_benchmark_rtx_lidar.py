@@ -9,10 +9,9 @@
 
 import omni.kit.test
 import omni.replicator.core as rep
+from omni.isaac.benchmark.services.base_isaac_benchmark import BaseIsaacBenchmark
 from omni.isaac.core.utils.prims import delete_prim
 from pxr import Gf
-
-from ..utils.base_isaac_benchmark import BaseIsaacBenchmark
 
 TEST_NUM_APP_UPDATES = 60 * 10
 

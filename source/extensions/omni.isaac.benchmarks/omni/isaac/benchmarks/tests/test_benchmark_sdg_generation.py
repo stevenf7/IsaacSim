@@ -13,11 +13,10 @@ import shutil
 import carb
 import omni.kit.test
 import omni.replicator.core as rep
+from omni.isaac.benchmark.services.base_isaac_benchmark import BaseIsaacBenchmark
+from omni.isaac.benchmark.services.helper import wait_until_stage_is_fully_loaded_async
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import create_new_stage_async, open_stage
-
-from ..utils.base_isaac_benchmark import BaseIsaacBenchmark
-from ..utils.helper import wait_until_stage_is_fully_loaded_async
 
 STAGE = "/Isaac/Samples/Replicator/Benchmark/full_warehouse_worker_benchmark_sdg.usd"
 LOOK_AT_PRIM_PATH = "/Root/SM_CardBoxA_3"
