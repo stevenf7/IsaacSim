@@ -515,6 +515,8 @@ group "python_samples"
     python_sample_test("tests-internalnativepython-omni.isaac.gym.test_gym_headless_app", "standalone_examples/testing/omni.isaac.gym/test_gym_headless_app.py")
     python_sample_test("tests-internalnativepython-omni.isaac.synthetic_utils.visualize_groundtruth", "standalone_examples/testing/omni.isaac.synthetic_utils/visualize_groundtruth.py")
     python_sample_test("tests-internalnativepython-omni.isaac.sensor.contact_sensor", "standalone_examples/testing/omni.isaac.sensor/contact_sensor_test.py")
+    python_sample_test("tests-internalnativepython-omni.isaac.sensor.camera_opencv_fisheye", "standalone_examples/api/omni.isaac.sensor/camera_opencv_fisheye.py")
+    python_sample_test("tests-internalnativepython-omni.isaac.sensor.camera_opencv", "standalone_examples/api/omni.isaac.sensor/camera_opencv.py")
     python_sample_test("tests-internalnativepython-python_sh.import_torch", "standalone_examples/testing/python_sh/import_torch.py")
     python_sample_test("tests-internalnativepython-python_sh.import_scipy", "standalone_examples/testing/python_sh/import_scipy.py")
     python_sample_test("tests-internalnativepython-python_sh.path_length", "standalone_examples/testing/python_sh/path_length.py")
