@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.8.5"
+version = "0.9.5"
 category = "Simulation"
 title = "Isaac Sim Gym"
 description = "Gym for RL"
@@ -21,7 +21,6 @@ writeTarget.kit = true
 "omni.isaac.cloner" = {}
 "omni.isaac.ml_archive" = {} # torch
 
-
 [[python.module]]
 name = "omni.isaac.gym"
 
@@ -29,5 +28,10 @@ name = "omni.isaac.gym"
 timeout = 250000
 args = ["--/physics/cudaDevice=0"]
 dependencies = [
-    "omni.isaac.core"
+    "omni.isaac.core",
+    "omni.isaac.kit",
+    "omni.isaac.ui",
+    "omni.isaac.cloner",
+    "omni.isaac.app.setup",
+    "OmniIsaacGymEnvs"
 ]
