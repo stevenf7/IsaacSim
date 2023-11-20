@@ -1,13 +1,18 @@
 # Changelog
 
+## [3.0.1] - 2023-11-20
+### Changed
+- Add examples to docstrings, fix type annotations, and improve description.
+  Affected modules: omni.isaac.core.articulations (articulation, articulation_view)
+  and omni.isaac.core.robots (robot, robot_view)
+
 ## [3.0.0] - 2023-11-15
 ### Changed
 - Removed create_hydra_texture; use rep.create.render_product from omni.replicator.core instead.
 
-
 ## [2.12.1] - 2023-11-14
 ### Changed
-- Add examples to doctrings, fix type annotations, and improve description.
+- Add examples to docstrings, fix type annotations, and improve description.
   Affected modules: omni.isaac.core.utils (bounds, carb, constants, extension, mesh, physics, prim, stage)
 
 ## [2.12.0] - 2023-11-09

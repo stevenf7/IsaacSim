@@ -1,10 +1,7 @@
-.. |br| raw:: html
-
-    <br>
-
 Core [omni.isaac.core]
 ######################################################
 
+|
 
 Articulations
 --------------
@@ -17,6 +14,8 @@ Articulation
     :members:
     :undoc-members:
     :exclude-members:
+
+|
 
 ArticulationView
 =================
@@ -417,6 +416,8 @@ Robot
     :members:
     :undoc-members:
     :exclude-members:
+
+|
 
 Robot View
 =====================
