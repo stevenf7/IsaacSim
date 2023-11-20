@@ -51,11 +51,11 @@ public:
 
     static bool compute(OgnIsaacXPrimAxisVisualizerDatabase& db)
     {
-        const auto& prim = db.inputs.xPrim();
+        const auto& input_prim = db.inputs.xPrim();
         pxr::SdfPath primPath;
-        if (prim.size() > 0)
+        if (input_prim.size() > 0)
         {
-            primPath = omni::fabric::toSdfPath(prim[0]);
+            primPath = omni::fabric::toSdfPath(input_prim[0]);
         }
         else
         {
@@ -80,6 +80,17 @@ public:
                 return false;
             }
         }
+
+        auto prim = state.mStage->GetPrimAtPath(primPath);
+
+        if (prim.IsValid() == false)
+        {
+            state.mLineDrawing->clear();
+            state.mLineDrawing->draw();
+            db.logError("Could not find USD prim at path: %s", primPath.GetText());
+            return false;
+        }
+
         state.mLineDrawing->clear();
 
         usdrt::GfMatrix4d usdTransform =
