@@ -85,9 +85,19 @@ public:
                 return false;
             }
         }
-        state.mLineDrawing->clear();
 
         auto prim = state.mStage->GetPrimAtPath(primPath);
+
+        if (prim.IsValid() == false)
+        {
+            state.mLineDrawing->clear();
+            state.mLineDrawing->draw();
+            db.logError("Could not find USD prim at path: %s", primPath.GetText());
+            return false;
+        }
+
+        state.mLineDrawing->clear();
+
         usdrt::GfMatrix4d usdTransform =
             omni::isaac::utils::pose::computeWorldXformNoCache(state.mStage, state.mUsdrtStage, primPath);
 

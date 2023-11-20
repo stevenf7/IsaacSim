@@ -1,4 +1,7 @@
 # Changelog
+## [0.6.1] - 2023-11-17
+### Added
+- Check for valid prim path, so the debug drawing nodes will issue an error instead of crash with invalid path
 
 ## [0.6.0] - 2023-08-30
 ### Added
