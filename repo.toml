@@ -234,6 +234,15 @@ sphinx_conf_py_extra = """
     ]
     autodoc_mock_imports = ["omni.ui", "usdrt",  "omni.kit.window", "omni.kit.helper", "omni.kit.ui", "omni.graph", "omni.replicator.core"]
 
+    rst_prolog = '''
+    .. |br| raw:: html
+
+        <br>
+
+    .. |physx_docs| replace:: `PhysX docs <https://nvidia-omniverse.github.io/PhysX/physx>`__
+
+    '''
+
 """
 
 sphinx_exclude_patterns = [
