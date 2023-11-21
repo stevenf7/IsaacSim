@@ -839,12 +839,12 @@ sysconfig_path = "${root}/_build/${platform}/${config}/kit/python/lib/python3.10
 url = "https://gitlab-master.nvidia.com/omniverse/ov-create/-/raw/release/2023.2/source/apps/omni.create.full.kit"
 
 deps_for_isaac = [
-  "omni.kit.livestream.core-2.2.1",
-  "omni.kit.livestream.native-2.3.0",
-  "omni.kit.streamsdk.plugins-2.3.7",
-  "omni.kit.livestream.webrtc-2.2.1",
+  "omni.kit.livestream.core-2.3.0",
+  "omni.kit.livestream.native-2.4.0",
+  "omni.kit.streamsdk.plugins-2.5.2",
+  "omni.kit.livestream.webrtc-2.3.2",
   "omni.services.streamclient.webrtc-1.3.8",
-  "omni.services.streaming.manager-0.3.8",
+  "omni.services.streaming.manager-0.3.10",
   "omni.services.streamclient.websocket-2.0.0",
   "omni.replicator.composer-1.2.17",
   "omni.replicator.replicator_yaml-2.0.4",
@@ -899,8 +899,8 @@ exclude = [
 
 # please provide extensions in the format "extension.name-version" or {dep = "extension.name-version", tag = "tag"}
 override = [
-  "omni.kit.livestream.core-2.2.1",
-  "omni.kit.livestream.webrtc-2.2.1",
+  "omni.kit.livestream.core-2.3.0",
+  "omni.kit.livestream.webrtc-2.3.2",
   "omni.warp-1.0.0-beta.2",
 	"omni.warp.core-1.0.0-beta.2",
   "omni.kit.converter.ogc-1.1.22",
