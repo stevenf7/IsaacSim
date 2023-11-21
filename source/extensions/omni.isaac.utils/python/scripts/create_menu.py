@@ -458,10 +458,10 @@ class Extension(omni.ext.IExt):
                 ext_id,
                 "tag36h11",
                 lambda a=weakref.proxy(self): a.create_apriltag(
-                    "/Materials/AprilTag/AprilTag.mdl",
+                    "/Isaac/Materials/AprilTag/AprilTag.mdl",
                     "AprilTag",
                     "/Looks/AprilTag",
-                    "/Materials/AprilTag/Textures/tag36h11.png",
+                    "/Isaac/Materials/AprilTag/Textures/tag36h11.png",
                 ),
             )
         ]

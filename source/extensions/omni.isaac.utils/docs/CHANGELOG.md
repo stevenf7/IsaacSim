@@ -3,6 +3,10 @@
 ## [0.5.4] - 2023-11-20
 ### Changed
 - Moved all End effectors under Robots section
+
+### Fixed
+- April tag menu
+
 ### Fixed
 - Loading Robotiq hand into a path that doesn't start with a number
 

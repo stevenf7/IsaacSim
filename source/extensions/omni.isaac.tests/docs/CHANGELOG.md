@@ -3,6 +3,7 @@
 ## [1.14.0] 2023-11-20
 ### Added
 - Added automatic loading test for assets under "Robots"
+- Added test for apriltag menu
 
 ## [1.13.1] 2023-10-11
 ### Changed
