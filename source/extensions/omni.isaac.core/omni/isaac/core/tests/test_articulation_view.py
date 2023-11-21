@@ -2238,3 +2238,13 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                     self._frankas_view.set_enabled_self_collisions(new_values)
                     values = self._frankas_view.get_enabled_self_collisions()
                 self.assertTrue(np.allclose(values.numpy(), new_values.numpy(), atol=1e-05))
+
+    async def test_get_dof_types(self):
+        await self.setUpWorld(backend="numpy")
+        await self.add_frankas(backend="numpy")
+        ground_truth = [0] * 7 + [1] * 2  # DofType.Rotation: 0, DofType.Translation: 1
+        values = [dof_type.value for dof_type in self._frankas_view.get_dof_types()]
+        self.assertTrue(values == ground_truth)
+        for dof_name, dof_type in zip(self._frankas_view.dof_names, ground_truth):
+            value = self._frankas_view.get_dof_types([dof_name])[0].value
+            self.assertTrue(value == dof_type)

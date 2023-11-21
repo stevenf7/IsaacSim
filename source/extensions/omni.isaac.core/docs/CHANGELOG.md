@@ -6,6 +6,10 @@
   Affected modules: omni.isaac.core.articulations (articulation, articulation_view)
   and omni.isaac.core.robots (robot, robot_view)
 
+### Fixed
+- Use articulation view metadata to get DOF types given specific DOF names
+- Remove unexpected keyword argument when printing the stage via the stage utils
+
 ## [3.0.0] - 2023-11-15
 ### Changed
 - Removed create_hydra_texture; use rep.create.render_product from omni.replicator.core instead.

@@ -431,15 +431,18 @@ class ArticulationView(XFormPrimView):
             [<DofType.Rotation: 0>, <DofType.Rotation: 0>, <DofType.Rotation: 0>,
              <DofType.Rotation: 0>, <DofType.Rotation: 0>, <DofType.Rotation: 0>,
              <DofType.Rotation: 0>, <DofType.Translation: 1>, <DofType.Translation: 1>]
+            >>>
+            >>> # get only the finger DOF types: panda_finger_joint1 and panda_finger_joint2
+            >>> prims.get_dof_types(dof_names=["panda_finger_joint1", "panda_finger_joint2"])
+            [<DofType.Translation: 1>, <DofType.Translation: 1>]
         """
-        # TODO: pending for example due to bug: prims.get_dof_types(dof_names=["panda_finger_joint1", "panda_finger_joint2"])
         if not self._is_initialized:
             carb.log_warn("ArticulationView needs to be initialized.")
             return None
         if dof_names is None:
             return self._dof_types
         else:
-            return [self._physics_view.get_dof_type(self.get_dof_index(dof_name)) for dof_name in dof_names]
+            return [self._dof_types[self.get_dof_index(dof_name)] for dof_name in dof_names]
 
     def get_dof_limits(self) -> Union[np.ndarray, torch.Tensor]:
         """Get the articulations DOFs limits (lower and upper)
