@@ -276,7 +276,7 @@ private:
 class Ros2SubscriberHumble : public Ros2Subscriber
 {
 public:
-    Ros2SubscriberHumble(Ros2NodeBase* node, const char* topic_name, const void* type);
+    Ros2SubscriberHumble(Ros2NodeBase* node, const char* topic_name, const void* type, const size_t history_depth);
     virtual ~Ros2SubscriberHumble();
     virtual bool spin(void* msg);
 

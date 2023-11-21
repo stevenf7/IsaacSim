@@ -19,7 +19,10 @@ public:
                                                            const char* topic_name,
                                                            const void* type,
                                                            const size_t history_depth);
-    virtual std::shared_ptr<Ros2Subscriber> CreateSubscriber(Ros2NodeBase* node, const char* topic_name, const void* type);
+    virtual std::shared_ptr<Ros2Subscriber> CreateSubscriber(Ros2NodeBase* node,
+                                                             const char* topic_name,
+                                                             const void* type,
+                                                             const size_t history_depth);
     virtual std::shared_ptr<Ros2ClockMessage> CreateClockMessage();
     virtual std::shared_ptr<Ros2ImuMessage> CreateImuMessage();
     virtual std::shared_ptr<Ros2CameraInfoMessage> CreateCameraInfoMessage();

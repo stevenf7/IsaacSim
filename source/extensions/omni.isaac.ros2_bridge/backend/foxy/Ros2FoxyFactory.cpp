@@ -46,9 +46,10 @@ std::shared_ptr<Ros2Publisher> Ros2FactoryFoxy::CreatePublisher(Ros2NodeBase* no
 }
 std::shared_ptr<Ros2Subscriber> Ros2FactoryFoxy::CreateSubscriber(Ros2NodeBase* node,
                                                                   const char* topic_name,
-                                                                  const void* type)
+                                                                  const void* type,
+                                                                  const size_t history_depth)
 {
-    return std::make_shared<Ros2SubscriberFoxy>(node, topic_name, type);
+    return std::make_shared<Ros2SubscriberFoxy>(node, topic_name, type, history_depth);
 }
 std::shared_ptr<Ros2ClockMessage> Ros2FactoryFoxy::CreateClockMessage()
 {

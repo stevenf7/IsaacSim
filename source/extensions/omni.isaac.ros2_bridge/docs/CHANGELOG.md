@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.3.10] - 2023-11-20
+### Fixed
+- Queue Size (QOS depth) settings now enforced when creating subscriber nodes.
+- Added unit tests for variable queue sizes in subscribers
+
 ## [2.3.9] - 2023-10-17
 ### Fixed
 - Added fix for foxy backend to match humble backend
