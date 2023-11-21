@@ -1,17 +1,17 @@
 <project toolsVersion="5.6">
     <dependency name="nv_ros" linkPath="../_build/target-deps/nv_ros">
-        <package name="nv_ros" version="noetic_20230430_e60c560-linux64_release" platforms="linux-x86_64"/>
+        <package name="nv_ros" version="noetic_20231114_0ce33ed-linux64_release" platforms="linux-x86_64"/>
     </dependency>
     <dependency name="onshape_client" linkPath="../_build/target-deps/onshape_client">
         <package name="onshape_client" version="20230614_fc9d61f"/>
     </dependency>
     <dependency name="nv_ros2" linkPath="../_build/target-deps/nv_ros2">
-        <package name="nv_ros2" version="foxy_20230925_20ebeb1-linux64_release" platforms="linux-x86_64"/>
-        <package name="nv_ros2" version="foxy_20231005_win64_release.7z" platforms="windows-x86_64"/>
+        <package name="nv_ros2" version="foxy_20231114_0ce33ed-linux64_release" platforms="linux-x86_64"/>
+        <package name="nv_ros2" version="foxy_20231120_win64_release.7z" platforms="windows-x86_64"/>
     </dependency>
     <dependency name="nv_ros2_humble" linkPath="../_build/target-deps/nv_ros2_humble">
-        <package name="nv_ros2" version="humble_20230925_20ebeb1-linux64_release" platforms="linux-x86_64"/>
-        <package name="nv_ros2" version="humble_20231005_win64_release.7z" platforms="windows-x86_64"/>
+        <package name="nv_ros2" version="humble_20231114_0ce33ed-linux64_release" platforms="linux-x86_64"/>
+        <package name="nv_ros2" version="humble_20231121_win64_release.7z" platforms="windows-x86_64"/>
     </dependency>
     <dependency name="lula" linkPath="../_build/target-deps/lula">
         <package name="lula" version="v0.9.1_34e9840.linux-x86_64.release" platforms="linux-x86_64"/>
