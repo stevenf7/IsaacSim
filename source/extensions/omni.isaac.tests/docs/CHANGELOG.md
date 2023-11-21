@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.14.0] 2023-11-20
+### Added
+- Added automatic loading test for assets under "Robots"
+
 ## [1.13.1] 2023-10-11
 ### Changed
 - Modified target angular velocity for the spin test as the old values are above the speed limit

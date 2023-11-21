@@ -1,4 +1,11 @@
 # Changelog
+
+## [0.5.4] - 2023-11-20
+### Changed
+- Moved all End effectors under Robots section
+### Fixed
+- Loading Robotiq hand into a path that doesn't start with a number
+
 ## [0.5.3] - 2023-10-06
 ### Added
 - Carter V2.4 asset path, removed Carter V2 and V2.3

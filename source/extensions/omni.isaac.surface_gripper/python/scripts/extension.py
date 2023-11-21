@@ -29,9 +29,8 @@ class Extension(omni.ext.IExt):
         )
         menu_items = [
             MenuItemDescription(
-                name="End Effectors",
+                name="Robots",
                 sub_menu=[
-                    MenuItemDescription(header="Grippers"),
                     MenuItemDescription(
                         name="Surface Gripper", onclick_action=(ext_id, "isaac_create_surface_gripper")
                     ),
@@ -40,7 +39,6 @@ class Extension(omni.ext.IExt):
         ]
 
         self._menu_items = [MenuItemDescription(name="Isaac", glyph="plug.svg", sub_menu=menu_items)]
-
         add_menu_items(self._menu_items, "Create")
 
     def on_shutdown(self):

@@ -219,14 +219,14 @@ class Extension(omni.ext.IExt):
             make_menu_item_description(
                 ext_id,
                 "ANYmal C",
-                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Unitree/anymal_c.usd", "/ANYmal_C"),
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/ANYbotics/anymal_c.usd", "/ANYmal_C"),
             ),
             MenuItemDescription(name="Unitree", sub_menu=menu_unitree),
             # MenuItemDescription(name="ANYbotics", sub_menu=menu_anybotics), # for some reason, the header needed to be above a item, not submenu, to show up
         ]
 
-        menu_quadrotors = [
-            MenuItemDescription(header="Quadcopters"),
+        menu_aerial = [
+            MenuItemDescription(header="Aerials"),
             make_menu_item_description(
                 ext_id,
                 "Crazyflie",
@@ -236,6 +236,11 @@ class Extension(omni.ext.IExt):
                 ext_id,
                 "Quadcopter",
                 lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Quadcopter/quadcopter.usd", "/Quadcopter"),
+            ),
+            make_menu_item_description(
+                ext_id,
+                "Ingenuity",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Ingenuity/ingenuity.usd", "/Ingenuity"),
             ),
         ]
 
@@ -276,7 +281,7 @@ class Extension(omni.ext.IExt):
                 ext_id,
                 "Nova Carter",
                 lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/Carter/carter_v2_4_sensors.usd", "/Nova_Carter"
+                    "/Isaac/Robots/Carter/nova_carter_sensors.usd", "/Nova_Carter"
                 ),
             ),
             make_menu_item_description(
@@ -331,34 +336,45 @@ class Extension(omni.ext.IExt):
                 ext_id,
                 "2F-140",
                 lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/Robotiq/2F-140/2f140_instanceable.usd", "/2F_140"
+                    "/Isaac/Robots/Robotiq/2F-140/Robotiq_2F_140_physics_edit.usd", "/Robotiq_2F_140"
                 ),
             ),
             make_menu_item_description(
                 ext_id,
                 "2F-85",
                 lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/Robotiq/2F-85/2f85_instanceable.usd", "/2F_85"
+                    "/Isaac/Robots/Robotiq/2F-85/2f85_instanceable.usd", "/Robotiq_2F_85"
                 ),
             ),
             make_menu_item_description(
                 ext_id,
                 "2F-C2",
                 lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/Robotiq/2F-C2/2fc2_instanceable.usd", "/2F_C2"
+                    "/Isaac/Robots/Robotiq/2F-C2/2fc2_instanceable.usd", "/Robotiq_2F_C2"
                 ),
             ),
         ]
 
-        menu_other = [
-            MenuItemDescription(header="Other"),
+        menu_end_effectors = [
+            MenuItemDescription(header="End Effectors"),
             make_menu_item_description(
                 ext_id,
-                "AllegroHand",
+                "Allegro Hand",
                 lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/AllegroHand/allegro_hand_instanceable.usd", "/AllegroHand"
+                    "/Isaac/Robots/AllegroHand/allegro_hand.usd", "/AllegroHand"
                 ),
             ),
+            make_menu_item_description(
+                ext_id,
+                "Shadow Hand",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/ShadowHand/shadow_hand.usd", "/ShadowHand"),
+            ),
+            # Robotiq 2F-140, Robotiq 2F-85, Robotiq 2F-C2, ShadowHand
+            MenuItemDescription(name="Robotiq", sub_menu=menu_robotiq),
+        ]
+
+        menu_other = [
+            MenuItemDescription(header="Other"),
             make_menu_item_description(
                 ext_id,
                 "Humanoid",
@@ -366,27 +382,14 @@ class Extension(omni.ext.IExt):
                     "/Isaac/Robots/Humanoid/humanoid_instanceable.usd", "/Humanoid"
                 ),
             ),
-            make_menu_item_description(
-                ext_id,
-                "Ingenuity",
-                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Ingenuity/ingenuity.usd", "/Ingenuity"),
-            ),
-            # Robotiq 2F-140, Robotiq 2F-85, Robotiq 2F-C2, ShadowHand
-            MenuItemDescription(name="Robotiq", sub_menu=menu_robotiq),
-            make_menu_item_description(
-                ext_id,
-                "ShadowHand",
-                lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/ShadowHand/shadow_hand_instanceable.usd", "/ShadowHand"
-                ),
-            ),
         ]
 
         robot_menu += menu_manipulators
         robot_menu += menu_quadrupeds
-        robot_menu += menu_quadrotors
+        robot_menu += menu_aerial
         robot_menu += menu_mobile
         robot_menu += menu_other
+        robot_menu += menu_end_effectors
 
         env_menu = [
             MenuItemDescription(header="Basic"),
@@ -485,7 +488,6 @@ class Extension(omni.ext.IExt):
                 glyph="plug.svg",
                 sub_menu=[
                     MenuItemDescription(name="Robots", sub_menu=robot_menu),
-                    MenuItemDescription(name="End Effectors", sub_menu=menu_end_effectors),
                     MenuItemDescription(name="Environments", sub_menu=env_menu),
                     MenuItemDescription(name="April Tag", sub_menu=apriltag_menu),
                 ],

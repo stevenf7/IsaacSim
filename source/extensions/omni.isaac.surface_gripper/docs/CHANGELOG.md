@@ -1,5 +1,10 @@
 # Changelog
 
+
+## [0.6.0] - 2023-11-20
+### Changed 
+- Location on the Menu changed from Create->Isaac->End Effector to Create->Isaac->Robot.
+
 ## [0.5.0] - 2023-09-26
 ### Changed 
 - Updated ogn node to prevent issue where it would only call for close on first attempt.
