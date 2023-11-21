@@ -213,7 +213,7 @@ def print_stage_prim_paths(fabric: bool = False) -> None:
     from omni.isaac.core.utils.prims import get_prim_path
 
     for prim in traverse_stage(fabric=fabric):
-        prim_path = get_prim_path(prim, fabric=fabric)
+        prim_path = get_prim_path(prim)
         print(prim_path)
 
 
