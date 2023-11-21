@@ -43,8 +43,9 @@ public:
 
             state.mMessage = state.mFactory->CreateTwistMessage();
 
-            state.mSubscriber = state.mFactory->CreateSubscriber(
-                state.mNodeHandle.get(), fullTopicName.c_str(), state.mMessage->getTypeSupportHandle());
+            state.mSubscriber =
+                state.mFactory->CreateSubscriber(state.mNodeHandle.get(), fullTopicName.c_str(),
+                                                 state.mMessage->getTypeSupportHandle(), db.inputs.queueSize());
 
 
             return true;

@@ -11,7 +11,10 @@
 #include <include/Ros2Macros.h>
 #include <rcl/rcl.h>
 
-Ros2SubscriberHumble::Ros2SubscriberHumble(Ros2NodeBase* node, const char* topic_name, const void* type)
+Ros2SubscriberHumble::Ros2SubscriberHumble(Ros2NodeBase* node,
+                                           const char* topic_name,
+                                           const void* type,
+                                           const size_t history_depth)
     : mNode(node), wait_set_initialized(false)
 {
     mSub = std::shared_ptr<rcl_subscription_t>(new rcl_subscription_t,
@@ -29,6 +32,20 @@ Ros2SubscriberHumble::Ros2SubscriberHumble(Ros2NodeBase* node, const char* topic
                                                });
     (*mSub) = rcl_get_zero_initialized_subscription();
     rcl_subscription_options_t sub_ops = rcl_subscription_get_default_options();
+    sub_ops.qos.depth = history_depth;
+
+    // rcl_subscription_default_options sub_ops = {
+    //     RMW_QOS_POLICY_HISTORY_KEEP_LAST,
+    //     10,
+    //     RMW_QOS_POLICY_RELIABILITY_RELIABLE,
+    //     RMW_QOS_POLICY_DURABILITY_VOLATILE,
+    //     RMW_QOS_DEADLINE_DEFAULT,
+    //     RMW_QOS_LIFESPAN_DEFAULT,
+    //     RMW_QOS_POLICY_LIVELINESS_SYSTEM_DEFAULT,
+    //     RMW_QOS_LIVELINESS_LEASE_DURATION_DEFAULT,
+    //     false
+    // };
+
     rcl_ret_t rc = rcl_subscription_init(mSub.get(), static_cast<rcl_node_t*>(mNode->node()),
                                          static_cast<const rosidl_message_type_support_t*>(type), topic_name, &sub_ops);
     if (rc != RCL_RET_OK)

@@ -276,7 +276,7 @@ private:
 class Ros2SubscriberFoxy : public Ros2Subscriber
 {
 public:
-    Ros2SubscriberFoxy(Ros2NodeBase* node, const char* topic_name, const void* type);
+    Ros2SubscriberFoxy(Ros2NodeBase* node, const char* topic_name, const void* type, const size_t history_depth);
     virtual ~Ros2SubscriberFoxy();
     virtual bool spin(void* msg);
 
