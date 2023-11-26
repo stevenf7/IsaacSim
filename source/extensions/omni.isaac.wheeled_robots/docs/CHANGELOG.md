@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.8.1] - 2023-11-27
+### Fixed
+- _wheeled_dof_indices vs _wheel_dof_indices typo
+
 ## [0.8.0] - 2023-11-13
 ### Changed
 - Moved wheel base pose controller from motion generation extension

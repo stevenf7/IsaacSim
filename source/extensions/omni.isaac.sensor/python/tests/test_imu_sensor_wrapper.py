@@ -29,15 +29,13 @@ class TestIMU(omni.kit.test.AsyncTestCase):
         await update_stage_async()
         self.my_world.scene.add_default_ground_plane()
         assets_root_path = get_assets_root_path()
-        asset_path = assets_root_path + "/Isaac/Robots/Carter/carter_v2_4_sensors.usd"
+        asset_path = assets_root_path + "/Isaac/Robots/Carter/nova_carter_sensors.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Carter")
         my_carter = self.my_world.scene.add(
-            Articulation(prim_path="/World/Carter/Carter_V24", name="my_carter", position=np.array([0, 0.0, 0.5]))
+            Articulation(prim_path="/World/Carter", name="my_carter", position=np.array([0, 0.0, 0.5]))
         )
 
-        self._imu = self.my_world.scene.add(
-            IMUSensor(prim_path="/World/Carter/Carter_V24/chassis_link/Imu_Sensor", name="imu")
-        )
+        self._imu = self.my_world.scene.add(IMUSensor(prim_path="/World/Carter/chassis_link/Imu_Sensor", name="imu"))
 
         cube_1 = self.my_world.scene.add(
             DynamicCuboid(

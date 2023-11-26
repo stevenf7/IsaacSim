@@ -32,11 +32,11 @@ if assets_root_path is None:
     simulation_app.close()
     sys.exit()
 
-asset_path = assets_root_path + "/Isaac/Robots/Carter/carter_v2_4_sensors.usd"
+asset_path = assets_root_path + "/Isaac/Robots/Carter/nova_carter_sensors.usd"
 add_reference_to_stage(usd_path=asset_path, prim_path="/World/Carter")
 
 my_carter = my_world.scene.add(
-    Articulation(prim_path="/World/Carter/Carter_V24", name="my_carter", position=np.array([0, 0.0, 0.5]))
+    Articulation(prim_path="/World/Carter", name="my_carter", position=np.array([0, 0.0, 0.5]))
 )
 wheel_dof_names = ["joint_wheel_left", "joint_wheel_right"]
 
@@ -45,7 +45,7 @@ my_controller = DifferentialController(name="simple_control", wheel_radius=0.042
 
 imu_sensor = my_world.scene.add(
     IMUSensor(
-        prim_path="/World/Carter/Carter_V24/caster_wheel_left/imu_sensor",
+        prim_path="/World/Carter/caster_wheel_left/imu_sensor",
         name="imu",
         frequency=60,
         translation=np.array([0, 0, 0]),
