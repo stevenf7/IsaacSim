@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.14.1] 2023-11-21
+### Added
+- Added writers to the 'test_randomizer_snippets.py' isaac replicator randomizers 
+
 ## [1.14.0] 2023-11-20
 ### Added
 - Added automatic loading test for assets under "Robots"
