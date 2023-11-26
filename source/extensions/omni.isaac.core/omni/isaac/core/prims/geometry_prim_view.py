@@ -9,6 +9,7 @@
 
 from typing import List, Optional, Tuple, Union
 
+import carb
 import numpy as np
 import omni.kit.app
 import torch
@@ -187,7 +188,7 @@ class GeometryPrimView(XFormPrimView):
                 else:
                     collision_api = UsdPhysics.PhysxCollisionAPI.Apply(self._prims[i])
                 self._physx_collision_apis[i] = collision_api
-            self._physx_collision_apis[i].GetContactOffsetAttr().Set(offsets[i])
+            self._physx_collision_apis[i].GetContactOffsetAttr().Set(offsets[read_idx])
             read_idx += 1
         return
 
@@ -248,7 +249,7 @@ class GeometryPrimView(XFormPrimView):
                 else:
                     collision_api = UsdPhysics.PhysxCollisionAPI.Apply(self._prims[i])
                 self._physx_collision_apis[i] = collision_api
-            self._physx_collision_apis[i].GetRestOffsetAttr().Set(offsets[i])
+            self._physx_collision_apis[i].GetRestOffsetAttr().Set(offsets[read_idx])
             read_idx += 1
         return
 
@@ -307,7 +308,7 @@ class GeometryPrimView(XFormPrimView):
                 else:
                     collision_api = UsdPhysics.PhysxCollisionAPI.Apply(self._prims[i])
                 self._physx_collision_apis[i] = collision_api
-            self._physx_collision_apis[i].GetTorsionalPatchRadiusAttr().Set(radii[i])
+            self._physx_collision_apis[i].GetTorsionalPatchRadiusAttr().Set(radii[read_idx])
             read_idx += 1
         return
 
@@ -367,7 +368,7 @@ class GeometryPrimView(XFormPrimView):
                 else:
                     collision_api = UsdPhysics.PhysxCollisionAPI.Apply(self._prims[i])
                 self._physx_collision_apis[i] = collision_api
-            self._physx_collision_apis[i].GetMinTorsionalPatchRadiusAttr().Set(radii[i])
+            self._physx_collision_apis[i].GetMinTorsionalPatchRadiusAttr().Set(radii[read_idx])
             read_idx += 1
         return
 
@@ -428,7 +429,7 @@ class GeometryPrimView(XFormPrimView):
                 else:
                     collision_api = UsdPhysics.MeshCollisionAPI.Apply(self._prims[i])
                 self._mesh_collision_apis[i] = collision_api
-            self._mesh_collision_apis[i].GetApproximationAttr().Set(approximation_types[i])
+            self._mesh_collision_apis[i].GetApproximationAttr().Set(approximation_types[read_idx])
             read_idx += 1
         return
 
@@ -587,7 +588,7 @@ class GeometryPrimView(XFormPrimView):
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         indices = self._backend_utils.to_list(indices)
         if isinstance(physics_materials, list):
-            if indices.shape[0] != len(physics_materials):
+            if len(indices) != len(physics_materials):
                 raise Exception("length of physics materials != length of prims indexed")
             if weaker_than_descendants is None:
                 weaker_than_descendants = [False] * len(physics_materials)

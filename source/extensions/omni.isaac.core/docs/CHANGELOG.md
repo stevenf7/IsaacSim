@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.0.2] - 2023-11-24
+### Fixed
+- Fix indices used to set the GeometryPrimView collision API properties
+- Fix the indices comparison that prevented applying several physical materials to a GeometryPrimView object
+
 ## [3.0.1] - 2023-11-20
 ### Changed
 - Add examples to docstrings, fix type annotations, and improve description.
