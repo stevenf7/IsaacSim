@@ -55,7 +55,8 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
         self._extension_path = get_extension_path_from_name("omni.isaac.tests")
 
         # add in carter (from nucleus)
-        self.usd_path = self._assets_root_path + "/Isaac/Robots/Carter/carter_v2_4.usd"
+        # self.usd_path = self._assets_root_path + "/Isaac/Robots/Carter/nova_carter.usd"
+        self.usd_path = "omniverse://isaac-dev.ov.nvidia.com/Isaac/Robots/Carter/nova_carter.usd"
         (result, error) = await open_stage_async(self.usd_path)
 
         # Make sure the stage loaded
@@ -68,7 +69,7 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
         # setup omnigraph
         self.graph_path = "/ActionGraph"
         graph, self.odom_node = setup_robot_og(
-            self.graph_path, "joint_wheel_left", "joint_wheel_right", "/World/Carter_V24", 0.14, 0.4132
+            self.graph_path, "joint_wheel_left", "joint_wheel_right", "/nova_carter", 0.14, 0.4132
         )
 
         pass
@@ -92,7 +93,7 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         # get the dofbot
-        self.ar = self.dc.get_articulation("/World/Carter_V24")
+        self.ar = self.dc.get_articulation("/nova_carter")
         self.chassis = self.dc.get_articulation_root_body(self.ar)
         self.starting_pos = np.array(self.dc.get_rigid_body_pose(self.chassis).p)
 
@@ -123,7 +124,7 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
         self.my_world.play()
         await omni.kit.app.get_app().next_update_async()
 
-        await init_robot_sim(self.dc, "/World/Carter_V24")
+        await init_robot_sim(self.dc, "/nova_carter")
 
         for x in range(1, 5):
             forward_velocity = x * 0.15
@@ -154,7 +155,7 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
         self.my_world.play()
         await omni.kit.app.get_app().next_update_async()
 
-        await init_robot_sim(self.dc, "/World/Carter_V24")
+        await init_robot_sim(self.dc, "/nova_carter")
         for x in range(1, 5):
             self.my_world.play()
             await omni.kit.app.get_app().next_update_async()
@@ -184,7 +185,7 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
         # Start Simulation and wait
         self.my_world.play()
         await omni.kit.app.get_app().next_update_async()
-        await init_robot_sim(self.dc, "/World/Carter_V24")
+        await init_robot_sim(self.dc, "/nova_carter")
 
         for x in range(1, 3):
             angular_velocity = 0.6 * x
@@ -215,7 +216,7 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
         self.my_world.play()
         await omni.kit.app.get_app().next_update_async()
 
-        await init_robot_sim(self.dc, "/World/Carter_V24")
+        await init_robot_sim(self.dc, "/nova_carter")
         forward_velocity = -0.1
         angular_velocity = -0.5
         og.Controller.attribute(self.graph_path + "/DifferentialController.inputs:linearVelocity").set(forward_velocity)

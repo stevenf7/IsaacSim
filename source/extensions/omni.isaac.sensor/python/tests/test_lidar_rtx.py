@@ -31,16 +31,16 @@ class TestRotatingLidarRtx(omni.kit.test.AsyncTestCase):
         await update_stage_async()
         self.my_world.scene.add_default_ground_plane()
         assets_root_path = get_assets_root_path()
-        asset_path = assets_root_path + "/Isaac/Robots/Carter/carter_v2_4_sensors.usd"
+        asset_path = assets_root_path + "/Isaac/Robots/Carter/nova_carter_sensors.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Carter")
         my_carter = self.my_world.scene.add(
-            Articulation(prim_path="/World/Carter/Carter_V24", name="my_carter", position=np.array([0, 0.0, 0.5]))
+            Articulation(prim_path="/World/Carter", name="my_carter", position=np.array([0, 0.0, 0.5]))
         )
         self.xform = self.my_world.scene.add(
-            XFormPrim(prim_path="/World/Carter/Carter_V24/chassis_link/front_hawk/right/lidar_rig", name="rig")
+            XFormPrim(prim_path="/World/Carter/chassis_link/front_hawk/right/lidar_rig", name="rig")
         )
         self._my_lidar = self.my_world.scene.add(
-            LidarRtx(prim_path="/World/Carter/Carter_V24/chassis_link/front_hawk/right/lidar_rig/lidar", name="lidar")
+            LidarRtx(prim_path="/World/Carter/chassis_link/front_hawk/right/lidar_rig/lidar", name="lidar")
         )
 
         cube_1 = self.my_world.scene.add(

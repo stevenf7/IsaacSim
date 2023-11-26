@@ -84,7 +84,7 @@ class WheeledRobot(Robot):
             Tuple[float, float]: [description]
         """
         full_dofs_positions = self.get_joint_positions()
-        wheel_joint_positions = [full_dofs_positions[i] for i in self._wheeled_dof_indices]
+        wheel_joint_positions = [full_dofs_positions[i] for i in self._wheel_dof_indices]
         return wheel_joint_positions
 
     def set_wheel_positions(self, positions) -> None:

@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.14.2] 2023-11-27
+### Fixed
+- updated tests to renamed nova carter asset 
+
+
 ## [1.14.1] 2023-11-21
 ### Added
 - Added writers to the 'test_randomizer_snippets.py' isaac replicator randomizers 
