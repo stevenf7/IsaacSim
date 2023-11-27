@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.0] - 2023-11-27
+### Changed
+- Added deprecation alert. This extension has been deprecated, please use omni.importer.urdf instead.
+
+
 ## [1.0.0] - 2023-07-11
 ### Changed
 - Deprecating omni.isaac.urdf, moving it to omni.importer.urdf
