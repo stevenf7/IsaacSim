@@ -20,6 +20,22 @@ class _SinglePrimWrapper(object):
         return
 
     def initialize(self, physics_sim_view=None) -> None:
+        """Create a physics simulation view if not passed and using PhysX tensor API
+
+        .. note::
+
+            If the prim has been added to the world scene (e.g., ``world.scene.add(prim)``),
+            it will be automatically initialized when the world is reset (e.g., ``world.reset()``).
+
+        Args:
+            physics_sim_view (omni.physics.tensors.SimulationView, optional): current physics simulation view. Defaults to None.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> prim.initialize()
+        """
         self._prim_view.initialize(physics_sim_view=physics_sim_view)
         return
 
@@ -126,7 +142,7 @@ class _SinglePrimWrapper(object):
         .. code-block:: python
 
             >>> state = prim.get_default_state()
-            >>> print(state)
+            >>> state
             <omni.isaac.core.utils.types.XFormPrimState object at 0x7f33addda650>
             >>>
             >>> state.position
@@ -237,9 +253,9 @@ class _SinglePrimWrapper(object):
     ) -> None:
         """Ses prim's pose with respect to the world's frame
 
-        .. hint::
+        .. warning::
 
-            This method belongs to the methods used to set the prim state
+            This method will change (teleport) the prim pose immediately to the indicated value
 
         Args:
             position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
@@ -247,6 +263,10 @@ class _SinglePrimWrapper(object):
             orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim.
                                                           quaternion is scalar-first (w, x, y, z). shape is (4, ).
                                                           Defaults to None, which means left unchanged.
+
+        .. hint::
+
+            This method belongs to the methods used to set the prim state
 
         Example:
 
@@ -276,9 +296,9 @@ class _SinglePrimWrapper(object):
 
             >>> # if the prim is in position (1.0, 0.5, 0.0) with respect to the world frame
             >>> position, orientation = prim.get_world_pose()
-            >>> print(position)
+            >>> position
             [1.  0.5 0. ]
-            >>> print(orientation)
+            >>> orientation
             [1. 0. 0. 0.]
         """
         positions, orientations = self._prim_view.get_world_poses()
@@ -300,9 +320,9 @@ class _SinglePrimWrapper(object):
 
             >>> # if the prim is in position (1.0, 0.5, 0.0) with respect to the world frame
             >>> position, orientation = prim.get_local_pose()
-            >>> print(position)
+            >>> position
             [0. 0. 0.]
-            >>> print(orientation)
+            >>> orientation
             [0. 0. 0.]
         """
         translations, orientations = self._prim_view.get_local_poses()
@@ -316,6 +336,10 @@ class _SinglePrimWrapper(object):
     ) -> None:
         """Set prim's pose with respect to the local frame (the prim's parent frame).
 
+        .. warning::
+
+            This method will change (teleport) the prim pose immediately to the indicated value
+
         Args:
             translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
                                                           (with respect to its parent prim). shape is (3, ).
@@ -323,6 +347,9 @@ class _SinglePrimWrapper(object):
             orientation (Optional[Sequence[float]], optional): quaternion orientation in the local frame of the prim.
                                                           quaternion is scalar-first (w, x, y, z). shape is (4, ).
                                                           Defaults to None, which means left unchanged.
+        .. hint::
+
+            This method belongs to the methods used to set the prim state
 
         Example:
 
