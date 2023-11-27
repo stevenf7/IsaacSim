@@ -296,6 +296,7 @@ Physics Context
     :undoc-members:
     :exclude-members:
 
+|
 
 Prims
 --------------
@@ -309,6 +310,8 @@ Base Sensor
     :undoc-members:
     :exclude-members:
 
+|
+
 XForm Prim
 ================
 
@@ -317,6 +320,8 @@ XForm Prim
     :members:
     :undoc-members:
     :exclude-members:
+
+|
 
 XForm Prim View
 ===================
@@ -327,6 +332,8 @@ XForm Prim View
     :undoc-members:
     :exclude-members:
 
+|
+
 Geometry Prim
 ================
 
@@ -335,6 +342,8 @@ Geometry Prim
     :members:
     :undoc-members:
     :exclude-members:
+
+|
 
 Geometry Prim View
 ===================
@@ -345,6 +354,8 @@ Geometry Prim View
     :undoc-members:
     :exclude-members:
 
+|
+
 Rigid Prim
 ===================
 
@@ -354,6 +365,8 @@ Rigid Prim
     :undoc-members:
     :exclude-members:
 
+|
+
 Rigid Prim View
 ===================
 
@@ -362,6 +375,8 @@ Rigid Prim View
     :members:
     :undoc-members:
     :exclude-members:
+
+|
 
 Rigid Contact View
 ===================

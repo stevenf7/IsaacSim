@@ -16,12 +16,15 @@ from omni.isaac.core.utils.prims import define_prim, get_prim_at_path, is_prim_p
 
 
 class XFormPrim(_SinglePrimWrapper):
-    """Provides high level functions to deal with an Xform prim and its attributes/ properties.
-    If there is an Xform prim present at the path, it will use it. Otherwise, a new XForm prim at
-    the specified prim path will be created.
+    """Provides high level functions to deal with an Xform prim (only one Xform prim) and its attributes/properties
 
-    Note: the prim will have "xformOp:orient", "xformOp:translate" and "xformOp:scale" only post init,
-            unless it is a non-root articulation link.
+    If there is an Xform prim present at the path, it will use it. Otherwise, a new XForm prim at
+    the specified prim path will be created
+
+    .. note::
+
+        The prim will have ``xformOp:orient``, ``xformOp:translate`` and ``xformOp:scale`` only post-init,
+        unless it is a non-root articulation link.
 
     Args:
         prim_path (str): prim path of the Prim to encapsulate or create.
@@ -43,6 +46,22 @@ class XFormPrim(_SinglePrimWrapper):
 
     Raises:
         Exception: if translation and position defined at the same time
+
+    Example:
+
+    .. code-block:: python
+
+        >>> from omni.isaac.core.prims import XFormPrim
+        >>>
+        >>> # given the stage: /World. Get the Xform prim at /World
+        >>> prim = XFormPrim("/World")
+        >>> prim
+        <omni.isaac.core.prims.xform_prim.XFormPrim object at 0x7f52381547c0>
+        >>>
+        >>> # create a new Xform prim at path: /World/Objects
+        >>> prim = XFormPrim("/World/Objects", name="objects")
+        >>> prim
+        <omni.isaac.core.prims.xform_prim.XFormPrim object at 0x7f525c11d420>
     """
 
     def __init__(

@@ -32,18 +32,21 @@ from pxr import Gf, Usd, UsdGeom, UsdShade
 
 
 class XFormPrimView(object):
-    """Provides high level functions to deal with an Xform prim view (1 or more XForm prims and its descendants)
-    as well as its attributes/ properties.
-    This object wraps all matching XForms found at the regex provided at the prim_paths_expr.
+    """Provides high level functions to deal with a Xform prim view (one or many) and its descendants
+    as well as its attributes/properties.
 
-    Note: each prim will have "xformOp:orient", "xformOp:translate" and "xformOp:scale" only post init,
-            unless it is a non-root articulation link.
+    This class wraps all matching Xforms found at the regex provided at the ``prim_paths_expr`` argument
+
+    .. note::
+
+        Each prim will have ``xformOp:orient``, ``xformOp:translate`` and ``xformOp:scale`` only post-init,
+        unless it is a non-root articulation link.
 
     Args:
         prim_paths_expr (str): prim paths regex to encapsulate all prims that match it.
                                 example: "/World/Env[1-5]/Franka" will match /World/Env1/Franka,
                                 /World/Env2/Franka..etc.
-                                (a non regex prim path can also be used to encapsulate one XForm).
+                                (a non regex prim path can also be used to encapsulate one Xform).
         name (str, optional): shortname to be used as a key by Scene class.
                                 Note: needs to be unique if the object is added to the Scene.
                                 Defaults to "xform_prim_view".
@@ -74,6 +77,36 @@ class XFormPrimView(object):
     Raises:
         Exception: if translations and positions defined at the same time.
         Exception: No prim was matched using the prim_paths_expr provided.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> import omni.isaac.core.utils.stage as stage_utils
+        >>> from omni.isaac.cloner import GridCloner
+        >>> from omni.isaac.core.prims import XFormPrimView
+        >>> from pxr import UsdGeom
+        >>>
+        >>> env_zero_path = "/World/envs/env_0"
+        >>> num_envs = 5
+        >>>
+        >>> # load the Franka Panda robot USD file
+        >>> stage_utils.add_reference_to_stage(usd_path, prim_path=f"{env_zero_path}/panda")  # /World/envs/env_0/panda
+        >>>
+        >>> # clone the environment (num_envs)
+        >>> cloner = GridCloner(spacing=1.5)
+        >>> cloner.define_base_env(env_zero_path)
+        >>> UsdGeom.Xform.Define(stage_utils.get_current_stage(), env_zero_path)
+        >>> env_pos = cloner.clone(
+        ...     source_prim_path=env_zero_path,
+        ...     prim_paths=cloner.generate_paths("/World/envs/env", num_envs),
+        ...     copy_from_source=True
+        ... )
+        >>>
+        >>> # wrap all Xforms
+        >>> prims = XFormPrimView(prim_paths_expr="/World/envs/env.*", name="xform_view")
+        >>> prims
+        <omni.isaac.core.prims.xform_prim_view.XFormPrimView object at 0x7f8ffd22ebc0>
     """
 
     def __init__(
@@ -150,6 +183,13 @@ class XFormPrimView(object):
         """
         Returns:
             List[str]: list of prim paths in the stage encapsulated in this view.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> prims.prim_paths
+            ['/World/envs/env_0', '/World/envs/env_1', '/World/envs/env_2', '/World/envs/env_3', '/World/envs/env_4']
         """
         return self._prim_paths
 
@@ -166,15 +206,29 @@ class XFormPrimView(object):
         """
         Returns:
             int: Number of prims encapsulated in this view.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> prims.count
+            5
         """
         return self._count
 
     @property
     def prims(self) -> List[Usd.Prim]:
         """
-
         Returns:
             List[Usd.Prim]: List of USD Prim objects encapsulated in this view.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> prims.prims
+            [Usd.Prim(</World/envs/env_0>), Usd.Prim(</World/envs/env_1>), Usd.Prim(</World/envs/env_2>),
+             Usd.Prim(</World/envs/env_3>), Usd.Prim(</World/envs/env_4>)]
         """
         return self._prims
 
@@ -187,6 +241,21 @@ class XFormPrimView(object):
         return self._non_root_link
 
     def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None) -> None:
+        """Create a physics simulation view if not passed and set other properties using the PhysX tensor API
+
+        .. note::
+
+            For this particular class, calling this method will do nothing
+
+        Args:
+            physics_sim_view (omni.physics.tensors.SimulationView, optional): current physics simulation view. Defaults to None.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> prims.initialize()
+        """
         return
 
     def _set_xform_properties(self) -> None:
@@ -236,16 +305,22 @@ class XFormPrimView(object):
         visibilities: Union[np.ndarray, torch.Tensor, wp.array],
         indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
     ) -> None:
-        """Sets the visibilities of the prims in stage.
+        """Set the visibilities of the prims in stage
 
         Args:
             visibilities (Union[np.ndarray, torch.Tensor, wp.array]): flag to set the visibilities of the usd prims in stage.
                                                             Shape (M,). Where M <= size of the encapsulated prims in the view.
-            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Defaults to None (i.e: all prims in the view).
-        """
 
+        Example:
+
+        .. code-block:: python
+
+            >>> # make all prims not visible in the stage
+            >>> prims.set_visibilities(visibilities=[False] * num_envs)
+        """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         read_idx = 0
         indices = self._backend_utils.to_list(indices)
@@ -265,7 +340,7 @@ class XFormPrimView(object):
         """Returns the current visibilities of the prims in stage.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -273,6 +348,18 @@ class XFormPrimView(object):
         Returns:
             Union[np.ndarray, torch.Tensor, wp.indexedarray]: Shape (M,) with type bool, where each item holds True
                                              if the prim is visible in stage. False otherwise.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # get all visibilities. Returned shape is (5,) for the example: 5 envs
+            >>> prims.get_visibilities()
+            [ True  True  True  True  True]
+            >>>
+            >>> # get the visibilities for the first, middle and last of the 5 envs. Returned shape is (3,)
+            >>> prims.get_visibilities(indices=np.array([0, 2, 4]))
+            [ True  True  True]
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         visibilities = np.zeros(shape=indices.shape[0], dtype="bool")
@@ -287,15 +374,43 @@ class XFormPrimView(object):
         return visibilities
 
     def post_reset(self) -> None:
-        """Resets the prims to its default state (positions and orientations)."""
+        """Reset the prims to its default state (positions and orientations)
+
+        Example:
+
+        .. code-block:: python
+
+            >>> prims.post_reset()
+        """
         if not self._non_root_link:
             self.set_world_poses(self._default_state.positions, self._default_state.orientations)
         return
 
     def get_default_state(self) -> XFormPrimViewState:
-        """
+        """Get the default states (positions and orientations) defined with the ``set_default_state`` method
+
         Returns:
-            XFormPrimViewState: returns the default state of the prims (positions and orientations) that is used after each reset.
+            XFormPrimViewState: returns the default state of the prims that is used after each reset.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> state = prims.get_default_state()
+            >>> state
+            <omni.isaac.core.utils.types.XFormPrimViewState object at 0x7f82f73e3070>
+            >>> state.positions
+            [[ 1.5  -0.75  0.  ]
+             [ 1.5   0.75  0.  ]
+             [ 0.   -0.75  0.  ]
+             [ 0.    0.75  0.  ]
+             [-1.5  -0.75  0.  ]]
+            >>> state.orientations
+            [[1. 0. 0. 0.]
+             [1. 0. 0. 0.]
+             [1. 0. 0. 0.]
+             [1. 0. 0. 0.]
+             [1. 0. 0. 0.]]
         """
         if self._non_root_link:
             carb.log_warn("This view corresponds to non root links that are included in an articulation")
@@ -307,7 +422,11 @@ class XFormPrimView(object):
         orientations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
         indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
     ) -> None:
-        """Sets the default state of the prims (positions and orientations), that will be used after each reset.
+        """Set the default state of the prims (positions and orientations), that will be used after each reset.
+
+        .. note::
+
+            The default states will be set during post-reset (e.g., calling ``.post_reset()`` or ``world.reset()`` methods)
 
         Args:
             positions (Optional[Union[np.ndarray, torch.Tensor, wp.array]], optional):  positions in the world frame of the prim. shape is (M, 3).
@@ -315,10 +434,23 @@ class XFormPrimView(object):
             orientations (Optional[Union[np.ndarray, torch.Tensor, wp.array]], optional): quaternion orientations in the world frame of the prim.
                                                           quaternion is scalar-first (w, x, y, z). shape is (M, 4).
                                                           Defaults to None, which means left unchanged.
-            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # configure default states for all prims
+            >>> positions = np.zeros((num_envs, 3))
+            >>> positions[:, 0] = np.arange(num_envs)
+            >>> orientations = np.tile(np.array([1.0, 0.0, 0.0, 0.0]), (num_envs, 1))
+            >>> prims.set_default_state(positions=positions, orientations=orientations)
+            >>>
+            >>> # set default states during post-reset
+            >>> prims.post_reset()
         """
         if self._non_root_link:
             carb.log_warn("This view corresponds to non root links that are included in an articulation")
@@ -353,7 +485,7 @@ class XFormPrimView(object):
         weaker_than_descendants: Optional[Union[bool, List[bool]]] = None,
         indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
     ) -> None:
-        """Used to apply visual material to the prims and optionally its prim descendants.
+        """Apply visual material to the prims and optionally their prim descendants.
 
         Args:
             visual_materials (Union[VisualMaterial, List[VisualMaterial]]): visual materials to be applied to the prims. Currently supports
@@ -364,7 +496,7 @@ class XFormPrimView(object):
                                                                                     materials, otherwise False. Defaults to False.
                                                                                     If a list of visual materials is provided then a list
                                                                                     has to be provided with the same size for this arg as well.
-            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -372,8 +504,23 @@ class XFormPrimView(object):
         Raises:
             Exception: length of visual materials != length of prims indexed
             Exception: length of visual materials != length of weaker descendants bools arg
-        """
 
+        Example:
+
+        .. code-block:: python
+
+            >>> from omni.isaac.core.materials import OmniGlass
+            >>>
+            >>> # create a dark-red glass visual material
+            >>> material = OmniGlass(
+            ...     prim_path="/World/material/glass",  # path to the material prim to create
+            ...     ior=1.25,
+            ...     depth=0.001,
+            ...     thin_walled=False,
+            ...     color=np.array([0.5, 0.0, 0.0])
+            ... )
+            >>> prims.apply_visual_materials(material)
+        """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
 
         if isinstance(visual_materials, list):
@@ -427,18 +574,35 @@ class XFormPrimView(object):
     def get_applied_visual_materials(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
     ) -> List[VisualMaterial]:
-        """
+        """Get the current applied visual materials
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
 
         Returns:
             List[VisualMaterial]: a list of the current applied visual materials to the prims if its type is currently supported.
-        """
 
+        Example:
+
+        .. code-block:: python
+
+            >>> # get all applied visual materials. Returned size is 5 for the example: 5 envs
+            >>> prims.get_applied_visual_materials()
+            [<omni.isaac.core.materials.omni_glass.OmniGlass object at 0x7f829c165de0>,
+             <omni.isaac.core.materials.omni_glass.OmniGlass object at 0x7f829c165de0>,
+             <omni.isaac.core.materials.omni_glass.OmniGlass object at 0x7f829c165de0>,
+             <omni.isaac.core.materials.omni_glass.OmniGlass object at 0x7f829c165de0>,
+             <omni.isaac.core.materials.omni_glass.OmniGlass object at 0x7f829c165de0>]
+            >>>
+            >>> # get the applied visual materials for the first, middle and last of the 5 envs. Returned size is 3
+            >>> prims.get_applied_visual_materials(indices=np.array([0, 2, 4]))
+            [<omni.isaac.core.materials.omni_glass.OmniGlass object at 0x7f829c165de0>,
+             <omni.isaac.core.materials.omni_glass.OmniGlass object at 0x7f829c165de0>,
+             <omni.isaac.core.materials.omni_glass.OmniGlass object at 0x7f829c165de0>]
+        """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         result = [None] * indices.shape[0]
         write_idx = 0
@@ -500,15 +664,28 @@ class XFormPrimView(object):
     def is_visual_material_applied(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
     ) -> List[bool]:
-        """
+        """Check if there is a visual material applied
+
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
 
         Returns:
             List[bool]: True if there is a visual material applied is applied to the corresponding prim in the view. False otherwise.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # given a visual material that is applied only to the first and the last environment
+            >>> prims.is_visual_material_applied()
+            [True, False, False, False, True]
+            >>>
+            >>> # check for the first, middle and last of the 5 envs
+            >>> prims.is_visual_material_applied(indices=np.array([0, 2, 4]))
+            [True, False, True]
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         result = [None] * indices.shape[0]
@@ -535,10 +712,10 @@ class XFormPrimView(object):
     ) -> Union[
         Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor], Tuple[wp.indexedarray, wp.indexedarray]
     ]:
-        """Returns the poses (positions and orientations) of the prims in the view with respect to the world frame.
+        """Get the poses of the prims in the view with respect to the world's frame
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -547,6 +724,38 @@ class XFormPrimView(object):
             Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor], Tuple[wp.indexedarray, wp.indexedarray]]: first index is positions in the world frame of the prims. shape is (M, 3).
                                                                                      second index is quaternion orientations in the world frame of the prims.
                                                                                      quaternion is scalar-first (w, x, y, z). shape is (M, 4).
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # get all prims poses with respect to the world's frame.
+            >>> # Returned shape is position (5, 3) and orientation (5, 4) for the example: 5 envs
+            >>> positions, orientations = prims.get_world_poses()
+            >>> positions
+            [[ 1.5  -0.75  0.  ]
+             [ 1.5   0.75  0.  ]
+             [ 0.   -0.75  0.  ]
+             [ 0.    0.75  0.  ]
+             [-1.5  -0.75  0.  ]]
+            >>> orientations
+            [[1. 0. 0. 0.]
+             [1. 0. 0. 0.]
+             [1. 0. 0. 0.]
+             [1. 0. 0. 0.]
+             [1. 0. 0. 0.]]
+            >>>
+            >>> # get only the prims poses with respect to the world's frame for the first, middle and last of the 5 envs.
+            >>> # Returned shape is position (3, 3) and orientation (3, 4) for the example: 3 envs selected
+            >>> positions, orientations = prims.get_world_poses(indices=np.array([0, 2, 4]))
+            >>> positions
+            [[ 1.5  -0.75  0.  ]
+             [ 0.   -0.75  0.  ]
+             [-1.5  -0.75  0.  ]]
+            >>> orientations
+            [[1. 0. 0. 0.]
+             [1. 0. 0. 0.]
+             [1. 0. 0. 0.]]
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         positions = np.zeros((indices.shape[0], 3), dtype=np.float32)
@@ -566,7 +775,11 @@ class XFormPrimView(object):
         orientations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
         indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
     ) -> None:
-        """Sets prim poses in the view with respect to the world's frame.
+        """Set prim poses in the view with respect to the world's frame
+
+        .. warning::
+
+            This method will change (teleport) the prim poses immediately to the indicated value
 
         Args:
             positions (Optional[Union[np.ndarray, torch.Tensor, wp.array]], optional): positions in the world frame of the prims. shape is (M, 3).
@@ -574,10 +787,30 @@ class XFormPrimView(object):
             orientations (Optional[Union[np.ndarray, torch.Tensor, wp.array]], optional): quaternion orientations in the world frame of the prims.
                                                                                 quaternion is scalar-first (w, x, y, z). shape is (M, 4).
                                                                                 Defaults to None, which means left unchanged.
-            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
+
+        .. hint::
+
+            This method belongs to the methods used to set the prim state
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # reposition all prims in row (x-axis)
+            >>> positions = np.zeros((num_envs, 3))
+            >>> positions[:,0] = np.arange(num_envs)
+            >>> orientations = np.tile(np.array([1.0, 0.0, 0.0, 0.0]), (num_envs, 1))
+            >>> prims.set_world_poses(positions, orientations)
+            >>>
+            >>> # reposition only the prims for the first, middle and last of the 5 envs in column (y-axis)
+            >>> positions = np.zeros((3, 3))
+            >>> positions[:,1] = np.arange(3)
+            >>> orientations = np.tile(np.array([1.0, 0.0, 0.0, 0.0]), (3, 1))
+            >>> prims.set_world_poses(positions, orientations, indices=np.array([0, 2, 4]))
         """
         if positions is None or orientations is None:
             current_positions, current_orientations = self.get_world_poses(indices=indices)
@@ -609,10 +842,10 @@ class XFormPrimView(object):
     ) -> Union[
         Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor], Tuple[wp.indexedarray, wp.indexedarray]
     ]:
-        """Gets prim poses in the view with respect to the local's frame (the prim's parent frame).
+        """Get prim poses in the view with respect to the local frame (the prim's parent frame)
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -622,6 +855,38 @@ class XFormPrimView(object):
                                           first index is translations in the local frame of the prims. shape is (M, 3).
                                             second index is quaternion orientations in the local frame of the prims.
                                             quaternion is scalar-first (w, x, y, z). shape is (M, 4).
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # get all prims poses with respect to the local frame.
+            >>> # Returned shape is position (5, 3) and orientation (5, 4) for the example: 5 envs
+            >>> positions, orientations = prims.get_local_poses()
+            >>> positions
+            [[ 1.5  -0.75  0.  ]
+             [ 1.5   0.75  0.  ]
+             [ 0.   -0.75  0.  ]
+             [ 0.    0.75  0.  ]
+             [-1.5  -0.75  0.  ]]
+            >>> orientations
+            [[1. 0. 0. 0.]
+             [1. 0. 0. 0.]
+             [1. 0. 0. 0.]
+             [1. 0. 0. 0.]
+             [1. 0. 0. 0.]]
+            >>>
+            >>> # get only the prims poses with respect to the local frame for the first, middle and last of the 5 envs.
+            >>> # Returned shape is position (3, 3) and orientation (3, 4) for the example: 3 envs selected
+            >>> positions, orientations = prims.get_local_poses(indices=np.array([0, 2, 4]))
+            >>> positions
+            [[ 1.5  -0.75  0.  ]
+             [ 0.   -0.75  0.  ]
+             [-1.5  -0.75  0.  ]]
+            >>> orientations
+            [[1. 0. 0. 0.]
+             [1. 0. 0. 0.]
+             [1. 0. 0. 0.]]
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         translations = np.zeros(shape=(indices.shape[0], 3), dtype="float32")
@@ -641,7 +906,11 @@ class XFormPrimView(object):
         orientations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
         indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
     ) -> None:
-        """Sets prim poses in the view with respect to the local frame (the prim's parent frame).
+        """Set prim poses in the view with respect to the local frame (the prim's parent frame)
+
+        .. warning::
+
+            This method will change (teleport) the prim poses immediately to the indicated value
 
         Args:
             translations (Optional[Union[np.ndarray, torch.Tensor, wp.array]], optional):
@@ -652,12 +921,31 @@ class XFormPrimView(object):
                                                           quaternion orientations in the local frame of the prims.
                                                           quaternion is scalar-first (w, x, y, z). shape is (M, 4).
                                                           Defaults to None, which means left unchanged.
-            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-        """
 
+        .. hint::
+
+            This method belongs to the methods used to set the prim state
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # reposition all prims
+            >>> positions = np.zeros((num_envs, 3))
+            >>> positions[:,0] = np.arange(num_envs)
+            >>> orientations = np.tile(np.array([1.0, 0.0, 0.0, 0.0]), (num_envs, 1))
+            >>> prims.set_local_poses(positions, orientations)
+            >>>
+            >>> # reposition only the prims for the first, middle and last of the 5 envs
+            >>> positions = np.zeros((3, 3))
+            >>> positions[:,1] = np.arange(3)
+            >>> orientations = np.tile(np.array([1.0, 0.0, 0.0, 0.0]), (3, 1))
+            >>> prims.set_local_poses(positions, orientations, indices=np.array([0, 2, 4]))
+        """
         indices = self._backend_utils.to_list(self._backend_utils.resolve_indices(indices, self.count, self._device))
         if translations is not None:
             translations = self._backend_utils.to_list(translations)
@@ -693,17 +981,36 @@ class XFormPrimView(object):
     def get_world_scales(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
-        """Gets prim scales in the view with respect to the world's frame.
-
+        """Get prim scales in the view with respect to the world's frame
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
 
         Returns:
             Union[np.ndarray, torch.Tensor, wp.indexedarray]: scales applied to the prim's dimensions in the world frame. shape is (M, 3).
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # get all prims scales with respect to the world's frame.
+            >>> # Returned shape is (5, 3) for the example: 5 envs
+            >>> prims.get_world_scales()
+            [[1. 1. 1.]
+             [1. 1. 1.]
+             [1. 1. 1.]
+             [1. 1. 1.]
+             [1. 1. 1.]]
+            >>>
+            >>> # get only the prims scales with respect to the world's frame for the first, middle and last of the 5 envs.
+            >>> # Returned shape is (3, 3) for the example: 3 envs selected
+            >>> prims.get_world_scales(indices=np.array([0, 2, 4]))
+            [[1. 1. 1.]
+             [1. 1. 1.]
+             [1. 1. 1.]]
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         scales = np.zeros(shape=(indices.shape[0], 3), dtype="float32")
@@ -723,17 +1030,28 @@ class XFormPrimView(object):
         scales: Optional[Union[np.ndarray, torch.Tensor, wp.array]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
     ) -> None:
-        """Sets prim scales in the view with respect to the local frame (the prim's parent frame).
+        """Set prim scales in the view with respect to the local frame (the prim's parent frame)
 
         Args:
             scales (Optional[Union[np.ndarray, torch.Tensor, wp.array]]): scales to be applied to the prim's dimensions in the view.
                                                                 shape is (M, 3).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-        """
 
+        Example:
+
+        .. code-block:: python
+
+            >>> # set the scale for all prims. Since there are 5 envs, the scale is repeated 5 times
+            >>> scales = np.tile(np.array([1.0, 0.75, 0.5]), (num_envs, 1))
+            >>> prims.set_local_scales(scales)
+            >>>
+            >>> # set the scale for the first, middle and last of the 5 envs
+            >>> scales = np.tile(np.array([1.0, 0.75, 0.5]), (3, 1))
+            >>> prims.set_local_scales(scales, indices=np.array([0, 2, 4]))
+        """
         indices = self._backend_utils.to_list(self._backend_utils.resolve_indices(indices, self.count, self._device))
         read_idx = 0
         scales = self._backend_utils.to_list(scales)
@@ -750,16 +1068,36 @@ class XFormPrimView(object):
     def get_local_scales(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
-        """Gets prim scales in the view with respect to the local frame (the parent's frame).
+        """Get prim scales in the view with respect to the local frame (the parent's frame).
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
 
         Returns:
             Union[np.ndarray, torch.Tensor, wp.indexedarray]: scales applied to the prim's dimensions in the local frame. shape is (M, 3).
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # get all prims scales with respect to the local frame.
+            >>> # Returned shape is (5, 3) for the example: 5 envs
+            >>> prims.get_local_scales()
+            [[1. 1. 1.]
+             [1. 1. 1.]
+             [1. 1. 1.]
+             [1. 1. 1.]
+             [1. 1. 1.]]
+            >>>
+            >>> # get only the prims scales with respect to the local frame for the first, middle and last of the 5 envs.
+            >>> # Returned shape is (3, 3) for the example: 3 envs selected
+            >>> prims.get_local_scales(indices=np.array([0, 2, 4]))
+            [[1. 1. 1.]
+             [1. 1. 1.]
+             [1. 1. 1.]]
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         scales = np.zeros(shape=(indices.shape[0], 3), dtype="float32")
@@ -772,17 +1110,24 @@ class XFormPrimView(object):
         return scales
 
     def is_valid(self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None) -> bool:
-        """
+        """Check that all prims have a valid USD Prim
+
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
 
         Returns:
             bool: True if all prim paths specified in the view correspond to a valid prim in stage. False otherwise.
-        """
 
+        Example:
+
+        .. code-block:: python
+
+            >>> prims.is_valid()
+            True
+        """
         indices = self._backend_utils.to_list(self._backend_utils.resolve_indices(indices, self.count, self._device))
         result = True
         indices = self._backend_utils.to_list(indices)

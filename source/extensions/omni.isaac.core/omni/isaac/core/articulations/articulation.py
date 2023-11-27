@@ -65,7 +65,7 @@ class Articulation(_SinglePrimWrapper):
         >>>
         >>> # wrap the prim as an articulation
         >>> prim = Articulation(prim_path=prim_path, name="franka_panda")
-        >>> print(prim)
+        >>> prim
         <omni.isaac.core.articulations.articulation.Articulation object at 0x7fdd165bf520>
     """
 
@@ -671,7 +671,7 @@ class Articulation(_SinglePrimWrapper):
         .. code-block:: python
 
             >>> state = prim.get_joints_default_state()
-            >>> print(state)
+            >>> state
             <omni.isaac.core.utils.types.JointsState object at 0x7f04a0061240>
             >>>
             >>> state.positions
@@ -735,7 +735,7 @@ class Articulation(_SinglePrimWrapper):
         .. code-block:: python
 
             >>> state = prim.get_joints_state()
-            >>> print(state)
+            >>> state
             <omni.isaac.core.utils.types.JointsState object at 0x7f02f6df57b0>
             >>>
             >>> state.positions

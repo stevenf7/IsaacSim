@@ -92,7 +92,7 @@ class ArticulationView(XFormPrimView):
         >>>
         >>> # wrap all articulations
         >>> prims = ArticulationView(prim_paths_expr="/World/envs/env.*/panda", name="franka_panda_view")
-        >>> print(prims)
+        >>> prims
         <omni.isaac.core.articulations.articulation_view.ArticulationView object at 0x7ff174054b20>
     """
 
@@ -1627,6 +1627,10 @@ class ArticulationView(XFormPrimView):
     ) -> None:
         """Set poses of prims in the view with respect to the world's frame.
 
+        .. warning::
+
+            This method will change (teleport) the prim poses immediately to the indicated value
+
         Args:
             positions (Optional[Union[np.ndarray, torch.Tensor, wp.array]], optional): positions in the world frame of the prim. shape is (M, 3).
                                                                              Defaults to None, which means left unchanged.
@@ -1637,6 +1641,10 @@ class ArticulationView(XFormPrimView):
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
+
+        .. hint::
+
+            This method belongs to the methods used to set the prim state
 
         Example:
 
@@ -1819,6 +1827,10 @@ class ArticulationView(XFormPrimView):
     ) -> None:
         """Set prim poses in the view with respect to the local frame (the prim's parent frame).
 
+        .. warning::
+
+            This method will change (teleport) the prim poses immediately to the indicated value
+
         Args:
             translations (Optional[Union[np.ndarray, torch.Tensor, wp.array]], optional):
                                                           translations in the local frame of the prims
@@ -1832,6 +1844,10 @@ class ArticulationView(XFormPrimView):
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
+
+        .. hint::
+
+            This method belongs to the methods used to set the prim state
 
         Example:
 
