@@ -3,10 +3,10 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.0"
+version = "1.1.0"
 category = "Simulation"
-title = "Isaac Sim URDF Importer"
-description = "URDF Importer for Isaac Sim"
+title = "[Deprecated] Isaac Sim URDF Importer"
+description = "This extension has been deprecated. Please use omni.importer.urdf instead."
 authors = ["Isaac Sim Team"]
 repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.urdf"
 keywords = ["isaac", "urdf", "import"]
