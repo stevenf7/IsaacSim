@@ -60,10 +60,10 @@ dependencies = [
     "omni.kit.ui_test",
     "omni.usd",
     "omni.kit.clipboard",
+    "omni.kit.browser.asset",
 ]
 
 args = [
-    "--no-window",
     "--/app/window/dpiScaleOverride=1.0",
     "--/app/window/scaleToMonitor=false",
     "--/app/menu/legacy_mode=false",
