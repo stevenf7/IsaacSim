@@ -1,9 +1,12 @@
 # Changelog
 
+## [1.14.3] 2023-11-27
+### Added
+- Added unit tests for checking the sensor and environment menu items
+
 ## [1.14.2] 2023-11-27
 ### Fixed
 - updated tests to renamed nova carter asset 
-
 
 ## [1.14.1] 2023-11-21
 ### Added

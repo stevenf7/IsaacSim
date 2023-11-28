@@ -43,7 +43,6 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
 
         # add in carter (from nucleus)
         self.usd_path = self._assets_root_path + "/Isaac/Robots/Carter/nova_carter.usd"
-        self.usd_path = "omniverse://isaac-dev.ov.nvidia.com/Isaac/Robots/Carter/nova_carter.usd"
         (result, error) = await open_stage_async(self.usd_path)
 
         # Make sure the stage loaded
