@@ -10,7 +10,6 @@
 // clang-format off
 #include "UsdPCH.h"
 // clang-format on
-
 #include "Ros2Humble.h"
 #include "pxr/usd/usdPhysics/joint.h"
 #include "sensor_msgs/image_encodings.hpp"
@@ -19,10 +18,8 @@
 
 #include <rcl/rcl.h>
 #include <sensor_msgs/msg/camera_info.h>
-
-
 // Clock message
-Ros2ClockMessageHumble::Ros2ClockMessageHumble()
+Ros2ClockMessageHumble::Ros2ClockMessageHumble() : Ros2BackendHumble("rosgraph_msgs", "msg", "Clock")
 {
     msg = rosgraph_msgs__msg__Clock__create();
 }
@@ -62,7 +59,7 @@ void Ros2ClockMessageHumble::setData(double& timeStamp)
 
 
 // IMU message
-Ros2ImuMessageHumble::Ros2ImuMessageHumble()
+Ros2ImuMessageHumble::Ros2ImuMessageHumble() : Ros2BackendHumble("sensor_msgs", "msg", "Imu")
 {
     msg = sensor_msgs__msg__Imu__create();
 }
@@ -159,7 +156,7 @@ Ros2ImuMessageHumble::~Ros2ImuMessageHumble()
 
 
 // Camera Info Message
-Ros2CameraInfoMessageHumble::Ros2CameraInfoMessageHumble()
+Ros2CameraInfoMessageHumble::Ros2CameraInfoMessageHumble() : Ros2BackendHumble("sensor_msgs", "msg", "CameraInfo")
 {
     msg = sensor_msgs__msg__CameraInfo__create();
 }
@@ -244,8 +241,6 @@ void Ros2CameraInfoMessageHumble::fillRectificationArray(const double r_arr[], c
     sensor_msgs__msg__CameraInfo* camInfo_msg = static_cast<sensor_msgs__msg__CameraInfo*>(msg);
     memcpy(camInfo_msg->r, r_arr, numElem * sizeof(double));
 }
-
-
 Ros2CameraInfoMessageHumble::~Ros2CameraInfoMessageHumble()
 {
     if (!msg)
@@ -258,7 +253,7 @@ Ros2CameraInfoMessageHumble::~Ros2CameraInfoMessageHumble()
 
 
 // Image message
-Ros2ImageMessageHumble::Ros2ImageMessageHumble()
+Ros2ImageMessageHumble::Ros2ImageMessageHumble() : Ros2BackendHumble("sensor_msgs", "msg", "Image")
 {
     msg = sensor_msgs__msg__Image__create();
 }
@@ -276,7 +271,6 @@ void Ros2ImageMessageHumble::fillHeader(const double timestamp, const std::strin
     sensor_msgs__msg__Image* img_msg = static_cast<sensor_msgs__msg__Image*>(msg);
     Ros2BackendHumble::set_header(frame_id, static_cast<int64_t>(timestamp * 1e9), img_msg->header);
 }
-
 
 void Ros2ImageMessageHumble::generateBuffer(const uint32_t height, const uint32_t width, const std::string& encoding)
 {
@@ -316,6 +310,7 @@ Ros2ImageMessageHumble::~Ros2ImageMessageHumble()
     if (!msg)
         return;
     sensor_msgs__msg__Image* img_msg = static_cast<sensor_msgs__msg__Image*>(msg);
+
     // Lifetime of memory is not managed by the message as we use a std vector
     img_msg->data.size = 0;
     img_msg->data.capacity = 0;
@@ -336,6 +331,7 @@ struct Bbox2DData
 };
 
 Ros2BoundingBox2DMessageHumble::Ros2BoundingBox2DMessageHumble()
+    : Ros2BackendHumble("vision_msgs", "msg", "Detection2DArray")
 {
     msg = vision_msgs__msg__Detection2DArray__create();
 }
@@ -410,6 +406,7 @@ struct Bbox3DData
 
 // 3D Detection array
 Ros2BoundingBox3DMessageHumble::Ros2BoundingBox3DMessageHumble()
+    : Ros2BackendHumble("vision_msgs", "msg", "Detection3DArray")
 {
     msg = vision_msgs__msg__Detection3DArray__create();
 }
@@ -486,7 +483,7 @@ Ros2BoundingBox3DMessageHumble::~Ros2BoundingBox3DMessageHumble()
 
 
 // Odom message implementations
-Ros2OdomMessageHumble::Ros2OdomMessageHumble()
+Ros2OdomMessageHumble::Ros2OdomMessageHumble() : Ros2BackendHumble("nav_msgs", "msg", "Odometry")
 {
     msg = nav_msgs__msg__Odometry__create();
 }
@@ -557,7 +554,7 @@ Ros2OdomMessageHumble::~Ros2OdomMessageHumble()
 
 
 // Raw Tf tree message
-Ros2RawTfTreeMessageHumble::Ros2RawTfTreeMessageHumble()
+Ros2RawTfTreeMessageHumble::Ros2RawTfTreeMessageHumble() : Ros2BackendHumble("tf2_msgs", "msg", "TFMessage")
 {
     msg = tf2_msgs__msg__TFMessage__create();
 }
@@ -599,7 +596,7 @@ Ros2RawTfTreeMessageHumble::~Ros2RawTfTreeMessageHumble()
 
 // Sematic label (string type message)
 
-Ros2SemanticLabelMessageHumble::Ros2SemanticLabelMessageHumble()
+Ros2SemanticLabelMessageHumble::Ros2SemanticLabelMessageHumble() : Ros2BackendHumble("std_msgs", "msg", "String")
 {
     msg = std_msgs__msg__String__create();
 }
@@ -625,7 +622,7 @@ Ros2SemanticLabelMessageHumble::~Ros2SemanticLabelMessageHumble()
 
 
 // Joint state
-Ros2JointStateMessageHumble::Ros2JointStateMessageHumble()
+Ros2JointStateMessageHumble::Ros2JointStateMessageHumble() : Ros2BackendHumble("sensor_msgs", "msg", "JointState")
 {
     msg = sensor_msgs__msg__JointState__create();
 }
@@ -772,6 +769,7 @@ void Ros2JointStateMessageHumble::getData(std::vector<char*>& jointNames,
         jointNames.push_back(name);
     }
 
+
     // resize for the array was called before fillData in the subscriber callback
     if (jointState_msg->position.size == num_actuators)
     {
@@ -784,7 +782,8 @@ void Ros2JointStateMessageHumble::getData(std::vector<char*>& jointNames,
     if (jointState_msg->effort.size == num_actuators)
     {
         std::memcpy(effortCommand, jointState_msg->effort.data, num_actuators * sizeof(double));
-    }
+    } // resize for the array was called before fillData in the subscriber callback
+
 
     timeStamp = jointState_msg->header.stamp.sec;
 
@@ -802,7 +801,7 @@ Ros2JointStateMessageHumble::~Ros2JointStateMessageHumble()
 
 
 // point cloud 2 message
-Ros2PointCloudMessageHumble::Ros2PointCloudMessageHumble()
+Ros2PointCloudMessageHumble::Ros2PointCloudMessageHumble() : Ros2BackendHumble("sensor_msgs", "msg", "PointCloud2")
 {
     msg = sensor_msgs__msg__PointCloud2__create();
 }
@@ -869,7 +868,7 @@ Ros2PointCloudMessageHumble::~Ros2PointCloudMessageHumble()
 
 
 // Laser scan message
-Ros2LaserScanMessageHumble::Ros2LaserScanMessageHumble()
+Ros2LaserScanMessageHumble::Ros2LaserScanMessageHumble() : Ros2BackendHumble("sensor_msgs", "msg", "LaserScan")
 {
     msg = sensor_msgs__msg__LaserScan__create();
 }
@@ -930,7 +929,7 @@ Ros2LaserScanMessageHumble::~Ros2LaserScanMessageHumble()
 //     geometry_msgs__msg__Transform transform;
 // };
 
-Ros2TfTreeMessageHumble::Ros2TfTreeMessageHumble()
+Ros2TfTreeMessageHumble::Ros2TfTreeMessageHumble() : Ros2BackendHumble("sensor_msgs", "msg", "TFMessage")
 {
     msg = tf2_msgs__msg__TFMessage__create();
     ;
@@ -974,7 +973,7 @@ Ros2TfTreeMessageHumble::~Ros2TfTreeMessageHumble()
 
 
 // twist message
-Ros2TwistMessageHumble::Ros2TwistMessageHumble()
+Ros2TwistMessageHumble::Ros2TwistMessageHumble() : Ros2BackendHumble("geometry_msgs", "msg", "Twist")
 {
     msg = geometry_msgs__msg__Twist__create();
 }

@@ -19,7 +19,7 @@
 #include <rcl/rcl.h>
 #include <sensor_msgs/msg/camera_info.h>
 // Clock message
-Ros2ClockMessageFoxy::Ros2ClockMessageFoxy()
+Ros2ClockMessageFoxy::Ros2ClockMessageFoxy() : Ros2BackendFoxy("rosgraph_msgs", "msg", "Clock")
 {
     msg = rosgraph_msgs__msg__Clock__create();
 }
@@ -59,7 +59,7 @@ void Ros2ClockMessageFoxy::setData(double& timeStamp)
 
 
 // IMU message
-Ros2ImuMessageFoxy::Ros2ImuMessageFoxy()
+Ros2ImuMessageFoxy::Ros2ImuMessageFoxy() : Ros2BackendFoxy("sensor_msgs", "msg", "Imu")
 {
     msg = sensor_msgs__msg__Imu__create();
 }
@@ -156,7 +156,7 @@ Ros2ImuMessageFoxy::~Ros2ImuMessageFoxy()
 
 
 // Camera Info Message
-Ros2CameraInfoMessageFoxy::Ros2CameraInfoMessageFoxy()
+Ros2CameraInfoMessageFoxy::Ros2CameraInfoMessageFoxy() : Ros2BackendFoxy("sensor_msgs", "msg", "CameraInfo")
 {
     msg = sensor_msgs__msg__CameraInfo__create();
 }
@@ -253,7 +253,7 @@ Ros2CameraInfoMessageFoxy::~Ros2CameraInfoMessageFoxy()
 
 
 // Image message
-Ros2ImageMessageFoxy::Ros2ImageMessageFoxy()
+Ros2ImageMessageFoxy::Ros2ImageMessageFoxy() : Ros2BackendFoxy("sensor_msgs", "msg", "Image")
 {
     msg = sensor_msgs__msg__Image__create();
 }
@@ -330,7 +330,7 @@ struct Bbox2DData
     float occlusionRatio;
 };
 
-Ros2BoundingBox2DMessageFoxy::Ros2BoundingBox2DMessageFoxy()
+Ros2BoundingBox2DMessageFoxy::Ros2BoundingBox2DMessageFoxy() : Ros2BackendFoxy("vision_msgs", "msg", "Detection2DArray")
 {
     msg = vision_msgs__msg__Detection2DArray__create();
 }
@@ -403,7 +403,7 @@ struct Bbox3DData
 };
 
 // 3D Detection array
-Ros2BoundingBox3DMessageFoxy::Ros2BoundingBox3DMessageFoxy()
+Ros2BoundingBox3DMessageFoxy::Ros2BoundingBox3DMessageFoxy() : Ros2BackendFoxy("vision_msgs", "msg", "Detection3DArray")
 {
     msg = vision_msgs__msg__Detection3DArray__create();
 }
@@ -479,7 +479,7 @@ Ros2BoundingBox3DMessageFoxy::~Ros2BoundingBox3DMessageFoxy()
 
 
 // Odom message implementations
-Ros2OdomMessageFoxy::Ros2OdomMessageFoxy()
+Ros2OdomMessageFoxy::Ros2OdomMessageFoxy() : Ros2BackendFoxy("nav_msgs", "msg", "Odometry")
 {
     msg = nav_msgs__msg__Odometry__create();
 }
@@ -550,7 +550,7 @@ Ros2OdomMessageFoxy::~Ros2OdomMessageFoxy()
 
 
 // Raw Tf tree message
-Ros2RawTfTreeMessageFoxy::Ros2RawTfTreeMessageFoxy()
+Ros2RawTfTreeMessageFoxy::Ros2RawTfTreeMessageFoxy() : Ros2BackendFoxy("tf2_msgs", "msg", "TFMessage")
 {
     msg = tf2_msgs__msg__TFMessage__create();
 }
@@ -592,7 +592,7 @@ Ros2RawTfTreeMessageFoxy::~Ros2RawTfTreeMessageFoxy()
 
 // Sematic label (string type message)
 
-Ros2SemanticLabelMessageFoxy::Ros2SemanticLabelMessageFoxy()
+Ros2SemanticLabelMessageFoxy::Ros2SemanticLabelMessageFoxy() : Ros2BackendFoxy("std_msgs", "msg", "String")
 {
     msg = std_msgs__msg__String__create();
 }
@@ -618,7 +618,7 @@ Ros2SemanticLabelMessageFoxy::~Ros2SemanticLabelMessageFoxy()
 
 
 // Joint state
-Ros2JointStateMessageFoxy::Ros2JointStateMessageFoxy()
+Ros2JointStateMessageFoxy::Ros2JointStateMessageFoxy() : Ros2BackendFoxy("sensor_msgs", "msg", "JointState")
 {
     msg = sensor_msgs__msg__JointState__create();
 }
@@ -797,7 +797,7 @@ Ros2JointStateMessageFoxy::~Ros2JointStateMessageFoxy()
 
 
 // point cloud 2 message
-Ros2PointCloudMessageFoxy::Ros2PointCloudMessageFoxy()
+Ros2PointCloudMessageFoxy::Ros2PointCloudMessageFoxy() : Ros2BackendFoxy("sensor_msgs", "msg", "PointCloud2")
 {
     msg = sensor_msgs__msg__PointCloud2__create();
 }
@@ -817,8 +817,7 @@ void Ros2PointCloudMessageFoxy::fillMetadata(const std::string& frameId,
     sensor_msgs__msg__PointCloud2* point_cloud_msg = static_cast<sensor_msgs__msg__PointCloud2*>(msg);
 
     point_cloud_msg->is_dense = true;
-    Ros2BackendFoxy::set_header(
-        frameId, static_cast<int64_t>(static_cast<int64_t>(timeStamp * 1e9)), point_cloud_msg->header);
+    Ros2BackendFoxy::set_header(frameId, static_cast<int64_t>(timeStamp * 1e9), point_cloud_msg->header);
     point_cloud_msg->height = 1;
     point_cloud_msg->point_step = static_cast<uint32_t>(sizeof(pxr::GfVec3f));
     point_cloud_msg->width = static_cast<uint32_t>(width);
@@ -865,7 +864,7 @@ Ros2PointCloudMessageFoxy::~Ros2PointCloudMessageFoxy()
 
 
 // Laser scan message
-Ros2LaserScanMessageFoxy::Ros2LaserScanMessageFoxy()
+Ros2LaserScanMessageFoxy::Ros2LaserScanMessageFoxy() : Ros2BackendFoxy("sensor_msgs", "msg", "LaserScan")
 {
     msg = sensor_msgs__msg__LaserScan__create();
 }
@@ -926,7 +925,7 @@ Ros2LaserScanMessageFoxy::~Ros2LaserScanMessageFoxy()
 //     geometry_msgs__msg__Transform transform;
 // };
 
-Ros2TfTreeMessageFoxy::Ros2TfTreeMessageFoxy()
+Ros2TfTreeMessageFoxy::Ros2TfTreeMessageFoxy() : Ros2BackendFoxy("sensor_msgs", "msg", "TFMessage")
 {
     msg = tf2_msgs__msg__TFMessage__create();
     ;
@@ -970,7 +969,7 @@ Ros2TfTreeMessageFoxy::~Ros2TfTreeMessageFoxy()
 
 
 // twist message
-Ros2TwistMessageFoxy::Ros2TwistMessageFoxy()
+Ros2TwistMessageFoxy::Ros2TwistMessageFoxy() : Ros2BackendFoxy("geometry_msgs", "msg", "Twist")
 {
     msg = geometry_msgs__msg__Twist__create();
 }

@@ -37,6 +37,7 @@
 class Ros2BackendFoxy : public Ros2Backend
 {
 public:
+    Ros2BackendFoxy(std::string pkgName, std::string msgSubfolder, std::string msgName);
     void set_timestamp(const int64_t nanoseconds, builtin_interfaces__msg__Time& time);
     void set_string(const std::string& input, rosidl_runtime_c__String& output);
     void set_header(const std::string& frame_id, const int64_t nanoseconds, std_msgs__msg__Header& header);

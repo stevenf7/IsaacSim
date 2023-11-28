@@ -13,7 +13,7 @@
 // clang-format on
 
 #include <omni/isaac/dynamic_control/DynamicControl.h>
-// #include <omni/isaac/utils/LibraryLoader.h>
+#include <omni/isaac/utils/LibraryLoader.h>
 #include <omni/isaac/utils/Math.h>
 
 #include <memory>
@@ -69,6 +69,41 @@ public:
 
 class Ros2Backend
 {
+public:
+    Ros2Backend(std::string pkgName, std::string msgSubfolder, std::string msgName)
+        : mPkgName(pkgName), mMsgSubfolder(msgSubfolder), mMsgName(msgName)
+    {
+        mGeneratorLibrary =
+            std::make_shared<omni::isaac::utils::LibraryLoader>(std::string(mPkgName) + "__rosidl_generator_c");
+        mTypesupportLibrary =
+            std::make_shared<omni::isaac::utils::LibraryLoader>(std::string(mPkgName) + "__rosidl_typesupport_c");
+    }
+    void* getTypeSupportHandleDynamic()
+    {
+        return mTypesupportLibrary->callSymbol<void*>("rosidl_typesupport_c__get_message_type_support_handle__" +
+                                                      std::string(mPkgName) + "__" + std::string(mMsgSubfolder) + "__" +
+                                                      std::string(mMsgName));
+    }
+    void* create()
+    {
+        return mGeneratorLibrary->callSymbol<void*>(std::string(mPkgName) + "__" + std::string(mMsgSubfolder) + "__" +
+                                                    std::string(mMsgName) + "__create");
+    }
+    template <typename T>
+    void destroy(T msg)
+    {
+        if (!msg)
+            return;
+        mGeneratorLibrary->callSymbolWithArg<void>(
+            std::string(mPkgName) + "__" + std::string(mMsgSubfolder) + "__" + std::string(mMsgName) + "__destroy", msg);
+    }
+
+protected:
+    std::string mPkgName;
+    std::string mMsgSubfolder;
+    std::string mMsgName;
+    std::shared_ptr<omni::isaac::utils::LibraryLoader> mTypesupportLibrary;
+    std::shared_ptr<omni::isaac::utils::LibraryLoader> mGeneratorLibrary;
 };
 
 
@@ -264,7 +299,6 @@ public:
 class Ros2Factory
 {
 public:
-    // virtual void* GetTypeSupportHandle(const char* pkgName, const char* msgSubfolder, const char* msgName);
     virtual std::shared_ptr<Ros2HandleBase> CreateHandle() = 0;
     virtual std::shared_ptr<Ros2NodeBase> CreateNode(const char* name, const char* name_space, Ros2HandleBase* handle) = 0;
     virtual std::shared_ptr<Ros2Publisher> CreatePublisher(Ros2NodeBase* node,
@@ -306,6 +340,4 @@ public:
     virtual bool validateTopic(const std::string& topicName) = 0;
     virtual bool validateNodeNamespace(const std::string& nodeNamespace) = 0;
     virtual bool validateNodeName(const std::string& nodeName) = 0;
-    // protected:
-    // omni::isaac::utils::MultiLibraryLoader mTypesupportLibraries;
 };
