@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.0.4] - 2023-11-25
+### Fixed
+- Add missing worker thread parsing from sim config
+
 ## [3.0.3] - 2023-11-27
 ### Changed
 - Add examples to docstrings, fix type annotations, and improve description.

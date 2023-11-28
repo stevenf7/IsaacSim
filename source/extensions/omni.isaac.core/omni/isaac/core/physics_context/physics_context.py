@@ -148,6 +148,9 @@ class PhysicsContext(object):
             else:
                 self._carb_settings.set_bool("/physics/suppressReadback", self._use_gpu_pipeline)
 
+            if "worker_thread_count" in sim_params.keys():
+                self._carb_settings.set_int("/persistent/physics/numThreads", sim_params["worker_thread_count"])
+
             if "use_fabric" in sim_params.keys() and sim_params["use_fabric"]:
                 self._use_fabric = True
                 self.enable_fabric(True)
