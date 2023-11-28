@@ -230,6 +230,19 @@ class Extension(omni.ext.IExt):
             category=BRIDGE_NAME,
         )
 
+        rep.writers.register_node_writer(
+            name=f"RtxLidar{BRIDGE_PREFIX}PublishPointCloudBuffer",
+            node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
+            annotators=[
+                "RtxSensorCpu" + "IsaacCreateRTXLidarScanBuffer",
+                "PostProcessDispatchIsaacSimulationGate",
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
+                ),
+            ],
+            category=BRIDGE_NAME,
+        )
+
         # RTX Radar PCL publisher
         rep.writers.register_node_writer(
             name=f"RtxRadar{BRIDGE_PREFIX}PublishPointCloud",

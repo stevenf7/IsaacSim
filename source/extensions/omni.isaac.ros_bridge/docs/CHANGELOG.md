@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.15.0] - 2023-11-27
+### Added
+- Option to publish a full scan from RTX lidar
+
 ## [1.14.12] - 2023-10-20
 ### Fixed
 - Logging levels for roscore helper
