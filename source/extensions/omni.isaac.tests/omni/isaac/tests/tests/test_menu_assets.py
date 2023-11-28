@@ -128,8 +128,6 @@ class TestMenuAssets(omni.kit.test.AsyncTestCase):
         self.assertEqual(len(failed_robots), 0)
 
     async def test_apriltag_menu(self):
-        ## check everything under "Robot"
-
         apriltag_root_path = "Create/Isaac/April Tag"
 
         def get_menu_path(d, path, result, root_path):
@@ -168,3 +166,130 @@ class TestMenuAssets(omni.kit.test.AsyncTestCase):
         )
 
         await omni.kit.app.get_app().next_update_async()
+
+    async def test_loading_environment(self):
+
+        self.robot_menu_dict = self.menu_dict["Create"]["Isaac"]["Environments"]
+        ## check everything under "Robot"
+
+        environment_root_path = "Create/Isaac/Environments"
+
+        def get_menu_path(d, path, result, root_path):
+
+            for key, value in d.items():
+                if key != "_":
+                    new_path = path + "/" + str(key)
+                if isinstance(value, dict):
+                    get_menu_path(value, new_path, result, root_path)
+                elif isinstance(value, str):
+                    result.append(root_path + path + "/" + str(value))
+                elif isinstance(value, list):
+                    for environment in value:
+                        result.append(root_path + path + "/" + str(environment))
+            return result
+
+        empty_list = []
+        skip_list = []
+        failed_environments = []
+
+        empty_path = ""
+        robot_menu_list = get_menu_path(self.robot_menu_dict, empty_path, empty_list, environment_root_path)
+
+        test_list = robot_menu_list
+
+        print(test_list)
+
+        for test_path in test_list:
+            print(test_path)
+            if test_path in skip_list:
+                print("skipping ", test_path)
+                continue
+
+            clear_stage()
+            await omni.kit.app.get_app().next_update_async()
+            await omni.kit.app.get_app().next_update_async()
+            has_robot = False
+            await menu_click(test_path, human_delay_speed=10)
+            for i in range(20):
+                await omni.kit.app.get_app().next_update_async()
+
+            # # waiting for stage to load
+            while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+                await omni.kit.app.get_app().next_update_async()
+
+            # count the numver of prims in the stage
+            num_prims = 0
+            for prim in traverse_stage():
+                num_prims += 1
+
+            if num_prims == 0:
+                print(f"failed to find any prims at {test_path}")
+                failed_environments.append(test_path)
+
+        print(failed_environments)
+
+        # if failed_environments array has 0 entries, then test passed
+        self.assertEqual(len(failed_environments), 0)
+
+    async def test_loading_sensors(self):
+        self.robot_menu_dict = self.menu_dict["Create"]["Isaac"]["Sensors"]
+        ## check everything under "Sensors"
+
+        sensor_root_path = "Create/Isaac/Sensors"
+
+        def get_menu_path(d, path, result, root_path):
+
+            for key, value in d.items():
+                if key != "_":
+                    new_path = path + "/" + str(key)
+                if isinstance(value, dict):
+                    get_menu_path(value, new_path, result, root_path)
+                elif isinstance(value, str):
+                    result.append(root_path + path + "/" + str(value))
+                elif isinstance(value, list):
+                    for sensor in value:
+                        result.append(root_path + path + "/" + str(sensor))
+            return result
+
+        empty_list = []
+        skip_list = []
+        failed_sensors = []
+
+        empty_path = ""
+        robot_menu_list = get_menu_path(self.robot_menu_dict, empty_path, empty_list, sensor_root_path)
+
+        test_list = robot_menu_list
+
+        print(test_list)
+
+        for test_path in test_list:
+            print(test_path)
+            if test_path in skip_list:
+                print("skipping ", test_path)
+                continue
+
+            clear_stage()
+            await omni.kit.app.get_app().next_update_async()
+            await omni.kit.app.get_app().next_update_async()
+            has_robot = False
+            await menu_click(test_path, human_delay_speed=10)
+            for i in range(20):
+                await omni.kit.app.get_app().next_update_async()
+
+            # # waiting for stage to load
+            while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+                await omni.kit.app.get_app().next_update_async()
+
+            num_prims = 0
+            # count the number of prims on the stage, shoudl be greater than 1
+            for prim in traverse_stage():
+                num_prims += 1
+
+            if num_prims == 0:
+                print(f"failed to find any prims at {test_path}")
+                failed_sensors.append(test_path)
+
+        print(failed_sensors)
+
+        # if failed_sensors array has 0 entries, then test passed
+        self.assertEqual(len(failed_sensors), 0)
