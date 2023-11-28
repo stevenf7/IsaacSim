@@ -2,8 +2,8 @@
 
 ## [2.4.0] - 2023-11-27
 ### Added
+- Option to publish a full scan from RTX lidar
 - APIs to dynamically load ROS2 libraries at runtime depending on what messages are being created. Will only be used for select non-default ROS 2 messages. 
-
 
 ## [2.3.10] - 2023-11-20
 ### Fixed

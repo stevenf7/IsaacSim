@@ -84,10 +84,15 @@ class OgnROS2RtxLidarHelper:
                 writer = None
                 try:
                     if sensor_type == "laser_scan":
+                        if db.inputs.fullScan:
+                            carb.log_warn("fullScan does not have an effect with the laser_scan setting")
                         writer = rep.writers.get("RtxLidar" + "ROS2PublishLaserScan")
 
                     elif sensor_type == "point_cloud":
-                        writer = rep.writers.get("RtxLidar" + "ROS2PublishPointCloud")
+                        if db.inputs.fullScan:
+                            writer = rep.writers.get("RtxLidar" + "ROS2PublishPointCloudBuffer")
+                        else:
+                            writer = rep.writers.get("RtxLidar" + "ROS2PublishPointCloud")
 
                     else:
                         carb.log_error("type is not supported")
