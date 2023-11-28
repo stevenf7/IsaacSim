@@ -11,6 +11,13 @@
 
 #include <include/Ros2Macros.h>
 #include <rcl/rcl.h>
+
+Ros2BackendHumble::Ros2BackendHumble(std::string pkgName, std::string msgSubfolder, std::string msgName)
+    : Ros2Backend(pkgName, msgSubfolder, msgName)
+{
+}
+
+
 void Ros2BackendHumble::set_timestamp(const int64_t nanoseconds, builtin_interfaces__msg__Time& time)
 {
     // publish the input string to topic

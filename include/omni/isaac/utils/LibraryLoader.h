@@ -10,7 +10,6 @@
 #include <carb/extras/Library.h>
 #include <carb/logging/Log.h>
 
-// #include <dlfcn.h>
 #include <vector>
 namespace omni
 {
@@ -72,6 +71,36 @@ public:
     T getSymbol(std::string symbol)
     {
         return carb::extras::getLibrarySymbol<T>(loadedLibrary, symbol.c_str());
+    }
+
+    template <typename T>
+    T callSymbol(std::string symbol)
+    {
+        typedef T binding();
+        void* loadedSymbol = getSymbol<void*>(symbol.c_str());
+        if (loadedSymbol == nullptr)
+        {
+            CARB_LOG_ERROR("%s does not contain %s", loadedLibraryFile.c_str(), symbol.c_str());
+            return nullptr;
+        }
+        binding* calledSymbol = reinterpret_cast<binding*>(loadedSymbol);
+
+        return calledSymbol();
+    }
+
+    template <typename T, typename... Arguments>
+    T callSymbolWithArg(std::string symbol, Arguments... args)
+    {
+        typedef T binding(Arguments...);
+        void* loadedSymbol = getSymbol<void*>(symbol.c_str());
+        if (loadedSymbol == nullptr)
+        {
+            CARB_LOG_ERROR("%s does not contain %s", loadedLibraryFile.c_str(), symbol.c_str());
+        }
+
+        binding* calledSymbol = reinterpret_cast<binding*>(loadedSymbol);
+
+        return calledSymbol(args...);
     }
 
 

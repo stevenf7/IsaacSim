@@ -13,20 +13,6 @@
 
 #include <carb/logging/Log.h>
 
-// void* Ros2FactoryFoxy::GetTypeSupportHandle(const char* pkgName, const char* msgSubfolder, const char* msgName)
-// {
-//     auto lib = mTypesupportLibraries.LoadLibrary(std::string(pkgName) + "__rosidl_typesupport_c");
-//     typedef rosidl_message_type_support_t* typesupport_binding();
-//     std::function<typesupport_binding> getTypeSupport;
-//     std::string symbol = "rosidl_typesupport_c__get_message_type_support_handle__" + std::string(pkgName) + "__" +
-//                          std::string(msgSubfolder) + "__" + std::string(msgName);
-//     typesupport_binding* getTypeSupport =
-//         reinterpret_cast<typesupport_binding*>(dlsym(lib->loadedLibrary, symbol.c_str()));
-
-//     return getTypeSupport();
-// }
-
-
 std::shared_ptr<Ros2HandleBase> Ros2FactoryFoxy::CreateHandle()
 {
     return std::make_shared<Ros2HandleFoxy>();

@@ -12,7 +12,6 @@
 class Ros2FactoryFoxy : public Ros2Factory
 {
 public:
-    // virtual void* GetTypeSupportHandle(const char* pkgName, const char* msgSubfolder, const char* msgName);
     virtual std::shared_ptr<Ros2HandleBase> CreateHandle();
     virtual std::shared_ptr<Ros2NodeBase> CreateNode(const char* name, const char* name_space, Ros2HandleBase* handle);
     virtual std::shared_ptr<Ros2Publisher> CreatePublisher(Ros2NodeBase* node,
