@@ -29,6 +29,7 @@ inline void cpyToBuffer(uint8_t* buffer,
                         const cudaMemcpyKind& kind,
                         const cudaStream_t& stream = nullptr)
 {
+
     // Parameter already on host
     {
         LidarParameterType* bufferParam = reinterpret_cast<LidarParameterType*>(buffer);
