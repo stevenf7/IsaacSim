@@ -1,6 +1,9 @@
 # Changelog
 
 ## [3.0.5] - 2023-11-28
+### Fixed
+- Forward the density parameter to the RigidPrimView instance in RigidPrim class constructor
+- Fix argument typo when applying a physics material to a ground plane object
 ### Changed
 - Add examples to docstrings, fix type annotations, and improve description.
   Affected modules: omni.isaac.core.objects (capsule, cone, cuboid, cylinder, sphere, ground_plane)
