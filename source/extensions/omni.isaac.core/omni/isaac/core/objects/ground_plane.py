@@ -289,7 +289,7 @@ class GroundPlane(object):
             >>> plane.apply_physics_material(material)
         """
         self._collision_prim.apply_physics_material(
-            physics_materials=physics_material, weaker_than_descendants=weaker_than_descendants
+            physics_material=physics_material, weaker_than_descendants=weaker_than_descendants
         )
         return
 

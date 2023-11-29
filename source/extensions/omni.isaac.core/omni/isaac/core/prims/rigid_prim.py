@@ -45,6 +45,7 @@ class RigidPrim(_SinglePrimWrapper):
                                                 Defaults to None, which means left unchanged.
         visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
         mass (Optional[float], optional): mass in kg. Defaults to None.
+        density (Optional[float], optional): density. Defaults to None.
         linear_velocity (Optional[np.ndarray], optional): linear velocity in the world frame. Defaults to None.
         angular_velocity (Optional[np.ndarray], optional): angular velocity in the world frame. Defaults to None.
 
@@ -120,6 +121,7 @@ class RigidPrim(_SinglePrimWrapper):
             scales=scale,
             visibilities=visible,
             masses=mass,
+            densities=density,
             linear_velocities=linear_velocity,
             angular_velocities=angular_velocity,
         )
