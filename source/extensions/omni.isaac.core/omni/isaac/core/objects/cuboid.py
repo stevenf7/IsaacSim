@@ -21,22 +21,45 @@ from pxr import Gf, UsdGeom
 
 
 class VisualCuboid(GeometryPrim):
-    """_summary_
+    """High level wrapper to create/encapsulate a visual cuboid
+
+    .. note::
+
+        Visual cuboids (Cube shape) have no collisions (Collider API) or rigid body dynamics (Rigid Body API)
 
     Args:
-        prim_path (str): _description_
-        name (str, optional): _description_. Defaults to "visual_cube".
-        position (Optional[Sequence[float]], optional): _description_. Defaults to None.
-        translation (Optional[Sequence[float]], optional): _description_. Defaults to None.
-        orientation (Optional[Sequence[float]], optional): _description_. Defaults to None.
-        scale (Optional[Sequence[float]], optional): _description_. Defaults to None.
-        visible (Optional[bool], optional): _description_. Defaults to None.
-        color (Optional[np.ndarray], optional): _description_. Defaults to None.
-        size (Optional[float], optional): _description_. Defaults to None.
-        visual_material (Optional[VisualMaterial], optional): _description_. Defaults to None.
+        prim_path (str): prim path of the Prim to encapsulate or create
+        name (str, optional): shortname to be used as a key by Scene class.
+                                Note: needs to be unique if the object is added to the Scene.
+                                Defaults to "visual_cube".
+        position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
+                                                        Defaults to None, which means left unchanged.
+        translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
+                                                        (with respect to its parent prim). shape is (3, ).
+                                                        Defaults to None, which means left unchanged.
+        orientation (Optional[Sequence[float]], optional): quaternion orientation in the world/ local frame of the prim
+                                                        (depends if translation or position is specified).
+                                                        quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                                                        Defaults to None, which means left unchanged.
+        scale (Optional[Sequence[float]], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
+                                                Defaults to None, which means left unchanged.
+        visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
+        color (Optional[np.ndarray], optional): color of the visual shape. Defaults to None, which means 50% gray
+        size (Optional[float], optional): length of each cube edge. Defaults to None.
+        visual_material (Optional[VisualMaterial], optional): visual material to be applied to the held prim.
+                                Defaults to None. If not specified, a default visual material will be added.
 
-    Raises:
-        Exception: _description_
+    Example:
+
+    .. code-block:: python
+
+        >>> from omni.isaac.core.objects import VisualCuboid
+        >>> import numpy as np
+        >>>
+        >>> # create a red visual cube at the given path
+        >>> prim = VisualCuboid(prim_path="/World/Xform/Cube", color=np.array([1.0, 0.0, 0.0]))
+        >>> prim
+        <omni.isaac.core.objects.cuboid.VisualCuboid object at 0x7f12e756fa00>
     """
 
     def __init__(
@@ -96,38 +119,78 @@ class VisualCuboid(GeometryPrim):
         return
 
     def set_size(self, size: float) -> None:
-        """[summary]
+        """Set the length of each cube edge
 
         Args:
-            size (float): [description]
+            size (float): edge length
+
+        Example:
+
+        .. code-block:: python
+
+            >>> prim.set_size(2.0)
         """
         self.geom.CreateSizeAttr(size)
         return
 
     def get_size(self) -> np.ndarray:
-        """[summary]
+        """Get the length of each cube edge
 
         Returns:
-            float: [description]
+            float: edge length
+
+        Example:
+
+        .. code-block:: python
+
+            >>> prim.get_size()
+            1.0
         """
         return self.geom.GetSizeAttr().Get()
 
 
 class FixedCuboid(VisualCuboid):
-    """_summary_
+    """High level wrapper to create/encapsulate a fixed cuboid
+
+    .. note::
+
+        Fixed cuboids (Cube shape) have collisions (Collider API) but no rigid body dynamics (Rigid Body API)
 
     Args:
-        prim_path (str): _description_
-        name (str, optional): _description_. Defaults to "fixed_cube".
-        position (Optional[np.ndarray], optional): _description_. Defaults to None.
-        translation (Optional[np.ndarray], optional): _description_. Defaults to None.
-        orientation (Optional[np.ndarray], optional): _description_. Defaults to None.
-        scale (Optional[np.ndarray], optional): _description_. Defaults to None.
-        visible (Optional[bool], optional): _description_. Defaults to None.
-        color (Optional[np.ndarray], optional): _description_. Defaults to None.
-        size (Optional[float], optional): _description_. Defaults to None.
-        visual_material (Optional[VisualMaterial], optional): _description_. Defaults to None.
-        physics_material (Optional[PhysicsMaterial], optional): _description_. Defaults to None.
+        prim_path (str): prim path of the Prim to encapsulate or create
+        name (str, optional): shortname to be used as a key by Scene class.
+                                Note: needs to be unique if the object is added to the Scene.
+                                Defaults to "fixed_cube".
+        position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
+                                                        Defaults to None, which means left unchanged.
+        translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
+                                                        (with respect to its parent prim). shape is (3, ).
+                                                        Defaults to None, which means left unchanged.
+        orientation (Optional[Sequence[float]], optional): quaternion orientation in the world/ local frame of the prim
+                                                        (depends if translation or position is specified).
+                                                        quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                                                        Defaults to None, which means left unchanged.
+        scale (Optional[Sequence[float]], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
+                                                Defaults to None, which means left unchanged.
+        visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
+        color (Optional[np.ndarray], optional): color of the visual shape. Defaults to None, which means 50% gray
+        size (Optional[float], optional): length of each cube edge. Defaults to None.
+        visual_material (Optional[VisualMaterial], optional): visual material to be applied to the held prim.
+                                Defaults to None. If not specified, a default visual material will be added.
+        physics_material (Optional[PhysicsMaterial], optional): physics material to be applied to the held prim.
+                                Defaults to None. If not specified, a default physics material will be added.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> from omni.isaac.core.objects import FixedCuboid
+        >>> import numpy as np
+        >>>
+        >>> # create a red fixed cube at the given path
+        >>> prim = FixedCuboid(prim_path="/World/Xform/Cube", color=np.array([1.0, 0.0, 0.0]))
+        >>> prim
+        <omni.isaac.core.objects.cuboid.FixedCuboid object at 0x7f7b4d91da80>
     """
 
     def __init__(
@@ -187,24 +250,51 @@ class FixedCuboid(VisualCuboid):
 
 
 class DynamicCuboid(RigidPrim, FixedCuboid):
-    """_summary_
+    """High level wrapper to create/encapsulate a dynamic cuboid
+
+    .. note::
+
+        Dynamic cuboids (Cube shape) have collisions (Collider API) and rigid body dynamics (Rigid Body API)
 
     Args:
-        prim_path (str): _description_
-        name (str, optional): _description_. Defaults to "dynamic_cube".
-        position (Optional[np.ndarray], optional): _description_. Defaults to None.
-        translation (Optional[np.ndarray], optional): _description_. Defaults to None.
-        orientation (Optional[np.ndarray], optional): _description_. Defaults to None.
-        scale (Optional[np.ndarray], optional): _description_. Defaults to None.
-        visible (Optional[bool], optional): _description_. Defaults to None.
-        color (Optional[np.ndarray], optional): _description_. Defaults to None.
-        size (Optional[float], optional): _description_. Defaults to None.
-        visual_material (Optional[VisualMaterial], optional): _description_. Defaults to None.
-        physics_material (Optional[PhysicsMaterial], optional): _description_. Defaults to None.
-        mass (Optional[float], optional): _description_. Defaults to None.
-        density (Optional[float], optional): _description_. Defaults to None.
-        linear_velocity (Optional[Sequence[float]], optional): _description_. Defaults to None.
-        angular_velocity (Optional[Sequence[float]], optional): _description_. Defaults to None.
+        prim_path (str): prim path of the Prim to encapsulate or create
+        name (str, optional): shortname to be used as a key by Scene class.
+                                Note: needs to be unique if the object is added to the Scene.
+                                Defaults to "fixed_cube".
+        position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
+                                                        Defaults to None, which means left unchanged.
+        translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
+                                                        (with respect to its parent prim). shape is (3, ).
+                                                        Defaults to None, which means left unchanged.
+        orientation (Optional[Sequence[float]], optional): quaternion orientation in the world/ local frame of the prim
+                                                        (depends if translation or position is specified).
+                                                        quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                                                        Defaults to None, which means left unchanged.
+        scale (Optional[Sequence[float]], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
+                                                Defaults to None, which means left unchanged.
+        visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
+        color (Optional[np.ndarray], optional): color of the visual shape. Defaults to None, which means 50% gray
+        size (Optional[float], optional): length of each cube edge. Defaults to None.
+        visual_material (Optional[VisualMaterial], optional): visual material to be applied to the held prim.
+                                Defaults to None. If not specified, a default visual material will be added.
+        physics_material (Optional[PhysicsMaterial], optional): physics material to be applied to the held prim.
+                                Defaults to None. If not specified, a default physics material will be added.
+        mass (Optional[float], optional): mass in kg. Defaults to None.
+        density (Optional[float], optional): density. Defaults to None.
+        linear_velocity (Optional[np.ndarray], optional): linear velocity in the world frame. Defaults to None.
+        angular_velocity (Optional[np.ndarray], optional): angular velocity in the world frame. Defaults to None.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> from omni.isaac.core.objects import DynamicCuboid
+        >>> import numpy as np
+        >>>
+        >>> # create a red dynamic cube of mass 1kg at the given path
+        >>> prim = DynamicCuboid(prim_path="/World/Xform/Cube", color=np.array([1.0, 0.0, 0.0]), mass=1.0)
+        >>> prim
+        <omni.isaac.core.objects.cuboid.DynamicCuboid object at 0x7ff14c04d990>
     """
 
     def __init__(

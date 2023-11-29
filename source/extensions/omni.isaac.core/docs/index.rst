@@ -133,13 +133,48 @@ Deformable Material View
     :undoc-members:
     :exclude-members:
 
+|
+
 Objects
 --------------
 
-from omni.isaac.core.objects.cone import DynamicCone, FixedCone, VisualCone
-from omni.isaac.core.objects.cuboid import DynamicCuboid, FixedCuboid, VisualCuboid
-from omni.isaac.core.objects.cylinder import DynamicCylinder, FixedCylinder, VisualCylinder
-from omni.isaac.core.objects.sphere import DynamicSphere, FixedSphere, VisualSphere
+Modules to create/encapsulate visual, fixed, and dynamic shapes (Capsule, Cone, Cuboid, Cylinder, Sphere) as well as ground planes
+
+.. list-table::
+    :header-rows: 1
+
+    * - Type
+      - Classes
+      - Collider API
+      - Rigid Body API
+    * - Visual
+      - :py:class:`omni.isaac.core.objects.VisualCapsule`
+        |br| :py:class:`omni.isaac.core.objects.VisualCone`
+        |br| :py:class:`omni.isaac.core.objects.VisualCuboid`
+        |br| :py:class:`omni.isaac.core.objects.VisualCylinder`
+        |br| :py:class:`omni.isaac.core.objects.VisualSphere`
+      - No
+      - No
+    * - Fixed
+      - :py:class:`omni.isaac.core.objects.FixedCapsule`
+        |br| :py:class:`omni.isaac.core.objects.FixedCone`
+        |br| :py:class:`omni.isaac.core.objects.FixedCuboid`
+        |br| :py:class:`omni.isaac.core.objects.FixedCylinder`
+        |br| :py:class:`omni.isaac.core.objects.FixedSphere`
+        |br|
+        |br| :py:class:`omni.isaac.core.objects.GroundPlane`
+      - Yes
+      - No
+    * - Dynamic
+      - :py:class:`omni.isaac.core.objects.DynamicCapsule`
+        |br| :py:class:`omni.isaac.core.objects.DynamicCone`
+        |br| :py:class:`omni.isaac.core.objects.DynamicCuboid`
+        |br| :py:class:`omni.isaac.core.objects.DynamicCylinder`
+        |br| :py:class:`omni.isaac.core.objects.DynamicSphere`
+      - Yes
+      - Yes
+
+|
 
 Ground Plane
 =============
@@ -150,14 +185,7 @@ Ground Plane
     :undoc-members:
     :exclude-members:
 
-Fixed Capsule
-==============
-
-.. autoclass:: omni.isaac.core.objects.FixedCapsule
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
+|
 
 Visual Capsule
 ==============
@@ -168,23 +196,7 @@ Visual Capsule
     :undoc-members:
     :exclude-members:
 
-Dynamic Capsule
-================
-
-.. autoclass:: omni.isaac.core.objects.DynamicCapsule
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
-
-Fixed Cone
-==========
-
-.. autoclass:: omni.isaac.core.objects.FixedCone
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
+|
 
 Visual Cone
 ============
@@ -195,23 +207,7 @@ Visual Cone
     :undoc-members:
     :exclude-members:
 
-Dynamic Cone
-============
-
-.. autoclass:: omni.isaac.core.objects.DynamicCone
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
-
-Fixed Cuboid
-=============
-
-.. autoclass:: omni.isaac.core.objects.FixedCuboid
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
+|
 
 Visual Cuboid
 ==============
@@ -222,23 +218,7 @@ Visual Cuboid
     :undoc-members:
     :exclude-members:
 
-Dynamic Cuboid
-===============
-
-.. autoclass:: omni.isaac.core.objects.DynamicCuboid
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
-
-Fixed Cylinder
-==================
-
-.. autoclass:: omni.isaac.core.objects.FixedCylinder
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
+|
 
 Visual Cylinder
 ==================
@@ -249,23 +229,7 @@ Visual Cylinder
     :undoc-members:
     :exclude-members:
 
-Dynamic Cylinder
-==================
-
-.. autoclass:: omni.isaac.core.objects.DynamicCylinder
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
-
-Fixed Sphere
-===============
-
-.. autoclass:: omni.isaac.core.objects.FixedSphere
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
+|
 
 Visual Sphere
 ===============
@@ -276,6 +240,107 @@ Visual Sphere
     :undoc-members:
     :exclude-members:
 
+|
+
+Fixed Capsule
+==============
+
+.. autoclass:: omni.isaac.core.objects.FixedCapsule
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+|
+
+Fixed Cone
+==========
+
+.. autoclass:: omni.isaac.core.objects.FixedCone
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+|
+
+Fixed Cuboid
+=============
+
+.. autoclass:: omni.isaac.core.objects.FixedCuboid
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+|
+
+Fixed Cylinder
+==================
+
+.. autoclass:: omni.isaac.core.objects.FixedCylinder
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+|
+
+Fixed Sphere
+===============
+
+.. autoclass:: omni.isaac.core.objects.FixedSphere
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+|
+
+Dynamic Capsule
+================
+
+.. autoclass:: omni.isaac.core.objects.DynamicCapsule
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+|
+
+Dynamic Cone
+============
+
+.. autoclass:: omni.isaac.core.objects.DynamicCone
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+|
+
+Dynamic Cuboid
+===============
+
+.. autoclass:: omni.isaac.core.objects.DynamicCuboid
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+|
+
+Dynamic Cylinder
+==================
+
+.. autoclass:: omni.isaac.core.objects.DynamicCylinder
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+|
+
 Dynamic Sphere
 ================
 
@@ -285,6 +350,7 @@ Dynamic Sphere
     :undoc-members:
     :exclude-members:
 
+|
 
 Physics Context
 ----------------

@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.0.5] - 2023-11-28
+### Changed
+- Add examples to docstrings, fix type annotations, and improve description.
+  Affected modules: omni.isaac.core.objects (capsule, cone, cuboid, cylinder, sphere, ground_plane)
+
 ## [3.0.4] - 2023-11-25
 ### Fixed
 - Add missing worker thread parsing from sim config
