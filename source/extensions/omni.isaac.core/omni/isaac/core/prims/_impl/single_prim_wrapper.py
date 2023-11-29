@@ -147,7 +147,7 @@ class _SinglePrimWrapper(object):
             >>>
             >>> state.position
             [-4.5299529e-08 -1.8347054e-09 -2.8610229e-08]
-            >>> state.orientation (as quaternion)
+            >>> state.orientation
             [1. 0. 0. 0.]
         """
         view_default_state = self._prim_view.get_default_state()

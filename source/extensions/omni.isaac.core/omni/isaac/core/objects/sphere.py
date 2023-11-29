@@ -21,22 +21,45 @@ from pxr import Gf, UsdGeom
 
 
 class VisualSphere(GeometryPrim):
-    """_summary_
+    """High level wrapper to create/encapsulate a visual sphere
+
+    .. note::
+
+        Visual spheres (Sphere shape) have no collisions (Collider API) or rigid body dynamics (Rigid Body API)
 
     Args:
-        prim_path (str): _description_
-        name (str, optional): _description_. Defaults to "visual_sphere".
-        position (Optional[Sequence[float]], optional): _description_. Defaults to None.
-        translation (Optional[Sequence[float]], optional): _description_. Defaults to None.
-        orientation (Optional[Sequence[float]], optional): _description_. Defaults to None.
-        scale (Optional[Sequence[float]], optional): _description_. Defaults to None.
-        visible (Optional[bool], optional): _description_. Defaults to True.
-        color (Optional[np.ndarray], optional): _description_. Defaults to None.
-        radius (Optional[float], optional): _description_. Defaults to None.
-        visual_material (Optional[VisualMaterial], optional): _description_. Defaults to None.
+        prim_path (str): prim path of the Prim to encapsulate or create
+        name (str, optional): shortname to be used as a key by Scene class.
+                                Note: needs to be unique if the object is added to the Scene.
+                                Defaults to "visual_sphere".
+        position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
+                                                        Defaults to None, which means left unchanged.
+        translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
+                                                        (with respect to its parent prim). shape is (3, ).
+                                                        Defaults to None, which means left unchanged.
+        orientation (Optional[Sequence[float]], optional): quaternion orientation in the world/ local frame of the prim
+                                                        (depends if translation or position is specified).
+                                                        quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                                                        Defaults to None, which means left unchanged.
+        scale (Optional[Sequence[float]], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
+                                                Defaults to None, which means left unchanged.
+        visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
+        color (Optional[np.ndarray], optional): color of the visual shape. Defaults to None, which means 50% gray
+        radius (Optional[float], optional): sphere radius. Defaults to None.
+        visual_material (Optional[VisualMaterial], optional): visual material to be applied to the held prim.
+                                Defaults to None. If not specified, a default visual material will be added.
 
-    Raises:
-        Exception: _description_
+    Example:
+
+    .. code-block:: python
+
+        >>> from omni.isaac.core.objects import VisualSphere
+        >>> import numpy as np
+        >>>
+        >>> # create a red visual sphere at the given path
+        >>> prim = VisualSphere(prim_path="/World/Xform/Sphere", color=np.array([1.0, 0.0, 0.0]))
+        >>> prim
+        <omni.isaac.core.objects.sphere.VisualSphere object at 0x7f4e3eb3ea70>
     """
 
     def __init__(
@@ -91,38 +114,78 @@ class VisualSphere(GeometryPrim):
         return
 
     def set_radius(self, radius: float) -> None:
-        """[summary]
+        """Set the sphere radius
 
         Args:
-            radius (float): [description]
+            radius (float): sphere radius
+
+        Example:
+
+        .. code-block:: python
+
+            >>> prim.set_radius(2.0)
         """
         self.geom.GetRadiusAttr().Set(radius)
         return
 
     def get_radius(self) -> float:
-        """[summary]
+        """Get the sphere radius
 
         Returns:
-            float: [description]
+            float: sphere radius
+
+        Example:
+
+        .. code-block:: python
+
+            >>> prim.get_radius()
+            1.0
         """
         return self.geom.GetRadiusAttr().Get()
 
 
 class FixedSphere(VisualSphere):
-    """_summary_
+    """High level wrapper to create/encapsulate a fixed sphere
+
+    .. note::
+
+        Fixed spheres (Sphere shape) have collisions (Collider API) but no rigid body dynamics (Rigid Body API)
 
     Args:
-        prim_path (str): _description_
-        name (str, optional): _description_. Defaults to "fixed_sphere".
-        position (Optional[np.ndarray], optional): _description_. Defaults to None.
-        translation (Optional[np.ndarray], optional): _description_. Defaults to None.
-        orientation (Optional[np.ndarray], optional): _description_. Defaults to None.
-        scale (Optional[np.ndarray], optional): _description_. Defaults to None.
-        visible (Optional[bool], optional): _description_. Defaults to None.
-        color (Optional[np.ndarray], optional): _description_. Defaults to None.
-        radius (Optional[np.ndarray], optional): _description_. Defaults to None.
-        visual_material (Optional[VisualMaterial], optional): _description_. Defaults to None.
-        physics_material (Optional[PhysicsMaterial], optional): _description_. Defaults to None.
+        prim_path (str): prim path of the Prim to encapsulate or create
+        name (str, optional): shortname to be used as a key by Scene class.
+                                Note: needs to be unique if the object is added to the Scene.
+                                Defaults to "fixed_sphere".
+        position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
+                                                        Defaults to None, which means left unchanged.
+        translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
+                                                        (with respect to its parent prim). shape is (3, ).
+                                                        Defaults to None, which means left unchanged.
+        orientation (Optional[Sequence[float]], optional): quaternion orientation in the world/ local frame of the prim
+                                                        (depends if translation or position is specified).
+                                                        quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                                                        Defaults to None, which means left unchanged.
+        scale (Optional[Sequence[float]], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
+                                                Defaults to None, which means left unchanged.
+        visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
+        color (Optional[np.ndarray], optional): color of the visual shape. Defaults to None, which means 50% gray
+        radius (Optional[float], optional): sphere radius. Defaults to None.
+        visual_material (Optional[VisualMaterial], optional): visual material to be applied to the held prim.
+                                Defaults to None. If not specified, a default visual material will be added.
+        physics_material (Optional[PhysicsMaterial], optional): physics material to be applied to the held prim.
+                                Defaults to None. If not specified, a default physics material will be added.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> from omni.isaac.core.objects import FixedSphere
+        >>> import numpy as np
+        >>>
+        >>> # create a red fixed sphere at the given path
+        >>> prim = FixedSphere(prim_path="/World/Xform/Sphere", color=np.array([1.0, 0.0, 0.0]))
+        >>> prim
+        <omni.isaac.core.objects.sphere.FixedSphere object at 0x7f4e433f2140>
     """
 
     def __init__(
@@ -175,24 +238,51 @@ class FixedSphere(VisualSphere):
 
 
 class DynamicSphere(RigidPrim, FixedSphere):
-    """_summary_
+    """High level wrapper to create/encapsulate a dynamic sphere
+
+    .. note::
+
+        Dynamic spheres (Sphere shape) have collisions (Collider API) and rigid body dynamics (Rigid Body API)
 
     Args:
-        prim_path (str): _description_
-        name (str, optional): _description_. Defaults to "dynamic_sphere".
-        position (Optional[np.ndarray], optional): _description_. Defaults to None.
-        translation (Optional[np.ndarray], optional): _description_. Defaults to None.
-        orientation (Optional[np.ndarray], optional): _description_. Defaults to None.
-        scale (Optional[np.ndarray], optional): _description_. Defaults to None.
-        visible (Optional[bool], optional): _description_. Defaults to None.
-        color (Optional[np.ndarray], optional): _description_. Defaults to None.
-        radius (Optional[np.ndarray], optional): _description_. Defaults to None.
-        visual_material (Optional[VisualMaterial], optional): _description_. Defaults to None.
-        physics_material (Optional[PhysicsMaterial], optional): _description_. Defaults to None.
-        mass (Optional[float], optional): _description_. Defaults to None.
-        density (Optional[float], optional): _description_. Defaults to None.
-        linear_velocity (Optional[Sequence[float]], optional): _description_. Defaults to None.
-        angular_velocity (Optional[Sequence[float]], optional): _description_. Defaults to None.
+        prim_path (str): prim path of the Prim to encapsulate or create
+        name (str, optional): shortname to be used as a key by Scene class.
+                                Note: needs to be unique if the object is added to the Scene.
+                                Defaults to "dynamic_sphere".
+        position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
+                                                        Defaults to None, which means left unchanged.
+        translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
+                                                        (with respect to its parent prim). shape is (3, ).
+                                                        Defaults to None, which means left unchanged.
+        orientation (Optional[Sequence[float]], optional): quaternion orientation in the world/ local frame of the prim
+                                                        (depends if translation or position is specified).
+                                                        quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                                                        Defaults to None, which means left unchanged.
+        scale (Optional[Sequence[float]], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
+                                                Defaults to None, which means left unchanged.
+        visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
+        color (Optional[np.ndarray], optional): color of the visual shape. Defaults to None, which means 50% gray
+        radius (Optional[float], optional): sphere radius. Defaults to None.
+        visual_material (Optional[VisualMaterial], optional): visual material to be applied to the held prim.
+                                Defaults to None. If not specified, a default visual material will be added.
+        physics_material (Optional[PhysicsMaterial], optional): physics material to be applied to the held prim.
+                                Defaults to None. If not specified, a default physics material will be added.
+        mass (Optional[float], optional): mass in kg. Defaults to None.
+        density (Optional[float], optional): density. Defaults to None.
+        linear_velocity (Optional[np.ndarray], optional): linear velocity in the world frame. Defaults to None.
+        angular_velocity (Optional[np.ndarray], optional): angular velocity in the world frame. Defaults to None.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> from omni.isaac.core.objects import DynamicSphere
+        >>> import numpy as np
+        >>>
+        >>> # create a red dynamic sphere of mass 1kg at the given path
+        >>> prim = DynamicSphere(prim_path="/World/Xform/Sphere", color=np.array([1.0, 0.0, 0.0]), mass=1.0)
+        >>> prim
+        <omni.isaac.core.objects.sphere.DynamicSphere object at 0x7f4deaf8f010>
     """
 
     def __init__(
