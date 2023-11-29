@@ -222,7 +222,7 @@ library_paths = [
   "$root/_build/$platform/$config/kit/exts/*/bin",
   "$root/_build/$platform/$config/kit/extscore/*/bin",
   "$root/_build/$platform/$config/kit/extscore/*/bin/deps",
-  "$root/_build/$platform/$config/kit/extsPhysics/*/bin",
+  "$root/_build/$platform/$config/extsPhysics/*/bin",
 ]
 
 sphinx_conf_py_extra = """
@@ -803,7 +803,7 @@ python_analysis_extra_mapping=[
   "$root/_build/$platform/$config/extscache/*",
   "$root/_build/$platform/$config/kit/exts/*",
   "$root/_build/$platform/$config/kit/extscore/*",
-  "$root/_build/$platform/$config/kit/extsPhysics/*",
+  "$root/_build/$platform/$config/extsPhysics/*",
 ]
 
 [repo_generate_changelog]
