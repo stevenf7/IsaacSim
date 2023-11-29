@@ -4,6 +4,7 @@
 # This file is used for the released branches of isaac-sim.
 # If you want to build the new versions of omni.sensors then you are looking for the sensors_prep_build.sh
 # script, which is used to build the omni.sensors extensions in isaac-sim.
+# branch mcarlson/omni.sensors-1000.0-0-isaacsim.2023.1.1
 # using drivesim-ov hash: c5ef2973b27adc0ea9f2a73dff0860d8dd43e1fc
 shopt -s extglob
 OMNI_SENSORS_FOLDER="/home/mcarlson/gitlab-master/drivesim-ov_autosimulator"
