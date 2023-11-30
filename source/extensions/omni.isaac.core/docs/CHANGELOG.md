@@ -4,6 +4,13 @@
 ### Changed
 - Apply codespell to fix common misspellings and typos
 
+### Fixed
+- quats_to_rot_matrices under torch utils to handle 1 dimensional input and batched
+- pad method under torch utils
+
+### Added
+- added rot_matrices_to_quats method to torch utils
+
 ## [3.0.5] - 2023-11-28
 ### Fixed
 - Forward the density parameter to the RigidPrimView instance in RigidPrim class constructor

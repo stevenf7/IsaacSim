@@ -1,5 +1,9 @@
 # Changelog
 
+## [9.10.1] - 2023-11-29
+### Fixed
+- Camera class to work with torch backend
+
 ## [9.10.0] - 2023-11-03
 ### Fixed
 - Contact Sensor can now measure force correctly when the rigid body is not its direct parent
