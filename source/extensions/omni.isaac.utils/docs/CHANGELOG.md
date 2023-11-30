@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.6.0] - 2023-11-29
+### Changed
+- Moved End effectors out of Robots menu again
+- Removed Factory Franka
+
 ## [0.5.4] - 2023-11-20
 ### Changed
 - Moved all End effectors under Robots section

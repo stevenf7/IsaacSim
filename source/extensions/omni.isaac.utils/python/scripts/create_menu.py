@@ -142,6 +142,26 @@ class Extension(omni.ext.IExt):
             ),
         ]
 
+        menu_franka = [
+            # make_menu_item_description(
+            #     ext_id,
+            #     "FactoryFranka",
+            #     lambda a=weakref.proxy(self): a.create_asset(
+            #         "/Isaac/Robots/FactoryFranka/factory_franka_instanceable.usd", "/FactoryFranka"
+            #     ),
+            # ),
+            make_menu_item_description(
+                ext_id,
+                "Franka",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Franka/franka_alt_fingers.usd", "/Franka"),
+            ),
+            make_menu_item_description(
+                ext_id,
+                "FR3",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Franka/FR3/fr3.usd", "/FR3"),
+            ),
+        ]
+
         menu_manipulators = [
             MenuItemDescription(header="Manipulators"),
             MenuItemDescription(name="Denso", sub_menu=menu_denso),
@@ -149,13 +169,6 @@ class Extension(omni.ext.IExt):
                 ext_id,
                 "Dofbot",
                 lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Dofbot/dofbot.usd", "/Dofbot"),
-            ),
-            make_menu_item_description(
-                ext_id,
-                "FactoryFranka",
-                lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/FactoryFranka/factory_franka_instanceable.usd", "/FactoryFranka"
-                ),
             ),
             make_menu_item_description(
                 ext_id,
@@ -176,13 +189,9 @@ class Extension(omni.ext.IExt):
                     "/Isaac/Robots/Flexiv/Rizon4/flexiv_rizon4.usd", "/Rizon_4"
                 ),
             ),
-            make_menu_item_description(
-                ext_id,
-                "Franka",
-                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Franka/franka_alt_fingers.usd", "/Franka"),
-            ),
             MenuItemDescription(name="Kawasaki", sub_menu=menu_kawasaki),
             MenuItemDescription(name="Kinova", sub_menu=menu_kinova),
+            MenuItemDescription(name="Franka", sub_menu=menu_franka),
             make_menu_item_description(
                 ext_id,
                 "Kuka KR210_L150",
@@ -331,48 +340,6 @@ class Extension(omni.ext.IExt):
             MenuItemDescription(name="NVIDIA", sub_menu=menu_nvidia),
         ]
 
-        menu_robotiq = [
-            make_menu_item_description(
-                ext_id,
-                "2F-140",
-                lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/Robotiq/2F-140/Robotiq_2F_140_physics_edit.usd", "/Robotiq_2F_140"
-                ),
-            ),
-            make_menu_item_description(
-                ext_id,
-                "2F-85",
-                lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/Robotiq/2F-85/2f85_instanceable.usd", "/Robotiq_2F_85"
-                ),
-            ),
-            make_menu_item_description(
-                ext_id,
-                "2F-C2",
-                lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/Robotiq/2F-C2/2fc2_instanceable.usd", "/Robotiq_2F_C2"
-                ),
-            ),
-        ]
-
-        menu_end_effectors = [
-            MenuItemDescription(header="End Effectors"),
-            make_menu_item_description(
-                ext_id,
-                "Allegro Hand",
-                lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/AllegroHand/allegro_hand.usd", "/AllegroHand"
-                ),
-            ),
-            make_menu_item_description(
-                ext_id,
-                "Shadow Hand",
-                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/ShadowHand/shadow_hand.usd", "/ShadowHand"),
-            ),
-            # Robotiq 2F-140, Robotiq 2F-85, Robotiq 2F-C2, ShadowHand
-            MenuItemDescription(name="Robotiq", sub_menu=menu_robotiq),
-        ]
-
         menu_other = [
             MenuItemDescription(header="Other"),
             make_menu_item_description(
@@ -389,7 +356,6 @@ class Extension(omni.ext.IExt):
         robot_menu += menu_aerial
         robot_menu += menu_mobile
         robot_menu += menu_other
-        robot_menu += menu_end_effectors
 
         env_menu = [
             MenuItemDescription(header="Basic"),
@@ -466,8 +432,37 @@ class Extension(omni.ext.IExt):
             )
         ]
 
-        menu_end_effectors = [
-            MenuItemDescription(header="Hands"),
+        menu_robotiq = [
+            make_menu_item_description(
+                ext_id,
+                "2F-140",
+                lambda a=weakref.proxy(self): a.create_asset(
+                    "/Isaac/Robots/Robotiq/2F-140/Robotiq_2F_140_physics_edit.usd", "/Robotiq_2F_140"
+                ),
+            ),
+            make_menu_item_description(
+                ext_id,
+                "2F-85",
+                lambda a=weakref.proxy(self): a.create_asset(
+                    "/Isaac/Robots/Robotiq/2F-85/2f85_instanceable.usd", "/Robotiq_2F_85"
+                ),
+            ),
+            make_menu_item_description(
+                ext_id,
+                "2F-C2",
+                lambda a=weakref.proxy(self): a.create_asset(
+                    "/Isaac/Robots/Robotiq/2F-C2/2fc2_instanceable.usd", "/Robotiq_2F_C2"
+                ),
+            ),
+        ]
+
+        menu_grippers = [
+            # MenuItemDescription(header="Parallel Grippers"),
+            MenuItemDescription(name="Robotiq", sub_menu=menu_robotiq)
+        ]
+
+        menu_hand = [
+            # MenuItemDescription(header="Hands"),
             make_menu_item_description(
                 ext_id,
                 "Allegro Hand",
@@ -482,12 +477,15 @@ class Extension(omni.ext.IExt):
             ),
         ]
 
+        end_effector_menu = menu_hand + menu_grippers
+
         self._menu_items = [
             MenuItemDescription(
                 name="Isaac",
                 glyph="plug.svg",
                 sub_menu=[
                     MenuItemDescription(name="Robots", sub_menu=robot_menu),
+                    MenuItemDescription(name="End Effectors", sub_menu=end_effector_menu),
                     MenuItemDescription(name="Environments", sub_menu=env_menu),
                     MenuItemDescription(name="April Tag", sub_menu=apriltag_menu),
                 ],
