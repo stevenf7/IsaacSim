@@ -67,7 +67,7 @@ default_sim_params = {
     "add_ground_plane": False,
 }
 
-# Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
+# Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestRigidPrimView(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         World.clear_instance()

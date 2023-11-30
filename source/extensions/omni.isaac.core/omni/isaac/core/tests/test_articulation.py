@@ -10,7 +10,7 @@
 import asyncio
 
 # NOTE:
-#   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
+#   omni.kit.test - std python's unittest module with additional wrapping to add support for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 import torch
@@ -30,7 +30,7 @@ from omni.isaac.core.utils.types import ArticulationAction
 from pxr import PhysxSchema, UsdPhysics
 
 
-# Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
+# Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestArticulation(omni.kit.test.AsyncTestCase):
     async def setUp(self, device="cpu"):
         World.clear_instance()

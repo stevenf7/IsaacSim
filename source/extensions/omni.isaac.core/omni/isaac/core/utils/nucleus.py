@@ -81,7 +81,7 @@ def delete_folder(server: str, path: str) -> bool:
     Returns:
         bool: True if folder is deleted successfully
     """
-    carb.log_info("Cleaup {} folder on {} Server".format(path, server))
+    carb.log_info("Cleanup {} folder on {} Server".format(path, server))
     # Increase hang detection timeout
     omni.client.set_hang_detection_time_ms(10000)
     result = omni.client.delete("{}{}".format(server, path))

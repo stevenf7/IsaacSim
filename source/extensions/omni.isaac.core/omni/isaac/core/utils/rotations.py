@@ -88,8 +88,8 @@ def matrix_to_euler_angles(mat: np.ndarray, degrees: bool = False, extrinsic: bo
         mat (np.ndarray): A 3x3 rotation matrix.
         degrees (bool, optional): Whether returned angles should be in degrees.
         extrinsic (bool, optional): True if the rotation matrix follows the extrinsic matrix
-                   convention (equivilant to ZYX ordering but returned in the reverse) and False if it follows
-                   the intrinsic matrix conventions (equivilant to XYZ ordering).
+                   convention (equivalent to ZYX ordering but returned in the reverse) and False if it follows
+                   the intrinsic matrix conventions (equivalent to XYZ ordering).
                    Defaults to True.
 
     Returns:
@@ -146,8 +146,8 @@ def euler_to_rot_matrix(euler_angles: np.ndarray, degrees: bool = False, extrins
         euler_angles (np.ndarray): Euler angles.
         degrees (bool, optional): Whether passed angles are in degrees.
         extrinsic (bool, optional): True if the euler angles follows the extrinsic angles
-                   convention (equivilant to ZYX ordering but returned in the reverse) and False if it follows
-                   the intrinsic angles conventions (equivilant to XYZ ordering).
+                   convention (equivalent to ZYX ordering but returned in the reverse) and False if it follows
+                   the intrinsic angles conventions (equivalent to XYZ ordering).
                    Defaults to True.
 
     Returns:
@@ -192,8 +192,8 @@ def quat_to_euler_angles(quat: np.ndarray, degrees: bool = False, extrinsic: boo
         quat (np.ndarray): Input quaternion (w, x, y, z).
         degrees (bool, optional): Whether returned angles should be in degrees. Defaults to False.
         extrinsic (bool, optional): True if the euler angles follows the extrinsic angles
-                   convention (equivilant to ZYX ordering but returned in the reverse) and False if it follows
-                   the intrinsic angles conventions (equivilant to XYZ ordering).
+                   convention (equivalent to ZYX ordering but returned in the reverse) and False if it follows
+                   the intrinsic angles conventions (equivalent to XYZ ordering).
                    Defaults to True.
 
 
@@ -210,8 +210,8 @@ def euler_angles_to_quat(euler_angles: np.ndarray, degrees: bool = False, extrin
         euler_angles (np.ndarray):  Euler XYZ angles.
         degrees (bool, optional): Whether input angles are in degrees. Defaults to False.
         extrinsic (bool, optional): True if the euler angles follows the extrinsic angles
-                   convention (equivilant to ZYX ordering but returned in the reverse) and False if it follows
-                   the intrinsic angles conventions (equivilant to XYZ ordering).
+                   convention (equivalent to ZYX ordering but returned in the reverse) and False if it follows
+                   the intrinsic angles conventions (equivalent to XYZ ordering).
                    Defaults to True.
 
     Returns:

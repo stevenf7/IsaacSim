@@ -241,7 +241,7 @@ class Scene(object):
         return plane
 
     def post_reset(self) -> None:
-        """calls post_reset on all added objects to the Scene Registery."""
+        """calls post_reset on all added objects to the Scene Registry."""
         prim_registries_available = [
             self._scene_registry._geometry_objects,
             self._scene_registry._rigid_objects,
@@ -335,7 +335,7 @@ class Scene(object):
 
         Args:
             name (str): Name of the prim to be removed. Defaults to None.
-            registry_only (bool, optional): True to remove the object from the scene registery only and not the USD. Defaults to False.
+            registry_only (bool, optional): True to remove the object from the scene registry only and not the USD. Defaults to False.
         """
         prim_object = self.get_object(name=name)
         # sometimes the prim path is under a reference
@@ -399,7 +399,7 @@ class Scene(object):
         """Clears the stage from all added objects to the Scene.
 
         Args:
-            registry_only (bool, optional): True to remove the object from the scene registery only and not the USD. Defaults to False.
+            registry_only (bool, optional): True to remove the object from the scene registry only and not the USD. Defaults to False.
         """
         # Group all of the stage delete events together
         with Sdf.ChangeBlock():
@@ -464,7 +464,7 @@ class Scene(object):
             Tuple[np.ndarray, np.ndarray]: [description]
         """
         if not self._enable_bounding_box_computations:
-            raise Exception("bounding box computations should be enabled before quering AABB of an object")
+            raise Exception("bounding box computations should be enabled before querying AABB of an object")
         prim_object = self.get_object(name)
         if not hasattr(prim_object, "prim"):
             carb.log_error(f"Computing AABB bounds supported only for single classes.")

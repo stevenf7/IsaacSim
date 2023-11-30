@@ -24,7 +24,7 @@ from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_asy
 from omni.isaac.core.utils.torch.rotations import euler_angles_to_quats as euler_angles_to_quats_torch
 
 # NOTE:
-#   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
+#   omni.kit.test - std python's unittest module with additional wrapping to add support for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 from omni.isaac.core.utils.types import DynamicsViewState
 from omni.isaac.core.utils.warp.rotations import euler_angles_to_quats as euler_angles_to_quats_warp
@@ -78,7 +78,7 @@ default_sim_params = {
 }
 
 
-# Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
+# Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestRigidPrimView(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         World.clear_instance()
@@ -423,7 +423,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             pair_contacts_start_indices,
         ) = self._box_view.get_contact_force_data(indices, dt=self._sim_params["dt"])
         # print("final forces: \n", net_forces)
-        # print("matirx forces: \n", forces_matrix)
+        # print("matrix forces: \n", forces_matrix)
         # print("final positions: \n", states.positions)
         # print("final top positions: \n", top_states.positions)
         # print("final linear_velocities: \n", states.linear_velocities)

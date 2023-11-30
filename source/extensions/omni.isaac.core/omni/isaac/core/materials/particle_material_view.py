@@ -61,7 +61,7 @@ class ParticleMaterialView:
             adhesions (Union[np.ndarray, torch.Tensor], optional): The adhesion tensor for interaction between particles (solid or fluid),
                 and rigid or deformable objects, shape is (N, ).
             particle_adhesion_scales (Union[np.ndarray, torch.Tensor], optional): The coefficient tensor that scales adhesion for solid
-                particle-particle interations, shape is (N, ).
+                particle-particle iterations, shape is (N, ).
             adhesion_offset_scales (Union[np.ndarray, torch.Tensor], optional): The offset scale tensor defines at which adhesion ceases
                 to take effect, shape is (N, ).
             gravity_scales (Union[np.ndarray, torch.Tensor], optional): The gravitational acceleration scaling tensor. It can be used
@@ -163,7 +163,7 @@ class ParticleMaterialView:
     def is_valid(self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None) -> bool:
         """
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).

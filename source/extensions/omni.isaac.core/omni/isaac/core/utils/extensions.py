@@ -78,7 +78,7 @@ def get_extension_path_from_name(extension_name: str) -> str:
 
 
 def enable_extension(extension_name: str) -> bool:
-    """Load an extension from the extenstion manager.
+    """Load an extension from the extension manager.
 
     Args:
         extension_name (str): name of the extension

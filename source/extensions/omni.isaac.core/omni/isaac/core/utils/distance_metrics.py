@@ -71,7 +71,7 @@ def _standardize_rotation_matrix(r1: typing.Union[np.ndarray, Gf.Matrix3d, Gf.Ma
 
 
 def _standardize_translation_vector(t1: typing.Union[np.ndarray, Gf.Matrix4d]) -> np.ndarray:
-    """Extract transaltion vector from input and convert it to numpy array.
+    """Extract translation vector from input and convert it to numpy array.
 
     If input matrix is a 4x4 matrix, then the translation component is extracted.
     Otherwise, it is checked that is a 3-dimensional vector and flattened into an array.
@@ -163,7 +163,7 @@ def rotational_distance_angle(
 def rotational_distance_identity_matrix_deviation(
     r1: typing.Union[np.ndarray, Gf.Matrix4d, Gf.Matrix3d], r2: typing.Union[np.ndarray, Gf.Matrix4d, Gf.Matrix3d]
 ) -> np.ndarray:
-    """Computes the distance between two rotations using deviation from indentity matrix.
+    """Computes the distance between two rotations using deviation from identity matrix.
 
     Note:
         If r1 and r2 are GfMatrix3d() objects, the transformation matrices will be transposed in the distance

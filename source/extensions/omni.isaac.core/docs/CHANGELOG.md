@@ -1,9 +1,14 @@
 # Changelog
 
+## [3.0.6] - 2023-11-29
+### Changed
+- Apply codespell to fix common misspellings and typos
+
 ## [3.0.5] - 2023-11-28
 ### Fixed
 - Forward the density parameter to the RigidPrimView instance in RigidPrim class constructor
 - Fix argument typo when applying a physics material to a ground plane object
+
 ### Changed
 - Add examples to docstrings, fix type annotations, and improve description.
   Affected modules: omni.isaac.core.objects (capsule, cone, cuboid, cylinder, sphere, ground_plane)
@@ -67,7 +72,7 @@
 
 ## [2.10.0] - 2023-10-04
 ### Added
-- euler_to_rot_matrix returns the pre multiplicative matrix and not the post multiplicative one as before and in numpy format intead of Gf.Rotation.
+- euler_to_rot_matrix returns the pre multiplicative matrix and not the post multiplicative one as before and in numpy format instead of Gf.Rotation.
 - added extrinsic argument to torch rotation utils: compute_rot, quat_from_euler_xyz, get_euler_xyz, euler_angles_to_quats
 - added methods to torch rotation utils: quat_to_rot_matrices, matrices_to_euler_angles
 - added extrinsic argument to numpy rotation utils: quats_to_euler_angles, euler_angles_to_quats
@@ -79,7 +84,7 @@
 
 ## [2.9.3] - 2023-09-29
 ### Fixed
-- Propagate physX to Fabric when stepping physX and kit seperatly
+- Propagate physX to Fabric when stepping physX and kit separately
 
 ## [2.9.2] - 2023-09-27
 ### Fixed
@@ -96,7 +101,7 @@
 ### Fixed
 - Fixed gpu device parsing.
 - Added gpu flushing as a physics callback to handle the extension workflow and the standalone one alike.
-- Removed the destructor calls from SimulationContext and World for possible bugs concerning them being Singeltons.
+- Removed the destructor calls from SimulationContext and World for possible bugs concerning them being Singletons.
 
 ## [2.7.7] - 2023-09-18
 ### Fixed
@@ -106,7 +111,6 @@
 ## [2.7.6] - 2023-09-13
 ### Fixed
 - None in numpy arrays in current numpy version 1.25.2 gets converted to nan, propagated this change to ArticulationController.apply_action
-
 
 ## [2.7.5] - 2023-09-12
 ### Changed
@@ -134,7 +138,7 @@
 
 ## [2.7.1] - 2023-08-16
 ### Fixed
-- Vertical Aperture used from reading the horizonal aperture usd property and multiplying it by resolution ratio to conform to the square pixels asumption in place. (setting and getting intrinsics in viewports utils)
+- Vertical Aperture used from reading the horizontal aperture usd property and multiplying it by resolution ratio to conform to the square pixels assumption in place. (setting and getting intrinsics in viewports utils)
 
 ## [2.7.0] - 2023-08-11
 ### Added
@@ -154,6 +158,7 @@
 - Fixed memory leak in ArticulationView, RigidPrimView and SimulationContext stemming from tensor api views
 - Fixed minor typo in articulation view
 - Fixed the order of parsing of the stage in the physics context warm start operation
+
 ## [2.5.0] - 2023-08-04
 ### Added
 - Added SdfShapeView class for handling shapes signed-distance function
@@ -604,7 +609,7 @@
 
 ### Changed
 - Removing redundant api in ArticulationView and RigidPrimView
-- Raise Exceptions when using set_linear_velocities and set_angular_velocities with the gpu pipleine
+- Raise Exceptions when using set_linear_velocities and set_angular_velocities with the gpu pipeline
 
 ## [1.7.0] - 2022-05-04
 
@@ -704,7 +709,7 @@
 ## [1.5.0] - 2022-04-14
 
 ### Added
-- An argument to clear scene registery only
+- An argument to clear scene registry only
 - rotation and cross product util functions
 
 ### Fixed
@@ -828,7 +833,7 @@
 ## [0.2.0] - 2022-01-11
 
 ### Changed
-- physx and usd tranformations update parameters are read from carb
+- physx and usd transformations update parameters are read from carb
 
 ### Added
 - Added set_defaults to SimulationContext, World and PhysicsContext
@@ -873,7 +878,7 @@
 ## [0.1.7] - 2021-11-06
 
 ### Added
-- Added seperate functions to set different physics scene settings.
+- Added separate functions to set different physics scene settings.
 - Added error handling in PhysicsContext.
 - Added doc strings to PhysicsContext.
 - create_bbox_cache, compute_aabb, compute_combined_aabb

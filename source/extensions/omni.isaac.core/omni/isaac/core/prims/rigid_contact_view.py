@@ -341,7 +341,7 @@ class RigidContactView(object):
     ]:
         """Get more detailed contact information between the prims in the view and the filter prims.
 
-        Specifically, this method provides individual contact normals, contact pointes, contact separations as well as
+        Specifically, this method provides individual contact normals, contact points, contact separations as well as
         contact forces for each pair (the sum of which equals the forces that the ``get_contact_force_matrix``
         method provides as the force aggregate of a pair)
 

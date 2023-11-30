@@ -227,7 +227,7 @@ class DeformablePrimView(XFormPrimView):
                                                                                 If a list is provided then its size has to be equal
                                                                                 the view's size or indices size.
                                                                                 If one material is provided it will be applied to all prims in the view.
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which prims
                                                                                 to manipulate. Shape (M,).
                                                                                 Where M <= size of the encapsulated prims in the view.
                                                                                 Defaults to None (i.e: all prims in the view).
@@ -256,7 +256,7 @@ class DeformablePrimView(XFormPrimView):
         """Gets the applied deformable material to prims in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which prims
                                                                                 to query. Shape (M,).
                                                                                 Where M <= size of the encapsulated prims in the view.
                                                                                 Defaults to None (i.e: all prims in the view).
