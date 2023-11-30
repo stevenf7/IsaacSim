@@ -1,4 +1,7 @@
 # Changelog
+## [1.4.6] - 2023-11-27
+### Changed
+- Set /app/player/useFixedTimeStepping to False since the loop runner controls stepping
 
 ## [1.4.5] - 2023-10-16
 ### Changed

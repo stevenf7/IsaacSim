@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.0] - 2023-11-29
+### Changed
+- /app/runLoops/main/rateLimitEnabled in standalone workflow will be set to False
+
+### Added
+- set_block_on_render and get_block_on_render to control waitIdle flag
+
 ## [3.0.6] - 2023-11-29
 ### Changed
 - Apply codespell to fix common misspellings and typos
@@ -29,6 +36,7 @@
 - Add examples to docstrings, fix type annotations, and improve description.
   Affected modules: omni.isaac.core.prims (xform_prim, xform_prim_view, rigid_prim, rigid_prim_view,
   rigid_contact_view, geometry_prim, geometry_prim_view, base_sensor)
+
 
 ## [3.0.2] - 2023-11-24
 ### Fixed
