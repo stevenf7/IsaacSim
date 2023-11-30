@@ -1395,9 +1395,17 @@ class Camera(BaseSensor):
                         with ros camera convention.
         """
         world_w_cam_u_T = self._backend_utils.transpose_2d(
-            UsdGeom.Imageable(self.prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
+            self._backend_utils.convert(
+                UsdGeom.Imageable(self.prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default()),
+                dtype="float32",
+                device=self._device,
+                indexed=True,
+            )
         )
-        return self._backend_utils.matmul(R_U_TRANSFORM, self._backend_utils.inverse(world_w_cam_u_T))
+        r_u_transform_converted = self._backend_utils.convert(
+            R_U_TRANSFORM, dtype="float32", device=self._device, indexed=True
+        )
+        return self._backend_utils.matmul(r_u_transform_converted, self._backend_utils.inverse(world_w_cam_u_T))
 
     def get_intrinsics_matrix(self) -> np.ndarray:
         """

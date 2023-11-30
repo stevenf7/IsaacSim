@@ -68,6 +68,8 @@ def expand_dims(data, axis):
 
 
 def pad(data, pad_width, mode="constant", value=None):
+    if len(pad_width) == 2 and isinstance(pad_width[0], tuple):
+        pad_width = pad_width[1] + pad_width[0]
     return torch.nn.functional.pad(data, pad_width, mode, value)
 
 

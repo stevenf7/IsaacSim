@@ -53,7 +53,30 @@ def euler_angles_to_quats(
         order = "XYZ"
     # TODO: implement a torch version
     rot = Rotation.from_euler(order, euler_angles.cpu().numpy(), degrees=degrees)
-    result = rot.as_quat()[:, [3, 0, 1, 2]]
+    result = rot.as_quat()
+    if len(result.shape) == 1:
+        result = result[[3, 0, 1, 2]]
+    else:
+        result = result[:, [3, 0, 1, 2]]
+    result = torch.from_numpy(np.asarray(result, dtype=np.float32)).float().to(device)
+    return result
+
+
+def rot_matrices_to_quats(rotation_matrices: torch.Tensor, device=None) -> torch.Tensor:
+    """Vectorized version of converting rotation matrices to quaternions
+
+    Args:
+        rotation_matrices (torch.Tensor): N Rotation matrices with shape (N, 3, 3) or (3, 3)
+
+    Returns:
+        torch.Tensor: quaternion representation of the rotation matrices (N, 4) or (4,) - scalar first
+    """
+    rot = Rotation.from_matrix(rotation_matrices.cpu().numpy())
+    result = rot.as_quat()
+    if len(result.shape) == 1:
+        result = result[[3, 0, 1, 2]]
+    else:
+        result = result[:, [3, 0, 1, 2]]
     result = torch.from_numpy(np.asarray(result, dtype=np.float32)).float().to(device)
     return result
 
@@ -179,12 +202,16 @@ def get_basis_vector(q, v):
 
 
 @torch.jit.script
-def quats_to_rot_matrices(quat):
-    nq = torch.linalg.vecdot(quat, quat, dim=1)
+def quats_to_rot_matrices(quats):
+    squeeze_flag = False
+    if quats.dim() == 1:
+        squeeze_flag = True
+        quats = torch.unsqueeze(quats, 0)
+    nq = torch.linalg.vecdot(quats, quats, dim=1)
     singularities = nq < 1e-10
-    result = torch.zeros(quat.shape[0], 3, 3, device=quat.device)
-    result[singularities] = torch.eye(3, device=quat.device).reshape((1, 3, 3)).repeat(sum(singularities), 1, 1)
-    non_singular = quat[torch.logical_not(singularities)] * torch.sqrt(2.0 / nq).reshape((-1, 1)).repeat(1, 4)
+    result = torch.zeros(quats.shape[0], 3, 3, device=quats.device)
+    result[singularities] = torch.eye(3, device=quats.device).reshape((1, 3, 3)).repeat(sum(singularities), 1, 1)
+    non_singular = quats[torch.logical_not(singularities)] * torch.sqrt(2.0 / nq).reshape((-1, 1)).repeat(1, 4)
     non_singular = torch.einsum("bi,bj->bij", non_singular, non_singular)
     result[torch.logical_not(singularities), 0, 0] = 1.0 - non_singular[:, 2, 2] - non_singular[:, 3, 3]
     result[torch.logical_not(singularities), 0, 1] = non_singular[:, 1, 2] - non_singular[:, 3, 0]
@@ -195,12 +222,9 @@ def quats_to_rot_matrices(quat):
     result[torch.logical_not(singularities), 2, 0] = non_singular[:, 1, 3] - non_singular[:, 2, 0]
     result[torch.logical_not(singularities), 2, 1] = non_singular[:, 2, 3] + non_singular[:, 1, 0]
     result[torch.logical_not(singularities), 2, 2] = 1.0 - non_singular[:, 1, 1] - non_singular[:, 2, 2]
+    if squeeze_flag:
+        result = torch.squeeze(result)
     return result
-
-
-@torch.jit.script
-def quat_to_rot_matrices(quat):
-    return quats_to_rot_matrices(quat)
 
 
 @torch.jit.script
@@ -271,7 +295,7 @@ def get_euler_xyz(q, extrinsic: bool = True):
 
         return roll % (2 * np.pi), pitch % (2 * np.pi), yaw % (2 * np.pi)
     else:
-        result = matrices_to_euler_angles(quat_to_rot_matrices(q), extrinsic=False)
+        result = matrices_to_euler_angles(quats_to_rot_matrices(q), extrinsic=False)
         return result[:, 0], result[:, 1], result[:, 2]
 
 
