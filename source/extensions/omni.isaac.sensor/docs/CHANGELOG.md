@@ -2,6 +2,8 @@
 
 ## [9.10.1] - 2023-11-29
 ### Fixed
+- aperture setters and getters in Camera.py
+- Camera Matrix calculation in set_matching_fisheye_polynomial_properties method in Camera.py
 - Camera class to work with torch backend
 
 ## [9.10.0] - 2023-11-03
