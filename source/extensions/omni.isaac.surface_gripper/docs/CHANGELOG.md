@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.7.0] - 2023-11-29
+### Changed 
+- Location on the Menu reverted back to from Create->Isaac->End Effector
 
 ## [0.6.0] - 2023-11-20
 ### Changed 

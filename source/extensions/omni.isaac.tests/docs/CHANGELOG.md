@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.14.4] 2023-11-29
+### Added
+- Added End Effectors menu items back into menu tests
+
 ## [1.14.3] 2023-11-27
 ### Added
 - Added unit tests for checking the sensor and environment menu items

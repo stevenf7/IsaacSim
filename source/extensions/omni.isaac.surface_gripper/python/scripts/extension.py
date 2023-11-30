@@ -29,7 +29,7 @@ class Extension(omni.ext.IExt):
         )
         menu_items = [
             MenuItemDescription(
-                name="Robots",
+                name="End Effectors",
                 sub_menu=[
                     MenuItemDescription(
                         name="Surface Gripper", onclick_action=(ext_id, "isaac_create_surface_gripper")

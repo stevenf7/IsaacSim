@@ -63,6 +63,8 @@ class TestMenuAssets(omni.kit.test.AsyncTestCase):
     async def test_loading_robots(self):
 
         self.robot_menu_dict = self.menu_dict["Create"]["Isaac"]["Robots"]
+        self.ee_menu_dict = self.menu_dict["Create"]["Isaac"]["End Effectors"]
+
         ## check everything under "Robot"
 
         robot_root_path = "Create/Isaac/Robots"
@@ -85,11 +87,14 @@ class TestMenuAssets(omni.kit.test.AsyncTestCase):
         empty_list = []
         empty_path = ""
         robot_menu_list = get_menu_path(self.robot_menu_dict, empty_path, empty_list, robot_root_path)
+        empty_list = []
+        empty_path = ""
+        ee_menu_list = get_menu_path(self.ee_menu_dict, empty_path, empty_list, ee_root_path)
 
-        test_list = robot_menu_list
+        test_list = robot_menu_list + ee_menu_list
 
         # surface gripper is just a graph, and jetracer has no articulation root
-        skip_list = ["Create/Isaac/Robots/Surface Gripper", "Create/Isaac/Robots/NVIDIA/Jetracer"]
+        skip_list = ["Create/Isaac/End Effectors/Surface Gripper", "Create/Isaac/Robots/NVIDIA/Jetracer"]
 
         failed_robots = []
         for test_path in test_list:
