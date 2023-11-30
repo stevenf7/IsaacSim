@@ -1096,7 +1096,7 @@ class Camera(BaseSensor):
             float: Emulates sensor/film height on a camera.
         """
         (width, height) = self.get_resolution()
-        aperture = (self.prim.GetAttribute("horizontalAperture").Get() / 10.0) * (float(width) / height)
+        aperture = (self.prim.GetAttribute("horizontalAperture").Get() / 10.0) * (float(height) / width)
         return aperture
 
     def set_vertical_aperture(self, value: float) -> None:
@@ -1253,7 +1253,7 @@ class Camera(BaseSensor):
         cx, cy = optical_centre_x, optical_centre_y
         fx = nominal_width * self.get_focal_length() / self.get_horizontal_aperture()
         fy = nominal_height * self.get_focal_length() / self.get_vertical_aperture()
-        camera_matrix = np.array([[fx, 0.0, cx], [0.0, fy, cy], [0.0, 0.0, 0.0]])
+        camera_matrix = np.array([[fx, 0.0, cx], [0.0, fy, cy], [0.0, 0.0, 1.0]])
 
         # Fit the fTheta model for the points on the diagonals.
         X = np.concatenate([np.linspace(0, nominal_width, nominal_width), np.linspace(0, nominal_width, nominal_width)])
