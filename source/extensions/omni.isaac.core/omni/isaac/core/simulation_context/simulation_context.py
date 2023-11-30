@@ -309,8 +309,11 @@ class SimulationContext:
         rendering_hz = 0
         if rendering_dt > 0:
             rendering_hz = 1.0 / rendering_dt
-        # TODO Is there a better way to do this or at least reset this to the original values on close
-        set_carb_setting(self._settings, "/app/runLoops/main/rateLimitEnabled", True)
+        # TODO Is there a better way to do this or atleast reset this to the original values on close
+        if builtins.ISAAC_LAUNCHED_FROM_TERMINAL:
+            set_carb_setting(self._settings, "/app/runLoops/main/rateLimitEnabled", True)
+        else:
+            set_carb_setting(self._settings, "/app/runLoops/main/rateLimitEnabled", False)
         set_carb_setting(self._settings, "/app/runLoops/main/rateLimitFrequency", rendering_hz)
         get_current_stage().SetTimeCodesPerSecond(rendering_hz)
         self._timeline.set_target_framerate(rendering_hz)
@@ -348,6 +351,26 @@ class SimulationContext:
             raise Exception("There is no stage currently opened")
         frequency = get_carb_setting(self._settings, "/app/runLoops/main/rateLimitFrequency")
         return 1.0 / frequency if frequency else 0
+
+    def set_block_on_render(self, block: bool) -> None:
+        """Set block on render flag for the simualtion thread
+
+        .. note::
+
+            This guarantee a one frame lag between any data captured from the render products and the current USD stage if enabled.
+
+        Args:
+            block (bool): True to block the thread until the renderer is done.
+        """
+        set_carb_setting(self._settings, "/app/hydraEngine/waitIdle", block)
+
+    def get_block_on_render(self) -> bool:
+        """
+
+        Returns:
+            bool: True if one frame lag between any data captured from the render products and the current USD stage is guaranteed by blocking the step call.
+        """
+        return get_carb_setting(self._settings, "/app/hydraEngine/waitIdle")
 
     """
     Operations.
