@@ -336,7 +336,7 @@ class PhysicsContext(object):
            through each other.
 
         Args:
-            flag (bool): enables or diables ccd on the PhysicsScene
+            flag (bool): enables or disables ccd on the PhysicsScene
 
         Raises:
             Exception: If the prim path registered in context doesn't correspond to a valid prim path currently.
@@ -366,7 +366,7 @@ class PhysicsContext(object):
         """Enables additional stabilization pass in the solver.
 
         Args:
-            flag (bool): enables or diables stabilization on the PhysicsScene
+            flag (bool): enables or disables stabilization on the PhysicsScene
 
         Raises:
             Exception: If the prim path registered in context doesn't correspond to a valid prim path currently.
@@ -396,7 +396,7 @@ class PhysicsContext(object):
         """Enables gpu dynamics pipeline, required for deformables for instance.
 
         Args:
-            flag (bool): enables or diables gpu dynamics on the PhysicsScene
+            flag (bool): enables or disables gpu dynamics on the PhysicsScene
 
         Raises:
             Exception: If the prim path registered in context doesn't correspond to a valid prim path currently.

@@ -66,7 +66,7 @@ class SdfShapeView(GeometryPrimView):
                                                 contact forces. Defaults to False.
         prepare_contact_sensors (bool, Optional): applies contact reporter API to the prim if it already does not have one.
                                                     Defaults to False.
-        disable_stablization (bool, optional): disables the contact stablization parameter in the physics context.
+        disable_stablization (bool, optional): disables the contact stabilization parameter in the physics context.
                                                 Defaults to True.
         contact_filter_prim_paths_expr (Optional[List[str]], Optional): a list of filter expressions which allows for tracking
                                                                         contact forces between the geometry prim and this subset
@@ -190,7 +190,7 @@ class SdfShapeView(GeometryPrimView):
         Args:
             points ([Union[np.ndarray, torch.Tensor]]): points (represented in the local frames of meshes) to be queried for sdf and gradients.
                                                                           shape is (self.num_shapes, self.num_query_points, 3).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -218,7 +218,7 @@ class SdfShapeView(GeometryPrimView):
         """Gets sdf margin values.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indices to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -249,7 +249,7 @@ class SdfShapeView(GeometryPrimView):
         """Gets sdf collision narrow band thickness values.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indices to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -280,7 +280,7 @@ class SdfShapeView(GeometryPrimView):
         """Gets sdf collision subgrid resolution values.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indices to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -311,7 +311,7 @@ class SdfShapeView(GeometryPrimView):
         """Gets sdf collision resolution values.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indices to specify which prims
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -343,7 +343,7 @@ class SdfShapeView(GeometryPrimView):
 
         Args:
             values (Union[np.ndarray, torch.Tensor]): sdf margins to be set. shape (M,).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indices to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -368,7 +368,7 @@ class SdfShapeView(GeometryPrimView):
 
         Args:
             values (Union[np.ndarray, torch.Tensor]): sdf margins to be set. shape (M,).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indices to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -393,7 +393,7 @@ class SdfShapeView(GeometryPrimView):
 
         Args:
             values (Union[np.ndarray, torch.Tensor]): sdf margins to be set. shape (M,).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indices to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
@@ -418,7 +418,7 @@ class SdfShapeView(GeometryPrimView):
 
         Args:
             values (Union[np.ndarray, torch.Tensor]): sdf margins to be set. shape (M,).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indices to specify which prims
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).

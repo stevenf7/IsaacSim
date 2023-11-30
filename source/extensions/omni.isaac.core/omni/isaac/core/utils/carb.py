@@ -18,7 +18,7 @@ def set_carb_setting(carb_settings: carb.settings.ISettings, setting: str, value
     """Convenience to set the carb settings.
 
     Args:
-        carb_settings (carb.settings.ISettings): The interface to carb setttings.
+        carb_settings (carb.settings.ISettings): The interface to carb settings.
         setting (str): Name of setting to change.
         value (Any): New value for the setting.
 
@@ -51,7 +51,7 @@ def get_carb_setting(carb_settings: carb.settings.ISettings, setting: str) -> An
     """Convenience function to get settings.
 
     Args:
-        carb_settings (carb.settings.ISettings): The interface to carb setttings.
+        carb_settings (carb.settings.ISettings): The interface to carb settings.
         setting (str): Name of setting to change.
 
     Returns:

@@ -36,8 +36,8 @@ def euler_angles_to_quats(
     Args:
         euler_angles np.ndarray: euler angles with shape (N, 3) or (3,) representation XYZ in extrinsic coordinates
         extrinsic (bool, optional): True if the euler angles follows the extrinsic angles
-                   convention (equivilant to ZYX ordering but returned in the reverse) and False if it follows
-                   the intrinsic angles conventions (equivilant to XYZ ordering).
+                   convention (equivalent to ZYX ordering but returned in the reverse) and False if it follows
+                   the intrinsic angles conventions (equivalent to XYZ ordering).
                    Defaults to True.
         degrees (bool, optional): True if degrees, False if radians. Defaults to False.
 
@@ -66,8 +66,8 @@ def quats_to_euler_angles(
         quaternions (np.ndarray): quaternions with shape (N, 4) or (4,) - scalar first
         degrees (bool, optional): Return euler angles in degrees if True, radians if False. Defaults to False.
         extrinsic (bool, optional): True if the euler angles follows the extrinsic angles
-                   convention (equivilant to ZYX ordering but returned in the reverse) and False if it follows
-                   the intrinsic angles conventions (equivilant to XYZ ordering).
+                   convention (equivalent to ZYX ordering but returned in the reverse) and False if it follows
+                   the intrinsic angles conventions (equivalent to XYZ ordering).
                    Defaults to True.
 
     Returns:
@@ -128,7 +128,7 @@ def rotvecs_to_quats(rotation_vectors: np.ndarray, degrees: bool = False, device
     Args:
         rotation_vectors (np.ndarray): N rotation vectors with shape (N, 3) or (3,).  The magnitude of the rotation vector describes the magnitude of the rotation.
             The normalized rotation vector represents the axis of rotation.
-        degrees (bool): The magnitude of the rotation vector will be interpretted as degrees if True, and radians if False.  Defaults to False.
+        degrees (bool): The magnitude of the rotation vector will be interpreted as degrees if True, and radians if False.  Defaults to False.
 
     Returns:
         np.ndarray: quaternion representation of the rotation matrices (N, 4) or (4,) - scalar first

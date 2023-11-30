@@ -11,7 +11,7 @@ import carb
 import numpy as np
 
 # NOTE:
-#   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
+#   omni.kit.test - std python's unittest module with additional wrapping to add support for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 import omni.physx as _physx
@@ -31,7 +31,7 @@ USD_PATH = [True, False]
 BACKEND = ["torch", "numpy", "warp"]
 
 
-# Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
+# Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestArticulationView(omni.kit.test.AsyncTestCase):
     async def setUpWorld(self, backend="torch", device="cpu"):
         World.clear_instance()

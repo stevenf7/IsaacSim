@@ -51,7 +51,7 @@ class World(SimulationContext):
         rendering_dt (Optional[float], optional): dt between rendering steps. Note: rendering means
                                                    rendering a frame of the current application and not
                                                    only rendering a frame to the viewports/ cameras. So UI
-                                                   elements of Isaac Sim will be refereshed with this dt
+                                                   elements of Isaac Sim will be refreshed with this dt
                                                    as well if running non-headless.
                                                    Defaults to None.
         stage_units_in_meters (Optional[float], optional): The metric units of assets. This will affect gravity value..etc.
@@ -265,7 +265,7 @@ class World(SimulationContext):
             - calls post_reset on each object in the Scene
             - calls post_reset on each Task
 
-            things like setting pd gains for instance should happend at a Task reset or a Robot reset since
+            things like setting pd gains for instance should happen at a Task reset or a Robot reset since
             the defaults are restored after .stop() is called.
 
         Args:
@@ -297,7 +297,7 @@ class World(SimulationContext):
             - calls post_reset on each object in the Scene
             - calls post_reset on each Task
 
-            things like setting pd gains for instance should happend at a Task reset or a Robot reset since
+            things like setting pd gains for instance should happen at a Task reset or a Robot reset since
             the defaults are restored after .stop() is called.
 
         Args:
@@ -318,7 +318,7 @@ class World(SimulationContext):
             - calls post_reset on each object in the Scene
             - calls post_reset on each Task
 
-            things like setting pd gains for instance should happend at a Task reset or a Robot reset since
+            things like setting pd gains for instance should happen at a Task reset or a Robot reset since
             the defaults are restored after .stop() is called.
 
         Args:
@@ -347,7 +347,7 @@ class World(SimulationContext):
             - calls post_reset on each object in the Scene
             - calls post_reset on each Task
 
-            things like setting pd gains for instance should happend at a Task reset or a Robot reset since
+            things like setting pd gains for instance should happen at a Task reset or a Robot reset since
             the defaults are restored after .stop() is called.
 
         Args:

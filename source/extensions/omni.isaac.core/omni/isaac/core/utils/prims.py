@@ -742,7 +742,7 @@ def create_prim(
 
 
 def delete_prim(prim_path: str) -> None:
-    """Remove the USD Prim and its decendants from the scene if able
+    """Remove the USD Prim and its descendants from the scene if able
 
     Args:
         prim_path (str): path of the prim in the stage
@@ -806,14 +806,14 @@ def get_prim_object_type(prim_path: str) -> typing.Union[str, None]:
     """Get the dynamic control object type of the USD Prim at the given path.
 
     If the prim at the path is of Dynamic Control type e.g.: rigid_body, joint, dof, articulation, attractor, d6joint,
-    then the correspodning string returned. If is an Xformable prim, then "xform" is returned. Otherwise None
+    then the corresponding string returned. If is an Xformable prim, then "xform" is returned. Otherwise None
     is returned.
 
     Args:
         prim_path (str): path of the prim in the stage
 
     Raises:
-        Exception: If the USD Prim is not a suppored type.
+        Exception: If the USD Prim is not a supported type.
 
     Returns:
         str: String corresponding to the object type.

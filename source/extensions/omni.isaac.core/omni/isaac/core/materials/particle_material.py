@@ -67,7 +67,7 @@ class ParticleMaterial:
             adhesion (float, optional): The adhesion for interaction between particles (solid or fluid),
                 and rigid or deformable objects.
             particle_adhesion_scale (float, optional): The coefficient that scales adhesion for solid
-                particle-particle interations.
+                particle-particle iterations.
             adhesion_offset_scale (float, optional): The offset scale defines at which adhesion ceases
                 to take effect.
             gravity_scale (float, optional): The gravitational acceleration scaling factor. It can be used

@@ -15,7 +15,7 @@ from omni.isaac.core.simulation_context import SimulationContext
 
 class BaseTask(object):
     """This class provides a way to set up a task in a scene and modularize adding objects to stage,
-    getting observations needed for the behavioral layer, caclulating metrics needed about the task,
+    getting observations needed for the behavioral layer, calculating metrics needed about the task,
     calling certain things pre-stepping, creating multiple tasks at the same time and much more.
 
     Checkout the required tutorials at
@@ -143,13 +143,13 @@ class BaseTask(object):
         return ""
 
     def cleanup(self) -> None:
-        """Called before calling a reset() on the world to removed temporarly objects that were added during
+        """Called before calling a reset() on the world to removed temporary objects that were added during
         simulation for instance.
         """
         return
 
     def set_params(self, *args, **kwargs) -> None:
-        """Changes the modifiable paramateres of the task
+        """Changes the modifiable parameters of the task
 
         Raises:
             NotImplementedError: [description]

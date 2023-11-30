@@ -34,8 +34,8 @@ def euler_angles_to_quats(
     Args:
         euler_angles (wp.types.array): euler angles with shape (N, 3)
         extrinsic (bool, optional): True if the euler angles follows the extrinsic angles
-                   convention (equivilant to ZYX ordering but returned in the reverse) and False if it follows
-                   the intrinsic angles conventions (equivilant to XYZ ordering).
+                   convention (equivalent to ZYX ordering but returned in the reverse) and False if it follows
+                   the intrinsic angles conventions (equivalent to XYZ ordering).
                    Defaults to True.
         degrees (bool, optional): True if degrees, False if radians. Defaults to False.
 

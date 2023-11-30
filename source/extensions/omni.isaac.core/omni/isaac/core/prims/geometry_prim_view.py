@@ -79,7 +79,7 @@ class GeometryPrimView(XFormPrimView):
                                                 contact forces. Defaults to False.
         prepare_contact_sensors (bool, Optional): applies contact reporter API to the prim if it already does not have one.
                                                     Defaults to False.
-        disable_stablization (bool, optional): disables the contact stablization parameter in the physics context.
+        disable_stablization (bool, optional): disables the contact stabilization parameter in the physics context.
                                                 Defaults to True.
         contact_filter_prim_paths_expr (Optional[List[str]], Optional): a list of filter expressions which allows for tracking
                                                                         contact forces between the geometry prim and this subset
@@ -1105,7 +1105,7 @@ class GeometryPrimView(XFormPrimView):
     ]:
         """
         Get more detailed contact information between the prims in the view and the filter prims. Specifically, this method provides individual
-        contact normals, contact pointes, contact separations as well as contact forces for each pair
+        contact normals, contact points, contact separations as well as contact forces for each pair
         (the sum of which equals the forces that the get_contact_force_matrix method provides as the force aggregate of a pair)
         Given to the dynamic nature of collision between bodies, this method will provide buffers of contact data which are arranged sequentially for each pair.
         The starting index and the number of contact data points for each pair in this stream can be realized from pair_contacts_start_indices,

@@ -14,13 +14,13 @@ from omni.isaac.core.materials.physics_material import PhysicsMaterial
 from omni.isaac.core.prims.geometry_prim import GeometryPrim
 
 # NOTE:
-#   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
+#   omni.kit.test - std python's unittest module with additional wrapping to add support for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 from omni.isaac.core.utils.prims import define_prim
 from pxr import UsdPhysics
 
 
-# Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
+# Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestGeometryPrim(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         await omni.usd.get_context().new_stage_async()

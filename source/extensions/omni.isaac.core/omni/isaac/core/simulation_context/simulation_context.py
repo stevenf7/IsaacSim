@@ -56,7 +56,7 @@ class SimulationContext:
         rendering_dt (Optional[float], optional):  dt between rendering steps. Note: rendering means
                                                    rendering a frame of the current application and not
                                                    only rendering a frame to the viewports/ cameras. So UI
-                                                   elements of Isaac Sim will be refereshed with this dt
+                                                   elements of Isaac Sim will be refreshed with this dt
                                                    as well if running non-headless.
                                                    Defaults to None.
         stage_units_in_meters (Optional[float], optional): The metric units of assets. This will affect gravity value..etc.
@@ -309,7 +309,7 @@ class SimulationContext:
         rendering_hz = 0
         if rendering_dt > 0:
             rendering_hz = 1.0 / rendering_dt
-        # TODO Is there a better way to do this or atleast reset this to the original values on close
+        # TODO Is there a better way to do this or at least reset this to the original values on close
         set_carb_setting(self._settings, "/app/runLoops/main/rateLimitEnabled", True)
         set_carb_setting(self._settings, "/app/runLoops/main/rateLimitFrequency", rendering_hz)
         get_current_stage().SetTimeCodesPerSecond(rendering_hz)
@@ -412,7 +412,7 @@ class SimulationContext:
                 carb.log_warn(msg)
 
     async def reset_async(self, soft: bool = False) -> None:
-        """Resets the physics simulation view (asynchornous version).
+        """Resets the physics simulation view (asynchronous version).
 
         Args:
             soft (bool, optional): if set to True simulation won't be stopped and start again. It only calls the reset on the scene objects.
