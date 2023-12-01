@@ -11,6 +11,10 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.uiapp" = {}
 "omni.kit.renderer.core" = {}
 
+# Livestream - OV Streaming Client
+"omni.kit.livestream.native" = {version = "2.4.0", exact = true}
+"omni.kit.streamsdk.plugins" = {version = "2.5.2", exact = true}
+
 # Status Bar
 "omni.kit.window.status_bar" = {}
 
@@ -518,6 +522,11 @@ sleepMsOnFocus = 0
 sleepMsOutOfFocus = 0
 resolution.width=1280
 resolution.height=720
+
+[settings.app.livestream]
+proto = "ws"
+allowResize = true
+outDirectory = "${data}"
 
 # default camera position in meters
 [settings.app.viewport]
