@@ -1,5 +1,10 @@
 # Changelog
 
+
+## [1.15.0] 2023-11-30
+### Added
+- Added unit tests for O3Dyn Robot.
+
 ## [1.14.4] 2023-11-29
 ### Added
 - Added End Effectors menu items back into menu tests
