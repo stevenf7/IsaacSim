@@ -175,19 +175,20 @@ async def download_assets_async(
     return result
 
 
-def check_server(server: str, path: str) -> bool:
+def check_server(server: str, path: str, timeout: float = 10.0) -> bool:
     """Check a specific server for a path
 
     Args:
         server (str): Name of Nucleus server
         path (str): Path to search
+        timeout (float): Default value: 10 seconds
 
     Returns:
         bool: True if folder is found
     """
     carb.log_info("Checking path: {}{}".format(server, path))
     # Increase hang detection timeout
-    omni.client.set_hang_detection_time_ms(10000)
+    omni.client.set_hang_detection_time_ms(20000)
     result, _ = omni.client.stat("{}{}".format(server, path))
     if result == Result.OK:
         carb.log_info("Success: {}{}".format(server, path))
@@ -197,23 +198,32 @@ def check_server(server: str, path: str) -> bool:
         return False
 
 
-async def check_server_async(server: str, path: str) -> bool:
+async def check_server_async(server: str, path: str, timeout: float = 10.0) -> bool:
     """Check a specific server for a path (asynchronous version).
 
     Args:
         server (str): Name of Nucleus server
         path (str): Path to search
+        timeout (float): Default value: 10 seconds
 
     Returns:
         bool: True if folder is found
     """
     carb.log_info("Checking path: {}{}".format(server, path))
-    result, _ = await omni.client.stat_async("{}{}".format(server, path))
-    if result == Result.OK:
-        carb.log_info("Success: {}{}".format(server, path))
-        return True
-    else:
-        carb.log_info("Failure: {}{} not accessible".format(server, path))
+
+    try:
+        result, _ = await asyncio.wait_for(omni.client.stat_async("{}{}".format(server, path)), timeout)
+        if result == Result.OK:
+            carb.log_info("Success: {}{}".format(server, path))
+            return True
+        else:
+            carb.log_info("Failure: {}{} not accessible".format(server, path))
+            return False
+    except asyncio.TimeoutError:
+        carb.log_warn(f"check_server_async() timeout {timeout}")
+        return False
+    except Exception as ex:
+        carb.log_warn(f"Exception: {type(ex).__name__}")
         return False
 
 
@@ -230,7 +240,7 @@ def build_server_list() -> typing.List:
         for drive in mounted_dict.items():
             all_servers.append(drive[1])
     else:
-        carb.log_warn("/persistent/app/omniverse/mountedDrives setting not found")
+        carb.log_info("/persistent/app/omniverse/mountedDrives setting not found")
 
     return all_servers
 
@@ -265,6 +275,27 @@ def get_server_path(suffix: str = "") -> typing.Union[str, None]:
     server_root = get_url_root(default_asset_root)
     if server_root:
         result = check_server(server_root, suffix)
+        if result:
+            return server_root
+    carb.log_warn("Could not find Nucleus server with {} folder".format(suffix))
+    return None
+
+
+async def get_server_path_async(suffix: str = "") -> typing.Union[str, None]:
+    """Tries to find a Nucleus server with specific path (asynchronous version).
+
+    Args:
+        suffix (str): Path to folder to search for.
+
+    Returns:
+        url (str): URL of Nucleus server with path to folder.
+        Returns None if Nucleus server not found.
+    """
+    carb.log_info("Check /persistent/isaac/asset_root/default setting")
+    default_asset_root = carb.settings.get_settings().get("/persistent/isaac/asset_root/default")
+    server_root = get_url_root(default_asset_root)
+    if server_root:
+        result = await check_server_async(server_root, suffix)
         if result:
             return server_root
     carb.log_warn("Could not find Nucleus server with {} folder".format(suffix))
@@ -352,6 +383,38 @@ def get_full_asset_path(path: str) -> typing.Union[str, None]:
     if len(connected_servers):
         for server_name in connected_servers:
             result = check_server(server_name, path)
+            if result:
+                carb.log_info("Asset path found at {}{}".format(server_name, path))
+                return server_name + path
+
+    carb.log_warn("Could not find assets path: {}".format(path))
+    return None
+
+
+async def get_full_asset_path_async(path: str) -> typing.Union[str, None]:
+    """Tries to find the full asset path on connected servers (asynchronous version).
+
+    Args:
+        path (str): Path of asset from root to verify
+
+    Returns:
+        url (str): URL or full path to assets.
+        Returns None if assets not found.
+    """
+
+    # 1 - Check /persistent/isaac/asset_root/default setting
+    default_asset_root = carb.settings.get_settings().get("/persistent/isaac/asset_root/default")
+    if default_asset_root:
+        result = await check_server_async(default_asset_root, path)
+        if result:
+            carb.log_info("Asset path found at {}{}".format(default_asset_root, path))
+            return default_asset_root + path
+
+    # 2 - Check mountedDrives setting
+    connected_servers = build_server_list()
+    if len(connected_servers):
+        for server_name in connected_servers:
+            result = await check_server_async(server_name, path)
             if result:
                 carb.log_info("Asset path found at {}{}".format(server_name, path))
                 return server_name + path
@@ -497,13 +560,18 @@ def get_assets_root_path() -> typing.Union[str, None]:
         Returns None if Nucleus server not found.
     """
 
+    # get timeout
+    timeout = carb.settings.get_settings().get("/persistent/isaac/asset_root/timeout")
+    if not isinstance(timeout, (int, float)):
+        timeout = 10.0
+
     # 1 - Check /persistent/isaac/asset_root/default setting
     carb.log_info("Check /persistent/isaac/asset_root/default setting")
     default_asset_root = carb.settings.get_settings().get("/persistent/isaac/asset_root/default")
     if default_asset_root:
-        result = check_server(default_asset_root, "/Isaac")
+        result = check_server(default_asset_root, "/Isaac", timeout)
         if result:
-            result = check_server(default_asset_root, "/NVIDIA")
+            result = check_server(default_asset_root, "/NVIDIA", timeout)
             if result:
                 carb.log_info("Assets root found at {}".format(default_asset_root))
                 return default_asset_root
@@ -513,9 +581,9 @@ def get_assets_root_path() -> typing.Union[str, None]:
     if len(connected_servers):
         for server_name in connected_servers:
             # carb.log_info("Found {}".format(server_name))
-            result = check_server(server_name, "/Isaac")
+            result = check_server(server_name, "/Isaac", timeout)
             if result:
-                result = check_server(server_name, "/NVIDIA")
+                result = check_server(server_name, "/NVIDIA", timeout)
                 if result:
                     carb.log_info("Assets root found at {}".format(server_name))
                     return server_name
@@ -524,9 +592,60 @@ def get_assets_root_path() -> typing.Union[str, None]:
     cloud_assets_url = carb.settings.get_settings().get("/persistent/isaac/asset_root/cloud")
     carb.log_info("Checking {}...".format(cloud_assets_url))
     if cloud_assets_url:
-        result = check_server(cloud_assets_url, "/Isaac")
+        result = check_server(cloud_assets_url, "/Isaac", timeout)
         if result:
-            result = check_server(cloud_assets_url, "/NVIDIA")
+            result = check_server(cloud_assets_url, "/NVIDIA", timeout)
+            if result:
+                carb.log_info("Assets root found at {}".format(cloud_assets_url))
+                return cloud_assets_url
+
+    carb.log_warn("Could not find assets root folder")
+    return None
+
+
+async def get_assets_root_path_async() -> typing.Union[str, None]:
+    """Tries to find the root path to the Isaac Sim assets on a Nucleus server (asynchronous version).
+
+    Returns:
+        url (str): URL of Nucleus server with root path to assets folder.
+        Returns None if Nucleus server not found.
+    """
+
+    # get timeout
+    timeout = carb.settings.get_settings().get("/persistent/isaac/asset_root/timeout")
+    if not isinstance(timeout, (int, float)):
+        timeout = 10.0
+
+    # 1 - Check /persistent/isaac/asset_root/default setting
+    carb.log_info("Check /persistent/isaac/asset_root/default setting")
+    default_asset_root = carb.settings.get_settings().get("/persistent/isaac/asset_root/default")
+    if default_asset_root:
+        result = await check_server_async(default_asset_root, "/Isaac", timeout)
+        if result:
+            result = await check_server_async(default_asset_root, "/NVIDIA", timeout)
+            if result:
+                carb.log_info("Assets root found at {}".format(default_asset_root))
+                return default_asset_root
+
+    # 2 - Check root on mountedDrives setting
+    connected_servers = build_server_list()
+    if len(connected_servers):
+        for server_name in connected_servers:
+            # carb.log_info("Found {}".format(server_name))
+            result = await check_server_async(server_name, "/Isaac", timeout)
+            if result:
+                result = await check_server_async(server_name, "/NVIDIA", timeout)
+                if result:
+                    carb.log_info("Assets root found at {}".format(server_name))
+                    return server_name
+
+    # 3 - Check cloud for /Assets/Isaac/{version_major}.{version_minor} folder
+    cloud_assets_url = carb.settings.get_settings().get("/persistent/isaac/asset_root/cloud")
+    carb.log_info("Checking {}...".format(cloud_assets_url))
+    if cloud_assets_url:
+        result = await check_server_async(cloud_assets_url, "/Isaac", timeout)
+        if result:
+            result = await check_server_async(cloud_assets_url, "/NVIDIA", timeout)
             if result:
                 carb.log_info("Assets root found at {}".format(cloud_assets_url))
                 return cloud_assets_url

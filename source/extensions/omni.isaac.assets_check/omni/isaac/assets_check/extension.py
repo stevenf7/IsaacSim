@@ -23,7 +23,7 @@ from omni.isaac.ui.menu import make_menu_item_description
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 
 DOCS_URL = "https://docs.omniverse.nvidia.com"
-ASSETS_GUIDE_URL = DOCS_URL + "/isaacsim/latest/install_workstation.html"
+ASSETS_GUIDE_URL = DOCS_URL + "/isaacsim/latest/installation/install_faq.html#setting-the-default-nuc-short-server"
 
 
 class Extension(omni.ext.IExt):
@@ -107,7 +107,7 @@ class Extension(omni.ext.IExt):
             self._startup_run = False
             pass
         else:
-            from omni.isaac.core.utils.nucleus import get_assets_root_path
+            from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 
             omni.kit.app.get_app().print_and_log("Checking for Isaac Sim assets...")
             self._check_window = ui.Window("Check Isaac Sim assets", height=120, width=600)
@@ -129,7 +129,7 @@ class Extension(omni.ext.IExt):
             await omni.kit.app.get_app().next_update_async()
 
             # Looks for assets root
-            self._nucleus_server = get_assets_root_path()
+            self._nucleus_server = await get_assets_root_path_async()
 
             self._check_window.visible = False
             self._check_window = None

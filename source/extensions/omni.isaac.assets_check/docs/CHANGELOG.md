@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.3] - 2023-11-30
+### Changed
+- Use get_assets_root_path_async(). Fix for OM-112464.
+
 ## [0.3.2] - 2023-01-06
 ### Fixed
 - onclick_fn warning when creating UI

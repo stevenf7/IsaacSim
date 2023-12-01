@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import asyncio
 import os
 import random
 import time
@@ -16,7 +17,7 @@ import carb
 import omni.kit.test
 from omni.isaac.benchmark.services.base_isaac_benchmark import BaseIsaacBenchmark
 from omni.isaac.benchmark.services.helper import wait_until_stage_is_fully_loaded_async
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path, get_assets_root_path_async
 from omni.isaac.core.utils.stage import add_reference_to_stage, create_new_stage_async, open_stage
 from pxr import UsdGeom, UsdLux
 
@@ -50,6 +51,9 @@ def get_test_name_from_args(num_assets, location, prim_type, api, num_lights=0):
 # Get a list of assets as a cycle iterator
 def get_usd_assets_from_path_as_cycle(assets_path):
     assets_root_path = get_assets_root_path()
+    if assets_root_path is None:
+        carb.log_error("Could not find Isaac Sim assets folder")
+        return
     path = assets_root_path + assets_path
     assets = []
     result, entries = omni.client.list(path)
@@ -70,10 +74,13 @@ def get_extent_from_num_assets(num_assets):
 
 # Spawn all assets in a new stage once to perform any caching and avoid influencing the following tests
 async def load_all_assets_in_new_stage_async(assets_path):
-    assets_root_path = get_assets_root_path()
+    assets_root_path = await get_assets_root_path_async()
+    if assets_root_path is None:
+        carb.log_error("Could not find Isaac Sim assets folder")
+        return
     path = assets_root_path + assets_path
     assets = []
-    result, entries = omni.client.list(path)
+    result, entries = await asyncio.wait_for(omni.client.list_async(path), timeout=10)
     if result != omni.client.Result.OK:
         carb.log_error(f"Could not list assets in path: {path}")
         return
