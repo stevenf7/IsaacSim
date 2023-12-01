@@ -13,7 +13,12 @@ import carb
 import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd
-from omni.isaac.core.utils.nucleus import build_server_list, get_assets_root_path, get_full_asset_path, get_server_path
+from omni.isaac.core.utils.nucleus import (
+    build_server_list,
+    get_assets_root_path_async,
+    get_full_asset_path_async,
+    get_server_path_async,
+)
 
 # import json
 # import time
@@ -312,18 +317,18 @@ class TestNucleusUtils(omni.kit.test.AsyncTestCase):
     async def test_get_server_path(self):
         carb.settings.get_settings().set("/persistent/isaac/asset_root/default", "")
         carb.settings.get_settings().set("/persistent/isaac/asset_root/default", "omniverse://isaac-dev.ov.nvidia.com")
-        result = get_server_path("/Isaac")
+        result = await get_server_path_async("/Isaac")
         self.assertEqual(result, "omniverse://isaac-dev.ov.nvidia.com")
-        result = get_server_path("/Isaac/Robots")
+        result = await get_server_path_async("/Isaac/Robots")
         self.assertEqual(result, "omniverse://isaac-dev.ov.nvidia.com")
-        result = get_server_path("/Does/Not/Exist")
+        result = await get_server_path_async("/Does/Not/Exist")
         self.assertIsNone(result)
 
     async def test_get_assets_root_path(self):
         # 1 - Check /persistent/isaac/asset_root/default setting
         carb.settings.get_settings().set("/persistent/isaac/asset_root/default", "")
         carb.settings.get_settings().set("/persistent/isaac/asset_root/default", "omniverse://isaac-dev.ov.nvidia.com")
-        result = get_assets_root_path()
+        result = await get_assets_root_path_async()
         self.assertEqual(result, "omniverse://isaac-dev.ov.nvidia.com")
 
         # 2 - Check root on mountedDrives setting
@@ -336,24 +341,24 @@ class TestNucleusUtils(omni.kit.test.AsyncTestCase):
         )
         self.assertTrue(len(build_server_list()) > 0)
         carb.settings.get_settings().set("/persistent/isaac/asset_root/default", "")
-        result = get_assets_root_path()
+        result = await get_assets_root_path_async()
         self.assertEqual(result, "omniverse://isaac-dev.ov.nvidia.com")
 
         # 3 - Check cloud for /Assets/Isaac/{version_major}.{version_minor} folder
         carb.settings.get_settings().set("/persistent/isaac/asset_root/default", "")
         carb.settings.get_settings().set("/persistent/app/omniverse/mountedDrives", "{}")
         cloud_assets_url = carb.settings.get_settings().get("/persistent/isaac/asset_root/cloud")
-        result = get_assets_root_path()
+        result = await get_assets_root_path_async()
         self.assertEqual(result, cloud_assets_url)
 
     async def test_get_full_asset_path(self):
         # 1 - Check /persistent/isaac/asset_root/default setting
         carb.settings.get_settings().set("/persistent/isaac/asset_root/default", "")
         carb.settings.get_settings().set("/persistent/isaac/asset_root/default", "omniverse://isaac-dev.ov.nvidia.com")
-        result = get_full_asset_path("/Isaac")
+        result = await get_full_asset_path_async("/Isaac")
         self.assertEqual(result, "omniverse://isaac-dev.ov.nvidia.com/Isaac")
         carb.settings.get_settings().set("/persistent/isaac/asset_root/default", "omniverse://ov-content.nvidia.com")
-        result = get_full_asset_path("/Isaac")
+        result = await get_full_asset_path_async("/Isaac")
         self.assertIsNone(result)
 
         # 2 - Check mountedDrives setting
@@ -366,5 +371,5 @@ class TestNucleusUtils(omni.kit.test.AsyncTestCase):
         )
         self.assertTrue(len(build_server_list()) > 0)
         carb.settings.get_settings().set("/persistent/isaac/asset_root/default", "")
-        result = get_full_asset_path("/Isaac")
+        result = await get_full_asset_path_async("/Isaac")
         self.assertEqual(result, "omniverse://isaac-dev.ov.nvidia.com/Isaac")

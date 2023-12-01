@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.0] - 2023-11-30
+### Changed
+- Use async omni.client calls
+
 ## [1.1.3] - 2023-01-09
 ### Changed
 - Update internal Nucleus to isaac-dev.ov.nvidia.com

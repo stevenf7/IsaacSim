@@ -1,5 +1,5 @@
 [package]
-version = "0.3.2"
+version = "0.3.3"
 category = "Setup"
 title = "Isaac Sim Assets Check"
 description = "This Extension checks if the assets are updated."
@@ -13,7 +13,7 @@ toggleable = false
 "omni.usd" = {}
 "omni.ui" = { order = -100 }
 
-# Isaac Sim Core Extensions 
+# Isaac Sim Core Extensions
 "omni.isaac.core" = {}
 
 [[python.module]]

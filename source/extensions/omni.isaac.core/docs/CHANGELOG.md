@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.2.0] - 2023-11-30
+### Changed
+- Add get_assets_root_path_async(). Fix for OM-112464.
+- Add get_full_asset_path_async()
+- Add get_server_path_async()
+
 ## [3.1.0] - 2023-11-29
 ### Changed
 - /app/runLoops/main/rateLimitEnabled in standalone workflow will be set to False

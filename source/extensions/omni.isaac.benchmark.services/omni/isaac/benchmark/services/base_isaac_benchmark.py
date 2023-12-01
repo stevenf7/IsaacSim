@@ -16,7 +16,7 @@ from pathlib import Path
 
 import carb
 import omni.kit.test
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.stage import is_stage_loading, open_stage
 from omni.kit.testing.services import execution, settings, utils
 from omni.kit.testing.services.datarecorders import interface
@@ -42,7 +42,7 @@ class BaseIsaacBenchmark(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         # Set carb settings to wait until all materials are loaded when loading a stage
         set_sync_mode()
-        self.assets_root_path = get_assets_root_path()
+        self.assets_root_path = await get_assets_root_path_async()
         if self.assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return
