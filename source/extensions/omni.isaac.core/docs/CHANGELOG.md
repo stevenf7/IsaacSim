@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.2.1] - 2023-12-01
+### Changed
+- Add examples to docstrings, fix type annotations, and improve description.
+  Affected modules: omni.isaac.core.world (world) and omni.isaac.core.simulation_context (simulation_context)
+
 ## [3.2.0] - 2023-11-30
 ### Changed
 - Add get_assets_root_path_async(). Fix for OM-112464.

@@ -55,7 +55,7 @@ class SimulationContext:
         physics_dt (Optional[float], optional): dt between physics steps. Defaults to None.
         rendering_dt (Optional[float], optional):  dt between rendering steps. Note: rendering means
                                                    rendering a frame of the current application and not
-                                                   only rendering a frame to the viewports/ cameras. So UI
+                                                   only rendering a frame to the viewports/cameras. So UI
                                                    elements of Isaac Sim will be refreshed with this dt
                                                    as well if running non-headless.
                                                    Defaults to None.
@@ -77,6 +77,15 @@ class SimulationContext:
         backend (str, optional): specifies the backend to be used (numpy or torch or warp). Defaults to numpy.
         device (Optional[str], optional): specifies the device to be used if running on the gpu with torch or warp backend.
 
+    Example:
+
+    .. code-block:: python
+
+        >>> from omni.isaac.core import SimulationContext
+        >>>
+        >>> simulation_context = SimulationContext()
+        >>> simulation_context
+        <omni.isaac.core.simulation_context.simulation_context.SimulationContext object at 0x...>
     """
 
     _instance = None
@@ -176,12 +185,33 @@ class SimulationContext:
     """
 
     @classmethod
-    def instance(cls):
+    def instance(cls) -> SimulationContext:
+        """Get the instance of the class, if it was instantiated before
+
+        Returns:
+            SimulationContext: SimulationContext object or None
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # given that the class has already been instantiated before
+            >>> simulation_context = SimulationContext.instance()
+            >>> simulation_context
+            <omni.isaac.core.simulation_context.simulation_context.SimulationContext object at 0x...>
+        """
         return SimulationContext._instance
 
     @classmethod
-    def clear_instance(cls):
-        """[summary]"""
+    def clear_instance(cls) -> None:
+        """Delete the simulation context object, if it was instantiated before, and destroy any subscribed callback
+
+        Example:
+
+        .. code-block:: python
+
+            >>> SimulationContext.clear_instance()
+        """
         if SimulationContext._instance is not None:
             if hasattr(SimulationContext._instance, "_physics_sim_view"):
                 del SimulationContext._instance._physics_sim_view
@@ -199,55 +229,94 @@ class SimulationContext:
 
     @property
     def app(self) -> omni.kit.app.IApp:
-        """[summary]
+        """Returns:
+            omni.kit.app.IApp: Omniverse Kit Application interface
 
-        Returns:
-            omni.kit.app.IApp: [description]
+        Example:
+
+        .. code-block:: python
+
+            >>> simulation_context.app
+            <omni.kit.app._app.IApp object at 0x...>
         """
         return self._app
 
     @property
     def current_time_step_index(self) -> int:
-        """[summary]
-
+        """
         Returns:
-            int: [description]
+            int: current number of physics steps that have elapsed since the simulation was played
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # given a running Isaac Sim instance and after approximately 15 seconds of physics simulation at 60 Hz
+            >>> simulation_context.current_time_step_index
+            911
         """
         return self._number_of_steps
 
     @property
     def current_time(self) -> float:
-        """[summary]
-
+        """
         Returns:
-            float: [description]
+            float: current time (simulated physical time) that have elapsed since the simulation was played
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # given a running Isaac Sim instance and after 911 physics steps at 60 Hz
+            >>> simulation_context.current_time
+            15.183334125205874
         """
         return self._current_time
 
     @property
     def stage(self) -> Usd.Stage:
-        """[summary]
-
+        """
         Returns:
-            Usd.Stage: [description]
+            Usd.Stage: current open USD stage
+
+        Example:
+
+        .. code-block:: python
+
+            >>> simulation_context.stage
+            Usd.Stage.Open(rootLayer=Sdf.Find('anon:0x...:World....usd'),
+                           sessionLayer=Sdf.Find('anon:0x...:World...-session.usda'),
+                           pathResolverContext=<invalid repr>)
         """
         return get_current_stage()
 
     @property
     def backend(self) -> str:
-        """[summary]
-
+        """
         Returns:
-            str: [description]
+            str: current backend. Supported backends are: ``"numpy"``, ``"torch"`` and ``"warp"``
+
+        Example:
+
+        .. code-block:: python
+
+            >>> simulation_context.backend
+            numpy
         """
         return self._backend
 
     @property
     def device(self) -> str:
-        """[summary]
-
+        """
         Returns:
-            str: [description]
+            str: Device used by the physics context. None for numpy backend
+
+        Example:
+
+        .. code-block:: python
+
+            >>> simulation_context.device
+            None
         """
         if self._physics_context:
             return self._physics_context._device
@@ -256,10 +325,50 @@ class SimulationContext:
 
     @property
     def backend_utils(self):
+        """Get the current backend utils module
+
+        .. list-table::
+            :header-rows: 1
+
+            * - Backend
+              - Utils module
+            * - ``"numpy"``
+              - ``omni.isaac.core.utils.numpy``
+            * - ``"torch"``
+              - ``omni.isaac.core.utils.torch``
+            * - ``"warp"``
+              - ``omni.isaac.core.utils.warp``
+
+        Returns:
+            str: current backend utils module
+
+        Example:
+
+        .. code-block:: python
+
+            >>> simulation_context.backend_utils
+            <module 'omni.isaac.core.utils.numpy'>
+        """
         return self._backend_utils
 
     @property
     def physics_sim_view(self):
+        """
+        .. note::
+
+            The physics simulation view instance will be only available after initializing the physics
+            (see ``initialize_physics``) or resetting the simulation context (see ``reset``)
+
+        Returns:
+            PhysicsContext: Physics simulation view instance
+
+        Example:
+
+        .. code-block:: python
+
+            >>> simulation_context.physics_sim_view
+            <omni.physics.tensors.impl.api.SimulationView object at 0x...>
+        """
         return self._physics_sim_view
 
     """
@@ -267,13 +376,20 @@ class SimulationContext:
     """
 
     def get_physics_context(self) -> PhysicsContext:
-        """[summary]
+        """Get the physics context (a class to deal with a physics scene and its settings) instance
 
         Raises:
-            Exception: [description]
+            Exception: if there is no stage currently opened
 
         Returns:
-            PhysicsContext: [description]
+            PhysicsContext: physics context object
+
+        Example:
+
+        .. code-block:: python
+
+            >>> simulation_context.get_physics_context()
+            <omni.isaac.core.physics_context.physics_context.PhysicsContext object at 0x...>
         """
         if self.stage is None:
             raise Exception("There is no stage currently opened")
@@ -284,11 +400,23 @@ class SimulationContext:
     """
 
     def set_simulation_dt(self, physics_dt: Optional[float] = None, rendering_dt: Optional[float] = None) -> None:
-        """Specify the physics step and rendering step size to use when stepping and rendering. It is recommended that the two values are divisible.
+        """Specify the physics step and rendering step size to use when stepping and rendering.
 
         Args:
             physics_dt (float): The physics time-step. None means it won't change the current setting. (default: None).
             rendering_dt (float):  The rendering time-step. None means it won't change the current setting. (default: None)
+
+        .. hint::
+
+            It is recommended that the two values be divisible, with the ``rendering_dt`` being equal to or greater
+            than the ``physics_dt``
+
+        Example:
+
+        .. code-block:: python
+
+            >>> set physics dt to 120 Hz and rendering dt to 60Hz (2 physics steps for each rendering)
+            >>> simulation_context.set_simulation_dt(physics_dt=1.0 / 120.0, rendering_dt=1.0 / 60.0)
         """
         if self.stage is None:
             raise Exception("There is no stage currently opened, init_stage needed before calling this func")
@@ -326,26 +454,40 @@ class SimulationContext:
         return
 
     def get_physics_dt(self) -> float:
-        """[summary]
+        """Get the current physics dt of the physics context
 
         Raises:
-            Exception: [description]
+            Exception: if there is no stage currently opened
 
         Returns:
             float: current physics dt of the PhysicsContext
+
+        Example:
+
+        .. code-block:: python
+
+            >>> simulation_context.get_physics_dt()
+            0.016666666666666666
         """
         if self.stage is None:
             raise Exception("There is no stage currently opened")
         return self._physics_context.get_physics_dt()
 
     def get_rendering_dt(self) -> float:
-        """[summary]
+        """Get the current rendering dt
 
         Raises:
-            Exception: [description]
+            Exception: if there is no stage currently opened
 
         Returns:
             float: current rendering dt
+
+        Example:
+
+        .. code-block:: python
+
+            >>> simulation_context.get_rendering_dt()
+            0.016666666666666666
         """
         if self.stage is None:
             raise Exception("There is no stage currently opened")
@@ -353,7 +495,7 @@ class SimulationContext:
         return 1.0 / frequency if frequency else 0
 
     def set_block_on_render(self, block: bool) -> None:
-        """Set block on render flag for the simualtion thread
+        """Set block on render flag for the simulation thread
 
         .. note::
 
@@ -361,14 +503,27 @@ class SimulationContext:
 
         Args:
             block (bool): True to block the thread until the renderer is done.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> simulation_context.set_block_on_render(False)
         """
         set_carb_setting(self._settings, "/app/hydraEngine/waitIdle", block)
 
     def get_block_on_render(self) -> bool:
-        """
+        """Get the block on render flag for the simulation thread
 
         Returns:
             bool: True if one frame lag between any data captured from the render products and the current USD stage is guaranteed by blocking the step call.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> simulation_context.get_block_on_render()
+            False
         """
         return get_carb_setting(self._settings, "/app/hydraEngine/waitIdle")
 
@@ -377,6 +532,24 @@ class SimulationContext:
     """
 
     async def initialize_simulation_context_async(self) -> None:
+        """Initialize the simulation context
+
+        .. hint::
+
+            This method is intended to be used in the Isaac Sim's Extensions workflow where
+            the Kit application has the control over timing of physics and rendering steps
+
+        Example:
+
+        .. code-block:: python
+
+            >>> from omni.kit.async_engine import run_coroutine
+            >>>
+            >>> async def task():
+            ...     await simulation_context.initialize_simulation_context_async()
+            ...
+            >>> run_coroutine(task())
+        """
         if self.is_playing():
             await self.stop_async()
         await omni.kit.app.get_app().next_update_async()
@@ -403,6 +576,14 @@ class SimulationContext:
         return
 
     def initialize_physics(self) -> None:
+        """Initialize the physics simulation view
+
+        Example:
+
+        .. code-block:: python
+
+            >>> simulation_context.initialize_physics()
+        """
         # remove current physics callbacks to avoid getting called before physics warmup
         for callback_name in list(self._physics_callback_functions.keys()):
             del self._physics_callback_functions[callback_name]
@@ -420,10 +601,21 @@ class SimulationContext:
         return
 
     def reset(self, soft: bool = False) -> None:
-        """Resets the physics simulation view.
+        """Reset the physics simulation view.
+
+        .. warning::
+
+            This method is not intended to be used in the Isaac Sim's Extensions workflow since the Kit application
+            has the control over the rendering steps. For the Extensions workflow use the ``reset_async`` method instead
 
         Args:
             soft (bool, optional): if set to True simulation won't be stopped and start again. It only calls the reset on the scene objects.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> simulation_context.reset()
         """
         if not soft:
             if not self.is_stopped():
@@ -435,10 +627,21 @@ class SimulationContext:
                 carb.log_warn(msg)
 
     async def reset_async(self, soft: bool = False) -> None:
-        """Resets the physics simulation view (asynchronous version).
+        """Reset the physics simulation view (asynchronous version).
 
         Args:
             soft (bool, optional): if set to True simulation won't be stopped and start again. It only calls the reset on the scene objects.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> from omni.kit.async_engine import run_coroutine
+            >>>
+            >>> async def task():
+            >>>     await simulation_context.reset_async()
+            >>>
+            >>> run_coroutine(task())
         """
         if not soft:
             if not self.is_stopped():
@@ -463,13 +666,24 @@ class SimulationContext:
     def step(self, render: bool = True) -> None:
         """Steps the physics simulation while rendering or without.
 
+        .. warning::
+
+            Calling this method with the ``render`` parameter set to True (default value) is not intended to be used
+            in the Isaac Sim's Extensions workflow since the Kit application has the control over the rendering steps
+
         Args:
             render (bool, optional): Set to False to only do a physics simulation without rendering. Note:
                                      app UI will be frozen (since its not rendering) in this case.
                                      Defaults to True.
 
         Raises:
-            Exception: [description]
+            Exception: if there is no stage currently opened
+
+        Example:
+
+        .. code-block:: python
+
+            >>> simulation_context.step()
         """
         if self.stage is None:
             raise Exception("There is no stage currently opened, init_stage needed before calling this func")
@@ -490,7 +704,19 @@ class SimulationContext:
         return
 
     def render(self) -> None:
-        """Refreshes the Isaac Sim app rendering components including UI elements and view ports..etc."""
+        """Refresh the Isaac Sim app rendering components including UI elements, viewports and others
+
+        .. warning::
+
+            This method is not intended to be used in the Isaac Sim's Extensions workflow
+            since the Kit application has the control over the rendering steps
+
+        Example:
+
+        .. code-block:: python
+
+            >>> simulation_context.render()
+        """
         if self._physx_fabric_interface is None:
             if self.current_time > 0 and self._extension_manager.is_extension_enabled("omni.physx.fabric"):
                 from omni.physxfabric import get_physx_fabric_interface
@@ -504,7 +730,24 @@ class SimulationContext:
         return
 
     async def render_async(self) -> None:
-        """Refreshes the Isaac Sim app rendering components including UI elements and view ports..etc."""
+        """Refresh the Isaac Sim app rendering components including UI elements, viewports and others
+
+        .. hint::
+
+            This method is intended to be used in the Isaac Sim's Extensions workflow where
+            the Kit application has the control over timing of physics and rendering steps
+
+        Example:
+
+        .. code-block:: python
+
+            >>> from omni.kit.async_engine import run_coroutine
+            >>>
+            >>> async def task():
+            ...     await simulation_context.render_async()
+            ...
+            >>> run_coroutine(task())
+        """
         if self._physx_fabric_interface is None:
             if self.current_time > 0 and self._extension_manager.is_extension_enabled("omni.physx.fabric"):
                 from omni.physxfabric import get_physx_fabric_interface
@@ -518,7 +761,14 @@ class SimulationContext:
         return
 
     def clear(self) -> None:
-        """Clears the current stage leaving the PhysicsScene only if under /World."""
+        """Clear the current stage leaving the PhysicsScene and /World
+
+        Example:
+
+        .. code-block:: python
+
+            >>> simulation_context.clear()
+        """
 
         def check_deletable_prim(prim_path):
             if is_prim_no_delete(prim_path):
@@ -543,13 +793,24 @@ class SimulationContext:
     """
 
     def is_simulating(self) -> bool:
-        """Returns: True if physics simulation is happening.
+        """Check whether the simulation is running or not
 
-        Note:
-            Can return True if start_simulation is called even if play was pressed/ called.
+        .. warning::
 
-        Deprecated:
-            With deprecation of Dynamic Control Toolbox, this function is not needed.
+            With deprecation of Dynamic Control Toolbox, this function is not needed
+
+            It can return True if start_simulation is called even if play was pressed/called.
+
+        Returns:
+            bool" True if physics simulation is happening.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # given a running simulation
+            >>> simulation_context.is_simulating()
+            True
         """
         return self._dynamic_control.is_simulating()
 
@@ -558,25 +819,68 @@ class SimulationContext:
     """
 
     def is_playing(self) -> bool:
-        """Returns: True if the simulator is playing."""
+        """Check whether the simulation is playing
+
+        Returns:
+            bool: True if the simulator is playing.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # given a simulation in play
+            >>> simulation_context.is_playing()
+            True
+        """
         return self._timeline.is_playing()
 
     def is_stopped(self) -> bool:
-        """Returns: True if the simulator is stopped."""
+        """Check whether the simulation is playing
+
+        Returns:
+            bool: True if the simulator is stopped.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # given a simulation in play
+            >>> simulation_context.is_stopped()
+            False
+        """
         return self._timeline.is_stopped()
 
     async def play_async(self) -> None:
-        """Starts playing simulation."""
+        """Start playing simulation
+
+        Example:
+
+        .. code-block:: python
+
+            >>> from omni.kit.async_engine import run_coroutine
+            >>>
+            >>> async def task():
+            ...     await simulation_context.play_async()
+            ...
+            >>> run_coroutine(task())
+        """
         self._timeline.play()
         self.get_physics_context().warm_start()
         await self.render_async()
         return
 
     def play(self) -> None:
-        """Start playing simulation.
+        """Start playing simulation
 
-        Note:
-           it does one step internally to propagate all physics handles properly.
+        .. note::
+
+           It does one step internally to propagate all physics handles properly.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> simulation_context.play()
         """
         self._timeline.play()
         if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
@@ -585,26 +889,64 @@ class SimulationContext:
         return
 
     async def pause_async(self) -> None:
-        """Pauses the physics simulation"""
+        """Pause the physics simulation
+
+        Example:
+
+        .. code-block:: python
+
+            >>> from omni.kit.async_engine import run_coroutine
+            >>>
+            >>> async def task():
+            ...     await simulation_context.pause_async()
+            ...
+            >>> run_coroutine(task())
+        """
         self._timeline.pause()
         await omni.kit.app.get_app().next_update_async()
         return
 
     def pause(self) -> None:
-        """Pauses the physics simulation"""
+        """Pause the physics simulation
+
+        Example:
+
+        .. code-block:: python
+
+            >>> simulation_context.pause()
+        """
         self._timeline.pause()
         if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
             self.render()
         return
 
     async def stop_async(self) -> None:
-        """Stops the physics simulation"""
+        """Stop the physics simulation
+
+        Example:
+
+        .. code-block:: python
+
+            >>> from omni.kit.async_engine import run_coroutine
+            >>>
+            >>> async def task():
+            ...     await simulation_context.stop_async()
+            ...
+            >>> run_coroutine(task())
+        """
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
         return
 
     def stop(self) -> None:
-        """Stops the physics simulation"""
+        """Stop the physics simulation
+
+        Example:
+
+        .. code-block:: python
+
+            >>> simulation_context.stop()
+        """
         self._timeline.stop()
         if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
             self.render()
@@ -615,12 +957,22 @@ class SimulationContext:
     """
 
     def add_physics_callback(self, callback_name: str, callback_fn: Callable[[float], None]) -> None:
-        """Adds a callback which will be called before each physics step.
-           callback_fn should take an argument of step_size: float
+        """Add a callback which will be called before each physics step.
+
+        ``callback_fn`` should take a float argument (e.g., ``step_size``)
 
         Args:
             callback_name (str): should be unique.
             callback_fn (Callable[[float], None]): [description]
+
+        Example:
+
+        .. code-block:: python
+
+            >>> def callback_physics(step_size):
+            ...     print("physics callback -> step_size:", step_size)
+            ...
+            >>> simulation_context.add_physics_callback("callback_physics", callback_physics)
         """
         if callback_name in self._physics_callback_functions:
             carb.log_error(f"Physics callback `{callback_name}` already exists")
@@ -632,10 +984,17 @@ class SimulationContext:
         return
 
     def remove_physics_callback(self, callback_name: str) -> None:
-        """[summary]
+        """Remove a physics callback by its name
 
         Args:
-            callback_name (str): [description]
+            callback_name (str): callback name
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # given a registered callback named 'callback_physics'
+            >>> simulation_context.remove_physics_callback("callback_physics")
         """
         if callback_name in self._physics_callback_functions:
             del self._physics_callback_functions[callback_name]
@@ -645,13 +1004,21 @@ class SimulationContext:
         return
 
     def physics_callback_exists(self, callback_name: str) -> bool:
-        """[summary]
+        """Check if a physics callback exists
 
         Args:
-            callback_name (str): [description]
+            callback_name (str): callback name
 
         Returns:
-            bool: [description]
+            bool: whether the callback is registered
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # given a registered callback named 'callback_physics'
+            >>> simulation_context.physics_callback_exists("callback_physics")
+            True
         """
         if callback_name in self._physics_callback_functions:
             return True
@@ -659,18 +1026,35 @@ class SimulationContext:
             return False
 
     def clear_physics_callbacks(self) -> None:
-        """[summary]"""
+        """Remove all registered physics callbacks
+
+        Example:
+
+        .. code-block:: python
+
+            >>> simulation_context.clear_physics_callbacks()
+        """
         self._physics_callback_functions = dict()
         self._physics_functions = dict()
         return
 
     def add_stage_callback(self, callback_name: str, callback_fn: Callable) -> None:
-        """Adds a callback which will be called after each stage event such as open/close.
-           callback_fn should take an argument of event
+        """Add a callback which will be called after each stage event such as open/close among others
+
+        ``callback_fn`` should take an argument of type ``omni.usd.StageEvent`` (e.g., ``event``)
 
         Args:
             callback_name (str): [description]
             callback_fn (Callable[[omni.usd.StageEvent], None]): [description]
+
+        Example:
+
+        .. code-block:: python
+
+            >>> def callback_stage(event):
+            ...     print("stage callback -> event:", event)
+            ...
+            >>> simulation_context.add_stage_callback("callback_stage", callback_stage)
         """
         if callback_name in self._stage_callback_functions:
             carb.log_error(f"Stage callback `{callback_name}` already exists")
@@ -681,10 +1065,17 @@ class SimulationContext:
         return
 
     def remove_stage_callback(self, callback_name: str) -> None:
-        """[summary]
+        """Remove a stage callback by its name
 
         Args:
-            callback_name (str): [description]
+            callback_name (str): callback name
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # given a registered callback named 'callback_stage'
+            >>> simulation_context.remove_stage_callback("callback_stage")
         """
         if callback_name in self._stage_callback_functions:
             del self._stage_callback_functions[callback_name]
@@ -693,13 +1084,21 @@ class SimulationContext:
         return
 
     def stage_callback_exists(self, callback_name: str) -> bool:
-        """[summary]
+        """Check if a stage callback exists
 
         Args:
-            callback_name (str): [description]
+            callback_name (str): callback name
 
         Returns:
-            bool: [description]
+            bool: whether the callback is registered
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # given a registered callback named 'callback_stage'
+            >>> simulation_context.stage_callback_exists("callback_stage")
+            True
         """
         if callback_name in self._stage_callback_functions:
             return True
@@ -707,17 +1106,34 @@ class SimulationContext:
             return False
 
     def clear_stage_callbacks(self) -> None:
-        """[summary]"""
+        """Remove all registered stage callbacks
+
+        Example:
+
+        .. code-block:: python
+
+            >>> simulation_context.clear_stage_callbacks()
+        """
         self._stage_callback_functions = dict()
         return
 
     def add_timeline_callback(self, callback_name: str, callback_fn: Callable) -> None:
-        """Adds a callback which will be called after each timeline event such as play/pause.
-           callback_fn should take an argument of event
+        """Add a callback which will be called after each timeline event such as play/pause.
+
+        ``callback_fn`` should take an argument of type ``omni.timeline.TimelineEvent`` (e.g., ``event``)
 
         Args:
             callback_name (str): [description]
             callback_fn (Callable[[omni.timeline.TimelineEvent], None]): [description]
+
+        Example:
+
+        .. code-block:: python
+
+            >>> def callback_timeline(event):
+            ...     print("timeline callback -> event:", event)
+            ...
+            >>> simulation_context.add_timeline_callback("callback_timeline", callback_timeline)
         """
         if callback_name in self._timeline_callback_functions:
             carb.log_error(f"Timeline callback `{callback_name}` already exists")
@@ -728,10 +1144,17 @@ class SimulationContext:
         return
 
     def remove_timeline_callback(self, callback_name: str) -> None:
-        """[summary]
+        """Remove a timeline callback by its name
 
         Args:
-            callback_name (str): [description]
+            callback_name (str): callback name
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # given a registered callback named 'timeline'
+            >>> simulation_context.timeline_callback("timeline")
         """
         if callback_name in self._timeline_callback_functions:
             del self._timeline_callback_functions[callback_name]
@@ -740,13 +1163,21 @@ class SimulationContext:
         return
 
     def timeline_callback_exists(self, callback_name: str) -> bool:
-        """[summary]
+        """Check if a timeline callback exists
 
         Args:
-            callback_name (str): [description]
+            callback_name (str): callback name
 
         Returns:
-            bool: [description]
+            bool: whether the callback is registered
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # given a registered callback named 'callback_timeline'
+            >>> simulation_context.timeline_callback_exists("callback_timeline")
+            True
         """
         if callback_name in self._timeline_callback_functions:
             return True
@@ -754,17 +1185,34 @@ class SimulationContext:
             return False
 
     def clear_timeline_callbacks(self) -> None:
-        """[summary]"""
+        """Remove all registered timeline callbacks
+
+        Example:
+
+        .. code-block:: python
+
+            >>> simulation_context.clear_timeline_callbacks()
+        """
         self._timeline_callback_functions = dict()
         return
 
     def add_render_callback(self, callback_name: str, callback_fn: Callable) -> None:
-        """Adds a callback which will be called after each rendering event such as .render().
-           callback_fn should take an argument of event
+        """Add a callback which will be called after each rendering event such as .render().
+
+        ``callback_fn`` should take an argument of type (e.g., ``event``)
 
         Args:
             callback_name (str): [description]
             callback_fn (Callable): [description]
+
+        Example:
+
+        .. code-block:: python
+
+            >>> def callback_render(event):
+            ...     print("render callback -> event:", event)
+            ...
+            >>> simulation_context.add_render_callback("callback_render", callback_render)
         """
         if callback_name in self._render_callback_functions:
             carb.log_error(f"Render callback `{callback_name}` already exists")
@@ -776,10 +1224,17 @@ class SimulationContext:
         return
 
     def remove_render_callback(self, callback_name: str) -> None:
-        """[summary]
+        """Remove a render callback by its name
 
         Args:
-            callback_name (str): [description]
+            callback_name (str): callback name
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # given a registered callback named 'callback_render'
+            >>> simulation_context.remove_render_callback("callback_render")
         """
         if callback_name in self._render_callback_functions:
             del self._render_callback_functions[callback_name]
@@ -788,13 +1243,21 @@ class SimulationContext:
         return
 
     def render_callback_exists(self, callback_name: str) -> bool:
-        """[summary]
+        """Check if a render callback exists
 
         Args:
-            callback_name (str): [description]
+            callback_name (str): callback name
 
         Returns:
-            bool: [description]
+            bool: whether the callback is registered
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # given a registered callback named 'callback_render'
+            >>> simulation_context.render_callback_exists("callback_render")
+            True
         """
         if callback_name in self._render_callback_functions:
             return True
@@ -802,12 +1265,26 @@ class SimulationContext:
             return False
 
     def clear_render_callbacks(self) -> None:
-        """[summary]"""
+        """Remove all registered render callbacks
+
+        Example:
+
+        .. code-block:: python
+
+            >>> simulation_context.clear_render_callbacks()
+        """
         self._render_callback_functions = dict()
         return
 
     def clear_all_callbacks(self) -> None:
-        """Clears all callbacks which were added using add_*_callback fn."""
+        """Clear all callbacks which were added using any ``add_*_callback`` method
+
+        Example:
+
+        .. code-block:: python
+
+            >>> simulation_context.clear_render_callbacks()
+        """
         self._physics_callback_functions = dict()
         self._physics_functions = dict()
         self._stage_callback_functions = dict()
