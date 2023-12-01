@@ -365,6 +365,17 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
         await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name, target_position, obstacle_position)
 
+    async def test_rmpflow_fr3(self):
+        assets_root_path = get_assets_root_path()
+        usd_path = assets_root_path + "/Isaac/Robots/Franka/FR3/fr3.usd"
+        robot_name = "FR3"
+        robot_prim_path = "/fr3"
+
+        obstacle_position = np.array([0.7, 0.25, 0.7])
+        target_position = np.array([0.78, 0.4, 0.55])
+
+        await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name, target_position, obstacle_position)
+
     async def _simple_robot_rmpflow_test(
         self,
         usd_path,

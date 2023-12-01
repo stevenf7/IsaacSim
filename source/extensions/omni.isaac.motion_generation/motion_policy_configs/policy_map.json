@@ -4,6 +4,9 @@
 		"RMPflowNoFeedback" : "./franka/rmpflow/config_no_feedback.json",
 		"RMPflowCortex" : "./franka/rmpflow/config_cortex.json"
 	},
+	"FR3":{
+		"RMPflow" : "./FR3/rmpflow/config.json"
+	},
 	"UR3":{
 		"RMPflow" : "./universal_robots/ur3/rmpflow/config.json"
 	},

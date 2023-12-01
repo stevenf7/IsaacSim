@@ -1,5 +1,9 @@
 # Changelog
 
+## [6.1.0] - 2023-11-30
+### Added
+- Add RMPflow configs for FR3 robot
+
 ## [6.0.0] - 2023-11-13
 ### Changed
 - Moved wheel base pose controller to wheeled robots extension
