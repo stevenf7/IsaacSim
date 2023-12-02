@@ -158,6 +158,20 @@ class IsaacSensorMenu:
                             ),
                         ],
                     ),
+                    MenuItemDescription(
+                        name="Stereolabs",
+                        sub_menu=[
+                            make_menu_item_description(
+                                ext_id,
+                                "ZED_X",
+                                lambda a=weakref.proxy(self): create_prim(
+                                    prim_path=get_next_free_path("/ZED_X", None),
+                                    prim_type="Xform",
+                                    usd_path=get_assets_root_path() + "/Isaac/Sensors/Stereolabs/ZED_X.usd",
+                                ),
+                            ),
+                        ],
+                    ),
                 ],
             ),
         ]
