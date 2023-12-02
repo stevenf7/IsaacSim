@@ -350,3 +350,87 @@ class TestRos2Subscribers(omni.kit.test.AsyncTestCase):
         self.assertTrue(self.sub_data == [self.MAX_COUNT - self.queue_size + i for i in range(self.queue_size)])
 
         pass
+
+    async def test_ackermann_subscriber_queue(self):
+
+        import rclpy
+        from ackermann_msgs.msg import AckermannDriveStamped
+        from builtin_interfaces.msg import Time
+
+        self._stage = omni.usd.get_context().get_stage()
+
+        node = rclpy.create_node("isaac_sim_test_AckermannDrive_sub_queue")
+        ros_topic = "ackermann_sub"
+        test_pub = node.create_publisher(AckermannDriveStamped, ros_topic, 1)
+
+        self.graph_path = "/ActionGraph"
+
+        # We are using timestamp to store message sequence
+        self.sub_node_time_attribute_path = self.graph_path + "/SubscribeAckermannDrive.outputs:timeStamp"
+        sub_node_queue_attribute_path = self.graph_path + "/SubscribeAckermannDrive.inputs:queueSize"
+
+        try:
+            og.Controller.edit(
+                {"graph_path": self.graph_path, "evaluator_name": "execution"},
+                {
+                    og.Controller.Keys.CREATE_NODES: [
+                        ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                        ("SubscribeAckermannDrive", "omni.isaac.ros2_bridge.ROS2SubscribeAckermannDrive"),
+                    ],
+                    og.Controller.Keys.SET_VALUES: [
+                        (
+                            "SubscribeAckermannDrive.inputs:topicName",
+                            ros_topic,
+                        ),
+                    ],
+                    og.Controller.Keys.CONNECT: [
+                        ("OnPlaybackTick.outputs:tick", "SubscribeAckermannDrive.inputs:execIn"),
+                    ],
+                },
+            )
+        except Exception as e:
+            print(e)
+
+        # Set random Queue Size in subscriber OG node and reset test variables
+
+        self.reset_queue_size(sub_node_queue_attribute_path, queue_size=self.choose_queue_size())
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+
+        def publish_data():
+            # We are using linear.x to store message sequence
+            for count in range(1, self.MAX_COUNT):
+                msg = AckermannDriveStamped()
+                time_obj = Time()
+                time_obj.sec = count
+                msg.header.stamp = time_obj
+                test_pub.publish(msg)
+                time.sleep(0.01)
+
+        publish_data()
+
+        await simulate_async(2, 60, self.spin)
+
+        self._timeline.stop()
+
+        self.assertTrue(self.sub_data == [self.MAX_COUNT - self.queue_size + i for i in range(self.queue_size)])
+
+        ## Change queue size to random value
+        self.reset_queue_size(sub_node_queue_attribute_path, queue_size=self.choose_queue_size())
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+
+        publish_data()
+
+        await simulate_async(2, 60, self.spin)
+
+        self._timeline.stop()
+        self.assertTrue(self.sub_data == [self.MAX_COUNT - self.queue_size + i for i in range(self.queue_size)])
+
+        pass

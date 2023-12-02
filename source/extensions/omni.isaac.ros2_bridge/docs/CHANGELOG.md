@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.5.0] - 2023-11-28
+### Added
+- ROS2 Ackermann Subscriber and Publisher nodes using non-default ROS2 AckermannDriveStamped message type.
+
 ## [2.4.0] - 2023-11-27
 ### Added
 - Option to publish a full scan from RTX lidar

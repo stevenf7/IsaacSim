@@ -1000,3 +1000,73 @@ Ros2TwistMessageFoxy::~Ros2TwistMessageFoxy()
 
     geometry_msgs__msg__Twist__destroy(static_cast<geometry_msgs__msg__Twist*>(msg));
 }
+
+// AckermannDriveStamped message
+Ros2AckermannDriveStampedMessageFoxy::Ros2AckermannDriveStampedMessageFoxy()
+    : Ros2BackendFoxy("ackermann_msgs", "msg", "AckermannDriveStamped")
+{
+    msg = create();
+}
+const void* Ros2AckermannDriveStampedMessageFoxy::getTypeSupportHandle()
+{
+    return getTypeSupportHandleDynamic();
+}
+
+void Ros2AckermannDriveStampedMessageFoxy::getData(std::string& frameId,
+                                                   double& timeStamp,
+                                                   double& steeringAngle,
+                                                   double& steeringAngleVelocity,
+                                                   double& speed,
+                                                   double& acceleration,
+                                                   double& jerk)
+{
+    if (!msg)
+        return;
+
+    ackermann_msgs__msg__AckermannDriveStamped* driveMsg = static_cast<ackermann_msgs__msg__AckermannDriveStamped*>(msg);
+
+    frameId = driveMsg->header.frame_id.data;
+
+    timeStamp = driveMsg->header.stamp.sec + driveMsg->header.stamp.nanosec / 1e9;
+
+    steeringAngle = driveMsg->drive.steering_angle;
+    steeringAngleVelocity = driveMsg->drive.steering_angle_velocity;
+    speed = driveMsg->drive.speed;
+    acceleration = driveMsg->drive.acceleration;
+    jerk = driveMsg->drive.jerk;
+}
+
+void Ros2AckermannDriveStampedMessageFoxy::fillHeader(const double timestamp, const std::string& frame_id)
+{
+    if (!msg)
+        return;
+
+    ackermann_msgs__msg__AckermannDriveStamped* drive_msg = static_cast<ackermann_msgs__msg__AckermannDriveStamped*>(msg);
+    Ros2BackendFoxy::set_header(frame_id, static_cast<int64_t>(timestamp * 1e9), drive_msg->header);
+}
+
+void Ros2AckermannDriveStampedMessageFoxy::fillData(const double& steeringAngle,
+                                                    const double& steeringAngleVelocity,
+                                                    const double& speed,
+                                                    const double& acceleration,
+                                                    const double& jerk)
+{
+    if (!msg)
+        return;
+
+    ackermann_msgs__msg__AckermannDriveStamped* drive_msg = static_cast<ackermann_msgs__msg__AckermannDriveStamped*>(msg);
+
+    drive_msg->drive.steering_angle = static_cast<float>(steeringAngle);
+    drive_msg->drive.steering_angle_velocity = static_cast<float>(steeringAngleVelocity);
+    drive_msg->drive.speed = static_cast<float>(speed);
+    drive_msg->drive.acceleration = static_cast<float>(acceleration);
+    drive_msg->drive.jerk = static_cast<float>(jerk);
+}
+
+Ros2AckermannDriveStampedMessageFoxy::~Ros2AckermannDriveStampedMessageFoxy()
+{
+    if (!msg)
+        return;
+
+    destroy(static_cast<ackermann_msgs__msg__AckermannDriveStamped*>(msg));
+}

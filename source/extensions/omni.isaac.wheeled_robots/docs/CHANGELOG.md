@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.9.0] - 2023-11-28
+### Changed
+- OgnAckermannSteering node receives inputs in SI units.
+- OgnAckermannSteering node now accepts speed and acceleration as desired forward motion inputs. 
+- OgnAckermannSteering node uses front axel steering angle as input rather than curvature 
+
 ## [0.8.1] - 2023-11-27
 ### Fixed
 - _wheeled_dof_indices vs _wheel_dof_indices typo

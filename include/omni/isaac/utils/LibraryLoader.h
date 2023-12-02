@@ -42,13 +42,13 @@ public:
             {
                 if (test)
                 {
-                    CARB_LOG_WARN("Could not load the dynamic library from %s. Error: %s", libraryPath.c_str(),
-                                  carb::extras::getLastLoadLibraryError().c_str());
+                    printf("Could not load the dynamic library from %s. Error: %s\n", libraryPath.c_str(),
+                           carb::extras::getLastLoadLibraryError().c_str());
                 }
                 else
                 {
-                    CARB_LOG_ERROR("Could not load the dynamic library from %s. Error: %s", libraryPath.c_str(),
-                                   carb::extras::getLastLoadLibraryError().c_str());
+                    printf("Could not load the dynamic library from %s. Error: %s\n", libraryPath.c_str(),
+                           carb::extras::getLastLoadLibraryError().c_str());
                 }
 
                 loadedLibrary = carb::extras::kInvalidLibraryHandle;
@@ -78,9 +78,10 @@ public:
     {
         typedef T binding();
         void* loadedSymbol = getSymbol<void*>(symbol.c_str());
-        if (loadedSymbol == nullptr)
+
+        if (!loadedSymbol)
         {
-            CARB_LOG_ERROR("%s does not contain %s", loadedLibraryFile.c_str(), symbol.c_str());
+            printf("%s does not contain %s\n", loadedLibraryFile.c_str(), symbol.c_str());
             return nullptr;
         }
         binding* calledSymbol = reinterpret_cast<binding*>(loadedSymbol);
@@ -93,9 +94,10 @@ public:
     {
         typedef T binding(Arguments...);
         void* loadedSymbol = getSymbol<void*>(symbol.c_str());
-        if (loadedSymbol == nullptr)
+
+        if (!loadedSymbol)
         {
-            CARB_LOG_ERROR("%s does not contain %s", loadedLibraryFile.c_str(), symbol.c_str());
+            printf("%s does not contain %s\n", loadedLibraryFile.c_str(), symbol.c_str());
         }
 
         binding* calledSymbol = reinterpret_cast<binding*>(loadedSymbol);

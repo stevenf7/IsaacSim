@@ -8,6 +8,7 @@
 //
 #pragma once
 
+#include "ackermann_msgs/msg/ackermann_drive_stamped.h"
 #include "builtin_interfaces/msg/time.h"
 #include "geometry_msgs/msg/transform_stamped.h"
 #include "geometry_msgs/msg/twist.h"
@@ -230,6 +231,26 @@ public:
     virtual void getData(pxr::GfVec3d& linearVelocity, pxr::GfVec3d& angularVelocity);
 };
 
+class Ros2AckermannDriveStampedMessageFoxy : public Ros2AckermannDriveStampedMessage, Ros2BackendFoxy
+{
+public:
+    Ros2AckermannDriveStampedMessageFoxy();
+    virtual ~Ros2AckermannDriveStampedMessageFoxy();
+    virtual const void* getTypeSupportHandle();
+    virtual void getData(std::string& frameId,
+                         double& timeStamp,
+                         double& steeringAngle,
+                         double& steeringAngleVelocity,
+                         double& speed,
+                         double& acceleration,
+                         double& jerk);
+    virtual void fillHeader(const double timestamp, const std::string& frame_id);
+    virtual void fillData(const double& steeringAngle,
+                          const double& steeringAngleVelocity,
+                          const double& speed,
+                          const double& acceleration,
+                          const double& jerk);
+};
 
 class Ros2HandleFoxy : public Ros2HandleBase
 {

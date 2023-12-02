@@ -165,6 +165,8 @@ CARB_EXPORT void carbOnPluginStartup()
         "rcl_action",
         "lifecycle_msgs__rosidl_generator_c",
         "lifecycle_msgs__rosidl_typesupport_c",
+        // "ackermann_msgs__rosidl_generator_c",
+        // "ackermann_msgs__rosidl_typesupport_c",
         // "fastcdr",
         // "tinyxml2",
         // "crypto",

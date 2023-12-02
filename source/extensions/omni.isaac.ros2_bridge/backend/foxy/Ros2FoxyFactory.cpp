@@ -107,6 +107,10 @@ std::shared_ptr<Ros2TwistMessage> Ros2FactoryFoxy::CreateTwistMessage()
     return std::make_shared<Ros2TwistMessageFoxy>();
 }
 
+std::shared_ptr<Ros2AckermannDriveStampedMessage> Ros2FactoryFoxy::CreateAckermannDriveStampedMessage()
+{
+    return std::make_shared<Ros2AckermannDriveStampedMessageFoxy>();
+}
 
 bool Ros2FactoryFoxy::validateTopic(const std::string& topicName)
 {
