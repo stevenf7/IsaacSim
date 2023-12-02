@@ -1,7 +1,13 @@
 # Changelog
+
+## [1.7.1] - 2023-12-01
+### Fixed
+- Annotator unit test due to replicator update
+
 ## [1.7.0] - 2023-11-08
 ### Added
 - On Physics Step Node
+
 ## [1.6.1] - 2023-09-21
 ### Changed
 - Read file node will return False if file path does not exist or is invalid
