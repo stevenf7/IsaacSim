@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.1"
+version = "0.2.0"
 category = "Simulation"
 title = "Isaac USD to URDF exporter"
 description = "Extension that exports USD files to URDF"
