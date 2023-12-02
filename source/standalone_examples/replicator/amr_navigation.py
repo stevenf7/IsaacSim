@@ -31,9 +31,11 @@ from pxr import Gf, PhysxSchema, UsdGeom, UsdLux, UsdPhysics
 
 
 class NavSDGDemo:
-    CARTER_URL = "/Isaac/Samples/Replicator/OmniGraph/carter_v2_nav_only.usd"
+    CARTER_URL = "/Isaac/Samples/Replicator/OmniGraph/nova_carter_nav_only.usd"
     DOLLY_URL = "/Isaac/Props/Dolly/dolly_physics.usd"
     PROPS_URL = "/Isaac/Props/YCB/Axis_Aligned_Physics"
+    LEFT_CAMERA_PATH = "/NavWorld/CarterNav/chassis_link/front_hawk/left/camera_left"
+    RIGHT_CAMERA_PATH = "/NavWorld/CarterNav/chassis_link/front_hawk/right/camera_right"
 
     def __init__(self):
         self._carter_chassis = None
@@ -212,6 +214,12 @@ class NavSDGDemo:
         carb.settings.get_settings().set("/omni/replicator/asyncRendering", False)
         carb.settings.get_settings().set("/app/asyncRendering", False)
 
+        # Set camera sensors fStop to 0.0 to get well lit sharp images
+        left_camera_prim = self._stage.GetPrimAtPath(self.LEFT_CAMERA_PATH)
+        left_camera_prim.GetAttribute("fStop").Set(0.0)
+        right_camera_prim = self._stage.GetPrimAtPath(self.RIGHT_CAMERA_PATH)
+        right_camera_prim.GetAttribute("fStop").Set(0.0)
+
         self._writer = rep.WriterRegistry.get("BasicWriter")
         self._writer.initialize(output_dir=self._out_dir, rgb=True)
         # If no temporary render products are requested, create them once here and destroy them only at the end
@@ -221,13 +229,13 @@ class NavSDGDemo:
     def _setup_render_products(self):
         print(f"[NavSDGDemo] Creating render products")
         rp_left = rep.create.render_product(
-            "/NavWorld/CarterNav/chassis_link/stereo_cam_left/stereo_cam_left_sensor_frame/camera_sensor_left",
+            self.LEFT_CAMERA_PATH,
             (512, 512),
             name="left_sensor",
             force_new=True,
         )
         rp_right = rep.create.render_product(
-            "/NavWorld/CarterNav/chassis_link/stereo_cam_right/stereo_cam_right_sensor_frame/camera_sensor_right",
+            self.RIGHT_CAMERA_PATH,
             (512, 512),
             name="right_sensor",
             force_new=True,
