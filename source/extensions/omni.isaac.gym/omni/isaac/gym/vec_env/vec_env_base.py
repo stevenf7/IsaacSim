@@ -12,6 +12,7 @@ import signal
 
 import carb
 import gymnasium as gym
+import numpy as np
 from omni.isaac.kit import SimulationApp
 
 
@@ -72,8 +73,10 @@ class VecEnvBase(gym.Env):
             signal.signal(signal.SIGINT, self.signal_handler)
 
         self._render = not headless or enable_livestream or enable_viewport
+        self._record = False
         self.sim_frame_count = 0
         self._world = None
+        self.metadata = None
 
     def signal_handler(self, sig, frame):
         self.close()
@@ -131,17 +134,52 @@ class VecEnvBase(gym.Env):
         self.action_space = self._task.action_space
 
     def render(self, mode="human") -> None:
-        """Step the renderer.
+        """Run rendering without stepping through the physics.
+
+           By convention, if mode is:
+            - **human**: render to the current display and return nothing. Usually for human consumption.
+            - **rgb_array**: Return an numpy.ndarray with shape (x, y, 3), representing RGB values for an
+              x-by-y pixel image, suitable for turning into a video.
 
         Args:
-            mode (str): Select mode of rendering based on OpenAI environments.
+            mode (str, optional): The mode to render with. Defaults to "human".
         """
 
         if mode == "human":
             self._world.render()
+            return None
+        elif mode == "rgb_array":
+            # check if viewport is enabled -- if not, then complain because we won't get any data
+            if not self._render or not self._record:
+                raise RuntimeError(
+                    f"Cannot render '{mode}' when rendering is not enabled. Please check the provided"
+                    "arguments to the environment class at initialization."
+                )
+            # obtain the rgb data
+            rgb_data = self._rgb_annotator.get_data()
+            # convert to numpy array
+            rgb_data = np.frombuffer(rgb_data, dtype=np.uint8).reshape(*rgb_data.shape)
+            # return the rgb data
+            return rgb_data[:, :, :3]
         else:
             gym.Env.render(self, mode=mode)
-        return
+            return None
+
+    def create_viewport_render_product(self, resolution=(1280, 720)):
+        """Create a render product of the viewport for rendering."""
+
+        try:
+            import omni.replicator.core as rep
+
+            # create render product
+            self._render_product = rep.create.render_product("/OmniverseKit_Persp", resolution)
+            # create rgb annotator -- used to read data from the render product
+            self._rgb_annotator = rep.AnnotatorRegistry.get_annotator("rgb", device="cpu")
+            self._rgb_annotator.attach([self._render_product])
+            self._record = True
+        except Exception as e:
+            carb.log_info("omni.replicator.core could not be imported. Skipping creation of render product.")
+            carb.log_info(str(e))
 
     def close(self) -> None:
         """Closes simulation."""
@@ -228,3 +266,39 @@ class VecEnvBase(gym.Env):
             num_envs(int): Number of environments.
         """
         return self._num_envs
+
+    @property
+    def simulation_app(self):
+        """Retrieves the SimulationApp object.
+
+        Returns:
+            simulation_app(SimulationApp): SimulationApp.
+        """
+        return self._simulation_app
+
+    @property
+    def world(self):
+        """Retrieves the World object for simulation.
+
+        Returns:
+            world(World): Simulation World.
+        """
+        return self._world
+
+    @property
+    def task(self):
+        """Retrieves the task.
+
+        Returns:
+            task(BaseTask): Task.
+        """
+        return self._task
+
+    @property
+    def render_enabled(self):
+        """Whether rendering is enabled.
+
+        Returns:
+            render(bool): is render enabled.
+        """
+        return self._render
