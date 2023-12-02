@@ -1,4 +1,7 @@
 # Changelog
+## [9.11.0] - 2023-12-01
+### Added
+- ZED X sensor to menu item
 
 ## [9.10.1] - 2023-11-29
 ### Fixed
