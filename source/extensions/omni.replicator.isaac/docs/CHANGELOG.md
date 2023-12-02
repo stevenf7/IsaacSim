@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.11.0] - 2023-12-01
+### Added 
+- DataVisualizationWriter writing annotattions as overlays on top of image data
+
 ## [1.10.2] - 2023-11-16
 ### Added 
 - DOPE and YCBWriter will write to disk only if there is valid data (target(s) is not fully occluded in view)

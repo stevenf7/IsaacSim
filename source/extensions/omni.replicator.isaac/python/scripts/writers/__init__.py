@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+from .data_visualization_writer import *
 from .dope_writer import *
 from .pytorch_listener import *
 from .pytorch_writer import *
