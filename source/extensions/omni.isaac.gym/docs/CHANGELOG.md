@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.10.0] - 2023-11-30
+### Added
+- Add APIs for recording viewport during training
+
 ## [0.9.5] - 2023-11-10
 ### Changed
 - Improve test coverage

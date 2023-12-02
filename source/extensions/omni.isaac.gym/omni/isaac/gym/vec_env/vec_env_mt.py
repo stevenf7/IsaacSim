@@ -180,6 +180,9 @@ class VecEnvMT(VecEnvBase):
 
         return data
 
+    def set_render_mode(self, render_mode):
+        self._render_mode = render_mode
+
     async def run(self, trainer):
         """Main loop for controlling simulation and task stepping.
         This method is responsible for stepping task and simulation,
