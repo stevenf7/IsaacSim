@@ -109,6 +109,11 @@ std::shared_ptr<Ros2TwistMessage> Ros2FactoryHumble::CreateTwistMessage()
     return std::make_shared<Ros2TwistMessageHumble>();
 }
 
+std::shared_ptr<Ros2AckermannDriveStampedMessage> Ros2FactoryHumble::CreateAckermannDriveStampedMessage()
+{
+    return std::make_shared<Ros2AckermannDriveStampedMessageHumble>();
+}
+
 
 bool Ros2FactoryHumble::validateTopic(const std::string& topicName)
 {

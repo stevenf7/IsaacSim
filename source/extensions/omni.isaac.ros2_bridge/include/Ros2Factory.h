@@ -270,6 +270,24 @@ public:
     virtual void getData(pxr::GfVec3d& linearVelocity, pxr::GfVec3d& angularVelocity) = 0;
 };
 
+class Ros2AckermannDriveStampedMessage : public Ros2Message
+{
+public:
+    virtual void getData(std::string& frameId,
+                         double& timeStamp,
+                         double& steeringAngle,
+                         double& steeringAngleVelocity,
+                         double& speed,
+                         double& acceleration,
+                         double& jerk) = 0;
+
+    virtual void fillHeader(const double timestamp, const std::string& frame_id) = 0;
+    virtual void fillData(const double& steeringAngle,
+                          const double& steeringAngleVelocity,
+                          const double& speed,
+                          const double& acceleration,
+                          const double& jerk) = 0;
+};
 
 struct tfMessageStruct
 {
@@ -336,6 +354,8 @@ public:
     virtual std::shared_ptr<Ros2TfTreeMessage> CreateTfTreeMessage() = 0;
 
     virtual std::shared_ptr<Ros2TwistMessage> CreateTwistMessage() = 0;
+
+    virtual std::shared_ptr<Ros2AckermannDriveStampedMessage> CreateAckermannDriveStampedMessage() = 0;
 
     virtual bool validateTopic(const std::string& topicName) = 0;
     virtual bool validateNodeNamespace(const std::string& nodeNamespace) = 0;

@@ -37,7 +37,9 @@ project_with_location("omni.isaac.ros2_bridge.foxy")
         "std_msgs__rosidl_typesupport_c", "std_msgs__rosidl_generator_c",
         "rosgraph_msgs__rosidl_typesupport_c", "rosgraph_msgs__rosidl_generator_c", 
         "sensor_msgs__rosidl_typesupport_c", "sensor_msgs__rosidl_generator_c", 
-        "vision_msgs__rosidl_typesupport_c", "vision_msgs__rosidl_generator_c"}
+        "vision_msgs__rosidl_typesupport_c", "vision_msgs__rosidl_generator_c"
+        -- "ackermann_msgs__rosidl_typesupport_c", "ackermann_msgs__rosidl_generator_c"
+    }
 
     filter { "system:linux" }
         disablewarnings {"error=pragmas"}
@@ -93,7 +95,9 @@ project_with_location("omni.isaac.ros2_bridge.humble")
         "std_msgs__rosidl_typesupport_c", "std_msgs__rosidl_generator_c",
         "rosgraph_msgs__rosidl_typesupport_c", "rosgraph_msgs__rosidl_generator_c", 
         "sensor_msgs__rosidl_typesupport_c", "sensor_msgs__rosidl_generator_c", 
-        "vision_msgs__rosidl_typesupport_c", "vision_msgs__rosidl_generator_c"}
+        "vision_msgs__rosidl_typesupport_c", "vision_msgs__rosidl_generator_c"
+        -- "ackermann_msgs__rosidl_typesupport_c", "ackermann_msgs__rosidl_generator_c"
+    }
 
     filter { "system:linux" }
         disablewarnings {"error=pragmas"}
@@ -118,6 +122,7 @@ project_with_location("omni.isaac.ros2_bridge.humble")
             "%{root}/_build/target-deps/nv_ros2_humble/include/rcutils",
             "%{root}/_build/target-deps/nv_ros2_humble/include/rmw",
             "%{root}/_build/target-deps/nv_ros2_humble/include/rcl_yaml_param_parser",
+            "%{root}/_build/target-deps/nv_ros2_humble/include/ackermann_msgs",
         }
         libdirs {
             "%{root}/_build/target-deps/tbb/lib/intel64/vc14"

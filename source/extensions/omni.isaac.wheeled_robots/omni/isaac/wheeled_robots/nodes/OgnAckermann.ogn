@@ -15,41 +15,51 @@
                 "type": "execution",
                 "description": "The input execution"
             },
-            "accel": {
+            "acceleration": {
                 "type": "double",
-                "description": "Desired acceleration for the robot"
+                "description": "Desired forward acceleration for the robot in m/s^2"
             },
-            "curvature": {
+            "speed": {
                 "type": "double",
-                "description": "Desired curvature for the robot, equal to 1/radius of curvature. By default it is positive for turning right and negative for turning left for front wheel drive"
+                "description": "Desired forward speed in m/s"
             },
-            "linearVelocity": {
+            "steeringAngle": {
+                "type": "double",
+                "description": "Desired virtual angle in radians. Corresponds to the yaw of a virtual wheel located at the center of the front axle. By default it is positive for turning left and negative for turning right for front wheel drive.",
+                "default": 0.0
+            },
+            "currentLinearVelocity": {
                 "type": "vectord[3]",
-                "description": "Current linear velocity of the robot"
+                "description": "Current linear velocity of the robot in m/s"
             },
             "wheelBase": {
                 "type": "double",
-                "description": "Distance between the front and rear axles of the robot"
+                "description": "Distance between the front and rear axles of the robot in meters"
             },
             "trackWidth": {
                 "type": "double",
-                "description": "Distance between the left and right rear wheels of the robot"
+                "description": "Distance between the left and right rear wheels of the robot in meters"
             },
             "turningWheelRadius": {
                 "type": "double",
-                "description": "Radius of the front wheels of the robot"
+                "description": "Radius of the front wheels of the robot in meters"
             },
             "maxWheelVelocity": {
                 "type": "double",
-                "description": "Maximum angular velocity of the robot wheel (rad/s)"
+                "description": "Maximum angular velocity of the robot wheel in rad/s"
             },
-            "invertCurvature": {
+            "invertSteeringAngle": {
                 "type": "bool",
-                "description": "Flips the sign of the curvature, Set to true for rear wheel drive"
+                "description": "Flips the sign of the steering angle, Set to true for rear wheel steering"
+            },
+            "useAcceleration": {
+                "type": "bool",
+                "description": "Use acceleration as an input, Set to false to use speed as input instead",
+                "default": true
             },
             "maxWheelRotation": {
                 "type": "double",
-                "description": "Maximum angle of rotation for the front wheels in degrees"
+                "description": "Maximum angle of rotation for the front wheels in radians"
             },
             "DT": {
                 "type": "double",

@@ -36,6 +36,7 @@ public:
     virtual std::shared_ptr<Ros2LaserScanMessage> CreateLaserScanMessage();
     virtual std::shared_ptr<Ros2TfTreeMessage> CreateTfTreeMessage();
     virtual std::shared_ptr<Ros2TwistMessage> CreateTwistMessage();
+    virtual std::shared_ptr<Ros2AckermannDriveStampedMessage> CreateAckermannDriveStampedMessage();
     virtual bool validateTopic(const std::string& topicName);
     virtual bool validateNodeNamespace(const std::string& nodeNamespace);
     virtual bool validateNodeName(const std::string& nodeName);
