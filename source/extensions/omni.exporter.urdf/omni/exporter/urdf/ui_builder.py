@@ -37,7 +37,7 @@ class UIBuilder:
         # Get access to the timeline to control stop/pause/play programmatically
         self._timeline = omni.timeline.get_timeline_interface()
 
-        self.log_level = logger.level_from_name("INFO")
+        self.log_level = logger.level_from_name("ERROR")
 
         self._on_init()
 
@@ -46,9 +46,9 @@ class UIBuilder:
         self._data_params["input_path"] = None
         self._data_params["output_path"] = None
         self._data_params["mesh_dir"] = None
+        self._data_params["mesh_path_prefix"] = ""
         self._data_params["root"] = None
         self._data_params["visualize_collision_meshes"] = False
-        self._data_params["use_absolute_paths"] = False
 
     def on_menu_callback(self):
         pass
@@ -77,7 +77,7 @@ class UIBuilder:
             input_field = StringField(
                 "USD Path",
                 default_value="",
-                tooltip="Path to the USD file to be exported",
+                tooltip="Path to the USD file to be exported, if empty use current stage",
                 read_only=False,
                 multiline_okay=False,
                 on_value_changed_fn=self._on_input_field_value_changed_fn,
@@ -89,7 +89,7 @@ class UIBuilder:
             self.wrapped_ui_elements.append(input_field)
 
             output_field = StringField(
-                "Output File",
+                "Output File/Directory",
                 default_value="",
                 tooltip="Path to where the URDF file will be created",
                 read_only=False,
@@ -97,8 +97,8 @@ class UIBuilder:
                 on_value_changed_fn=self._on_output_field_value_changed_fn,
                 use_folder_picker=True,
                 item_filter_fn=is_usd_or_urdf_path,
-                folder_dialog_title="Set Output File",
-                folder_button_title="Select File",
+                folder_dialog_title="Set Output File Or Directory",
+                folder_button_title="Select File/Directory",
             )
             self.wrapped_ui_elements.append(output_field)
 
@@ -116,7 +116,7 @@ class UIBuilder:
                     mesh_field = StringField(
                         "Mesh Directory Path",
                         default_value="",
-                        tooltip="Type a string or use the file picker to set a value",
+                        tooltip="Path to where directory where mesh files will be saved. Defaults to 'meshes'.",
                         read_only=False,
                         multiline_okay=False,
                         on_value_changed_fn=self._on_mesh_field_value_changed_fn,
@@ -125,10 +125,22 @@ class UIBuilder:
                     )
                     self.wrapped_ui_elements.append(mesh_field)
 
+                    mesh_path_prefix_field = StringField(
+                        "Mesh Path Prefix",
+                        default_value="",
+                        tooltip="Prefix to add to URDF mesh filename values (e.g. 'file://')",
+                        read_only=False,
+                        multiline_okay=False,
+                        on_value_changed_fn=self._on_mesh_path_prefix_field_value_changed_fn,
+                        use_folder_picker=False,
+                        item_filter_fn=None,
+                    )
+                    self.wrapped_ui_elements.append(mesh_path_prefix_field)
+
                     root_path_field = StringField(
                         "Root Prim Path",
                         default_value="",
-                        tooltip='Root path of the robot to be exported ("None" takes the default prim)',
+                        tooltip="Root prim path of the robot to be exported. Defaults to the default prim.",
                         read_only=False,
                         multiline_okay=False,
                         on_value_changed_fn=self._on_root_field_value_changed_fn,
@@ -140,24 +152,19 @@ class UIBuilder:
                     stage_visualize_collisions_check_box = CheckBox(
                         "Visualize Collisions",
                         default_value=False,
-                        tooltip="add or remove visualization meshes for colliders",
+                        tooltip="Visualization collider meshes even if their visibility is disabled.",
                         on_click_fn=self._on_visualize_collisions_check_box_click_fn,
                     )
                     self.wrapped_ui_elements.append(stage_visualize_collisions_check_box)
-
-                    stage_use_absolute_paths_check_box = CheckBox(
-                        "Use Absolute Paths",
-                        default_value=False,
-                        tooltip="use absolute or relative mesh paths in the URDF file",
-                        on_click_fn=self._on_use_absolute_paths_check_box_click_fn,
-                    )
-                    self.wrapped_ui_elements.append(stage_use_absolute_paths_check_box)
 
     def _on_input_field_value_changed_fn(self, new_value: str):
         self._data_params["input_path"] = new_value
 
     def _on_output_field_value_changed_fn(self, new_value: str):
         self._data_params["output_path"] = new_value
+
+    def _on_mesh_path_prefix_field_value_changed_fn(self, new_value: str):
+        self._data_params["mesh_path_prefix"] = new_value
 
     def _on_root_field_value_changed_fn(self, new_value: str):
         self._data_params["root"] = new_value
@@ -168,9 +175,6 @@ class UIBuilder:
     def _on_visualize_collisions_check_box_click_fn(self, value: bool):
         self._data_params["visualize_collision_meshes"] = value
 
-    def _on_use_absolute_paths_check_box_click_fn(self, value: bool):
-        self._data_params["use_absolute_paths"] = value
-
     def _on_export_button_clicked_fn(self):
         root = self._data_params["root"]
         if root == "":
@@ -180,7 +184,7 @@ class UIBuilder:
             "node_names_to_remove": None,
             "edge_names_to_remove": None,
             "root": root,
-            "parent_link_is_body_1": False,
+            "parent_link_is_body_1": None,
             "log_level": self.log_level,
         }
 
@@ -196,18 +200,28 @@ class UIBuilder:
 
         urdf_output_path = self._data_params["output_path"]
         if urdf_output_path == "" or urdf_output_path is None:
-            urdf_output_path = usd_to_urdf._graph.name + ".urdf"
+            if usd_path is None:
+                raise ValueError("Must specify an URDF output path.")
+            urdf_output_path = Path(usd_path).parent
 
         mesh_dir = self._data_params["mesh_dir"]
         if mesh_dir == "":
             mesh_dir = None
 
-        usd_to_urdf.save_to_file(
+        output_path = usd_to_urdf.save_to_file(
             urdf_output_path=urdf_output_path,
             visualize_collision_meshes=self._data_params["visualize_collision_meshes"],
             mesh_dir=mesh_dir,
-            use_absolute_path=self._data_params["use_absolute_paths"],
+            mesh_path_prefix=self._data_params["mesh_path_prefix"],
         )
+
+        if usd_path is None:
+            input_path = stage.GetRootLayer().realPath
+        else:
+            input_path = usd_path
+        print("Converted USD to URDF.")
+        print(f"    Input: {input_path}")
+        print(f"    Output: {output_path}")
 
     def _reset_extension(self):
         pass
