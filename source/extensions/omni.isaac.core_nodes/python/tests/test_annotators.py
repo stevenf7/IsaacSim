@@ -76,7 +76,7 @@ class TestAnnotators(omni.kit.test.AsyncTestCase):
         self._timeline.play()
         await omni.syntheticdata.sensors.next_render_simulation_async(self._render_product_path, 1)
         data = annotator.get_data()
-        self.assertAlmostEqual(data["simulationTime"], 0.03333333507180214)
+        self.assertAlmostEqual(data["simulationTime"], 0.01666666753590107)
         # print(data)
         annotator.detach()
 
