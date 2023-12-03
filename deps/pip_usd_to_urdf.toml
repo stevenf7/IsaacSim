@@ -8,6 +8,7 @@ packages = [
     "nvidia-srl-usd==0.13.0",
     "nvidia-srl-usd-to-urdf==0.5.0",
     "setuptools_scm==8.0.4",
+    "tomli==2.0.1",
 ]
 target = "../_build/target-deps/isaac_usd_to_urdf_prebundle"
 platforms = ["*-x86_64"]
