@@ -867,9 +867,9 @@ deps_for_isaac = [
   "semantics.schema.property-1.0.2",
   "omni.importer.mjcf-1.1.0",
   "omni.importer.urdf-1.1.3",
-  "omni.anim.people-0.1.11",
-  "omni.replicator.character.core-0.1.0",
-  "omni.replicator.character.ui-0.1.0",
+  "omni.anim.people-0.2.3",
+  "omni.replicator.character.core-0.1.5",
+  "omni.replicator.character.ui-0.1.5",
 ]
 
 deps_for_testing = [

@@ -1,0 +1,25 @@
+omni.replicator.character:
+  version: 0.1.5
+  global:
+    seed: 123456
+    camera_num: 5
+    lidar_num: 0
+    simulation_length: 10
+  scene:
+    asset_path: omniverse://isaac-dev.ov.nvidia.com/Isaac/Environments/Simple_Warehouse/full_warehouse.usd
+  character:
+    asset_path: omniverse://isaac-dev.ov.nvidia.com/Isaac/People/Characters/
+    command_file:
+    filters:
+    num: 5
+  robot:
+    command_file:
+    num: 0
+    write_data: false
+  replicator:
+    writer: TaoWriter
+    parameters:
+      output_dir: 
+      rgb: True
+      bbox: True
+      semantic_segmentation: False
