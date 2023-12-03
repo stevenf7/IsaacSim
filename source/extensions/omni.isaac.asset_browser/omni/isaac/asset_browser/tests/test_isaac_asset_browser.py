@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 from unittest.mock import Mock
 
+import omni.isaac.asset_browser
 import omni.kit.app
 import omni.kit.clipboard
 import omni.kit.test
@@ -29,7 +30,7 @@ class TestAssetBrowser(OmniUiTest):
 
         self._golden_img_dir = TEST_DATA_PATH.absolute().joinpath("golden_img").absolute()
         self._stage_dir = TEST_DATA_PATH.absolute().joinpath("stage").absolute()
-        self._browser = omni.kit.browser.asset.get_instance()
+        self._browser = omni.isaac.asset_browser.get_instance()
         self._window = self._browser._window
 
     # After running each test
@@ -41,8 +42,8 @@ class TestAssetBrowser(OmniUiTest):
         await omni.kit.app.get_app().next_update_async()
         await self.__wait_collection_loaded()
         # Wait for folder and thumbnails load completed
-        await asyncio.sleep(8)
-
+        await asyncio.sleep(60)
+        # test image is stored at .local/share/ov/data/_testoutput/test_asset.png
         await self.finalize_test(golden_img_dir=self._golden_img_dir, golden_img_name="test_asset.png")
 
     async def test_drag_and_drop_item(self):
@@ -153,11 +154,11 @@ class TestAssetBrowser(OmniUiTest):
                 if hasattr(category, "folder") and not category.folder.prepared:
                     await omni.kit.app.get_app().next_update_async()
                     break
-            else:
-                # Always expand first category
-                await omni.kit.app.get_app().next_update_async()
-                collections = model.get_item_children(None)
-                categories = model.get_item_children(collections[collection_index])
-                browser_widget._category_view.set_expanded(categories[1], True, True)
-                await omni.kit.app.get_app().next_update_async()
-                return model.get_item_children(categories[1])
+                else:
+                    # Always expand first category
+                    await omni.kit.app.get_app().next_update_async()
+                    collections = model.get_item_children(None)
+                    categories = model.get_item_children(collections[collection_index])
+                    browser_widget._category_view.set_expanded(categories[1], True, True)
+                    await omni.kit.app.get_app().next_update_async()
+                    return model.get_item_children(categories[1])

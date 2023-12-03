@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.2] - 2023-11-29
+
+### Changed
+
+- Updated golden image
+
 ## [0.4.1] - 2023-11-15
 
 ### Changed
