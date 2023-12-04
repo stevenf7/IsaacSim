@@ -197,6 +197,19 @@ class ArticulationView(XFormPrimView):
         return self._num_shapes
 
     @property
+    def num_joints(self) -> int:
+        """Number of joints of the articulations
+
+        Returns:
+            int: number of joints of the articulations in the view
+
+        """
+        if not self._is_initialized:
+            carb.log_warn("ArticulationView needs to be initialized.")
+            return None
+        return self._num_joints
+
+    @property
     def num_fixed_tendons(self) -> int:
         """Number of fixed tendons of the articulations
 
@@ -254,6 +267,19 @@ class ArticulationView(XFormPrimView):
             carb.log_warn("ArticulationView needs to be initialized.")
             return None
         return self._dof_names
+
+    @property
+    def joint_names(self) -> List[str]:
+        """List of prim names for each joint of the articulations
+
+        Returns:
+            List[str]: ordered names of joints that corresponds to degrees of freedom for the articulations in the view
+
+        """
+        if not self._is_initialized:
+            carb.log_warn("ArticulationView needs to be initialized.")
+            return None
+        return self._joint_names
 
     @property
     def initialized(self) -> bool:
@@ -334,6 +360,11 @@ class ArticulationView(XFormPrimView):
             self._dof_indices = self._metadata.dof_indices
             self._dof_types = self._metadata.dof_types
             self._dof_paths = self._physics_view.dof_paths
+            self._joint_indices = self._metadata.joint_indices
+            self._joint_names = self._metadata.joint_names
+            self._joint_types = self._metadata.joint_types
+            self._num_joints = self._metadata.joint_count
+            self._link_indices = self._metadata.link_indices
             self._prim_paths = self._physics_view.prim_paths
             carb.log_info("Articulation Prim View Device: {}".format(self._device))
             self._is_initialized = True
@@ -481,6 +512,36 @@ class ArticulationView(XFormPrimView):
             carb.log_warn("ArticulationView needs to be initialized.")
             return None
         return self._physics_view.get_dof_limits()
+
+    def get_joint_index(self, joint_name: str) -> int:
+        """Get a joint index in the joint buffers given its name
+
+        Args:
+            joint_name (str): name of the joint that corresponds to the index of the joint in the articulation
+
+        Returns:
+            int: index of the joint in the joint buffers
+
+        """
+        if not self._is_initialized:
+            carb.log_warn("ArticulationView needs to be initialized.")
+            return None
+        return self._joint_indices[joint_name]
+
+    def get_link_index(self, link_name: str) -> int:
+        """Get a link index in the link buffers given its name
+
+        Args:
+            link_name (str): name of the link that corresponds to the index of the link in the articulation
+
+        Returns:
+            int: index of the link in the link buffers
+
+        """
+        if not self._is_initialized:
+            carb.log_warn("ArticulationView needs to be initialized.")
+            return None
+        return self._link_indices[link_name]
 
     def set_friction_coefficients(
         self,

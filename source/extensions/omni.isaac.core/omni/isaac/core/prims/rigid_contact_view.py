@@ -24,11 +24,6 @@ class RigidContactView(object):
 
     This class wraps all matching rigid prims found at the regex provided at the ``prim_paths_expr`` argument
 
-    .. note::
-
-        If the prims do not already have the Rigid Body API applied to them before init, it will apply it
-        unless the ``apply_rigid_body_api`` is set to False
-
     .. warning::
 
         The rigid prim view object must be initialized in order to be able to operate on it.
@@ -46,7 +41,6 @@ class RigidContactView(object):
                                                   (although slow for large number of prims) this ensures that
                                                   appropriate physics settings are applied on all the prim in the view.
         disable_stablization (bool, optional): disables the contact stabilization parameter in the physics context
-        apply_rigid_body_api (bool, optional): apply rigid body API to prims in prim_paths_expr and filter_paths_expr when prepare_contact_sensors=True
         max_contact_count (int, optional): maximum number of contact data to report when detailed contact information is needed
 
     Example:
@@ -95,7 +89,6 @@ class RigidContactView(object):
         name: str = "rigid_contact_view",
         prepare_contact_sensors: bool = True,
         disable_stablization: bool = True,
-        apply_rigid_body_api: bool = True,
         max_contact_count: int = 0,
     ) -> None:
         self._name = name
@@ -123,12 +116,12 @@ class RigidContactView(object):
         if prepare_contact_sensors:
             self._prim_paths = find_matching_prim_paths(prim_paths_expr)
             for path in self._prim_paths:
-                self._prepare_contact_reporter(get_prim_at_path(path), apply_rigid_body_api)
+                self._prepare_contact_reporter(get_prim_at_path(path))
 
             for group_expr in filter_paths_expr:
                 self._filter_paths = find_matching_prim_paths(group_expr)
                 for path in self._filter_paths:
-                    self._prepare_contact_reporter(get_prim_at_path(path), apply_rigid_body_api)
+                    self._prepare_contact_reporter(get_prim_at_path(path))
         return
 
     @property
@@ -161,20 +154,13 @@ class RigidContactView(object):
         """
         return self._num_filters
 
-    def _prepare_contact_reporter(self, prim_at_path, apply_rigid_body_api=False):
-        """Prepares the contact reporter by removing the sleep/contact thresholds."""
-        # disable sleeping, because sleeping bodies don't get contact reports
-        if apply_rigid_body_api:
-            if prim_at_path.HasAPI(UsdPhysics.RigidBodyAPI):
-                rb_api = UsdPhysics.RigidBodyAPI(prim_at_path)
-            else:
-                rb_api = UsdPhysics.RigidBodyAPI.Apply(prim_at_path)
+    def _prepare_contact_reporter(self, prim_at_path):
+        """Prepares the contact reporter by removing the contact thresholds."""
+        if prim_at_path.HasAPI(PhysxSchema.PhysxContactReportAPI):
+            cr_api = PhysxSchema.PhysxContactReportAPI(prim_at_path)
+        else:
+            cr_api = PhysxSchema.PhysxContactReportAPI.Apply(prim_at_path)
 
-            rb_api = PhysxSchema.PhysxRigidBodyAPI.Apply(prim_at_path)
-            rb_api.CreateSleepThresholdAttr().Set(0)
-
-        # prepare contact sensors
-        cr_api = PhysxSchema.PhysxContactReportAPI.Apply(prim_at_path)
         cr_api.CreateThresholdAttr().Set(0)
 
     def is_physics_handle_valid(self) -> bool:
