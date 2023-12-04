@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.3.0] - 2023-12-1
+### Changed
+- Add more articulation metadata for OM-116002
+- Fix contact reporter API schema preparation for OM-116001
+- Fix joint limits OM-91153 
+
 ## [3.2.1] - 2023-12-01
 ### Changed
 - Add examples to docstrings, fix type annotations, and improve description.

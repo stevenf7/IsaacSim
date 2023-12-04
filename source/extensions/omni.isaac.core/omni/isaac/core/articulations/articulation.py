@@ -243,7 +243,10 @@ class Articulation(_SinglePrimWrapper):
             >>> prim.dof_properties["upper"][8]  # or prim.dof_properties[8][3]
             0.04
         """
-        return self._dc_interface.get_articulation_dof_properties(self._handle)
+        properties = self._dc_interface.get_articulation_dof_properties(self._handle)
+        properties["lower"] = self._articulation_view.get_dof_limits()[0][:, 0]
+        properties["upper"] = self._articulation_view.get_dof_limits()[0][:, 1]
+        return properties
 
     @property
     def dof_names(self) -> List[str]:

@@ -185,7 +185,6 @@ class GeometryPrimView(XFormPrimView):
                 filter_paths_expr=contact_filter_prim_paths_expr,
                 name=name + "_contact",
                 prepare_contact_sensors=prepare_contact_sensors,
-                apply_rigid_body_api=False,
                 disable_stablization=disable_stablization,
                 max_contact_count=max_contact_count,
             )

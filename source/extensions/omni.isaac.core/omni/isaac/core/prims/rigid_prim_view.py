@@ -168,8 +168,8 @@ class RigidPrimView(XFormPrimView):
         self._dynamics_default_state = DynamicsViewState(
             positions=None, linear_velocities=None, orientations=None, angular_velocities=None
         )
-        self._apply_rigid_body_apis()
         self._track_contact_forces = track_contact_forces or len(contact_filter_prim_paths_expr) != 0
+        self._apply_rigid_body_apis(prepare_contact_sensors or self._track_contact_forces)
         if self._track_contact_forces:
             self._contact_view = RigidContactView(
                 prim_paths_expr=prim_paths_expr,
@@ -178,7 +178,6 @@ class RigidPrimView(XFormPrimView):
                 prepare_contact_sensors=prepare_contact_sensors,
                 disable_stablization=disable_stablization,
                 max_contact_count=max_contact_count,
-                apply_rigid_body_api=False,
             )
         return
 
@@ -286,13 +285,18 @@ class RigidPrimView(XFormPrimView):
             self._invalidate_physics_handle_event = None
         return
 
-    def _apply_rigid_body_apis(self):
+    def _apply_rigid_body_apis(self, prepare_contact_reporter=False):
         for i in range(self.count):
             if self._prims[i].HasAPI(UsdPhysics.RigidBodyAPI):
                 rigid_api = UsdPhysics.RigidBodyAPI(self._prims[i])
             else:
                 rigid_api = UsdPhysics.RigidBodyAPI.Apply(self._prims[i])
             self._rigid_body_apis[i] = rigid_api
+
+            if prepare_contact_reporter:
+                # disable sleeping, because sleeping bodies don't get contact reports
+                rb_api = PhysxSchema.PhysxRigidBodyAPI.Apply(self._prims[i])
+                rb_api.CreateSleepThresholdAttr().Set(0)
         return
 
     def set_world_poses(

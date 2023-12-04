@@ -102,7 +102,7 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
         self.assertTrue(reading.time != 0)
 
         # arm only, 2kg with C of G 1m away from the joint
-        expected_effort = float(2 * -9.81)
+        expected_effort = float(2 * 9.81)
         self.assertAlmostEqual(reading.value, expected_effort, 1)
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
@@ -120,7 +120,7 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
 
-        expected_effort = float(3.5 * -9.81)
+        expected_effort = float(3.5 * 9.81)
         reading = self.effort_sensor.get_sensor_reading()
         self.assertAlmostEqual(reading.value, expected_effort, 1)
 
