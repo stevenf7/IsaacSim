@@ -99,7 +99,7 @@ class NutBoltController(BaseController):
             initial_end_effector_orientation = euler_angles_to_quat(initial_effector_orientation)
             actions = self._pick_place_controller.forward(
                 picking_position=initial_picking_position + gripper_to_nut_offset,
-                placing_position=bolt_top - np.array([x_offset, 0.0, 0.0]),
+                placing_position=bolt_top + np.array([x_offset, 0.0, 0.0]),
                 current_joint_positions=self._franka.get_joint_positions(),
                 end_effector_orientation=initial_end_effector_orientation,
             )

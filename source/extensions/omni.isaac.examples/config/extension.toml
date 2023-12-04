@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.7.9"
+version = "1.7.10"
 category = "Simulation"
 title = "Isaac Sim Samples"
 description = "Sample extensions for Isaac Sim"
