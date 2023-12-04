@@ -1,4 +1,9 @@
 # Changelog
+## [1.7.10] - 2023-12-03
+### Fixed
+- Fixed issue with screwing in nut and bolt demo
+- Improved accuracy of placement and rotation and increased rotation speed  
+
 ## [1.7.9] - 2023-11-13
 ### Fixed
 - Updated documentation links for the examples

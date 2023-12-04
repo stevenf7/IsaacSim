@@ -56,7 +56,7 @@ class ScrewController(BaseController):
         self._t = 0
         self._events_dt = events_dt
         if self._events_dt is None:
-            self._events_dt = [0.005, 0.05, 0.05, 0.005, 0.05, 0.01]
+            self._events_dt = [0.01, 0.1, 0.1, 0.025, 0.1, 0.05]
         else:
             if not isinstance(self._events_dt, np.ndarray) and not isinstance(self._events_dt, list):
                 raise Exception("events dt need to be list or numpy array")
@@ -69,8 +69,9 @@ class ScrewController(BaseController):
         self._pause = False
         self._start = True
         self._screw_position = np.array([0.0, 0.0, 0.0])
-        self._screw_speed = 60.0 / 180.0 * np.pi
-        self._screw_speed_back = 120.0 / 180.0 * np.pi
+        self._final_position = np.array([0.0, 0.0, 0.0])
+        self._screw_speed = 360.0 / 180.0 * np.pi
+        self._screw_speed_back = 720.0 / 180.0 * np.pi
         return
 
     def is_paused(self) -> bool:
@@ -112,7 +113,8 @@ class ScrewController(BaseController):
             return ArticulationAction(joint_positions=target_joints)
 
         if self._event == 0 and self._start:
-            self._screw_position = bolt_position
+            self._screw_position = np.copy(bolt_position)
+            self._final_position = np.copy(bolt_position)
             self._start = False
             self._target_end_effector_orientation = self._gripper.get_world_pose()[1]
 
@@ -141,7 +143,7 @@ class ScrewController(BaseController):
             finger_pos = current_joint_positions[-2:]
             positive_x_offset = finger_pos[1] - finger_pos[0]
             target_joints = self._cspace_controller.forward(
-                target_end_effector_position=self._screw_position - np.array([positive_x_offset, -0.002, 0.001]),
+                target_end_effector_position=self._screw_position - np.array([positive_x_offset, 0.0, 0.001]),
                 target_end_effector_orientation=target_orientation_quat,
             )
 
@@ -170,12 +172,15 @@ class ScrewController(BaseController):
             self._event = (self._event + 1) % 6
             self._t = 0
             if self._event == 5:
-                if not self._start and (bolt_position[2] - self._screw_position[2] > 0.02):
+                if not self._start and (bolt_position[2] - self._final_position[2] > 0.0198):
                     self.pause()
                     return ArticulationAction(joint_positions=[None] * current_joint_positions.shape[0])
                 if self._start:
                     self._screw_position[2] -= 0.001
-                self._screw_position[2] -= 0.0018
+                    self._final_position[2] -= 0.001
+                if bolt_position[2] - self._screw_position[2] < 0.013:
+                    self._screw_position[2] -= 0.0018
+                self._final_position[2] -= 0.0018
 
         return target_joints
 
@@ -196,8 +201,9 @@ class ScrewController(BaseController):
         self._pause = False
         self._start = True
         self._screw_position = np.array([0.0, 0.0, 0.0])
-        self._screw_speed = 60.0 / 180.0 * np.pi
-        self._screw_speed_back = 120.0 / 180.0 * np.pi
+        self._final_position = np.array([0.0, 0.0, 0.0])
+        self._screw_speed = 360.0 / 180.0 * np.pi
+        self._screw_speed_back = 720.0 / 180.0 * np.pi
         # self._gripper = gripper
         if events_dt is not None:
             self._events_dt = events_dt
