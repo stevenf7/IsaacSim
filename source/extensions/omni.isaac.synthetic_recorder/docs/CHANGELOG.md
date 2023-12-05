@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0] - 2023-12-05
+### Changed
+- removed overwrite/increment/timestamp options from recorder, it is now handled by the backend which is not exposed
+
+### Fixed
+- fixed bug if a non valid json file is provided to the custom writer  
+
 ## [1.6.0] - 2023-08-10
 ### Added
 - custom names for render products
