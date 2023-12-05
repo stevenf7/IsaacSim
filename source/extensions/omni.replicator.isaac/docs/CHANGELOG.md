@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.11.1] - 2023-12-05
+### Fixed
+- DataVisualizationWriter parameters if None and writer metadata export
+
 ## [1.11.0] - 2023-12-01
 ### Added 
 - DataVisualizationWriter writing annotattions as overlays on top of image data
