@@ -57,12 +57,6 @@ WINDOW_NAME = "Synthetic Data Recorder"
 MENU_PATH = f"Replicator/{WINDOW_NAME}"
 
 
-class OutWriteType(Enum):
-    OVERWRITE = 0
-    INCREMENT = 1
-    TIMESTAMP = 2
-
-
 @lru_cache()
 def _ui_get_delete_glyph():
     return omni.ui.get_custom_glyph_code("${glyphs}/menu_delete.svg")
@@ -131,7 +125,6 @@ class SyntheticRecorderExtension(omni.ext.IExt):
         self._config_file = "custom_config.json"
         self._out_working_dir = os.getcwd() + "/"
         self._out_dir = "_out_sdrec"
-        self._out_write_type = OutWriteType.OVERWRITE
         self._use_s3 = False
         self._s3_params = {"s3_bucket": "", "s3_region": "", "s3_endpoint": ""}
 
@@ -257,8 +250,6 @@ class SyntheticRecorderExtension(omni.ext.IExt):
                     self._out_working_dir = config["out_working_dir"]
                 if "out_dir" in config and config["out_dir"]:
                     self._out_dir = config["out_dir"]
-                if "out_write_type" in config:
-                    self._out_write_type = OutWriteType[config["out_write_type"]]
                 if "use_s3" in config:
                     self._use_s3 = config["use_s3"]
                 if "s3_params" in config:
@@ -290,7 +281,6 @@ class SyntheticRecorderExtension(omni.ext.IExt):
                 "num_frames": self._num_frames,
                 "rt_subframes": self._rt_subframes,
                 "control_timeline": self._control_timeline,
-                "out_write_type": self._out_write_type.name,
                 "use_s3": self._use_s3,
                 "s3_params": self._s3_params,
                 "basic_writer_params": self._basic_writer_params,
@@ -317,11 +307,18 @@ class SyntheticRecorderExtension(omni.ext.IExt):
         if not os.path.isfile(path):
             carb.log_warn(f"Could not find params file {path}.")
             return custom_params
-        with open(path, "r") as f:
-            params = json.load(f)
-            for key in params:
-                custom_params[key] = params[key]
+        try:
+            with open(path, "r") as f:
+                params = json.load(f)
+        except json.JSONDecodeError:
+            carb.log_warn(f"The file {path} is not a valid JSON.")
             return custom_params
+        except Exception as e:
+            carb.log_warn(f"An error occurred while reading {path}: {e}")
+            return custom_params
+        for key in params:
+            custom_params[key] = params[key]
+        return custom_params
 
     def _reset_config_dir(self):
         self._config_dir = os.path.abspath(
@@ -332,25 +329,6 @@ class SyntheticRecorderExtension(omni.ext.IExt):
     def _reset_out_working_dir(self):
         self._out_working_dir = os.getcwd() + "/"
         self._build_window_ui()
-
-    def _get_dir_next_numerical_suffix(self, path, dir_name):
-        nums = [-1]
-        for file in os.listdir(path):
-            if file.startswith(dir_name) and os.path.isdir(os.path.join(path, file)):
-                file = file[len(dir_name) :]
-                file = file.replace("_", "")
-                if file.isdecimal():
-                    nums.append(int(file))
-        suffix = "_" + str(max(nums) + 1)
-        return suffix
-
-    def _get_output_dir(self):
-        out_dir = self._out_dir
-        if self._out_write_type is OutWriteType.INCREMENT:
-            out_dir = out_dir + self._get_dir_next_numerical_suffix(self._out_working_dir, out_dir)
-        elif self._out_write_type is OutWriteType.TIMESTAMP:
-            out_dir = out_dir + time.strftime("_%Y-%m-%d-%H-%M-%S")
-        return os.path.join(self._out_working_dir, out_dir, "")
 
     def _check_if_valid_camera(self, path):
         context = omni.usd.get_context()
@@ -499,8 +477,7 @@ class SyntheticRecorderExtension(omni.ext.IExt):
             custom_params = self._get_custom_params(self._custom_params_path)
             writer_params = {**custom_params}
 
-        # Output path can suffixed with an increment or a timestamp if the user has enabled the option
-        output_dir = self._get_output_dir()
+        output_dir = os.path.join(self._out_working_dir, self._out_dir)
         try:
             self._writer.initialize(output_dir=output_dir, **writer_params)
         except Exception as e:
@@ -676,11 +653,6 @@ class SyntheticRecorderExtension(omni.ext.IExt):
 
                 def value_changed(m):
                     self._use_s3 = m.as_bool
-                    if self._use_s3 and self._out_write_type is OutWriteType.INCREMENT:
-                        print(f"Incremental output is not supported for S3. Switching to Timestamp.")
-                        self._out_write_type = OutWriteType.TIMESTAMP
-                        # Rebuild ui to update radio buttons state to TIMESTAMP
-                        self._build_window_ui()
 
                 s3_model.add_value_changed_fn(value_changed)
 
@@ -738,37 +710,6 @@ class SyntheticRecorderExtension(omni.ext.IExt):
                     self._out_dir = model.as_string
 
                 out_dir_model.add_value_changed_fn(out_dir_changed)
-
-                write_collection = ui.RadioCollection()
-                write_collection.model.set_value(self._out_write_type.value)
-
-                def write_collection_changed(model):
-                    out_write_type = OutWriteType(model.as_int)
-                    if self._use_s3 and out_write_type is OutWriteType.INCREMENT:
-                        print(f"Incremental output is not supported for S3. Switching to Timestamp.")
-                        self._out_write_type = OutWriteType.TIMESTAMP
-                        # Rebuild ui to update radio buttons state to TIMESTAMP
-                        self._build_window_ui()
-                    else:
-                        self._out_write_type = out_write_type
-
-                write_collection.model.add_value_changed_fn(write_collection_changed)
-
-                ui.RadioButton(
-                    text="Overwrite",
-                    radio_collection=write_collection,
-                    tooltip="Overwrite data if output folder already exists",
-                )
-                ui.RadioButton(
-                    text="Increment",
-                    radio_collection=write_collection,
-                    tooltip="Append numerical increments to output folder (e.g., _01, _02). NOTE: does not work with S3",
-                )
-                ui.RadioButton(
-                    text="Timestamp",
-                    radio_collection=write_collection,
-                    tooltip="Append timestamp to output folder (e.g., _YYYY-mm-dd-HH-MM-SS)",
-                )
 
             s3_frame = ui.CollapsableFrame("S3 Bucket", height=0, collapsed=self._s3_params_frame_collapsed)
             with s3_frame:

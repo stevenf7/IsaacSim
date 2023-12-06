@@ -242,6 +242,7 @@ class NavSDGDemo:
         )
         self._render_products = [rp_left, rp_right]
         self._writer.attach(self._render_products)
+        rep.orchestrator.preview()
 
     def _destroy_render_products(self):
         print(f"[NavSDGDemo] Destroying render products")
