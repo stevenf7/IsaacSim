@@ -73,6 +73,8 @@ class A1QPController:
         else:
             self.waypoint_pose = []
 
+        self.torque_limit = 50
+
     """
     Operations
     """
@@ -198,6 +200,8 @@ class A1QPController:
         # update_plan updates swing foot target
         # swing foot control and stance foot control
         torques = self._root_control.generate_ctrl(self._desired_states, self._ctrl_states, self._ctrl_params)
+
+        torques = np.clip(torques, -self.torque_limit, self.torque_limit)
         return torques
 
     def switch_mode(self):

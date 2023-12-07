@@ -1,4 +1,8 @@
 # Changelog
+## [1.7.11] - 2023-12-06
+### Changed
+- Increase quadruped example physics rate to 400hz
+
 ## [1.7.10] - 2023-12-03
 ### Fixed
 - Fixed issue with screwing in nut and bolt demo

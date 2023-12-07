@@ -23,6 +23,7 @@ from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.stage import create_new_stage_async
 from omni.isaac.quadruped.robots.unitree import Unitree
 from omni.isaac.quadruped.utils.rot_utils import get_xyz_euler_from_quaternion
+from pxr import UsdPhysics
 
 
 class TestA1(omni.kit.test.AsyncTestCase):
@@ -79,6 +80,7 @@ class TestA1(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         self.assertEqual(self._a1.num_dof, 12)
         self.assertTrue(get_prim_at_path("/World/A1").IsValid(), True)
+        self.assertTrue(get_prim_at_path("/World/A1").HasAPI(UsdPhysics.ArticulationRootAPI))
 
         print("robot articulation passed")
         await omni.kit.app.get_app().next_update_async()
@@ -102,7 +104,7 @@ class TestA1(omni.kit.test.AsyncTestCase):
         print(str(self.current_pos))
         delta = np.linalg.norm(self.current_pos[0] - self.start_pos[0])
 
-        self.assertTrue(delta > 0.5)
+        self.assertTrue(delta > 0.5)  # physics change result in limited mobility
 
         pass
 
@@ -123,10 +125,10 @@ class TestA1(omni.kit.test.AsyncTestCase):
 
         delta = self.current_pos - self.start_pos
         print(str(delta))
-        # x should be around 1, y, z should be around 0
+        # x should be around 0.5 , y, z should be around 0
         self.assertAlmostEquals(0.5, delta[0], 0)
-        self.assertTrue(abs(delta[1]) < 0.1)
-        self.assertTrue(abs(delta[2]) < 0.1)
+        self.assertTrue(abs(delta[1]) < 0.15)
+        self.assertTrue(abs(delta[2]) < 0.15)
 
     async def test_robot_turn_waypoint(self):
         self._path_follow = False

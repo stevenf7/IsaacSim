@@ -102,6 +102,7 @@ class TestJetBot(omni.kit.test.AsyncTestCase):
         pass
 
     # general, slowly building up speed testcase
+    # note, jetbot cannot exceed 0.42 m/s
     async def test_accel(self):
 
         odom_velocity = og.Controller.attribute("outputs:linearVelocity", self.odom_node)
@@ -114,13 +115,13 @@ class TestJetBot(omni.kit.test.AsyncTestCase):
         await init_robot_sim(self.dc, "/jetbot")
 
         for x in range(1, 5):
-            forward_velocity = x * 0.15
+            forward_velocity = x * 0.10
             og.Controller.attribute(self.graph_path + "/DifferentialController.inputs:linearVelocity").set(
                 forward_velocity
             )
-            print(x, forward_velocity)
             for i in range(15):
                 await omni.kit.app.get_app().next_update_async()
+            print(x, forward_velocity, og.DataView.get(odom_velocity)[0])
             if og.DataView.get(odom_ang_vel)[2] > 0.8:
                 print("spinning out of control, linear velocity: " + str(forward_velocity))
                 self.my_world.stop()
@@ -146,8 +147,8 @@ class TestJetBot(omni.kit.test.AsyncTestCase):
         for x in range(1, 5):
             self.my_world.play()
             await omni.kit.app.get_app().next_update_async()
-            forward_velocity = x * 0.15
-            angular_velocity = x * 0.15
+            forward_velocity = x * 0.10
+            angular_velocity = x * 0.10
             og.Controller.attribute(self.graph_path + "/DifferentialController.inputs:linearVelocity").set(
                 forward_velocity
             )
@@ -160,6 +161,9 @@ class TestJetBot(omni.kit.test.AsyncTestCase):
             og.Controller.attribute(self.graph_path + "/DifferentialController.inputs:angularVelocity").set(0.0)
             for j in range(10):
                 await omni.kit.app.get_app().next_update_async()
+            print(x, forward_velocity, og.DataView.get(odom_velocity)[0])
+            print(x, angular_velocity, og.DataView.get(odom_ang_vel)[2])
+
             self.assertAlmostEqual(og.DataView.get(odom_velocity)[0], 0.0, delta=5e-1)
             self.assertAlmostEqual(og.DataView.get(odom_ang_vel)[2], 0.0, delta=5e-1)
 
