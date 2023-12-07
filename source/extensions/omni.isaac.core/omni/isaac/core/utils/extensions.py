@@ -49,7 +49,7 @@ def get_extension_path(ext_id: str) -> str:
         >>>
         >>> ext_id = extensions_utils.get_extension_id("omni.kit.window.stage")
         >>> extensions_utils.get_extension_path(ext_id)
-        /home/user/.local/share/ov/pkg/isaac_sim-2023.1.0/kit/exts/omni.kit.window.stage
+        /home/user/.local/share/ov/pkg/isaac_sim-<version>/kit/exts/omni.kit.window.stage
     """
     extension_manager = omni.kit.app.get_app().get_extension_manager()
     return extension_manager.get_extension_path(ext_id)
@@ -71,7 +71,7 @@ def get_extension_path_from_name(extension_name: str) -> str:
         >>> import omni.isaac.core.utils.extensions as extensions_utils
         >>>
         >>> extensions_utils.get_extension_path_from_name("omni.kit.window.stage")
-        /home/user/.local/share/ov/pkg/isaac_sim-2023.1.0/kit/exts/omni.kit.window.stage
+        /home/user/.local/share/ov/pkg/isaac_sim-<version>/kit/exts/omni.kit.window.stage
     """
     extension_manager = omni.kit.app.get_app().get_extension_manager()
     return extension_manager.get_extension_path(get_extension_id(extension_name))
