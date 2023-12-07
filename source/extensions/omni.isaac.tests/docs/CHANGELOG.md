@@ -1,5 +1,7 @@
 # Changelog
-
+## [1.15.1] 2023-12-06
+### Fixed
+- Modified jetbot unit tests to not go above its max speed
 
 ## [1.15.0] 2023-11-30
 ### Added

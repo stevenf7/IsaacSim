@@ -21,6 +21,7 @@ from omni.isaac.core import World
 from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.stage import create_new_stage_async
 from omni.isaac.quadruped.robots.unitree import Unitree
+from pxr import UsdPhysics
 
 
 class TestGo1(omni.kit.test.AsyncTestCase):
@@ -76,6 +77,8 @@ class TestGo1(omni.kit.test.AsyncTestCase):
 
         self.assertEqual(self._go1.num_dof, 12)  # actually verify this number
         self.assertTrue(get_prim_at_path("/World/Go1").IsValid(), True)
+        self.assertTrue(get_prim_at_path("/World/Go1").HasAPI(UsdPhysics.ArticulationRootAPI))
+
         print("articulation check passed")
         await omni.kit.app.get_app().next_update_async()
 

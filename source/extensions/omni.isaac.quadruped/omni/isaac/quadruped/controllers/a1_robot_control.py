@@ -162,12 +162,6 @@ class A1RobotControl:
         torques = (1 - input_states._init_transition) * torques_init + input_states._init_transition * torques
         torques += input_params._torque_gravity
 
-        # for i in range(12):
-        #     if torques[i] < -1000:
-        #         torques[i] = -1000
-        #     if torques[i] > 1000:
-        #         torques[i] = 1000
-
         return torques
 
     """

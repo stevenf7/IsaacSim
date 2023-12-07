@@ -73,5 +73,5 @@ class A1CtrlParams:
     _kd_angular: np.ndarray = field(default=np.array([3.0, 3.0, 10.0]))
     """ control parameter: the stance foot force orientation angular velocity error coefficient"""
 
-    _torque_gravity: np.ndarray = field(default=np.array([0.80, 0, 0, -0.80, 0, 0, 0.80, 0, 0, -0.80, 0, 0]))
+    _torque_gravity: np.ndarray = field(default=np.array([1.0, 0, 0, -1.0, 0, 0, 1.0, 0, 0, -1.0, 0, 0]))
     """ control parameter: gravity compentation heuristic"""
