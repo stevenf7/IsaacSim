@@ -98,7 +98,7 @@ class TestAssets(omni.kit.test.AsyncTestCase):
         total_files = len(sub_files)
         results = []
         for item in sub_files:
-            print(f"opening: {item}")
+            # print(f"opening: {item}")
             file_results = []
             # first make sure all assets open
             await omni.kit.app.get_app().next_update_async()
@@ -126,7 +126,7 @@ class TestAssets(omni.kit.test.AsyncTestCase):
             # TODO: Instance Check?
             file_results.extend(self.check_abs_refs(item))
             # file_results.extend(self.check_external_refs(item))
-            print(f"opened: {count} of {total_files}, {item}, found {len(file_results)} issues")
+            # print(f"opened: {count} of {total_files}, {item}, found {len(file_results)} issues")
             results.extend(file_results)
             count = count + 1
         if len(results) > 0:

@@ -129,6 +129,7 @@ class TestRotatingLidarRtx(omni.kit.test.AsyncTestCase):
         await omni.syntheticdata.sensors.next_render_simulation_async(self._my_lidar.get_render_product_path(), 1)
         data = annotator.get_data()
         # TODO: Improve Test
+        self.assertGreater(len(data["data"]), 144000)  # make sure that the number of points is reasonable
         self.assertTrue(np.all(np.linalg.norm(data["data"], axis=1) > 0))
         annotator.detach()
 

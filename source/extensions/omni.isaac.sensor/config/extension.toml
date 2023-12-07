@@ -73,6 +73,7 @@ rtx.materialDb.rtSensorNameToIdMap="DefaultMaterial:0;AsphaltStandardMaterial:1;
 #renderer.raytracingMotion.enabled=true
 
 [[test]]
+timeout=900
 dependencies = [
     "omni.hydra.rtx",                       # "omni.hydra.pxr", Can we run and pass with Storm ?
     "omni.kit.viewport.utility",
