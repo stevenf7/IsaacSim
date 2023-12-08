@@ -80,7 +80,7 @@ class DOPEWriter(Writer):
                 }
             )
         else:
-            self.backend = BackendDispatch({"paths": {"out_dir": output_dir}})
+            self.backend = BackendDispatch({"paths": {"out_dir": output_dir}}, overwrite=True)
 
         self._backend = self.backend  # Kept for backwards compatibility
 

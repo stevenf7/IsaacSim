@@ -197,9 +197,6 @@ class RandomScenario(torch.utils.data.IterableDataset):
         if not self.test:
             self._setup_randomizers()
 
-        # Generate the replicator graphs without triggering any writing
-        rep.orchestrator.preview()
-
         # Update the app a few times to make sure the materials are fully loaded and world scene objects are registered
         for _ in range(5):
             kit.app.update()
@@ -210,6 +207,9 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self.writer.attach([self.render_product])
 
         self.dome_distractors.set_visible(False)
+
+        # Generate the replicator graphs without triggering any writing
+        rep.orchestrator.preview()
 
     def _setup_camera(self):
         focal_length = config_data["HORIZONTAL_APERTURE"] * config_data["F_X"] / config_data["WIDTH"]
@@ -498,7 +498,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
             # Randomize the dome backgrounds
             self._setup_dome_randomizers()
 
-            # Generate the replicator graphs for the DOME dataset without triggering any writing
+            # Run another preview to generate the replicator graphs for the DOME dataset without triggering any writing
             rep.orchestrator.preview()
 
         # Randomize the distractors by applying forces to them and changing their materials
@@ -557,7 +557,7 @@ if dataset.result:
         # Dataset generation loop
         for _ in dataset:
             if dataset.last_frame_reached:
-                print(f"Stopping generation loop at index..")
+                print(f"Stopping generation loop at index {dataset.cur_idx}..")
                 break
             if dataset.exiting:
                 break

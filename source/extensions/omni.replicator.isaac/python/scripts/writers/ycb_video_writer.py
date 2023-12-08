@@ -76,7 +76,7 @@ class YCBVideoWriter(Writer):
         factor_depth: int = 10000,
         intrinsic_matrix: np.ndarray = None,
     ):
-        self.backend = BackendDispatch({"paths": {"out_dir": output_dir}})
+        self.backend = BackendDispatch({"paths": {"out_dir": output_dir}}, overwrite=True)
         self._backend = self.backend  # Kept for backwards compatibility
         self._output_dir = self.backend.output_dir
         self.num_frames = num_frames

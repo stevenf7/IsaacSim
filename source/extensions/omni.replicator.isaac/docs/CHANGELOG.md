@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.11.2] - 2023-12-07
+### Fixed
+- Added overwrite=True by default to DOPE and YCV Writer backends
+
 ## [1.11.1] - 2023-12-05
 ### Fixed
 - DataVisualizationWriter parameters if None and writer metadata export
