@@ -11,7 +11,7 @@ from multiprocessing import Process
 
 from omni.isaac.kit import SimulationApp
 
-CONFIG = {"renderer": "RayTracedLighting", "headless": False, "width": 1920, "height": 1080}
+CONFIG = {"renderer": "RayTracedLighting", "headless": True, "width": 1920, "height": 1080}
 import argparse
 import glob
 import os
@@ -69,7 +69,7 @@ class PeopleSDG:
         self._settings.set("/persistent/exts/omni.anim.navigation.core/navMesh/viewNavMesh", False)
         self._settings.set("/exts/omni.anim.people/navigation_settings/navmesh_enabled", True)
         self._settings.set(
-            "/persistent/exts/omni.replicator.character/default_robot_command_file_path", "default_robot_command.txt"
+            "/exts/omni.replicator.character/default_robot_command_file_path", "default_robot_command.txt"
         )
         self._settings.set("/persistent/exts/omni.replicator.character/aim_camera_to_character", True)
         self._settings.set("/persistent/exts/omni.replicator.character/min_camera_height", 1)
@@ -159,7 +159,7 @@ def enable_extensions():
     enable_extension("omni.anim.retarget.ui")
     enable_extension("omni.kit.scripting")
     enable_extension("omni.anim.people")
-    enable_extension("omni.replicator.character.core-0.1.5")
+    enable_extension("omni.replicator.character.core")
     enable_extension("omni.kit.mesh.raycast")
 
 
