@@ -81,11 +81,9 @@ rep.AnnotatorRegistry.register_augmentation(
     "gn_depth_wp", rep.annotators.Augmentation.from_function(gaussian_noise_depth_wp, sigma=0.1, seed=None)
 )
 
-# Setup the environment and update the app a couple of times to fully load texture/materials
+# Setup the environment
 assets_root_path = get_assets_root_path()
 open_stage(assets_root_path + ENV_URL)
-for _ in range(10):
-    simulation_app.update()
 
 # Disable capture on play and async rendering
 carb.settings.get_settings().set("/omni/replicator/captureOnPlay", False)
@@ -97,6 +95,10 @@ red_mat = rep.create.material_omnipbr(diffuse=(1, 0, 0))
 red_cube = rep.create.cube(position=(0, 0, 0.71), material=red_mat)
 cam = rep.create.camera(position=(0, 0, 5), look_at=(0, 0, 0))
 rp = rep.create.render_product(cam, (512, 512))
+
+# Update the app a couple of times to fully load texture/materials
+for _ in range(5):
+    simulation_app.update()
 
 # Access default annotators from replicator
 rgb_to_hsv_augm = rep.annotators.Augmentation.from_function(rep.augmentations_default.aug_rgb_to_hsv)
