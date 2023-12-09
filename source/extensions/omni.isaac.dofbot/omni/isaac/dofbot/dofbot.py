@@ -66,9 +66,9 @@ class DofBot(Robot):
             if gripper_dof_names is None:
                 gripper_dof_names = ["Finger_Left_01_RevoluteJoint", "Finger_Right_01_RevoluteJoint"]
             if gripper_open_position is None:
-                gripper_open_position = np.array([-0.67192185, 0.67192185])
+                gripper_open_position = np.array([0.523599, -0.523599])
             if gripper_closed_position is None:
-                gripper_closed_position = np.array([0.523599, -0.523599])
+                gripper_closed_position = np.array([-0.67192185, 0.67192185])
         else:
             # TODO: change this
             if self._end_effector_prim_name is None:
@@ -78,15 +78,15 @@ class DofBot(Robot):
             if gripper_dof_names is None:
                 gripper_dof_names = ["Finger_Left_01_RevoluteJoint", "Finger_Right_01_RevoluteJoint"]
             if gripper_open_position is None:
-                gripper_open_position = np.array([-0.67192185, 0.67192185])
+                gripper_open_position = np.array([0.523599, -0.523599])
             if gripper_closed_position is None:
-                gripper_closed_position = np.array([0.523599, -0.523599])
+                gripper_closed_position = np.array([-0.67192185, 0.67192185])
         super().__init__(
             prim_path=prim_path, name=name, position=position, orientation=orientation, articulation_controller=None
         )
         if gripper_dof_names is not None:
             if deltas is None:
-                deltas = np.array([-0.1, 0.1])
+                deltas = np.array([0.1, -0.1])
             self._gripper = ParallelGripper(
                 end_effector_prim_path=self._end_effector_prim_path,
                 joint_prim_names=gripper_dof_names,
