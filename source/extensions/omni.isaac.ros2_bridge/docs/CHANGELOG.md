@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.5.1] - 2023-12-08
+### Fixed
+- Removed conflicting TF Publishers from standalone ROS2 Moveit tutorial
+
 ## [2.5.0] - 2023-11-28
 ### Added
 - ROS2 Ackermann Subscriber and Publisher nodes using non-default ROS2 AckermannDriveStamped message type.
