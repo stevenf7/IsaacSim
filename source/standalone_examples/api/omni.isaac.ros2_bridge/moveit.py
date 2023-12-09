@@ -71,31 +71,35 @@ try:
                 ("PublishJointState", "omni.isaac.ros2_bridge.ROS2PublishJointState"),
                 ("SubscribeJointState", "omni.isaac.ros2_bridge.ROS2SubscribeJointState"),
                 ("ArticulationController", "omni.isaac.core_nodes.IsaacArticulationController"),
-                ("PublishTF", "omni.isaac.ros2_bridge.ROS2PublishTransformTree"),
                 ("PublishClock", "omni.isaac.ros2_bridge.ROS2PublishClock"),
             ],
             og.Controller.Keys.CONNECT: [
                 ("OnImpulseEvent.outputs:execOut", "PublishJointState.inputs:execIn"),
                 ("OnImpulseEvent.outputs:execOut", "SubscribeJointState.inputs:execIn"),
-                ("OnImpulseEvent.outputs:execOut", "PublishTF.inputs:execIn"),
                 ("OnImpulseEvent.outputs:execOut", "PublishClock.inputs:execIn"),
                 ("OnImpulseEvent.outputs:execOut", "ArticulationController.inputs:execIn"),
                 ("Context.outputs:context", "PublishJointState.inputs:context"),
                 ("Context.outputs:context", "SubscribeJointState.inputs:context"),
-                ("Context.outputs:context", "PublishTF.inputs:context"),
                 ("Context.outputs:context", "PublishClock.inputs:context"),
                 ("ReadSimTime.outputs:simulationTime", "PublishJointState.inputs:timeStamp"),
                 ("ReadSimTime.outputs:simulationTime", "PublishClock.inputs:timeStamp"),
-                ("ReadSimTime.outputs:simulationTime", "PublishTF.inputs:timeStamp"),
                 ("SubscribeJointState.outputs:jointNames", "ArticulationController.inputs:jointNames"),
-                ("SubscribeJointState.outputs:positionCommand", "ArticulationController.inputs:positionCommand"),
-                ("SubscribeJointState.outputs:velocityCommand", "ArticulationController.inputs:velocityCommand"),
+                (
+                    "SubscribeJointState.outputs:positionCommand",
+                    "ArticulationController.inputs:positionCommand",
+                ),
+                (
+                    "SubscribeJointState.outputs:velocityCommand",
+                    "ArticulationController.inputs:velocityCommand",
+                ),
                 ("SubscribeJointState.outputs:effortCommand", "ArticulationController.inputs:effortCommand"),
             ],
             og.Controller.Keys.SET_VALUES: [
                 # Setting the /Franka target prim to Articulation Controller node
                 ("ArticulationController.inputs:usePath", True),
                 ("ArticulationController.inputs:robotPath", FRANKA_STAGE_PATH),
+                ("PublishJointState.inputs:topicName", "isaac_joint_states"),
+                ("SubscribeJointState.inputs:topicName", "isaac_joint_commands"),
                 ("PublishJointState.inputs:targetPrim", [usdrt.Sdf.Path(FRANKA_STAGE_PATH)]),
                 ("PublishTF.inputs:targetPrims", [usdrt.Sdf.Path(FRANKA_STAGE_PATH)]),
             ],
@@ -116,7 +120,7 @@ while simulation_app.is_running():
     # Run with a fixed step size
     simulation_context.step(render=True)
 
-    # Tick the Publish/Subscribe JointState, Publish TF and Publish Clock nodes each frame
+    # Tick the Publish/Subscribe JointState and Publish Clock nodes each frame
     og.Controller.set(og.Controller.attribute("/ActionGraph/OnImpulseEvent.state:enableImpulse"), True)
 
 simulation_context.stop()
