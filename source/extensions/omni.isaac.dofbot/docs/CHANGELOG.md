@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.1] - 2023-12-08
+
+### Changed
+- switched gripper deltas them because of a change in physX regarding flipped signs.
+
 ## [0.3.0] - 2022-07-26
 
 ### Removed
