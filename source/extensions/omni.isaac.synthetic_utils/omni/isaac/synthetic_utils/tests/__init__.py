@@ -7,4 +7,5 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .test_synthetic_utils import *
+# extension is deprecated, disabling tests
+# from .test_synthetic_utils import *
