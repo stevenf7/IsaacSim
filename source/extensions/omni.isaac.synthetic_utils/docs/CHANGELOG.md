@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.6.0] - 2023-12-11
+### Changed
+- disabling unit tests that are failing due to deprecated interfaces
+
 ## [0.5.0] - 2023-09-12
 ### Changed
 - deprecated in favor of omni.replicator.core, omni.syntheticdata and omni.isaac.sensor

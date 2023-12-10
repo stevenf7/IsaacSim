@@ -3,9 +3,9 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.5.0"
+version = "0.6.0"
 category = "Simulation"
-title = "Isaac Sim Synthetic Data Utilities [Deprecated]"
+title = "[Deprecated] Isaac Sim Synthetic Data Utilities"
 description = "Utility functions for generating synthetic data"
 authors = ["Isaac Sim Team"]
 repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.synthetic_utils"
