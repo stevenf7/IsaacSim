@@ -56,6 +56,7 @@ class DOPEWriter(Writer):
         use_s3: bool = False,
         bucket_name: str = "",
         endpoint_url: str = "",
+        s3_region: str = "us-east-1",
     ):
         self._output_dir = output_dir
         self._frame_id = 0
@@ -74,10 +75,12 @@ class DOPEWriter(Writer):
                 )
 
             self.backend = BackendDispatch(
-                {
-                    "use_s3": True,
-                    "paths": {"out_dir": self._output_dir, "s3_bucket": bucket_name, "s3_endpoint_url": endpoint_url},
-                }
+                output_dir=output_dir,
+                key_prefix=output_dir,
+                bucket=bucket_name,
+                region=s3_region,
+                endpoint_url=endpoint_url,
+                overwrite=True,
             )
         else:
             self.backend = BackendDispatch({"paths": {"out_dir": output_dir}}, overwrite=True)

@@ -36,6 +36,7 @@ parser.add_argument(
     default=None,
     help="Bucket name to store output in. See naming rules: https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html",
 )
+parser.add_argument("--s3_region", type=str, default="us-east-1", help="s3 region.")
 parser.add_argument("--endpoint", type=str, default=None, help="s3 endpoint to write to.")
 parser.add_argument(
     "--writer",
@@ -107,6 +108,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
         output_folder,
         use_s3=False,
         endpoint="",
+        s3_region="us-east-1",
         writer="ycbvideo",
         bucket="",
         test=False,
@@ -145,6 +147,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self._output_folder = output_folder if use_s3 else os.path.join(os.getcwd(), output_folder)
         self.use_s3 = use_s3
         self.endpoint = endpoint
+        self.s3_region = s3_region
         self.bucket = bucket
 
         self.writer_config = {
@@ -152,6 +155,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
             "use_s3": self.use_s3,
             "bucket_name": self.bucket,
             "endpoint_url": self.endpoint,
+            "s3_region": self.s3_region,
             "train_size": self.train_size,
         }
 
@@ -534,6 +538,7 @@ dataset = RandomScenario(
     output_folder=args.output_folder,
     use_s3=args.use_s3,
     bucket=args.bucket,
+    s3_region=args.s3_region,
     endpoint=args.endpoint,
     writer=args.writer.lower(),
     test=args.test,
