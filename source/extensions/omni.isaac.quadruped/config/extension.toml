@@ -1,7 +1,7 @@
 display_name = "Isaac Quadruped Robot"
 
 [package]
-version = "1.4.0"
+version = "1.4.1"
 category = "Simulation"
 title = "Isaac Quadruped Robot"
 description = "Simulation for unitree 12 dof quadrupeds"
