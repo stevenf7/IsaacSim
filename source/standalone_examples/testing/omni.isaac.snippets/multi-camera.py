@@ -9,7 +9,7 @@
 
 from omni.isaac.kit import SimulationApp
 
-simulation_app = SimulationApp()
+simulation_app = SimulationApp({"headless": False})
 
 import os
 
@@ -18,14 +18,13 @@ import omni.kit
 import omni.replicator.core as rep
 from omni.replicator.core import AnnotatorRegistry, Writer
 from PIL import Image
-from pxr import UsdGeom
+from pxr import Sdf, UsdGeom
 
 NUM_FRAMES = 5
 
 # Save rgb image to file
 def save_rgb(rgb_data, file_name):
-    rgb_image_data = np.frombuffer(rgb_data, dtype=np.uint8).reshape(*rgb_data.shape, -1)
-    rgb_img = Image.fromarray(rgb_image_data, "RGBA")
+    rgb_img = Image.fromarray(rgb_data, "RGBA")
     rgb_img.save(file_name + ".png")
 
 
@@ -61,11 +60,19 @@ class MyWriter(Writer):
 
 rep.WriterRegistry.register(MyWriter)
 
+# Create a new stage and add a dome light
+omni.usd.get_context().new_stage()
 stage = omni.usd.get_context().get_stage()
+dome_light = stage.DefinePrim("/World/DomeLight", "DomeLight")
+dome_light.CreateAttribute("inputs:intensity", Sdf.ValueTypeNames.Float).Set(1000.0)
 
 # Create cube
 cube_prim = stage.DefinePrim("/World/Cube", "Cube")
 UsdGeom.Xformable(cube_prim).AddTranslateOp().Set((0.0, 5.0, 1.0))
+
+# Run a few frames to ensure all materials are properly loaded
+for _ in range(5):
+    simulation_app.update()
 
 # Register cube color randomizer to trigger on every frame
 rep.randomizer.register(cube_color_randomizer)
@@ -82,9 +89,9 @@ UsdGeom.Xformable(camera_prim2).AddTranslateOp().Set((-10.0, 15.0, 15.0))
 UsdGeom.Xformable(camera_prim2).AddRotateXYZOp().Set((-45.0, 0.0, 45.0))
 
 # Create render products
-rp1 = rep.create.render_product(str(camera_prim1.GetPrimPath()), resolution=(320, 320))
-rp2 = rep.create.render_product(str(camera_prim2.GetPrimPath()), resolution=(640, 640))
-rp3 = rep.create.render_product("/OmniverseKit_Persp", (1024, 1024))
+rp1 = rep.create.render_product(str(camera_prim1.GetPrimPath()), resolution=(320, 320), name="rp1")
+rp2 = rep.create.render_product(str(camera_prim2.GetPrimPath()), resolution=(640, 640), name="rp2")
+rp3 = rep.create.render_product("/OmniverseKit_Persp", (1024, 1024), name="rp3")
 
 # Acess the data through a custom writer
 writer = rep.WriterRegistry.get("MyWriter")
@@ -95,12 +102,8 @@ writer.attach([rp1, rp2, rp3])
 rgb_annotators = []
 for rp in [rp1, rp2, rp3]:
     rgb = rep.AnnotatorRegistry.get_annotator("rgb")
-    rgb.attach([rp])
+    rgb.attach(rp)
     rgb_annotators.append(rgb)
-
-# NOTE A list of render products will be supported in the near future, currently only the first render product in the list will be used
-# rgb = rep.AnnotatorRegistry.get_annotator("rgb")
-# rgb.attach([rp1, rp2, rp3])
 
 # Create annotator output directory
 file_path = os.path.join(os.getcwd(), "_out_annot", "")
@@ -109,7 +112,8 @@ dir = os.path.dirname(file_path)
 os.makedirs(dir, exist_ok=True)
 
 for i in range(NUM_FRAMES):
-    rep.orchestrator.step()
+    # Improve the rendering quality by rendering multiple subframes per captured frame
+    rep.orchestrator.step(rt_subframes=8)
     # Get annotator data after each replicator process step
     for j, rgb_annot in enumerate(rgb_annotators):
         save_rgb(rgb_annot.get_data(), f"{dir}/rp{j}_step_{i}")
