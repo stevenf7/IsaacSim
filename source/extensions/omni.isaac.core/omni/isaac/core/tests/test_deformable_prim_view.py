@@ -228,7 +228,7 @@ class TestDeformablePrimView(omni.kit.test.AsyncTestCase):
         xforms = self.deformable_view.get_world_poses(indices)
         num_nodes = rest_point.shape[1]
         translate = np.repeat(xforms[0].cpu()[:, np.newaxis, :], num_nodes, axis=1)
-        translate = torch.tensor(translate, device="cuda:0")
+        translate = translate.clone().detach().to("cuda:0")
         self.assertTrue(
             self.isclose(
                 rest_point + translate,
