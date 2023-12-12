@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.3] - 2023-12-11
+
+### Changed
+- Minor tweaks in bin filling position so pieces don't hit robot when falling
+
+### Added
+- Random piece orientation on drop
+
 ## [0.3.2] - 2023-02-01
 
 ### Changed

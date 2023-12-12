@@ -1,4 +1,9 @@
 # Changelog
+## [1.7.12] - 2023-12-11
+### Changed
+- Force stop bin filling once gripper constraint breaks
+- Add small force to induce gripper breaking if it doesn't happen on bin pieces falling
+
 ## [1.7.11] - 2023-12-06
 ### Changed
 - Increase quadruped example physics rate to 400hz
