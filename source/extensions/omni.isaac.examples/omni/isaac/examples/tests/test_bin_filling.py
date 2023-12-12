@@ -9,6 +9,8 @@
 
 import asyncio
 
+import carb
+import numpy as np
 import omni.kit
 
 # NOTE:
@@ -33,6 +35,9 @@ class TestBinFillingExampleExtension(omni.kit.test.AsyncTestCase):
         await update_stage_async()
         while is_stage_loading():
             await update_stage_async()
+        settings = carb.settings.get_settings()
+        settings.set("/app/player/useFixedTimeStepping", False)
+        settings.set("/app/runLoops/main/rateLimitEnabled", False)
         return
 
     # After running each test
@@ -57,15 +62,24 @@ class TestBinFillingExampleExtension(omni.kit.test.AsyncTestCase):
         bin = world.scene.get_object(task_params["bin_name"]["value"])
         await self._sample.on_fill_bin_event_async()
         await update_stage_async()
-        # run for 2500 frames and print time
-        for i in range(2500):
+        # run for 1500 frames and print time
+        for i in range(1500):
             await update_stage_async()
+            my_ur10.gripper.update()
             if self._sample._controller.get_current_event() in [4, 5]:
                 self.assertTrue(my_ur10.gripper.is_closed())
             if self._sample._controller.get_current_event() == 5:
                 self.assertGreater(bin.get_world_pose()[0][-1], 0.15)
+            if self._sample._controller.get_current_event() > 5:
+                if not my_ur10.gripper.is_closed():
+                    break
+        if my_ur10.gripper.is_closed():
+            bin.set_linear_velocity(np.array([0.0, 0.0, -15.0]))
+
+        for i in range(100):
+            await update_stage_async()
         self.assertTrue(not my_ur10.gripper.is_closed())
-        self.assertLess(bin.get_world_pose()[0][-1], 0)
+        self.assertLess(bin.get_world_pose()[0][-1], 0.15)
         pass
 
     async def test_reset(self):

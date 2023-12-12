@@ -47,7 +47,7 @@ class BinFilling(BaseTask):
         self._max_screws = 100
         self._screws_to_add = 0
         self._pipe_position = np.array([0, 0.85, 1.2]) / get_stage_units()
-        self._target_position = np.array([0, 0.90, -0.44]) / get_stage_units()
+        self._target_position = np.array([0, 0.85, -0.44]) / get_stage_units()
         self._bin_initial_position = np.array([0.35, 0.15, -0.40]) / get_stage_units()
         self._bin_size = np.array([0.25, 0.35, 0.20]) / get_stage_units()
         return
@@ -153,10 +153,17 @@ class BinFilling(BaseTask):
     def _add_screw(self):
         asset_path = self._screw_asset_paths[random.randint(0, len(self._screw_asset_paths) - 1)]
         prim_path = "/World/objects/object_{}".format(len(self._screws))
+        orientation = np.array([random.random(), random.random(), random.random(), random.random()])
+        orientation = orientation / np.linalg.norm(orientation)
         add_reference_to_stage(usd_path=asset_path, prim_path=prim_path)
         self._screws.append(
             self.scene.add(
-                XFormPrim(prim_path=prim_path, name="screw_{}".format(len(self._screws)), position=self._pipe_position)
+                XFormPrim(
+                    prim_path=prim_path,
+                    name="screw_{}".format(len(self._screws)),
+                    translation=self._pipe_position,
+                    orientation=orientation,
+                )
             )
         )
         self._screws_to_add -= 1
