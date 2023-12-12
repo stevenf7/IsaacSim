@@ -31,6 +31,7 @@ status, stage_path = omni.kit.commands.execute(
     "URDFParseAndImportFile",
     urdf_path=extension_path + "/data/urdf/robots/carter/urdf/carter.urdf",
     import_config=import_config,
+    get_articulation_root=True,
 )
 # Get stage handle
 stage = omni.usd.get_context().get_stage()
