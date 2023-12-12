@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.1.4] - 2023-12-11
+### Fixed
+- Fixed breaking test cases that loaded local USD assets with references to robots on Nucleus
+
 ## [1.1.3] - 2023-11-13
 ### Fixed
 - Updated documentation link
