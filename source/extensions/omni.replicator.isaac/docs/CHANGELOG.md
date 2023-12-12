@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.11.3] - 2023-12-00
+### Fixed
+- Change initialization of s3 BackendDispatch for DOPE writer 
+
 ## [1.11.2] - 2023-12-07
 ### Fixed
 - Added overwrite=True by default to DOPE and YCV Writer backends
