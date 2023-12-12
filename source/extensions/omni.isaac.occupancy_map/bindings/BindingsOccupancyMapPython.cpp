@@ -117,28 +117,28 @@ PYBIND11_MODULE(_occupancy_map, m)
                 Main function that generates a map based on the settings and transform set. Assumes that a 2d map is generated and flattens the computed data
         )pbdoc")
         .def("generate3d", &MapGenerator::generate3d, R"pbdoc(
-                Main function that generates a map based on the settings and transform set. Assumes 3d generation, output is not flattened
+                Main function that generates a map based on the settings and transform set. Assumes 3d generation, map is not flattened
         )pbdoc")
         .def("get_occupied_positions", &MapGenerator::getOccupiedPositions, R"pbdoc(
 
                 Returns:
-                    :obj:`list` of :obj:`carb.Float2`: List of 2d points in stage coordinates containing occupied locations.
+                    :obj:`list` of :obj:`carb.Float3`: List of 3d points in stage coordinates from the generated map, containing occupied locations.
         )pbdoc")
         .def("get_free_positions", &MapGenerator::getFreePositions, R"pbdoc(
                 Returns:
-                    :obj:`list` of :obj:`carb.Float2`: List of 2d points in stage coordinates containing free locations.
+                    :obj:`list` of :obj:`carb.Float3`: List of 3d points in stage coordinates from the generated map, containing free locations.
         )pbdoc")
         .def("get_min_bound", &MapGenerator::getMinBound, R"pbdoc(
                 Returns:
-                    :obj:`carb.Float2`: Minimum bound for generated occupancy map instage coordinates
+                    :obj:`carb.Float3`: Minimum bound for generated occupancy map instage coordinates
         )pbdoc")
         .def("get_max_bound", &MapGenerator::getMaxBound, R"pbdoc(
                 Returns:
-                    :obj:`carb.Float2`: Maximum bound for generated occupancy map instage coordinates
+                    :obj:`carb.Float3`: Maximum bound for generated occupancy map instage coordinates
         )pbdoc")
         .def("get_dimensions", &MapGenerator::getDimensions, R"pbdoc(
                 Returns:
-                    :obj:`carb.Int2`: Dimensions for output buffer
+                    :obj:`carb.Int3`: Dimensions for output buffer
         )pbdoc")
         .def("get_buffer", &MapGenerator::getBuffer, R"pbdoc(
                 Returns:
