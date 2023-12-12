@@ -14,6 +14,7 @@ simulation_app = SimulationApp(launch_config={"renderer": "RayTracedLighting", "
 import json
 import os
 
+import carb.settings
 import numpy as np
 import omni
 import omni.replicator.core as rep
@@ -25,8 +26,7 @@ from PIL import Image
 
 # Util function to save rgb annotator data
 def write_rgb_data(rgb_data, file_path):
-    rgb_image_data = np.frombuffer(rgb_data, dtype=np.uint8).reshape(*rgb_data.shape, -1)
-    rgb_img = Image.fromarray(rgb_image_data, "RGBA")
+    rgb_img = Image.fromarray(rgb_data, "RGBA")
     rgb_img.save(file_path + ".png")
 
 
@@ -42,45 +42,56 @@ def write_sem_data(sem_data, file_path):
 
 # Create a new stage with the default ground plane
 omni.usd.get_context().new_stage()
+
+# Setup the simulation world
 world = World()
 world.scene.add_default_ground_plane()
 world.reset()
 
-# Run the application for several frames to allow the materials to load
-for i in range(20):
+# Setting capture on play to False will prevent the replicator from capturing data each frame
+carb.settings.get_settings().set("/omni/replicator/captureOnPlay", False)
+
+# Run a few frames to ensure all materials are properly loaded
+for _ in range(5):
     simulation_app.update()
 
 # Create a camera and render product to collect the data from
-cam = rep.create.camera(position=(3, 3, 3), look_at=(0, 0, 0))
+cam = rep.create.camera(position=(5, 5, 5), look_at=(0, 0, 0))
 rp = rep.create.render_product(cam, (512, 512))
 
 # Set the output directory for the data
-out_dir = os.getcwd() + "/_out_sim_get_data"
+out_dir = os.getcwd() + "/_out_sim_event"
 os.makedirs(out_dir, exist_ok=True)
 print(f"Outputting data to {out_dir}..")
 
-# NOTE currently replicator writers do not work correctly with isaac simulations and will interfere with the timeline
-# writer = rep.WriterRegistry.get("BasicWriter")
-# writer.initialize(output_dir=out_dir, rgb=True, semantic_segmentation=True, colorize_semantic_segmentation=True)
-# writer.attach([rp])
+# Example of using a writer to save the data
+writer = rep.WriterRegistry.get("BasicWriter")
+writer.initialize(
+    output_dir=f"{out_dir}/writer", rgb=True, semantic_segmentation=True, colorize_semantic_segmentation=True
+)
+writer.attach(rp)
 
-# Accesing the data directly from annotators
+# Run a preview to ensure the replicator graph is initialized
+rep.orchestrator.preview()
+
+# Example of accesing the data directly from annotators
 rgb_annot = rep.AnnotatorRegistry.get_annotator("rgb")
-rgb_annot.attach([rp])
+rgb_annot.attach(rp)
 sem_annot = rep.AnnotatorRegistry.get_annotator("semantic_segmentation", init_params={"colorize": True})
-sem_annot.attach([rp])
+sem_annot.attach(rp)
 
+# Spawn and drop a few cubes, capture data when they stop moving
 for i in range(5):
     cuboid = world.scene.add(DynamicCuboid(prim_path=f"/World/Cuboid_{i}", name=f"Cuboid_{i}", position=(0, 0, 10 + i)))
     add_update_semantics(cuboid.prim, "Cuboid")
 
-    for s in range(1000):
-        world.step(render=True, step_sim=True)
+    for s in range(500):
+        world.step(render=False)
         vel = np.linalg.norm(cuboid.get_linear_velocity())
         if vel < 0.1:
             print(f"Cube_{i} stopped moving after {s} simulation steps, writing data..")
-            # NOTE replicator's step is no longer needed since new data is fed in the annotators every world.step()
-            # rep.orchestrator.step()
+            # Tigger the writer and update the annotators with new data
+            rep.orchestrator.step(rt_subframes=4, pause_timeline=False)
             write_rgb_data(rgb_annot.get_data(), f"{out_dir}/Cube_{i}_step_{s}_rgb")
             write_sem_data(sem_annot.get_data(), f"{out_dir}/Cube_{i}_step_{s}_sem")
             break
