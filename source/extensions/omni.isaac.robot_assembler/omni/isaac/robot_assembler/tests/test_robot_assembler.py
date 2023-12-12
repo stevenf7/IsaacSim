@@ -16,7 +16,13 @@ import numpy as np
 import omni.kit.test
 from omni.isaac.core.articulations import Articulation
 from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.utils.stage import create_new_stage_async, get_current_stage, open_stage_async, update_stage_async
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.stage import (
+    add_reference_to_stage,
+    create_new_stage_async,
+    get_current_stage,
+    update_stage_async,
+)
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.world import World
 from omni.isaac.robot_assembler import AssembledRobot, RobotAssembler
@@ -148,8 +154,14 @@ class TestRobotAssembler(omni.kit.test.AsyncTestCase):
             await update_stage_async()
 
     async def testRobotToRobotAssemble(self):
-        stage_path = os.path.join(self._robot_assembler_data_path, "robot_composition_test_stage.usd")
-        await open_stage_async(stage_path)
+        assets_root_path = get_assets_root_path()
+
+        add_reference_to_stage(assets_root_path + "/Isaac/Robots/AllegroHand/allegro_hand.usd", "/World/allegro_hand")
+        XFormPrim("/World/allegro_hand").set_world_pose(np.array([1.0, 0.0, 0.0]))
+
+        add_reference_to_stage(assets_root_path + "/Isaac/Robots/UniversalRobots/ur10e/ur10e.usd", "/World/ur10e")
+        XFormPrim("/World/ur10e").set_world_pose(np.array([-1.0, 0.0, 0.0]))
+
         await update_stage_async()
 
         for single_robot in [True, False]:
@@ -215,8 +227,14 @@ class TestRobotAssembler(omni.kit.test.AsyncTestCase):
             await self._assert_not_assembled(base_robot_path, attach_robot_mount_path)
 
     async def testRobotToRigidBodyAssemble(self):
-        stage_path = os.path.join(self._robot_assembler_data_path, "ur10_with_mount.usd")
-        await open_stage_async(stage_path)
+        assets_root_path = get_assets_root_path()
+
+        add_reference_to_stage(assets_root_path + "/Isaac/Props/Mounts/ur10_mount.usd", "/World/ur10_mount")
+        XFormPrim("/World/ur10_mount").set_world_pose(np.array([-1.0, 0.0, 0.0]))
+
+        add_reference_to_stage(assets_root_path + "/Isaac/Robots/UniversalRobots/ur10e/ur10e.usd", "/World/ur10e")
+        XFormPrim("/World/ur10e").set_world_pose(np.array([1.0, 0.0, 0.0]))
+
         await update_stage_async()
 
         robot_assembler = RobotAssembler()
@@ -267,8 +285,15 @@ class TestRobotAssembler(omni.kit.test.AsyncTestCase):
         await self._assert_not_assembled(attach_robot_path, base_robot_path + "/assembler_mount_frame")
 
     async def testRigidBodyToRigidBodyAssemble(self):
-        stage_path = os.path.join(self._robot_assembler_data_path, "ur10_with_mount.usd")
-        await open_stage_async(stage_path)
+        assets_root_path = get_assets_root_path()
+
+        await self._create_light()
+
+        add_reference_to_stage(assets_root_path + "/Isaac/Props/Mounts/ur10_mount.usd", "/World/ur10_mount")
+        XFormPrim("/World/ur10_mount").set_world_pose(np.array([-1.0, 0.0, 0.0]))
+
+        add_reference_to_stage(assets_root_path + "/Isaac/Props/Mounts/ur10_mount.usd", "/World/ur10_mount_01")
+        XFormPrim("/World/ur10_mount_01").set_world_pose(np.array([1.0, 0.0, 0.0]))
         await update_stage_async()
 
         robot_assembler = RobotAssembler()
