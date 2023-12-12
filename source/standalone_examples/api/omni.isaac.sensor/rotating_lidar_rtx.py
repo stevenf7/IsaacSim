@@ -40,7 +40,6 @@ asset_path = assets_root_path + "/Isaac/Robots/Carter/nova_carter_sensors.usd"
 my_carter = my_world.scene.add(
     WheeledRobot(
         prim_path="/World/Carter",
-        robot_path="Carter_V24",
         name="my_carter",
         wheel_dof_names=["joint_wheel_left", "joint_wheel_right"],
         create_robot=True,
