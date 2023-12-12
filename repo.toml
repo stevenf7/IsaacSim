@@ -868,6 +868,7 @@ deps_for_isaac = [
   "omni.importer.mjcf-1.1.0",
   "omni.importer.urdf-1.5.0",
   "omni.anim.people-0.2.4",
+  "omni.replicator.object-0.1.7",
   "omni.replicator.character.core-0.1.8",
   "omni.replicator.character.ui-0.1.8",
   "omni.replicator.character.camera_calibration-0.1.8"
