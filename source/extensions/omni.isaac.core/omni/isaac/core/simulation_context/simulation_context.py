@@ -443,7 +443,8 @@ class SimulationContext:
         else:
             set_carb_setting(self._settings, "/app/runLoops/main/rateLimitEnabled", False)
         set_carb_setting(self._settings, "/app/runLoops/main/rateLimitFrequency", rendering_hz)
-        get_current_stage().SetTimeCodesPerSecond(rendering_hz)
+        with Usd.EditContext(get_current_stage(), get_current_stage().GetRootLayer()):
+            get_current_stage().SetTimeCodesPerSecond(rendering_hz)
         self._timeline.set_target_framerate(rendering_hz)
         self._rendering_dt = rendering_dt
         # the custom isaac loop runner is available by default when running as a native python script with SimulationApp

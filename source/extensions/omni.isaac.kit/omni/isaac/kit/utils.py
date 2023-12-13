@@ -14,6 +14,7 @@ from __future__ import annotations
 from typing import Any
 
 import carb
+from omni.kit.usd import layers
 
 
 def set_carb_setting(carb_settings: carb.settings.ISettings, setting: str, value: Any) -> None:
@@ -86,7 +87,7 @@ def set_livesync_stage(usd_path: str, enable: bool) -> bool:
     """[summary]
 
     Args:
-        usd_path (str): path to enable live sync for, t will be overwritten with the current stage
+        usd_path (str): path to enable live sync for, it will be overwritten with the current stage
         enable (bool): True to enable livesync, false to disable livesync
 
     Returns:
@@ -97,11 +98,15 @@ def set_livesync_stage(usd_path: str, enable: bool) -> bool:
     # TODO: Check that the provided usd_path exists
     if save_stage(usd_path):
         if enable:
-            omni.usd.get_context().set_stage_live(omni.usd.StageLiveModeType.ALWAYS_ON)
-            omni.usd.get_context().set_layer_live(usd_path, enable)
+            usd_path_split = usd_path.split("/")
+            live_session = layers.get_live_syncing().find_live_session_by_name(usd_path, "Default")
+            if live_session is None:
+                live_session = layers.get_live_syncing().create_live_session(name="Default")
+            result = layers.get_live_syncing().join_live_session(live_session)
+            return True
         else:
-            omni.usd.get_context().set_stage_live(omni.usd.StageLiveModeType.TOGGLE_OFF)
-        return True
+            layers.get_live_syncing().stop_live_session(usd_path)
+            return True
     else:
         return False
 

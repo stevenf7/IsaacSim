@@ -19,6 +19,7 @@ import usdrt
 
 # isaacsim
 from omni.isaac.core.utils.constants import AXES_TOKEN
+from omni.kit.usd import layers
 from omni.usd.commands import DeletePrimsCommand
 from pxr import Sdf, Usd, UsdGeom
 
@@ -456,13 +457,18 @@ def set_livesync_stage(usd_path: str, enable: bool) -> bool:
         True
     """
     # TODO: Check that the provided usd_path exists
+    # TODO: Check that the provided usd_path exists
     if save_stage(usd_path):
         if enable:
-            omni.usd.get_context().set_stage_live(omni.usd.StageLiveModeType.ALWAYS_ON)
-            omni.usd.get_context().set_layer_live(usd_path, enable)
+            usd_path_split = usd_path.split("/")
+            live_session = layers.get_live_syncing().find_live_session_by_name(usd_path, "Default")
+            if live_session is None:
+                live_session = layers.get_live_syncing().create_live_session(name="Default")
+            result = layers.get_live_syncing().join_live_session(live_session)
+            return True
         else:
-            omni.usd.get_context().set_stage_live(omni.usd.StageLiveModeType.TOGGLE_OFF)
-        return True
+            layers.get_live_syncing().stop_live_session(usd_path)
+            return True
     else:
         return False
 
@@ -551,7 +557,8 @@ def set_stage_units(stage_units_in_meters: float) -> None:
     """
     if get_current_stage() is None:
         raise Exception("There is no stage currently opened, init_stage needed before calling this func")
-    UsdGeom.SetStageMetersPerUnit(get_current_stage(), stage_units_in_meters)
+    with Usd.EditContext(get_current_stage(), get_current_stage().GetRootLayer()):
+        UsdGeom.SetStageMetersPerUnit(get_current_stage(), stage_units_in_meters)
 
 
 def get_stage_units() -> float:

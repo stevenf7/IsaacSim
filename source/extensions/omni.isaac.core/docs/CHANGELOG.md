@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.3.2] - 2023-12-13
+### Fixed
+- set_live_sync method 
+
 ## [3.3.1] - 2023-12-12
 ### Fixed
 - Unit tests

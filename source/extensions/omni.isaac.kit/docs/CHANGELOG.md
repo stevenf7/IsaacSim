@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.4.7] - 2023-12-13
+### Fixed
+- set_live_sync method 
+
 ## [1.4.6] - 2023-11-27
 ### Changed
 - Set /app/player/useFixedTimeStepping to False since the loop runner controls stepping
