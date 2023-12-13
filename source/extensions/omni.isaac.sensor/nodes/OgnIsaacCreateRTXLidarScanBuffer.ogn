@@ -35,7 +35,7 @@
             "transformPoints": {
                 "type": "bool",
                 "description": "Transform point cloud to world coordinates",
-                "default": true,
+                "default": false,
                 "uiName": "Output in World Coordinates"
             },
             "accuracyErrorAzimuthDeg": {

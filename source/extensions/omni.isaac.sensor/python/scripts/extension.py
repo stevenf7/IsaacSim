@@ -195,7 +195,7 @@ class Extension(omni.ext.IExt):
                     "RtxSensorCpu" + "IsaacCreateRTXLidarScanBuffer"
                 )
             ],
-            doTransform=False,
+            doTransform=True,
             category="omni.isaac.sensor",
         )
 
