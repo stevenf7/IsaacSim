@@ -77,6 +77,7 @@ vscode.python_env.PYTHONPATH= [
   "$root/_build/$platform/$config/exts/omni.pip.compute/pip_prebundle",
   "$root/_build/$platform/$config/exts/omni.pip.cloud/pip_prebundle",
   "$root/_build/$platform/$config/extscache/omni.pip.torch*/torch-2-0-1/",
+  "$root/_build/$platform/$config/kit/python/lib/python3.10/site-packages",
 ]
 
 vscode.python_env.PATH= [
