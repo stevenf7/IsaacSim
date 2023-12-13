@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.1] - 2023-12-12
+### Changed
+- Added tests to check physics scene
+
 ## [1.2.0] - 2023-11-30
 ### Changed
 - Use async omni.client calls

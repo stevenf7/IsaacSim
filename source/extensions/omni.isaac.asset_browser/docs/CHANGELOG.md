@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.3] - 2023-12-12
+
+### Changed
+
+- Disable test when windowing is not present
+
 ## [0.4.2] - 2023-11-29
 
 ### Changed

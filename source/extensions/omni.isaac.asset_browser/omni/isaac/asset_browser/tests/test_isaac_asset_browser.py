@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 from unittest.mock import Mock
 
+import carb
 import omni.isaac.asset_browser
 import omni.kit.app
 import omni.kit.clipboard
@@ -38,6 +39,10 @@ class TestAssetBrowser(OmniUiTest):
         await super().tearDown()
 
     async def test_browser_ui(self):
+        try:
+            carb.windowing.acquire_windowing_interface()
+        except:
+            return
         await self.docked_test_window(window=self._window, width=1280, height=720)
         await omni.kit.app.get_app().next_update_async()
         await self.__wait_collection_loaded()
@@ -72,6 +77,10 @@ class TestAssetBrowser(OmniUiTest):
         delegate.destroy()
 
     async def test_context_menu(self):
+        try:
+            carb.windowing.acquire_windowing_interface()
+        except:
+            return
         model = omni.kit.browser.asset.model.AssetBrowserModel()
         delegate = omni.kit.browser.asset.delegate.AssetDetailDelegate(model)
         delegate._instanceable_categories = ["mock"]

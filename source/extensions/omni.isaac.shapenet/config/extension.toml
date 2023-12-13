@@ -27,6 +27,3 @@ writeTarget.kit = true
 [[python.module]]
 name = "omni.isaac.shapenet"
 
-
-[[test]]
-args = ["--/exts/omni.kit.renderer.core/compatibilityMode=true"]

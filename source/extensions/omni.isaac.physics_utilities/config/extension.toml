@@ -24,6 +24,3 @@ name = "omni.isaac.physics_utilities"
 
 [[python.module]]
 name = "omni.isaac.physics_utilities.tests"
-
-[[test]]
-args = ["--/exts/omni.kit.renderer.core/compatibilityMode=true"]

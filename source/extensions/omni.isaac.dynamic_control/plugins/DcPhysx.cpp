@@ -3818,8 +3818,8 @@ CARB_EXPORT void carbOnPluginStartup()
     // suDesc.onResume = SuResume;
     // suDesc.onPause = SuPause;
     // suDesc.onStop = SuStop;
-
-    suDesc.onPrimRemove = onPrimRemove;
+    // TODO: enabling this causes prims to get removed randomly sometimes
+    // suDesc.onPrimRemove = onPrimRemove;
 
     g_suNode = g_su->createStageUpdateNode(suDesc);
     if (!g_suNode)

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.6] - 2023-12-12
+### Fixed
+- Issue with prim getting removed at random
+
 ## [1.2.5] - 2023-08-04
 ### Fixed
 - Fixed joints on the root of an articulation are treated as a special type of internal articulation to support fixed base. 

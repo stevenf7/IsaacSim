@@ -40,7 +40,6 @@ class TestScene(omni.kit.test.AsyncTestCase):
         World.clear_instance()
         pass
 
-    @unittest.expectedFailure
     async def test_clear_instance(self):
         await create_new_stage_async()
         my_world = World(device="cpu")

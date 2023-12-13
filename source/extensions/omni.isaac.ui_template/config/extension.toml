@@ -23,6 +23,3 @@ name = "omni.isaac.ui_template"
 
 [[python.module]]
 name = "omni.isaac.ui_template.tests"
-
-[[test]]
-args = ["--/exts/omni.kit.renderer.core/compatibilityMode=true"]

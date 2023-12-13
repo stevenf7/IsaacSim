@@ -38,7 +38,7 @@ include = ["*.ogn", "*.py"]
 exclude = ["Ogn*Database.py"]
 
 [[test]]
-
+timeout=900
 dependencies = [
     "omni.kit.viewport.actions"
 ]

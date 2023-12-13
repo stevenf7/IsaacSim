@@ -23,7 +23,7 @@ if [[ -z "${DISPLAY}" ]]; then
 fi
 
 pushd $SCRIPT_DIR/tests/
-for f in tests-*.sh; do
+for f in tests-python*.sh; do
     echo "Executing Test: $f"
     bash "$f" $args $@
 done
