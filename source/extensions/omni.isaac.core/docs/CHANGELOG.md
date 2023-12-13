@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.3.1] - 2023-12-12
+### Fixed
+- Unit tests
+
 ## [3.3.0] - 2023-12-1
 ### Changed
 - Add more articulation metadata for OM-116002

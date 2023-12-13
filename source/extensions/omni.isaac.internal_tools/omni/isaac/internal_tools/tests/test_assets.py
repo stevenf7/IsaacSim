@@ -25,7 +25,7 @@ from omni.isaac.internal_tools.utils.file_utils import (
     list_sub_files,
 )
 from omni.physx import get_physx_interface
-from pxr import Sdf, Usd, UsdGeom, UsdUtils
+from pxr import PhysxSchema, Sdf, Usd, UsdGeom
 
 
 # This test is part of internal utils because it needs internal servers
@@ -123,6 +123,7 @@ class TestAssets(omni.kit.test.AsyncTestCase):
                 file_results.extend(self.check_deleted_ref(item, prim))
                 file_results.extend(self.check_deleted_payload(item, prim))
                 file_results.extend(self.check_properties(item, prim))
+                file_results.extend(self.check_physics_scene(item, prim))
             # TODO: Instance Check?
             file_results.extend(self.check_abs_refs(item))
             # file_results.extend(self.check_external_refs(item))
@@ -207,3 +208,16 @@ class TestAssets(omni.kit.test.AsyncTestCase):
                 return [f"stage: {usd_path}, has deleted payload {payload_info.deletedItems}"]
             else:
                 return []
+
+    def check_physics_scene(self, usd_path, prim):
+        errors = []
+        if prim.HasAPI(PhysxSchema.PhysxSceneAPI):
+            physics_api = PhysxSchema.PhysxSceneAPI(prim)
+            if physics_api.GetEnableGPUDynamicsAttr().Get():
+                errors.append(f"Physics scene: {prim} in {usd_path}, has gpu dynamics enabled")
+            if physics_api.GetBroadphaseTypeAttr().Get() != "MBP":
+                errors.append(
+                    f"Physics scene: {prim} in {usd_path}, has {physics_api.GetBroadphaseTypeAttr().Get()} broadphase"
+                )
+            return errors
+        return []

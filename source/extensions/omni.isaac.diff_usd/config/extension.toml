@@ -25,6 +25,3 @@ name = "omni.isaac.diff_usd"
 
 [[python.module]]
 name = "omni.isaac.diff_usd.tests"
-
-[[test]]
-args = ["--/exts/omni.kit.renderer.core/compatibilityMode=true"]

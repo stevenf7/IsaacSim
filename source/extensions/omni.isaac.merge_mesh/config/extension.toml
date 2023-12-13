@@ -23,6 +23,3 @@ name = "omni.isaac.merge_mesh"
 
 [[python.module]]
 name = "omni.isaac.merge_mesh.tests"
-
-[[test]]
-args = ["--/exts/omni.kit.renderer.core/compatibilityMode=true"]

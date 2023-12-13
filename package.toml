@@ -62,6 +62,7 @@ files_exclude = [
     ["tests/tests-python-omni.isaac.benchmarks*"],
     ["tests/tests-python-omni.isaac.benchmark.services*"],
     ["tests/tests-python-omni.isaac.gym.benchmark*"],
+    ["tests/tests-python-omni.isaac.onshape*"],
     # GXF Bridge related items
     ["exts/omni.isaac.gxf_bridge"],
     ["tests/tests-python-omni.isaac.gxf_bridge.*"],
@@ -101,6 +102,7 @@ files_exclude = [
     ["tests/tests-python-omni.isaac.benchmarks*"],
     ["tests/tests-python-omni.isaac.benchmark.services*"],
     ["tests/tests-python-omni.isaac.gym.benchmark*"],
+    ["tests/tests-python-omni.isaac.onshape*"],
     # GXF Bridge related items
     ["exts/omni.isaac.gxf_bridge"],
     ["tests/tests-python-omni.isaac.gxf_bridge.*"],
