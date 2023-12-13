@@ -72,8 +72,13 @@ class PeopleSDG:
             "/exts/omni.replicator.character/default_robot_command_file_path", "default_robot_command.txt"
         )
         self._settings.set("/persistent/exts/omni.replicator.character/aim_camera_to_character", True)
-        self._settings.set("/persistent/exts/omni.replicator.character/min_camera_height", 1)
-        self._settings.set("/persistent/exts/omni.replicator.character/max_camera_height", 2)
+        self._settings.set("/persistent/exts/omni.replicator.character/min_camera_distance", 6.5)
+        self._settings.set("/persistent/exts/omni.replicator.character/max_camera_distance", 14.5)
+        self._settings.set("/persistent/exts/omni.replicator.character/max_camera_look_down_angle", 60)
+        self._settings.set("/persistent/exts/omni.replicator.character/min_camera_look_down_angle", 0)
+        self._settings.set("/persistent/exts/omni.replicator.character/min_camera_height", 2)
+        self._settings.set("/persistent/exts/omni.replicator.character/max_camera_height", 3)
+        self._settings.set("/persistent/exts/omni.replicator.character/character_focus_height", 0.7)
         self._settings.set("/persistent/exts/omni.replicator.character/frame_write_interval", 10)
 
     def save_commands_to_file(self, file_path, commands):
