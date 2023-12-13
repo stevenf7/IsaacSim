@@ -1,4 +1,10 @@
 # Changelog
+
+## [9.11.1] - 2023-12-12
+### Changed
+- IsaacCreateRTXLidarScanBuffer transformPoints defaults to false
+- RtxSensorCpuIsaacCreateRTXLidarScanBuffer doTransform defaults to true
+
 ## [9.11.0] - 2023-12-01
 ### Added
 - ZED X sensor to menu item
