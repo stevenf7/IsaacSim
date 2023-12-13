@@ -40,6 +40,7 @@ include:
 variables:
     OSEC_NSPECT_ID: "NSPECT-8CX1-LP1G"
     OSEC_CHECKMARX_ENABLED: 'true'
+    OSEC_README_ENABLED: 'false'
 
 # include:
 #   - project: 'omniverse/sectools/omni-pulse'
