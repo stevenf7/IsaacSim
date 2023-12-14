@@ -127,11 +127,18 @@ public:
 
         uint64_t curr_sequence_num = mLidarSensorInterface->getSequenceNumber(mLidarPrimPath);
 
+
+        if (curr_sequence_num == mPrevSequenceNumber)
+        {
+            return;
+        }
+
         if (curr_sequence_num < mPrevSequenceNumber)
         {
             mResetPCL = true;
-            mPrevSequenceNumber = curr_sequence_num;
         }
+
+        mPrevSequenceNumber = curr_sequence_num;
 
         if (mResetPCL)
         {
@@ -178,7 +185,6 @@ public:
 
             db.outputs.execOut() = kExecutionAttributeStateEnabled;
 
-            mPrevSequenceNumber = curr_sequence_num;
 
             mPointsData.clear();
 
