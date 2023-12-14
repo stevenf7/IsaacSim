@@ -376,8 +376,8 @@ class World(SimulationContext):
             - All articulations should be added before the first reset is called unless the ``clear`` method was called.
             - This method takes care of initializing articulation handles with the first reset called.
             - This will do one step internally regardless
-            - Call ``post_reset on each object in the Scene
-            - Call ``post_reset on each Task
+            - Call ``post_reset`` on each object in the Scene
+            - Call ``post_reset`` on each Task
 
             Things like setting PD gains for instance should happen at a Task reset or a Robot reset since
             the defaults are restored after ``stop`` method is called.
@@ -420,8 +420,8 @@ class World(SimulationContext):
             - All articulations should be added before the first reset is called unless the ``clear`` method was called.
             - This method takes care of initializing articulation handles with the first reset called.
             - This will do one step internally regardless
-            - Call ``post_reset on each object in the Scene
-            - Call ``post_reset on each Task
+            - Call ``post_reset`` on each object in the Scene
+            - Call ``post_reset`` on each Task
 
             Things like setting PD gains for instance should happen at a Task reset or a Robot reset since
             the defaults are restored after ``stop`` method is called.
@@ -453,8 +453,8 @@ class World(SimulationContext):
             - All articulations should be added before the first reset is called unless the ``clear`` method was called.
             - This method takes care of initializing articulation handles with the first reset called.
             - This will do one step internally regardless
-            - Call ``post_reset on each object in the Scene
-            - Call ``post_reset on each Task
+            - Call ``post_reset`` on each object in the Scene
+            - Call ``post_reset`` on each Task
 
             Things like setting PD gains for instance should happen at a Task reset or a Robot reset since
             the defaults are restored after ``stop`` method is called.
@@ -494,8 +494,8 @@ class World(SimulationContext):
             - All articulations should be added before the first reset is called unless the ``clear`` method was called.
             - This method takes care of initializing articulation handles with the first reset called.
             - This will do one step internally regardless
-            - Call ``post_reset on each object in the Scene
-            - Call ``post_reset on each Task
+            - Call ``post_reset`` on each object in the Scene
+            - Call ``post_reset`` on each Task
 
             Things like setting PD gains for instance should happen at a Task reset or a Robot reset since
             the defaults are restored after ``stop`` method is called.
