@@ -53,11 +53,11 @@ class NutBoltExampleExtension(omni.kit.test.AsyncTestCase):
         await update_stage_async()
 
         # run for 4000 frames
-        for i in range(4000):
+        for i in range(3500):
             await update_stage_async()
 
         nut_on_bolt = False
-        bolt = world.scene.get_object(f"bolt0_geom")
+        bolt = world.scene.get_object(f"bolt2_geom")
         bolt_pos, _ = bolt.get_world_pose()
         for j in range(self._sample._num_nuts):
             nut = world.scene.get_object(f"nut{j}_geom")
@@ -77,11 +77,11 @@ class NutBoltExampleExtension(omni.kit.test.AsyncTestCase):
         world = self._sample.get_world()
         await update_stage_async()
 
-        for i in range(4000):
+        for i in range(3500):
             await update_stage_async()
 
         nut_on_bolt = False
-        bolt = world.scene.get_object(f"bolt0_geom")
+        bolt = world.scene.get_object(f"bolt2_geom")
         bolt_pos, _ = bolt.get_world_pose()
         for j in range(self._sample._num_nuts):
             nut = world.scene.get_object(f"nut{j}_geom")

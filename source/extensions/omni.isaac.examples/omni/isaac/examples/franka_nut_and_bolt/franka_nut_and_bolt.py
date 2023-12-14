@@ -496,11 +496,11 @@ class FrankaNutAndBolt(BaseSample):
 
     async def setup_post_reset(self):
         self._controller._vibraSM.reset()
-        self._controller._vibraSM._i = 0
+        self._controller._vibraSM._i = 2
         self._controller.reset(franka=self._franka)
         self._controller._i = self._controller._vibraSM._i
         self._franka.gripper.open()
-        self._controller._vibraSM.stop_feed_after_delay(delay_sec=5.0)
+        self._controller._vibraSM.start_feed()
         await self._world.play_async()
         return
 

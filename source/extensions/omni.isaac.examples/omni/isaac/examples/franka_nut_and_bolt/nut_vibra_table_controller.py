@@ -19,14 +19,14 @@ class VibraFSM:
     _motion_frequency = 60.0  # [Hz]
 
     # configure unblock-cycle:
-    _feed_time = 5.0
+    _feed_time = 3.5
     _stop_time = 5.0
-    _backward_time = 1.5
-    _realign_time = 1.5
+    _backward_time = 0.75
+    _realign_time = 0.75
 
     def __init__(self, dt=None):
         self.reset()
-        self._i = 0
+        self._i = 2
         if dt is not None:
             self._dt = dt
 
