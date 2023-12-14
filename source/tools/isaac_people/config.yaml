@@ -8,7 +8,7 @@ omni.replicator.character:
   scene:
     asset_path:
   character:
-    asset_path: 
+    asset_path:
     command_file:
     filters:
     num: 5
@@ -19,7 +19,8 @@ omni.replicator.character:
   replicator:
     writer: TaoWriter
     parameters:
-      output_dir: 
+      output_dir:
       rgb: True
       bbox: True
       semantic_segmentation: False
+      video: False

@@ -870,9 +870,9 @@ deps_for_isaac = [
   "omni.importer.urdf-1.6.0",
   "omni.anim.people-0.2.4",
   "omni.replicator.object-0.1.7",
-  "omni.replicator.character.core-0.1.9",
-  "omni.replicator.character.ui-0.1.9",
-  "omni.replicator.character.camera_calibration-0.1.9"
+  "omni.replicator.character.core-0.1.10",
+  "omni.replicator.character.ui-0.1.10",
+  "omni.replicator.character.camera_calibration-0.1.10"
 ]
 
 deps_for_testing = [
