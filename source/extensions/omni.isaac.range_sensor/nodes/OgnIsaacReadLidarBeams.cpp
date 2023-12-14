@@ -183,11 +183,17 @@ public:
 
         uint64_t curr_sequence_num = mLidarSensorInterface->getSequenceNumber(mLidarPrimPath);
 
+        if (curr_sequence_num == mPrevSequenceNumber)
+        {
+            return;
+        }
+
         if (curr_sequence_num < mPrevSequenceNumber)
         {
             mResetLaserScan = true;
-            mPrevSequenceNumber = curr_sequence_num;
         }
+
+        mPrevSequenceNumber = curr_sequence_num;
 
         carb::Float2 azimuthRange = mLidarSensorInterface->getAzimuthRange(mLidarPrimPath);
         carb::Float2 zenithRange = mLidarSensorInterface->getZenithRange(mLidarPrimPath);
@@ -262,7 +268,6 @@ public:
 
             db.outputs.execOut() = kExecutionAttributeStateEnabled;
 
-            mPrevSequenceNumber = curr_sequence_num;
 
             // Reset fields for new lidar scan
             mBeamTimeData.clear();
