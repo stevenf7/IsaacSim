@@ -261,6 +261,6 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
                 if options.validate:
                     validate(changelog_path)
 
-                generate_extension_diff_report(name, changelog_path, datetime.date(2023, 3, 15), datetime.date.today())
+                generate_extension_diff_report(name, changelog_path, datetime.date(2023, 10, 31), datetime.date.today())
 
     return run_repo_tool

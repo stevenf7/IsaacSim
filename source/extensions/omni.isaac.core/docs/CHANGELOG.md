@@ -16,8 +16,7 @@
 
 ## [3.2.1] - 2023-12-01
 ### Changed
-- Add examples to docstrings, fix type annotations, and improve description.
-  Affected modules: omni.isaac.core.world (world) and omni.isaac.core.simulation_context (simulation_context)
+- Add examples to docstrings, fix type annotations, and improve description. Affected modules: omni.isaac.core.world (world) and omni.isaac.core.simulation_context (simulation_context)
 
 ## [3.2.0] - 2023-11-30
 ### Changed
@@ -49,8 +48,7 @@
 - Fix argument typo when applying a physics material to a ground plane object
 
 ### Changed
-- Add examples to docstrings, fix type annotations, and improve description.
-  Affected modules: omni.isaac.core.objects (capsule, cone, cuboid, cylinder, sphere, ground_plane)
+- Add examples to docstrings, fix type annotations, and improve description. Affected modules: omni.isaac.core.objects (capsule, cone, cuboid, cylinder, sphere, ground_plane)
 
 ## [3.0.4] - 2023-11-25
 ### Fixed
@@ -58,9 +56,7 @@
 
 ## [3.0.3] - 2023-11-27
 ### Changed
-- Add examples to docstrings, fix type annotations, and improve description.
-  Affected modules: omni.isaac.core.prims (xform_prim, xform_prim_view, rigid_prim, rigid_prim_view,
-  rigid_contact_view, geometry_prim, geometry_prim_view, base_sensor)
+- Add examples to docstrings, fix type annotations, and improve description. Affected modules: omni.isaac.core.prims (xform_prim, xform_prim_view, rigid_prim, rigid_prim_view, rigid_contact_view, geometry_prim, geometry_prim_view, base_sensor)
 
 
 ## [3.0.2] - 2023-11-24
@@ -70,9 +66,7 @@
 
 ## [3.0.1] - 2023-11-20
 ### Changed
-- Add examples to docstrings, fix type annotations, and improve description.
-  Affected modules: omni.isaac.core.articulations (articulation, articulation_view)
-  and omni.isaac.core.robots (robot, robot_view)
+- Add examples to docstrings, fix type annotations, and improve description. Affected modules: omni.isaac.core.articulations (articulation, articulation_view) and omni.isaac.core.robots (robot, robot_view)
 
 ### Fixed
 - Use articulation view metadata to get DOF types given specific DOF names
@@ -84,8 +78,7 @@
 
 ## [2.12.1] - 2023-11-14
 ### Changed
-- Add examples to docstrings, fix type annotations, and improve description.
-  Affected modules: omni.isaac.core.utils (bounds, carb, constants, extension, mesh, physics, prim, stage)
+- Add examples to docstrings, fix type annotations, and improve description. Affected modules: omni.isaac.core.utils (bounds, carb, constants, extension, mesh, physics, prim, stage)
 
 ## [2.12.0] - 2023-11-09
 ### Changed

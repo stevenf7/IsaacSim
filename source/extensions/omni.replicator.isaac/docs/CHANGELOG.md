@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.11.3] - 2023-12-00
+## [1.11.3] - 2023-12-10
 ### Fixed
 - Change initialization of s3 BackendDispatch for DOPE writer 
 
