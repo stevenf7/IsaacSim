@@ -1,4 +1,8 @@
 # Changelog
+## [1.7.13] - 2023-12-13
+### Fixed
+- Moved nut screwing to start with 3rd nut with slight improvement to centering
+
 ## [1.7.12] - 2023-12-11
 ### Changed
 - Force stop bin filling once gripper constraint breaks
