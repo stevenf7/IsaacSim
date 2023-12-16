@@ -1,8 +1,0 @@
-{
-    "categoryDefinitions": {
-        "$description": "These categories are applied to nodes in the GXF Bridge",
-        "isaacGxf": "Nodes implementing functionality for GXF Interoperability",
-        "isaacGxf:publisher": "Nodes that publish a GXF message",
-        "isaacGxf:subscriber": "Nodes that subscribe to a GXF message"
-    }
-}
