@@ -23,9 +23,6 @@
     <dependency name="isaac_engine" linkPath="../_build/target-deps/isaac_engine">
         <package name="isaac_engine" version="linux_x64_e36b915_20210515_release-2021.1_60c595d5d" platforms="linux-x86_64"/>
     </dependency>
-    <dependency name="isaac_gxf" linkPath="../_build/target-deps/isaac_gxf">
-        <package name="isaac_gxf" version="linux_x64_6f8712db72_20230829_master_232bc002d" platforms="linux-x86_64"/>
-    </dependency>
     <dependency name="step_reader" linkPath="../_build/target-deps/stepreader">
         <package name="step_reader" version="linux_x64_linbuild_20201005_1f9616f" platforms="linux-x86_64" />
         <package name="step_reader" version="win_x64_winbuild_20201005_1f9616f" platforms="windows-x86_64" />

@@ -63,11 +63,6 @@ files_exclude = [
     ["tests/tests-python-omni.isaac.benchmark.services*"],
     ["tests/tests-python-omni.isaac.gym.benchmark*"],
     ["tests/tests-python-omni.isaac.onshape*"],
-    # GXF Bridge related items
-    ["exts/omni.isaac.gxf_bridge"],
-    ["tests/tests-python-omni.isaac.gxf_bridge.*"],
-    ["tools/isaac_amr"],
-
 ]
 
 [isaac-sim-standalone.release]
@@ -103,11 +98,6 @@ files_exclude = [
     ["tests/tests-python-omni.isaac.benchmark.services*"],
     ["tests/tests-python-omni.isaac.gym.benchmark*"],
     ["tests/tests-python-omni.isaac.onshape*"],
-    # GXF Bridge related items
-    ["exts/omni.isaac.gxf_bridge"],
-    ["tests/tests-python-omni.isaac.gxf_bridge.*"],
-    ["tools/isaac_amr"],
-
 ]
 
 [isaac-sim-standalone.linux-x86_64]
@@ -176,10 +166,6 @@ files_exclude = [
     ["exts/omni.isaac.benchmarks"],
     ["exts/omni.isaac.gym.benchmark"],
     ["exts/omni.isaac.benchmark.services"],
-    # GXF Bridge related items
-    ["exts/omni.isaac.gxf_bridge"],
-    ["tests/tests-python-omni.isaac.gxf_bridge.*"],
-    ["tools/isaac_amr"],
 ]
 
 [isaac-sim-binaryscan.linux-x86_64]

@@ -25,7 +25,6 @@ extensions = [
     "omni.isaac.occupancy_map",
     "omni.isaac.merge_mesh",
     "omni.isaac.internal_tools",
-    "omni.isaac.gxf_bridge",
     "omni.isaac.gain_tuner",
     "omni.isaac.extension_templates",
     "omni.isaac.examples",

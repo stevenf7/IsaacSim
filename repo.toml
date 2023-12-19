@@ -257,7 +257,6 @@ sphinx_exclude_patterns = [
     "**/omni.isaac.ml_archive",
     "**/omni.pip.compute",
     "**/omni.pip.cloud",
-    "**/omni.isaac.gxf_bridge",     #TODO
     "**/omni.isaac.examples",     #TODO?
     "**/omni.isaac.repl",
     "**/omni.isaac.tests",

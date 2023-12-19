@@ -380,7 +380,6 @@ group "exts"
         include ("source/extensions/omni.isaac.repl")
         include ("source/extensions/omni.isaac.cortex_sync")
         include ("source/extensions/omni.isaac.ocs2")
-        include ("source/extensions/omni.isaac.gxf_bridge")
         include ("source/extensions/omni.isaac.ros_bridge")
     end
 
