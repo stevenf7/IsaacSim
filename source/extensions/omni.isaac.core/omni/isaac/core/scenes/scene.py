@@ -53,14 +53,18 @@ from pxr import Sdf, Usd, UsdGeom
 
 
 class Scene(object):
-    """This class provides functions to add objects of interest in the stage to retrieve their information and set their
-    reset default state in an easy way. For example:
-    - performing certain commands post_reset
-    - getting bounding boxes of the objects
-    - Deleting the objects/ removing them from stage..etc.
+    """Provide methods to add objects of interest in the stage to retrieve their information and set their
+    reset default state in an easy way
 
-    Checkout the required tutorials at
-    https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html
+    Example:
+
+    .. code-block:: python
+
+        >>> from omni.isaac.core.scenes import Scene
+        >>>
+        >>> scene = Scene()
+        >>> scene
+        <omni.isaac.core.scenes.scene.Scene object at 0x...>
     """
 
     def __init__(self) -> None:
@@ -76,25 +80,42 @@ class Scene(object):
 
     @property
     def stage(self) -> Usd.Stage:
-        """[summary]
-
+        """
         Returns:
-            Usd.Stage: [description]
+            Usd.Stage: current USD stage
+
+        Example:
+
+        .. code-block:: python
+
+            >>> scene.stage
+            Usd.Stage.Open(rootLayer=Sdf.Find('anon:0x...usd'),
+                           sessionLayer=Sdf.Find('anon:0x...usda'),
+                           pathResolverContext=<invalid repr>)
         """
         return get_current_stage()
 
     def add(self, obj: XFormPrim) -> XFormPrim:
-        """[summary]
+        """Add an object to the scene registry
 
         Args:
-            obj (XFormPrim): [description]
+            obj (XFormPrim): object to be added
 
         Raises:
-            Exception: [description]
-            Exception: [description]
+            Exception: The object type is not supported yet
 
         Returns:
-            XFormPrim: [description]
+            XFormPrim: object
+
+        Example:
+
+        .. code-block:: python
+
+            >>> from omni.isaac.core.prims import XFormPrimView
+            >>>
+            >>> prims = XFormPrimView(prim_paths_expr="/World")
+            >>> scene.add(prims)
+            <omni.isaac.core.prims.xform_prim_view.XFormPrimView object at 0x...>
         """
         if self._scene_registry.name_exists(obj.name):
             raise Exception("Cannot add the object {} to the scene since its name is not unique".format(obj.name))
@@ -158,21 +179,30 @@ class Scene(object):
         dynamic_friction: float = 0.5,
         restitution: float = 0.8,
         color: Optional[np.ndarray] = None,
-    ) -> None:
-        """[summary]
+    ) -> GroundPlane:
+        """Create a ground plane and add it to the scene registry
 
         Args:
-            size (Optional[float], optional): [description]. Defaults to None.
-            z_position (float, optional): [description]. Defaults to 0.
-            name (str, optional): [description]. Defaults to "ground_plane".
-            prim_path (str, optional): [description]. Defaults to "/World/groundPlane".
-            static_friction (float, optional): [description]. Defaults to 0.5.
-            dynamic_friction (float, optional): [description]. Defaults to 0.5.
-            restitution (float, optional): [description]. Defaults to 0.8.
-            color (Optional[np.ndarray], optional): [description]. Defaults to None.
+            size (Optional[float], optional): length of each edge. Defaults to 5000.0.
+            z_position (float, optional): ground plane position in the z-axis. Defaults to 0.
+            name (str, optional): shortname to be used as a key by Scene class.
+                                Note: needs to be unique if the object is added to the Scene.
+                                Defaults to "ground_plane".
+            prim_path (str, optional): prim path of the prim to create. Defaults to "/World/groundPlane".
+            static_friction (float, optional): static friction coefficient. Defaults to 0.5.
+            dynamic_friction (float, optional): dynamic friction coefficient. Defaults to 0.5.
+            restitution (float, optional): restitution coefficient. Defaults to 0.8.
+            color (Optional[np.ndarray], optional): color of the visual plane. Defaults to None, which means 50% gray
 
         Returns:
-            [type]: [description]
+            GroundPlane: ground plane instance
+
+        Example:
+
+        .. code-block:: python
+
+            >>> scene.add_ground_plane()
+            <omni.isaac.core.objects.ground_plane.GroundPlane object at 0x...>
         """
         if Scene.object_exists(self, name=name):
             carb.log_info("ground floor already created with name {}.".format(name))
@@ -205,19 +235,29 @@ class Scene(object):
         static_friction: float = 0.5,
         dynamic_friction: float = 0.5,
         restitution: float = 0.8,
-    ) -> None:
-        """[summary]
+    ) -> GroundPlane:
+        """Create a ground plane (using the default asset for Isaac Sim environments) and add it to the scene registry
 
         Args:
-            z_position (float, optional): [description]. Defaults to 0.
-            name (str, optional): [description]. Defaults to "default_ground_plane".
-            prim_path (str, optional): [description]. Defaults to "/World/defaultGroundPlane".
-            static_friction (float, optional): [description]. Defaults to 0.5.
-            dynamic_friction (float, optional): [description]. Defaults to 0.5.
-            restitution (float, optional): [description]. Defaults to 0.8.
+            z_position (float, optional): ground plane position in the z-axis. Defaults to 0.
+            name (str, optional): shortname to be used as a key by Scene class.
+                                Note: needs to be unique if the object is added to the Scene.
+                                Defaults to "default_ground_plane".
+            prim_path (str, optional): prim path of the prim to create. Defaults to "/World/defaultGroundPlane".
+            static_friction (float, optional): static friction coefficient. Defaults to 0.5.
+            dynamic_friction (float, optional): dynamic friction coefficient. Defaults to 0.5.
+            restitution (float, optional): restitution coefficient. Defaults to 0.8.
 
         Returns:
-            [type]: [description]
+            GroundPlane: ground plane instance
+
+        Example:
+
+        .. code-block:: python
+
+            >>> scene.add_default_ground_plane()
+            server...
+            <omni.isaac.core.objects.ground_plane.GroundPlane object at 0x...>
         """
         if Scene.object_exists(self, name=name):
             carb.log_info("ground floor already created with name {}.".format(name))
@@ -241,7 +281,14 @@ class Scene(object):
         return plane
 
     def post_reset(self) -> None:
-        """calls post_reset on all added objects to the Scene Registry."""
+        """Call the ``post_reset`` method on all added objects to the scene registry
+
+        Example:
+
+        .. code-block:: python
+
+            >>> scene.post_reset()
+        """
         prim_registries_available = [
             self._scene_registry._geometry_objects,
             self._scene_registry._rigid_objects,
@@ -331,11 +378,18 @@ class Scene(object):
         return
 
     def remove_object(self, name: str, registry_only: bool = False) -> None:
-        """[summary]
+        """Remove and object from the scene registry and the USD stage if specified (enable by default)
 
         Args:
-            name (str): Name of the prim to be removed. Defaults to None.
+            name (str): Name of the prim to be removed.
             registry_only (bool, optional): True to remove the object from the scene registry only and not the USD. Defaults to False.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # given a default ground plane named 'default_ground_plane'
+            >>> scene.remove_object("default_ground_plane")
         """
         prim_object = self.get_object(name=name)
         # sometimes the prim path is under a reference
@@ -370,25 +424,44 @@ class Scene(object):
         return
 
     def get_object(self, name: str) -> XFormPrim:
-        """[summary]
+        """Get a registered object by its name if exists otherwise None
+
+        .. note::
+
+            Object can be registered via the ``add`` method
 
         Args:
-            name (Optional[str], optional): [description]. Defaults to None.
-            prim_path (Optional[str], optional): [description]. Defaults to None.
+            name str: object name
 
         Returns:
-            XFormPrim: [description]
+            XFormPrim: object if it exists otherwise None
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # given a default ground plane named 'default_ground_plane'
+            >>> scene.get_object("default_ground_plane")
+            <omni.isaac.core.objects.ground_plane.GroundPlane object at 0x...>
         """
         return self._scene_registry.get_object(name=name)
 
     def object_exists(self, name: str) -> bool:
-        """[summary]
+        """Check if an object exists in the scene registry
 
         Args:
-            name (str): [description]
+            name (str): object name
 
         Returns:
-            XFormPrim: [description]
+            bool: whether the object exists in the scene registry or not
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # given a default ground plane named 'default_ground_plane'
+            >>> scene.object_exists("default_ground_plane")
+            True
         """
         if self._scene_registry.name_exists(name):
             return True
@@ -396,10 +469,16 @@ class Scene(object):
             return False
 
     def clear(self, registry_only: bool = False) -> None:
-        """Clears the stage from all added objects to the Scene.
+        """Clear the stage from all added objects to the scene registry.
 
         Args:
             registry_only (bool, optional): True to remove the object from the scene registry only and not the USD. Defaults to False.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> scene.clear()
         """
         # Group all of the stage delete events together
         with Sdf.ChangeBlock():
@@ -452,16 +531,33 @@ class Scene(object):
         return
 
     def compute_object_AABB(self, name: str) -> Tuple[np.ndarray, np.ndarray]:
-        """[summary]
+        """Compute the bounding box points (minimum and maximum) of a registered object given its name
+
+        .. warning::
+
+            The bounding box computations should be enabled, via the ``enable_bounding_boxes_computations`` method,
+            before querying the Axis-Aligned Bounding Box (AABB) of an object
 
         Args:
-            name (str): [description]
+            name (str): object name
 
         Raises:
-            Exception: [description]
+            Exception: If the bounding box computation is not enabled
 
         Returns:
-            Tuple[np.ndarray, np.ndarray]: [description]
+            Tuple[np.ndarray, np.ndarray]: bounding box points (minimum and maximum)
+
+        Example:
+
+        .. code-block:: python
+
+            >>> scene.enable_bounding_boxes_computations()
+            >>>
+            >>> bbox = scene.compute_object_AABB("ground_plane")
+            >>> bbox[0]  # minimum
+            array([-50., -50.,  0.])
+            >>> bbox[1]  # maximum
+            array([50., 50.,  0.])
         """
         if not self._enable_bounding_box_computations:
             raise Exception("bounding box computations should be enabled before querying AABB of an object")
@@ -474,7 +570,14 @@ class Scene(object):
         return np.array([np.array(prim_range.GetMin()), np.array(prim_range.GetMax())])
 
     def enable_bounding_boxes_computations(self) -> None:
-        """[summary]"""
+        """Enable the bounding boxes computations
+
+        Example:
+
+        .. code-block:: python
+
+            >>> scene.enable_bounding_boxes_computations()
+        """
         self._bbox_cache = UsdGeom.BBoxCache(
             time=Usd.TimeCode.Default(), includedPurposes=[UsdGeom.Tokens.default_], useExtentsHint=False
         )
@@ -482,7 +585,14 @@ class Scene(object):
         return
 
     def disable_bounding_boxes_computations(self) -> None:
-        """[summary]"""
+        """Disable the bounding boxes computations
+
+        Example:
+
+        .. code-block:: python
+
+            >>> scene.disable_bounding_boxes_computations()
+        """
         self._bbox_cache = None
         self._enable_bounding_box_computations = False
         return

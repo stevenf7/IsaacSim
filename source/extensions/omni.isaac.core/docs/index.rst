@@ -508,13 +508,25 @@ Robot View
     :undoc-members:
     :exclude-members:
 
+|
 
 Scenes
 --------------
 
-.. automodule:: omni.isaac.core.scenes
+Scene
+=====================
+.. autoclass:: omni.isaac.core.scenes.Scene
     :inherited-members:
-    :imported-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+|
+
+SceneRegistry
+=====================
+.. autoclass:: omni.isaac.core.scenes.SceneRegistry
+    :inherited-members:
     :members:
     :undoc-members:
     :exclude-members:
