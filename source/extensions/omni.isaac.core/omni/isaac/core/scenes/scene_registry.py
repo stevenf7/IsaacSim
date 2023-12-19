@@ -31,8 +31,20 @@ from omni.isaac.core.robots.robot_view import RobotView
 
 
 class SceneRegistry(object):
+    """Class to keep track of the different types of objects added to the scene
+
+    Example:
+
+    .. code-block:: python
+
+        >>> from omni.isaac.core.scenes import SceneRegistry
+        >>>
+        >>> scene_registry = SceneRegistry()
+        >>> scene_registry
+        <omni.isaac.core.scenes.scene_registry.SceneRegistry object at 0x...>
+    """
+
     def __init__(self) -> None:
-        """[summary]"""
         self._rigid_objects = dict()
         self._geometry_objects = dict()
         self._articulated_systems = dict()
@@ -84,423 +96,347 @@ class SceneRegistry(object):
 
     @property
     def articulated_systems(self) -> dict:
-        """[summary]
-
-        Returns:
-            dict: [description]
-        """
+        """Registered ``Articulation`` objects"""
         return self._articulated_systems
 
     @property
     def rigid_objects(self) -> dict:
-        """[summary]
-
-        Returns:
-            dict: [description]
-        """
+        """Registered ``RigidPrim`` objects"""
         return self._rigid_objects
 
     @property
     def rigid_prim_views(self) -> dict:
-        """[summary]
-
-        Returns:
-            dict: [description]
-        """
+        """Registered ``RigidPrimView`` objects"""
         return self._rigid_prim_views
 
     @property
     def rigid_contact_views(self) -> dict:
-        """[summary]
-
-        Returns:
-            dict: [description]
-        """
+        """Registered ``RigidContactView`` objects"""
         return self._rigid_contact_views
 
     @property
     def geometry_prim_views(self) -> dict:
-        """[summary]
-
-        Returns:
-            dict: [description]
-        """
+        """Registered ``GeometryPrimView`` objects"""
         return self._geometry_prim_views
 
     @property
     def articulated_views(self) -> dict:
-        """[summary]
-
-        Returns:
-            dict: [description]
-        """
+        """Registered ``ArticulationView`` objects"""
         return self._articulated_views
 
     @property
     def robot_views(self) -> dict:
-        """[summary]
-
-        Returns:
-            dict: [description]
-        """
+        """Registered ``RobotView`` objects"""
         return self._robot_views
 
     @property
     def robots(self) -> dict:
-        """[summary]
-
-        Returns:
-            dict: [description]
-        """
+        """Registered ``Robot`` objects"""
         return self._robots
 
     @property
     def xforms(self) -> dict:
-        """[summary]
-
-        Returns:
-            dict: [description]
-        """
+        """Registered ``XFormPrim`` objects"""
         return self._xforms
 
     @property
     def sensors(self) -> dict:
-        """[summary]
-
-        Returns:
-            dict: [description]
-        """
+        """Registered ``BaseSensor`` (and derived) objects"""
         return self._sensors
 
     @property
     def xform_prim_views(self) -> dict:
-        """[summary]
-
-        Returns:
-            dict: [description]
-        """
+        """Registered ``XFormPrimView`` objects"""
         return self._xform_prim_views
 
     @property
     def deformable_prims(self) -> dict:
-        """[summary]
-
-        Returns:
-            dict: [description]
-        """
+        """Registered ``DeformablePrim`` objects"""
         return self._deformable_prims
 
     @property
     def deformable_prim_views(self) -> dict:
-        """[summary]
-
-        Returns:
-            dict: [description]
-        """
+        """Registered ``DeformablePrimView`` objects"""
         return self._deformable_prim_views
 
     @property
     def deformable_materials(self) -> dict:
-        """[summary]
-
-        Returns:
-            dict: [description]
-        """
+        """Registered ``DeformableMaterial`` objects"""
         return self._deformable_materials
 
     @property
     def deformable_material_views(self) -> dict:
-        """[summary]
-
-        Returns:
-            dict: [description]
-        """
+        """Registered ``DeformableMaterialView`` objects"""
         return self._deformable_material_views
 
     @property
     def cloth_prims(self) -> dict:
-        """[summary]
-
-        Returns:
-            dict: [description]
-        """
+        """Registered ``ClothPrim`` objects"""
         return self._cloth_prims
 
     @property
     def cloth_prim_views(self) -> dict:
-        """[summary]
-
-        Returns:
-            dict: [description]
-        """
+        """Registered ``ClothPrimView`` objects"""
         return self._cloth_prim_views
 
     @property
     def particle_systems(self) -> dict:
-        """[summary]
-
-        Returns:
-            dict: [description]
-        """
+        """Registered ``ParticleSystem`` objects"""
         return self._particle_systems
 
     @property
     def particle_system_views(self) -> dict:
-        """[summary]
-
-        Returns:
-            dict: [description]
-        """
+        """Registered ``ParticleSystemView`` objects"""
         return self._particle_system_views
 
     @property
     def particle_materials(self) -> dict:
-        """[summary]
-
-        Returns:
-            dict: [description]
-        """
+        """Registered ``ParticleMaterial`` objects"""
         return self._particle_materials
 
     @property
     def particle_material_views(self) -> dict:
-        """[summary]
-
-        Returns:
-            dict: [description]
-        """
+        """Registered ``particle_material_view`` objects"""
         return self._particle_material_views
 
     # TODO: add if name exists check uniqueness
-    def add_rigid_object(self, name, rigid_object: RigidPrim) -> None:
-        """[summary]
+    def add_rigid_object(self, name: str, rigid_object: RigidPrim) -> None:
+        """Register a ``RigidPrim`` (or subclass) object
 
         Args:
-            name ([type]): [description]
-            rigid_object (RigidPrim): [description]
+            name (str): object name
+            rigid_object (RigidPrim): object
         """
         self._rigid_objects[name] = rigid_object
         return
 
-    def add_rigid_prim_view(self, name, rigid_prim_view: RigidPrimView) -> None:
-        """[summary]
+    def add_rigid_prim_view(self, name: str, rigid_prim_view: RigidPrimView) -> None:
+        """Register a ``RigidPrimView`` (or subclass) object
 
         Args:
-            name ([type]): [description]
-            rigid_object (RigidPrim): [description]
+            name (str): object name
+            rigid_prim_view (RigidPrimView): object
         """
         self._rigid_prim_views[name] = rigid_prim_view
         return
 
-    def add_rigid_contact_view(self, name, rigid_contact_view: RigidContactView) -> None:
-        """[summary]
+    def add_rigid_contact_view(self, name: str, rigid_contact_view: RigidContactView) -> None:
+        """Register a ``RigidContactView`` (or subclass) object
 
         Args:
-            name ([type]): [description]
-            rigid_contact_views (RigidContactView): [description]
+            name (str): object name
+            rigid_contact_view (RigidContactView): object
         """
         self._rigid_contact_views[name] = rigid_contact_view
         return
 
-    def add_articulated_system(self, name, articulated_system: Articulation) -> None:
-        """[summary]
+    def add_articulated_system(self, name: str, articulated_system: Articulation) -> None:
+        """Register a ``Articulation`` (or subclass) object
 
         Args:
-            name ([type]): [description]
-            articulated_system (Articulation): [description]
+            name (str): object name
+            articulated_system (Articulation): object
         """
         self._articulated_systems[name] = articulated_system
         return
 
-    def add_articulated_view(self, name, articulated_view: ArticulationView) -> None:
-        """[summary]
+    def add_articulated_view(self, name: str, articulated_view: ArticulationView) -> None:
+        """Register a ``ArticulationView`` (or subclass) object
 
         Args:
-            name ([type]): [description]
-            articulated_view (ArticulationView): [description]
+            name (str): object name
+            articulated_view (ArticulationView): object
         """
         self._articulated_views[name] = articulated_view
         return
 
-    def add_geometry_object(self, name, geometry_object: GeometryPrim) -> None:
-        """[summary]
+    def add_geometry_object(self, name: str, geometry_object: GeometryPrim) -> None:
+        """Register a ``GeometryPrim`` (or subclass) object
 
         Args:
-            name ([type]): [description]
-            geometry_object (GeometryPrim): [description]
+            name (str): object name
+            geometry_object (GeometryPrim): object
         """
         self._geometry_objects[name] = geometry_object
         return
 
-    def add_geometry_prim_view(self, name, geometry_prim_view: GeometryPrimView) -> None:
-        """[summary]
+    def add_geometry_prim_view(self, name: str, geometry_prim_view: GeometryPrimView) -> None:
+        """Register a ``GeometryPrimView`` (or subclass) object
 
         Args:
-            name ([type]): [description]
-            geometry_object (GeometryPrim): [description]
+            name (str): object name
+            geometry_prim_view (GeometryPrim): object
         """
         self._geometry_prim_views[name] = geometry_prim_view
         return
 
-    def add_robot(self, name, robot: Robot) -> None:
-        """[summary]
+    def add_robot(self, name: str, robot: Robot) -> None:
+        """Register a ``Robot`` (or subclass) object
 
         Args:
-            name ([type]): [description]
-            robot (Robot): [description]
+            name (str): object name
+            robot (Robot): object
         """
         self._robots[name] = robot
         return
 
-    def add_robot_view(self, name, robot_view: RobotView) -> None:
-        """[summary]
+    def add_robot_view(self, name: str, robot_view: RobotView) -> None:
+        """Register a ``RobotView`` (or subclass) object
 
         Args:
-            name ([type]): [description]
-            geometry_object (GeometryPrim): [description]
+            name (str): object name
+            robot_view (RobotView): object
         """
         self._robot_views[name] = robot_view
         return
 
-    def add_xform_view(self, name, xform_prim_view: XFormPrimView) -> None:
-        """[summary]
+    def add_xform_view(self, name: str, xform_prim_view: XFormPrimView) -> None:
+        """Register a ``XFormPrimView`` (or subclass) object
 
         Args:
-            name ([type]): [description]
-            geometry_object (GeometryPrim): [description]
+            name (str): object name
+            xform_prim_view (XFormPrimView): object
         """
         self._xform_prim_views[name] = xform_prim_view
         return
 
-    def add_deformable(self, name, deformable: DeformablePrim) -> None:
-        """[summary]
+    def add_deformable(self, name: str, deformable: DeformablePrim) -> None:
+        """Register a ``DeformablePrim`` (or subclass) object
 
         Args:
-            name ([type]): [description]
-            deformable (DeformablePrim): [description]
+            name (str): object name
+            deformable (DeformablePrim): object
         """
         self._deformable_prims[name] = deformable
         return
 
-    def add_deformable_view(self, name, deformable_prim_view: DeformablePrimView) -> None:
-        """[summary]
+    def add_deformable_view(self, name: str, deformable_prim_view: DeformablePrimView) -> None:
+        """Register a ``DeformablePrimView`` (or subclass) object
 
         Args:
-            name ([type]): [description]
-            geometry_object (DeformablePrimView): [description]
+            name (str): object name
+            deformable_prim_view (DeformablePrimView): object
         """
         self._deformable_prim_views[name] = deformable_prim_view
         return
 
-    def add_deformable_material(self, name, deformable_material: DeformableMaterial) -> None:
-        """[summary]
+    def add_deformable_material(self, name: str, deformable_material: DeformableMaterial) -> None:
+        """Register a ``DeformableMaterial`` (or subclass) object
 
         Args:
-            name ([type]): [description]
-            geometry_object (DeformableMaterial): [description]
+            name (str): object name
+            deformable_material (DeformableMaterial): object
         """
         self._deformable_materials[name] = deformable_material
         return
 
-    def add_deformable_material_view(self, name, deformable_material_view: DeformableMaterialView) -> None:
-        """[summary]
+    def add_deformable_material_view(self, name: str, deformable_material_view: DeformableMaterialView) -> None:
+        """Register a ``DeformableMaterialView`` (or subclass) object
 
         Args:
-            name ([type]): [description]
-            geometry_object (DeformableMaterialView): [description]
+            name (str): object name
+            deformable_material_view (DeformableMaterialView): object
         """
         self._deformable_material_views[name] = deformable_material_view
         return
 
-    def add_cloth(self, name, cloth: ClothPrim) -> None:
-        """[summary]
+    def add_cloth(self, name: str, cloth: ClothPrim) -> None:
+        """Register a ``ClothPrim`` (or subclass) object
 
         Args:
-            name ([type]): [description]
-            cloth (ClothPrim): [description]
+            name (str): object name
+            cloth (ClothPrim): object
         """
         self._cloth_prims[name] = cloth
         return
 
-    def add_cloth_view(self, name, cloth_prim_view: ClothPrimView) -> None:
-        """[summary]
+    def add_cloth_view(self, name: str, cloth_prim_view: ClothPrimView) -> None:
+        """Register a ``ClothPrimView`` (or subclass) object
 
         Args:
-            name ([type]): [description]
-            geometry_object (ClothPrimView): [description]
+            name (str): object name
+            cloth_prim_view (ClothPrimView): object
         """
         self._cloth_prim_views[name] = cloth_prim_view
         return
 
-    def add_particle_system(self, name, particle_system: ParticleSystem) -> None:
-        """[summary]
+    def add_particle_system(self, name: str, particle_system: ParticleSystem) -> None:
+        """Register a ``ParticleSystem`` (or subclass) object
 
         Args:
-            name ([type]): [description]
-            geometry_object (ParticleSystemView): [description]
+            name (str): object name
+            particle_system (ParticleSystemView): object
         """
         self._particle_systems[name] = particle_system
         return
 
-    def add_particle_system_view(self, name, particle_system_view: ParticleSystemView) -> None:
-        """[summary]
+    def add_particle_system_view(self, name: str, particle_system_view: ParticleSystemView) -> None:
+        """Register a ``ParticleSystemView`` (or subclass) object
 
         Args:
-            name ([type]): [description]
-            geometry_object (ParticleSystemView): [description]
+            name (str): object name
+            particle_system_view (ParticleSystemView): object
         """
         self._particle_system_views[name] = particle_system_view
         return
 
-    def add_particle_material(self, name, particle_material: ParticleMaterial) -> None:
-        """[summary]
+    def add_particle_material(self, name: str, particle_material: ParticleMaterial) -> None:
+        """Register a ``ParticleMaterial`` (or subclass) object
 
         Args:
-            name ([type]): [description]
-            geometry_object (ParticleMaterial): [description]
+            name (str): object name
+            particle_material (ParticleMaterial): object
         """
         self._particle_materials[name] = particle_material
         return
 
-    def add_particle_material_view(self, name, particle_material_view: ParticleMaterialView) -> None:
-        """[summary]
+    def add_particle_material_view(self, name: str, particle_material_view: ParticleMaterialView) -> None:
+        """Register a ``ParticleMaterialView`` (or subclass) object
 
         Args:
-            name ([type]): [description]
-            geometry_object (ParticleMaterialView): [description]
+            name (str): object name
+            particle_material_view (ParticleMaterialView): object
         """
         self._particle_material_views[name] = particle_material_view
         return
 
-    def add_xform(self, name, xform: XFormPrim) -> None:
-        """[summary]
+    def add_xform(self, name: str, xform: XFormPrim) -> None:
+        """Register a ``XFormPrim`` (or subclass) object
 
         Args:
-            name ([type]): [description]
-            robot (Robot): [description]
+            name (str): object name
+            robot (Robot): object
         """
         self._xforms[name] = xform
         return
 
-    def add_sensor(self, name, sensor: BaseSensor) -> None:
-        """[summary]
+    def add_sensor(self, name: str, sensor: BaseSensor) -> None:
+        """Register a ``BaseSensor`` (or subclass) object
 
         Args:
-            name ([type]): [description]
-                        sensor (BaseSensor): [description]
+            name (str): object name
+            sensor (BaseSensor): object
         """
         self._sensors[name] = sensor
 
         return
 
     def name_exists(self, name: str) -> bool:
-        """[summary]
+        """Check if an object exists in the registry by its name
 
         Args:
-            name (str): [description]
+            name (str): object name
 
         Returns:
-            bool: [description]
+            bool: whether the object is registered or not
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # given a registered ground plane named 'default_ground_plane'
+            >>> scene_registry.name_exists("default_ground_plane")
+            True
         """
         for object_dict in self._all_object_dicts:
             if name in object_dict:
@@ -508,17 +444,25 @@ class SceneRegistry(object):
         return False
 
     def remove_object(self, name: str) -> None:
-        """[summary]
+        """Remove and object from the registry
+
+        .. note::
+
+            This method will only remove the object from the internal registry.
+            The wrapped object will not be removed from the USD stage
 
         Args:
-            name (Optional[str], optional): [description]. Defaults to None.
-            prim_path (Optional[str], optional): [description]. Defaults to None.
+            name (str): object name
 
         Raises:
-            Exception: [description]
-            Exception: [description]
-            NotImplementedError: [description]
-            Exception: [description]
+            Exception: If the name doesn't exist in the registry
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # given a registered ground plane named 'default_ground_plane'
+            >>> scene_registry.remove_object("default_ground_plane")
         """
         for object_dict in self._all_object_dicts:
             if name in object_dict:
@@ -527,17 +471,21 @@ class SceneRegistry(object):
         raise Exception("Cannot remove object {} from the scene since it doesn't exist".format(name))
 
     def get_object(self, name: str) -> XFormPrim:
-        """[summary]
+        """Get a registered object by its name if exists otherwise None
 
         Args:
-            name (Optional[str], optional): [description]. Defaults to None.
-            prim_path (Optional[str], optional): [description]. Defaults to None.
-
-        Raises:
-            Exception: [description]
+            name (str): object name
 
         Returns:
-            XFormPrim: [description]
+            XFormPrim: the object if it exists otherwise None
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # given a registered ground plane named 'default_ground_plane'
+            >>> scene_registry.get_object("default_ground_plane")
+            <omni.isaac.core.objects.ground_plane.GroundPlane object at 0x...>
         """
         for object_dict in self._all_object_dicts:
             if name in object_dict:

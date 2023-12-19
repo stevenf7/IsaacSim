@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.3.3] - 2023-12-18
+### Changed
+- Add examples to docstrings, fix type annotations, and improve description. Affected modules: omni.isaac.core.scenes (scene, scene_registry)
+
 ## [3.3.2] - 2023-12-13
 ### Fixed
 - set_live_sync method 
@@ -57,7 +61,6 @@
 ## [3.0.3] - 2023-11-27
 ### Changed
 - Add examples to docstrings, fix type annotations, and improve description. Affected modules: omni.isaac.core.prims (xform_prim, xform_prim_view, rigid_prim, rigid_prim_view, rigid_contact_view, geometry_prim, geometry_prim_view, base_sensor)
-
 
 ## [3.0.2] - 2023-11-24
 ### Fixed
