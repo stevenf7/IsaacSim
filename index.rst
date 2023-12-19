@@ -57,7 +57,6 @@ Isaac Sim: Extensions API
    source/extensions/omni.isaac.motion_generation/docs/index
    source/extensions/omni.isaac.lula/docs/index
    source/extensions/omni.isaac.surface_gripper/docs/index
-   source/extensions/omni.isaac.synthetic_utils/docs/index
    source/extensions/omni.isaac.occupancy_map/docs/index
    source/extensions/omni.replicator.isaac/docs/index
    source/extensions/omni.isaac.conveyor/docs/index
