@@ -126,7 +126,7 @@ class TestAssets(omni.kit.test.AsyncTestCase):
                 file_results.extend(self.check_physics_scene(item, prim))
             # TODO: Instance Check?
             file_results.extend(self.check_abs_refs(item))
-            # file_results.extend(self.check_external_refs(item))
+            file_results.extend(self.check_external_refs(item))
             # print(f"opened: {count} of {total_files}, {item}, found {len(file_results)} issues")
             results.extend(file_results)
             count = count + 1

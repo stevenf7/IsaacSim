@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.1] - 2023-12-14
+### Changed
+- Added tests to check physics scene
+
 ## [1.2.1] - 2023-12-12
 ### Changed
 - Added tests to check physics scene
