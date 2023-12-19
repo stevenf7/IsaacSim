@@ -8,9 +8,9 @@
 //
 #include <include/Ros2Bridge.h>
 #include <include/Ros2Factory.h>
-#include <omni/isaac/core_nodes/CoreNodes.h>
 #include <omni/isaac/utils/BaseResetNode.h>
 
+#include <CoreNodes.h>
 #include <OgnROS2ContextDatabase.h>
 
 class OgnROS2Context : public BaseResetNode

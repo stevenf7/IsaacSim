@@ -17,13 +17,13 @@
 #include <carb/logging/Logger.h>
 
 #include <omni/fabric/FabricUSD.h>
-#include <omni/isaac/core_nodes/CoreNodes.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/utils/BaseResetNode.h>
 #include <omni/isaac/utils/Conversions.h>
 #include <omni/usd/UsdContext.h>
 #include <omni/usd/UsdContextIncludes.h>
 
+#include <CoreNodes.h>
 #include <OgnIsaacComputeOdometryDatabase.h>
 
 namespace omni

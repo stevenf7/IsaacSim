@@ -11,7 +11,7 @@
 #include <carb/BindingsPythonUtils.h>
 #include <carb/logging/Log.h>
 
-#include <omni/isaac/core_nodes/CoreNodes.h>
+#include <CoreNodes.h>
 
 CARB_BINDINGS("omni.isaac.core_nodes.python")
 

@@ -5,7 +5,7 @@ project_ext (ext)
 project_ext_plugin(ext, "omni.isaac.core_nodes.plugin")
     add_files("impl", "plugins")
     add_files("impl", "%{root}/include/omni/isaac/utils/", "CameraKernels.cu")
-    add_files("iface", "%{root}/include/omni/isaac/core_nodes/**")
+    add_files("iface","%{root}/source/extensions/omni.isaac.core_nodes/include/**")
     add_files("ogn", ogn.nodes_path)
 
     add_cuda_dependencies()
@@ -32,6 +32,7 @@ project_ext_plugin(ext, "omni.isaac.core_nodes.plugin")
         "%{root}/_build/target-deps/omni_physics/include",
         "%{kit_sdk_bin_dir}/exts/omni.syntheticdata/include",
         "%{kit_sdk_bin_dir}/exts/usdrt.scenegraph/include",
+        "%{root}/source/extensions/omni.isaac.core_nodes/include",
      }
      libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
@@ -65,6 +66,7 @@ project_ext_bindings {
 
     includedirs {
         "%{root}/_build/target-deps/rtx_plugins/include",
+        "%{root}/source/extensions/omni.isaac.core_nodes/include",
      }
 
     -- Add the standard dependencies all OGN projects have
