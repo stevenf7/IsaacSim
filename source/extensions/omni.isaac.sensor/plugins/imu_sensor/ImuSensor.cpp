@@ -30,7 +30,6 @@
 #include <carb/events/EventsUtils.h>
 #include <carb/logging/Log.h>
 
-#include <omni/isaac/math/core/quat.h>
 #include <omni/isaac/utils/Conversions.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/physx/IPhysx.h>

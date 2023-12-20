@@ -30,6 +30,7 @@ project_ext_plugin(ext, "omni.isaac.sensor.plugin")
         "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/include",
         targetDepsDir.."/omni_client_library/include",
         targetDepsDir.."/python/include",
+        "%{root}/source/extensions/omni.isaac.core_nodes/include",
     }
     libdirs {
         targetDepsDir.."/python/lib",

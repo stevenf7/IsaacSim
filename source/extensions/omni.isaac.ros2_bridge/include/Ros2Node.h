@@ -17,8 +17,9 @@
 
 #include <include/Ros2Bridge.h>
 #include <include/Ros2Factory.h>
-#include <omni/isaac/core_nodes/CoreNodes.h>
 #include <omni/usd/UsdContextIncludes.h>
+
+#include <CoreNodes.h>
 //
 #include <omni/usd/UsdContext.h>
 

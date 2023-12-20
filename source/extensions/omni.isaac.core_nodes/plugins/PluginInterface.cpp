@@ -23,11 +23,12 @@
 #include <omni/graph/core/NodeTypeRegistrar.h>
 #include <omni/graph/core/iComputeGraph.h>
 #include <omni/graph/core/ogn/Registration.h>
-#include <omni/isaac/core_nodes/CoreNodes.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/kit/IMinimal.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/physx/IPhysx.h>
+
+#include <CoreNodes.h>
 
 const struct carb::PluginImplDesc pluginDesc = { "omni.isaac.core_nodes", "Isaac Sim Core OmniGraph Nodes", "NVIDIA",
                                                  carb::PluginHotReload::eEnabled, "dev" };

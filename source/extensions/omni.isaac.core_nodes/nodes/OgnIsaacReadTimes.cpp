@@ -7,9 +7,9 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
-#include <omni/isaac/core_nodes/CoreNodes.h>
 #include <rtx/hydra/HydraRenderResults.h>
 
+#include <CoreNodes.h>
 #include <OgnIsaacReadTimesDatabase.h>
 
 namespace omni
