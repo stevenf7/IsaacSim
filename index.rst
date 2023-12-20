@@ -26,14 +26,6 @@ Isaac Sim: Extensions API
 
 .. toctree::
    :maxdepth: 1
-   :caption: Asset Conversion Extensions
-   :glob: 
-
-   source/extensions/omni.isaac.urdf/docs/index
-   source/extensions/omni.isaac.mjcf/docs/index
-
-.. toctree::
-   :maxdepth: 1
    :caption: Robot Extensions
    :glob: 
 

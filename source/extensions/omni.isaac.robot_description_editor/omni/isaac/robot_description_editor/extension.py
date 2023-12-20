@@ -1393,24 +1393,3 @@ class Extension(omni.ext.IExt):
             f.write("# not be able to avoid obstacles.\n\n")
 
             self._collision_sphere_editor.save_spheres(self.articulation, f)
-
-        def _get_urdf_root_link(self):
-            from omni.isaac.urdf import _urdf
-
-            urdf_path = self._models["urdf_file"].get_value_as_string()
-
-            urdf_interface = _urdf.acquire_urdf_interface()
-
-            # setup config params
-            import_config = _urdf.ImportConfig()
-            import_config.set_merge_fixed_joints(False)
-            import_config.set_fix_base(True)
-
-            # parse and import file
-            # imported_robot = urdf_interface.parse_urdf(urdf_path, "robot_urdf", import_config)
-
-            imported_robot = omni.kit.commands.execute(
-                "URDFParseFile", urdf_path=urdf_path, import_config=import_config
-            )
-
-            # TODO: Decide if this function needs to get completed and used or deleted
