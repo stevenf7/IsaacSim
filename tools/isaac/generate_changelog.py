@@ -28,7 +28,7 @@ def parse_version(line: str):
     return None
 
 
-def validate_changelog(change: str):
+def validate_changelog(change: str, final_version: str):
     i = 0
     prev_version = None
     prev_date = None
@@ -68,7 +68,8 @@ def validate_changelog(change: str):
             else:
                 print("Version or date is None: ")
                 print(version, date, line, i)
-
+    if final_version != prev_version:
+        print(f" extension toml version {final_version} does not match {prev_version}")
     return True
 
 
@@ -158,16 +159,17 @@ def read_extension_data_from_app_kitfiles(repo_root: str) -> Dict[str, str]:
     return ext_to_version_map
 
 
-def validate(changelog_path: str) -> bool:
+def validate(changelog_path: str, config_path: str) -> bool:
     """
     returns for this extension a list of tuples of (version, changelog strings) for each version between old and new
     """
 
-    if os.path.exists(changelog_path):
-        print("validating", changelog_path)
+    if os.path.exists(changelog_path) and os.path.exists(config_path):
+        print("validating", changelog_path, config_path)
+        loaded_config = toml.load(config_path)
         with open(changelog_path) as changelog_file:
             changelog_str = changelog_file.read()
-            if not validate_changelog(changelog_str):
+            if not validate_changelog(changelog_str, loaded_config["package"]["version"]):
                 print("FAIL")
                 exit()
                 return False
@@ -258,9 +260,10 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
                 name = e.split("\\")[-1]
                 # print(name)
                 changelog_path = os.path.join(home_path, e, "docs", "CHANGELOG.md")
+                config_path = os.path.join(home_path, e, "config", "extension.toml")
                 if options.validate:
-                    validate(changelog_path)
+                    validate(changelog_path, config_path)
 
-                generate_extension_diff_report(name, changelog_path, datetime.date(2023, 10, 31), datetime.date.today())
+                generate_extension_diff_report(name, changelog_path, datetime.date(2023, 12, 13), datetime.date.today())
 
     return run_repo_tool

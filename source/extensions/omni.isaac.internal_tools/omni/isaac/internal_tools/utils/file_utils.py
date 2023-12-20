@@ -104,7 +104,7 @@ def is_external(path, base_path):
     #     path = os.path.join(parent, path)
     # -1 because os module removes second slash on omniverse://
     try:
-        return len(os.path.commonpath([path, base_path])) != (len(base_path) - 1)
+        return base_path not in path
     except:
         print(path, base_path)
         raise Exception

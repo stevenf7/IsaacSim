@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.2.1"
+version = "1.3.1"
 category = "Simulation"
 title = "Isaac Sim Internal Utils"
 description = "Internal Utilities"
