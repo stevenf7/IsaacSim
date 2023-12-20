@@ -332,7 +332,6 @@ group "exts"
     include ("source/extensions/omni.isaac.statistics_logging")
     include ("source/extensions/omni.isaac.surface_gripper")
     include ("source/extensions/omni.isaac.synthetic_recorder")
-    include ("source/extensions/omni.isaac.synthetic_utils")
     include ("source/extensions/omni.isaac.tests")
     include ("source/extensions/omni.isaac.throttling")
     include ("source/extensions/omni.isaac.universal_robots")
@@ -516,7 +515,6 @@ group "python_samples"
     python_sample_test("tests-internalnativepython-omni.isaac.cortex.bringup", "standalone_examples/testing/omni.isaac.cortex/cortex_bringup_test.py")
     python_sample_test("tests-internalnativepython-omni.isaac.core.tensor_api_handles", "standalone_examples/testing/omni.isaac.core/tensor_api_handles.py")
     python_sample_test("tests-internalnativepython-omni.isaac.gym.test_gym_headless_app", "standalone_examples/testing/omni.isaac.gym/test_gym_headless_app.py")
-    python_sample_test("tests-internalnativepython-omni.isaac.synthetic_utils.visualize_groundtruth", "standalone_examples/testing/omni.isaac.synthetic_utils/visualize_groundtruth.py")
     python_sample_test("tests-internalnativepython-omni.isaac.sensor.contact_sensor", "standalone_examples/testing/omni.isaac.sensor/contact_sensor_test.py")
     python_sample_test("tests-internalnativepython-omni.isaac.sensor.camera_opencv_fisheye", "standalone_examples/api/omni.isaac.sensor/camera_opencv_fisheye.py")
     python_sample_test("tests-internalnativepython-omni.isaac.sensor.camera_opencv", "standalone_examples/api/omni.isaac.sensor/camera_opencv.py")
@@ -525,7 +523,6 @@ group "python_samples"
     python_sample_test("tests-internalnativepython-python_sh.path_length", "standalone_examples/testing/python_sh/path_length.py")
     python_sample_test("tests-internalnativepython-python_sh.import_sys", "standalone_examples/testing/python_sh/import_sys.py")
     python_sample_test("tests-internalnativepython-omni.syntheticdata.test_basic", "standalone_examples/testing/omni.syntheticdata/test_basic.py")
-    python_sample_test("tests-internalnativepython-omni.isaac.synthetic_utils.test_basic", "standalone_examples/testing/omni.isaac.synthetic_utils/test_basic.py")
     python_sample_test("tests-internalnativepython-omni.isaac.snippets.multi-camera", "standalone_examples/testing/omni.isaac.snippets/multi-camera.py")
     python_sample_test("tests-internalnativepython-omni.isaac.snippets.simulation_get_data", "standalone_examples/testing/omni.isaac.snippets/simulation_get_data.py")
 
