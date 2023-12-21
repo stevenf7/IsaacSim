@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.15.1] - 2023-12-20
+### Added
+- Lidar and pointcloud tests with replicator enabled
+
 ## [1.15.0] - 2023-11-28
 ### Added
 - ROS1 Ackermann Subscriber and Publisher nodes
