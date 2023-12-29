@@ -59,15 +59,16 @@ public:
 
         // std::cout << "Creating message next...." << std::endl;
 
-        
-        if (state.mPublisher.get()->get_subscription_count() != 0){
-        // if (1 != 0){
 
-        // std::cout << "Filling Message... " << std::endl;
+        if (state.mPublisher.get()->get_subscription_count() != 0)
+        {
+            // if (1 != 0){
+
+            // std::cout << "Filling Message... " << std::endl;
             state.mMessage->fill(db.inputs.timeStamp());
 
-        // std::cout << "Publishing message" << std::endl;
-        
+            // std::cout << "Publishing message" << std::endl;
+
             state.mPublisher.get()->publish(state.mMessage->ptr());
         }
 

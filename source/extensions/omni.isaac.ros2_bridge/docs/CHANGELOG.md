@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.6.0] - 2024-01-02
+### Added
+- Publishers now check to see topic subscription count before filling data and publishing.
+
 ## [2.5.2] - 2023-12-20
 ### Added
 - Lidar and pointcloud tests with replicator enabled

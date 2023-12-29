@@ -67,85 +67,86 @@ public:
     {
 
         auto& state = db.internalState<OgnROS2PublishImage>();
-        if (state.mPublisher.get()->get_subscription_count() != 0){
-        state.mMessage = state.mFactory->CreateImageMessage();
-
-        state.mMessage->fillHeader(db.inputs.timeStamp(), state.mFrameId);
-
-        if (db.inputs.width() == 0 || db.inputs.height() == 0)
+        if (state.mPublisher.get()->get_subscription_count() != 0)
         {
-            db.logError("Width %d or height %d is not valid", db.inputs.width(), db.inputs.height());
-            return false;
-        }
+            state.mMessage = state.mFactory->CreateImageMessage();
 
-        std::string encoding = db.tokenToString(db.inputs.encoding());
-        state.mMessage->generateBuffer(db.inputs.height(), db.inputs.width(), encoding);
-        size_t totalBytes = state.mMessage->getTotalBytes();
-        void* dataPtr = state.mMessage->getDataPtr();
+            state.mMessage->fillHeader(db.inputs.timeStamp(), state.mFrameId);
 
-        if (db.inputs.cudaDeviceIndex() == -1)
-        {
-            if (db.inputs.dataPtr() != 0 && totalBytes == db.inputs.bufferSize())
+            if (db.inputs.width() == 0 || db.inputs.height() == 0)
             {
-                // Data is on host as ptr, buffer size matches
-                memcpy(dataPtr, reinterpret_cast<void*>(db.inputs.dataPtr()), totalBytes);
-            }
-            else if (db.inputs.dataPtr() == 0 && totalBytes == db.inputs.data.size())
-            {
-                // data is on host as ogn data, copy from cpu
-                memcpy(dataPtr, reinterpret_cast<const uint8_t*>(db.inputs.data.cpu().data()), totalBytes);
-            }
-            else
-            {
-                db.logError("image format and expected size %d bytes does not match input buffer Size of %d bytes",
-                            totalBytes, db.inputs.bufferSize());
-                db.logError("dataPtr null and expected size %d bytes does not match input data Size of %d bytes",
-                            totalBytes, db.inputs.data.size());
+                db.logError("Width %d or height %d is not valid", db.inputs.width(), db.inputs.height());
                 return false;
             }
-        }
-        else
-        {
-            omni::isaac::utils::ScopedDevice(db.inputs.cudaDeviceIndex());
 
-            if (db.inputs.bufferSize() == 0)
+            std::string encoding = db.tokenToString(db.inputs.encoding());
+            state.mMessage->generateBuffer(db.inputs.height(), db.inputs.width(), encoding);
+            size_t totalBytes = state.mMessage->getTotalBytes();
+            void* dataPtr = state.mMessage->getDataPtr();
+
+            if (db.inputs.cudaDeviceIndex() == -1)
             {
-                omni::isaac::utils::ScopedCudaTextureObject srcTexObj(
-                    reinterpret_cast<cudaMipmappedArray_t>(db.inputs.dataPtr()), 0);
-                switch (static_cast<carb::graphics::Format>(db.inputs.format()))
+                if (db.inputs.dataPtr() != 0 && totalBytes == db.inputs.bufferSize())
                 {
-                case carb::graphics::Format::eR32_SFLOAT:
-                    if (db.inputs.width() * db.inputs.height() * sizeof(float) != totalBytes)
-                    {
-                        CARB_LOG_ERROR("totalBytes doesn't match eR32_SFLOAT %zu %zu",
-                                       db.inputs.width() * db.inputs.height() * sizeof(float), totalBytes);
-                    }
-                    else
-                    {
-                        state.mBuffer.setDevice(db.inputs.cudaDeviceIndex());
-                        state.mBuffer.resize(db.inputs.width() * db.inputs.height() * sizeof(float));
-                        textureFloatCopyToRawBuffer(
-                            srcTexObj, state.mBuffer.data(), db.inputs.width(), db.inputs.height(), 0);
-                        CUDA_CHECK(cudaGetLastError());
-                        auto src = reinterpret_cast<void*>(state.mBuffer.data());
-                        CUDA_CHECK(cudaMemcpy(dataPtr, src, totalBytes, cudaMemcpyDeviceToHost));
-                    }
-                    break;
-
-                default:
-                    CARB_LOG_ERROR("SdRenderVarToRawArray : input texture format (%d) is not supported.",
-                                   static_cast<int>(db.inputs.format()));
+                    // Data is on host as ptr, buffer size matches
+                    memcpy(dataPtr, reinterpret_cast<void*>(db.inputs.dataPtr()), totalBytes);
+                }
+                else if (db.inputs.dataPtr() == 0 && totalBytes == db.inputs.data.size())
+                {
+                    // data is on host as ogn data, copy from cpu
+                    memcpy(dataPtr, reinterpret_cast<const uint8_t*>(db.inputs.data.cpu().data()), totalBytes);
+                }
+                else
+                {
+                    db.logError("image format and expected size %d bytes does not match input buffer Size of %d bytes",
+                                totalBytes, db.inputs.bufferSize());
+                    db.logError("dataPtr null and expected size %d bytes does not match input data Size of %d bytes",
+                                totalBytes, db.inputs.data.size());
                     return false;
                 }
             }
             else
             {
-                CUDA_CHECK(cudaMemcpy(dataPtr, reinterpret_cast<void*>(db.inputs.dataPtr()), db.inputs.bufferSize(),
-                                      cudaMemcpyDeviceToHost));
-            }
-        }
+                omni::isaac::utils::ScopedDevice(db.inputs.cudaDeviceIndex());
 
-        state.mPublisher.get()->publish(state.mMessage->ptr());
+                if (db.inputs.bufferSize() == 0)
+                {
+                    omni::isaac::utils::ScopedCudaTextureObject srcTexObj(
+                        reinterpret_cast<cudaMipmappedArray_t>(db.inputs.dataPtr()), 0);
+                    switch (static_cast<carb::graphics::Format>(db.inputs.format()))
+                    {
+                    case carb::graphics::Format::eR32_SFLOAT:
+                        if (db.inputs.width() * db.inputs.height() * sizeof(float) != totalBytes)
+                        {
+                            CARB_LOG_ERROR("totalBytes doesn't match eR32_SFLOAT %zu %zu",
+                                           db.inputs.width() * db.inputs.height() * sizeof(float), totalBytes);
+                        }
+                        else
+                        {
+                            state.mBuffer.setDevice(db.inputs.cudaDeviceIndex());
+                            state.mBuffer.resize(db.inputs.width() * db.inputs.height() * sizeof(float));
+                            textureFloatCopyToRawBuffer(
+                                srcTexObj, state.mBuffer.data(), db.inputs.width(), db.inputs.height(), 0);
+                            CUDA_CHECK(cudaGetLastError());
+                            auto src = reinterpret_cast<void*>(state.mBuffer.data());
+                            CUDA_CHECK(cudaMemcpy(dataPtr, src, totalBytes, cudaMemcpyDeviceToHost));
+                        }
+                        break;
+
+                    default:
+                        CARB_LOG_ERROR("SdRenderVarToRawArray : input texture format (%d) is not supported.",
+                                       static_cast<int>(db.inputs.format()));
+                        return false;
+                    }
+                }
+                else
+                {
+                    CUDA_CHECK(cudaMemcpy(dataPtr, reinterpret_cast<void*>(db.inputs.dataPtr()), db.inputs.bufferSize(),
+                                          cudaMemcpyDeviceToHost));
+                }
+            }
+
+            state.mPublisher.get()->publish(state.mMessage->ptr());
         }
         return true;
     }

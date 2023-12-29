@@ -134,47 +134,48 @@ public:
         auto stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
 
         auto& state = db.internalState<OgnROS2PublishTransformTree>();
-         if (state.mPublisher.get()->get_subscription_count() != 0){
-        if (!stage)
+        if (state.mPublisher.get()->get_subscription_count() != 0)
         {
-            db.logError("Could not find USD stage %ld", stageId);
-            return false;
-        }
+            if (!stage)
+            {
+                db.logError("Could not find USD stage %ld", stageId);
+                return false;
+            }
 
 
-        const double time = db.inputs.timeStamp();
-        std::vector<tfMessageStruct> tfMsg_vec;
+            const double time = db.inputs.timeStamp();
+            std::vector<tfMessageStruct> tfMsg_vec;
 
-        double stageUnits = mStageUnits;
+            double stageUnits = mStageUnits;
 
-        // TODO: Define tfmessagevec as state member and load with this
+            // TODO: Define tfmessagevec as state member and load with this
 
-        std::function<void(const std::string&, const std::string&, const physx::PxTransform&)> addPoseLambda =
-            [stageUnits, &tfMsg_vec, &time](
-                const std::string& parent_frame, const std::string& child_frame, const physx::PxTransform& t)
-        {
-            tfMessageStruct currentMsg;
-            currentMsg.timeStamp = time;
-            currentMsg.childFrame = child_frame;
-            currentMsg.parentFrame = parent_frame;
+            std::function<void(const std::string&, const std::string&, const physx::PxTransform&)> addPoseLambda =
+                [stageUnits, &tfMsg_vec, &time](
+                    const std::string& parent_frame, const std::string& child_frame, const physx::PxTransform& t)
+            {
+                tfMessageStruct currentMsg;
+                currentMsg.timeStamp = time;
+                currentMsg.childFrame = child_frame;
+                currentMsg.parentFrame = parent_frame;
 
-            currentMsg.trans_x = t.p.x * static_cast<float>(stageUnits);
-            currentMsg.trans_y = t.p.y * static_cast<float>(stageUnits);
-            currentMsg.trans_z = t.p.z * static_cast<float>(stageUnits);
+                currentMsg.trans_x = t.p.x * static_cast<float>(stageUnits);
+                currentMsg.trans_y = t.p.y * static_cast<float>(stageUnits);
+                currentMsg.trans_z = t.p.z * static_cast<float>(stageUnits);
 
-            currentMsg.quat_x = t.q.x;
-            currentMsg.quat_y = t.q.y;
-            currentMsg.quat_z = t.q.z;
-            currentMsg.quat_w = t.q.w;
+                currentMsg.quat_x = t.q.x;
+                currentMsg.quat_y = t.q.y;
+                currentMsg.quat_z = t.q.z;
+                currentMsg.quat_w = t.q.w;
 
-            tfMsg_vec.push_back(currentMsg);
-        };
+                tfMsg_vec.push_back(currentMsg);
+            };
 
-        mPoseTree->processAllFrames(addPoseLambda);
+            mPoseTree->processAllFrames(addPoseLambda);
 
-        state.mMessage->fillData(time, tfMsg_vec);
+            state.mMessage->fillData(time, tfMsg_vec);
 
-        state.mPublisher.get()->publish(state.mMessage->ptr());
+            state.mPublisher.get()->publish(state.mMessage->ptr());
         }
         return true;
     }

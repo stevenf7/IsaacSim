@@ -103,19 +103,20 @@ public:
     {
 
         auto& state = db.internalState<OgnROS2PublishOdometry>();
-         if (state.mPublisher.get()->get_subscription_count() != 0){
-        auto& linVel = db.inputs.linearVelocity();
-        auto& angVel = db.inputs.angularVelocity();
-        auto& position = db.inputs.position();
-        auto& orientation = db.inputs.orientation();
+        if (state.mPublisher.get()->get_subscription_count() != 0)
+        {
+            auto& linVel = db.inputs.linearVelocity();
+            auto& angVel = db.inputs.angularVelocity();
+            auto& position = db.inputs.position();
+            auto& orientation = db.inputs.orientation();
 
 
-        state.mMessage->fillHeader(db.inputs.timeStamp(), state.mOdomFrameId);
-        state.mMessage->fillData(
-            state.mChassisFrameId, linVel, angVel, mRobotFront, mRobotSide, mUnitScale, mZUp, position, orientation);
+            state.mMessage->fillHeader(db.inputs.timeStamp(), state.mOdomFrameId);
+            state.mMessage->fillData(state.mChassisFrameId, linVel, angVel, mRobotFront, mRobotSide, mUnitScale, mZUp,
+                                     position, orientation);
 
-        state.mPublisher.get()->publish(state.mMessage->ptr());
-         }
+            state.mPublisher.get()->publish(state.mMessage->ptr());
+        }
     }
 
     virtual void release(const NodeObj& nodeObj)

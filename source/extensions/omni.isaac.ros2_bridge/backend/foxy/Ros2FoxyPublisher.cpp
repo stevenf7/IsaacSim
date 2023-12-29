@@ -60,7 +60,7 @@ size_t Ros2PublisherFoxy::get_subscription_count()
     rcl_ret_t rc = rcl_publisher_get_subscription_count(mPub.get(), &sub_count);
     if (rc != RCL_RET_OK)
     {
-        RCL_ERROR_MSG(publish, rcl_publish);
+        RCL_ERROR_MSG(get_subscription_count, rcl_publisher_get_subscription_count);
     }
     return sub_count;
 }
