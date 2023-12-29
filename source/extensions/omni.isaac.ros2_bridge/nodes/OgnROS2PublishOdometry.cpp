@@ -103,7 +103,7 @@ public:
     {
 
         auto& state = db.internalState<OgnROS2PublishOdometry>();
-
+         if (state.mPublisher.get()->get_subscription_count() != 0){
         auto& linVel = db.inputs.linearVelocity();
         auto& angVel = db.inputs.angularVelocity();
         auto& position = db.inputs.position();
@@ -115,6 +115,7 @@ public:
             state.mChassisFrameId, linVel, angVel, mRobotFront, mRobotSide, mUnitScale, mZUp, position, orientation);
 
         state.mPublisher.get()->publish(state.mMessage->ptr());
+         }
     }
 
     virtual void release(const NodeObj& nodeObj)

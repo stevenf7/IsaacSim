@@ -64,7 +64,7 @@ public:
     void publishCameraInfo(OgnROS2PublishCameraInfoDatabase& db)
     {
         auto& state = db.internalState<OgnROS2PublishCameraInfo>();
-
+        if (state.mPublisher.get()->get_subscription_count() != 0){
         state.mMessage->fillHeader(db.inputs.timeStamp(), state.mFrameId);
 
         auto& height = db.inputs.height();
@@ -108,6 +108,7 @@ public:
             state.mMessage->fillDistortionModel(empty, db.tokenToString(db.inputs.projectionType()));
         }
         state.mPublisher.get()->publish(state.mMessage->ptr());
+        }
     }
 
     virtual void release(const NodeObj& nodeObj)

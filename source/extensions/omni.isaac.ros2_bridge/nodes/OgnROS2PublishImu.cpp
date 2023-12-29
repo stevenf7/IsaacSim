@@ -83,6 +83,7 @@ public:
     {
 
         auto& state = db.internalState<OgnROS2PublishImu>();
+        if (state.mPublisher.get()->get_subscription_count() != 0){
         state.mMessage->fillHeader(db.inputs.timeStamp(), state.mFrameId);
 
         if (!db.inputs.publishLinearAcceleration())
@@ -120,6 +121,7 @@ public:
         }
 
         state.mPublisher.get()->publish(state.mMessage->ptr());
+        }
     }
 
     virtual void release(const NodeObj& nodeObj)

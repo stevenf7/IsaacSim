@@ -70,6 +70,7 @@ public:
 
         auto& state = db.internalState<OgnROS2PublishLaserScan>();
 
+        if (state.mPublisher.get()->get_subscription_count() != 0){
         size_t buffSize = db.inputs.numCols() * db.inputs.numRows();
         if (buffSize == 0)
         {
@@ -120,7 +121,7 @@ public:
                                  db.inputs.horizontalResolution(), db.inputs.horizontalFov());
 
         state.mPublisher.get()->publish(state.mMessage->ptr());
-
+        }
         return true;
     }
 

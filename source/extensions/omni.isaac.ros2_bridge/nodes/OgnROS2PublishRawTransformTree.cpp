@@ -69,14 +69,14 @@ public:
     bool publishTF(OgnROS2PublishRawTransformTreeDatabase& db)
     {
         auto& state = db.internalState<OgnROS2PublishRawTransformTree>();
-
+         if (state.mPublisher.get()->get_subscription_count() != 0){
         auto& translation = db.inputs.translation();
         auto& rotation = db.inputs.rotation();
 
 
         state.mMessage->fillData(db.inputs.timeStamp(), state.mParentFrameId, state.mChildFrameId, translation, rotation);
         state.mPublisher.get()->publish(state.mMessage->ptr());
-
+         }
         return true;
     }
 

@@ -67,7 +67,7 @@ public:
     {
 
         auto& state = db.internalState<OgnROS2PublishImage>();
-
+        if (state.mPublisher.get()->get_subscription_count() != 0){
         state.mMessage = state.mFactory->CreateImageMessage();
 
         state.mMessage->fillHeader(db.inputs.timeStamp(), state.mFrameId);
@@ -146,7 +146,7 @@ public:
         }
 
         state.mPublisher.get()->publish(state.mMessage->ptr());
-
+        }
         return true;
     }
 

@@ -73,7 +73,7 @@ public:
     {
 
         auto& state = db.internalState<OgnROS2PublishAckermann>();
-
+        if (state.mPublisher.get()->get_subscription_count() != 0){
         const double steeringAngle = db.inputs.steeringAngle();
 
         state.mMessage->fillHeader(db.inputs.timeStamp(), db.inputs.frameId());
@@ -81,6 +81,7 @@ public:
                                  db.inputs.acceleration(), db.inputs.jerk());
 
         state.mPublisher.get()->publish(state.mMessage->ptr());
+        }
     }
 
     virtual void release(const NodeObj& nodeObj)

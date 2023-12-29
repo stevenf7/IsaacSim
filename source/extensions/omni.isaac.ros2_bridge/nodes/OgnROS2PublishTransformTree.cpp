@@ -134,7 +134,7 @@ public:
         auto stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
 
         auto& state = db.internalState<OgnROS2PublishTransformTree>();
-
+         if (state.mPublisher.get()->get_subscription_count() != 0){
         if (!stage)
         {
             db.logError("Could not find USD stage %ld", stageId);
@@ -175,6 +175,7 @@ public:
         state.mMessage->fillData(time, tfMsg_vec);
 
         state.mPublisher.get()->publish(state.mMessage->ptr());
+        }
         return true;
     }
 

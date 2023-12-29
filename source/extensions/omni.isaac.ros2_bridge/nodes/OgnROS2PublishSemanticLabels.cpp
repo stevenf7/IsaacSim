@@ -62,6 +62,7 @@ public:
     {
 
         auto& state = db.internalState<OgnROS2PublishSemanticLabels>();
+        if (state.mPublisher.get()->get_subscription_count() != 0){
         nlohmann::json json;
 
         if (db.inputs.idToLabels().length() > 0)
@@ -100,7 +101,7 @@ public:
 
         state.mMessage->fillData(json.dump());
         state.mPublisher.get()->publish(state.mMessage->ptr());
-
+        }
         return true;
     }
 

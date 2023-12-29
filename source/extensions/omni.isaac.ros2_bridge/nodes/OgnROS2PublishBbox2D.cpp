@@ -72,6 +72,7 @@ public:
     {
 
         auto& state = db.internalState<OgnROS2PublishBbox2D>();
+        if (state.mPublisher.get()->get_subscription_count() != 0){
         size_t bytes = db.inputs.data().size();
         size_t numBbox = bytes / sizeof(Bbox2DData);
 
@@ -80,6 +81,7 @@ public:
         state.mMessage->fillHeader(db.inputs.timeStamp(), state.mFrameId);
         state.mMessage->fillBboxData(bboxData, numBbox);
         state.mPublisher.get()->publish(state.mMessage->ptr());
+        }
         return true;
     }
 

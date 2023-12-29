@@ -76,7 +76,7 @@ public:
         CARB_PROFILE_ZONE(0, "Lidar Point Cloud Pub");
 
         auto& state = db.internalState<OgnROS2PublishPointCloud>();
-
+         if (state.mPublisher.get()->get_subscription_count() != 0){
         size_t height = 1;
         uint32_t point_step = sizeof(GfVec3f);
         size_t width = 0;
@@ -120,7 +120,7 @@ public:
             }
         }
         state.mPublisher.get()->publish(state.mMessage->ptr());
-
+         }
         return true;
     }
 

@@ -57,3 +57,17 @@ void Ros2PublisherHumble::publish(const void* msg)
         RCL_ERROR_MSG(publish, rcl_publish);
     }
 }
+
+size_t Ros2PublisherHumble::get_subscription_count()
+{
+    // printf("YOOOOHOOOOOOOOOOOOOOOOOOOOOOOO!!!!---------------------------");
+    size_t sub_count = 0;
+    rcl_ret_t rc = rcl_publisher_get_subscription_count(mPub.get(), &sub_count);
+    // printf("AREYOUHERE!!!!---------------------------");
+    if (rc != RCL_RET_OK)
+    {
+        RCL_ERROR_MSG(publish, rcl_publish);
+    }
+    // printf("WHASUPPPPPPPPPPPPPPPPPPPPPPPP!!!!---------------------------");
+    return sub_count;
+}

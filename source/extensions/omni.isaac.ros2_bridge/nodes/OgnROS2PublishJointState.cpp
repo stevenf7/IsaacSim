@@ -120,7 +120,7 @@ public:
     bool publishJointStates(OgnROS2PublishJointStateDatabase& db, const GraphContextObj& context)
     {
         auto& state = db.internalState<OgnROS2PublishJointState>();
-
+        if (state.mPublisher.get()->get_subscription_count() != 0){
         double stageUnits = 1.0 / mUnitScale;
         double dt = db.inputs.timeStamp() - mPreviousTimeStamp;
         mPreviousTimeStamp = db.inputs.timeStamp();
@@ -131,6 +131,7 @@ public:
         state.mMessage->fillData(db.inputs.timeStamp(), mDynamicControlPtr, mArticulationHandle, mStage, mDofProps,
                                  mPrevJointPosition, mCalculatedJointVelocity, dt, stageUnits);
         state.mPublisher.get()->publish(state.mMessage->ptr());
+        }
         return true;
     }
 

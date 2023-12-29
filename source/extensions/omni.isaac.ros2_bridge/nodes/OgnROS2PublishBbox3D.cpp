@@ -71,6 +71,7 @@ public:
     bool publishDetectionArray(OgnROS2PublishBbox3DDatabase& db)
     {
         auto& state = db.internalState<OgnROS2PublishBbox3D>();
+        if (state.mPublisher.get()->get_subscription_count() != 0){
         size_t bytes = db.inputs.data().size();
         size_t numBbox = bytes / sizeof(Bbox3DData);
         const Bbox3DData* bboxData = reinterpret_cast<const Bbox3DData*>(db.inputs.data().data());
@@ -79,7 +80,7 @@ public:
         state.mMessage->fillHeader(db.inputs.timeStamp(), state.mFrameId);
         state.mMessage->fillBboxData(bboxData, numBbox);
         state.mPublisher.get()->publish(state.mMessage->ptr());
-
+        }
         return true;
     }
 
