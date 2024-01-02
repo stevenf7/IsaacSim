@@ -26,7 +26,8 @@ import omni.kit.viewport.utility
 import usdrt.Sdf
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.physics import simulate_async
-from pxr import Sdf
+from omni.isaac.core.utils.stage import open_stage_async
+from pxr import Gf, Sdf
 
 from .common import add_carter, add_carter_ros, add_cube, fields_to_dtype, get_qos_profile
 
@@ -309,4 +310,154 @@ class TestRos2PointCloud(omni.kit.test.AsyncTestCase):
         self._timeline.stop()
         spin()
 
+        pass
+
+    async def test_flat_point_cloud_buffer(self):
+        import rclpy
+        from sensor_msgs.msg import PointCloud2
+
+        (result, error) = await open_stage_async(
+            self._assets_root_path + "/Isaac/Environments/Simple_Room/simple_room.usd"
+        )
+
+        # Make sure the stage loaded
+        stage = omni.usd.get_context().get_stage()
+        await omni.kit.app.get_app().next_update_async()
+
+        HORIZONTAL_FOV = 360.0
+
+        HORIZONTAL_RESOLUTION = 0.4
+
+        # Add lidar
+        result, lidar = omni.kit.commands.execute(
+            "RangeSensorCreateLidar",
+            path="/World/Lidar",
+            parent=None,
+            min_range=0.4,
+            max_range=100.0,
+            draw_points=True,
+            draw_lines=True,
+            horizontal_fov=HORIZONTAL_FOV,
+            vertical_fov=30.0,
+            horizontal_resolution=HORIZONTAL_RESOLUTION,
+            vertical_resolution=4.0,
+            rotation_rate=0.0,
+            high_lod=False,
+            yaw_offset=0.0,
+            enable_semantics=True,
+        )
+        lidarPath = str(lidar.GetPath())
+        lidar.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, -0.5, 0.5))
+
+        # Setup a camera_helper to activate replicator to test PhysX Lidar buffer
+        viewport_api = omni.kit.viewport.utility.get_active_viewport()
+        render_product_path = viewport_api.get_render_product_path()
+        # Set viewport resolution, changes will occur on next frame
+        viewport_api.set_texture_resolution((1280, 720))
+        await omni.kit.app.get_app().next_update_async()
+
+        # Add Point Cloud publisher
+        graph_path = "/ActionGraph"
+
+        try:
+            keys = og.Controller.Keys
+            (graph, nodes, _, _) = og.Controller.edit(
+                {"graph_path": graph_path, "evaluator_name": "execution"},
+                {
+                    keys.CREATE_NODES: [
+                        ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                        ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                        # Added nodes used for Point Cloud Publisher
+                        ("ReadLidarPCL", "omni.isaac.range_sensor.IsaacReadLidarPointCloud"),
+                        ("PublishPCL", "omni.isaac.ros2_bridge.ROS2PublishPointCloud"),
+                        ("CameraHelper", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
+                    ],
+                    keys.SET_VALUES: [
+                        ("ReadLidarPCL.inputs:lidarPrim", [usdrt.Sdf.Path(lidarPath)]),
+                        ("CameraHelper.inputs:renderProductPath", render_product_path),
+                    ],
+                    keys.CONNECT: [
+                        ("OnPlaybackTick.outputs:tick", "ReadLidarPCL.inputs:execIn"),
+                        ("ReadLidarPCL.outputs:execOut", "PublishPCL.inputs:execIn"),
+                        ("ReadLidarPCL.outputs:data", "PublishPCL.inputs:data"),
+                        ("OnPlaybackTick.outputs:tick", "CameraHelper.inputs:execIn"),
+                        ("ReadSimTime.outputs:simulationTime", "PublishPCL.inputs:timeStamp"),
+                    ],
+                },
+            )
+        except Exception as e:
+            print(e)
+
+        self._point_cloud_data = None
+
+        def point_cloud_callback(data: PointCloud2):
+            self._point_cloud_data = data
+
+        node = rclpy.create_node("depth_point_cloud_tester")
+        camera_sub = node.create_subscription(PointCloud2, "point_cloud", point_cloud_callback, get_qos_profile())
+
+        def spin():
+            rclpy.spin_once(node, timeout_sec=0.1)
+
+        def standard_checks():
+            # If flat point cloud (highLOD disabled)
+            self.assertIsNotNone(self._point_cloud_data)
+            self.assertEqual(self._point_cloud_data.height, 1)
+            self.assertGreater(self._point_cloud_data.width, 1)
+            self.assertEqual(len(self._point_cloud_data.data), self._point_cloud_data.row_step)
+            self.assertEqual(
+                self._point_cloud_data.row_step / self._point_cloud_data.point_step, self._point_cloud_data.width
+            )
+
+            ff = fields_to_dtype(self._point_cloud_data.fields, self._point_cloud_data.point_step)
+            arr = np.frombuffer(self._point_cloud_data.data, ff)
+
+            self.assertEqual(self._point_cloud_data.fields[0].datatype, 7)
+            self.assertEqual(self._point_cloud_data.fields[1].datatype, 7)
+            self.assertEqual(self._point_cloud_data.fields[2].datatype, 7)
+
+            def fix_data(arr):
+                dat = []
+                for x in arr:
+                    dat.append((x[0], x[1], x[2]))
+                return dat
+
+            arr = fix_data(arr)
+
+            # Check to see if number of points matches number of beams in full scan
+            self.assertEqual(len(set(arr)), HORIZONTAL_FOV / HORIZONTAL_RESOLUTION)
+
+        # Check with lidar 0.0 rotation rate
+        omni.kit.commands.execute(
+            "ChangeProperty",
+            prop_path=Sdf.Path(lidarPath + ".rotationRate"),
+            value=0.0,
+            prev=None,
+        )
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await simulate_async(2.0, 60, spin)
+
+        standard_checks()
+
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+
+        # 21.0 Hz Lidar rotation
+        omni.kit.commands.execute(
+            "ChangeProperty",
+            prop_path=Sdf.Path(lidarPath + ".rotationRate"),
+            value=21.0,
+            prev=None,
+        )
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+        await simulate_async(2.0, 60, spin)
+
+        standard_checks()
+        self._timeline.stop()
+        spin()
         pass

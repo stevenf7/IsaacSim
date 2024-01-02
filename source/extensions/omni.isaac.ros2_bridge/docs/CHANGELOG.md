@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.5.2] - 2023-12-20
+### Added
+- Lidar and pointcloud tests with replicator enabled
+
 ## [2.5.1] - 2023-12-08
 ### Fixed
 - Removed conflicting TF Publishers from standalone ROS2 Moveit tutorial
