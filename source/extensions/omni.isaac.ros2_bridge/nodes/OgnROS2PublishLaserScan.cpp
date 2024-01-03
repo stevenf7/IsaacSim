@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -70,59 +70,62 @@ public:
 
         auto& state = db.internalState<OgnROS2PublishLaserScan>();
 
-        if (state.mPublisher.get()->get_subscription_count() != 0)
+        // Check if subscription count is 0
+        if (!state.mPublisher.get()->get_subscription_count())
         {
-            size_t buffSize = db.inputs.numCols() * db.inputs.numRows();
-            if (buffSize == 0)
-            {
-                return false;
-            }
-            if (db.inputs.numRows() != 1)
-            {
-                db.logError(
-                    "Number of rows must be equal to 1. High LOD not supported for LaserScan, only 2D Lidar Supported for LaserScan. Please disable Lidar High LOD setting");
-                return false;
-            }
-
-            float rotationRate = db.inputs.rotationRate();
-
-            if (!db.inputs.linearDepthData.isValid() || !db.inputs.intensitiesData.isValid())
-            {
-                db.logError("Buffers are invalid");
-                return false;
-            }
-
-            if (db.inputs.linearDepthData.size() != db.inputs.intensitiesData.size())
-            {
-                db.logError("Linear Depth data and Intensities data sizes do not match");
-                return false;
-            }
-
-            if (buffSize != db.inputs.linearDepthData.size())
-            {
-                db.logError("Lidar data with %d rows and %d columns does not match input buffer array size of %d",
-                            db.inputs.numRows(), db.inputs.numCols(), db.inputs.linearDepthData.size());
-                return false;
-            }
-
-            const float* rangePoints = static_cast<const float*>(db.inputs.linearDepthData().data());
-            float* rangeData = (float*)malloc(sizeof(float) * buffSize);
-            memcpy(rangeData, rangePoints, sizeof(float) * buffSize);
-
-            const uint8_t* intensityPointsCpu = static_cast<const uint8_t*>(db.inputs.intensitiesData().data());
-            float* intensityData = (float*)malloc(sizeof(float) * buffSize);
-
-            for (size_t i = 0; i < buffSize; i++)
-            {
-                intensityData[i] = static_cast<float>(intensityPointsCpu[i]);
-            }
-
-            state.mMessage->fillData(state.mFrameId, db.inputs.timeStamp(), db.inputs.azimuthRange(), rotationRate,
-                                     db.inputs.depthRange(), buffSize, rangeData, intensityData,
-                                     db.inputs.horizontalResolution(), db.inputs.horizontalFov());
-
-            state.mPublisher.get()->publish(state.mMessage->ptr());
+            return false;
         }
+        size_t buffSize = db.inputs.numCols() * db.inputs.numRows();
+        if (buffSize == 0)
+        {
+            return false;
+        }
+        if (db.inputs.numRows() != 1)
+        {
+            db.logError(
+                "Number of rows must be equal to 1. High LOD not supported for LaserScan, only 2D Lidar Supported for LaserScan. Please disable Lidar High LOD setting");
+            return false;
+        }
+
+        float rotationRate = db.inputs.rotationRate();
+
+        if (!db.inputs.linearDepthData.isValid() || !db.inputs.intensitiesData.isValid())
+        {
+            db.logError("Buffers are invalid");
+            return false;
+        }
+
+        if (db.inputs.linearDepthData.size() != db.inputs.intensitiesData.size())
+        {
+            db.logError("Linear Depth data and Intensities data sizes do not match");
+            return false;
+        }
+
+        if (buffSize != db.inputs.linearDepthData.size())
+        {
+            db.logError("Lidar data with %d rows and %d columns does not match input buffer array size of %d",
+                        db.inputs.numRows(), db.inputs.numCols(), db.inputs.linearDepthData.size());
+            return false;
+        }
+
+        const float* rangePoints = static_cast<const float*>(db.inputs.linearDepthData().data());
+        float* rangeData = (float*)malloc(sizeof(float) * buffSize);
+        memcpy(rangeData, rangePoints, sizeof(float) * buffSize);
+
+        const uint8_t* intensityPointsCpu = static_cast<const uint8_t*>(db.inputs.intensitiesData().data());
+        float* intensityData = (float*)malloc(sizeof(float) * buffSize);
+
+        for (size_t i = 0; i < buffSize; i++)
+        {
+            intensityData[i] = static_cast<float>(intensityPointsCpu[i]);
+        }
+
+        state.mMessage->fillData(state.mFrameId, db.inputs.timeStamp(), db.inputs.azimuthRange(), rotationRate,
+                                 db.inputs.depthRange(), buffSize, rangeData, intensityData,
+                                 db.inputs.horizontalResolution(), db.inputs.horizontalFov());
+
+        state.mPublisher.get()->publish(state.mMessage->ptr());
+
         return true;
     }
 

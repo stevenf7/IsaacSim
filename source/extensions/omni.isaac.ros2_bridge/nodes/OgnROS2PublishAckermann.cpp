@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -73,16 +73,19 @@ public:
     {
 
         auto& state = db.internalState<OgnROS2PublishAckermann>();
-        if (state.mPublisher.get()->get_subscription_count() != 0)
+
+        // Check if subscription count is 0
+        if (!state.mPublisher.get()->get_subscription_count())
         {
-            const double steeringAngle = db.inputs.steeringAngle();
-
-            state.mMessage->fillHeader(db.inputs.timeStamp(), db.inputs.frameId());
-            state.mMessage->fillData(db.inputs.steeringAngle(), db.inputs.steeringAngleVelocity(), db.inputs.speed(),
-                                     db.inputs.acceleration(), db.inputs.jerk());
-
-            state.mPublisher.get()->publish(state.mMessage->ptr());
+            return;
         }
+        const double steeringAngle = db.inputs.steeringAngle();
+
+        state.mMessage->fillHeader(db.inputs.timeStamp(), db.inputs.frameId());
+        state.mMessage->fillData(db.inputs.steeringAngle(), db.inputs.steeringAngleVelocity(), db.inputs.speed(),
+                                 db.inputs.acceleration(), db.inputs.jerk());
+
+        state.mPublisher.get()->publish(state.mMessage->ptr());
     }
 
     virtual void release(const NodeObj& nodeObj)

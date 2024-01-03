@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -134,49 +134,52 @@ public:
         auto stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
 
         auto& state = db.internalState<OgnROS2PublishTransformTree>();
-        if (state.mPublisher.get()->get_subscription_count() != 0)
+        // Check if subscription count is 0
+        if (!state.mPublisher.get()->get_subscription_count())
         {
-            if (!stage)
-            {
-                db.logError("Could not find USD stage %ld", stageId);
-                return false;
-            }
-
-
-            const double time = db.inputs.timeStamp();
-            std::vector<tfMessageStruct> tfMsg_vec;
-
-            double stageUnits = mStageUnits;
-
-            // TODO: Define tfmessagevec as state member and load with this
-
-            std::function<void(const std::string&, const std::string&, const physx::PxTransform&)> addPoseLambda =
-                [stageUnits, &tfMsg_vec, &time](
-                    const std::string& parent_frame, const std::string& child_frame, const physx::PxTransform& t)
-            {
-                tfMessageStruct currentMsg;
-                currentMsg.timeStamp = time;
-                currentMsg.childFrame = child_frame;
-                currentMsg.parentFrame = parent_frame;
-
-                currentMsg.trans_x = t.p.x * static_cast<float>(stageUnits);
-                currentMsg.trans_y = t.p.y * static_cast<float>(stageUnits);
-                currentMsg.trans_z = t.p.z * static_cast<float>(stageUnits);
-
-                currentMsg.quat_x = t.q.x;
-                currentMsg.quat_y = t.q.y;
-                currentMsg.quat_z = t.q.z;
-                currentMsg.quat_w = t.q.w;
-
-                tfMsg_vec.push_back(currentMsg);
-            };
-
-            mPoseTree->processAllFrames(addPoseLambda);
-
-            state.mMessage->fillData(time, tfMsg_vec);
-
-            state.mPublisher.get()->publish(state.mMessage->ptr());
+            return false;
         }
+        if (!stage)
+        {
+            db.logError("Could not find USD stage %ld", stageId);
+            return false;
+        }
+
+
+        const double time = db.inputs.timeStamp();
+        std::vector<tfMessageStruct> tfMsg_vec;
+
+        double stageUnits = mStageUnits;
+
+        // TODO: Define tfmessagevec as state member and load with this
+
+        std::function<void(const std::string&, const std::string&, const physx::PxTransform&)> addPoseLambda =
+            [stageUnits, &tfMsg_vec, &time](
+                const std::string& parent_frame, const std::string& child_frame, const physx::PxTransform& t)
+        {
+            tfMessageStruct currentMsg;
+            currentMsg.timeStamp = time;
+            currentMsg.childFrame = child_frame;
+            currentMsg.parentFrame = parent_frame;
+
+            currentMsg.trans_x = t.p.x * static_cast<float>(stageUnits);
+            currentMsg.trans_y = t.p.y * static_cast<float>(stageUnits);
+            currentMsg.trans_z = t.p.z * static_cast<float>(stageUnits);
+
+            currentMsg.quat_x = t.q.x;
+            currentMsg.quat_y = t.q.y;
+            currentMsg.quat_z = t.q.z;
+            currentMsg.quat_w = t.q.w;
+
+            tfMsg_vec.push_back(currentMsg);
+        };
+
+        mPoseTree->processAllFrames(addPoseLambda);
+
+        state.mMessage->fillData(time, tfMsg_vec);
+
+        state.mPublisher.get()->publish(state.mMessage->ptr());
+
         return true;
     }
 

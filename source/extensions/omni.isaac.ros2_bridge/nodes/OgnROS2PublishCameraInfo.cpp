@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -64,53 +64,54 @@ public:
     void publishCameraInfo(OgnROS2PublishCameraInfoDatabase& db)
     {
         auto& state = db.internalState<OgnROS2PublishCameraInfo>();
-        if (state.mPublisher.get()->get_subscription_count() != 0)
+        // Check if subscription count is 0
+        if (!state.mPublisher.get()->get_subscription_count())
         {
-            state.mMessage->fillHeader(db.inputs.timeStamp(), state.mFrameId);
-
-            auto& height = db.inputs.height();
-            auto& width = db.inputs.width();
-            state.mMessage->fillHeightWidth(height, width);
-            // ROS image: conventions
-            // origin of frame should be optical center of camera
-            // +x should point to the right in the image
-            // +y should point down in the image
-            // +z should point into the plane of the image
-
-            float fx, fy, cy, cx;
-
-            fx = width * db.inputs.focalLength() / db.inputs.horizontalAperture();
-            fy = height * db.inputs.focalLength() / db.inputs.verticalAperture();
-            cx = width * 0.5f;
-            cy = height * 0.5f;
-            double k_arr[] = { fx, 0, cx, 0, fy, cy, 0, 0, 1 };
-            state.mMessage->fillIntrisicArray(k_arr, 9);
-
-            double p_arr[] = { fx, 0, cx, db.inputs.stereoOffset()[0], 0, fy, cy, db.inputs.stereoOffset()[1], 0,
-                               0,  1, 0 };
-            state.mMessage->fillProjectionArray(p_arr, 12);
-            std::string physicalDistortion = db.tokenToString(db.inputs.physicalDistortionModel());
-
-            double r_arr[] = { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
-            state.mMessage->fillRectificationArray(r_arr, 9);
-
-            if (physicalDistortion.length() > 0)
-            {
-                std::vector<double> coeff;
-                for (size_t i = 0; i < db.inputs.physicalDistortionCoefficients().size(); i++)
-                {
-                    coeff.push_back(db.inputs.physicalDistortionCoefficients()[i]);
-                }
-                state.mMessage->fillDistortionModel(coeff, physicalDistortion);
-            }
-            else
-            {
-                // TODO: Handle fisheye coeffieicents?
-                std::vector<double> empty;
-                state.mMessage->fillDistortionModel(empty, db.tokenToString(db.inputs.projectionType()));
-            }
-            state.mPublisher.get()->publish(state.mMessage->ptr());
+            return;
         }
+        state.mMessage->fillHeader(db.inputs.timeStamp(), state.mFrameId);
+
+        auto& height = db.inputs.height();
+        auto& width = db.inputs.width();
+        state.mMessage->fillHeightWidth(height, width);
+        // ROS image: conventions
+        // origin of frame should be optical center of camera
+        // +x should point to the right in the image
+        // +y should point down in the image
+        // +z should point into the plane of the image
+
+        float fx, fy, cy, cx;
+
+        fx = width * db.inputs.focalLength() / db.inputs.horizontalAperture();
+        fy = height * db.inputs.focalLength() / db.inputs.verticalAperture();
+        cx = width * 0.5f;
+        cy = height * 0.5f;
+        double k_arr[] = { fx, 0, cx, 0, fy, cy, 0, 0, 1 };
+        state.mMessage->fillIntrisicArray(k_arr, 9);
+
+        double p_arr[] = { fx, 0, cx, db.inputs.stereoOffset()[0], 0, fy, cy, db.inputs.stereoOffset()[1], 0, 0, 1, 0 };
+        state.mMessage->fillProjectionArray(p_arr, 12);
+        std::string physicalDistortion = db.tokenToString(db.inputs.physicalDistortionModel());
+
+        double r_arr[] = { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
+        state.mMessage->fillRectificationArray(r_arr, 9);
+
+        if (physicalDistortion.length() > 0)
+        {
+            std::vector<double> coeff;
+            for (size_t i = 0; i < db.inputs.physicalDistortionCoefficients().size(); i++)
+            {
+                coeff.push_back(db.inputs.physicalDistortionCoefficients()[i]);
+            }
+            state.mMessage->fillDistortionModel(coeff, physicalDistortion);
+        }
+        else
+        {
+            // TODO: Handle fisheye coeffieicents?
+            std::vector<double> empty;
+            state.mMessage->fillDistortionModel(empty, db.tokenToString(db.inputs.projectionType()));
+        }
+        state.mPublisher.get()->publish(state.mMessage->ptr());
     }
 
     virtual void release(const NodeObj& nodeObj)

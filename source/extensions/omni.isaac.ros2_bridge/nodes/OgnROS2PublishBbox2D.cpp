@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -72,17 +72,21 @@ public:
     {
 
         auto& state = db.internalState<OgnROS2PublishBbox2D>();
-        if (state.mPublisher.get()->get_subscription_count() != 0)
+
+        // Check if subscription count is 0
+        if (!state.mPublisher.get()->get_subscription_count())
         {
-            size_t bytes = db.inputs.data().size();
-            size_t numBbox = bytes / sizeof(Bbox2DData);
-
-            const Bbox2DData* bboxData = reinterpret_cast<const Bbox2DData*>(db.inputs.data().data());
-
-            state.mMessage->fillHeader(db.inputs.timeStamp(), state.mFrameId);
-            state.mMessage->fillBboxData(bboxData, numBbox);
-            state.mPublisher.get()->publish(state.mMessage->ptr());
+            return false;
         }
+        size_t bytes = db.inputs.data().size();
+        size_t numBbox = bytes / sizeof(Bbox2DData);
+
+        const Bbox2DData* bboxData = reinterpret_cast<const Bbox2DData*>(db.inputs.data().data());
+
+        state.mMessage->fillHeader(db.inputs.timeStamp(), state.mFrameId);
+        state.mMessage->fillBboxData(bboxData, numBbox);
+        state.mPublisher.get()->publish(state.mMessage->ptr());
+
         return true;
     }
 

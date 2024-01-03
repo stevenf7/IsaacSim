@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -103,20 +103,22 @@ public:
     {
 
         auto& state = db.internalState<OgnROS2PublishOdometry>();
-        if (state.mPublisher.get()->get_subscription_count() != 0)
+        // Check if subscription count is 0
+        if (!state.mPublisher.get()->get_subscription_count())
         {
-            auto& linVel = db.inputs.linearVelocity();
-            auto& angVel = db.inputs.angularVelocity();
-            auto& position = db.inputs.position();
-            auto& orientation = db.inputs.orientation();
-
-
-            state.mMessage->fillHeader(db.inputs.timeStamp(), state.mOdomFrameId);
-            state.mMessage->fillData(state.mChassisFrameId, linVel, angVel, mRobotFront, mRobotSide, mUnitScale, mZUp,
-                                     position, orientation);
-
-            state.mPublisher.get()->publish(state.mMessage->ptr());
+            return;
         }
+        auto& linVel = db.inputs.linearVelocity();
+        auto& angVel = db.inputs.angularVelocity();
+        auto& position = db.inputs.position();
+        auto& orientation = db.inputs.orientation();
+
+
+        state.mMessage->fillHeader(db.inputs.timeStamp(), state.mOdomFrameId);
+        state.mMessage->fillData(
+            state.mChassisFrameId, linVel, angVel, mRobotFront, mRobotSide, mUnitScale, mZUp, position, orientation);
+
+        state.mPublisher.get()->publish(state.mMessage->ptr());
     }
 
     virtual void release(const NodeObj& nodeObj)

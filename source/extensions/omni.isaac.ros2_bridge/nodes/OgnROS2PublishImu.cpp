@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -83,46 +83,48 @@ public:
     {
 
         auto& state = db.internalState<OgnROS2PublishImu>();
-        if (state.mPublisher.get()->get_subscription_count() != 0)
+        // Check if subscription count is 0
+        if (!state.mPublisher.get()->get_subscription_count())
         {
-            state.mMessage->fillHeader(db.inputs.timeStamp(), state.mFrameId);
-
-            if (!db.inputs.publishLinearAcceleration())
-            {
-                state.mMessage->fillAccel(true);
-            }
-            else
-            {
-                auto& linAccel = db.inputs.linearAcceleration();
-                std::vector<double> accel{ linAccel[0], linAccel[1], linAccel[2] };
-                state.mMessage->fillAccel(false, accel);
-            }
-
-            if (!db.inputs.publishAngularVelocity())
-            {
-                state.mMessage->fillVelo(true);
-            }
-            else
-            {
-                auto& angVel = db.inputs.angularVelocity();
-                std::vector<double> velo{ angVel[0], angVel[1], angVel[2] };
-                state.mMessage->fillVelo(false, velo);
-            }
-
-            if (!db.inputs.publishOrientation())
-            {
-                state.mMessage->fillOrient(true);
-            }
-            else
-            {
-                auto& orientation = db.inputs.orientation();
-                std::vector<double> orient{ orientation.GetImaginary()[0], orientation.GetImaginary()[1],
-                                            orientation.GetImaginary()[2], orientation.GetReal() };
-                state.mMessage->fillOrient(false, orient);
-            }
-
-            state.mPublisher.get()->publish(state.mMessage->ptr());
+            return;
         }
+        state.mMessage->fillHeader(db.inputs.timeStamp(), state.mFrameId);
+
+        if (!db.inputs.publishLinearAcceleration())
+        {
+            state.mMessage->fillAccel(true);
+        }
+        else
+        {
+            auto& linAccel = db.inputs.linearAcceleration();
+            std::vector<double> accel{ linAccel[0], linAccel[1], linAccel[2] };
+            state.mMessage->fillAccel(false, accel);
+        }
+
+        if (!db.inputs.publishAngularVelocity())
+        {
+            state.mMessage->fillVelo(true);
+        }
+        else
+        {
+            auto& angVel = db.inputs.angularVelocity();
+            std::vector<double> velo{ angVel[0], angVel[1], angVel[2] };
+            state.mMessage->fillVelo(false, velo);
+        }
+
+        if (!db.inputs.publishOrientation())
+        {
+            state.mMessage->fillOrient(true);
+        }
+        else
+        {
+            auto& orientation = db.inputs.orientation();
+            std::vector<double> orient{ orientation.GetImaginary()[0], orientation.GetImaginary()[1],
+                                        orientation.GetImaginary()[2], orientation.GetReal() };
+            state.mMessage->fillOrient(false, orient);
+        }
+
+        state.mPublisher.get()->publish(state.mMessage->ptr());
     }
 
     virtual void release(const NodeObj& nodeObj)

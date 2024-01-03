@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -62,47 +62,50 @@ public:
     {
 
         auto& state = db.internalState<OgnROS2PublishSemanticLabels>();
-        if (state.mPublisher.get()->get_subscription_count() != 0)
+        // Check if subscription count is 0
+        if (!state.mPublisher.get()->get_subscription_count())
         {
-            nlohmann::json json;
+            return false;
+        }
+        nlohmann::json json;
 
-            if (db.inputs.idToLabels().length() > 0)
+        if (db.inputs.idToLabels().length() > 0)
+        {
+            json = nlohmann::json::parse(db.inputs.idToLabels());
+        }
+        else
+        {
+            for (size_t i = 0; i < db.inputs.ids().size(); i++)
             {
-                json = nlohmann::json::parse(db.inputs.idToLabels());
-            }
-            else
-            {
-                for (size_t i = 0; i < db.inputs.ids().size(); i++)
+                std::string label = db.tokenToString(db.inputs.labels()[i]);
+                if (label.rfind("class:", 0) == 0)
                 {
-                    std::string label = db.tokenToString(db.inputs.labels()[i]);
-                    if (label.rfind("class:", 0) == 0)
-                    {
-                        label = label.erase(0, 6);
-                        json[std::to_string(db.inputs.ids()[i])]["class"] = label;
-                    }
-                    else
-                    {
-                        json[std::to_string(db.inputs.ids()[i])] = label;
-                    }
+                    label = label.erase(0, 6);
+                    json[std::to_string(db.inputs.ids()[i])]["class"] = label;
+                }
+                else
+                {
+                    json[std::to_string(db.inputs.ids()[i])] = label;
                 }
             }
-            json["time_stamp"] = {};
-            const auto result =
-                std::div(static_cast<int64_t>(db.inputs.timeStamp() * 1e9), static_cast<int64_t>(1000000000L));
-            if (result.rem >= 0)
-            {
-                json["time_stamp"]["sec"] = static_cast<std::int32_t>(result.quot);
-                json["time_stamp"]["nanosec"] = static_cast<std::uint32_t>(result.rem);
-            }
-            else
-            {
-                json["time_stamp"]["sec"] = static_cast<std::int32_t>(result.quot - 1);
-                json["time_stamp"]["nanosec"] = static_cast<std::uint32_t>(1000000000L + result.rem);
-            }
-
-            state.mMessage->fillData(json.dump());
-            state.mPublisher.get()->publish(state.mMessage->ptr());
         }
+        json["time_stamp"] = {};
+        const auto result =
+            std::div(static_cast<int64_t>(db.inputs.timeStamp() * 1e9), static_cast<int64_t>(1000000000L));
+        if (result.rem >= 0)
+        {
+            json["time_stamp"]["sec"] = static_cast<std::int32_t>(result.quot);
+            json["time_stamp"]["nanosec"] = static_cast<std::uint32_t>(result.rem);
+        }
+        else
+        {
+            json["time_stamp"]["sec"] = static_cast<std::int32_t>(result.quot - 1);
+            json["time_stamp"]["nanosec"] = static_cast<std::uint32_t>(1000000000L + result.rem);
+        }
+
+        state.mMessage->fillData(json.dump());
+        state.mPublisher.get()->publish(state.mMessage->ptr());
+
         return true;
     }
 

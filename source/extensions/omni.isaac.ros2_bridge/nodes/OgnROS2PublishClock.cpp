@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -60,17 +60,19 @@ public:
         // std::cout << "Creating message next...." << std::endl;
 
 
-        if (state.mPublisher.get()->get_subscription_count() != 0)
+        // Check if subscription count is 0
+        if (!state.mPublisher.get()->get_subscription_count())
         {
-            // if (1 != 0){
-
-            // std::cout << "Filling Message... " << std::endl;
-            state.mMessage->fill(db.inputs.timeStamp());
-
-            // std::cout << "Publishing message" << std::endl;
-
-            state.mPublisher.get()->publish(state.mMessage->ptr());
+            return false;
         }
+        // if (1 != 0){
+
+        // std::cout << "Filling Message... " << std::endl;
+        state.mMessage->fill(db.inputs.timeStamp());
+
+        // std::cout << "Publishing message" << std::endl;
+
+        state.mPublisher.get()->publish(state.mMessage->ptr());
 
 
         // std::cout << "Message published..." << std::endl;

@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -76,53 +76,55 @@ public:
         CARB_PROFILE_ZONE(0, "Lidar Point Cloud Pub");
 
         auto& state = db.internalState<OgnROS2PublishPointCloud>();
-        if (state.mPublisher.get()->get_subscription_count() != 0)
+        // Check if subscription count is 0
+        if (!state.mPublisher.get()->get_subscription_count())
         {
-            size_t height = 1;
-            uint32_t point_step = sizeof(GfVec3f);
-            size_t width = 0;
-            size_t row_step = 0;
-
-            if (db.inputs.cudaDeviceIndex() == -1)
-            {
-                if (db.inputs.dataPtr() != 0)
-                {
-                    width = db.inputs.bufferSize() / point_step;
-                    row_step = db.inputs.bufferSize();
-                    size_t totalBytes = row_step;
-                    state.mMessage->fillMetadata(mFrameId, db.inputs.timeStamp(), width, height, point_step);
-                    // Data is on host as ptr, buffer size matches
-                    memcpy(state.mMessage->getDataPtr(), reinterpret_cast<void*>(db.inputs.dataPtr()), totalBytes);
-                }
-
-                else if (db.inputs.dataPtr() == 0)
-                {
-                    width = db.inputs.data.size();
-                    row_step = point_step * db.inputs.data.size();
-                    size_t totalBytes = row_step;
-                    state.mMessage->fillMetadata(mFrameId, db.inputs.timeStamp(), width, height, point_step);
-                    // data is on host as ogn data, copy from cpu
-                    memcpy(state.mMessage->getDataPtr(), reinterpret_cast<const uint8_t*>(db.inputs.data.cpu().data()),
-                           totalBytes);
-                }
-            }
-            else
-            {
-                if (db.inputs.dataPtr() != 0)
-                {
-                    width = db.inputs.bufferSize() / point_step;
-                    row_step = db.inputs.bufferSize();
-                    size_t totalBytes = row_step;
-                    state.mMessage->fillMetadata(mFrameId, db.inputs.timeStamp(), width, height, point_step);
-
-                    omni::isaac::utils::ScopedDevice(db.inputs.cudaDeviceIndex());
-                    auto src = reinterpret_cast<void*>(db.inputs.dataPtr());
-                    CUDA_CHECK(
-                        cudaMemcpy(state.mMessage->getDataPtr(), src, db.inputs.bufferSize(), cudaMemcpyDeviceToHost));
-                }
-            }
-            state.mPublisher.get()->publish(state.mMessage->ptr());
+            return false;
         }
+        size_t height = 1;
+        uint32_t point_step = sizeof(GfVec3f);
+        size_t width = 0;
+        size_t row_step = 0;
+
+        if (db.inputs.cudaDeviceIndex() == -1)
+        {
+            if (db.inputs.dataPtr() != 0)
+            {
+                width = db.inputs.bufferSize() / point_step;
+                row_step = db.inputs.bufferSize();
+                size_t totalBytes = row_step;
+                state.mMessage->fillMetadata(mFrameId, db.inputs.timeStamp(), width, height, point_step);
+                // Data is on host as ptr, buffer size matches
+                memcpy(state.mMessage->getDataPtr(), reinterpret_cast<void*>(db.inputs.dataPtr()), totalBytes);
+            }
+
+            else if (db.inputs.dataPtr() == 0)
+            {
+                width = db.inputs.data.size();
+                row_step = point_step * db.inputs.data.size();
+                size_t totalBytes = row_step;
+                state.mMessage->fillMetadata(mFrameId, db.inputs.timeStamp(), width, height, point_step);
+                // data is on host as ogn data, copy from cpu
+                memcpy(state.mMessage->getDataPtr(), reinterpret_cast<const uint8_t*>(db.inputs.data.cpu().data()),
+                       totalBytes);
+            }
+        }
+        else
+        {
+            if (db.inputs.dataPtr() != 0)
+            {
+                width = db.inputs.bufferSize() / point_step;
+                row_step = db.inputs.bufferSize();
+                size_t totalBytes = row_step;
+                state.mMessage->fillMetadata(mFrameId, db.inputs.timeStamp(), width, height, point_step);
+
+                omni::isaac::utils::ScopedDevice(db.inputs.cudaDeviceIndex());
+                auto src = reinterpret_cast<void*>(db.inputs.dataPtr());
+                CUDA_CHECK(cudaMemcpy(state.mMessage->getDataPtr(), src, db.inputs.bufferSize(), cudaMemcpyDeviceToHost));
+            }
+        }
+        state.mPublisher.get()->publish(state.mMessage->ptr());
+
         return true;
     }
 
