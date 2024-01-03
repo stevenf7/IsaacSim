@@ -9,8 +9,9 @@
 
 #include <carb/BindingsPythonUtils.h>
 
-#include <omni/isaac/ros_bridge/RosBridge.h>
 #include <pybind11/numpy.h>
+
+#include <RosBridge.h>
 
 CARB_BINDINGS("omni.isaac.ros_bridge.python")
 

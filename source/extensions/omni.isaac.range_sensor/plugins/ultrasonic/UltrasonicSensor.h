@@ -17,11 +17,11 @@
 #include "UltrasonicReceiverArray.h"
 
 #include <extensions/PxSceneQueryExt.h>
-#include <omni/isaac/range_sensor/RangeSensorInterface.h>
 #include <pxr/base/gf/vec3f.h>
 #include <pxr/usd/usd/inherits.h>
 #include <rangeSensorSchema/ultrasonicArray.h>
 
+#include <RangeSensorInterface.h>
 #include <vector>
 
 namespace omni

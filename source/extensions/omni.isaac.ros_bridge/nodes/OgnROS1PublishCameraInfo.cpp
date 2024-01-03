@@ -13,9 +13,8 @@
 
 #include "sensor_msgs/CameraInfo.h"
 
-#include <omni/isaac/ros/RosNode.h>
-
 #include <OgnROS1PublishCameraInfoDatabase.h>
+#include <RosNode.h>
 
 
 class OgnROS1PublishCameraInfo : public RosNode

@@ -14,12 +14,12 @@
 #include "omni/isaac/utils/UsdUtilities.h"
 
 #include <omni/fabric/FabricUSD.h>
-#include <omni/isaac/range_sensor/RangeSensorInterface.h>
 #include <omni/isaac/utils/BaseResetNode.h>
 #include <rangeSensorSchema/lidar.h>
 #include <rangeSensorSchema/rangeSensor.h>
 
 #include <OgnIsaacReadLidarPointCloudDatabase.h>
+#include <RangeSensorInterface.h>
 
 namespace omni
 {

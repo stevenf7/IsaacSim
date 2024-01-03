@@ -9,10 +9,10 @@
 
 #pragma once
 
-#include <omni/isaac/partition/IsaacPartition.h>
+#include <IsaacPartition.h>
 
 // clang-format off
-#include <carb/Defines.h>
+#include <carb/Defines.h>`
 #include <omni/usd/UsdUtils.h>
 
 #include <string>

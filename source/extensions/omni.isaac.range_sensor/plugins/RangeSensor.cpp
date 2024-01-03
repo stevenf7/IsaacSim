@@ -28,7 +28,6 @@
 
 #include <omni/fabric/FabricUSD.h>
 #include <omni/graph/core/ogn/Registration.h>
-#include <omni/isaac/range_sensor/RangeSensorInterface.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/kit/KitUtils.h>
 #include <omni/kit/syntheticdata/SyntheticData.h>
@@ -37,6 +36,7 @@
 #include <omni/usd/UsdContext.h>
 #include <omni/usd/UsdUtils.h>
 
+#include <RangeSensorInterface.h>
 #include <map>
 #include <vector>
 

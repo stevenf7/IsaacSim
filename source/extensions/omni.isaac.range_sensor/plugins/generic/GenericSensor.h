@@ -13,13 +13,13 @@
 #include "../core/RangeSensorComponent.h"
 
 #include <extensions/PxSceneQueryExt.h>
-#include <omni/isaac/range_sensor/RangeSensorInterface.h>
-#include <omni/isaac/utils/Color.h>
 #include <omni/isaac/utils/Conversions.h>
 #include <pxr/base/gf/vec3f.h>
 #include <pxr/usd/usd/inherits.h>
 #include <rangeSensorSchema/generic.h>
 
+#include <Color.h>
+#include <RangeSensorInterface.h>
 #include <vector>
 
 namespace omni

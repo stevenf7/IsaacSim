@@ -13,9 +13,8 @@
 
 #include "sensor_msgs/LaserScan.h"
 
-#include <omni/isaac/ros/RosNode.h>
-
 #include <OgnROS1PublishLaserScanDatabase.h>
+#include <RosNode.h>
 
 
 class OgnROS1PublishLaserScan : public RosNode

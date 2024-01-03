@@ -12,9 +12,9 @@
 #include <carb/graphics/GraphicsTypes.h>
 
 #include <nlohmann/json.hpp>
-#include <omni/isaac/ros/RosNode.h>
 
 #include <OgnROS1PublishSemanticLabelsDatabase.h>
+#include <RosNode.h>
 #include <string>
 
 class OgnROS1PublishSemanticLabels : public RosNode

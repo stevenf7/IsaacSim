@@ -21,8 +21,8 @@
 #include <omni/extras/DictHelpers.h>
 #include <omni/kit/IApp.h>
 #include <omni/kit/IRunLoopRunner.h>
-#include <omni/kit/RunLoopRunner.h>
 
+#include <RunLoopRunner.h>
 #include <iomanip>
 #include <iostream>
 

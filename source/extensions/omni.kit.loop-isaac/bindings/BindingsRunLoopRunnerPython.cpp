@@ -9,11 +9,12 @@
 
 #include <carb/BindingsPythonUtils.h>
 
-#include <omni/kit/RunLoopRunner.h>
 #include <pybind11/chrono.h>
 #include <pybind11/functional.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+
+#include <RunLoopRunner.h>
 
 CARB_BINDINGS("omni.kit.loop-isaac.python")
 

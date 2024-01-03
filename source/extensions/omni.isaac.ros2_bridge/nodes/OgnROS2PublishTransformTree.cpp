@@ -15,7 +15,6 @@
 #include <include/Ros2Node.h>
 #include <omni/fabric/FabricUSD.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
-#include <omni/isaac/ros/Conversions.h>
 #include <omni/isaac/utils/PoseTree.h>
 #include <omni/usd/UsdUtils.h>
 
