@@ -11,15 +11,15 @@
 #include "UltrasonicArrayEmissionTimer.h"
 #include "omni/isaac/utils/UsdUtilities.h"
 
-#include <omni/isaac/utils/Color.h>
 #include <omni/usd/UtilsIncludes.h>
+
+#include <Color.h>
 //
 #include <omni/usd/UsdUtils.h>
 //
 #include "omni/isaac/utils/ScopedTimer.h"
 
 #include <extensions/PxSceneQueryExt.h>
-#include <omni/isaac/range_sensor/RangeSensorInterface.h>
 #include <omni/isaac/utils/Conversions.h>
 #include <omni/isaac/utils/Pose.h>
 #include <omni/physx/IPhysx.h>
@@ -30,6 +30,7 @@
 #include <rangeSensorSchema/ultrasonicEmitter.h>
 #include <rangeSensorSchema/ultrasonicMaterialAPI.h>
 
+#include <RangeSensorInterface.h>
 #include <vector>
 
 using namespace ::physx;

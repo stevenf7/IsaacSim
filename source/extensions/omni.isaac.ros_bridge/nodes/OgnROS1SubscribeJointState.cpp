@@ -18,9 +18,9 @@
 #include <carb/Types.h>
 
 #include <omni/fabric/FabricUSD.h>
-#include <omni/isaac/ros/RosNode.h>
 
 #include <OgnROS1SubscribeJointStateDatabase.h>
+#include <RosNode.h>
 
 
 class OgnROS1SubscribeJointState : public RosNode

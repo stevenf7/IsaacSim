@@ -23,8 +23,8 @@ project_ext_plugin(ext, "omni.isaac.partition.plugin")
         targetDepsDir.."/usd_ext_physics/%{cfg.buildcfg}/include",
         targetDepsDir.."/omni_physics/include",
         targetDepsDir.."/rtx_plugins/include",
-        "./include",
         "%{root}/_build/target-deps/omni_client_library/include",
+        "%{root}/source/extensions/omni.isaac.partition/include",
      }
     libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
@@ -61,6 +61,10 @@ project_ext_bindings {
     module = "_partition",
     src = "bindings",
     target_subdir = "omni/isaac/partition"
+}
+
+includedirs {
+    "%{root}/source/extensions/omni.isaac.partition/include",
 }
 
 repo_build.prebuild_link {

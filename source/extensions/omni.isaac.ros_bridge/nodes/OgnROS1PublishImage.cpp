@@ -12,11 +12,11 @@
 
 #include <carb/graphics/GraphicsTypes.h>
 
-#include <omni/isaac/ros/RosNode.h>
 #include <omni/isaac/utils/Buffer.h>
 #include <omni/isaac/utils/ScopedCudaDevice.h>
 
 #include <OgnROS1PublishImageDatabase.h>
+#include <RosNode.h>
 
 
 extern "C" void textureFloatCopyToRawBuffer(cudaTextureObject_t, uint8_t*, uint32_t, uint32_t, cudaStream_t);

@@ -13,9 +13,8 @@
 
 #include "ackermann_msgs/AckermannDriveStamped.h"
 
-#include <omni/isaac/ros/RosNode.h>
-
 #include <OgnROS1PublishAckermannDatabase.h>
+#include <RosNode.h>
 
 
 class OgnROS1PublishAckermann : public RosNode

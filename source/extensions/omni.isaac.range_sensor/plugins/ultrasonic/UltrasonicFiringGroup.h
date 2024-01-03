@@ -15,11 +15,11 @@
 //
 #include <omni/usd/UsdUtils.h>
 //
-#include <omni/isaac/range_sensor/RangeSensorInterface.h>
 #include <pxr/base/gf/vec2i.h>
 #include <pxr/usd/usd/inherits.h>
 #include <rangeSensorSchema/ultrasonicFiringGroup.h>
 
+#include <RangeSensorInterface.h>
 #include <vector>
 
 namespace omni

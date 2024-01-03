@@ -15,12 +15,12 @@
 
 #include <omni/fabric/FabricUSD.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
-#include <omni/isaac/ros/Conversions.h>
-#include <omni/isaac/ros/RosNode.h>
 #include <omni/isaac/utils/PoseTree.h>
 #include <omni/usd/UsdUtils.h>
 
 #include <OgnROS1PublishTransformTreeDatabase.h>
+#include <RosConversions.h>
+#include <RosNode.h>
 #include <iomanip>
 #include <sstream>
 

@@ -34,7 +34,6 @@
 #include <omni/graph/core/iComputeGraph.h>
 #include <omni/graph/core/ogn/Registration.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
-#include <omni/isaac/range_sensor/RangeSensorInterface.h>
 #include <omni/isaac/utils/LibraryLoader.h>
 #include <omni/kit/IApp.h>
 #include <omni/kit/IStageUpdate.h>
@@ -55,7 +54,6 @@ CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       carb::dictionary::IDictionary,
                       omni::isaac::dynamic_control::DynamicControl,
                       omni::kit::IStageUpdate,
-                      omni::isaac::range_sensor::LidarSensorInterface,
                       omni::syntheticdata::SyntheticData,
                       omni::physx::IPhysx,
                       carb::tasking::ITasking,

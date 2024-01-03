@@ -17,10 +17,10 @@
 #undef BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include "sensor_msgs/PointCloud2.h"
 
-#include <omni/isaac/ros/RosNode.h>
 #include <omni/isaac/utils/ScopedCudaDevice.h>
 
 #include <OgnROS1PublishPointCloudDatabase.h>
+#include <RosNode.h>
 
 
 class OgnROS1PublishPointCloud : public RosNode

@@ -12,9 +12,8 @@
 
 #include <carb/graphics/GraphicsTypes.h>
 
-#include <omni/isaac/ros/RosNode.h>
-
 #include <OgnROS1PublishBbox3DDatabase.h>
+#include <RosNode.h>
 
 struct Bbox3DData
 {

@@ -18,7 +18,6 @@
 #include <omni/fabric/IToken.h>
 #include <omni/fabric/SimStageWithHistory.h>
 #include <omni/isaac/debug_draw/PrimitiveDrawingHelper.h>
-#include <omni/isaac/range_sensor/RangeSensorInterface.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
 #include <omni/renderer/IDebugDraw.h>
@@ -27,6 +26,7 @@
 #include <rangeSensorSchema/rangeSensor.h>
 
 #include <PxActor.h>
+#include <RangeSensorInterface.h>
 #if defined(_WIN32)
 #    include <PxRigidDynamic.h>
 #else

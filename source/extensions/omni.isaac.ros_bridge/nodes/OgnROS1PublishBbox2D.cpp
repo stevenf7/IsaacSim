@@ -11,9 +11,8 @@
 
 #include <carb/graphics/GraphicsTypes.h>
 
-#include <omni/isaac/ros/RosNode.h>
-
 #include <OgnROS1PublishBbox2DDatabase.h>
+#include <RosNode.h>
 
 struct Bbox2DData
 {

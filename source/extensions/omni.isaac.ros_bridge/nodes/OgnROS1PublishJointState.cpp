@@ -20,10 +20,10 @@
 
 #include <omni/fabric/FabricUSD.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
-#include <omni/isaac/ros/RosNode.h>
 #include <omni/isaac/utils/Math.h>
 
 #include <OgnROS1PublishJointStateDatabase.h>
+#include <RosNode.h>
 
 class OgnROS1PublishJointState : public RosNode
 {

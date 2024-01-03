@@ -26,6 +26,8 @@ project_ext_plugin(ext, "omni.isaac.range_sensor.plugin")
         "%{kit_sdk_bin_dir}/exts/usdrt.scenegraph/include",
         "%{root}/_build/target-deps/omni_client_library/include",
         "%{root}/_build/target-deps/python/include",
+        "%{root}/source/extensions/omni.isaac.range_sensor/include",
+
      }
      libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
@@ -116,6 +118,10 @@ project_ext_bindings {
     module = "_range_sensor",
     src = "bindings",
     target_subdir = "omni/isaac/range_sensor"
+}
+
+includedirs {
+    "%{root}/source/extensions/omni.isaac.range_sensor/include",
 }
 
 repo_build.prebuild_link {

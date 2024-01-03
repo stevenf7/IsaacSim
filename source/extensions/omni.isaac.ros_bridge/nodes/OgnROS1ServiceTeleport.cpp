@@ -18,12 +18,12 @@
 
 #include <omni/fabric/FabricUSD.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
-#include <omni/isaac/ros/Conversions.h>
-#include <omni/isaac/ros/RosNode.h>
 #include <omni/isaac/utils/Conversions.h>
 #include <omni/usd/UsdUtils.h>
 
 #include <OgnROS1ServiceTeleportDatabase.h>
+#include <RosConversions.h>
+#include <RosNode.h>
 
 
 class OgnROS1ServiceTeleport : public RosNode
