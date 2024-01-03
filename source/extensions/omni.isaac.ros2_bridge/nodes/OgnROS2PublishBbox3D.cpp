@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -71,6 +71,11 @@ public:
     bool publishDetectionArray(OgnROS2PublishBbox3DDatabase& db)
     {
         auto& state = db.internalState<OgnROS2PublishBbox3D>();
+        // Check if subscription count is 0
+        if (!state.mPublisher.get()->get_subscription_count())
+        {
+            return false;
+        }
         size_t bytes = db.inputs.data().size();
         size_t numBbox = bytes / sizeof(Bbox3DData);
         const Bbox3DData* bboxData = reinterpret_cast<const Bbox3DData*>(db.inputs.data().data());

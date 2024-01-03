@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -74,6 +74,11 @@ public:
 
         auto& state = db.internalState<OgnROS2PublishAckermann>();
 
+        // Check if subscription count is 0
+        if (!state.mPublisher.get()->get_subscription_count())
+        {
+            return;
+        }
         const double steeringAngle = db.inputs.steeringAngle();
 
         state.mMessage->fillHeader(db.inputs.timeStamp(), db.inputs.frameId());

@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -120,7 +120,11 @@ public:
     bool publishJointStates(OgnROS2PublishJointStateDatabase& db, const GraphContextObj& context)
     {
         auto& state = db.internalState<OgnROS2PublishJointState>();
-
+        // Check if subscription count is 0
+        if (!state.mPublisher.get()->get_subscription_count())
+        {
+            return false;
+        }
         double stageUnits = 1.0 / mUnitScale;
         double dt = db.inputs.timeStamp() - mPreviousTimeStamp;
         mPreviousTimeStamp = db.inputs.timeStamp();
@@ -131,6 +135,7 @@ public:
         state.mMessage->fillData(db.inputs.timeStamp(), mDynamicControlPtr, mArticulationHandle, mStage, mDofProps,
                                  mPrevJointPosition, mCalculatedJointVelocity, dt, stageUnits);
         state.mPublisher.get()->publish(state.mMessage->ptr());
+
         return true;
     }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -83,6 +83,11 @@ public:
     {
 
         auto& state = db.internalState<OgnROS2PublishImu>();
+        // Check if subscription count is 0
+        if (!state.mPublisher.get()->get_subscription_count())
+        {
+            return;
+        }
         state.mMessage->fillHeader(db.inputs.timeStamp(), state.mFrameId);
 
         if (!db.inputs.publishLinearAcceleration())

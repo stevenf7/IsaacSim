@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -76,7 +76,11 @@ public:
         CARB_PROFILE_ZONE(0, "Lidar Point Cloud Pub");
 
         auto& state = db.internalState<OgnROS2PublishPointCloud>();
-
+        // Check if subscription count is 0
+        if (!state.mPublisher.get()->get_subscription_count())
+        {
+            return false;
+        }
         size_t height = 1;
         uint32_t point_step = sizeof(GfVec3f);
         size_t width = 0;

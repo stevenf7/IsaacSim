@@ -289,6 +289,7 @@ public:
     Ros2PublisherFoxy(Ros2NodeBase* node, const char* topic_name, const void* type, const size_t history_depth);
     virtual ~Ros2PublisherFoxy();
     virtual void publish(const void* msg);
+    virtual size_t get_subscription_count();
 
 private:
     Ros2NodeBase* mNode;

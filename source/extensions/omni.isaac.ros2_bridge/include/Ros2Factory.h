@@ -58,6 +58,7 @@ class Ros2Publisher
 {
 public:
     virtual void publish(const void* msg) = 0;
+    virtual size_t get_subscription_count() = 0;
 };
 
 
