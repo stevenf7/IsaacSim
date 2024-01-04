@@ -300,6 +300,7 @@ group "exts"
     include ("source/extensions/omni.isaac.conveyor")
     include ("source/extensions/omni.isaac.diff_usd")
     include ("source/extensions/omni.isaac.debug_draw")
+    include ("source/extensions/omni.isaac.doctest")
     include ("source/extensions/omni.isaac.dofbot")
     include ("source/extensions/omni.isaac.dynamic_control")
     include ("source/extensions/omni.isaac.examples")
