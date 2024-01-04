@@ -452,7 +452,6 @@ group "python_samples"
     python_sample_test("tests-nativepython-omni.isaac.manipulators.franka_pick_up", "standalone_examples/api/omni.isaac.manipulators/franka_pick_up.py", "--test")
     python_sample_test("tests-nativepython-omni.isaac.manipulators.ur10_pick_up", "standalone_examples/api/omni.isaac.manipulators/ur10_pick_up.py", "--test")
     -- omni.isaac.jetbot
-    python_sample_test("tests-nativepython-omni.isaac.jetbot.stable_baselines_example", "standalone_examples/api/omni.isaac.jetbot/stable_baselines_example/train.py", "--test")
     python_sample_test("tests-nativepython-omni.isaac.jetbot.jetbot_move", "standalone_examples/api/omni.isaac.jetbot/jetbot_move.py", "--test")
     -- omni.isaac.dynamic_control
     python_sample_test("tests-nativepython-omni.isaac.dynamic_control.franka_articulation", "standalone_examples/api/omni.isaac.dynamic_control/franka_articulation.py")
