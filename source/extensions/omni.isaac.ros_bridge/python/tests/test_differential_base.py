@@ -409,7 +409,6 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
                         ("diffController.inputs:wheelRadius", 0.24),
                         ("diffController.inputs:wheelDistance", 0.5),
                         ("artController.inputs:jointNames", ["left_wheel", "right_wheel"]),
-                        ("artController.inputs:usePath", False),
                         ("computeOdom.inputs:chassisPrim", [usdrt.Sdf.Path("/carter")]),
                         ("artController.inputs:targetPrim", [usdrt.Sdf.Path("/carter")]),
                     ],

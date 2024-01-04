@@ -77,7 +77,7 @@ class OgnIsaacArticulationController:
         state = db.internal_state
         try:
             if not state.initialized:
-                if db.inputs.usePath:
+                if len(db.inputs.robotPath) != 0:
                     state.robot_prim = db.inputs.robotPath
                 else:
                     if len(db.inputs.targetPrim) == 0:

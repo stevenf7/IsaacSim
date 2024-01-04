@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.6.1] - 2024-01-03
+### Changed
+- Updated samples and unit tests with newer OgnIsaacArticulationController node
+
 ## [2.6.0] - 2024-01-02
 ### Added
 - Publishers now check to see topic subscription count before filling data and publishing.
