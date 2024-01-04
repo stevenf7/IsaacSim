@@ -10,7 +10,7 @@
 import numpy as np
 import omni.kit.test
 from omni.isaac.benchmark.services.base_isaac_benchmark import BaseIsaacBenchmark
-from omni.isaac.benchmark.services.helper import add_ros1_camera
+from omni.isaac.benchmark.services.helper import add_ros2_camera
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.sensor import Camera
 from omni.kit.viewport.utility import get_active_viewport
@@ -18,26 +18,18 @@ from omni.kit.viewport.utility import get_active_viewport
 TEST_NUM_APP_UPDATES = 60 * 10
 
 
-class TestBenchmarkRos1Camera(BaseIsaacBenchmark):
+class TestBenchmarkRos2Camera(BaseIsaacBenchmark):
     async def setUp(self):
         await super().setUp()
-        from omni.isaac.ros_bridge.scripts.roscore import Roscore
-        from omni.isaac.ros_bridge.tests.common import wait_for_rosmaster_async
-
-        self._roscore = Roscore()
-        await wait_for_rosmaster_async()
-
         pass
 
     async def tearDown(self):
         await super().tearDown()
-        self._roscore.shutdown()
-        self._roscore = None
         pass
 
     # ----------------------------------------------------------------------
-    async def benchmark_ros1_camera(self, n_camera, resolution):
-        self.test_run.test_name = f"cameras_{n_camera}_resolution_{resolution[0]}_{resolution[1]}_ros1"
+    async def benchmark_ros2_camera(self, n_camera, resolution):
+        self.test_run.test_name = f"cameras_{n_camera}_resolution_{resolution[0]}_{resolution[1]}_ros2"
         self.set_phase("loading")
         self.start_runtime()
 
@@ -69,7 +61,7 @@ class TestBenchmarkRos1Camera(BaseIsaacBenchmark):
             cameras[i].initialize()
 
             rp_path = cameras[i].get_render_product_path()
-            add_ros1_camera(rp_path, "/Graphs/Camera_" + str(i), "/rgb_" + str(i), "sim_camera_" + str(i))
+            add_ros2_camera(rp_path, "/Graphs/Camera_" + str(i), "/rgb_" + str(i), "sim_camera_" + str(i))
             await omni.kit.app.get_app().next_update_async()
 
         self.stop_runtime()
@@ -86,26 +78,26 @@ class TestBenchmarkRos1Camera(BaseIsaacBenchmark):
 
         timeline.stop()
 
-    async def test_benchmark_ros1_1_camera_720p(self):
-        await self.benchmark_ros1_camera(1, [1280, 720])
+    async def test_benchmark_ros2_1_camera_720p(self):
+        await self.benchmark_ros2_camera(1, [1280, 720])
 
-    async def test_benchmark_ros1_2_camera_720p(self):
-        await self.benchmark_ros1_camera(2, [1280, 720])
+    async def test_benchmark_ros2_2_camera_720p(self):
+        await self.benchmark_ros2_camera(2, [1280, 720])
 
-    async def test_benchmark_ros1_4_camera_720p(self):
-        await self.benchmark_ros1_camera(4, [1280, 720])
+    async def test_benchmark_ros2_4_camera_720p(self):
+        await self.benchmark_ros2_camera(4, [1280, 720])
 
-    async def test_benchmark_ros1_8_camera_720p(self):
-        await self.benchmark_ros1_camera(8, [1280, 720])
+    async def test_benchmark_ros2_8_camera_720p(self):
+        await self.benchmark_ros2_camera(8, [1280, 720])
 
-    async def test_benchmark_ros1_1_camera_1080(self):
-        await self.benchmark_ros1_camera(1, [1920, 1080])
+    async def test_benchmark_ros2_1_camera_1080(self):
+        await self.benchmark_ros2_camera(1, [1920, 1080])
 
-    async def test_benchmark_ros1_2_camera_1080(self):
-        await self.benchmark_ros1_camera(2, [1920, 1080])
+    async def test_benchmark_ros2_2_camera_1080(self):
+        await self.benchmark_ros2_camera(2, [1920, 1080])
 
-    async def test_benchmark_ros1_4_camera_1080(self):
-        await self.benchmark_ros1_camera(4, [1920, 1080])
+    async def test_benchmark_ros2_4_camera_1080(self):
+        await self.benchmark_ros2_camera(4, [1920, 1080])
 
-    async def test_benchmark_ros1_8_camera_1080(self):
-        await self.benchmark_ros1_camera(8, [1920, 1080])
+    async def test_benchmark_ros2_8_camera_1080(self):
+        await self.benchmark_ros2_camera(8, [1920, 1080])

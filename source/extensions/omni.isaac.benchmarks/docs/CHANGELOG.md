@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.19.0] - 2023-12-14
+### Changed
+- Now dependent on ROS 2
+- Change ROS 1 camera benchmarks to ROS 2 cameras
+
+### Added
+- Added Nova Carter benchmarks
+
 ## [0.18.4] - 2023-11-15
 ### Changed
 - Now dependent on omni.isaac.benchmark.services

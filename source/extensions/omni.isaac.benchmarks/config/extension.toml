@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.18.4"
+version = "0.19.0"
 category = "Simulation"
 title = "Benchmark"
 description = "This extension provides benchmarking utilities"
@@ -34,7 +34,7 @@ writeTarget.kit = true
 "omni.kit.material.library"= {}
 
 [dependencies."filter:platform"."linux-x86_64"]
-"omni.isaac.ros_bridge" = {}
+"omni.isaac.ros2_bridge" = {}
 
 [[python.module]]
 name = "omni.isaac.benchmarks.tests"
