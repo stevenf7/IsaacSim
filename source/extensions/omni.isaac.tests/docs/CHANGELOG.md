@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.15.2] - 2024-01-03
+### Changed
+- Updated unit tests with newer OgnIsaacArticulationController node
+
 ## [1.15.1] 2023-12-06
 ### Fixed
 - Modified jetbot unit tests to not go above its max speed

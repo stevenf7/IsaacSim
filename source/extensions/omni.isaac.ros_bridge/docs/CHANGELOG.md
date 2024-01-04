@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.15.2] - 2024-01-03
+### Changed
+- Updated samples and unit tests with newer OgnIsaacArticulationController node
+
 ## [1.15.1] - 2023-12-20
 ### Added
 - Lidar and pointcloud tests with replicator enabled

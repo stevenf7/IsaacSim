@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.7.2] - 2024-01-03
+### Changed
+- Removed usePath checkbox from OgnIsaacArticulationController node. Now if the robotPath field is populated, targetPrim is ignored.
+
+- GUI users won't notice any behavior changes. Standalone workflow users must ensure any references to usePath in the script is removed.
+
 ## [1.7.1] - 2023-12-01
 ### Fixed
 - Annotator unit test due to replicator update

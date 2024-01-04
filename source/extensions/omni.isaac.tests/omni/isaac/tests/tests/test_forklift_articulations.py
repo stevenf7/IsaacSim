@@ -84,7 +84,6 @@ class TestForkliftArticulations(omni.kit.test.AsyncTestCase):
                     ),
                     ("WritePrimAttributeLift.inputs:name", "drive:linear:physics:targetPosition"),
                     ("ArticulationController.inputs:robotPath", "/SM_Forklift_C01_01"),
-                    ("ArticulationController.inputs:usePath", True),
                     ("ArticulationController.inputs:velocityCommand", [0.0, 0.0]),
                     (
                         "ArticulationController.inputs:jointNames",
