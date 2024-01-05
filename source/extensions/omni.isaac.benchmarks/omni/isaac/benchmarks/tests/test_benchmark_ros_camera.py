@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2023, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2018-2024, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -10,7 +10,7 @@
 import numpy as np
 import omni.kit.test
 from omni.isaac.benchmark.services.base_isaac_benchmark import BaseIsaacBenchmark
-from omni.isaac.benchmark.services.helper import add_ros2_camera
+from omni.isaac.benchmarks.helper import add_ros2_camera
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.sensor import Camera
 from omni.kit.viewport.utility import get_active_viewport

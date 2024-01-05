@@ -130,7 +130,7 @@ class TestBenchmarkRobotsCarter(BaseIsaacBenchmark):
 
     # ROBOT_NO_SENSOR_TESTS = range(1, 51)
     # ROBOT_NO_SENSOR_TESTS = [1, 5, 10, 25, 50]
-    # using parameterized.expand requires parameterized version 0.9.0 or higher, current version in kit is 0.8.1 (_build/linux-x86_64/release/extscache/omni.kit.testing.services-1.6.28/pip_prebundle/parameterized/__init__.py)
+    # using parameterized.expand requires parameterized version 0.9.0 or higher, current version in kit is 0.8.1
     # @parameterized.expand([("with " + str(x) + " robots", x) for x in ROBOT_NO_SENSOR_TESTS])
     # @parameterized.expand([("with " + str(x) + " robots", x) for x in ROBOT_NO_SENSOR_TESTS])
     # async def test_benchmark(self, name, n):

@@ -1,4 +1,4 @@
-# Copyright (c) 2023, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2023-2024, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -13,7 +13,26 @@ from typing import List, Optional, Tuple
 import carb
 import omni.kit.test
 from omni.hydra.engine.stats import HydraEngineStats
-from omni.kit.testing.services import viewport_utils
+
+
+def get_last_gpu_time_ms(
+    hydra_engine_stats: HydraEngineStats,
+) -> float:
+    """
+    Return the RTX Renderer duration (in milliseconds) as seen in the profiler window.
+    """
+    device_nodes = hydra_engine_stats.get_gpu_profiler_result()
+
+    total_time = 0.0
+
+    # jcannon TODO: make this handle multi GPU
+    for node in device_nodes[0]:
+        # RTX Renderer duration, seems to always be available even if the profiler
+        # isn't on... it is always the root node
+        if node["indent"] == 0:
+            total_time += node["duration"]
+
+    return round(total_time, 6)
 
 
 class IsaacUpdateFrametimeCollector:
@@ -35,7 +54,7 @@ class IsaacUpdateFrametimeCollector:
         timestamp_ns = time.perf_counter_ns()
         app_update_time_ms = round((timestamp_ns - self.__last_frametime_timestamp_ns) / 1000 / 1000, 6)
         self.__last_frametime_timestamp_ns = timestamp_ns
-        gpu_frametime_ms = viewport_utils.get_last_gpu_time_ms(self.hydra_engine_stats)
+        gpu_frametime_ms = get_last_gpu_time_ms(self.hydra_engine_stats)
         # print(app_update_time_ms, gpu_frametime_ms)
         self.render_frametimes_ms.append(app_update_time_ms)
         self.gpu_frametimes_ms.append(gpu_frametime_ms)

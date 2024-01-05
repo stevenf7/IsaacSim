@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.0] - 2024-01-04
+### Changed
+- Remove depdencies and added classes needed to make benchmarks work independently
+- Helpers specific to certain benchmarks were moved to benchmarks extension
+
 ## [0.2.0] - 2023-12-14
 ### Added
 - Added ROS2 camera graph helper

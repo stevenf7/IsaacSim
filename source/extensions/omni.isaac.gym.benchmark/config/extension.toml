@@ -26,9 +26,6 @@ writeTarget.kit = true
 "omni.isaac.range_sensor" = {}
 "omni.isaac.sensor" = {}
 "omni.isaac.wheeled_robots" = {}
-"omni.kit.testing.services" = {}
-"omni.kit.nvdf.telemetry" = {}
-# "omni.kit.usdstats" = {}
 "omni.hydra.rtx"= {}
 "omni.kit.viewport.utility"= {}
 "omni.kit.viewport.window"= {}
@@ -55,10 +52,6 @@ exts."omni.isaac.benchmark.services".metrics.nvdataflow_default_test_suite_name 
 
 # these are not cached
 dependencies = [
-    # "omni.kit.testing.metrics_uploader",
-    "omni.kit.testing.services",
-    "omni.kit.nvdf.telemetry",
-#    "omni.kit.usdstats",
     "OmniIsaacGymEnvs"
 ]
 

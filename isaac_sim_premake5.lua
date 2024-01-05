@@ -261,7 +261,7 @@ $SCRIPT_DIR/../python.sh -m pip install $SCRIPT_DIR/OmniIsaacGymEnvs
 -- Write experience running .bat/.sh file, like _build\windows-x86_64\release\example.helloext.app.bat
 function create_test_experience_runner(name, config_path, config, kit_sdk_config, extra_args, executable)
     local os_target = os.target()
-    if string.find(name, "ros2_bridge") then
+    if string.find(name, "ros2_bridge") or string.find(name, "omni.isaac.benchmarks") then
         extra = ROS2_EXTRA[os_target]
     elseif string.find(name, "gym") then
         extra = GYM_EXTRA[os_target]

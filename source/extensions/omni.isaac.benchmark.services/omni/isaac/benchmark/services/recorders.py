@@ -1,4 +1,4 @@
-# Copyright (c) 2023, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2023-2024, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -11,11 +11,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
-    from omni.kit.testing.services.settings import BenchmarkSettings
+    from omni.isaac.benchmark.services.settings import BenchmarkSettings
 
+from omni.isaac.benchmark.services.datarecorders import cpu, frametime, interface, memory
+from omni.isaac.benchmark.services.metrics import measurements
 from omni.isaac.core_nodes.bindings import _omni_isaac_core_nodes
-from omni.kit.testing.services.datarecorders import cpu, frametime, interface, memory
-from omni.kit.testing.services.metrics import measurements
 
 from .collectors import IsaacUpdateFrametimeCollector
 
