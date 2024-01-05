@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.20.0] - 2024-01-04
+### Changed
+- Moved helpers from benchmark services extension
+
 ## [0.19.0] - 2023-12-14
 ### Changed
 - Now dependent on ROS 2

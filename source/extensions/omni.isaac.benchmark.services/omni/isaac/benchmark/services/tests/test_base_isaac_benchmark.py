@@ -1,0 +1,27 @@
+# Copyright (c) 2024, NVIDIA CORPORATION. All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto. Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+#
+from omni.isaac.benchmark.services.base_isaac_benchmark import BaseIsaacBenchmark
+
+
+class TestBaseIsaacBenchmark(BaseIsaacBenchmark):
+    async def setUp(self):
+        await super().setUp()
+        pass
+
+    async def tearDown(self):
+        await super().tearDown()
+        pass
+
+    async def test_base_isaac_benchmark(self):
+
+        self.test_run.test_name = "base_isaac_benchmark"
+        self.set_phase("loading")
+        self.start_runtime()
+        self.stop_runtime()
+        await self.store_measurements()

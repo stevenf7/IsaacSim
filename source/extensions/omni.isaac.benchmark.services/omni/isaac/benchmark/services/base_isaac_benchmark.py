@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2023, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2018-2024, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -16,14 +16,14 @@ from pathlib import Path
 
 import carb
 import omni.kit.test
+from omni.isaac.benchmark.services import execution, settings, utils
+from omni.isaac.benchmark.services.datarecorders import interface
+from omni.isaac.benchmark.services.metrics import backend, measurements
 from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.stage import is_stage_loading, open_stage
-from omni.kit.testing.services import execution, settings, utils
-from omni.kit.testing.services.datarecorders import interface
-from omni.kit.testing.services.metrics import backend, measurements
 
-from .helper import wait_until_stage_is_fully_loaded_async
 from .recorders import *
+from .utils import wait_until_stage_is_fully_loaded_async
 
 logger = utils.set_up_logging(__name__)
 
@@ -53,8 +53,6 @@ class BaseIsaacBenchmark(omni.kit.test.AsyncTestCase):
 
         self._execution_env = execution.TestExecutionEnvironment.get_instance()
 
-        self.nvdataflow_server_url = self._get_nvdataflow_server_url()
-
         prefix = self._get_output_file_prefix(self._testMethodName)
         version, _, _ = utils.get_kit_version_branch()
 
@@ -62,17 +60,14 @@ class BaseIsaacBenchmark(omni.kit.test.AsyncTestCase):
             artifact_prefix=prefix,
             kit_version=version,
             phase="benchmark",
-            nvdataflow_server_url=self.nvdataflow_server_url,
             sync_mode=self._get_sync_mode(),
         )
 
         self.frametime_recorder = IsaacFrameTimeRecorder(self.context)
         self.runtime_recorder = IsaacRuntimeRecorder(self.context)
         self.recorders = [
-            # scene.SceneStatsRecorder(self.context), # This crashes on new stage.
             IsaacMemoryRecorder(self.context),
             IsaacCPUStatsRecorder(self.context),
-            # memory.GPUDetailedMemoryStatsRecorder(self.context), # This is causing a crash on new stage
             self.frametime_recorder,
             self.runtime_recorder,
         ]
@@ -114,46 +109,11 @@ class BaseIsaacBenchmark(omni.kit.test.AsyncTestCase):
         _metrics.finalize(metrics_filename_out)
         logger.info(f"Writing metrics data to {metrics_filename_out}")
 
-        # Create metadata.json to store NVDF destination settings (only need to do this once per session)
-        metrics_metadata_filename_out = os.path.join(self._metrics_output_folder, "metadata.json")
-        if not os.path.exists(metrics_metadata_filename_out):
-            nvdataflow_test_suite_name = self.settings.get(
-                "/exts/omni.isaac.benchmark.services/metrics/nvdataflow_default_test_suite_name"
-            )
-            if not nvdataflow_test_suite_name:
-                exit()
-            # This is the same directory that datarecorders.profiler.CarbTracingProfiler creates/uses
-            # This metatata write and the eventual upload of the carb trace data digest to NVDF should
-            # be factored into that datarecorder somehow
-            trace_dir: Path = self.outputs_dir / "traces"
-
-            with open(metrics_metadata_filename_out, "w") as fw:
-                json.dump(
-                    {
-                        "nvdataflow_test_suite_name": nvdataflow_test_suite_name,
-                        "start_time": self.benchmark_start_time,
-                        "nvdataflow_server_url": self.nvdataflow_server_url,
-                        "chrometrace_dir": str(trace_dir),
-                    },
-                    fw,
-                )
-        logger.info(f"Writing metrics metadata to {metrics_metadata_filename_out}")
         await omni.kit.app.get_app().next_update_async()
         self.test_run = None
         self.recorders = None
         self.context = None
         pass
-
-    def _get_nvdataflow_server_url(self) -> str:
-        """upload metrics to nvdf only if either TC/ETM execution, or forced via env-var override (see TESTING.md)"""
-        nvdataflow_server_url = os.getenv("EXTS_OMNI_KIT_TESTS_BENCHMARK_METRICS_NVDATAFLOW_METRICS_PUBLISH_URL")
-        etm_active = not isinstance(self._execution_env, execution.LocalExecutionEnvironment)
-        if etm_active:
-            if not nvdataflow_server_url:
-                nvdataflow_server_url = self.settings.get(
-                    "/exts/omni.kit.tests.benchmark/metrics/nvdataflow_metrics_publish_url"
-                )
-        return nvdataflow_server_url or ""
 
     def _get_output_file_name(self, setting: settings.BenchmarkSettings, filename: str) -> str:
         version, _, _ = utils.get_kit_version_branch()
