@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.0] - 2024-01-08
+### Changed
+- Moved header files to extension
+
 ## [1.0.6] - 2023-11-13
 ### Fixed
 - Updated documentation link

@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.1.0] - 2024-01-08
+### Changed
+- Moved header files to extension
+
 ## [2.0.2] - 2023-12-13
 ### Fixed
 - Issue where ReadLidar nodes ticking twice on the same set of data if run twice per frame

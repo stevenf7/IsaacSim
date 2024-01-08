@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -25,7 +25,6 @@
 #include <carb/settings/ISettings.h>
 
 #include <isaacSensorSchema/isaacBaseSensor.h>
-#include <omni/isaac/debug_draw/PrimitiveDrawingHelper.h>
 #include <omni/kit/KitUtils.h>
 #include <omni/kit/syntheticdata/SyntheticData.h>
 #include <omni/physx/IPhysx.h>
@@ -33,6 +32,7 @@
 #include <omni/usd/UsdContext.h>
 #include <omni/usd/UsdUtils.h>
 
+#include <PrimitiveDrawingHelper.h>
 #include <memory>
 #include <string>
 #include <unordered_map>

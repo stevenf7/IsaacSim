@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -11,8 +11,8 @@
 
 #include "omni/isaac/utils/Math.h"
 
-#include <omni/isaac/dynamic_control/DynamicControl.h>
-#include <omni/isaac/dynamic_control/DynamicControlTypes.h>
+#include <DynamicControl.h>
+#include <DynamicControlTypes.h>
 
 namespace omni
 {

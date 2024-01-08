@@ -33,6 +33,7 @@ project_ext_plugin(ext, "omni.isaac.core_nodes.plugin")
         "%{kit_sdk_bin_dir}/exts/omni.syntheticdata/include",
         "%{kit_sdk_bin_dir}/exts/usdrt.scenegraph/include",
         "%{root}/source/extensions/omni.isaac.core_nodes/include",
+        "%{root}/source/extensions/omni.isaac.dynamic_control/include",
      }
      libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
@@ -78,6 +79,7 @@ repo_build.prebuild_link {
     { "python/scripts", ogn.python_target_path.."/scripts" },
     { "docs", ext.target_dir.."/docs" },
     { "data", ext.target_dir.."/data" },
+    { "include", ext.target_dir.."/include" },
     { "python/impl", ogn.python_target_path.."/impl" },
     { "python/tests", ogn.python_tests_target_path },
 }

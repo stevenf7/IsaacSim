@@ -31,6 +31,9 @@ project_ext_plugin(ext, "omni.isaac.sensor.plugin")
         targetDepsDir.."/omni_client_library/include",
         targetDepsDir.."/python/include",
         "%{root}/source/extensions/omni.isaac.core_nodes/include",
+        "%{root}/source/extensions/omni.isaac.sensor/include",
+        "%{root}/source/extensions/omni.isaac.dynamic_control/include",
+        "%{root}/source/extensions/omni.isaac.debug_draw/include",
     }
     libdirs {
         targetDepsDir.."/python/lib",
@@ -71,11 +74,16 @@ project_ext_bindings {
     target_subdir = "omni/isaac/sensor"
 }
 
+    includedirs {
+        "%{root}/source/extensions/omni.isaac.sensor/include",
+    }
+
 repo_build.prebuild_link {
     { "python/scripts", ext.target_dir.."/omni/isaac/sensor/scripts" },
     { "python/tests", ext.target_dir.."/omni/isaac/sensor/tests" },
     { "data", ext.target_dir.."/data" },
     { "docs", ext.target_dir.."/docs" },
+    { "include", ext.target_dir.."/include" },
 }
 
 repo_build.prebuild_copy {

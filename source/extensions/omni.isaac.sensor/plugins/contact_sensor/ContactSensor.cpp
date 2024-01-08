@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -21,7 +21,7 @@
 #include "../core/BaseSensorComponent.h"
 #include "../core/BaseSensorManager.h"
 #include "ContactManager.h"
-#include "omni/isaac/sensor/IsaacSensor.h"
+#include "IsaacSensor.h"
 
 #include <omni/isaac/utils/Pose.h>
 

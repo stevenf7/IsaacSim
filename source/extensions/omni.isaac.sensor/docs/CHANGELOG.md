@@ -1,5 +1,9 @@
 # Changelog
 
+## [9.12.0] - 2024-01-08
+### Changed
+- Moved header files to extension
+
 ## [9.11.1] - 2023-12-12
 ### Changed
 - IsaacCreateRTXLidarScanBuffer transformPoints defaults to false

@@ -25,13 +25,13 @@
 
 #include <omni/graph/core/iComputeGraph.h>
 #include <omni/graph/core/ogn/Registration.h>
-#include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/kit/syntheticdata/SyntheticData.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/usd/UsdContext.h>
 #include <omni/usd/UsdTypes.h>
 
+#include <DynamicControl.h>
 #include <RosBridge.h>
 #include <memory>
 #include <string>

@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -12,7 +12,6 @@
 #include "../core/BaseSensorComponent.h"
 
 #include <isaacSensorSchema/isaacImuSensor.h>
-#include <omni/isaac/sensor/IsaacSensor.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/renderer/IDebugDraw.h>
 #include <omni/usd/UsdUtils.h>
@@ -21,6 +20,7 @@
 #include <usdrt/gf/matrix.h>
 #include <usdrt/gf/vec.h>
 
+#include <IsaacSensor.h>
 #include <map>
 #include <memory>
 #include <vector>

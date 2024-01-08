@@ -34,6 +34,7 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
         "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/RangeSensorSchema/include",
         "%{root}/_build/target-deps/nlohmann-json/include",
         "%{root}/source/extensions/omni.isaac.ros_bridge/include",
+        "%{root}/source/extensions/omni.isaac.dynamic_control/include",
      }
      libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
@@ -77,6 +78,7 @@ repo_build.prebuild_link {
     { "python/tests", ext.target_dir.."/omni/isaac/ros_bridge/tests" },
     { "docs", ext.target_dir.."/docs" },
     { "data", ext.target_dir.."/data" },
+    { "include", ext.target_dir.."/include" },
 }
 
 repo_build.prebuild_copy {

@@ -19,6 +19,7 @@ project_with_location("omni.isaac.occupancy_map.generator")
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/omni_physics/include",
         "%{root}/_build/target-deps/octomap/include",
+        "%{root}/source/extensions/omni.isaac.occupancy_map/include",
     }
     libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
@@ -63,6 +64,8 @@ project_ext_plugin(ext, "omni.isaac.occupancy_map.plugin")
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/omni_physics/include",
         "%{root}/_build/target-deps/omni_client_library/include",
+        "%{root}/source/extensions/omni.isaac.occupancy_map/include",
+        "%{root}/source/extensions/omni.isaac.debug_draw/include",
     }
     libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
@@ -112,6 +115,7 @@ project_ext_bindings ({
         "%{root}/include/pch",
         "%{root}/_build/target-deps/omni_physics/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
+        "%{root}/source/extensions/omni.isaac.occupancy_map/include",
     }
 
     libdirs {
@@ -147,6 +151,7 @@ repo_build.prebuild_link {
     { "python/tests", ext.target_dir.."/omni/isaac/occupancy_map/tests" },
     { "docs", ext.target_dir.."/docs" },
     { "data", ext.target_dir.."/data" },
+    { "include", ext.target_dir.."/include" },
 }
 
 repo_build.prebuild_copy {

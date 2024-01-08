@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -18,15 +18,15 @@
 #include <carb/logging/Log.h>
 #include <carb/settings/ISettings.h>
 
-#include <omni/isaac/debug_draw/PrimitiveDrawingHelper.h>
-#include <omni/isaac/occupancy_map/MapGenerator.h>
-#include <omni/isaac/occupancy_map/OccupancyMap.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/renderer/IDebugDraw.h>
 #include <omni/usd/UsdUtils.h>
 #include <omni/usd/UtilsIncludes.h>
 
+#include <MapGenerator.h>
+#include <OccupancyMap.h>
+#include <PrimitiveDrawingHelper.h>
 #include <map>
 #include <string>
 #include <vector>

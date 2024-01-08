@@ -11,8 +11,7 @@
 
 #include <carb/Framework.h>
 
-#include <omni/isaac/dynamic_control/DynamicControl.h>
-
+#include <DynamicControl.h>
 #include <PxActor.h>
 
 namespace omni

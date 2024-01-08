@@ -17,10 +17,10 @@
 #include <carb/Types.h>
 
 #include <omni/fabric/FabricUSD.h>
-#include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/utils/Conversions.h>
 #include <omni/usd/UsdUtils.h>
 
+#include <DynamicControl.h>
 #include <OgnROS1ServiceTeleportDatabase.h>
 #include <RosConversions.h>
 #include <RosNode.h>

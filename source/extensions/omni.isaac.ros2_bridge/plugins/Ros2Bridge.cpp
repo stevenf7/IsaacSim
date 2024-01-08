@@ -33,7 +33,6 @@
 #include <include/Ros2Factory.h>
 #include <omni/graph/core/iComputeGraph.h>
 #include <omni/graph/core/ogn/Registration.h>
-#include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/utils/LibraryLoader.h>
 #include <omni/kit/IApp.h>
 #include <omni/kit/IStageUpdate.h>
@@ -42,6 +41,7 @@
 #include <omni/usd/UsdContext.h>
 #include <omni/usd/UsdTypes.h>
 
+#include <DynamicControl.h>
 #include <memory>
 #include <string>
 #include <unordered_map>

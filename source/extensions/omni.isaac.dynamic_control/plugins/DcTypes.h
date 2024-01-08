@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -20,9 +20,9 @@
 #    pragma GCC diagnostic pop
 #endif
 
-#include <omni/isaac/dynamic_control/DynamicControlTypes.h>
 #include <pxr/usd/sdf/path.h>
 
+#include <DynamicControlTypes.h>
 #include <PxActor.h>
 #include <PxArticulationJointReducedCoordinate.h>
 #include <PxArticulationLink.h>

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.0] - 2024-01-08
+### Changed
+- Moved header files to extension
+
 ## [1.2.6] - 2023-12-12
 ### Fixed
 - Issue with prim getting removed at random

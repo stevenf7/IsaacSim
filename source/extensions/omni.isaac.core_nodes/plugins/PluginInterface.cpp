@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -23,12 +23,12 @@
 #include <omni/graph/core/NodeTypeRegistrar.h>
 #include <omni/graph/core/iComputeGraph.h>
 #include <omni/graph/core/ogn/Registration.h>
-#include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/kit/IMinimal.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/physx/IPhysx.h>
 
 #include <CoreNodes.h>
+#include <DynamicControl.h>
 
 const struct carb::PluginImplDesc pluginDesc = { "omni.isaac.core_nodes", "Isaac Sim Core OmniGraph Nodes", "NVIDIA",
                                                  carb::PluginHotReload::eEnabled, "dev" };
