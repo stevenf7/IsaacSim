@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.8.0] - 2024-01-08
+### Changed
+- Moved header files to extension
+
 ## [0.7.0] - 2023-11-29
 ### Changed 
 - Location on the Menu reverted back to from Create->Isaac->End Effector

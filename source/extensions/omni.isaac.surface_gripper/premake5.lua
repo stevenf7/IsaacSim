@@ -16,6 +16,7 @@ project_ext( ext, { generate_ext_project=true })
         { "python/tests", ogn.python_target_path.."/tests" },
         { "docs", ext.target_dir.."/docs" },
         { "data", ext.target_dir.."/data" },
+        { "include", ext.target_dir.."/include" },
     }
 
     repo_build.prebuild_copy {
@@ -35,6 +36,8 @@ project_ext_bindings ({
         "%{root}/include/pch",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
+        "%{root}/source/extensions/omni.isaac.surface_gripper/include",
+        "%{root}/source/extensions/omni.isaac.dynamic_control/include",
     }
 
     libdirs {

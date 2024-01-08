@@ -14,10 +14,10 @@
 #include "tf2_msgs/TFMessage.h"
 
 #include <omni/fabric/FabricUSD.h>
-#include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/utils/PoseTree.h>
 #include <omni/usd/UsdUtils.h>
 
+#include <DynamicControl.h>
 #include <OgnROS1PublishTransformTreeDatabase.h>
 #include <RosConversions.h>
 #include <RosNode.h>

@@ -27,7 +27,8 @@ project_ext_plugin(ext, "omni.isaac.range_sensor.plugin")
         "%{root}/_build/target-deps/omni_client_library/include",
         "%{root}/_build/target-deps/python/include",
         "%{root}/source/extensions/omni.isaac.range_sensor/include",
-
+        "%{root}/source/extensions/omni.isaac.dynamic_control/include",
+        "%{root}/source/extensions/omni.isaac.debug_draw/include",
      }
      libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
@@ -129,6 +130,7 @@ repo_build.prebuild_link {
     { "python/tests", ext.target_dir.."/omni/isaac/range_sensor/tests" },
     { "docs", ext.target_dir.."/docs" },
     { "data", ext.target_dir.."/data" },
+    { "include", ext.target_dir.."/include" },
 }
 
 repo_build.prebuild_copy {

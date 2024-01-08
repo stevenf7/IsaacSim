@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.0] - 2024-01-08
+### Changed
+- Moved header files to extension
+
 ## [0.3.2] - 2023-12-12
 ### Fixed
 - Updated api docs to mention correct return types.

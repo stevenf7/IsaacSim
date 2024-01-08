@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -17,13 +17,13 @@
 #include <carb/logging/Logger.h>
 
 #include <omni/fabric/FabricUSD.h>
-#include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/utils/BaseResetNode.h>
 #include <omni/isaac/utils/Conversions.h>
 #include <omni/usd/UsdContext.h>
 #include <omni/usd/UsdContextIncludes.h>
 
 #include <CoreNodes.h>
+#include <DynamicControl.h>
 #include <OgnIsaacComputeOdometryDatabase.h>
 
 namespace omni

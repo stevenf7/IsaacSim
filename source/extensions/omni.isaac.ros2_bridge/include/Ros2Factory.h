@@ -1,4 +1,4 @@
-// Copyright (c) 2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2023-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -12,10 +12,10 @@
 #include <UsdPCH.h>
 // clang-format on
 
-#include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/utils/LibraryLoader.h>
 #include <omni/isaac/utils/Math.h>
 
+#include <DynamicControl.h>
 #include <memory>
 #include <string>
 #include <vector>

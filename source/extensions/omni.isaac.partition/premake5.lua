@@ -72,6 +72,7 @@ repo_build.prebuild_link {
     { "python/tests", ext.target_dir.."/omni/isaac/partition/tests" },
     { "data", ext.target_dir.."/data" },
     { "docs", ext.target_dir.."/docs" },
+    { "include", ext.target_dir.."/include" },
 }
 
 repo_build.prebuild_copy {

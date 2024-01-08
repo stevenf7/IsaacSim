@@ -17,6 +17,7 @@ project_with_location("omni.isaac.debug_draw.primitive_drawing")
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/omni_physics/include",
+        "%{root}/source/extensions/omni.isaac.debug_draw/include",
     }
     libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
@@ -62,6 +63,8 @@ project_ext_plugin(ext, "omni.isaac.debug_draw.plugin")
         "%{root}/_build/target-deps/omni_client_library/include",
         "%{kit_sdk_bin_dir}/exts/usdrt.scenegraph/include",
         "%{root}/_build/target-deps/python/include",
+        "%{root}/source/extensions/omni.isaac.dynamic_control/include",
+        "%{root}/source/extensions/omni.isaac.debug_draw/include",
     }
     libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
@@ -111,6 +114,7 @@ project_ext_bindings ({
         "%{root}/include/pch",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
+        "%{root}/source/extensions/omni.isaac.debug_draw/include",
     }
 
     libdirs {
@@ -141,6 +145,7 @@ repo_build.prebuild_link {
     { "python/tests", ogn.python_tests_target_path },
     { "docs", ext.target_dir.."/docs" },
     { "data", ext.target_dir.."/data" },
+    { "include", ext.target_dir.."/include" },
 }
 
 repo_build.prebuild_copy {

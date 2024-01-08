@@ -1,4 +1,4 @@
-// Copyright (c) 2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2023-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -14,10 +14,11 @@
 
 #include <foundation/PxTransform.h>
 #include <isaacSensorSchema/isaacRtxLidarSensorAPI.h>
-#include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/usd/UsdUtils.h>
 #include <physx/include/foundation/PxTransform.h>
 #include <usdrt/scenegraph/usd/rt/xformable.h>
+
+#include <DynamicControl.h>
 
 
 using namespace omni::isaac::dynamic_control;

@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -13,7 +13,6 @@
 #include "UsdPCH.h"
 // clang-format on
 #include <omni/fabric/FabricUSD.h>
-#include <omni/isaac/debug_draw/PrimitiveDrawingHelper.h>
 #include <omni/isaac/utils/BaseResetNode.h>
 #include <omni/isaac/utils/Pose.h>
 #include <omni/renderer/IDebugDraw.h>
@@ -26,6 +25,7 @@
 #include <usdrt/gf/vec.h>
 
 #include <OgnIsaacXPrimAxisVisualizerDatabase.h>
+#include <PrimitiveDrawingHelper.h>
 
 namespace omni
 {

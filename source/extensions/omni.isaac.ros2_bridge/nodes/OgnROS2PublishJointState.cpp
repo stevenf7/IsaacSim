@@ -18,9 +18,9 @@
 
 #include <include/Ros2Node.h>
 #include <omni/fabric/FabricUSD.h>
-#include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/utils/Math.h>
 
+#include <DynamicControl.h>
 #include <OgnROS2PublishJointStateDatabase.h>
 
 

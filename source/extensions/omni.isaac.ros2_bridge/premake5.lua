@@ -19,6 +19,7 @@ project_with_location("omni.isaac.ros2_bridge.foxy")
         "%{root}/_build/target-deps/omni_physics/include",
         "%{root}/_build/target-deps/nv_ros2/include",
         "%{root}/source/extensions/omni.isaac.ros2_bridge",
+        "%{root}/source/extensions/omni.isaac.dynamic_control/include",
     }
     libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
@@ -77,6 +78,7 @@ project_with_location("omni.isaac.ros2_bridge.humble")
         "%{root}/_build/target-deps/omni_physics/include",
         "%{root}/_build/target-deps/nv_ros2_humble/include",
         "%{root}/source/extensions/omni.isaac.ros2_bridge",
+        "%{root}/source/extensions/omni.isaac.dynamic_control/include",
     }
     libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
@@ -167,6 +169,7 @@ project_ext_plugin(ext, "omni.isaac.ros2_bridge.plugin")
         "%{root}/source/extensions/omni.isaac.ros2_bridge",
         "%{root}/_build/target-deps/nlohmann-json/include",
         "%{root}/source/extensions/omni.isaac.core_nodes/include",
+        "%{root}/source/extensions/omni.isaac.dynamic_control/include",
      }
      libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
@@ -214,6 +217,7 @@ repo_build.prebuild_link {
     { "python/tests", ext.target_dir.."/omni/isaac/ros2_bridge/tests" },
     { "docs", ext.target_dir.."/docs" },
     { "data", ext.target_dir.."/data" },
+    { "include", ext.target_dir.."/include" },
 }
 
 repo_build.prebuild_copy {

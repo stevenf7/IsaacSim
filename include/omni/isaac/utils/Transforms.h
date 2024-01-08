@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -11,7 +11,7 @@
 
 // #include <carb/filesystem/IFileSystem.h>
 
-#include <omni/isaac/dynamic_control/DynamicControl.h>
+#include <DynamicControl.h>
 // clang-format off
 #include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/UsdUtils.h>

@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -17,15 +17,16 @@
 
 #include <omni/graph/core/iComputeGraph.h>
 #include <omni/graph/core/ogn/Registration.h>
-#include <omni/isaac/debug_draw/Curves.h>
-#include <omni/isaac/debug_draw/DebugDraw.h>
-#include <omni/isaac/debug_draw/PrimitiveDrawingHelper.h>
-#include <omni/kit/IStageUpdate.h>
-#include <omni/renderer/IDebugDraw.h>
-#include <omni/usd/UsdContextIncludes.h>
+
+#include <Curves.h>
+#include <DebugDraw.h>
+#include <PrimitiveDrawingHelper.h>
 
 ///
+#include <omni/kit/IStageUpdate.h>
+#include <omni/renderer/IDebugDraw.h>
 #include <omni/usd/UsdContext.h>
+#include <omni/usd/UsdContextIncludes.h>
 ///
 
 

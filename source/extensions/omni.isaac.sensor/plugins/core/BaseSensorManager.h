@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -21,7 +21,6 @@
 #include <carb/logging/Log.h>
 
 #include <isaacSensorSchema/isaacContactSensor.h>
-#include <omni/isaac/sensor/IsaacSensorTypes.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
@@ -30,6 +29,7 @@
 #include <physxSchema/physxContactReportAPI.h>
 #include <pxr/usd/usdPhysics/scene.h>
 
+#include <IsaacSensorTypes.h>
 #include <PxActor.h>
 #include <PxArticulationLink.h>
 #include <PxRigidDynamic.h>

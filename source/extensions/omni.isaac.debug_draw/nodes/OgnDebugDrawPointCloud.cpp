@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -17,10 +17,10 @@
 
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
-#include <omni/isaac/debug_draw/PrimitiveDrawingHelper.h>
 #include <omni/isaac/utils/BaseResetNode.h>
 
 #include <OgnDebugDrawPointCloudDatabase.h>
+#include <PrimitiveDrawingHelper.h>
 #include <iostream>
 
 namespace omni

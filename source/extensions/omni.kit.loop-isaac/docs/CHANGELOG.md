@@ -1,12 +1,14 @@
 # Changelog
 
-## [1.1.0] - 2023-10-24
+## [1.2.0] - 2024-01-08
+### Changed
+- Moved header files to extension
 
+## [1.1.0] - 2023-10-24
 ### Changed
 - Update to latest loop runner code from kit-sdk and set default settings
 
 ## [1.0.2] - 2023-06-12
-
 ### Changed
 - Update to kit 105.1, pybind11 header locations
 

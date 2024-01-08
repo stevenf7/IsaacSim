@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.8.0] - 2024-01-08
+### Changed
+- Moved header files into extension
+
 ## [1.7.2] - 2024-01-03
 ### Changed
 - Removed usePath checkbox from OgnIsaacArticulationController node. Now if the robotPath field is populated, targetPrim is ignored.

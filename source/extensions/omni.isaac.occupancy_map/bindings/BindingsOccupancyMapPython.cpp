@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -13,13 +13,14 @@
 
 #include <carb/BindingsPythonUtils.h>
 
-#include <omni/isaac/occupancy_map/MapGenerator.h>
-#include <omni/isaac/occupancy_map/OccupancyMap.h>
 #include <omni/physx/IPhysx.h>
 #include <pybind11/chrono.h>
 #include <pybind11/functional.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+
+#include <MapGenerator.h>
+#include <OccupancyMap.h>
 
 
 CARB_BINDINGS("omni.isaac.occupancy_map.python")
