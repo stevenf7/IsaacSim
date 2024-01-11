@@ -11,7 +11,7 @@ import json
 from typing import Dict, List
 
 import numpy as np
-from omni.replicator.core.scripts.utils import ReplicatorItem
+from omni.replicator.core.utils import ReplicatorItem
 
 
 def set_distribution_params(distribution: ReplicatorItem, parameters: Dict) -> None:

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.12.0] - 2024-01-10
+### Added
+- Added support for `RtxSensorGpu` and `RtxSensorCpu` aovs in`pytorch_writer` to support tiled RTX Sensor.
+
 ## [1.11.3] - 2023-12-10
 ### Fixed
 - Change initialization of s3 BackendDispatch for DOPE writer 

@@ -19,7 +19,7 @@ import torch
 from omni.isaac.core.utils.numpy.rotations import quats_to_euler_angles as quat_to_euler_numpy
 from omni.isaac.core.utils.torch.rotations import get_euler_xyz as quat_to_euler_torch
 from omni.replicator.core import distribution
-from omni.replicator.core.scripts.utils import ReplicatorItem, ReplicatorWrapper, utils
+from omni.replicator.core.utils import ReplicatorItem, ReplicatorWrapper, utils
 from omni.replicator.isaac.scripts import context
 
 from .attributes import TENDON_ATTRIBUTES

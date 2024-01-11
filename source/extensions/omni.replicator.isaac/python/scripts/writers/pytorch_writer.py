@@ -8,6 +8,7 @@
 #
 
 import carb
+import numpy as np
 import torch
 import warp as wp
 from omni.replicator.core import AnnotatorRegistry, BackendDispatch, Writer, WriterRegistry
@@ -30,7 +31,9 @@ class PytorchWriter(Writer):
                       other format that pytorch supports for devices. Default is "cuda".
     """
 
-    def __init__(self, listener: PytorchListener, output_dir: str = None, device: str = "cuda"):
+    def __init__(
+        self, listener: PytorchListener, output_dir: str = None, tiled_sensor: bool = False, device: str = "cuda"
+    ):
         # If output directory is specified, writer will write annotated data to the given directory
         if output_dir:
             self.backend = BackendDispatch({"paths": {"out_dir": output_dir}})
@@ -40,7 +43,11 @@ class PytorchWriter(Writer):
             self._output_dir = None
         self._frame_id = 0
 
-        self.annotators = [AnnotatorRegistry.get_annotator("LdrColor", device="cuda", do_array_copy=False)]
+        if tiled_sensor:
+            self.annotators = [AnnotatorRegistry.get_annotator("RtxSensorGpu", device="cuda", do_array_copy=False)]
+        else:
+            self.annotators = [AnnotatorRegistry.get_annotator("LdrColor", device="cuda", do_array_copy=False)]
+
         self.listener = listener
         self.device = device
         self.version = __version__
@@ -52,15 +59,20 @@ class PytorchWriter(Writer):
         Args:
             data (dict): Data to be pinged to the listener and written to the output directory if specified.
         """
+        # breakpoint()
+        for annotator in data.keys():
+            if annotator.startswith("rp"):
+                rp_info = data[annotator]
+
         if self._output_dir:
             # Write RGB data to output directory as png
-            self._write_rgb(data)
-        pytorch_rgb = self._convert_to_pytorch(data).to(self.device)
+            self._write_rgb(data, rp_info)
+        pytorch_rgb = self._convert_to_pytorch(data, rp_info).to(self.device)
         self.listener.write_data({"pytorch_rgb": pytorch_rgb, "device": self.device})
         self._frame_id += 1
 
     @carb.profiler.profile
-    def _write_rgb(self, data: dict) -> None:
+    def _write_rgb(self, data: dict, rp_info: dict) -> None:
         for annotator in data.keys():
             if annotator.startswith("LdrColor"):
                 render_product_name = annotator.split("-")[-1]
@@ -69,16 +81,29 @@ class PytorchWriter(Writer):
                 if isinstance(img_data, wp.types.array):
                     img_data = img_data.numpy()
                 self._backend.write_image(file_path, img_data)
+            elif annotator.startswith("RtxSensor"):
+                width, height = rp_info["resolution"][0], rp_info["resolution"][1]
+                file_path = f"rgb_{self._frame_id}.png"
+                img_data = data[annotator].reshape(height, width, -1)
+                self._backend.write_image(file_path, img_data)
 
     @carb.profiler.profile
-    def _convert_to_pytorch(self, data: dict) -> torch.Tensor:
+    def _convert_to_pytorch(self, data: dict, rp_info: dict) -> torch.Tensor:
         if data is None:
             raise Exception("Data is Null")
-
+        # breakpoint()
         data_tensors = []
         for annotator in data.keys():
             if annotator.startswith("LdrColor"):
                 data_tensors.append(wp.to_torch(data[annotator]).unsqueeze(0))
+            elif annotator.startswith("RtxSensor"):
+                breakpoint()
+                width, height = rp_info["resolution"][0], rp_info["resolution"][1]
+                img_data = data[annotator]
+                data_tensors.append(wp.to_torch(img_data).reshape(height, width, -1).unsqueeze(0))
+            elif annotator.startswith("distance"):
+                width, height = rp_info["resolution"][0], rp_info["resolution"][1]
+                data_tensors.append(wp.to_torch(data[annotator]).reshape(height, width, -1).unsqueeze(0))
 
         # Move all tensors to the same device for concatenation
         device = "cuda:0" if self.device == "cuda" else self.device
