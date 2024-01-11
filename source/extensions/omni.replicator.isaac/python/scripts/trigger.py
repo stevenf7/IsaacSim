@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.replicator.core.scripts.utils import ReplicatorWrapper, create_node
+from omni.replicator.core.utils import ReplicatorWrapper, create_node
 
 from .context import initialize_context
 

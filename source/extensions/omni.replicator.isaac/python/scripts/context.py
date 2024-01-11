@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 import omni.graph.core as og
-from omni.replicator.core.scripts.utils import utils
+from omni.replicator.core.utils import utils
 
 _context = None
 
