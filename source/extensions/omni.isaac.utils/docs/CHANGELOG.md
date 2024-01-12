@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.0] - 2024-01-11
+### Changed
+- Moved forklift asset under new Robots > Forklift section
+- Renamed forklift asset to Forklift B.
+
+### Added
+- New Forklift C asset option under Robots > Forklift
+
 ## [0.6.0] - 2023-11-29
 ### Changed
 - Moved End effectors out of Robots menu again
