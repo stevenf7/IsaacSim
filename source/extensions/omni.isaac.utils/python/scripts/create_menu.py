@@ -321,15 +321,24 @@ class Extension(omni.ext.IExt):
             ),
         ]
 
+        menu_forklift = [
+            make_menu_item_description(
+                ext_id,
+                "Forklift B",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Forklift/forklift_b.usd", "/Forklift"),
+            ),
+            make_menu_item_description(
+                ext_id,
+                "Forklift C",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Forklift/forklift_c.usd", "/Forklift"),
+            ),
+        ]
+
         menu_mobile = [
             MenuItemDescription(header="Wheeled Robots"),
             MenuItemDescription(name="Clearpath", sub_menu=menu_clearpath),
             MenuItemDescription(name="Fraunhofer", sub_menu=menu_fraunhofer),
-            make_menu_item_description(
-                ext_id,
-                "Forklift",
-                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Forklift/forklift_b.usd", "/Forklift"),
-            ),
+            MenuItemDescription(name="Forklift", sub_menu=menu_forklift),
             make_menu_item_description(
                 ext_id,
                 "Idealworks iw.hub",

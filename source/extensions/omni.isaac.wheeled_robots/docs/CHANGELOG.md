@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.9.1] - 2024-01-08
+### Fixed
+- Updated description in Ackermann Steering node
+
 ## [0.9.0] - 2023-11-28
 ### Changed
 - OgnAckermannSteering node receives inputs in SI units.
