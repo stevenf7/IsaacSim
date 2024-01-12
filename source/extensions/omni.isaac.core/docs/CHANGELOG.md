@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.3.4] - 2024-01-10
+### Fixed
+- Fix undefined variables when clone=False for force APIs
+
 ## [3.3.3] - 2023-12-18
 ### Changed
 - Add examples to docstrings, fix type annotations, and improve description. Affected modules: omni.isaac.core.scenes (scene, scene_registry)

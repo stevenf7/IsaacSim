@@ -2248,3 +2248,25 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         for dof_name, dof_type in zip(self._frankas_view.dof_names, ground_truth):
             value = self._frankas_view.get_dof_types([dof_name])[0].value
             self.assertTrue(value == dof_type)
+
+    async def test_get_measured_joint_efforts(self):
+        for backend in BACKEND:
+            for clone in [True, False]:
+                for device in ["cpu", "cuda:0"]:
+                    if not backend == "numpy" and device == "cuda:0":
+                        print("backend:", backend, "clone:", clone, "device:", device)
+                        await self.setUpWorld(backend=backend, device=device)
+                        await self.add_frankas(backend=backend)
+                        cur_value = self._frankas_view.get_measured_joint_efforts(clone=clone)
+                        self._my_world.clear_instance()
+
+    async def test_get_measured_joint_forces(self):
+        for backend in BACKEND:
+            for clone in [True, False]:
+                for device in ["cpu", "cuda:0"]:
+                    if not backend == "numpy" and device == "cuda:0":
+                        print("backend:", backend, "clone:", clone, "device:", device)
+                        await self.setUpWorld(backend=backend, device=device)
+                        await self.add_frankas(backend=backend)
+                        cur_value = self._frankas_view.get_measured_joint_forces(clone=clone)
+                        self._my_world.clear_instance()
