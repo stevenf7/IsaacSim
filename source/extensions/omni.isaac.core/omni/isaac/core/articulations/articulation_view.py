@@ -1280,8 +1280,8 @@ class ArticulationView(XFormPrimView):
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
             current_joint_forces = self._physics_view.get_dof_projected_joint_forces()
             if clone:
-                result = self._backend_utils.clone_tensor(current_joint_forces, device=self._device)
-            result = result[
+                current_joint_forces = self._backend_utils.clone_tensor(current_joint_forces, device=self._device)
+            result = current_joint_forces[
                 self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, joint_indices
             ]
             return result
@@ -1382,8 +1382,8 @@ class ArticulationView(XFormPrimView):
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_bodies, self._device)
             current_joint_forces = self._physics_view.get_link_incoming_joint_force()
             if clone:
-                result = self._backend_utils.clone_tensor(current_joint_forces, device=self._device)
-            result = result[
+                current_joint_forces = self._backend_utils.clone_tensor(current_joint_forces, device=self._device)
+            result = current_joint_forces[
                 self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices, joint_indices
             ]
             return result
