@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.21.0] - 2024-01-16
+### Added
+- Added Nova Carter Benchmarks (non ROS)
+
+### Changed
+- Renamed previous Nova Carter Benchmarks to Nova Carter ROS2
+
+### Removed
+- Removed Carter V1 benchmarks
+
 ## [0.20.0] - 2024-01-04
 ### Changed
 - Moved helpers from benchmark services extension

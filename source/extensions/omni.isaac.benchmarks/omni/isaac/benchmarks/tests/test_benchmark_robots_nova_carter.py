@@ -9,7 +9,6 @@
 
 import carb
 import numpy as np
-import omni.graph.core as og
 import omni.kit.test
 from omni.isaac.benchmark.services.base_isaac_benchmark import BaseIsaacBenchmark
 from omni.isaac.core import PhysicsContext
@@ -34,58 +33,29 @@ class TestBenchmarkRobotsNovaCarter(BaseIsaacBenchmark):
 
     # ----------------------------------------------------------------------
 
-    async def benchmark_robots(
-        self, n_robot: int = 1, enable_3d_lidar: int = 0, enable_2d_lidar: int = 0, enable_hawks: int = 0
-    ):
+    async def benchmark_robots(self, n_robot: int = 1):
         """_summary_
-        A nova carter robot can accept a maximum of 4 hawks, 2 2d lidars, and 1 3d lidar
+        Benchmark the physics of just the nova carter robot without the rendering pipelines and omnigraph nodes
         Args:
             n_robot (_type_): _description_
-            enable_3d_lidar (int, optional): _description_. Defaults to 0.
-            enable_2d_lidar (int, optional): _description_. Defaults to 0.
-            enable_hawks (int, optional): _description_. Defaults to 0.
         """
-        sensor_name = ""
-        if enable_3d_lidar > 0:
-            sensor_name += "_3dlidar"
-            if enable_3d_lidar > 1:
-                carb.log_warn("Warning: Nova Carter only has 1 3D lidar")
-                enable_3d_lidar = 1
 
-        if enable_2d_lidar > 0:
-            sensor_name += "_2dlidar"
-            if enable_2d_lidar > 2:
-                carb.log_warn("Warning: Nova Carter only has 2 2D lidar")
-                enable_2d_lidar = 2
-
-        if enable_hawks > 0:
-            sensor_name += "_hawk"
-            if enable_hawks > 4:
-                carb.log_warn("Warning: Nova Carter only has 1 3D lidar")
-                enable_hawks = 4
-
-        if len(sensor_name) == 0:
-            sensor_name = "_no_sensor"
-
-        self.test_run.test_name = f"robots_nova_carter{sensor_name}_{n_robot}"
+        self.test_run.test_name = f"robots_nova_carter_{n_robot}"
         self.set_phase("loading")
         self.start_runtime()
 
-        robot_path = "/Isaac/Samples/ROS2/Robots/Nova_Carter_ROS.usd"
+        robot_path = "/Isaac/Robots/Carter/nova_carter_sensors.usd"
         scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
         await self.fully_load_stage(self.assets_root_path + scene_path)
         stage = omni.usd.get_context().get_stage()
         PhysicsContext(physics_dt=1.0 / 60.0)
         set_camera_view(eye=[-6, -15.5, 6.5], target=[-6, 10.5, -1], camera_prim_path="/OmniverseKit_Persp")
 
-        lidars_2d = ["/front_2d_lidar_render_product", "/back_2d_lidar_render_product"]
-        hawk_actiongraphs = ["/front_hawk", "/left_hawk", "/right_hawk", "/back_hawk"]
-
         robots = []
         for i in range(n_robot):
             robot_prim_path = "/Robots/Robot_" + str(i)
             robot_usd_path = self.assets_root_path + robot_path
-            # position the robot robot
+            # position the robot
             MAX_IN_LINE = 10
             robot_position = np.array([-2 * (i % MAX_IN_LINE), -2 * np.floor(i / MAX_IN_LINE), 0])
             current_robot = WheeledRobot(
@@ -98,41 +68,6 @@ class TestBenchmarkRobotsNovaCarter(BaseIsaacBenchmark):
 
             await omni.kit.app.get_app().next_update_async()
             await omni.kit.app.get_app().next_update_async()
-
-            for i in range(len(lidars_2d)):
-                if i < enable_2d_lidar:
-                    og.Controller.attribute(robot_prim_path + "/ros_lidars" + lidars_2d[i] + ".inputs:enabled").set(
-                        True
-                    )
-                else:
-                    og.Controller.attribute(robot_prim_path + "/ros_lidars" + lidars_2d[i] + ".inputs:enabled").set(
-                        False
-                    )
-
-            if enable_3d_lidar > 0:
-                og.Controller.attribute(
-                    robot_prim_path + "/ros_lidars/front_3d_lidar_render_product.inputs:enabled"
-                ).set(True)
-            else:
-                og.Controller.attribute(
-                    robot_prim_path + "/ros_lidars/front_3d_lidar_render_product.inputs:enabled"
-                ).set(False)
-
-            for i in range(len(hawk_actiongraphs)):
-                if i < enable_hawks:
-                    og.Controller.attribute(
-                        robot_prim_path + hawk_actiongraphs[i] + "/left_camera_render_product" + ".inputs:enabled"
-                    ).set(True)
-                    og.Controller.attribute(
-                        robot_prim_path + hawk_actiongraphs[i] + "/right_camera_render_product" + ".inputs:enabled"
-                    ).set(True)
-                else:
-                    og.Controller.attribute(
-                        robot_prim_path + hawk_actiongraphs[i] + "/left_camera_render_product" + ".inputs:enabled"
-                    ).set(False)
-                    og.Controller.attribute(
-                        robot_prim_path + hawk_actiongraphs[i] + "/right_camera_render_product" + ".inputs:enabled"
-                    ).set(False)
 
             robots.append(current_robot)
 
@@ -168,35 +103,11 @@ class TestBenchmarkRobotsNovaCarter(BaseIsaacBenchmark):
     async def test_benchmark_1_robot_nova_carter(self):
         await self.benchmark_robots(1)
 
-    async def test_benchmark_1_robot_nova_carter_3d_lidar(self):
-        await self.benchmark_robots(1, enable_3d_lidar=1)
-
-    async def test_benchmark_1_robot_nova_carter_1_2d_lidar(self):
-        await self.benchmark_robots(1, enable_2d_lidar=1)
-
-    async def test_benchmark_1_robot_nova_carter_1_3d_lidar_2_2d_lidar(self):
-        await self.benchmark_robots(1, enable_3d_lidar=1, enable_2d_lidar=2)
-
-    async def test_benchmark_1_robot_nova_carter_1_hawk(self):
-        await self.benchmark_robots(1, enable_hawks=1)
-
-    async def test_benchmark_1_robot_nova_carter_2_hawk(self):
-        await self.benchmark_robots(1, enable_hawks=2)
-
-    async def test_benchmark_1_robot_nova_carter_4_hawk(self):
-        await self.benchmark_robots(1, enable_hawks=4)
-
-    async def test_benchmark_1_robot_nova_carter_1_hawk_1_3d_lidar(self):
-        await self.benchmark_robots(1, enable_hawks=1, enable_3d_lidar=1)
-
-    async def test_benchmark_1_robot_nova_carter_4_hawk_1_3d_lidar_2_2d_lidar(self):
-        await self.benchmark_robots(1, enable_hawks=4, enable_3d_lidar=1, enable_2d_lidar=2)
-
     async def test_benchmark_3_robot_nova_carter(self):
         await self.benchmark_robots(3)
 
-    async def test_benchmark_3_robot_nova_carter_1_hawk_1_3d_lidar(self):
-        await self.benchmark_robots(3, enable_hawks=1, enable_3d_lidar=1)
+    async def test_benchmark_5_robot_nova_carter(self):
+        await self.benchmark_robots(5)
 
-    async def test_benchmark_3_robot_nova_carter_4_hawk_1_3d_lidar_2_2d_lidar(self):
-        await self.benchmark_robots(3, enable_hawks=4, enable_3d_lidar=1, enable_2d_lidar=2)
+    async def test_benchmark_10_robot_nova_carter(self):
+        await self.benchmark_robots(10)
