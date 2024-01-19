@@ -17,6 +17,7 @@ import omni.kit
 import omni.replicator.core as rep
 import omni.usd
 import torch
+from omni.isaac.core.utils.stage import create_new_stage_async
 from omni.replicator.isaac.scripts.writers.pytorch_listener import PytorchListener
 from PIL import Image
 
@@ -24,7 +25,8 @@ from PIL import Image
 class TestMultipleRenderProducts(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         # Create new stage
-        await omni.usd.get_context().new_stage_async()
+        await omni.kit.app.get_app().next_update_async()
+        await create_new_stage_async()
 
         # Create camera and render products
         render_product1 = rep.create.render_product(rep.create.camera(position=(0, 0, 1000)), (512, 512))
@@ -55,7 +57,14 @@ class TestMultipleRenderProducts(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self):
-        pass
+        await omni.kit.app.get_app().next_update_async()
+        for rp in self.render_products:
+            rp.destroy()
+            rp = None
+            await omni.kit.app.get_app().next_update_async()
+        self.render_products = None
+        await omni.kit.app.get_app().next_update_async()
+        omni.usd.get_context().close_stage()
 
     async def _run_until_stopped(self):
         await rep.orchestrator.run_until_complete_async(num_frames=10)
@@ -72,6 +81,8 @@ class TestMultipleRenderProducts(omni.kit.test.AsyncTestCase):
         image = pytorch_listener.get_rgb_data()
         self.assertTrue(image.device.type == "cpu")
         self.assertTrue([*image.shape] == [1, 3, 512, 512])
+        pytorch_writer.detach()
+        pytorch_listener = None
 
     async def test_single_camera_writer_with_backend(self):
         render_products = self.render_products[0:1]
@@ -94,6 +105,8 @@ class TestMultipleRenderProducts(omni.kit.test.AsyncTestCase):
         torch_to_numpy = image.numpy().transpose(0, 2, 3, 1).squeeze()
 
         self.assertTrue((file_image == torch_to_numpy).all())
+        pytorch_writer.detach()
+        pytorch_listener = None
 
     async def test_multiple_cameras_writer_without_backend(self):
         render_products = self.render_products
@@ -107,6 +120,8 @@ class TestMultipleRenderProducts(omni.kit.test.AsyncTestCase):
         images = pytorch_listener.get_rgb_data()
         self.assertTrue(images.device.type == "cpu")
         self.assertTrue([*images.shape] == [3, 3, 512, 512])
+        pytorch_writer.detach()
+        pytorch_listener = None
 
     async def test_multiple_cameras_writer_with_backend(self):
         render_products = self.render_products
@@ -138,6 +153,8 @@ class TestMultipleRenderProducts(omni.kit.test.AsyncTestCase):
         torch_to_numpy = image.numpy().transpose(0, 2, 3, 1)
 
         self.assertTrue((concatenated_images == torch_to_numpy).all())
+        pytorch_writer.detach()
+        pytorch_listener = None
 
     @unittest.skipIf(torch.cuda.is_available() == False, "GPU is not available on this machine!")
     async def test_single_camera_writer_with_gpu(self):
@@ -152,6 +169,8 @@ class TestMultipleRenderProducts(omni.kit.test.AsyncTestCase):
         image = pytorch_listener.get_rgb_data()
         self.assertTrue(image.device.type == "cuda")
         self.assertTrue([*image.shape] == [1, 3, 512, 512])
+        pytorch_writer.detach()
+        pytorch_listener = None
 
     @unittest.skipIf(torch.cuda.is_available() == False, "GPU is not available on this machine!")
     async def test_multiple_cameras_writer_with_gpu(self):
@@ -166,3 +185,5 @@ class TestMultipleRenderProducts(omni.kit.test.AsyncTestCase):
         images = pytorch_listener.get_rgb_data()
         self.assertTrue(images.device.type == "cuda")
         self.assertTrue([*images.shape] == [3, 3, 512, 512])
+        pytorch_writer.detach()
+        pytorch_listener = None

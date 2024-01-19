@@ -65,12 +65,12 @@ class TestOgnWritePhysicsRigidPrimView(omni.kit.test.AsyncTestCase):
         self._my_world.clear_instance()
         dr.physics_view._rigid_prim_views = dict()
         dr.physics_view._rigid_prim_views_initial_values = dict()
-        await omni.usd.get_context().new_stage_async()
+        omni.usd.get_context().close_stage()
 
     async def _setup_random_attribute(self, attribute_name, value):
         self._distribution_node.get_attribute("inputs:numSamples").set(1)
-        self._distribution_node.get_attribute("inputs:lower").set(value)
-        self._distribution_node.get_attribute("inputs:upper").set(value)
+        self._distribution_node.get_attribute("inputs:lower").set([value])
+        self._distribution_node.get_attribute("inputs:upper").set([value])
 
         self._rigid_prim_view_node.get_attribute("inputs:prims").set("cube")
         self._rigid_prim_view_node.get_attribute("inputs:attribute").set(attribute_name)
