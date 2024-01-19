@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.0] - 2024-01-19
+### Added
+- Adds new BaseIsaacBenchmark for non-async benchmarking
+- Adds new standalone examples for non-async benchmarking
+- Adds OsmoKPIFile writer to publish KPIs compatible with OSMO's Kratos backend
+
+### Changed
+- Move BaseIsaacBenchmark -> BaseIsaacBenchmarkAsync, for (eg) async unit tests
+
 ## [1.0.0] - 2024-01-04
 ### Changed
 - Remove depdencies and added classes needed to make benchmarks work independently

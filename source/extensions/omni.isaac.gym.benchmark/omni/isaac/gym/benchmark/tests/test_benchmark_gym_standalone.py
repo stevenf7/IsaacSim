@@ -14,7 +14,7 @@ import carb
 import omni.kit
 import omni.kit.test
 import omni.timeline
-from omni.isaac.benchmark.services.base_isaac_benchmark import BaseIsaacBenchmark
+from omni.isaac.benchmark.services.base_isaac_benchmark_async import BaseIsaacBenchmarkAsync
 
 MAX_ITERATIONS = 10
 
@@ -87,7 +87,7 @@ def _run_rlgames_train(script, task, pipeline, sim_device, headless, max_iterati
     return experiment_name
 
 
-class TestBenchmarkGymStandalone(BaseIsaacBenchmark):
+class TestBenchmarkGymStandalone(BaseIsaacBenchmarkAsync):
     def __init__(self, *args, **kwargs):
         super(TestBenchmarkGymStandalone, self).__init__(*args, **kwargs)
 

@@ -50,7 +50,7 @@ class IsaacFrameTimeRecorder(interface.MeasurementDataRecorder):
         self.elapsed_real_time = (time.perf_counter_ns() - self.real_time_start) / 1000000
         self.frametime_collector.stop_collecting()
 
-    async def get_data(self):
+    def get_data(self):
         if self.phase != self.context.phase:
             return interface.MeasurementData(measurements=[])
 
@@ -117,7 +117,7 @@ class IsaacMemoryRecorder(memory.MemoryRecorder):
         self.benchmark_settings = benchmark_settings
         super().__init__(context, root_dir, benchmark_settings)
 
-    async def get_data(self) -> interface.MeasurementData:
+    def get_data(self) -> interface.MeasurementData:
         (
             cpu_load,
             rss,
@@ -160,7 +160,7 @@ class IsaacCPUStatsRecorder(cpu.CPUStatsRecorder):
         self.benchmark_settings = benchmark_settings
         super().__init__(context, root_dir, benchmark_settings)
 
-    async def get_data(self) -> interface.MeasurementData:
+    def get_data(self) -> interface.MeasurementData:
         (
             cpu_iowait_pct,
             cpu_system_pct,
@@ -201,7 +201,7 @@ class IsaacRuntimeRecorder(interface.MeasurementDataRecorder):
     def stop_time(self):
         self.elapsed_time = (time.perf_counter_ns() - self.start) / 1000000
 
-    async def get_data(self):
+    def get_data(self):
         if self.phase != self.context.phase:
             return interface.MeasurementData(measurements=[])
 

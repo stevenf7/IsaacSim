@@ -9,7 +9,7 @@
 
 import omni.kit.test
 import omni.replicator.core as rep
-from omni.isaac.benchmark.services.base_isaac_benchmark import BaseIsaacBenchmark
+from omni.isaac.benchmark.services.base_isaac_benchmark_async import BaseIsaacBenchmarkAsync
 from omni.isaac.core.utils.prims import delete_prim
 from pxr import Gf
 
@@ -18,7 +18,7 @@ from pxr import Gf
 TEST_NUM_APP_UPDATES = 60 * 10
 
 
-class TestBenchmarkRtxRadar(BaseIsaacBenchmark):
+class TestBenchmarkRtxRadar(BaseIsaacBenchmarkAsync):
     async def setUp(self):
         await super().setUp()
         pass

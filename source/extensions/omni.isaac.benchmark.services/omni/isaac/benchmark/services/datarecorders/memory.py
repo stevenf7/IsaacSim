@@ -66,7 +66,7 @@ class MemoryRecorder(MeasurementDataRecorder):
     Gathers some basic System Memory and GPU Memory stats
     """
 
-    async def get_data(self) -> MeasurementData:
+    def get_data(self) -> MeasurementData:
 
         (
             cpu_load,

@@ -62,7 +62,7 @@ class MeasurementDataRecorder:
         """
         pass
 
-    async def get_data(self) -> MeasurementData:
+    def get_data(self) -> MeasurementData:
         return MeasurementData()
 
 

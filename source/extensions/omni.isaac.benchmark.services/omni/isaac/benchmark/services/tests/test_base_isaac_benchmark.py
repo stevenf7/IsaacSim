@@ -6,10 +6,10 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.benchmark.services.base_isaac_benchmark import BaseIsaacBenchmark
+from omni.isaac.benchmark.services.base_isaac_benchmark_async import BaseIsaacBenchmarkAsync
 
 
-class TestBaseIsaacBenchmark(BaseIsaacBenchmark):
+class TestBaseIsaacBenchmarkAsync(BaseIsaacBenchmarkAsync):
     async def setUp(self):
         await super().setUp()
         pass

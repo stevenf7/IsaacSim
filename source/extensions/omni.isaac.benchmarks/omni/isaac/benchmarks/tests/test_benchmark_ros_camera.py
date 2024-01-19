@@ -9,7 +9,7 @@
 
 import numpy as np
 import omni.kit.test
-from omni.isaac.benchmark.services.base_isaac_benchmark import BaseIsaacBenchmark
+from omni.isaac.benchmark.services.base_isaac_benchmark_async import BaseIsaacBenchmarkAsync
 from omni.isaac.benchmarks.helper import add_ros2_camera
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.sensor import Camera
@@ -18,7 +18,7 @@ from omni.kit.viewport.utility import get_active_viewport
 TEST_NUM_APP_UPDATES = 60 * 10
 
 
-class TestBenchmarkRos2Camera(BaseIsaacBenchmark):
+class TestBenchmarkRos2Camera(BaseIsaacBenchmarkAsync):
     async def setUp(self):
         await super().setUp()
         pass

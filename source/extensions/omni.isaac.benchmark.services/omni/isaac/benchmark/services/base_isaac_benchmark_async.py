@@ -8,20 +8,22 @@
 #
 
 
+import json
 import os
 import tempfile
 import time
 from pathlib import Path
 
 import carb
+import omni.kit.test
 from omni.isaac.benchmark.services import execution, settings, utils
 from omni.isaac.benchmark.services.datarecorders import interface
 from omni.isaac.benchmark.services.metrics import backend, measurements
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.utils.stage import open_stage
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
+from omni.isaac.core.utils.stage import is_stage_loading, open_stage
 
 from .recorders import *
-from .utils import wait_until_stage_is_fully_loaded
+from .utils import wait_until_stage_is_fully_loaded_async
 
 logger = utils.set_up_logging(__name__)
 
@@ -36,18 +38,23 @@ def set_sync_mode():
     carb_settings.set("/rtx-defaults/hydra/materialSyncLoads", True)
 
 
-class BaseIsaacBenchmark:
-    def __init__(self, benchmark_name: str = "BaseIsaacBenchmark"):
-        self._execution_env = execution.TestExecutionEnvironment.get_instance()
-
-        self.settings = carb.settings.get_settings()
-        prefix = self._get_output_file_prefix(benchmark_name)
-        version, _, _ = utils.get_kit_version_branch()
-
-        self.assets_root_path = get_assets_root_path()
+class BaseIsaacBenchmarkAsync(omni.kit.test.AsyncTestCase):
+    async def setUp(self):
+        # Set carb settings to wait until all materials are loaded when loading a stage
+        set_sync_mode()
+        self.assets_root_path = await get_assets_root_path_async()
         if self.assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return
+        self.settings = carb.settings.get_settings()
+        await omni.usd.get_context().new_stage_async()
+        for _ in range(100):
+            await omni.kit.app.get_app().next_update_async()
+
+        self._execution_env = execution.TestExecutionEnvironment.get_instance()
+
+        prefix = self._get_output_file_prefix(self._testMethodName)
+        version, _, _ = utils.get_kit_version_branch()
 
         self.context = interface.InputContext(
             artifact_prefix=prefix,
@@ -65,50 +72,44 @@ class BaseIsaacBenchmark:
             self.runtime_recorder,
         ]
         self.test_run = measurements.TestRun(
-            benchmark_name
+            "BaseIsaacBenchmarkAsync"
         )  # the name is set by the test itself, set it to a default here.
 
         logger.info(f"Execution type = {type(self._execution_env).__name__}")
-        self._metrics_output_folder = self.settings.get(
-            "/exts/omni.isaac.benchmark.services/metrics/metrics_output_folder"
-        )
-
+        self._metrics_output_folder = self.settings.get("/exts/omni.isaac.benchmarks/metrics/metrics_output_folder")
         if not self._metrics_output_folder:
             self._metrics_output_folder = tempfile.gettempdir()
 
-        logger.info(f"Local folder location = {self._metrics_output_folder}")
+        self.outputs_dir: Path = Path(self._metrics_output_folder) / "isaac_sim_benchmark_outputs"
+
+        logger.info(f"Local folder location = {self.outputs_dir}")
         logger.info("Starting")
         self.benchmark_start_time = time.time()
         self.test_mode = os.getenv("ISAAC_TEST_MODE") == "1"
         logger.info(f"Test mode = {'true' if self.test_mode else 'false'}")
         pass
 
-    def stop(self):
+    async def tearDown(self):
         logger.info("Stopping")
+        while is_stage_loading():
+            print("asset still loading, waiting to finish")
+            await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+
         logger.info("Writing metrics data.")
 
         if not os.path.exists(self._metrics_output_folder):
             os.mkdir(path=self._metrics_output_folder)
-        if self.settings.get("/exts/omni.isaac.benchmark.services/metrics/randomize_filename_prefix"):
-            fd, metrics_filename_out = tempfile.mkstemp(
-                dir=self._metrics_output_folder, prefix=f"metrics_{self.test_run.test_name}", suffix=".json"
-            )
-        else:
-            metrics_filename_out = Path(self._metrics_output_folder) / f"metrics_{self.test_run.test_name}.json"
+        fd, metrics_filename_out = tempfile.mkstemp(
+            dir=self._metrics_output_folder, prefix=f"metrics_{self.test_run.test_name}", suffix=".json"
+        )
         _metrics = backend.MetricsBackend.get_instance(self._execution_env)
         logger.info(f"Metrics type = {type(_metrics).__name__}")
         _metrics.add_metrics(self.test_run)
         _metrics.finalize(metrics_filename_out)
         logger.info(f"Writing metrics data to {metrics_filename_out}")
 
-        if self.settings.get("/exts/omni.isaac.benchmark.services/metrics/generate_osmo_kpi_output"):
-            osmo_metrics_filename_out = Path(self._metrics_output_folder) / f"kpis_{self.test_run.test_name}.json"
-            _osmo_metrics = backend.MetricsBackend.get_instance(instance_type="OsmoKPIFile")
-            logger.info(f"Metrics type = {type(_osmo_metrics).__name__}")
-            _osmo_metrics.add_metrics(self.test_run)
-            _osmo_metrics.finalize(osmo_metrics_filename_out)
-            logger.info(f"Writing metrics data to {osmo_metrics_filename_out}")
-
+        await omni.kit.app.get_app().next_update_async()
         self.test_run = None
         self.recorders = None
         self.context = None
@@ -166,7 +167,7 @@ class BaseIsaacBenchmark:
     def stop_runtime(self):
         self.runtime_recorder.stop_time()
 
-    def store_measurements(self):
+    async def store_measurements(self):
         run_measurements = []
         run_metadata = []
         run_artifacts = []
@@ -178,6 +179,6 @@ class BaseIsaacBenchmark:
         self.test_run.measurements.extend(run_measurements)
         self.test_run.metadata.extend(run_metadata)
 
-    def fully_load_stage(self, usd_path):
+    async def fully_load_stage(self, usd_path):
         open_stage(usd_path)
-        wait_until_stage_is_fully_loaded()
+        await wait_until_stage_is_fully_loaded_async()

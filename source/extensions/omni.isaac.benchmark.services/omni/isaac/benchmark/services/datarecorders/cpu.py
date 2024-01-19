@@ -107,7 +107,7 @@ class CPUStatsRecorder(MeasurementDataRecorder):
             self.cpu_idle,
         ) = get_cpu_counters()
 
-    async def get_data(self) -> MeasurementData:
+    def get_data(self) -> MeasurementData:
 
         (
             cpu_iowait_pct,
