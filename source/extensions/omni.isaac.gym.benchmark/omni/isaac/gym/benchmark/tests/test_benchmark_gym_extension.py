@@ -10,13 +10,13 @@
 import omni.kit
 import omni.kit.test
 import omni.timeline
-from omni.isaac.benchmark.services.base_isaac_benchmark import BaseIsaacBenchmark
+from omni.isaac.benchmark.services.base_isaac_benchmark_async import BaseIsaacBenchmarkAsync
 from omniisaacgymenvs import RLExtension, get_instance
 
 MAX_ITERATIONS = 10
 
 
-class TestBenchmarkGymExtension(BaseIsaacBenchmark):
+class TestBenchmarkGymExtension(BaseIsaacBenchmarkAsync):
     def __init__(self, *args, **kwargs):
         super(TestBenchmarkGymExtension, self).__init__(*args, **kwargs)
         self._ext = get_instance()

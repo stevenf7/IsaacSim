@@ -13,7 +13,7 @@ import shutil
 import carb
 import omni.kit.test
 import omni.replicator.core as rep
-from omni.isaac.benchmark.services.base_isaac_benchmark import BaseIsaacBenchmark
+from omni.isaac.benchmark.services.base_isaac_benchmark_async import BaseIsaacBenchmarkAsync
 from omni.isaac.benchmark.services.utils import wait_until_stage_is_fully_loaded_async
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import create_new_stage_async, open_stage
@@ -68,7 +68,7 @@ def check_number_of_written_sdg_frames(output_directory, num_frames_expected, ve
     return num_written_frames == num_frames_expected
 
 
-class TestBenchmarkSDGGeneration(BaseIsaacBenchmark):
+class TestBenchmarkSDGGeneration(BaseIsaacBenchmarkAsync):
     async def setUp(self):
         await super().setUp()
         pass

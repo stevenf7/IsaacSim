@@ -9,7 +9,7 @@
 
 import numpy as np
 import omni.kit.test
-from omni.isaac.benchmark.services.base_isaac_benchmark import BaseIsaacBenchmark
+from omni.isaac.benchmark.services.base_isaac_benchmark_async import BaseIsaacBenchmarkAsync
 from omni.isaac.core import PhysicsContext
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.utils.viewports import set_camera_view
@@ -19,7 +19,7 @@ from omni.kit.viewport.utility import get_active_viewport
 TEST_NUM_APP_UPDATES = 60 * 10
 
 
-class TestBenchmarkRobotsO3dyn(BaseIsaacBenchmark):
+class TestBenchmarkRobotsO3dyn(BaseIsaacBenchmarkAsync):
     async def setUp(self):
         await super().setUp()
         pass

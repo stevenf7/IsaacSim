@@ -8,7 +8,7 @@
 #
 
 import omni.kit.test
-from omni.isaac.benchmark.services.base_isaac_benchmark import BaseIsaacBenchmark
+from omni.isaac.benchmark.services.base_isaac_benchmark_async import BaseIsaacBenchmarkAsync
 from omni.isaac.benchmarks.helper import add_physx_lidar
 from omni.isaac.core import PhysicsContext
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
@@ -17,7 +17,7 @@ from pxr import Gf
 TEST_NUM_APP_UPDATES = 60 * 10
 
 
-class TestBenchmarkLidar(BaseIsaacBenchmark):
+class TestBenchmarkLidar(BaseIsaacBenchmarkAsync):
     async def setUp(self):
         await super().setUp()
         pass

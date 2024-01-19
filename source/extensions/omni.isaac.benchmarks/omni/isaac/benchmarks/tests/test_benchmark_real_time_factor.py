@@ -8,13 +8,13 @@
 #
 
 import omni.kit.test
-from omni.isaac.benchmark.services.base_isaac_benchmark import BaseIsaacBenchmark
+from omni.isaac.benchmark.services.base_isaac_benchmark_async import BaseIsaacBenchmarkAsync
 from omni.isaac.core_nodes.bindings import _omni_isaac_core_nodes
 
 TEST_NUM_APP_UPDATES = 60 * 10
 
 
-class TestBenchmarkRealTimeFactor(BaseIsaacBenchmark):
+class TestBenchmarkRealTimeFactor(BaseIsaacBenchmarkAsync):
     async def setUp(self):
         await super().setUp()
         self._core_nodes = _omni_isaac_core_nodes.acquire_interface()
