@@ -24,7 +24,7 @@ class Extension(omni.ext.IExt):
 
         self._menu_items = [
             MenuItemDescription(
-                name="ROS",
+                name="ROS2",
                 sub_menu=[
                     make_menu_item_description(
                         ext_id,
@@ -36,7 +36,7 @@ class Extension(omni.ext.IExt):
                 ],
             ),
             MenuItemDescription(
-                name="ROS",
+                name="ROS2",
                 sub_menu=[
                     MenuItemDescription(
                         name="Isaac ROS",
@@ -53,7 +53,7 @@ class Extension(omni.ext.IExt):
                 ],
             ),
             MenuItemDescription(
-                name="ROS",
+                name="ROS2",
                 sub_menu=[
                     MenuItemDescription(
                         name="Multiple Robot Navigation",
