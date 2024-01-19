@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.7.0] - 2024-01-19
+### Changed
+- Renamed "Isaac Examples > ROS" menu to "Isaac Examples > ROS2" 
+
 ## [2.6.1] - 2024-01-03
 ### Changed
 - Updated samples and unit tests with newer OgnIsaacArticulationController node
