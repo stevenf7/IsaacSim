@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.21.0"
+version = "0.21.1"
 category = "Simulation"
 title = "Benchmark"
 description = "This extension provides benchmarking utilities"

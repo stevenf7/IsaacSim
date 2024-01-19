@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.21.1] - 2024-01-18
+### Added
+- Added 1200p eight cameras benchmark for hawk cameras
+
 ## [0.21.0] - 2024-01-16
 ### Added
 - Added Nova Carter Benchmarks (non ROS)
