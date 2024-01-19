@@ -103,3 +103,6 @@ class TestBenchmarkCamera(BaseIsaacBenchmark):
 
     async def test_benchmark_8_camera_1080(self):
         await self.benchmark_camera(8, [1920, 1080])
+
+    async def test_benchmark_8_camera_1200(self):
+        await self.benchmark_camera(8, [1920, 1200])
