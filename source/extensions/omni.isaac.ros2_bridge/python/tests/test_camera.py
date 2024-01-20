@@ -41,7 +41,7 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
 
         import rclpy
 
-        await omni.usd.get_context().new_stage_async()
+        omni.usd.get_context().new_stage()
         self._timeline = omni.timeline.get_timeline_interface()
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
