@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.21.2] - 2024-01-19
+### Added
+- Fix ROS2 camera helper benchmark issue
+
 ## [0.21.1] - 2024-01-18
 ### Added
 - Added 1200p eight cameras benchmark for hawk cameras

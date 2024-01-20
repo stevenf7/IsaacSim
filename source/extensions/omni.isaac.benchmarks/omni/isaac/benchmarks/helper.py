@@ -73,7 +73,7 @@ def add_ros2_camera(render_product_path, graph_path, camera_topic, sim_camera_id
         {
             og.Controller.Keys.CREATE_NODES: [
                 ("OnTick", "omni.graph.action.OnTick"),
-                ("cameraHelperRgb", "omni.isaac.ros_bridge.ROS2CameraHelper"),
+                ("cameraHelperRgb", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
             ],
             og.Controller.Keys.CONNECT: [
                 ("OnTick.outputs:tick", "cameraHelperRgb.inputs:execIn"),
