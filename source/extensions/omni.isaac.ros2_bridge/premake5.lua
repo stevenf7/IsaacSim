@@ -243,5 +243,9 @@ if os.target() == "windows" then
         { "%{root}/_build/target-deps/nv_ros2_humble/bin/**.dll", ext.target_dir.."/humble/lib" },
         { "%{root}/_build/target-deps/nv_ros2/Lib/site-packages", ext.target_dir.."/foxy/rclpy" },
         { "%{root}/_build/target-deps/nv_ros2_humble/Lib/site-packages", ext.target_dir.."/humble/rclpy" },
+        { "%{root}/_build/target-deps/tinyxml2/bin/**.dll", ext.target_dir.."/foxy/lib" },
+        { "%{root}/_build/target-deps/tinyxml2/bin/**.dll", ext.target_dir.."/humble/lib" },
+        { "%{root}/_build/target-deps/openssl/lib/release/rt_dynamic/**.dll", ext.target_dir.."/foxy/lib" },
+        { "%{root}/_build/target-deps/openssl/lib/release/rt_dynamic/**.dll", ext.target_dir.."/humble/lib" },
     }
 end
