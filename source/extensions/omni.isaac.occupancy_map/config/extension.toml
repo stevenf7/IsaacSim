@@ -8,7 +8,7 @@ category = "Simulation"
 title = "Isaac Sim Occupancy Map"
 description = "2D Occupancy Map Generation"
 authors = ["Isaac Sim Team"]
-repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.occupancy_map"
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.occupancy_map"
 keywords = ["isaac", "occupancy map"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
@@ -17,7 +17,7 @@ writeTarget.kit = true
 
 [dependencies]
 "omni.kit.uiapp" = {}
-"omni.physx" = {} 
+"omni.physx" = {}
 "omni.isaac.debug_draw" = {}
 "omni.kit.viewport.window" = {}
 "omni.kit.pip_archive" = {} # pulls in pillow

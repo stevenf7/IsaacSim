@@ -27,7 +27,7 @@ pages:
     paths:
       - public
   only:
-    - develop@Isaac/omni_isaac_sim
+    - develop@omniverse/isaac/omni_isaac_sim
 
 stages:
   - test

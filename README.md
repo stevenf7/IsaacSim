@@ -15,9 +15,9 @@ There are multiple ways to use isaac sim based on your workflow:
 ## Source (This repository)
 See [Using The Source Repository](#using-the-source-repository) section below for how to compile source and set up `git lfs`
 #### Branches:
-* [Release/2023.1](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/release/2023.1): Current Release Candidates and Public Release (rc.x)
-* [Develop](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop): Latest internal codebase, updated daily (alpha.x, beta.x)
-* [Tagged Releases](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tags): Older release commits are tagged here
+* [Release/2023.1](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/release/2023.1): Current Release Candidates and Public Release (rc.x)
+* [Develop](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop): Latest internal codebase, updated daily (alpha.x, beta.x)
+* [Tagged Releases](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tags): Older release commits are tagged here
 
 See [Isaac Sim Release Flow](https://docs.google.com/presentation/d/161QpSIxvXvAmZO1QeniJ-sMWdUhbX8iWUHpmg2sCHAA/edit?usp=sharing)
 
@@ -52,8 +52,8 @@ For information on launching once you have downloaded a build [see here](https:/
 
 ## Docker Containers (GitLab)
 
-* Isaac Sim: [gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/isaac-sim:latest-20xx.x](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/container_registry/6641) (Release branch, rc)
-* Isaac Sim Daily: [gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/isaac-sim:latest-develop](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/container_registry/6641) (Develop branch, alpha/beta)
+* Isaac Sim: [gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/isaac-sim:latest-20xx.x](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/container_registry/6641) (Release branch, rc)
+* Isaac Sim Daily: [gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/isaac-sim:latest-develop](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/container_registry/6641) (Develop branch, alpha/beta)
 
 ## Docker Containers (NGC)
 
@@ -77,10 +77,10 @@ It is ideal if you want to write native python scripts and need place to work wh
 
 # Developer Resources
 
-See the [wiki section](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/wikis/home) of this repo for developer resources and docs.
+See the [wiki section](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/wikis/home) of this repo for developer resources and docs.
 
-* [Filing Bugs And Requests](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/wikis/Developer-Resources/Jira-Board#creating-a-new-issue)
-* [Submitting a merge request](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/wikis/Developer-Resources/Merge-Request)
+* [Filing Bugs And Requests](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/wikis/Developer-Resources/Jira-Board#creating-a-new-issue)
+* [Submitting a merge request](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/wikis/Developer-Resources/Merge-Request)
 
 # Running headless and connecting via a remote client
 
@@ -144,10 +144,10 @@ After a reboot you will need to:
     * Reboot your machine after installation.
     * Execute `git lfs install` once to enable LFS features after installation.
         * If you cloned the repo before above steps, you have to fetch the data with `git lfs pull` in the repo.
-- [Fork omniverse isaac sim repository](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/forks/new)
+- [Fork omniverse isaac sim repository](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/forks/new)
 - Go to your newly created fork in GitLab, select
     * go to "Settings->Repository->Mirroring repositories"
-        * set "Git repository URL" to https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim.git
+        * set "Git repository URL" to https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim.git
         * select "Pull" under "Mirror direction".
         * clear out the text under "Password".
         * check the "Overwrite diverged branches" checkbox.

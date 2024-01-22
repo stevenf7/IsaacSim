@@ -34,7 +34,7 @@ kind = "app"
 #string array, each line is a new line, keep lines under 256 char and keep lines under 4
 description = [
   "DAILY INTERNAL BUILD !!, use the Stable Build for Production Work.",
-  "DAILY INTERNAL BUILD !!, see [Developer README](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/blob/develop/README.md) link below.",
+  "DAILY INTERNAL BUILD !!, see [Developer README](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/blob/develop/README.md) link below.",
   "NVIDIA Isaac Sim is a scalable robotics simulation application and synthetic data generation tool, built on the NVIDIA Omniverse™ platform. It leverages Omniverse Kit powerful simulation technologies including advanced GPU-enabled physics simulation with PhysX 5, photorealism with real-time ray tracing.",
   "Isaac Sim is a physically accurate virtual environment to develop, test, and manage AI-based robots, and provides the essential features for building virtual robotics experiments.",
   "Features:",
@@ -49,7 +49,7 @@ description = [
 
 [[links]]
 title = "Developer README"
-url = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/blob/develop/README.md"
+url = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/blob/develop/README.md"
 [[links]]
 title = "System Requirements"
 url = "https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/isaacsim/latest/requirements.html"

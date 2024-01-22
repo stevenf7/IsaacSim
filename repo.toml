@@ -685,7 +685,7 @@ stdout_fail_patterns.exclude = [
 ########################################################################################################################
 
 [bump_version]
-git_url = "https://oauth2:${env:ISAAC_SIM_PIPELINE_TOKEN}@gitlab-master.nvidia.com/Isaac/omni_isaac_sim.git"
+git_url = "https://oauth2:${env:ISAAC_SIM_PIPELINE_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim.git"
 # FOR DEVELOPMENT #
 branch_name = "develop"
 # # FOR PRODUCTION #

@@ -6,7 +6,7 @@ description="Omnigraph Node for Defining the behavior of a linear conveyor belt"
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
 icon = "data/icon.png"
-repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.conveyor"
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.conveyor"
 
 keywords = ["kit", "example"]
 
@@ -44,7 +44,7 @@ exclude = ["Ogn*Database.py"]
 dependencies=[
 "usdrt.scenegraph",
 ]
-    
+
 stdoutFailPatterns.exclude = [
  "*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_conveyor_IsaacConveyor: [/TestGraph] no prim path found for the conveyor"
 ]
