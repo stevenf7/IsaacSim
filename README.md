@@ -1,14 +1,14 @@
 # Omniverse Isaac Sim
 This is where the Omniverse Isaac Sim application is developed.
 
-* [Internal Documentation](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/isaacsim/latest/index.html)
+* [Internal Documentation](https://omniverse.gitlab-master-pages.nvidia.com/isaac/omni_isaac_sim/isaacsim/latest/index.html)
 * [Public Documentation](https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html)
 * Slack: [#omni-isaac-support](https://nvidia.slack.com/archives/CBDM22E5P)
 * [Confluence](https://confluence.nvidia.com/display/OMNIVERSE/Omniverse+Isaac+Sim)
 
 # Getting Started
 
-See [here](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/isaacsim/latest/requirements.html) for general hardware and driver requirements
+See [here](https://omniverse.gitlab-master-pages.nvidia.com/isaac/omni_isaac_sim/isaacsim/latest/requirements.html) for general hardware and driver requirements
 
 There are multiple ways to use isaac sim based on your workflow:
 
@@ -35,7 +35,7 @@ Once launched you will see the builds under the ``Exchange`` tab
 * [Isaac Sim Assets Pack 2](https://web.launcher.omniverse.nvidia.com/exchange/content-pack/isaac_sim-assets-2?text=&kind=content-pack): Latest asset pack download for use in an air-gapped environment. Pack 2 of 3.
 * [Isaac Sim Assets Pack 3](https://web.launcher.omniverse.nvidia.com/exchange/content-pack/isaac_sim-assets-3?text=&kind=content-pack): Latest asset pack download for use in an air-gapped environment. Pack 3 of 3.
 
-For information on launching once you have downloaded a build [see here](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/isaacsim/latest/install_workstation.html).
+For information on launching once you have downloaded a build [see here](https://omniverse.gitlab-master-pages.nvidia.com/isaac/omni_isaac_sim/isaacsim/latest/install_workstation.html).
 
 > Note that our documentation shows the public Omniverse launcher where daily builds are not available, but the process of running Isaac Sim is identical.
 
@@ -84,7 +84,7 @@ See the [wiki section](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isa
 
 # Running headless and connecting via a remote client
 
-See [here](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/isaacsim/latest/install_container.html) for more information on how to use the container.
+See [here](https://omniverse.gitlab-master-pages.nvidia.com/isaac/omni_isaac_sim/isaacsim/latest/install_container.html) for more information on how to use the container.
 
 # List of internal nucleus servers:
 * isaac-dev.ov.nvidia.com : http://isaac-dev.ov.nvidia.com/
@@ -100,7 +100,7 @@ You can also clear your local cache from here and see used disk space
 
 ## Deleting previous installs
 
-* Download and run the [launcher cleanup tool](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/prod_launcher/prod_utilities/cleanup-tool.html)
+* Download and run the [launcher cleanup tool](https://omniverse.gitlab-master-pages.nvidia.com/isaac/omni_isaac_sim/prod_launcher/prod_utilities/cleanup-tool.html)
     * Run ``./launcher-cleanup``
     * This tool will delete any installed omniverse applications and will ask if you want to delete your local nucleus data.
     * Run with ``sudo`` if you have trouble installing cache from the launcher.
@@ -198,7 +198,7 @@ To run isaac sim with a debugger attached:
 
 To attach a debugger to a running application:
 
-- See [Here](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/isaacsim/latest/install_python.html)
+- See [Here](https://omniverse.gitlab-master-pages.nvidia.com/isaac/omni_isaac_sim/isaacsim/latest/install_python.html)
 
 To debug a native python (normally run from `python.sh`) application:
 
