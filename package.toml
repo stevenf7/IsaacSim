@@ -217,14 +217,14 @@ files = [
 # launcher images package
 ########################################################################################################################
 
-[isaac-sim-pipeline-images-beta]
+[isaac-sim-pipeline-images-daily]
 files = [
-    ["tools/repoman/launcher-images/beta/**",""],
+    ["tools/repoman/launcher-images/daily/**",""],
 ]
 
-[isaac-sim-pipeline-images-rc]
+[isaac-sim-pipeline-images-staging]
 files = [
-    ["tools/repoman/launcher-images/rc/**",""],
+    ["tools/repoman/launcher-images/staging/**",""],
 ]
 
 [isaac-sim-pipeline-images-assets]

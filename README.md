@@ -28,12 +28,28 @@ See [Isaac Sim Release Flow](https://docs.google.com/presentation/d/161QpSIxvXvA
 
 Once launched you will see the builds under the ``Exchange`` tab
 
-* [Isaac Sim](https://web.launcher.omniverse.nvidia.com/exchange/app/isaac_sim): Latest build from Release branch. This build works staging or production assets. (Use the Release channel only)
-* [Isaac Sim Daily](https://web.launcher.omniverse.nvidia.com/exchange/app/isaac_sim-daily): Latest daily build from Develop branch. This build works with our internal isaac-dev.ov.nvidia.com Nucleus by default. (Use the Beta channel only)
-* [Isaac Sim Public Release](https://web.launcher.omniverse.nvidia.com/exchange/app/prod-isaac_sim): Latest public release. This build works with localhost Nucleus by default.
-* [Isaac Sim Assets Pack 1](https://web.launcher.omniverse.nvidia.com/exchange/content-pack/isaac_sim-assets-1?text=&kind=content-pack): Latest asset pack download for use in an air-gapped environment. Pack 1 of 3.
-* [Isaac Sim Assets Pack 2](https://web.launcher.omniverse.nvidia.com/exchange/content-pack/isaac_sim-assets-2?text=&kind=content-pack): Latest asset pack download for use in an air-gapped environment. Pack 2 of 3.
-* [Isaac Sim Assets Pack 3](https://web.launcher.omniverse.nvidia.com/exchange/content-pack/isaac_sim-assets-3?text=&kind=content-pack): Latest asset pack download for use in an air-gapped environment. Pack 3 of 3.
+Public Release (Similar to the Isaac Sim app in public Launcher. This app may have issues being installed on the internal Launcher):
+
+* [prod-Isaac Sim](https://web.launcher.omniverse.nvidia.com/exchange/app/prod-isaac_sim): Latest public release. This build works with localhost Nucleus by default.
+
+Internal Developer Dailies:
+
+* [Isaac Sim Daily](https://web.launcher.omniverse.nvidia.com/exchange/app/isaac-sim-daily): Latest daily build from Develop branch. This build works with our internal isaac-dev.ov.nvidia.com Nucleus by default. (Use the Alpha/Beta channel only)
+
+Staging builds for release (These will be available when we build 4.0.0-rc.1):
+
+* [Isaac Sim](https://web.launcher.omniverse.nvidia.com/exchange/app/isaac-sim): Latest build from Release branch. This build works staging or production assets. (Use the Release channel only)
+* [Isaac Sim Assets Pack 1](https://web.launcher.omniverse.nvidia.com/exchange/content-pack/isaac-sim-assets-1?text=&kind=content-pack): Latest asset pack download for use in an air-gapped environment. Pack 1 of 3.
+* [Isaac Sim Assets Pack 2](https://web.launcher.omniverse.nvidia.com/exchange/content-pack/isaac-sim-assets-2?text=&kind=content-pack): Latest asset pack download for use in an air-gapped environment. Pack 2 of 3.
+* [Isaac Sim Assets Pack 3](https://web.launcher.omniverse.nvidia.com/exchange/content-pack/isaac-sim-assets-3?text=&kind=content-pack): Latest asset pack download for use in an air-gapped environment. Pack 3 of 3.
+
+Older versions (2023.1.1 or earlier):
+
+* [[OLD] Isaac Sim](https://web.launcher.omniverse.nvidia.com/exchange/app/isaac_sim): Latest build from Release branch. This build works staging or production assets. (Use the Release channel only)
+* [[OLD] Isaac Sim Daily](https://web.launcher.omniverse.nvidia.com/exchange/app/isaac_sim-daily): Latest daily build from Develop branch. This build works with our internal isaac-dev.ov.nvidia.com Nucleus by default. (Use the Beta channel only)
+* [[OLD] Isaac Sim Assets Pack 1](https://web.launcher.omniverse.nvidia.com/exchange/content-pack/isaac_sim-assets-1?text=&kind=content-pack): Latest asset pack download for use in an air-gapped environment. Pack 1 of 3.
+* [[OLD] Isaac Sim Assets Pack 2](https://web.launcher.omniverse.nvidia.com/exchange/content-pack/isaac_sim-assets-2?text=&kind=content-pack): Latest asset pack download for use in an air-gapped environment. Pack 2 of 3.
+* [[OLD] Isaac Sim Assets Pack 3](https://web.launcher.omniverse.nvidia.com/exchange/content-pack/isaac_sim-assets-3?text=&kind=content-pack): Latest asset pack download for use in an air-gapped environment. Pack 3 of 3.
 
 For information on launching once you have downloaded a build [see here](https://omniverse.gitlab-master-pages.nvidia.com/isaac/omni_isaac_sim/isaacsim/latest/install_workstation.html).
 

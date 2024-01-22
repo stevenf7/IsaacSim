@@ -5,7 +5,7 @@ version = "${version}"
 #boolean for if this version is the latest version
 latest = true
 #unique identifier for component, all lower case, persists between versions
-slug = "isaac_sim-daily"
+slug = "isaac-sim-daily"
 
 #displayed before application name in launcher
 productArea = ""
@@ -14,7 +14,7 @@ category = "Daily"
 
 # A filter of release types
 # 3 filter types [ "alpha", "beta", "release "]
-channel = "beta"
+channel = "alpha"
 
 # Set true if you want this package to show in enterprise launcher
 enterpriseStatus = false
