@@ -1,5 +1,5 @@
-name = "Isaac Sim"
-slug = "isaac_sim"
+name = "Isaac Sim Daily"
+slug = "isaac-sim-daily"
 kind = "app"
 version = "${version}"
 
@@ -23,6 +23,6 @@ location = "$${base}"
 # Not Required (will be created from image)
 # card.png: 220x1243
 [images]
-name = "Isaac-Sim-Images"
-url = "http://d4i3qtqj3r0z5.cloudfront.net/isaac-sim-pipeline-images-rc%402022.2.0-beta.46%2Bdevelop.46.6f16fc6b.tc.windows-x86_64.zip"
+name = "Isaac-Sim-Daily-Images"
+url = "http://d4i3qtqj3r0z5.cloudfront.net/isaac-sim-pipeline-images-beta%402022.2.0-beta.46%2Bdevelop.46.6f16fc6b.tc.windows-x86_64.zip"
 

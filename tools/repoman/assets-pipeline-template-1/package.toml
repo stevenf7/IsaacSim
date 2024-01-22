@@ -1,5 +1,5 @@
 name = "Isaac Sim Assets Pack 1"
-slug = "isaac_sim-assets-1"
+slug = "isaac-sim-assets-1"
 kind = "content-pack"
 version = "${version}"
 
