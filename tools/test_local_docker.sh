@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#This script packages isaac sim like normal, extracts it and then mounts it into a container for testing. 
+#This script packages isaac sim like normal, extracts it and then mounts it into a container for testing.
 rebuild=0
 mountpip=0
 while getopts x flag
@@ -13,7 +13,7 @@ done
 set -e
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 
-docker pull gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/isaac-sim:base
+docker pull gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/isaac-sim:base
 if [ "$rebuild" -eq "1" ]; then
 sudo rm -rf $SCRIPT_DIR/../_build/packages
 fi
@@ -31,6 +31,6 @@ if [ ! -d "isaac-sim-standalone" ]; then
     7za x isaac-sim-standalone*.7z -oisaac-sim-standalone
 fi
 
-nvidia-docker run -it -e OMNI_USER=svc-test -e OMNI_PASS=svc-test --network=host --rm -v "$(pwd)"/isaac-sim-standalone:/isaac-sim gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/isaac-sim:base bash
+nvidia-docker run -it -e OMNI_USER=svc-test -e OMNI_PASS=svc-test --network=host --rm -v "$(pwd)"/isaac-sim-standalone:/isaac-sim gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/isaac-sim:base bash
 
 popd
