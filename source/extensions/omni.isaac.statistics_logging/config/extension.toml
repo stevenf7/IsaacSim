@@ -4,7 +4,7 @@ category = "other"
 title = "Isaac Sim Statistics Logging"
 description = "Automatically logs statistics to disk if enabled"
 authors = ["Isaac Sim Team"]
-repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.statistics_logging"
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.statistics_logging"
 keywords = ["isaac"]
 changelog = "docs/CHANGELOG.md"
 toggleable = true
@@ -21,7 +21,7 @@ exts."omni.isaac.statistics_logging".resetLogOnStart = true
 # blank will default to default logging directory + /isaac_statistics/log.yaml
 exts."omni.isaac.statistics_logging".logFilePath = ""
 # logMode can also be "frames"
-exts."omni.isaac.statistics_logging".logMode = "seconds" 
+exts."omni.isaac.statistics_logging".logMode = "seconds"
 exts."omni.isaac.statistics_logging".verbose = true
 exts."omni.isaac.statistics_logging".logEveryNSeconds = 30
 exts."omni.isaac.statistics_logging".logEveryNFrames = 10

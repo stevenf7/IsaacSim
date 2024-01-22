@@ -8,7 +8,7 @@ category = "Simulation"
 title = "ROS2 Bridge"
 description = "ROS2 Bridge"
 authors = ["Isaac Sim Team"]
-repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.ros2_bridge"
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.ros2_bridge"
 keywords = ["isaac", "ROS2"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
@@ -29,7 +29,7 @@ icon = "data/icon.png"
 "usdrt.scenegraph" = {}
 
 [settings]
-exts."omni.isaac.ros2_bridge".ros_distro = "humble" # This setting specified which ros distro to fallback onto if none were sourced. 
+exts."omni.isaac.ros2_bridge".ros_distro = "humble" # This setting specified which ros distro to fallback onto if none were sourced.
 
 [[python.module]]
 name = "omni.isaac.ros2_bridge"

@@ -1,23 +1,23 @@
 # Omniverse Isaac Sim
 This is where the Omniverse Isaac Sim application is developed.
 
-* [Internal Documentation](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/isaacsim/latest/index.html)
+* [Internal Documentation](https://omniverse.gitlab-master-pages.nvidia.com/isaac/omni_isaac_sim/isaacsim/latest/index.html)
 * [Public Documentation](https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html)
 * Slack: [#omni-isaac-support](https://nvidia.slack.com/archives/CBDM22E5P)
 * [Confluence](https://confluence.nvidia.com/display/OMNIVERSE/Omniverse+Isaac+Sim)
 
 # Getting Started
 
-See [here](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/isaacsim/latest/requirements.html) for general hardware and driver requirements
+See [here](https://omniverse.gitlab-master-pages.nvidia.com/isaac/omni_isaac_sim/isaacsim/latest/requirements.html) for general hardware and driver requirements
 
 There are multiple ways to use isaac sim based on your workflow:
 
 ## Source (This repository)
 See [Using The Source Repository](#using-the-source-repository) section below for how to compile source and set up `git lfs`
 #### Branches:
-* [Release/2023.1](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/release/2023.1): Current Release Candidates and Public Release (rc.x)
-* [Develop](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop): Latest internal codebase, updated daily (alpha.x, beta.x)
-* [Tagged Releases](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tags): Older release commits are tagged here
+* [Release/2023.1](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/release/2023.1): Current Release Candidates and Public Release (rc.x)
+* [Develop](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop): Latest internal codebase, updated daily (alpha.x, beta.x)
+* [Tagged Releases](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tags): Older release commits are tagged here
 
 See [Isaac Sim Release Flow](https://docs.google.com/presentation/d/161QpSIxvXvAmZO1QeniJ-sMWdUhbX8iWUHpmg2sCHAA/edit?usp=sharing)
 
@@ -35,7 +35,7 @@ Once launched you will see the builds under the ``Exchange`` tab
 * [Isaac Sim Assets Pack 2](https://web.launcher.omniverse.nvidia.com/exchange/content-pack/isaac_sim-assets-2?text=&kind=content-pack): Latest asset pack download for use in an air-gapped environment. Pack 2 of 3.
 * [Isaac Sim Assets Pack 3](https://web.launcher.omniverse.nvidia.com/exchange/content-pack/isaac_sim-assets-3?text=&kind=content-pack): Latest asset pack download for use in an air-gapped environment. Pack 3 of 3.
 
-For information on launching once you have downloaded a build [see here](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/isaacsim/latest/install_workstation.html).
+For information on launching once you have downloaded a build [see here](https://omniverse.gitlab-master-pages.nvidia.com/isaac/omni_isaac_sim/isaacsim/latest/install_workstation.html).
 
 > Note that our documentation shows the public Omniverse launcher where daily builds are not available, but the process of running Isaac Sim is identical.
 
@@ -52,8 +52,8 @@ For information on launching once you have downloaded a build [see here](https:/
 
 ## Docker Containers (GitLab)
 
-* Isaac Sim: [gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/isaac-sim:latest-20xx.x](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/container_registry/6641) (Release branch, rc)
-* Isaac Sim Daily: [gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/isaac-sim:latest-develop](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/container_registry/6641) (Develop branch, alpha/beta)
+* Isaac Sim: [gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/isaac-sim:latest-20xx.x](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/container_registry/6641) (Release branch, rc)
+* Isaac Sim Daily: [gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/isaac-sim:latest-develop](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/container_registry/6641) (Develop branch, alpha/beta)
 
 ## Docker Containers (NGC)
 
@@ -77,14 +77,14 @@ It is ideal if you want to write native python scripts and need place to work wh
 
 # Developer Resources
 
-See the [wiki section](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/wikis/home) of this repo for developer resources and docs.
+See the [wiki section](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/wikis/home) of this repo for developer resources and docs.
 
-* [Filing Bugs And Requests](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/wikis/Developer-Resources/Jira-Board#creating-a-new-issue)
-* [Submitting a merge request](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/wikis/Developer-Resources/Merge-Request)
+* [Filing Bugs And Requests](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/wikis/Developer-Resources/Jira-Board#creating-a-new-issue)
+* [Submitting a merge request](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/wikis/Developer-Resources/Merge-Request)
 
 # Running headless and connecting via a remote client
 
-See [here](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/isaacsim/latest/install_container.html) for more information on how to use the container.
+See [here](https://omniverse.gitlab-master-pages.nvidia.com/isaac/omni_isaac_sim/isaacsim/latest/install_container.html) for more information on how to use the container.
 
 # List of internal nucleus servers:
 * isaac-dev.ov.nvidia.com : http://isaac-dev.ov.nvidia.com/
@@ -100,7 +100,7 @@ You can also clear your local cache from here and see used disk space
 
 ## Deleting previous installs
 
-* Download and run the [launcher cleanup tool](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/prod_launcher/prod_utilities/cleanup-tool.html)
+* Download and run the [launcher cleanup tool](https://omniverse.gitlab-master-pages.nvidia.com/isaac/omni_isaac_sim/prod_launcher/prod_utilities/cleanup-tool.html)
     * Run ``./launcher-cleanup``
     * This tool will delete any installed omniverse applications and will ask if you want to delete your local nucleus data.
     * Run with ``sudo`` if you have trouble installing cache from the launcher.
@@ -144,10 +144,10 @@ After a reboot you will need to:
     * Reboot your machine after installation.
     * Execute `git lfs install` once to enable LFS features after installation.
         * If you cloned the repo before above steps, you have to fetch the data with `git lfs pull` in the repo.
-- [Fork omniverse isaac sim repository](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/forks/new)
+- [Fork omniverse isaac sim repository](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/forks/new)
 - Go to your newly created fork in GitLab, select
     * go to "Settings->Repository->Mirroring repositories"
-        * set "Git repository URL" to https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim.git
+        * set "Git repository URL" to https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim.git
         * select "Pull" under "Mirror direction".
         * clear out the text under "Password".
         * check the "Overwrite diverged branches" checkbox.
@@ -198,7 +198,7 @@ To run isaac sim with a debugger attached:
 
 To attach a debugger to a running application:
 
-- See [Here](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/isaacsim/latest/install_python.html)
+- See [Here](https://omniverse.gitlab-master-pages.nvidia.com/isaac/omni_isaac_sim/isaacsim/latest/install_python.html)
 
 To debug a native python (normally run from `python.sh`) application:
 

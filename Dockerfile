@@ -42,7 +42,7 @@
 ARG DEBIAN_FRONTEND=noninteractive
 ARG ISAACSIM_VERSION=develop
 
-FROM gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/isaac-sim:latest-${ISAACSIM_VERSION} as isaac-sim
+FROM gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/isaac-sim:latest-${ISAACSIM_VERSION} as isaac-sim
 
 # ENV OMNI_SERVER http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/2023.1.1
 ARG OMNI_SERVER_ENV omniverse://isaac-dev.ov.nvidia.com

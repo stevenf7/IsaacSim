@@ -10,7 +10,7 @@ title = "Isaac Sim About Window"
 description="Show application/build information."
 
 # URL of the extension source repository.
-repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/"
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/"
 
 # Preview image. Folder named "data" automatically goes in git lfs (see .gitattributes file).
 preview_image = "data/preview.png"
