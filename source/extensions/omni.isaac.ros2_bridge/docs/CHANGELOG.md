@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.7.1] - 2024-01-19
+### Fixed
+- Missing DLLs for local windows usage
+- empty semantics test
+
 ## [2.7.0] - 2024-01-19
 ### Changed
 - Renamed "Isaac Examples > ROS" menu to "Isaac Examples > ROS2" 
