@@ -13,6 +13,11 @@ import omni.kit.test
 class TestPipArchive(omni.kit.test.AsyncTestCase):
     # import all packages to make sure dependencies were not missed
     async def test_import_all(self):
+        # isort: off
+        # Must be at the top so that dependencies later on work
+        import typing_extensions
+
+        # isort: on
         import azure.core
         import azure.identity
         import azure.storage.blob
@@ -25,7 +30,6 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
         import requests
         import requests_oauthlib
         import s3transfer
-        import typing_extensions
 
         self.assertIsNotNone(azure.identity)
         self.assertIsNotNone(azure.storage.blob)
