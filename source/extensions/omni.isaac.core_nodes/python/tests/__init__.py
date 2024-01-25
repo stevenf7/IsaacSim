@@ -1,4 +1,4 @@
-# Copyright (c) 2023, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2024, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -13,3 +13,4 @@ from .test_compute_odometry import *
 from .test_core_nodes import *
 from .test_create_render_product import *
 from .test_create_viewport import *
+from .test_rtf import *

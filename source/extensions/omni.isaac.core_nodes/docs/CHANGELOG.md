@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.9.0] - 2024-01-23
+### Added
+- Real Time Factor Node
+
 ## [1.8.0] - 2024-01-08
 ### Changed
 - Moved header files into extension
