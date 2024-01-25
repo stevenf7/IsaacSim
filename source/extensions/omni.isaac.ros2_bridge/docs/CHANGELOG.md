@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.8.0] - 2024-01-23
+### Changed
+- ROS2 Bridge no longer requires the vision_msgs for activation. However, if you would like to use Isaac Sim publishers dependant on vision_msgs, simply install it on the system or use isaac sim internal libraries. 
+
+
 ## [2.7.1] - 2024-01-19
 ### Fixed
 - Missing DLLs for local windows usage

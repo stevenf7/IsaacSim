@@ -57,6 +57,13 @@ public:
             }
             state.mMessage = state.mFactory->CreateBoundingBox3DMessage();
 
+            if (!state.mMessage->ptr())
+            {
+                CARB_LOG_ERROR("Unable to find Detection3DArray message type");
+
+                return false;
+            }
+
             state.mPublisher =
                 state.mFactory->CreatePublisher(state.mNodeHandle.get(), fullTopicName.c_str(),
                                                 state.mMessage->getTypeSupportHandle(), db.inputs.queueSize());

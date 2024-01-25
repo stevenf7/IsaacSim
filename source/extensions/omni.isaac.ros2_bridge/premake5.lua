@@ -38,7 +38,7 @@ project_with_location("omni.isaac.ros2_bridge.foxy")
         "std_msgs__rosidl_typesupport_c", "std_msgs__rosidl_generator_c",
         "rosgraph_msgs__rosidl_typesupport_c", "rosgraph_msgs__rosidl_generator_c", 
         "sensor_msgs__rosidl_typesupport_c", "sensor_msgs__rosidl_generator_c", 
-        "vision_msgs__rosidl_typesupport_c", "vision_msgs__rosidl_generator_c"
+        -- "vision_msgs__rosidl_typesupport_c", "vision_msgs__rosidl_generator_c"
         -- "ackermann_msgs__rosidl_typesupport_c", "ackermann_msgs__rosidl_generator_c"
     }
 
@@ -97,7 +97,7 @@ project_with_location("omni.isaac.ros2_bridge.humble")
         "std_msgs__rosidl_typesupport_c", "std_msgs__rosidl_generator_c",
         "rosgraph_msgs__rosidl_typesupport_c", "rosgraph_msgs__rosidl_generator_c", 
         "sensor_msgs__rosidl_typesupport_c", "sensor_msgs__rosidl_generator_c", 
-        "vision_msgs__rosidl_typesupport_c", "vision_msgs__rosidl_generator_c"
+        -- "vision_msgs__rosidl_typesupport_c", "vision_msgs__rosidl_generator_c"
         -- "ackermann_msgs__rosidl_typesupport_c", "ackermann_msgs__rosidl_generator_c"
     }
 
