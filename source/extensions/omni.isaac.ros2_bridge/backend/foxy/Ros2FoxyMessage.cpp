@@ -1,4 +1,4 @@
-// Copyright (c) 2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2023-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -332,12 +332,12 @@ struct Bbox2DData
 
 Ros2BoundingBox2DMessageFoxy::Ros2BoundingBox2DMessageFoxy() : Ros2BackendFoxy("vision_msgs", "msg", "Detection2DArray")
 {
-    msg = vision_msgs__msg__Detection2DArray__create();
+    msg = create();
 }
 
 const void* Ros2BoundingBox2DMessageFoxy::getTypeSupportHandle()
 {
-    return ROSIDL_GET_MSG_TYPE_SUPPORT(vision_msgs, msg, Detection2DArray);
+    return getTypeSupportHandleDynamic();
 }
 
 void Ros2BoundingBox2DMessageFoxy::fillHeader(const double timestamp, const std::string& frame_id)
@@ -357,7 +357,8 @@ void Ros2BoundingBox2DMessageFoxy::fillBboxData(const void* bboxArray, const siz
     vision_msgs__msg__Detection2DArray* detection_msg = static_cast<vision_msgs__msg__Detection2DArray*>(msg);
 
     // Set the detection sequence size and object pose sequence size
-    vision_msgs__msg__Detection2D__Sequence__init(&detection_msg->detections, numBoxes);
+    mGeneratorLibrary->callSymbolWithArg<void>(
+        "vision_msgs__msg__Detection2D__Sequence__init", &detection_msg->detections, numBoxes);
 
 
     const Bbox2DData* bboxData = reinterpret_cast<const Bbox2DData*>(bboxArray);
@@ -374,7 +375,8 @@ void Ros2BoundingBox2DMessageFoxy::fillBboxData(const void* bboxArray, const siz
         // TODO: Detection sub message header for all detections
         // detection_msg->detections.data[i].header
 
-        vision_msgs__msg__ObjectHypothesisWithPose__Sequence__init(&detection_msg->detections.data[i].results, 1);
+        mGeneratorLibrary->callSymbolWithArg<void>("vision_msgs__msg__ObjectHypothesisWithPose__Sequence__init",
+                                                   &detection_msg->detections.data[i].results, 1);
 
         detection_msg->detections.data[i].results.data[0].score = 1.0;
         Ros2BackendFoxy::set_string(std::to_string(box.semanticId), detection_msg->detections.data[i].results.data[0].id);
@@ -386,7 +388,7 @@ Ros2BoundingBox2DMessageFoxy::~Ros2BoundingBox2DMessageFoxy()
     if (!msg)
         return;
 
-    vision_msgs__msg__Detection2DArray__destroy(static_cast<vision_msgs__msg__Detection2DArray*>(msg));
+    destroy(static_cast<vision_msgs__msg__Detection2DArray*>(msg));
 }
 
 struct Bbox3DData
@@ -405,12 +407,12 @@ struct Bbox3DData
 // 3D Detection array
 Ros2BoundingBox3DMessageFoxy::Ros2BoundingBox3DMessageFoxy() : Ros2BackendFoxy("vision_msgs", "msg", "Detection3DArray")
 {
-    msg = vision_msgs__msg__Detection3DArray__create();
+    msg = create();
 }
 
 const void* Ros2BoundingBox3DMessageFoxy::getTypeSupportHandle()
 {
-    return ROSIDL_GET_MSG_TYPE_SUPPORT(vision_msgs, msg, Detection3DArray);
+    return getTypeSupportHandleDynamic();
 }
 
 void Ros2BoundingBox3DMessageFoxy::fillHeader(const double timestamp, const std::string& frame_id)
@@ -429,8 +431,8 @@ void Ros2BoundingBox3DMessageFoxy::fillBboxData(const void* bboxArray, size_t nu
 
 
     vision_msgs__msg__Detection3DArray* detection_msg = static_cast<vision_msgs__msg__Detection3DArray*>(msg);
-
-    vision_msgs__msg__Detection3D__Sequence__init(&detection_msg->detections, numBoxes);
+    mGeneratorLibrary->callSymbolWithArg<void>(
+        "vision_msgs__msg__Detection3D__Sequence__init", &detection_msg->detections, numBoxes);
 
     const Bbox3DData* bboxData = reinterpret_cast<const Bbox3DData*>(bboxArray);
 
@@ -462,7 +464,8 @@ void Ros2BoundingBox3DMessageFoxy::fillBboxData(const void* bboxArray, size_t nu
         detection_msg->detections.data[i].bbox.size.y = (box.x_max - box.x_min) * scale[1];
         detection_msg->detections.data[i].bbox.size.z = (box.x_max - box.x_min) * scale[2];
 
-        vision_msgs__msg__ObjectHypothesisWithPose__Sequence__init(&detection_msg->detections.data[i].results, 1);
+        mGeneratorLibrary->callSymbolWithArg<void>("vision_msgs__msg__ObjectHypothesisWithPose__Sequence__init",
+                                                   &detection_msg->detections.data[i].results, 1);
 
         detection_msg->detections.data[i].results.data[0].score = 1.0;
         Ros2BackendFoxy::set_string(std::to_string(box.semanticId), detection_msg->detections.data[i].results.data[0].id);
@@ -474,7 +477,7 @@ Ros2BoundingBox3DMessageFoxy::~Ros2BoundingBox3DMessageFoxy()
     if (!msg)
         return;
 
-    vision_msgs__msg__Detection3DArray__destroy(static_cast<vision_msgs__msg__Detection3DArray*>(msg));
+    destroy(static_cast<vision_msgs__msg__Detection3DArray*>(msg));
 }
 
 
