@@ -164,3 +164,28 @@ class TestO3dyn(omni.kit.test.AsyncTestCase):
         self.my_world.stop()
 
         pass
+
+    async def test_rotate(self):
+        omni.usd.get_context().new_stage()
+        stage = omni.usd.get_context().get_stage()
+
+        robot_prim = stage.DefinePrim(str(stage.GetDefaultPrim().GetPath()) + "/O3dyn", "Xform")
+
+        robot_prim.GetReferences().AddReference(self.usd_path)
+        self.my_world = World(stage_units_in_meters=1.0)
+        add_ground_plane(stage, "/physics/groundPlane", "Z", 1000.0, Gf.Vec3f(0.0, 0, -0.12), Gf.Vec3f(1.0))
+        await self.my_world.initialize_simulation_context_async()
+        for prim in stage.GetPrimAtPath(robot_prim.GetPath().AppendPath("wheel_drive")).GetChildren():
+            if prim.GetName() in ["wheel_fl_joint", "wheel_rl_joint"]:
+                prim.GetAttribute("drive:angular:physics:targetVelocity").Set(300)
+            else:
+                prim.GetAttribute("drive:angular:physics:targetVelocity").Set(-300)
+        self.my_world.play()
+        for i in range(155):
+            await omni.kit.app.get_app().next_update_async()
+
+        pose = omni.usd.get_world_transform_matrix(stage.GetPrimAtPath(robot_prim.GetPath().AppendPath("base_link")))
+        pose.Orthonormalize()
+        rotation = pose.ExtractRotation().GetAngle()
+        self.assertGreater(rotation, 45, 1)
+        self.my_world.stop()
