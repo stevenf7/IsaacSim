@@ -1,6 +1,10 @@
 # Changelog
 
 
+## [1.2.0] - 2024-01-25
+### Added
+- OsmoKPIFile writer logs KPIs to console.
+
 ## [1.1.0] - 2024-01-19
 ### Added
 - Adds new BaseIsaacBenchmark for non-async benchmarking
