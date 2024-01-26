@@ -125,3 +125,6 @@ output
 
 # ignore crash logs from streaming client sessions
 NvStreamer-*.etli
+
+# nodejs modules
+node_modules
