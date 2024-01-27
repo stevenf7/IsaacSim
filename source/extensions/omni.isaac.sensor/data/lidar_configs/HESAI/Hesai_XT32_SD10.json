@@ -11,6 +11,7 @@
         "intensityProcessing": "normalization",
         "rayType": "IDEALIZED",
         "nearRangeM": 0.05, "_comment4": "p.13 Instrument Range 0.05-120m",
+        "minDistBetweenEchos": 0.05,
         "farRangeM": 120.0,
   
         "startAzimuthDeg": 0.0, "_comment5": "p.11 0° is y-axis (and z is up, right handed)",

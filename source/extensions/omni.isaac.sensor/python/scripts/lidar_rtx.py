@@ -1,4 +1,4 @@
-# Copyright (c) 2023, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2023-2024, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -357,7 +357,10 @@ class LidarRtx(BaseSensor):
         config["profile"]["rayType"] = "IDEALIZED"
 
         if valid_range:
-            config["profile"]["nearRangeM"] = valid_range[0] / get_stage_units()
+            nearRangeM = valid_range[0] / get_stage_units()
+            config["profile"]["nearRangeM"] = nearRangeM
+            if nearRangeM < 0.4:
+                config["profile"]["minDistBetweenEchos"] = nearRangeM
             config["profile"]["farRangeM"] = valid_range[1] / get_stage_units()
         else:
             config["profile"]["nearRangeM"] = 1.0 / get_stage_units()

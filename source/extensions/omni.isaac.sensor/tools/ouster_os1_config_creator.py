@@ -1,4 +1,4 @@
-# Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2022-2024, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -6,6 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+# run this from the folder you want to configs to be in.
 # This is an example configuration file creator for the Ouster OS1 Lidar with 32 channels.
 brand = "ouster"
 model = "OS1"
@@ -69,7 +70,8 @@ for config in configs:
     resolution = config["resolution"]
     name = f"{model} {channels} {hz}hz @ {resolution} resolution"
     file_name = f"{model}_{channels}ch{hz}hz{resolution}res"
-    file_name = f"../data/lidar_configs/{brand}/{file_name}.json"
+    file_name = f"./{file_name}.json"
+    print(file_name)
     os.makedirs(os.path.dirname(file_name), exist_ok=True)
     with open(file_name, "w") as f:
         comment_count = 0
@@ -91,6 +93,7 @@ for config in configs:
         print('        "intensityProcessing": "normalization",')
         print('        "rayType": "IDEALIZED",')
         print(f'        "nearRangeM": 0.3, {comment("OPTICAL PERFORMANCE-Minimum Range 0.3 m for point cloud data")},')
+        print('        "minDistBetweenEchos": 0.3,')
         print(
             f'        "farRangeM": 120.0, {comment("OPTICAL PERFORMANCE- Range 100 m @ >90% detection probability, 100 klx sunlight 120 m @ >50% detection probability, 100 klx sunlight")},'
         )
@@ -104,10 +107,6 @@ for config in configs:
         print('        "downElevationDeg": -22.5,')
         print("        ")
         print(f'        "rangeResolutionM": 0.001, {comment("OPTICAL PERFORMANCE- Range Resolution 0.1 cm")},')
-        print("        ")
-        print(
-            f'        "rangeAccuracyM": 0.03, {comment("OPTICAL PERFORMANCE- Range Accuracy ±3 cm for lambertian targets, ±10 cm for retroreflectors")},'
-        )
         print("        ")
         print('        "avgPowerW": 0.002,')
         print(
