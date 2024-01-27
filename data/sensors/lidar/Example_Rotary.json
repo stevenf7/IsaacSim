@@ -8,7 +8,8 @@
       "scanType": "rotary",
       "intensityProcessing": "normalization",
       "rayType": "IDEALIZED",
-      "nearRangeM": 1.0,
+      "minDistBetweenEchos": 0.10,
+      "nearRangeM": 0.10,
       "farRangeM": 200.0,
   
       "startAzimuthDeg": 0.0,
@@ -20,11 +21,11 @@
       "rangeResolutionM": 0.004,
       "rangeAccuracyM": 0.02,
   
-      "avgPowerW": 0.002,
+      "avgPowerW": 0.2,
       "minReflectance": 0.1,
       "minReflectanceRange": 120.0,
-      "wavelengthNm": 903.0,
-      "pulseTimeNs": 6,
+      "wavelengthNm": 103.0,
+      "pulseTimeNs": 1,
 
       "azimuthErrorMean": 0.0,
       "azimuthErrorStd": 0.015,

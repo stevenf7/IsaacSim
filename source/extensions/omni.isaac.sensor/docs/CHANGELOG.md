@@ -1,5 +1,9 @@
 # Changelog
 
+## [9.12.1] - 2024-01-26
+### Fixed
+- RTX Lidar config parameter nearRangeM < 0.4 was broken. Added minDistBetweenEchos, which also affects the near hits.
+
 ## [9.12.0] - 2024-01-08
 ### Changed
 - Moved header files to extension

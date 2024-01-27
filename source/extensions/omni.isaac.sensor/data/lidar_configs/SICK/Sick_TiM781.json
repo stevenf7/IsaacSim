@@ -11,6 +11,7 @@
         "intensityProcessing": "normalization",
         "rayType": "IDEALIZED",
         "nearRangeM": 0.05, "_comment4": "p.2 Working range 0.05-25m",
+        "minDistBetweenEchos": 0.05,
         "farRangeM": 25.0, 
   
         "startAzimuthDeg": 0.0, "_comment5": " BROKEN AND CAN BE ONLY 0-360 p.5 0°-180° is y-axis, -45° to 225° is scan angle ⑮  Aperture angle 270° (scanning angle)",

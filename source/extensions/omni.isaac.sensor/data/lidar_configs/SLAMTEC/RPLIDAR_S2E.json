@@ -10,6 +10,7 @@
         "intensityProcessing": "normalization",
         "rayType": "IDEALIZED",
         "nearRangeM": 0.05,
+        "minDistBetweenEchos": 0.05,
         "farRangeM": 30.0,
   
         "startAzimuthDeg": 0.0,

@@ -9,6 +9,7 @@
     "intensityProcessing": "normalization",
     "rayType": "IDEALIZED",
     "nearRangeM": 0.2,
+    "minDistBetweenEchos": 0.2,
     "farRangeM": 45.0,
     "effectiveApertureSize": 0.01,
     "focusDistM": 0.12,
