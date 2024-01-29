@@ -1,3 +1,11 @@
+# Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto. Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+#
 """
 The Kit Runner Service is the main interface to Omniverse Kit within OVAT Tests. It is responsible
 for acquiring, launching and configuring a Kit build. Acquisition comes from Teamcity, or a local
