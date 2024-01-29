@@ -134,33 +134,35 @@ PYBIND11_MODULE(_sensor, m)
 
     defineInterfaceClass<ContactSensorInterface>(
         m, "ContactSensorInterface", "acquire_contact_sensor_interface", "release_contact_sensor_interface")
-        .def("get_contact_sensor_raw_data",
-             [](ContactSensorInterface* li, const char* body_path) -> py::object
-             {
-                 if (!li)
-                     return py::none();
-                 size_t num_data = 0;
-                 CsRawData* data = li->getSensorRawData(body_path, num_data);
-                 return py::array(py::buffer_info(data, sizeof(CsRawPython), py::format_descriptor<CsRawPython>::format(),
-                                                  1, { num_data }, { sizeof(CsRawPython) }));
-             },
-             R"pbdoc(
+        .def(
+            "get_contact_sensor_raw_data",
+            [](ContactSensorInterface* li, const char* body_path) -> py::object
+            {
+                if (!li)
+                    return py::none();
+                size_t num_data = 0;
+                CsRawData* data = li->getSensorRawData(body_path, num_data);
+                return py::array(py::buffer_info(data, sizeof(CsRawPython), py::format_descriptor<CsRawPython>::format(),
+                                                 1, { num_data }, { sizeof(CsRawPython) }));
+            },
+            R"pbdoc(
                 Args:
                     arg0 (:obj:`str`): USD Path to contact sensor as string
 
                 Returns:
                     :obj:`numpy.array`: The list of contact raw data that contains the specified body that the contact sensor is attached to.)pbdoc")
-        .def("get_rigid_body_raw_data",
-             [](ContactSensorInterface* li, const char* body_path) -> py::object
-             {
-                 if (!li)
-                     return py::none();
-                 size_t num_data = 0;
-                 CsRawData* data = li->getBodyRawData(body_path, num_data);
-                 return py::array(py::buffer_info(data, sizeof(CsRawPython), py::format_descriptor<CsRawPython>::format(),
-                                                  1, { num_data }, { sizeof(CsRawPython) }));
-             },
-             R"pbdoc(
+        .def(
+            "get_rigid_body_raw_data",
+            [](ContactSensorInterface* li, const char* body_path) -> py::object
+            {
+                if (!li)
+                    return py::none();
+                size_t num_data = 0;
+                CsRawData* data = li->getBodyRawData(body_path, num_data);
+                return py::array(py::buffer_info(data, sizeof(CsRawPython), py::format_descriptor<CsRawPython>::format(),
+                                                 1, { num_data }, { sizeof(CsRawPython) }));
+            },
+            R"pbdoc(
                 Get raw data from a rigid body that have contact report API enabled
                 Args:
                     arg0 (:obj:`str`): USD Path to rigid body as string
@@ -181,17 +183,18 @@ PYBIND11_MODULE(_sensor, m)
                     arg0 (:obj:`str`): USD Path to sensor as string
                 Returns:
                     :obj:`int`: Number of readings ready on the buffer.)pbdoc")
-        .def("get_sensor_readings",
-             [](const ContactSensorInterface* li, const char* sensor_path) -> py::object
-             {
-                 if (!li)
-                     return py::none();
-                 size_t num_data = 0;
-                 CsReading data = li->getSensorReadings(sensor_path, num_data);
-                 return py::array(py::buffer_info(&data, sizeof(CsReading), py::format_descriptor<CsReading>::format(),
-                                                  1, { num_data }, { sizeof(CsReading) }));
-             },
-             R"pbdoc(   
+        .def(
+            "get_sensor_readings",
+            [](const ContactSensorInterface* li, const char* sensor_path) -> py::object
+            {
+                if (!li)
+                    return py::none();
+                size_t num_data = 0;
+                CsReading data = li->getSensorReadings(sensor_path, num_data);
+                return py::array(py::buffer_info(&data, sizeof(CsReading), py::format_descriptor<CsReading>::format(),
+                                                 1, { num_data }, { sizeof(CsReading) }));
+            },
+            R"pbdoc(   
                 Gets the list of sensor readings for the given sensor, clears the reading buffer once values are acquired
                 Args:
                     arg0 (:obj:`str`): USD Path to sensor as string
@@ -229,47 +232,49 @@ PYBIND11_MODULE(_sensor, m)
                     arg0 (:obj:`char*`): the sensor path
                 Returns:
                     :obj:`int`: Number of readings ready on the buffer.)pbdoc")
-        .def("get_sensor_readings",
-             [](const ImuSensorInterface* li, const char* sensor_path, bool read_gravity = true) -> py::object
-             {
-                 if (!li)
-                 {
-                     return py::none();
-                 }
-                 size_t num_data = 0;
-                 IsReading data = li->getSensorReadings(sensor_path, num_data, read_gravity);
-                 return py::array(py::buffer_info(&data, sizeof(IsReading), py::format_descriptor<IsReading>::format(),
-                                                  1, { num_data }, { sizeof(IsReading) }));
-             },
-             R"pbdoc(   
+        .def(
+            "get_sensor_readings",
+            [](const ImuSensorInterface* li, const char* sensor_path, bool read_gravity = true) -> py::object
+            {
+                if (!li)
+                {
+                    return py::none();
+                }
+                size_t num_data = 0;
+                IsReading data = li->getSensorReadings(sensor_path, num_data, read_gravity);
+                return py::array(py::buffer_info(&data, sizeof(IsReading), py::format_descriptor<IsReading>::format(),
+                                                 1, { num_data }, { sizeof(IsReading) }));
+            },
+            R"pbdoc(   
                 Gets the list of sensor readings for the given sensor. Clears the reading buffer once values are acquired.
                 Args:
                     arg0 (:obj:`char*`): the sensor path
                 Returns:
                     :obj:`numpy.array`: The list of readings for the sensor ready on the buffer.)pbdoc",
-             py::arg("sensor_path"), py::arg("read_gravity") = true)
-        .def("get_sensor_reading",
-             [](const ImuSensorInterface* li, const char* sensor_path,
-                std::function<IsReading(std::vector<IsReading>, float)> interpolation_function = nullptr,
-                bool use_latest_data = false, bool read_gravity = true) -> py::object
-             {
-                 if (!li)
-                 {
-                     return py::none();
-                 }
-                 IsReading data = IsReading();
-                 if (interpolation_function)
-                 {
-                     data = li->getSensorReading(sensor_path, carb::wrapPythonCallback(std::move(interpolation_function)),
-                                                 use_latest_data, read_gravity);
-                 }
-                 else
-                 {
-                     data = li->getSensorReading(sensor_path, nullptr, use_latest_data, read_gravity);
-                 }
-                 return py::cast(data);
-             },
-             R"pbdoc(   
+            py::arg("sensor_path"), py::arg("read_gravity") = true)
+        .def(
+            "get_sensor_reading",
+            [](const ImuSensorInterface* li, const char* sensor_path,
+               std::function<IsReading(std::vector<IsReading>, float)> interpolation_function = nullptr,
+               bool use_latest_data = false, bool read_gravity = true) -> py::object
+            {
+                if (!li)
+                {
+                    return py::none();
+                }
+                IsReading data = IsReading();
+                if (interpolation_function)
+                {
+                    data = li->getSensorReading(sensor_path, carb::wrapPythonCallback(std::move(interpolation_function)),
+                                                use_latest_data, read_gravity);
+                }
+                else
+                {
+                    data = li->getSensorReading(sensor_path, nullptr, use_latest_data, read_gravity);
+                }
+                return py::cast(data);
+            },
+            R"pbdoc(   
                 Args:
                     arg0 (:obj:`char*`): the sensor path
                     arg1 (:obj:`std::function<IsReading(std::vector<IsReading>, float)>&`): interpolation_function
@@ -277,8 +282,8 @@ PYBIND11_MODULE(_sensor, m)
                     arg3 (:obj:`bool`): read_gravity
                 Returns:
                     :obj:`numpy.array`: The reading for the current sensor period.)pbdoc",
-             py::arg("sensor_path"), py::arg("interpolation_function") = nullptr, py::arg("use_latest_data") = false,
-             py::arg("read_gravity") = true)
+            py::arg("sensor_path"), py::arg("interpolation_function") = nullptr, py::arg("use_latest_data") = false,
+            py::arg("read_gravity") = true)
         .def("get_sensor_sim_reading", wrapInterfaceFunction(&ImuSensorInterface::getSensorSimReading),
              R"pbdoc(   
                 Args:

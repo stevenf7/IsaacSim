@@ -2,7 +2,7 @@ import argparse
 import os
 from typing import Callable, Dict
 
-from omni.repo.build import load_settings_from_config, setup_vscode_env
+from omni.repo.build import REPO_BUILD_DEFAULT_JOBS, load_settings_from_config, setup_vscode_env
 from omni.repo.man import get_all_known_configs, get_and_validate_host_platform, get_repo_paths
 
 
@@ -20,7 +20,10 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
     def run_repo_tool(options: Dict, config: Dict):
         # get config specific to repo build tool
         tool_config = config.get("repo_build", {})
-        settings = load_settings_from_config(config)
+        options.build_verbose = False
+        options.jobs = REPO_BUILD_DEFAULT_JOBS
+        options.compilation_cores = 1
+        settings = load_settings_from_config(config, options)
         repo_folders = get_repo_paths()
 
         # configs = get_all_known_configs()
