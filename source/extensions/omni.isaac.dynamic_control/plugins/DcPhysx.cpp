@@ -3791,24 +3791,24 @@ CARB_EXPORT void carbOnPluginStartup()
     }
     gStepSubscription = gPhysXInterface->subscribePhysicsStepEvents(SuUpdate, nullptr);
 
-    gEventSubscription =
-        carb::events::createSubscriptionToPop(gPhysXInterface->getSimulationEventStreamV2().get(),
-                                              [](carb::events::IEvent* e)
-                                              {
-                                                  if (e->type == omni::physx::SimulationEvent::eStopped)
-                                                  {
-                                                      SuStop();
-                                                  }
-                                                  else if (e->type == omni::physx::SimulationEvent::ePaused)
-                                                  {
-                                                      SuPause();
-                                                  }
-                                                  else if (e->type == omni::physx::SimulationEvent::eResumed)
-                                                  {
-                                                      SuResume();
-                                                  }
-                                              },
-                                              0, "Dynamic Control Status Event");
+    gEventSubscription = carb::events::createSubscriptionToPop(
+        gPhysXInterface->getSimulationEventStreamV2().get(),
+        [](carb::events::IEvent* e)
+        {
+            if (e->type == omni::physx::SimulationEvent::eStopped)
+            {
+                SuStop();
+            }
+            else if (e->type == omni::physx::SimulationEvent::ePaused)
+            {
+                SuPause();
+            }
+            else if (e->type == omni::physx::SimulationEvent::eResumed)
+            {
+                SuResume();
+            }
+        },
+        0, "Dynamic Control Status Event");
 
     omni::kit::StageUpdateNodeDesc suDesc = { 0 };
     suDesc.displayName = "Dynamic Control";

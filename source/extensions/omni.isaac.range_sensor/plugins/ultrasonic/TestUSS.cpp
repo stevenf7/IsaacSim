@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -13,9 +13,9 @@
 #include "UltrasonicArrayEmissionTimer.h"
 #include "UltrasonicReceiver.h"
 #include "UltrasonicReceiverArray.h"
-//#include "FiringGroupUtils.h"
-//#include <pxr/base/gf/vec2i.h>
-//#include <pxr/usd/usd/inherits.h>
+// #include "FiringGroupUtils.h"
+// #include <pxr/base/gf/vec2i.h>
+// #include <pxr/usd/usd/inherits.h>
 #include <doctest/doctest/doctest.h>
 
 #include <string>

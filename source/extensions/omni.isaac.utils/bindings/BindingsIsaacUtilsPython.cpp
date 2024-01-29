@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -54,8 +54,9 @@ PYBIND11_MODULE(_isaac_utils, m)
         )pbdoc";
 
     // Basic operations between types (Add, Sub, Mul)
-    math.def("mul", [](const carb::Float3& a, float x) { return a * x; }, py::is_operator(),
-             R"pbdoc( Scales a 3D vector by a given value
+    math.def(
+        "mul", [](const carb::Float3& a, float x) { return a * x; }, py::is_operator(),
+        R"pbdoc( Scales a 3D vector by a given value
         
         Args:
             arg0 (:obj:`carb.Float3`): 3D vector
@@ -65,8 +66,9 @@ PYBIND11_MODULE(_isaac_utils, m)
         Returns:
             :obj:`carb.Float3`: scaled vector.
         )pbdoc");
-    math.def("mul", [](const carb::Float4& a, float x) { return a * x; }, py::is_operator(),
-             R"pbdoc( Scales a 4D vector by a given value
+    math.def(
+        "mul", [](const carb::Float4& a, float x) { return a * x; }, py::is_operator(),
+        R"pbdoc( Scales a 4D vector by a given value
         
         Args:
             arg0 (:obj:`carb.Float4`): 4D vector
@@ -76,8 +78,9 @@ PYBIND11_MODULE(_isaac_utils, m)
         Returns:
             :obj:`carb.Float4`: scaled vector.
         )pbdoc");
-    math.def("mul", [](const carb::Float4& a, carb::Float4& x) { return a * x; }, py::is_operator(),
-             R"pbdoc( Performs a Quaternion rotation between two 4D vectors
+    math.def(
+        "mul", [](const carb::Float4& a, carb::Float4& x) { return a * x; }, py::is_operator(),
+        R"pbdoc( Performs a Quaternion rotation between two 4D vectors
         
         Args:
             arg0 (:obj:`carb.Float4`): first 4D quaternion vector
@@ -87,8 +90,9 @@ PYBIND11_MODULE(_isaac_utils, m)
         Returns:
             :obj:`carb.Float4`: rotated 4D quaternion vector.
         )pbdoc");
-    math.def("mul", [](const DcTransform& a, DcTransform& x) { return a * x; }, py::is_operator(),
-             R"pbdoc( Performs a Forward Transform multiplication between the transforms
+    math.def(
+        "mul", [](const DcTransform& a, DcTransform& x) { return a * x; }, py::is_operator(),
+        R"pbdoc( Performs a Forward Transform multiplication between the transforms
         
         Args:
             arg0 (:obj:`omni.isaac.dynamic_control._dynamic_control.Transform`): First Transform
@@ -99,8 +103,9 @@ PYBIND11_MODULE(_isaac_utils, m)
 
             :obj:`omni.isaac.dynamic_control._dynamic_control.Transform`: ``arg0 * arg1``
         )pbdoc");
-    math.def("add", [](const carb::Float3& a, carb::Float3& x) { return a + x; }, py::is_operator(),
-             R"pbdoc( 
+    math.def(
+        "add", [](const carb::Float3& a, carb::Float3& x) { return a + x; }, py::is_operator(),
+        R"pbdoc( 
         Args:
             arg0 (:obj:`carb.Float3`): 3D vector
 
@@ -374,28 +379,29 @@ PYBIND11_MODULE(_isaac_utils, m)
                 )pbdoc");
     auto transforms = m.def_submodule("transforms");
 
-    transforms.def("set_transform",
-                   [](DynamicControl* dynamicControlPtr, const long int stageId, const std::string primPath,
-                      const carb::Float3& translation, const carb::Float4& rotation)
-                   {
-                       pxr::UsdStageWeakPtr stage =
-                           pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
+    transforms.def(
+        "set_transform",
+        [](DynamicControl* dynamicControlPtr, const long int stageId, const std::string primPath,
+           const carb::Float3& translation, const carb::Float4& rotation)
+        {
+            pxr::UsdStageWeakPtr stage =
+                pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
 
-                       pxr::UsdPrim prim = stage->GetPrimAtPath(pxr::SdfPath(primPath));
+            pxr::UsdPrim prim = stage->GetPrimAtPath(pxr::SdfPath(primPath));
 
-                       if (prim)
-                       {
+            if (prim)
+            {
 
-                           omni::isaac::utils::transforms::setTransform(
-                               dynamicControlPtr, prim, omni::isaac::utils::conversions::asGfVec3f(translation),
-                               omni::isaac::utils::conversions::asGfQuatf(rotation));
-                       }
-                       else
-                       {
-                           CARB_LOG_ERROR("Set Transform Prim %s Not Valid", primPath.c_str());
-                       }
-                   },
-                   R"pbdoc(
+                omni::isaac::utils::transforms::setTransform(dynamicControlPtr, prim,
+                                                             omni::isaac::utils::conversions::asGfVec3f(translation),
+                                                             omni::isaac::utils::conversions::asGfQuatf(rotation));
+            }
+            else
+            {
+                CARB_LOG_ERROR("Set Transform Prim %s Not Valid", primPath.c_str());
+            }
+        },
+        R"pbdoc(
                 Set transform for an object in the stage, handles physics objects if simulation is running using dynamic control
 
                 Args:
@@ -409,30 +415,30 @@ PYBIND11_MODULE(_isaac_utils, m)
                     
                 )pbdoc");
 
-    transforms.def("set_scale",
-                   [](DynamicControl* dynamicControlPtr, const long int stageId, const std::string primPath,
-                      const carb::Float3& scale)
-                   {
-                       pxr::UsdStageWeakPtr stage =
-                           pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
+    transforms.def(
+        "set_scale",
+        [](DynamicControl* dynamicControlPtr, const long int stageId, const std::string primPath, const carb::Float3& scale)
+        {
+            pxr::UsdStageWeakPtr stage =
+                pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
 
-                       pxr::UsdPrim prim = stage->GetPrimAtPath(pxr::SdfPath(primPath));
+            pxr::UsdPrim prim = stage->GetPrimAtPath(pxr::SdfPath(primPath));
 
-                       if (prim)
-                       {
+            if (prim)
+            {
 
-                           omni::isaac::utils::transforms::setScale(
-                               dynamicControlPtr, prim, omni::isaac::utils::conversions::asGfVec3f(scale));
-                       }
-                       else
-                       {
-                           CARB_LOG_ERROR("Set Scale Prim %s Not Valid", primPath.c_str());
-                       }
+                omni::isaac::utils::transforms::setScale(
+                    dynamicControlPtr, prim, omni::isaac::utils::conversions::asGfVec3f(scale));
+            }
+            else
+            {
+                CARB_LOG_ERROR("Set Scale Prim %s Not Valid", primPath.c_str());
+            }
 
-                       // return new
-                       // // MapGenerator(physXPtr, stage);
-                   },
-                   R"pbdoc(
+            // return new
+            // // MapGenerator(physXPtr, stage);
+        },
+        R"pbdoc(
                 Set scale for an object in the stage
 
                 Args:
