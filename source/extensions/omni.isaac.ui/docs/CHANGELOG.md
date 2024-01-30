@@ -1,4 +1,8 @@
 # Changelog
+## [0.13.6] - 2024-01-29
+### Fixed
+- Fix bug where XYPlot widget could display the wrong axis values for ragged data.
+
 ## [0.13.5] - 2023-11-13
 ### Fixed
 - Updated documentation link

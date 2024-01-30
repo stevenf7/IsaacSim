@@ -1939,7 +1939,7 @@ class XYPlot(UIWidgetWrapper):
                 if data_min is None or m < data_min:
                     data_min = m
 
-        return data_min
+        return float(data_min)
 
     def _get_ragged_data_max(self, data) -> float:
         # Get the maximum value in a set of ragged data
@@ -1952,7 +1952,7 @@ class XYPlot(UIWidgetWrapper):
                 if data_max is None or m > data_max:
                     data_max = m
 
-        return data_max
+        return float(data_max)
 
     def _get_interpolated_data(self, x_min=None, x_max=None):
         """Get all data necessary for plotting
