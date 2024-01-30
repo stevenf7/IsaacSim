@@ -123,7 +123,7 @@ class Extension(omni.ext.IExt):
                 except socket.timeout:
                     pass
                 except Exception as e:
-                    carb.log_error("UDP server error: {}".format(e))
+                    carb.log_warn("UDP server error: {}".format(e))
                     break
             self._udp_server = None
             self._udp_clients = []
