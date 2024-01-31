@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.3.5] - 2024-01-31
+### Changed
+- Update asset paths to 4.0
+
 ## [3.3.4] - 2024-01-10
 ### Fixed
 - Fix undefined variables when clone=False for force APIs
@@ -10,7 +14,7 @@
 
 ## [3.3.2] - 2023-12-13
 ### Fixed
-- set_live_sync method 
+- set_live_sync method
 
 ## [3.3.1] - 2023-12-12
 ### Fixed
@@ -20,7 +24,7 @@
 ### Changed
 - Add more articulation metadata for OM-116002
 - Fix contact reporter API schema preparation for OM-116001
-- Fix joint limits OM-91153 
+- Fix joint limits OM-91153
 
 ## [3.2.1] - 2023-12-01
 ### Changed
