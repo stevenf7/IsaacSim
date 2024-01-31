@@ -140,6 +140,17 @@ class CreateSetupExtension(omni.ext.IExt):
         # Let users know when app is ready for use and live-streaming
         omni.kit.app.get_app().print_and_log(f"{self.app_title} App is loaded.")
 
+        # Record startup time as time at which app is ready for use
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        if ext_manager.is_extension_enabled("omni.isaac.benchmark.services"):
+            from omni.isaac.benchmark.services import base_isaac_benchmark
+
+            benchmark = base_isaac_benchmark.BaseIsaacBenchmark(benchmark_name="app_startup")
+            benchmark.set_phase("startup")
+            benchmark.stop_runtime()
+            benchmark.store_measurements()
+            benchmark.stop()
+
         await omni.kit.app.get_app().next_update_async()
 
     def _start_app(self, app_id, console=True, custom_args=None):

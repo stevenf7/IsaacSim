@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.12.0] - 2024-01-30
+
+### Changed
+- Measures startup time if omni.isaac.benchmark.services is loaded.
+
 ## [0.11.2] - 2023-09-21
 
 ### Removed

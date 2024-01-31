@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from omni.isaac.benchmark.services.settings import BenchmarkSettings
 
+import omni.kit.app as omni_kit_app
 from omni.isaac.benchmark.services.datarecorders import cpu, frametime, interface, memory
 from omni.isaac.benchmark.services.metrics import measurements
 from omni.isaac.core_nodes.bindings import _omni_isaac_core_nodes
@@ -190,16 +191,18 @@ class IsaacRuntimeRecorder(interface.MeasurementDataRecorder):
         self.context = context
         self.root_dir = root_dir
         self.benchmark_settings = benchmark_settings
-        self.start = None
+        self.start = 0.0
         self.elapsed_time = None
         self.phase = None
 
     def start_time(self):
         self.phase = self.context.phase
-        self.start = time.perf_counter_ns()
+        self.start = omni_kit_app.get_app().get_time_since_start_ms()
 
     def stop_time(self):
-        self.elapsed_time = (time.perf_counter_ns() - self.start) / 1000000
+        if self.phase is None:
+            self.phase = self.context.phase
+        self.elapsed_time = omni_kit_app.get_app().get_time_since_start_ms() - self.start
 
     def get_data(self):
         if self.phase != self.context.phase:

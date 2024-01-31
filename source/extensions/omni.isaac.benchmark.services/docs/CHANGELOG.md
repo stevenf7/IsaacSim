@@ -1,6 +1,10 @@
 # Changelog
 
 
+## [1.3.0] - 2024-01-30
+### Added
+- IsaacStartupTimeRecorder measures startup time, collected only during "startup" phase
+
 ## [1.2.0] - 2024-01-25
 ### Added
 - OsmoKPIFile writer logs KPIs to console.
