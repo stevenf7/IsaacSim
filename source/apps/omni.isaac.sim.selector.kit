@@ -26,7 +26,6 @@ ext.'omni.isaac.selector'.apps = [
     "omni.isaac.sim",
     "omni.isaac.sim.headless.native",
     "omni.isaac.sim.headless.webrtc",
-    "omni.isaac.sim.headless.websocket", # Note: WebSocket is deprecated (OM-105631)
 ]
 
 ext.'omni.isaac.selector'.experimental_apps = []
@@ -48,7 +47,7 @@ app.runLoops.main.rateLimitUseBusyLoop = false
 
 # setup size
 app.window.width = 500
-app.window.height = 530
+app.window.height = 480
 app.window.noResize = true
 # center position
 app.window.x = -1
