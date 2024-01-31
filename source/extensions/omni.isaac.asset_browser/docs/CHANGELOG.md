@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.4] - 2024-01-31
+
+### Changed
+
+- Update asset paths to 4.0
+
 ## [0.4.3] - 2023-12-12
 
 ### Changed

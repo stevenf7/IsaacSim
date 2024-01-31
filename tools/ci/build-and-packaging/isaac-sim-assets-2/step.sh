@@ -5,7 +5,7 @@ SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 OMNICLI="$SCRIPT_DIR/../../../../_build/_omnicli/omnicli.sh"
 ROOT_PATH="omniverse://isaac-dev.ov.nvidia.com/NVIDIA-Staging/Assets/Isaac"
 OUTPUT_PATH="_assets-2_temp"
-VERSION="2023.1.1"
+VERSION="4.0"
 NAME="isaac-sim-assets-2"
 
 echo Removing $SCRIPT_DIR/../../../../$OUTPUT_PATH/...

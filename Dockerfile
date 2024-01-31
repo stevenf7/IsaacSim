@@ -44,7 +44,7 @@ ARG ISAACSIM_VERSION=develop
 
 FROM gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/isaac-sim:latest-${ISAACSIM_VERSION} as isaac-sim
 
-# ENV OMNI_SERVER http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/2023.1.1
+# ENV OMNI_SERVER http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0
 ARG OMNI_SERVER_ENV omniverse://isaac-dev.ov.nvidia.com
 ENV OMNI_SERVER omniverse://isaac-dev.ov.nvidia.com
 # ENV OMNI_USER admin
