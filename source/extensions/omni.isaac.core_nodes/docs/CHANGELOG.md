@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.10.0] - 2024-01-30
+
+### Changed
+- Measures startup time if omni.isaac.benchmark.services is loaded.
+
 ## [1.9.0] - 2024-01-23
 ### Added
 - Real Time Factor Node

@@ -242,6 +242,17 @@ class SimulationApp:
         # Notify toolkit is running
         self._app.print_and_log("Simulation App Startup Complete")
 
+        # Record startup time as time at which app is ready for use
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        if ext_manager.is_extension_enabled("omni.isaac.benchmark.services"):
+            from omni.isaac.benchmark.services import base_isaac_benchmark
+
+            benchmark = base_isaac_benchmark.BaseIsaacBenchmark(benchmark_name="app_startup")
+            benchmark.set_phase("startup")
+            benchmark.stop_runtime()
+            benchmark.store_measurements()
+            benchmark.stop()
+
     def __del__(self):
         """Destructor for the class."""
         if self._exiting is False and sys.meta_path is None:
