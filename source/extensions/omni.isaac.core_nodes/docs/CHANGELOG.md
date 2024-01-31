@@ -1,10 +1,5 @@
 # Changelog
 
-## [1.10.0] - 2024-01-30
-
-### Changed
-- Measures startup time if omni.isaac.benchmark.services is loaded.
-
 ## [1.9.0] - 2024-01-23
 ### Added
 - Real Time Factor Node
@@ -147,7 +142,7 @@
 ### Changed
 - IsaacSimulationGate step value can now be set to zero to stop execution
 ### Added
-- function to handle writer activation requests to avoid race conditions from camera helpers. 
+- function to handle writer activation requests to avoid race conditions from camera helpers.
 
 ## [0.20.0] - 2022-12-05
 ### Added
@@ -218,7 +213,7 @@
 - utility function to cache node activations until the next frame. This solves an issue where activating node templates from other nodes would cause a race condition
 
 ### Fixed
-- IsaacSetViewportResolution node forces window aperture to reset if the resolution is changed. 
+- IsaacSetViewportResolution node forces window aperture to reset if the resolution is changed.
 
 ## [0.12.2] - 2022-07-22
 

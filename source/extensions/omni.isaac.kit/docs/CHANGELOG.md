@@ -1,8 +1,12 @@
 # Changelog
 
+## [1.5.0] - 2024-01-30
+### Changed
+- Measures startup time if omni.isaac.benchmark.services is loaded.
+
 ## [1.4.7] - 2023-12-13
 ### Fixed
-- set_live_sync method 
+- set_live_sync method
 
 ## [1.4.6] - 2023-11-27
 ### Changed
@@ -56,7 +60,7 @@
 
 ## [1.2.0] - 2022-10-25
 ### Changed
-- Prepare UI focuses on content tab and hides samples to improve startup times. 
+- Prepare UI focuses on content tab and hides samples to improve startup times.
 
 ## [1.1.0] - 2022-10-14
 ### Added
