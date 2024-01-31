@@ -75,10 +75,8 @@ For information on launching once you have downloaded a build [see here](https:/
 
 * Isaac Sim Public: [nvcr.io/nvidia/isaac-sim:20xx.x.x](https://catalog.ngc.nvidia.com/orgs/nvidia/containers/isaac-sim) Similar to Prod-Isaac Sim from the Integ Launcher.
 * Isaac Sim: [nvcr.io/nvidian/isaac-sim:latest-20xx.x](https://registry.ngc.nvidia.com/orgs/nvidian/containers/isaac-sim/tags) Similar to RC Builds from the Integ Launcher. Built from the Release branch. For anyone in the ``nvidian`` org in NGC.
-> To get access to the containers below, fill up and submit this [form](https://goo.gl/forms/IjKBiZRt4RYZcF3h1). Select the ``omniverse [For Omniverse Team (Susan Fong)]`` team. Post on [#swngc-help](https://nvidia.slack.com/archives/C7VGNG1V3) if you have issues getting access to the ``nvidian/omniverse`` NGC team.
-* Isaac Sim: [nvcr.io/nvidian/omniverse/isaac-sim:latest-20xx.x](https://registry.ngc.nvidia.com/orgs/nvidian/teams/omniverse/containers/isaac-sim/tags) Similar to RC Builds from the Integ Launcher. Built from the Release branch.
-* Isaac Sim Daily: [nvcr.io/nvidian/omniverse/isaac-sim:latest-develop](https://registry.ngc.nvidia.com/orgs/nvidian/teams/omniverse/containers/isaac-sim/tags) Similar to Alpha and Beta Builds from the Integ Launcher. Built from the Develop branch.
-* Isaac Sim Internal-only: [nvcr.io/nvidian/omniverse/isaac-sim:latest-develop-internal](https://registry.ngc.nvidia.com/orgs/nvidian/teams/omniverse/containers/isaac-sim/tags) Similar to Internal-only builds from the Develop branch.
+* Isaac Sim Daily: [nvcr.io/nvidian/isaac-sim:latest-develop](https://registry.ngc.nvidia.com/orgs/nvidian/containers/isaac-sim/tags) Similar to Alpha and Beta Builds from the Integ Launcher. Built from the Develop branch.
+* Isaac Sim Internal-only: [nvcr.io/nvidian/isaac-sim:latest-develop-internal](https://registry.ngc.nvidia.com/orgs/nvidian/containers/isaac-sim/tags) Similar to Internal-only builds from the Develop branch (for internal tests/benchmarking). 
 
 Notes:
   - See [Branches](#branches)
