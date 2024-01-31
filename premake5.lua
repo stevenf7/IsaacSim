@@ -233,8 +233,6 @@ group "apps"
     define_local_experience("isaac-sim.fabric", "omni.isaac.sim.fabric")
     define_local_experience("isaac-sim.selector", "omni.isaac.sim.selector")
     define_local_experience("isaac-sim.headless.native", "omni.isaac.sim.headless.native", "--no-window ")
-    define_local_experience("isaac-sim.headless.websocket", "omni.isaac.sim.headless.websocket", "--no-window ")
-    define_local_experience("isaac-sim.headless.websocket.h264", "omni.isaac.sim.headless.websocket", "--no-window --/app/livestream/websocket/encoder_selection=OPENH264 ")
     define_local_experience("isaac-sim.headless.webrtc", "omni.isaac.sim.headless.webrtc", "--no-window ")
     -- Windows Only
     if os.target() == "windows" then
@@ -245,8 +243,6 @@ group "startup_tests"
     -- use "--/app/settings/persistent=0 --/app/settings/loadUserConfig=0" to ignore config user config file
     -- use "--reset-user" to reset user config file
     define_startup_experience("tests-startup.main", "omni.isaac.sim", "--/app/quitAfter=500 --/app/file/ignoreUnsavedOnExit=1")
-    define_startup_experience("tests-startup.websocket", "omni.isaac.sim.headless.websocket", "--no-window --/app/quitAfter=500 --/app/file/ignoreUnsavedOnExit=1")
-    define_startup_experience("tests-startup.websocket.h264", "omni.isaac.sim.headless.websocket", "--no-window --/app/livestream/websocket/encoder_selection=OPENH264 --/app/quitAfter=500 --/app/file/ignoreUnsavedOnExit=1")
     define_startup_experience("tests-startup.webrtc", "omni.isaac.sim.headless.webrtc", "--no-window --/app/quitAfter=500 --/app/file/ignoreUnsavedOnExit=1")
     define_startup_experience("tests-startup.native", "omni.isaac.sim.headless.native", "--no-window --/app/quitAfter=500 --/app/file/ignoreUnsavedOnExit=1")
     define_startup_experience("tests-startup.extscache", "omni.isaac.sim", "--no-window --/app/quitAfter=500 --/app/extensions/registryEnabled=0 --/app/file/ignoreUnsavedOnExit=1")
@@ -535,10 +531,7 @@ group "docker_tests"
 
     docker_test("tests-internaldocker-simple", "./dockertests/simple.sh")
     docker_test("tests-internaldocker-headless-native", "./isaac-sim.headless.native.sh", "--allow-root --/app/quitAfter=500")
-    docker_test("tests-internaldocker-headless-webrtc", "./isaac-sim.headless.webrtc.sh", "--allow-root --/app/quitAfter=500")
-    docker_test("tests-internaldocker-headless-websocket", "./isaac-sim.headless.websocket.sh", "--allow-root --/app/quitAfter=500")
-    docker_test("tests-internaldocker-headless-websocket-h264", "./isaac-sim.headless.websocket.h264.sh", "--allow-root --/app/quitAfter=500")
-    -- docker_test("tests-internaldocker-python-livestream", "./python.sh", "standalone_examples/api/omni.isaac.kit/livestream.py --/app/quitAfter=500")
+    docker_test("tests-internaldocker-headless-webrtc", "./isaac-sim.headless.webrtc.sh", "--allow-root --/app/quitAfter=500")-- docker_test("tests-internaldocker-python-livestream", "./python.sh", "standalone_examples/api/omni.isaac.kit/livestream.py --/app/quitAfter=500")
     -- docker_test("tests-internaldocker-jupyter", "./dockertests/jupyter.sh")
     docker_test("tests-internaldocker-python-asset_usd_converter", "./python.sh", "standalone_examples/api/omni.kit.asset_converter/asset_usd_converter.py --folders standalone_examples/data/cube standalone_examples/data/torus")
     -- docker_test("tests-internaldocker-python-flying_things_3d", "./python.sh", "tools/composer/src/main.py --nucleus-server isaac-dev.ov.nvidia.com --input parameters/flying_things_3d.yaml --headless")
