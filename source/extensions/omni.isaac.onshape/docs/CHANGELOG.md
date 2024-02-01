@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.0] - 2024-01-29
+### Changed
+- Deprecated - Use omni.importer.onshape
+
 ## [0.7.0] - 2023-08-02
 ### Changed
 - Use pip_prebundle instead of runtime installation of pip packages
