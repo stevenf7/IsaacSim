@@ -11,9 +11,10 @@ import carb
 import numpy as np
 import omni.graph.core as og
 import omni.kit.test
+import rclpy
+from geometry_msgs.msg import Twist
 from omni.isaac.benchmark.services.base_isaac_benchmark_async import BaseIsaacBenchmarkAsync
 from omni.isaac.core import PhysicsContext
-from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.wheeled_robots.robots import WheeledRobot
 
@@ -26,11 +27,23 @@ TEST_NUM_APP_UPDATES = 60 * 10
 class TestBenchmarkRobotsNovaCarterROS2(BaseIsaacBenchmarkAsync):
     async def setUp(self):
         await super().setUp()
+        rclpy.init()
         pass
 
     async def tearDown(self):
         await super().tearDown()
+        rclpy.shutdown()
         pass
+
+    def move_cmd_msg(self, x, y, z, ax, ay, az):
+        msg = Twist()
+        msg.linear.x = x
+        msg.linear.y = y
+        msg.linear.z = z
+        msg.angular.x = ax
+        msg.angular.y = ay
+        msg.angular.z = az
+        return msg
 
     # ----------------------------------------------------------------------
 
@@ -136,16 +149,15 @@ class TestBenchmarkRobotsNovaCarterROS2(BaseIsaacBenchmarkAsync):
 
             robots.append(current_robot)
 
-        timeline = omni.timeline.get_timeline_interface()
-        timeline.play()
+        node = rclpy.create_node("nova_carter_cmd")
+        self.cmd_vel_pub = node.create_publisher(Twist, "cmd_vel", 1)
         await omni.kit.app.get_app().next_update_async()
 
-        for robot in robots:
-            robot.initialize()
-            # start the robot rotating in place so not to run into each
-            robot.apply_wheel_actions(
-                ArticulationAction(joint_positions=None, joint_efforts=None, joint_velocities=5 * np.array([0, 1]))
-            )
+        move_cmd = self.move_cmd_msg(0.0, 0.0, 0.0, 0.0, 0.0, 1.0)
+        self.cmd_vel_pub.publish(move_cmd)
+
+        timeline = omni.timeline.get_timeline_interface()
+        timeline.play()
 
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
@@ -159,6 +171,7 @@ class TestBenchmarkRobotsNovaCarterROS2(BaseIsaacBenchmarkAsync):
 
         for _ in range(1 if self.test_mode else TEST_NUM_APP_UPDATES):
             await omni.kit.app.get_app().next_update_async()
+            self.cmd_vel_pub.publish(move_cmd)
 
         self.stop_collecting_frametime()
         await self.store_measurements()

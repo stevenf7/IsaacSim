@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.9.1"
+version = "1.0.0"
 category = "Simulation"
 title = "Wheeled Drives"
 description = "This extension provides wheeled robots utilities"
@@ -31,6 +31,10 @@ name = "omni.isaac.wheeled_robots"
 
 [[python.module]]
 name = "omni.isaac.wheeled_robots.tests"
+
+[[native.plugin]]
+path = "bin/*.plugin"
+recursive = false
 
 [fswatcher.patterns]
 include = ["*.ogn", "*.py"]

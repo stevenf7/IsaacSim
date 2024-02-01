@@ -1,4 +1,7 @@
 # Changelog
+## [1.10.0] - 2024-01-30
+### Added
+- Run One Frame Simulation Node
 
 ## [1.9.0] - 2024-01-23
 ### Added

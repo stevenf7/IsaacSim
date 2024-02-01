@@ -3,7 +3,6 @@
         "version": 1,
         "icon": "icons/isaac-sim.svg",        
         "description": "Node that reads out IMU linear acceleration, angular velocity and orientation data",
-        "language": "Python",
         "categoryDefinitions": "config/CategoryDefinition.json",
         "categories": "isaacSensor",
         "metadata": {

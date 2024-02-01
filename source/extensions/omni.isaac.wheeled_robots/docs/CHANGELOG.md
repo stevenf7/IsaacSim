@@ -1,4 +1,9 @@
 # Changelog
+## [1.0.0] - 2024-01-30
+### Changed
+- Refactored wheeled robots extension to use carb plugin and support Cpp code
+- Rewrote differential controller node in Cpp
+- Removed unused outputs for position and effort control
 
 ## [0.9.1] - 2024-01-08
 ### Fixed
