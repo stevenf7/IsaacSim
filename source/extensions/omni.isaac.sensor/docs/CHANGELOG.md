@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.13.0] - 2024-01-30
+### Changed
+- Converted read IMU and contact sensor nodes to C++
+- Added read latest data input flag to the read contact sensor node (default to false)
+- Renamed Isaac Read Contact Sensor to Isaac Read Contact Sensor Node
+
+
 ## [9.12.1] - 2024-01-26
 ### Fixed
 - RTX Lidar config parameter nearRangeM < 0.4 was broken. Added minDistBetweenEchos, which also affects the near hits.

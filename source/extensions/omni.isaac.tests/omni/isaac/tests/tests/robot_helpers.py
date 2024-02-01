@@ -61,8 +61,6 @@ def setup_robot_og(graph_path, lwheel_name, rwheel_name, robot_path, wheel_rad, 
                 ("OnPlaybackTick.outputs:tick", "DifferentialController.inputs:execIn"),
                 ("OnPlaybackTick.outputs:tick", "ArticulationController.inputs:execIn"),
                 ("OnPlaybackTick.outputs:tick", "computeOdom.inputs:execIn"),
-                ("DifferentialController.outputs:effortCommand", "ArticulationController.inputs:effortCommand"),
-                ("DifferentialController.outputs:positionCommand", "ArticulationController.inputs:positionCommand"),
                 ("DifferentialController.outputs:velocityCommand", "ArticulationController.inputs:velocityCommand"),
             ],
             keys.SET_VALUES: [

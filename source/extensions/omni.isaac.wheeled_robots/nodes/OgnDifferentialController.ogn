@@ -1,8 +1,8 @@
 {
     "DifferentialController": {
         "version": 1,
+        "icon": "icons/isaac-sim.svg",
         "description": "Differential Controller",
-        "language": "Python",
         "categories": {
             "isaacSim": "robot controller inside Isaac Sim"
         },
@@ -17,52 +17,52 @@
             },
             "wheelRadius": {
                 "type": "double",
-                "description": "radius of the wheels"
+                "description": "radius of the wheels",
+                "default": 0.0
             },
             "wheelDistance": {
                 "type": "double",
-                "description": "distance between the two wheels"
+                "description": "distance between the two wheels",
+                "default": 0.0
             },
             "maxLinearSpeed":{
                 "type": "double",
-                "description": "max linear speed allowed for vehicle"
+                "description": "max linear speed allowed for vehicle",
+                "default": 0.0
             },
             "maxAngularSpeed":{
                 "type": "double",
-                "description": "max angular speed allowed for vehicle"
+                "description": "max angular speed allowed for vehicle",
+                "default": 0.0
             },
             "maxWheelSpeed":{
                 "type": "double",
-                "description": "max wheel speed allowed"
+                "description": "max wheel speed allowed",
+                "default": 0.0
             },
             "linearVelocity":{
                 "type": "double",
                 "description": "desired linear velocity",
                 "metadata": {
                     "uiName": "Linear Velocity"
-                }
+                },
+                "default": 0.0
             },
             "angularVelocity":{
                 "type": "double",
                 "description": "desired rotation velocity",
                 "metadata": {
                     "uiName": "Angular Velocity"
-                }
+                },
+                "default": 0.0
             }
         },
         "outputs":{
-            "positionCommand":{
-                "type": "double[]",
-                "description": "position commands"
-            },
             "velocityCommand":{
                 "type": "double[]",
-                "description": "velocity commands"
-            },            
-            "effortCommand":{
-                "type": "double[]",
-                "description": "effort commands"
-            }            
+                "description": "velocity commands",
+                "default": [0.0, 0.0]    
+            }
         }
     }
 }

@@ -405,8 +405,6 @@ class TestRos2DifferentialBase(omni.kit.test.AsyncTestCase):
                         ("breakLinVel.outputs:x", "diffController.inputs:linearVelocity"),
                         ("subscribeTwist.outputs:angularVelocity", "breakAngVel.inputs:tuple"),
                         ("breakAngVel.outputs:z", "diffController.inputs:angularVelocity"),
-                        ("diffController.outputs:effortCommand", "artController.inputs:effortCommand"),
-                        ("diffController.outputs:positionCommand", "artController.inputs:positionCommand"),
                         ("diffController.outputs:velocityCommand", "artController.inputs:velocityCommand"),
                     ],
                     og.Controller.Keys.SET_VALUES: [

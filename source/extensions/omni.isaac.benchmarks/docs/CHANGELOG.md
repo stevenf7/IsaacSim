@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.21.3] - 2024-01-30
+### Fixed
+- Nova Carter ROS2 benchmark to use /cmd_vel commands rather than articulation control directly
+
 ## [0.21.2] - 2024-01-19
 ### Added
 - Fix ROS2 camera helper benchmark issue
