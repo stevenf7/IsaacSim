@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.1] - 2024-01-31
+### Fixed
+- Crash on exit when using tracy
+
 ## [1.5.0] - 2024-01-30
 ### Changed
 - Measures startup time if omni.isaac.benchmark.services is loaded.
