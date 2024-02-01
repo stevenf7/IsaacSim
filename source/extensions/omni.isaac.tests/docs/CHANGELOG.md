@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.16.0] - 2024-02-01
+### Addewd
+- Added NvBlox unit test
+
 ## [1.15.3] - 2024-01-25
 ### Added
 - Added O3Dyn robot rotate unit tests
