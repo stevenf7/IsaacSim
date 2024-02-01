@@ -491,8 +491,23 @@ class SimulationApp:
             while is_stage_loading():
                 self._app.update()
 
-            self._app.shutdown()
-            # disabled on linux to workaround issues where unloading plugins causes carb to fail
+            # Cleanup any running tracy intances so data is not lost
+            try:
+                _profiler_tracy = carb.profiler.acquire_profiler_interface(plugin_name="carb.profiler-tracy.plugin")
+                if _profiler_tracy:
+                    _profiler_tracy.set_capture_mask(0)
+                    _profiler_tracy.end(0)
+                    _profiler_tracy.shutdown()
+            except RuntimeError:
+                # Tracy plugin was not loaded, so profiler never started - skip checks.
+                pass
+
+            # Disable logging before shutdown to keep the log clean
+            # Warnings at this point don't matter as the python process is about to be terminated
+            _logging = carb.logging.acquire_logging()
+            _logging.set_level_threshold(carb.logging.LEVEL_ERROR)
+            # Disabled to prevent crashes on shutdown, terminating carb is faster
+            # self._app.shutdown()
             self._framework.unload_all_plugins()
             # Force all omni module to unload on close
             # This prevents crash on exit
