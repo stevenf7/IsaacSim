@@ -57,7 +57,7 @@ files_exclude = [
     ["tests/tests-python-omni.isaac.benchmarks*"],
     ["tests/tests-python-omni.isaac.benchmark.services*"],
     ["tests/tests-python-omni.isaac.gym.benchmark*"],
-    ["tests/tests-python-omni.isaac.onshape*"],
+    ["tests/tests-python-omni.importer.onshape*"],
 ]
 
 [isaac-sim-standalone.release]
@@ -87,7 +87,7 @@ files_exclude = [
     ["tests/tests-python-omni.isaac.benchmarks*"],
     ["tests/tests-python-omni.isaac.benchmark.services*"],
     ["tests/tests-python-omni.isaac.gym.benchmark*"],
-    ["tests/tests-python-omni.isaac.onshape*"],
+    ["tests/tests-python-omni.importer.onshape*"],
 ]
 
 [isaac-sim-standalone.linux-x86_64]

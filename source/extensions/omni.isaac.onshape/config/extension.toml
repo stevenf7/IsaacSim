@@ -1,10 +1,10 @@
 display_name = "Onshape Importer"
 
 [package]
-version = "0.7.0"
+version = "1.0.0"
 category = "Importer"
-title = "Onshape Importer"
-description = "Import Onshape Documents into Omniverse"
+title = " [DEPRECATED] Onshape Importer"
+description = "Deprecated - Use omni.importer.onshape"
 authors = ["Isaac Sim Team"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.onshape"
 keywords = ["isaac"]
@@ -16,16 +16,7 @@ writeTarget.kit = true
 
 [dependencies]
 "omni.kit.uiapp" = {}
-"omni.kit.commands" = {}
-"omni.kit.window.filepicker" = {}
-"omni.kit.menu.utils" = {}
-"omni.kit.window.preferences" = {}
-"omni.timeline" = {}
-"omni.physx" = {}
-"omni.kit.pip_archive" = {}
 
-[[python.module]]
-path = "pip_prebundle"
 
 [[python.module]]
 name = "omni.isaac.onshape"
