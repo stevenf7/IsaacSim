@@ -32,7 +32,8 @@ fetch.packman_target_files_to_pull = [
     "${root}/deps/kit-sdk.packman.xml",
     "${root}/deps/rtx-plugins.packman.xml",
     "${root}/deps/omni-physics.packman.xml",
-    "${root}/deps/target-deps.packman.xml",
+    "${root}/deps/kit-sdk-deps.packman.xml",
+    "${root}/deps/ext-deps.packman.xml",
     "${root}/deps/isaac-sim.packman.xml",
     "${root}/deps/omni-usd-resolver.packman.xml",
 ]
@@ -99,7 +100,7 @@ msbuild.vs_version = "vs2017"
 stage_files.error_if_missing = true
 
 licensing.enabled = true
-licensing.packages = ["${root}/deps/rtx-target-deps.packman.xml", "${root}/deps/target-deps.packman.xml", "${root}/deps/isaac-sim.packman.xml"]
+licensing.packages = ["${root}/deps/rtx-target-deps.packman.xml", "${root}/deps/ext-deps.packman.xml", "${root}/deps/isaac-sim.packman.xml"]
 licensing.fail_on_missing = true
 
 post_build.commands = [
