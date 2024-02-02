@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.1.0"
+version = "2.1.1"
 category = "Simulation"
 title = "Isaac Sim Range Sensor"
 description = "Range based sensor simulation using physx"

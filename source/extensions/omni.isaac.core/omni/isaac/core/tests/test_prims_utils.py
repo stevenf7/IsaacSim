@@ -67,13 +67,13 @@ class TestPrims(omni.kit.test.AsyncTestCase):
 
     async def test_is_prim_non_root_articulation_link(self):
         from omni.isaac.core.objects import DynamicCuboid
-        from omni.isaac.core.utils.nucleus import get_assets_root_path
+        from omni.isaac.core.utils.nucleus import get_assets_root_path_async
         from omni.isaac.core.utils.prims import is_prim_non_root_articulation_link
         from omni.isaac.core.utils.stage import clear_stage
 
         clear_stage()
         add_reference_to_stage(usd_path="", prim_path="/World/Franka")
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         if assets_root_path is None:
             raise Exception("Asset root path doesn't exist")
         asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"

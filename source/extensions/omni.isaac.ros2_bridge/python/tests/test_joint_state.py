@@ -23,7 +23,7 @@ import omni.kit.test
 import omni.kit.usd
 import usdrt.Sdf
 from omni.isaac.core.articulations import Articulation
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.physics import simulate_async
 from omni.isaac.core.utils.stage import open_stage_async
 
@@ -42,7 +42,7 @@ class TestRos2JointState(omni.kit.test.AsyncTestCase):
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.ros2_bridge")
         self._ros_extension_path = ext_manager.get_extension_path(ext_id)
 
-        self._assets_root_path = get_assets_root_path()
+        self._assets_root_path = await get_assets_root_path_async()
         if self._assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return
@@ -77,7 +77,7 @@ class TestRos2JointState(omni.kit.test.AsyncTestCase):
         from sensor_msgs.msg import JointState
 
         # open simple_articulation asset (with one drivable revolute and one drivable prismatic joint)
-        self._assets_root_path = get_assets_root_path()
+        self._assets_root_path = await get_assets_root_path_async()
         await omni.kit.app.get_app().next_update_async()
         self.usd_path = self._assets_root_path + "/Isaac/Robots/Simple/articulation_3_joints.usd"
         (result, error) = await open_stage_async(self.usd_path)

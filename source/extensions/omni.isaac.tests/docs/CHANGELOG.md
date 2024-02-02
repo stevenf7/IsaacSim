@@ -8,6 +8,9 @@
 ### Added
 - Added O3Dyn robot rotate unit tests
 
+### Changed
+- Changed get_assets_root_path to get_assets_root_path_async for the unit tests
+
 ## [1.15.2] - 2024-01-03
 ### Changed
 - Updated unit tests with newer OgnIsaacArticulationController node
@@ -19,6 +22,8 @@
 ## [1.15.0] 2023-11-30
 ### Added
 - Added unit tests for O3Dyn Robot.
+- Update unit test to use get_assets_root_path_async
+
 
 ## [1.14.4] 2023-11-29
 ### Added

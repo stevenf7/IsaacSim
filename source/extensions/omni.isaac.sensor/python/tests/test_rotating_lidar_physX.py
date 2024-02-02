@@ -15,7 +15,7 @@ import omni.kit.test
 from omni.isaac.core import World
 from omni.isaac.core.articulations import Articulation
 from omni.isaac.core.objects import DynamicCuboid
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.stage import add_reference_to_stage, create_new_stage_async, update_stage_async
 from omni.isaac.sensor import RotatingLidarPhysX
 
@@ -28,7 +28,7 @@ class TestRotatingLidarPhysX(omni.kit.test.AsyncTestCase):
         await self.my_world.initialize_simulation_context_async()
         await update_stage_async()
         self.my_world.scene.add_default_ground_plane()
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         asset_path = assets_root_path + "/Isaac/Robots/Carter/carter_v1.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Carter")
         my_carter = self.my_world.scene.add(

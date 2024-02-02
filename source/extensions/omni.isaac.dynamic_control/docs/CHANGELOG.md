@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.1] - 2024-01-18
+### Changed
+- Changed get_assets_root_path to get_assets_root_path_async for the unit tests
+
 ## [1.3.0] - 2024-01-08
 ### Changed
 - Moved header files to extension

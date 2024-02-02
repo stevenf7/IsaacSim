@@ -13,7 +13,7 @@ import omni.graph.core as og
 import omni.graph.core.tests as ogts
 import omni.kit.test
 from omni.isaac.core.robots import Robot
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.core.utils.viewports import get_viewport_names
 
@@ -24,7 +24,7 @@ class TestCreateViewport(ogts.OmniGraphTestCase):
         await omni.usd.get_context().new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
         # add franka robot for test
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         if assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return

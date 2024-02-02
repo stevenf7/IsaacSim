@@ -18,7 +18,7 @@ from omni.isaac.core.objects import VisualCuboid
 from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.prims.rigid_prim_view import RigidPrimView
 from omni.isaac.core.robots import Robot
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.prims import get_prim_object_type, is_prim_path_valid
 from omni.isaac.core.utils.stage import (
     add_reference_to_stage,
@@ -102,7 +102,7 @@ class TestScene(omni.kit.test.AsyncTestCase):
         await my_world.initialize_simulation_context_async()
         await update_stage_async()
         my_world.scene.add_default_ground_plane()
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         if assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
         asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
@@ -153,7 +153,7 @@ class TestScene(omni.kit.test.AsyncTestCase):
         await my_world.initialize_simulation_context_async()
         await update_stage_async()
         my_world.scene.add_default_ground_plane()
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         if assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
         asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
@@ -176,7 +176,7 @@ class TestScene(omni.kit.test.AsyncTestCase):
         await my_world.initialize_simulation_context_async()
         await update_stage_async()
         my_world.scene.add_default_ground_plane()
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         if assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
         asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"

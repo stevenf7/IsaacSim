@@ -26,7 +26,7 @@ import usdrt.Sdf
 from omni.isaac.core import World
 from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.physics import simulate_async
 from omni.isaac.core.utils.prims import add_reference_to_stage, delete_prim
 
@@ -79,7 +79,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         self.lower_joints = ["{}/lower_arm_joint".format(i) for i in self.leg_paths]
         self._sensor_handles = [0 for i in range(4)]
 
-        self._assets_root_path = get_assets_root_path()
+        self._assets_root_path = await get_assets_root_path_async()
         if self._assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return

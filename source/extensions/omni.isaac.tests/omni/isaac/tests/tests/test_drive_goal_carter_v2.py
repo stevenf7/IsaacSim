@@ -18,9 +18,9 @@ import omni.kit.test
 import usdrt.Sdf
 from omni.isaac.core import World
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.rotations import quat_to_euler_angles
-from omni.isaac.core.utils.stage import create_new_stage_async, open_stage_async
+from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.dynamic_control import _dynamic_control
 
 from .robot_helpers import init_robot_sim, setup_robot_og
@@ -34,7 +34,7 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
 
         self.dc = _dynamic_control.acquire_dynamic_control_interface()
 
-        self._assets_root_path = get_assets_root_path()
+        self._assets_root_path = await get_assets_root_path_async()
         if self._assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return

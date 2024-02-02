@@ -23,7 +23,7 @@ import omni.kit.test
 import omni.kit.usd
 import usdrt.Sdf
 from omni.isaac.core.articulations import Articulation
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.physics import simulate_async
 from omni.isaac.core.utils.stage import open_stage_async
 
@@ -73,7 +73,7 @@ class TestRosJointState(omni.kit.test.AsyncTestCase):
 
     async def test_joint_state_publisher(self):
         # open simple_articulation asset (with one drivable revolute and one drivable prismatic joint)
-        self._assets_root_path = get_assets_root_path()
+        self._assets_root_path = await get_assets_root_path_async()
         await omni.kit.app.get_app().next_update_async()
         self.usd_path = self._assets_root_path + "/Isaac/Robots/Simple/articulation_3_joints.usd"
         (result, error) = await open_stage_async(self.usd_path)

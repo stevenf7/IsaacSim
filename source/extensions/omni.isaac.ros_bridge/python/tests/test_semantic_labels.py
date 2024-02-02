@@ -23,7 +23,7 @@ import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd
 import omni.kit.viewport.utility
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.physics import simulate_async
 from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.core.utils.viewports import set_camera_view
@@ -88,7 +88,7 @@ class TestRosSemanticLabels(omni.kit.test.AsyncTestCase):
 
         BACKGROUND_USD_PATH = "/Isaac/Environments/Simple_Warehouse/warehouse.usd"
 
-        self._assets_root_path = get_assets_root_path()
+        self._assets_root_path = await get_assets_root_path_async()
         if self._assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return

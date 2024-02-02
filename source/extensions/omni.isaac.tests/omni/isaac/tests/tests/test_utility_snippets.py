@@ -198,10 +198,10 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
         ###
         import carb
         import omni
-        from omni.isaac.core.utils.nucleus import get_assets_root_path
+        from omni.isaac.core.utils.nucleus import get_assets_root_path_async
         from pxr import Sdf, UsdShade
 
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         mtl_created_list = []
         # Create a new material using OmniPBR.mdl
         omni.kit.commands.execute(
@@ -322,9 +322,9 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
     async def test_save_to_file(self):
         import carb
         import omni
-        from omni.isaac.core.utils.nucleus import get_assets_root_path
+        from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 
-        assets_root = get_assets_root_path()
+        assets_root = await get_assets_root_path_async()
         # Create a prim
         result, path = omni.kit.commands.execute("CreateMeshPrimCommand", prim_type="Cube")
         # Change the path as needed

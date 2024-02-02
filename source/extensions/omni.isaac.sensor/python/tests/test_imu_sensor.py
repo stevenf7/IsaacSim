@@ -23,7 +23,7 @@ from omni.isaac.core import World
 from omni.isaac.core.objects import DynamicCuboid
 from omni.isaac.core.objects.ground_plane import GroundPlane
 from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.physics import simulate_async
 from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.rotations import quat_to_euler_angles
@@ -42,7 +42,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         self._sensor_rate = 60
         self._is = _sensor.acquire_imu_sensor_interface()
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
-        self._assets_root_path = get_assets_root_path()
+        self._assets_root_path = await get_assets_root_path_async()
         if self._assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return

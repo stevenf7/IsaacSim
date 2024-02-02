@@ -19,8 +19,7 @@ from omni.isaac.dynamic_control import conversions as dc_conversions
 from omni.isaac.dynamic_control import utils as dc_utils
 from pxr import Gf, Sdf, Usd, UsdPhysics
 
-# from omni.isaac.core.utils.nucleus import get_assets_root_path
-from .common import get_assets_root_path, open_stage_async
+from .common import get_assets_root_path_async, open_stage_async
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -34,7 +33,7 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCase):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
         self._extension_path = ext_manager.get_extension_path(ext_id)
-        self._assets_root_path = get_assets_root_path()
+        self._assets_root_path = await get_assets_root_path_async()
 
         await omni.kit.app.get_app().next_update_async()
 

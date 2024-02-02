@@ -118,7 +118,7 @@ class TestRandomizerSnippets(omni.kit.test.AsyncTestCase):
         import numpy as np
         import omni.replicator.core as rep
         import omni.usd
-        from omni.isaac.core.utils.nucleus import get_assets_root_path
+        from omni.isaac.core.utils.nucleus import get_assets_root_path_async
         from omni.isaac.core.utils.semantics import add_update_semantics, get_semantics
         from pxr import Gf, Sdf, UsdGeom, UsdShade
 
@@ -241,7 +241,7 @@ class TestRandomizerSnippets(omni.kit.test.AsyncTestCase):
                 else:
                     UsdShade.MaterialBindingAPI(shape).UnbindAllBindings()
 
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         textures = [
             assets_root_path + "/NVIDIA/Materials/vMaterials_2/Ground/textures/aggregate_exposed_diff.jpg",
             assets_root_path + "/NVIDIA/Materials/vMaterials_2/Ground/textures/gravel_track_ballast_diff.jpg",
@@ -262,7 +262,7 @@ class TestRandomizerSnippets(omni.kit.test.AsyncTestCase):
         import numpy as np
         import omni.replicator.core as rep
         import omni.usd
-        from omni.isaac.core.utils.nucleus import get_assets_root_path
+        from omni.isaac.core.utils.nucleus import get_assets_root_path_async
         from pxr import Gf, Usd, UsdGeom, UsdLux
 
         # https://stackoverflow.com/questions/9600801/evenly-distributing-n-points-on-a-sphere
@@ -277,7 +277,7 @@ class TestRandomizerSnippets(omni.kit.test.AsyncTestCase):
             x = np.sin(phi) * r
             return [(x * radius) + origin[0], (y * radius) + origin[1], (z * radius) + origin[2]]
 
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         FORKLIFT_PATH = assets_root_path + "/Isaac/Props/Forklift/forklift.usd"
         PALLET_PATH = assets_root_path + "/Isaac/Props/Pallet/pallet.usd"
         BIN_PATH = assets_root_path + "/Isaac/Props/KLT_Bin/small_KLT_visual.usd"

@@ -1,4 +1,7 @@
 # Changelog
+## [3.3.6] - 2024-01-31
+### Changed
+- Changed get_assets_root_path to get_assets_root_path_async for the unit tests
 
 ## [3.3.5] - 2024-01-31
 ### Changed

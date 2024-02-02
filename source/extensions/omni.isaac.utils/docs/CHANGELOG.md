@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.7.1] - 2024-01-18
+### Changed
+- Changed get_assets_root_path to get_assets_root_path_async for the unit tests
+
 ## [0.7.0] - 2024-01-11
 ### Changed
 - Moved forklift asset under new Robots > Forklift section

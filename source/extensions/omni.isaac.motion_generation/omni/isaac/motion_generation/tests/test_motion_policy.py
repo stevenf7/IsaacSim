@@ -19,7 +19,7 @@ import omni.kit.test
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.robots.robot import Robot
 from omni.isaac.core.utils import distance_metrics
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.prims import delete_prim, is_prim_path_valid
 from omni.isaac.core.utils.rotations import gf_quat_to_np_array, quat_to_rot_matrix
 from omni.isaac.core.utils.stage import (
@@ -110,7 +110,9 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         await update_stage_async()
 
     async def test_rmpflow_cspace_target(self):
-        usd_path = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
+        asset_root_path = await get_assets_root_path_async()
+
+        usd_path = asset_root_path + "/Isaac/Robots/Franka/franka.usd"
         robot_prim_path = "/panda"
         add_reference_to_stage(usd_path, robot_prim_path)
 
@@ -186,7 +188,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         )
 
     async def test_rmpflow_cobotta_900(self):
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         usd_path = assets_root_path + "/Isaac/Robots/Denso/cobotta_pro_900.usd"
         robot_name = "Cobotta_Pro_900"
         robot_prim_path = "/cobotta_pro_900"
@@ -194,7 +196,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name)
 
     async def test_rmpflow_cobotta_1300(self):
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         usd_path = assets_root_path + "/Isaac/Robots/Denso/cobotta_pro_1300.usd"
         robot_name = "Cobotta_Pro_1300"
         robot_prim_path = "/cobotta_pro_1300"
@@ -202,7 +204,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name)
 
     async def test_rmpflow_ur3(self):
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         usd_path = assets_root_path + "/Isaac/Robots/UniversalRobots/ur3/ur3.usd"
         robot_name = "UR3"
         robot_prim_path = "/ur3"
@@ -212,7 +214,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         )
 
     async def test_rmpflow_ur3e(self):
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         usd_path = assets_root_path + "/Isaac/Robots/UniversalRobots/ur3e/ur3e.usd"
         robot_name = "UR3e"
         robot_prim_path = "/ur3e"
@@ -222,7 +224,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         )
 
     async def test_rmpflow_ur5(self):
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         usd_path = assets_root_path + "/Isaac/Robots/UniversalRobots/ur5/ur5.usd"
         robot_name = "UR5"
         robot_prim_path = "/ur5"
@@ -230,7 +232,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name)
 
     async def test_rmpflow_ur5e(self):
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         usd_path = assets_root_path + "/Isaac/Robots/UniversalRobots/ur5e/ur5e.usd"
         robot_name = "UR5e"
         robot_prim_path = "/ur5e"
@@ -238,7 +240,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name)
 
     async def test_rmpflow_ur10(self):
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         usd_path = assets_root_path + "/Isaac/Robots/UniversalRobots/ur10/ur10.usd"
         robot_name = "UR10"
         robot_prim_path = "/ur10"
@@ -246,7 +248,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name)
 
     async def test_rmpflow_ur10e(self):
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         usd_path = assets_root_path + "/Isaac/Robots/UniversalRobots/ur10e/ur10e.usd"
         robot_name = "UR10e"
         robot_prim_path = "/ur10e"
@@ -254,7 +256,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name)
 
     async def test_rmpflow_ur16e(self):
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         usd_path = assets_root_path + "/Isaac/Robots/UniversalRobots/ur16e/ur16e.usd"
         robot_name = "UR16e"
         robot_prim_path = "/ur16e"
@@ -262,7 +264,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name)
 
     async def test_rmpflow_rizon4(self):
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         usd_path = assets_root_path + "/Isaac/Robots/Flexiv/Rizon4/flexiv_rizon4.usd"
         robot_name = "Rizon4"
         robot_prim_path = "/A02L_MP"
@@ -273,7 +275,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name, target_position, obstacle_position)
 
     async def test_rmpflow_rs007l(self):
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         usd_path = assets_root_path + "/Isaac/Robots/Kawasaki/RS007L/rs007l_onrobot_rg2.usd"
         robot_name = "RS007L"
         robot_prim_path = "/khi_rs007l"
@@ -281,7 +283,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name)
 
     async def test_rmpflow_rs007n(self):
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         usd_path = assets_root_path + "/Isaac/Robots/Kawasaki/RS007N/rs007n_onrobot_rg2.usd"
         robot_name = "RS007N"
         robot_prim_path = "/khi_rs007n"
@@ -289,7 +291,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name)
 
     async def test_rmpflow_rs013n(self):
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         usd_path = assets_root_path + "/Isaac/Robots/Kawasaki/RS013N/rs013n_onrobot_rg2.usd"
         robot_name = "RS013N"
         robot_prim_path = "/khi_rs013n"
@@ -300,7 +302,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name, target_position, obstacle_position)
 
     async def test_rmpflow_rs025n(self):
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         usd_path = assets_root_path + "/Isaac/Robots/Kawasaki/RS025N/rs025n_onrobot_rg2.usd"
         robot_name = "RS025N"
         robot_prim_path = "/khi_rs025n"
@@ -311,7 +313,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name, target_position, obstacle_position)
 
     async def test_rmpflow_rs080n(self):
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         usd_path = assets_root_path + "/Isaac/Robots/Kawasaki/RS080N/rs080n_onrobot_rg2.usd"
         robot_name = "RS080N"
         robot_prim_path = "/khi_rs080n"
@@ -322,7 +324,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name, target_position, obstacle_position)
 
     async def test_rmpflow_festo_cobot(self):
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         usd_path = assets_root_path + "/Isaac/Robots/Festo/FestoCobot/festo_cobot.usd"
         robot_name = "FestoCobot"
         robot_prim_path = "/bettina"
@@ -333,7 +335,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name, target_position, obstacle_position)
 
     async def test_rmpflow_tm12(self):
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         usd_path = assets_root_path + "/Isaac/Robots/Techman/TM12/tm12.usd"
         robot_name = "Techman_TM12"
         robot_prim_path = "/tm12"
@@ -344,7 +346,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name, target_position, obstacle_position)
 
     async def test_rmpflow_kr210(self):
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         usd_path = assets_root_path + "/Isaac/Robots/Kuka/KR210_L150/kr210_l150.usd"
         robot_name = "Kuka_KR210"
         robot_prim_path = "/kuka_kr210"
@@ -355,7 +357,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name, target_position, obstacle_position)
 
     async def test_rmpflow_crx10ial(self):
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         usd_path = assets_root_path + "/Isaac/Robots/Fanuc/CRX10IAL/crx10ial.usd"
         robot_name = "Fanuc_CRX10IAL"
         robot_prim_path = "/fanuc_crx10ial"
@@ -366,7 +368,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name, target_position, obstacle_position)
 
     async def test_rmpflow_fr3(self):
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         usd_path = assets_root_path + "/Isaac/Robots/Franka/FR3/fr3.usd"
         robot_name = "FR3"
         robot_prim_path = "/fr3"
@@ -402,7 +404,8 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
     async def test_rmpflow_visualization_franka(self):
-        usd_path = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
+        asset_root_path = await get_assets_root_path_async()
+        usd_path = asset_root_path + "/Isaac/Robots/Franka/franka.usd"
         robot_prim_path = "/panda"
         add_reference_to_stage(usd_path, robot_prim_path)
 
@@ -485,7 +488,8 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         self.assertTrue(not is_prim_path_valid("/lula/collision_sphere0"))
 
     async def test_rmpflow_obstacle_adders(self):
-        usd_path = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
+        asset_root_path = await get_assets_root_path_async()
+        usd_path = asset_root_path + "/Isaac/Robots/Franka/franka.usd"
         robot_prim_path = "/panda"
         add_reference_to_stage(usd_path, robot_prim_path)
 
@@ -537,7 +541,8 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         self.assertFalse(is_prim_path_valid("/lula/ground_plane"))
 
     async def test_articulation_motion_policy_init_order(self):
-        usd_path = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
+        asset_root_path = await get_assets_root_path_async()
+        usd_path = asset_root_path + "/Isaac/Robots/Franka/franka.usd"
         robot_prim_path = "/panda"
         add_reference_to_stage(usd_path, robot_prim_path)
 
@@ -562,7 +567,8 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_rmpflow_on_franka(self):
-        usd_path = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
+        asset_root_path = await get_assets_root_path_async()
+        usd_path = asset_root_path + "/Isaac/Robots/Franka/franka.usd"
         robot_prim_path = "/panda"
         add_reference_to_stage(usd_path, robot_prim_path)
 
@@ -657,7 +663,8 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
     async def test_rmpflow_on_franka_ignore_state(self):
         # Perform an internal rollout of robot state, ignoring simulated robot state updates
 
-        usd_path = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
+        asset_root_path = await get_assets_root_path_async()
+        usd_path = asset_root_path + "/Isaac/Robots/Franka/franka.usd"
         robot_prim_path = "/panda"
         add_reference_to_stage(usd_path, robot_prim_path)
 
@@ -711,7 +718,8 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
     async def test_rmpflow_static_obstacles_franka(self):
         # Perform an internal rollout of robot state, ignoring simulated robot state updates
 
-        usd_path = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
+        asset_root_path = await get_assets_root_path_async()
+        usd_path = asset_root_path + "/Isaac/Robots/Franka/franka.usd"
         robot_prim_path = "/panda"
         add_reference_to_stage(usd_path, robot_prim_path)
 
@@ -755,7 +763,8 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos, static=True)
 
     async def test_rmpflow_on_ur10(self):
-        usd_path = get_assets_root_path() + "/Isaac/Robots/UR10/ur10.usd"
+        usd_path = await get_assets_root_path_async()
+        usd_path += "/Isaac/Robots/UR10/ur10.usd"
         robot_prim_path = "/ur10"
         add_reference_to_stage(usd_path, robot_prim_path)
         self._timeline = omni.timeline.get_timeline_interface()
@@ -812,7 +821,8 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
     async def test_rmpflow_on_ur10_ignore_state(self):
         # Perform an internal rollout of robot state, ignoring simulated robot state updates
-        usd_path = get_assets_root_path() + "/Isaac/Robots/UR10/ur10.usd"
+        usd_path = await get_assets_root_path_async()
+        usd_path += "/Isaac/Robots/UR10/ur10.usd"
         robot_prim_path = "/ur10"
         add_reference_to_stage(usd_path, robot_prim_path)
 

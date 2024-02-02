@@ -15,7 +15,7 @@ import omni.kit.test
 import omni.replicator.core as rep
 from omni.isaac.benchmark.services.base_isaac_benchmark_async import BaseIsaacBenchmarkAsync
 from omni.isaac.benchmark.services.utils import wait_until_stage_is_fully_loaded_async
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.stage import create_new_stage_async, open_stage
 
 STAGE = "/Isaac/Samples/Replicator/Benchmark/full_warehouse_worker_benchmark_sdg.usd"
@@ -89,7 +89,7 @@ class TestBenchmarkSDGGeneration(BaseIsaacBenchmarkAsync):
         # Create a fresh stage
         await create_new_stage_async()
         await wait_until_stage_is_fully_loaded_async()
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
 
         # <---------------------------- loading phase -----------------------------
         # Perform the loading phase: check for the duration for loading the stage,

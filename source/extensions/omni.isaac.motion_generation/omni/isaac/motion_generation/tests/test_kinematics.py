@@ -20,7 +20,7 @@ import omni.kit.test
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.robots.robot import Robot
 from omni.isaac.core.utils import distance_metrics
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices
 from omni.isaac.core.utils.prims import is_prim_path_valid
 from omni.isaac.core.utils.stage import (
@@ -104,7 +104,8 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         await update_stage_async()
 
     async def test_lula_fk_ur10(self):
-        usd_path = get_assets_root_path() + "/Isaac/Robots/UR10/ur10.usd"
+        usd_path = await get_assets_root_path_async()
+        usd_path += "/Isaac/Robots/UR10/ur10.usd"
         robot_name = "UR10"
         robot_prim_path = "/ur10"
         trans_dist, rot_dist = await self._test_lula_fk(
@@ -114,7 +115,8 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.all(rot_dist < 0.005))
 
     async def test_lula_fk_franka(self):
-        usd_path = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
+        usd_path = await get_assets_root_path_async()
+        usd_path += "/Isaac/Robots/Franka/franka.usd"
         robot_name = "Franka"
         robot_prim_path = "/panda"
         trans_dist, rot_dist = await self._test_lula_fk(
@@ -185,7 +187,8 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         return np.array(trans_dists), np.array(rot_dist)
 
     async def test_lula_ik_ur10(self):
-        usd_path = get_assets_root_path() + "/Isaac/Robots/UR10/ur10.usd"
+        usd_path = await get_assets_root_path_async()
+        usd_path += "/Isaac/Robots/UR10/ur10.usd"
         robot_name = "UR10"
         robot_prim_path = "/ur10"
         frame = "ee_link"
@@ -217,7 +220,8 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         )
 
     async def test_lula_ik_franka(self):
-        usd_path = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
+        usd_path = await get_assets_root_path_async()
+        usd_path += "/Isaac/Robots/Franka/franka.usd"
         robot_name = "Franka"
         robot_prim_path = "/panda"
         frame = "right_gripper"

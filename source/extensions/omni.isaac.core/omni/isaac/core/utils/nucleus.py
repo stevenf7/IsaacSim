@@ -256,7 +256,7 @@ def find_nucleus_server(suffix: str) -> typing.Tuple[bool, str]:
         bool: True if Nucleus server with suffix is found
         url (str): URL of found Nucleus
     """
-    carb.log_warn("find_nucleus_server() is deprecated. Use get_assets_root_path().")
+    carb.log_warn("find_nucleus_server() is deprecated. Use get_assets_root_path() or get_assets_root_path_async().")
     return False, ""
 
 

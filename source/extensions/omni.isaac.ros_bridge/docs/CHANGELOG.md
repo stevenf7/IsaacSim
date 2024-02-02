@@ -4,6 +4,9 @@
 ### Fixed
 - Empty semantics unit test
 
+### Changed
+- Changed get_assets_root_path to get_assets_root_path_async for the unit tests
+
 ## [1.15.2] - 2024-01-03
 ### Changed
 - Updated samples and unit tests with newer OgnIsaacArticulationController node

@@ -13,7 +13,7 @@ from omni.isaac.core import World
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.core.prims.xform_prim_view import XFormPrimView
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.numpy.rotations import euler_angles_to_quats
 
 # NOTE:
@@ -30,7 +30,7 @@ class TestXFormPrimView(omni.kit.test.AsyncTestCase):
         World.clear_instance()
         await create_new_stage_async()
         self._my_world = World()
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_1")
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_2")

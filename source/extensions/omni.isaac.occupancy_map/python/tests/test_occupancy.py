@@ -15,7 +15,7 @@ import numpy as np
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 import omni.kit.usd
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.stage import open_stage_async
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
@@ -31,7 +31,7 @@ class TestOccupancyMapGenerator(omni.kit.test.AsyncTestCase):
         self._om = _occupancy_map.acquire_occupancy_map_interface()
         self._timeline = omni.timeline.get_timeline_interface()
 
-        self._assets_root_path = get_assets_root_path()
+        self._assets_root_path = await get_assets_root_path_async()
         if self._assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return

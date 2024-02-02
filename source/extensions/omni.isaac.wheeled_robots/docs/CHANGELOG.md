@@ -5,6 +5,10 @@
 - Rewrote differential controller node in Cpp
 - Removed unused outputs for position and effort control
 
+## [0.9.2] - 2024-01-18
+### Changed
+- Changed get_assets_root_path to get_assets_root_path_async for the unit tests
+
 ## [0.9.1] - 2024-01-08
 ### Fixed
 - Updated description in Ackermann Steering node

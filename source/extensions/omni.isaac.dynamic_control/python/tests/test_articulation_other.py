@@ -17,7 +17,7 @@ from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.dynamic_control import utils as dc_utils
 from pxr import Gf, UsdPhysics
 
-from .common import get_assets_root_path, open_stage_async
+from .common import get_assets_root_path_async, open_stage_async
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -31,7 +31,7 @@ class TestArticulationOther(omni.kit.test.AsyncTestCase):
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
         self._extension_path = ext_manager.get_extension_path(ext_id)
 
-        self._assets_root_path = get_assets_root_path()
+        self._assets_root_path = await get_assets_root_path_async()
         if self._assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return
