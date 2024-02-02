@@ -896,7 +896,7 @@ override = [
   "omni.warp-1.0.0-beta.2",
 	"omni.warp.core-1.0.0-beta.2",
   "omni.kit.converter.ogc-1.1.22",
-  "omni.anim.graph.core-105.1.19"
+  "omni.anim.graph.core-105.1.20"
 ]
 
 output_file = "${root}/source/apps/omni.isaac.sim.extscache.kit"
