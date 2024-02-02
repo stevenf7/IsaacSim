@@ -257,7 +257,6 @@ sphinx_exclude_patterns = [
     "**/omni.kit.property.isaac",
     "**/omni.usd.schema.isaac",     #TODO?
     "**/omni.isaac.window.about",
-    "**/omni.isaac.statistics_logging",
     "**/omni.isaac.unit_converter",
     "include",
     "tools",
