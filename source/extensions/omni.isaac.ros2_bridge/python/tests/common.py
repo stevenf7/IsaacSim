@@ -12,7 +12,7 @@ import asyncio
 import carb
 import numpy as np
 import omni
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.stage import open_stage_async
 
 
@@ -76,7 +76,7 @@ async def add_cube(path, size, offset):
 async def add_carter():
     from pxr import Gf, PhysicsSchemaTools
 
-    assets_root_path = get_assets_root_path()
+    assets_root_path = await get_assets_root_path_async()
     if assets_root_path is None:
         carb.log_error("Could not find Isaac Sim assets folder")
         return
@@ -89,7 +89,7 @@ async def add_carter():
 async def add_carter_ros():
     from pxr import Gf, PhysicsSchemaTools
 
-    assets_root_path = get_assets_root_path()
+    assets_root_path = await get_assets_root_path_async()
     if assets_root_path is None:
         carb.log_error("Could not find Isaac Sim assets folder")
         return
@@ -112,7 +112,7 @@ async def add_carter_ros():
 
 
 async def add_franka():
-    assets_root_path = get_assets_root_path()
+    assets_root_path = await get_assets_root_path_async()
     if assets_root_path is None:
         carb.log_error("Could not find Isaac Sim assets folder")
         return

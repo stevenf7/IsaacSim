@@ -14,7 +14,7 @@ import numpy as np
 import omni.kit.test
 from omni.isaac.core import SimulationContext, World
 from omni.isaac.core.robots import Robot
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.stage import add_reference_to_stage, open_stage_async, update_stage_async
 from omni.isaac.core.utils.types import ArticulationAction
 
@@ -30,7 +30,7 @@ class TestArticulationDeterminism(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(60))
         carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(60))
 
-        self._assets_root_path = get_assets_root_path()
+        self._assets_root_path = await get_assets_root_path_async()
         if self._assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return

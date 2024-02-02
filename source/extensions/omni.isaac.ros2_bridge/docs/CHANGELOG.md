@@ -4,7 +4,6 @@
 ### Changed
 - ROS2 Bridge no longer requires the vision_msgs for activation. However, if you would like to use Isaac Sim publishers dependant on vision_msgs, simply install it on the system or use isaac sim internal libraries. 
 
-
 ## [2.7.1] - 2024-01-19
 ### Fixed
 - Missing DLLs for local windows usage
@@ -13,6 +12,9 @@
 ## [2.7.0] - 2024-01-19
 ### Changed
 - Renamed "Isaac Examples > ROS" menu to "Isaac Examples > ROS2" 
+## [2.6.2] - 2024-01-18
+### Changed
+- Changed get_assets_root_path to get_assets_root_path_async for the unit tests
 
 ## [2.6.1] - 2024-01-03
 ### Changed

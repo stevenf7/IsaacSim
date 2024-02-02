@@ -11,7 +11,7 @@ import asyncio
 
 import omni.kit.test
 from omni.isaac.core.robots.robot import Robot
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.stage import add_reference_to_stage, create_new_stage_async, update_stage_async
 from omni.isaac.core.world import World
 
@@ -41,7 +41,8 @@ class TestSimulationContextCrash(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_simulation_context_crash(self):
-        usd_path = get_assets_root_path() + "/Isaac/Robots/Denso/cobotta_pro_900.usd"
+        usd_path = await get_assets_root_path_async()
+        usd_path += "/Isaac/Robots/Denso/cobotta_pro_900.usd"
         robot_prim_path = "/cobotta_pro_900"
 
         add_reference_to_stage(usd_path, robot_prim_path)

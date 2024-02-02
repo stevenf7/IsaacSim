@@ -18,7 +18,7 @@ import omni.timeline
 import omni.usd
 from omni.isaac.core import World
 from omni.isaac.core.articulations import ArticulationView
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.stage import add_reference_to_stage, create_new_stage_async
 from omni.replicator.isaac import physics_view as physics
 from scipy.spatial.transform import Rotation as R
@@ -51,7 +51,7 @@ class TestOgnWritePhysicsArticulationView(omni.kit.test.AsyncTestCase):
         self._iface = omni.timeline.get_timeline_interface()
 
         # fetch franka asset and add to stage
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         asset_path = assets_root_path + "/Isaac/Robots/Franka/franka.usd"
         franka_path = "/World/Franka"
         add_reference_to_stage(usd_path=asset_path, prim_path=franka_path)

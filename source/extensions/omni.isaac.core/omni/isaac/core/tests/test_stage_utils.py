@@ -11,7 +11,7 @@ import asyncio
 
 import carb
 import omni.kit.test
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.prims import create_prim
 from omni.isaac.core.utils.stage import add_reference_to_stage, clear_stage, create_new_stage_async, update_stage_async
 
@@ -33,7 +33,7 @@ class TestStage(omni.kit.test.AsyncTestCase):
         await create_new_stage_async()
         prim = create_prim("/Test")
         self.assertTrue(prim.IsValid())
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         if assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
         asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"

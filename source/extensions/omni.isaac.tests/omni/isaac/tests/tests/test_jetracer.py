@@ -15,7 +15,7 @@ import numpy as np
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.dynamic_control import _dynamic_control
 from pxr import Usd
@@ -48,7 +48,7 @@ class TestJetRacer(omni.kit.test.AsyncTestCase):
 
     # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_jetracer_loading(self):
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         if assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return

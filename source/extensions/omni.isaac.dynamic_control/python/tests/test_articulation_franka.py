@@ -17,7 +17,7 @@ from omni.isaac.dynamic_control import conversions as dc_conversions
 from omni.isaac.dynamic_control import utils as dc_utils
 from pxr import Gf
 
-from .common import get_assets_root_path
+from .common import get_assets_root_path_async
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -31,7 +31,7 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         self._stage = omni.usd.get_context().get_stage()
         prim = self._stage.DefinePrim("/panda", "Xform")
-        self._assets_root_path = get_assets_root_path()
+        self._assets_root_path = await get_assets_root_path_async()
         if self._assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return

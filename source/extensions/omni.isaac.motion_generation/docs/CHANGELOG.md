@@ -1,5 +1,10 @@
 # Changelog
 
+
+## [6.1.1] - 2024-01-18
+### Changed
+- Changed get_assets_root_path to get_assets_root_path_async for the unit tests
+
 ## [6.1.0] - 2023-11-30
 ### Added
 - Add RMPflow configs for FR3 robot

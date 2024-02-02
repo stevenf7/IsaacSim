@@ -18,7 +18,7 @@ from omni.isaac.core import World
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.core.articulations import Articulation
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.stage import (
     add_reference_to_stage,
@@ -50,7 +50,7 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_get_applied_action(self, add_view_to_scene=True):
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
         franka = self._my_world.scene.add(Articulation(prim_path="/World/Franka", name="franka"))
@@ -66,7 +66,7 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
         await self._my_world.initialize_simulation_context_async()
         await omni.kit.app.get_app().next_update_async()
         self._my_world.scene.add_default_ground_plane()
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
         my_franka = self._my_world.scene.add(Articulation(prim_path="/World/Franka", name="franka"))
@@ -80,7 +80,7 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
         await self._my_world.stop_async()
 
     async def test_dof_efforts(self, add_view_to_scene=True):
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         self._my_world.set_simulation_dt(0.001)
         asset_path = assets_root_path + "/Isaac/Robots/Cartpole/cartpole.usd"
         self.stage = get_current_stage()
@@ -102,7 +102,7 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
         self.assertTrue(torch.isclose(current_efforts, efforts, atol=1e-1).all())
 
     async def test_joint_forces(self, add_view_to_scene=True):
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
         franka = self._my_world.scene.add(Articulation(prim_path="/World/Franka", name="franka"))
@@ -117,7 +117,7 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
         self.assertEqual(forces.shape, torch.Size([franka._articulation_view.num_bodies, 6]))
 
     async def test_articulation_joint_signs(self):
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         asset_path = assets_root_path + "/Isaac/Robots/Simple/articulation_3_joints.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Articulation")
         test_art = self._my_world.scene.add(Articulation(prim_path="/World/Articulation", name="test_art"))

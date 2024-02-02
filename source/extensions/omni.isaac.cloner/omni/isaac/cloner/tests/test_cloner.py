@@ -12,7 +12,7 @@ import unittest
 import numpy as np
 import omni.kit
 from omni.isaac.cloner import Cloner, GridCloner
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from pxr import Gf, UsdGeom, UsdPhysics, Vt
 
 
@@ -213,7 +213,8 @@ class TestSimpleCloner(omni.kit.test.AsyncTestCase):
         cloner.define_base_env(base_env_path + "/env_0")
         UsdGeom.Xform.Define(stage, base_env_path + "/env_0")
         prim = stage.DefinePrim(base_env_path + "/env_0/Ant", "Xform")
-        prim.GetReferences().AddReference(get_assets_root_path() + "/Isaac/Robots/Ant/ant_instanceable.usd")
+        asset_root_path = await get_assets_root_path_async()
+        prim.GetReferences().AddReference(asset_root_path + "/Isaac/Robots/Ant/ant_instanceable.usd")
 
         target_paths = cloner.generate_paths("/World/envs/env", 100)
 
@@ -242,7 +243,8 @@ class TestSimpleCloner(omni.kit.test.AsyncTestCase):
         cloner.define_base_env(base_env_path + "/env_0")
         UsdGeom.Xform.Define(stage, base_env_path + "/env_0")
         prim = stage.DefinePrim(base_env_path + "/env_0/Ant", "Xform")
-        prim.GetReferences().AddReference(get_assets_root_path() + "/Isaac/Robots/Ant/ant_instanceable.usd")
+        asset_root_path = await get_assets_root_path_async()
+        prim.GetReferences().AddReference(asset_root_path + "/Isaac/Robots/Ant/ant_instanceable.usd")
 
         target_paths = cloner.generate_paths("/World/envs/env", 100)
 
@@ -274,7 +276,8 @@ class TestSimpleCloner(omni.kit.test.AsyncTestCase):
         cloner.define_base_env(base_env_path + "/env_0")
         UsdGeom.Xform.Define(stage, base_env_path + "/env_0")
         prim = stage.DefinePrim(base_env_path + "/env_0/Ant", "Xform")
-        prim.GetReferences().AddReference(get_assets_root_path() + "/Isaac/Robots/Ant/ant_instanceable.usd")
+        asset_root_path = await get_assets_root_path_async()
+        prim.GetReferences().AddReference(asset_root_path + "/Isaac/Robots/Ant/ant_instanceable.usd")
 
         target_paths = cloner.generate_paths("/World/envs/env", 100)
 
@@ -314,7 +317,8 @@ class TestSimpleCloner(omni.kit.test.AsyncTestCase):
         cloner.define_base_env(base_env_path + "/env_0")
         UsdGeom.Xform.Define(stage, base_env_path + "/env_0")
         prim = stage.DefinePrim(base_env_path + "/env_0/Ant", "Xform")
-        prim.GetReferences().AddReference(get_assets_root_path() + "/Isaac/Robots/Ant/ant_instanceable.usd")
+        asset_root_path = await get_assets_root_path_async()
+        prim.GetReferences().AddReference(asset_root_path + "/Isaac/Robots/Ant/ant_instanceable.usd")
 
         target_paths = cloner.generate_paths("/World/envs/env", 100)
 
@@ -354,7 +358,8 @@ class TestSimpleCloner(omni.kit.test.AsyncTestCase):
         cloner.define_base_env(base_env_path + "/env_0")
         UsdGeom.Xform.Define(stage, base_env_path + "/env_0")
         prim = stage.DefinePrim(base_env_path + "/env_0/Ant", "Xform")
-        prim.GetReferences().AddReference(get_assets_root_path() + "/Isaac/Robots/Ant/ant_instanceable.usd")
+        asset_root_path = await get_assets_root_path_async()
+        prim.GetReferences().AddReference(asset_root_path + "/Isaac/Robots/Ant/ant_instanceable.usd")
 
         target_paths = cloner.generate_paths("/World/envs/env", 100)
 

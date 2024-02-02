@@ -18,7 +18,7 @@ from omni.isaac.core.objects import FixedCuboid, VisualCuboid
 from omni.isaac.core.objects.ground_plane import GroundPlane
 from omni.isaac.core.prims import XFormPrim
 from omni.isaac.core.robots import Robot
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.numpy.rotations import euler_angles_to_quats
 from omni.isaac.core.utils.stage import (
     add_reference_to_stage,
@@ -61,7 +61,8 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
 
         await update_stage_async()
         robot_prim_path = "/panda"
-        usd_path = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
+        usd_path = await get_assets_root_path_async()
+        usd_path += "/Isaac/Robots/Franka/franka.usd"
         await create_new_stage_async()
         # TODO105 need this?
         # omni.usd.get_context().get_stage().SetTimeCodesPerSecond(self._physics_fps)

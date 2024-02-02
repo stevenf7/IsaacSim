@@ -22,7 +22,7 @@ from omni.isaac.core import World
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.core.articulations import ArticulationView
 from omni.isaac.core.prims.rigid_prim_view import RigidPrimView
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.stage import add_reference_to_stage, create_new_stage_async, update_stage_async
 from omni.isaac.core.utils.torch.rotations import euler_angles_to_quats
 
@@ -45,7 +45,7 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
     async def add_frankas(self, backend, enable_dof_force_sensors=False):
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_1")
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_2")
@@ -66,7 +66,7 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         await self._my_world.reset_async()
 
     async def add_humanoids(self, backend):
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         asset_path = assets_root_path + "/Isaac/Robots/Humanoid/humanoid_instanceable.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Humanoid_1")
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Humanoid_2")
@@ -85,7 +85,7 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         await self._my_world.reset_async()
 
     async def add_cartpoles(self, backend):
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         asset_path = assets_root_path + "/Isaac/Robots/Cartpole/cartpole.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Cartpole_1")
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Cartpole_2")
@@ -103,7 +103,7 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         await self._my_world.reset_async()
 
     async def add_shadow_hands(self, backend, device="cpu"):
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         asset_path = assets_root_path + "/Isaac/Robots/ShadowHand/shadow_hand_instanceable.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/ShadowHand_1")
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/ShadowHand_2")

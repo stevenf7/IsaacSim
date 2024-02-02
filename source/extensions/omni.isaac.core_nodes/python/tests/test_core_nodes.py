@@ -10,7 +10,7 @@
 
 import carb
 import omni.kit.test
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.core_nodes.bindings import _omni_isaac_core_nodes
 
@@ -21,7 +21,7 @@ class TestCoreNodes(omni.kit.test.AsyncTestCase):
         self._timeline = omni.timeline.get_timeline_interface()
         self._core_nodes = _omni_isaac_core_nodes.acquire_interface()
         # add franka robot for test
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         if assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return

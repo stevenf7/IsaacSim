@@ -11,6 +11,9 @@
 ### Fixed
 - RTX Lidar config parameter nearRangeM < 0.4 was broken. Added minDistBetweenEchos, which also affects the near hits.
 
+### Changed
+- Changed get_assets_root_path to get_assets_root_path_async for the unit tests
+
 ## [9.12.0] - 2024-01-08
 ### Changed
 - Moved header files to extension

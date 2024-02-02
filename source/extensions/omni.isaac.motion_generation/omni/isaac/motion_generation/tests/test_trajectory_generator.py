@@ -21,7 +21,7 @@ import omni.kit.test
 from omni.isaac.core.objects.cuboid import VisualCuboid
 from omni.isaac.core.prims import XFormPrim
 from omni.isaac.core.robots.robot import Robot
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.numpy.rotations import rot_matrices_to_quats, rotvecs_to_quats
 from omni.isaac.core.utils.prims import delete_prim
 from omni.isaac.core.utils.stage import (
@@ -106,7 +106,8 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_lula_c_space_traj_gen_franka(self):
-        usd_path = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
+        usd_path = await get_assets_root_path_async()
+        usd_path += "/Isaac/Robots/Franka/franka.usd"
         robot_name = "Franka"
         robot_prim_path = "/panda"
 
@@ -140,7 +141,8 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
         )
 
     async def test_lula_c_space_traj_gen_cobotta(self):
-        usd_path = get_assets_root_path() + "/Isaac/Robots/Denso/cobotta_pro_900.usd"
+        usd_path = await get_assets_root_path_async()
+        usd_path += "/Isaac/Robots/Denso/cobotta_pro_900.usd"
         robot_name = "Cobotta_Pro_900"
         robot_prim_path = "/cobotta_pro_900"
 
@@ -269,7 +271,8 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
         self._trajectory_generator.set_solver_param("time_split_method", "centripetal")
 
     async def test_lula_task_space_traj_gen_franka(self):
-        usd_path = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
+        usd_path = await get_assets_root_path_async()
+        usd_path += "/Isaac/Robots/Franka/franka.usd"
         robot_name = "Franka"
         robot_prim_path = "/panda"
 
@@ -283,7 +286,8 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
         )
 
     async def test_lula_task_space_traj_gen_ur10(self):
-        usd_path = get_assets_root_path() + "/Isaac/Robots/UR10/ur10.usd"
+        usd_path = await get_assets_root_path_async()
+        usd_path += "/Isaac/Robots/UR10/ur10.usd"
         robot_name = "UR10"
         robot_prim_path = "/ur10"
 
@@ -315,7 +319,8 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
         )
 
     async def test_lula_task_space_traj_gen_cobotta(self):
-        usd_path = get_assets_root_path() + "/Isaac/Robots/Denso/cobotta_pro_900.usd"
+        usd_path = await get_assets_root_path_async()
+        usd_path += "/Isaac/Robots/Denso/cobotta_pro_900.usd"
         robot_name = "Cobotta_Pro_900"
         robot_prim_path = "/cobotta_pro_900"
         ee_frame = "gripper_center"

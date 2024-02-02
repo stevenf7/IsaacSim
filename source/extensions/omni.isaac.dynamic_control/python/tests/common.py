@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import asyncio
 import json
 import typing
 
@@ -35,43 +36,55 @@ def build_server_list() -> typing.List:
     return all_servers
 
 
-def check_server(server: str, path: str) -> bool:
-    """Check a specific server for a path
+async def check_server_async(server: str, path: str, timeout: float = 10.0) -> bool:
+    """Check a specific server for a path (asynchronous version).
 
     Args:
         server (str): Name of Nucleus server
         path (str): Path to search
+        timeout (float): Default value: 10 seconds
 
     Returns:
         bool: True if folder is found
     """
     carb.log_info("Checking path: {}{}".format(server, path))
-    # Increase hang detection timeout
-    omni.client.set_hang_detection_time_ms(10000)
-    result, _ = omni.client.stat("{}{}".format(server, path))
-    if result == Result.OK:
-        carb.log_info("Success: {}{}".format(server, path))
-        return True
-    else:
-        carb.log_info("Failure: {}{} not accessible".format(server, path))
+
+    try:
+        result, _ = await asyncio.wait_for(omni.client.stat_async("{}{}".format(server, path)), timeout)
+        if result == Result.OK:
+            carb.log_info("Success: {}{}".format(server, path))
+            return True
+        else:
+            carb.log_info("Failure: {}{} not accessible".format(server, path))
+            return False
+    except asyncio.TimeoutError:
+        carb.log_warn(f"check_server_async() timeout {timeout}")
+        return False
+    except Exception as ex:
+        carb.log_warn(f"Exception: {type(ex).__name__}")
         return False
 
 
-def get_assets_root_path() -> typing.Union[str, None]:
-    """Tries to find the root path to the Isaac Sim assets on a Nucleus server
+async def get_assets_root_path_async() -> typing.Union[str, None]:
+    """Tries to find the root path to the Isaac Sim assets on a Nucleus server (asynchronous version).
 
     Returns:
         url (str): URL of Nucleus server with root path to assets folder.
         Returns None if Nucleus server not found.
     """
 
+    # get timeout
+    timeout = carb.settings.get_settings().get("/persistent/isaac/asset_root/timeout")
+    if not isinstance(timeout, (int, float)):
+        timeout = 10.0
+
     # 1 - Check /persistent/isaac/asset_root/default setting
     carb.log_info("Check /persistent/isaac/asset_root/default setting")
     default_asset_root = carb.settings.get_settings().get("/persistent/isaac/asset_root/default")
     if default_asset_root:
-        result = check_server(default_asset_root, "/Isaac")
+        result = await check_server_async(default_asset_root, "/Isaac", timeout)
         if result:
-            result = check_server(default_asset_root, "/NVIDIA")
+            result = await check_server_async(default_asset_root, "/NVIDIA", timeout)
             if result:
                 carb.log_info("Assets root found at {}".format(default_asset_root))
                 return default_asset_root
@@ -81,9 +94,9 @@ def get_assets_root_path() -> typing.Union[str, None]:
     if len(connected_servers):
         for server_name in connected_servers:
             # carb.log_info("Found {}".format(server_name))
-            result = check_server(server_name, "/Isaac")
+            result = await check_server_async(server_name, "/Isaac", timeout)
             if result:
-                result = check_server(server_name, "/NVIDIA")
+                result = await check_server_async(server_name, "/NVIDIA", timeout)
                 if result:
                     carb.log_info("Assets root found at {}".format(server_name))
                     return server_name
@@ -92,9 +105,9 @@ def get_assets_root_path() -> typing.Union[str, None]:
     cloud_assets_url = carb.settings.get_settings().get("/persistent/isaac/asset_root/cloud")
     carb.log_info("Checking {}...".format(cloud_assets_url))
     if cloud_assets_url:
-        result = check_server(cloud_assets_url, "/Isaac")
+        result = await check_server_async(cloud_assets_url, "/Isaac", timeout)
         if result:
-            result = check_server(cloud_assets_url, "/NVIDIA")
+            result = await check_server_async(cloud_assets_url, "/NVIDIA", timeout)
             if result:
                 carb.log_info("Assets root found at {}".format(cloud_assets_url))
                 return cloud_assets_url

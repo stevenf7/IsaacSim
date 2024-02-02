@@ -15,7 +15,7 @@ import omni.usd
 from omni.isaac.dynamic_control import _dynamic_control
 from pxr import Sdf
 
-from .common import get_assets_root_path
+from .common import get_assets_root_path_async
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -61,7 +61,7 @@ class TestCore(omni.kit.test.AsyncTestCase):
 
     async def test_delete(self):
 
-        self._assets_root_path = get_assets_root_path()
+        self._assets_root_path = await get_assets_root_path_async()
         if self._assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return

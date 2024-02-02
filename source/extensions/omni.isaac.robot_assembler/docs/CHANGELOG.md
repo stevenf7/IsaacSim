@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.5] - 2024-01-18
+### Changed
+- Changed get_assets_root_path to get_assets_root_path_async for the unit tests
+
 ## [1.1.4] - 2023-12-11
 ### Fixed
 - Fixed breaking test cases that loaded local USD assets with references to robots on Nucleus

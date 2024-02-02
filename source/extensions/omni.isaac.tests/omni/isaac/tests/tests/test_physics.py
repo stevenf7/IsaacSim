@@ -12,7 +12,7 @@ import numpy as np
 import omni.kit.test
 import omni.physx
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.stage import add_reference_to_stage, open_stage_async
 from omni.isaac.dynamic_control import _dynamic_control
 from pxr import Gf, Sdf, UsdGeom, UsdPhysics
@@ -258,7 +258,7 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(position[2], -4.9867, delta=0.01)
 
     async def test_articulation_reference(self):
-        assets_root_path = get_assets_root_path()
+        assets_root_path = await get_assets_root_path_async()
         asset_path = assets_root_path + "/Isaac/Robots/Franka/franka.usd"
         stage = omni.usd.get_context().get_stage()
         timeline = omni.timeline.get_timeline_interface()
@@ -312,7 +312,7 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
 
     async def test_delete(self):
         self._timeline = omni.timeline.get_timeline_interface()
-        self._assets_root_path = get_assets_root_path()
+        self._assets_root_path = await get_assets_root_path_async()
         if self._assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return

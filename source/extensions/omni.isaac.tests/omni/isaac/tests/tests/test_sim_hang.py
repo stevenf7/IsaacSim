@@ -13,7 +13,7 @@ import carb
 import numpy as np
 import omni.isaac.core.objects as objects
 import omni.kit.test
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.core.utils.stage import (
@@ -105,7 +105,8 @@ class TestHangBugs(omni.kit.test.AsyncTestCase):
         #     The position and scale arguments have to be present for this segfault to happen
 
         # It has to be the Franka USD that gets loaded here to cause the issue
-        usd_path = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
+        usd_path = await get_assets_root_path_async()
+        usd_path += "/Isaac/Robots/Franka/franka.usd"
         robot_prim_path = "/panda"
         add_reference_to_stage(usd_path, robot_prim_path)
 
@@ -131,7 +132,8 @@ class TestHangBugs(omni.kit.test.AsyncTestCase):
             await update_stage_async()
 
     async def test_freeze_sim(self):
-        usd_path = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
+        usd_path = await get_assets_root_path_async()
+        usd_path += "/Isaac/Robots/Franka/franka.usd"
 
         for i in range(100):
             (result, error) = await open_stage_async(usd_path)

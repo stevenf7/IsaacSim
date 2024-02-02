@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.7.3] - 2024-01-18
+### Changed
+- Changed get_assets_root_path to get_assets_root_path_async for the unit tests
+
 ## [0.7.2] - 2023-11-10
 ### Fixed
 - Fixed error with GridCloner when offsets are passed

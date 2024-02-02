@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.21.4] - 2024-02-01
+### Changed
+- Changed get_assets_root_path to get_assets_root_path_async for the unit tests
+
 ## [0.21.3] - 2024-01-30
 ### Fixed
 - Nova Carter ROS2 benchmark to use /cmd_vel commands rather than articulation control directly

@@ -8,7 +8,6 @@
 #
 
 import carb
-import numpy as np
 import omni.graph.core as og
 
 # NOTE:
@@ -16,10 +15,6 @@ import omni.graph.core as og
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 import usdrt.Sdf
-from omni.isaac.core.utils.extensions import get_extension_path_from_name
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.utils.rotations import quat_to_euler_angles
-from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.dynamic_control import utils as dc_utils
 
@@ -77,8 +72,6 @@ def setup_robot_og(graph_path, lwheel_name, rwheel_name, robot_path, wheel_rad, 
 
 
 def set_physics_frequency(frequency=60):
-    import carb
-
     carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
     carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(frequency))
     carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(frequency))

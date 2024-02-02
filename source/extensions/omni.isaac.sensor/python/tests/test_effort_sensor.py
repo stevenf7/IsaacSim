@@ -20,7 +20,7 @@ import omni.kit.test
 from omni.isaac.core import World
 from omni.isaac.core.objects import DynamicCuboid
 from omni.isaac.core.objects.ground_plane import GroundPlane
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.sensor.scripts.effort_sensor import EffortSensor, EsSensorReading
 from pxr import UsdPhysics
@@ -29,7 +29,7 @@ from pxr import UsdPhysics
 class TestEffortSensor(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
-        self._assets_root_path = get_assets_root_path()
+        self._assets_root_path = await get_assets_root_path_async()
         if self._assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return

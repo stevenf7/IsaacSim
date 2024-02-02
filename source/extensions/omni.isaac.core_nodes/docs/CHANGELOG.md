@@ -6,6 +6,9 @@
 ## [1.9.0] - 2024-01-23
 ### Added
 - Real Time Factor Node
+## [1.8.1] - 2024-01-18
+### Changed
+- Changed get_assets_root_path to get_assets_root_path_async for the unit tests
 
 ## [1.8.0] - 2024-01-08
 ### Changed
