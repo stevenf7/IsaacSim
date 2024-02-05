@@ -13,3 +13,17 @@ omit_package_patterns=[
     'python@3.8.*',
     'xz@*'
     ]
+
+exclude_packman_files=[
+    # excluded because we don't ship any of these, right
+    "deps/host-deps.packman.xml",
+    "deps/repo-deps.packman.xml",
+
+    # excluded because these packages all ride in through the Connex link to Kit SDK for this project
+    "deps/kit-sdk.packman.xml",
+    "deps/kit-sdk-deps.packman.xml",
+    "deps/rtx-plugins.packman.xml",
+    "deps/target-deps.packman.xml"
+
+    # if this project brings in unique dependencies not part of Kit SDK they need to go in `deps/ext-deps.packman.xml`
+]
