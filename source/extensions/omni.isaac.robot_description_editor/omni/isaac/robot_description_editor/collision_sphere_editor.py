@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2023, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2022-2024, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -12,9 +12,11 @@ import carb
 import lula
 import numpy as np
 import yaml
+from omni.isaac.core.materials import PreviewSurface
 from omni.isaac.core.objects.sphere import VisualSphere
 from omni.isaac.core.utils.prims import delete_prim, is_prim_path_valid
 from omni.isaac.core.utils.string import find_unique_string_name
+from pxr import Sdf
 
 
 class CollisionSphereEditor:
@@ -33,7 +35,74 @@ class CollisionSphereEditor:
         self._preview_color = np.array([1.0, 0, 0])
         self._preview_spheres = []
 
+        self._sphere_path_generators = {}
+
+        self._lula_path = "/World/LulaRobotDescriptionEditor"
+
+        self._filter_in_surface_prim_path = self._lula_path + "/selected_link_sphere_material"
+        self._filter_out_surface_prim_path = self._lula_path + "/base_sphere_material"
+        self._filter_in_surface = None
+        self._filter_out_surface = None
+
+        self._preview_sphere_surface_prim_path = self._lula_path + "/preview_sphere_material"
+        self._preview_sphere_surface = None
+
+    def _ensure_preview_sphere_visual_material(self):
+        if not is_prim_path_valid(self._preview_sphere_surface_prim_path):
+            self._preview_sphere_surface = PreviewSurface(
+                self._preview_sphere_surface_prim_path, color=np.array([1.0, 0, 0])
+            )
+        elif self._preview_sphere_surface is None or not self._preview_sphere_surface.prim.IsValid():
+            delete_prim(self._preview_sphere_surface_prim_path)
+
+            self._preview_sphere_surface = PreviewSurface(
+                self._preview_sphere_surface_prim_path, color=np.array([1.0, 0, 0])
+            )
+
+    def _ensure_collision_sphere_visual_material(self):
+        """Make sure that the visual materials for sphere visualization have been created and are valid"""
+        if not is_prim_path_valid(self._filter_in_surface_prim_path):
+            self._filter_in_surface = PreviewSurface(
+                prim_path=self._filter_in_surface_prim_path, color=self.filter_in_sphere_color
+            )
+        elif self._filter_in_surface is None or not self._filter_in_surface.prim.IsValid():
+            delete_prim(self._filter_in_surface_prim_path)
+            self._filter_in_surface = PreviewSurface(
+                prim_path=self._filter_in_surface_prim_path, color=self.filter_in_sphere_color
+            )
+
+        if not is_prim_path_valid(self._filter_out_surface_prim_path):
+            self._filter_out_surface = PreviewSurface(
+                prim_path=self._filter_out_surface_prim_path, color=self.filter_out_sphere_color
+            )
+        elif self._filter_out_surface is None or not self._filter_out_surface.prim.IsValid():
+            delete_prim(self._filter_out_surface_prim_path)
+            self._filter_out_surface = PreviewSurface(
+                prim_path=self._filter_out_surface_prim_path, color=self.filter_out_sphere_color
+            )
+
+    @staticmethod
+    def _path_generator(path: str):
+        """Get a generator that incrementally adds integers to `path` forever"""
+        count = 1
+        while True:
+            yield f"{path}_{count}"
+            count += 1
+
+    def _get_unused_collision_sphere_path(self, link_path: str):
+        sphere_base_path = self._get_collision_sphere_base_path(link_path)
+
+        if sphere_base_path not in self._sphere_path_generators:
+            self._sphere_path_generators[sphere_base_path] = self._path_generator(sphere_base_path)
+
+        sphere_path_generator = self._sphere_path_generators[sphere_base_path]
+        sphere_path = next(sphere_path_generator)
+        while is_prim_path_valid(sphere_path):
+            sphere_path = next(sphere_path_generator)
+        return sphere_path
+
     def clear_spheres(self, store_op=True):
+        self._sphere_path_generators = {}
         sphere_paths = list(self.path_2_spheres.keys())
         if len(sphere_paths) == 0:
             return
@@ -48,15 +117,17 @@ class CollisionSphereEditor:
         for sphere_path in sphere_paths:
             self.delete_sphere(sphere_path)
 
-    def clear_link_spheres(self, path, store_op=True):
-        path_len = len(path)
+    def clear_link_spheres(self, link_path, store_op=True):
+        if self._get_collision_sphere_base_path(link_path) in self._sphere_path_generators:
+            del self._sphere_path_generators[self._get_collision_sphere_base_path(link_path)]
+        path_len = len(link_path)
 
         to_delete = []
         if store_op:
             self.copy_all_sphere_data()
         deleted_spheres = ["DEL"]
         for p in self.path_2_spheres.keys():
-            if is_prim_path_valid(p) and p[:path_len] == path:
+            if is_prim_path_valid(p) and p[:path_len] == link_path:
                 deleted_spheres.append(self.path_2_sphere_serial_copy[p])
                 to_delete.append(p)
 
@@ -73,25 +144,34 @@ class CollisionSphereEditor:
             del self.path_2_spheres[sphere_path]
 
     def set_sphere_colors(self, filter, color_in=None, color_out=None):
+        self._ensure_collision_sphere_visual_material()
+
         if color_in is not None:
             self.filter_in_sphere_color = color_in
+            self._filter_in_surface.set_color(color_in)
+
         if color_out is not None:
             self.filter_out_sphere_color = color_out
+            self._filter_out_surface.set_color(color_out)
         self.filter = filter
 
-        for sphere_path in self.path_2_spheres.keys():
-            self.set_sphere_color(sphere_path)
+        with Sdf.ChangeBlock():
+            for sphere_path in self.path_2_spheres.keys():
+                self.set_sphere_color(sphere_path, False)
 
-    def set_sphere_color(self, sphere_path):
+    def set_sphere_color(self, sphere_path, ensure_visual_material=True):
+        if ensure_visual_material:
+            self._ensure_collision_sphere_visual_material()
         if not is_prim_path_valid(sphere_path):
             return
         sphere = self.path_2_spheres[sphere_path]
         if sphere_path[: len(self.filter)] == self.filter:
-            sphere.get_applied_visual_material().set_color(self.filter_in_sphere_color)
+            sphere.apply_visual_material(self._filter_in_surface)
         else:
-            sphere.get_applied_visual_material().set_color(self.filter_out_sphere_color)
+            sphere.apply_visual_material(self._filter_out_surface)
 
     def copy_all_sphere_data(self):
+        self._ensure_collision_sphere_visual_material()
         sphere_paths = list(self.path_2_spheres.keys())
         deleted_spheres = ["DEL"]
         for sphere_path in sphere_paths:
@@ -137,7 +217,12 @@ class CollisionSphereEditor:
         elif op_type == "DEL":
             redo = ["DEL"]
             for d in op:
-                sphere = VisualSphere(d["sphere_path"], translation=d["center"], radius=d["radius"])
+                sphere = VisualSphere(
+                    d["sphere_path"],
+                    translation=d["center"],
+                    radius=d["radius"],
+                    visual_material=self._filter_in_surface,
+                )
                 self.path_2_spheres[d["sphere_path"]] = sphere
                 self.set_sphere_color(d["sphere_path"])
                 redo.append(d)
@@ -166,7 +251,12 @@ class CollisionSphereEditor:
         if op_type == "ADD":
             added_spheres = ["ADD"]
             for d in op:
-                sphere = VisualSphere(d["sphere_path"], translation=d["center"], radius=d["radius"])
+                sphere = VisualSphere(
+                    d["sphere_path"],
+                    translation=d["center"],
+                    radius=d["radius"],
+                    visual_material=self._filter_in_surface,
+                )
                 self.path_2_spheres[d["sphere_path"]] = sphere
                 self.set_sphere_color(d["sphere_path"])
                 added_spheres.append(d["sphere_path"])
@@ -214,16 +304,17 @@ class CollisionSphereEditor:
         result = generator.generate_spheres(num_spheres, radius_offset)
         if is_preview:
             self.clear_preview()
+            self._ensure_preview_sphere_visual_material()
+            preview_sphere_path_generator = self._path_generator(self._get_collision_sphere_preview_path(link_path))
             for lula_sphere in result:
-                sphere_path = find_unique_string_name(
-                    link_path + "/preview_sphere", lambda x: not is_prim_path_valid(x)
-                )
+                sphere_path = next(preview_sphere_path_generator)
                 self._preview_spheres.append(
                     VisualSphere(
                         sphere_path,
                         color=self._preview_color,
                         translation=lula_sphere.center,
                         radius=lula_sphere.radius,
+                        visual_material=self._preview_sphere_surface,
                     )
                 )
         else:
@@ -235,6 +326,8 @@ class CollisionSphereEditor:
             self.clear_preview()
 
     def clear_preview(self):
+        self._preview_path_generator = {}
+
         for sphere in self._preview_spheres:
             self.delete_sphere(sphere.prim_path)
         self._preview_spheres = []
@@ -247,18 +340,26 @@ class CollisionSphereEditor:
             link_path = link_path[:-1]
 
         self._redo = []
-        prim_path = find_unique_string_name(link_path + "/collision_sphere", lambda x: not is_prim_path_valid(x))
+        sphere_path = self._get_unused_collision_sphere_path(link_path)
 
-        sphere = VisualSphere(prim_path, translation=center, radius=radius)
+        self._ensure_collision_sphere_visual_material()
+        if sphere_path[: len(self.filter)] == self.filter:
+            visual_material = self._filter_in_surface
+        else:
+            visual_material = self._filter_out_surface
+
+        sphere = VisualSphere(sphere_path, translation=center, radius=radius, visual_material=visual_material)
+
         self.path_2_spheres[sphere.prim_path] = sphere
-        self.set_sphere_color(prim_path)
+
         if store_op:
             self._operations.append(["ADD", sphere.prim_path])
 
-        return prim_path
+        return sphere_path
 
     def load_spheres(self, robot, robot_description_file_path):
         self.clear_spheres(store_op=False)
+
         self._redo = []
         self._operations = []
 
@@ -270,9 +371,16 @@ class CollisionSphereEditor:
 
         sphere_list = parsed_file["collision_spheres"]
 
+        if sphere_list is None:
+            return
+
         robot_path = robot.prim_path
 
         added_sphere_paths = ["ADD"]
+
+        import time
+
+        s = time.perf_counter()
         for sphere_dict in sphere_list:
             for key, val in sphere_dict.items():
                 link_path = robot_path + "/" + key
@@ -286,6 +394,8 @@ class CollisionSphereEditor:
                     carb.log_warn("Could not place sphere from robot description at path: {}".format(link_path))
 
         self._operations.append(added_sphere_paths)
+
+        print("Load Time = ", time.perf_counter() - s)
 
     def interpolate_spheres(self, path1, path2, num_spheres):
         if not is_prim_path_valid(path1):
@@ -383,6 +493,18 @@ class CollisionSphereEditor:
             for sphere in sphere_list:
                 f.write('    - "center": {}\n'.format(sphere["center"]))
                 f.write('      "radius": {}\n'.format(sphere["radius"]))
+
+    def on_shutdown(self):
+        self.clear_spheres(store_op=False)
+        self.clear_preview()
+        if is_prim_path_valid(self._lula_path):
+            delete_prim(self._lula_path)
+
+    def _get_collision_sphere_base_path(self, link_path):
+        return link_path + "/collision_sphere"
+
+    def _get_collision_sphere_preview_path(self, link_path):
+        return link_path + "/preview_sphere"
 
     def _round_list_floats(self, l, decimals=3):
         r = []

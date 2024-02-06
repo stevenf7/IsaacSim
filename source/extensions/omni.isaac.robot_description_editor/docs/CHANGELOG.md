@@ -1,4 +1,9 @@
 # Changelog
+## [2.2.0] - 2024-02-06
+### Changed
+- Improved sphere creation time by reusing `VisualMaterial`s and
+    rewriting sphere prim path generation.
+
 ## [2.1.3] - 2023-11-13
 ### Fixed
 - Updated documentation link
