@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2023, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2022-2024, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -128,8 +128,7 @@ class Extension(omni.ext.IExt):
 
     def on_shutdown(self):
         self._show_robot_if_hidden()
-        self._collision_sphere_editor.clear_spheres(store_op=False)
-        self._collision_sphere_editor.clear_preview()
+        self._collision_sphere_editor.on_shutdown()
         self._usd_context = None
         self._stage_event_sub = None
         self._timeline_event_sub = None
@@ -957,14 +956,18 @@ class Extension(omni.ext.IExt):
         with self._models["editor_tools_ui"]:
             with ui.VStack(style=get_style(), spacing=5, height=0):
 
-                self._models["undo_btn"] = btn_builder(
-                    "Undo", text="Undo", on_clicked_fn=self._collision_sphere_editor.undo
-                )
+                def on_undo():
+                    self._collision_sphere_editor.undo()
+                    self._refresh_collision_sphere_comboboxes()
+
+                self._models["undo_btn"] = btn_builder("Undo", text="Undo", on_clicked_fn=on_undo)
                 self._models["undo_btn"].enabled = True
 
-                self._models["redo_btn"] = btn_builder(
-                    "Redo", text="Redo", on_clicked_fn=self._collision_sphere_editor.redo
-                )
+                def on_redo():
+                    self._collision_sphere_editor.redo()
+                    self._refresh_collision_sphere_comboboxes()
+
+                self._models["redo_btn"] = btn_builder("Redo", text="Redo", on_clicked_fn=on_redo)
                 self._models["redo_btn"].enabled = True
 
                 kwargs = {
