@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.21.6] - 2024-02-06
+### Fixed
+- O3dyn benchmark crash
+
 ## [0.21.5] - 2024-02-05
 ### Added
 - Nova Carter ROS2 benchmark for 3 carters 1 3d lidar each for benchmarking multi-robot nav

@@ -67,13 +67,14 @@ class TestBenchmarkRobotsO3dyn(BaseIsaacBenchmarkAsync):
             # else:
             #     lidar_prim.GetAttribute("enabled").Set(False)
 
-            viewport_api = get_active_viewport()
-            viewport_api.set_texture_resolution([1280, 720])
-
             await omni.kit.app.get_app().next_update_async()
-            await omni.kit.app.get_app().next_update_async()
-
             robots.append(current_robot)
+
+        viewport_api = get_active_viewport()
+        viewport_api.set_texture_resolution([1280, 720])
+
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
 
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()
@@ -155,12 +156,3 @@ class TestBenchmarkRobotsO3dyn(BaseIsaacBenchmarkAsync):
 
     async def test_benchmark_50_robot_o3dyn(self):
         await self.benchmark_robots(50)
-
-    # async def test_benchmark_1_robot_lidar(self):
-    #     await self.benchmark_robots(1, True)
-
-    # async def test_benchmark_5_robot_lidar(self):
-    #     await self.benchmark_robots(5, True)
-
-    # async def test_benchmark_10_robot_lidar(self):
-    #     await self.benchmark_robots(10, True)
