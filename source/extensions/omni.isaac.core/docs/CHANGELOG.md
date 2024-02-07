@@ -3,6 +3,10 @@
 ### Changed
 - Changed get_assets_root_path to get_assets_root_path_async for the unit tests
 
+## [3.3.6] - 2024-02-02
+### Fixed
+- Always set update to USD flag when fabric is enabled
+
 ## [3.3.5] - 2024-01-31
 ### Changed
 - Update asset paths to 4.0

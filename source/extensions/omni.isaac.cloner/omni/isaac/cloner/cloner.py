@@ -26,9 +26,16 @@ class Cloner:
     be expected to follow linear scaling with an increase of clones.
     """
 
-    def __init__(self):
+    def __init__(self, stage: Usd.Stage = None):
+        """
+        Args:
+            stage (Usd.Stage): Usd stage where source prim and clones are added to.
+        """
         self._base_env_path = None
         self._root_path = None
+        self._stage = stage
+        if stage is None:
+            self._stage = omni.usd.get_context().get_stage()
 
     def define_base_env(self, base_env_path: str):
         """Creates a USD Scope at base_env_path. This is designed to be the parent that holds all clones.
@@ -37,7 +44,7 @@ class Cloner:
             base_env_path (str): Path to create the USD Scope at.
         """
 
-        UsdGeom.Scope.Define(omni.usd.get_context().get_stage(), base_env_path)
+        UsdGeom.Scope.Define(self._stage, base_env_path)
         self._base_env_path = base_env_path
 
     def generate_paths(self, root_path: str, num_paths: int):
@@ -93,8 +100,7 @@ class Cloner:
                 stringPath = clone_base_path + str(index + 1)
             return stringPath
 
-        stage = omni.usd.get_context().get_stage()
-        stageId = UsdUtils.StageCache.Get().GetId(stage).ToLongInt()
+        stageId = UsdUtils.StageCache.Get().Insert(self._stage).ToLongInt()
 
         get_physx_replicator_interface().register_replicator(
             stageId, replicationAttachFn, replicationAttachEndFn, hierarchyRenameFn
@@ -155,8 +161,7 @@ class Cloner:
             orientations = Vt.QuatdArray.FromNumpy(orientations)
 
         # make sure source prim has valid xform properties
-        stage = omni.usd.get_context().get_stage()
-        source_prim = stage.GetPrimAtPath(source_prim_path)
+        source_prim = self._stage.GetPrimAtPath(source_prim_path)
         if not source_prim:
             raise Exception("Source prim does not exist")
         properties = source_prim.GetPropertyNames()
@@ -219,7 +224,7 @@ class Cloner:
         # set source actor transform
         if source_prim_path in prim_paths:
             idx = prim_paths.index(source_prim_path)
-            prim = UsdGeom.Xform(stage.GetPrimAtPath(source_prim_path))
+            prim = UsdGeom.Xform(self._stage.GetPrimAtPath(source_prim_path))
 
             if positions is not None:
                 translation = positions[idx]
@@ -240,8 +245,9 @@ class Cloner:
             for i, prim_path in enumerate(prim_paths):
                 if prim_path != source_prim_path:
                     has_clones = True
-                    env_spec = Sdf.CreatePrimInLayer(stage.GetRootLayer(), prim_path)
-                    stack = UsdGeom.Xform(stage.GetPrimAtPath(source_prim_path)).GetPrim().GetPrimStack()
+
+                    env_spec = Sdf.CreatePrimInLayer(self._stage.GetRootLayer(), prim_path)
+                    stack = UsdGeom.Xform(self._stage.GetPrimAtPath(source_prim_path)).GetPrim().GetPrimStack()
 
                     if copy_from_source:
                         Sdf.CopySpec(env_spec.layer, Sdf.Path(source_prim_path), env_spec.layer, Sdf.Path(prim_path))
@@ -283,7 +289,9 @@ class Cloner:
         if replicate_physics and has_clones:
             self.replicate_physics(source_prim_path, prim_paths, base_env_path, root_path)
         else:
-            get_physx_replicator_interface().unregister_replicator(UsdUtils.StageCache.Get().GetId(stage).ToLongInt())
+            get_physx_replicator_interface().unregister_replicator(
+                UsdUtils.StageCache.Get().Insert(self._stage).ToLongInt()
+            )
 
     def filter_collisions(
         self, physicsscene_path: str, collision_root_path: str, prim_paths: List[str], global_paths: List[str] = []
@@ -298,20 +306,19 @@ class Cloner:
 
         """
 
-        stage = omni.usd.get_context().get_stage()
-        physx_scene = PhysxSchema.PhysxSceneAPI(stage.GetPrimAtPath(physicsscene_path))
+        physx_scene = PhysxSchema.PhysxSceneAPI(self._stage.GetPrimAtPath(physicsscene_path))
 
         # We invert the collision group filters for more efficient collision filtering across environments
         physx_scene.CreateInvertCollisionGroupFilterAttr().Set(True)
 
-        collision_scope = UsdGeom.Scope.Define(stage, collision_root_path)
+        collision_scope = UsdGeom.Scope.Define(self._stage, collision_root_path)
 
         with Sdf.ChangeBlock():
             if len(global_paths) > 0:
                 global_collision_group_path = collision_root_path + "/global_group"
                 # add collision group prim
                 global_collision_group = Sdf.PrimSpec(
-                    stage.GetRootLayer().GetPrimAtPath(collision_root_path),
+                    self._stage.GetRootLayer().GetPrimAtPath(collision_root_path),
                     "global_group",
                     Sdf.SpecifierDef,
                     "PhysicsCollisionGroup",
@@ -349,7 +356,7 @@ class Cloner:
                 collision_group_path = collision_root_path + f"/group{i}"
                 # add collision group prim
                 collision_group = Sdf.PrimSpec(
-                    stage.GetRootLayer().GetPrimAtPath(collision_root_path),
+                    self._stage.GetRootLayer().GetPrimAtPath(collision_root_path),
                     f"group{i}",
                     Sdf.SpecifierDef,
                     "PhysicsCollisionGroup",

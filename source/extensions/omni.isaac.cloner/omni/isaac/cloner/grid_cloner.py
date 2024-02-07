@@ -12,18 +12,19 @@ import numpy as np
 import omni.usd
 import torch
 from omni.isaac.cloner import Cloner
-from pxr import Gf, UsdGeom
+from pxr import Gf, Usd, UsdGeom
 
 
 class GridCloner(Cloner):
 
     """This is a specialized Cloner class that will automatically generate clones in a grid fashion."""
 
-    def __init__(self, spacing: float, num_per_row: int = -1):
+    def __init__(self, spacing: float, num_per_row: int = -1, stage: Usd.Stage = None):
         """
         Args:
             spacing (float): Spacing between clones.
             num_per_row (int): Number of clones to place in a row. Defaults to sqrt(num_clones).
+            stage (Usd.Stage): Usd stage where source prim and clones are added to.
         """
         self._spacing = spacing
         self._num_per_row = num_per_row
@@ -31,7 +32,7 @@ class GridCloner(Cloner):
         self._positions = None
         self._orientations = None
 
-        Cloner.__init__(self)
+        Cloner.__init__(self, stage)
 
     def get_clone_transforms(
         self,
@@ -80,8 +81,6 @@ class GridCloner(Cloner):
         row_offset = 0.5 * self._spacing * (num_rows - 1)
         col_offset = 0.5 * self._spacing * (num_cols - 1)
 
-        stage = omni.usd.get_context().get_stage()
-
         positions = []
         orientations = []
 
@@ -92,7 +91,7 @@ class GridCloner(Cloner):
             x = row_offset - row * self._spacing
             y = col * self._spacing - col_offset
 
-            up_axis = UsdGeom.GetStageUpAxis(stage)
+            up_axis = UsdGeom.GetStageUpAxis(self._stage)
             position = [x, y, 0] if up_axis == UsdGeom.Tokens.z else [x, 0, y]
             orientation = Gf.Quatd.GetIdentity()
 
