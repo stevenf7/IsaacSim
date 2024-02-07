@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -21,6 +21,16 @@ namespace nv
 namespace lidar
 {
 
+inline cudaError_t DEBUG_cudaMemcpyAsync(void* dst, const void* src, size_t count, cudaMemcpyKind kind, cudaStream_t stream)
+{
+    cudaError_t result = cudaMemcpyAsync(dst, src, count, kind, stream);
+    if (result != cudaSuccess)
+    {
+        CARB_LOG_ERROR("dst: %p, src: %p, count: %zu,  kind: %d, stream: %p", dst, src, count, kind, (void*)stream);
+    }
+    return result;
+}
+
 // Helper Functions
 inline void cpyToBuffer(uint8_t* buffer,
                         const LidarParameterType* parameter,
@@ -34,7 +44,7 @@ inline void cpyToBuffer(uint8_t* buffer,
     {
         LidarParameterType* bufferParam = reinterpret_cast<LidarParameterType*>(buffer);
         memcpy(&bufferParam->sync, &parameter->sync, sizeof(LidarSyncParameter));
-        CUDA_CALL(cudaMemcpyAsync(
+        CUDA_CALL(DEBUG_cudaMemcpyAsync(
             &bufferParam->async, &parameter->async, sizeof(LidarAsyncParameter), cudaMemcpyHostToHost, stream));
     }
 
@@ -45,39 +55,39 @@ inline void cpyToBuffer(uint8_t* buffer,
     size_t offset = sizeof(LidarParameterType);
     // Ticks
     size_t sizeInBytes = sizeof(float) * numTicks;
-    CUDA_CALL(cudaMemcpyAsync(buffer + offset, ticks.azimuths, sizeInBytes, kind, stream));
+    CUDA_CALL(DEBUG_cudaMemcpyAsync(buffer + offset, ticks.azimuths, sizeInBytes, kind, stream));
     offset += sizeInBytes;
     sizeInBytes = sizeof(uint32_t) * numTicks;
-    CUDA_CALL(cudaMemcpyAsync(buffer + offset, ticks.states, sizeInBytes, kind, stream));
+    CUDA_CALL(DEBUG_cudaMemcpyAsync(buffer + offset, ticks.states, sizeInBytes, kind, stream));
     offset += sizeInBytes;
     sizeInBytes = sizeof(uint64_t) * numTicks;
-    CUDA_CALL(cudaMemcpyAsync(buffer + offset, ticks.timestamps, sizeInBytes, kind, stream));
+    CUDA_CALL(DEBUG_cudaMemcpyAsync(buffer + offset, ticks.timestamps, sizeInBytes, kind, stream));
     offset += sizeInBytes;
     // Returns
     sizeInBytes = sizeof(float) * numReturns;
-    CUDA_CALL(cudaMemcpyAsync(buffer + offset, returns.azimuths, sizeInBytes, kind, stream));
+    CUDA_CALL(DEBUG_cudaMemcpyAsync(buffer + offset, returns.azimuths, sizeInBytes, kind, stream));
     offset += sizeInBytes;
-    CUDA_CALL(cudaMemcpyAsync(buffer + offset, returns.elevations, sizeInBytes, kind, stream));
+    CUDA_CALL(DEBUG_cudaMemcpyAsync(buffer + offset, returns.elevations, sizeInBytes, kind, stream));
     offset += sizeInBytes;
-    CUDA_CALL(cudaMemcpyAsync(buffer + offset, returns.distances, sizeInBytes, kind, stream));
+    CUDA_CALL(DEBUG_cudaMemcpyAsync(buffer + offset, returns.distances, sizeInBytes, kind, stream));
     offset += sizeInBytes;
-    CUDA_CALL(cudaMemcpyAsync(buffer + offset, returns.intensities, sizeInBytes, kind, stream));
+    CUDA_CALL(DEBUG_cudaMemcpyAsync(buffer + offset, returns.intensities, sizeInBytes, kind, stream));
     offset += sizeInBytes;
     sizeInBytes = sizeof(float) * numReturns * 3;
-    CUDA_CALL(cudaMemcpyAsync(buffer + offset, returns.velocities, sizeInBytes, kind, stream));
+    CUDA_CALL(DEBUG_cudaMemcpyAsync(buffer + offset, returns.velocities, sizeInBytes, kind, stream));
     offset += sizeInBytes;
-    CUDA_CALL(cudaMemcpyAsync(buffer + offset, returns.hitPointNormals, sizeInBytes, kind, stream));
+    CUDA_CALL(DEBUG_cudaMemcpyAsync(buffer + offset, returns.hitPointNormals, sizeInBytes, kind, stream));
     offset += sizeInBytes;
     sizeInBytes = sizeof(uint32_t) * numReturns;
-    CUDA_CALL(cudaMemcpyAsync(buffer + offset, returns.deltaTimes, sizeInBytes, kind, stream));
+    CUDA_CALL(DEBUG_cudaMemcpyAsync(buffer + offset, returns.deltaTimes, sizeInBytes, kind, stream));
     offset += sizeInBytes;
-    CUDA_CALL(cudaMemcpyAsync(buffer + offset, returns.emitterIds, sizeInBytes, kind, stream));
+    CUDA_CALL(DEBUG_cudaMemcpyAsync(buffer + offset, returns.emitterIds, sizeInBytes, kind, stream));
     offset += sizeInBytes;
-    CUDA_CALL(cudaMemcpyAsync(buffer + offset, returns.beamIds, sizeInBytes, kind, stream));
+    CUDA_CALL(DEBUG_cudaMemcpyAsync(buffer + offset, returns.beamIds, sizeInBytes, kind, stream));
     offset += sizeInBytes;
-    CUDA_CALL(cudaMemcpyAsync(buffer + offset, returns.materialIds, sizeInBytes, kind, stream));
+    CUDA_CALL(DEBUG_cudaMemcpyAsync(buffer + offset, returns.materialIds, sizeInBytes, kind, stream));
     offset += sizeInBytes;
-    CUDA_CALL(cudaMemcpyAsync(buffer + offset, returns.objectIds, sizeInBytes, kind, stream));
+    CUDA_CALL(DEBUG_cudaMemcpyAsync(buffer + offset, returns.objectIds, sizeInBytes, kind, stream));
 }
 
 inline void fillTicksFromBuffer(uint8_t* buffer, const uint32_t numTicks, LidarTicks& ticks)
