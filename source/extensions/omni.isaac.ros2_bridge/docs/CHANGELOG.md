@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.8.1] - 2024-02-02
+### Changed
+- Added profile zones for the image publisher
+
 ## [2.8.0] - 2024-01-23
 ### Changed
 - ROS2 Bridge no longer requires the vision_msgs for activation. However, if you would like to use Isaac Sim publishers dependant on vision_msgs, simply install it on the system or use isaac sim internal libraries. 

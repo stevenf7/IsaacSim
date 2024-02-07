@@ -8,6 +8,7 @@
 //
 
 #include <carb/graphics/GraphicsTypes.h>
+#include <carb/profiler/Profile.h>
 
 #include <include/Ros2Node.h>
 #include <omni/isaac/utils/Buffer.h>
@@ -40,6 +41,7 @@ public:
         // Publisher was not valid, create a new one
         if (!state.mPublisher)
         {
+            CARB_PROFILE_ZONE(0, "setup publisher");
             // Setup ROS publisher
             const std::string& topicName = db.inputs.topicName();
 
@@ -65,13 +67,15 @@ public:
 
     bool publishImage(OgnROS2PublishImageDatabase& db)
     {
-
+        CARB_PROFILE_ZONE(1, "publish image function");
         auto& state = db.internalState<OgnROS2PublishImage>();
         // Check if subscription count is 0
         if (!state.mPublisher.get()->get_subscription_count())
         {
             return false;
         }
+
+        auto zoneID = CARB_PROFILE_BEGIN(5, "Generate message header and buffer");
         state.mMessage = state.mFactory->CreateImageMessage();
 
         state.mMessage->fillHeader(db.inputs.timeStamp(), state.mFrameId);
@@ -86,9 +90,11 @@ public:
         state.mMessage->generateBuffer(db.inputs.height(), db.inputs.width(), encoding);
         size_t totalBytes = state.mMessage->getTotalBytes();
         void* dataPtr = state.mMessage->getDataPtr();
+        CARB_PROFILE_END(zoneID);
 
         if (db.inputs.cudaDeviceIndex() == -1)
         {
+            CARB_PROFILE_ZONE(2, "Data on host");
             if (db.inputs.dataPtr() != 0 && totalBytes == db.inputs.bufferSize())
             {
                 // Data is on host as ptr, buffer size matches
@@ -110,6 +116,7 @@ public:
         }
         else
         {
+            CARB_PROFILE_ZONE(3, "data on Cuda device");
             omni::isaac::utils::ScopedDevice(db.inputs.cudaDeviceIndex());
 
             if (db.inputs.bufferSize() == 0)
@@ -148,7 +155,7 @@ public:
                                       cudaMemcpyDeviceToHost));
             }
         }
-
+        CARB_PROFILE_ZONE(4, "image publisher publish");
         state.mPublisher.get()->publish(state.mMessage->ptr());
 
         return true;

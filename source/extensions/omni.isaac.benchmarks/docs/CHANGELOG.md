@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.21.5] - 2024-02-05
+### Added
+- Nova Carter ROS2 benchmark for 3 carters 1 3d lidar each for benchmarking multi-robot nav
+
 ## [0.21.4] - 2024-02-01
 ### Changed
 - Changed get_assets_root_path to get_assets_root_path_async for the unit tests

@@ -208,6 +208,9 @@ class TestBenchmarkRobotsNovaCarterROS2(BaseIsaacBenchmarkAsync):
     async def test_benchmark_3_robot_nova_carter_ros2(self):
         await self.benchmark_robots(3)
 
+    async def test_benchmark_3_robot_nova_carter_ros2_1_3d_lidar(self):
+        await self.benchmark_robots(3, enable_3d_lidar=1)
+
     async def test_benchmark_3_robot_nova_carter_ros2_1_hawk_1_3d_lidar(self):
         await self.benchmark_robots(3, enable_hawks=1, enable_3d_lidar=1)
 
