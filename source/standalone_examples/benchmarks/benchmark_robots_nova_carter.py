@@ -11,9 +11,11 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-n", "--n-robot", type=int, default=1, help="Number of robots")
+parser.add_argument("--num-gpus", type=int, default=1, help="Number of GPUs on machine.")
 args, unknown = parser.parse_known_args()
 
 n_robot = args.n_robot
+n_gpu = args.num_gpus
 
 import numpy as np
 from omni.isaac.kit import SimulationApp
@@ -34,7 +36,7 @@ enable_extension("omni.isaac.benchmark.services")
 from omni.isaac.benchmark.services import base_isaac_benchmark
 
 # Create the benchmark
-benchmark = base_isaac_benchmark.BaseIsaacBenchmark(f"robots_nova_carter_{n_robot}")
+benchmark = base_isaac_benchmark.BaseIsaacBenchmark(f"robots_nova_carter_{n_robot}_gpu_{n_gpu}")
 benchmark.set_phase("loading")
 benchmark.start_runtime()
 

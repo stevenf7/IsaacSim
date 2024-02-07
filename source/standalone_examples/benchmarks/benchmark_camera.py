@@ -14,12 +14,13 @@ parser.add_argument("-n", "--num-cameras", type=int, default=1, help="Number of 
 parser.add_argument(
     "--resolution", nargs=2, type=int, default=[1280, 720], help="Camera resolution as [width, height] px"
 )
+parser.add_argument("--num-gpus", type=int, default=1, help="Number of GPUs on machine.")
 args, unknown = parser.parse_known_args()
 
 n_camera = args.num_cameras
 resolution = args.resolution
+n_gpu = args.num_gpus
 
-import carb
 import numpy as np
 from omni.isaac.kit import SimulationApp
 
@@ -39,7 +40,7 @@ from omni.isaac.benchmark.services import base_isaac_benchmark
 
 # Create the benchmark
 benchmark = base_isaac_benchmark.BaseIsaacBenchmark(
-    benchmark_name=f"cameras_{n_camera}_resolution_{resolution[0]}_{resolution[1]}"
+    benchmark_name=f"cameras_{n_camera}_resolution_{resolution[0]}_{resolution[1]}_gpu_{n_gpu}"
 )
 benchmark.set_phase("loading")
 benchmark.start_runtime()
