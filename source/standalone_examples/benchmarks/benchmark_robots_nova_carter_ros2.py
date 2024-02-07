@@ -16,12 +16,14 @@ parser.add_argument("--enable-2d-lidar", type=int, default=0, help="Number of 2D
 parser.add_argument(
     "--enable-hawks", type=int, default=0, help="Number of Hawk camera stereo pairs to enable, per robot."
 )
+parser.add_argument("--num-gpus", type=int, default=1, help="Number of GPUs on machine.")
 args, unknown = parser.parse_known_args()
 
 n_robot = args.n_robot
 enable_3d_lidar = args.enable_3d_lidar
 enable_2d_lidar = args.enable_2d_lidar
 enable_hawks = args.enable_hawks
+n_gpu = args.num_gpus
 
 if enable_3d_lidar > 1:
     carb.log_warn("Warning: Nova Carter only has 1 3D lidar")
@@ -55,7 +57,7 @@ enable_extension("omni.isaac.benchmark.services")
 from omni.isaac.benchmark.services import base_isaac_benchmark
 
 # Create the benchmark
-benchmark = base_isaac_benchmark.BaseIsaacBenchmark(f"robots_nova_carter_ros2_{sensor_name}_{n_robot}")
+benchmark = base_isaac_benchmark.BaseIsaacBenchmark(f"robots_nova_carter_ros2_{sensor_name}_{n_robot}_gpu_{n_gpu}")
 benchmark.set_phase("loading")
 benchmark.start_runtime()
 

@@ -11,9 +11,11 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-n", "--n-sensor", type=int, default=1, help="Number of sensors")
+parser.add_argument("--num-gpus", type=int, default=1, help="Number of GPUs on machine.")
 args, unknown = parser.parse_known_args()
 
 n_sensor = args.n_sensor
+n_gpu = args.num_gpus
 
 from omni.isaac.kit import SimulationApp
 
@@ -31,7 +33,7 @@ enable_extension("omni.isaac.benchmark.services")
 from omni.isaac.benchmark.services import base_isaac_benchmark
 
 # Create the benchmark
-benchmark = base_isaac_benchmark.BaseIsaacBenchmark(benchmark_name=f"rtx_lidar_{n_sensor}")
+benchmark = base_isaac_benchmark.BaseIsaacBenchmark(benchmark_name=f"rtx_lidar_{n_sensor}_gpu_{n_gpu}")
 benchmark.set_phase("loading")
 benchmark.start_runtime()
 scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
