@@ -59,6 +59,8 @@ benchmark = base_isaac_benchmark.BaseIsaacBenchmark(f"robots_nova_carter_ros2_{s
 benchmark.set_phase("loading")
 benchmark.start_runtime()
 
+enable_extension("omni.isaac.ros2_bridge")
+
 robot_path = "/Isaac/Samples/ROS2/Robots/Nova_Carter_ROS.usd"
 scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
 
