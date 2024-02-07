@@ -239,10 +239,6 @@ simulation.defaultMetersPerUnit = 1.0
 omnigraph.updateToUsd = false
 omnigraph.useSchemaPrims = true
 omnigraph.disablePrimNodes = true
-physics.updateToUsd = false
-physics.updateVelocitiesToUsd = false
-physics.useFastCache = false
-physics.visualizationDisplayJoints = false
 omni.replicator.captureOnPlay = true
 omnihydra.useSceneGraphInstancing = true
 renderer.startupMessageDisplayed = true # hides the IOMMU popup window
@@ -253,9 +249,12 @@ app.omniverse.filepicker.options_menu.show_details = true
 
 [settings.physics]
 updateToUsd = false
+updateParticlesToUsd = false
 updateVelocitiesToUsd = false
 updateForceSensorsToUsd = false
 outputVelocitiesLocalSpace = false
+useFastCache = false
+visualizationDisplayJoints = false
 
 # Register extension folder from this repo in kit
 [settings.app.exts]

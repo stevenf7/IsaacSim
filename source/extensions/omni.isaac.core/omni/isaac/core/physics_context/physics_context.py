@@ -318,18 +318,13 @@ class PhysicsContext(object):
         fabric_was_enabled = manager.is_extension_enabled("omni.physx.fabric")
         if not fabric_was_enabled and enable:
             manager.set_extension_enabled_immediate("omni.physx.fabric", True)
-            self._carb_settings.set_bool("/physics/updateToUsd", False)
-            self._carb_settings.set_bool("/physics/updateParticlesToUsd", False)
-            self._carb_settings.set_bool("/physics/updateVelocitiesToUsd", False)
-            self._carb_settings.set_bool("/physics/updateForceSensorsToUsd", False)
-            self._carb_settings.set_bool("/physics/outputVelocitiesLocalSpace", False)
         elif fabric_was_enabled and not enable:
             manager.set_extension_enabled_immediate("omni.physx.fabric", False)
-            self._carb_settings.set_bool("/physics/updateToUsd", True)
-            self._carb_settings.set_bool("/physics/updateParticlesToUsd", True)
-            self._carb_settings.set_bool("/physics/updateVelocitiesToUsd", True)
-            self._carb_settings.set_bool("/physics/updateForceSensorsToUsd", True)
-            self._carb_settings.set_bool("/physics/outputVelocitiesLocalSpace", True)
+        self._carb_settings.set_bool("/physics/updateToUsd", not enable)
+        self._carb_settings.set_bool("/physics/updateParticlesToUsd", not enable)
+        self._carb_settings.set_bool("/physics/updateVelocitiesToUsd", not enable)
+        self._carb_settings.set_bool("/physics/updateForceSensorsToUsd", not enable)
+        self._carb_settings.set_bool("/physics/outputVelocitiesLocalSpace", not enable)
 
     def enable_ccd(self, flag: bool) -> None:
         """Enables a second broad phase after integration that makes it possible to prevent objects from tunneling

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.8.0] - 2024-02-02
+### Changed
+- Support executing cloner on non-context stage
+
 ## [0.7.3] - 2024-01-18
 ### Changed
 - Changed get_assets_root_path to get_assets_root_path_async for the unit tests

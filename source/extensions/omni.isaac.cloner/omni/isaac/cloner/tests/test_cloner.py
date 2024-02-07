@@ -13,7 +13,7 @@ import numpy as np
 import omni.kit
 from omni.isaac.cloner import Cloner, GridCloner
 from omni.isaac.core.utils.nucleus import get_assets_root_path_async
-from pxr import Gf, UsdGeom, UsdPhysics, Vt
+from pxr import Gf, Usd, UsdGeom, UsdPhysics, Vt
 
 
 class TestSimpleCloner(omni.kit.test.AsyncTestCase):
@@ -392,4 +392,35 @@ class TestSimpleCloner(omni.kit.test.AsyncTestCase):
             self.assertTrue(
                 stage.GetPrimAtPath(f"/World/envs/env_{i}").GetAttribute("xformOp:orient").Get()
                 == Gf.Quatd(0.0, Gf.Vec3d(0.0, 0.0, 1.0))
+            )
+
+    async def test_simple_cloner_on_stage_in_memory(self):
+        stage = Usd.Stage.CreateInMemory()
+
+        # create our base environment with one cube
+        base_env_path = "/World/Cube_0"
+        UsdGeom.Cube.Define(stage, base_env_path)
+
+        # create a Cloner instance
+        cloner = Cloner(stage=stage)
+
+        # generate 4 paths that begin with "/World/Cube" - path will be appended with _{index}
+        target_paths = cloner.generate_paths("/World/Cube", 4)
+
+        cube_positions = np.array([[0, 0, 0], [3, 0, 0], [6, 0, 0], [9, 0, 0]])
+        target_translations = []
+        for pos in cube_positions:
+            target_translations.append(Gf.Vec3d(*pos.tolist()))
+
+        # clone the cube at target paths at specified positions
+        cloner.clone(
+            source_prim_path="/World/Cube_0", prim_paths=target_paths, positions=cube_positions, replicate_physics=False
+        )
+
+        for i in range(4):
+            self.assertTrue(stage.GetPrimAtPath(f"/World/Cube_{i}") is not None)
+            self.assertTrue(stage.GetPrimAtPath(f"/World/Cube_{i}").GetTypeName() == "Cube")
+            self.assertTrue(
+                stage.GetPrimAtPath(f"/World/Cube_{i}").GetAttribute("xformOp:translate").Get()
+                == target_translations[i]
             )
