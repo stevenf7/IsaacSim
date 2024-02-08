@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.2] - 2024-02-07
+### Fixed
+- Issues with instanceable assets when using non physx collision mesh option
+- Cell size not updating based on the current stage units. On stage load the cell size is set to 5cm or 0.05m depending on the units. 
+
+
 ## [0.4.1] - 2024-01-18
 ### Changed
 - Changed get_assets_root_path to get_assets_root_path_async for the unit tests

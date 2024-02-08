@@ -100,8 +100,9 @@ class Extension(omni.ext.IExt):
                 selection = self._collision_type.get_item_value_model().as_int
                 self.apply_collision_to_prim(prim, approximation_type[selection])
                 index = index + 1
-                self._progress_bar.set_value(index / count)
-                await omni.kit.app.get_app().next_update_async()
+                if index % 100 == 0 or index == count:
+                    self._progress_bar.set_value(index / count)
+                    await omni.kit.app.get_app().next_update_async()
 
         asyncio.ensure_future(_task())
 
@@ -119,8 +120,9 @@ class Extension(omni.ext.IExt):
             for prim in all_prims:
                 self.unapply_collision_on_prim(prim)
                 index = index + 1
-                self._progress_bar.set_value(index / count)
-                await omni.kit.app.get_app().next_update_async()
+                if index % 100 == 0 or index == count:
+                    self._progress_bar.set_value(index / count)
+                    await omni.kit.app.get_app().next_update_async()
 
         asyncio.ensure_future(_task())
 
@@ -138,8 +140,9 @@ class Extension(omni.ext.IExt):
             for prim in all_prims:
                 self.remove_physics_apis_on_prim(prim)
                 index = index + 1
-                self._progress_bar.set_value(index / count)
-                await omni.kit.app.get_app().next_update_async()
+                if index % 100 == 0 or index == count:
+                    self._progress_bar.set_value(index / count)
+                    await omni.kit.app.get_app().next_update_async()
 
         asyncio.ensure_future(_task())
 
