@@ -12,10 +12,10 @@ import carb
 import numpy as np
 from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.robots.robot import Robot
-from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.stage import add_reference_to_stage
 from omni.isaac.manipulators.grippers.parallel_gripper import ParallelGripper
+from omni.isaac.nucleus import get_assets_root_path
 
 
 class DofBot(Robot):

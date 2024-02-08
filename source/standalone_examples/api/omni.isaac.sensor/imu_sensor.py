@@ -17,9 +17,9 @@ import carb
 import numpy as np
 from omni.isaac.core import World
 from omni.isaac.core.articulations import Articulation
-from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import add_reference_to_stage
 from omni.isaac.core.utils.types import ArticulationAction
+from omni.isaac.nucleus import get_assets_root_path
 from omni.isaac.sensor import IMUSensor
 from omni.isaac.wheeled_robots.controllers.differential_controller import DifferentialController
 

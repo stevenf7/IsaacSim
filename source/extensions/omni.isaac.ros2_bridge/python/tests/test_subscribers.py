@@ -26,9 +26,9 @@ import omni.kit.test
 import omni.kit.usd
 import usdrt.Sdf
 from omni.isaac.core.articulations import Articulation
-from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.physics import simulate_async
 from omni.isaac.core.utils.stage import open_stage_async
+from omni.isaac.nucleus import get_assets_root_path_async
 
 from .common import get_qos_profile
 

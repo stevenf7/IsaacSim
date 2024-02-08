@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.8.0"
+version = "0.8.1"
 category = "Simulation"
 title = "Isaac Sim Cloner"
 description = "Cloner"
@@ -27,5 +27,6 @@ name = "omni.isaac.cloner"
 [[test]]
 dependencies = [
     "omni.physx",
-    "omni.isaac.core"
+    "omni.isaac.core",
+    "omni.isaac.nucleus", # test only
 ]

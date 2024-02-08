@@ -26,9 +26,9 @@ import usdrt.Sdf
 from omni.isaac.core import World
 from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.physics import simulate_async
 from omni.isaac.core.utils.prims import add_reference_to_stage, delete_prim
+from omni.isaac.nucleus import get_assets_root_path_async
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.sensor import _sensor

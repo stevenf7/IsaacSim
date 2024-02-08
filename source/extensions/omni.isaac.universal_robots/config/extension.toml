@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.3.3"
+version = "0.3.4"
 category = "Simulation"
 title = "Isaac Universal Robots"
 description = "Isaac Universal Robots Helper Class"
@@ -19,6 +19,7 @@ icon = "data/icon.png"
 "omni.isaac.core" = {}
 "omni.isaac.motion_generation" = {}
 "omni.isaac.manipulators" = {}
+"omni.isaac.nucleus" = {}
 
 [[python.module]]
 name = "omni.isaac.universal_robots"

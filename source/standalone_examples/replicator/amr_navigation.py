@@ -26,8 +26,8 @@ import omni.kit.app
 import omni.replicator.core as rep
 import omni.timeline
 import omni.usd
-from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import add_reference_to_stage, create_new_stage
+from omni.isaac.nucleus import get_assets_root_path
 from pxr import Gf, PhysxSchema, UsdGeom, UsdLux, UsdPhysics
 
 

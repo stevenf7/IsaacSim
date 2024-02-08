@@ -18,6 +18,7 @@ from omni.isaac.core.objects.ground_plane import GroundPlane
 from omni.isaac.core.robots import Robot
 from omni.isaac.core.utils.stage import get_current_stage, open_stage_async
 from omni.isaac.core.utils.viewports import set_camera_view
+from omni.isaac.nucleus import get_assets_root_path
 from omni.kit.viewport.utility import get_active_viewport
 from pxr import Sdf, UsdLux
 

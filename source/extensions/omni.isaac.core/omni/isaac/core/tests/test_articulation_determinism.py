@@ -14,9 +14,9 @@ import numpy as np
 import omni.kit.test
 from omni.isaac.core import SimulationContext, World
 from omni.isaac.core.robots import Robot
-from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.stage import add_reference_to_stage, open_stage_async, update_stage_async
 from omni.isaac.core.utils.types import ArticulationAction
+from omni.isaac.nucleus import get_assets_root_path_async
 
 
 class TestArticulationDeterminism(omni.kit.test.AsyncTestCase):

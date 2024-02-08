@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.7.2] - 2023-02-02
+### Changed
+- Updated path to the nucleus extension
+
 ## [0.7.1] - 2024-01-18
 ### Changed
 - Changed get_assets_root_path to get_assets_root_path_async for the unit tests

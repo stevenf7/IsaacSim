@@ -46,6 +46,7 @@ Isaac Sim: Extensions API
    source/extensions/omni.isaac.ros2_bridge/docs/index
    source/extensions/omni.isaac.debug_draw/docs/index
    source/extensions/omni.isaac.motion_generation/docs/index
+   source/extensions/omni.isaac.nucleus/docs/index
    source/extensions/omni.isaac.lula/docs/index
    source/extensions/omni.isaac.surface_gripper/docs/index
    source/extensions/omni.isaac.occupancy_map/docs/index

@@ -18,7 +18,6 @@ from omni.isaac.core import World
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.core.articulations import Articulation
-from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.stage import (
     add_reference_to_stage,
@@ -27,6 +26,7 @@ from omni.isaac.core.utils.stage import (
     update_stage_async,
 )
 from omni.isaac.core.utils.types import ArticulationAction
+from omni.isaac.nucleus import get_assets_root_path_async
 from pxr import PhysxSchema, UsdPhysics
 
 

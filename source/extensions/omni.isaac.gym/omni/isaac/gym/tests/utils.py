@@ -22,7 +22,7 @@ import numpy as np
 import omni.kit
 import psutil
 import torch
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.nucleus import get_assets_root_path
 
 
 def _is_windows():

@@ -1,3 +1,10 @@
+# Changelog
+
+## [0.1.2] - 2023-02-02
+
+### Changed
+- Updated path to the nucleus extension
+
 ## [0.1.1] - 2023-03-20
 
 ### Changed

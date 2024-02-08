@@ -13,7 +13,7 @@ import carb
 import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd
-from omni.isaac.core.utils.nucleus import (
+from omni.isaac.nucleus import (
     build_server_list,
     get_assets_root_path_async,
     get_full_asset_path_async,

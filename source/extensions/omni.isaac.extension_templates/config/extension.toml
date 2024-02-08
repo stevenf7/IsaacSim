@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.5.1"
+version = "1.5.2"
 category = "Simulation"
 title = "Generate Extension"
 description = "UI tool for generating extension templates for different common workflows"
@@ -19,6 +19,7 @@ icon = "data/icon.png"
 "omni.kit.uiapp" = {}
 "omni.isaac.ui" = {}
 "omni.isaac.core" = {}
+"omni.isaac.nucleus" = {}
 
 [[python.module]]
 name = "omni.isaac.extension_templates"

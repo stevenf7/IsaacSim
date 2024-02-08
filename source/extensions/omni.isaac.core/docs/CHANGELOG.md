@@ -1,4 +1,10 @@
 # Changelog
+
+## [3.3.7] - 2023-02-02
+### Changed
+- Updated path to the nucleus extension
+- Added deprecation warnings to the nucleus functions in nucleus.py
+
 ## [3.3.6] - 2024-01-31
 ### Changed
 - Changed get_assets_root_path to get_assets_root_path_async for the unit tests
@@ -826,7 +832,7 @@
 - test_prims to omni.isaac.core.tests
 
 ### Changed
-- _list and _recursive_walk in omni.isaac.core.utils.nucleus to list_folder and recursive_list_folder
+- _list and _recursive_walk in omni.isaac.nucleus to list_folder and recursive_list_folder
 
 ## [0.2.8] - 2022-02-14
 

@@ -13,8 +13,8 @@ simulation_app = SimulationApp({"headless": False})
 import carb
 import omni
 from omni.isaac.core import SimulationContext
-from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.dynamic_control import _dynamic_control
+from omni.isaac.nucleus import get_assets_root_path
 
 stage = simulation_app.context.get_stage()
 sim_context = SimulationContext(stage_units_in_meters=1.0)

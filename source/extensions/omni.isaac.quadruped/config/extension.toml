@@ -1,7 +1,7 @@
 display_name = "Isaac Quadruped Robot"
 
 [package]
-version = "1.4.1"
+version = "1.4.2"
 category = "Simulation"
 title = "Isaac Quadruped Robot"
 description = "Simulation for unitree 12 dof quadrupeds"
@@ -15,6 +15,7 @@ readme = "docs/README.md"
 "omni.isaac.core" = {}
 "omni.isaac.sensor" = {}
 "omni.isaac.core_nodes" = {}
+"omni.isaac.nucleus" = {}
 
 [[python.module]]
 name = "omni.isaac.quadruped"

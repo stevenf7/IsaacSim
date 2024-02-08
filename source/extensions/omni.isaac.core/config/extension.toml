@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "3.3.6"
+version = "3.3.7"
 category = "Simulation"
 title = "Isaac Sim Core"
 description = "Core"
@@ -20,6 +20,7 @@ writeTarget.kit = true
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.core_archive" = {}
 "omni.isaac.ml_archive" = {}
+"omni.isaac.nucleus" = {}
 "omni.pip.compute" = {} # scipy
 "omni.pip.cloud" = {}
 "omni.physx.tensors" = {}
@@ -44,6 +45,7 @@ dependencies = [
     "omni.kit.material.library",
     "omni.warp",
     "omni.isaac.sensor",
+    "omni.isaac.nucleus",
 ]
 
 stdoutFailPatterns.exclude = [

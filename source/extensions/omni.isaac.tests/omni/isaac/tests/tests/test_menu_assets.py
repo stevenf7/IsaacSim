@@ -18,9 +18,9 @@ import omni.kit.commands
 import omni.kit.test
 import omni.kit.ui_test as ui_test
 import omni.ui as ui
-from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.prims import get_prim_path
 from omni.isaac.core.utils.stage import clear_stage, create_new_stage, traverse_stage
+from omni.isaac.nucleus import get_assets_root_path_async
 from omni.kit.mainwindow import get_main_window
 from omni.kit.ui_test.menu import *
 from omni.kit.ui_test.query import *

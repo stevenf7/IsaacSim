@@ -15,8 +15,8 @@ simulation_app = SimulationApp({"headless": False})
 import carb
 from omni.isaac.core import World
 from omni.isaac.core.robots import Robot
-from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import add_reference_to_stage
+from omni.isaac.nucleus import get_assets_root_path
 
 assets_root_path = get_assets_root_path()
 if assets_root_path is None:

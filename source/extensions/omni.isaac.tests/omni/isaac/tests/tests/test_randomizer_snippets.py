@@ -118,8 +118,8 @@ class TestRandomizerSnippets(omni.kit.test.AsyncTestCase):
         import numpy as np
         import omni.replicator.core as rep
         import omni.usd
-        from omni.isaac.core.utils.nucleus import get_assets_root_path_async
         from omni.isaac.core.utils.semantics import add_update_semantics, get_semantics
+        from omni.isaac.nucleus import get_assets_root_path_async
         from pxr import Gf, Sdf, UsdGeom, UsdShade
 
         omni.usd.get_context().new_stage()
@@ -262,7 +262,7 @@ class TestRandomizerSnippets(omni.kit.test.AsyncTestCase):
         import numpy as np
         import omni.replicator.core as rep
         import omni.usd
-        from omni.isaac.core.utils.nucleus import get_assets_root_path_async
+        from omni.isaac.nucleus import get_assets_root_path_async
         from pxr import Gf, Usd, UsdGeom, UsdLux
 
         # https://stackoverflow.com/questions/9600801/evenly-distributing-n-points-on-a-sphere

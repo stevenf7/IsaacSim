@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.8.2] - 2023-02-07
+### Changed
+- Updated path to the nucleus extension
+
 ## [2.8.1] - 2024-02-02
 ### Changed
 - Added profile zones for the image publisher

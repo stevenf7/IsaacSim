@@ -17,9 +17,10 @@ import omni.physx as _physx
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.dynamic_control import conversions as dc_conversions
 from omni.isaac.dynamic_control import utils as dc_utils
+from omni.isaac.nucleus import get_assets_root_path_async
 from pxr import Gf, Sdf, Usd, UsdPhysics
 
-from .common import get_assets_root_path_async, open_stage_async
+from .common import open_stage_async
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test

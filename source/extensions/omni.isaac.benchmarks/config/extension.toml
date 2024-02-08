@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.21.6"
+version = "0.21.7"
 category = "Simulation"
 title = "Benchmark"
 description = "This extension provides benchmarking utilities"
@@ -43,7 +43,10 @@ name = "omni.isaac.benchmarks.tests"
 
 [[test]]
 # these are not cached
-dependencies = []
+dependencies = [
+    "omni.isaac.nucleus" # test only
+]
+
 timeout=12000
 args = ["--no-window", "--allow-root", "--/app/fastShutdown=1", "--vulkan"] # we can use fast shutdown because metrics are not uploaded
 stdoutFailPatterns.exclude = [

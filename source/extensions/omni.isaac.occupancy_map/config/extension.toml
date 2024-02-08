@@ -38,4 +38,7 @@ path = "bin/*.plugin"
 recursive = false
 
 [[test]]
+dependencies = [
+    "omni.isaac.nucleus" # test only
+]
 timeout = 960

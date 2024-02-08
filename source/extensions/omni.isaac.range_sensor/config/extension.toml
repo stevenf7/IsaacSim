@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.1.1"
+version = "2.1.2"
 category = "Simulation"
 title = "Isaac Sim Range Sensor"
 description = "Range based sensor simulation using physx"
@@ -51,3 +51,9 @@ public = false
 [[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
+
+[[test]]
+
+dependencies = [
+    "omni.isaac.nucleus" # test only
+]

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.21.7] - 2023-02-07
+### Changed
+- Updated path to the nucleus extension
+
 ## [0.21.6] - 2024-02-06
 ### Fixed
 - O3dyn benchmark crash

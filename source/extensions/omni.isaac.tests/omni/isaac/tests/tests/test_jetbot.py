@@ -20,11 +20,11 @@ import omni.graph.core as og
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 from omni.isaac.core import World
-from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.prims import delete_prim
 from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.dynamic_control import utils as dc_utils
+from omni.isaac.nucleus import get_assets_root_path_async
 
 from .robot_helpers import init_robot_sim, setup_robot_og
 

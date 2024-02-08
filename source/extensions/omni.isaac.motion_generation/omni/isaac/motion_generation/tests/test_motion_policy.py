@@ -19,7 +19,6 @@ import omni.kit.test
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.robots.robot import Robot
 from omni.isaac.core.utils import distance_metrics
-from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.prims import delete_prim, is_prim_path_valid
 from omni.isaac.core.utils.rotations import gf_quat_to_np_array, quat_to_rot_matrix
 from omni.isaac.core.utils.stage import (
@@ -34,6 +33,7 @@ from omni.isaac.core.world import World
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.motion_generation.articulation_motion_policy import ArticulationMotionPolicy
 from omni.isaac.motion_generation.lula.motion_policies import RmpFlow
+from omni.isaac.nucleus import get_assets_root_path_async
 from pxr import Gf, Sdf, UsdLux
 
 

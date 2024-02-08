@@ -19,7 +19,7 @@ import carb
 import numpy as np
 from omni.isaac.core import World
 from omni.isaac.core.objects import DynamicCuboid
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.nucleus import get_assets_root_path
 from omni.isaac.sensor import LidarRtx
 from omni.isaac.wheeled_robots.controllers.differential_controller import DifferentialController
 from omni.isaac.wheeled_robots.robots import WheeledRobot

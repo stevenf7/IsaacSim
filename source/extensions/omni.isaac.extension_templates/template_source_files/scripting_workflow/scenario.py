@@ -12,13 +12,13 @@ from omni.isaac.core.articulations import Articulation
 from omni.isaac.core.objects import DynamicCuboid, FixedCuboid, GroundPlane
 from omni.isaac.core.prims import XFormPrim
 from omni.isaac.core.utils import distance_metrics
-from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.numpy.rotations import euler_angles_to_quats, quats_to_rot_matrices
 from omni.isaac.core.utils.stage import add_reference_to_stage
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.motion_generation import ArticulationMotionPolicy, RmpFlow
 from omni.isaac.motion_generation.interface_config_loader import load_supported_motion_policy_config
+from omni.isaac.nucleus import get_assets_root_path
 
 
 class FrankaRmpFlowExampleScript:

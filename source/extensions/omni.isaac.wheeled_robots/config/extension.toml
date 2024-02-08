@@ -46,3 +46,7 @@ stdoutFailPatterns.exclude = [
     "*Invalid Bundle object in Py_Bundle in getPrimPath*", # Per node tests won't have valid bundles
     "*AttributeError: 'NoneType' object has no attribute 'GetPrimAtPath'*" # For ackerman node omnigraph tests
 ]
+
+dependencies = [
+    "omni.isaac.nucleus" # test only
+]

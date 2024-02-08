@@ -21,7 +21,6 @@ import omni.kit.test
 from omni.isaac.core.objects.cuboid import VisualCuboid
 from omni.isaac.core.prims import XFormPrim
 from omni.isaac.core.robots.robot import Robot
-from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.numpy.rotations import rot_matrices_to_quats, rotvecs_to_quats
 from omni.isaac.core.utils.prims import delete_prim
 from omni.isaac.core.utils.stage import (
@@ -38,6 +37,7 @@ from omni.isaac.motion_generation.lula.trajectory_generator import (
     LulaCSpaceTrajectoryGenerator,
     LulaTaskSpaceTrajectoryGenerator,
 )
+from omni.isaac.nucleus import get_assets_root_path_async
 from pxr import Sdf, UsdLux
 
 

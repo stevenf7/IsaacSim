@@ -16,7 +16,6 @@ import numpy as np
 import omni.kit.test
 from omni.isaac.core.articulations import Articulation
 from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.stage import (
     add_reference_to_stage,
     create_new_stage_async,
@@ -25,6 +24,7 @@ from omni.isaac.core.utils.stage import (
 )
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.world import World
+from omni.isaac.nucleus import get_assets_root_path_async
 from omni.isaac.robot_assembler import AssembledRobot, RobotAssembler
 from pxr import Sdf, UsdLux
 

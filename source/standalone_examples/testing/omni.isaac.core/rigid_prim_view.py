@@ -22,8 +22,8 @@ from omni.isaac.core.materials.physics_material import PhysicsMaterial
 from omni.isaac.core.objects import DynamicCuboid
 from omni.isaac.core.prims.geometry_prim_view import GeometryPrimView
 from omni.isaac.core.prims.rigid_prim_view import RigidPrimView
-from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.torch.rotations import euler_angles_to_quats
+from omni.isaac.nucleus import get_assets_root_path
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")

@@ -1,5 +1,9 @@
 # Changelog
 
+## [9.13.4] - 2023-02-02
+### Changed
+- Updated path to the nucleus extension
+
 ## [9.13.0] - 2024-01-30
 ### Changed
 - Converted read IMU and contact sensor nodes to C++

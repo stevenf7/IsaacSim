@@ -1,5 +1,8 @@
 # Changelog
 
+## [6.1.2] - 2023-02-02
+### Changed
+- Updated path to the nucleus extension
 
 ## [6.1.1] - 2024-01-18
 ### Changed

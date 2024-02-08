@@ -16,8 +16,8 @@ simulation_app = SimulationApp({"headless": True})
 
 # This sample loads an articulation and prints its information
 import omni
-from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.dynamic_control import _dynamic_control
+from omni.isaac.nucleus import get_assets_root_path
 
 stage = simulation_app.context.get_stage()
 

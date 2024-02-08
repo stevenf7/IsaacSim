@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.5.2] - 2023-02-02
+### Changed
+- Updated path to the nucleus extension
+
 ## [1.5.1] - 2023-11-13
 ### Fixed
 - Updated documentation link

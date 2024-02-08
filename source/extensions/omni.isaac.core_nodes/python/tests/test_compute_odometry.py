@@ -17,6 +17,7 @@ import omni.kit.test
 from omni.isaac.core.robots import Robot
 from omni.isaac.core.utils.physics import simulate_async
 from omni.isaac.core.utils.stage import open_stage_async
+from omni.isaac.nucleus import get_assets_root_path
 from pxr import Gf, Usd, UsdGeom, UsdPhysics
 
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.10.1] - 2023-02-02
+### Changed
+- Updated path to the nucleus extension
+
 ## [0.10.0] - 2023-11-30
 ### Added
 - Add APIs for recording viewport during training

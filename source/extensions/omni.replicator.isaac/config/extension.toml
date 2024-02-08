@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.12.1"
+version = "1.12.2"
 category = "SyntheticData"
 title = "Replicator Isaac"
 description="Omni Replicator Isaac Sim Extension"
@@ -41,4 +41,5 @@ dependencies = [
     "omni.hydra.rtx",                       # "omni.hydra.pxr", Can we run and pass with Storm ?
     "omni.kit.viewport.utility",
     "omni.kit.viewport.window",
+    "omni.isaac.nucleus" # test only
 ]

@@ -12,9 +12,9 @@ import numpy as np
 import omni.kit.test
 import omni.physx
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
-from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.stage import add_reference_to_stage, open_stage_async
 from omni.isaac.dynamic_control import _dynamic_control
+from omni.isaac.nucleus import get_assets_root_path_async
 from pxr import Gf, Sdf, UsdGeom, UsdPhysics
 
 

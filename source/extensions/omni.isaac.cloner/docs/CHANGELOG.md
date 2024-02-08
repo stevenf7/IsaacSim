@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.8.1] - 2023-02-07
+### Changed
+- Updated path to the nucleus extension
+
 ## [0.8.0] - 2024-02-02
 ### Changed
 - Support executing cloner on non-context stage
