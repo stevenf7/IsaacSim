@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.1.3] - 2024-02-07
+### Fixed
+- Slow performance when clearning physics apis on large scenes
+
 ## [0.1.2] - 2023-08-09
 ### Fixed
 - Switch from ui.Window to ScrollingWindow wrapper for extension because scrolling was broken

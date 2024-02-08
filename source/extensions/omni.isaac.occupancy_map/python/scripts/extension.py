@@ -41,6 +41,7 @@ class Extension(omni.ext.IExt):
         self._timeline = omni.timeline.get_timeline_interface()
         self._window = ScrollingWindow(title=EXTENSION_NAME, width=600, height=400, visible=False)
         self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
+        self._window.set_visibility_changed_fn(self._on_window)
         self._menu_items = [
             make_menu_item_description(ext_id, EXTENSION_NAME, lambda a=weakref.proxy(self): a._menu_callback())
         ]
@@ -56,6 +57,10 @@ class Extension(omni.ext.IExt):
 
         self.wait_bound_update = False
         self.bound_update_case = 0
+
+        units = 0.05  # default assumes 5cm in meters
+        if omni.usd.get_context().get_stage():
+            units = 0.05 / get_stage_units()
 
         with self._window.frame:
             with ui.HStack(spacing=10):
@@ -82,7 +87,7 @@ class Extension(omni.ext.IExt):
 
                     self._models["cell_size"] = float_builder(
                         label="Cell Size",
-                        default_val=0.05,
+                        default_val=units,
                         tooltip="Size of each pixel in stage units in output occupancy map image",
                     )
                     self._models["cell_size"].add_value_changed_fn(self.on_update_cell_size)
@@ -104,6 +109,21 @@ class Extension(omni.ext.IExt):
 
     def _menu_callback(self):
         self._window.visible = not self._window.visible
+
+    def _on_window(self, visible):
+        if self._window.visible:
+            self._models["cell_size"].set_value(0.05 / get_stage_units())
+            self._stage_open_callback = (
+                omni.usd.get_context()
+                .get_stage_event_stream()
+                .create_subscription_to_pop_by_type(int(omni.usd.StageEventType.OPENED), self._stage_open_callback_fn)
+            )
+        else:
+            self._stage_open_callback = None
+
+    def _stage_open_callback_fn(self, event):
+        carb.log_warn(f"New stage opened, setting cell_size to {0.05 / get_stage_units()} to match stage units")
+        self._models["cell_size"].set_value(0.05 / get_stage_units())
 
     def _on_center_selection(self):
         origin = self.calculate_bounds(True, True)
@@ -292,6 +312,13 @@ class Extension(omni.ext.IExt):
                                         UsdPhysics.MeshCollisionAPI.Apply(prim)
                                     else:
                                         utils.setCollider(prim, "none")
+                            elif prim.IsA(UsdGeom.Xformable) and prim.IsInstanceable():
+                                UsdPhysics.CollisionAPI.Apply(prim)
+                                UsdPhysics.MeshCollisionAPI.Apply(prim)
+                            elif prim.IsA(UsdGeom.Gprim):
+                                UsdPhysics.CollisionAPI.Apply(prim)
+                                UsdPhysics.MeshCollisionAPI.Apply(prim)
+
                 self._timeline.play()
                 await omni.kit.app.get_app().next_update_async()
                 self._om.generate()
@@ -477,6 +504,7 @@ class Extension(omni.ext.IExt):
         self._fill_image()
 
     def on_shutdown(self):
+        self._stage_open_callback = None
         if self._filepicker:
             self._filepicker = None
         remove_menu_items(self._menu_items, "Isaac Utils")
