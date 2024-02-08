@@ -10,12 +10,12 @@
 import carb
 import numpy as np
 from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.dofbot.controllers import PickPlaceController
 from omni.isaac.dofbot.tasks import PickPlace
 from omni.isaac.examples.base_sample import BaseSample
 from omni.isaac.franka.controllers.stacking_controller import StackingController as FrankaStackingController
 from omni.isaac.franka.tasks import Stacking as FrankaStacking
+from omni.isaac.nucleus import get_assets_root_path
 from omni.isaac.universal_robots.controllers import StackingController as UR10StackingController
 from omni.isaac.universal_robots.tasks import Stacking as UR10Stacking
 from omni.isaac.wheeled_robots.controllers.differential_controller import DifferentialController

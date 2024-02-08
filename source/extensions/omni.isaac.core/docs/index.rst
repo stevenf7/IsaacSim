@@ -689,7 +689,7 @@ Mesh Utils
 Nucleus Utils
 ==================
 
-.. automodule:: omni.isaac.core.utils.nucleus
+.. automodule:: omni.isaac.nucleus
     :members:
     :undoc-members:
     :exclude-members:

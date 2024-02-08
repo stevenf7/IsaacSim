@@ -22,7 +22,7 @@ import omni
 import omni.graph.core as og
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils.extensions import enable_extension
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.nucleus import get_assets_root_path
 from pxr import Sdf
 
 # enable ROS2 bridge extension

@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.16.0"
+version = "1.16.1"
 category = "Simulation"
 title = "Isaac Sim Tests"
 description = "Collection of tests for isaac sim that are not tied to a specific extension"
@@ -31,6 +31,7 @@ icon = "data/icon.png"
 "omni.kit.asset_converter" = {}
 "omni.isaac.wheeled_robots" = {}
 "omni.isaac.utils" = {}
+"omni.isaac.nucleus" = {}
 
 [[python.module]]
 name = "omni.isaac.tests" # so we can find the path to the extension

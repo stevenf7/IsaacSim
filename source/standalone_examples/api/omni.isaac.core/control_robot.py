@@ -13,8 +13,8 @@ simulation_app = SimulationApp({"headless": False})
 
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.articulations import Articulation
-from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import add_reference_to_stage
+from omni.isaac.nucleus import get_assets_root_path
 
 assets_root_path = get_assets_root_path()
 asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"

@@ -18,7 +18,6 @@ from omni.isaac.core.objects import FixedCuboid, VisualCuboid
 from omni.isaac.core.objects.ground_plane import GroundPlane
 from omni.isaac.core.prims import XFormPrim
 from omni.isaac.core.robots import Robot
-from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.numpy.rotations import euler_angles_to_quats
 from omni.isaac.core.utils.stage import (
     add_reference_to_stage,
@@ -36,6 +35,7 @@ from omni.isaac.motion_generation.lula.kinematics import LulaKinematicsSolver
 from omni.isaac.motion_generation.lula.path_planners import RRT
 from omni.isaac.motion_generation.lula.trajectory_generator import LulaCSpaceTrajectoryGenerator
 from omni.isaac.motion_generation.path_planner_visualizer import PathPlannerVisualizer
+from omni.isaac.nucleus import get_assets_root_path_async
 from pxr import Sdf, UsdLux
 
 

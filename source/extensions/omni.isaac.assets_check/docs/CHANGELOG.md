@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.4] - 2023-02-02
+### Changed
+- Updated path to the nucleus extension
+
 ## [0.3.3] - 2023-11-30
 ### Changed
 - Use get_assets_root_path_async(). Fix for OM-112464.

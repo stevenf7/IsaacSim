@@ -68,7 +68,7 @@ After setting up this action graph, it is necessesary to run ``omni.replicator.c
     from omni.isaac.core.articulations import ArticulationView
     from omni.isaac.core.utils.prims import get_prim_at_path, define_prim
     from omni.isaac.core.utils.stage import get_current_stage, add_reference_to_stage
-    from omni.isaac.core.utils.nucleus import get_assets_root_path
+    from omni.isaac.nucleus import get_assets_root_path
     from omni.isaac.core.objects import DynamicSphere
     from omni.isaac.cloner import GridCloner
 

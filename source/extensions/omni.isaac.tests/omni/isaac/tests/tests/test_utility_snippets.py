@@ -198,7 +198,7 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
         ###
         import carb
         import omni
-        from omni.isaac.core.utils.nucleus import get_assets_root_path_async
+        from omni.isaac.nucleus import get_assets_root_path_async
         from pxr import Sdf, UsdShade
 
         assets_root_path = await get_assets_root_path_async()
@@ -322,7 +322,7 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
     async def test_save_to_file(self):
         import carb
         import omni
-        from omni.isaac.core.utils.nucleus import get_assets_root_path_async
+        from omni.isaac.nucleus import get_assets_root_path_async
 
         assets_root = await get_assets_root_path_async()
         # Create a prim

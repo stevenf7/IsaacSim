@@ -107,7 +107,7 @@ class Extension(omni.ext.IExt):
             self._startup_run = False
             pass
         else:
-            from omni.isaac.core.utils.nucleus import get_assets_root_path_async
+            from omni.isaac.nucleus import get_assets_root_path_async
 
             omni.kit.app.get_app().print_and_log("Checking for Isaac Sim assets...")
             self._check_window = ui.Window("Check Isaac Sim assets", height=120, width=600)

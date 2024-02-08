@@ -12,11 +12,11 @@ from omni.isaac.core.materials.physics_material import PhysicsMaterial
 from omni.isaac.core.physics_context.physics_context import PhysicsContext
 from omni.isaac.core.prims.geometry_prim import GeometryPrim
 from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.stage import add_reference_to_stage
 from omni.isaac.examples.base_sample import BaseSample
 from omni.isaac.franka.franka import Franka
+from omni.isaac.nucleus import get_assets_root_path
 from pxr import Gf, PhysxSchema, Usd, UsdPhysics, UsdShade
 
 from .nut_bolt_controller import NutBoltController

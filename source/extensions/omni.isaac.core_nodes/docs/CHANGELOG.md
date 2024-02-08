@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.10.1] - 2023-02-02
+### Changed
+- Updated path to the nucleus extension
+
 ## [1.10.0] - 2024-01-30
 ### Added
 - Run One Frame Simulation Node

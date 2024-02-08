@@ -19,8 +19,8 @@ import omni.kit.test
 from omni.isaac.benchmark.services import execution, settings, utils
 from omni.isaac.benchmark.services.datarecorders import interface
 from omni.isaac.benchmark.services.metrics import backend, measurements
-from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.stage import is_stage_loading, open_stage
+from omni.isaac.nucleus import get_assets_root_path_async
 
 from .recorders import *
 from .utils import wait_until_stage_is_fully_loaded_async

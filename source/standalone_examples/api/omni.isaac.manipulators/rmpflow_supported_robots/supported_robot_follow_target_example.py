@@ -17,7 +17,6 @@ import numpy as np
 from omni.isaac.core import World
 from omni.isaac.core.objects import cuboid
 from omni.isaac.core.robots import Robot
-from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.prims import create_prim
 from omni.isaac.core.utils.stage import add_reference_to_stage
 from omni.isaac.motion_generation.articulation_motion_policy import ArticulationMotionPolicy
@@ -26,6 +25,7 @@ from omni.isaac.motion_generation.interface_config_loader import (
     load_supported_motion_policy_config,
 )
 from omni.isaac.motion_generation.lula import RmpFlow
+from omni.isaac.nucleus import get_assets_root_path
 
 parser = argparse.ArgumentParser()
 parser.add_argument(

@@ -18,9 +18,9 @@ import omni.graph.core as og
 import omni.kit.commands
 import usdrt.Sdf
 from omni.isaac.core import PhysicsContext
-from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.prims import create_prim
 from omni.isaac.core.utils.viewports import set_camera_view
+from omni.isaac.nucleus import get_assets_root_path
 from omni.isaac.ui.menu import make_menu_item_description
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from pxr import Gf

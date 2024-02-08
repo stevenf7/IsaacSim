@@ -23,10 +23,10 @@ import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd
 import omni.kit.viewport.utility
-from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.physics import simulate_async
 from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.core.utils.viewports import set_camera_view
+from omni.isaac.nucleus import get_assets_root_path_async
 
 from .common import get_qos_profile
 

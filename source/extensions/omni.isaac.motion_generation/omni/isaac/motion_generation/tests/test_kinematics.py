@@ -20,7 +20,6 @@ import omni.kit.test
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.robots.robot import Robot
 from omni.isaac.core.utils import distance_metrics
-from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices
 from omni.isaac.core.utils.prims import is_prim_path_valid
 from omni.isaac.core.utils.stage import (
@@ -34,6 +33,7 @@ from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.core.world import World
 from omni.isaac.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
 from omni.isaac.motion_generation.lula.kinematics import LulaKinematicsSolver
+from omni.isaac.nucleus import get_assets_root_path_async
 from pxr import Sdf, UsdLux
 
 

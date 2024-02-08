@@ -28,11 +28,11 @@ import yaml
 from omni.isaac.core.prims.geometry_prim import GeometryPrim
 from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.utils.nucleus import get_full_asset_path
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.core.utils.semantics import add_update_semantics
 from omni.isaac.core.utils.stage import add_reference_to_stage
 from omni.isaac.core.world.world import World
+from omni.isaac.nucleus import get_full_asset_path
 from omni.isaac.scene_blox.grid_utils.config import GlobalRNG
 from pxr import PhysicsSchemaTools, Usd, UsdGeom
 

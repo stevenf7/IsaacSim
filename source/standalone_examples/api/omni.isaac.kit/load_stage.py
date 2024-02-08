@@ -32,7 +32,7 @@ CONFIG["headless"] = args.headless
 kit = SimulationApp(launch_config=CONFIG)
 
 # Locate Isaac Sim assets folder to load sample
-from omni.isaac.core.utils.nucleus import get_assets_root_path, is_file
+from omni.isaac.nucleus import get_assets_root_path, is_file
 
 assets_root_path = get_assets_root_path()
 if assets_root_path is None:

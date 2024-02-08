@@ -21,9 +21,9 @@ import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd
 import usdrt.Sdf
-from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.physics import simulate_async
 from omni.isaac.core_nodes.scripts.utils import set_target_prims
+from omni.isaac.nucleus import get_assets_root_path_async
 from pxr import Sdf
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)

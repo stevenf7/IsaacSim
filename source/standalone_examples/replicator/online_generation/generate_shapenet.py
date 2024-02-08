@@ -116,7 +116,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.rep = rep
         self.wp = wp
 
-        from omni.isaac.core.utils.nucleus import get_assets_root_path
+        from omni.isaac.nucleus import get_assets_root_path
 
         self.assets_root_path = get_assets_root_path()
         if self.assets_root_path is None:

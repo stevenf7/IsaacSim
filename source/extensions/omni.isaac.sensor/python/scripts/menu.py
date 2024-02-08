@@ -13,9 +13,9 @@ import weakref
 
 import omni.kit.commands
 from omni.isaac.core.utils.extensions import get_extension_path
-from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.prims import create_prim, set_prim_visibility
 from omni.isaac.core.utils.stage import get_next_free_path
+from omni.isaac.nucleus import get_assets_root_path
 from omni.isaac.ui.menu import make_menu_item_description
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from pxr import Gf, Tf

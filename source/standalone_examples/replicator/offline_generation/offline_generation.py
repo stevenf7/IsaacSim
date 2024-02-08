@@ -94,9 +94,9 @@ import offline_generation_utils
 import omni.replicator.core as rep
 import omni.usd
 from omni.isaac.core.utils import prims
-from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.core.utils.stage import get_current_stage, open_stage
+from omni.isaac.nucleus import get_assets_root_path
 from pxr import Gf
 
 # Get server path

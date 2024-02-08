@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.10.0"
+version = "1.10.1"
 category = "Simulation"
 title = "Isaac Sim Core OmniGraph Nodes"
 description = "Core"
@@ -22,6 +22,7 @@ writeTarget.kit = true
 "omni.graph" = {}
 "omni.kit.viewport.window" = {}
 "omni.kit.viewport.utility" = {}
+"omni.isaac.nucleus" = {}
 
 [[python.module]]
 name = "omni.isaac.core_nodes"

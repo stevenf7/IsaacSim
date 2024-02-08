@@ -19,9 +19,9 @@ import carb
 import numpy as np
 from omni.isaac.core import World
 from omni.isaac.core.objects import DynamicCuboid
-from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.stage import add_reference_to_stage
+from omni.isaac.nucleus import get_assets_root_path
 from omni.isaac.sensor.scripts.effort_sensor import EffortSensor
 from pxr import UsdPhysics
 

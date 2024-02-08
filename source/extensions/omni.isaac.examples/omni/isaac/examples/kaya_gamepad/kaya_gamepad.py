@@ -11,8 +11,8 @@
 import carb
 import omni.graph.core as og
 import omni.usd
-from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.examples.base_sample import BaseSample
+from omni.isaac.nucleus import get_assets_root_path
 
 
 class KayaGamepad(BaseSample):

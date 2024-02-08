@@ -17,9 +17,9 @@ from omni.isaac.core import World
 from omni.isaac.core.articulations import ArticulationView
 from omni.isaac.core.objects import DynamicSphere
 from omni.isaac.core.prims.rigid_prim_view import RigidPrimView
-from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
 from omni.isaac.core.utils.stage import add_reference_to_stage, get_current_stage
+from omni.isaac.nucleus import get_assets_root_path
 
 # create the world
 world = World(stage_units_in_meters=1.0, physics_prim_path="/physicsScene", backend="numpy")

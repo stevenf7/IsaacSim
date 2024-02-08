@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.7.1"
+version = "0.7.2"
 category = "Simulation"
 title = "Isaac Sim Utilities"
 description = "Isaac Sim Utility Extensions"
@@ -23,6 +23,7 @@ writeTarget.kit = true
 "omni.kit.menu.utils" = {}
 "omni.isaac.core" = {}
 "omni.isaac.ui" = {}
+"omni.isaac.nucleus" = {}
 
 [[python.module]]
 name = "omni.isaac.utils"

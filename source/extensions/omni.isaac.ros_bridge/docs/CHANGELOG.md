@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.15.4] - 2023-02-02
+### Changed
+- Updated path to the nucleus extension
+
 ## [1.15.3] - 2024-01-19
 ### Fixed
 - Empty semantics unit test

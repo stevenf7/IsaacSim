@@ -65,57 +65,6 @@ async def check_server_async(server: str, path: str, timeout: float = 10.0) -> b
         return False
 
 
-async def get_assets_root_path_async() -> typing.Union[str, None]:
-    """Tries to find the root path to the Isaac Sim assets on a Nucleus server (asynchronous version).
-
-    Returns:
-        url (str): URL of Nucleus server with root path to assets folder.
-        Returns None if Nucleus server not found.
-    """
-
-    # get timeout
-    timeout = carb.settings.get_settings().get("/persistent/isaac/asset_root/timeout")
-    if not isinstance(timeout, (int, float)):
-        timeout = 10.0
-
-    # 1 - Check /persistent/isaac/asset_root/default setting
-    carb.log_info("Check /persistent/isaac/asset_root/default setting")
-    default_asset_root = carb.settings.get_settings().get("/persistent/isaac/asset_root/default")
-    if default_asset_root:
-        result = await check_server_async(default_asset_root, "/Isaac", timeout)
-        if result:
-            result = await check_server_async(default_asset_root, "/NVIDIA", timeout)
-            if result:
-                carb.log_info("Assets root found at {}".format(default_asset_root))
-                return default_asset_root
-
-    # 2 - Check root on mountedDrives setting
-    connected_servers = build_server_list()
-    if len(connected_servers):
-        for server_name in connected_servers:
-            # carb.log_info("Found {}".format(server_name))
-            result = await check_server_async(server_name, "/Isaac", timeout)
-            if result:
-                result = await check_server_async(server_name, "/NVIDIA", timeout)
-                if result:
-                    carb.log_info("Assets root found at {}".format(server_name))
-                    return server_name
-
-    # 3 - Check cloud for /Assets/Isaac/{version_major}.{version_minor} folder
-    cloud_assets_url = carb.settings.get_settings().get("/persistent/isaac/asset_root/cloud")
-    carb.log_info("Checking {}...".format(cloud_assets_url))
-    if cloud_assets_url:
-        result = await check_server_async(cloud_assets_url, "/Isaac", timeout)
-        if result:
-            result = await check_server_async(cloud_assets_url, "/NVIDIA", timeout)
-            if result:
-                carb.log_info("Assets root found at {}".format(cloud_assets_url))
-                return cloud_assets_url
-
-    carb.log_warn("Could not find assets root folder")
-    return None
-
-
 async def open_stage_async(usd_path: str) -> bool:
     """
     Open the given usd file and replace currently opened stage

@@ -38,7 +38,6 @@ from omni.isaac.core.prims.xform_prim_view import XFormPrimView
 from omni.isaac.core.robots.robot import Robot
 from omni.isaac.core.robots.robot_view import RobotView
 from omni.isaac.core.scenes.scene_registry import SceneRegistry
-from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.prims import (
     get_prim_children,
     get_prim_parent,
@@ -49,6 +48,7 @@ from omni.isaac.core.utils.prims import (
 )
 from omni.isaac.core.utils.stage import add_reference_to_stage, get_current_stage, update_stage
 from omni.isaac.core.utils.string import find_unique_string_name
+from omni.isaac.nucleus import get_assets_root_path
 from pxr import Sdf, Usd, UsdGeom
 
 

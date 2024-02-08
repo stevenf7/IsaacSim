@@ -20,7 +20,7 @@ from omni.isaac.core import World
 from omni.isaac.core.materials.deformable_material import DeformableMaterial
 from omni.isaac.core.prims.soft.deformable_prim import DeformablePrim
 from omni.isaac.core.prims.soft.deformable_prim_view import DeformablePrimView
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.nucleus import get_assets_root_path
 from omni.physx.scripts import deformableUtils, physicsUtils
 from pxr import Gf, UsdGeom, UsdLux
 

@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.3.0"
+version = "1.3.1"
 category = "Simulation"
 title = "Benchmark Services"
 description = "This extension provides benchmarking utilities"
@@ -19,6 +19,7 @@ writeTarget.kit = true
 "omni.isaac.core" = {}
 "omni.kit.profiler.window" = {}
 "omni.isaac.core_nodes" = {}
+"omni.isaac.nucleus" = {}
 
 [[python.module]]
 name = "omni.isaac.benchmark.services"

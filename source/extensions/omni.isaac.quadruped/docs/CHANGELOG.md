@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.2] - 2023-02-02
+### Changed
+- Updated path to the nucleus extension
+
 ## [1.4.1] - 2023-12-11
 ### Fixed
 - Add the missing import statement for the IMUSensor

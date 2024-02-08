@@ -22,9 +22,9 @@ from omni.isaac.core import World
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.core.articulations import ArticulationView
 from omni.isaac.core.prims.rigid_prim_view import RigidPrimView
-from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.stage import add_reference_to_stage, create_new_stage_async, update_stage_async
 from omni.isaac.core.utils.torch.rotations import euler_angles_to_quats
+from omni.isaac.nucleus import get_assets_root_path_async
 
 INDEXED = [True, False]
 USD_PATH = [True, False]

@@ -18,9 +18,9 @@ import numpy as np
 import omni.kit.test
 from omni.isaac.core import World
 from omni.isaac.core.robots import Robot
-from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import open_stage, update_stage
 from omni.isaac.core.utils.types import ArticulationAction
+from omni.isaac.nucleus import get_assets_root_path
 
 assets_root_path = get_assets_root_path()
 

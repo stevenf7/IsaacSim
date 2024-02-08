@@ -15,7 +15,7 @@ import omni
 import omni.kit.commands
 import omni.physx as _physx
 import omni.ui as ui
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.nucleus import get_assets_root_path
 from omni.isaac.sensor import _sensor
 from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.ui.ui_utils import LABEL_WIDTH, get_style, setup_ui_headers

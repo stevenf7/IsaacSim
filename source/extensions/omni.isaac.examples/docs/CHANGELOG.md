@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.7.14] - 2023-02-02
+### Changed
+- Updated path to the nucleus extension
+
 ## [1.7.13] - 2023-12-13
 ### Fixed
 - Moved nut screwing to start with 3rd nut with slight improvement to centering

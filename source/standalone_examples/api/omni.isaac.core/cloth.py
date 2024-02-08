@@ -20,7 +20,7 @@ from omni.isaac.core.materials.particle_material import ParticleMaterial
 from omni.isaac.core.prims.soft.cloth_prim import ClothPrim
 from omni.isaac.core.prims.soft.cloth_prim_view import ClothPrimView
 from omni.isaac.core.prims.soft.particle_system import ParticleSystem
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.nucleus import get_assets_root_path
 from omni.physx.scripts import deformableUtils, physicsUtils
 from pxr import Gf, UsdGeom
 

@@ -18,7 +18,6 @@ from omni.isaac.core.objects import VisualCuboid
 from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.prims.rigid_prim_view import RigidPrimView
 from omni.isaac.core.robots import Robot
-from omni.isaac.core.utils.nucleus import get_assets_root_path_async
 from omni.isaac.core.utils.prims import get_prim_object_type, is_prim_path_valid
 from omni.isaac.core.utils.stage import (
     add_reference_to_stage,
@@ -27,6 +26,7 @@ from omni.isaac.core.utils.stage import (
     update_stage_async,
 )
 from omni.isaac.core.utils.types import ArticulationAction
+from omni.isaac.nucleus import get_assets_root_path_async
 
 
 class TestScene(omni.kit.test.AsyncTestCase):
