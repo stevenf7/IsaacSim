@@ -109,9 +109,6 @@ PACKAGE-DEPS.yaml
 .ipynb_checkpoints
 
 
-# ignoring replicator output
-source/tools/composer/datasets/dataset
-
 # ignore docs output
 .local
 conf.py

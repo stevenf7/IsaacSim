@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.12.1] - 2024-02-08
+
+### Removed
+- Deprecated replicator composer menu item
+
+
 ## [0.12.0] - 2024-01-30
 
 ### Changed

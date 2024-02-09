@@ -895,7 +895,6 @@ deps_for_isaac = [
   "omni.kit.livestream.webrtc-2.3.2",
   "omni.services.streamclient.webrtc-1.3.8",
   "omni.services.streaming.manager-0.3.10",
-  "omni.replicator.composer-1.2.17",
   "omni.replicator.replicator_yaml-2.0.4",
   "omni.replicator.core-1.10.20",
   "omni.sensors.fov_preview_visualization-1000.2.0-isaacsim.4.0",
