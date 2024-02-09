@@ -46,7 +46,6 @@ fetch.pip.files_to_pull = [
     "${root}/deps/pip_repl.toml",
     "${root}/deps/pip_compute.toml",
     "${root}/deps/pip_usd_to_urdf.toml",
-    "${root}/deps/pip_onshape.toml",
     "${root}/deps/pip_cloud.toml",
 ]
 

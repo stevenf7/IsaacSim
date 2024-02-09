@@ -316,7 +316,6 @@ group "exts"
     include ("source/extensions/omni.isaac.motion_generation")
     include ("source/extensions/omni.isaac.nucleus")
     include ("source/extensions/omni.isaac.occupancy_map")
-    include ("source/extensions/omni.isaac.onshape")
     include ("source/extensions/omni.isaac.partition")
     include ("source/extensions/omni.isaac.proximity_sensor")
     include ("source/extensions/omni.isaac.physics_inspector")
