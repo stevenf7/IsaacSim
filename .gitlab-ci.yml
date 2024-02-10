@@ -1,3 +1,13 @@
+include:
+  - project: "omniverse/devplat/gitlab/templates/common/compliance"
+    file: "modules/omniverse-repo-compliance.gitlab-ci.yml"
+    ref: "v1_latest"
+
+variables:
+    OSEC_NSPECT_ID: "NSPECT-8CX1-LP1G"
+    OSEC_CHECKMARX_ENABLED: 'true'
+    OSEC_README_ENABLED: 'false'
+
 workflow:
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
@@ -32,16 +42,6 @@ pages:
 stages:
   - check
   - test
-
-include:
-  - project: "omniverse/devplat/gitlab/templates/common/compliance"
-    file: "modules/omniverse-repo-compliance.gitlab-ci.yml"
-    ref: "v1_latest"
-
-variables:
-    OSEC_NSPECT_ID: "NSPECT-8CX1-LP1G"
-    OSEC_CHECKMARX_ENABLED: 'true'
-    OSEC_README_ENABLED: 'false'
 
 # include:
 #   - project: 'omniverse/sectools/omni-pulse'
