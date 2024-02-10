@@ -30,6 +30,7 @@ pages:
     - develop@omniverse/isaac/omni_isaac_sim
 
 stages:
+  - check
   - test
 
 include:
