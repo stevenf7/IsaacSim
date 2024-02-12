@@ -72,7 +72,11 @@ class PhysicsContext(object):
             self._prim_path = get_prim_path(current_physics_prim)
             carb.log_info(f"Physics Scene at path `{self._prim_path}` is already defined - reusing it")
             self._physics_scene = UsdPhysics.Scene(current_physics_prim)
-            self._physx_scene_api = PhysxSchema.PhysxSceneAPI(current_physics_prim)
+            # get or apply PhysxScene API
+            if current_physics_prim.HasAPI(PhysxSchema.PhysxSceneAPI):
+                self._physx_scene_api = PhysxSchema.PhysxSceneAPI(current_physics_prim)
+            else:
+                self._physx_scene_api = PhysxSchema.PhysxSceneAPI.Apply(current_physics_prim)
         self._physx_interface = omni.physx.acquire_physx_interface()
         self._physx_sim_interface = omni.physx.get_physx_simulation_interface()
         self._use_gpu_pipeline = False
@@ -242,7 +246,7 @@ class PhysicsContext(object):
             Optional[Usd.Prim]: returns a PhysicsScene prim if found in current stage. Otherwise, None.
         """
         for prim in traverse_stage():
-            if prim.HasAPI(PhysxSchema.PhysxSceneAPI):
+            if prim.HasAPI(PhysxSchema.PhysxSceneAPI) or prim.GetTypeName() == "PhysicsScene":
                 return prim
         return None
 

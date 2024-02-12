@@ -1,4 +1,7 @@
 # Changelog
+## [3.3.8] - 2024-02-05
+### Fixed
+- Check for PhysicsScene USD type to identify whether a physics scene is already defined (OM-115537)
 
 ## [3.3.7] - 2023-02-02
 ### Changed
