@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.13.7"
+version = "0.14.0"
 category = "Simulation"
 title = "Isaac Sim UI Utilities"
 description = "Core UI Elements for Isaac Sim"
@@ -28,6 +28,7 @@ writeTarget.kit = true
 "omni.graph.action" = {}
 "omni.graph.visualization.nodes" = {}
 "omni.isaac.core" = {}
+"omni.kit.property.usd" = {}
 
 [[python.module]]
 name = "omni.isaac.ui"

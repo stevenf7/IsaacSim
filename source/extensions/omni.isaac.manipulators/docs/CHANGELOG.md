@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.0] - 2024-02-07
+### Added
+- a menu item for the extension to allow for populating common controller omnigraphs
+- automatically populated omnigraph for position and velocity controller of any articulation object
+
 ## [1.1.0] - 2022-11-24
 
 ### Added
