@@ -1,4 +1,9 @@
 # Changelog
+## [1.1.0] - 2024-02-02
+### Added
+- a menu item for the extension to allow for populating common controller omnigraphs
+- automatically populated omnigraph for controlling a differential robot
+
 ## [1.0.0] - 2024-01-30
 ### Changed
 - Refactored wheeled robots extension to use carb plugin and support Cpp code

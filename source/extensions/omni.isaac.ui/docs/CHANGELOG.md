@@ -1,6 +1,9 @@
 # Changelog
+## [0.14.0] - 2024-02-02
+### Added
+- SelectPrimWidget and ParamWidget to simplify populating a popup dialog for collecting paramaters. 
 
-## [0.13.7] - 2023-02-02
+## [0.13.7] - 2024-02-02
 ### Changed
 - Updated path to the nucleus extension
 

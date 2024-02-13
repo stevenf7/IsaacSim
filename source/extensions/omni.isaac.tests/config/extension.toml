@@ -33,6 +33,7 @@ icon = "data/icon.png"
 "omni.isaac.utils" = {}
 "omni.isaac.nucleus" = {}
 
+
 [[python.module]]
 name = "omni.isaac.tests" # so we can find the path to the extension
 

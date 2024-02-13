@@ -6,7 +6,6 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-
 """
 Support required by the Carbonite extension loader
 """
@@ -17,16 +16,19 @@ import omni.kit.commands
 from omni.isaac.ui.menu import make_menu_item_description
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 
-from ..bindings._omni_isaac_wheeled_robots import acquire_interface, release_interface
-from .menu_graphs import DifferentialRobotGraph
+from .menu_graphs import ArticulationPositionGraph, ArticulationVelocityGraph, GripperGraph
 
 
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
-        self.__interface = acquire_interface()
-
         controller_menu = [
-            make_menu_item_description(ext_id, "Differential Robots", onclick_fun=self._open_differential_graph),
+            make_menu_item_description(
+                ext_id, "Articulation Position Controller", onclick_fun=self._open_articulation_position
+            ),
+            make_menu_item_description(
+                ext_id, "Articulation Velocity Controller", onclick_fun=self._open_articulation_velocity
+            ),
+            make_menu_item_description(ext_id, "Gripper Controller", onclick_fun=self._open_gripper_graph),
         ]
         self._menu_controller = [
             MenuItemDescription(
@@ -34,20 +36,17 @@ class Extension(omni.ext.IExt):
                 sub_menu=controller_menu,
             )
         ]
-
         add_menu_items(self._menu_controller, "Isaac Utils")
-        self._window = None
-
-        self._differential_graph = None
 
     def on_shutdown(self):
-        self._differential_graph = None
         remove_menu_items(self._menu_controller, "Isaac Utils")
-        release_interface(self.__interface)
         gc.collect()
 
-    def _open_differential_graph(self):
-        if not self._differential_graph:
-            # only initialize the graph once each session, so defaults can be saved
-            self._differential_graph = DifferentialRobotGraph()
-        self._differential_graph.create_differential_robot_graph()
+    def _open_articulation_position(self):
+        ArticulationPositionGraph().create_articulation_controller_graph()
+
+    def _open_articulation_velocity(self):
+        ArticulationVelocityGraph().create_articulation_controller_graph()
+
+    def _open_gripper_graph(self):
+        pass
