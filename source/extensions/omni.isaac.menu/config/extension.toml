@@ -1,0 +1,51 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.1.0"
+category = "Simulation"
+title = "Isaac Sim Menus"
+description = "Isaac Sim Utility Extensions"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.menu"
+keywords = ["isaac", "menu"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+icon = "data/icon.png"
+writeTarget.kit = true
+
+[dependencies]
+"omni.kit.menu.utils" = {}
+"omni.isaac.core" = {}
+"omni.isaac.ui" = {}
+
+[[python.module]]
+name = "omni.isaac.menu"
+
+[[python.module]]
+name = "omni.isaac.menu.tests"
+
+
+[[test]]
+timeout = 960
+dependencies = [
+    "omni.timeline",
+    "omni.isaac.utils",
+    "omni.isaac.range_sensor",
+    "omni.isaac.sensor",
+]
+
+stdoutFailPatterns.exclude = [
+    '*[Error] [omni.isaac.sensor.plugin] *** error: Parent prim is not found or is invalid*',
+    '*[Error] [omni.isaac.sensor.plugin] Failed to create imu sensor, parent prim is not found or invalid*',
+    '*[Error] [omni.isaac.sensor.plugin] Imu Sensor does not exist*',
+    '*[Error] [omni.isaac.sensor.plugin] Contact Sensor does not exist*',
+    '*[omni.isaac.sensor.plugin] *** error: contact sensor parent prim is not found or is invalid*',
+    '*[omni.isaac.sensor.plugin] Failed to create contact sensor, parent prim is not found or invalid*',
+    '*[Error] [omni.isaac.range_sensor.plugin] Ultrasonic Sensor does not exist*',
+    '*[Error] [omni.isaac.range_sensor.plugin] Lidar Sensor does not exist*',
+    '*[Error] [omni.isaac.range_sensor.plugin] Generic Sensor does not exist*',
+    '*[Error] [omni.kit.commands.command] Failed to execute a command: ChangeProperty*',
+    '*[Error] [asyncio] Task exception was never retrieved*',
+]

@@ -9,7 +9,6 @@
 
 import carb
 import carb.tokens
-import numpy as np
 import omni.kit.commands
 
 # NOTE:
@@ -20,7 +19,6 @@ import omni.kit.ui_test as ui_test
 import omni.ui as ui
 from omni.isaac.core.utils.prims import get_prim_path
 from omni.isaac.core.utils.stage import clear_stage, create_new_stage, traverse_stage
-from omni.isaac.nucleus import get_assets_root_path_async
 from omni.kit.mainwindow import get_main_window
 from omni.kit.ui_test.menu import *
 from omni.kit.ui_test.query import *
@@ -32,12 +30,6 @@ class TestMenuAssets(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         self._timeline = omni.timeline.get_timeline_interface()
-
-        self._assets_root_path = await get_assets_root_path_async()
-        if self._assets_root_path is None:
-            carb.log_error("Could not find Isaac Sim assets folder")
-            return
-
         result = create_new_stage()
         # Make sure the stage loaded
         self.assertTrue(result)
@@ -237,6 +229,7 @@ class TestMenuAssets(omni.kit.test.AsyncTestCase):
         self.assertEqual(len(failed_environments), 0)
 
     async def test_loading_sensors(self):
+        print(self.menu_dict["Create"]["Isaac"])
         self.robot_menu_dict = self.menu_dict["Create"]["Isaac"]["Sensors"]
         ## check everything under "Sensors"
 

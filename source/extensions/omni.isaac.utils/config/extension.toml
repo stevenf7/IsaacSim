@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.7.2"
+version = "1.0.0"
 category = "Simulation"
 title = "Isaac Sim Utilities"
 description = "Isaac Sim Utility Extensions"
@@ -30,7 +30,3 @@ name = "omni.isaac.utils"
 
 [[python.module]]
 name = "omni.isaac.utils.tests"
-
-[[python.module]]
-name = "omni.isaac.utils.scripts.create_menu"
-public = false

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.0] - 2024-02-09
+### Changed
+- Moved menu items to omni.isaac.menu
+
 ## [0.7.2] - 2023-02-02
 ### Changed
 - Updated path to the nucleus extension
