@@ -17,7 +17,15 @@ from .app_framework import AppFramework
 from .simulation_app import SimulationApp
 
 # check for isaac_sim module
-if "isaac_sim" not in sys.modules:
+check_for_isaac_sim_module = False
+try:
+    import omni.kit.app
+
+    omni.kit.app.get_app()
+except RuntimeError:
+    check_for_isaac_sim_module = True
+
+if check_for_isaac_sim_module and "isaac_sim" not in sys.modules:
     import traceback
 
     stack = traceback.extract_stack()
