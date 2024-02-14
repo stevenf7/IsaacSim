@@ -13,6 +13,7 @@ changelog = "docs/CHANGELOG.md"
 category = "Simulation"
 readme = "docs/README.md"
 icon = "data/icon.png"
+preview_image = "data/preview.png"
 writeTarget.kit = true
 
 [dependencies]

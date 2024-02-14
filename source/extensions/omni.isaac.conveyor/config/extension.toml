@@ -6,6 +6,7 @@ description="Omnigraph Node for Defining the behavior of a linear conveyor belt"
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
 icon = "data/icon.png"
+preview_image = "data/preview.png"
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.conveyor"
 
 keywords = ["kit", "example"]

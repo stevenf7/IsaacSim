@@ -13,6 +13,7 @@ keywords = ["Synthetic", "Data", "Randomization", "Generator", "Domain Randomiza
 changelog="docs/CHANGELOG.md"
 readme  = "docs/README.md"
 icon = "data/icon.png"
+preview_image = "data/preview.png"
 
 # Build separate extensions for Windows and Linux so appropriate libraries are bundled
 writeTarget.platform = true

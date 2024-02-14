@@ -5,7 +5,7 @@ project_ext (ext)
 
 -- Link only those files and folders into the extension target directory
 repo_build.prebuild_link {
-    -- { "docs", ext.target_dir.."/docs" },
+    { "docs", ext.target_dir.."/docs" },
     { "data", ext.target_dir.."/data" },
     { "omni", ext.target_dir.."/omni" },
     -- { "layouts", ext.target_dir.."/layouts" },

@@ -1,8 +1,15 @@
 [package]
+version = "2.3.2"
+category = "Simulation"
 title = "Isaac Sim App Selector"
 description = "Mini Launch Pad app for Isaac Sim Sub Apps"
-version = "2.3.2"
+authors = ["Isaac Sim Team"]
+readme = "docs/README.md"
+changelog = "docs/CHANGELOG.md"
+preview_image = "icons/preview.png"
+icon = "icons/omni.isaac.sim.png"
 toggleable = false
+
 
 [dependencies]
 "omni.kit.pip_archive" = {} # pulls in pyperclip
