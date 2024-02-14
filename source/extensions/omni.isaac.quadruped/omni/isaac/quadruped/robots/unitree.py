@@ -11,6 +11,7 @@ from collections import deque
 from typing import List, Optional
 
 import carb
+import carb.profiler
 import numpy as np
 import omni
 import omni.kit.commands
@@ -21,7 +22,7 @@ from omni.isaac.core_nodes.bindings import _omni_isaac_core_nodes
 from omni.isaac.nucleus import get_assets_root_path
 from omni.isaac.quadruped.controllers import A1QPController
 from omni.isaac.quadruped.utils.a1_classes import A1Command, A1Measurement, A1State
-from omni.isaac.sensor import ContactSensor, IMUSensor, _sensor
+from omni.isaac.sensor import _sensor
 
 
 class Unitree(Articulation):
@@ -104,33 +105,23 @@ class Unitree(Articulation):
             self._prim_path + "/RR_foot",
         ]
 
-        self.color = [(1, 0, 0, 1), (0, 1, 0, 1), (0, 0, 1, 1), (1, 1, 0, 1)]
-        self._contact_sensors = [None] * 4
         for i in range(4):
-            self._contact_sensors[i] = ContactSensor(
-                prim_path=self.feet_path[i] + "/sensor",
+            omni.kit.commands.execute(
+                "IsaacSensorCreateContactSensor",
+                path="/sensor",
+                parent=self.feet_path[i],
                 min_threshold=0,
                 max_threshold=1000000,
-                radius=0.03,
-                dt=physics_dt,
+                radius=-1,
+                sensor_period=-1,
             )
 
         self.foot_force = np.zeros(4)
         self.enable_foot_filter = True
-        self._FILTER_WINDOW_SIZE = 20
-        self._foot_filters = [deque(), deque(), deque(), deque()]
 
         # imu sensor setup
-        self.imu_path = self._prim_path + "/imu_link"
-        self._imu_sensor = IMUSensor(
-            prim_path=self.imu_path + "/imu_sensor",
-            name="imu",
-            dt=physics_dt,
-            translation=np.array([0, 0, 0]),
-            orientation=np.array([1, 0, 0, 0]),
-        )
-        self.base_lin = np.zeros(3)
-        self.ang_vel = np.zeros(3)
+        # Since the linear acceleration and angular velocity data are obtained directly from ground truth
+        # IMU sensor will not be instantiated
 
         # Controller
         self.physics_dt = physics_dt
@@ -143,6 +134,7 @@ class Unitree(Articulation):
 
         self.robot_initialized = False
         self.core_nodes = _omni_isaac_core_nodes.acquire_interface()
+        self._cs = _sensor.acquire_contact_sensor_interface()
         return
 
     def set_state(self, state: A1State) -> None:
@@ -186,39 +178,30 @@ class Unitree(Articulation):
         """
         # Order: FL, FR, BL, BR
         for i in range(len(self.feet_path)):
-            frame = self._contact_sensors[i].get_current_frame()
-            if "force" in frame:
+            sensor_reading = self._cs.get_sensor_reading(self.feet_path[i] + "/sensor")
+            if sensor_reading.is_valid:
                 if self.enable_foot_filter:
-                    self._foot_filters[i].append(frame["force"])
-                    if len(self._foot_filters[i]) > self._FILTER_WINDOW_SIZE:
-                        self._foot_filters[i].popleft()
-                    self.foot_force[i] = np.mean(self._foot_filters[i])
+                    self.foot_force[i] = self.foot_force[i] * 0.9 + sensor_reading.value * 0.1
 
                 else:
-                    self.foot_force[i] = frame["force"]
-
-    def update_imu_sensor_data(self) -> None:
-        """[summary]
-
-        Updates processed imu sensor data from the robot body, store them in member variable base_lin and ang_vel
-        """
-        frame = self._imu_sensor.get_current_frame()
-        self.base_lin = frame["lin_acc"]
-        self.ang_vel = frame["ang_vel"]
-        return
+                    self.foot_force[i] = sensor_reading.value
 
     def update(self) -> None:
         """[summary]
 
         update robot sensor variables, state variables in A1Measurement
         """
-
+        carb.profiler.begin(20, "unitree update")
+        carb.profiler.begin(30, "get contact data")
         self.update_contact_sensor_data()
-        self.update_imu_sensor_data()
-
+        carb.profiler.end(30)
+        # carb.profiler.begin(31, "get imu data")
+        # self.update_imu_sensor_data()
+        # carb.profiler.end(31)
         # joint pos and vel from the DC interface
+        carb.profiler.begin(32, "get joint state")
         self.joint_state = super().get_joints_state()
-
+        carb.profiler.end(32)
         # joint_state from the DC interface now has the order of
         # 'FL_hip_joint',   'FR_hip_joint',   'RL_hip_joint',   'RR_hip_joint',
         # 'FL_thigh_joint', 'FR_thigh_joint', 'RL_thigh_joint', 'RR_thigh_joint',
@@ -234,17 +217,17 @@ class Unitree(Articulation):
         self._state.joint_vel = np.array(self.joint_state.velocities.reshape([3, 4]).T.flat)
 
         # base frame
+        carb.profiler.begin(33, "get world pose")
         base_pose = self.get_world_pose()
         self._state.base_frame.pos = base_pose[0]
         self._state.base_frame.quat = base_pose[1][[1, 2, 3, 0]]
         self._state.base_frame.lin_vel = self.get_linear_velocity()
         self._state.base_frame.ang_vel = self.get_angular_velocity()
-
+        carb.profiler.end(33)
         # assign to _measurement obj
         self._measurement.state = self._state
         self._measurement.foot_forces = np.asarray(self.foot_force)
-        self._measurement.base_ang_vel = np.asarray(self.ang_vel)
-        self._measurement.base_lin_acc = np.asarray(self.base_lin)
+        carb.profiler.end(20)
         return
 
     def advance(self, dt, goal, path_follow=False, auto_start=True) -> np.ndarray:
@@ -261,6 +244,7 @@ class Unitree(Articulation):
         Returns:
         np.ndarray -- The desired joint torques for the robot.
         """
+        carb.profiler.begin(21, "unitree advance")
         if goal is None:
             goal = self._goal
         else:
@@ -290,6 +274,7 @@ class Unitree(Articulation):
         # we convert controller order to DC order for command torque
         torque_reorder = np.array(self._command.desired_joint_torque.reshape([4, 3]).T.flat)
         self.set_joint_efforts(np.asarray(torque_reorder, dtype=np.float32))
+        carb.profiler.end(21)
         return self._command
 
     def initialize(self, physics_sim_view=None) -> None:
@@ -302,7 +287,7 @@ class Unitree(Articulation):
         self.get_articulation_controller().switch_control_mode("effort")
         self.set_state(self._default_a1_state)
         for i in range(4):
-            self._contact_sensors[i].initialize()
+            self.foot_force[i] = self._cs.get_sensor_reading(self.feet_path[i] + "/sensor").value
         self.robot_initialized = True
         return
 
@@ -312,8 +297,6 @@ class Unitree(Articulation):
         post reset articulation and qp_controller
         """
         super().post_reset()
-        for i in range(4):
-            self._contact_sensors[i].post_reset()
         self._qp_controller.reset()
         self.set_state(self._default_a1_state)
         self.robot_initialized = False
