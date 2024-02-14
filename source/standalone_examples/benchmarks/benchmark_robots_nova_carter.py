@@ -18,7 +18,7 @@ n_robot = args.n_robot
 n_gpu = args.num_gpus
 
 import numpy as np
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 simulation_app = SimulationApp({"headless": True})
 

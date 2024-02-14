@@ -11,7 +11,7 @@
 # creates a camera and a sample scene, renders an image and saves it to camera_ros.png file.
 # The asset is also saved to camera_ros.usd file. The camera model is based on Intel RealSense D435i.
 
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 simulation_app = SimulationApp({"headless": True})
 

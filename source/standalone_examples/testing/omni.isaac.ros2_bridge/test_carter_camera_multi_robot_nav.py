@@ -8,8 +8,7 @@
 #
 import sys
 
-import carb
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 # Default environment: Hospital
 
@@ -19,6 +18,7 @@ CONFIG = {"renderer": "RayTracedLighting", "headless": False}
 
 # Example ROS2 bridge sample demonstrating the manual loading of Multiple Robot Navigation scenario
 simulation_app = SimulationApp(CONFIG)
+import carb
 import omni
 import omni.graph.core as og
 from omni.isaac.core import SimulationContext

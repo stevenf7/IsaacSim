@@ -15,8 +15,7 @@ visual interial odometry algorithm. Users can use the keyboard mapping to contro
 quadruped localize itself.
 """
 
-
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 

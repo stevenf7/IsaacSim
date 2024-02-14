@@ -11,8 +11,7 @@ import argparse
 import asyncio
 import os
 
-import omni
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 
 async def convert(in_file, out_file, load_materials=False):
@@ -80,6 +79,7 @@ def asset_convert(args):
 if __name__ == "__main__":
     kit = SimulationApp()
 
+    import omni
     from omni.isaac.core.utils.extensions import enable_extension
 
     enable_extension("omni.kit.asset_converter")

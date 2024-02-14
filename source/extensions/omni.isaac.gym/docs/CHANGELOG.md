@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.10.2] - 2024-02-08
+### Changed
+- Get SimulationApp from isaac_sim instead of omni.isaac.kit
+
 ## [0.10.1] - 2023-02-02
 ### Changed
 - Updated path to the nucleus extension

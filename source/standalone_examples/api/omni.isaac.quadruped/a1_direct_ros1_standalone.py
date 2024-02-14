@@ -16,7 +16,7 @@ The runner instantiate robot UnitreeDirect, which directly takes in joint torque
 This is a very simple example to demonstrate how to treat Isaac Sim as a simulation component with in the ROS1 ecosystem
 """
 
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 

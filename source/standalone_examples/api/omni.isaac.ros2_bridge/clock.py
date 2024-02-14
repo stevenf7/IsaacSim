@@ -10,11 +10,11 @@
 import argparse
 import time
 
-import carb
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 # Example ROS2 bridge sample showing rclpy and rosclock interaction
 simulation_app = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
+import carb
 import omni
 import omni.graph.core as og
 from omni.isaac.core import SimulationContext

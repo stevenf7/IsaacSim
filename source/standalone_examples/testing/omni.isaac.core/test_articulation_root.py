@@ -8,7 +8,7 @@
 #
 import os
 
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 simulation_app = SimulationApp({"headless": True})
 

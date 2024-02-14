@@ -9,8 +9,7 @@
 
 import time
 
-import carb
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 # Example ROS bridge sample showing rospy and rosclock interaction
 kit = SimulationApp()

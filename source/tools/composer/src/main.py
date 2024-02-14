@@ -10,7 +10,7 @@
 import argparse
 import os
 
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 
 def define_arguments():

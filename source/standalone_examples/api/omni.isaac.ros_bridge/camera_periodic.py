@@ -9,8 +9,7 @@
 
 import sys
 
-import carb
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 CAMERA_STAGE_PATH = "/Camera"
 ROS_CAMERA_GRAPH_PATH = "/ROS_Camera"
@@ -20,6 +19,7 @@ BACKGROUND_USD_PATH = "/Isaac/Environments/Simple_Warehouse/warehouse_with_forkl
 CONFIG = {"renderer": "RayTracedLighting", "headless": False}
 
 simulation_app = SimulationApp(CONFIG)
+import carb
 import omni
 import omni.graph.core as og
 import usdrt.Sdf

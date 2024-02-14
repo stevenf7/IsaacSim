@@ -9,7 +9,7 @@
 
 import argparse
 
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 parser = argparse.ArgumentParser("franka_examples")
 parser.add_argument(

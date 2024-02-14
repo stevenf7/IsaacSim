@@ -8,9 +8,7 @@
 #
 import sys
 
-import carb
-import omni
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 # The most basic usage for creating a simulation app
 kit = SimulationApp()
@@ -28,7 +26,8 @@ ADDITIONAL_EXTENSIONS_PEOPLE = [
     "omni.kit.scripting",
 ]
 
-
+import carb
+import omni
 from omni.isaac.core.utils.extensions import enable_extension
 
 for e in ADDITIONAL_EXTENSIONS_PEOPLE:

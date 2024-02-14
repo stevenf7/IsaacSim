@@ -20,7 +20,7 @@ import argparse
 import os
 
 import numpy as np
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 
 def main(args):

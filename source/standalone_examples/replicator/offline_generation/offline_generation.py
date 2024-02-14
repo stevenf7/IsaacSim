@@ -16,9 +16,8 @@ import math
 import os
 import random
 
-import carb
 import yaml
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 # Default config (will be updated/extended by any other passed config arguments)
 config = {
@@ -59,6 +58,8 @@ config = {
         "class": "Cardbox",
     },
 }
+
+import carb
 
 # Check if there are any config files (yaml or json) are passed as arguments
 parser = argparse.ArgumentParser()

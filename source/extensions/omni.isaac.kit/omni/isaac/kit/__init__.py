@@ -9,21 +9,41 @@
 
 import builtins
 import os
+import sys
+
+import carb
 
 from .app_framework import AppFramework
 from .simulation_app import SimulationApp
 
+# check for isaac_sim module
+if "isaac_sim" not in sys.modules:
+    import traceback
+
+    stack = traceback.extract_stack()
+    if stack:
+        carb.log_error("Traceback (most recent call last):")
+        for item in traceback.extract_stack():
+            if "<frozen" in item.filename:
+                continue
+            elif "omni.isaac.kit/omni/isaac/kit" in item.filename:
+                break
+            carb.log_error(f"File '{item.filename}', line {item.lineno}")
+            if item.line is not None:
+                carb.log_error(f"  {item.line}")
+        carb.log_error("")
+    carb.log_error("Please import 'isaac_sim' before importing the 'omni.isaac.kit' extension")
+    exit()
+
 builtins.ISAAC_LAUNCHED_FROM_JUPYTER = (
-    os.getenv("ISAAC_JUPYTER_KERNEL") is not None
-)  # We set this in the kernel.json file
+    os.getenv("ISAAC_JUPYTER_KERNEL") is not None or os.getenv("ISAAC_JUPYTER_PYTHON_PACKAGE") is not None
+)  # We set this in the kernel.json file or in the isaac-sim-kernel package
 
 if builtins.ISAAC_LAUNCHED_FROM_JUPYTER:
     import nest_asyncio
 
     nest_asyncio.apply()
 else:
-    import carb
-
     # Do a sanity check to see if we are running in an ipython env
     try:
         get_ipython()

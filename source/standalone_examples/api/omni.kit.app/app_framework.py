@@ -10,8 +10,7 @@
 import asyncio
 import os
 
-import omni.kit.app
-from omni.isaac.kit import AppFramework
+from isaac_sim import AppFramework
 
 argv = [
     "--empty",

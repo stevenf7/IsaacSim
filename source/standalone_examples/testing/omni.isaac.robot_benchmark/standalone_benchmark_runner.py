@@ -207,11 +207,11 @@ def main(args):
         "headless": args.headless,
         "experience": f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit',
     }
-    import omni
-    from omni.isaac.kit import SimulationApp
+    from isaac_sim import SimulationApp
 
     simulation_app = SimulationApp(CUSTOM_CONFIG)
 
+    import omni
     from omni.isaac.core import World
 
     # make kit and omni globals to make calling functions cleaner

@@ -10,8 +10,7 @@
 import argparse
 import time
 
-import carb
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 parser = argparse.ArgumentParser(description="ROS Clock Example")
 parser.add_argument("--test", action="store_true")
@@ -20,6 +19,7 @@ args, unknown = parser.parse_known_args()
 
 # Example ROS bridge sample showing rospy and rosclock interaction
 simulation_app = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
+import carb
 import omni
 import omni.graph.core as og
 from omni.isaac.core import SimulationContext

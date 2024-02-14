@@ -13,11 +13,10 @@ import argparse
 import os
 import signal
 
-import carb
 import numpy as np
 import torch
 import yaml
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 parser = argparse.ArgumentParser("Pose Generation data generator")
 parser.add_argument("--num_mesh", type=int, default=30, help="Number of frames to record similar to MESH dataset")
@@ -77,6 +76,7 @@ kit = SimulationApp(launch_config=config_data["CONFIG"])
 
 import math
 
+import carb
 import omni.replicator.core as rep
 from omni.isaac.core import World
 from omni.isaac.core.prims.xform_prim import XFormPrim

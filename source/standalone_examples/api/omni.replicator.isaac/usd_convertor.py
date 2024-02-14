@@ -17,10 +17,11 @@ large datasets or for online training of Deep Learning models.
 import argparse
 import os
 
-import carb
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 if "SHAPENET_LOCAL_DIR" not in os.environ:
+    import carb
+
     carb.log_error("SHAPENET_LOCAL_DIR not defined:")
     carb.log_error(
         "Please specify the SHAPENET_LOCAL_DIR environment variable to the location of your local shapenet database, exiting"

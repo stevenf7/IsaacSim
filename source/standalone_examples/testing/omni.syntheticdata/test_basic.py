@@ -8,11 +8,11 @@
 #
 
 
-import carb
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 simulation_app = SimulationApp({"headless": True})
 
+import carb
 import omni.syntheticdata._syntheticdata as sd
 from omni.isaac.core.utils.stage import get_current_stage
 from omni.isaac.nucleus import get_assets_root_path

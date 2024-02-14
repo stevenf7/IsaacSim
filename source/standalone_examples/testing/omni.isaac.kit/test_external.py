@@ -9,7 +9,7 @@
 import sys
 
 import numpy as np
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 simulation_app = SimulationApp()
 

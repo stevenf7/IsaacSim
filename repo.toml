@@ -57,6 +57,7 @@ vscode.python = "${root}/_build/$platform/release/kit/python"
 vscode.python_env.PYTHONPATH= [
   "$$$${PYTHONPATH}",
   "$root/_build/$platform/$config/kit/python/lib/python3.10/site-packages",
+  "$root/_build/$platform/$config/python_packages",
   "$root/_build/$platform/$config/exts/omni.isaac.kit",
   "$root/_build/$platform/$config/exts/omni.isaac.gym",
   "$root/_build/$platform/$config/kit/kernel/py",
