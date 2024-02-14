@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.2.1] - 2023-09-30
+## [0.2.2] - 2023-09-30
 
 ### Fixed
 - Prevents messages to be sent when their content is null
