@@ -3,7 +3,7 @@ The Partition utility is used to convert a large USD stage to a stage with small
 In short, it splits a stage into several shots defined by camera views.
 
 ## Usage
-To enable this extension, go to the Extension Manager menu and enable omni.isaac.partition extension.
+To enable this extension, go to the Extension Manager menu and enable omni.isaac.partition extension. Once loaded, the extension can be found in under Isaac Utils -> Workflows 
 
 ## Know Issues
 Camera animation is currently ignored.

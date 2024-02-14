@@ -13,6 +13,7 @@ keywords = ["isaac", "benchmarking", "manipulation"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
 icon = "data/icon.png"
+preview_image = "data/preview.png"
 
 [dependencies]
 "omni.kit.uiapp" = {}
