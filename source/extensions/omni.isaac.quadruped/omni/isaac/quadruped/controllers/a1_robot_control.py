@@ -9,6 +9,7 @@
 
 from typing import Tuple
 
+import carb.profiler
 import numpy as np
 import osqp  # used for solving QP
 import scipy.sparse as sp
@@ -48,6 +49,8 @@ class A1RobotControl:
 
     def __init__(self) -> None:
         """Initializes the class instance."""
+        self.counter = 0
+        self.grf = np.zeros((4, 3))
         pass
 
     """
@@ -68,6 +71,7 @@ class A1RobotControl:
             dt {float} -- The simulation time-step.
 
         """
+        carb.profiler.begin(1, "update plan")
         self._update_gait_plan(input_states)
         self._update_foot_plan(desired_states, input_states, input_params, dt)
         # increase _counter
@@ -76,6 +80,7 @@ class A1RobotControl:
 
         input_states._gait_counter += input_states._gait_counter_speed
         input_states._gait_counter %= input_states._counter_per_gait
+        carb.profiler.end(1)
 
     def generate_ctrl(
         self, desired_states: A1DesiredStates, input_states: A1CtrlStates, input_params: A1CtrlParams
@@ -89,6 +94,7 @@ class A1RobotControl:
             input_states {A1CtrlStates} -- the control states
             input_params {A1CtrlParams} -- the control parameters
         """
+        carb.profiler.begin(2, "generate control")
         # first second, do nothing, wait sensor and stuff got stablized
         if input_states._exp_time < 0.1:
             return np.zeros(12)
@@ -135,17 +141,29 @@ class A1RobotControl:
             input_states._contacts[i] = input_states._contacts[i] or input_states._early_contacts[i]
 
         # root control
-        grf = self._compute_grf(desired_states, input_states, input_params)
-        grf_rel = grf @ input_states._rot_mat
+        if self.counter == 0 or self.grf.all == 0:
+            self.grf = self._compute_grf(desired_states, input_states, input_params)
+
+        self.counter = (self.counter + 1) % 5
+
+        grf_rel = self.grf @ input_states._rot_mat
         foot_forces_grf = -grf_rel.flatten()
 
+        carb.profiler.begin(43, "convert to torque")
         # convert to torque
+        carb.profiler.begin(50, "M matrix")
         M = np.kron(np.eye(4, dtype=int), input_params._km_foot)
+        carb.profiler.end(50)
         # torques_init = input_states._j_foot.T @ foot_forces_init
+        carb.profiler.begin(51, "torque kin")
         torques_kin = np.linalg.inv(input_states._j_foot) @ M @ foot_forces_kin
+        carb.profiler.end(51)
         # torques_kin = input_states._j_foot.T @ foot_forces_kin
+        carb.profiler.begin(52, "torque grf")
         torques_grf = input_states._j_foot.T @ foot_forces_grf
-
+        carb.profiler.end(52)
+        carb.profiler.end(43)
+        carb.profiler.begin(44, "combine torque")
         # combine torques
         torques_init = np.zeros(12)
         for i in range(4):
@@ -161,7 +179,8 @@ class A1RobotControl:
 
         torques = (1 - input_states._init_transition) * torques_init + input_states._init_transition * torques
         torques += input_params._torque_gravity
-
+        carb.profiler.end(44)
+        carb.profiler.end(2)
         return torques
 
     """
@@ -176,7 +195,7 @@ class A1RobotControl:
         Args:
             input_states {A1CtrlStates} -- the control states
         """
-
+        carb.profiler.begin(3, "Update gait plan")
         # initialize _counter
         if input_states._counter == 0 or input_states._gait_type != input_states._gait_type_last:
             if input_states._gait_type == 2:
@@ -198,6 +217,7 @@ class A1RobotControl:
             input_states._contacts[i] = input_states._gait_counter[i] < input_states._counter_per_swing
 
         input_states._gait_type_last = input_states._gait_type
+        carb.profiler.end(3)
 
     def _update_foot_plan(
         self, desired_states: A1DesiredStates, input_states: A1CtrlStates, input_params: A1CtrlParams, dt: float
@@ -212,7 +232,7 @@ class A1RobotControl:
             input_params {A1CtrlParams}    -- the control parameters
             dt           {float}           -- delta time since last update
         """
-
+        carb.profiler.begin(4, "update foot plan")
         # heuristic plan
         lin_pos = input_states._root_pos
         # lin_pos_rel = input_states._rot_mat_z.T @ lin_pos
@@ -243,6 +263,7 @@ class A1RobotControl:
 
             input_states._foot_pos_target_rel[i, 0] += delta_x
             input_states._foot_pos_target_rel[i, 1] += delta_y
+        carb.profiler.end(4)
 
     def _get_from_bezier_curve(
         self, foot_pos_start: np.ndarray, foot_pos_final: np.ndarray, bezier_time: np.ndarray
@@ -257,6 +278,7 @@ class A1RobotControl:
             bezier_time {np.ndarray} -- The curve interpolation time for each of the four legs; each should be
                 within [0,1].
         """
+        carb.profiler.begin(5, "generate swing foot pos from bezier curve")
         foot_pos_target = np.empty([4, 3])
 
         for i in range(4):
@@ -274,11 +296,15 @@ class A1RobotControl:
             bezier_nodes[1, 2] += z_foot_clearance1
             bezier_nodes[2, 2] += z_foot_clearance2
             foot_pos_target[i, :] = _eval_quartic_bezier(bezier_nodes, bezier_time[i])
-
+        carb.profiler.end(5)
         return foot_pos_target
 
     def _compute_grf(
-        self, desired_states: A1DesiredStates, input_states: A1CtrlStates, input_params: A1CtrlParams
+        self,
+        desired_states: A1DesiredStates,
+        input_states: A1CtrlStates,
+        input_params: A1CtrlParams,
+        setup_optimizer: bool = True,
     ) -> np.ndarray:
         """[summary]
 
@@ -293,6 +319,9 @@ class A1RobotControl:
             grf {np.ndarray}
         """
 
+        carb.profiler.begin(6, "generate foot ground force")
+
+        self.solver = osqp.OSQP()
         inertia_inv, root_acc, acc_weight, u_weight = self._get_qp_params(desired_states, input_states, input_params)
 
         modified_contacts = np.array([True, True, True, True])
@@ -300,7 +329,7 @@ class A1RobotControl:
             modified_contacts = np.array([True, True, True, True])
         else:
             modified_contacts = input_states._contacts
-
+        carb.profiler.begin(41, "generate friction pyramid")
         mu = 0.2
         # use osqp
         Q = np.diag(np.square(acc_weight))
@@ -336,22 +365,28 @@ class A1RobotControl:
             c_flag = 1.0 if modified_contacts[i] else 0.0
             lowerBound[i] = c_flag * F_min
             upperBound[i] = c_flag * F_max
-
+        carb.profiler.end(41)
+        carb.profiler.begin(40, "create hessian")
         sparse_hessian = sp.csc_matrix(hessian)
-
+        carb.profiler.end(40)
+        carb.profiler.begin(7, "OSQP initialize")
         # initialize the OSQP solver
-        solver = osqp.OSQP()
-        solver.setup(
+        self.solver.setup(
             P=sparse_hessian, q=gradient, A=sp.csc_matrix(linearMatrix), l=lowerBound, u=upperBound, verbose=False
         )
-        results = solver.solve()
+        carb.profiler.end(7)
+        carb.profiler.begin(8, "OSQP solve")
+        results = self.solver.solve()
+        carb.profiler.end(8)
         # print("compare casadi with osqp")
         # print(grf_vec)
         # print(results.x)
 
         grf = results.x.reshape(4, 3)
+        # print(str(grf))
         # print(results.x)
         # print(grf)
+        carb.profiler.end(6)
         return grf
 
     def _get_qp_params(
@@ -368,7 +403,7 @@ class A1RobotControl:
         Returns:
             qp_params: {Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray] -- inertia_inv, root_acc, acc_weight, u_weight}
         """
-
+        carb.profiler.begin(9, "construct QP param")
         # continuous yaw error
         # reference: http://ltu.diva-portal.org/smash/get/diva2:1010947/FULLTEXT01.pdf
         euler_error = desired_states._euler_d - input_states._euler
@@ -410,5 +445,5 @@ class A1RobotControl:
         # QP weight
         acc_weight = np.array([1, 1, 1, 20, 20, 10])
         u_weight = 1e-3
-
+        carb.profiler.end(9)
         return inertia_inv, root_acc, acc_weight, u_weight

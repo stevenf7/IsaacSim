@@ -10,6 +10,7 @@
 from typing import List, Union
 
 import carb
+import carb.profiler
 import numpy as np
 from omni.isaac.quadruped.controllers.a1_robot_control import A1RobotControl
 
@@ -117,9 +118,9 @@ class A1QPController:
         Returns:
             np.ndarray -- The desired joint torques for the robot.
         """
+        carb.profiler.begin(10, "qp advance")
         # update controller states from A1Measurement
         self.update(dt, measurement)
-
         if auto_start:
             if (self._ctrl_states._exp_time > 1) and self._ctrl_states._init_transition == 0:
                 self._ctrl_states._init_transition = 1
@@ -202,6 +203,8 @@ class A1QPController:
         torques = self._root_control.generate_ctrl(self._desired_states, self._ctrl_states, self._ctrl_params)
 
         torques = np.clip(torques, -self.torque_limit, self.torque_limit)
+
+        carb.profiler.end(10)
         return torques
 
     def switch_mode(self):
@@ -255,6 +258,7 @@ class A1QPController:
             dt {float} -- Timestep update in the world.
             measurement {A1Measurement} -- Current measurement from robot.
         """
+        carb.profiler.begin(11, "qp update")
         self._ctrl_states._root_quat[0] = measurement.state.base_frame.quat[3]  # w
         self._ctrl_states._root_quat[1] = measurement.state.base_frame.quat[0]  # x
         self._ctrl_states._root_quat[2] = measurement.state.base_frame.quat[1]  # y
@@ -298,3 +302,4 @@ class A1QPController:
             self._ctrl_states._foot_forces[i] = measurement.foot_forces[i]
 
         self._ctrl_states._exp_time += dt
+        carb.profiler.end(11)

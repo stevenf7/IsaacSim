@@ -18,7 +18,7 @@ from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
 from omni.isaac.core.utils.stage import get_current_stage, get_stage_units
 from omni.isaac.nucleus import get_assets_root_path
 from omni.isaac.quadruped.utils.a1_classes import A1Command, A1Measurement, A1State
-from omni.isaac.sensor import ContactSensor, IMUSensor, _sensor
+from omni.isaac.sensor import IMUSensor, _sensor
 
 
 class UnitreeDirect(Articulation):
@@ -100,22 +100,19 @@ class UnitreeDirect(Articulation):
             self._prim_path + "/RR_foot",
         ]
 
-        self.color = [(1, 0, 0, 1), (0, 1, 0, 1), (0, 0, 1, 1), (1, 1, 0, 1)]
-
-        self._contact_sensors = [None] * 4
         for i in range(4):
-            self._contact_sensors[i] = ContactSensor(
-                prim_path=self.feet_path[i] + "/sensor",
+            omni.kit.commands.execute(
+                "IsaacSensorCreateContactSensor",
+                path="/sensor",
+                parent=self.feet_path[i],
                 min_threshold=0,
                 max_threshold=1000000,
-                radius=0.03,
-                dt=physics_dt,
+                radius=-1,
+                sensor_period=-1,
             )
 
         self.foot_force = np.zeros(4)
         self.enable_foot_filter = True
-        self._FILTER_WINDOW_SIZE = 20
-        self._foot_filters = [deque(), deque(), deque(), deque()]
 
         # imu sensor setup
         # imu sensor setup
@@ -176,16 +173,13 @@ class UnitreeDirect(Articulation):
         """
         # Order: FL, FR, BL, BR
         for i in range(len(self.feet_path)):
-            frame = self._contact_sensors[i].get_current_frame()
-            if "force" in frame:
+            sensor_reading = self._cs.get_sensor_reading(self.feet_path[i] + "/sensor")
+            if sensor_reading.is_valid:
                 if self.enable_foot_filter:
-                    self._foot_filters[i].append(frame["force"])
-                    if len(self._foot_filters[i]) > self._FILTER_WINDOW_SIZE:
-                        self._foot_filters[i].popleft()
-                    self.foot_force[i] = np.mean(self._foot_filters[i])
+                    self.foot_force[i] = self.foot_force[i] * 0.9 + sensor_reading.value * 0.1
 
                 else:
-                    self.foot_force[i] = frame["force"]
+                    self.foot_force[i] = sensor_reading.value
 
     def update_imu_sensor_data(self):
         """[summary]

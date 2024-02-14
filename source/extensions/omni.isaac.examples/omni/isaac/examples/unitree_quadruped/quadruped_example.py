@@ -89,6 +89,7 @@ class QuadrupedExample(BaseSample):
         await self._world.play_async()
         self._a1.set_state(self._a1._default_a1_state)
         self._a1.post_reset()
+        self._event_timer_callback = None
         return
 
     def on_physics_step(self, step_size) -> None:
