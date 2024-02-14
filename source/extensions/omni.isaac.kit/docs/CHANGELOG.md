@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.2] - 2024-02-14
+### Fixed
+- Import isaac_sim error in running instance
+
 ## [1.5.1] - 2024-01-31
 ### Fixed
 - Crash on exit when using tracy
