@@ -475,17 +475,6 @@ group "python_samples"
     python_sample_test("tests-nativepython-replicator.annotator_augmentation_warp", "standalone_examples/replicator/augmentation/annotator_augmentation.py", "--num_frames 1 --use_warp")
     python_sample_test("tests-nativepython-replicator.amr_navigation", "standalone_examples/replicator/amr_navigation.py", "--num_frames 3 --env_interval 1")
     python_sample_test("tests-nativepython-replicator.amr_navigation_use_temp_rp", "standalone_examples/replicator/amr_navigation.py", "--num_frames 3 --env_interval 1 --use_temp_rp")
-    -- Replicator Composer tests
-    -- SceneBlox tests
-    python_sample_test("tests-nativepython-scene_blox.generate_scene", "tools/scene_blox/src/scene_blox/generate_scene.py", "--save_path _out_scene_blox")
-    -- FOR DEVELOPMENT --
-    local nucleus_server = "isaac-dev.ov.nvidia.com"
-    -- -- FOR PRODUCTION --
-    -- local nucleus_server = "localhost/NVIDIA/Assets/Isaac/2023.1.1"
-    python_sample_test("tests-nativepython-replicator.composer.warehouse_1", "tools/composer/src/main.py", "--input parameters/warehouse.yaml --num-scenes 5 --headless --output warehouse_1_out --overwrite --nucleus-server "..nucleus_server)
-    python_sample_test("tests-nativepython-replicator.composer.warehouse_2", "tools/composer/src/main.py", "--input parameters/warehouse.yaml --visualize-models --headless --output warehouse_2_out --overwrite --nucleus-server "..nucleus_server)
-    python_sample_test("tests-nativepython-replicator.composer.flying_things_3d", "tools/composer/src/main.py", "--input parameters/flying_things_3d.yaml --num-scenes 5 --headless --output flying_things_3d_out --overwrite --nucleus-server "..nucleus_server)
-    python_sample_test("tests-nativepython-replicator.composer.flying_things_4d", "tools/composer/src/main.py", "--input parameters/flying_things_4d.yaml --num-scenes 1 --headless --output flying_things_4d_out --overwrite --nucleus-server "..nucleus_server)
 
     -- tests that are not shipped
     python_sample_test("tests-internalnativepython-omni.isaac.core.hello_world", "standalone_examples/testing/omni.isaac.core/hello_world.py", "--test")
@@ -534,6 +523,5 @@ group "docker_tests"
     docker_test("tests-internaldocker-headless-webrtc", "./isaac-sim.headless.webrtc.sh", "--allow-root --/app/quitAfter=500")-- docker_test("tests-internaldocker-python-livestream", "./python.sh", "standalone_examples/api/omni.isaac.kit/livestream.py --/app/quitAfter=500")
     -- docker_test("tests-internaldocker-jupyter", "./dockertests/jupyter.sh")
     docker_test("tests-internaldocker-python-asset_usd_converter", "./python.sh", "standalone_examples/api/omni.kit.asset_converter/asset_usd_converter.py --folders standalone_examples/data/cube standalone_examples/data/torus")
-    -- docker_test("tests-internaldocker-python-flying_things_3d", "./python.sh", "tools/composer/src/main.py --nucleus-server isaac-dev.ov.nvidia.com --input parameters/flying_things_3d.yaml --headless")
     docker_test("tests-internaldocker-python-offline_pose_generation", "./python.sh", "standalone_examples/replicator/offline_pose_generation/offline_pose_generation.py --writer dope --num_dome 5 --num_mesh 5 --no-window")
 end
