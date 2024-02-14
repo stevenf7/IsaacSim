@@ -9,9 +9,8 @@
 
 import sys
 
-import carb
 import numpy as np
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 FRANKA_STAGE_PATH = "/Franka"
 FRANKA_USD_PATH = "/Isaac/Robots/Franka/franka_alt_fingers.usd"
@@ -23,6 +22,7 @@ CONFIG = {"renderer": "RayTracedLighting", "headless": False}
 # Example ROS bridge sample demonstrating the manual loading of stages
 # and creation of ROS components
 simulation_app = SimulationApp(CONFIG)
+import carb
 import omni.graph.core as og
 import usdrt.Sdf
 from omni.isaac.core import SimulationContext

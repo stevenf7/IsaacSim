@@ -10,7 +10,7 @@
 """Generate synthetic data from an AMR navigating to random locations
 """
 
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 simulation_app = SimulationApp(launch_config={"headless": False})
 

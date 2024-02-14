@@ -14,8 +14,7 @@ This is a demo for the go1 robot's ros integration. In this example, the robot's
 being published to "/isaac_a1/output" topic, and these values can be plotted using plotjugler. 
 """
 
-
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 

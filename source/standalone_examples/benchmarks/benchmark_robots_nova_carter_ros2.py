@@ -25,25 +25,14 @@ enable_2d_lidar = args.enable_2d_lidar
 enable_hawks = args.enable_hawks
 n_gpu = args.num_gpus
 
-if enable_3d_lidar > 1:
-    carb.log_warn("Warning: Nova Carter only has 1 3D lidar")
-    enable_3d_lidar = 1
-if enable_2d_lidar > 2:
-    carb.log_warn("Warning: Nova Carter only has 2 2D lidar")
-    enable_2d_lidar = 2
-if enable_hawks > 4:
-    carb.log_warn("Warning: Nova Carter only has 1 3D lidar")
-    enable_hawks = 4
-sensor_name = f"{enable_3d_lidar}_3d_lidar_{enable_2d_lidar}_2d_lidar_{enable_hawks}_hawk"
-
-import carb
 import numpy as np
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 simulation_app = SimulationApp({"headless": True})
 
 TEST_NUM_APP_UPDATES = 60 * 10
 
+import carb
 import omni
 import omni.graph.core as og
 import omni.kit.test
@@ -55,6 +44,17 @@ from omni.isaac.wheeled_robots.robots import WheeledRobot
 
 enable_extension("omni.isaac.benchmark.services")
 from omni.isaac.benchmark.services import base_isaac_benchmark
+
+if enable_3d_lidar > 1:
+    carb.log_warn("Warning: Nova Carter only has 1 3D lidar")
+    enable_3d_lidar = 1
+if enable_2d_lidar > 2:
+    carb.log_warn("Warning: Nova Carter only has 2 2D lidar")
+    enable_2d_lidar = 2
+if enable_hawks > 4:
+    carb.log_warn("Warning: Nova Carter only has 1 3D lidar")
+    enable_hawks = 4
+sensor_name = f"{enable_3d_lidar}_3d_lidar_{enable_2d_lidar}_2d_lidar_{enable_hawks}_hawk"
 
 # Create the benchmark
 benchmark = base_isaac_benchmark.BaseIsaacBenchmark(f"robots_nova_carter_ros2_{sensor_name}_{n_robot}_gpu_{n_gpu}")

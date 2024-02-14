@@ -9,7 +9,7 @@
 
 import random
 
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 # Simple example showing how to change resolution
 kit = SimulationApp({"headless": True})

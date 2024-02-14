@@ -10,7 +10,7 @@
 """Generate augmented synthetic from a writer
 """
 
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 simulation_app = SimulationApp(launch_config={"headless": False})
 

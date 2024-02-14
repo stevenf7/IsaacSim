@@ -17,7 +17,7 @@ args, unknown = parser.parse_known_args()
 n_sensor = args.n_sensor
 n_gpu = args.num_gpus
 
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 simulation_app = SimulationApp({"headless": True})
 

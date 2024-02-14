@@ -7,13 +7,14 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+from isaac_sim import SimulationApp  # isort: skip
+
 import os
 import signal
 
 import carb
 import gymnasium as gym
 import numpy as np
-from omni.isaac.kit import SimulationApp
 
 
 class VecEnvBase(gym.Env):

@@ -9,7 +9,7 @@
 
 from multiprocessing import Process
 
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 CONFIG = {"renderer": "RayTracedLighting", "headless": True, "width": 1920, "height": 1080}
 import argparse

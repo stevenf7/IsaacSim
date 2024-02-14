@@ -9,12 +9,12 @@
 
 import sys
 
-import carb
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 simulation_app = SimulationApp({"headless": True})
 
 # This sample loads an articulation and prints its information
+import carb
 import omni
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.nucleus import get_assets_root_path

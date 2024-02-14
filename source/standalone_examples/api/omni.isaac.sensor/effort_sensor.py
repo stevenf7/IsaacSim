@@ -9,7 +9,7 @@
 
 # In this example, please drag the cube along the arm and see how the effort measurement from the effort sensor changes
 
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 

@@ -7,11 +7,11 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import carb
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 simulation_app = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
 
+import carb
 import omni
 import omni.kit.commands
 from omni.isaac.core import World

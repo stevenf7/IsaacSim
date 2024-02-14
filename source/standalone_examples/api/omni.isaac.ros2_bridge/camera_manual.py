@@ -10,8 +10,7 @@
 import argparse
 import sys
 
-import carb
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 CAMERA_STAGE_PATH = "/Camera"
 ROS_CAMERA_GRAPH_PATH = "/ROS_Camera"
@@ -22,6 +21,7 @@ CONFIG = {"renderer": "RayTracedLighting", "headless": False}
 
 # Example ROS2 bridge sample demonstrating the manual loading of stages and manual publishing of images
 simulation_app = SimulationApp(CONFIG)
+import carb
 import omni
 import omni.graph.core as og
 import usdrt.Sdf

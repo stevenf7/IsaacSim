@@ -22,10 +22,9 @@ import os
 import signal
 import sys
 
-import carb
 import numpy as np
 import torch
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 LABEL_TO_SYNSET = {
     "table": "04379243",
@@ -110,6 +109,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
 
         self.kit = SimulationApp(RENDER_CONFIG)
 
+        import carb
         import omni.replicator.core as rep
         import warp as wp
 

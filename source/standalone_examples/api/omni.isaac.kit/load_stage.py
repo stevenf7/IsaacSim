@@ -10,9 +10,7 @@
 import argparse
 import sys
 
-import carb
-import omni
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 # This sample loads a usd stage and starts simulation
 CONFIG = {"width": 1280, "height": 720, "sync_loads": True, "headless": False, "renderer": "RayTracedLighting"}
@@ -30,6 +28,9 @@ args, unknown = parser.parse_known_args()
 # Start the omniverse application
 CONFIG["headless"] = args.headless
 kit = SimulationApp(launch_config=CONFIG)
+
+import carb
+import omni
 
 # Locate Isaac Sim assets folder to load sample
 from omni.isaac.nucleus import get_assets_root_path, is_file

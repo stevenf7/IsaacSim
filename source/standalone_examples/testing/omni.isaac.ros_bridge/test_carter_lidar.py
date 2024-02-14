@@ -10,9 +10,8 @@
 import argparse
 import sys
 
-import carb
 import numpy as np
-from omni.isaac.kit import SimulationApp
+from isaac_sim import SimulationApp
 
 parser = argparse.ArgumentParser(description="ROS Clock Example")
 parser.add_argument("--test", action="store_true")
@@ -26,6 +25,7 @@ BACKGROUND_USD_PATH = "/Isaac/Environments/Grid/default_environment.usd"
 CONFIG = {"renderer": "RayTracedLighting", "headless": False}
 
 simulation_app = SimulationApp(CONFIG)
+import carb
 import omni
 import omni.graph.core as og
 import usdrt.Sdf
