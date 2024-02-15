@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.11.0] - 2023-02-13
+### Added
+- Articulation State node
+
 ## [1.10.1] - 2023-02-02
 ### Changed
 - Updated path to the nucleus extension
