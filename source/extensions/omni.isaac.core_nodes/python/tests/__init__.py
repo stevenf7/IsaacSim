@@ -9,6 +9,7 @@
 # scan_for_test_modules = True
 from .test_annotators import *
 from .test_articulation_controller import *
+from .test_articulation_state import *
 from .test_compute_odometry import *
 from .test_core_nodes import *
 from .test_create_render_product import *
