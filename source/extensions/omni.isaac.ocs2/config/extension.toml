@@ -12,6 +12,8 @@ repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/
 keywords = ["isaac", "ocs2", "mpc"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
+icon = "data/icon.png"
+preview_image = "data/preview.png"
 writeTarget.kit = true
 writeTarget.platform = true # pip prebundle makes this extension os specific
 
