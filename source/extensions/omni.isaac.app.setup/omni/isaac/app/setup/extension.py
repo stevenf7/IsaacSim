@@ -146,7 +146,7 @@ class CreateSetupExtension(omni.ext.IExt):
             from omni.isaac.benchmark.services import base_isaac_benchmark
 
             benchmark = base_isaac_benchmark.BaseIsaacBenchmark(benchmark_name="app_startup")
-            benchmark.set_phase("startup")
+            benchmark.set_phase("startup_async")
             benchmark.stop_runtime()
             benchmark.store_measurements()
             benchmark.stop()
