@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.2] - 2023-02-02
+### Changed
+- OSMOKPIFile writer logs exact KPI keys, rather than abbreviation.
+
 ## [1.3.1] - 2023-02-02
 ### Changed
 - Updated path to the nucleus extension

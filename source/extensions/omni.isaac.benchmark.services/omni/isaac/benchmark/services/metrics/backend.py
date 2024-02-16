@@ -167,30 +167,22 @@ class OsmoKPIFile(MetricsBackendInterface):
 
     def finalize(self, filename: str) -> None:
         self._generate_metrics_file(filename)
-        self._log_metrics()
 
     def _generate_metrics_file(self, filename) -> None:
         """
-        write JSON file for all test runs
+        write JSON file for all test runs and log values.
         """
         # Extract only the values from the metrics objects for the OSMO KPI file
         osmo_kpis = {}
         for test_run_name in self.metrics:
+            log_statements = [f"{test_run_name} KPIs:"]
             for measurement in self.metrics[test_run_name].values():
                 osmo_kpis[test_run_name + "_" + measurement.name] = measurement.value
+                log_statements.append(f"{test_run_name}_{measurement.name}: {measurement.value} {measurement.unit}")
+            logger.info("\n" + "\n".join(log_statements))
         json_data = json.dumps(osmo_kpis, indent=4)
         with open(filename, "w") as f:
             f.write(json_data)
-
-    def _log_metrics(self):
-        """
-        Log metrics so they appear in OSMO workflow logs.
-        """
-        for test_run_name in self.metrics:
-            log_statements = [f"{test_run_name} KPIs:"]
-            for measurement in self.metrics[test_run_name].values():
-                log_statements.append(f"{measurement.name}: {measurement.value} {measurement.unit}")
-            logger.info("\n" + "\n".join(log_statements))
 
 
 class MetricsBackend:
