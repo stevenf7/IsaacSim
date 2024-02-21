@@ -26,16 +26,16 @@
 class OgnROS1SubscribeJointState : public RosNode
 {
 public:
-    static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS1SubscribeJointStateDatabase::sInternalState<OgnROS1SubscribeJointState>(nodeObj);
-        state.mContextObj = contextObj;
+        auto& state =
+            OgnROS1SubscribeJointStateDatabase::sPerInstanceState<OgnROS1SubscribeJointState>(nodeObj, instanceId);
         state.mNodeObj = nodeObj;
     }
 
     static bool compute(OgnROS1SubscribeJointStateDatabase& db)
     {
-        auto& state = db.internalState<OgnROS1SubscribeJointState>();
+        auto& state = db.perInstanceState<OgnROS1SubscribeJointState>();
 
         // spin once calls reset automatically if it was not successful
         if (!state.spinOnce(db.inputs.nodeNamespace()))
@@ -146,15 +146,16 @@ public:
         return false;
     }
 
-    virtual void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS1SubscribeJointStateDatabase::sInternalState<OgnROS1SubscribeJointState>(nodeObj);
+        auto& state =
+            OgnROS1SubscribeJointStateDatabase::sPerInstanceState<OgnROS1SubscribeJointState>(nodeObj, instanceId);
         state.reset();
     }
 
     virtual void reset()
     {
-        auto db = OgnROS1SubscribeJointStateDatabase(mContextObj, mNodeObj);
+        auto db = OgnROS1SubscribeJointStateDatabase(mNodeObj);
 
         db.outputs.jointNames.resize(0);
         db.outputs.positionCommand.resize(0);
@@ -169,7 +170,6 @@ public:
 private:
     std::unique_ptr<ros::Subscriber> mSubscriber;
     std::function<void(const sensor_msgs::JointState::ConstPtr&)> mCallback;
-    GraphContextObj mContextObj;
     NodeObj mNodeObj;
 };
 

@@ -20,16 +20,16 @@
 class OgnROS1PublishImu : public RosNode
 {
 public:
-    // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     // {
-    //     auto& state = OgnROS1PublishImuDatabase::sInternalState<OgnROS1PublishImu>(nodeObj);
+    //     auto& state = OgnROS1PublishImuDatabase::sPerInstanceState<OgnROS1PublishImu>(nodeObj, instanceId);
     // }
 
     static bool compute(OgnROS1PublishImuDatabase& db)
     {
         const GraphContextObj& context = db.abi_context();
 
-        auto& state = db.internalState<OgnROS1PublishImu>();
+        auto& state = db.perInstanceState<OgnROS1PublishImu>();
 
         // spin once calls reset automatically if it was not successful
         if (!state.spinOnce(db.inputs.nodeNamespace()))
@@ -132,9 +132,9 @@ public:
         mPublisher->publish(msg);
     }
 
-    virtual void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS1PublishImuDatabase::sInternalState<OgnROS1PublishImu>(nodeObj);
+        auto& state = OgnROS1PublishImuDatabase::sPerInstanceState<OgnROS1PublishImu>(nodeObj, instanceId);
         state.reset();
     }
 

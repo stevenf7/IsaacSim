@@ -33,15 +33,15 @@ namespace core_nodes
 class OgnIsaacRealTimeFactor : public BaseResetNode
 {
 public:
-    static void initialize(const GraphContextObj& context, const NodeObj& nodeObj)
+    static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnIsaacRealTimeFactorDatabase::sInternalState<OgnIsaacRealTimeFactor>(nodeObj);
+        auto& state = OgnIsaacRealTimeFactorDatabase::sPerInstanceState<OgnIsaacRealTimeFactor>(nodeObj, instanceId);
         state.mCoreNodeFramework = carb::getCachedInterface<omni::isaac::core_nodes::CoreNodes>();
     }
 
     static bool compute(OgnIsaacRealTimeFactorDatabase& db)
     {
-        auto& state = db.internalState<OgnIsaacRealTimeFactor>();
+        auto& state = db.perInstanceState<OgnIsaacRealTimeFactor>();
 
         // Return immediately after first frame to get accurate measurement next frame
         if (state.mResetTimes)

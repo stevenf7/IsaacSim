@@ -19,7 +19,6 @@ writeTarget.kit = true
 
 [dependencies]
 "omni.usd.libs" = {}
-"omni.usd.schema.physics" = {}
 
 [[python.module]]
 name = "omni.isaac.RangeSensorSchema"

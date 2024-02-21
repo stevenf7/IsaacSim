@@ -27,9 +27,9 @@
 class OgnROS2PublishJointState : public Ros2Node
 {
 public:
-    static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS2PublishJointStateDatabase::sInternalState<OgnROS2PublishJointState>(nodeObj);
+        auto& state = OgnROS2PublishJointStateDatabase::sPerInstanceState<OgnROS2PublishJointState>(nodeObj, instanceId);
 
         state.mDynamicControlPtr = carb::getCachedInterface<omni::isaac::dynamic_control::DynamicControl>();
         if (!state.mDynamicControlPtr)
@@ -44,7 +44,7 @@ public:
     {
         const GraphContextObj& context = db.abi_context();
 
-        auto& state = db.internalState<OgnROS2PublishJointState>();
+        auto& state = db.perInstanceState<OgnROS2PublishJointState>();
 
         const auto& prim = db.inputs.targetPrim();
         const char* primPath;
@@ -119,7 +119,8 @@ public:
 
     bool publishJointStates(OgnROS2PublishJointStateDatabase& db, const GraphContextObj& context)
     {
-        auto& state = db.internalState<OgnROS2PublishJointState>();
+        auto& state = db.perInstanceState<OgnROS2PublishJointState>();
+
         // Check if subscription count is 0
         if (!state.mPublisher.get()->get_subscription_count())
         {
@@ -140,9 +141,9 @@ public:
     }
 
 
-    virtual void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS2PublishJointStateDatabase::sInternalState<OgnROS2PublishJointState>(nodeObj);
+        auto& state = OgnROS2PublishJointStateDatabase::sPerInstanceState<OgnROS2PublishJointState>(nodeObj, instanceId);
         state.reset();
     }
 

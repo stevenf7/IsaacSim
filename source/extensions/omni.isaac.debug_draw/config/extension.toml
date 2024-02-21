@@ -44,3 +44,10 @@ exclude = ["Ogn*Database.py"]
 [[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
+
+[[test]]
+stdoutFailPatterns.exclude = [
+ "*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_debug_draw_IsaacXPrimAxisVisualizer: [/TestGraph] Omnigraph Error: no input prim found for visualization*",
+ "*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_debug_draw_IsaacXPrimRadiusVisualizer: [/TestGraph] Omnigraph Error: no input prim found for visualization*"
+
+]

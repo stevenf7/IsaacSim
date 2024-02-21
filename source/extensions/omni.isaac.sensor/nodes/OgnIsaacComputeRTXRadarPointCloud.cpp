@@ -135,7 +135,7 @@ public:
 
         size_t numDetects = scan->numDetections;
 
-        auto& state = db.internalState<OgnIsaacComputeRTXRadarPointCloud>();
+        auto& state = db.perInstanceState<OgnIsaacComputeRTXRadarPointCloud>();
         state.mDataPtr = boost::make_shared<pxr::GfVec3f[]>(numDetects);
         db.outputs.dataPtr() = reinterpret_cast<uint64_t>(state.mDataPtr.get());
         db.outputs.bufferSize() = numDetects * sizeof(pxr::GfVec3f);

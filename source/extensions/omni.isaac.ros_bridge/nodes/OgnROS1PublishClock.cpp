@@ -15,14 +15,14 @@
 class OgnROS1PublishClock : public RosNode
 {
 public:
-    // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     // {
-    //     auto& state = OgnROS1PublishClockDatabase::sInternalState<OgnROS1PublishClock>(nodeObj);
+    //     auto& state = OgnROS1PublishClockDatabase::sPerInstanceState<OgnROS1PublishClock>(nodeObj, instanceId);
     // }
 
     static bool compute(OgnROS1PublishClockDatabase& db)
     {
-        auto& state = db.internalState<OgnROS1PublishClock>();
+        auto& state = db.perInstanceState<OgnROS1PublishClock>();
         // spin once calls reset automatically if it was not successful
         if (!state.spinOnce(db.inputs.nodeNamespace()))
         {
@@ -51,9 +51,9 @@ public:
         return true;
     }
 
-    static void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS1PublishClockDatabase::sInternalState<OgnROS1PublishClock>(nodeObj);
+        auto& state = OgnROS1PublishClockDatabase::sPerInstanceState<OgnROS1PublishClock>(nodeObj, instanceId);
         state.reset();
     }
 

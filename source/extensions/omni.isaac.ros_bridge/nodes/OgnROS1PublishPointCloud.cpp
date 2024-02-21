@@ -28,7 +28,7 @@ class OgnROS1PublishPointCloud : public RosNode
 public:
     static bool compute(OgnROS1PublishPointCloudDatabase& db)
     {
-        auto& state = db.internalState<OgnROS1PublishPointCloud>();
+        auto& state = db.perInstanceState<OgnROS1PublishPointCloud>();
 
         // spin once calls reset automatically if it was not successful
         if (!state.spinOnce(db.inputs.nodeNamespace()))
@@ -133,9 +133,9 @@ public:
         mPublisher->publish(point_cloud_msg);
     }
 
-    virtual void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS1PublishPointCloudDatabase::sInternalState<OgnROS1PublishPointCloud>(nodeObj);
+        auto& state = OgnROS1PublishPointCloudDatabase::sPerInstanceState<OgnROS1PublishPointCloud>(nodeObj, instanceId);
         state.reset();
     }
 

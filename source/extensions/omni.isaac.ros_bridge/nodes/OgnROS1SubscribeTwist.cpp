@@ -15,14 +15,14 @@
 class OgnROS1SubscribeTwist : public RosNode
 {
 public:
-    // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     // {
-    //     auto& state = OgnROS1SubscribeTwistDatabase::sInternalState<OgnROS1SubscribeTwist>(nodeObj);
+    //     auto& state = OgnROS1SubscribeTwistDatabase::sPerInstanceState<OgnROS1SubscribeTwist>(nodeObj, instanceId);
     // }
 
     static bool compute(OgnROS1SubscribeTwistDatabase& db)
     {
-        auto& state = db.internalState<OgnROS1SubscribeTwist>();
+        auto& state = db.perInstanceState<OgnROS1SubscribeTwist>();
         // spin once calls reset automatically if it was not successful
         if (!state.spinOnce(db.inputs.nodeNamespace()))
         {
@@ -46,9 +46,9 @@ public:
         return true;
     }
 
-    static void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS1SubscribeTwistDatabase::sInternalState<OgnROS1SubscribeTwist>(nodeObj);
+        auto& state = OgnROS1SubscribeTwistDatabase::sPerInstanceState<OgnROS1SubscribeTwist>(nodeObj, instanceId);
         state.reset();
     }
 

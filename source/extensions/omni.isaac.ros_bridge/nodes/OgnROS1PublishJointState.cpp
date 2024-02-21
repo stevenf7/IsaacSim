@@ -28,9 +28,9 @@
 class OgnROS1PublishJointState : public RosNode
 {
 public:
-    static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS1PublishJointStateDatabase::sInternalState<OgnROS1PublishJointState>(nodeObj);
+        auto& state = OgnROS1PublishJointStateDatabase::sPerInstanceState<OgnROS1PublishJointState>(nodeObj, instanceId);
 
         state.mDynamicControlPtr = carb::getCachedInterface<omni::isaac::dynamic_control::DynamicControl>();
         if (!state.mDynamicControlPtr)
@@ -45,7 +45,7 @@ public:
     {
         const GraphContextObj& context = db.abi_context();
 
-        auto& state = db.internalState<OgnROS1PublishJointState>();
+        auto& state = db.perInstanceState<OgnROS1PublishJointState>();
         const auto& prim = db.inputs.targetPrim();
         const char* primPath;
         if (prim.size() > 0)
@@ -195,9 +195,9 @@ public:
     }
 
 
-    virtual void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS1PublishJointStateDatabase::sInternalState<OgnROS1PublishJointState>(nodeObj);
+        auto& state = OgnROS1PublishJointStateDatabase::sPerInstanceState<OgnROS1PublishJointState>(nodeObj, instanceId);
         state.reset();
     }
 

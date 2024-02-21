@@ -20,16 +20,16 @@
 class OgnROS2PublishImu : public Ros2Node
 {
 public:
-    // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     // {
-    //     auto& state = OgnROS2PublishImuDatabase::sInternalState<OgnROS2PublishImu>(nodeObj);
+    //     auto& state = OgnROS2PublishImuDatabase::sPerInstanceState<OgnROS2PublishImu>(nodeObj, instanceId);
     // }
 
     static bool compute(OgnROS2PublishImuDatabase& db)
     {
         const GraphContextObj& context = db.abi_context();
 
-        auto& state = db.internalState<OgnROS2PublishImu>();
+        auto& state = db.perInstanceState<OgnROS2PublishImu>();
 
         // spin once calls reset automatically if it was not successful
         const auto& nodeObj = db.abi_node();
@@ -82,7 +82,7 @@ public:
     void publishImu(OgnROS2PublishImuDatabase& db)
     {
 
-        auto& state = db.internalState<OgnROS2PublishImu>();
+        auto& state = db.perInstanceState<OgnROS2PublishImu>();
         // Check if subscription count is 0
         if (!state.mPublisher.get()->get_subscription_count())
         {
@@ -127,9 +127,9 @@ public:
         state.mPublisher.get()->publish(state.mMessage->ptr());
     }
 
-    virtual void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS2PublishImuDatabase::sInternalState<OgnROS2PublishImu>(nodeObj);
+        auto& state = OgnROS2PublishImuDatabase::sPerInstanceState<OgnROS2PublishImu>(nodeObj, instanceId);
         state.reset();
     }
 

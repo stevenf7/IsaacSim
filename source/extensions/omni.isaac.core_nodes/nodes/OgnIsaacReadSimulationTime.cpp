@@ -35,15 +35,16 @@ namespace core_nodes
 class OgnIsaacReadSimulationTime
 {
 public:
-    static void initialize(const GraphContextObj& context, const NodeObj& nodeObj)
+    static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnIsaacReadSimulationTimeDatabase::sInternalState<OgnIsaacReadSimulationTime>(nodeObj);
+        auto& state =
+            OgnIsaacReadSimulationTimeDatabase::sPerInstanceState<OgnIsaacReadSimulationTime>(nodeObj, instanceId);
         state.mCoreNodeFramework = carb::getCachedInterface<omni::isaac::core_nodes::CoreNodes>();
     }
 
     static bool compute(OgnIsaacReadSimulationTimeDatabase& db)
     {
-        auto& state = db.internalState<OgnIsaacReadSimulationTime>();
+        auto& state = db.perInstanceState<OgnIsaacReadSimulationTime>();
 
         state.mResetOnStop = db.inputs.resetOnStop();
         if (db.inputs.swhFrameNumber() > 0)

@@ -58,7 +58,7 @@ public:
         {
             return true;
         }
-        auto& state = db.internalState<OgnIsaacComputeRTXLidarFlatScan>();
+        auto& state = db.perInstanceState<OgnIsaacComputeRTXLidarFlatScan>();
 
         // fill the structure of arrays
         LidarTicks lidarTicksHost;

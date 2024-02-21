@@ -20,16 +20,16 @@
 class OgnROS2PublishOdometry : public Ros2Node
 {
 public:
-    // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     // {
-    //     auto& state = OgnROS2PublishOdometryDatabase::sInternalState<OgnROS2PublishOdometry>(nodeObj);
+    //     auto& state = OgnROS2PublishOdometryDatabase::sPerInstanceState<OgnROS2PublishOdometry>(nodeObj, instanceId);
     // }
 
     static bool compute(OgnROS2PublishOdometryDatabase& db)
     {
         const GraphContextObj& context = db.abi_context();
 
-        auto& state = db.internalState<OgnROS2PublishOdometry>();
+        auto& state = db.perInstanceState<OgnROS2PublishOdometry>();
 
         // spin once calls reset automatically if it was not successful
         const auto& nodeObj = db.abi_node();
@@ -102,7 +102,8 @@ public:
     void publishOdom(OgnROS2PublishOdometryDatabase& db)
     {
 
-        auto& state = db.internalState<OgnROS2PublishOdometry>();
+        auto& state = db.perInstanceState<OgnROS2PublishOdometry>();
+
         // Check if subscription count is 0
         if (!state.mPublisher.get()->get_subscription_count())
         {
@@ -121,9 +122,9 @@ public:
         state.mPublisher.get()->publish(state.mMessage->ptr());
     }
 
-    virtual void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS2PublishOdometryDatabase::sInternalState<OgnROS2PublishOdometry>(nodeObj);
+        auto& state = OgnROS2PublishOdometryDatabase::sPerInstanceState<OgnROS2PublishOdometry>(nodeObj, instanceId);
         state.reset();
     }
 

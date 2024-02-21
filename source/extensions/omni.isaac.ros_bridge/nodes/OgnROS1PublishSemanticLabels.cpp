@@ -20,14 +20,14 @@
 class OgnROS1PublishSemanticLabels : public RosNode
 {
 public:
-    // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     // {
-    //     auto& state = ROS1PublishBbox2DDatabase::sInternalState<ROS1PublishBbox2D>(nodeObj);
+    //     auto& state = ROS1PublishBbox2DDatabase::sPerInstanceState<ROS1PublishBbox2D>(nodeObj, instanceId);
     // }
 
     static bool compute(OgnROS1PublishSemanticLabelsDatabase& db)
     {
-        auto& state = db.internalState<OgnROS1PublishSemanticLabels>();
+        auto& state = db.perInstanceState<OgnROS1PublishSemanticLabels>();
         // spin once calls reset automatically if it was not successful
         if (!state.spinOnce(db.inputs.nodeNamespace()))
         {
@@ -87,9 +87,10 @@ public:
         return true;
     }
 
-    static void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS1PublishSemanticLabelsDatabase::sInternalState<OgnROS1PublishSemanticLabels>(nodeObj);
+        auto& state =
+            OgnROS1PublishSemanticLabelsDatabase::sPerInstanceState<OgnROS1PublishSemanticLabels>(nodeObj, instanceId);
         state.reset();
     }
 

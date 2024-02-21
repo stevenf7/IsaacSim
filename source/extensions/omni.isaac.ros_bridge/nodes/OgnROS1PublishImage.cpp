@@ -25,14 +25,14 @@ extern "C" void textureFloatCopyToRawBuffer(cudaTextureObject_t, uint8_t*, uint3
 class OgnROS1PublishImage : public RosNode
 {
 public:
-    // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     // {
-    //     auto& state = OgnROS1PublishImageDatabase::sInternalState<OgnROS1PublishImage>(nodeObj);
+    //     auto& state = OgnROS1PublishImageDatabase::sPerInstanceState<OgnROS1PublishImage>(nodeObj, instanceId);
     // }
 
     static bool compute(OgnROS1PublishImageDatabase& db)
     {
-        auto& state = db.internalState<OgnROS1PublishImage>();
+        auto& state = db.perInstanceState<OgnROS1PublishImage>();
         // spin once calls reset automatically if it was not successful
         if (!state.spinOnce(db.inputs.nodeNamespace()))
         {
@@ -166,9 +166,9 @@ public:
         return true;
     }
 
-    static void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS1PublishImageDatabase::sInternalState<OgnROS1PublishImage>(nodeObj);
+        auto& state = OgnROS1PublishImageDatabase::sPerInstanceState<OgnROS1PublishImage>(nodeObj, instanceId);
         state.reset();
     }
 

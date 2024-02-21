@@ -14,7 +14,7 @@ category = "Daily"
 
 # A filter of release types
 # 3 filter types [ "alpha", "beta", "release "]
-channel = "alpha"
+channel = "beta"
 
 # Set true if you want this package to show in enterprise launcher
 enterpriseStatus = false

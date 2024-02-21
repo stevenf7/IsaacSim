@@ -20,16 +20,16 @@
 class OgnROS1PublishOdometry : public RosNode
 {
 public:
-    // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     // {
-    //     auto& state = OgnROS1PublishOdometryDatabase::sInternalState<OgnROS1PublishOdometry>(nodeObj);
+    //     auto& state = OgnROS1PublishOdometryDatabase::sPerInstanceState<OgnROS1PublishOdometry>(nodeObj, instanceId);
     // }
 
     static bool compute(OgnROS1PublishOdometryDatabase& db)
     {
         const GraphContextObj& context = db.abi_context();
 
-        auto& state = db.internalState<OgnROS1PublishOdometry>();
+        auto& state = db.perInstanceState<OgnROS1PublishOdometry>();
 
         // spin once calls reset automatically if it was not successful
         if (!state.spinOnce(db.inputs.nodeNamespace()))
@@ -149,9 +149,9 @@ public:
         mPublisher->publish(odomMsg);
     }
 
-    virtual void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS1PublishOdometryDatabase::sInternalState<OgnROS1PublishOdometry>(nodeObj);
+        auto& state = OgnROS1PublishOdometryDatabase::sPerInstanceState<OgnROS1PublishOdometry>(nodeObj, instanceId);
         state.reset();
     }
 

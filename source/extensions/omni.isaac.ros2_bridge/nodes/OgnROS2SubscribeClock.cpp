@@ -15,14 +15,14 @@
 class OgnROS2SubscribeClock : public Ros2Node
 {
 public:
-    // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     // {
-    //     auto& state = OgnROS2SubscribeClockDatabase::sInternalState<OgnROS2SubscribeClock>(nodeObj);
+    //     auto& state = OgnROS2SubscribeClockDatabase::sPerInstanceState<OgnROS2SubscribeClock>(nodeObj, instanceId);
     // }
 
     static bool compute(OgnROS2SubscribeClockDatabase& db)
     {
-        auto& state = db.internalState<OgnROS2SubscribeClock>();
+        auto& state = db.perInstanceState<OgnROS2SubscribeClock>();
         // spin once calls reset automatically if it was not successful
         const auto& nodeObj = db.abi_node();
         if (!state.spinOnce(
@@ -53,9 +53,9 @@ public:
         return state.subscriberCallback(db);
     }
 
-    static void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS2SubscribeClockDatabase::sInternalState<OgnROS2SubscribeClock>(nodeObj);
+        auto& state = OgnROS2SubscribeClockDatabase::sPerInstanceState<OgnROS2SubscribeClock>(nodeObj, instanceId);
         state.reset();
     }
 
@@ -74,7 +74,7 @@ public:
 
     bool subscriberCallback(OgnROS2SubscribeClockDatabase& db)
     {
-        auto& state = db.internalState<OgnROS2SubscribeClock>();
+        auto& state = db.perInstanceState<OgnROS2SubscribeClock>();
 
 
         // std::cout << "Subscriber callback..";

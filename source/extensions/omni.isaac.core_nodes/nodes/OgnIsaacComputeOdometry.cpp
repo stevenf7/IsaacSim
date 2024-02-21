@@ -39,9 +39,9 @@ using omni::isaac::utils::conversions::asGfVec3d;
 class OgnIsaacComputeOdometry : public BaseResetNode
 {
 public:
-    static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnIsaacComputeOdometryDatabase::sInternalState<OgnIsaacComputeOdometry>(nodeObj);
+        auto& state = OgnIsaacComputeOdometryDatabase::sPerInstanceState<OgnIsaacComputeOdometry>(nodeObj, instanceId);
 
         state.mDynamicControlPtr = carb::getCachedInterface<omni::isaac::dynamic_control::DynamicControl>();
         state.mCoreNodeFramework = carb::getCachedInterface<omni::isaac::core_nodes::CoreNodes>();
@@ -57,7 +57,7 @@ public:
     {
         const GraphContextObj& context = db.abi_context();
 
-        auto& state = db.internalState<OgnIsaacComputeOdometry>();
+        auto& state = db.perInstanceState<OgnIsaacComputeOdometry>();
         if (state.mFirstFrame)
         {
             const auto& prim = db.inputs.chassisPrim();

@@ -20,14 +20,15 @@
 class OgnROS2PublishCameraInfo : public Ros2Node
 {
 public:
-    static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        // auto& state = OgnROS2PublishCameraInfoDatabase::sInternalState<OgnROS2PublishCameraInfo>(nodeObj);
+        // auto& state = OgnROS2PublishCameraInfoDatabase::sPerInstanceState<OgnROS2PublishCameraInfo>(nodeObj,
+        // instanceId);
     }
 
     static bool compute(OgnROS2PublishCameraInfoDatabase& db)
     {
-        auto& state = db.internalState<OgnROS2PublishCameraInfo>();
+        auto& state = db.perInstanceState<OgnROS2PublishCameraInfo>();
         // std::cout << "Call publish method..." << std::endl;
 
         // spin once calls reset automatically if it was not successful
@@ -63,7 +64,8 @@ public:
 
     void publishCameraInfo(OgnROS2PublishCameraInfoDatabase& db)
     {
-        auto& state = db.internalState<OgnROS2PublishCameraInfo>();
+        auto& state = db.perInstanceState<OgnROS2PublishCameraInfo>();
+
         // Check if subscription count is 0
         if (!state.mPublisher.get()->get_subscription_count())
         {
@@ -114,9 +116,9 @@ public:
         state.mPublisher.get()->publish(state.mMessage->ptr());
     }
 
-    virtual void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS2PublishCameraInfoDatabase::sInternalState<OgnROS2PublishCameraInfo>(nodeObj);
+        auto& state = OgnROS2PublishCameraInfoDatabase::sPerInstanceState<OgnROS2PublishCameraInfo>(nodeObj, instanceId);
         state.reset();
     }
 

@@ -17,14 +17,14 @@
 class OgnROS2PublishClock : public Ros2Node
 {
 public:
-    static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        // auto& state = OgnROS2PublishClockDatabase::sInternalState<OgnROS2PublishClock>(nodeObj);
+        // auto& state = OgnROS2PublishClockDatabase::sPerInstanceState<OgnROS2PublishClock>(nodeObj, instanceId);
     }
 
     static bool compute(OgnROS2PublishClockDatabase& db)
     {
-        auto& state = db.internalState<OgnROS2PublishClock>();
+        auto& state = db.perInstanceState<OgnROS2PublishClock>();
         // spin once calls reset automatically if it was not successful
         const auto& nodeObj = db.abi_node();
         if (!state.spinOnce(
@@ -55,7 +55,7 @@ public:
 
     bool publishClock(OgnROS2PublishClockDatabase& db)
     {
-        auto& state = db.internalState<OgnROS2PublishClock>();
+        auto& state = db.perInstanceState<OgnROS2PublishClock>();
 
         // std::cout << "Creating message next...." << std::endl;
 
@@ -80,9 +80,9 @@ public:
         return true;
     }
 
-    static void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS2PublishClockDatabase::sInternalState<OgnROS2PublishClock>(nodeObj);
+        auto& state = OgnROS2PublishClockDatabase::sPerInstanceState<OgnROS2PublishClock>(nodeObj, instanceId);
         state.reset();
     }
 

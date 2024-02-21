@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -108,13 +108,14 @@ public:
                         onPhysicsStep, reinterpret_cast<void*>(graphObj.graphHandle));
             }
             gGraphsWithPhysxStepNode[graphObj.graphHandle].nodes.push_back(nodeObj.nodeHandle);
-            auto& state = OgnOnPhysicsStepDatabase::sInternalState<OgnOnPhysicsStep>(nodeObj);
+            // TODO105.2 check need instance id if want sPerInstanceState
+            auto& state = OgnOnPhysicsStepDatabase::sSharedState<OgnOnPhysicsStep>(nodeObj);
             state.mInitialized = true;
         }
     }
-    static void initialize(const GraphContextObj& context, const NodeObj& nodeObj)
+    static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnOnPhysicsStepDatabase::sInternalState<OgnOnPhysicsStep>(nodeObj);
+        auto& state = OgnOnPhysicsStepDatabase::sPerInstanceState<OgnOnPhysicsStep>(nodeObj, instanceId);
         state.mNodeHandle = nodeObj.nodeHandle;
         initialize(nodeObj);
     }
@@ -142,14 +143,14 @@ public:
                 gGraphsWithPhysxStepNode.erase(graphData);
             }
         }
-        auto& state = OgnOnPhysicsStepDatabase::sInternalState<OgnOnPhysicsStep>(nodeObj);
+        auto& state = OgnOnPhysicsStepDatabase::sSharedState<OgnOnPhysicsStep>(nodeObj);
         state.mInitialized = false;
     }
 
-    static void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
         unsubscribe(nodeObj);
-        auto& state = OgnOnPhysicsStepDatabase::sInternalState<OgnOnPhysicsStep>(nodeObj);
+        auto& state = OgnOnPhysicsStepDatabase::sPerInstanceState<OgnOnPhysicsStep>(nodeObj, instanceId);
         state.mTimelineEventSub->unsubscribe();
     }
 
@@ -170,7 +171,7 @@ public:
                 for (auto handle : graphData->second.nodes)
                 {
                     NodeObj node = gINode->getNodeFromHandle(handle);
-                    auto& state = OgnOnPhysicsStepDatabase::sInternalState<OgnOnPhysicsStep>(node);
+                    auto& state = OgnOnPhysicsStepDatabase::sSharedState<OgnOnPhysicsStep>(node);
                     state.mDt = timeElapsed;
                     state.mIsSet = true;
                 }
@@ -182,7 +183,7 @@ public:
 
     static bool compute(OgnOnPhysicsStepDatabase& db)
     {
-        auto& state = db.internalState<OgnOnPhysicsStep>();
+        auto& state = db.perInstanceState<OgnOnPhysicsStep>();
         // Update node with trigger event
         if (state.mIsSet)
         {

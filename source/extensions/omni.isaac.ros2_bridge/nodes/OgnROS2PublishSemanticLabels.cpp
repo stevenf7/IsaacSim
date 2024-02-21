@@ -19,14 +19,14 @@
 class OgnROS2PublishSemanticLabels : public Ros2Node
 {
 public:
-    // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     // {
-    //     auto& state = ROS2PublishBbox2DDatabase::sInternalState<ROS2PublishBbox2D>(nodeObj);
+    //     auto& state = ROS2PublishBbox2DDatabase::sPerInstanceState<ROS2PublishBbox2D>(nodeObj, instanceId);
     // }
 
     static bool compute(OgnROS2PublishSemanticLabelsDatabase& db)
     {
-        auto& state = db.internalState<OgnROS2PublishSemanticLabels>();
+        auto& state = db.perInstanceState<OgnROS2PublishSemanticLabels>();
         // spin once calls reset automatically if it was not successful
         const auto& nodeObj = db.abi_node();
         if (!state.spinOnce(
@@ -61,7 +61,7 @@ public:
     bool publishSemanticLabels(OgnROS2PublishSemanticLabelsDatabase& db)
     {
 
-        auto& state = db.internalState<OgnROS2PublishSemanticLabels>();
+        auto& state = db.perInstanceState<OgnROS2PublishSemanticLabels>();
         // Check if subscription count is 0
         if (!state.mPublisher.get()->get_subscription_count())
         {
@@ -109,9 +109,10 @@ public:
         return true;
     }
 
-    static void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS2PublishSemanticLabelsDatabase::sInternalState<OgnROS2PublishSemanticLabels>(nodeObj);
+        auto& state =
+            OgnROS2PublishSemanticLabelsDatabase::sPerInstanceState<OgnROS2PublishSemanticLabels>(nodeObj, instanceId);
         state.reset();
     }
 

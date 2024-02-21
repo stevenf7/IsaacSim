@@ -19,16 +19,17 @@
 class OgnROS1PublishRawTransformTree : public RosNode
 {
 public:
-    // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     // {
     //     auto& state =
-    //     OgnROS1PublishRawTransformTreeDatabase::sInternalState<OgnROS1PublishRawTransformTree>(nodeObj);
+    //     OgnROS1PublishRawTransformTreeDatabase::sPerInstanceState<OgnROS1PublishRawTransformTree>(nodeObj,
+    //     instanceId);
 
     // }
 
     static bool compute(OgnROS1PublishRawTransformTreeDatabase& db)
     {
-        auto& state = db.internalState<OgnROS1PublishRawTransformTree>();
+        auto& state = db.perInstanceState<OgnROS1PublishRawTransformTree>();
 
         // spin once calls reset automatically if it was not successful
         if (!state.spinOnce(db.inputs.nodeNamespace()))
@@ -99,9 +100,10 @@ public:
         mPublisher->publish(tfMsg);
     }
 
-    virtual void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS1PublishRawTransformTreeDatabase::sInternalState<OgnROS1PublishRawTransformTree>(nodeObj);
+        auto& state = OgnROS1PublishRawTransformTreeDatabase::sPerInstanceState<OgnROS1PublishRawTransformTree>(
+            nodeObj, instanceId);
         state.reset();
     }
 

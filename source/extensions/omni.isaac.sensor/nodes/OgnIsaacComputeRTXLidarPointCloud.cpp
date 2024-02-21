@@ -129,7 +129,7 @@ public:
         {
             return true;
         }
-        auto& state = db.internalState<OgnIsaacComputeRTXLidarPointCloud>();
+        auto& state = db.perInstanceState<OgnIsaacComputeRTXLidarPointCloud>();
 
         // fill the structure of arrays
         LidarTicks lidarTicks;

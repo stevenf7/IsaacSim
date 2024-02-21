@@ -20,14 +20,15 @@
 class OgnROS2PublishLaserScan : public Ros2Node
 {
 public:
-    // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     // {
-    //     auto& state = OgnROS2PublishLaserScanDatabase::sInternalState<OgnROS2PublishLaserScan>(nodeObj);
+    //     auto& state = OgnROS2PublishLaserScanDatabase::sPerInstanceState<OgnROS2PublishLaserScan>(nodeObj,
+    //     instanceId);
     // }
 
     static bool compute(OgnROS2PublishLaserScanDatabase& db)
     {
-        auto& state = db.internalState<OgnROS2PublishLaserScan>();
+        auto& state = db.perInstanceState<OgnROS2PublishLaserScan>();
 
         // spin once calls reset automatically if it was not successful
         const auto& nodeObj = db.abi_node();
@@ -68,7 +69,7 @@ public:
     {
         CARB_PROFILE_ZONE(0, "Lidar 2D Pub");
 
-        auto& state = db.internalState<OgnROS2PublishLaserScan>();
+        auto& state = db.perInstanceState<OgnROS2PublishLaserScan>();
 
         // Check if subscription count is 0
         if (!state.mPublisher.get()->get_subscription_count())
@@ -129,9 +130,9 @@ public:
         return true;
     }
 
-    virtual void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS2PublishLaserScanDatabase::sInternalState<OgnROS2PublishLaserScan>(nodeObj);
+        auto& state = OgnROS2PublishLaserScanDatabase::sPerInstanceState<OgnROS2PublishLaserScan>(nodeObj, instanceId);
         state.reset();
     }
 

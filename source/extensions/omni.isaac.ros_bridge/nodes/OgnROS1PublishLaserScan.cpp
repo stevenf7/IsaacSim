@@ -20,14 +20,15 @@
 class OgnROS1PublishLaserScan : public RosNode
 {
 public:
-    // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     // {
-    //     auto& state = OgnROS1PublishLaserScanDatabase::sInternalState<OgnROS1PublishLaserScan>(nodeObj);
+    //     auto& state = OgnROS1PublishLaserScanDatabase::sPerInstanceState<OgnROS1PublishLaserScan>(nodeObj,
+    //     instanceId);
     // }
 
     static bool compute(OgnROS1PublishLaserScanDatabase& db)
     {
-        auto& state = db.internalState<OgnROS1PublishLaserScan>();
+        auto& state = db.perInstanceState<OgnROS1PublishLaserScan>();
 
         // spin once calls reset automatically if it was not successful
         if (!state.spinOnce(db.inputs.nodeNamespace()))
@@ -132,9 +133,9 @@ public:
         return true;
     }
 
-    virtual void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS1PublishLaserScanDatabase::sInternalState<OgnROS1PublishLaserScan>(nodeObj);
+        auto& state = OgnROS1PublishLaserScanDatabase::sPerInstanceState<OgnROS1PublishLaserScan>(nodeObj, instanceId);
         state.reset();
     }
 

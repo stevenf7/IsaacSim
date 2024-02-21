@@ -47,7 +47,7 @@ public:
         //     "BUFFER SIZE: %d %d", db.inputs.width() * db.inputs.height() * 3 * sizeof(uint8_t),
         //     db.inputs.bufferSize());
         // CARB_LOG_ERROR("FORMAT: %lu DEVICE: %d", db.inputs.format(), db.inputs.cudaDeviceIndex());
-        auto& state = db.internalState<OgnIsaacConvertRGBAToRGB>();
+        auto& state = db.perInstanceState<OgnIsaacConvertRGBAToRGB>();
 
         // // If the data is on host, copy to device, use default device
         // if (db.inputs.cudaDeviceIndex() == -1)
@@ -83,9 +83,10 @@ public:
         return true;
     }
 
-    // virtual void release(const NodeObj& nodeObj)
+    // static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     // {
-    //     auto& state = OgnIsaacConvertRGBAToRGBDatabase::sInternalState<OgnIsaacConvertRGBAToRGB>(nodeObj);
+    //     auto& state = OgnIsaacConvertRGBAToRGBDatabase::sPerInstanceState<OgnIsaacConvertRGBAToRGB>(nodeObj,
+    //     instanceId);
     // }
 
 private:

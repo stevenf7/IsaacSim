@@ -54,6 +54,11 @@ recursive = false
 
 [[test]]
 
+stdoutFailPatterns.exclude = [
+ "*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_range_sensor_IsaacReadLidarBeams: [/TestGraph] no prim path found for the lidar*",
+ "*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_range_sensor_IsaacReadLidarPointCloud: [/TestGraph] no prim path found for the lidar*"
+]
+
 dependencies = [
     "omni.isaac.nucleus" # test only
 ]

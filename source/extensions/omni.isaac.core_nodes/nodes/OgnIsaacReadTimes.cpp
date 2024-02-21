@@ -46,9 +46,9 @@ class OgnIsaacReadTimes
     CoreNodes* mCoreNodeFramework = nullptr;
 
 public:
-    static void initialize(const GraphContextObj& context, const NodeObj& nodeObj)
+    static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnIsaacReadTimesDatabase::sInternalState<OgnIsaacReadTimes>(nodeObj);
+        auto& state = OgnIsaacReadTimesDatabase::sPerInstanceState<OgnIsaacReadTimes>(nodeObj, instanceId);
         state.mCoreNodeFramework = carb::getCachedInterface<CoreNodes>();
     }
 
@@ -56,7 +56,7 @@ public:
     {
         // const auto& contextObj = db.abi_context();
         // const IGraphContext* const iContext = contextObj.iContext;
-        auto& state = db.internalState<OgnIsaacReadTimes>();
+        auto& state = db.perInstanceState<OgnIsaacReadTimes>();
         CARB_ASSERT(state.mCoreNodeFramework);
 
         auto renderProduct = reinterpret_cast<usd::hydra::HydraRenderProduct*>(db.inputs.renderResults());
@@ -104,9 +104,9 @@ public:
         if (renderProductTimesAOV)
         {
             CARB_ASSERT(!inPostRenderGraph);
-            const TimesAOV* timesAOV = static_cast<const TimesAOV*>(renderProductTimesAOV->rawResource);
+            const TimesAOV* timesAOV = static_cast<const TimesAOV*>(renderProductTimesAOV->rawResource->data());
             const bool validTimesAOV = !renderProductTimesAOV->isRpResource && timesAOV &&
-                                       (renderProductTimesAOV->rawResourceBufferSize == sizeof(TimesAOV));
+                                       (renderProductTimesAOV->rawResource->size() == sizeof(TimesAOV));
             CARB_ASSERT(validTimesAOV);
             if (!validTimesAOV)
             {
@@ -191,9 +191,10 @@ public:
                 newRenderVars[renderProduct->renderVarCnt].aov = db.tokens.IsaacFabricTimes.token;
                 newRenderVars[renderProduct->renderVarCnt].isRpResource = false;
                 newRenderVars[renderProduct->renderVarCnt].isBufferRpResource = false;
-                newRenderVars[renderProduct->renderVarCnt].rawResource = timesAOV;
-                newRenderVars[renderProduct->renderVarCnt].rawResourceBufferSize = sizeof(TimesAOV);
-                newRenderVars[renderProduct->renderVarCnt].isFrameLifetimeRsrc = true;
+                // TODO105.2 Leak?  check out that this is correct, seems fishy and I didn't look at how it's done other
+                // places.
+                newRenderVars[renderProduct->renderVarCnt].rawResource =
+                    new omni::usd::hydra::HydraRVRawResource(timesAOV, sizeof(TimesAOV));
                 delete[] renderProduct->vars;
                 renderProduct->vars = newRenderVars;
                 renderProduct->renderVarCnt++;

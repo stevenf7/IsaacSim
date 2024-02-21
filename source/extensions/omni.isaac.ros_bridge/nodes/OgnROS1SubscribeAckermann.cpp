@@ -15,14 +15,15 @@
 class OgnROS1SubscribeAckermann : public RosNode
 {
 public:
-    // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     // {
-    //     auto& state = OgnROS1SubscribeAckermannDatabase::sInternalState<OgnROS1SubscribeAckermann>(nodeObj);
+    //     auto& state = OgnROS1SubscribeAckermannDatabase::sPerInstanceState<OgnROS1SubscribeAckermann>(nodeObj,
+    //     instanceId);
     // }
 
     static bool compute(OgnROS1SubscribeAckermannDatabase& db)
     {
-        auto& state = db.internalState<OgnROS1SubscribeAckermann>();
+        auto& state = db.perInstanceState<OgnROS1SubscribeAckermann>();
         // spin once calls reset automatically if it was not successful
         if (!state.spinOnce(db.inputs.nodeNamespace()))
         {
@@ -48,9 +49,10 @@ public:
         return true;
     }
 
-    static void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS1SubscribeAckermannDatabase::sInternalState<OgnROS1SubscribeAckermann>(nodeObj);
+        auto& state =
+            OgnROS1SubscribeAckermannDatabase::sPerInstanceState<OgnROS1SubscribeAckermann>(nodeObj, instanceId);
         state.reset();
     }
 

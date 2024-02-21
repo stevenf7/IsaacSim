@@ -49,7 +49,7 @@ public:
         {
             return true;
         }
-        auto& state = db.internalState<OgnIsaacReadRTXLidarData>();
+        auto& state = db.perInstanceState<OgnIsaacReadRTXLidarData>();
 
         // fill the structure of arrays
         LidarTicks lidarTicks;

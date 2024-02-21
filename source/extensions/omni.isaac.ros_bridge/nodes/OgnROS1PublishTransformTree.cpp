@@ -29,9 +29,10 @@ using namespace omni::isaac::dynamic_control;
 class OgnROS1PublishTransformTree : public RosNode
 {
 public:
-    static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS1PublishTransformTreeDatabase::sInternalState<OgnROS1PublishTransformTree>(nodeObj);
+        auto& state =
+            OgnROS1PublishTransformTreeDatabase::sPerInstanceState<OgnROS1PublishTransformTree>(nodeObj, instanceId);
 
         state.mThisPrimPath = nodeObj.iNode->getPrimPath(nodeObj);
 
@@ -47,7 +48,7 @@ public:
     static bool compute(OgnROS1PublishTransformTreeDatabase& db)
     {
         const GraphContextObj& context = db.abi_context();
-        auto& state = db.internalState<OgnROS1PublishTransformTree>();
+        auto& state = db.perInstanceState<OgnROS1PublishTransformTree>();
 
         // spin once calls reset automatically if it was not successful
         if (!state.spinOnce(db.inputs.nodeNamespace()))
@@ -156,9 +157,10 @@ public:
         mPublisher->publish(tf_msg);
     }
 
-    virtual void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS1PublishTransformTreeDatabase::sInternalState<OgnROS1PublishTransformTree>(nodeObj);
+        auto& state =
+            OgnROS1PublishTransformTreeDatabase::sPerInstanceState<OgnROS1PublishTransformTree>(nodeObj, instanceId);
         state.reset();
     }
 

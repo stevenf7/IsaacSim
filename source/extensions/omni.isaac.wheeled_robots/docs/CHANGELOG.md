@@ -1,8 +1,13 @@
 # Changelog
+
 ## [1.1.0] - 2024-02-02
 ### Added
 - a menu item for the extension to allow for populating common controller omnigraphs
 - automatically populated omnigraph for controlling a differential robot
+
+## [1.0.1] - 2024-02-05
+### Changed
+- Replaced internalState with perInstanceState for the ogn nodes
 
 ## [1.0.0] - 2024-01-30
 ### Changed

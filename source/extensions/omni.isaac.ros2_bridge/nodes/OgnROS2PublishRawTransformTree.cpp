@@ -19,16 +19,17 @@
 class OgnROS2PublishRawTransformTree : public Ros2Node
 {
 public:
-    // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     // {
     //     auto& state =
-    //     OgnROS2PublishRawTransformTreeDatabase::sInternalState<OgnROS2PublishRawTransformTree>(nodeObj);
+    //     OgnROS2PublishRawTransformTreeDatabase::sPerInstanceState<OgnROS2PublishRawTransformTree>(nodeObj,
+    //     instanceId);
 
     // }
 
     static bool compute(OgnROS2PublishRawTransformTreeDatabase& db)
     {
-        auto& state = db.internalState<OgnROS2PublishRawTransformTree>();
+        auto& state = db.perInstanceState<OgnROS2PublishRawTransformTree>();
 
         // spin once calls reset automatically if it was not successful
         const auto& nodeObj = db.abi_node();
@@ -68,7 +69,8 @@ public:
 
     bool publishTF(OgnROS2PublishRawTransformTreeDatabase& db)
     {
-        auto& state = db.internalState<OgnROS2PublishRawTransformTree>();
+        auto& state = db.perInstanceState<OgnROS2PublishRawTransformTree>();
+
         // Check if subscription count is 0
         if (!state.mPublisher.get()->get_subscription_count())
         {
@@ -84,9 +86,10 @@ public:
         return true;
     }
 
-    virtual void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS2PublishRawTransformTreeDatabase::sInternalState<OgnROS2PublishRawTransformTree>(nodeObj);
+        auto& state = OgnROS2PublishRawTransformTreeDatabase::sPerInstanceState<OgnROS2PublishRawTransformTree>(
+            nodeObj, instanceId);
         state.reset();
     }
 

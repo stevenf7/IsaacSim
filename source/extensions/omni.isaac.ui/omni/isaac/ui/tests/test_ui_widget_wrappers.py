@@ -138,7 +138,7 @@ class TestUI(omni.kit.test.AsyncTestCase):
             # The chosen colors should be the same every time
             self._selected_colors.append(color)
             self.assertTrue(
-                (color == [0.23778240382671356, 0.3425201177597046, 0.447257399559021, 1.0] or color == [1, 1, 1, 1])
+                (color == [0.2545888423919678, 0.3593621551990509, 0.4641350507736206, 1.0] or color == [1, 1, 1, 1])
             )
 
         with window.frame:

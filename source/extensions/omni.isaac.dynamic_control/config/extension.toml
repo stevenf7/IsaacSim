@@ -18,6 +18,8 @@ writeTarget.kit = true
 
 [dependencies]
 "omni.physx" = {}
+"omni.kit.usd.layers" = {}
+"omni.physx.stageupdate" = {}
 "omni.timeline" = {} # Needed for simulation to occur
 "omni.kit.numpy.common" = {}
 "omni.usd.core" = {}

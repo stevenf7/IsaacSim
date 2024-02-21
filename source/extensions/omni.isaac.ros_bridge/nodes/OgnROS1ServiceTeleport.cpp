@@ -29,9 +29,9 @@
 class OgnROS1ServiceTeleport : public RosNode
 {
 public:
-    static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS1ServiceTeleportDatabase::sInternalState<OgnROS1ServiceTeleport>(nodeObj);
+        auto& state = OgnROS1ServiceTeleportDatabase::sPerInstanceState<OgnROS1ServiceTeleport>(nodeObj, instanceId);
 
         state.mDynamicControlPtr = carb::getCachedInterface<omni::isaac::dynamic_control::DynamicControl>();
         if (!state.mDynamicControlPtr)
@@ -43,7 +43,7 @@ public:
 
     static bool compute(OgnROS1ServiceTeleportDatabase& db)
     {
-        auto& state = db.internalState<OgnROS1ServiceTeleport>();
+        auto& state = db.perInstanceState<OgnROS1ServiceTeleport>();
         const GraphContextObj& context = db.abi_context();
 
         // spin once calls reset automatically if it was not successful
@@ -181,9 +181,9 @@ public:
     }
 
 
-    virtual void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS1ServiceTeleportDatabase::sInternalState<OgnROS1ServiceTeleport>(nodeObj);
+        auto& state = OgnROS1ServiceTeleportDatabase::sPerInstanceState<OgnROS1ServiceTeleport>(nodeObj, instanceId);
         state.reset();
     }
 

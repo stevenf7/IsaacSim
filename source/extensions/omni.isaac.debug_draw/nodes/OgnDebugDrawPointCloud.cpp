@@ -33,9 +33,8 @@ namespace debug_draw
 class OgnDebugDrawPointCloud : public BaseResetNode
 {
 public:
-    static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    static void setPointDrawing(omni::isaac::debug_draw::OgnDebugDrawPointCloud& state)
     {
-        auto& state = OgnDebugDrawPointCloudDatabase::sInternalState<OgnDebugDrawPointCloud>(nodeObj);
         omni::renderer::IDebugDraw* debugDrawPtr = carb::getCachedInterface<omni::renderer::IDebugDraw>();
         if (!debugDrawPtr)
         {
@@ -46,6 +45,13 @@ public:
             true /*World Coords*/);
     }
 
+    static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
+    {
+
+        auto& state = OgnDebugDrawPointCloudDatabase::sPerInstanceState<OgnDebugDrawPointCloud>(nodeObj, instanceId);
+        setPointDrawing(state);
+    }
+
 
     static bool compute(OgnDebugDrawPointCloudDatabase& db)
     {
@@ -53,20 +59,24 @@ public:
 
         const carb::Float3* input = reinterpret_cast<const carb::Float3*>(db.inputs.dataPtr());
         size_t numVerts = db.inputs.bufferSize() / sizeof(carb::Float3); // assumes float3 input.
+        auto& state = db.perInstanceState<OgnDebugDrawPointCloud>();
+        if (!state.m_pointDrawing.get())
+        {
+            setPointDrawing(state);
+        }
         if (!input)
         {
             if (numVerts)
                 db.logError("DebugDrawPointCloud Buffer is invalid, but should have %d vertices.", numVerts);
+
+            state.m_pointDrawing->clear();
+            state.m_pointDrawing->draw();
             return false;
         }
 
-        auto& state = db.internalState<OgnDebugDrawPointCloud>();
 
         const carb::ColorRgba* color = (const carb::ColorRgba*)db.inputs.color().data();
         float size = db.inputs.size();
-        state.m_pointDrawing->clear();
-        state.m_pointDrawing->clear();
-
 
         if (!db.inputs.testMode() && numVerts > 0)
         {
@@ -80,6 +90,10 @@ public:
             {
                 state.m_pointDrawing->transformVertices(db.inputs.transform().data());
             }
+        }
+        else
+        {
+            state.m_pointDrawing->clear();
         }
         state.m_pointDrawing->draw();
         return true;

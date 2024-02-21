@@ -20,14 +20,15 @@
 class OgnROS1PublishCameraInfo : public RosNode
 {
 public:
-    // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     // {
-    //     auto& state = OgnROS1PublishCameraInfoDatabase::sInternalState<OgnROS1PublishCameraInfo>(nodeObj);
+    //     auto& state = OgnROS1PublishCameraInfoDatabase::sPerInstanceState<OgnROS1PublishCameraInfo>(nodeObj,
+    //     instanceId);
     // }
 
     static bool compute(OgnROS1PublishCameraInfoDatabase& db)
     {
-        auto& state = db.internalState<OgnROS1PublishCameraInfo>();
+        auto& state = db.perInstanceState<OgnROS1PublishCameraInfo>();
 
         // spin once calls reset automatically if it was not successful
         if (!state.spinOnce(db.inputs.nodeNamespace()))
@@ -119,9 +120,9 @@ public:
         return true;
     }
 
-    virtual void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS1PublishCameraInfoDatabase::sInternalState<OgnROS1PublishCameraInfo>(nodeObj);
+        auto& state = OgnROS1PublishCameraInfoDatabase::sPerInstanceState<OgnROS1PublishCameraInfo>(nodeObj, instanceId);
         state.reset();
     }
 

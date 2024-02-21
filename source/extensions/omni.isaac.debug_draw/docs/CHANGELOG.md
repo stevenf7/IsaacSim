@@ -4,6 +4,11 @@
 ### Changed
 - Moved header files to extension
 
+## [0.6.2] - 2023-12-12
+### Changed
+- In DebugDrawPointCloud compute, set pointer to debug draw helper if it's missing.
+- In DebugDrawPointCloud compute, only clear when needed.
+
 ## [0.6.1] - 2023-11-17
 ### Added
 - Check for valid prim path, so the debug drawing nodes will issue an error instead of crash with invalid path

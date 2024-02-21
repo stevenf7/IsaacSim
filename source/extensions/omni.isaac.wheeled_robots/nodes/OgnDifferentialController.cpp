@@ -30,7 +30,7 @@ public:
     {
         const GraphContextObj& context = db.abi_context();
 
-        auto& state = db.internalState<OgnDifferentialController>();
+        auto& state = db.perInstanceState<OgnDifferentialController>();
 
         if (!state.mInitialized)
         {
