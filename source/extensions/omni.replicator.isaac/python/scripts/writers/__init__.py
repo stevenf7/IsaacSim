@@ -9,6 +9,7 @@
 
 from .data_visualization_writer import *
 from .dope_writer import *
+from .pose_writer import *
 from .pytorch_listener import *
 from .pytorch_writer import *
 from .ycb_video_writer import *

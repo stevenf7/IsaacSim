@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.13.0] - 2024-01-31
+### Added
+- Added a generic pose writer 
+
 ## [1.12.2] - 2023-02-02
 ### Changed
 - Updated path to the nucleus extension
@@ -7,7 +11,7 @@
 ## [1.12.1] - 2024-01-18
 ### Changed
 - Changed get_assets_root_path to get_assets_root_path_async for the unit tests
-
+ 
 ## [1.12.0] - 2024-01-10
 ### Added
 - Added support for `RtxSensorGpu` and `RtxSensorCpu` aovs in`pytorch_writer` to support tiled RTX Sensor.
