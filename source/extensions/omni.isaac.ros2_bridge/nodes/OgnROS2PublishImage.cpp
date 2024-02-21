@@ -22,14 +22,14 @@ extern "C" void textureFloatCopyToRawBuffer(cudaTextureObject_t, uint8_t*, uint3
 class OgnROS2PublishImage : public Ros2Node
 {
 public:
-    // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     // {
-    //     auto& state = OgnROS2PublishImageDatabase::sInternalState<OgnROS2PublishImage>(nodeObj);
+    //     auto& state = OgnROS2PublishImageDatabase::sPerInstanceState<OgnROS2PublishImage>(nodeObj, instanceId);
     // }
 
     static bool compute(OgnROS2PublishImageDatabase& db)
     {
-        auto& state = db.internalState<OgnROS2PublishImage>();
+        auto& state = db.perInstanceState<OgnROS2PublishImage>();
         // spin once calls reset automatically if it was not successful
         const auto& nodeObj = db.abi_node();
         if (!state.spinOnce(
@@ -68,7 +68,7 @@ public:
     bool publishImage(OgnROS2PublishImageDatabase& db)
     {
         CARB_PROFILE_ZONE(1, "publish image function");
-        auto& state = db.internalState<OgnROS2PublishImage>();
+        auto& state = db.perInstanceState<OgnROS2PublishImage>();
         // Check if subscription count is 0
         if (!state.mPublisher.get()->get_subscription_count())
         {
@@ -161,9 +161,9 @@ public:
         return true;
     }
 
-    static void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS2PublishImageDatabase::sInternalState<OgnROS2PublishImage>(nodeObj);
+        auto& state = OgnROS2PublishImageDatabase::sPerInstanceState<OgnROS2PublishImage>(nodeObj, instanceId);
         state.reset();
     }
 

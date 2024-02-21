@@ -47,7 +47,7 @@ public:
         auto& height = db.inputs.height();
         auto& width = db.inputs.width();
 
-        auto& state = db.internalState<OgnIsaacConvertDepthToPointCloud>();
+        auto& state = db.perInstanceState<OgnIsaacConvertDepthToPointCloud>();
 
         float fx, fy, cx, cy;
 

@@ -20,16 +20,17 @@
 class OgnROS1PublishAckermann : public RosNode
 {
 public:
-    // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     // {
-    //     auto& state = OgnROS1PublishAckermannDatabase::sInternalState<OgnROS1PublishAckermann>(nodeObj);
+    //     auto& state = OgnROS1PublishAckermannDatabase::sPerInstanceState<OgnROS1PublishAckermann>(nodeObj,
+    //     instanceId);
     // }
 
     static bool compute(OgnROS1PublishAckermannDatabase& db)
     {
         const GraphContextObj& context = db.abi_context();
 
-        auto& state = db.internalState<OgnROS1PublishAckermann>();
+        auto& state = db.perInstanceState<OgnROS1PublishAckermann>();
 
         // spin once calls reset automatically if it was not successful
         if (!state.spinOnce(db.inputs.nodeNamespace()))
@@ -92,9 +93,9 @@ public:
         mPublisher->publish(msg);
     }
 
-    virtual void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS1PublishAckermannDatabase::sInternalState<OgnROS1PublishAckermann>(nodeObj);
+        auto& state = OgnROS1PublishAckermannDatabase::sPerInstanceState<OgnROS1PublishAckermann>(nodeObj, instanceId);
         state.reset();
     }
 

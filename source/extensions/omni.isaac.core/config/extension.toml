@@ -27,6 +27,7 @@ writeTarget.kit = true
 "omni.kit.material.library" = {} # omni.kit.material
 "omni.isaac.version" = {}
 "omni.warp.core" = {}
+"omni.physx.stageupdate" = {}
 
 
 [[python.module]]

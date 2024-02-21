@@ -36,9 +36,10 @@ namespace debug_draw
 class OgnIsaacXPrimAxisVisualizer : public BaseResetNode
 {
 public:
-    static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnIsaacXPrimAxisVisualizerDatabase::sInternalState<OgnIsaacXPrimAxisVisualizer>(nodeObj);
+        auto& state =
+            OgnIsaacXPrimAxisVisualizerDatabase::sPerInstanceState<OgnIsaacXPrimAxisVisualizer>(nodeObj, instanceId);
         omni::renderer::IDebugDraw* debugDrawPtr = carb::getCachedInterface<omni::renderer::IDebugDraw>();
         if (!debugDrawPtr)
         {
@@ -63,7 +64,7 @@ public:
             return false;
         }
 
-        auto& state = db.internalState<OgnIsaacXPrimAxisVisualizer>();
+        auto& state = db.perInstanceState<OgnIsaacXPrimAxisVisualizer>();
         state.mLength = db.inputs.length();
         state.mThickness = db.inputs.thickness();
 

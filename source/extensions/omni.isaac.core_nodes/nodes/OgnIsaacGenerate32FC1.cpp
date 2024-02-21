@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -32,7 +32,7 @@ class OgnIsaacGenerate32FC1
 public:
     static bool compute(OgnIsaacGenerate32FC1Database& db)
     {
-        auto& state = db.internalState<OgnIsaacGenerate32FC1>();
+        auto& state = db.perInstanceState<OgnIsaacGenerate32FC1>();
         size_t numElements = db.inputs.width() * db.inputs.height();
         state.values.resize(numElements);
 

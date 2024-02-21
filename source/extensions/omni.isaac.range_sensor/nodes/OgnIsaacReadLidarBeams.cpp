@@ -31,9 +31,9 @@ namespace core_nodes
 class OgnIsaacReadLidarBeams : public BaseResetNode
 {
 public:
-    static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnIsaacReadLidarBeamsDatabase::sInternalState<OgnIsaacReadLidarBeams>(nodeObj);
+        auto& state = OgnIsaacReadLidarBeamsDatabase::sPerInstanceState<OgnIsaacReadLidarBeams>(nodeObj, instanceId);
 
         state.mLidarSensorInterface = carb::getCachedInterface<omni::isaac::range_sensor::LidarSensorInterface>();
 
@@ -48,7 +48,7 @@ public:
     {
         const GraphContextObj& context = db.abi_context();
 
-        auto& state = db.internalState<OgnIsaacReadLidarBeams>();
+        auto& state = db.perInstanceState<OgnIsaacReadLidarBeams>();
 
         if (state.mFirstFrame)
         {

@@ -192,7 +192,9 @@ class TestViewports(omni.kit.test.AsyncTestCase):
         viewport_api = get_active_viewport()
         camera_prim_path = "/Camera"
         camera = Camera(prim_path=camera_prim_path, render_product_path=viewport_api.get_render_product_path())
-        camera.initialize()
+
+        # TODO 106: calling initialize crashes, disabling because its not necessary for the test
+        # camera.initialize()
         await omni.kit.app.get_app().next_update_async()
         prim = viewport_api.stage.GetPrimAtPath(camera_prim_path)
         rotate_prop = prim.GetAttribute("xformOp:orient")

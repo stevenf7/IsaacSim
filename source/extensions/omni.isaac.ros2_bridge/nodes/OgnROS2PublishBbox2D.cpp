@@ -27,14 +27,14 @@ struct Bbox2DData
 class OgnROS2PublishBbox2D : public Ros2Node
 {
 public:
-    // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     // {
-    //     auto& state = ROS2PublishBbox2DDatabase::sInternalState<ROS2PublishBbox2D>(nodeObj);
+    //     auto& state = ROS2PublishBbox2DDatabase::sPerInstanceState<ROS2PublishBbox2D>(nodeObj, instanceId);
     // }
 
     static bool compute(OgnROS2PublishBbox2DDatabase& db)
     {
-        auto& state = db.internalState<OgnROS2PublishBbox2D>();
+        auto& state = db.perInstanceState<OgnROS2PublishBbox2D>();
         // spin once calls reset automatically if it was not successful
         const auto& nodeObj = db.abi_node();
         if (!state.spinOnce(
@@ -78,7 +78,7 @@ public:
     bool publishDetectionArray(OgnROS2PublishBbox2DDatabase& db)
     {
 
-        auto& state = db.internalState<OgnROS2PublishBbox2D>();
+        auto& state = db.perInstanceState<OgnROS2PublishBbox2D>();
 
         // Check if subscription count is 0
         if (!state.mPublisher.get()->get_subscription_count())
@@ -97,9 +97,9 @@ public:
         return true;
     }
 
-    static void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS2PublishBbox2DDatabase::sInternalState<OgnROS2PublishBbox2D>(nodeObj);
+        auto& state = OgnROS2PublishBbox2DDatabase::sPerInstanceState<OgnROS2PublishBbox2D>(nodeObj, instanceId);
         state.reset();
     }
 

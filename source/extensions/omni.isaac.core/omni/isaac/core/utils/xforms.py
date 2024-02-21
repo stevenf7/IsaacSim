@@ -152,12 +152,18 @@ def get_local_pose(prim_path):
     elif xformable_prim.HasLocalXform():
         local_transform = xformable_prim.GetLocalMatrixAttr().Get(usdrt.Usd.TimeCode.Default())
         local_transform.Orthonormalize()
-        return np.array(local_transform.ExtractTranslation()), np.array(local_transform.ExtractRotation())[[3, 0, 1, 2]]
+        return (
+            np.array(local_transform.ExtractTranslation()),
+            np.array(local_transform.ExtractRotationQuat())[[3, 0, 1, 2]],
+        )
     else:
         usd_prim = get_prim_at_path(prim_path=prim_path, fabric=False)
         local_transform = usdrt.Gf.Matrix4d(UsdGeom.Xformable(usd_prim).GetLocalTransformation(Usd.TimeCode.Default()))
         local_transform.Orthonormalize()
-        return np.array(local_transform.ExtractTranslation()), np.array(local_transform.ExtractRotation())[[3, 0, 1, 2]]
+        return (
+            np.array(local_transform.ExtractTranslation()),
+            np.array(local_transform.ExtractRotationQuat())[[3, 0, 1, 2]],
+        )
 
 
 def get_world_pose(prim_path):

@@ -26,14 +26,15 @@
 class OgnROS2PublishPointCloud : public Ros2Node
 {
 public:
-    // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     // {
-    //     auto& state = OgnROS2PublishPointCloudDatabase::sInternalState<OgnROS2PublishPointCloud>(nodeObj);
+    //     auto& state = OgnROS2PublishPointCloudDatabase::sPerInstanceState<OgnROS2PublishPointCloud>(nodeObj,
+    //     instanceId);
     // }
 
     static bool compute(OgnROS2PublishPointCloudDatabase& db)
     {
-        auto& state = db.internalState<OgnROS2PublishPointCloud>();
+        auto& state = db.perInstanceState<OgnROS2PublishPointCloud>();
 
         // spin once calls reset automatically if it was not successful
         const auto& nodeObj = db.abi_node();
@@ -75,7 +76,8 @@ public:
 
         CARB_PROFILE_ZONE(0, "Lidar Point Cloud Pub");
 
-        auto& state = db.internalState<OgnROS2PublishPointCloud>();
+        auto& state = db.perInstanceState<OgnROS2PublishPointCloud>();
+
         // Check if subscription count is 0
         if (!state.mPublisher.get()->get_subscription_count())
         {
@@ -129,9 +131,9 @@ public:
     }
 
 
-    virtual void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS2PublishPointCloudDatabase::sInternalState<OgnROS2PublishPointCloud>(nodeObj);
+        auto& state = OgnROS2PublishPointCloudDatabase::sPerInstanceState<OgnROS2PublishPointCloud>(nodeObj, instanceId);
         state.reset();
     }
 

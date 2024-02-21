@@ -15,14 +15,14 @@
 class OgnROS2SubscribeTwist : public Ros2Node
 {
 public:
-    // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     // {
-    //     auto& state = OgnROS2SubscribeTwistDatabase::sInternalState<OgnROS2SubscribeTwist>(nodeObj);
+    //     auto& state = OgnROS2SubscribeTwistDatabase::sPerInstanceState<OgnROS2SubscribeTwist>(nodeObj, instanceId);
     // }
 
     static bool compute(OgnROS2SubscribeTwistDatabase& db)
     {
-        auto& state = db.internalState<OgnROS2SubscribeTwist>();
+        auto& state = db.perInstanceState<OgnROS2SubscribeTwist>();
         // spin once calls reset automatically if it was not successful
         const auto& nodeObj = db.abi_node();
         if (!state.spinOnce(
@@ -54,9 +54,9 @@ public:
         return state.subscriberCallback(db);
     }
 
-    static void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS2SubscribeTwistDatabase::sInternalState<OgnROS2SubscribeTwist>(nodeObj);
+        auto& state = OgnROS2SubscribeTwistDatabase::sPerInstanceState<OgnROS2SubscribeTwist>(nodeObj, instanceId);
         state.reset();
     }
 
@@ -75,7 +75,7 @@ public:
 
     bool subscriberCallback(OgnROS2SubscribeTwistDatabase& db)
     {
-        auto& state = db.internalState<OgnROS2SubscribeTwist>();
+        auto& state = db.perInstanceState<OgnROS2SubscribeTwist>();
 
 
         if (state.mSubscriber->spin(state.mMessage->ptr()))

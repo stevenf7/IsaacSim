@@ -29,9 +29,10 @@ namespace sensor
 class OgnIsaacReadContactSensor
 {
 public:
-    static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnIsaacReadContactSensorDatabase::sInternalState<OgnIsaacReadContactSensor>(nodeObj);
+        auto& state =
+            OgnIsaacReadContactSensorDatabase::sPerInstanceState<OgnIsaacReadContactSensor>(nodeObj, instanceId);
 
         state.mContactSensorInterface = carb::getCachedInterface<ContactSensorInterface>();
 
@@ -44,7 +45,7 @@ public:
 
     static bool compute(OgnIsaacReadContactSensorDatabase& db)
     {
-        auto& state = db.internalState<OgnIsaacReadContactSensor>();
+        auto& state = db.perInstanceState<OgnIsaacReadContactSensor>();
 
         const auto& prim = db.inputs.csPrim();
         const char* primPath;

@@ -1,7 +1,8 @@
 # Changelog
 
-## [9.13.4] - 2023-02-02
+## [9.13.1] - 2024-02-05
 ### Changed
+- Replaced internalState with perInstanceState for the ogn nodes
 - Updated path to the nucleus extension
 
 ## [9.13.0] - 2024-01-30

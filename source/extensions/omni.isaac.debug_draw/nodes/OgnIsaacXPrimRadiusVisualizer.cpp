@@ -35,9 +35,10 @@ namespace debug_draw
 class OgnIsaacXPrimRadiusVisualizer : public BaseResetNode
 {
 public:
-    static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnIsaacXPrimRadiusVisualizerDatabase::sInternalState<OgnIsaacXPrimRadiusVisualizer>(nodeObj);
+        auto& state =
+            OgnIsaacXPrimRadiusVisualizerDatabase::sPerInstanceState<OgnIsaacXPrimRadiusVisualizer>(nodeObj, instanceId);
         omni::renderer::IDebugDraw* debugDrawPtr = carb::getCachedInterface<omni::renderer::IDebugDraw>();
         if (!debugDrawPtr)
         {
@@ -61,7 +62,7 @@ public:
             db.logError("Omnigraph Error: no input prim found for visualization");
             return false;
         }
-        auto& state = db.internalState<OgnIsaacXPrimRadiusVisualizer>();
+        auto& state = db.perInstanceState<OgnIsaacXPrimRadiusVisualizer>();
         state.mRadius = db.inputs.radius();
         state.mThickness = db.inputs.thickness();
         state.mSegments = db.inputs.segments();

@@ -27,14 +27,14 @@ struct Bbox2DData
 class OgnROS1PublishBbox2D : public RosNode
 {
 public:
-    // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     // {
-    //     auto& state = ROS1PublishBbox2DDatabase::sInternalState<ROS1PublishBbox2D>(nodeObj);
+    //     auto& state = ROS1PublishBbox2DDatabase::sPerInstanceState<ROS1PublishBbox2D>(nodeObj, instanceId);
     // }
 
     static bool compute(OgnROS1PublishBbox2DDatabase& db)
     {
-        auto& state = db.internalState<OgnROS1PublishBbox2D>();
+        auto& state = db.perInstanceState<OgnROS1PublishBbox2D>();
         // spin once calls reset automatically if it was not successful
         if (!state.spinOnce(db.inputs.nodeNamespace()))
         {
@@ -95,9 +95,9 @@ public:
         return true;
     }
 
-    static void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS1PublishBbox2DDatabase::sInternalState<OgnROS1PublishBbox2D>(nodeObj);
+        auto& state = OgnROS1PublishBbox2DDatabase::sPerInstanceState<OgnROS1PublishBbox2D>(nodeObj, instanceId);
         state.reset();
     }
 

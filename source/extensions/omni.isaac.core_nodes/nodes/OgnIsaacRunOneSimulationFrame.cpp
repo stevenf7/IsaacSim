@@ -27,7 +27,7 @@ public:
     {
         const GraphContextObj& context = db.abi_context();
 
-        auto& state = db.internalState<OgnIsaacRunOneSimulationFrame>();
+        auto& state = db.perInstanceState<OgnIsaacRunOneSimulationFrame>();
 
         if (state.mFirstFrame)
         {

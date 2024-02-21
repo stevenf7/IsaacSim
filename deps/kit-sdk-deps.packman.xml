@@ -17,6 +17,7 @@
     <filter include="client_library" />
     <filter include="usd_schema_semantics_${config}" />
     <filter include="omni_usd_resolver" />
+    <filter include="usdrt" />
   </import>
 
   <!-- Import Physics plugins deps -->
@@ -24,6 +25,9 @@
     <filter include="pxshared" />
     <filter include="physx" />
     <filter include="vhacd" />
+  </import>
+
+  <import path="../_build/target-deps/omni_physics/deps/schema-deps.packman.xml">
     <filter include="usd_ext_physics_${config}" />
   </import>
 
@@ -47,5 +51,6 @@
   <dependency name="usd_ext_physics_${config}" linkPath="../_build/target-deps/usd_ext_physics/${config}" />
   <dependency name="gsl" linkPath="../_build/target-deps/gsl" />
   <dependency name="omni_usd_resolver" linkPath="../_build/target-deps/omni_usd_resolver" />
+  <dependency name="usdrt" linkPath="../_build/target-deps/usdrt" />
 </project>
 

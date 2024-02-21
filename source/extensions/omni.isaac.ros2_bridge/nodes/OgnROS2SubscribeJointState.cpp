@@ -25,16 +25,16 @@
 class OgnROS2SubscribeJointState : public Ros2Node
 {
 public:
-    static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS2SubscribeJointStateDatabase::sInternalState<OgnROS2SubscribeJointState>(nodeObj);
-        state.mContextObj = contextObj;
+        auto& state =
+            OgnROS2SubscribeJointStateDatabase::sPerInstanceState<OgnROS2SubscribeJointState>(nodeObj, instanceId);
         state.mNodeObj = nodeObj;
     }
 
     static bool compute(OgnROS2SubscribeJointStateDatabase& db)
     {
-        auto& state = db.internalState<OgnROS2SubscribeJointState>();
+        auto& state = db.perInstanceState<OgnROS2SubscribeJointState>();
 
         // spin once calls reset automatically if it was not successful
         const auto& nodeObj = db.abi_node();
@@ -72,7 +72,7 @@ public:
 
     bool subscriberCallback(OgnROS2SubscribeJointStateDatabase& db)
     {
-        auto& state = db.internalState<OgnROS2SubscribeJointState>();
+        auto& state = db.perInstanceState<OgnROS2SubscribeJointState>();
 
 
         if (state.mSubscriber->spin(state.mMessage->ptr()))
@@ -196,15 +196,16 @@ public:
         return false;
     }
 
-    virtual void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS2SubscribeJointStateDatabase::sInternalState<OgnROS2SubscribeJointState>(nodeObj);
+        auto& state =
+            OgnROS2SubscribeJointStateDatabase::sPerInstanceState<OgnROS2SubscribeJointState>(nodeObj, instanceId);
         state.reset();
     }
 
     virtual void reset()
     {
-        auto db = OgnROS2SubscribeJointStateDatabase(mContextObj, mNodeObj);
+        auto db = OgnROS2SubscribeJointStateDatabase(mNodeObj);
 
         db.outputs.jointNames.resize(0);
         db.outputs.positionCommand.resize(0);
@@ -223,7 +224,6 @@ private:
     // Names will be extracted as strings and later converted to tokens
     std::vector<char*> mJointNames;
 
-    GraphContextObj mContextObj;
     NodeObj mNodeObj;
 };
 

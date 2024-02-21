@@ -289,7 +289,8 @@ def read_source(file):
         if generated and line.startswith("# END GENERATED PART"):
             generated = False
             continue
-
+        if line.lstrip().startswith('# "'):
+            continue
         # If the line is not a comment or other text, it is a dependency (and it should be added to the correct dict depending on which section is being read)
         # This code does not handle the case where a dependency has a tag, since Create does not currently have any dependencies that have tags (and therefore the format is unknown)
         if exact:

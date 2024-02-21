@@ -15,16 +15,17 @@
 class OgnROS2PublishAckermann : public Ros2Node
 {
 public:
-    // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     // {
-    //     auto& state = OgnROS2PublishAckermannDatabase::sInternalState<OgnROS2PublishAckermann>(nodeObj);
+    //     auto& state = OgnROS2PublishAckermannDatabase::sPerInstanceState<OgnROS2PublishAckermann>(nodeObj,
+    //     instanceId);
     // }
 
     static bool compute(OgnROS2PublishAckermannDatabase& db)
     {
         const GraphContextObj& context = db.abi_context();
 
-        auto& state = db.internalState<OgnROS2PublishAckermann>();
+        auto& state = db.perInstanceState<OgnROS2PublishAckermann>();
 
         // spin once calls reset automatically if it was not successful
         const auto& nodeObj = db.abi_node();
@@ -72,7 +73,7 @@ public:
     void publishAckermmanDrive(OgnROS2PublishAckermannDatabase& db)
     {
 
-        auto& state = db.internalState<OgnROS2PublishAckermann>();
+        auto& state = db.perInstanceState<OgnROS2PublishAckermann>();
 
         // Check if subscription count is 0
         if (!state.mPublisher.get()->get_subscription_count())
@@ -88,9 +89,9 @@ public:
         state.mPublisher.get()->publish(state.mMessage->ptr());
     }
 
-    virtual void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS2PublishAckermannDatabase::sInternalState<OgnROS2PublishAckermann>(nodeObj);
+        auto& state = OgnROS2PublishAckermannDatabase::sPerInstanceState<OgnROS2PublishAckermann>(nodeObj, instanceId);
         state.reset();
     }
 

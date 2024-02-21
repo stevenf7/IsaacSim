@@ -15,14 +15,14 @@
 class OgnROS1SubscribeClock : public RosNode
 {
 public:
-    // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     // {
-    //     auto& state = OgnROS1SubscribeClockDatabase::sInternalState<OgnROS1SubscribeClock>(nodeObj);
+    //     auto& state = OgnROS1SubscribeClockDatabase::sPerInstanceState<OgnROS1SubscribeClock>(nodeObj, instanceId);
     // }
 
     static bool compute(OgnROS1SubscribeClockDatabase& db)
     {
-        auto& state = db.internalState<OgnROS1SubscribeClock>();
+        auto& state = db.perInstanceState<OgnROS1SubscribeClock>();
         // spin once calls reset automatically if it was not successful
         if (!state.spinOnce(db.inputs.nodeNamespace()))
         {
@@ -46,9 +46,9 @@ public:
         return true;
     }
 
-    static void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS1SubscribeClockDatabase::sInternalState<OgnROS1SubscribeClock>(nodeObj);
+        auto& state = OgnROS1SubscribeClockDatabase::sPerInstanceState<OgnROS1SubscribeClock>(nodeObj, instanceId);
         state.reset();
     }
 

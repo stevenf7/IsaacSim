@@ -63,6 +63,7 @@ project_ext_plugin(ext, "omni.isaac.debug_draw.plugin")
         "%{root}/_build/target-deps/omni_client_library/include",
         "%{kit_sdk_bin_dir}/exts/usdrt.scenegraph/include",
         "%{root}/_build/target-deps/python/include",
+        "%{root}/_build/target-deps/usdrt/include",
         "%{root}/source/extensions/omni.isaac.dynamic_control/include",
         "%{root}/source/extensions/omni.isaac.debug_draw/include",
     }

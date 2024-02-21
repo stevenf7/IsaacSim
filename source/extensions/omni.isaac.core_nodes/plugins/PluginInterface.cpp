@@ -107,12 +107,12 @@ void onResume(float currentTime, void* userData)
     stageReaderWriter.createAttribute(omni::fabric::Path("/__OgnIsaacSimTime__"), fc_exportToRingbuffer, typeTag);
 
     const omni::graph::core::Type typeDouble(omni::graph::core::BaseDataType::eDouble, 1, 0);
-    stageReaderWriter.getOrCreateAttributeWr<double>(
+    *stageReaderWriter.getOrCreateAttributeWr<double>(
         omni::fabric::Path("/__OgnIsaacSimTime__"), omni::fabric::Token("simTime"), typeDouble) = gSimTime;
-    stageReaderWriter.getOrCreateAttributeWr<double>(
+    *stageReaderWriter.getOrCreateAttributeWr<double>(
         omni::fabric::Path("/__OgnIsaacSimTime__"), omni::fabric::Token("simTimeMonotonic"), typeDouble) =
         gSimTimeMonotonic;
-    stageReaderWriter.getOrCreateAttributeWr<double>(
+    *stageReaderWriter.getOrCreateAttributeWr<double>(
         omni::fabric::Path("/__OgnIsaacSimTime__"), omni::fabric::Token("systemTime"), typeDouble) = gSystemTime;
 }
 
@@ -123,7 +123,7 @@ void onStop(void* userData)
 {
     omni::fabric::StageReaderWriter stageReaderWriter = omni::fabric::StageReaderWriter(gStageReaderWriterId);
     auto path = omni::fabric::Path("/__OgnIsaacSimTime__");
-    pxr::SdfPath usdPath = omni::fabric::intToPath(path);
+    pxr::SdfPath usdPath = omni::fabric::toSdfPath(path);
     pxr::UsdStageRefPtr usdStage =
         pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(uint32_t(gStageId.id)));
     if (usdStage->GetPrimAtPath(usdPath))
@@ -142,7 +142,7 @@ void onPhysicsStep(float timeElapsed, void* userData)
     gPhysicsNumSteps += 1;
     gSystemTime = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
     auto path = omni::fabric::Path("/__OgnIsaacSimTime__");
-    pxr::SdfPath usdPath = omni::fabric::intToPath(path);
+    pxr::SdfPath usdPath = omni::fabric::toSdfPath(path);
     pxr::UsdStageRefPtr usdStage =
         pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(uint32_t(gStageId.id)));
 
@@ -197,7 +197,7 @@ size_t getPhysicsNumSteps()
 double getSimulationTimeAtTime(const omni::fabric::RationalTime& rtime)
 {
     auto path = omni::fabric::Path("/__OgnIsaacSimTime__");
-    pxr::SdfPath usdPath = omni::fabric::intToPath(path);
+    pxr::SdfPath usdPath = omni::fabric::toSdfPath(path);
 
     if (!gStage->GetPrimAtPath(usdPath) || !gSimStageWithHistoryId.id || !gStageId.id)
     {
@@ -218,7 +218,7 @@ double getSimulationTimeAtTime(const omni::fabric::RationalTime& rtime)
 double getSimulationTimeMonotonicAtTime(const omni::fabric::RationalTime& rtime)
 {
     auto path = omni::fabric::Path("/__OgnIsaacSimTime__");
-    pxr::SdfPath usdPath = omni::fabric::intToPath(path);
+    pxr::SdfPath usdPath = omni::fabric::toSdfPath(path);
 
     if (!gStage->GetPrimAtPath(usdPath) || !gSimStageWithHistoryId.id || !gStageId.id)
     {
@@ -239,7 +239,7 @@ double getSystemTimeAtTime(const omni::fabric::RationalTime& rtime)
 {
 
     auto path = omni::fabric::Path("/__OgnIsaacSimTime__");
-    pxr::SdfPath usdPath = omni::fabric::intToPath(path);
+    pxr::SdfPath usdPath = omni::fabric::toSdfPath(path);
 
     if (!gStage->GetPrimAtPath(usdPath) || !gSimStageWithHistoryId.id || !gStageId.id)
     {

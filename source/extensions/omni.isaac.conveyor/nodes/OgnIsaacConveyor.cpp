@@ -34,14 +34,14 @@ namespace conveyor
 class OgnIsaacConveyor
 {
 public:
-    static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& _state = OgnIsaacConveyorDatabase::sInternalState<OgnIsaacConveyor>(nodeObj);
+        auto& _state = OgnIsaacConveyorDatabase::sPerInstanceState<OgnIsaacConveyor>(nodeObj, instanceId);
         _state.m_EventSubscription = carb::events::createSubscriptionToPop(
             omni::usd::UsdContext::getContext()->getStageEventStream().get(),
-            [nodeObj](carb::events::IEvent* e)
+            [nodeObj, instanceId](carb::events::IEvent* e)
             {
-                auto& state = OgnIsaacConveyorDatabase::sInternalState<OgnIsaacConveyor>(nodeObj);
+                auto& state = OgnIsaacConveyorDatabase::sPerInstanceState<OgnIsaacConveyor>(nodeObj, instanceId);
                 state.mOnEnd =
                     static_cast<omni::usd::StageEventType>(e->type) == omni::usd::StageEventType::eAnimationStopPlay;
                 state.mOnStart =
@@ -59,7 +59,7 @@ public:
         {
             // const GraphContextObj& context = db.abi_context();
             // pxr::SdfChangeBlock changeBlock(true);
-            auto& state = db.internalState<OgnIsaacConveyor>();
+            auto& state = db.perInstanceState<OgnIsaacConveyor>();
             bool velocity_changed = state.mVelocity != db.inputs.velocity() ||
                                     (state.mDirection - pxr::GfVec3f(db.inputs.direction())).GetLength() > 1.0e-6f;
             if (state.mOnStart || velocity_changed)

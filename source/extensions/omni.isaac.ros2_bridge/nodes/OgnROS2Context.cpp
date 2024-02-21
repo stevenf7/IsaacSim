@@ -16,9 +16,9 @@
 class OgnROS2Context : public BaseResetNode
 {
 public:
-    static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS2ContextDatabase::sInternalState<OgnROS2Context>(nodeObj);
+        auto& state = OgnROS2ContextDatabase::sPerInstanceState<OgnROS2Context>(nodeObj, instanceId);
         state.mCoreNodeFramework = carb::getCachedInterface<omni::isaac::core_nodes::CoreNodes>();
         omni::isaac::ros2_bridge::Ros2Bridge* mRos2Bridge =
             carb::getCachedInterface<omni::isaac::ros2_bridge::Ros2Bridge>();
@@ -27,7 +27,7 @@ public:
     }
     static bool compute(OgnROS2ContextDatabase& db)
     {
-        auto& state = db.internalState<OgnROS2Context>();
+        auto& state = db.perInstanceState<OgnROS2Context>();
 
         // if the domain id has changed, reset the context
         if (state.mContext->is_valid() && state.mCleanup && db.inputs.domain_id() != state.mDomain)
@@ -89,9 +89,9 @@ public:
         }
         return true;
     }
-    static void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS2ContextDatabase::sInternalState<OgnROS2Context>(nodeObj);
+        auto& state = OgnROS2ContextDatabase::sPerInstanceState<OgnROS2Context>(nodeObj, instanceId);
         state.reset();
         state.mContext.reset();
         state.mCoreNodeFramework->removeHandle(state.mHandle);

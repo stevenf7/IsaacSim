@@ -31,6 +31,7 @@ project_ext_plugin(ext, "omni.isaac.sensor.plugin")
         targetDepsDir.."/omni_client_library/include",
         targetDepsDir.."/python/include",
         "%{root}/source/extensions/omni.isaac.core_nodes/include",
+        targetDepsDir.."/usdrt/include",
         "%{root}/source/extensions/omni.isaac.sensor/include",
         "%{root}/source/extensions/omni.isaac.dynamic_control/include",
         "%{root}/source/extensions/omni.isaac.debug_draw/include",

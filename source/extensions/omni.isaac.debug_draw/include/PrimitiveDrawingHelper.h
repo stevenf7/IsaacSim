@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include <carb/scenerenderer/SceneRendererTypes.h>
+
 #include <omni/usd/UsdContextIncludes.h>
 //
 #include <omni/renderer/IDebugDraw.h>

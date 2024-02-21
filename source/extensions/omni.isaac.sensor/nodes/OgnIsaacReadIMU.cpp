@@ -31,9 +31,9 @@ namespace sensor
 class OgnIsaacReadIMU
 {
 public:
-    static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnIsaacReadIMUDatabase::sInternalState<OgnIsaacReadIMU>(nodeObj);
+        auto& state = OgnIsaacReadIMUDatabase::sPerInstanceState<OgnIsaacReadIMU>(nodeObj, instanceId);
 
         state.mImuSensorInterface = carb::getCachedInterface<ImuSensorInterface>();
 
@@ -46,7 +46,7 @@ public:
 
     static bool compute(OgnIsaacReadIMUDatabase& db)
     {
-        auto& state = db.internalState<OgnIsaacReadIMU>();
+        auto& state = db.perInstanceState<OgnIsaacReadIMU>();
 
         const auto& prim = db.inputs.imuPrim();
         const char* primPath;

@@ -15,14 +15,15 @@
 class OgnROS2SubscribeAckermann : public Ros2Node
 {
 public:
-    // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     // {
-    //     auto& state = OgnROS2SubscribeAckermannDatabase::sInternalState<OgnROS2SubscribeAckermann>(nodeObj);
+    //     auto& state = OgnROS2SubscribeAckermannDatabase::sPerInstanceState<OgnROS2SubscribeAckermann>(nodeObj,
+    //     instanceId);
     // }
 
     static bool compute(OgnROS2SubscribeAckermannDatabase& db)
     {
-        auto& state = db.internalState<OgnROS2SubscribeAckermann>();
+        auto& state = db.perInstanceState<OgnROS2SubscribeAckermann>();
         // spin once calls reset automatically if it was not successful
         const auto& nodeObj = db.abi_node();
         if (!state.spinOnce(
@@ -59,9 +60,10 @@ public:
         return state.subscriberCallback(db);
     }
 
-    static void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS2SubscribeAckermannDatabase::sInternalState<OgnROS2SubscribeAckermann>(nodeObj);
+        auto& state =
+            OgnROS2SubscribeAckermannDatabase::sPerInstanceState<OgnROS2SubscribeAckermann>(nodeObj, instanceId);
         state.reset();
     }
 
@@ -80,7 +82,7 @@ public:
 
     bool subscriberCallback(OgnROS2SubscribeAckermannDatabase& db)
     {
-        auto& state = db.internalState<OgnROS2SubscribeAckermann>();
+        auto& state = db.perInstanceState<OgnROS2SubscribeAckermann>();
 
 
         if (state.mSubscriber->spin(state.mMessage->ptr()))

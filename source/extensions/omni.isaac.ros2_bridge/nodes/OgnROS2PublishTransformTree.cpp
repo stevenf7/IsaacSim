@@ -28,9 +28,10 @@ using namespace omni::isaac::dynamic_control;
 class OgnROS2PublishTransformTree : public Ros2Node
 {
 public:
-    static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS2PublishTransformTreeDatabase::sInternalState<OgnROS2PublishTransformTree>(nodeObj);
+        auto& state =
+            OgnROS2PublishTransformTreeDatabase::sPerInstanceState<OgnROS2PublishTransformTree>(nodeObj, instanceId);
 
         state.mThisPrimPath = nodeObj.iNode->getPrimPath(nodeObj);
 
@@ -46,7 +47,7 @@ public:
     static bool compute(OgnROS2PublishTransformTreeDatabase& db)
     {
         const GraphContextObj& context = db.abi_context();
-        auto& state = db.internalState<OgnROS2PublishTransformTree>();
+        auto& state = db.perInstanceState<OgnROS2PublishTransformTree>();
 
         // spin once calls reset automatically if it was not successful
         const auto& nodeObj = db.abi_node();
@@ -133,7 +134,8 @@ public:
         long stageId = context.iContext->getStageId(context);
         auto stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
 
-        auto& state = db.internalState<OgnROS2PublishTransformTree>();
+        auto& state = db.perInstanceState<OgnROS2PublishTransformTree>();
+
         // Check if subscription count is 0
         if (!state.mPublisher.get()->get_subscription_count())
         {
@@ -183,9 +185,10 @@ public:
         return true;
     }
 
-    virtual void release(const NodeObj& nodeObj)
+    static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnROS2PublishTransformTreeDatabase::sInternalState<OgnROS2PublishTransformTree>(nodeObj);
+        auto& state =
+            OgnROS2PublishTransformTreeDatabase::sPerInstanceState<OgnROS2PublishTransformTree>(nodeObj, instanceId);
         state.reset();
     }
 
