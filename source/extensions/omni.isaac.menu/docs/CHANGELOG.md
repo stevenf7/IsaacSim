@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.1] - 2024-02-20
+### Fixed
+- Extra dependencies from tests being incorrectly imported
+
 ## [0.2.0] - 2024-01-30
 ### Changed
 - Changed sensor menu tests to verify sensor functionality through the sensor interfaces
