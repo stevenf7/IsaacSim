@@ -26,6 +26,7 @@ class OgnIsaacArticulationControllerInternalState(BaseResetNode):
         self.joint_names = None
         self.joint_indices = None
         self.joint_picked = False
+        self.node = None
         super().__init__(initialize=False)
 
     def initialize_controller(self):
@@ -69,12 +70,17 @@ class OgnIsaacArticulationController:
     """
 
     @staticmethod
+    def init_instance(node, graph_instance_id):
+        state = OgnIsaacArticulationControllerDatabase.get_internal_state(node, graph_instance_id)
+        state.node = node
+
+    @staticmethod
     def internal_state():
         return OgnIsaacArticulationControllerInternalState()
 
     @staticmethod
     def compute(db) -> bool:
-        state = db.internal_state
+        state = db.per_instance_state
         try:
             if not state.initialized:
                 if len(db.inputs.robotPath) != 0:
@@ -114,10 +120,21 @@ class OgnIsaacArticulationController:
 
         return True
 
+    # @staticmethod
+    # def release(node):
+    #     try:
+    #         state = OgnIsaacArticulationControllerDatabase.per_instance_state(node)
+    #     except Exception:
+    #         state = None
+    #         pass
+
+    #     if state is not None:
+    #         state.reset()
+
     @staticmethod
-    def release(node):
+    def release_instance(node, graph_instance_id):
         try:
-            state = OgnIsaacArticulationControllerDatabase.per_node_internal_state(node)
+            state = OgnIsaacArticulationControllerDatabase.get_internal_state(node, graph_instance_id)
         except Exception:
             state = None
             pass

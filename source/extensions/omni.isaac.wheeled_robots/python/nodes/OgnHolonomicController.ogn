@@ -33,14 +33,16 @@
             },  
             "wheelAxis": {
                 "type": "double[3]",
-                "description": "the rotation axis of the wheels"
+                "description": "the rotation axis of the wheels",
+                "default": [1.0,0.0,0.0]
             },
             "upAxis": {
                 "type": "double[3]",
-                "description": "the rotation axis of the vehicle"
+                "description": "the rotation axis of the vehicle",
+                "default": [0.0,0.0,1.0]
             },
             "velocityCommands":{
-                "type": ["float[3]", "double[3]"],
+                "type":  "double[3]",
                 "description": "velocity in x and y and rotation",
                 "metadata": {
                     "uiName": "Velocity Commands for the vehicle"
@@ -49,17 +51,20 @@
             "maxLinearSpeed": {
                 "type": "double",
                 "description": "maximum speed allowed for the vehicle",
-                "optional": "true"
+                "optional": "true",
+                "default": 100000
             },
             "maxAngularSpeed": {
                 "type": "double",
                 "description": "maximum angular rotation speed allowed for the vehicle",
-                "optional": "true"
+                "optional": "true",
+                "default": 100000               
             },
             "maxWheelSpeed": {
                 "type": "double",
                 "description": "maximum rotation speed allowed for the wheel joints",
-                "optional": "true"
+                "optional": "true",
+                "default": 100000
             },
             "linearGain": {
                 "type": "double",
@@ -73,18 +78,10 @@
             }        
         },
         "outputs":{
-            "jointPositionCommand":{
-                "type": "double[]",
-                "description": "position commands for the wheel joints"
-            },
             "jointVelocityCommand":{
                 "type": "double[]",
                 "description": "velocity commands for the wheels joints"
-            },            
-            "jointEffortCommand":{
-                "type": "double[]",
-                "description": "effort commands for the wheels joints"
-            }  
+            }         
         }
     }
 }

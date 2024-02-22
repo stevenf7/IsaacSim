@@ -12,10 +12,11 @@ from re import I
 
 import numpy as np
 import omni.graph.core as og
+from omni.isaac.wheeled_robots.ogn.OgnHolonomicRobotUsdSetupDatabase import OgnHolonomicRobotUsdSetupDatabase
 from omni.isaac.wheeled_robots.robots.holonomic_robot_usd_setup import HolonomicRobotUsdSetup
 
 
-class InternalState:
+class OgnHolonomicRobotUsdSetupInternalState:
     def __init__(self):
         self.robot_prim_path = ""
         self.com_prim_path = ""
@@ -40,15 +41,24 @@ class OgnHolonomicRobotUsdSetup:
     nodes for bundling robot parameters for any robot to be used by differential and articulation controller
     """
 
+    # @staticmethod
+    # def initialize(graph_context, node):
+    #     state = OgnHolonomicRobotUsdSetupDatabase.shared_internal_state(node)
+
+    @staticmethod
+    def init_instance(node, graph_instance_id):
+        state = OgnHolonomicRobotUsdSetupDatabase.get_internal_state(node, graph_instance_id)
+        state.node = node
+
     @staticmethod
     def internal_state():
-        return InternalState()
+        return OgnHolonomicRobotUsdSetupInternalState()
 
     @staticmethod
     def compute(db) -> bool:
         try:
             # check about the using path vs bundle thing
-            state = db.internal_state
+            state = db.per_instance_state
 
             if db.inputs.usePath:
                 robot_prim_path = db.inputs.robotPrimPath

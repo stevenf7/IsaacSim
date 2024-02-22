@@ -25,12 +25,14 @@ namespace wheeled_robot
 
 class OgnDifferentialController : public BaseResetNode
 {
+
 public:
     static bool compute(OgnDifferentialControllerDatabase& db)
     {
         const GraphContextObj& context = db.abi_context();
 
         auto& state = db.perInstanceState<OgnDifferentialController>();
+        state.nodeObj = db.abi_node();
 
         if (!state.mInitialized)
         {
@@ -50,28 +52,17 @@ public:
             {
                 state.mMaxLinearSpeed = std::fabs(db.inputs.maxLinearSpeed());
             }
-            else if (db.inputs.maxLinearSpeed() == 0)
-            {
-                state.mMaxLinearSpeed = 10000000;
-            }
 
             if (std::fabs(db.inputs.maxAngularSpeed()) > 0)
             {
                 state.mMaxAngularSpeed = std::fabs(db.inputs.maxAngularSpeed());
-            }
-            else if (db.inputs.maxAngularSpeed() == 0)
-            {
-                state.mMaxAngularSpeed = 10000000;
             }
 
             if (std::fabs(db.inputs.maxWheelSpeed()) > 0)
             {
                 state.mMaxWheelSpeed = std::fabs(db.inputs.maxWheelSpeed());
             }
-            else if (db.inputs.maxWheelSpeed() == 0)
-            {
-                state.mMaxWheelSpeed = 10000000;
-            }
+
             state.mInitialized = true;
         }
 
@@ -91,20 +82,39 @@ public:
         return true;
     }
 
-
     virtual void reset()
     {
-        mInitialized = false;
-    }
+        GraphObj graphObj{ nodeObj.iNode->getGraph(nodeObj) };
+        GraphContextObj context{ graphObj.iGraph->getDefaultGraphContext(graphObj) };
 
+        // set the node's input and output
+        AttributeObj linearAttr = nodeObj.iNode->getAttribute(nodeObj, "inputs:linearVelocity");
+        auto linearHandle = linearAttr.iAttribute->getAttributeDataHandle(linearAttr, kAccordingToContextIndex);
+        double* linearVelocity = getDataW<double>(context, linearHandle);
+        *linearVelocity = 0;
+
+        // set the node's input and output
+        AttributeObj angularAttr = nodeObj.iNode->getAttribute(nodeObj, "inputs:angularVelocity");
+        auto angularHandle = angularAttr.iAttribute->getAttributeDataHandle(angularAttr, kAccordingToContextIndex);
+        double* angularVelocity = getDataW<double>(context, angularHandle);
+        *angularVelocity = 0;
+
+        // set the node's input and output
+        AttributeObj velocityAttr = nodeObj.iNode->getAttribute(nodeObj, "outputs:velocityCommand");
+        auto velocityHandle = velocityAttr.iAttribute->getAttributeDataHandle(velocityAttr, kAccordingToContextIndex);
+        double* velocityCommand = getDataW<double>(context, velocityHandle);
+        velocityCommand[0] = 0.0;
+        velocityCommand[1] = 0.0;
+    }
 
 private:
     bool mInitialized = false;
-    double mMaxAngularSpeed = 0;
-    double mMaxWheelSpeed = 0;
-    double mMaxLinearSpeed = 0;
+    double mMaxAngularSpeed = 1.0e7;
+    double mMaxWheelSpeed = 1.0e7;
+    double mMaxLinearSpeed = 1.0e7;
     double mWheelDistance = 0;
     double mWheelRadius = 0;
+    NodeObj nodeObj;
 };
 
 REGISTER_OGN_NODE()

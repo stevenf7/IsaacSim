@@ -19,20 +19,49 @@ class OgnCheckGoal2DInternalState(BaseResetNode):
     # modeled after OgnDifferentialController state layout
     def __init__(self):
         # store target pos to prevent repeated & unnecessary db.inputs.target access
+        self.node = None
         self.target = [0, 0, 0]  # [x, y, z_rot]
         super().__init__(initialize=False)
 
     def custom_reset(self):
         # reset target to origin (not an ideal reset solution but technically works)
-        self.target = [0, 0, 0]
+        self.node.get_attribute("inputs:target").set([0.0, 0.0, 0.0])
 
 
 class OgnCheckGoal2D:
+    # @staticmethod
+    # def initialize(graph_context, node):
+    #     state = OgnCheckGoal2DDatabase.shared_internal_state(node)
+    #     state.node = node
+
+    # @staticmethod
+    # def release(node):
+    #     try:
+    #         state = OgnCheckGoal2DDatabase.shared_internal_state(node)
+    #     except Exception:
+    #         state = None
+    #         pass
+
+    #     if state is not None:
+    #         state.reset()
+    #         state.initialized = False
+
     @staticmethod
-    def initialize(graph_context, node):
-        db = OgnCheckGoal2DDatabase(node)
-        state = OgnCheckGoal2DDatabase.per_node_internal_state(node)
-        state.outputs = db.outputs
+    def init_instance(node, graph_instance_id):
+        state = OgnCheckGoal2DDatabase.get_internal_state(node, graph_instance_id)
+        state.node = node
+        state.graph_id = graph_instance_id
+
+    @staticmethod
+    def release_instance(node, graph_instance_id):
+        try:
+            state = OgnCheckGoal2DDatabase.get_internal_state(node, graph_instance_id)
+        except Exception:
+            state = None
+            pass
+
+        if state is not None:
+            state.reset()
 
     @staticmethod
     def internal_state():
@@ -40,7 +69,7 @@ class OgnCheckGoal2D:
 
     @staticmethod
     def compute(db) -> bool:
-        state = db.internal_state
+        state = db.per_instance_state
 
         # if planner outputs targetChanged = True, new target data will be accessed and stored
         if db.inputs.targetChanged:

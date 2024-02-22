@@ -29,6 +29,8 @@ class OgnHolonomicControllerInternalState(BaseResetNode):
         self.max_wheel_speed = 1.0e20
         self.linear_gain = 1.0
         self.angular_gain = 1.0
+        self.node = None
+        self.graph_id = None
         super().__init__(initialize=False)
 
     def initialize_controller(self) -> None:
@@ -51,6 +53,11 @@ class OgnHolonomicControllerInternalState(BaseResetNode):
     def forward(self, command: np.ndarray) -> ArticulationAction:
         return self.controller_handle.forward(command)
 
+    def custom_reset(self):
+        if self.initialized:
+            self.node.get_attribute("inputs:velocityCommands").set([0, 0, 0])
+            self.node.get_attribute("outputs:jointVelocityCommand").set([0, 0, 0])
+
 
 class OgnHolonomicController:
     """
@@ -58,89 +65,72 @@ class OgnHolonomicController:
     """
 
     @staticmethod
-    def internal_state():
-        return OgnHolonomicControllerInternalState()
+    def init_instance(node, graph_instance_id):
+        state = OgnHolonomicControllerDatabase.get_internal_state(node, graph_instance_id)
+        state.node = node
+        state.graph_id = graph_instance_id
+
+        # function_callback = OgnHolonomicController.on_value_changed_callback
+        # node.get_attribute("inputs:wheelRadius").register_value_changed_callback(function_callback)
+        # node.get_attribute("inputs:wheelPositions").register_value_changed_callback(function_callback)
+        # node.get_attribute("inputs:wheelOrientations").register_value_changed_callback(function_callback)
+        # node.get_attribute("inputs:mecanumAngles").register_value_changed_callback(function_callback)
+        # node.get_attribute("inputs:wheelAxis").register_value_changed_callback(function_callback)
+        # node.get_attribute("inputs:upAxis").register_value_changed_callback(function_callback)
+        # node.get_attribute("inputs:maxLinearSpeed").register_value_changed_callback(function_callback)
+        # node.get_attribute("inputs:maxAngularSpeed").register_value_changed_callback(function_callback)
+        # node.get_attribute("inputs:linearGain").register_value_changed_callback(function_callback)
+        # node.get_attribute("inputs:angularGain").register_value_changed_callback(function_callback)
 
     @staticmethod
-    def compute(db) -> bool:
-        state = db.internal_state
-
+    def release_instance(node, graph_instance_id):
         try:
-            if (db.inputs.wheelRadius > 0).all() and (db.inputs.wheelRadius != state.wheel_radius).any():
-                state.wheel_radius = db.inputs.wheelRadius
-                state.initialized = False
-
-            if np.array((db.inputs.wheelPositions != state.wheel_positions)).any():
-                state.wheel_positions = db.inputs.wheelPositions
-                state.initialized = False
-
-            if np.array((db.inputs.wheelOrientations != state.wheel_orientations)).any():
-                state.wheel_orientations = db.inputs.wheelOrientations
-                state.initialized = False
-
-            if np.array((db.inputs.mecanumAngles != state.mecanum_angles)).any():
-                state.mecanum_angles = db.inputs.mecanumAngles
-                state.initialized = False
-
-            if (
-                np.array((db.inputs.wheelAxis != [0.0, 0.0, 0.0])).all()
-                and np.array((db.inputs.wheelAxis != state.wheel_axis)).any()
-            ):
-                state.wheel_axis = db.inputs.wheelAxis
-                state.initialized = False
-
-            if (
-                np.array((db.inputs.upAxis != [0.0, 0.0, 0.0])).all()
-                and np.array((db.inputs.upAxis != state.up_axis)).any()
-            ):
-                state.up_axis = db.inputs.upAxis
-                state.initialized = False
-
-            if (db.inputs.maxLinearSpeed != 0) and (db.inputs.maxLinearSpeed != state.max_linear_speed):
-                state.max_linear_speed = db.inputs.maxLinearSpeed
-                state.initialized = False
-
-            if (db.inputs.maxAngularSpeed != 0) and (db.inputs.maxAngularSpeed != state.max_angular_speed):
-                state.max_angular_speed = db.inputs.maxAngularSpeed
-                state.initialized = False
-
-            if (db.inputs.maxWheelSpeed != 0) and (db.inputs.maxWheelSpeed != state.max_wheel_speed):
-                state.max_wheel_speed = db.inputs.maxWheelSpeed
-                state.initialized = False
-
-            if (db.inputs.linearGain != 0) and (db.inputs.linearGain != state.linear_gain):
-                state.linear_gain = db.inputs.linearGain
-                state.initialized = False
-
-            if (db.inputs.angularGain != 0) and (db.inputs.angularGain != state.angular_gain):
-                state.angular_gain = db.inputs.angularGain
-                state.initialized = False
-
-            if not state.initialized:
-                state.initialize_controller()
-
-            joint_actions = state.forward(np.array(db.inputs.velocityCommands.value))
-
-            if joint_actions.joint_positions is not None:
-                db.outputs.jointPositionCommand = joint_actions.joint_positions
-            if joint_actions.joint_velocities is not None:
-                db.outputs.jointVelocityCommand = joint_actions.joint_velocities
-            if joint_actions.joint_efforts is not None:
-                db.outputs.jointEffortCommand = joint_actions.joint_efforts
-
-        except Exception as error:
-            db.log_warning(str(error))
-            return False
-
-        return True
-
-    @staticmethod
-    def release(node):
-        try:
-            state = OgnHolonomicControllerDatabase.per_node_internal_state(node)
+            state = OgnHolonomicControllerDatabase.get_internal_state(node, graph_instance_id)
         except Exception:
             state = None
             pass
 
         if state is not None:
             state.reset()
+            state.initialized = False
+
+    # @staticmethod
+    # def on_value_changed_callback(attr):
+    #     node = attr.get_node()
+    #     state = OgnHolonomicControllerDatabase.shared_internal_state(node)
+    #     state.initialized = False
+
+    @staticmethod
+    def internal_state():
+        return OgnHolonomicControllerInternalState()
+
+    @staticmethod
+    def compute(db) -> bool:
+        state = db.per_instance_state
+
+        try:
+            if not state.initialized:
+                state.wheel_radius = db.inputs.wheelRadius
+                state.wheel_positions = db.inputs.wheelPositions
+                state.wheel_orientations = db.inputs.wheelOrientations
+                state.mecanum_angles = db.inputs.mecanumAngles
+                state.wheel_axis = db.inputs.wheelAxis
+                state.up_axis = db.inputs.upAxis
+                state.max_linear_speed = db.inputs.maxLinearSpeed
+                state.max_angular_speed = db.inputs.maxAngularSpeed
+                state.max_wheel_speed = db.inputs.maxWheelSpeed
+                state.linear_gain = db.inputs.linearGain
+                state.angular_gain = db.inputs.angularGain
+
+                state.initialize_controller()
+
+            joint_actions = state.forward(np.array(db.inputs.velocityCommands))
+
+            if joint_actions.joint_velocities is not None:
+                db.outputs.jointVelocityCommand = joint_actions.joint_velocities
+
+        except Exception as error:
+            db.log_warning(str(error))
+            return False
+
+        return True

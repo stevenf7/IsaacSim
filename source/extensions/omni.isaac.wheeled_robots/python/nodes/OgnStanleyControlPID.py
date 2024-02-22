@@ -24,6 +24,7 @@ class OgnStanleyControlPIDInternalState(BaseResetNode):
         self.target_idx = 0  # path array index
         # store target pos to prevent repeated & unnecessary db.inputs.target access
         self.target = [0, 0, 0]  # [x, y, z_rot]
+        self.node = None
         self.rv = []  # store path arrays to avoid repeated inputs access
         self.rx = []
         self.ry = []
@@ -54,11 +55,16 @@ class OgnStanleyControlPIDInternalState(BaseResetNode):
 
 
 class OgnStanleyControlPID:
+    # @staticmethod
+    # def initialize(graph_context, node):
+    #     db = OgnStanleyControlPIDDatabase(node)
+    #     state = OgnStanleyControlPIDDatabase.shared_internal_state(node)
+    #     state.node = node
+
     @staticmethod
-    def initialize(graph_context, node):
-        db = OgnStanleyControlPIDDatabase(node)
-        state = OgnStanleyControlPIDDatabase.per_node_internal_state(node)
-        state.outputs = db.outputs
+    def init_instance(node, graph_instance_id):
+        state = OgnStanleyControlPIDDatabase.get_internal_state(node, graph_instance_id)
+        state.node = node
 
     @staticmethod
     def internal_state():
@@ -66,7 +72,7 @@ class OgnStanleyControlPID:
 
     @staticmethod
     def compute(db) -> bool:
-        state = db.internal_state
+        state = db.per_instance_state
 
         # save thresholds if changed
         state.thresholds = db.inputs.thresholds
