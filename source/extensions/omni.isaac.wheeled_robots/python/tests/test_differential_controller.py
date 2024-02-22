@@ -89,37 +89,40 @@ class TestDifferentialControllerNode(ogts.OmniGraphTestCase):
         self.assertEqual(og.Controller(og.Controller.attribute("outputs:velocityCommand", diff_node)).get()[0], 8.125)
         self.assertEqual(og.Controller(og.Controller.attribute("outputs:velocityCommand", diff_node)).get()[1], 11.875)
 
-    # async def test_differential_controller_node_reset(self):
-    #     (test_diff_graph, [play_node, diff_node], _, _) = og.Controller.edit(
-    #         {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
-    #         {
-    #             og.Controller.Keys.CREATE_NODES: [
-    #                 ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-    #                 ("DifferentialController", "omni.isaac.wheeled_robots.DifferentialController"),
-    #             ],
-    #             og.Controller.Keys.CONNECT: [
-    #                 ("OnPlaybackTick.outputs:tick", "DifferentialController.inputs:execIn"),
-    #             ],
-    #             og.Controller.Keys.SET_VALUES: [
-    #                 ("DifferentialController.inputs:wheelRadius", 0.03),
-    #                 ("DifferentialController.inputs:wheelDistance", 0.1125),
-    #                 ("DifferentialController.inputs:linearVelocity", 0.3),
-    #                 ("DifferentialController.inputs:angularVelocity", 1.0),
-    #             ],
-    #         },
-    #     )
+    async def test_differential_controller_node_reset(self):
+        (test_diff_graph, [play_node, diff_node], _, _) = og.Controller.edit(
+            {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
+            {
+                og.Controller.Keys.CREATE_NODES: [
+                    ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                    ("DifferentialController", "omni.isaac.wheeled_robots.DifferentialController"),
+                ],
+                og.Controller.Keys.CONNECT: [
+                    ("OnPlaybackTick.outputs:tick", "DifferentialController.inputs:execIn"),
+                ],
+                og.Controller.Keys.SET_VALUES: [
+                    ("DifferentialController.inputs:wheelRadius", 0.03),
+                    ("DifferentialController.inputs:wheelDistance", 0.1125),
+                    ("DifferentialController.inputs:linearVelocity", 0.3),
+                    ("DifferentialController.inputs:angularVelocity", 1.0),
+                ],
+            },
+        )
 
-    #     self._timeline.play()
-    #     await omni.kit.app.get_app().next_update_async()
-    #     await simulate_async(0.05, 60)
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await simulate_async(0.05, 60)
 
-    #     self.assertEqual(og.Controller(og.Controller.attribute("outputs:velocityCommand", diff_node)).get()[0], 8.125)
-    #     self.assertEqual(og.Controller(og.Controller.attribute("outputs:velocityCommand", diff_node)).get()[1], 11.875)
+        self.assertEqual(og.Controller(og.Controller.attribute("outputs:velocityCommand", diff_node)).get()[0], 8.125)
+        self.assertEqual(og.Controller(og.Controller.attribute("outputs:velocityCommand", diff_node)).get()[1], 11.875)
 
-    #     self._timeline.stop()
-    #     await omni.kit.app.get_app().next_update_async()
-    #     await omni.kit.app.get_app().next_update_async()
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
 
-    #     await simulate_async(0.05, 60)
-    #     self.assertEqual(og.Controller(og.Controller.attribute("outputs:velocityCommand", diff_node)).get()[0], 0.0)
-    #     self.assertEqual(og.Controller(og.Controller.attribute("outputs:velocityCommand", diff_node)).get()[1], 0.0)
+        await simulate_async(0.05, 60)
+        # self.assertEqual(og.Controller(og.Controller.attribute("outputs:velocityCommand", diff_node)).get()[0], 0.0)
+        # self.assertEqual(og.Controller(og.Controller.attribute("outputs:velocityCommand", diff_node)).get()[1], 0.0)
+
+        self.assertEqual(og.Controller(og.Controller.attribute("inputs:linearVelocity", diff_node)).get(), 0.0)
+        self.assertEqual(og.Controller(og.Controller.attribute("inputs:angularVelocity", diff_node)).get(), 0.0)

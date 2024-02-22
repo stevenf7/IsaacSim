@@ -55,11 +55,13 @@ class TestHolonomicControllerOgn(ogts.OmniGraphTestCase):
     async def setUp(self):
         """Set up  test environment, to be torn down when done"""
         await omni.usd.get_context().new_stage_async()
+        self._timeline = omni.timeline.get_timeline_interface()
 
     # ----------------------------------------------------------------------
     async def tearDown(self):
         """Get rid of temporary data used by the test"""
         await omni.kit.stage_templates.new_stage_async()
+        self._timeline = None
 
     # ----------------------------------------------------------------------
     async def test_holonomic_drive_ogn(self):
@@ -116,4 +118,68 @@ class TestHolonomicControllerOgn(ogts.OmniGraphTestCase):
             og.Controller(og.Controller.attribute("outputs:jointVelocityCommand", holo_node)).get()[2],
             -14.5417,
             delta=0.001,
+        )
+
+    # ----------------------------------------------------------------------
+    async def test_holonomic_drive_ogn_reset(self):
+        (test_holo_graph, [holo_node, _], _, _) = og.Controller.edit(
+            {"graph_path": "/ActionGraph"},
+            {
+                og.Controller.Keys.CREATE_NODES: [
+                    ("HolonomicController", "omni.isaac.wheeled_robots.HolonomicController"),
+                    ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                ],
+                og.Controller.Keys.SET_VALUES: [
+                    ("HolonomicController.inputs:wheelRadius", [0.04, 0.04, 0.04]),
+                    (
+                        "HolonomicController.inputs:wheelPositions",
+                        [
+                            [-0.0980432, 0.000636773, -0.050501],
+                            [0.0493475, -0.084525, -0.050501],
+                            [0.0495291, 0.0856937, -0.050501],
+                        ],
+                    ),
+                    (
+                        "HolonomicController.inputs:wheelOrientations",
+                        [[0, 0, 0, 1], [0.866, 0, 0, -0.5], [0.866, 0, 0, 0.5]],
+                    ),
+                    ("HolonomicController.inputs:mecanumAngles", [90, 90, 90]),
+                    ("HolonomicController.inputs:velocityCommands", [1.0, 1.0, 0.1]),
+                ],
+                og.Controller.Keys.CONNECT: [
+                    ("OnPlaybackTick.outputs:tick", "HolonomicController.inputs:execIn"),
+                ],
+            },
+        )
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+
+        self.assertAlmostEqual(
+            og.Controller(og.Controller.attribute("outputs:jointVelocityCommand", holo_node)).get()[0],
+            -25.1053,
+            delta=0.01,
+        )
+        self.assertAlmostEqual(
+            og.Controller(og.Controller.attribute("outputs:jointVelocityCommand", holo_node)).get()[1],
+            14.3182,
+            delta=0.01,
+        )
+        self.assertAlmostEqual(
+            og.Controller(og.Controller.attribute("outputs:jointVelocityCommand", holo_node)).get()[2],
+            -14.5417,
+            delta=0.01,
+        )
+
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+
+        self.assertEqual(
+            og.Controller(og.Controller.attribute("outputs:jointVelocityCommand", holo_node)).get()[0], 0.0
+        )
+        self.assertEqual(
+            og.Controller(og.Controller.attribute("outputs:jointVelocityCommand", holo_node)).get()[1], 0.0
+        )
+        self.assertEqual(
+            og.Controller(og.Controller.attribute("outputs:jointVelocityCommand", holo_node)).get()[2], 0.0
         )

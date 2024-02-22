@@ -22,6 +22,7 @@ class OgnQuinticPathPlannerInternalState(BaseResetNode):
     def __init__(self):
         self.stage = omni.usd.get_context().get_stage()  # save stage for getting prim at path
         self.target = []  # stored target pos to avoid need for recalculation each cycle - [x, y, z_rot]
+        self.node = None
         self.rx = []  # stored path array outputs to avoid retargeting each cycle
         self.ry = []
         self.ryaw = []
@@ -37,11 +38,16 @@ class OgnQuinticPathPlannerInternalState(BaseResetNode):
 
 
 class OgnQuinticPathPlanner:
+    # @staticmethod
+    # def initialize(graph_context, node):
+    #     db = OgnQuinticPathPlannerDatabase(node)
+    #     state = OgnQuinticPathPlannerDatabase.shared_internal_state(node)
+    #     state.node = node
+
     @staticmethod
-    def initialize(graph_context, node):
-        db = OgnQuinticPathPlannerDatabase(node)
-        state = OgnQuinticPathPlannerDatabase.per_node_internal_state(node)
-        state.outputs = db.outputs
+    def init_instance(node, graph_instance_id):
+        state = OgnQuinticPathPlannerDatabase.get_internal_state(node, graph_instance_id)
+        state.node = node
 
     @staticmethod
     def internal_state():
@@ -49,7 +55,7 @@ class OgnQuinticPathPlanner:
 
     @staticmethod
     def compute(db) -> bool:
-        state = db.internal_state
+        state = db.per_instance_state
 
         # calculate and save relevant target data from inputs, will be None if target has not changed
         goal = get_target_pos(db.inputs, state)

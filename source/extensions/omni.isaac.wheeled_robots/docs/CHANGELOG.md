@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.1] - 2024-02-17
+### Changed
+- Replaced internalState with perInstanceState for python ogn nodes
+- small modifications in the Holonomic node definition
+- All custom_reset function in directly set the node using OG API
+
+### Added
+- Reset test for holonomic controller
+
 ## [1.1.0] - 2024-02-02
 ### Added
 - a menu item for the extension to allow for populating common controller omnigraphs

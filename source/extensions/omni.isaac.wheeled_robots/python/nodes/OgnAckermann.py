@@ -15,22 +15,27 @@ from omni.isaac.wheeled_robots.ogn.OgnAckermannDatabase import OgnAckermannDatab
 
 class OgnAckermannInternalState(BaseResetNode):
     def __init__(self):
-        self.outputs = None
+        self.node = None
         super().__init__(initialize=False)
 
     def custom_reset(self):
-        self.outputs.leftWheelAngle = 0.0
-        self.outputs.rightWheelAngle = 0.0
-        self.outputs.wheelRotationVelocity = 0.0
+        self.node.get_attribute("outputs:leftWheelAngle").set(0.0)
+        self.node.get_attribute("outputs:rightWheelAngle").set(0.0)
+        self.node.get_attribute("outputs:wheelRotationVelocity").set(0.0)
 
 
 class OgnAckermann:
+    # @staticmethod
+    # def initialize(graph_context, node):
+    #     # Store db.outputs in a private variable of State class so we can modify the output on simulation Stop
+    #     state = OgnAckermannDatabase.shared_internal_state(node)
+    #     state.node = node
+
     @staticmethod
-    def initialize(graph_context, node):
-        # Store db.outputs in a private variable of State class so we can modify the output on simulation Stop
-        db = OgnAckermannDatabase(node)
-        state = OgnAckermannDatabase.per_node_internal_state(node)
-        state.outputs = db.outputs
+    def init_instance(node, graph_instance_id):
+        state = OgnAckermannDatabase.get_internal_state(node, graph_instance_id)
+        state.node = node
+        state.graph_id = graph_instance_id
 
     @staticmethod
     def internal_state():
@@ -96,10 +101,21 @@ class OgnAckermann:
 
         return True
 
+    # @staticmethod
+    # def release(node):
+    #     try:
+    #         state = OgnAckermannDatabase.shared_internal_state(node)
+    #     except Exception:
+    #         state = None
+    #         pass
+
+    #     if state is not None:
+    #         state.reset()
+
     @staticmethod
-    def release(node):
+    def release_instance(node, graph_instance_id):
         try:
-            state = OgnAckermannDatabase.per_node_internal_state(node)
+            state = OgnAckermannDatabase.get_internal_state(node, graph_instance_id)
         except Exception:
             state = None
             pass

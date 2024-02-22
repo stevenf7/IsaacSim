@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.11.1] - 2023-02-21
+### Added
+- Replaced internalState with perInstanceState for the articulation controller node
+
+
 ## [1.11.0] - 2023-02-13
 ### Added
 - Articulation State node
