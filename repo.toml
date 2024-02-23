@@ -129,7 +129,8 @@ kit_extra_args = []
 cache_path = "${root}/_build/${platform}/${config}/extscache"
 
 ext_folders = [
-  "${root}/_build/$platform/$config/exts"
+  "${root}/_build/$platform/$config/exts",
+  "${root}/_build/$platform/$config/extsPhysics"
 ]
 
 # Apps to run and precache
