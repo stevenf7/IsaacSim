@@ -3,7 +3,6 @@
         "version": 1,
         "icon": "icons/isaac-sim.svg",
         "description": "Gate node that only passes through execution if simulation is playing",
-        "language": "Python",
         "categoryDefinitions": "config/CategoryDefinition.json",
         "categories": "isaacCore",
         "metadata": {

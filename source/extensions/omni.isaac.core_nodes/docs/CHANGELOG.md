@@ -1,15 +1,19 @@
 # Changelog
 
-## [1.11.1] - 2023-02-21
+## [1.12.0] - 2024-02-09
+### Changed
+- Converted Isaac Simulation Gate and Read Camera Info nodes to C++
+- Read camera info node no longer accept viewport as input
+
+## [1.11.1] - 2024-02-21
 ### Added
 - Replaced internalState with perInstanceState for the articulation controller node
 
-
-## [1.11.0] - 2023-02-13
+## [1.11.0] - 2024-02-13
 ### Added
 - Articulation State node
 
-## [1.10.1] - 2023-02-02
+## [1.10.1] - 2024-02-05
 ### Changed
 - Replaced internalState with perInstanceState for the ogn nodes
 - Updated path to the nucleus extension
