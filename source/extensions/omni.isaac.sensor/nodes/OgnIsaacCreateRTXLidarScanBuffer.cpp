@@ -16,7 +16,6 @@
 
 #include <carb/tasking/ITasking.h>
 
-#include <internal/omni/sensors/lidar/LidarReturnHelper.h>
 #include <omni/isaac/utils/Buffer.h>
 #include <omni/isaac/utils/ScopedCudaDevice.h>
 #include <omni/math/linalg/matrix.h>
@@ -172,8 +171,9 @@ public:
         // fill the structure of arrays
         LidarTicks lidarTicksHost;
         LidarReturns lidarReturnsHost;
-        LidarParameterType* parameterHost =
-            omni::sensors::nv::lidar::fillStructsFromBuffer(dataHost, lidarReturnsHost, lidarTicksHost);
+        LidarParameterType* parameterHost = saferFillStructsFromBuffer(dataHost, lidarReturnsHost, lidarTicksHost);
+        if (!parameterHost)
+            return true;
         const uint32_t ticksPerScan = parameterHost->async.ticksPerScan;
         const uint32_t numTicks = parameterHost->async.numTicks;
         const uint32_t numChannels = parameterHost->async.numChannels;

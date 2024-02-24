@@ -13,7 +13,6 @@
 #include "LidarNodeUtils.h"
 #include "omni/isaac/utils/UsdUtilities.h"
 
-#include <internal/omni/sensors/lidar/LidarReturnHelper.h>
 #include <omni/sensors/lidar/LidarParameterType.h>
 #include <omni/sensors/lidar/LidarReturn.h>
 #include <omni/sensors/lidar/LidarReturnTypes.h>
@@ -27,13 +26,6 @@ namespace isaac
 {
 namespace sensor
 {
-
-#define PI 3.141592653589f
-
-inline constexpr float Deg2Rad(float deg)
-{
-    return (deg / 180.f) * PI;
-}
 
 // a scan buffer that takes only one emitter, as nearest 0 elevation, and has to be from a rotary lidar.
 // because it creates laser scan data which assumes 0 elevation emitter with all the same delta for emitter rotation
@@ -63,9 +55,9 @@ public:
         // fill the structure of arrays
         LidarTicks lidarTicksHost;
         LidarReturns lidarReturnsHost;
-        LidarParameterType* parameterHost =
-            omni::sensors::nv::lidar::fillStructsFromBuffer(dataHost, lidarReturnsHost, lidarTicksHost);
-        const uint32_t ticksPerScan = parameterHost->async.ticksPerScan;
+        LidarParameterType* parameterHost = saferFillStructsFromBuffer(dataHost, lidarReturnsHost, lidarTicksHost);
+        if (!parameterHost)
+            return true;
         const uint32_t numTicks = parameterHost->async.numTicks;
         const uint32_t numChannels = parameterHost->async.numChannels;
         const uint32_t numEchos = parameterHost->async.numEchos;
@@ -127,6 +119,8 @@ public:
             // state.rotaryProfile.reportRateBaseHz; // 3600 for a 10Hz lidar that fires one tick per degree.
             // state.rotaryProfile.scanRateBaseHz; // 10 for a 10Hz lidar
             uint32_t numTicksPerRotation = state.rotaryProfile.reportRateBaseHz / state.rotaryProfile.scanRateBaseHz;
+            // std::cout << "MTC " << state.rotaryProfile.reportRateBaseHz << " " << state.rotaryProfile.scanRateBaseHz
+            //          << " " << numTicksPerRotation << "\n";
             db.outputs.horizontalFov() = 360.0;
             db.outputs.horizontalResolution() = static_cast<float>(360.0 / numTicksPerRotation);
             db.outputs.numRows() = 1;
@@ -138,11 +132,9 @@ public:
             // assert(numTicksPerRotation == parameterHost->async.ticksPerScan);
         }
 
-        // numReturnsInput is the number returns held in the incoming data
-        const uint32_t numReturnsInput = numTicks * numChannels * numEchos;
-
         uint8_t* intensities = db.outputs.intensitiesData().data();
         float* distances = db.outputs.linearDepthData().data();
+        // std::cout << "MTC2 " << numTicks;
         for (uint32_t tick = 0; tick < numTicks; tick++)
         {
             uint32_t channelId = state.emitterToOutput;
@@ -162,6 +154,7 @@ public:
             intensities[outIdx] = intensity;
             distances[outIdx] = distance;
         }
+        // std::cout << "done\n";
 
         db.outputs.exec() = kExecutionAttributeStateEnabled;
         return true;

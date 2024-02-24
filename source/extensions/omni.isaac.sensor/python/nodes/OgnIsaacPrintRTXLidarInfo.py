@@ -1,4 +1,4 @@
-# Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2022-2024, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -205,9 +205,10 @@ class OgnIsaacPrintRTXLidarInfo:
         returns_p = ticks_p + ctypes.sizeof(lidarTick) * params.contents.numTicks
         returns = fillReturns(returns_p, numReturns)
         print("-------------------- first and last return:")
+        # print(return2string(returns, 0, f"{returns.objectIds[0]}"))  # object_id_to_prim_path(returns.objectIds[0])))
+        # print(return2string(returns, numReturns - 1, f"{returns.objectIds[numReturns - 1]}"))
         print(return2string(returns, 0, object_id_to_prim_path(returns.objectIds[0])))
         print(return2string(returns, numReturns - 1, object_id_to_prim_path(returns.objectIds[numReturns - 1])))
-
         objId2mats = {}
         num0dist = 0
         num0inte = 0

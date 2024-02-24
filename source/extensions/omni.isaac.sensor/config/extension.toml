@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "9.13.4"
+version = "9.13.5"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Support physics based sensors, such as contact sensors and imu sensors"
@@ -34,6 +34,7 @@ writeTarget.kit = true
 "omni.replicator.core" = {}
 "omni.usd" = {} # needed for call to add aov
 "usdrt.scenegraph" = {}
+"omni.sensors.nv.common" = {}
 "omni.sensors.nv.lidar" = {}
 "omni.sensors.nv.radar" = {}
 "omni.isaac.nucleus" = {}
@@ -57,7 +58,7 @@ recursive = false
 
 [settings]
 app.sensors.nv.lidar.profileBaseFolder=[
-    "${app}/../data/sensors/lidar/",
+    "${app}/../extsbuild/omni.sensors.nv.common/data/lidar/",
     "${app}/../exts/omni.isaac.sensor/data/lidar_configs/HESAI/",
     "${app}/../exts/omni.isaac.sensor/data/lidar_configs/NVIDIA/",
     "${app}/../exts/omni.isaac.sensor/data/lidar_configs/Ouster/",

@@ -11,6 +11,7 @@
 # It is not meant for users, so use at your own risk.
 import sys
 
+import isaac_sim
 from isaac_sim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
@@ -50,27 +51,13 @@ def add_cube(stage, path, scale, offset, physics=False):
 i = printinc(i)
 simulation_app.update()
 
-# Locate Isaac Sim assets folder to load environment and robot stages
-assets_root_path = nucleus.get_assets_root_path()
-if assets_root_path is None:
-    carb.log_error("Could not find Isaac Sim assets folder")
-    simulation_app.close()
-    sys.exit()
-
-i = printinc(i)
-simulation_app.update()
 
 geo_type = "cubes"
 if len(sys.argv) >= 2:
     geo_type = sys.argv[1]
 
 if 1:
-    if geo_type == "warehouse":
-        # Loading the simple_room environment
-        stage.add_reference_to_stage(
-            assets_root_path + "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd", "/background"
-        )
-    elif geo_type == "cubes":
+    if geo_type == "cubes":
         # add_cube(stage.get_current_stage(), "/World/cxube_x2", (1, 20, 1000), (-5, 0, 500), physics=True)
         add_cube(stage.get_current_stage(), "/World/cxube_x1", (1, 20, 5), (5, 0, 0), physics=False)
         add_cube(stage.get_current_stage(), "/World/cxube_x2", (1, 20, 1), (-5, 0, 0), physics=False)
@@ -84,30 +71,6 @@ if 1:
             (-3.0258131660928367, 0, 0),
             physics=False,
         )
-        # omni.kit.commands.execute('CreateAndBindMdlMaterialFromLibrary',
-        #    mdl_name='OmniGlass.mdl',
-        #    mtl_name='glass',
-        #    mtl_created_list=['/World/Looks/glass'],
-        #    bind_selected_prims=['/World/cube_5'])
-        omni.kit.commands.execute(
-            "CreateMdlMaterialPrim",
-            mtl_url="omniverse://ov-isaac-dev/NVIDIA/Materials/OmniSurface/Glass/OmniSurface_Glass.mdl",
-            mtl_name="OmniSurface_Glass",
-            mtl_path="/World/Looks/OmniSurface_Glass",
-        )
-        omni.kit.commands.execute(
-            "BindMaterialCommand",
-            prim_path=["/World/cube_5"],
-            material_path=Sdf.Path("/World/Looks/OmniSurface_Glass"),
-            strength=None,
-        )
-
-        # omni.kit.commands.execute('CreateUsdAttributeOnPath',
-        #    attr_path=Sdf.Path('/World/Looks/OmniSurface_Glass.SensorMaterialIndex'),
-        #    attr_type=Sdf.ValueTypeNames.Int,
-        #    custom=False,
-        #    variability=Sdf.VariabilityUniform,
-        #    attr_value=5)
 
     elif geo_type == "sphere":
         omni.kit.commands.execute(
@@ -144,16 +107,6 @@ _, sensor = omni.kit.commands.execute(
     orientation=Gf.Quatd(1, 0, 0, 0),  # Gf.Quatd is w,i,j,k
 )
 
-if 0:
-    _, sensor2 = omni.kit.commands.execute(
-        "IsaacSensorCreateRtxLidar",
-        path="/sensor2",
-        parent=None,
-        config=lidar_config,
-        translation=(0, -1, 1.0),
-        orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),  # Gf.Quatd is w,i,j,k
-    )
-
 i = printinc(i)
 hydra_texture = rep.create.render_product(sensor.GetPath(), [1, 1], name="Isaac")
 
@@ -165,6 +118,7 @@ simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 /
 
 i = printinc(i)
 writer = rep.writers.get("" + "RtxLidar" + "DebugDrawPointCloud" + "Buffer")
+# writer = rep.writers.get("Writer" + "IsaacPrintRTXLidarInfo")
 # writer.initialize(testMode=True)
 # writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
 # writer = rep.writers.get("Writer" + "IsaacReadRTXLidarData")
@@ -190,30 +144,7 @@ i = printinc(i)
 simulation_context.play()
 
 i = printinc(i)
-if 0:
-    # Use custom writer to see what the output of the annotator looks like
-    class MyCustomWriter(rep.Writer):
-        def __init__(self, output_dir: str):
-            self.version = "0.0.2"
-            self._frame_id = 0
-            self.annotators = ["RtxSensorCpuIsaacCreateRTXLidarScanBuffer"]
 
-        def on_final_frame(self):
-            self.backend.sync_pending_paths()
-
-        def write(self, data):
-            print("Frame number - {}".format(self._frame_id))
-            all_data = data["RtxSensorCpuIsaacCreateRTXLidarScanBuffer"]
-            vel = ["velocity"]
-            print(all_data)  # ["data"])
-            print("*****************")
-            self._frame_id += 1
-
-    rep.WriterRegistry.register(MyCustomWriter)
-
-    writer = rep.WriterRegistry.get("MyCustomWriter")
-    writer.initialize(output_dir="")
-    writer.attach([hydra_texture])
 
 annoNames = [
     "RtxSensorCpuIsaacReadRTXLidarData",

@@ -49,6 +49,12 @@ fetch.pip.files_to_pull = [
     "${root}/deps/pip_cloud.toml",
 ]
 
+# Extensions precache
+# This is one way to get the headers and bin files from extensions to show up... like needed in omni.sensors.nv.common
+pre_build.commands = [
+    ["${root}/repo${shell_ext}", "precache_exts", "-c", "${config}", "${precache_flag_0}"],
+]
+
 stage_files.extra_mapping.kit_sdk_debug = "${root}/_build/$platform/debug/kit"
 stage_files.extra_mapping.kit_sdk_release = "${root}/_build/$platform/release/kit"
 
@@ -104,7 +110,7 @@ licensing.packages = ["${root}/deps/rtx-target-deps.packman.xml", "${root}/deps/
 licensing.fail_on_missing = true
 
 post_build.commands = [
-    ["${root}/repo${shell_ext}", "precache_exts", "-c", "${config}", "${precache_flag_0}"] ,
+    #["${root}/repo${shell_ext}", "precache_exts", "-c", "${config}", "${precache_flag_0}"] ,
     # ["${root}/tools/build_docs${shell_ext}", "--config", "${config}", "--warn-as-error=0"], # disabled to reduce local build times
     ["${root}/repo${shell_ext}", "generate_vscode_settings", "-c", "${config}"],
     ["${root}/repo${shell_ext}", "edit_sysconfig", "-c", "${config}"]
@@ -120,6 +126,7 @@ kwargs.required = false
 ########################################################################################################################
 
 [repo_precache_exts]
+generated_app_path = ""
 enabled = true
 kit_omit_ext_version = false
 # Extra args to pass to kit
@@ -135,13 +142,21 @@ ext_folders = [
 
 # Apps to run and precache
 apps = [
-    "${root}/_build/$platform/$config/apps/omni.isaac.sim.extscache.kit"
+        "${root}/_build/$platform/$config/apps/omni.isaac.sim.extscache.kit"
 ]
 
 # Registries to use
 registries = [
     { name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default" },
 ]
+
+# Link selected extensions into a separate folder without a version. Used for build-time referencing extensions.
+# Wildcards are supported in the list.
+links.path = "${root}/_build/${platform}/${config}/extsbuild"
+links.exts.include = [
+    "omni.sensors.nv.*",
+]
+
 
 
 ########################################################################################################################
@@ -686,7 +701,8 @@ branch_name = "develop"
 ########################################################################################################################
 # Extensions publisher
 ########################################################################################################################
-
+# For publishing an ext locally, set the extension you want in exts.include (wild cards work) and run the following:
+# ./repo.sh publish_exts -c release
 [repo_publish_exts]
 enabled = true
 kit_path = "${root}/_build/$platform/$config/kit/kit${exe_ext}"
@@ -894,19 +910,12 @@ deps_for_isaac = [
   "omni.kit.livestream.webrtc-3.2.0",
   "omni.replicator.replicator_yaml-2.0.5",
   "omni.replicator.core-1.11.1-dev1",
-  "omni.sensors.fov_preview_visualization-1000.1.0-isaacsim.2024.1.0",
-  "omni.sensors.nv.beams-1000.1.0-isaacsim.2024.1.0",
-  "omni.sensors.nv.camera-1000.1.0-isaacsim.2024.1.0",
-  "omni.sensors.nv.common-1000.1.0-isaacsim.2024.1.0",
-  "omni.sensors.nv.ids-1000.1.0-isaacsim.2024.1.0",
-  "omni.sensors.nv.lidar-1000.1.0-isaacsim.2024.1.0",
-  "omni.sensors.nv.lidar_tools-1000.1.0-isaacsim.2024.1.0",
-  "omni.sensors.nv.materials-1000.1.0-isaacsim.2024.1.0",
-  "omni.sensors.nv.material_tools-1000.1.0-isaacsim.2024.1.0",
-  "omni.sensors.nv.radar-1000.1.0-isaacsim.2024.1.0",
-  "omni.sensors.nv.radar_tools-1000.1.0-isaacsim.2024.1.0",
-  "omni.sensors.nv.ultrasonic-1000.1.0-isaacsim.2024.1.0",
-  "omni.sensors.nv.wpm-1000.1.0-isaacsim.2024.1.0",
+  "omni.sensors.nv.common-0.3.0-wfix-2",
+  "omni.sensors.nv.lidar-0.3.0-wfix-2",
+  "omni.sensors.nv.materials-0.3.0-wfix-2",
+  "omni.sensors.nv.radar-0.3.0-wfix-2",
+  "omni.sensors.nv.ultrasonic-0.3.0-wfix-2",
+  "omni.sensors.nv.wpm-0.3.0-wfix-2",
   "semantics.schema.editor-0.3.4",
   "semantics.schema.property-1.0.2",
   "omni.importer.mjcf-1.1.0",

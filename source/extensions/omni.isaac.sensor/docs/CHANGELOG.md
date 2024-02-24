@@ -1,5 +1,14 @@
 # Changelog
 
+## [9.13.5] - 2024-02-22
+### Changed
+- Using externally built omni.sensors for rtx lidar and rtx radar
+- use intensityScalePercent in IsaacComputeRTXLidarPointCloud if present
+- Location of default and temp lidar config files set to ${app}/../extsbuild/omni.sensors.nv.common/data/lidar/
+
+### Fixed
+- No longer crash when number of rtx lidar ticks are out of sync
+
 ## [9.13.1] - 2024-02-05
 ### Changed
 - Replaced internalState with perInstanceState for the ogn nodes
