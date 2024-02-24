@@ -1,4 +1,4 @@
-// Copyright (c) 2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2023-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -9,14 +9,19 @@
 
 #include "LidarNodeUtils.h"
 
-#include <carb/Framework.h>
+#include <carb/InterfaceUtils.h>
 
-#include <internal/omni/sensors/lidar/LidarSettings.h>
 #include <omni/math/linalg/matrix.h>
 #include <omni/math/linalg/quat.h>
 #include <omni/math/linalg/vec.h>
 #include <omni/sensors/lidar/ILidarProfileReaderFactory.h>
 
+namespace omni
+{
+namespace isaac
+{
+namespace sensor
+{
 
 void getTransformFromLidarAsyncParameter(const LidarAsyncParameter& parm, omni::math::linalg::matrix4d& matrixOutput)
 {
@@ -51,9 +56,9 @@ bool updateLidarConfig(std::string inConfig,
         return false;
     }
 
-    const std::string json = omni::sensors::nv::lidar::getProfileJsonAtPaths(inConfig);
     omni::sensors::lidar::ILidarProfileReaderPtr profileReader =
         carb::getCachedInterface<omni::sensors::lidar::ILidarProfileReaderFactory>()->createInstance();
+    const auto json = profileReader->getProfileJsonAtPaths(inConfig.c_str());
 
     bool updated{ false };
     if (profileReader)
@@ -78,4 +83,7 @@ bool updateLidarConfig(std::string inConfig,
         scanType = LidarScanType::kUnknown;
     }
     return updated;
+}
+}
+}
 }

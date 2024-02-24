@@ -21,7 +21,6 @@ project_ext_plugin(ext, "omni.isaac.sensor.plugin")
     
     includedirs {
         "%{root}/include/pch",
-        "%{root}/source/include",
         targetDepsDir.."/nv_usd/%{cfg.buildcfg}/include",
         targetDepsDir.."/usd_ext_physics/%{cfg.buildcfg}/include",
         targetDepsDir.."/omni_physics/include",
@@ -35,6 +34,7 @@ project_ext_plugin(ext, "omni.isaac.sensor.plugin")
         "%{root}/source/extensions/omni.isaac.sensor/include",
         "%{root}/source/extensions/omni.isaac.dynamic_control/include",
         "%{root}/source/extensions/omni.isaac.debug_draw/include",
+        bin_dir.."/extsbuild/omni.sensors.nv.common/include",
     }
     libdirs {
         targetDepsDir.."/python/lib",
@@ -90,10 +90,3 @@ repo_build.prebuild_link {
 repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir.."/omni/isaac/sensor" },
 }
--- sensor material and configrations
-repo_build.prebuild_link {
-    -- needs to be here because material_files folder location is hard coded to %(app}../data/material_files)
-    {"%{root}/data/sensors/materials/material_files","%{root}/_build/%{platform}/%{config}/data/material_files" },
-    {"%{root}/data/sensors","%{root}/_build/%{platform}/%{config}/data/sensors" },
-}
-

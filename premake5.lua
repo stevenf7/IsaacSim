@@ -6,7 +6,6 @@ newoption {
 
 -- Shared build scripts from repo_build package
 no_compile_commands_file = false
-build_with_omni_sensors = false
 repo_build = require("omni/repo/build")
 
 -- Repo root
@@ -25,9 +24,6 @@ end
 
 -- Shared build scripts from isaac sim
 include("isaac_sim_premake5.lua")
-if build_with_omni_sensors then
-    include("omni_sensors_premake5.lua")
-end
 
 -- Setup where to write generate prebuild.toml file
 repo_build.set_prebuild_file('_build/generated/prebuild.toml')
@@ -86,9 +82,6 @@ workspace "isaac-sim"
     -- mostly so outside code knows we are building isaac-sim
     building_for_isaac_sim = true
     defines { "BUILDING_FOR_ISAAC_SIM" }
-    if build_with_omni_sensors then
-        includedirs { "source/include" }
-    end
 
     -- Setup include paths. Add kit SDK include paths too.
     includedirs {
@@ -348,24 +341,6 @@ group "exts"
     include ("source/extensions/omni.pip.cloud")
     include ("source/extensions/omni.exporter.urdf")
     include ("source/extensions/omni.isaac.menu")
-
-    if build_with_omni_sensors then
-        include ("source/extensions/omni.sensors.fov_preview_visualization")
-        include ("source/extensions/omni.sensors.nv.beams")
-        include ("source/extensions/omni.sensors.nv.camera")
-        include ("source/extensions/omni.sensors.nv.common")
-        include ("source/extensions/omni.sensors.nv.ids")
-        include ("source/extensions/omni.sensors.nv.lidar")
-        include ("source/extensions/omni.sensors.nv.lidar_tools")
-        include ("source/extensions/omni.sensors.nv.materials")
-        include ("source/extensions/omni.sensors.nv.material_tools")
-        include ("source/extensions/omni.sensors.nv.radar")
-        include ("source/extensions/omni.sensors.nv.radar_tools")
-        include ("source/extensions/omni.sensors.nv.ultrasonic")
-        include ("source/extensions/omni.sensors.nv.wpm")
-    end
-
-
 
     -- Linux Only
     if os.target() == "linux" then

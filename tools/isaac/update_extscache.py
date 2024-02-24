@@ -240,6 +240,12 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
                 output.append(print_dep(dep, ver))
 
         output.append("\n")
+        output.append("# If you need local builds with extensions that don't have all flavors published, then")
+        output.append("# uncomment the next 3 lines.")
+        output.append("#[settings]")
+        output.append("#app.extensions.supportedTargets.platform = []")
+        output.append("#app.extensions.supportedTargets.config = []")
+        output.append("\n")
         output.append(commentline)
         output.append("# END AUTOUPDATED PART\n")
         output.append(commentline)

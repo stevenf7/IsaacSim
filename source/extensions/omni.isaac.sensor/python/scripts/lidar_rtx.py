@@ -69,7 +69,7 @@ class LidarRtx(BaseSensor):
                 file_path = os.path.abspath(
                     os.path.join(
                         get_extension_path_from_name("omni.isaac.sensor"),
-                        "../../data/sensors/lidar/Temp_Config_" + str(file_index) + ".json",
+                        "data/lidar_configs/Temp_Config_" + str(file_index) + ".json",
                     )
                 )
                 file_name = "Temp_Config_" + str(file_index)
@@ -78,7 +78,7 @@ class LidarRtx(BaseSensor):
                     file_path = os.path.abspath(
                         os.path.join(
                             get_extension_path_from_name("omni.isaac.sensor"),
-                            "../../data/sensors/lidar/Temp_Config_" + str(file_index) + ".json",
+                            "data/lidar_configs/Temp_Config_" + str(file_index) + ".json",
                         )
                     )
                 config_file_name = "Temp_Config_" + str(file_index)

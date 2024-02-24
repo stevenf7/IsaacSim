@@ -13,11 +13,10 @@
 #include "LidarNodeUtils.h"
 #include "omni/isaac/utils/UsdUtilities.h"
 
-#include <internal/omni/sensors/lidar/LidarReturnHelper.h>
 #include <omni/isaac/utils/Buffer.h>
 #include <omni/math/linalg/matrix.h>
-#include <omni/sensors/LidarPointsConvert.h>
 #include <omni/sensors/lidar/LidarParameterType.h>
+#include <omni/sensors/lidar/LidarPoint.h>
 #include <omni/sensors/lidar/LidarProfileTypes.h>
 #include <omni/sensors/lidar/LidarReturnTypes.h>
 
@@ -88,10 +87,10 @@ inline void convertReturnToPoint(unsigned int idx,
 
     // Add beam origin distance directly? -> see differences in resim
     point.range = distanceM + beamOriginDistM;
-    point.intensity = profile ? static_cast<float>(omni::sensors::lidar::mapIntensity<uint16_t>(
-                                    *profile, lidarReturns.intensities[idx], true)) /
-                                    100.f :
-                                lidarReturns.intensities[idx];
+    point.intensity = lidarReturns.intensities[idx];
+    if (profile)
+        point.intensity *= profile->intensityScalePercent / 100.f;
+
 
     point.azimuth = azimuthRad;
     point.elevation = elevationRad;
@@ -134,8 +133,10 @@ public:
         // fill the structure of arrays
         LidarTicks lidarTicks;
         LidarReturns lidarReturns;
-        LidarParameterType* parameter = omni::sensors::nv::lidar::fillStructsFromBuffer(input, lidarReturns, lidarTicks);
-        const uint32_t numTicks = parameter->async.numTicks;
+        LidarParameterType* parameter = saferFillStructsFromBuffer(input, lidarReturns, lidarTicks);
+        if (!parameter)
+            return true;
+        const uint32_t numTicks = parameter->sync.numTicks;
         const uint32_t numChannels = parameter->async.numChannels;
         const uint32_t numEchos = parameter->async.numEchos;
 

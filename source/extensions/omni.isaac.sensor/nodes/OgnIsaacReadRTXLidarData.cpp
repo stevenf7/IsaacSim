@@ -16,8 +16,6 @@
 
 #include <carb/InterfaceUtils.h>
 
-#include <internal/omni/sensors/lidar/LidarReturnHelper.h>
-#include <internal/omni/sensors/lidar/LidarSettings.h>
 #include <omni/sensors/lidar/LidarParameterType.h>
 #include <omni/sensors/lidar/LidarReturn.h>
 #include <omni/sensors/lidar/LidarReturnTypes.h>
@@ -54,7 +52,9 @@ public:
         // fill the structure of arrays
         LidarTicks lidarTicks;
         LidarReturns lidarReturns;
-        LidarParameterType* parameter = omni::sensors::nv::lidar::fillStructsFromBuffer(input, lidarReturns, lidarTicks);
+        LidarParameterType* parameter = saferFillStructsFromBuffer(input, lidarReturns, lidarTicks);
+        if (!parameter)
+            return true;
         const uint32_t numTicks = parameter->async.numTicks;
         const uint32_t numChannels = parameter->async.numChannels;
         const uint32_t numEchos = parameter->async.numEchos;
