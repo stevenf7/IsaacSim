@@ -71,6 +71,7 @@ public:
 
         // calculate wheel speed
         auto& jointVelocities = db.outputs.velocityCommand();
+        jointVelocities.resize(2);
         jointVelocities[0] = ((2 * linearVelocity) - (angularVelocity * state.mWheelDistance)) / (2 * state.mWheelRadius);
         jointVelocities[1] = ((2 * linearVelocity) + (angularVelocity * state.mWheelDistance)) / (2 * state.mWheelRadius);
 
@@ -98,11 +99,12 @@ public:
         *angularVelocity = 0;
 
         // set the node's input and output
-        AttributeObj velocityAttr = nodeObj.iNode->getAttribute(nodeObj, "outputs:velocityCommand");
-        auto velocityHandle = velocityAttr.iAttribute->getAttributeDataHandle(velocityAttr, kAccordingToContextIndex);
-        double* velocityCommand = getDataW<double>(context, velocityHandle);
-        velocityCommand[0] = 0.0;
-        velocityCommand[1] = 0.0;
+        // TODO: Disabled because this causes a crash on reset when next compute is called
+        // AttributeObj velocityAttr = nodeObj.iNode->getAttribute(nodeObj, "outputs:velocityCommand");
+        // auto velocityHandle = velocityAttr.iAttribute->getAttributeDataHandle(velocityAttr,
+        // kAccordingToContextIndex); double* velocityCommand = getDataW<double>(context, velocityHandle);
+        // velocityCommand[0] = 0.0;
+        // velocityCommand[1] = 0.0;
     }
 
 private:
