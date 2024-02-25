@@ -207,7 +207,7 @@ def main(args):
         "headless": args.headless,
         "experience": f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit',
     }
-    from isaac_sim import SimulationApp
+    from isaacsim import SimulationApp
 
     simulation_app = SimulationApp(CUSTOM_CONFIG)
 

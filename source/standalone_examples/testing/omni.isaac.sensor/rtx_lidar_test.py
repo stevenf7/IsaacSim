@@ -11,8 +11,7 @@
 # It is not meant for users, so use at your own risk.
 import sys
 
-import isaac_sim
-from isaac_sim import SimulationApp
+from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 import carb

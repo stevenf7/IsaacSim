@@ -9,7 +9,7 @@
 
 import sys
 
-from isaac_sim import SimulationApp
+from isaacsim import SimulationApp
 
 # Example for creating a RTX lidar sensor and publishing PCL data
 simulation_app = SimulationApp({"headless": False})

@@ -11,7 +11,7 @@ import argparse
 import sys
 
 import numpy as np
-from isaac_sim import SimulationApp
+from isaacsim import SimulationApp
 
 parser = argparse.ArgumentParser(description="ROS Clock Example")
 parser.add_argument("--test", action="store_true")

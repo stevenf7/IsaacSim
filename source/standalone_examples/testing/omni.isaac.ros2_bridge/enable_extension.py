@@ -9,7 +9,7 @@
 
 import time
 
-from isaac_sim import SimulationApp
+from isaacsim import SimulationApp
 
 # Example ROS bridge sample showing rospy and rosclock interaction
 kit = SimulationApp()

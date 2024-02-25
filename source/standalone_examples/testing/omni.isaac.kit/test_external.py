@@ -9,7 +9,7 @@
 import sys
 
 import numpy as np
-from isaac_sim import SimulationApp
+from isaacsim import SimulationApp
 
 simulation_app = SimulationApp()
 

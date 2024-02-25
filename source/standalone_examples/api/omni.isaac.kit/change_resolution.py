@@ -9,7 +9,7 @@
 
 import random
 
-from isaac_sim import SimulationApp
+from isaacsim import SimulationApp
 
 # Simple example showing how to change resolution
 kit = SimulationApp({"headless": True})

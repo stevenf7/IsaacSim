@@ -8,7 +8,7 @@
 #
 import sys
 
-from isaac_sim import SimulationApp
+from isaacsim import SimulationApp
 
 HOSPITAL_USD_PATH = "/Isaac/Samples/ROS/Scenario/multiple_robot_carter_hospital_navigation.usd"
 OFFICE_USD_PATH = "/Isaac/Samples/ROS/Scenario/multiple_robot_carter_office_navigation.usd"

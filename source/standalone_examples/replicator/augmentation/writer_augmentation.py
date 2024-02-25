@@ -10,7 +10,7 @@
 """Generate augmented synthetic from a writer
 """
 
-from isaac_sim import SimulationApp
+from isaacsim import SimulationApp
 
 simulation_app = SimulationApp(launch_config={"headless": False})
 

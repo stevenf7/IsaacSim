@@ -18,7 +18,7 @@ n_robot = args.n_robot
 n_gpu = args.num_gpus
 
 import numpy as np
-from isaac_sim import SimulationApp
+from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": True})
 

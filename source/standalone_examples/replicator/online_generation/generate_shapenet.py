@@ -24,7 +24,7 @@ import sys
 
 import numpy as np
 import torch
-from isaac_sim import SimulationApp
+from isaacsim import SimulationApp
 
 LABEL_TO_SYNSET = {
     "table": "04379243",

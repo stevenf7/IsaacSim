@@ -10,7 +10,7 @@
 import math
 import unittest
 
-from isaac_sim import SimulationApp
+from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": True})
 

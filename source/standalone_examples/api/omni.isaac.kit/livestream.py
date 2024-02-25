@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from isaac_sim import SimulationApp
+from isaacsim import SimulationApp
 
 # This sample enables a livestream server to connect to when running headless
 CONFIG = {

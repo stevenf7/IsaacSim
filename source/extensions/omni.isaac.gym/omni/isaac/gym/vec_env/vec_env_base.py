@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from isaac_sim import SimulationApp  # isort: skip
+from isaacsim import SimulationApp  # isort: skip
 
 import os
 import signal

@@ -14,7 +14,7 @@ from typing import List, Tuple
 
 import numpy as np
 import yaml
-from isaac_sim import SimulationApp
+from isaacsim import SimulationApp
 
 
 def get_ids_list(equivalent_ids: List[List[str]], tile_id: str) -> List[str]:

@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from isaac_sim import SimulationApp
+from isaacsim import SimulationApp
 
 # URDF import, configuration and simulation sample
 kit = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
