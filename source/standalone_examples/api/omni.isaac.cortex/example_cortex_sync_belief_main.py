@@ -9,7 +9,7 @@
 
 import argparse
 
-from isaac_sim import SimulationApp
+from isaacsim import SimulationApp
 
 parser = argparse.ArgumentParser("example_cortex_sync_belief")
 parser.add_argument(

@@ -11,7 +11,7 @@ import argparse
 import asyncio
 import os
 
-from isaac_sim import SimulationApp
+from isaacsim import SimulationApp
 
 
 async def convert(in_file, out_file, load_materials=False):

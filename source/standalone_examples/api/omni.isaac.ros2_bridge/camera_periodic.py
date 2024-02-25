@@ -10,7 +10,7 @@
 import argparse
 import sys
 
-from isaac_sim import SimulationApp
+from isaacsim import SimulationApp
 
 CAMERA_STAGE_PATH = "/Camera"
 ROS_CAMERA_GRAPH_PATH = "/ROS_Camera"

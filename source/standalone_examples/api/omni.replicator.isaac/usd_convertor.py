@@ -17,7 +17,7 @@ large datasets or for online training of Deep Learning models.
 import argparse
 import os
 
-from isaac_sim import SimulationApp
+from isaacsim import SimulationApp
 
 if "SHAPENET_LOCAL_DIR" not in os.environ:
     import carb

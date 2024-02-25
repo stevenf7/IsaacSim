@@ -10,7 +10,7 @@
 import sys
 
 import numpy as np
-from isaac_sim import SimulationApp
+from isaacsim import SimulationApp
 
 FRANKA_STAGE_PATH = "/Franka"
 FRANKA_USD_PATH = "/Isaac/Robots/Franka/franka_alt_fingers.usd"

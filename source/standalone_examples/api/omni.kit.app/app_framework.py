@@ -10,7 +10,7 @@
 import asyncio
 import os
 
-from isaac_sim import AppFramework
+from isaacsim import AppFramework
 
 argv = [
     "--empty",

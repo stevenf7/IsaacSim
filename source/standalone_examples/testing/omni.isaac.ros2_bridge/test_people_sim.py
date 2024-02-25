@@ -8,7 +8,7 @@
 #
 import sys
 
-from isaac_sim import SimulationApp
+from isaacsim import SimulationApp
 
 # The most basic usage for creating a simulation app
 kit = SimulationApp()

@@ -16,16 +16,16 @@ import carb
 from .app_framework import AppFramework
 from .simulation_app import SimulationApp
 
-# check for isaac_sim module
-check_for_isaac_sim_module = False
+# check for isaacsim module
+check_for_isaacsim_module = False
 try:
     import omni.kit.app
 
     omni.kit.app.get_app()
 except RuntimeError:
-    check_for_isaac_sim_module = True
+    check_for_isaacsim_module = True
 
-if check_for_isaac_sim_module and "isaac_sim" not in sys.modules:
+if check_for_isaacsim_module and "isaacsim" not in sys.modules:
     import traceback
 
     stack = traceback.extract_stack()
@@ -40,7 +40,7 @@ if check_for_isaac_sim_module and "isaac_sim" not in sys.modules:
             if item.line is not None:
                 carb.log_error(f"  {item.line}")
         carb.log_error("")
-    carb.log_error("Please import 'isaac_sim' before importing the 'omni.isaac.kit' extension")
+    carb.log_error("Please import 'isaacsim' before importing the 'omni.isaac.kit' extension")
     exit()
 
 builtins.ISAAC_LAUNCHED_FROM_JUPYTER = (

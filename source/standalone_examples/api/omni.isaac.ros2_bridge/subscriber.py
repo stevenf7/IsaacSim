@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from isaac_sim import SimulationApp
+from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"renderer": "RayTracedLighting", "headless": False})
 

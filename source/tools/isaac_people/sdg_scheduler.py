@@ -9,7 +9,7 @@
 
 from multiprocessing import Process
 
-from isaac_sim import SimulationApp
+from isaacsim import SimulationApp
 
 CONFIG = {"renderer": "RayTracedLighting", "headless": True, "width": 1920, "height": 1080}
 import argparse

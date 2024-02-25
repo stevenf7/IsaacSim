@@ -9,7 +9,7 @@
 
 import argparse
 
-from isaac_sim import SimulationApp
+from isaacsim import SimulationApp
 
 parser = argparse.ArgumentParser(description="Carter Stereo Example")
 parser.add_argument("--test", action="store_true")

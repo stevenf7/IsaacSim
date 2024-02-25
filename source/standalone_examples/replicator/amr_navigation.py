@@ -10,7 +10,7 @@
 """Generate synthetic data from an AMR navigating to random locations
 """
 
-from isaac_sim import SimulationApp
+from isaacsim import SimulationApp
 
 simulation_app = SimulationApp(launch_config={"headless": False})
 

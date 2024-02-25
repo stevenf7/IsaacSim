@@ -17,7 +17,7 @@ import os
 import random
 
 import yaml
-from isaac_sim import SimulationApp
+from isaacsim import SimulationApp
 
 # Default config (will be updated/extended by any other passed config arguments)
 config = {

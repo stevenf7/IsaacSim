@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.11.0] - 2024-02-22
+### Changed
+- Rename isaac_sim import statement to isaacsim
+
 ## [0.10.2] - 2024-02-08
 ### Changed
 - Get SimulationApp from isaac_sim instead of omni.isaac.kit

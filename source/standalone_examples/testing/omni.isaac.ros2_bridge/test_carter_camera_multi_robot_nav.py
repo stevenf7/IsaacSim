@@ -8,7 +8,7 @@
 #
 import sys
 
-from isaac_sim import SimulationApp
+from isaacsim import SimulationApp
 
 # Default environment: Hospital
 

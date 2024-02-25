@@ -16,7 +16,7 @@ import signal
 import numpy as np
 import torch
 import yaml
-from isaac_sim import SimulationApp
+from isaacsim import SimulationApp
 
 parser = argparse.ArgumentParser("Pose Generation data generator")
 parser.add_argument("--num_mesh", type=int, default=30, help="Number of frames to record similar to MESH dataset")

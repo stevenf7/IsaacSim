@@ -9,7 +9,7 @@
 
 import argparse
 
-from isaac_sim import SimulationApp
+from isaacsim import SimulationApp
 
 parser = argparse.ArgumentParser("franka_examples")
 parser.add_argument(
