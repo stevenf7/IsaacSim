@@ -117,7 +117,7 @@ public:
             {
                 width = db.inputs.bufferSize() / point_step;
                 row_step = db.inputs.bufferSize();
-                size_t totalBytes = row_step;
+                // size_t totalBytes = row_step;
                 state.mMessage->fillMetadata(mFrameId, db.inputs.timeStamp(), width, height, point_step);
 
                 omni::isaac::utils::ScopedDevice(db.inputs.cudaDeviceIndex());

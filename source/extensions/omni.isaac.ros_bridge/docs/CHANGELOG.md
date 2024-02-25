@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.15.5] - 2024-02-24
+### Changed
+- Update source code to run a build clean of warnings
+
 ## [1.15.4] - 2023-02-02
 ### Changed
 - Updated path to the nucleus extension

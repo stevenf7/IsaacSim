@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.2] - 2024-02-24
+### Changed
+- Update source code to run a build clean of warnings
+
 ## [1.1.1] - 2024-02-17
 ### Changed
 - Replaced internalState with perInstanceState for python ogn nodes

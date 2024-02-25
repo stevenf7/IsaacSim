@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.12.1] - 2024-02-24
+### Changed
+- Update source code to run a build clean of warnings
+
 ## [1.12.0] - 2024-02-09
 ### Changed
 - Converted Isaac Simulation Gate and Read Camera Info nodes to C++

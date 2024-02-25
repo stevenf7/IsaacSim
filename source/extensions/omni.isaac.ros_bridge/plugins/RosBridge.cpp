@@ -14,7 +14,9 @@
 #include <pxr/usd/usd/inherits.h>
 // clang-format on
 
+#define BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include "ros/ros.h"
+#undef BOOST_BIND_GLOBAL_PLACEHOLDERS
 
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>

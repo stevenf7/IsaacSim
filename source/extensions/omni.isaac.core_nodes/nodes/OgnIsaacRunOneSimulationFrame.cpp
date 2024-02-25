@@ -25,8 +25,6 @@ class OgnIsaacRunOneSimulationFrame : public BaseResetNode
 public:
     static bool compute(OgnIsaacRunOneSimulationFrameDatabase& db)
     {
-        const GraphContextObj& context = db.abi_context();
-
         auto& state = db.perInstanceState<OgnIsaacRunOneSimulationFrame>();
 
         if (state.mFirstFrame)
