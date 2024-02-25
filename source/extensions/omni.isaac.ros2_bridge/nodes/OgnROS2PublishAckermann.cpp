@@ -23,8 +23,6 @@ public:
 
     static bool compute(OgnROS2PublishAckermannDatabase& db)
     {
-        const GraphContextObj& context = db.abi_context();
-
         auto& state = db.perInstanceState<OgnROS2PublishAckermann>();
 
         // spin once calls reset automatically if it was not successful
@@ -80,7 +78,6 @@ public:
         {
             return;
         }
-        const double steeringAngle = db.inputs.steeringAngle();
 
         state.mMessage->fillHeader(db.inputs.timeStamp(), db.inputs.frameId());
         state.mMessage->fillData(db.inputs.steeringAngle(), db.inputs.steeringAngleVelocity(), db.inputs.speed(),

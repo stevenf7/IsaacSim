@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.8.3] - 2024-02-24
+### Changed
+- Update source code to run a build clean of warnings
+
 ## [2.8.2] - 2023-02-07
 ### Changed
 - Updated path to the nucleus extension

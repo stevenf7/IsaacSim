@@ -29,8 +29,6 @@ class OgnDifferentialController : public BaseResetNode
 public:
     static bool compute(OgnDifferentialControllerDatabase& db)
     {
-        const GraphContextObj& context = db.abi_context();
-
         auto& state = db.perInstanceState<OgnDifferentialController>();
         state.nodeObj = db.abi_node();
 

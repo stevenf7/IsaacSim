@@ -1,5 +1,9 @@
 # Changelog
 
+## [9.13.6] - 2024-02-24
+### Changed
+- Update source code to run a build clean of warnings
+
 ## [9.13.5] - 2024-02-22
 ### Changed
 - Using externally built omni.sensors for rtx lidar and rtx radar

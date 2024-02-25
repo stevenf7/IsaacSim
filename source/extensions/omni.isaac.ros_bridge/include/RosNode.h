@@ -11,7 +11,9 @@
 
 #include "omni/isaac/utils/BaseResetNode.h"
 #include "ros/callback_queue.h"
+#define BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include "ros/ros.h"
+#undef BOOST_BIND_GLOBAL_PLACEHOLDERS
 
 #include <carb/Defines.h>
 #include <carb/Types.h>

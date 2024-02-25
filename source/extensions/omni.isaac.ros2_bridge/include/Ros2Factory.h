@@ -318,6 +318,7 @@ public:
 class Ros2Factory
 {
 public:
+    virtual ~Ros2Factory() = default;
     virtual std::shared_ptr<Ros2HandleBase> CreateHandle() = 0;
     virtual std::shared_ptr<Ros2NodeBase> CreateNode(const char* name, const char* name_space, Ros2HandleBase* handle) = 0;
     virtual std::shared_ptr<Ros2Publisher> CreatePublisher(Ros2NodeBase* node,

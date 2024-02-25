@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.1.1] - 2024-02-24
+### Changed
+- Update source code to run a build clean of warnings
+
 ## [1.1.0] - 2024-01-08
 ### Changed
 - Moved header files to extension
