@@ -109,7 +109,7 @@ class NavSDGDemo:
         if self._timeline_sub:
             self._timeline_sub.unsubscribe()
         self._timeline_sub = None
-        self._destroy_render_products()
+        self._clear_sdg_render_products()
         self._stage = None
         self._in_running_state = False
 
@@ -223,30 +223,31 @@ class NavSDGDemo:
 
         self._writer = rep.WriterRegistry.get("BasicWriter")
         self._writer.initialize(output_dir=self._out_dir, rgb=True)
-        # If no temporary render products are requested, create them once here and destroy them only at the end
-        if not self._use_temp_rp:
-            self._setup_render_products()
+        self._setup_sdg_render_products()
 
-    def _setup_render_products(self):
-        print(f"[NavSDGDemo] Creating render products")
+    def _setup_sdg_render_products(self):
+        print(f"[NavSDGDemo] Creating SDG render products")
         rp_left = rep.create.render_product(
             self.LEFT_CAMERA_PATH,
-            (512, 512),
+            (1024, 1024),
             name="left_sensor",
             force_new=True,
         )
         rp_right = rep.create.render_product(
             self.RIGHT_CAMERA_PATH,
-            (512, 512),
+            (1024, 1024),
             name="right_sensor",
             force_new=True,
         )
         self._render_products = [rp_left, rp_right]
+        # For better performance the render products can be disabled when not in use, and re-enabled only during SDG
+        if self._use_temp_rp:
+            self._disable_render_products()
         self._writer.attach(self._render_products)
         rep.orchestrator.preview()
 
-    def _destroy_render_products(self):
-        print(f"[NavSDGDemo] Destroying render products")
+    def _clear_sdg_render_products(self):
+        print(f"[NavSDGDemo] Clearing SDG render products")
         if self._writer:
             self._writer.detach()
         for rp in self._render_products:
@@ -255,21 +256,31 @@ class NavSDGDemo:
         if self._stage.GetPrimAtPath("/Replicator"):
             omni.kit.commands.execute("DeletePrimsCommand", paths=["/Replicator"])
 
+    def _enable_render_products(self):
+        print(f"[NavSDGDemo] Enabling render products for SDG..")
+        for rp in self._render_products:
+            rp.hydra_texture.set_updates_enabled(True)
+
+    def _disable_render_products(self):
+        print(f"[NavSDGDemo] Disabling render products (enabled only during SDG)..")
+        for rp in self._render_products:
+            rp.hydra_texture.set_updates_enabled(False)
+
     def _run_sdg(self):
         if self._use_temp_rp:
-            self._setup_render_products()
-        rep.orchestrator.step(rt_subframes=16, pause_timeline=False)
+            self._enable_render_products()
+        rep.orchestrator.step(rt_subframes=16, delta_time=0.0)
         rep.orchestrator.wait_until_complete()
         if self._use_temp_rp:
-            self._destroy_render_products()
+            self._disable_render_products()
 
     async def _run_sdg_async(self):
         if self._use_temp_rp:
-            self._setup_render_products()
-        await rep.orchestrator.step_async(rt_subframes=16, pause_timeline=False)
+            self._enable_render_products()
+        await rep.orchestrator.step_async(rt_subframes=16, delta_time=0.0)
         await rep.orchestrator.wait_until_complete_async()
         if self._use_temp_rp:
-            self._destroy_render_products()
+            self._disable_render_products()
 
     def _load_next_env(self):
         if self._stage.GetPrimAtPath("/Environment"):
@@ -303,7 +314,7 @@ class NavSDGDemo:
         dolly_loc = self._dolly.GetAttribute("xformOp:translate").Get()
         dist = (Gf.Vec2f(dolly_loc[0], dolly_loc[1]) - Gf.Vec2f(carter_loc[0], carter_loc[1])).GetLength()
         if dist < self._trigger_distance:
-            print(f"[NavSDGDemo] Capturing frame no. {self._frame_counter}")
+            print(f"[NavSDGDemo] Starting SDG for frame no. {self._frame_counter}")
             self._timeline.pause()
             self._timeline_sub.unsubscribe()
             if self._is_running_in_script_editor():
