@@ -1,5 +1,9 @@
 # Changelog
 
+## [9.13.7] - 2024-02-26
+### Fixed
+- Added execOut trigger commands in Read IMU and Contact Sensor nodes to allow attached downstream nodes to tick
+
 ## [9.13.6] - 2024-02-24
 ### Changed
 - Update source code to run a build clean of warnings
