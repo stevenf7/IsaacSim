@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.1] - 2024-02-26
+### Fixed
+- Missing app icon issue
+
 ## [1.6.0] - 2024-02-22
 ### Changed
 - Rename isaac_sim import statement to isaacsim
