@@ -27,6 +27,8 @@ from omni.usd.commands import DeletePrimsCommand, MovePrimCommand
 # omniverse
 from pxr import Gf, Usd, UsdGeom, UsdPhysics
 
+from .._core import _find_matching_prim_paths
+
 
 def get_prim_at_path(prim_path: str, fabric: bool = False) -> typing.Union[Usd.Prim, usdrt.Usd._Usd.Prim]:
     """Get the USD or Fabric Prim at a given path string
@@ -385,28 +387,30 @@ def find_matching_prim_paths(prim_path_regex: str) -> typing.List[str]:
         >>> prims_utils.find_matching_prim_paths("/World/env_.*/Cube")
         ['/World/env_01/Cube', '/World/env_02/Cube']
     """
-    expressions_to_match = [prim_path_regex]
-    result = []
-    while len(expressions_to_match) > 0:
-        expression_to_match = expressions_to_match.pop(0)
-        root_prim_path, tree_level = find_root_prim_path_from_regex(expression_to_match)
-        if root_prim_path is None:
-            if is_prim_path_valid(expression_to_match):
-                result.append(expression_to_match)
-        else:
-            immediate_expression_to_match = "/".join(expression_to_match.split("/")[: tree_level + 1])
-            children_matching = get_all_matching_child_prims(
-                prim_path=root_prim_path,
-                predicate=lambda a: re.search(immediate_expression_to_match, a) is not None,
-                depth=1,
-            )
-            children_matching = [get_prim_path(prim) for prim in children_matching]
-            remainder_expression = "/".join(expression_to_match.split("/")[tree_level + 1 :])
-            if remainder_expression != "":
-                remainder_expression = "/" + remainder_expression
-            children_expressions = [child + remainder_expression for child in children_matching]
-            expressions_to_match = expressions_to_match + children_expressions
-    return result
+    stage_id = omni.usd.get_context().get_stage_id()
+    return _find_matching_prim_paths(prim_path_regex.replace(".*", "*"), stage_id)
+    # expressions_to_match = [prim_path_regex]
+    # result = []
+    # while len(expressions_to_match) > 0:
+    #     expression_to_match = expressions_to_match.pop(0)
+    #     root_prim_path, tree_level = find_root_prim_path_from_regex(expression_to_match)
+    #     if root_prim_path is None:
+    #         if is_prim_path_valid(expression_to_match):
+    #             result.append(expression_to_match)
+    #     else:
+    #         immediate_expression_to_match = "/".join(expression_to_match.split("/")[: tree_level + 1])
+    #         children_matching = get_all_matching_child_prims(
+    #             prim_path=root_prim_path,
+    #             predicate=lambda a: re.search(immediate_expression_to_match, a) is not None,
+    #             depth=1,
+    #         )
+    #         children_matching = [get_prim_path(prim) for prim in children_matching]
+    #         remainder_expression = "/".join(expression_to_match.split("/")[tree_level + 1 :])
+    #         if remainder_expression != "":
+    #             remainder_expression = "/" + remainder_expression
+    #         children_expressions = [child + remainder_expression for child in children_matching]
+    #         expressions_to_match = expressions_to_match + children_expressions
+    # return result
 
 
 def get_prim_children(prim: Usd.Prim) -> typing.List[Usd.Prim]:
