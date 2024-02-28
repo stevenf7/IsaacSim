@@ -926,6 +926,7 @@ deps_for_isaac = [
   "omni.replicator.character.core-0.1.11",
   "omni.replicator.character.ui-0.1.11",
   # "omni.replicator.character.camera_calibration-0.1.10"
+  "omni.kit.profiler.tracy-1.1.4"
 ]
 
 deps_for_testing = []
