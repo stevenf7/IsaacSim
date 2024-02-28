@@ -40,7 +40,12 @@ if check_for_isaacsim_module and "isaacsim" not in sys.modules:
             if item.line is not None:
                 carb.log_error(f"  {item.line}")
         carb.log_error("")
-    carb.log_error("Please import 'isaacsim' before importing the 'omni.isaac.kit' extension")
+    carb.log_error("Please import 'isaacsim' before importing the 'omni.isaac.kit' extension...")
+    carb.log_error("  >>> import isaacsim")
+    carb.log_error("  >>> from omni.isaac.kit import SimulationApp")
+    carb.log_error("")
+    carb.log_error("or get the 'SimulationApp' class directly from the 'isaacsim' module")
+    carb.log_error("  >>> from isaacsim import SimulationApp")
     exit()
 
 builtins.ISAAC_LAUNCHED_FROM_JUPYTER = (
