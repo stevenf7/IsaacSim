@@ -81,8 +81,10 @@ public:
             value = 0;
             sensorTime = 0.0f;
             db.logWarning("no valid sensor reading, is the sensor enabled?");
+            db.outputs.execOut() = kExecutionAttributeStateDisabled;
             return false;
         }
+        db.outputs.execOut() = kExecutionAttributeStateEnabled;
         return true;
     }
 
