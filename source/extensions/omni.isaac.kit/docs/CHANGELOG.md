@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.2] - 2024-02-27
+### Changed
+- Make error message about import isaacsim clearer
+
 ## [1.6.1] - 2024-02-26
 ### Fixed
 - Missing app icon issue
