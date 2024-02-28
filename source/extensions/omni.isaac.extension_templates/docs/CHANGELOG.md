@@ -1,6 +1,10 @@
 # Changelog
+## [1.6.0] - 2024-02-28
+### Fixed
+- Fixed code for populating drop-down menu with Articulations in Configuration Tooling Template.
+    This issue arose with Kit behavior changes on stage and timeline events.
 
-## [1.5.2] - 2023-02-02
+## [1.5.2] - 2023-12-02
 ### Changed
 - Updated path to the nucleus extension
 

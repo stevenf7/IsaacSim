@@ -71,14 +71,12 @@ class UIBuilder:
         Args:
             event (omni.usd.StageEventType): Event Type
         """
-
-        # The ASSETS_LOADED stage event is triggered on every occasion that the selection menu should be repopulated:
-        #   a) The timeline is stopped or played
-        #   b) An Articulation is added or removed from the stage
-        #   c) The USD stage is loaded or cleared
-        if event.type == int(omni.usd.StageEventType.ASSETS_LOADED):
+        if event.type == int(omni.usd.StageEventType.ASSETS_LOADED):  # Any asset added or removed
             self._selection_menu.repopulate()
-        pass
+        elif event.type == int(omni.usd.StageEventType.SIMULATION_START_PLAY):  # Timeline played
+            self._selection_menu.repopulate()
+        elif event.type == int(omni.usd.StageEventType.SIMULATION_STOP_PLAY):  # Timeline stopped
+            self._selection_menu.repopulate()
 
     def cleanup(self):
         """
