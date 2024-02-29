@@ -65,6 +65,12 @@
                 "description": "If True publish a full scan when enough data has accumulated instead of partial scans each frame. Supports point cloud type only",
                 "uiName": "Publish Full Scan",
                 "default": false
+            },
+            "showDebugView": {
+                "type": "bool",
+                "description": "If True a debug view of the lidar particles will appear in the scene.",
+                "uiName": "Show Debug View",
+                "default": false
             }
         }
     }

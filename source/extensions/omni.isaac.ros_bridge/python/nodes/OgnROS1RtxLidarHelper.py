@@ -105,6 +105,9 @@ class OgnROS1RtxLidarHelper:
                             topicName=db.inputs.topicName,
                         )
                         db.internal_state.append_writer(writer)
+                        if db.inputs.showDebugView:
+                            writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud" + "Buffer")
+                            db.internal_state.append_writer(writer)
                     db.internal_state.attach_writers(render_product_path)
                 except Exception as e:
                     print(traceback.format_exc())

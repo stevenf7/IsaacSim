@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.8.4] - 2024-02-28
+### Added
+- Added Show Debug View flag to RTX Lidar Helper
+
+
 ## [2.8.3] - 2024-02-24
 ### Changed
 - Update source code to run a build clean of warnings
