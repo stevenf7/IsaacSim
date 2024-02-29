@@ -23,8 +23,8 @@ def make_menu_item_description(ext_id: str, name: str, onclick_fun, action_name:
         ext_id + name + action_name must concatenate to a unique identifier.
 
     """
-    # TODO, fix errors when reloading extensions
-    # action_unique = f'{ext_id.replace(" ", "_")}{name.replace(" ", "_")}{action_name.replace(" ", "_")}'
-    # action_registry = omni.kit.actions.core.get_action_registry()
-    # action_registry.register_action(ext_id, action_unique, onclick_fun)
-    return MenuItemDescription(name=name, onclick_fn=onclick_fun)
+    action_unique = f'{ext_id.replace(" ", "_")}{name.replace(" ", "_")}{action_name.replace(" ", "_")}'
+    action_registry = omni.kit.actions.core.get_action_registry()
+    action_registry.deregister_action(ext_id, action_unique)
+    action_registry.register_action(ext_id, action_unique, onclick_fun)
+    return MenuItemDescription(name=name, onclick_action=(ext_id, action_unique))

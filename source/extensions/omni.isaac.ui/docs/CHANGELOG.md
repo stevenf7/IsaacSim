@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.14.1] - 2024-02-27
+### Changed
+- Use action registry in make_menu_item_description by deregistering actions first
+
 ## [0.14.0] - 2024-02-02
 ### Added
 - SelectPrimWidget and ParamWidget to simplify populating a popup dialog for collecting paramaters. 
