@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.9.1] - 2024-02-29
+### Fixed
+- Fixed edge case crash in ROS2 subscribers
+
 ## [2.9.0] - 2024-02-29
 ### Added
 - Carb setting publish_without_verification for toggling ROS2 publishers to publish regardless of subscription count on a topic

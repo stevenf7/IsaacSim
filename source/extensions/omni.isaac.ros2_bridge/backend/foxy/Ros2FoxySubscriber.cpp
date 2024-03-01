@@ -1,4 +1,4 @@
-// Copyright (c) 2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2023-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -56,13 +56,15 @@ Ros2SubscriberFoxy::Ros2SubscriberFoxy(Ros2NodeBase* node,
 }
 Ros2SubscriberFoxy::~Ros2SubscriberFoxy()
 {
-
-    rcl_ret_t rc = rcl_wait_set_fini(&wait_set);
-    if (rc != RCL_RET_OK)
+    if (wait_set_initialized)
     {
-        RCL_ERROR_MSG(~Ros2SubscriberFoxy, rcl_wait_set_fini);
+        rcl_ret_t rc = rcl_wait_set_fini(&wait_set);
+        if (rc != RCL_RET_OK)
+        {
+            RCL_ERROR_MSG(~Ros2SubscriberFoxy, rcl_wait_set_fini);
+        }
+        wait_set_initialized = false;
     }
-    wait_set_initialized = false;
 
     mSub.reset();
     return;
