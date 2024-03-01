@@ -6,11 +6,6 @@ CONFIG:
   width: 512
   height: 512
 
-# Index of part in array of classes in PoseCNN training
-CLASS_NAME_TO_INDEX:
-  003_cracker_box: 1
-  035_power_drill: 2
-
 # prim_type is determined by the usd file. 
 # To determine, open the usd file in Isaac Sim and see the prim path. If you load it in /World, the path will be /World/<prim_type>
 OBJECTS_TO_GENERATE:
@@ -25,10 +20,7 @@ WIDTH: 512
 HEIGHT: 512
 F_X: 768.1605834960938
 F_Y: 768.1605834960938
-C_X: 256
-C_Y: 256
-# Default Camera Horizontal Aperture
-HORIZONTAL_APERTURE: 20.955
+pixel_size: 0.003
 
 # Number of sphere lights added to the scene
 NUM_LIGHTS: 6

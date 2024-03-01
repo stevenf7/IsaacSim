@@ -10,6 +10,7 @@
 """
 
 import argparse
+import datetime
 import os
 import signal
 
@@ -40,9 +41,10 @@ parser.add_argument("--endpoint", type=str, default=None, help="s3 endpoint to w
 parser.add_argument(
     "--writer",
     type=str,
-    default="YCBVideo",
+    default="centerpose",
     help="Which writer to use to output data. Choose between: [YCBVideo, DOPE]",
 )
+parser.add_argument("--debug", action="store_true", help="Write debug images for the writer.")
 parser.add_argument(
     "--test",
     action="store_true",
@@ -58,7 +60,11 @@ if args.test:
 if args.use_s3 and (args.endpoint is None or args.bucket is None):
     raise Exception("To use s3, --endpoint and --bucket must be specified.")
 
-CONFIG_FILES = {"dope": "config/dope_config.yaml", "ycbvideo": "config/ycb_config.yaml"}
+CONFIG_FILES = {
+    "dope": "config/dope_config.yaml",
+    "ycbvideo": "config/ycb_config.yaml",
+    "centerpose": "config/centerpose_config.yaml",
+}
 TEST_CONFIG_FILES = {"dope": "tests/dope/test_dope_config.yaml", "ycbvideo": "tests/ycbvideo/test_ycb_config.yaml"}
 
 # Path to config file:
@@ -83,7 +89,7 @@ from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.core.utils.semantics import add_update_semantics
 from omni.isaac.nucleus import get_assets_root_path
-from omni.replicator.isaac.scripts.writers import DOPEWriter, YCBVideoWriter
+from omni.replicator.isaac.scripts.writers import PoseWriter, YCBVideoWriter
 
 # Since the simulation is mostly collision checking, a larger physics dt can be used to speed up the object movements
 world = World(physics_dt=1.0 / 30.0)
@@ -96,7 +102,7 @@ from flying_distractors.dynamic_shape_set import DynamicShapeSet
 from flying_distractors.flying_distractors import FlyingDistractors
 from omni.isaac.core.utils.random import get_random_world_pose_in_view
 from omni.isaac.core.utils.transformations import get_world_pose_from_relative
-from tests.test_utils import clean_output_dir, run_pose_generation_test
+from pose_tests.test_utils import clean_output_dir, run_pose_generation_test
 
 
 class RandomScenario(torch.utils.data.IterableDataset):
@@ -109,18 +115,23 @@ class RandomScenario(torch.utils.data.IterableDataset):
         use_s3=False,
         endpoint="",
         s3_region="us-east-1",
-        writer="ycbvideo",
+        writer="centerpose",
         bucket="",
         test=False,
+        debug=False,
     ):
         self.test = test
+        self.writer_format = writer
+        self.debug = debug
 
         if writer == "ycbvideo":
             self.writer_helper = YCBVideoWriter
-        elif writer == "dope":
-            self.writer_helper = DOPEWriter
+        elif writer == "dope" or writer == "centerpose":
+            self.writer_helper = PoseWriter
         else:
-            raise Exception("Invalid writer specified. Choose between [DOPE, YCBVideo].")
+            raise Exception(
+                "Invalid writer specified. Choose between [DOPE, CenterPose, YCBVideo]. Run with --help for more options."
+            )
 
         self.result = True
         assets_root_path = get_assets_root_path()
@@ -128,6 +139,8 @@ class RandomScenario(torch.utils.data.IterableDataset):
             carb.log_error("Could not find Isaac Sim assets folder")
             self.result = False
             return
+        else:
+            print(f"Using Isaac Sim assets from: {assets_root_path}")
         self.dome_texture_path = assets_root_path + "/NVIDIA/Assets/Skies/"
         self.ycb_asset_path = assets_root_path + "/Isaac/Props/YCB/Axis_Aligned/"
         self.asset_path = assets_root_path + "/Isaac/Props/YCB/Axis_Aligned/"
@@ -138,7 +151,6 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self.dome_distractors = FlyingDistractors()
         self.current_distractors = None
 
-        self.data_writer = None
         self.num_mesh = max(0, num_mesh) if not self.test else 5
         self.num_dome = max(0, num_dome) if not self.test else 0
         self.train_size = self.num_mesh + self.num_dome
@@ -206,8 +218,14 @@ class RandomScenario(torch.utils.data.IterableDataset):
             kit.app.update()
 
         # Setup writer
-        self.writer_helper.register_pose_annotator(config_data=config_data)
-        self.writer = self.writer_helper.setup_writer(config_data=config_data, writer_config=self.writer_config)
+        if self.writer_helper == PoseWriter:
+            self.writer = rep.WriterRegistry.get("PoseWriter")
+            self.writer.initialize(
+                output_dir=self._output_folder, write_debug_images=self.debug, format=self.writer_format
+            )
+        else:
+            self.writer_helper.register_pose_annotator(config_data=config_data)
+            self.writer = self.writer_helper.setup_writer(config_data=config_data, writer_config=self.writer_config)
         self.writer.attach([self.render_product])
 
         self.dome_distractors.set_visible(False)
@@ -216,13 +234,16 @@ class RandomScenario(torch.utils.data.IterableDataset):
         rep.orchestrator.preview()
 
     def _setup_camera(self):
-        focal_length = config_data["HORIZONTAL_APERTURE"] * config_data["F_X"] / config_data["WIDTH"]
+        focal_length_mm = (config_data["F_X"] + config_data["F_Y"]) * config_data["pixel_size"] / 2
+        horiztonal_aperture_mm = config_data["pixel_size"] * config_data["WIDTH"]
 
         # Setup camera and render product
+        # See https://docs.omniverse.nvidia.com/py/replicator/1.10.10/source/extensions/omni.replicator.core/docs/API.html#cameras
         self.camera = rep.create.camera(
             position=(0, 0, 0),
             rotation=np.array(config_data["CAMERA_RIG_ROTATION"]),
-            focal_length=focal_length,
+            focal_length=focal_length_mm / 10.0,  # convert to cm
+            horizontal_aperture=horiztonal_aperture_mm / 10.0,  # convert to cm
             clipping_range=(0.01, 10000),
         )
 
@@ -520,9 +541,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
         print(f"ID: {self.cur_idx}/{self.train_size - 1}")
         rep.orchestrator.step(rt_subframes=4)
 
-        # Check that there was valid training data in the last frame (target object(s) visible to camera)
-        if self.writer.is_last_frame_valid():
-            self.cur_idx += 1
+        self.cur_idx += 1
 
         # Check if last frame has been reached
         if self.cur_idx >= self.train_size:
@@ -542,13 +561,12 @@ dataset = RandomScenario(
     endpoint=args.endpoint,
     writer=args.writer.lower(),
     test=args.test,
+    debug=args.debug,
 )
 
 if dataset.result:
     # Iterate through dataset and visualize the output
     print("Loading materials. Will generate data soon...")
-
-    import datetime
 
     start_time = datetime.datetime.now()
     print("Start timestamp:", start_time.strftime("%m/%d/%Y, %H:%M:%S"))
