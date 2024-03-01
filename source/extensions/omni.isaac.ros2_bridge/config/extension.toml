@@ -32,7 +32,7 @@ preview_image = "data/preview.png"
 
 [settings]
 exts."omni.isaac.ros2_bridge".ros_distro = "humble" # This setting specified which ros distro to fallback onto if none were sourced.
-omni.isaac.ros2_bridge.publish_without_verification = false # This setting specifies if ROS2 publishers are enabled regardless of whether there are active subscriptions to their topics.
+exts."omni.isaac.ros2_bridge".publish_without_verification = false # This setting specifies if ROS2 publishers are enabled regardless of whether there are active subscriptions to their topics.
 
 [[python.module]]
 name = "omni.isaac.ros2_bridge"

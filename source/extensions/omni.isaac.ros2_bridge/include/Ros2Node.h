@@ -42,7 +42,7 @@ public:
         mRos2Bridge = carb::getCachedInterface<omni::isaac::ros2_bridge::Ros2Bridge>();
 
         mSettings = carb::getCachedInterface<carb::settings::ISettings>();
-        static constexpr char setting[] = "/omni/isaac/ros2_bridge/publish_without_verification";
+        static constexpr char setting[] = "/exts/omni.isaac.ros2_bridge/publish_without_verification";
         mPublishWithoutVerification = mSettings->getAsBool(setting);
 
         // Here mFactory should be set according to the env var for ROS Distro..?
