@@ -14,6 +14,7 @@
 #include <carb/Defines.h>
 #include <carb/Types.h>
 #include <carb/events/EventsUtils.h>
+#include <carb/settings/ISettings.h>
 
 #include <include/Ros2Bridge.h>
 #include <include/Ros2Factory.h>
@@ -39,6 +40,11 @@ public:
     {
         mCoreNodeFramework = carb::getCachedInterface<omni::isaac::core_nodes::CoreNodes>();
         mRos2Bridge = carb::getCachedInterface<omni::isaac::ros2_bridge::Ros2Bridge>();
+
+        mSettings = carb::getCachedInterface<carb::settings::ISettings>();
+        static constexpr char setting[] = "/omni/isaac/ros2_bridge/publish_without_verification";
+        mPublishWithoutVerification = mSettings->getAsBool(setting);
+
         // Here mFactory should be set according to the env var for ROS Distro..?
         mFactory = mRos2Bridge->getFactory();
     }
@@ -208,6 +214,8 @@ private:
 protected:
     omni::isaac::ros2_bridge::Ros2Bridge* mRos2Bridge = nullptr;
     std::shared_ptr<Ros2NodeBase> mNodeHandle = nullptr;
+    carb::settings::ISettings* mSettings = nullptr;
+    bool mPublishWithoutVerification;
     std::shared_ptr<Ros2HandleBase>* contextPtr;
     omni::isaac::core_nodes::CoreNodes* mCoreNodeFramework;
     Ros2Factory* mFactory = nullptr;

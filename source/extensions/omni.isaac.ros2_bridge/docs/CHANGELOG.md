@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.9.0] - 2024-02-29
+### Added
+- Carb setting publish_without_verification for toggling ROS2 publishers to publish regardless of subscription count on a topic
+
 ## [2.8.4] - 2024-02-28
 ### Added
 - Added Show Debug View flag to RTX Lidar Helper
