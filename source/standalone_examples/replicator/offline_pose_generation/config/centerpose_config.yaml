@@ -1,40 +1,33 @@
----
 # Default rendering parameters
 CONFIG:
   renderer: RayTracedLighting
   headless: false
-  width: 1280
-  height: 720
+  width: 1920
+  height: 1440
 
-# Index of part in array of classes in PoseCNN training
-CLASS_NAME_TO_INDEX:
-  _03_cracker_box: 1
-  _35_power_drill: 2
 
 # prim_type is determined by the usd file. 
 # To determine, open the usd file in Isaac Sim and see the prim path. If you load it in /World, the path will be /World/<prim_type>
-OBJECTS_TO_GENERATE: 
-- { part_name: 003_cracker_box, num: 1, prim_type: _03_cracker_box } 
+OBJECTS_TO_GENERATE:
+- { part_name: 003_cracker_box, num: 1, prim_type: _03_cracker_box }
 - { part_name: 035_power_drill, num: 1, prim_type: _35_power_drill }
 
 # Maximum force component to apply to objects to keep them in motion
 FORCE_RANGE: 30
 
 # Camera Intrinsics
-WIDTH: 1280
-HEIGHT: 720
-F_X: 665.80768
-F_Y: 665.80754
-C_X: 256
-C_Y: 256
-pixel_size: 0.003
+WIDTH: 1920
+HEIGHT: 1440
+F_X: 1544.0
+F_Y: 1544.0 # F_X, F_Y should be the same.
+pixel_size: 0.003 # in mm 
 
 # Number of sphere lights added to the scene
 NUM_LIGHTS: 6
 
 # Minimum and maximum distances of objects away from the camera (along the optical axis)
 MIN_DISTANCE: 0.2
-MAX_DISTANCE: 1.2
+MAX_DISTANCE: 1.4
 
 # Rotation of camera rig with respect to world frame, expressed as XYZ euler angles
 CAMERA_RIG_ROTATION:
@@ -67,7 +60,7 @@ MAX_ROTATION_RANGE:
 - 180
 
 # How close the center of the part being trained on is allowed to be to the edge of the screen
-FRACTION_TO_SCREEN_EDGE: 0.9
+FRACTION_TO_SCREEN_EDGE: 0.8
 
 # MESH and DOME datasets
 SHAPE_SCALE:
@@ -108,8 +101,8 @@ MESH_FILENAMES:
 - 061_foam_brick
 
 # DOME dataset
-NUM_DOME_SHAPES: 30
-NUM_DOME_OBJECTS: 20
+NUM_DOME_SHAPES: 100
+NUM_DOME_OBJECTS: 100
 DOME_FRACTION_GLASS: 0.2
 DOME_TEXTURES:
 - Clear/evening_road_01_4k

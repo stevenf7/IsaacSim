@@ -33,11 +33,26 @@ class PoseWriter(Writer):
             If True, the writer will include rgb images overlaid with the projected 3d bounding boxes.
         frame_padding:
             Pad the frame number with leading zeroes.  Default: ``4``
+        format:
+            Specifies which format the data will be outputted as. Default: ``centerpose``
     """
 
     RGB_ANNOT_NAME = "rgb"
     BB3D_ANNOT_NAME = "bounding_box_3d_fast"
     CAM_PARAMS_ANNOT_NAME = "camera_params"
+    SUPPORTED_FORMATS = set(["default", "dope", "centerpose"])
+
+    KEYPOINT_ORDER = [
+        "Center",
+        "LDB",
+        "LDF",
+        "LUB",
+        "LUF",
+        "RDB",
+        "RDF",
+        "RUB",
+        "RUF",
+    ]
 
     def __init__(
         self,
@@ -47,6 +62,7 @@ class PoseWriter(Writer):
         skip_empty_frames: bool = True,
         write_debug_images: bool = False,
         frame_padding: int = 4,
+        format: str = "default",
     ):
         self.version = __version__
         self._output_dir = output_dir
@@ -57,12 +73,17 @@ class PoseWriter(Writer):
         self._write_debug_images = write_debug_images
         self._frame_padding = frame_padding
         self._frame_id = 0
+        if format.lower() not in self.SUPPORTED_FORMATS:
+            raise ValueError(f"Unsupported format: {format}. Supported formats: {self.SUPPORTED_FORMATS}")
+        else:
+            self._format = format
 
         # Use render product names and their multiple render product flag for convenient data access
         self._render_product_names = []
         self._multiple_render_products = False
 
         self.annotators = []
+        # For more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html
         self.annotators.append(AnnotatorRegistry.get_annotator(self.RGB_ANNOT_NAME))
         self.annotators.append(AnnotatorRegistry.get_annotator(self.BB3D_ANNOT_NAME))
         self.annotators.append(AnnotatorRegistry.get_annotator(self.CAM_PARAMS_ANNOT_NAME))
@@ -84,20 +105,34 @@ class PoseWriter(Writer):
     # Extract the camera parameters from the data
     def _extract_camera_parameters(self, camera_params) -> dict:
         camera_data = {}
-        camera_data["aperture"] = camera_params["cameraAperture"].tolist()
-        camera_data["aperture_offset"] = camera_params["cameraApertureOffset"].tolist()
-        camera_data["focal_length"] = float(camera_params["cameraFocalLength"])
-        camera_data["view_transform"] = camera_params["cameraViewTransform"].reshape(4, 4).tolist()
-        camera_data["projection_matrix"] = camera_params["cameraProjection"].reshape(4, 4).tolist()
-        camera_data["fisheye_optical_centre"] = camera_params["cameraFisheyeOpticalCentre"].tolist()
-        camera_data["fisheye_nominal_height"] = float(camera_params["cameraFisheyeNominalHeight"])
-        camera_data["fisheye_nominal_width"] = float(camera_params["cameraFisheyeNominalWidth"])
-        camera_data["resolution"] = camera_params["renderProductResolution"].tolist()
-        camera_data["meters_per_scene_unit"] = float(camera_params["metersPerSceneUnit"])
+        if self._format == "default":
+            camera_data["aperture"] = camera_params["cameraAperture"].tolist()
+            camera_data["aperture_offset"] = camera_params["cameraApertureOffset"].tolist()
+            camera_data["focal_length"] = float(camera_params["cameraFocalLength"])
+
+            camera_data["fisheye_optical_centre"] = camera_params["cameraFisheyeOpticalCentre"].tolist()
+            camera_data["fisheye_nominal_height"] = float(camera_params["cameraFisheyeNominalHeight"])
+            camera_data["fisheye_nominal_width"] = float(camera_params["cameraFisheyeNominalWidth"])
+            camera_data["meters_per_scene_unit"] = float(camera_params["metersPerSceneUnit"])
+
+        camera_data["camera_view_matrix"] = camera_params["cameraViewTransform"].reshape(4, 4).tolist()
+        camera_data["camera_projection_matrix"] = camera_params["cameraProjection"].reshape(4, 4).tolist()
+        camera_data["width"] = camera_params["renderProductResolution"].tolist()[0]
+        camera_data["height"] = camera_params["renderProductResolution"].tolist()[1]
+
+        pixel_size = camera_params["cameraAperture"][0] / camera_data["width"]
+
+        # See https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/isaac_sim_sensors_camera.html#calibrated-camera-sensors
+        camera_data["intrinsics"] = {
+            "fx": camera_params["cameraFocalLength"] / pixel_size,
+            "fy": camera_params["cameraFocalLength"] / pixel_size,
+            "cx": camera_data["width"] / 2.0 + camera_params["cameraApertureOffset"][0],
+            "cy": camera_data["height"] / 2.0 + camera_params["cameraApertureOffset"][1],
+        }
+
         return camera_data
 
-    # Project a 3D point in world coordinates into 2D screen coordinates
-    def _project_world_point_to_screen(self, world_point, view_matrix, projection_matrix, screen_size):
+    def _world_point_to_camera_point(self, world_point, view_matrix):
         # Convert the 3D point to homogeneous coordinates (if not already in that form)
         if len(world_point) == 4:
             point_homogeneous = np.array(world_point)
@@ -106,11 +141,15 @@ class PoseWriter(Writer):
 
         # Transform to camera frame (row-major representation where the translation vector is on the left side of the multiplication)
         point_camera = point_homogeneous @ view_matrix
-        # point_camera = view_matrix.T @ point_homogeneous  # column-major alternative approach with the transpose
+
+        return point_camera
+
+    # Project a 3D point in world coordinates into 2D screen coordinates
+    def _project_world_point_to_screen(self, world_point, view_matrix, projection_matrix, screen_size):
+        point_camera = self._world_point_to_camera_point(world_point, view_matrix)
 
         # Apply the projection matrix to project into screen coordinates
         point_screen = point_camera @ projection_matrix
-        # point_screen = np.dot(projection_matrix.T, point_camera)  # column-major alternative approach with the transpose
 
         # Normalize to NDC (Normalized Device Coordinates) by dividing x, y, z by w. Needed for 3D to 2D projection across various screen sizes/aspect ratios.
         point_screen_normalized = point_screen / point_screen[3]
@@ -119,7 +158,7 @@ class PoseWriter(Writer):
         x = (point_screen_normalized[0] + 1) * screen_size[0] / 2
         y = (1 - point_screen_normalized[1]) * screen_size[1] / 2
 
-        return int(x), int(y)
+        return round(x), round(y)
 
     # Process the bounding box data and extract the object's label, location, rotation, visibility, etc.
     def _process_bounding_boxes(self, bb3d_data, bb3d_info, camera_params) -> list:
@@ -127,17 +166,13 @@ class PoseWriter(Writer):
         id_to_labels = {k: v["class"] for k, v in bb3d_info["idToLabels"].items()}
 
         objs = []
-        # ("semanticId", "<u4"),        # Semantic identifier to map to label names using ["info"]["idToLabels"]
-        # ("x_min", "<i4"), [..],       # Bounding box coordinates in local space
-        # ("transform", "<i4"),         # Local to world transformation matrix (row-major)
-        # ('occlusionRatio', '<f4')]),  # (visible pixels / total pixels), where `0.0` is fully visible and `1.0` is fully occluded.
         for i, bbox in enumerate(bb3d_data):
             obj = {}
             # Get the object's visibility first for early exit if the visibility is below the threshold
             obj_visibility = 1.0 - float(bbox["occlusionRatio"])
             if obj_visibility <= self._visibility_threshold:
                 continue
-            obj["class"] = id_to_labels[bbox["semanticId"]]
+            obj["label"] = id_to_labels[bbox["semanticId"]]
             obj["prim_path"] = bb3d_info["primPaths"][i]
             obj["visibility"] = obj_visibility
 
@@ -147,45 +182,49 @@ class PoseWriter(Writer):
 
             # Extract world frame location (last row) and rotation matrix (3x3) from the row-major transform matrix
             location_world_frame = local_to_world_tf[3, :3]
-            obj["location_world_frame"] = location_world_frame.tolist()
-            rotation_matrix_world_frame = local_to_world_tf[:3, :3]
-            obj["rotation_matrix_world_frame"] = rotation_matrix_world_frame.tolist()
+            if self._format == "default":
+                obj["location_world_frame"] = location_world_frame.tolist()
+                rotation_matrix_world_frame = local_to_world_tf[:3, :3]
+                obj["rotation_matrix_world_frame"] = rotation_matrix_world_frame.tolist()
 
             # Get the world frame quaternion using Gf.Transform (row-major)
             local_to_world_tf_gf = Gf.Transform()
             local_to_world_tf_gf.SetMatrix(Gf.Matrix4d(local_to_world_tf.tolist()))
-            # location_world_frame_gf = local_to_world_tf_gf.GetTranslation()
-            # obj["location_world_frame_gf"] = list(location_world_frame_gf)
-            # rotation_matrix_world_frame_gf = local_to_world_tf_gf.GetMatrix().ExtractRotationMatrix()
-            # obj["rotation_matrix_world_frame_gf"] = [list(rotation_matrix_world_frame_gf.GetRow(i)) for i in range(3)]
-            quat_world_frame_gf = local_to_world_tf_gf.GetRotation().GetQuat()
-            obj["quat_wxyz_world_frame"] = [quat_world_frame_gf.GetReal()] + list(quat_world_frame_gf.GetImaginary())
+            if self._format == "default":
+                location_world_frame_gf = local_to_world_tf_gf.GetTranslation()
+                obj["location_world_frame_gf"] = list(location_world_frame_gf)
+                rotation_matrix_world_frame_gf = local_to_world_tf_gf.GetMatrix().ExtractRotationMatrix()
+                obj["rotation_matrix_world_frame_gf"] = [
+                    list(rotation_matrix_world_frame_gf.GetRow(i)) for i in range(3)
+                ]
+                quat_world_frame_gf = local_to_world_tf_gf.GetRotation().GetQuat()
+                obj["quat_wxyz_world_frame"] = [quat_world_frame_gf.GetReal()] + list(
+                    quat_world_frame_gf.GetImaginary()
+                )
 
             # World to camera transform (row-major) (transform a point from world coordinate to camera coordinate)
             world_to_camera_tf = camera_params["cameraViewTransform"].reshape(4, 4)
 
             # Object world space to camera frame transform (row-major)
             obj_to_camera_tf = world_to_camera_tf @ local_to_world_tf
-            obj["object_to_camera_transform"] = obj_to_camera_tf.tolist()
 
             # Extract camera frame location (last row) and rotation matrix (3x3) from the row-major transform matrix
             location_camera_frame = obj_to_camera_tf[3, :3]
-            obj["location_camera_frame"] = location_camera_frame.tolist()
-            rotation_matrix_camera_frame = obj_to_camera_tf[:3, :3]
-            obj["rotation_matrix_camera_frame"] = rotation_matrix_camera_frame.tolist()
+            obj["location"] = location_camera_frame.tolist()
+
+            if self._format == "default":
+                rotation_matrix_camera_frame = obj_to_camera_tf[:3, :3]
+                obj["rotation_matrix_camera_frame"] = rotation_matrix_camera_frame.tolist()
 
             # Get the camera frame quaternion using Gf.Transform (row-major)
             obj_to_camera_tf_gf = Gf.Transform()
             obj_to_camera_tf_gf.SetMatrix(Gf.Matrix4d(obj_to_camera_tf.tolist()))
-            # location_camera_frame_gf = obj_to_camera_tf_gf.GetTranslation()
-            # obj["location_camera_frame_gf"] = list(location_camera_frame_gf)
-            # rotation_matrix_camera_frame_gf = obj_to_camera_tf_gf.GetMatrix().ExtractRotationMatrix()
-            # obj["rotation_matrix_camera_frame_gf"] = [list(rotation_matrix_camera_frame_gf.GetRow(i)) for i in range(3)]
             quat_camera_frame_gf = obj_to_camera_tf_gf.GetRotation().GetQuat()
-            obj["quat_wxyz_camera_frame"] = [quat_camera_frame_gf.GetReal()] + list(quat_camera_frame_gf.GetImaginary())
+            obj["quaternion_xyzw"] = [quat_camera_frame_gf.GetReal()] + list(quat_camera_frame_gf.GetImaginary())
 
             #  Projected cuboid vertices (local -> world -> camera -> screen space) (8 corners + world location (center))
             vertices_screen = []
+            keypoints_3d = []
 
             # The resolution is used to map the Normalized Device Coordinates (NDC) to screen space
             screen_size = camera_params["renderProductResolution"]
@@ -193,21 +232,19 @@ class PoseWriter(Writer):
             # Camera to screen space projection matrix (row-major)
             cam_projection_tf = camera_params["cameraProjection"].reshape((4, 4))
 
+            corners_local = {
+                "Center": np.array([0, 0, 0, 1]),
+                "LDB": np.array([bbox["x_min"], bbox["y_min"], bbox["z_min"], 1]),
+                "LDF": np.array([bbox["x_min"], bbox["y_min"], bbox["z_max"], 1]),
+                "LUB": np.array([bbox["x_min"], bbox["y_max"], bbox["z_min"], 1]),
+                "LUF": np.array([bbox["x_min"], bbox["y_max"], bbox["z_max"], 1]),
+                "RDB": np.array([bbox["x_max"], bbox["y_min"], bbox["z_min"], 1]),
+                "RDF": np.array([bbox["x_max"], bbox["y_min"], bbox["z_max"], 1]),
+                "RUB": np.array([bbox["x_max"], bbox["y_max"], bbox["z_min"], 1]),
+                "RUF": np.array([bbox["x_max"], bbox["y_max"], bbox["z_max"], 1]),
+            }
             # Transform the cuboid corners to world frame using row-major matrix multiplication (translation on the left side)
-            corners_world = [
-                np.array([bbox["x_min"], bbox["y_min"], bbox["z_min"], 1]) @ local_to_world_tf,  # LDB - Left Down Back
-                np.array([bbox["x_min"], bbox["y_min"], bbox["z_max"], 1]) @ local_to_world_tf,  # LDF - Left Down Front
-                np.array([bbox["x_min"], bbox["y_max"], bbox["z_min"], 1]) @ local_to_world_tf,  # LUB - Left Upper Back
-                np.array([bbox["x_min"], bbox["y_max"], bbox["z_max"], 1])
-                @ local_to_world_tf,  # LUF - Left Upper Front
-                np.array([bbox["x_max"], bbox["y_min"], bbox["z_min"], 1]) @ local_to_world_tf,  # RDB - Right Down Back
-                np.array([bbox["x_max"], bbox["y_min"], bbox["z_max"], 1])
-                @ local_to_world_tf,  # RDF - Right Down Front
-                np.array([bbox["x_max"], bbox["y_max"], bbox["z_min"], 1])
-                @ local_to_world_tf,  # RUB - Right Upper Back
-                np.array([bbox["x_max"], bbox["y_max"], bbox["z_max"], 1])
-                @ local_to_world_tf,  # RUF - Right Upper Front
-            ]
+            corners_world = [corners_local[c] @ local_to_world_tf for c in self.KEYPOINT_ORDER]
 
             # Project the cuboid corners from world space to screen space
             for vertex in corners_world:
@@ -216,13 +253,35 @@ class PoseWriter(Writer):
                 )
                 vertices_screen.append(screen_point)
 
-            # Project the objects world location to screen space (usually the center of the bounding box)
-            location_screen_point = self._project_world_point_to_screen(
-                location_world_frame, world_to_camera_tf, cam_projection_tf, screen_size
-            )
-            vertices_screen.append(location_screen_point)
+                if self._format == "centerpose":
+                    camera_point = self._world_point_to_camera_point(vertex, world_to_camera_tf)
+                    normalized_camera_point = camera_point[:3] / camera_point[3]
+                    keypoints_3d.append(normalized_camera_point.astype(float).tolist())
 
             obj["projected_cuboid"] = vertices_screen
+            if self._format == "centerpose":
+                obj["keypoints_3d"] = keypoints_3d
+
+                # get scale from local_to_world_tf matrix
+                scale_x = np.linalg.norm(local_to_world_tf[:3, 0])
+                scale_y = np.linalg.norm(local_to_world_tf[:3, 1])
+                scale_z = np.linalg.norm(local_to_world_tf[:3, 2])
+
+                obj["scale"] = (
+                    (
+                        np.array(
+                            [
+                                bbox["x_max"] - bbox["x_min"],
+                                bbox["y_max"] - bbox["y_min"],
+                                bbox["z_max"] - bbox["z_min"],
+                            ]
+                        )
+                        * np.array([scale_x, scale_y, scale_z])
+                    )
+                    .astype(float)
+                    .tolist()
+                )
+
             objs.append(obj)
         return objs
 
@@ -316,13 +375,20 @@ class PoseWriter(Writer):
     def _draw_projected_cuboid(self, draw, cuboid, point_colors=None, point_size=4, edge_colors=None, edge_size=2):
         # Validate vertex_colors input and use default if necessary
         if point_colors is None or len(point_colors) != 9:
-            print(f"Using default cuboid colors due to missing or incomplete color data.")
-            # LDB, LDF, LUB, LUF, RDB, RDF, RUB, RUF, Center (as object world Location)
-            point_colors = ["red", "green", "blue", "yellow", "cyan", "magenta", "orange", "purple", "white"]
+            point_colors = [
+                "white",
+                "red",
+                "green",
+                "blue",
+                "yellow",
+                "cyan",
+                "magenta",
+                "orange",
+                "purple",
+            ]
 
         # Validate edge_colors input and use default if necessary
         if edge_colors is None or len(edge_colors) != 3:
-            print(f"Using default edge colors due to missing or incomplete edge color data.")
             edge_colors = {"front": "red", "back": "blue", "connecting": "green"}
 
         # Draw the projected cuboid vertices in the specified colors
@@ -335,9 +401,9 @@ class PoseWriter(Writer):
         # Define the edges of the cuboid using vertex indices
         edge_colors = {"front": "red", "back": "blue", "connecting": "green"}
         edges = {
-            "front": [(0, 1), (1, 3), (3, 2), (2, 0)],  # Front face
-            "back": [(4, 5), (5, 7), (7, 6), (6, 4)],  # Back face
-            "connecting": [(0, 4), (1, 5), (2, 6), (3, 7)],  # Connecting edges
+            "front": [(1, 2), (2, 4), (4, 3), (3, 1)],  # Front face
+            "back": [(5, 6), (6, 8), (8, 7), (7, 5)],  # Back face
+            "connecting": [(1, 5), (2, 6), (3, 7), (4, 8)],  # Connecting edges
         }
 
         # Draw the edges of the projected cuboid with specified colors for each set
@@ -362,29 +428,28 @@ class PoseWriter(Writer):
             draw = ImageDraw.Draw(rgb_img)
 
             # Get the camera and image parameters
-            camera_projection_matrix = np.array(frame_entries["camera_data"]["projection_matrix"])
-            camera_view_matrix = np.array(frame_entries["camera_data"]["view_transform"])
-            screen_size = frame_entries["camera_data"]["resolution"]
+            camera_projection_matrix = np.array(frame_entries["camera_data"]["camera_projection_matrix"])
+            camera_view_matrix = np.array(frame_entries["camera_data"]["camera_view_matrix"])
+            screen_size = [frame_entries["camera_data"]["height"], frame_entries["camera_data"]["width"]]
 
             # Overlay the world frame axes on the bottom left part of the RGB image
-            self._draw_world_frame_axes_bottom_left(draw, camera_view_matrix, camera_projection_matrix, screen_size)
-
-            # Define the colors for the projected cuboid vertices and edges
-            # LDB, LDF, LUB, LUF, RDB, RDF, RUB, RUF, Center (as object world Location)
-            point_colors = ["red", "green", "blue", "yellow", "cyan", "magenta", "orange", "purple", "white"]
-            edge_colors = {"front": "red", "back": "blue", "connecting": "green"}
+            # self._draw_world_frame_axes_bottom_left(draw, camera_view_matrix, camera_projection_matrix, screen_size)
 
             # Iterate objects and draw the projected cuboid and local frame axes
             for obj in frame_entries["objects"]:
                 cuboid = obj["projected_cuboid"]
 
                 # Draw the projected cuboid and its edges
-                self._draw_projected_cuboid(draw, cuboid, point_colors=point_colors, edge_colors=edge_colors)
+                self._draw_projected_cuboid(draw, cuboid)
 
                 # Draw local frame axes
                 obj_world_frame_tf = np.array(obj["local_to_world_transform"])
                 self._draw_local_frame_axes(
-                    draw, obj_world_frame_tf, camera_view_matrix, camera_projection_matrix, screen_size
+                    draw,
+                    obj_world_frame_tf,
+                    camera_view_matrix,
+                    camera_projection_matrix,
+                    screen_size,
                 )
 
             file_path = f"{render_product_subfolder}{self._frame_id:0{self._frame_padding}}_overlay.png"
@@ -403,6 +468,7 @@ class PoseWriter(Writer):
         camera_params = data[camera_params_annot_name]
         frame_entries["camera_data"] = self._extract_camera_parameters(camera_params)
 
+        frame_entries["keypoint_order"] = self.KEYPOINT_ORDER
         # Get the bounding box 3d data
         bb3d_annot_name = (
             f"{self.BB3D_ANNOT_NAME}-{render_product_name}" if self._multiple_render_products else self.BB3D_ANNOT_NAME
