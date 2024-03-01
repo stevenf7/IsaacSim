@@ -137,7 +137,7 @@ public:
         auto& state = db.perInstanceState<OgnROS2PublishTransformTree>();
 
         // Check if subscription count is 0
-        if (!state.mPublisher.get()->get_subscription_count())
+        if (!mPublishWithoutVerification && !state.mPublisher.get()->get_subscription_count())
         {
             return false;
         }
