@@ -16,6 +16,7 @@ from omni.isaac.core.robots import Robot
 from omni.isaac.core.utils.stage import get_current_stage, open_stage_async
 from omni.isaac.core.utils.viewports import get_viewport_names
 from omni.isaac.nucleus import get_assets_root_path_async
+from pxr import UsdRender
 
 
 class TestCreateRenderProduct(ogts.OmniGraphTestCase):
@@ -62,9 +63,20 @@ class TestCreateRenderProduct(ogts.OmniGraphTestCase):
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
 
-        rp_1 = self._stage.GetPrimAtPath("/Render/RenderProduct_Isaac")
-        rp_2 = self._stage.GetPrimAtPath("/Render/RenderProduct_Isaac_01")
-        self.assertTrue(rp_1.IsValid())
-        self.assertFalse(rp_2.IsValid())
+        rp_1 = UsdRender.Product(self._stage.GetPrimAtPath("/Render/RenderProduct_Replicator"))
+        rp_2 = UsdRender.Product(self._stage.GetPrimAtPath("/Render/RenderProduct_Replicator_01"))
+        self.assertTrue(rp_1)
+        self.assertFalse(rp_2)
+
+        og.Controller.attribute("inputs:width", new_nodes[1]).set(700)
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+        self.assertEqual(rp_1.GetResolutionAttr().Get(), (700, 720))
+
+        og.Controller.attribute("inputs:cameraPrim", new_nodes[1]).set(["/OmniverseKit_Top"])
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+        self.assertEqual(rp_1.GetCameraRel().GetTargets()[0], "/OmniverseKit_Top")
+
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()

@@ -39,11 +39,16 @@ public:
     {
         auto& state = db.perInstanceState<OgnIsaacReadCameraInfo>();
         const std::string renderProductPath = std::string(db.tokenToString(db.inputs.renderProductPath()));
+        if (renderProductPath.length() == 0)
+        {
+            CARB_LOG_WARN("Render product path is empty, skipping read camera info");
+            return false;
+        }
         pxr::UsdPrim camera = omni::isaac::utils::getCameraPrimFromRenderProduct(renderProductPath);
 
         if (!camera.IsValid())
         {
-            CARB_LOG_ERROR("Render product path is invalid or outdated");
+            CARB_LOG_ERROR("Render product path %s is invalid or outdated", renderProductPath.c_str());
             return false;
         }
 
