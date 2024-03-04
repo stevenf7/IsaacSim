@@ -9,13 +9,10 @@
 
 import carb
 import omni
-import omni.hydratexture
+import omni.replicator.core as rep
 from omni.isaac.core_nodes import BaseResetNode
-
-# from omni.kit.viewport.utility import create_viewport_window, get_active_viewport_window
-# from omni.isaac.core.utils.viewports import get_window_from_id, get_id_from_index
 from omni.isaac.core_nodes.ogn.OgnIsaacCreateRenderProductDatabase import OgnIsaacCreateRenderProductDatabase
-from pxr import Usd
+from pxr import Gf, Usd, UsdRender
 
 
 class OgnIsaacCreateRenderProductInternalState(BaseResetNode):
@@ -23,6 +20,8 @@ class OgnIsaacCreateRenderProductInternalState(BaseResetNode):
         self.hydra_texture = None
         self.render_product_path = None
         self.factory = None
+        self.resolution = [0, 0]
+        self.camera_path = ""
         super().__init__(initialize=False)
 
     def on_stage_event(self, event: carb.events.IEvent):
@@ -46,7 +45,7 @@ class OgnIsaacCreateRenderProduct:
 
     @staticmethod
     def compute(db) -> bool:
-        state = db.internal_state
+        state = db.per_instance_state
         if db.inputs.enabled is False:
             if state.hydra_texture is not None:
                 state.hydra_texture.updates_enabled = False
@@ -58,37 +57,44 @@ class OgnIsaacCreateRenderProduct:
         if len(db.inputs.cameraPrim) == 0:
             db.log_error(f"Camera prim must be specified")
             return False
-        if state.factory is None:
-            state.factory = omni.hydratexture.acquire_hydra_texture_factory_interface()
-        if state.hydra_texture is None:
-            stage = omni.usd.get_context().get_stage()
-            with Usd.EditContext(stage, stage.GetSessionLayer()):
-                state.render_product_path = omni.usd.get_stage_next_free_path(
-                    stage, "/Render/RenderProduct_Isaac", False
+        stage = omni.usd.get_context().get_stage()
+        with Usd.EditContext(stage, stage.GetSessionLayer()):
+            if state.hydra_texture is None:
+                state.hydra_texture = rep.create.render_product(
+                    db.inputs.cameraPrim[0].GetString(), (db.inputs.width, db.inputs.height), force_new=True
                 )
-                name = state.render_product_path.split("/Render/RenderProduct_")[-1]
-                state.hydra_texture = state.factory.create_hydra_texture(
-                    name, db.inputs.width, db.inputs.height, "", db.inputs.cameraPrim[0].GetString(), "rtx", True, True
-                )
-            db.outputs.renderProductPath = state.render_product_path
+                state.resolution = (db.inputs.width, db.inputs.height)
+                state.camera_path = db.inputs.cameraPrim[0].GetString()
+                db.outputs.renderProductPath = state.hydra_texture.path
 
-            state.rp_sub = (
-                omni.timeline.get_timeline_interface()
-                .get_timeline_event_stream()
-                .create_subscription_to_pop(state.on_stage_event, name="IsaacSimOGNCoreNodesRPEventHandler")
-            )
+                state.rp_sub = (
+                    omni.timeline.get_timeline_interface()
+                    .get_timeline_event_stream()
+                    .create_subscription_to_pop(state.on_stage_event, name="IsaacSimOGNCoreNodesRPEventHandler")
+                )
+            render_prod_prim = UsdRender.Product(stage.GetPrimAtPath(state.hydra_texture.path))
+            if not render_prod_prim:
+                raise RuntimeError(f'Invalid renderProduct "{state.hydra_texture.path}"')
+            if state.resolution[0] != db.inputs.width or state.resolution[1] != db.inputs.height:
+                render_prod_prim.GetResolutionAttr().Set(Gf.Vec2i(db.inputs.width, db.inputs.height))
+                state.resolution = (db.inputs.width, db.inputs.height)
+            if state.camera_path != db.inputs.cameraPrim[0].GetString():
+                render_prod_prim.GetCameraRel().SetTargets([db.inputs.cameraPrim[0].GetString()])
+                state.camera_path = db.inputs.cameraPrim[0].GetString()
+
         db.outputs.execOut = omni.graph.core.ExecutionAttributeState.ENABLED
         return True
 
     @staticmethod
-    def release(node):
+    def release_instance(node, graph_instance_id):
         try:
-            state = OgnIsaacCreateRenderProductDatabase.per_node_internal_state(node)
+            state = OgnIsaacCreateRenderProductDatabase.per_instance_internal_state(node)
         except Exception:
             state = None
             pass
 
         if state is not None:
+            if state.hydra_texture:
+                state.hydra_texture.destroy()
             state.hydra_texture = None
-            state.hydra_texture_factory = None
             state.rp_sub = None

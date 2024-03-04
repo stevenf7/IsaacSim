@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.12.2] - 2024-03-01
+### Fixed
+- Issue where render product is not cleared when opening a stage
+- Render product resolution and camera prim not updating
+- Camera info issue when path was blank
+
 ## [1.12.1] - 2024-02-24
 ### Changed
 - Update source code to run a build clean of warnings
