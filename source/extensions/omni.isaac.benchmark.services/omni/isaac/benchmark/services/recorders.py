@@ -61,46 +61,44 @@ class IsaacFrameTimeRecorder(interface.MeasurementDataRecorder):
         frametime_stats.calc_stats()
 
         m1 = measurements.SingleMeasurement(
-            name=f"{self.context.phase} Mean Render Thread Frametime",
+            name=f"Mean Render Thread Frametime",
             value=frametime_stats.mean_render_thread_frametime,
             unit="ms",
         )
         m2 = measurements.SingleMeasurement(
-            name=f"{self.context.phase} Mean GPU Frametime", value=frametime_stats.mean_gpu_frametime, unit="ms"
+            name=f"Mean GPU Frametime", value=frametime_stats.mean_gpu_frametime, unit="ms"
         )
         m3 = measurements.SingleMeasurement(
-            name=f"{self.context.phase} Stdev Render Thread Frametime",
+            name=f"Stdev Render Thread Frametime",
             value=frametime_stats.stdev_render_thread_frametime,
             unit="ms",
         )
         m4 = measurements.SingleMeasurement(
-            name=f"{self.context.phase} Stdev GPU Frametime", value=frametime_stats.stdev_gpu_frametime, unit="ms"
+            name=f"Stdev GPU Frametime", value=frametime_stats.stdev_gpu_frametime, unit="ms"
         )
         m5 = measurements.SingleMeasurement(
-            name=f"{self.context.phase} Min Render Thread Frametime",
+            name=f"Min Render Thread Frametime",
             value=frametime_stats.min_render_thread_frametime,
             unit="ms",
         )
         m6 = measurements.SingleMeasurement(
-            name=f"{self.context.phase} Min GPU Frametime", value=frametime_stats.min_gpu_frametime, unit="ms"
+            name=f"Min GPU Frametime", value=frametime_stats.min_gpu_frametime, unit="ms"
         )
         m7 = measurements.SingleMeasurement(
-            name=f"{self.context.phase} Max Render Thread Frametime",
+            name=f"Max Render Thread Frametime",
             value=frametime_stats.max_render_thread_frametime,
             unit="ms",
         )
         m8 = measurements.SingleMeasurement(
-            name=f"{self.context.phase} Max GPU Frametime", value=frametime_stats.max_gpu_frametime, unit="ms"
+            name=f"Max GPU Frametime", value=frametime_stats.max_gpu_frametime, unit="ms"
         )
         m9 = measurements.ListMeasurement(
-            name=f"{self.context.phase} Render Thread Frametime Samples",
+            name=f"Render Thread Frametime Samples",
             value=frametime_stats.render_thread_frametime_samples,
         )
-        m10 = measurements.ListMeasurement(
-            name=f"{self.context.phase} GPU Frametime Samples", value=frametime_stats.gpu_frametime_samples
-        )
+        m10 = measurements.ListMeasurement(name=f"GPU Frametime Samples", value=frametime_stats.gpu_frametime_samples)
         m11 = measurements.SingleMeasurement(
-            name=f"{self.context.phase} Real Time Factor", value=self.elapsed_sim_time / self.elapsed_real_time, unit=""
+            name=f"Real Time Factor", value=self.elapsed_sim_time / self.elapsed_real_time, unit=""
         )
         measurements_out = [m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11]
         return interface.MeasurementData(measurements=measurements_out)
@@ -129,21 +127,17 @@ class IsaacMemoryRecorder(memory.MemoryRecorder):
             dedicated_gpu_memory,
         ) = self.get_hardware_stats()
 
-        m1 = measurements.SingleMeasurement(name=f"{self.context.phase} System Memory RSS", value=rss, unit="GB")
-        m2 = measurements.SingleMeasurement(name=f"{self.context.phase} System Memory VMS", value=vms, unit="GB")
-        m3 = measurements.SingleMeasurement(name=f"{self.context.phase} System Memory USS", value=uss, unit="GB")
-        m4 = measurements.SingleMeasurement(
-            name=f"{self.context.phase} GPU Memory Tracked", value=tracked_gpu_memory, unit="GB"
-        )
-        m5 = measurements.SingleMeasurement(
-            name=f"{self.context.phase} GPU Memory Dedicated", value=dedicated_gpu_memory, unit="GB"
-        )
+        m1 = measurements.SingleMeasurement(name=f"System Memory RSS", value=rss, unit="GB")
+        m2 = measurements.SingleMeasurement(name=f"System Memory VMS", value=vms, unit="GB")
+        m3 = measurements.SingleMeasurement(name=f"System Memory USS", value=uss, unit="GB")
+        m4 = measurements.SingleMeasurement(name=f"GPU Memory Tracked", value=tracked_gpu_memory, unit="GB")
+        m5 = measurements.SingleMeasurement(name=f"GPU Memory Dedicated", value=dedicated_gpu_memory, unit="GB")
         measurements_out = [m1, m2, m3, m4, m5]
 
         # Only capture System Memory PB for Windows.
         # if platform.system() == "Windows":
         #     measurements_out.append(
-        #         measurements.SingleMeasurement(name=f"{self.context.phase} System Memory PB", value=pb, unit="GB")
+        #         measurements.SingleMeasurement(name=f"System Memory PB", value=pb, unit="GB")
         #     )
 
         return interface.MeasurementData(measurements=measurements_out)
@@ -169,14 +163,10 @@ class IsaacCPUStatsRecorder(cpu.CPUStatsRecorder):
             cpu_idle_pct,
         ) = cpu.get_cpu_usage_in_pct(self.cpu_iowait, self.cpu_system, self.cpu_user, self.cpu_idle)
 
-        m1 = measurements.SingleMeasurement(
-            name=f"{self.context.phase} System CPU iowait", value=cpu_iowait_pct, unit="%"
-        )
-        m2 = measurements.SingleMeasurement(
-            name=f"{self.context.phase} System CPU system", value=cpu_system_pct, unit="%"
-        )
-        m3 = measurements.SingleMeasurement(name=f"{self.context.phase} System CPU user", value=cpu_user_pct, unit="%")
-        m4 = measurements.SingleMeasurement(name=f"{self.context.phase} System CPU idle", value=cpu_idle_pct, unit="%")
+        m1 = measurements.SingleMeasurement(name=f"System CPU iowait", value=cpu_iowait_pct, unit="%")
+        m2 = measurements.SingleMeasurement(name=f"System CPU system", value=cpu_system_pct, unit="%")
+        m3 = measurements.SingleMeasurement(name=f"System CPU user", value=cpu_user_pct, unit="%")
+        m4 = measurements.SingleMeasurement(name=f"System CPU idle", value=cpu_idle_pct, unit="%")
 
         return interface.MeasurementData(measurements=[m1, m2, m3, m4])
 
@@ -208,5 +198,5 @@ class IsaacRuntimeRecorder(interface.MeasurementDataRecorder):
         if self.phase != self.context.phase:
             return interface.MeasurementData(measurements=[])
 
-        m1 = measurements.SingleMeasurement(name=f"{self.context.phase} Runtime", value=self.elapsed_time, unit="ms")
+        m1 = measurements.SingleMeasurement(name=f"Runtime", value=self.elapsed_time, unit="ms")
         return interface.MeasurementData(measurements=[m1])

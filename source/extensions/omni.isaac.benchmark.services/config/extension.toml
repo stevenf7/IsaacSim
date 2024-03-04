@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.3.2"
+version = "1.4.0"
 category = "Simulation"
 title = "Benchmark Services"
 description = "This extension provides benchmarking utilities"
@@ -34,9 +34,6 @@ exts."omni.isaac.benchmark.services".metrics.nvdataflow_default_test_suite_name 
 # exts."omni.isaac.benchmark.services".metrics.metrics_output_folder=""
 # Set to true to add a random string to the metrics filename to distinguish runs
 exts."omni.isaac.benchmark.services".metrics.randomize_filename_prefix = false
-# Set to true to generate an additional metrics file compatible with the OSMO KPI format,
-# denoted as "kpis_[filename].json"
-exts."omni.isaac.benchmark.services".metrics.generate_osmo_kpi_output = true
 
 [[test]]
 dependencies = ["omni.kit.test"]

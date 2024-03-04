@@ -29,9 +29,8 @@ class TestBenchmarkRos2Camera(BaseIsaacBenchmarkAsync):
 
     # ----------------------------------------------------------------------
     async def benchmark_ros2_camera(self, n_camera, resolution):
-        self.test_run.test_name = f"cameras_{n_camera}_resolution_{resolution[0]}_{resolution[1]}_ros2"
+        self.benchmark_name = f"cameras_{n_camera}_resolution_{resolution[0]}_{resolution[1]}_ros2"
         self.set_phase("loading")
-        self.start_runtime()
 
         scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
         await self.fully_load_stage(self.assets_root_path + scene_path)
@@ -64,16 +63,13 @@ class TestBenchmarkRos2Camera(BaseIsaacBenchmarkAsync):
             add_ros2_camera(rp_path, "/Graphs/Camera_" + str(i), "/rgb_" + str(i), "sim_camera_" + str(i))
             await omni.kit.app.get_app().next_update_async()
 
-        self.stop_runtime()
         await self.store_measurements()
 
         self.set_phase("benchmark")
-        self.start_collecting_frametime()
 
         for _ in range(1 if self.test_mode else TEST_NUM_APP_UPDATES):
             await omni.kit.app.get_app().next_update_async()
 
-        self.stop_collecting_frametime()
         await self.store_measurements()
 
         timeline.stop()

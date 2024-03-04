@@ -101,9 +101,7 @@ class TestBenchmarkGymStandalone(BaseIsaacBenchmarkAsync):
 
     async def benchmark_train(self, task, headless, dr=False, warp=False):
         self.set_phase("train_benchmark")
-        self.start_runtime()
         _run_rlgames_train("rlgames_train", task, self._pipeline, self._sim_device, headless, MAX_ITERATIONS, dr, warp)
-        self.stop_runtime()
         await self.store_measurements()
 
     # ----------------------------------------------------------------------

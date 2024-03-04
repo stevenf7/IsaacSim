@@ -1,6 +1,10 @@
 # Changelog
 
-## [0.21.7] - 2023-02-07
+## [0.21.8] - 2024-02-29
+### Changed
+- Removes deprecated function calls from benchmarks.
+
+## [0.21.7] - 2024-02-07
 ### Changed
 - Updated path to the nucleus extension
 

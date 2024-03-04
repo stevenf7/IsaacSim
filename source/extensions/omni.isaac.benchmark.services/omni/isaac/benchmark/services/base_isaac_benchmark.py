@@ -11,10 +11,9 @@
 import os
 import tempfile
 import time
-from pathlib import Path
 
 import carb
-from omni.isaac.benchmark.services import execution, settings, utils
+from omni.isaac.benchmark.services import utils
 from omni.isaac.benchmark.services.datarecorders import interface
 from omni.isaac.benchmark.services.metrics import backend, measurements
 from omni.isaac.core.utils.stage import open_stage
@@ -26,8 +25,10 @@ from .utils import wait_until_stage_is_fully_loaded
 logger = utils.set_up_logging(__name__)
 
 
-# Sync mode sets settings that blocks the app until all materials are fully loaded
 def set_sync_mode():
+    """
+    Sync mode sets settings that blocks the app until all materials are fully loaded
+    """
     carb_settings = carb.settings.get_settings()
     if carb_settings.get("/app/asyncRendering"):
         carb.log_warn("Async rendering is enabled, setting sync mode might not work")
@@ -37,8 +38,44 @@ def set_sync_mode():
 
 
 class BaseIsaacBenchmark:
-    def __init__(self, benchmark_name: str = "BaseIsaacBenchmark"):
-        self._execution_env = execution.TestExecutionEnvironment.get_instance()
+    """
+    Front-end for benchmarking standalone scripts and other non-async snippets.
+
+    By default this class will collect hardware performance data (see recorders), broken up by "phase". Typical structure looks like:
+
+    ```
+        benchmark = base_isaac_benchmark.BaseIsaacBenchmark(benchmark_name=..., workflow_metadata=...)
+        benchmark.set_phase("loading")
+        # load stage, configure sim, etc.
+        benchmark.store_measurements()
+        benchmark.set_phase("benchmark")
+        # Actual code being benchmarked (running the sim for N frames, cloning an object, etc.)
+        benchmark.store_measurements()
+        benchmark.stop() # Shuts down benchmark, writes metrics to file
+    ```
+
+    You can set any number of phases.
+    """
+
+    def __init__(
+        self,
+        benchmark_name: str = "BaseIsaacBenchmark",
+        backend_type: str = "OsmoKPIFile",
+        workflow_metadata: dict = {},
+    ):
+        """
+
+        Args:
+            benchmark_name (str, optional): Name of benchmark - will be printed in outputs. Defaults to
+                "BaseIsaacBenchmark".
+            backend_type (str, optional): Type of backend used to collect and print metrics. Supported values provided
+                in metrics.backend. Defaults to "OsmoKPIFile".
+            workflow_metadata (dict, optional): Metadata describing benchmark (eg. number of GPUs, number of cameras,
+                etc.) Most useful for OsmoKPIFile backend. Expected as JSON-style input - nested dictionary of
+                {"metadata": [{"name": <name>, "data": <value>}, ...]}. Defaults to {}.
+        """
+        self.benchmark_name = benchmark_name
+        self._test_phases = []
 
         self.settings = carb.settings.get_settings()
         prefix = self._get_output_file_prefix(benchmark_name)
@@ -64,17 +101,25 @@ class BaseIsaacBenchmark:
             self.frametime_recorder,
             self.runtime_recorder,
         ]
-        self.test_run = measurements.TestRun(
-            benchmark_name
-        )  # the name is set by the test itself, set it to a default here.
 
-        logger.info(f"Execution type = {type(self._execution_env).__name__}")
         self._metrics_output_folder = self.settings.get(
             "/exts/omni.isaac.benchmark.services/metrics/metrics_output_folder"
         )
 
         if not self._metrics_output_folder:
             self._metrics_output_folder = tempfile.gettempdir()
+
+        # Get metrics backend based on user-provided type
+        self._metrics = backend.MetricsBackend.get_instance(instance_type=backend_type)
+
+        # Generate workflow-level metadata
+        self._metadata = [measurements.StringMetadata(name="workflow_name", data=self.benchmark_name)]
+        if "metadata" in workflow_metadata:
+            self._metadata.extend(measurements.TestPhase.metadata_from_dict(workflow_metadata))
+        elif workflow_metadata:
+            logger.warning(
+                "workflow_metadata provided, but missing expected `metadata' entry. Metadata will not be read."
+            )
 
         logger.info(f"Local folder location = {self._metrics_output_folder}")
         logger.info("Starting")
@@ -84,47 +129,31 @@ class BaseIsaacBenchmark:
         pass
 
     def stop(self):
-        logger.info("Stopping")
-        logger.info("Writing metrics data.")
+        """
+        Stop benchmarking and write accumulated metrics to file.
+        """
 
         if not os.path.exists(self._metrics_output_folder):
             os.mkdir(path=self._metrics_output_folder)
-        if self.settings.get("/exts/omni.isaac.benchmark.services/metrics/randomize_filename_prefix"):
-            fd, metrics_filename_out = tempfile.mkstemp(
-                dir=self._metrics_output_folder, prefix=f"metrics_{self.test_run.test_name}", suffix=".json"
-            )
-        else:
-            metrics_filename_out = Path(self._metrics_output_folder) / f"metrics_{self.test_run.test_name}.json"
-        _metrics = backend.MetricsBackend.get_instance(self._execution_env)
-        logger.info(f"Metrics type = {type(_metrics).__name__}")
-        _metrics.add_metrics(self.test_run)
-        _metrics.finalize(metrics_filename_out)
-        logger.info(f"Writing metrics data to {metrics_filename_out}")
-
-        if self.settings.get("/exts/omni.isaac.benchmark.services/metrics/generate_osmo_kpi_output"):
-            osmo_metrics_filename_out = Path(self._metrics_output_folder) / f"kpis_{self.test_run.test_name}.json"
-            _osmo_metrics = backend.MetricsBackend.get_instance(instance_type="OsmoKPIFile")
-            logger.info(f"Metrics type = {type(_osmo_metrics).__name__}")
-            _osmo_metrics.add_metrics(self.test_run)
-            _osmo_metrics.finalize(osmo_metrics_filename_out)
-            logger.info(f"Writing metrics data to {osmo_metrics_filename_out}")
+        randomize_filename_prefix = self.settings.get(
+            "/exts/omni.isaac.benchmark.services/metrics/randomize_filename_prefix"
+        )
+        logger.info("Stopping")
+        logger.info("Writing metrics data.")
+        logger.info(f"Metrics type = {type(self._metrics).__name__}")
+        self._metrics.finalize(self._metrics_output_folder, randomize_filename_prefix)
 
         self.test_run = None
         self.recorders = None
         self.context = None
         pass
 
-    def _get_output_file_name(self, setting: settings.BenchmarkSettings, filename: str) -> str:
-        version, _, _ = utils.get_kit_version_branch()
-        resolution = self.get_setting_resolution(setting.image_width, setting.image_height)
-        return f"{setting.test_name}_{version}_{resolution}_{filename}"
-
-    def _get_output_file_prefix(self, test_name) -> str:
+    def _get_output_file_prefix(self, test_phase: str) -> str:
         """
         uniquefies artifact file names (so e.g if we support multiple resolutions they are included in the name
         """
         version, _, _ = utils.get_kit_version_branch()
-        return f"{test_name}_{version}"
+        return f"{test_phase}_{version}"
 
     def _get_sync_mode(self) -> utils.SyncMode:
         """Checks if we are in sync mode."""
@@ -150,23 +179,51 @@ class BaseIsaacBenchmark:
         )
         return utils.SyncMode.AMBIGUOUS
 
-    def set_phase(self, phase):
+    def set_phase(self, phase: str, start_recording_time: bool = True) -> None:
+        """Sets benchmarking phase. Turns on frametime and runtime collection.
+
+        Args:
+            phase (str): Name of phase, used in output.
+            start_recording_time (bool): False to not start recording runtime and frametime at start of phase. Default True.
+        """
         logger.info(f"Starting phase: {phase}")
         self.context.phase = phase
+        if start_recording_time:
+            self.frametime_recorder.start_collecting()
+            self.runtime_recorder.start_time()
 
     def start_collecting_frametime(self):
+        """Deprecated"""
+        logger.warning(f"{self.start_collecting_frametime.__name__} is deprecated. Invoked by set_phase.")
         self.frametime_recorder.start_collecting()
 
     def stop_collecting_frametime(self):
+        """Deprecated"""
+        logger.warning(f"{self.stop_collecting_frametime.__name__} is deprecated. Invoked by store_measurements.")
         self.frametime_recorder.stop_collecting()
 
     def start_runtime(self):
+        """Deprecated"""
+        logger.warning(f"{self.start_runtime.__name__} is deprecated. Invoked by set_phase.")
         self.runtime_recorder.start_time()
 
     def stop_runtime(self):
+        """Deprecated"""
+        logger.warning(f"{self.stop_runtime.__name__} is deprecated. Invoked by store_measurements.")
         self.runtime_recorder.stop_time()
 
-    def store_measurements(self):
+    def store_measurements(self, stop_recording_time: bool = True) -> None:
+        """Stores measurements, metadata, and artifacts collected by all recorders during the previous phase.
+        Optionally, ends frametime and runtime collection.
+
+        Args:
+            stop_recording_time (bool): False to not stop recording runtime and frametime at end of phase. Default True.
+        """
+        if stop_recording_time:
+            self.frametime_recorder.stop_collecting()
+            self.runtime_recorder.stop_time()
+
+        # Retrieve metrics, metadata, and artifacts from the recorders
         run_measurements = []
         run_metadata = []
         run_artifacts = []
@@ -175,9 +232,21 @@ class BaseIsaacBenchmark:
             run_measurements.extend(data.measurements)
             run_metadata.extend(data.metadata)
             run_artifacts.extend(data.artefacts)
-        self.test_run.measurements.extend(run_measurements)
-        self.test_run.metadata.extend(run_metadata)
+        # Create a new test phase to store these measurements
+        test_phase = measurements.TestPhase(
+            phase_name=self.context.phase, measurements=run_measurements, metadata=run_metadata
+        )
+        # Update test phase metadata with phase name and benchmark metadata
+        test_phase.metadata.extend(self._metadata)
+        test_phase.metadata.append(measurements.StringMetadata(name="phase", data=self.context.phase))
+        # Add metrics and metadata from the test phase to the backend
+        self._metrics.add_metrics(test_phase)
 
-    def fully_load_stage(self, usd_path):
+    def fully_load_stage(self, usd_path: str) -> None:
+        """Loads provided USD stage, blocking execution until it is fully loaded.
+
+        Args:
+            usd_path (str): Path to USD stage.
+        """
         open_stage(usd_path)
         wait_until_stage_is_fully_loaded()

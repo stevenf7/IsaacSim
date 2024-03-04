@@ -28,9 +28,8 @@ class TestBenchmarkCamera(BaseIsaacBenchmarkAsync):
         pass
 
     async def benchmark_camera(self, n_camera, resolution):
-        self.test_run.test_name = f"cameras_{n_camera}_resolution_{resolution[0]}_{resolution[1]}"
+        self.benchmark_name = f"cameras_{n_camera}_resolution_{resolution[0]}_{resolution[1]}"
         self.set_phase("loading")
-        self.start_runtime()
 
         scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
         await self.fully_load_stage(self.assets_root_path + scene_path)
@@ -63,17 +62,14 @@ class TestBenchmarkCamera(BaseIsaacBenchmarkAsync):
             await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
 
-        self.stop_runtime()
         await self.store_measurements()
 
         # perform benchmark
         self.set_phase("benchmark")
-        self.start_collecting_frametime()
 
         for _ in range(1 if self.test_mode else TEST_NUM_APP_UPDATES):
             await omni.kit.app.get_app().next_update_async()
 
-        self.stop_collecting_frametime()
         await self.store_measurements()
 
         timeline.stop()

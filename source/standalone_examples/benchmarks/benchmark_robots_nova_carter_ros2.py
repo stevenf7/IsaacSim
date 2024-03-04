@@ -54,12 +54,21 @@ if enable_2d_lidar > 2:
 if enable_hawks > 4:
     carb.log_warn("Warning: Nova Carter only has 1 3D lidar")
     enable_hawks = 4
-sensor_name = f"{enable_3d_lidar}_3d_lidar_{enable_2d_lidar}_2d_lidar_{enable_hawks}_hawk"
 
 # Create the benchmark
-benchmark = base_isaac_benchmark.BaseIsaacBenchmark(f"robots_nova_carter_ros2_{sensor_name}_{n_robot}_gpu_{n_gpu}")
+benchmark = base_isaac_benchmark.BaseIsaacBenchmark(
+    benchmark_name="benchmark_robots_nova_carter_ros2",
+    workflow_metadata={
+        "metadata": [
+            {"name": "num_hawks", "data": enable_hawks},
+            {"name": "num_2d_lidars", "data": enable_2d_lidar},
+            {"name": "num_3d_lidars", "data": enable_3d_lidar},
+            {"name": "num_robots", "data": n_robot},
+            {"name": "num_gpus", "data": n_gpu},
+        ]
+    },
+)
 benchmark.set_phase("loading")
-benchmark.start_runtime()
 
 enable_extension("omni.isaac.ros2_bridge")
 
@@ -136,17 +145,14 @@ for robot in robots:
 omni.kit.app.get_app().update()
 omni.kit.app.get_app().update()
 
-benchmark.stop_runtime()
 benchmark.store_measurements()
-
 # perform benchmark
 benchmark.set_phase("benchmark")
-benchmark.start_collecting_frametime()
+
 
 for _ in range(1 if benchmark.test_mode else TEST_NUM_APP_UPDATES):
     omni.kit.app.get_app().update()
 
-benchmark.stop_collecting_frametime()
 benchmark.store_measurements()
 benchmark.stop()
 

@@ -10,6 +10,7 @@ import copy
 import json
 import os
 import shutil
+import tempfile
 import typing
 from pathlib import Path
 from typing import Optional
@@ -25,13 +26,13 @@ logger = utils.set_up_logging(__name__)
 
 
 class MetricsBackendInterface:
-    def add_metrics(self, test_run: measurements.TestRun) -> None:
+    def add_metrics(self, test_phase: measurements.TestPhase) -> None:
         """
         accumulate metrics
         """
         pass
 
-    def finalize(self, filename: str, **kwargs) -> None:
+    def finalize(self, metrics_output_folder: str, randomize_filename_prefix: bool = False, **kwargs) -> None:
         """
         write the data to file and clear
         """
@@ -77,7 +78,7 @@ class KitGenericTelemetry(MetricsBackendInterface):
         with open(privacy_toml_path, "w") as toml_file:
             toml.dump(data, toml_file)
 
-    def add_metrics(self, test_run: measurements.TestRun):
+    def add_metrics(self, test_phase: measurements.TestPhase):
         event_type = ("omni.kit.tests.benchmark@run_benchmark-dev",)
         # TOOD: this needs to be rewritten if we ever want to use it
         omni.kit.app.send_telemetry_event(
@@ -90,8 +91,8 @@ class LocalLogMetrics(MetricsBackendInterface):
     Just logger.info to console
     """
 
-    def add_metrics(self, test_run: measurements.TestRun):
-        logger.info(f"LocalLogMetricsEvent::add_metrics {test_run}")
+    def add_metrics(self, test_phase: measurements.TestPhase):
+        logger.info(f"LocalLogMetricsEvent::add_metrics {test_phase}")
 
 
 class JSONFileMetrics(MetricsBackendInterface):
@@ -104,85 +105,122 @@ class JSONFileMetrics(MetricsBackendInterface):
     def __init__(self, execution_environment: Optional[TestExecutionEnvironmentInterface] = None):
         self._execution_environment = execution_environment
         self.data = []
+        self.test_name = ""
 
-    def add_metrics(self, test_run: measurements.TestRun) -> None:
+    def add_metrics(self, test_phase: measurements.TestPhase) -> None:
 
-        self.data.append(copy.deepcopy(test_run))
+        self.data.append(copy.deepcopy(test_phase))
 
         # Lets upload a subset of metrics to our execution environment (e.g TC).
-        # In TC this shows up as metadata on the test run
+        # In TC this shows up as metadata on the test phase
         # This should not be hardcoded though as it is below
         if self._execution_environment:
             exec_metrics = {}
-            for m in test_run.measurements:
+            test_name = test_phase.get_metadata_field("workflow_name")
+            for m in test_phase.measurements:
                 measurement = typing.cast(measurements.SingleMeasurement, m)
                 if measurement.name in self.metrics_to_upload_to_teamcity:
-                    full_name = test_run.test_name + " " + measurement.name
+                    full_name = test_name + " " + measurement.name
                     exec_metrics[full_name] = measurement.value
 
-            self._execution_environment.add_metrics(test_run.test_name, exec_metrics)
+            self._execution_environment.add_metrics(test_name, exec_metrics)
 
-    def finalize(self, filename: str) -> None:
-        self._generate_metrics_file(filename)
-        self.data.clear()
+    def finalize(self, metrics_output_folder: str, randomize_filename_prefix: bool = False) -> None:
 
-    def _generate_metrics_file(self, filename) -> None:
-        """
-        write JSON file for all test runs
-        """
         # Append test name to measurement name as OVAT needs to uniquely identify
-        for test_run in self.data:
-            for m in test_run.measurements:
-                m.name = test_run.test_name + " " + m.name
+        for test_phase in self.data:
+            test_name = test_phase.get_metadata_field("workflow_name")
+            # Store the test name
+            if test_name != self.test_name:
+                if self.test_name:
+                    logger.warning(
+                        f"Nonempty test name {self.test_name} different from name {test_name} provided by test phase."
+                    )
+                self.test_name = test_name
+                logger.info(f"Setting test name to {self.test_name}")
 
-            for m in test_run.metadata:
-                m.name = test_run.test_name + " " + m.name
+            phase_name = test_phase.get_metadata_field("phase")
+            for m in test_phase.measurements:
+                m.name = f"{test_name} {phase_name} {m.name}"
 
-        json_data = json.dumps(self.data, indent=4, cls=measurements.TestRunEncoder)
-        with open(filename, "w") as f:
+            for m in test_phase.metadata:
+                m.name = f"{test_name} {phase_name} {m.name}"
+
+        json_data = json.dumps(self.data, indent=4, cls=measurements.TestPhaseEncoder)
+
+        # Generate the output filename
+        if randomize_filename_prefix:
+            _, metrics_filename_out = tempfile.mkstemp(
+                dir=metrics_output_folder, prefix=f"metrics_{self.test_name}", suffix=".json"
+            )
+        else:
+            metrics_filename_out = Path(metrics_output_folder) / f"metrics_{self.test_name}.json"
+
+        with open(metrics_filename_out, "w") as f:
+            logger.info(f"Writing metrics to {metrics_filename_out}")
             f.write(json_data)
+
+        self.data.clear()
 
 
 class OsmoKPIFile(MetricsBackendInterface):
     """
-    Dump to a file meeting OSMO KPI file descrption.
-    See:
+    Print metrics into a document for each phase. Only prints SingleMeasurement metrics and metadata as single key-value
+    pairs.
     """
-
-    metrics_to_upload_to_teamcity = ["Stage Load Time", "Stage FPS", "Stage DSSIM"]
 
     def __init__(self, execution_environment: Optional[TestExecutionEnvironmentInterface] = None):
         self._execution_environment = execution_environment
-        self.metrics = {}
+        self._test_phases = []
 
-    def add_metrics(self, test_run: measurements.TestRun) -> None:
+    def add_metrics(self, test_phase: measurements.TestPhase) -> None:
+        """Adds provided test_phase to internal list of test_phases.
 
-        # Add single measurements from test run to metrics dictionary,
-        # keeping only the most recent measurement
-        if not test_run.test_name in self.metrics:
-            self.metrics[test_run.test_name] = {}
-        for m in test_run.measurements:
-            if isinstance(m, measurements.SingleMeasurement):
-                self.metrics[test_run.test_name][m.name] = m
-
-    def finalize(self, filename: str) -> None:
-        self._generate_metrics_file(filename)
-
-    def _generate_metrics_file(self, filename) -> None:
+        Args:
+            test_phase (measurements.TestPhase): Current test phase.
         """
-        write JSON file for all test runs and log values.
+        self._test_phases.append(test_phase)
+
+    def finalize(self, metrics_output_folder: str, randomize_filename_prefix: bool = False) -> None:
+        """Write metrics to output file(s).
+
+        Each test phase's SingleMeasurement metrics and metadata are written to an output JSON file, at path
+        `[metrics_output_folder]/[optional random prefix]kpis_{test_name}_{test_phase}.json`.
+
+        Args:
+            metrics_output_folder (str): Output folder in which metrics files will be stored.
+            randomize_filename_prefix (bool, optional): True to randomize filename prefix. Defaults to False.
         """
-        # Extract only the values from the metrics objects for the OSMO KPI file
-        osmo_kpis = {}
-        for test_run_name in self.metrics:
-            log_statements = [f"{test_run_name} KPIs:"]
-            for measurement in self.metrics[test_run_name].values():
-                osmo_kpis[test_run_name + "_" + measurement.name] = measurement.value
-                log_statements.append(f"{test_run_name}_{measurement.name}: {measurement.value} {measurement.unit}")
+        for test_phase in self._test_phases:
+            # Retrieve useful metadata from test_phase
+            test_name = test_phase.get_metadata_field("workflow_name")
+            phase_name = test_phase.get_metadata_field("phase")
+
+            osmo_kpis = {}
+            log_statements = [f"{phase_name} KPIs:"]
+            # Add metadata as KPIs
+            for metadata in test_phase.metadata:
+                osmo_kpis[metadata.name] = metadata.data
+                log_statements.append(f"{metadata.name}: {metadata.data}")
+            # Add single measurements as KPIs
+            for measurement in test_phase.measurements:
+                if isinstance(measurement, measurements.SingleMeasurement):
+                    osmo_kpis[measurement.name] = measurement.value
+                    log_statements.append(f"{measurement.name}: {measurement.value} {measurement.unit}")
+            # Log all KPIs to console
             logger.info("\n" + "\n".join(log_statements))
-        json_data = json.dumps(osmo_kpis, indent=4)
-        with open(filename, "w") as f:
-            f.write(json_data)
+            # Generate the output filename
+            if randomize_filename_prefix:
+                _, metrics_filename_out = tempfile.mkstemp(
+                    dir=metrics_output_folder, prefix=f"kpis_{test_name}_{phase_name}", suffix=".json"
+                )
+            else:
+                metrics_filename_out = Path(metrics_output_folder) / f"metrics_{self.test_name}.json"
+            # Dump key-value pairs (fields) to the JSON document
+            json_data = json.dumps(osmo_kpis, indent=4)
+            with open(metrics_filename_out, "w") as f:
+                logger.info(f"Writing KPIs to {metrics_filename_out}")
+                f.write(json_data)
 
 
 class MetricsBackend:

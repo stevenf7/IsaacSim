@@ -51,9 +51,7 @@ class TestBenchmarkGymExtension(BaseIsaacBenchmarkAsync):
 
         # create scene
         self.set_phase("scene_loading")
-        self.start_runtime()
         await self._ext._env._world.reset_async_set_up_scene()
-        self.stop_runtime()
         await self.store_measurements()
 
     async def benchmark_train(self, task, max_iterations=None):
@@ -65,9 +63,7 @@ class TestBenchmarkGymExtension(BaseIsaacBenchmarkAsync):
                 overrides += [f"max_iterations={max_iterations}"]
 
         self.set_phase("train_benchmark")
-        self.start_collecting_frametime()
         await self._ext._on_train_async(overrides=overrides)
-        self.stop_collecting_frametime()
         await self.store_measurements()
 
         omni.timeline.get_timeline_interface().stop()
@@ -78,18 +74,14 @@ class TestBenchmarkGymExtension(BaseIsaacBenchmarkAsync):
 
         # benchmark simulation startup time
         self.set_phase("sim_start")
-        self.start_runtime()
         omni.timeline.get_timeline_interface().play()
         await omni.kit.app.get_app().next_update_async()
-        self.stop_runtime()
         await self.store_measurements()
 
         # benchmark step time (simulation only)
         self.set_phase("sim_benchmark")
-        self.start_collecting_frametime()
         for _ in range(step_num):
             await omni.kit.app.get_app().next_update_async()
-        self.stop_collecting_frametime()
         await self.store_measurements()
 
         omni.timeline.get_timeline_interface().stop()

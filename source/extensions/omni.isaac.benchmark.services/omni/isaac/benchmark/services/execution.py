@@ -34,7 +34,7 @@ class TestExecutionEnvironmentInterface:
         pass
 
     @classmethod
-    def add_metrics(cls, test_name: str, metrics: Dict):
+    def add_metrics(cls, test_phase: str, metrics: Dict):
         pass
 
     """
@@ -98,9 +98,9 @@ class LocalExecutionEnvironment(TestExecutionEnvironmentInterface):
             f"LocalExecutionEnvironment copied '{artefact_filepath} => {self.tmp_dir} {key}' for test {test_id}"
         )
 
-    def add_metrics(self, test_name: str, metrics: Dict):
+    def add_metrics(self, test_phase: str, metrics: Dict):
         test_id = get_calling_test_id()
-        print_info_log(f"LocalExecutionEnvironment add_metrics '{test_name} => {metrics}")
+        print_info_log(f"LocalExecutionEnvironment add_metrics '{test_phase} => {metrics}")
 
     def store_shader_cache_contents(self):
 

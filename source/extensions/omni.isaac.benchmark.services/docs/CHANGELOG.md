@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.4.0] - 2023-02-02
+### Added
+- User can now specify per-benchmark metadata when using BaseIsaacBenchmark, which will persist across phases
+### Changed
+- Refactors "middleware" in extension
+- OsmoKPIFile backend now prints one KPI file per phase, rather than one KPI file per workflow
+- Deprecates individual runtime/frametime APIs in BaseIsaacBenchmark, moves functionality to start_phase() and
+  stop_collecting_measurements()
+- metrics.measurements.TestRun renamed to metrics.measurements.TestPhase
+
+
 ## [1.3.2] - 2023-02-02
 ### Changed
 - OSMOKPIFile writer logs exact KPI keys, rather than abbreviation.
