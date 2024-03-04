@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.12.2] - 2024-02-29
+
+### Added
+- Benchmark metadata
+### Changed
+- Updated benchmark set_phase() call to correctly record startup time after removing deprecated API
+### Removed
+- Deprecated benchmark stop_runtime() call
+
 ## [0.12.1] - 2024-02-08
 
 ### Removed

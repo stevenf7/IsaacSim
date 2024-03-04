@@ -83,12 +83,12 @@ class DictMetadata(MetadataBase):
 
 
 @dataclass
-class TestRun(object):
+class TestPhase(object):
     """
-    represent a single test run which may have many metrics associated with it
+    represent a single test phase which may have many metrics associated with it
     """
 
-    test_name: str
+    phase_name: str
     measurements: List[Measurement] = field(default_factory=list)
     metadata: List[MetadataBase] = field(default_factory=list)
 
@@ -101,7 +101,7 @@ class TestRun(object):
         """
         name = name.lower()
         for m in self.metadata:
-            name2 = m.name.replace(self.test_name, "").strip().lower()
+            name2 = m.name.replace(self.phase_name, "").strip().lower()
             if name == name2:
                 return m.data
 
@@ -111,11 +111,23 @@ class TestRun(object):
             return default
 
     @classmethod
-    def from_json(cls, m: Dict) -> "TestRun":
+    def metadata_from_dict(cls, m: Dict) -> List[MetadataBase]:
+        metadata = []
+        metadata_mapping = {str: StringMetadata, int: IntMetadata, float: FloatMetadata, dict: DictMetadata}
+        for meas in m["metadata"]:
+            if "data" in meas:
+                metadata_type = metadata_mapping.get(type(meas["data"]))
+                if metadata_type:
+                    curr_meta = metadata_type(name=meas["name"], data=meas["data"])
+                    metadata.append(curr_meta)
+        return metadata
+
+    @classmethod
+    def from_json(cls, m: Dict) -> "TestPhase":
         """
         Deserialize measurements and metadata.
         """
-        curr_run = TestRun(m["test_name"])
+        curr_run = TestPhase(m["phase_name"])
 
         for meas in m["measurements"]:
             if "value" in meas:
@@ -132,22 +144,15 @@ class TestRun(object):
                 curr_meas = BooleanMeasurement(name=meas["name"], bvalue=meas["bvalue"])
                 curr_run.measurements.append(curr_meas)
 
-        metadata_mapping = {str: StringMetadata, int: IntMetadata, float: FloatMetadata, dict: DictMetadata}
-
-        for meas in m["metadata"]:
-            if "data" in meas:
-                metadata_type = metadata_mapping.get(type(meas["data"]))
-                if metadata_type:
-                    curr_meta = metadata_type(name=meas["name"], data=meas["data"])
-                    curr_run.metadata.append(curr_meta)
+            curr_run.metadata = TestPhase.metadata_from_dict(m["metadata"])
         return curr_run
 
     @classmethod
-    def aggregate_json_files(cls, json_folder_path: Union[str, Path]) -> List["TestRun"]:
+    def aggregate_json_files(cls, json_folder_path: Union[str, Path]) -> List["TestPhase"]:
         """
-        When we write multiple JSON files containing test runs to
+        When we write multiple JSON files containing test phases to
         a single folder, this will aggregate them and return all of
-        the test runs
+        the test phases
         """
         # Gather the separate metrics files for each test
         test_runs = []
@@ -169,6 +174,6 @@ class TestRun(object):
         return test_runs
 
 
-class TestRunEncoder(json.JSONEncoder):
+class TestPhaseEncoder(json.JSONEncoder):
     def default(self, o):
         return o.__dict__

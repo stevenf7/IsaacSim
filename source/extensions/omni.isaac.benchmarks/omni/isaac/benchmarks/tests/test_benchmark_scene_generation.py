@@ -200,8 +200,8 @@ class TestBenchmarkSceneGeneration(BaseIsaacBenchmarkAsync):
         self, num_assets, location="origin", prim_type="xform", api="usd", num_lights=0
     ):
         # Set the test name
-        self.test_run.test_name = get_test_name_from_args(num_assets, location, prim_type, api, num_lights)
-        print(f" ** [scene_benchmark] Running test: {self.test_run.test_name}")
+        self.benchmark_name = get_test_name_from_args(num_assets, location, prim_type, api, num_lights)
+        print(f" ** [scene_benchmark] Running test: {self.benchmark_name}")
 
         # Create a fresh stage
         await create_new_stage_async()
@@ -211,7 +211,6 @@ class TestBenchmarkSceneGeneration(BaseIsaacBenchmarkAsync):
         # <---------------------------- spawn phase -----------------------------
         # Perform the loading benchmark
         self.set_phase("spawn")
-        self.start_runtime()
         await omni.kit.app.get_app().next_update_async()
 
         # Spawn the assest (xform or meshes) in the origin, (usd/isaac api) or at random poses (meshes, lights)
@@ -224,7 +223,6 @@ class TestBenchmarkSceneGeneration(BaseIsaacBenchmarkAsync):
         await wait_until_stage_is_fully_loaded_async()
 
         await omni.kit.app.get_app().next_update_async()
-        self.stop_runtime()
         await self.store_measurements()
         # ----------------------------- spawn phase ----------------------------->
 
@@ -234,12 +232,10 @@ class TestBenchmarkSceneGeneration(BaseIsaacBenchmarkAsync):
 
         # <---------------------------- play phase -----------------------------
         self.set_phase("play")
-        self.start_collecting_frametime()
 
         for _ in range(1 if self.test_mode else TEST_NUM_APP_UPDATES):
             await omni.kit.app.get_app().next_update_async()
 
-        self.stop_collecting_frametime()
         await self.store_measurements()
         # ----------------------------- play phase ----------------------------->
 
@@ -247,7 +243,7 @@ class TestBenchmarkSceneGeneration(BaseIsaacBenchmarkAsync):
         await omni.kit.app.get_app().next_update_async()
 
         # Export the generated stage to file
-        stage.GetRootLayer().Export(f"{self.test_run.test_name}.usda")
+        stage.GetRootLayer().Export(f"{self.benchmark_name}.usda")
         await omni.kit.app.get_app().next_update_async()
 
         # Create a fresh stage
@@ -257,20 +253,18 @@ class TestBenchmarkSceneGeneration(BaseIsaacBenchmarkAsync):
 
         # <---------------------------- load phase -----------------------------
         self.set_phase("load")
-        self.start_runtime()
         await omni.kit.app.get_app().next_update_async()
 
-        # await open_stage_async(f"{self.test_run.test_name}.usda")
-        open_stage(f"{self.test_run.test_name}.usda")
+        # await open_stage_async(f"{self.benchmark_name}.usda")
+        open_stage(f"{self.benchmark_name}.usda")
         await wait_until_stage_is_fully_loaded_async(verbose=True)
 
         await omni.kit.app.get_app().next_update_async()
-        self.stop_runtime()
         await self.store_measurements()
         # ----------------------------- load phase ----------------------------->
 
         # Delete the exported usd file
-        os.remove(f"{self.test_run.test_name}.usda")
+        os.remove(f"{self.benchmark_name}.usda")
         await omni.kit.app.get_app().next_update_async()
 
     # NOTE: Not a benchmark, loading all meshes in scene once if any caching is done not to affect the benchmarks

@@ -42,20 +42,23 @@ class BaseIsaacBenchmarkAsync(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         # Set carb settings to wait until all materials are loaded when loading a stage
         set_sync_mode()
+        self._test_phases = []
+
+        self.settings = carb.settings.get_settings()
+        prefix = self._get_output_file_prefix(self._testMethodName)
+        version, _, _ = utils.get_kit_version_branch()
+
         self.assets_root_path = await get_assets_root_path_async()
         if self.assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return
-        self.settings = carb.settings.get_settings()
+
         # non async version improves stability when running many benchmarks in a row
         omni.usd.get_context().new_stage()
         for _ in range(100):
             await omni.kit.app.get_app().next_update_async()
 
         self._execution_env = execution.TestExecutionEnvironment.get_instance()
-
-        prefix = self._get_output_file_prefix(self._testMethodName)
-        version, _, _ = utils.get_kit_version_branch()
 
         self.context = interface.InputContext(
             artifact_prefix=prefix,
@@ -72,18 +75,19 @@ class BaseIsaacBenchmarkAsync(omni.kit.test.AsyncTestCase):
             self.frametime_recorder,
             self.runtime_recorder,
         ]
-        self.test_run = measurements.TestRun(
-            "BaseIsaacBenchmarkAsync"
-        )  # the name is set by the test itself, set it to a default here.
 
-        logger.info(f"Execution type = {type(self._execution_env).__name__}")
+        # logger.info(f"Execution type = {type(self._execution_env).__name__}")
         self._metrics_output_folder = self.settings.get("/exts/omni.isaac.benchmarks/metrics/metrics_output_folder")
+
         if not self._metrics_output_folder:
             self._metrics_output_folder = tempfile.gettempdir()
 
-        self.outputs_dir: Path = Path(self._metrics_output_folder) / "isaac_sim_benchmark_outputs"
+        # Get metrics backend based on user-provided type
+        self._metrics = backend.MetricsBackend.get_instance(execution_environment=self._execution_env)
 
-        logger.info(f"Local folder location = {self.outputs_dir}")
+        # Generate workflow-level metadata
+        self._metadata = []
+
         logger.info("Starting")
         self.benchmark_start_time = time.time()
         self.test_mode = os.getenv("ISAAC_TEST_MODE") == "1"
@@ -91,6 +95,13 @@ class BaseIsaacBenchmarkAsync(omni.kit.test.AsyncTestCase):
         pass
 
     async def tearDown(self):
+
+        if not os.path.exists(self._metrics_output_folder):
+            os.mkdir(path=self._metrics_output_folder)
+        randomize_filename_prefix = self.settings.get(
+            "/exts/omni.isaac.benchmark.services/metrics/randomize_filename_prefix"
+        )
+
         logger.info("Stopping")
         while is_stage_loading():
             print("asset still loading, waiting to finish")
@@ -98,17 +109,8 @@ class BaseIsaacBenchmarkAsync(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         logger.info("Writing metrics data.")
-
-        if not os.path.exists(self._metrics_output_folder):
-            os.mkdir(path=self._metrics_output_folder)
-        fd, metrics_filename_out = tempfile.mkstemp(
-            dir=self._metrics_output_folder, prefix=f"metrics_{self.test_run.test_name}", suffix=".json"
-        )
-        _metrics = backend.MetricsBackend.get_instance(self._execution_env)
-        logger.info(f"Metrics type = {type(_metrics).__name__}")
-        _metrics.add_metrics(self.test_run)
-        _metrics.finalize(metrics_filename_out)
-        logger.info(f"Writing metrics data to {metrics_filename_out}")
+        logger.info(f"Metrics type = {type(self._metrics).__name__}")
+        self._metrics.finalize(self._metrics_output_folder, randomize_filename_prefix)
 
         await omni.kit.app.get_app().next_update_async()
         self.test_run = None
@@ -119,14 +121,14 @@ class BaseIsaacBenchmarkAsync(omni.kit.test.AsyncTestCase):
     def _get_output_file_name(self, setting: settings.BenchmarkSettings, filename: str) -> str:
         version, _, _ = utils.get_kit_version_branch()
         resolution = self.get_setting_resolution(setting.image_width, setting.image_height)
-        return f"{setting.test_name}_{version}_{resolution}_{filename}"
+        return f"{setting.test_phase}_{version}_{resolution}_{filename}"
 
-    def _get_output_file_prefix(self, test_name) -> str:
+    def _get_output_file_prefix(self, test_phase) -> str:
         """
         uniquefies artifact file names (so e.g if we support multiple resolutions they are included in the name
         """
         version, _, _ = utils.get_kit_version_branch()
-        return f"{test_name}_{version}"
+        return f"{test_phase}_{version}"
 
     def _get_sync_mode(self) -> utils.SyncMode:
         """Checks if we are in sync mode."""
@@ -152,33 +154,71 @@ class BaseIsaacBenchmarkAsync(omni.kit.test.AsyncTestCase):
         )
         return utils.SyncMode.AMBIGUOUS
 
-    def set_phase(self, phase):
+    def set_phase(self, phase: str, start_recording_time: bool = True) -> None:
+        """Sets benchmarking phase. Turns on frametime and runtime collection.
+
+        Args:
+            phase (str): Name of phase, used in output.
+            start_recording_time (bool): False to not start recording runtime and frametime at start of phase. Default True.
+        """
         logger.info(f"Starting phase: {phase}")
         self.context.phase = phase
+        if start_recording_time:
+            self.frametime_recorder.start_collecting()
+            self.runtime_recorder.start_time()
 
     def start_collecting_frametime(self):
+        """Deprecated"""
+        logger.warning(f"{self.start_collecting_frametime.__name__} is deprecated. Invoked by set_phase.")
         self.frametime_recorder.start_collecting()
 
     def stop_collecting_frametime(self):
+        """Deprecated"""
+        logger.warning(f"{self.stop_collecting_frametime.__name__} is deprecated. Invoked by store_measurements.")
         self.frametime_recorder.stop_collecting()
 
     def start_runtime(self):
+        """Deprecated"""
+        logger.warning(f"{self.start_runtime.__name__} is deprecated. Invoked by set_phase.")
         self.runtime_recorder.start_time()
 
     def stop_runtime(self):
+        """Deprecated"""
+        logger.warning(f"{self.stop_runtime.__name__} is deprecated. Invoked by store_measurements.")
         self.runtime_recorder.stop_time()
 
-    async def store_measurements(self):
+    async def store_measurements(self, stop_recording_time: bool = True) -> None:
+        """Stores measurements, metadata, and artifacts collected by all recorders during the previous phase.
+        Optionally, ends frametime and runtime collection.
+
+        Args:
+            stop_recording_time (bool): False to not stop recording runtime and frametime at end of phase. Default True.
+        """
+        if stop_recording_time:
+            self.frametime_recorder.stop_collecting()
+            self.runtime_recorder.stop_time()
+
+        if not self._metadata:
+            self._metadata = [measurements.StringMetadata(name="workflow_name", data=self.benchmark_name)]
+        # Retrieve metrics, metadata, and artifacts from the recorders
         run_measurements = []
         run_metadata = []
         run_artifacts = []
+        # Retrieve metrics, metadata, and artifacts from the recorders
         for m in self.recorders:
             data = m.get_data()
             run_measurements.extend(data.measurements)
             run_metadata.extend(data.metadata)
             run_artifacts.extend(data.artefacts)
-        self.test_run.measurements.extend(run_measurements)
-        self.test_run.metadata.extend(run_metadata)
+        # Create a new test phase to store these measurements
+        test_phase = measurements.TestPhase(
+            phase_name=self.context.phase, measurements=run_measurements, metadata=run_metadata
+        )
+        # Update test phase metadata with phase name and benchmark metadata
+        test_phase.metadata.extend(self._metadata)
+        test_phase.metadata.append(measurements.StringMetadata(name="phase", data=self.context.phase))
+        # Add metrics and metadata from the test phase to the backend
+        self._metrics.add_metrics(test_phase)
 
     async def fully_load_stage(self, usd_path):
         open_stage(usd_path)

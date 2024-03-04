@@ -80,9 +80,8 @@ class TestBenchmarkRobotsNovaCarterROS2(BaseIsaacBenchmarkAsync):
         if len(sensor_name) == 0:
             sensor_name = "_no_sensor"
 
-        self.test_run.test_name = f"robots_nova_carter_ros2{sensor_name}_{n_robot}"
+        self.benchmark_name = f"robots_nova_carter_ros2{sensor_name}_{n_robot}"
         self.set_phase("loading")
-        self.start_runtime()
 
         robot_path = "/Isaac/Samples/ROS2/Robots/Nova_Carter_ROS.usd"
         scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
@@ -162,18 +161,15 @@ class TestBenchmarkRobotsNovaCarterROS2(BaseIsaacBenchmarkAsync):
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
 
-        self.stop_runtime()
         await self.store_measurements()
 
         # perform benchmark
         self.set_phase("benchmark")
-        self.start_collecting_frametime()
 
         for _ in range(1 if self.test_mode else TEST_NUM_APP_UPDATES):
             await omni.kit.app.get_app().next_update_async()
             self.cmd_vel_pub.publish(move_cmd)
 
-        self.stop_collecting_frametime()
         await self.store_measurements()
 
         timeline.stop()

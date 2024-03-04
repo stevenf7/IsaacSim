@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.6.3] - 2024-02-29
+### Added
+- Benchmark metadata
+### Changed
+- Updated benchmark set_phase() call to correctly record startup time after removing deprecated API
+### Removed
+- Deprecated benchmark stop_runtime() call
+
 ## [1.6.2] - 2024-02-27
 ### Changed
 - Make error message about import isaacsim clearer

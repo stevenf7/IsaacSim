@@ -26,25 +26,21 @@ class TestBenchmarkRealTimeFactor(BaseIsaacBenchmarkAsync):
 
     # ----------------------------------------------------------------------
     async def benchmark_real_time_factor(self):
-        self.test_run.test_name = "real_time_factor"
+        self.benchmark_name = "real_time_factor"
         self.set_phase("loading")
-        self.start_runtime()
 
         scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
         await self.fully_load_stage(self.assets_root_path + scene_path)
         timeline = omni.timeline.get_timeline_interface()
 
-        self.stop_runtime()
         await self.store_measurements()
 
         self.set_phase("benchmark")
         timeline.play()
-        self.start_collecting_frametime()
 
         for _ in range(1 if self.test_mode else TEST_NUM_APP_UPDATES):
             await omni.kit.app.get_app().next_update_async()
 
-        self.stop_collecting_frametime()
         await self.store_measurements()
 
         timeline.stop()

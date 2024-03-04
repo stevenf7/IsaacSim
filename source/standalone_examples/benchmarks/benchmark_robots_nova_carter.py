@@ -36,9 +36,16 @@ enable_extension("omni.isaac.benchmark.services")
 from omni.isaac.benchmark.services import base_isaac_benchmark
 
 # Create the benchmark
-benchmark = base_isaac_benchmark.BaseIsaacBenchmark(f"robots_nova_carter_{n_robot}_gpu_{n_gpu}")
+benchmark = base_isaac_benchmark.BaseIsaacBenchmark(
+    benchmark_name="benchmark_robots_nova_carter",
+    workflow_metadata={
+        "metadata": [
+            {"name": "num_robots", "data": n_robot},
+            {"name": "num_gpus", "data": n_gpu},
+        ]
+    },
+)
 benchmark.set_phase("loading")
-benchmark.start_runtime()
 
 robot_path = "/Isaac/Robots/Carter/nova_carter_sensors.usd"
 scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
@@ -81,17 +88,13 @@ for robot in robots:
 omni.kit.app.get_app().update()
 omni.kit.app.get_app().update()
 
-benchmark.stop_runtime()
 benchmark.store_measurements()
-
 # perform benchmark
 benchmark.set_phase("benchmark")
-benchmark.start_collecting_frametime()
 
 for _ in range(1 if benchmark.test_mode else TEST_NUM_APP_UPDATES):
     omni.kit.app.get_app().update()
 
-benchmark.stop_collecting_frametime()
 benchmark.store_measurements()
 benchmark.stop()
 

@@ -247,9 +247,15 @@ class SimulationApp:
         if ext_manager.is_extension_enabled("omni.isaac.benchmark.services"):
             from omni.isaac.benchmark.services import base_isaac_benchmark
 
-            benchmark = base_isaac_benchmark.BaseIsaacBenchmark(benchmark_name="app_startup")
-            benchmark.set_phase("startup")
-            benchmark.stop_runtime()
+            benchmark = base_isaac_benchmark.BaseIsaacBenchmark(
+                benchmark_name="app_startup",
+                workflow_metadata={
+                    "metadata": [
+                        {"name": "mode", "data": "non-async"},
+                    ]
+                },
+            )
+            benchmark.set_phase("startup", start_recording_time=False)
             benchmark.store_measurements()
             benchmark.stop()
 
