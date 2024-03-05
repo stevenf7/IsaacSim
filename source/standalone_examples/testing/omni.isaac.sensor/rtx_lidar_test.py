@@ -30,7 +30,7 @@ def printinc(i):
 
 i = 0
 
-i = printinc(i)
+i = printinc(i)  # 0
 
 
 def add_cube(stage, path, scale, offset, physics=False):
@@ -47,7 +47,7 @@ def add_cube(stage, path, scale, offset, physics=False):
     return cubePrim
 
 
-i = printinc(i)
+i = printinc(i)  # 2
 simulation_app.update()
 
 
@@ -79,6 +79,8 @@ if 1:
         )
 
 lidar_config = "RPLIDAR_S2E"
+lidar_config = "SICK_microscan3_ABAZ90ZA1P01"
+lidar_config = "Sick_MISC3"
 lidar_config = "Example_Rotary"
 if len(sys.argv) >= 3:
     lidar_config = sys.argv[2]
@@ -87,7 +89,7 @@ omni.kit.commands.execute(
     "CreatePrim", prim_type="DomeLight", attributes={"inputs:intensity": 1000, "inputs:texture:format": "latlong"}
 )
 
-i = printinc(i)
+i = printinc(i)  # 3
 simulation_app.update()
 
 # Create the lidar sensor that generates data into "RtxSensorCpu"
@@ -96,7 +98,7 @@ simulation_app.update()
 # Possible options are Example_Rotary and Example_Solid_State
 # drive sim applies 0.5,-0.5,-0.5,w(-0.5), we have to apply the reverse
 
-i = printinc(i)
+i = printinc(i)  # 4
 _, sensor = omni.kit.commands.execute(
     "IsaacSensorCreateRtxLidar",
     path="/sensor",
@@ -106,7 +108,7 @@ _, sensor = omni.kit.commands.execute(
     orientation=Gf.Quatd(1, 0, 0, 0),  # Gf.Quatd is w,i,j,k
 )
 
-i = printinc(i)
+i = printinc(i)  # 5
 hydra_texture = rep.create.render_product(sensor.GetPath(), [1, 1], name="Isaac")
 
 # Create the debug draw pipeline in the post process graph
@@ -221,4 +223,23 @@ import omni.replicator.core as rep
 hydra_texture = rep.create.render_product("/Camera", [1, 1], name="Isaac")
 writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloudBuffer")
 writer.attach([hydra_texture])
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
+import asyncio
+import omni.replicator.core as rep
+import carb.settings
+import omni.usd
+
+RP_RESOLUTION = (1280, 720)
+NUM_RP = 6
+
+async def create_new_stage_with_rp_async():
+    omni.usd.get_context().new_stage()
+    from omni.isaac.core.utils import stage
+    stage.add_reference_to_stage("omniverse://isaac-dev.ov.nvidia.com/Isaac/Environments/Simple_Warehouse/full_warehouse.usd", "/background")
+    # None (`0`), TAA (`1`), FXAA (`2`), DLSS (`3`) and DLAA (`4`)
+    # carb.settings.get_settings().set("/rtx/post/aa/op", 4)
+    for i in range(NUM_RP):
+        rep.create.render_product("/OmniverseKit_Persp", RP_RESOLUTION, name=f"rp_{i}")
+
+asyncio.ensure_future(create_new_stage_with_rp_async())
 """

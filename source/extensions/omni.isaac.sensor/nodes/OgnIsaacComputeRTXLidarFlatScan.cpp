@@ -36,7 +36,10 @@ private:
     std::string config;
     LidarScanType scanType{ LidarScanType::kUnknown };
     LidarRotaryProfile rotaryProfile;
+    LidarSolidStateProfile solidStateProfile;
     int emitterToOutput{ -1 };
+    int numRaysPerLine{ -1 };
+    int emitterStateToOutput{ -1 };
     EmitterProfile* emitterProfile;
     bool mRightHanded = true; // TODO make parameter?
 
@@ -75,86 +78,177 @@ public:
         {
             omni::isaac::utils::safeGetAttribute(configAttr, curConfig);
         }
-        LidarSolidStateProfile dummy;
-        bool configUpdated = updateLidarConfig(curConfig, state.config, state.scanType, state.rotaryProfile, dummy);
-        if (state.scanType != LidarScanType::kRotary)
-        {
-            CARB_LOG_WARN_ONCE(
-                "IsaacComputeRTXLidarFlatScan only works with Rotary lidar, and  %s is not one.", curConfig.c_str());
-            return true;
-        }
+        bool configUpdated =
+            updateLidarConfig(curConfig, state.config, state.scanType, state.rotaryProfile, state.solidStateProfile);
         if (configUpdated)
         {
-            state.emitterToOutput = 0;
-            state.emitterProfile = &state.rotaryProfile.emitterStates[0].emitterProfiles[state.emitterToOutput];
-            float minElevation = ::fabs(state.emitterProfile->elevationDeg);
-            for (int s = 0; s < (int)state.rotaryProfile.emitterStateCount; s++)
+            if (state.scanType == LidarScanType::kRotary)
             {
-                for (int i = 0; i < (int)state.rotaryProfile.numberOfEmitters; i++)
+                state.emitterToOutput = 0;
+                state.emitterStateToOutput = 0;
+                state.emitterProfile = &state.rotaryProfile.emitterStates[0].emitterProfiles[state.emitterToOutput];
+                float minElevation = ::fabs(state.emitterProfile->elevationDeg);
+                for (int s = 0; s < (int)state.rotaryProfile.emitterStateCount; s++)
                 {
-                    float curElevation = ::fabs(state.rotaryProfile.emitterStates[s].emitterProfiles[i].elevationDeg);
-                    if (curElevation < minElevation)
+                    for (int i = 0; i < (int)state.rotaryProfile.numberOfEmitters; i++)
                     {
-                        minElevation = curElevation;
-                        state.emitterToOutput = i;
-                        state.emitterProfile = &state.rotaryProfile.emitterStates[s].emitterProfiles[i];
+                        float curElevation = ::fabs(state.rotaryProfile.emitterStates[s].emitterProfiles[i].elevationDeg);
+                        if (curElevation < minElevation)
+                        {
+                            minElevation = curElevation;
+                            state.emitterToOutput = i;
+                            state.emitterStateToOutput = s;
+                            state.emitterProfile = &state.rotaryProfile.emitterStates[s].emitterProfiles[i];
+                        }
                     }
                 }
-            }
-            if (minElevation != 0.0f)
-            {
-                CARB_LOG_WARN_ONCE(
-                    "IsaacComputeRTXLidarFlatScan: lowest elevation emitter is %f, not 0.",
-                    state.rotaryProfile.emitterStates[0].emitterProfiles[state.emitterToOutput].elevationDeg);
-            }
-            float startAzimuth = state.emitterProfile->azimuthDeg;
-            db.outputs.azimuthRange() = {
-                (state.rotaryProfile.startAzimuthDeg + startAzimuth) * static_cast<float>(M_PI / 180.0f),
-                (state.rotaryProfile.endAzimuthDeg + startAzimuth) * static_cast<float>(M_PI / 180.0f),
-            };
-            db.outputs.depthRange() = {
-                state.rotaryProfile.nearRangeM,
-                state.rotaryProfile.farRangeM,
-            };
-            // state.rotaryProfile.reportRateBaseHz; // 3600 for a 10Hz lidar that fires one tick per degree.
-            // state.rotaryProfile.scanRateBaseHz; // 10 for a 10Hz lidar
-            uint32_t numTicksPerRotation = state.rotaryProfile.reportRateBaseHz / state.rotaryProfile.scanRateBaseHz;
-            // std::cout << "MTC " << state.rotaryProfile.reportRateBaseHz << " " << state.rotaryProfile.scanRateBaseHz
-            //          << " " << numTicksPerRotation << "\n";
-            db.outputs.horizontalFov() = 360.0;
-            db.outputs.horizontalResolution() = static_cast<float>(360.0 / numTicksPerRotation);
-            db.outputs.numRows() = 1;
-            db.outputs.numCols() = numTicksPerRotation;
-            db.outputs.rotationRate() = static_cast<float>(state.rotaryProfile.scanRateBaseHz);
-            db.outputs.intensitiesData().resize(numTicksPerRotation);
-            db.outputs.linearDepthData().resize(numTicksPerRotation);
+                if (minElevation != 0.0f)
+                {
+                    CARB_LOG_WARN_ONCE("IsaacComputeRTXLidarFlatScan: lowest elevation emitter is %f, not 0.",
+                                       state.rotaryProfile.emitterStates[state.emitterStateToOutput]
+                                           .emitterProfiles[state.emitterToOutput]
+                                           .elevationDeg);
+                }
+                float startAzimuth = state.emitterProfile->azimuthDeg;
+                db.outputs.azimuthRange() = {
+                    (state.rotaryProfile.startAzimuthDeg + startAzimuth) * static_cast<float>(M_PI / 180.0f),
+                    (state.rotaryProfile.endAzimuthDeg + startAzimuth) * static_cast<float>(M_PI / 180.0f),
+                };
+                db.outputs.depthRange() = {
+                    state.rotaryProfile.nearRangeM,
+                    state.rotaryProfile.farRangeM,
+                };
+                // state.rotaryProfile.reportRateBaseHz; // 3600 for a 10Hz lidar that fires one tick per degree.
+                // state.rotaryProfile.scanRateBaseHz; // 10 for a 10Hz lidar
+                uint32_t numTicksPerRotation = state.rotaryProfile.reportRateBaseHz / state.rotaryProfile.scanRateBaseHz;
+                // std::cout << "MTC " << state.rotaryProfile.reportRateBaseHz << " " <<
+                // state.rotaryProfile.scanRateBaseHz
+                //          << " " << numTicksPerRotation << "\n";
+                db.outputs.horizontalFov() = 360.0;
+                db.outputs.horizontalResolution() = static_cast<float>(360.0 / numTicksPerRotation);
+                db.outputs.numRows() = 1;
+                db.outputs.numCols() = numTicksPerRotation;
+                db.outputs.rotationRate() = static_cast<float>(state.rotaryProfile.scanRateBaseHz);
+                db.outputs.intensitiesData().resize(numTicksPerRotation);
+                db.outputs.linearDepthData().resize(numTicksPerRotation);
 
-            // assert(numTicksPerRotation == parameterHost->async.ticksPerScan);
+                // assert(numTicksPerRotation == parameterHost->async.ticksPerScan);
+            }
+            else if (state.scanType == LidarScanType::kSolidState)
+            {
+                // Find the solid state line with the lowest elevation.
+                // gather the start and end Azimuth of the line while at it as well
+
+                state.emitterToOutput = 0;
+                state.emitterStateToOutput = 0;
+                float startAzimuthDeg = state.solidStateProfile.emitterStates[0].emitterProfiles[0].azimuthDeg;
+                state.numRaysPerLine = state.solidStateProfile.numRaysPerLine[0];
+                float endAzimuthDeg =
+                    state.solidStateProfile.emitterStates[0].emitterProfiles[state.numRaysPerLine - 1].azimuthDeg;
+                if (endAzimuthDeg > 180.0f)
+                    endAzimuthDeg = endAzimuthDeg - 360.0f;
+                state.emitterProfile = &state.solidStateProfile.emitterStates[0].emitterProfiles[0];
+                float minElevation = ::fabs(state.emitterProfile->elevationDeg);
+                for (int s = 0; s < (int)state.solidStateProfile.emitterStateCount; s++)
+                {
+                    int emitterToCheck = 0; // will be adding number of emitters in line as I iterate over the lines.
+                    for (int l = 0; l < (int)state.solidStateProfile.numLines; l++)
+                    {
+                        float curElevation =
+                            ::fabs(state.solidStateProfile.emitterStates[s].emitterProfiles[emitterToCheck].elevationDeg);
+                        if (curElevation < minElevation)
+                        {
+                            minElevation = curElevation;
+                            state.emitterToOutput = emitterToCheck;
+                            state.emitterStateToOutput = s;
+                            state.emitterProfile =
+                                &state.solidStateProfile.emitterStates[s].emitterProfiles[emitterToCheck];
+                            startAzimuthDeg =
+                                state.solidStateProfile.emitterStates[s].emitterProfiles[emitterToCheck].azimuthDeg;
+                            state.numRaysPerLine = state.solidStateProfile.numRaysPerLine[l];
+                            endAzimuthDeg = state.solidStateProfile.emitterStates[s]
+                                                .emitterProfiles[emitterToCheck + state.numRaysPerLine - 1]
+                                                .azimuthDeg;
+                            if (endAzimuthDeg > 180.0f)
+                                endAzimuthDeg = endAzimuthDeg - 360.0f;
+                        }
+                        emitterToCheck += state.solidStateProfile.numRaysPerLine[l];
+                    }
+                }
+                if (minElevation != 0.0f)
+                {
+                    CARB_LOG_WARN_ONCE("IsaacComputeRTXLidarFlatScan: lowest elevation emitter line is %f, not 0.",
+                                       state.solidStateProfile.emitterStates[state.emitterStateToOutput]
+                                           .emitterProfiles[state.emitterToOutput]
+                                           .elevationDeg);
+                }
+                db.outputs.azimuthRange() = {
+                    startAzimuthDeg * static_cast<float>(M_PI / 180.0f),
+                    endAzimuthDeg * static_cast<float>(M_PI / 180.0f),
+                };
+                db.outputs.depthRange() = {
+                    state.solidStateProfile.nearRangeM,
+                    state.solidStateProfile.farRangeM,
+                };
+                float horizontalFov = ::fabs(endAzimuthDeg - startAzimuthDeg);
+                db.outputs.horizontalFov() = horizontalFov;
+                db.outputs.horizontalResolution() = horizontalFov / (state.numRaysPerLine - 1);
+                db.outputs.numRows() = 1;
+                db.outputs.numCols() = state.numRaysPerLine;
+                db.outputs.rotationRate() = static_cast<float>(state.solidStateProfile.scanRateBaseHz);
+                db.outputs.intensitiesData().resize(state.numRaysPerLine);
+                db.outputs.linearDepthData().resize(state.numRaysPerLine);
+            }
+            else
+            {
+
+                CARB_LOG_WARN_ONCE("IsaacComputeRTXLidarFlatScan %s is an unknown scanType.", curConfig.c_str());
+                return true;
+            }
         }
 
         uint8_t* intensities = db.outputs.intensitiesData().data();
         float* distances = db.outputs.linearDepthData().data();
-        // std::cout << "MTC2 " << numTicks;
-        for (uint32_t tick = 0; tick < numTicks; tick++)
+        if (state.scanType == LidarScanType::kRotary)
         {
-            uint32_t channelId = state.emitterToOutput;
-
-            const uint32_t echoId = 0;
-            const uint32_t pointIdx{ idxOfReturn(channelId, echoId, numEchos, numChannels, tick) };
-            uint8_t intensity{ static_cast<uint8_t>(lidarReturnsHost.intensities[pointIdx] * 255.0f) };
-            float distance{ lidarReturnsHost.distances[pointIdx] };
-            if (state.emitterProfile->elevationDeg)
+            for (uint32_t tick = 0; tick < numTicks; tick++)
             {
-                distance = distance * ::cosf(Deg2Rad(state.emitterProfile->elevationDeg));
+                uint32_t channelId = state.emitterToOutput;
+
+                const uint32_t echoId = 0;
+                const uint32_t pointIdx{ idxOfReturn(channelId, echoId, numEchos, numChannels, tick) };
+                uint8_t intensity{ static_cast<uint8_t>(lidarReturnsHost.intensities[pointIdx] * 255.0f) };
+                float distance{ lidarReturnsHost.distances[pointIdx] };
+                if (state.emitterProfile->elevationDeg)
+                {
+                    distance = distance * ::cosf(Deg2Rad(state.emitterProfile->elevationDeg));
+                }
+                uint32_t outIdx = (startTick + tick) % parameterHost->async.ticksPerScan;
+                // reverse output indices if right handed
+                if (state.mRightHanded)
+                    outIdx = parameterHost->async.ticksPerScan - 1 - outIdx;
+                intensities[outIdx] = intensity;
+                distances[outIdx] = distance;
             }
-            uint32_t outIdx = (startTick + tick) % parameterHost->async.ticksPerScan;
-            // reverse output indices if right handed
-            if (state.mRightHanded)
-                outIdx = parameterHost->async.ticksPerScan - 1 - outIdx;
-            intensities[outIdx] = intensity;
-            distances[outIdx] = distance;
         }
-        // std::cout << "done\n";
+        else if (state.scanType == LidarScanType::kSolidState)
+        {
+            // Solid State is always 1 tick
+
+            for (int i = 0; i < (int)numChannels; i++)
+            {
+                int pointIdx = i * numEchos;
+                int emitterId = lidarReturnsHost.emitterIds[pointIdx];
+                if (emitterId >= state.emitterToOutput && emitterId < state.emitterToOutput + state.numRaysPerLine)
+                {
+                    uint8_t intensity{ static_cast<uint8_t>(lidarReturnsHost.intensities[pointIdx] * 255.0f) };
+                    float distance{ lidarReturnsHost.distances[pointIdx] };
+                    int outIdx = emitterId - state.emitterToOutput;
+                    intensities[outIdx] = intensity;
+                    distances[outIdx] = distance;
+                }
+            }
+        }
 
         db.outputs.exec() = kExecutionAttributeStateEnabled;
         return true;
