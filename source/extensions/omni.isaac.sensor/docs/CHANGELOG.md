@@ -1,5 +1,10 @@
 # Changelog
 
+## [9.14.0] - 2024-03-1
+### Added
+- IsaacComputeRTXLidarFlatScan Node now works with Solid State lidar.
+- Official version of SICK microscan3 config, and marked old one as legacy.
+
 ## [9.13.7] - 2024-02-26
 ### Fixed
 - Added execOut trigger commands in Read IMU and Contact Sensor nodes to allow attached downstream nodes to tick
