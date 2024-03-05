@@ -34,15 +34,14 @@ class PoseWriter(Writer):
         frame_padding:
             Pad the frame number with leading zeroes.  Default: ``4``
         format:
-            Specifies which format the data will be outputted as. Default: ``centerpose``
+            Specifies which format the data will be outputted as. Default: ``None`` (will write most of the available data)
     """
 
     RGB_ANNOT_NAME = "rgb"
     BB3D_ANNOT_NAME = "bounding_box_3d_fast"
     CAM_PARAMS_ANNOT_NAME = "camera_params"
-    SUPPORTED_FORMATS = set(["default", "dope", "centerpose"])
-
-    KEYPOINT_ORDER = [
+    SUPPORTED_FORMATS = set(["dope", "centerpose"])
+    CUBOID_KEYPOINTS_ORDER = [
         "Center",
         "LDB",
         "LDF",
@@ -53,6 +52,18 @@ class PoseWriter(Writer):
         "RUB",
         "RUF",
     ]
+    CUBOID_KEYPOINT_COLORS = [
+        "white",
+        "red",
+        "green",
+        "blue",
+        "yellow",
+        "cyan",
+        "magenta",
+        "orange",
+        "purple",
+    ]
+    CUBOID_EDGE_COLORS = {"front": "red", "back": "blue", "connecting": "green"}
 
     def __init__(
         self,
@@ -62,7 +73,7 @@ class PoseWriter(Writer):
         skip_empty_frames: bool = True,
         write_debug_images: bool = False,
         frame_padding: int = 4,
-        format: str = "default",
+        format: str = None,
     ):
         self.version = __version__
         self._output_dir = output_dir
@@ -73,85 +84,310 @@ class PoseWriter(Writer):
         self._write_debug_images = write_debug_images
         self._frame_padding = frame_padding
         self._frame_id = 0
-        if format.lower() not in self.SUPPORTED_FORMATS:
+        if format is not None and format.lower() not in self.SUPPORTED_FORMATS:
             raise ValueError(f"Unsupported format: {format}. Supported formats: {self.SUPPORTED_FORMATS}")
         else:
             self._format = format
 
-        # Use render product names and their multiple render product flag for convenient data access
+        # Handle multiple render products scenario (e.g. single render product:'rgb', multiple render products: 'rgb-{rp_name}')
         self._render_product_names = []
         self._multiple_render_products = False
 
-        self.annotators = []
+        # Store processed data to be written every frame in the selected format
+        self._frame_data = {}
+
+        # Store debug related data to write overlay images (projected cuboid, local frame axes, etc.)
+        self._debug_frame_data = {}
+
         # For more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html
+        self.annotators = []
         self.annotators.append(AnnotatorRegistry.get_annotator(self.RGB_ANNOT_NAME))
         self.annotators.append(AnnotatorRegistry.get_annotator(self.BB3D_ANNOT_NAME))
         self.annotators.append(AnnotatorRegistry.get_annotator(self.CAM_PARAMS_ANNOT_NAME))
 
+    # Abstract method from Writer to access the annotator data and write to disk
     def write(self, data: dict):
         # In case of multiple render products annotator names are suffixed with the render product name:
         # (e.g. 'rgb' -> 'rgb-{rp_name}')
         for rp_name in self._render_product_names:
-            # Check if data should be split into subfolders
+            # Process the frame data of the current render product
+            num_objs = self._process_frame_data(data, rp_name)
+
+            # Early exist if empty frames should not be written
+            if self._skip_empty_frames and num_objs == 0:
+                continue
+
+            # Create subfolder name if data should be separated for each render product
             rp_subfolder = f"{rp_name}/" if self._multiple_render_products and self._use_subfolders else ""
 
-            # Write frame data: rgb, camera parameters, bounding box 3d, projected cuboid, etc.
-            self._process_and_write_data_to_disk(data, rp_name, rp_subfolder)
+            # Write frame data to disk
+            self._write_frame_data(data, rp_name, rp_subfolder)
+            if self._write_debug_images:
+                self._write_debug_data(data, rp_name, rp_subfolder)
 
-        # If the data is split into subfolders, increment the frame id only once
+            # If render products are NOT separated into subfolders increment the frame id after processing each render product
+            if not self._use_subfolders:
+                self._frame_id += 1
+
+        # If render products are separated into subfolders increment the frame id after processing all render products
         if self._use_subfolders:
             self._frame_id += 1
 
-    # Extract the camera parameters from the data
-    def _extract_camera_parameters(self, camera_params) -> dict:
+    # Note that the frame id can be incremented for each render product write (if use_subfolders is False) or for each step (if use_subfolders is True)
+    def get_current_frame_id(self):
+        return self._frame_id
+
+    # Process the render product data and store it in the selected format, return the number of objects in the frame
+    def _process_frame_data(self, data: dict, render_product_name: str) -> int:
+        # Store the frame data for writing to disk
+        self._frame_data = {}
+
+        # Get and process the camera parameters annotator data in the selected format
+        camera_params_annot_name = (
+            f"{self.CAM_PARAMS_ANNOT_NAME}-{render_product_name}"
+            if self._multiple_render_products
+            else self.CAM_PARAMS_ANNOT_NAME
+        )
+        camera_params = data[camera_params_annot_name]
+
+        # Get and process the bounding box 3d annotator data in the selected format
+        bb3d_annot_name = (
+            f"{self.BB3D_ANNOT_NAME}-{render_product_name}" if self._multiple_render_products else self.BB3D_ANNOT_NAME
+        )
+        bb3d_data = data[bb3d_annot_name]["data"]
+        bb3d_info = data[bb3d_annot_name]["info"]
+        objs_data = self._process_bounding_boxes(bb3d_data, bb3d_info, camera_params)
+
+        # Early exist if empty frames should be skipped and there are no visible objects in the frame
+        if self._skip_empty_frames and len(objs_data) == 0:
+            return 0
+
+        # Store the camera information in the
+        self._frame_data["camera_data"] = self._process_camera_parameters(camera_params)
+
+        # Store the predefined order of the cuboid keypoints
+        self._frame_data["keypoint_order"] = self.CUBOID_KEYPOINTS_ORDER
+
+        # Add the objects data to the frame entries
+        self._frame_data["objects"] = objs_data
+
+        return len(objs_data)
+
+    # Process the bounding box annotator data (extract objects label, location, rotation, visibility, etc.)
+    def _process_bounding_boxes(self, bb3d_data, bb3d_info, camera_params) -> list:
+        # Map the ids to class names from the bbox annotator "idToLabels" data
+        # ('idToLabels': {0: {'class': 'cube'}, 1: {'class': 'sphere'}} -> {0: 'cube', 1: 'sphere'})
+        id_to_labels = {k: v["class"] for k, v in bb3d_info["idToLabels"].items()}
+
+        if self._write_debug_images:
+            self._debug_frame_data["world_frame_transforms"] = []
+            self._debug_frame_data["projected_keypoints"] = []
+        # Iterate the bounding box data and extract the object informations
+        objs = []
+        for i, bbox in enumerate(bb3d_data):
+            obj = {}
+            # `occlusionRatio` represents (visible pixels / total pixels) where `0.0` is fully visible and `1.0` is fully occluded
+            # NOTE: `obj_visibility` is inverted to match the format where `0.0` is fully occluded and `1.0`` is fully visible
+            obj_visibility = 1.0 - float(bbox["occlusionRatio"])
+
+            # Early exit if visibility is below the given threshold
+            if obj_visibility <= self._visibility_threshold:
+                continue
+
+            obj["label"] = id_to_labels[bbox["semanticId"]]
+            obj["prim_path"] = bb3d_info["primPaths"][i]
+            obj["visibility"] = obj_visibility
+
+            # Local space to to world transform (row-major)
+            local_to_world_tf = bbox["transform"]
+            if self._format is None:
+                obj["local_to_world_transform"] = local_to_world_tf.tolist()
+                # Extract world frame location (last row) and rotation matrix (3x3) from the row-major transform matrix
+                location_world_frame = local_to_world_tf[3, :3]
+                obj["location_world_frame"] = location_world_frame.tolist()
+                rotation_matrix_world_frame = local_to_world_tf[:3, :3]
+                obj["rotation_matrix_world_frame"] = rotation_matrix_world_frame.tolist()
+
+                # Get the world frame quaternion using Gf.Transform (row-major)
+                local_to_world_tf_gf = Gf.Transform()
+                local_to_world_tf_gf.SetMatrix(Gf.Matrix4d(local_to_world_tf.tolist()))
+                quat_world_frame_gf = local_to_world_tf_gf.GetRotation().GetQuat()
+                obj["quat_wxyz_world_frame"] = [quat_world_frame_gf.GetReal()] + list(
+                    quat_world_frame_gf.GetImaginary()
+                )
+            if self._write_debug_images:
+                self._debug_frame_data["world_frame_transforms"].append(local_to_world_tf)
+
+            # World to camera transform (row-major) (transform a point from world coordinate to camera coordinate)
+            world_to_camera_tf = camera_params["cameraViewTransform"].reshape(4, 4)
+            # Object world space to camera frame transform (row-major matrix multiplication)
+            obj_to_camera_tf = world_to_camera_tf @ local_to_world_tf
+            # Extract camera frame location (last row) and rotation matrix (3x3) from the row-major transform matrix
+            location_camera_frame = obj_to_camera_tf[3, :3]
+            if self._format is None:
+                obj["location_camera_frame"] = location_camera_frame.tolist()
+            elif self._format == "centerpose":
+                obj["location"] = location_camera_frame.tolist()
+            if self._format is None:
+                rotation_matrix_camera_frame = obj_to_camera_tf[:3, :3]
+                obj["rotation_matrix_camera_frame"] = rotation_matrix_camera_frame.tolist()
+            # Get the camera frame quaternion using Gf.Transform (row-major)
+            obj_to_camera_tf_gf = Gf.Transform()
+            obj_to_camera_tf_gf.SetMatrix(Gf.Matrix4d(obj_to_camera_tf.tolist()))
+            quat_camera_frame_gf = obj_to_camera_tf_gf.GetRotation().GetQuat()
+            if self._format is None:
+                obj["quat_wxyz_camera_frame"] = [quat_camera_frame_gf.GetReal()] + list(
+                    quat_camera_frame_gf.GetImaginary()
+                )
+            elif self._format == "centerpose":
+                obj["quaternion_xyzw"] = list(quat_camera_frame_gf.GetImaginary()) + [quat_camera_frame_gf.GetReal()]
+
+            # Calculate the (scaled) size of the object from its world bounds (NOTE: scale is applied through the transform)
+            min_world = np.array([bbox["x_min"], bbox["y_min"], bbox["z_min"], 1]) @ local_to_world_tf
+            max_world = np.array([bbox["x_max"], bbox["y_max"], bbox["z_max"], 1]) @ local_to_world_tf
+            size_world = [max_world[0] - min_world[0], max_world[1] - min_world[1], max_world[2] - min_world[2]]
+            if self._format is None:
+                obj["size"] = size_world
+            elif self._format == "centerpose":
+                obj["scale"] = size_world
+
+            # Cuboid keypoints in local frame (NOTE: scale is not applied yet to objects in local frame)
+            keypoints_local = {
+                "Center": np.array([0, 0, 0, 1]),
+                "LDB": np.array([bbox["x_min"], bbox["y_min"], bbox["z_min"], 1]),  # Left-Down-Back
+                "LDF": np.array([bbox["x_min"], bbox["y_min"], bbox["z_max"], 1]),  # Left-Down-Front
+                "LUB": np.array([bbox["x_min"], bbox["y_max"], bbox["z_min"], 1]),  # Left-Up-Back
+                "LUF": np.array([bbox["x_min"], bbox["y_max"], bbox["z_max"], 1]),  # Left-Up-Front
+                "RDB": np.array([bbox["x_max"], bbox["y_min"], bbox["z_min"], 1]),  # Right-Down-Back
+                "RDF": np.array([bbox["x_max"], bbox["y_min"], bbox["z_max"], 1]),  # Right-Down-Front
+                "RUB": np.array([bbox["x_max"], bbox["y_max"], bbox["z_min"], 1]),  # Right-Up-Back
+                "RUF": np.array([bbox["x_max"], bbox["y_max"], bbox["z_max"], 1]),  # Right-Up-Front
+            }
+
+            # Transform the cuboid keypoints from local to world frame in the given order
+            keypoints_world_ordered = [keypoints_local[k] @ local_to_world_tf for k in self.CUBOID_KEYPOINTS_ORDER]
+            if self._format is None:
+                obj["cuboid_keypoints_world_frame"] = [point[:3].tolist() for point in keypoints_world_ordered]
+            # Transform the cuboid keypoints from world to camera frame
+            keypoints_camera_ordered = [point @ world_to_camera_tf for point in keypoints_world_ordered]
+            if self._format is None:
+                obj["cuboid_keypoints_camera_frame"] = [point[:3].tolist() for point in keypoints_camera_ordered]
+            elif self._format == "centerpose":
+                obj["keypoints_3d"] = [point[:3].tolist() for point in keypoints_camera_ordered]
+            # Get the camera projection matrix and screen size to project the cuboid keypoints to screen space
+            cam_projection_tf = camera_params["cameraProjection"].reshape((4, 4))
+            screen_size = camera_params["renderProductResolution"]
+            keypoints_projected_ordered = [
+                self._project_camera_point_to_screen(point, cam_projection_tf, screen_size)
+                for point in keypoints_camera_ordered
+            ]
+            if self._format is None:
+                obj["cuboid_keypoints_projected"] = keypoints_projected_ordered
+            elif self._format == "centerpose":
+                obj["projected_cuboid"] = keypoints_projected_ordered
+            if self._write_debug_images:
+                self._debug_frame_data["projected_keypoints"].append(keypoints_projected_ordered)
+            objs.append(obj)
+
+        return objs
+
+    # Get the camera parameters from the annotator data
+    def _process_camera_parameters(self, camera_params) -> dict:
         camera_data = {}
-        if self._format == "default":
+        if self._format is None:
             camera_data["aperture"] = camera_params["cameraAperture"].tolist()
             camera_data["aperture_offset"] = camera_params["cameraApertureOffset"].tolist()
             camera_data["focal_length"] = float(camera_params["cameraFocalLength"])
-
-            camera_data["fisheye_optical_centre"] = camera_params["cameraFisheyeOpticalCentre"].tolist()
-            camera_data["fisheye_nominal_height"] = float(camera_params["cameraFisheyeNominalHeight"])
-            camera_data["fisheye_nominal_width"] = float(camera_params["cameraFisheyeNominalWidth"])
+            camera_data["resolution"] = camera_params["renderProductResolution"].tolist()
             camera_data["meters_per_scene_unit"] = float(camera_params["metersPerSceneUnit"])
 
-        camera_data["camera_view_matrix"] = camera_params["cameraViewTransform"].reshape(4, 4).tolist()
-        camera_data["camera_projection_matrix"] = camera_params["cameraProjection"].reshape(4, 4).tolist()
-        camera_data["width"] = camera_params["renderProductResolution"].tolist()[0]
-        camera_data["height"] = camera_params["renderProductResolution"].tolist()[1]
-
-        pixel_size = camera_params["cameraAperture"][0] / camera_data["width"]
-
-        # See https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/isaac_sim_sensors_camera.html#calibrated-camera-sensors
+        # OV only supports square pixels, so the pixel size is the same in both x and y directions
+        # https://docs.omniverse.nvidia.com/materials-and-rendering/latest/cameras.html#cameras
+        pixel_size = camera_params["cameraAperture"][0] / camera_params["renderProductResolution"][0]
         camera_data["intrinsics"] = {
             "fx": camera_params["cameraFocalLength"] / pixel_size,
             "fy": camera_params["cameraFocalLength"] / pixel_size,
-            "cx": camera_data["width"] / 2.0 + camera_params["cameraApertureOffset"][0],
-            "cy": camera_data["height"] / 2.0 + camera_params["cameraApertureOffset"][1],
+            "cx": camera_params["renderProductResolution"][0] / 2.0 + camera_params["cameraApertureOffset"][0],
+            "cy": camera_params["renderProductResolution"][1] / 2.0 + camera_params["cameraApertureOffset"][1],
         }
+        camera_data["camera_view_matrix"] = camera_params["cameraViewTransform"].reshape(4, 4).tolist()
+        camera_data["camera_projection_matrix"] = camera_params["cameraProjection"].reshape(4, 4).tolist()
+
+        if self._format == "centerpose":
+            camera_data["width"] = camera_params["renderProductResolution"].tolist()[0]
+            camera_data["height"] = camera_params["renderProductResolution"].tolist()[1]
+
+        # Debug data needed for the overlay projections
+        if self._write_debug_data:
+            self._debug_frame_data["camera_projection_matrix"] = camera_params["cameraProjection"].reshape(4, 4)
+            self._debug_frame_data["camera_view_matrix"] = camera_params["cameraViewTransform"].reshape(4, 4)
+            self._debug_frame_data["resolution"] = camera_params["renderProductResolution"]
 
         return camera_data
 
+    # Write the processed data to disk
+    def _write_frame_data(self, data: dict, render_product_name: str, render_product_subfolder: str = ""):
+        # Write frame data to as a JSON file
+        file_path_json = f"{render_product_subfolder}{self._frame_id:0{self._frame_padding}}.json"
+        self.backend.schedule(write_json, path=file_path_json, data=self._frame_data, indent=2)
+
+        # Get RGB data from annotator
+        rgb_annot_name = (
+            f"{self.RGB_ANNOT_NAME}-{render_product_name}" if self._multiple_render_products else self.RGB_ANNOT_NAME
+        )
+        rgb_data = data[rgb_annot_name]
+
+        # Write image to disk
+        rgb_file_path = f"{render_product_subfolder}{self._frame_id:0{self._frame_padding}}.png"
+        self.backend.schedule(write_image, path=rgb_file_path, data=rgb_data)
+
+    # Write overlay debug data to disk
+    def _write_debug_data(self, data: dict, render_product_name: str, render_product_subfolder: str = ""):
+        # Get RGB data to overlay with the debug information
+        rgb_annot_name = (
+            f"{self.RGB_ANNOT_NAME}-{render_product_name}" if self._multiple_render_products else self.RGB_ANNOT_NAME
+        )
+        rgb_data = data[rgb_annot_name]
+
+        # Create overlay image from the RGB data
+        rgb_img = Image.fromarray(rgb_data)
+        draw = ImageDraw.Draw(rgb_img)
+
+        # Draw the projected cuboid and its edges
+        for keypoints in self._debug_frame_data["projected_keypoints"]:
+            self._draw_projected_keypoints(draw, keypoints)
+
+        # Get the stored camera parameters for debug purposes
+        camera_projection_matrix = self._debug_frame_data["camera_projection_matrix"]
+        camera_view_matrix = self._debug_frame_data["camera_view_matrix"]
+        screen_size = self._debug_frame_data["resolution"]
+
+        # Draw objects local frame axes
+        for tf in self._debug_frame_data["world_frame_transforms"]:
+            self._draw_local_frame_axes(draw, tf, camera_view_matrix, camera_projection_matrix, screen_size)
+
+        # Overlay the world frame axes on the bottom left part of the RGB image
+        self._draw_world_frame_axes_bottom_left(draw, camera_view_matrix, camera_projection_matrix, screen_size)
+
+        file_path = f"{render_product_subfolder}{self._frame_id:0{self._frame_padding}}_overlay.png"
+        self.backend.schedule(write_image, path=file_path, data=np.asarray(rgb_img))
+
+    # Transform a 3D point from world coordinates to camera coordinates
     def _world_point_to_camera_point(self, world_point, view_matrix):
         # Convert the 3D point to homogeneous coordinates (if not already in that form)
-        if len(world_point) == 4:
-            point_homogeneous = np.array(world_point)
-        else:
-            point_homogeneous = np.array([*world_point, 1.0])
+        point_homogeneous = np.array(world_point) if len(world_point) == 4 else np.array([*world_point, 1.0])
 
         # Transform to camera frame (row-major representation where the translation vector is on the left side of the multiplication)
         point_camera = point_homogeneous @ view_matrix
 
         return point_camera
 
-    # Project a 3D point in world coordinates into 2D screen coordinates
-    def _project_world_point_to_screen(self, world_point, view_matrix, projection_matrix, screen_size):
-        point_camera = self._world_point_to_camera_point(world_point, view_matrix)
+    # Project a 3D point from camera coordinates to 2D screen coordinates
+    def _project_camera_point_to_screen(self, camera_point, projection_matrix, screen_size):
+        # Apply the projection matrix to project to screen coordinates
+        point_screen = camera_point @ projection_matrix
 
-        # Apply the projection matrix to project into screen coordinates
-        point_screen = point_camera @ projection_matrix
-
-        # Normalize to NDC (Normalized Device Coordinates) by dividing x, y, z by w. Needed for 3D to 2D projection across various screen sizes/aspect ratios.
+        # Normalize to NDC (Normalized Device Coordinates) by dividing x, y, z, by w: (x, y, z, w) -> (x/w, y/w, z/w, 1)
         point_screen_normalized = point_screen / point_screen[3]
 
         # Map NDC to screen coordinates. Adjust x and y for screen dimensions, flipping y to match screen's coordinate system.
@@ -160,132 +396,12 @@ class PoseWriter(Writer):
 
         return round(x), round(y)
 
-    # Process the bounding box data and extract the object's label, location, rotation, visibility, etc.
-    def _process_bounding_boxes(self, bb3d_data, bb3d_info, camera_params) -> list:
-        # Map class names from bbox annotator (e.g. 'idToLabels': {0: {'class': 'cube'}, 1: {'class': 'sphere'}} -> {0: 'cube', 1: 'sphere'})
-        id_to_labels = {k: v["class"] for k, v in bb3d_info["idToLabels"].items()}
+    # Project a 3D point from world coordinates to 2D screen coordinates
+    def _project_world_point_to_screen(self, world_point, view_matrix, projection_matrix, screen_size):
+        point_camera = self._world_point_to_camera_point(world_point, view_matrix)
+        return self._project_camera_point_to_screen(point_camera, projection_matrix, screen_size)
 
-        objs = []
-        for i, bbox in enumerate(bb3d_data):
-            obj = {}
-            # Get the object's visibility first for early exit if the visibility is below the threshold
-            obj_visibility = 1.0 - float(bbox["occlusionRatio"])
-            if obj_visibility <= self._visibility_threshold:
-                continue
-            obj["label"] = id_to_labels[bbox["semanticId"]]
-            obj["prim_path"] = bb3d_info["primPaths"][i]
-            obj["visibility"] = obj_visibility
-
-            # Local space to to world transform (row-major)
-            local_to_world_tf = bbox["transform"]
-            obj["local_to_world_transform"] = local_to_world_tf.tolist()
-
-            # Extract world frame location (last row) and rotation matrix (3x3) from the row-major transform matrix
-            location_world_frame = local_to_world_tf[3, :3]
-            if self._format == "default":
-                obj["location_world_frame"] = location_world_frame.tolist()
-                rotation_matrix_world_frame = local_to_world_tf[:3, :3]
-                obj["rotation_matrix_world_frame"] = rotation_matrix_world_frame.tolist()
-
-            # Get the world frame quaternion using Gf.Transform (row-major)
-            local_to_world_tf_gf = Gf.Transform()
-            local_to_world_tf_gf.SetMatrix(Gf.Matrix4d(local_to_world_tf.tolist()))
-            if self._format == "default":
-                location_world_frame_gf = local_to_world_tf_gf.GetTranslation()
-                obj["location_world_frame_gf"] = list(location_world_frame_gf)
-                rotation_matrix_world_frame_gf = local_to_world_tf_gf.GetMatrix().ExtractRotationMatrix()
-                obj["rotation_matrix_world_frame_gf"] = [
-                    list(rotation_matrix_world_frame_gf.GetRow(i)) for i in range(3)
-                ]
-                quat_world_frame_gf = local_to_world_tf_gf.GetRotation().GetQuat()
-                obj["quat_wxyz_world_frame"] = [quat_world_frame_gf.GetReal()] + list(
-                    quat_world_frame_gf.GetImaginary()
-                )
-
-            # World to camera transform (row-major) (transform a point from world coordinate to camera coordinate)
-            world_to_camera_tf = camera_params["cameraViewTransform"].reshape(4, 4)
-
-            # Object world space to camera frame transform (row-major)
-            obj_to_camera_tf = world_to_camera_tf @ local_to_world_tf
-
-            # Extract camera frame location (last row) and rotation matrix (3x3) from the row-major transform matrix
-            location_camera_frame = obj_to_camera_tf[3, :3]
-            obj["location"] = location_camera_frame.tolist()
-
-            if self._format == "default":
-                rotation_matrix_camera_frame = obj_to_camera_tf[:3, :3]
-                obj["rotation_matrix_camera_frame"] = rotation_matrix_camera_frame.tolist()
-
-            # Get the camera frame quaternion using Gf.Transform (row-major)
-            obj_to_camera_tf_gf = Gf.Transform()
-            obj_to_camera_tf_gf.SetMatrix(Gf.Matrix4d(obj_to_camera_tf.tolist()))
-            quat_camera_frame_gf = obj_to_camera_tf_gf.GetRotation().GetQuat()
-            obj["quaternion_xyzw"] = [quat_camera_frame_gf.GetReal()] + list(quat_camera_frame_gf.GetImaginary())
-
-            #  Projected cuboid vertices (local -> world -> camera -> screen space) (8 corners + world location (center))
-            vertices_screen = []
-            keypoints_3d = []
-
-            # The resolution is used to map the Normalized Device Coordinates (NDC) to screen space
-            screen_size = camera_params["renderProductResolution"]
-
-            # Camera to screen space projection matrix (row-major)
-            cam_projection_tf = camera_params["cameraProjection"].reshape((4, 4))
-
-            corners_local = {
-                "Center": np.array([0, 0, 0, 1]),
-                "LDB": np.array([bbox["x_min"], bbox["y_min"], bbox["z_min"], 1]),
-                "LDF": np.array([bbox["x_min"], bbox["y_min"], bbox["z_max"], 1]),
-                "LUB": np.array([bbox["x_min"], bbox["y_max"], bbox["z_min"], 1]),
-                "LUF": np.array([bbox["x_min"], bbox["y_max"], bbox["z_max"], 1]),
-                "RDB": np.array([bbox["x_max"], bbox["y_min"], bbox["z_min"], 1]),
-                "RDF": np.array([bbox["x_max"], bbox["y_min"], bbox["z_max"], 1]),
-                "RUB": np.array([bbox["x_max"], bbox["y_max"], bbox["z_min"], 1]),
-                "RUF": np.array([bbox["x_max"], bbox["y_max"], bbox["z_max"], 1]),
-            }
-            # Transform the cuboid corners to world frame using row-major matrix multiplication (translation on the left side)
-            corners_world = [corners_local[c] @ local_to_world_tf for c in self.KEYPOINT_ORDER]
-
-            # Project the cuboid corners from world space to screen space
-            for vertex in corners_world:
-                screen_point = self._project_world_point_to_screen(
-                    vertex, world_to_camera_tf, cam_projection_tf, screen_size
-                )
-                vertices_screen.append(screen_point)
-
-                if self._format == "centerpose":
-                    camera_point = self._world_point_to_camera_point(vertex, world_to_camera_tf)
-                    normalized_camera_point = camera_point[:3] / camera_point[3]
-                    keypoints_3d.append(normalized_camera_point.astype(float).tolist())
-
-            obj["projected_cuboid"] = vertices_screen
-            if self._format == "centerpose":
-                obj["keypoints_3d"] = keypoints_3d
-
-                # get scale from local_to_world_tf matrix
-                scale_x = np.linalg.norm(local_to_world_tf[:3, 0])
-                scale_y = np.linalg.norm(local_to_world_tf[:3, 1])
-                scale_z = np.linalg.norm(local_to_world_tf[:3, 2])
-
-                obj["scale"] = (
-                    (
-                        np.array(
-                            [
-                                bbox["x_max"] - bbox["x_min"],
-                                bbox["y_max"] - bbox["y_min"],
-                                bbox["z_max"] - bbox["z_min"],
-                            ]
-                        )
-                        * np.array([scale_x, scale_y, scale_z])
-                    )
-                    .astype(float)
-                    .tolist()
-                )
-
-            objs.append(obj)
-        return objs
-
-    # Draws the objects local frame axes at the objects world location
+    # Projects the local frame axes of the object to the screen, axes_length is the length of the axes in world units
     def _draw_local_frame_axes(
         self, draw, local_to_world_transform, camera_view_matrix, camera_projection_matrix, screen_size, axes_length=0.2
     ):
@@ -309,6 +425,7 @@ class PoseWriter(Writer):
 
         # Extract world location from the row-major transform matrix (last row)
         origin_world = local_to_world_transform[3]
+
         # Project the origin and axes end points from 3D world coordinates to 2D screen coordinates
         origin_2d = project_to_screen(origin_world)
         x_axis_end_2d = project_to_screen(x_axis_end_point_world)
@@ -324,7 +441,6 @@ class PoseWriter(Writer):
     def _draw_world_frame_axes_bottom_left(
         self, draw, camera_view_matrix, camera_projection_matrix, screen_size, axes_scale=75.0, margin_percentage=0.03
     ):
-        # Skip if image too small
         if min(screen_size) < 32:
             print(f"Skipping drawing world frame axes due to small image size {screen_size}")
             return
@@ -372,130 +488,23 @@ class PoseWriter(Writer):
         draw.line([origin_2d, z_axis_end_2d], fill="blue", width=2)  # Z-axis in blue
 
     # Draw the projected cuboid and its edges
-    def _draw_projected_cuboid(self, draw, cuboid, point_colors=None, point_size=4, edge_colors=None, edge_size=2):
-        # Validate vertex_colors input and use default if necessary
-        if point_colors is None or len(point_colors) != 9:
-            point_colors = [
-                "white",
-                "red",
-                "green",
-                "blue",
-                "yellow",
-                "cyan",
-                "magenta",
-                "orange",
-                "purple",
-            ]
-
-        # Validate edge_colors input and use default if necessary
-        if edge_colors is None or len(edge_colors) != 3:
-            edge_colors = {"front": "red", "back": "blue", "connecting": "green"}
-
-        # Draw the projected cuboid vertices in the specified colors
-        for i, point in enumerate(cuboid):
+    def _draw_projected_keypoints(self, draw, keypoints, point_size=4, edge_size=2):
+        # Draw the projected cuboid keypoint vertices in the specified colors
+        for i, point in enumerate(keypoints):
             draw.ellipse(
                 (point[0] - point_size, point[1] - point_size, point[0] + point_size, point[1] + point_size),
-                fill=point_colors[i],
+                fill=self.CUBOID_KEYPOINT_COLORS[i],
             )
 
-        # Define the edges of the cuboid using vertex indices
-        edge_colors = {"front": "red", "back": "blue", "connecting": "green"}
+        # Draw the edges of the projected cuboid with specified colors for each set
         edges = {
             "front": [(1, 2), (2, 4), (4, 3), (3, 1)],  # Front face
             "back": [(5, 6), (6, 8), (8, 7), (7, 5)],  # Back face
             "connecting": [(1, 5), (2, 6), (3, 7), (4, 8)],  # Connecting edges
         }
-
-        # Draw the edges of the projected cuboid with specified colors for each set
         for edge_type, edge_list in edges.items():
             for start, end in edge_list:
-                draw.line(cuboid[start] + cuboid[end], fill=edge_colors[edge_type], width=edge_size)
-
-    # Write data to disk
-    def _write_data_to_disk(self, frame_entries, rgb_data, render_product_subfolder: str = ""):
-        # Frame data
-        file_path = f"{render_product_subfolder}{self._frame_id:0{self._frame_padding}}.json"
-        self.backend.schedule(write_json, path=file_path, data=frame_entries, indent=2)
-
-        # RGB
-        file_path = f"{render_product_subfolder}{self._frame_id:0{self._frame_padding}}.png"
-        self.backend.schedule(write_image, path=file_path, data=rgb_data)
-
-        # Debug overlays
-        if self._write_debug_images:
-            # Create overlay image from the RGB data
-            rgb_img = Image.fromarray(rgb_data)
-            draw = ImageDraw.Draw(rgb_img)
-
-            # Get the camera and image parameters
-            camera_projection_matrix = np.array(frame_entries["camera_data"]["camera_projection_matrix"])
-            camera_view_matrix = np.array(frame_entries["camera_data"]["camera_view_matrix"])
-            screen_size = [frame_entries["camera_data"]["height"], frame_entries["camera_data"]["width"]]
-
-            # Overlay the world frame axes on the bottom left part of the RGB image
-            # self._draw_world_frame_axes_bottom_left(draw, camera_view_matrix, camera_projection_matrix, screen_size)
-
-            # Iterate objects and draw the projected cuboid and local frame axes
-            for obj in frame_entries["objects"]:
-                cuboid = obj["projected_cuboid"]
-
-                # Draw the projected cuboid and its edges
-                self._draw_projected_cuboid(draw, cuboid)
-
-                # Draw local frame axes
-                obj_world_frame_tf = np.array(obj["local_to_world_transform"])
-                self._draw_local_frame_axes(
-                    draw,
-                    obj_world_frame_tf,
-                    camera_view_matrix,
-                    camera_projection_matrix,
-                    screen_size,
-                )
-
-            file_path = f"{render_product_subfolder}{self._frame_id:0{self._frame_padding}}_overlay.png"
-            self.backend.schedule(write_image, path=file_path, data=np.asarray(rgb_img))
-
-    # Process the frame data and write to disk
-    def _process_and_write_data_to_disk(self, data: dict, render_product_name: str, render_product_subfolder: str = ""):
-        frame_entries = {}
-
-        # Get the camera parameters
-        camera_params_annot_name = (
-            f"{self.CAM_PARAMS_ANNOT_NAME}-{render_product_name}"
-            if self._multiple_render_products
-            else self.CAM_PARAMS_ANNOT_NAME
-        )
-        camera_params = data[camera_params_annot_name]
-        frame_entries["camera_data"] = self._extract_camera_parameters(camera_params)
-
-        frame_entries["keypoint_order"] = self.KEYPOINT_ORDER
-        # Get the bounding box 3d data
-        bb3d_annot_name = (
-            f"{self.BB3D_ANNOT_NAME}-{render_product_name}" if self._multiple_render_products else self.BB3D_ANNOT_NAME
-        )
-        bb3d_data = data[bb3d_annot_name]["data"]
-        bb3d_info = data[bb3d_annot_name]["info"]
-        objs = self._process_bounding_boxes(bb3d_data, bb3d_info, camera_params)
-
-        # Check if the frame should be skipped if there are no visible objects
-        if self._skip_empty_frames and len(objs) == 0:
-            return
-
-        # Add the objects to the frame entries
-        frame_entries["objects"] = objs
-
-        # RGB data
-        rgb_annot_name = (
-            f"{self.RGB_ANNOT_NAME}-{render_product_name}" if self._multiple_render_products else self.RGB_ANNOT_NAME
-        )
-        rgb_data = data[rgb_annot_name]
-
-        # Write the data (frame, rgb, debug rgb) to disk
-        self._write_data_to_disk(frame_entries, rgb_data, render_product_subfolder)
-
-        # Increment the frame id for every frame if not using subfolders (otherwise once per step outside of this function)
-        if not self._use_subfolders:
-            self._frame_id += 1
+                draw.line(keypoints[start] + keypoints[end], fill=self.CUBOID_EDGE_COLORS[edge_type], width=edge_size)
 
     # Override to cache the render product names
     def attach(self, render_products, trigger="omni.replicator.core.OgnOnFrame"):
