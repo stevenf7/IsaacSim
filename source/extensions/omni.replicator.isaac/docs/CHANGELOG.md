@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.13.2] - 2024-03-04
+### Changed
+- PoseWriter restructuring
+
 ## [1.13.1] - 2024-02-23
 ### Added
 - Add support for CenterPose and Dope to generic PoseWriter class 
