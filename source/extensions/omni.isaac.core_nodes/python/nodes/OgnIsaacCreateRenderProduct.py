@@ -17,7 +17,7 @@ from pxr import Gf, Usd, UsdRender
 
 class OgnIsaacCreateRenderProductInternalState(BaseResetNode):
     def __init__(self):
-        self.hydra_texture = None
+        self.handle = None
         self.render_product_path = None
         self.factory = None
         self.resolution = [0, 0]
@@ -26,12 +26,12 @@ class OgnIsaacCreateRenderProductInternalState(BaseResetNode):
 
     def on_stage_event(self, event: carb.events.IEvent):
         if event.type == int(omni.timeline.TimelineEventType.STOP):
-            if self.hydra_texture:
-                self.hydra_texture.updates_enabled = False
+            if self.handle:
+                self.handle.hydra_texture.set_updates_enabled(False)
             self.initialized = False
         elif event.type == int(omni.timeline.TimelineEventType.PLAY):
-            if self.hydra_texture:
-                self.hydra_texture.updates_enabled = True
+            if self.handle:
+                self.handle.hydra_texture.set_updates_enabled(True)
 
 
 class OgnIsaacCreateRenderProduct:
@@ -47,34 +47,34 @@ class OgnIsaacCreateRenderProduct:
     def compute(db) -> bool:
         state = db.per_instance_state
         if db.inputs.enabled is False:
-            if state.hydra_texture is not None:
-                state.hydra_texture.updates_enabled = False
+            if state.handle is not None:
+                state.handle.hydra_texture.set_updates_enabled(False)
             return False
         else:
-            if state.hydra_texture is not None:
-                state.hydra_texture.updates_enabled = True
+            if state.handle is not None:
+                state.handle.hydra_texture.set_updates_enabled(True)
 
         if len(db.inputs.cameraPrim) == 0:
             db.log_error(f"Camera prim must be specified")
             return False
         stage = omni.usd.get_context().get_stage()
         with Usd.EditContext(stage, stage.GetSessionLayer()):
-            if state.hydra_texture is None:
-                state.hydra_texture = rep.create.render_product(
+            if state.handle is None:
+                state.handle = rep.create.render_product(
                     db.inputs.cameraPrim[0].GetString(), (db.inputs.width, db.inputs.height), force_new=True
                 )
                 state.resolution = (db.inputs.width, db.inputs.height)
                 state.camera_path = db.inputs.cameraPrim[0].GetString()
-                db.outputs.renderProductPath = state.hydra_texture.path
+                db.outputs.renderProductPath = state.handle.path
 
                 state.rp_sub = (
                     omni.timeline.get_timeline_interface()
                     .get_timeline_event_stream()
                     .create_subscription_to_pop(state.on_stage_event, name="IsaacSimOGNCoreNodesRPEventHandler")
                 )
-            render_prod_prim = UsdRender.Product(stage.GetPrimAtPath(state.hydra_texture.path))
+            render_prod_prim = UsdRender.Product(stage.GetPrimAtPath(state.handle.path))
             if not render_prod_prim:
-                raise RuntimeError(f'Invalid renderProduct "{state.hydra_texture.path}"')
+                raise RuntimeError(f'Invalid renderProduct "{state.handle.path}"')
             if state.resolution[0] != db.inputs.width or state.resolution[1] != db.inputs.height:
                 render_prod_prim.GetResolutionAttr().Set(Gf.Vec2i(db.inputs.width, db.inputs.height))
                 state.resolution = (db.inputs.width, db.inputs.height)
@@ -94,7 +94,7 @@ class OgnIsaacCreateRenderProduct:
             pass
 
         if state is not None:
-            if state.hydra_texture:
-                state.hydra_texture.destroy()
-            state.hydra_texture = None
+            if state.handle:
+                state.handle.destroy()
+            state.handle = None
             state.rp_sub = None
