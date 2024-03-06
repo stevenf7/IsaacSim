@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.9.2] - 2024-03-04
+### Updated
+- Updated omnigraph nodes to use per instance state instead of internal state
+
 ## [2.9.1] - 2024-02-29
 ### Fixed
 - Fixed edge case crash in ROS2 subscribers

@@ -29,24 +29,24 @@ class OgnIsaacGetViewportRenderProduct:
 
     @staticmethod
     def compute(db) -> bool:
-        state = db.internal_state
+        state = db.per_instance_state
         viewport_api = get_viewport_from_window_name(db.inputs.viewport)
         if viewport_api:
-            db.internal_state.viewport = viewport_api
-        if db.internal_state.viewport == None:
+            db.per_instance_state.viewport = viewport_api
+        if db.per_instance_state.viewport == None:
             carb.log_warn("viewport name {db.inputs.viewport} not found")
-            db.internal_state.initialized = False
+            db.per_instance_state.initialized = False
             return False
 
-        viewport = db.internal_state.viewport
+        viewport = db.per_instance_state.viewport
         db.outputs.renderProductPath = viewport.get_render_product_path()
         db.outputs.execOut = omni.graph.core.ExecutionAttributeState.ENABLED
         return True
 
     @staticmethod
-    def release(node):
+    def release_instance(node, graph_instance_id):
         try:
-            state = OgnIsaacGetViewportRenderProductDatabase.per_node_internal_state(node)
+            state = OgnIsaacGetViewportRenderProductDatabase.per_instance_internal_state(node)
         except Exception:
             state = None
             pass

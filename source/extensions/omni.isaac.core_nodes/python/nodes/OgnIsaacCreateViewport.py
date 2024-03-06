@@ -28,7 +28,7 @@ class OgnIsaacCreateViewport:
 
     @staticmethod
     def compute(db) -> bool:
-        state = db.internal_state
+        state = db.per_instance_state
         if state.window is None:
             if len(db.inputs.name) > 0:
                 state.window = create_viewport_window(db.inputs.name)

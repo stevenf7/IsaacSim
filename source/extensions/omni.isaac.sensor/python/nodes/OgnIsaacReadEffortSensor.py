@@ -51,7 +51,7 @@ class OgnIsaacReadEffortSensor:
 
     @staticmethod
     def compute(db) -> bool:
-        state = db.internal_state
+        state = db.per_instance_state
         state.sensor_period = db.inputs.sensorPeriod
         state.use_latest_data = db.inputs.useLatestData
         state.enabled = db.inputs.enabled
@@ -119,9 +119,9 @@ class OgnIsaacReadEffortSensor:
         return True
 
     @staticmethod
-    def release(node):
+    def release_instance(node, graph_instance_id):
         try:
-            state = OgnIsaacReadEffortSensorDatabase.per_node_internal_state(node)
+            state = OgnIsaacReadEffortSensorDatabase.per_instance_internal_state(node)
         except Exception:
             state = None
             pass

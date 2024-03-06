@@ -98,7 +98,7 @@ class OgnIsaacPickPlaceController:
 
     @staticmethod
     def compute(db) -> bool:
-        state = db.internal_state
+        state = db.per_instance_state
         try:
             if not state.initialized:
 
@@ -140,9 +140,9 @@ class OgnIsaacPickPlaceController:
         return True
 
     @staticmethod
-    def release(node):
+    def release_instance(node, graph_instance_id):
         try:
-            state = OgnIsaacPickPlaceControllerDatabase.per_node_internal_state(node)
+            state = OgnIsaacPickPlaceControllerDatabase.per_instance_internal_state(node)
         except Exception:
             state = None
             pass

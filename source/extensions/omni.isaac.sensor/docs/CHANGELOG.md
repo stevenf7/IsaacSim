@@ -1,6 +1,10 @@
 # Changelog
 
-## [9.14.0] - 2024-03-1
+## [9.14.1] - 2024-03-04
+### Updated
+- Updated omnigraph nodes to use per instance state instead of internal state
+
+## [9.14.0] - 2024-03-01
 ### Added
 - IsaacComputeRTXLidarFlatScan Node now works with Solid State lidar.
 - Official version of SICK microscan3 config, and marked old one as legacy.

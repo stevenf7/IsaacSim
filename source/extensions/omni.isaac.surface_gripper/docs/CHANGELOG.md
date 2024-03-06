@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.8.1] - 2024-03-04
+### Updated
+- Updated omnigraph nodes to use per instance state instead of internal state
+
 ## [0.8.0] - 2024-01-08
 ### Changed
 - Moved header files to extension

@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.8.0"
+version = "0.8.1"
 category = "Simulation"
 title = "Isaac Sim Surface Gripper"
 description = "Helper to model Suction and Distance based grippers"

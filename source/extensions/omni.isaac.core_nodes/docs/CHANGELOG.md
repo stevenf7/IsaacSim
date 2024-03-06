@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.12.3] - 2024-03-04
+### Updated
+- Updated omnigraph nodes to use per instance state instead of internal state
+
 ## [1.12.2] - 2024-03-01
 ### Fixed
 - Issue where render product is not cleared when opening a stage
