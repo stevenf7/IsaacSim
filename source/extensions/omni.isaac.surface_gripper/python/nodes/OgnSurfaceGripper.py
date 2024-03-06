@@ -121,16 +121,16 @@ class OgnSurfaceGripper:
 
                 # update internal state properties
                 grip_point = stage.GetPrimAtPath(db.inputs.GripPosition[0].GetString())
-                db.internal_state._sgp.parentPath = str(parent.GetPath())
-                db.internal_state._sgp.d6JointPath = db.internal_state._sgp.parentPath + "/d6FixedJoint"
-                db.internal_state._sgp.gripThreshold = db.inputs.GripThreshold
-                db.internal_state._sgp.forceLimit = db.inputs.ForceLimit
-                db.internal_state._sgp.torqueLimit = db.inputs.TorqueLimit
-                db.internal_state._sgp.bendAngle = radians(db.inputs.BendAngle)
-                db.internal_state._sgp.stiffness = db.inputs.Stiffness
-                db.internal_state._sgp.damping = db.inputs.Damping
-                db.internal_state._sgp.disableGravity = db.inputs.DisableGravity
-                db.internal_state._sgp.retryClose = db.inputs.RetryClose
+                db.per_instance_state._sgp.parentPath = str(parent.GetPath())
+                db.per_instance_state._sgp.d6JointPath = db.per_instance_state._sgp.parentPath + "/d6FixedJoint"
+                db.per_instance_state._sgp.gripThreshold = db.inputs.GripThreshold
+                db.per_instance_state._sgp.forceLimit = db.inputs.ForceLimit
+                db.per_instance_state._sgp.torqueLimit = db.inputs.TorqueLimit
+                db.per_instance_state._sgp.bendAngle = radians(db.inputs.BendAngle)
+                db.per_instance_state._sgp.stiffness = db.inputs.Stiffness
+                db.per_instance_state._sgp.damping = db.inputs.Damping
+                db.per_instance_state._sgp.disableGravity = db.inputs.DisableGravity
+                db.per_instance_state._sgp.retryClose = db.inputs.RetryClose
                 # compute offset between parent and gripping point
                 parent_pose = omni.usd.get_world_transform_matrix(parent)
                 grip_pose = omni.usd.get_world_transform_matrix(grip_point)
@@ -142,16 +142,16 @@ class OgnSurfaceGripper:
                 qr = q.GetImaginary()
                 tr.r = [qr[0], qr[1], qr[2], q.GetReal()]
 
-                db.internal_state._sgp.offset = tr
-                db.internal_state.initialize()
-                db.outputs.GripBroken = db.internal_state.broken
-                db.internal_state.broken = False
-                db.outputs.closed = db.internal_state._surface_gripper.is_closed()
+                db.per_instance_state._sgp.offset = tr
+                db.per_instance_state.initialize()
+                db.outputs.GripBroken = db.per_instance_state.broken
+                db.per_instance_state.broken = False
+                db.outputs.closed = db.per_instance_state._surface_gripper.is_closed()
 
                 if db.inputs.Close:
-                    db.outputs.Closed = db.internal_state.close(db.node)
+                    db.outputs.Closed = db.per_instance_state.close(db.node)
                 if db.inputs.Open:
-                    db.outputs.Closed = db.internal_state.open()
-            db.outputs.Closed = db.internal_state.update()
+                    db.outputs.Closed = db.per_instance_state.open()
+            db.outputs.Closed = db.per_instance_state.update()
         else:
-            db.internal_state.open()
+            db.per_instance_state.open()

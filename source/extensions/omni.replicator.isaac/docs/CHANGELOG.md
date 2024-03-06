@@ -4,6 +4,9 @@
 ### Changed
 - PoseWriter restructuring
 
+### Updated
+- Updated omnigraph nodes to use per instance state instead of internal state
+
 ## [1.13.1] - 2024-02-23
 ### Added
 - Add support for CenterPose and Dope to generic PoseWriter class 

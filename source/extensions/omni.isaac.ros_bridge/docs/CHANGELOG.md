@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.15.7] - 2024-03-04
+### Updated
+- Updated omnigraph nodes to use per instance state instead of internal state
 
 ## [1.15.6] - 2024-02-28
 ### Added

@@ -29,7 +29,7 @@ class OgnOnRLFrame:
             return True
 
         context._context.trigger = False
-        state = db.internal_state
+        state = db.per_instance_state
         reset_inds = context.get_reset_inds()
 
         if state.frame_count is None:

@@ -90,7 +90,7 @@ class OgnIsaacArticulationState:
 
     @staticmethod
     def compute(db) -> bool:
-        state = db.internal_state
+        state = db.per_instance_state
         try:
             if not state.initialized:
                 if len(db.inputs.robotPath) != 0:
@@ -129,9 +129,9 @@ class OgnIsaacArticulationState:
         return True
 
     @staticmethod
-    def release(node):
+    def release_instance(node, graph_instance_id):
         try:
-            state = OgnIsaacArticulationStateDatabase.per_node_internal_state(node)
+            state = OgnIsaacArticulationStateDatabase.per_instance_internal_state(node)
         except Exception:
             state = None
             pass

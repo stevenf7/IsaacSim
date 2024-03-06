@@ -43,15 +43,15 @@ class OgnROS2CameraHelper:
     @staticmethod
     def compute(db) -> bool:
         if db.inputs.enabled is False:
-            if db.internal_state.initialized is False:
+            if db.per_instance_state.initialized is False:
                 return True
             else:
-                db.internal_state.custom_reset()
+                db.per_instance_state.custom_reset()
                 return True
 
         sensor_type = db.inputs.type
-        if db.internal_state.initialized is False:
-            db.internal_state.initialized = True
+        if db.per_instance_state.initialized is False:
+            db.per_instance_state.initialized = True
             stage = omni.usd.get_context().get_stage()
             with Usd.EditContext(stage, stage.GetSessionLayer()):
                 if db.inputs.viewport:
@@ -60,26 +60,26 @@ class OgnROS2CameraHelper:
                     )
                     viewport_api = get_viewport_from_window_name(db.inputs.viewport)
                     if viewport_api:
-                        db.internal_state.viewport = viewport_api
-                        db.internal_state.viewport_name = db.inputs.viewport
-                    if db.internal_state.viewport == None:
+                        db.per_instance_state.viewport = viewport_api
+                        db.per_instance_state.viewport_name = db.inputs.viewport
+                    if db.per_instance_state.viewport == None:
                         carb.log_warn("viewport name {db.inputs.viewport} not found")
-                        db.internal_state.initialized = False
+                        db.per_instance_state.initialized = False
                         return False
 
-                    viewport = db.internal_state.viewport
+                    viewport = db.per_instance_state.viewport
                     render_product_path = viewport.get_render_product_path()
                 else:
                     render_product_path = db.inputs.renderProductPath
                     if not render_product_path:
                         carb.log_warn("Render product not valid")
-                        db.internal_state.initialized = False
+                        db.per_instance_state.initialized = False
                         return False
                     if stage.GetPrimAtPath(render_product_path) is None:
                         carb.log_warn("Render product no created yet, retrying on next call")
-                        db.internal_state.initialized = False
+                        db.per_instance_state.initialized = False
                         return False
-                db.internal_state.resetSimulationTimeOnStop = db.inputs.resetSimulationTimeOnStop
+                db.per_instance_state.resetSimulationTimeOnStop = db.inputs.resetSimulationTimeOnStop
                 writer = None
                 try:
                     if sensor_type == "rgb":
@@ -186,10 +186,10 @@ class OgnROS2CameraHelper:
 
                     else:
                         carb.log_error("type is not supported")
-                        db.internal_state.initialized = False
+                        db.per_instance_state.initialized = False
                         return False
                     if writer is not None:
-                        db.internal_state.append_writer(writer)
+                        db.per_instance_state.append_writer(writer)
                     type_dict = {
                         "instance_segmentation": "InstanceSegmentationSD",
                         "semantic_segmentation": "SemanticSegmentationSD",
@@ -206,8 +206,8 @@ class OgnROS2CameraHelper:
                                 topicName=db.inputs.semanticLabelsTopicName,
                                 context=db.inputs.context,
                             )
-                            db.internal_state.append_writer(semantic_writer)
-                    db.internal_state.attach_writers(render_product_path)
+                            db.per_instance_state.append_writer(semantic_writer)
+                    db.per_instance_state.attach_writers(render_product_path)
                 except Exception as e:
                     print(traceback.format_exc())
                     pass
@@ -215,9 +215,9 @@ class OgnROS2CameraHelper:
             return True
 
     @staticmethod
-    def release(node):
+    def release_instance(node, graph_instance_id):
         try:
-            state = OgnROS2CameraHelperInternalState.per_node_internal_state(node)
+            state = OgnROS2CameraHelperInternalState.per_instance_internal_state(node)
         except Exception:
             state = None
             pass
