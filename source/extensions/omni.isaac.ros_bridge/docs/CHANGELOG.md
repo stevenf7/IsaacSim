@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.15.8] - 2024-03-05
+### Fixed
+- RGB being published twice per frame
+
 ## [1.15.7] - 2024-03-04
 ### Updated
 - Updated omnigraph nodes to use per instance state instead of internal state

@@ -199,9 +199,7 @@ class Extension(omni.ext.IExt):
             name=annotator_name,
             input_rendervars=[
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(rv + "Ptr"),
-                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    rv + "IsaacSimulationGate", attributes_mapping={"outputs:execOut": "inputs:execIn"}
-                ),
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(rv + "IsaacSimulationGate"),
             ],
             node_type_id="omni.isaac.core_nodes.IsaacConvertRGBAToRGB",
             init_params={"encoding": "rgba8"},

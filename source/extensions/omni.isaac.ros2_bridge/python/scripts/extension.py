@@ -108,7 +108,6 @@ class ROS2BridgeExtension(omni.ext.IExt):
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                     "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
                 ),
-                f"{rv}IsaacSimulationGate",
             ],
             category=BRIDGE_NAME,
         )

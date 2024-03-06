@@ -3,6 +3,9 @@
 ## [1.12.3] - 2024-03-04
 ### Updated
 - Updated omnigraph nodes to use per instance state instead of internal state
+### Fixed
+- Render products not disabling on stop
+- RGBA to RGB node running twice per frame
 
 ## [1.12.2] - 2024-03-01
 ### Fixed
