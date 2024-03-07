@@ -287,7 +287,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
 
     async def test_lula_task_space_traj_gen_ur10(self):
         usd_path = await get_assets_root_path_async()
-        usd_path += "/Isaac/Robots/UR10/ur10.usd"
+        usd_path += "/Isaac/Robots/UniversalRobots/ur10/ur10.usd"
         robot_name = "UR10"
         robot_prim_path = "/ur10"
 

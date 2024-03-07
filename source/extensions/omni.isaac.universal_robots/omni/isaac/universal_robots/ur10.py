@@ -58,7 +58,7 @@ class UR10(Robot):
                 if assets_root_path is None:
                     carb.log_error("Could not find Isaac Sim assets folder")
                     return
-                usd_path = assets_root_path + "/Isaac/Robots/UR10/ur10.usd"
+                usd_path = assets_root_path + "/Isaac/Robots/UniversalRobots/ur10/ur10.usd"
                 add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
             if self._end_effector_prim_name is None:
                 self._end_effector_prim_path = prim_path + "/ee_link"

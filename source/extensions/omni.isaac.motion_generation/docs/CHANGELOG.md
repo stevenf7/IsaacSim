@@ -1,4 +1,7 @@
 # Changelog
+## [6.1.3] - 2024-03-06
+### Changed
+- Updated path to UR10
 
 ## [6.1.2] - 2023-02-02
 ### Changed
