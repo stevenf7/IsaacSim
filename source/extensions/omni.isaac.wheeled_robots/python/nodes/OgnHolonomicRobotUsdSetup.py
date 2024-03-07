@@ -41,10 +41,6 @@ class OgnHolonomicRobotUsdSetup:
     nodes for bundling robot parameters for any robot to be used by differential and articulation controller
     """
 
-    # @staticmethod
-    # def initialize(graph_context, node):
-    #     state = OgnHolonomicRobotUsdSetupDatabase.shared_internal_state(node)
-
     @staticmethod
     def init_instance(node, graph_instance_id):
         state = OgnHolonomicRobotUsdSetupDatabase.get_internal_state(node, graph_instance_id)

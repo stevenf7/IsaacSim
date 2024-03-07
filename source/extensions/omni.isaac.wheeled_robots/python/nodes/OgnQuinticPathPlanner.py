@@ -38,12 +38,6 @@ class OgnQuinticPathPlannerInternalState(BaseResetNode):
 
 
 class OgnQuinticPathPlanner:
-    # @staticmethod
-    # def initialize(graph_context, node):
-    #     db = OgnQuinticPathPlannerDatabase(node)
-    #     state = OgnQuinticPathPlannerDatabase.shared_internal_state(node)
-    #     state.node = node
-
     @staticmethod
     def init_instance(node, graph_instance_id):
         state = OgnQuinticPathPlannerDatabase.get_internal_state(node, graph_instance_id)

@@ -1,4 +1,7 @@
 # Changelog
+## [1.1.3] - 2024-03-06
+### Fixed
+- Removed commented out code
 
 ## [1.1.2] - 2024-02-24
 ### Changed
