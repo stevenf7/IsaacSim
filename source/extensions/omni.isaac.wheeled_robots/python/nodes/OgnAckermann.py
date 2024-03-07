@@ -25,12 +25,6 @@ class OgnAckermannInternalState(BaseResetNode):
 
 
 class OgnAckermann:
-    # @staticmethod
-    # def initialize(graph_context, node):
-    #     # Store db.outputs in a private variable of State class so we can modify the output on simulation Stop
-    #     state = OgnAckermannDatabase.shared_internal_state(node)
-    #     state.node = node
-
     @staticmethod
     def init_instance(node, graph_instance_id):
         state = OgnAckermannDatabase.get_internal_state(node, graph_instance_id)
@@ -100,17 +94,6 @@ class OgnAckermann:
         db.outputs.execOut = og.ExecutionAttributeState.ENABLED
 
         return True
-
-    # @staticmethod
-    # def release(node):
-    #     try:
-    #         state = OgnAckermannDatabase.shared_internal_state(node)
-    #     except Exception:
-    #         state = None
-    #         pass
-
-    #     if state is not None:
-    #         state.reset()
 
     @staticmethod
     def release_instance(node, graph_instance_id):

@@ -70,18 +70,6 @@ class OgnHolonomicController:
         state.node = node
         state.graph_id = graph_instance_id
 
-        # function_callback = OgnHolonomicController.on_value_changed_callback
-        # node.get_attribute("inputs:wheelRadius").register_value_changed_callback(function_callback)
-        # node.get_attribute("inputs:wheelPositions").register_value_changed_callback(function_callback)
-        # node.get_attribute("inputs:wheelOrientations").register_value_changed_callback(function_callback)
-        # node.get_attribute("inputs:mecanumAngles").register_value_changed_callback(function_callback)
-        # node.get_attribute("inputs:wheelAxis").register_value_changed_callback(function_callback)
-        # node.get_attribute("inputs:upAxis").register_value_changed_callback(function_callback)
-        # node.get_attribute("inputs:maxLinearSpeed").register_value_changed_callback(function_callback)
-        # node.get_attribute("inputs:maxAngularSpeed").register_value_changed_callback(function_callback)
-        # node.get_attribute("inputs:linearGain").register_value_changed_callback(function_callback)
-        # node.get_attribute("inputs:angularGain").register_value_changed_callback(function_callback)
-
     @staticmethod
     def release_instance(node, graph_instance_id):
         try:
@@ -93,12 +81,6 @@ class OgnHolonomicController:
         if state is not None:
             state.reset()
             state.initialized = False
-
-    # @staticmethod
-    # def on_value_changed_callback(attr):
-    #     node = attr.get_node()
-    #     state = OgnHolonomicControllerDatabase.shared_internal_state(node)
-    #     state.initialized = False
 
     @staticmethod
     def internal_state():

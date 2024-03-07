@@ -55,12 +55,6 @@ class OgnStanleyControlPIDInternalState(BaseResetNode):
 
 
 class OgnStanleyControlPID:
-    # @staticmethod
-    # def initialize(graph_context, node):
-    #     db = OgnStanleyControlPIDDatabase(node)
-    #     state = OgnStanleyControlPIDDatabase.shared_internal_state(node)
-    #     state.node = node
-
     @staticmethod
     def init_instance(node, graph_instance_id):
         state = OgnStanleyControlPIDDatabase.get_internal_state(node, graph_instance_id)

@@ -29,23 +29,6 @@ class OgnCheckGoal2DInternalState(BaseResetNode):
 
 
 class OgnCheckGoal2D:
-    # @staticmethod
-    # def initialize(graph_context, node):
-    #     state = OgnCheckGoal2DDatabase.shared_internal_state(node)
-    #     state.node = node
-
-    # @staticmethod
-    # def release(node):
-    #     try:
-    #         state = OgnCheckGoal2DDatabase.shared_internal_state(node)
-    #     except Exception:
-    #         state = None
-    #         pass
-
-    #     if state is not None:
-    #         state.reset()
-    #         state.initialized = False
-
     @staticmethod
     def init_instance(node, graph_instance_id):
         state = OgnCheckGoal2DDatabase.get_internal_state(node, graph_instance_id)
