@@ -12,8 +12,16 @@ set ISAAC_PATH=%~dp0
 set EXP_PATH=%~dp0apps
 
 :: By default use our python, but allow overriding it by checking if PYTHONEXE env var is defined:
-IF "%PYTHONEXE%"=="" (
-    set PYTHONEXE="%~dp0kit\python\python.exe"
+if "%PYTHONEXE%"=="" (
+    REM https://jirasw.nvidia.com/browse/OM-120773
+    REM In the DX driver, the omniverse profile is set with the process name "kit.exe".
+    REM so it's necessary to change the name of the python executable to "kit.exe" to get proper optimization.
+    REM Later, when kit 107.0 uses the Vulkan as a default, this workaround needs to be removed.
+    if not exist "%~dp0kit\python\kit.exe" (
+        copy "%~dp0kit\python\python.exe" "%~dp0kit\python\kit.exe"
+    )
+    set PYTHONEXE="%~dp0kit\python\kit.exe"
+    REM set PYTHONEXE="%~dp0kit\python\python.exe"
 )
 
 call %PYTHONEXE% %*
