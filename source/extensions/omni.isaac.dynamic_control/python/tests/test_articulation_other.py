@@ -171,7 +171,7 @@ class TestArticulationOther(omni.kit.test.AsyncTestCase):
 
     async def test_articulation_position_ur10(self, gpu=False):
 
-        (result, error) = await open_stage_async(self._assets_root_path + "/Isaac/Robots/UR10/ur10.usd")
+        (result, error) = await open_stage_async(self._assets_root_path + "/Isaac/Robots/UniversalRobots/ur10/ur10.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
         dc_utils.set_scene_physics_type(gpu)

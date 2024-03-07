@@ -730,7 +730,7 @@ def add_ur10_to_stage(
     if usd_path is not None:
         add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
     else:
-        usd_path = get_assets_root_path_or_die() + "/Isaac/Robots/UR10/ur10.usd"
+        usd_path = get_assets_root_path_or_die() + "/Isaac/Robots/UniversalRobots/ur10/ur10.usd"
         add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
 
     return CortexUr10(name, prim_path, position, orientation)

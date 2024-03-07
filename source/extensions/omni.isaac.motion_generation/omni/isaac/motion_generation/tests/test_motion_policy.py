@@ -764,7 +764,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
     async def test_rmpflow_on_ur10(self):
         usd_path = await get_assets_root_path_async()
-        usd_path += "/Isaac/Robots/UR10/ur10.usd"
+        usd_path += "/Isaac/Robots/UniversalRobots/ur10/ur10.usd"
         robot_prim_path = "/ur10"
         add_reference_to_stage(usd_path, robot_prim_path)
         self._timeline = omni.timeline.get_timeline_interface()
@@ -822,7 +822,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
     async def test_rmpflow_on_ur10_ignore_state(self):
         # Perform an internal rollout of robot state, ignoring simulated robot state updates
         usd_path = await get_assets_root_path_async()
-        usd_path += "/Isaac/Robots/UR10/ur10.usd"
+        usd_path += "/Isaac/Robots/UniversalRobots/ur10/ur10.usd"
         robot_prim_path = "/ur10"
         add_reference_to_stage(usd_path, robot_prim_path)
 

@@ -1,5 +1,7 @@
 # Changelog
-
+## [0.3.7] - 2024-03-06
+### Changed
+- Updated path to ur10
 ## [0.3.6] - 2023-02-02
 ### Changed
 - Updated path to the nucleus extension

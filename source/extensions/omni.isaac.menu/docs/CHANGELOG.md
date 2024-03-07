@@ -1,5 +1,4 @@
 # Changelog
-
 ## [0.2.1] - 2024-02-20
 ### Fixed
 - Extra dependencies from tests being incorrectly imported
