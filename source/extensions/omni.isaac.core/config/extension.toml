@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "3.3.8"
+version = "3.4.0"
 category = "Simulation"
 title = "Isaac Sim Core"
 description = "Core"
@@ -59,3 +59,4 @@ persistent.isaac.asset_root.nvidia = "omniverse://localhost/NVIDIA"
 persistent.isaac.asset_root.isaac = "omniverse://localhost/NVIDIA/Assets/Isaac/4.0/Isaac"
 persistent.isaac.asset_root.cloud = "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0"
 persistent.isaac.asset_root.timeout = 10.0
+exts."omni.isaac.core".use_finite_difference_with_tgs_solver = true
