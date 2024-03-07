@@ -204,7 +204,8 @@ class TestOgnWritePhysicsArticulationView(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.all(np.isclose(new_value, value)))
 
     async def test_randomize_rest_offset(self):
-        value = [100] * self._articulation_view.count * self._articulation_view.num_shapes
+        # rest offset should be less than current contact offset
+        value = self._articulation_view._physics_view.get_contact_offsets().clone().cpu().numpy() / 2
         await self._setup_random_attribute(attribute_name="rest_offset", value=value)
         new_value = self._articulation_view._physics_view.get_rest_offsets().clone().cpu().numpy()
         self.assertTrue(np.all(np.isclose(new_value, value)))
