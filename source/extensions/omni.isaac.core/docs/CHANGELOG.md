@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.4.0] - 2024-03-01
+### Added
+- Enable joint velocities computation using finite difference with TGS solver
+
 ## [3.3.8] - 2024-02-05
 ### Fixed
 - Check for PhysicsScene USD type to identify whether a physics scene is already defined (OM-115537)
