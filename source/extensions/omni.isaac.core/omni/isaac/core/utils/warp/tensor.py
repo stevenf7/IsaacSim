@@ -272,20 +272,3 @@ def ones(n, device="cpu", dtype=wp.float32):
 def clamp(data: wp.array(dtype=wp.float32, ndim=2), low: float, high: float):
     i, j = wp.tid()
     data[i, j] = wp.clamp(data[i, j], low, high)
-
-
-@wp.kernel
-def _finite_diff2(
-    result: wp.array(dtype=wp.float32, ndim=2),
-    a: wp.array(dtype=wp.float32, ndim=2),
-    b: wp.array(dtype=wp.float32, ndim=2),
-    dt: float,
-):
-    i, j = wp.tid()
-    result[i, j] = (a[i, j] - b[i, j]) / dt
-
-
-def finite_diff2(a, b, dt):
-    result = wp.empty(a.shape, dtype=wp.float32, device=a.device)
-    wp.launch(kernel=_finite_diff2, dim=a.shape, inputs=[result, a, b, dt], device=a.device)
-    return result
