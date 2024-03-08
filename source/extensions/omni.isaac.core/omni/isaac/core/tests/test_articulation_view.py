@@ -1107,7 +1107,6 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 await self.setUpWorld(backend="torch", device=device)
                 await self.add_cartpoles(backend="torch")
                 cur_value = self._cartpoles_view.get_joint_velocities()
-                await self._step()
                 if indexed:
                     new_value = torch.tensor([[0.1]], device=device)
                     self._cartpoles_view.set_joint_velocities(new_value, indices=[1], joint_indices=[0])
@@ -1127,16 +1126,13 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
             await self.setUpWorld(backend="numpy", device="cpu")
             await self.add_cartpoles(backend="numpy")
             cur_value = self._cartpoles_view.get_joint_velocities()
-            await self._step()
             if indexed:
                 new_value = np.array([[0.1]])
                 self._cartpoles_view.set_joint_velocities(new_value, indices=[1], joint_indices=[0])
-                await self._step()
                 value = self._cartpoles_view.get_joint_velocities(indices=[1], joint_indices=[0])
             else:
                 new_value = np.array([[0.1, 0.1], [0.1, 0.1]])
                 self._cartpoles_view.set_joint_velocities(new_value)
-                await self._step()
                 value = self._cartpoles_view.get_joint_velocities()
             self.assertTrue(np.isclose(new_value, value, atol=1e-03).all())
 
@@ -1147,7 +1143,6 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 await self.setUpWorld(backend="warp", device=device)
                 await self.add_cartpoles(backend="warp")
                 cur_value = self._cartpoles_view.get_joint_velocities()
-                await self._step()
                 if indexed:
                     new_value = wp.array([[0.1]], device=device, dtype=wp.float32)
                     self._cartpoles_view.set_joint_velocities(new_value, indices=[1], joint_indices=[0])
