@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.12.3] - 2024-03-07
+
+### Fixed
+- Crash after disabling omni.activity extensions to improve performance
+
 ## [0.12.2] - 2024-02-29
 
 ### Added
