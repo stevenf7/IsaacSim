@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.2.2] - 2024-03-07
+### Fixed
+- Tests failing due to short delay when clicking, increased delay from 10 to 32 (default)
+
 ## [0.2.1] - 2024-02-20
 ### Fixed
 - Extra dependencies from tests being incorrectly imported

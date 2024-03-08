@@ -322,8 +322,8 @@ class TestMenuAssets(OmniUiTest):
             if sensor_test == "Contact" or sensor_test == "Imu":
                 cube = DynamicCuboid(prim_path="/Cube")
                 self.usd_selection.set_selected_prim_paths(["/Cube"], True)
-
-            await menu_click(test_path, human_delay_speed=10)
+            print("clicking ", test_path)
+            await menu_click(test_path, human_delay_speed=32)
             for i in range(20):
                 await omni.kit.app.get_app().next_update_async()
 
