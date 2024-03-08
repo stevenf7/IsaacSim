@@ -11,7 +11,6 @@ from typing import Optional
 import numpy as np
 from omni.isaac.core.controllers import ArticulationController
 from omni.isaac.core.utils.types import ArticulationAction
-from omni.isaac.dynamic_control import _dynamic_control
 
 
 class ArticulationGripper(object):
@@ -29,11 +28,9 @@ class ArticulationGripper(object):
         gripper_open_position: Optional[np.ndarray] = None,
         gripper_closed_position: Optional[np.ndarray] = None,
     ) -> None:
-        self._handle = None
-        self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
+        self._articulation = None
         self._grippers_dof_names = gripper_dof_names
         self._grippers_dof_indices = [None] * len(self._grippers_dof_names)
-        self._grippers_dof_handles = [None] * len(self._grippers_dof_names)
         self._articulation_controller = None
         self._gripper_open_position = gripper_open_position
         self._gripper_closed_position = gripper_closed_position
@@ -76,15 +73,12 @@ class ArticulationGripper(object):
         Raises:
             Exception: [description]
         """
-        self._handle = self._dc_interface.get_articulation(root_prim_path)
-        num_dof = self._dc_interface.get_articulation_dof_count(self._handle)
-        for index in range(num_dof):
-            dof_handle = self._dc_interface.get_articulation_dof(self._handle, index)
-            dof_name = self._dc_interface.get_dof_name(dof_handle)
+        self._articulation = Articulation(root_prim_path)
+        for index in len(self._articulation.dof_names):
+            dof_name = self._articulation.dof_names[index]
             for j in range(len(self._grippers_dof_names)):
                 if self._grippers_dof_names[j] == dof_name:
                     self._grippers_dof_indices[j] = index
-                    self._grippers_dof_handles[j] = self._dc_interface.get_articulation_dof(self._handle, index)
         # make sure that all gripper dof names were resolved
         for i in range(len(self._grippers_dof_names)):
             if self._grippers_dof_indices[i] is None:
@@ -99,8 +93,7 @@ class ArticulationGripper(object):
         Args:
             positions (np.ndarray): [description]
         """
-        for i in range(len(self._grippers_dof_handles)):
-            self._dc_interface.set_dof_position(self._grippers_dof_handles[i], positions[i])
+        self._articulation.set_joint_positions(positions, self._grippers_dof_indices)
         self._articulation_controller.apply_action(
             ArticulationAction(
                 joint_positions=positions,
@@ -117,10 +110,11 @@ class ArticulationGripper(object):
         Returns:
             np.ndarray: [description]
         """
-        gripper_positions = np.zeros(len(self._grippers_dof_handles))
-        for i in range(len(self._grippers_dof_handles)):
-            gripper_positions[i] = self._dc_interface.get_dof_position(self._grippers_dof_handles[i])
-        return gripper_positions
+        # gripper_positions = np.zeros(len(self._grippers_dof_handles))
+        # for i in range(len(self._grippers_dof_handles)):
+        #     gripper_positions[i] = self._dc_interface.get_dof_position(self._grippers_dof_handles[i])
+        # return gripper_positions
+        return self._articulation.get_joint_positions(self._grippers_dof_indices)
 
     def get_velocities(self) -> np.ndarray:
         """[summary]
@@ -128,10 +122,11 @@ class ArticulationGripper(object):
         Returns:
             np.ndarray: [description]
         """
-        gripper_velocities = np.zeros(len(self._grippers_dof_handles))
-        for i in range(len(self._grippers_dof_handles)):
-            gripper_velocities[i] = self._dc_interface.get_dof_velocity(self._grippers_dof_handles[i])
-        return gripper_velocities
+        # gripper_velocities = np.zeros(len(self._grippers_dof_handles))
+        # for i in range(len(self._grippers_dof_handles)):
+        #     gripper_velocities[i] = self._dc_interface.get_dof_velocity(self._grippers_dof_handles[i])
+        # return gripper_velocities
+        return self._articulation.get_joint_velocities(self._grippers_dof_indices)
 
     def set_velocities(self, velocities: np.ndarray) -> None:
         """[summary]
@@ -139,8 +134,9 @@ class ArticulationGripper(object):
         Args:
             velocities (np.ndarray): [description]
         """
-        for i in range(len(self._grippers_dof_handles)):
-            self._dc_interface.set_dof_velocity(self._grippers_dof_handles[i], velocities[i])
+        # for i in range(len(self._grippers_dof_handles)):
+        #     self._dc_interface.set_dof_velocity(self._grippers_dof_handles[i], velocities[i])
+        self._articulation.set_joint_velocities(velocities, self._grippers_dof_indices)
         self._articulation_controller.apply_action(
             ArticulationAction(
                 joint_positions=None,

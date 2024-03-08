@@ -39,14 +39,13 @@ using omni::isaac::dynamic_control::DcTransform;
  * @param pxBodyTranslation
  * @param pxBodyRotation
  */
-inline void setTransform(omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr,
-                         pxr::UsdPrim& prim,
-                         pxr::GfVec3f pxBodyTranslation,
-                         pxr::GfQuatf pxBodyRotation)
+inline void setTransform(pxr::UsdPrim& prim, pxr::GfVec3f pxBodyTranslation, pxr::GfQuatf pxBodyRotation)
 {
     // TODO: Handle world rotation as well
     // NOTE: reverting this for now, rigid body sink publishes global so teleport should be global too
     // auto newTranslation = pxBodyTranslation; // + parentToWorldMat.ExtractTranslation();
+    omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr =
+        carb::getCachedInterface<omni::isaac::dynamic_control::DynamicControl>();
     DcTransform t = omni::isaac::utils::conversions::asDcTransform(pxBodyTranslation, pxBodyRotation);
 
     if (mDynamicControlPtr->isSimulating())
@@ -94,10 +93,10 @@ inline void setTransform(omni::isaac::dynamic_control::DynamicControl* mDynamicC
  * @param prim
  * @param pxBodyScale
  */
-inline void setScale(omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr,
-                     pxr::UsdPrim& prim,
-                     pxr::GfVec3f pxBodyScale)
+inline void setScale(pxr::UsdPrim& prim, pxr::GfVec3f pxBodyScale)
 {
+    omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr =
+        carb::getCachedInterface<omni::isaac::dynamic_control::DynamicControl>();
     bool doScale = true;
 
     if (mDynamicControlPtr->isSimulating())

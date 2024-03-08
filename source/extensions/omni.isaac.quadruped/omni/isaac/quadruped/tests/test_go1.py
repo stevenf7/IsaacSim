@@ -108,7 +108,7 @@ class TestGo1(omni.kit.test.AsyncTestCase):
         return
 
     def on_physics_step(self, step_size):
-        if self._go1 and self._go1._handle:
+        if self._go1:
             # print(self._base_command)
             self._go1.advance(
                 dt=step_size, goal=self._base_command, path_follow=self._path_follow, auto_start=self._auto_start

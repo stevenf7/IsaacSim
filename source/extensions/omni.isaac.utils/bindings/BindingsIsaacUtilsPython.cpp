@@ -381,8 +381,8 @@ PYBIND11_MODULE(_isaac_utils, m)
 
     transforms.def(
         "set_transform",
-        [](DynamicControl* dynamicControlPtr, const long int stageId, const std::string primPath,
-           const carb::Float3& translation, const carb::Float4& rotation)
+        [](const long int stageId, const std::string primPath, const carb::Float3& translation,
+           const carb::Float4& rotation)
         {
             pxr::UsdStageWeakPtr stage =
                 pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
@@ -392,7 +392,7 @@ PYBIND11_MODULE(_isaac_utils, m)
             if (prim)
             {
 
-                omni::isaac::utils::transforms::setTransform(dynamicControlPtr, prim,
+                omni::isaac::utils::transforms::setTransform(prim,
                                                              omni::isaac::utils::conversions::asGfVec3f(translation),
                                                              omni::isaac::utils::conversions::asGfQuatf(rotation));
             }
@@ -417,7 +417,7 @@ PYBIND11_MODULE(_isaac_utils, m)
 
     transforms.def(
         "set_scale",
-        [](DynamicControl* dynamicControlPtr, const long int stageId, const std::string primPath, const carb::Float3& scale)
+        [](const long int stageId, const std::string primPath, const carb::Float3& scale)
         {
             pxr::UsdStageWeakPtr stage =
                 pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
@@ -427,8 +427,7 @@ PYBIND11_MODULE(_isaac_utils, m)
             if (prim)
             {
 
-                omni::isaac::utils::transforms::setScale(
-                    dynamicControlPtr, prim, omni::isaac::utils::conversions::asGfVec3f(scale));
+                omni::isaac::utils::transforms::setScale(prim, omni::isaac::utils::conversions::asGfVec3f(scale));
             }
             else
             {

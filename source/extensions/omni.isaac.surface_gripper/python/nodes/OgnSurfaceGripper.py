@@ -11,16 +11,15 @@ from math import radians
 import numpy as np
 import omni
 import omni.graph.core as og
+import omni.physics.tensors
 import omni.physx as _physx
-from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper, Surface_Gripper_Properties
 from pxr import Gf, Usd, UsdGeom, UsdPhysics, UsdShade
 
 
 class SurfaceGripperInternalState:
     def __init__(self):
-        self._dc = _dynamic_control.acquire_dynamic_control_interface()
-        self._surface_gripper = Surface_Gripper(self._dc)
+        self._surface_gripper = Surface_Gripper()
         self._initialized = False
         self._sgp = Surface_Gripper_Properties()
 
@@ -135,7 +134,7 @@ class OgnSurfaceGripper:
                 parent_pose = omni.usd.get_world_transform_matrix(parent)
                 grip_pose = omni.usd.get_world_transform_matrix(grip_point)
                 offset = grip_pose * parent_pose.GetInverse()
-                tr = _dynamic_control.Transform()
+                tr = omni.physics.tensors.Transform()
                 t = offset.ExtractTranslation()
                 q = offset.ExtractRotationQuat()
                 tr.p = [t[0], t[1], t[2]]

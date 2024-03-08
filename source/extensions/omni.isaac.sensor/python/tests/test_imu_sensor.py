@@ -20,14 +20,15 @@ import numpy as np
 import omni.kit.commands
 import omni.kit.test
 from omni.isaac.core import World
+from omni.isaac.core.articulations import Articulation
 from omni.isaac.core.objects import DynamicCuboid
 from omni.isaac.core.objects.ground_plane import GroundPlane
+from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.physics import simulate_async
 from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.rotations import quat_to_euler_angles
 from omni.isaac.core.utils.transformations import get_relative_transform
-from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.nucleus import get_assets_root_path_async
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
@@ -41,7 +42,6 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         self._sensor_rate = 60
         self._is = _sensor.acquire_imu_sensor_interface()
-        self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._assets_root_path = await get_assets_root_path_async()
         if self._assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
@@ -200,28 +200,16 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
 
         await omni.kit.app.get_app().next_update_async()
 
-        art = self._dc.get_articulation("/Articulation")
-        self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
-        slider_body = self._dc.find_articulation_body(art, "Arm")
+        art = Articulation("/Articulation")
+        art.initialize()
         await omni.kit.app.get_app().next_update_async()
-        state = self._dc.get_articulation_dof_states(art, _dynamic_control.STATE_ALL)
-        props = self._dc.get_articulation_dof_properties(art)
-        num_dofs = self._dc.get_articulation_dof_count(art)
-
-        # set both dof state and targets for position
-        for i in range(num_dofs):
-            props[i]["stiffness"] = 1e8
-            props[i]["damping"] = 1e8
-
-        self._dc.set_articulation_dof_properties(art, props)
+        num_dofs = art.num_dof
+        art._articulation_view.set_gains(kps=np.ones(num_dofs) * 1e8, kds=np.ones(num_dofs) * 1e8)
 
         ang = 0
         for i in range(70):
-            new_state = [math.radians(ang), 0.5]
+            art.set_joint_positions(np.array([math.radians(ang), 0.5]))
 
-            state["pos"] = new_state
-            self._dc.set_articulation_dof_states(art, state, _dynamic_control.STATE_POS)
-            self._dc.set_articulation_dof_position_targets(art, new_state)
             await omni.kit.app.get_app().next_update_async()
             await omni.kit.app.get_app().next_update_async()
 
@@ -265,27 +253,16 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
 
         await omni.kit.app.get_app().next_update_async()
 
-        art = self._dc.get_articulation("/Articulation")
-        self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
-        slider_body = self._dc.find_articulation_body(art, "Slider")
-        dof_ptr = self._dc.find_articulation_dof(art, "RevoluteJoint")
+        art = Articulation("/Articulation")
+        art.initialize()
         await omni.kit.app.get_app().next_update_async()
-        state = self._dc.get_articulation_dof_states(art, _dynamic_control.STATE_ALL)
-
-        props = self._dc.get_articulation_dof_properties(art)
-        num_dofs = self._dc.get_articulation_dof_count(art)
-
-        self._dc.set_articulation_dof_properties(art, props)
+        num_dofs = art.num_dof
 
         ang_vel_l = [x * 30 for x in range(0, 20)]
 
         for x in ang_vel_l:
+            art.set_joint_velocities(np.array([math.radians(x), 0]))
 
-            new_state = [math.radians(x), 0]
-            state["pos"] = new_state
-
-            self._dc.set_articulation_dof_states(art, state, _dynamic_control.STATE_VEL)
-            self._dc.set_articulation_dof_velocity_targets(art, new_state)
             await omni.kit.app.get_app().next_update_async()
             ang_vel_z_sim = self._is.get_sensor_sim_reading(self.slider_path + "/slider_imu").ang_vel_z
             ang_vel_z_readings = self._is.get_sensor_readings(self.slider_path + "/slider_imu")[0]["ang_vel_z"]
@@ -295,10 +272,9 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             self.assertAlmostEqual(ang_vel_z_readings, math.radians(x), delta=2.0e-1)
             self.assertAlmostEqual(ang_vel_z, math.radians(x), delta=2.0e-1)
 
-            # reset state before next test
-            self._dc.set_dof_state(dof_ptr, _dynamic_control.DofState(0, 0, 0), _dynamic_control.STATE_ALL)
-            self._dc.set_dof_position_target(dof_ptr, 0)
-
+            art.set_joint_positions(np.array([0, 0]))
+            art.set_joint_velocities(np.array([0, 0]))
+            art.set_joint_efforts(np.array([0, 0]))
         pass
 
     async def test_lin_acc_imu(self):
@@ -338,34 +314,16 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         self.my_world.play()
 
         await omni.kit.app.get_app().next_update_async()
-
-        art = self._dc.get_articulation("/Articulation")
-        self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
-        slider_body = self._dc.find_articulation_body(art, "Slider")
-        dof_ptr = self._dc.find_articulation_dof(art, "RevoluteJoint")
+        art = Articulation("/Articulation")
+        art.initialize()
         await omni.kit.app.get_app().next_update_async()
-        state = self._dc.get_articulation_dof_states(art, _dynamic_control.STATE_ALL)
-
-        props = self._dc.get_articulation_dof_properties(art)
-        num_dofs = self._dc.get_articulation_dof_count(art)
-
-        # set all joints to effort mode
-        for i in range(num_dofs):
-            props["stiffness"][i] = 0
-            props["damping"][i] = 0
-
-        self._dc.set_articulation_dof_properties(art, props)
+        num_dofs = art.num_dof
+        art._articulation_view.set_gains(kps=np.zeros(num_dofs), kds=np.ones(num_dofs))
 
         x = 0
-
         for i in range(60):
 
-            new_state = [math.radians(x), 0]
-            state["effort"] = new_state
-
-            self._dc.set_articulation_dof_states(art, state, _dynamic_control.STATE_EFFORT)
-            self._dc.set_articulation_dof_efforts(art, new_state)
-
+            art.set_joint_efforts(np.array([math.radians(x), 0]))
             await omni.kit.app.get_app().next_update_async()
             slider_mag = np.linalg.norm(
                 [
@@ -487,8 +445,11 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
                 init_reading = sensor_reading
                 first = False
 
-            body_handle = self._dc.get_rigid_body(self.sphere_path)
-            self._dc.apply_body_force(body_handle, (10, 10, 10), (0, 0, 0), True)
+            rigid_body = RigidPrim(self.sphere_path)
+            rigid_body.initialize()
+            rigid_body._rigid_prim_view.apply_forces_and_torques_at_pos(
+                forces=np.array([10, 10, 10]), positions=np.array([10, 10, 10]), is_global=True
+            )
 
         self.my_world.stop()
         await omni.kit.app.get_app().next_update_async()

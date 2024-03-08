@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.4.0] - 2023-03-07
+### Changed
+- Removed the usage of the deprecated dynamic_control extension 
+
 ## [3.3.8] - 2024-02-05
 ### Fixed
 - Check for PhysicsScene USD type to identify whether a physics scene is already defined (OM-115537)

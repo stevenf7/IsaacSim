@@ -10,7 +10,6 @@ from typing import List, Optional, Tuple, Union
 
 import numpy as np
 from omni.isaac.core.utils.types import ArticulationAction, ArticulationActions
-from omni.isaac.dynamic_control import _dynamic_control
 
 
 class ArticulationController(object):
@@ -23,19 +22,16 @@ class ArticulationController(object):
     def __init__(self) -> None:
         self._dof_controllers = list()
         self._articulation_handle = None
-        self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
         self._default_kps = None
         self._default_kds = None
         return
 
-    def initialize(self, handle, articulation_view) -> None:
+    def initialize(self, articulation_view) -> None:
         """[summary]
 
         Args:
-            handle ([type]): [description]
-            dof_infos ([type]): [description]
+            articulation_view ([type]): [description]
         """
-        self._articulation_handle = handle
         self._articulation_view = articulation_view
         return
 

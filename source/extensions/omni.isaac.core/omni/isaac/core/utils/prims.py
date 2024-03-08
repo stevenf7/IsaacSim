@@ -22,7 +22,6 @@ from omni.isaac.core.utils.semantics import add_update_semantics
 from omni.isaac.core.utils.stage import add_reference_to_stage, get_current_stage
 from omni.isaac.core.utils.string import find_root_prim_path_from_regex
 from omni.isaac.core.utils.types import SDF_type_to_Gf
-from omni.isaac.dynamic_control import _dynamic_control
 from omni.usd.commands import DeletePrimsCommand, MovePrimCommand
 
 # omniverse
@@ -827,28 +826,21 @@ def get_prim_object_type(prim_path: str) -> typing.Union[str, None]:
         >>> prims_utils.get_prim_object_type("/World/Cube")
         xform
     """
-    dc_interface = _dynamic_control.acquire_dynamic_control_interface()
-    object_type = dc_interface.peek_object_type(prim_path)
-    if object_type == _dynamic_control.OBJECT_NONE:
-        prim = get_prim_at_path(prim_path)
-        if prim.IsA(UsdGeom.Xformable):
-            return "xform"
-        else:
-            return None
-    elif object_type == _dynamic_control.OBJECT_RIGIDBODY:
+    prim = get_prim_at_path(prim_path)
+    if prim.IsA(UsdGeom.Xformable):
+        return "xform"
+    elif prim.HasAPI(UsdPhysics.RigidBodyAPI):
         return "rigid_body"
-    elif object_type == _dynamic_control.OBJECT_JOINT:
+    elif (
+        prim.IsA(UsdPhysics.PrismaticJoint) or prim.IsA(UsdPhysics.RevoluteJoint) or prim.IsA(UsdPhysics.SphericalJoint)
+    ):
         return "joint"
-    elif object_type == _dynamic_control.OBJECT_DOF:
-        return "dof"
-    elif object_type == _dynamic_control.OBJECT_ARTICULATION:
+    elif prim.HasAPI(UsdPhysics.ArticulationRootAPI):
         return "articulation"
-    elif object_type == _dynamic_control.OBJECT_ATTRACTOR:
-        return "attractor"
-    elif object_type == _dynamic_control.OBJECT_D6JOINT:
+    elif prim.IsA(UsdPhysicsJoint):
         return "d6joint"
     else:
-        raise Exception("the object type is not support here yet")
+        raise Exception("the object type is not support yet")
 
 
 def is_prim_non_root_articulation_link(prim_path: str) -> bool:

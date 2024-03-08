@@ -137,18 +137,6 @@ class RigidPrim(_SinglePrimWrapper):
 
         Args:
             velocity (np.ndarray): linear velocity to set the rigid prim to. Shape (3,).
-
-        .. hint::
-
-            This method belongs to the methods used to set the rigid prim kinematic state:
-
-            ``set_linear_velocity``, ``set_angular_velocity``
-
-        Example:
-
-        .. code-block:: python
-
-            >>> prim.set_linear_velocity(np.array([5.0, 0.0, 0.0]))
         """
         velocity = self._backend_utils.expand_dims(velocity, 0)
         self._rigid_prim_view.set_linear_velocities(velocities=velocity)
@@ -180,17 +168,6 @@ class RigidPrim(_SinglePrimWrapper):
         Args:
             velocity (np.ndarray): angular velocity to set the rigid prim to. Shape (3,).
 
-        .. hint::
-
-            This method belongs to the methods used to set the rigid prim kinematic state:
-
-            ``set_linear_velocity``, ``set_angular_velocity``
-
-        Example:
-
-        .. code-block:: python
-
-            >>> prim.set_angular_velocity(np.array([0.0, 0.0, 10.0]))
         """
         velocity = self._backend_utils.expand_dims(velocity, 0)
         self._rigid_prim_view.set_angular_velocities(velocities=velocity)
@@ -202,15 +179,33 @@ class RigidPrim(_SinglePrimWrapper):
         Returns:
             np.ndarray: current angular velocity of the the rigid prim. Shape (3,).
 
-        Example:
-
-        .. code-block:: python
-
-            >>> prim.get_angular_velocity()]
-            [-0.01727393  0.00827609 -0.00040014]
         """
         velocities = self._rigid_prim_view.get_angular_velocities()
         return velocities[0]
+
+    def set_com(self, position: np.ndarray, orientation: np.ndarray) -> None:
+        """Set the center of mass pose of the rigid body
+
+        Args:
+            position (np.ndarray): center of mass position. Shape (3,).
+            orientation (np.ndarray): center of mass orientation. Shape (4,).
+
+        """
+        position = self._backend_utils.expand_dims(position, 0)
+        orientation = self._backend_utils.expand_dims(orientation, 0)
+        self._rigid_prim_view.set_coms(positions=position, orientations=orientation)
+        return
+
+    def get_com(self) -> float:
+        """Get the center of mass pose of the rigid body
+
+        Returns:
+            np.ndarray: position of the center of mass of the rigid body.
+            np.ndarray: orientation of the center of mass of the rigid body.
+
+        """
+        positions, orientations = self._rigid_prim_view.get_coms()
+        return positions[0], orientations[0]
 
     def set_mass(self, mass: float) -> None:
         """Set the mass of the rigid body

@@ -38,7 +38,6 @@ from omni.isaac.core.utils.stage import (
     update_stage_async,
 )
 from omni.isaac.core.utils.viewports import set_camera_view
-from omni.isaac.dynamic_control import _dynamic_control
 from pxr import Usd
 
 
@@ -119,7 +118,6 @@ class SimulationContext:
         self._settings = carb.settings.get_settings()
         self._timeline = omni.timeline.get_timeline_interface()
         self._timeline.set_auto_update(True)
-        self._dynamic_control = _dynamic_control.acquire_dynamic_control_interface()
         self._physx_fabric_interface = None
         self._physics_callback_functions = dict()
         self._physics_functions = dict()
@@ -813,7 +811,7 @@ class SimulationContext:
             >>> simulation_context.is_simulating()
             True
         """
-        return self._dynamic_control.is_simulating()
+        return self._physics_sim_view is not None
 
     """
     Operations- Timeline.

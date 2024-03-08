@@ -9,8 +9,8 @@
 import carb
 import numpy as np
 import omni.kit.app
+from omni.isaac.core.articulations.articulation import Articulation
 from omni.isaac.core.utils.types import ArticulationAction
-from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.manipulators.grippers.gripper import Gripper
 from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper, Surface_Gripper_Properties
 
@@ -46,7 +46,6 @@ class SurfaceGripper(Gripper):
         disable_gravity: bool = True,
     ) -> None:
         Gripper.__init__(self, end_effector_prim_path=end_effector_prim_path)
-        self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
         self._translate = translate
         self._direction = direction
         self._grip_threshold = grip_threshold
@@ -83,7 +82,7 @@ class SurfaceGripper(Gripper):
         virtual_gripper_props.stiffness = self._kp
         virtual_gripper_props.damping = self._kd
         virtual_gripper_props.disableGravity = self._disable_gravity
-        tr = _dynamic_control.Transform()
+        tr = omni.physics.tensors.Transform()
         if self._direction == "x":
             tr.p.x = self._translate
         elif self._direction == "y":
@@ -93,7 +92,7 @@ class SurfaceGripper(Gripper):
         else:
             carb.log_error("Direction specified for the surface gripper doesn't exist")
         virtual_gripper_props.offset = tr
-        virtual_gripper = Surface_Gripper(self._dc_interface)
+        virtual_gripper = Surface_Gripper()
         virtual_gripper.initialize(virtual_gripper_props)
         self._virtual_gripper = virtual_gripper
         if self._default_state is None:

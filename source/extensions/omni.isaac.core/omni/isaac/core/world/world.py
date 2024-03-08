@@ -19,7 +19,6 @@ from omni.isaac.core.scenes.scene import Scene
 from omni.isaac.core.simulation_context import SimulationContext
 from omni.isaac.core.tasks import BaseTask
 from omni.isaac.core.utils.viewports import set_camera_view
-from omni.isaac.dynamic_control import _dynamic_control
 
 # omniverse
 from pxr import Usd
@@ -112,7 +111,6 @@ class World(SimulationContext):
         World._world_initialized = True
         self._task_scene_built = False
         self._current_tasks = dict()
-        self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
         self._scene = Scene()
         # if not builtins.ISAAC_LAUNCHED_FROM_TERMINAL:
         #     self.start_simulation()
@@ -145,21 +143,6 @@ class World(SimulationContext):
     """
     Properties.
     """
-
-    @property
-    def dc_interface(self) -> _dynamic_control.DynamicControl:
-        """
-        Returns:
-            _dynamic_control.DynamicControl: DynamicControl instance
-
-        Example:
-
-        .. code-block:: python
-
-            >>> world.dc_interface
-            <omni.isaac.dynamic_control._dynamic_control.DynamicControl object at 0x...>
-        """
-        return self._dc_interface
 
     @property
     def scene(self) -> Scene:

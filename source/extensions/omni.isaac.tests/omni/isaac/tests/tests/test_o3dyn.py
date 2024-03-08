@@ -20,8 +20,6 @@ from omni.isaac.core import World
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
 from omni.isaac.core.utils.prims import delete_prim
 from omni.isaac.core.utils.stage import open_stage_async
-from omni.isaac.dynamic_control import _dynamic_control
-from omni.isaac.dynamic_control import utils as dc_utils
 from omni.isaac.nucleus import get_assets_root_path_async
 from omni.physx.scripts.physicsUtils import add_ground_plane
 from pxr import Gf
@@ -36,8 +34,6 @@ class TestO3dyn(omni.kit.test.AsyncTestCase):
         self._timeline = omni.timeline.get_timeline_interface()
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        self.dc = _dynamic_control.acquire_dynamic_control_interface()
-
         self._assets_root_path = await get_assets_root_path_async()
         if self._assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")

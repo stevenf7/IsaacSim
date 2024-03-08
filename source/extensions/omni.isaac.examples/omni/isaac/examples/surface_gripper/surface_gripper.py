@@ -15,10 +15,11 @@ import omni
 import omni.ext
 import omni.kit.commands
 import omni.kit.usd
+import omni.physics.tensors as physics
 import omni.physx as _physx
 import omni.ui as ui
+from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.utils.viewports import set_camera_view
-from omni.isaac.dynamic_control import _dynamic_control as dc
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper, Surface_Gripper_Properties
@@ -45,7 +46,6 @@ class Extension(omni.ext.IExt):
 
         # Loads interfaces
         self._timeline = omni.timeline.get_timeline_interface()
-        self._dc = dc.acquire_dynamic_control_interface()
         self._usd_context = omni.usd.get_context()
         self._window = None
         self._models = {}
@@ -207,8 +207,9 @@ class Extension(omni.ext.IExt):
         if self._timeline.is_playing() and self._stage_id != -1:
             # Check if the handles for cone and box have been loaded
             if self.cone is None:
-                self.cone = self._dc.get_rigid_body("/GripperCone")
-                self.box = self._dc.get_rigid_body("/Box")
+                self.cone = RigidPrim("/GripperCone")
+                self.box = RigidPrim("/Box")
+
             # If the surface Gripper has been created, update wheter it has been broken or not
             if self.surface_gripper is not None:
                 self.surface_gripper.update()
@@ -222,13 +223,12 @@ class Extension(omni.ext.IExt):
         if self._timeline.is_playing() and self._stage_id != -1:
             if self.surface_gripper is not None:
                 self.surface_gripper.open()
-            self._dc.set_rigid_body_linear_velocity(self.cone, [0, 0, 0])
-            self._dc.set_rigid_body_linear_velocity(self.box, [0, 0, 0])
-            self._dc.set_rigid_body_angular_velocity(self.cone, [0, 0, 0])
-            self._dc.set_rigid_body_angular_velocity(self.box, [0, 0, 0])
-
-            self._dc.set_rigid_body_pose(self.cone, self.gripper_start_pose)
-            self._dc.set_rigid_body_pose(self.box, self.box_start_pose)
+            self.cone.set_linear_velocity([0, 0, 0])
+            self.box.set_linear_velocity([0, 0, 0])
+            self.cone.set_angular_velocity([0, 0, 0])
+            self.box.set_angular_velocity([0, 0, 0])
+            self.cone.set_world_pose(self.gripper_start_pose.p, self.gripper_start_pose.r)
+            self.box.set_world_pose(self.box_start_pose.p, self.box_start_pose.r)
 
     async def _create_scenario(self, task):
         done, pending = await asyncio.wait({task})
@@ -268,7 +268,7 @@ class Extension(omni.ext.IExt):
             self.color_open = Gf.Vec3f(0.2, 1.0, 0.2)
 
             # Cone that will represent the gripper
-            self.gripper_start_pose = dc.Transform([0, 0, 0.301], [1, 0, 0, 0])
+            self.gripper_start_pose = physics.Transform([0, 0, 0.301], [1, 0, 0, 0])
             self.coneGeom = self.createRigidBody(
                 UsdGeom.Cone,
                 "/GripperCone",
@@ -280,20 +280,20 @@ class Extension(omni.ext.IExt):
             )
 
             # Box to be picked
-            self.box_start_pose = dc.Transform([0, 0, 0.10], [1, 0, 0, 0])
+            self.box_start_pose = physics.Transform([0, 0, 0.10], [1, 0, 0, 0])
             self.boxGeom = self.createRigidBody(
                 UsdGeom.Cube, "/Box", 0.10, [0.1, 0.1, 0.1], self.box_start_pose.p, self.box_start_pose.r, [0.2, 0.2, 1]
             )
 
             # Reordering the quaternion to follow DC convention for later use.
-            self.gripper_start_pose = dc.Transform([0, 0, 0.301], [0, 0, 0, 1])
-            self.box_start_pose = dc.Transform([0, 0, 0.10], [0, 0, 0, 1])
+            self.gripper_start_pose = physics.Transform([0, 0, 0.301], [0, 0, 0, 1])
+            self.box_start_pose = physics.Transform([0, 0, 0.10], [0, 0, 0, 1])
 
             # Gripper properties
             self.sgp = Surface_Gripper_Properties()
             self.sgp.d6JointPath = "/GripperCone/SurfaceGripper"
             self.sgp.parentPath = "/GripperCone"
-            self.sgp.offset = dc.Transform()
+            self.sgp.offset = physics.Transform()
             self.sgp.offset.p.x = 0
             self.sgp.offset.p.z = -0.1001
             self.sgp.offset.r = [0.7071, 0, 0.7071, 0]  # Rotate to point gripper in Z direction
@@ -304,7 +304,7 @@ class Extension(omni.ext.IExt):
             self.sgp.stiffness = 1.0e4
             self.sgp.damping = 1.0e3
 
-            self.surface_gripper = Surface_Gripper(self._dc)
+            self.surface_gripper = Surface_Gripper()
             self.surface_gripper.initialize(self.sgp)
             # Set camera to a nearby pose and looking directly at the Gripper cone
             set_camera_view(
@@ -332,14 +332,14 @@ class Extension(omni.ext.IExt):
 
     def _on_speed_button_clicked(self):
         if self._timeline.is_playing():
-            self._dc.set_rigid_body_linear_velocity(
-                self.cone, [0, 0, self._models["speed_slider"].get_value_as_float()]
-            )
+            self.cone.set_linear_velocity([0, 0, self._models["speed_slider"].get_value_as_float()])
 
     def _on_force_button_clicked(self):
         if self._timeline.is_playing():
-            self._dc.apply_body_force(
-                self.cone, [0, 0, self._models["force_slider"].get_value_as_float()], [0, 0, 0], True
+            self.cone._rigid_prim_view.apply_forces_and_torques_at_pos(
+                forces=np.array([0, 0, self._models["force_slider"].get_value_as_float()]),
+                positions=np.array([10, 10, 10]),
+                is_global=True,
             )
 
     def createRigidBody(self, bodyType, boxActorPath, mass, scale, position, rotation, color):

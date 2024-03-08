@@ -51,19 +51,16 @@ PYBIND11_MODULE(_surface_gripper, m)
         The surface gripper is useful to approximate suction style grippers.
         
         Example:
-            To create a surface gripper you need to aquire the :obj:`omni.isaac.dynamic_control`, interface import this submodule, create a Surface_Gripper_Properties, and then create a Surface Gripper:
+            To create a surface gripper you need to import this submodule, create a Surface_Gripper_Properties, and then create a Surface Gripper:
 
             .. code-block:: python
 
                 from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper
                 from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper_Properties
-                from omni.isaac.dynamic_control import _dynamic_control
                 import numpy as np
 
                 # Create surface gripper
-                _dc = _dynamic_control.acquire_interface()
-                surface_gripper = Surface_Gripper(_dc)
-                
+                surface_gripper = Surface_Gripper()
                 sgp = Surface_Gripper_Properties()
 
                 # Configure the Gripper Properties here (Example configuration below)
@@ -101,9 +98,8 @@ PYBIND11_MODULE(_surface_gripper, m)
             "d6JointPath", &SurfaceGripperProperties::d6JointPath, R"pbdoc(USD path to joint (:obj:`str`))pbdoc")
         .def_readwrite(
             "parentPath", &SurfaceGripperProperties::parentPath, R"pbdoc(USD Path to parent body (:obj:`str`))pbdoc")
-        .def_readwrite(
-            "offset", &SurfaceGripperProperties::offset,
-            R"pbdoc(Transform from parent body to joint (:obj:`omni.isaac.dynamic_control._dynamic_control.Transform`))pbdoc")
+        .def_readwrite("offset", &SurfaceGripperProperties::offset,
+                       R"pbdoc(Transform from parent body to joint (:obj:`omni.physics.tensors.Transform`))pbdoc")
         .def_readwrite("gripThreshold", &SurfaceGripperProperties::gripThreshold,
                        R"pbdoc(Threshold distance the gripper will respond to closing (:obj:`float`))pbdoc")
         .def_readwrite(
@@ -152,12 +148,9 @@ PYBIND11_MODULE(_surface_gripper, m)
 
     auto surface_gripper =
         py::class_<SurfaceGripper>(m, "Surface_Gripper")
-            .def(py::init([](DynamicControl* dc) { return new SurfaceGripper(dc); }),
+            .def(py::init([]() { return new SurfaceGripper(); }),
                  R"pbdoc(
                 Creates a Surface Gripper, that connects two rigid bodies when it's actuated in close proximity
-
-                Args:
-                    arg0: dynamic control interface
 
             )pbdoc")
             .def("initialize", &SurfaceGripper::initialize,
