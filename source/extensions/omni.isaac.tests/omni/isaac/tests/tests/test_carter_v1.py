@@ -17,11 +17,10 @@ import omni.graph.core as og
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 from omni.isaac.core import World
+from omni.isaac.core.articulations.articulation import Articulation
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
 from omni.isaac.core.utils.prims import delete_prim
 from omni.isaac.core.utils.stage import open_stage_async
-from omni.isaac.dynamic_control import _dynamic_control
-from omni.isaac.dynamic_control import utils as dc_utils
 from omni.isaac.nucleus import get_assets_root_path_async
 
 from .robot_helpers import init_robot_sim, set_physics_frequency, setup_robot_og
@@ -45,7 +44,6 @@ class TestCarterv1(omni.kit.test.AsyncTestCase):
         self._timeline = omni.timeline.get_timeline_interface()
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        self.dc = _dynamic_control.acquire_dynamic_control_interface()
 
         self._assets_root_path = await get_assets_root_path_async()
         if self._assets_root_path is None:
@@ -93,21 +91,20 @@ class TestCarterv1(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         # get the dofbot
-        self.ar = self.dc.get_articulation("/carter")
-        self.chassis = self.dc.get_articulation_root_body(self.ar)
-        self.starting_pos = np.array(self.dc.get_rigid_body_pose(self.chassis).p)
-
-        self.wheel_left = self.dc.find_articulation_dof(self.ar, "left_wheel")
-        self.wheel_right = self.dc.find_articulation_dof(self.ar, "right_wheel")
+        self.ar = Articulation("/carter")
+        self.ar._articulation_view.initialize()
+        self.starting_pos, _ = self.ar.get_world_pose()
+        left_wheel_joint_idx = self.ar._articulation_view.get_dof_index("left_wheel")
+        right_wheel_joint_idx = self.ar._articulation_view.get_dof_index("right_wheel")
+        self.ar._articulation_view.set_joint_velocity_targets(
+            velocities=np.array([1.0, 1.0]), joint_indices=[left_wheel_joint_idx, right_wheel_joint_idx]
+        )
 
         # move the jetbot
-        self.dc.set_dof_velocity_target(self.wheel_left, 1.0)
-        self.dc.set_dof_velocity_target(self.wheel_right, 1.0)
+        for i in range(60):
+            await omni.kit.app.get_app().next_update_async()
 
-        await dc_utils.simulate(1, self.dc, self.ar)
-
-        self.current_pos = np.array(self.dc.get_rigid_body_pose(self.chassis).p)
-
+        self.current_pos, _ = self.ar.get_world_pose()
         delta = np.linalg.norm(self.current_pos - self.starting_pos)
         print("Diff is ", delta)
         self.assertTrue(delta > 0.02)
@@ -124,7 +121,7 @@ class TestCarterv1(omni.kit.test.AsyncTestCase):
         self.my_world.play()
         await omni.kit.app.get_app().next_update_async()
 
-        await init_robot_sim(self.dc, "/carter")
+        await init_robot_sim("/carter")
 
         for x in range(1, 5):
             forward_velocity = x * 0.15
@@ -155,7 +152,7 @@ class TestCarterv1(omni.kit.test.AsyncTestCase):
         self.my_world.play()
         await omni.kit.app.get_app().next_update_async()
 
-        await init_robot_sim(self.dc, "/carter")
+        await init_robot_sim("/carter")
         for x in range(1, 5):
             self.my_world.play()
             await omni.kit.app.get_app().next_update_async()
@@ -185,7 +182,7 @@ class TestCarterv1(omni.kit.test.AsyncTestCase):
         # Start Simulation and wait
         self.my_world.play()
         await omni.kit.app.get_app().next_update_async()
-        await init_robot_sim(self.dc, "/carter")
+        await init_robot_sim("/carter")
 
         for x in range(1, 4):
 
@@ -215,7 +212,7 @@ class TestCarterv1(omni.kit.test.AsyncTestCase):
         self.my_world.play()
         await omni.kit.app.get_app().next_update_async()
 
-        await init_robot_sim(self.dc, "/carter")
+        await init_robot_sim("/carter")
         forward_velocity = -0.1
         angular_velocity = -0.5
         og.Controller.attribute(self.graph_path + "/DifferentialController.inputs:linearVelocity").set(forward_velocity)

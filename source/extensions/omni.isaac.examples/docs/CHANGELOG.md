@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.7.15] - 2023-03-07
+### Changed
+- Removed the usage of the deprecated dynamic_control extension 
+
 ## [1.7.14] - 2023-02-02
 ### Changed
 - Updated path to the nucleus extension

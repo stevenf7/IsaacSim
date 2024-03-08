@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.4] - 2023-03-07
+### Changed
+- Removed the usage of the deprecated dynamic_control extension 
+
 ## [1.4.3] - 2024-02-12
 ### Changed
 - Removed IMU sensor from unitree.py (since the controller uses ground truth data)

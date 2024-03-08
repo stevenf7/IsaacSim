@@ -14,9 +14,9 @@ import omni.kit.app
 from omni.isaac.core.articulations.articulation_view import ArticulationView
 from omni.isaac.core.controllers.articulation_controller import ArticulationController
 from omni.isaac.core.prims._impl.single_prim_wrapper import _SinglePrimWrapper
+from omni.isaac.core.prims.rigid_prim_view import RigidPrimView
 from omni.isaac.core.simulation_context.simulation_context import SimulationContext
 from omni.isaac.core.utils.types import ArticulationAction, JointsState
-from omni.isaac.dynamic_control import _dynamic_control
 
 
 class Articulation(_SinglePrimWrapper):
@@ -81,7 +81,6 @@ class Articulation(_SinglePrimWrapper):
         articulation_controller: Optional[ArticulationController] = None,
         enable_dof_force_sensors: bool = False,
     ) -> None:
-        self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
         if SimulationContext.instance() is not None:
             self._backend = SimulationContext.instance().backend
             self._device = SimulationContext.instance().device
@@ -119,28 +118,8 @@ class Articulation(_SinglePrimWrapper):
         self._articulation_controller = articulation_controller
         if self._articulation_controller is None:
             self._articulation_controller = ArticulationController()
-        self._handles_initialized = False
-        self._handle = None
         _SinglePrimWrapper.__init__(self, view=self._articulation_view)
         return
-
-    @property
-    def articulation_handle(self) -> int:
-        """A handler to the articulation
-
-        The handler is a unique identifier used by the Dynamic Control extension to manage the articulation
-
-        Returns:
-            int: handle
-
-        Example:
-
-        .. code-block:: python
-
-            >>> prim.articulation_handle
-            1116691496961
-        """
-        return self._handle
 
     @property
     def handles_initialized(self) -> bool:
@@ -156,7 +135,7 @@ class Articulation(_SinglePrimWrapper):
             >>> prim.handles_initialized
             True
         """
-        return self._handles_initialized and self._articulation_view.is_physics_handle_valid()
+        return self._articulation_view.is_physics_handle_valid()
 
     @property
     def num_dof(self) -> int:
@@ -173,6 +152,22 @@ class Articulation(_SinglePrimWrapper):
             9
         """
         return self._articulation_view.num_dof
+
+    @property
+    def num_bodies(self) -> int:
+        """Number of articulation links
+
+        Returns:
+            int: number of links
+
+        Example:
+
+        .. code-block:: python
+
+            >>> prim.num_bodies
+            9
+        """
+        return self._articulation_view.num_bodies
 
     @property
     def dof_properties(self) -> np.ndarray:
@@ -243,9 +238,34 @@ class Articulation(_SinglePrimWrapper):
             >>> prim.dof_properties["upper"][8]  # or prim.dof_properties[8][3]
             0.04
         """
-        properties = self._dc_interface.get_articulation_dof_properties(self._handle)
+        dtype = np.dtype(
+            [
+                ("type", int),
+                ("hasLimits", bool),
+                ("lower", float),
+                ("upper", float),
+                ("driveMode", int),
+                ("maxVelocity", float),
+                ("maxEffort", float),
+                ("stiffness", float),
+                ("damping", float),
+            ]
+        )
+        properties = np.zeros(self.num_dof, dtype=dtype)
+        properties["type"] = self._articulation_view.get_dof_types()[0]
         properties["lower"] = self._articulation_view.get_dof_limits()[0][:, 0]
         properties["upper"] = self._articulation_view.get_dof_limits()[0][:, 1]
+        properties["hasLimits"] = properties["lower"] < properties["upper"]
+        properties["driveMode"] = self._articulation_view.get_drive_types()[0]
+        properties["maxEffort"] = self._articulation_view.get_max_efforts()[0]
+        properties["maxVelocity"] = self._articulation_view.get_joint_max_velocities()[0]
+        stiffnesses, dampings = self._articulation_view.get_gains()
+        properties["stiffness"] = stiffnesses[0]
+        properties["damping"] = dampings[0]
+        # properties = self._dc_interface.get_articulation_dof_properties(self._handle)
+        # properties["lower"] = self._articulation_view.get_dof_limits()[0][:, 0]
+        # properties["upper"] = self._articulation_view.get_dof_limits()[0][:, 1]
+        # print(properties)
         return properties
 
     @property
@@ -288,11 +308,8 @@ class Articulation(_SinglePrimWrapper):
             >>> prim.initialize()
         """
         carb.log_info("initializing handles for {}".format(self.prim_path))
-        self._handle = self._dc_interface.get_articulation(self.prim_path)
-        self._root_handle = self._dc_interface.get_articulation_root_body(self._handle)
-        self._articulation_controller.initialize(self._handle, self._articulation_view)
+        self._articulation_controller.initialize(self._articulation_view)
         self._articulation_view.initialize(physics_sim_view=physics_sim_view)
-        self._handles_initialized = True
         return
 
     def get_dof_index(self, dof_name: str) -> int:
@@ -337,9 +354,10 @@ class Articulation(_SinglePrimWrapper):
 
             >>> prim.disable_gravity()
         """
-        for body_index in range(self._dc_interface.get_articulation_body_count(self._handle)):
-            body = self._dc_interface.get_articulation_body(self._handle, body_index)
-            self._dc_interface.set_rigid_body_disable_gravity(body, True)
+
+        self._articulation_view.set_body_disable_gravity(
+            self._backend_utils.create_tensor_from_list([[True] * self.num_bodies], dtype="uint8")
+        )
         return
 
     def enable_gravity(self) -> None:
@@ -351,10 +369,31 @@ class Articulation(_SinglePrimWrapper):
 
             >>> prim.enable_gravity()
         """
-        for body_index in range(self._dc_interface.get_articulation_body_count(self._handle)):
-            body = self._dc_interface.get_articulation_body(self._handle, body_index)
-            self._dc_interface.set_rigid_body_disable_gravity(body, False)
+        self._articulation_view.set_body_disable_gravity(
+            self._backend_utils.create_tensor_from_list([[False] * self.num_bodies], dtype="uint8")
+        )
         return
+
+    def set_world_velocity(self, velocity: np.ndarray):
+        """Set the articulation root velocity
+
+        Args:
+            velocity (np.ndarray): linear and angular velocity to set the root prim to. Shape (6,).
+
+        """
+        velocity = self._backend_utils.expand_dims(velocity, 0)
+        self._articulation_view.set_velocities(velocities=velocity)
+        return
+
+    def get_world_velocity(self) -> np.ndarray:
+        """Get the articulation root velocity
+
+        Returns:
+            np.ndarray: current velocity of the the root prim. Shape (3,).
+
+        """
+        velocities = self._articulation_view.get_velocities()
+        return velocities[0]
 
     def set_joint_positions(
         self, positions: np.ndarray, joint_indices: Optional[Union[List, np.ndarray]] = None
@@ -554,7 +593,7 @@ class Articulation(_SinglePrimWrapper):
             >>> prim.get_measured_joint_efforts(joint_indices=np.array([7, 8]))
             [ 0.0003234  -0.00032044]
         """
-        if self._handle is None:
+        if self._articulation_view.is_physics_handle_valid() is None:
             raise Exception("handles are not initialized yet")
         if joint_indices is not None:
             joint_indices = self._backend_utils.expand_dims(joint_indices, 0)
@@ -588,7 +627,7 @@ class Articulation(_SinglePrimWrapper):
             >>> prim.get_applied_joint_efforts(joint_indices=np.array([7, 8]))
             [0.  0.]
         """
-        if self._handle is None:
+        if self._articulation_view.is_physics_handle_valid() is None:
             raise Exception("handles are not initialized yet")
         if joint_indices is not None:
             joint_indices = self._backend_utils.expand_dims(joint_indices, 0)
@@ -654,7 +693,7 @@ class Articulation(_SinglePrimWrapper):
             [[ 5.1680198e-03 -9.7754575e-02 -9.7093947e-02 -8.4155556e-12 -1.2910691e-12 -1.9347857e-11]
              [-5.1910793e-03  9.7588278e-02 -9.7106412e-02  8.4155573e-12  1.2910637e-12 -1.9347855e-11]]
         """
-        if self._handle is None:
+        if self._articulation_view.is_physics_handle_valid() is None:
             raise Exception("handles are not initialized yet")
         if joint_indices is not None:
             joint_indices = self._backend_utils.expand_dims(joint_indices, 0)

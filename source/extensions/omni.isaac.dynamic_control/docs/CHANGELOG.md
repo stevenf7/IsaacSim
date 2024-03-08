@@ -1,4 +1,8 @@
 # Changelog
+## [1.3.4] - 2023-03-07
+### Changed
+- Deprecated the extension and removed its usage in other extensions in python
+
 ## [1.3.3] - 2024-03-06
 ### Changed
 - Updated path to ur10

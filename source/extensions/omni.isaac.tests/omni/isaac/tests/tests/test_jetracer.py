@@ -15,8 +15,8 @@ import numpy as np
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-from omni.isaac.core.utils.stage import open_stage_async
-from omni.isaac.dynamic_control import _dynamic_control
+from omni.isaac.core.prims.rigid_prim import RigidPrim
+from omni.isaac.core.utils.stage import get_current_stage, open_stage_async
 from omni.isaac.nucleus import get_assets_root_path_async
 from pxr import Usd
 
@@ -28,7 +28,6 @@ class TestJetRacer(omni.kit.test.AsyncTestCase):
         self._timeline = omni.timeline.get_timeline_interface()
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        self.dc = _dynamic_control.acquire_dynamic_control_interface()
 
         self._physics_rate = 60
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
@@ -65,11 +64,12 @@ class TestJetRacer(omni.kit.test.AsyncTestCase):
 
         # get the jetracer
         vehicle_path = "/World/Jetracer/Vehicle"
-        self.chassis = self.dc.get_rigid_body(vehicle_path)
-        self.starting_pos = np.array(self.dc.get_rigid_body_pose(self.chassis).p)
+        self.rigid_prim = RigidPrim(vehicle_path)
+        self.rigid_prim._rigid_prim_view.initialize()
+        self.starting_pos, _ = self.rigid_prim.get_world_pose()
 
         # apply some accel
-        stage = omni.usd.get_context().get_stage()
+        stage = get_current_stage()
         self.accelerator = stage.GetPrimAtPath(vehicle_path).GetAttribute("physxVehicleController:accelerator")
         self.left_steer = stage.GetPrimAtPath(vehicle_path).GetAttribute("physxVehicleController:steerLeft")
         self.accelerator.Set(1)
@@ -78,9 +78,11 @@ class TestJetRacer(omni.kit.test.AsyncTestCase):
         for frame in range(100):
             await omni.kit.app.get_app().next_update_async()
 
-        self.current_pos = np.array(self.dc.get_rigid_body_pose(self.chassis).p)
+        self.current_pos, _ = self.rigid_prim.get_world_pose()
         delta = np.linalg.norm(self.current_pos - self.starting_pos)
         print("Diff is ", delta)
+        # TODO: the asset seems broken, when it is played in Isaac sim it vanishes
+        # The RigidPrim constructor seems to be adding something that stabilizes it but breaks this assertion
         self.assertTrue(delta > 20)
 
         pass

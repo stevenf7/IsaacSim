@@ -15,26 +15,19 @@ import omni.graph.core as og
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 import usdrt.Sdf
+from omni.isaac.core.articulations.articulation import Articulation
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
 from omni.isaac.core.utils.rotations import quat_to_euler_angles
 from omni.isaac.core.utils.stage import open_stage_async
-from omni.isaac.dynamic_control import _dynamic_control
-from omni.isaac.dynamic_control import utils as dc_utils
 from omni.isaac.nucleus import get_assets_root_path_async
 
 
-async def init_robot_sim(dc, art_path, graph_path="/ActionGraph"):
-
-    art = dc.get_articulation(art_path)
-    chassis = dc.get_articulation_root_body(art)
-    starting_pos = dc.get_rigid_body_pose(chassis)
-    starting_pos.p = [0, 0, 0.1]
-    starting_pos.r = [0, 0, 0, 1]
-    # reset pose
-    dc.set_rigid_body_pose(chassis, starting_pos)
-    # reset velocity
-    dc.set_rigid_body_linear_velocity(chassis, (0, 0, 0))
-    dc.set_rigid_body_angular_velocity(chassis, (0, 0, 0))
+async def init_robot_sim(art_path, graph_path="/ActionGraph"):
+    art = Articulation(art_path)
+    art._articulation_view.initialize()
+    # reset
+    art.set_world_pose(position=[0, 0, 0.1], orientation=[0, 0, 0, 1])
+    art.set_world_velocity([0, 0, 0, 0, 0, 0])
     # reset controller
     og.Controller.attribute(graph_path + "/DifferentialController.inputs:linearVelocity").set(0)
     og.Controller.attribute(graph_path + "/DifferentialController.inputs:angularVelocity").set(0)

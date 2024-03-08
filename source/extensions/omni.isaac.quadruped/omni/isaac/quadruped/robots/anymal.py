@@ -201,8 +201,6 @@ class Anymal(Articulation):
                 self.action = self._policy(obs).detach().view(-1).numpy()
             self._previous_action = self.action.copy()
 
-        self._dc_interface.wake_up_articulation(self._handle)
-
         # joint_state from the DC interface now has the order of
         # 'FL_hip_joint',   'FR_hip_joint',   'RL_hip_joint',   'RR_hip_joint',
         # 'FL_thigh_joint', 'FR_thigh_joint', 'RL_thigh_joint', 'RR_thigh_joint',
@@ -224,14 +222,14 @@ class Anymal(Articulation):
 
         # finally convert controller order to DC order for command torque
         torque_reorder = np.array(joint_torques.reshape([4, 3]).T.flat)
-        self._dc_interface.set_articulation_dof_efforts(self._handle, torque_reorder)
+        self.set_joint_efforts(torque_reorder)
 
         self._policy_counter += 1
 
     def initialize(self, physics_sim_view=None) -> None:
         """[summary]
 
-        initialize the dc interface, set up drive mode
+        initialize the articulation interface, set up drive mode
         """
         super().initialize(physics_sim_view=physics_sim_view)
         self.get_articulation_controller().set_effort_modes("force")

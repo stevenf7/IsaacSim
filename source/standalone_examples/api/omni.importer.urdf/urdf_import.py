@@ -92,7 +92,7 @@ art.initialize()
 if not art.handles_initialized:
     print(f"{stage_path} is not an articulation")
 else:
-    print(f"Got articulation {stage_path} with handle {art.articulation_handle}")
+    print(f"Got articulation {stage_path}")
 
 # perform simulation
 for frame in range(100):

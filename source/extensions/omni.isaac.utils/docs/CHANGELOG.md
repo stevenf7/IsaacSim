@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.1] - 2023-03-07
+### Changed
+- Removed the usage of the deprecated dynamic_control extension 
+
 ## [1.0.0] - 2024-02-09
 ### Changed
 - Moved menu items to omni.isaac.menu

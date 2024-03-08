@@ -20,7 +20,6 @@ from omni.isaac.core import World
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
 from omni.isaac.core.utils.rotations import quat_to_euler_angles
 from omni.isaac.core.utils.stage import open_stage_async
-from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.nucleus import get_assets_root_path_async
 
 from .robot_helpers import init_robot_sim, setup_robot_og
@@ -31,8 +30,6 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         self._timeline = omni.timeline.get_timeline_interface()
-
-        self.dc = _dynamic_control.acquire_dynamic_control_interface()
 
         self._assets_root_path = await get_assets_root_path_async()
         if self._assets_root_path is None:
@@ -165,8 +162,10 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
     async def test_check_goal_2d(self):
         # Start Simulation and wait
         self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
 
-        await init_robot_sim(self.dc, "/nova_carter")
+        await init_robot_sim("/nova_carter")
+        await omni.kit.app.get_app().next_update_async()
 
         # Get position and rotation data provided to node, then set target equal to pos/rot and check for reachedGoal booleans
         pos = og.Controller.attribute(self.graph_path + "/GetTranslation.outputs:translation").get()
@@ -206,7 +205,7 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
 
-        await init_robot_sim(self.dc, "/nova_carter")
+        await init_robot_sim("/nova_carter")
 
         # allow time for carter to move from origin and start driving
         for i in range(20):

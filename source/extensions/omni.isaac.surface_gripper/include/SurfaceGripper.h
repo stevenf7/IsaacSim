@@ -11,8 +11,9 @@
 
 #include "omni/isaac/utils/Math.h"
 
+#include <omni/physics/tensors/BodyTypes.h>
+
 #include <DynamicControl.h>
-#include <DynamicControlTypes.h>
 
 namespace omni
 {
@@ -24,6 +25,7 @@ namespace surface_gripper
 
 using namespace omni::isaac::dynamic_control;
 using namespace omni::isaac::utils::math;
+using omni::physics::tensors::Transform;
 
 
 /**
@@ -34,7 +36,7 @@ struct SurfaceGripperProperties
 {
     std::string d6JointPath; //! USD path of the joint
     std::string parentPath; //! parent body that  contains the joint
-    DcTransform offset; //! offset from parent body to joint point of contact in vacuum pressure
+    Transform offset; //! offset from parent body to joint point of contact in vacuum pressure
     float gripThreshold; //!  How far from an object it allows the gripper to lock in. Object will be pulled in this
                          //!  distance when gripper is closed
     float forceLimit; //! gripper breaking force
@@ -61,10 +63,9 @@ public:
      * @param[in] dc.
      * @param[in] props.
      */
-    SurfaceGripper(DynamicControl* dc)
+    SurfaceGripper()
     {
-        mDc = dc;
-
+        mDc = carb::getCachedInterface<omni::isaac::dynamic_control::DynamicControl>();
         mJointProperties.body0 = 0;
         mJointProperties.axes = kDcAxisNone;
         mJointProperties.jointType = DcJointType::eSpherical;
@@ -187,7 +188,8 @@ public:
             return false;
         }
         DcTransform t_0 = mDc->getRigidBodyPose(rb_0);
-        DcTransform _t_0 = (t_0 * mProps.offset);
+        DcTransform* offsetPtr = reinterpret_cast<DcTransform*>(&mProps.offset);
+        DcTransform _t_0 = (t_0 * (*offsetPtr));
         carb::Float3 dir = getBasisVectorX(_t_0.r);
         // CARB_LOG_WARN("gripper position: (%f, %f, %f)", p.x, p.y, p.z);
         // CARB_LOG_WARN("gripper direction: (%f, %f, %f)", dir.x, dir.y, dir.z);
@@ -222,7 +224,8 @@ public:
                 mJointProperties.body0 = rb_0;
                 mJointProperties.body1 = hit.rigidBody;
                 mDc->setRigidBodyDisableGravity(mJointProperties.body1, mProps.disableGravity);
-                mJointProperties.pose0 = mProps.offset;
+                DcTransform* offsetPtr = reinterpret_cast<DcTransform*>(&mProps.offset);
+                mJointProperties.pose0 = *offsetPtr;
                 mJointProperties.pose1 = t_1;
                 mJointProperties.axes = kDcAxisAll;
 

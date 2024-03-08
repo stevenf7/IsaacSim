@@ -838,9 +838,9 @@ class Extension(omni.ext.IExt):
 
             label = f"{self.dof_names[i]}"
             tooltip = f"DOF {i} Position:"
-            if self.types[i] == 1:  # _dynamic_control.DOF_ROTATION:
+            if self.types[i] == 1:
                 tooltip += " Angle (rad)"
-            elif self.types[i] == 2:  # _dynamic_control.DOF_TRANSLATION:
+            elif self.types[i] == 2:
                 tooltip += " Distance"
                 if units < 1.0 and units > 0.005:
                     tooltip += " (cm)"

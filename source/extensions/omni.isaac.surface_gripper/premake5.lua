@@ -38,6 +38,7 @@ project_ext_bindings ({
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/source/extensions/omni.isaac.surface_gripper/include",
         "%{root}/source/extensions/omni.isaac.dynamic_control/include",
+        "%{root}/_build/target-deps/omni_physics/include",
     }
 
     libdirs {
