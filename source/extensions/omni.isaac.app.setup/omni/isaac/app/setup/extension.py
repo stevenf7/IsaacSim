@@ -91,7 +91,7 @@ class CreateSetupExtension(omni.ext.IExt):
 
         self.__setup_window_task = asyncio.ensure_future(self.__dock_windows())
         self.__setup_property_window = asyncio.ensure_future(self.__property_window())
-        self.__enable_ros_bridge()
+        asyncio.ensure_future(self.__enable_ros_bridge())
         self.__menu_update()
         self.__add_app_icon(ext_id)
         self.__await_new_scene = asyncio.ensure_future(self.__new_stage())
@@ -129,11 +129,10 @@ class CreateSetupExtension(omni.ext.IExt):
 
         from omni.kit.viewport.utility import get_active_viewport, next_viewport_frame_async
 
-        for i in range(10):
-            await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
         if omni.usd.get_context().can_open_stage():
             stage_templates.new_stage(template=None)
-        # 10 frame delay to allow Layout
+        await omni.kit.app.get_app().next_update_async()
         await next_viewport_frame_async(get_active_viewport())
         await omni.kit.app.get_app().next_update_async()
 
@@ -492,10 +491,12 @@ Type=Application
 StartupWMClass=IsaacSim"""
                     )
 
-    def __enable_ros_bridge(self):
+    async def __enable_ros_bridge(self):
         ros_bridge_name = self._settings.get("isaac/startup/ros_bridge_extension")
         if ros_bridge_name is not None and len(ros_bridge_name):
+            await omni.kit.app.get_app().next_update_async()
             self._ext_manager.set_extension_enabled_immediate(ros_bridge_name, True)
+            await omni.kit.app.get_app().next_update_async()
 
     def on_shutdown(self):
         omni.kit.menu.utils.remove_layout(self._menu_layout)
