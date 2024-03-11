@@ -44,18 +44,45 @@ ARG ISAACSIM_VERSION=develop
 
 FROM gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/isaac-sim:latest-${ISAACSIM_VERSION} as isaac-sim
 
+
+# remove old isaac sim files
+RUN rm -rf /isaac-sim
+ARG ISAACSIM_PATH=_build/linux-x86_64/release_container
+# Copy dev Isaac Sim files
+COPY ${ISAACSIM_PATH} /isaac-sim
+
+# Remove duplicate files and make them symlinks
+RUN apt-get update && apt-get install -y rdfind
+RUN rdfind -makesymlinks true /isaac-sim
+
+# Add Tracy profiler dependencies
+RUN apt-get install -y libglfw3 libfreetype6 libdbus-1-3
+
+# multi stage build to remove all cached data and reduce image size
+# this effectively flattens all layers
+
+FROM scratch
+COPY --from=isaac-sim / /
+
 # ENV OMNI_SERVER http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0
 ARG OMNI_SERVER_ENV omniverse://isaac-dev.ov.nvidia.com
 ENV OMNI_SERVER omniverse://isaac-dev.ov.nvidia.com
 # ENV OMNI_USER admin
 # ENV OMNI_PASS admin
 ENV MIN_DRIVER_VERSION 525.60.11
+ENV VK_DRIVER_FILES "/etc/vulkan/icd.d/nvidia_icd.json"
+ENV NVIDIA_VISIBLE_DEVICES=all NVIDIA_DRIVER_CAPABILITIES=all
 
-# Copy dev Isaac Sim files
-RUN rm -rf /isaac-sim
-ARG ISAACSIM_PATH=_build/linux-x86_64/release_container
-COPY ${ISAACSIM_PATH} /isaac-sim
-
+EXPOSE 47995-48012/udp \
+       47995-48012/tcp \
+       49000-49007/udp \
+       49000-49007/tcp \
+       49100/tcp \
+       8011/tcp \
+       8012/tcp \
+       8211/tcp \
+       8899/tcp \
+       8891/tcp
 
 WORKDIR /isaac-sim
 
