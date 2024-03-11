@@ -184,9 +184,11 @@ featuredExts = []
 [settings]
 # MGPU is always on, you can turn it from the settings, and force this off to save even more resource if you
 # only want to use a single GPU on your MGPU system
-# False for Isaac Sim
 renderer.multiGpu.enabled = true
 renderer.multiGpu.autoEnable = true
+# This setting forces all GPUs to copy their render results to the main GPU.
+# This legacy setting should not be needed anymore
+app.gatherRenderResults = false
 'rtx-transient'.resourcemanager.enableTextureStreaming = true
 # app.hydra.aperture.conform = 4 # in 105.1 pixels are square by default
 app.hydraEngine.waitIdle = false
