@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.10.0] - 2024-03-05
+### Changed
+- Improved Image publisher performance
+
 ## [2.9.3] - 2024-03-05
 ### Fixed
 - RGB being published twice per frame

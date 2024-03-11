@@ -90,7 +90,8 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
 
         import rclpy
 
-        viewport_window = omni.kit.viewport.utility.get_active_viewport_window()
+        viewport_api = omni.kit.viewport.utility.get_active_viewport()
+        render_product_path = viewport_api.get_render_product_path()
         try:
             og.Controller.edit(
                 {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
@@ -108,39 +109,39 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
                         ("CameraInfoPublish", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
                     ],
                     og.Controller.Keys.SET_VALUES: [
-                        ("RGBPublish.inputs:viewport", viewport_window.title),
+                        ("RGBPublish.inputs:renderProductPath", render_product_path),
                         ("RGBPublish.inputs:topicName", "rgb"),
                         ("RGBPublish.inputs:type", "rgb"),
                         ("RGBPublish.inputs:resetSimulationTimeOnStop", True),
-                        ("DepthPublish.inputs:viewport", viewport_window.title),
+                        ("DepthPublish.inputs:renderProductPath", render_product_path),
                         ("DepthPublish.inputs:topicName", "depth"),
                         ("DepthPublish.inputs:type", "depth"),
                         ("DepthPublish.inputs:resetSimulationTimeOnStop", True),
-                        ("DepthPclPublish.inputs:viewport", viewport_window.title),
+                        ("DepthPclPublish.inputs:renderProductPath", render_product_path),
                         ("DepthPclPublish.inputs:topicName", "depth_pcl"),
                         ("DepthPclPublish.inputs:type", "depth_pcl"),
                         ("DepthPclPublish.inputs:resetSimulationTimeOnStop", True),
-                        ("InstancePublish.inputs:viewport", viewport_window.title),
+                        ("InstancePublish.inputs:renderProductPath", render_product_path),
                         ("InstancePublish.inputs:topicName", "instance_segmentation"),
                         ("InstancePublish.inputs:type", "instance_segmentation"),
                         ("InstancePublish.inputs:resetSimulationTimeOnStop", True),
-                        ("SemanticPublish.inputs:viewport", viewport_window.title),
+                        ("SemanticPublish.inputs:renderProductPath", render_product_path),
                         ("SemanticPublish.inputs:topicName", "semantic_segmentation"),
                         ("SemanticPublish.inputs:type", "semantic_segmentation"),
                         ("SemanticPublish.inputs:resetSimulationTimeOnStop", True),
-                        ("Bbox2dTightPublish.inputs:viewport", viewport_window.title),
+                        ("Bbox2dTightPublish.inputs:renderProductPath", render_product_path),
                         ("Bbox2dTightPublish.inputs:topicName", "bbox_2d_tight"),
                         ("Bbox2dTightPublish.inputs:type", "bbox_2d_tight"),
                         ("Bbox2dTightPublish.inputs:resetSimulationTimeOnStop", True),
-                        ("Bbox2dLoosePublish.inputs:viewport", viewport_window.title),
+                        ("Bbox2dLoosePublish.inputs:renderProductPath", render_product_path),
                         ("Bbox2dLoosePublish.inputs:topicName", "bbox_2d_loose"),
                         ("Bbox2dLoosePublish.inputs:type", "bbox_2d_loose"),
                         ("Bbox2dLoosePublish.inputs:resetSimulationTimeOnStop", True),
-                        ("Bbox3dPublish.inputs:viewport", viewport_window.title),
+                        ("Bbox3dPublish.inputs:renderProductPath", render_product_path),
                         ("Bbox3dPublish.inputs:topicName", "bbox_3d"),
                         ("Bbox3dPublish.inputs:type", "bbox_3d"),
                         ("Bbox3dPublish.inputs:resetSimulationTimeOnStop", True),
-                        ("CameraInfoPublish.inputs:viewport", viewport_window.title),
+                        ("CameraInfoPublish.inputs:renderProductPath", render_product_path),
                         ("CameraInfoPublish.inputs:topicName", "camera_info"),
                         ("CameraInfoPublish.inputs:type", "camera_info"),
                         ("CameraInfoPublish.inputs:resetSimulationTimeOnStop", True),
@@ -325,7 +326,8 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
 
         import rclpy
 
-        viewport_window = omni.kit.viewport.utility.get_active_viewport_window()
+        viewport_api = omni.kit.viewport.utility.get_active_viewport()
+        render_product_path = viewport_api.get_render_product_path()
 
         try:
             og.Controller.edit(
@@ -340,23 +342,23 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
                         ("SemanticPublish", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
                     ],
                     og.Controller.Keys.SET_VALUES: [
-                        ("InstancePublish.inputs:viewport", viewport_window.title),
+                        ("InstancePublish.inputs:renderProductPath", render_product_path),
                         ("InstancePublish.inputs:topicName", "instance_segmentation"),
                         ("InstancePublish.inputs:type", "instance_segmentation"),
                         ("InstancePublish.inputs:resetSimulationTimeOnStop", True),
-                        ("SemanticPublish.inputs:viewport", viewport_window.title),
+                        ("SemanticPublish.inputs:renderProductPath", render_product_path),
                         ("SemanticPublish.inputs:topicName", "semantic_segmentation"),
                         ("SemanticPublish.inputs:type", "semantic_segmentation"),
                         ("SemanticPublish.inputs:resetSimulationTimeOnStop", True),
-                        ("Bbox2dTightPublish.inputs:viewport", viewport_window.title),
+                        ("Bbox2dTightPublish.inputs:renderProductPath", render_product_path),
                         ("Bbox2dTightPublish.inputs:topicName", "bbox_2d_tight"),
                         ("Bbox2dTightPublish.inputs:type", "bbox_2d_tight"),
                         ("Bbox2dTightPublish.inputs:resetSimulationTimeOnStop", True),
-                        ("Bbox2dLoosePublish.inputs:viewport", viewport_window.title),
+                        ("Bbox2dLoosePublish.inputs:renderProductPath", render_product_path),
                         ("Bbox2dLoosePublish.inputs:topicName", "bbox_2d_loose"),
                         ("Bbox2dLoosePublish.inputs:type", "bbox_2d_loose"),
                         ("Bbox2dLoosePublish.inputs:resetSimulationTimeOnStop", True),
-                        ("Bbox3dPublish.inputs:viewport", viewport_window.title),
+                        ("Bbox3dPublish.inputs:renderProductPath", render_product_path),
                         ("Bbox3dPublish.inputs:topicName", "bbox_3d"),
                         ("Bbox3dPublish.inputs:type", "bbox_3d"),
                         ("Bbox3dPublish.inputs:resetSimulationTimeOnStop", True),
@@ -606,7 +608,8 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
 
         import rclpy
 
-        viewport_window = omni.kit.viewport.utility.get_active_viewport_window()
+        viewport_api = omni.kit.viewport.utility.get_active_viewport()
+        render_product_path = viewport_api.get_render_product_path()
 
         try:
             og.Controller.edit(
@@ -617,7 +620,7 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
                         ("Bbox3dPublish", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
                     ],
                     og.Controller.Keys.SET_VALUES: [
-                        ("Bbox3dPublish.inputs:viewport", viewport_window.title),
+                        ("Bbox3dPublish.inputs:renderProductPath", render_product_path),
                         ("Bbox3dPublish.inputs:topicName", "bbox_3d"),
                         ("Bbox3dPublish.inputs:type", "bbox_3d"),
                         ("Bbox3dPublish.inputs:resetSimulationTimeOnStop", True),

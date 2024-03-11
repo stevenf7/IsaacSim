@@ -9,6 +9,8 @@
 
 #include <carb/graphics/GraphicsTypes.h>
 #include <carb/profiler/Profile.h>
+#include <carb/tasking/ITasking.h>
+#include <carb/tasking/TaskingUtils.h>
 
 #include <include/Ros2Node.h>
 #include <omni/isaac/utils/Buffer.h>
@@ -69,14 +71,19 @@ public:
     {
         CARB_PROFILE_ZONE(1, "publish image function");
         auto& state = db.perInstanceState<OgnROS2PublishImage>();
+        auto tasking = carb::getCachedInterface<carb::tasking::ITasking>();
+
+        {
+            CARB_PROFILE_ZONE(1, "wait for previous publish");
+            // wait for last message to publish before starting next
+            state.mTasks.wait();
+        }
         // Check if subscription count is 0
         if (!mPublishWithoutVerification && !state.mPublisher.get()->get_subscription_count())
         {
             return false;
         }
 
-        auto zoneID = CARB_PROFILE_BEGIN(5, "Generate message header and buffer");
-        state.mMessage = state.mFactory->CreateImageMessage();
 
         state.mMessage->fillHeader(db.inputs.timeStamp(), state.mFrameId);
 
@@ -90,11 +97,10 @@ public:
         state.mMessage->generateBuffer(db.inputs.height(), db.inputs.width(), encoding);
         size_t totalBytes = state.mMessage->getTotalBytes();
         void* dataPtr = state.mMessage->getDataPtr();
-        CARB_PROFILE_END(zoneID);
 
         if (db.inputs.cudaDeviceIndex() == -1)
         {
-            CARB_PROFILE_ZONE(2, "Data on host");
+            CARB_PROFILE_ZONE(1, "Data on host");
             if (db.inputs.dataPtr() != 0 && totalBytes == db.inputs.bufferSize())
             {
                 // Data is on host as ptr, buffer size matches
@@ -116,13 +122,17 @@ public:
         }
         else
         {
-            CARB_PROFILE_ZONE(3, "data on Cuda device");
+
             omni::isaac::utils::ScopedDevice(db.inputs.cudaDeviceIndex());
 
             if (db.inputs.bufferSize() == 0)
             {
-                omni::isaac::utils::ScopedCudaTextureObject srcTexObj(
-                    reinterpret_cast<cudaMipmappedArray_t>(db.inputs.dataPtr()), 0);
+                CARB_PROFILE_ZONE(1, "data in gpu texture");
+
+
+                cudaArray_t levelArray = 0;
+                CUDA_CHECK(cudaGetMipmappedArrayLevel(
+                    &levelArray, reinterpret_cast<cudaMipmappedArray_t>(db.inputs.dataPtr()), 0));
                 switch (static_cast<carb::graphics::Format>(db.inputs.format()))
                 {
                 case carb::graphics::Format::eR32_SFLOAT:
@@ -133,13 +143,10 @@ public:
                     }
                     else
                     {
-                        state.mBuffer.setDevice(db.inputs.cudaDeviceIndex());
-                        state.mBuffer.resize(db.inputs.width() * db.inputs.height() * sizeof(float));
-                        textureFloatCopyToRawBuffer(
-                            srcTexObj, state.mBuffer.data(), db.inputs.width(), db.inputs.height(), 0);
+                        CUDA_CHECK(cudaMemcpy2DFromArray(dataPtr, db.inputs.width() * sizeof(float), levelArray, 0, 0,
+                                                         db.inputs.width() * sizeof(float), db.inputs.height(),
+                                                         cudaMemcpyDeviceToHost));
                         CUDA_CHECK(cudaGetLastError());
-                        auto src = reinterpret_cast<void*>(state.mBuffer.data());
-                        CUDA_CHECK(cudaMemcpy(dataPtr, src, totalBytes, cudaMemcpyDeviceToHost));
                     }
                     break;
 
@@ -151,12 +158,19 @@ public:
             }
             else
             {
+                CARB_PROFILE_ZONE(1, "data in cuda memory");
                 CUDA_CHECK(cudaMemcpy(dataPtr, reinterpret_cast<void*>(db.inputs.dataPtr()), db.inputs.bufferSize(),
                                       cudaMemcpyDeviceToHost));
             }
         }
-        CARB_PROFILE_ZONE(4, "image publisher publish");
-        state.mPublisher.get()->publish(state.mMessage->ptr());
+
+        tasking->addTask(carb::tasking::Priority::eHigh, state.mTasks,
+                         [&state]
+                         {
+                             CARB_PROFILE_ZONE(1, "image publisher publish");
+                             state.mPublisher.get()->publish(state.mMessage->ptr());
+                         });
+
 
         return true;
     }
@@ -178,7 +192,7 @@ private:
     std::shared_ptr<Ros2ImageMessage> mMessage = nullptr;
 
     std::string mFrameId = "sim_camera";
-    omni::isaac::utils::DeviceBuffer mBuffer;
+    carb::tasking::TaskGroup mTasks;
 };
 
 REGISTER_OGN_NODE()

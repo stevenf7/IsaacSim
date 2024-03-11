@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.9.3"
+version = "2.10.0"
 category = "Simulation"
 title = "ROS2 Bridge"
 description = "ROS2 Bridge"
@@ -61,9 +61,15 @@ include = ["*.ogn", "*.py", "*.toml"]
 exclude = ["Ogn*Database.py"]
 
 [[test]]
+
+timeout=900
 dependencies = [
     "omni.graph.ui",
     "omni.isaac.wheeled_robots",
+]
+
+args = [
+    "--/exts/omni.isaac.ros2_bridge/publish_without_verification=1",
 ]
 
 stdoutFailPatterns.exclude = [

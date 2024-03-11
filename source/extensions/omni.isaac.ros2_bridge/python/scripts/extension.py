@@ -117,7 +117,7 @@ class ROS2BridgeExtension(omni.ext.IExt):
             name=f"{rv}{BRIDGE_PREFIX}PublishImage",
             node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
             annotators=[
-                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(rv + "ExportRawArray"),
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(rv + "Ptr"),
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                     "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
                 ),
