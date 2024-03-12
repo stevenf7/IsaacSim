@@ -7,4 +7,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .extension import *
+EXTENSION_TITLE = "Gain Tuner"
+
+EXTENSION_DESCRIPTION = "Auto Tuner for Articulation PD Gains"
