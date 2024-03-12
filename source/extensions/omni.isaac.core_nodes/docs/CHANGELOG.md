@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.13.0] - 2024-03-11
+### Added
+- Isaac Get Wold Pose Node
+
 ## [1.12.3] - 2024-03-04
 ### Updated
 - Updated omnigraph nodes to use per instance state instead of internal state
