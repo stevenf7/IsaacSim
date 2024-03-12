@@ -1,0 +1,59 @@
+{
+    "ROS2Subscriber": {
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",
+        "description": [
+            "This node subscribes to any existing ROS2 message"
+        ],
+        "metadata": {
+            "uiName": "ROS2 Subscriber"
+        },
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacRos2:subscriber",
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "The input execution port."
+            },
+            "context": {
+                "type": "uint64",
+                "description": "ROS2 context handle, Default of zero will use the default global context",
+                "default" : 0
+            },
+            "nodeNamespace": {
+                "type": "string",
+                "description": "Namespace of ROS2 Node, prepends any published/subscribed topic by the node namespace",
+                "default": ""
+            },
+            "topicName": {
+                "type": "string",
+                "description": "Name of ROS2 Topic",
+                "default": "topic"
+            },
+            "queueSize": {
+                "type": "uint64",
+                "description": "The number of messages to queue up before throwing some away, in case messages are collected faster than they can be processed",
+                "default": 10
+            },
+            "messagePackage": {
+                "type": "string",
+                "description": "Message package (e.g.: std_msgs for std_msgs/msg/Int32)"
+            },
+            "messageSubfolder": {
+                "type": "string",
+                "description": "Message subfolder (e.g.: msg for std_msgs/msg/Int32)",
+                "default": "msg"
+            },
+            "messageName": {
+                "type": "string",
+                "description": "Message name (e.g.: Int32 for std_msgs/msg/Int32)"
+            }
+        },
+        "outputs": {
+            "execOut": {
+                "type": "execution",
+                "description": "Output execution triggers when a new message is received"
+            }
+        }
+    }
+}

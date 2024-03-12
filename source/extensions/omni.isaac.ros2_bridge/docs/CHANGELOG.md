@@ -1,8 +1,9 @@
 # Changelog
 
-## [2.10.0] - 2024-03-05
+## [2.10.0] - 2024-03-11
 ### Changed
 - Improved Image publisher performance
+- Generic ROS2 Subscriber node
 
 ## [2.9.3] - 2024-03-05
 ### Fixed

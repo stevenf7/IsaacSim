@@ -19,4 +19,5 @@ from .test_pose_tree import *
 from .test_rclpy import *
 from .test_rtx_sensor import *
 from .test_semantic_labels import *
+from .test_subscriber import *
 from .test_subscribers import *
