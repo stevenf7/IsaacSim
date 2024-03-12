@@ -57,7 +57,7 @@ def run_dope_test(test_folder, output_folder):
     for gt_obj, op_obj in zip(gt_objects, op_objects):
         if not within_threshold(gt_obj["location"], op_obj["location"], 10):
             raise Exception(
-                f"Distance between groundtruth location and output location exceeds threshold. (location) {gt_pt} and {op_pt}"
+                f"Distance between groundtruth location and output location exceeds threshold. (location) {gt_obj['location']} and {op_obj['location']}"
             )
         for gt_pt, op_pt in zip(gt_obj["projected_cuboid"], op_obj["projected_cuboid"]):
             if not within_threshold(gt_pt, op_pt, 20.0):

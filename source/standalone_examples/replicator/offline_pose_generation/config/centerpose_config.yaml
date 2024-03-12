@@ -9,8 +9,10 @@ CONFIG:
 # prim_type is determined by the usd file. 
 # To determine, open the usd file in Isaac Sim and see the prim path. If you load it in /World, the path will be /World/<prim_type>
 OBJECTS_TO_GENERATE:
-- { part_name: 003_cracker_box, num: 1, prim_type: _03_cracker_box }
-- { part_name: 035_power_drill, num: 1, prim_type: _35_power_drill }
+- { part_name: SM_Mug_A2, num: 1, prim_type: SM_Mug_A2 }
+- { part_name: SM_Mug_B1, num: 1, prim_type: SM_Mug_B1 }
+- { part_name: SM_Mug_C1, num: 1, prim_type: SM_Mug_C1 }
+- { part_name: SM_Mug_D1, num: 1, prim_type: SM_Mug_D1 }
 
 # Maximum force component to apply to objects to keep them in motion
 FORCE_RANGE: 30
@@ -74,6 +76,16 @@ OBJECT_SCALE:
 - 1
 OBJECT_MASS: 1
 
+TRAIN_PART_SCALE: # Scale for the training objects 
+- 0.01
+- 0.01
+- 0.01
+
+# Asset paths 
+DISTRACTOR_ASSET_PATH: /Isaac/Props/YCB/Axis_Aligned/
+TRAIN_ASSET_PATH: /Isaac/Props/Mugs/
+DOME_TEXTURE_PATH: /NVIDIA/Assets/Skies/ 
+
 # MESH dataset
 NUM_MESH_SHAPES: 500
 NUM_MESH_OBJECTS: 200
@@ -91,7 +103,7 @@ MESH_FILENAMES:
 - 019_pitcher_base
 - 021_bleach_cleanser
 - 024_bowl
-- 025_mug
+# - 025_mug # Do not add YCB Mug as distractor if training objects are already mugs 
 - 035_power_drill
 - 036_wood_block
 - 037_scissors

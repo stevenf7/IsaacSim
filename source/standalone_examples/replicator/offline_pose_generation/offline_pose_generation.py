@@ -41,8 +41,8 @@ parser.add_argument("--endpoint", type=str, default=None, help="s3 endpoint to w
 parser.add_argument(
     "--writer",
     type=str,
-    default="centerpose",
-    help="Which writer to use to output data. Choose between: [YCBVideo, DOPE]",
+    default="dope",
+    help="Which writer to use to output data. Choose between: [DOPE, CenterPose, YCBVideo]",
 )
 parser.add_argument("--debug", action="store_true", help="Write debug images for the writer.")
 parser.add_argument(
@@ -65,7 +65,10 @@ CONFIG_FILES = {
     "ycbvideo": "config/ycb_config.yaml",
     "centerpose": "config/centerpose_config.yaml",
 }
-TEST_CONFIG_FILES = {"dope": "tests/dope/test_dope_config.yaml", "ycbvideo": "tests/ycbvideo/test_ycb_config.yaml"}
+TEST_CONFIG_FILES = {
+    "dope": "pose_tests/dope/test_dope_config.yaml",
+    "ycbvideo": "pose_tests/ycbvideo/test_ycb_config.yaml",
+}
 
 # Path to config file:
 cf_map = TEST_CONFIG_FILES if args.test else CONFIG_FILES
@@ -115,13 +118,13 @@ class RandomScenario(torch.utils.data.IterableDataset):
         use_s3=False,
         endpoint="",
         s3_region="us-east-1",
-        writer="centerpose",
+        writer="dope",
         bucket="",
         test=False,
         debug=False,
     ):
         self.test = test
-        self.writer_format = writer
+        self.writer_format = writer.lower()
         self.debug = debug
 
         if writer == "ycbvideo":
@@ -141,9 +144,9 @@ class RandomScenario(torch.utils.data.IterableDataset):
             return
         else:
             print(f"Using Isaac Sim assets from: {assets_root_path}")
-        self.dome_texture_path = assets_root_path + "/NVIDIA/Assets/Skies/"
-        self.ycb_asset_path = assets_root_path + "/Isaac/Props/YCB/Axis_Aligned/"
-        self.asset_path = assets_root_path + "/Isaac/Props/YCB/Axis_Aligned/"
+        self.dome_texture_path = assets_root_path + config_data["DOME_TEXTURE_PATH"]
+        self.distractor_asset_path = assets_root_path + config_data["DISTRACTOR_ASSET_PATH"]
+        self.train_asset_path = assets_root_path + config_data["TRAIN_ASSET_PATH"]
 
         self.train_parts = []
         self.train_part_mesh_path_to_prim_path_map = {}
@@ -210,8 +213,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
         self._setup_train_objects()
 
-        if not self.test:
-            self._setup_randomizers()
+        self._setup_randomizers()
 
         # Update the app a few times to make sure the materials are fully loaded and world scene objects are registered
         for _ in range(5):
@@ -221,7 +223,10 @@ class RandomScenario(torch.utils.data.IterableDataset):
         if self.writer_helper == PoseWriter:
             self.writer = rep.WriterRegistry.get("PoseWriter")
             self.writer.initialize(
-                output_dir=self._output_folder, write_debug_images=self.debug, format=self.writer_format
+                output_dir=self._output_folder,
+                write_debug_images=self.debug,
+                format=self.writer_format,
+                frame_padding=6,
             )
         else:
             self.writer_helper.register_pose_annotator(config_data=config_data)
@@ -313,7 +318,8 @@ class RandomScenario(torch.utils.data.IterableDataset):
         ]
 
         usd_path_list = [
-            f"{self.ycb_asset_path}{usd_filename_prefix}.usd" for usd_filename_prefix in distractor_mesh_filenames
+            f"{self.distractor_asset_path}{usd_filename_prefix}.usd"
+            for usd_filename_prefix in distractor_mesh_filenames
         ]
         mesh_list = [f"_{usd_filename_prefix[1:]}" for usd_filename_prefix in distractor_mesh_filenames]
 
@@ -385,7 +391,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
         for object in OBJECTS_TO_GENERATE:
             for prim_idx in range(object["num"]):
                 part_name = object["part_name"]
-                ref_path = self.asset_path + part_name + ".usd"
+                ref_path = self.train_asset_path + part_name + ".usd"
                 prim_type = object["prim_type"]
 
                 if self.writer_helper == YCBVideoWriter and prim_type not in config_data["CLASS_NAME_TO_INDEX"]:
@@ -404,7 +410,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
                     mesh_path=mesh_path,
                     name=name,
                     position=np.array([0.0, 0.0, 0.0]),
-                    scale=config_data["OBJECT_SCALE"],
+                    scale=config_data["TRAIN_PART_SCALE"],
                     mass=1.0,
                 )
 
@@ -594,7 +600,7 @@ if args.test:
     run_pose_generation_test(
         writer=args.writer,
         output_folder=dataset._output_folder,
-        test_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), "tests"),
+        test_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), "pose_tests"),
     )
 
 # Close the app

@@ -13,6 +13,7 @@ from typing import Optional
 
 import numpy as np
 from omni.isaac.core import World
+from omni.isaac.core.prims.rigid_prim import RigidPrim
 
 from .collision_box import CollisionBox
 
@@ -96,9 +97,9 @@ class DynamicAssetSet(ABC):
             # X, Y, and Z components of the force are constrained to be within [-force_limit, force_limit]
             random_force = np.random.uniform(-force_limit, force_limit, 3).tolist()
 
-            handle = self.world.dc_interface.get_rigid_body(path)
-
-            self.world.dc_interface.apply_body_force(handle, random_force, (0, 0, 0), False)
+            rigid_body = RigidPrim(path)
+            rigid_body.initialize()
+            rigid_body._rigid_prim_view.apply_forces_and_torques_at_pos(random_force, is_global=False)
 
     def randomize_glass_color(self):
         """Randomize the color of the assets in the dynamic asset set with a glass material applied."""
