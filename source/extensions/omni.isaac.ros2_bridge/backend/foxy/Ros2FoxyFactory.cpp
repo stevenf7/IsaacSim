@@ -1,4 +1,4 @@
-// Copyright (c) 2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2023-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -171,6 +171,13 @@ bool Ros2FactoryFoxy::validateNodeName(const std::string& nodeName)
         return false;
     }
     return true;
+}
+
+std::shared_ptr<Ros2Message> Ros2FactoryFoxy::createDynamicMessage(const std::string& pkgName,
+                                                                   const std::string& msgSubfolder,
+                                                                   const std::string& msgName)
+{
+    return std::make_shared<Ros2DynamicMessageFoxy>(pkgName, msgSubfolder, msgName);
 }
 
 Ros2Factory* createFactory()

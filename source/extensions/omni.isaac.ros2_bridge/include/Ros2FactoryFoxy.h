@@ -1,4 +1,4 @@
-// Copyright (c) 2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2023-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -40,6 +40,10 @@ public:
     virtual bool validateTopic(const std::string& topicName);
     virtual bool validateNodeNamespace(const std::string& nodeNamespace);
     virtual bool validateNodeName(const std::string& nodeName);
+
+    virtual std::shared_ptr<Ros2Message> createDynamicMessage(const std::string& pkgName,
+                                                              const std::string& msgSubfolder,
+                                                              const std::string& msgName);
 };
 
 

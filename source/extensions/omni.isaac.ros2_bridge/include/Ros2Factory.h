@@ -12,6 +12,7 @@
 #include <UsdPCH.h>
 // clang-format on
 
+#include <omni/fabric/Type.h>
 #include <omni/isaac/utils/LibraryLoader.h>
 #include <omni/isaac/utils/Math.h>
 
@@ -25,6 +26,17 @@
 // #include <omni/fabric/FabricUSD.h>
 // #include <omni/usd/UsdUtils.h>
 
+struct MessageField
+{
+    std::string name; // field name
+    uint8_t rosType; // ROS type:
+                     // https://github.com/ros2/rosidl/blob/humble/rosidl_typesupport_introspection_c/include/rosidl_typesupport_introspection_c/field_types.h
+    bool isArray; // true if this field is an array type
+    std::string ognType; // OGN type name:
+                         // https://docs.omniverse.nvidia.com/kit/docs/omni.graph.docs/latest/dev/ogn/attribute_types.html
+    omni::fabric::BaseDataType dataType; // fabric type
+};
+
 class Ros2Message
 {
 public:
@@ -36,6 +48,23 @@ public:
 
 protected:
     void* msg = nullptr;
+};
+
+class Ros2DynamicMessage : public Ros2Message
+{
+public:
+    virtual void getData(std::vector<std::shared_ptr<const void>>& data, bool asOgnType) = 0;
+    std::vector<MessageField> getMessageFields()
+    {
+        return mMessagesFields;
+    };
+    bool isValid()
+    {
+        return msg != nullptr;
+    }
+
+protected:
+    std::vector<MessageField> mMessagesFields;
 };
 
 class Ros2HandleBase
@@ -66,6 +95,7 @@ class Ros2Subscriber
 {
 public:
     virtual bool spin(void* msg) = 0;
+    virtual bool isValid() = 0;
 };
 
 class Ros2Backend
@@ -78,12 +108,20 @@ public:
             std::make_shared<omni::isaac::utils::LibraryLoader>(std::string(mPkgName) + "__rosidl_generator_c");
         mTypesupportLibrary =
             std::make_shared<omni::isaac::utils::LibraryLoader>(std::string(mPkgName) + "__rosidl_typesupport_c");
+        mTypesupportIntrospectionLibrary = std::make_shared<omni::isaac::utils::LibraryLoader>(
+            std::string(mPkgName) + "__rosidl_typesupport_introspection_c");
     }
     void* getTypeSupportHandleDynamic()
     {
         return mTypesupportLibrary->callSymbol<void*>("rosidl_typesupport_c__get_message_type_support_handle__" +
                                                       std::string(mPkgName) + "__" + std::string(mMsgSubfolder) + "__" +
                                                       std::string(mMsgName));
+    }
+    void* getTypeSupportIntrospectionHandleDynamic()
+    {
+        return mTypesupportIntrospectionLibrary->callSymbol<void*>(
+            "rosidl_typesupport_introspection_c__get_message_type_support_handle__" + std::string(mPkgName) + "__" +
+            std::string(mMsgSubfolder) + "__" + std::string(mMsgName));
     }
     void* create()
     {
@@ -103,6 +141,7 @@ protected:
     std::string mPkgName;
     std::string mMsgSubfolder;
     std::string mMsgName;
+    std::shared_ptr<omni::isaac::utils::LibraryLoader> mTypesupportIntrospectionLibrary;
     std::shared_ptr<omni::isaac::utils::LibraryLoader> mTypesupportLibrary;
     std::shared_ptr<omni::isaac::utils::LibraryLoader> mGeneratorLibrary;
 };
@@ -362,4 +401,8 @@ public:
     virtual bool validateTopic(const std::string& topicName) = 0;
     virtual bool validateNodeNamespace(const std::string& nodeNamespace) = 0;
     virtual bool validateNodeName(const std::string& nodeName) = 0;
+
+    virtual std::shared_ptr<Ros2Message> createDynamicMessage(const std::string& pkgName,
+                                                              const std::string& msgSubfolder,
+                                                              const std::string& msgName) = 0;
 };

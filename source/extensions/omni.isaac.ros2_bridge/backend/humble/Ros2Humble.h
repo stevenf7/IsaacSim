@@ -1,4 +1,4 @@
-// Copyright (c) 2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2023-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -15,6 +15,8 @@
 #include "nav_msgs/msg/odometry.h"
 #include "rosidl_runtime_c/primitives_sequence_functions.h"
 #include "rosidl_runtime_c/string_functions.h"
+#include "rosidl_typesupport_introspection_c/field_types.h"
+#include "rosidl_typesupport_introspection_c/message_introspection.h"
 #include "sensor_msgs/msg/image.h"
 #include "sensor_msgs/msg/imu.h"
 #include "sensor_msgs/msg/joint_state.h"
@@ -302,10 +304,46 @@ public:
     Ros2SubscriberHumble(Ros2NodeBase* node, const char* topic_name, const void* type, const size_t history_depth);
     virtual ~Ros2SubscriberHumble();
     virtual bool spin(void* msg);
+    virtual bool isValid()
+    {
+        return mSub != nullptr;
+    }
 
 private:
     Ros2NodeBase* mNode;
-    std::shared_ptr<rcl_subscription_t> mSub;
+    std::shared_ptr<rcl_subscription_t> mSub = nullptr;
     rcl_wait_set_t wait_set;
     bool wait_set_initialized = false;
+};
+
+class Ros2DynamicMessageHumble : public Ros2DynamicMessage, Ros2BackendHumble
+{
+public:
+    Ros2DynamicMessageHumble(std::string pkgName, std::string msgSubfolder, std::string msgName);
+    virtual ~Ros2DynamicMessageHumble();
+    virtual const void* getTypeSupportHandle();
+    virtual void getData(std::vector<std::shared_ptr<const void>>& data, bool asOgnType);
+
+protected:
+    virtual void parseMessageFields(const std::string& parentName, const void* members);
+    virtual void parseMessageValues(const void* members,
+                                    uint8_t* data,
+                                    std::vector<std::shared_ptr<const void>>& messageValues,
+                                    bool asOgnType);
+
+private:
+    template <typename ArrayType, typename RosType, typename OgnType>
+    std::shared_ptr<const void> getArray(const rosidl_typesupport_introspection_c__MessageMember* member,
+                                         uint8_t* data,
+                                         bool asOgnType);
+
+    template <typename RosType, typename OgnType>
+    std::shared_ptr<const void> getSingleValue(uint8_t* data, bool asOgnType);
+
+    void messageValuesToJson(const void* members,
+                             uint8_t* messageData,
+                             const std::shared_ptr<std::vector<std::string>> messageValues);
+    void embeddedMessageArrayToJson(const rosidl_typesupport_introspection_c__MessageMember* member,
+                                    uint8_t* data,
+                                    const std::shared_ptr<std::vector<std::string>> messageValues);
 };

@@ -18,6 +18,7 @@ project_with_location("omni.isaac.ros2_bridge.foxy")
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/omni_physics/include",
         "%{root}/_build/target-deps/nv_ros2/include",
+        "%{root}/_build/target-deps/nlohmann-json/include",
         "%{root}/source/extensions/omni.isaac.ros2_bridge",
         "%{root}/source/extensions/omni.isaac.dynamic_control/include",
     }
@@ -77,6 +78,7 @@ project_with_location("omni.isaac.ros2_bridge.humble")
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/omni_physics/include",
         "%{root}/_build/target-deps/nv_ros2_humble/include",
+        "%{root}/_build/target-deps/nlohmann-json/include",
         "%{root}/source/extensions/omni.isaac.ros2_bridge",
         "%{root}/source/extensions/omni.isaac.dynamic_control/include",
     }
@@ -120,6 +122,7 @@ project_with_location("omni.isaac.ros2_bridge.humble")
             "%{root}/_build/target-deps/nv_ros2_humble/include/std_msgs",
             "%{root}/_build/target-deps/nv_ros2_humble/include/rosgraph_msgs",
             "%{root}/_build/target-deps/nv_ros2_humble/include/rosidl_typesupport_interface",
+            "%{root}/_build/target-deps/nv_ros2_humble/include/rosidl_typesupport_introspection_c",
             "%{root}/_build/target-deps/nv_ros2_humble/include/rcl",
             "%{root}/_build/target-deps/nv_ros2_humble/include/rcutils",
             "%{root}/_build/target-deps/nv_ros2_humble/include/rmw",
