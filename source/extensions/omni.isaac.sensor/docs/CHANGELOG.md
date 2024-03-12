@@ -1,6 +1,6 @@
 # Changelog
 
-## [9.14.2] - 2023-03-07
+## [9.14.2] - 2024-03-07
 ### Changed
 - Removed the usage of the deprecated dynamic_control extension 
 

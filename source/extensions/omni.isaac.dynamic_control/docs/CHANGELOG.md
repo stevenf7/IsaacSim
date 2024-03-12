@@ -1,5 +1,5 @@
 # Changelog
-## [1.3.4] - 2023-03-07
+## [1.3.4] - 2024-03-07
 ### Changed
 - Deprecated the extension and removed its usage in other extensions in python
 
