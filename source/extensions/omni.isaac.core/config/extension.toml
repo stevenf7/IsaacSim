@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "3.4.0"
+version = "3.5.0"
 category = "Simulation"
 title = "Isaac Sim Core"
 description = "Core"
@@ -59,3 +59,9 @@ persistent.isaac.asset_root.nvidia = "omniverse://localhost/NVIDIA"
 persistent.isaac.asset_root.isaac = "omniverse://localhost/NVIDIA/Assets/Isaac/4.0/Isaac"
 persistent.isaac.asset_root.cloud = "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0"
 persistent.isaac.asset_root.timeout = 10.0
+# joint velocities computation using finite difference
+# - If `use_finite_difference` is true, the finite diference computation will be enabled for any PhysX solver
+# - If `use_finite_difference` is false and `autodetect_finite_difference_use_with_tgs_solver` is true,
+#   the finite diference computation will be enabled only if the PhysX's TGS solver is detected
+exts."omni.isaac.core".use_finite_difference = true
+exts."omni.isaac.core".autodetect_finite_difference_use_with_tgs_solver = true

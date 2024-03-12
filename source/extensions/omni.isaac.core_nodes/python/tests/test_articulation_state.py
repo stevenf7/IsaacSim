@@ -77,9 +77,7 @@ class TestArticulationStateNode(ogts.OmniGraphTestCase):
         robot.initialize()
         robot.set_joint_positions([-1.0, 1.2], joint_indices=[1, 2])
         await omni.kit.app.get_app().next_update_async()
-        robot_joint_positions = robot.get_joint_positions()
-        robot_joint_velocities = robot.get_joint_velocities()
-        robot_measured_joint_efforts = robot.get_measured_joint_efforts()
+        await omni.kit.app.get_app().next_update_async()
 
         # check where the joints are after evaluate
         await og.Controller.evaluate(test_graph)
@@ -96,6 +94,10 @@ class TestArticulationStateNode(ogts.OmniGraphTestCase):
         print(joint_efforts)
         print(joint_forces)
         print(joint_torques)
+
+        robot_joint_positions = robot.get_joint_positions()
+        robot_joint_velocities = robot.get_joint_velocities()
+        robot_measured_joint_efforts = robot.get_measured_joint_efforts()
 
         self.assertEqual(len(joint_names), 2)
         self.assertEqual(len(joint_positions), 2)
@@ -142,9 +144,7 @@ class TestArticulationStateNode(ogts.OmniGraphTestCase):
         robot.initialize()
         robot.set_joint_positions([-1.0, 1.2], joint_indices=[1, 2])
         await omni.kit.app.get_app().next_update_async()
-        robot_joint_positions = robot.get_joint_positions()
-        robot_joint_velocities = robot.get_joint_velocities()
-        robot_measured_joint_efforts = robot.get_measured_joint_efforts()
+        await omni.kit.app.get_app().next_update_async()
 
         # check where the joints are after evaluate
         await og.Controller.evaluate(test_graph)
@@ -161,6 +161,10 @@ class TestArticulationStateNode(ogts.OmniGraphTestCase):
         print(joint_efforts)
         print(joint_forces)
         print(joint_torques)
+
+        robot_joint_positions = robot.get_joint_positions()
+        robot_joint_velocities = robot.get_joint_velocities()
+        robot_measured_joint_efforts = robot.get_measured_joint_efforts()
 
         self.assertEqual(len(joint_names), 2)
         self.assertEqual(len(joint_positions), 2)
@@ -198,9 +202,7 @@ class TestArticulationStateNode(ogts.OmniGraphTestCase):
         robot.initialize()
         robot.set_joint_positions([-1.0, 1.2], joint_indices=[1, 2])
         await omni.kit.app.get_app().next_update_async()
-        robot_joint_positions = robot.get_joint_positions()
-        robot_joint_velocities = robot.get_joint_velocities()
-        robot_measured_joint_efforts = robot.get_measured_joint_efforts()
+        await omni.kit.app.get_app().next_update_async()
 
         # check where the joints are after evaluate
         await og.Controller.evaluate(test_graph)
@@ -217,6 +219,10 @@ class TestArticulationStateNode(ogts.OmniGraphTestCase):
         print(joint_efforts)
         print(joint_forces)
         print(joint_torques)
+
+        robot_joint_positions = robot.get_joint_positions()
+        robot_joint_velocities = robot.get_joint_velocities()
+        robot_measured_joint_efforts = robot.get_measured_joint_efforts()
 
         self.assertEqual(len(joint_names), 9)
         self.assertEqual(len(joint_positions), 9)
@@ -260,9 +266,7 @@ class TestArticulationStateNode(ogts.OmniGraphTestCase):
         robot.initialize()
         robot.set_joint_positions([-1.0], joint_indices=[2])
         await omni.kit.app.get_app().next_update_async()
-        robot_joint_positions = robot.get_joint_positions()
-        robot_joint_velocities = robot.get_joint_velocities()
-        robot_measured_joint_efforts = robot.get_measured_joint_efforts()
+        await omni.kit.app.get_app().next_update_async()
 
         # check where the joints are after evaluate
         await og.Controller.evaluate(test_graph)
@@ -279,6 +283,10 @@ class TestArticulationStateNode(ogts.OmniGraphTestCase):
         print(joint_efforts)
         print(joint_forces)
         print(joint_torques)
+
+        robot_joint_positions = robot.get_joint_positions()
+        robot_joint_velocities = robot.get_joint_velocities()
+        robot_measured_joint_efforts = robot.get_measured_joint_efforts()
 
         self.assertEqual(len(joint_names), 1)
         self.assertEqual(len(joint_positions), 1)
@@ -322,9 +330,7 @@ class TestArticulationStateNode(ogts.OmniGraphTestCase):
         robot.initialize()
         robot.set_joint_positions([-1.0], joint_indices=[2])
         await omni.kit.app.get_app().next_update_async()
-        robot_joint_positions = robot.get_joint_positions()
-        robot_joint_velocities = robot.get_joint_velocities()
-        robot_measured_joint_efforts = robot.get_measured_joint_efforts()
+        await omni.kit.app.get_app().next_update_async()
 
         # check where the joints are after evaluate
         await og.Controller.evaluate(test_graph)
@@ -341,6 +347,10 @@ class TestArticulationStateNode(ogts.OmniGraphTestCase):
         print(joint_efforts)
         print(joint_forces)
         print(joint_torques)
+
+        robot_joint_positions = robot.get_joint_positions()
+        robot_joint_velocities = robot.get_joint_velocities()
+        robot_measured_joint_efforts = robot.get_measured_joint_efforts()
 
         self.assertEqual(len(joint_names), 1)
         self.assertEqual(len(joint_positions), 1)
