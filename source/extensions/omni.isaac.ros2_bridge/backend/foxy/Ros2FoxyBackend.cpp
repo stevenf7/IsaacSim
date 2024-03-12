@@ -1,4 +1,4 @@
-// Copyright (c) 2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2023-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -50,6 +50,8 @@ void Ros2BackendFoxy::set_header(const std::string& frame_id, const int64_t nano
     }
     else
     {
-        CARB_LOG_WARN("Timestamp is invalid. Timestamp will be neglected for all published ROS CameraInfo messages");
+        fprintf(
+            stdout,
+            "[Warning] Timestamp is invalid. Timestamp will be neglected for all published ROS CameraInfo messages\n");
     }
 }
