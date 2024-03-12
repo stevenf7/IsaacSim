@@ -200,8 +200,9 @@ class PoseWriter(Writer):
 
             # Local space to to world transform (row-major)
             local_to_world_tf = bbox["transform"]
+            obj["local_to_world_transform"] = local_to_world_tf.tolist()
+
             if self._format is None:
-                obj["local_to_world_transform"] = local_to_world_tf.tolist()
                 # Extract world frame location (last row) and rotation matrix (3x3) from the row-major transform matrix
                 location_world_frame = local_to_world_tf[3, :3]
                 obj["location_world_frame"] = location_world_frame.tolist()
@@ -226,7 +227,7 @@ class PoseWriter(Writer):
             location_camera_frame = obj_to_camera_tf[3, :3]
             if self._format is None:
                 obj["location_camera_frame"] = location_camera_frame.tolist()
-            elif self._format == "centerpose":
+            elif self._format == "centerpose" or self._format == "dope":
                 obj["location"] = location_camera_frame.tolist()
             if self._format is None:
                 rotation_matrix_camera_frame = obj_to_camera_tf[:3, :3]
@@ -239,7 +240,7 @@ class PoseWriter(Writer):
                 obj["quat_wxyz_camera_frame"] = [quat_camera_frame_gf.GetReal()] + list(
                     quat_camera_frame_gf.GetImaginary()
                 )
-            elif self._format == "centerpose":
+            elif self._format == "centerpose" or self._format == "dope":
                 obj["quaternion_xyzw"] = list(quat_camera_frame_gf.GetImaginary()) + [quat_camera_frame_gf.GetReal()]
 
             # Calculate the (scaled) size of the object from its world bounds (NOTE: scale is applied through the transform)
@@ -283,7 +284,7 @@ class PoseWriter(Writer):
             ]
             if self._format is None:
                 obj["cuboid_keypoints_projected"] = keypoints_projected_ordered
-            elif self._format == "centerpose":
+            elif self._format == "centerpose" or self._format == "dope":
                 obj["projected_cuboid"] = keypoints_projected_ordered
             if self._write_debug_images:
                 self._debug_frame_data["projected_keypoints"].append(keypoints_projected_ordered)

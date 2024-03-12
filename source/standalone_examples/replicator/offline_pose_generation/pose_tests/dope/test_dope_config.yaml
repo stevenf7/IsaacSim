@@ -14,8 +14,8 @@ WIDTH: 512
 HEIGHT: 512
 F_X: 768.1605834960938
 F_Y: 768.1605834960938
-C_X: 256
-C_Y: 256
+pixel_size: 0.003
+
 HORIZONTAL_APERTURE: 20.955
 NUM_LIGHTS: 6
 MIN_DISTANCE: 1.0
@@ -46,6 +46,10 @@ OBJECT_SCALE:
 - 1
 - 1
 - 1
+TRAIN_PART_SCALE: # Scale for the training objects 
+- 1
+- 1
+- 1
 OBJECT_MASS: 1
 NUM_MESH_SHAPES: 0
 NUM_MESH_OBJECTS: 0
@@ -55,3 +59,8 @@ NUM_DOME_OBJECTS: 0
 DOME_FRACTION_GLASS: 0.2
 DOME_TEXTURES: []
 MESH_FILENAMES: []
+
+# Asset paths 
+DISTRACTOR_ASSET_PATH: '' # Can leave empty, distactors not used in tests
+TRAIN_ASSET_PATH: /Isaac/Props/YCB/Axis_Aligned/
+DOME_TEXTURE_PATH: '' # Can leave empty, textures not used in tests 

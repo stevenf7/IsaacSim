@@ -74,6 +74,16 @@ OBJECT_SCALE:
 - 1
 OBJECT_MASS: 1
 
+TRAIN_PART_SCALE: # Scale for the training objects 
+- 1
+- 1
+- 1
+
+# Asset paths 
+DISTRACTOR_ASSET_PATH: /Isaac/Props/YCB/Axis_Aligned/
+TRAIN_ASSET_PATH: /Isaac/Props/YCB/Axis_Aligned/
+DOME_TEXTURE_PATH: /NVIDIA/Assets/Skies/ 
+
 # MESH dataset
 NUM_MESH_SHAPES: 500
 NUM_MESH_OBJECTS: 200

@@ -25,8 +25,8 @@ WIDTH: 1280
 HEIGHT: 720
 F_X: 665.80768
 F_Y: 665.80754
-C_X: 256
-C_Y: 256
+C_X: 637.642
+C_Y: 367.56
 pixel_size: 0.003
 
 # Number of sphere lights added to the scene
@@ -80,6 +80,16 @@ OBJECT_SCALE:
 - 1
 - 1
 OBJECT_MASS: 1
+
+TRAIN_PART_SCALE: # Scale for the training objects 
+- 1
+- 1
+- 1
+
+# Asset paths 
+DISTRACTOR_ASSET_PATH: /Isaac/Props/YCB/Axis_Aligned/
+TRAIN_ASSET_PATH: /Isaac/Props/YCB/Axis_Aligned/
+DOME_TEXTURE_PATH: /NVIDIA/Assets/Skies/ 
 
 # MESH dataset
 NUM_MESH_SHAPES: 500

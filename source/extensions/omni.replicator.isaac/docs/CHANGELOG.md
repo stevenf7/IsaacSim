@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.13.3] - 2024-03-11
+### Changed
+- Include more information for DOPE output annotations 
+
 ## [1.13.2] - 2024-03-04
 ### Changed
 - PoseWriter restructuring
