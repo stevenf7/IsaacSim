@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.5.0] - 2024-03-11
+### Added
+- Enable joint velocities computation using finite difference with TGS solver
+
 ## [3.4.0] - 2023-03-07
 ### Changed
 - Removed the usage of the deprecated dynamic_control extension 
