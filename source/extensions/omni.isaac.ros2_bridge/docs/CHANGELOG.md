@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.10.1] - 2024-03-12
+### Fixed
+- Fixed logging in ROS2 bridge backend
+
 ## [2.10.0] - 2024-03-11
 ### Changed
 - Improved Image publisher performance

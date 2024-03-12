@@ -291,7 +291,7 @@ void Ros2ImageMessageFoxy::generateBuffer(const uint32_t height, const uint32_t 
     }
     catch (std::exception& e)
     {
-        CARB_LOG_ERROR("%s", e.what());
+        fprintf(stderr, "[Error] %s\n", e.what());
         return;
     }
     int byteDepth = bitDepth / 8;

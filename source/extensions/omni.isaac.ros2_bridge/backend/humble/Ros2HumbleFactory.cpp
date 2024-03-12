@@ -124,8 +124,8 @@ bool Ros2FactoryHumble::validateTopic(const std::string& topicName)
 
     if (invalid_result)
     {
-        CARB_LOG_ERROR("Topic name %s not valid, %s", topicName.c_str(),
-                       rmw_full_topic_name_validation_result_string(invalid_result));
+        fprintf(stderr, "[Error] Topic name %s not valid, %s\n", topicName.c_str(),
+                rmw_full_topic_name_validation_result_string(invalid_result));
         return false;
     }
     return true;
@@ -146,8 +146,8 @@ bool Ros2FactoryHumble::validateNodeNamespace(const std::string& nodeNamespace)
 
     if (invalid_result)
     {
-        CARB_LOG_ERROR("Namespace name %s not valid, %s", nodeNamespace.c_str(),
-                       rmw_namespace_validation_result_string(invalid_result));
+        fprintf(stderr, "[Error] Namespace name %s not valid, %s\n", nodeNamespace.c_str(),
+                rmw_namespace_validation_result_string(invalid_result));
         return false;
     }
     return true;
@@ -169,8 +169,8 @@ bool Ros2FactoryHumble::validateNodeName(const std::string& nodeName)
 
     if (invalid_result)
     {
-        CARB_LOG_ERROR(
-            "Node name %s not valid, %s", nodeName.c_str(), rmw_node_name_validation_result_string(invalid_result));
+        fprintf(stderr, "[Error] Node name %s not valid, %s\n", nodeName.c_str(),
+                rmw_node_name_validation_result_string(invalid_result));
         return false;
     }
     return true;
