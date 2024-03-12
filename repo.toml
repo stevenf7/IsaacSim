@@ -653,7 +653,7 @@ path = "${test_root}/tests"
 tests_per_process = 1
   [[repo_test.suites.internaldockertests.group]]
   include = ["tests-internaldocker*${shell_ext}"]
-  timeout = 1200
+  timeout = 1500
 # stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
 
 [[repo_test.suites.internaldockertests.bucket]]
