@@ -490,14 +490,14 @@ function docker_test_runner(name, script, config, extra_args)
 set -e
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 docker ps -q --filter "name=isaac-sim" | grep -q . && docker kill isaac-sim
+# Copy release folder to resolve symlinks
+cp -r -L "$SCRIPT_DIR/.." "$SCRIPT_DIR/../../%s"
 docker run --name isaac-sim --entrypoint bash --gpus all -e "ACCEPT_EULA=Y" --rm --network=host \
--v $SCRIPT_DIR/..:/isaac-sim:rw \
--e "OMNI_USER=dockeruser" -e "OMNI_PASS=dockeruser" \
--e "OMNI_SERVER=omniverse://isaac-dev.ov.nvidia.com" \
+-v $SCRIPT_DIR/../../%s:/isaac-sim:rw \
 -e "PRIVACY_CONSENT=Y" -e "PRIVACY_USERID=dockeruser" \
 gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/isaac-sim:latest-develop \
 -c "%s %s"
-        ]], script, extra_args))
+        ]], name, name, script, extra_args))
         f:close()
         os.chmod(sh_file_path, 755)
     end
