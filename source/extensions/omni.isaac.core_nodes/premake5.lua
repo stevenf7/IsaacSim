@@ -35,6 +35,8 @@ project_ext_plugin(ext, "omni.isaac.core_nodes.plugin")
         "%{kit_sdk_bin_dir}/exts/omni.syntheticdata/include",
         "%{kit_sdk_bin_dir}/exts/usdrt.scenegraph/include",
         "%{root}/source/extensions/omni.isaac.core_nodes/include",
+        "%{root}/_build/target-deps/usdrt/include",
+        "%{root}/_build/target-deps/python/include",
 
      }
      libdirs {
