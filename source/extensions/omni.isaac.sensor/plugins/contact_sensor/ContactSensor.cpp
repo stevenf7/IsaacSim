@@ -314,21 +314,10 @@ void ContactSensor::setContactReportApi()
     {
         contactReportAPI = pxr::PhysxSchemaPhysxContactReportAPI::Apply(mParentPrim.GetPrim());
     }
-    if (!contactReportAPI.GetThresholdAttr())
-    {
-        contactReportAPI.CreateThresholdAttr();
-    }
     if (!contactReportAPI.GetReportPairsRel())
     {
         contactReportAPI.CreateReportPairsRel();
     }
-
-    const pxr::IsaacSensorIsaacContactSensor& typedPrim = (pxr::IsaacSensorIsaacContactSensor)mPrim;
-
-    pxr::GfVec2f thresholdAttr = pxr::GfVec2f(0.01f, 100000.0f);
-    isaac::utils::safeGetAttribute(typedPrim.GetThresholdAttr(), thresholdAttr);
-    const float* thresholds = thresholdAttr.GetArray();
-    contactReportAPI.GetThresholdAttr().Set(thresholds[0]);
 }
 
 bool ContactSensor::findValidParent()
