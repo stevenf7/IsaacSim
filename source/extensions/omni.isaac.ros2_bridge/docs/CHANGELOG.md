@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.10.2] - 2024-03-12
+### Added
+- Added differential base unit test for nova carter
+
 ## [2.10.1] - 2024-03-12
 ### Fixed
 - Fixed logging in ROS2 bridge backend

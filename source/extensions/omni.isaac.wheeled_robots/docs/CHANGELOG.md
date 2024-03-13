@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.1.4] - 2024-02-24
+### Added
+- Added acceleration restraints to differential controller
+
 ## [1.1.3] - 2024-03-06
 ### Fixed
 - Removed commented out code

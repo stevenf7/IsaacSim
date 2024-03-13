@@ -27,7 +27,7 @@ from omni.isaac.core.utils.physics import simulate_async
 from omni.isaac.nucleus import get_assets_root_path_async
 from pxr import Gf, Sdf
 
-from .common import add_carter, add_carter_ros, get_qos_profile, set_rotate, set_translate
+from .common import add_carter, add_carter_ros, add_nova_carter_ros, get_qos_profile, set_rotate, set_translate
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -71,7 +71,7 @@ class TestRos2DifferentialBase(omni.kit.test.AsyncTestCase):
         gc.collect()
         pass
 
-    async def test_differential_base(self):
+    async def test_carter_differential_base(self):
         from copy import deepcopy
 
         import rclpy
@@ -243,6 +243,308 @@ class TestRos2DifferentialBase(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(self.trans.transform.rotation.w, 0.9230, 1)
         self.assertAlmostEqual(round(odom_data.position.x, 1), 0.7, 1)
         self.assertAlmostEqual(round(odom_data.position.y, 1), 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.x, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.y, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.z, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.w, 1, 1)
+
+        self._timeline.stop()
+        spin()
+        print("End of test")
+        pass
+
+    # add carter and ROS topic from scratch
+    async def test_differential_base_scratch(self):
+        from copy import deepcopy
+
+        import rclpy
+        from geometry_msgs.msg import Twist
+        from nav_msgs.msg import Odometry
+
+        await add_carter()
+
+        self._odom_data = None
+
+        node = rclpy.create_node("isaac_sim_test_diff_drive_manual")
+
+        def odom_callback(data: Odometry):
+            self._odom_data = data.pose.pose
+
+        odom_sub = node.create_subscription(Odometry, "odom", odom_callback, 10)
+        cmd_vel_pub = node.create_publisher(Twist, "cmd_vel", 1)
+
+        def move_cmd_msg(x, y, z, ax, ay, az):
+            msg = Twist()
+            msg.linear.x = x
+            msg.linear.y = y
+            msg.linear.z = z
+            msg.angular.x = ax
+            msg.angular.y = ay
+            msg.angular.z = az
+            return msg
+
+        def spin():
+            rclpy.spin_once(node, timeout_sec=0.1)
+
+        graph_path = "/ActionGraph"
+        (graph_id, created_nodes) = self.add_differential_drive(graph_path)
+        og.Controller.attribute(graph_path + "/diffController.inputs:wheelRadius").set(0.1)
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await simulate_async(3, 60, spin)
+
+        # check 0: is carter initially stationary
+        odom_data = deepcopy(self._odom_data)
+        self.assertIsNotNone(self._odom_data)
+        self.assertAlmostEqual(odom_data.position.x, 0, 1)
+        self.assertAlmostEqual(odom_data.position.y, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.x, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.y, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.z, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.w, 1, 1)
+
+        # rotate
+        move_cmd = move_cmd_msg(0.0, 0.0, 0.0, 0.0, 0.0, 0.2)
+        cmd_vel_pub.publish(move_cmd)
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await simulate_async(2, 60, spin)
+
+        # stop
+        move_cmd = move_cmd_msg(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+        cmd_vel_pub.publish(move_cmd)
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await simulate_async(1, 60, spin)
+
+        # check 1: location using default param
+        odom_data = deepcopy(self._odom_data)
+        self.assertAlmostEqual(odom_data.position.x, 0, 1)
+        self.assertAlmostEqual(odom_data.position.y, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.x, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.y, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.z, 0.40, 1)
+        self.assertAlmostEqual(odom_data.orientation.w, 0.916, 1)
+
+        # change wheel rotation and wheel base
+        omni.kit.commands.execute("DeletePrims", paths=[graph_path])
+
+        (graph_id, created_nodes) = self.add_differential_drive(graph_path)
+        og.Controller.attribute(graph_path + "/diffController.inputs:wheelRadius").set(0.1)
+        og.Controller.attribute(graph_path + "/diffController.inputs:wheelDistance").set(0.8)
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await simulate_async(1, 60, spin)
+
+        # rotate back
+        move_cmd = move_cmd_msg(0.0, 0.0, 0.0, 0.0, 0.0, -0.2)
+        cmd_vel_pub.publish(move_cmd)
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await simulate_async(2, 60, spin)
+
+        # stop
+        move_cmd = move_cmd_msg(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+        cmd_vel_pub.publish(move_cmd)
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await simulate_async(1, 60, spin)
+
+        # check 3: location after change radius
+        odom_data = deepcopy(self._odom_data)
+        self.assertAlmostEqual(odom_data.position.x, 0, 1)
+        self.assertAlmostEqual(odom_data.position.y, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.x, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.y, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.z, -0.61, 1)
+        self.assertAlmostEqual(odom_data.orientation.w, 0.79, 1)
+
+        self._timeline.stop()
+        spin()
+        pass
+
+    async def test_nova_carter_differential_base(self):
+        from copy import deepcopy
+
+        import rclpy
+        from geometry_msgs.msg import Twist
+        from nav_msgs.msg import Odometry
+        from pxr import UsdGeom
+        from tf2_msgs.msg import TFMessage
+
+        await add_nova_carter_ros()
+        stage = omni.usd.get_context().get_stage()
+
+        meters_per_unit = UsdGeom.GetStageMetersPerUnit(stage)
+
+        graph_path = "/nova_carter_ros2_sensors/transform_tree_odometry"
+        drive_graph_path = "/nova_carter_ros2_sensors/differential_drive"
+        # add an tf publisher for world->base_link
+        try:
+            og.Controller.edit(
+                graph_path,
+                {
+                    og.Controller.Keys.CREATE_NODES: [("PublishTF", "omni.isaac.ros2_bridge.ROS2PublishTransformTree")],
+                    og.Controller.Keys.SET_VALUES: [
+                        ("PublishTF.inputs:topicName", "tf_test"),
+                        (
+                            "PublishTF.inputs:targetPrims",
+                            [usdrt.Sdf.Path("/nova_carter_ros2_sensors/chassis_link/base_link")],
+                        ),
+                    ],
+                    og.Controller.Keys.CONNECT: [
+                        (graph_path + "/on_playback_tick.outputs:tick", "PublishTF.inputs:execIn"),
+                        (
+                            graph_path + "/isaac_read_simulation_time.outputs:simulationTime",
+                            "PublishTF.inputs:timeStamp",
+                        ),
+                    ],
+                },
+            )
+        except Exception as e:
+            print(e)
+
+        # move carter off origin
+        carter_prim = stage.GetPrimAtPath("/nova_carter_ros2_sensors")
+        new_translate = Gf.Vec3d(1.00, -3.00, 0.0)
+        new_rotate = Gf.Rotation(Gf.Vec3d(0, 0, 1), 45)
+        set_translate(carter_prim, new_translate)
+        set_rotate(carter_prim, new_rotate)
+
+        self._odom_data = None
+        self.trans = None
+
+        node = rclpy.create_node("isaac_sim_test_diff_drive")
+
+        def tf_callback(data: TFMessage):
+            self.trans = data.transforms[-1]
+
+        def odom_callback(data: Odometry):
+            self._odom_data = data.pose.pose
+
+        tf_sub = node.create_subscription(TFMessage, "tf_test", tf_callback, get_qos_profile())
+        odom_sub = node.create_subscription(Odometry, "odom", odom_callback, get_qos_profile())
+        cmd_vel_pub = node.create_publisher(Twist, "cmd_vel", 1)
+
+        def move_cmd_msg(x, y, z, ax, ay, az):
+            msg = Twist()
+            msg.linear.x = x
+            msg.linear.y = y
+            msg.linear.z = z
+            msg.angular.x = ax
+            msg.angular.y = ay
+            msg.angular.z = az
+            return msg
+
+        def spin():
+            rclpy.spin_once(node, timeout_sec=0.1)
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await simulate_async(2, 60, spin)
+
+        def check_odom_initial_pose():
+            odom_data = deepcopy(self._odom_data)
+
+            self.assertIsNotNone(self._odom_data)
+            self.assertAlmostEqual(self.trans.transform.translation.x, 1.0 * meters_per_unit, 2)
+            self.assertAlmostEqual(self.trans.transform.translation.y, -3.0 * meters_per_unit, 2)
+            self.assertAlmostEqual(self.trans.transform.rotation.x, 0, 2)
+            self.assertAlmostEqual(self.trans.transform.rotation.y, 0, 2)
+            self.assertAlmostEqual(self.trans.transform.rotation.z, 0.38268, 2)
+            self.assertAlmostEqual(self.trans.transform.rotation.w, 0.9238, 2)
+            self.assertAlmostEqual(odom_data.position.x, 0, 1)
+            self.assertAlmostEqual(odom_data.position.y, 0, 1)
+            self.assertAlmostEqual(odom_data.orientation.x, 0, 1)
+            self.assertAlmostEqual(odom_data.orientation.y, 0, 1)
+            self.assertAlmostEqual(odom_data.orientation.z, 0, 1)
+            self.assertAlmostEqual(odom_data.orientation.w, 1, 1)
+
+        # check 0: is carter initial tf position and odometry position
+        check_odom_initial_pose()
+
+        # straight forward
+        move_cmd = move_cmd_msg(0.1, 0.0, 0.0, 0.0, 0.0, 0.0)
+        cmd_vel_pub.publish(move_cmd)
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await simulate_async(3, 60, spin)
+
+        # stop
+        move_cmd = move_cmd_msg(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+        cmd_vel_pub.publish(move_cmd)
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await simulate_async(1, 60, spin)
+
+        # check 1: location using default param
+        odom_data = deepcopy(self._odom_data)
+
+        print(str(self.trans.transform))
+        print(str(odom_data))
+        self.assertAlmostEqual(self.trans.transform.translation.x, 1.22 * meters_per_unit, 2)
+        self.assertAlmostEqual(self.trans.transform.translation.y, -2.78 * meters_per_unit, 2)
+        self.assertAlmostEqual(self.trans.transform.rotation.x, 0, 2)
+        self.assertAlmostEqual(self.trans.transform.rotation.y, 0, 2)
+        self.assertAlmostEqual(self.trans.transform.rotation.z, 0.38268, 1)
+        self.assertAlmostEqual(self.trans.transform.rotation.w, 0.9238, 1)
+        self.assertAlmostEqual(odom_data.position.x, 0.3, 1)
+        self.assertAlmostEqual(odom_data.position.y, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.x, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.y, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.z, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.w, 1, 1)
+
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+        spin()
+        self.trans = None
+
+        # change wheel rotation and wheel base
+        og.Controller.set(
+            og.Controller.attribute(drive_graph_path + "/differential_controller_01.inputs:wheelRadius"), 0.1
+        )
+        og.Controller.set(
+            og.Controller.attribute(drive_graph_path + "/differential_controller_01.inputs:wheelDistance"), 0.5
+        )
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+
+        await simulate_async(1, 60, spin)
+
+        # check 3: is carter initial tf position and odometry position
+        check_odom_initial_pose()
+
+        # straight forward
+        move_cmd = move_cmd_msg(0.1, 0.0, 0.0, 0.0, 0.0, 0.0)
+        cmd_vel_pub.publish(move_cmd)
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await simulate_async(3, 60, spin)
+
+        # stop
+        move_cmd = move_cmd_msg(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+        cmd_vel_pub.publish(move_cmd)
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await simulate_async(1, 60, spin)
+
+        # check 4: location after change radius
+        odom_data = deepcopy(self._odom_data)
+        print(str(self.trans.transform))
+        print(str(odom_data))
+        self.assertAlmostEqual(self.trans.transform.translation.x, 1.30 * meters_per_unit, delta=0.01)
+        self.assertAlmostEqual(self.trans.transform.translation.y, -2.69 * meters_per_unit, delta=0.01)
+        self.assertAlmostEqual(self.trans.transform.rotation.x, 0, 2)
+        self.assertAlmostEqual(self.trans.transform.rotation.y, 0, 2)
+        self.assertAlmostEqual(self.trans.transform.rotation.z, 0.3815, 1)
+        self.assertAlmostEqual(self.trans.transform.rotation.w, 0.9244, 1)
+        self.assertAlmostEqual(odom_data.position.x, 0.43, 1)
+        self.assertAlmostEqual(odom_data.position.y, 0, 1)
         self.assertAlmostEqual(odom_data.orientation.x, 0, 1)
         self.assertAlmostEqual(odom_data.orientation.y, 0, 1)
         self.assertAlmostEqual(odom_data.orientation.z, 0, 1)

@@ -111,6 +111,14 @@ async def add_carter_ros():
     PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, -0.25), Gf.Vec3f(0.5))
 
 
+async def add_nova_carter_ros():
+    assets_root_path = await get_assets_root_path_async()
+    if assets_root_path is None:
+        carb.log_error("Could not find Isaac Sim assets folder")
+        return
+    (result, error) = await open_stage_async(assets_root_path + "/Isaac/Samples/ROS2/Robots/Nova_Carter_ROS.usd")
+
+
 async def add_franka():
     assets_root_path = await get_assets_root_path_async()
     if assets_root_path is None:
