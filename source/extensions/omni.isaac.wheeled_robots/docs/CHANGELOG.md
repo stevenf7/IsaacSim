@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.5] - 2024-03-13
+### Changed
+- added empty string to get_next_free_path's parent argument in Omnigraph shortcuts
+- added ability to open python script in the popup dialog for omnigraph shortcuts
+
 ## [1.1.4] - 2024-02-24
 ### Added
 - Added acceleration restraints to differential controller
