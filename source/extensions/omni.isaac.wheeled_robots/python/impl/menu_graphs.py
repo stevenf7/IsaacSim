@@ -10,6 +10,8 @@
 import omni.graph.core as og
 import omni.ui as ui
 from omni.isaac.core.utils.stage import get_next_free_path
+from omni.isaac.ui.callbacks import on_open_IDE_clicked
+from omni.isaac.ui.style import get_style
 from omni.isaac.ui.widgets import ParamWidget, SelectPrimWidget
 from omni.kit.window.extensions import SimpleCheckBox
 
@@ -163,7 +165,7 @@ class DifferentialRobotGraph:
             )
 
     def create_differential_robot_graph(self):
-        default_og_path = get_next_free_path(self._og_path)
+        default_og_path = get_next_free_path(self._og_path, "")
         og_path_def = ParamWidget.FieldDef(
             name="og_path", label="graph path", type=ui.StringField, default=default_og_path
         )
@@ -190,7 +192,7 @@ class DifferentialRobotGraph:
         )
 
         ## populate the popup window
-        self._window = ui.Window("Parameters", width=400, height=450)
+        self._window = ui.Window("Parameters", width=400, height=470)
         with self._window.frame:
             with ui.VStack(spacing=4):
                 ui.Label(
@@ -230,6 +232,16 @@ class DifferentialRobotGraph:
                     ui.Spacer(width=ui.Percent(20))
                     ui.Button("Cancel", height=40, width=ui.Percent(30), clicked_fn=self._on_cancel)
                     ui.Spacer(width=ui.Percent(10))
+                with ui.Frame(height=30):
+                    with ui.HStack():
+                        ui.Label("Python Script for Graph Generation", width=ui.Percent(30))
+                        ui.Button(
+                            name="IconButton",
+                            width=24,
+                            height=24,
+                            clicked_fn=lambda: on_open_IDE_clicked("", __file__),
+                            style=get_style()["IconButton.Image::OpenConfig"],
+                        )
 
     def _on_ok(self):
         self._og_path = self.og_path_input.get_value()
@@ -249,4 +261,4 @@ class DifferentialRobotGraph:
 
     def _on_checked_box(self, check_state):
         self._use_keyboard = check_state
-        print("use keyboard", self._use_keyboard)
+        print("use keyboard to move robot (WASD)", self._use_keyboard)
