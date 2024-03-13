@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.13.4] - 2024-03-12
+### Fixed
+- Pose writer fixes for assets with origin not at the center of the bounds
+
 ## [1.13.3] - 2024-03-11
 ### Changed
 - Include more information for DOPE output annotations 

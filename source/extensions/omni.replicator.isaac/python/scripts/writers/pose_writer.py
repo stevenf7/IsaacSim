@@ -182,6 +182,8 @@ class PoseWriter(Writer):
         if self._write_debug_images:
             self._debug_frame_data["world_frame_transforms"] = []
             self._debug_frame_data["projected_keypoints"] = []
+            self._debug_frame_data["size_local"] = []
+            self._debug_frame_data["center_local"] = []
         # Iterate the bounding box data and extract the object informations
         objs = []
         for i, bbox in enumerate(bb3d_data):
@@ -200,9 +202,9 @@ class PoseWriter(Writer):
 
             # Local space to to world transform (row-major)
             local_to_world_tf = bbox["transform"]
-            obj["local_to_world_transform"] = local_to_world_tf.tolist()
 
             if self._format is None:
+                obj["local_to_world_transform"] = local_to_world_tf.tolist()
                 # Extract world frame location (last row) and rotation matrix (3x3) from the row-major transform matrix
                 location_world_frame = local_to_world_tf[3, :3]
                 obj["location_world_frame"] = location_world_frame.tolist()
@@ -243,18 +245,18 @@ class PoseWriter(Writer):
             elif self._format == "centerpose" or self._format == "dope":
                 obj["quaternion_xyzw"] = list(quat_camera_frame_gf.GetImaginary()) + [quat_camera_frame_gf.GetReal()]
 
-            # Calculate the (scaled) size of the object from its world bounds (NOTE: scale is applied through the transform)
-            min_world = np.array([bbox["x_min"], bbox["y_min"], bbox["z_min"], 1]) @ local_to_world_tf
-            max_world = np.array([bbox["x_max"], bbox["y_max"], bbox["z_max"], 1]) @ local_to_world_tf
-            size_world = [max_world[0] - min_world[0], max_world[1] - min_world[1], max_world[2] - min_world[2]]
-            if self._format is None:
-                obj["size"] = size_world
-            elif self._format == "centerpose":
-                obj["scale"] = size_world
+            # Size of the object before scale (NOTE: scale is not applied yet to objects in local frame)
+            min_local = np.array([bbox["x_min"], bbox["y_min"], bbox["z_min"], 1])
+            max_local = np.array([bbox["x_max"], bbox["y_max"], bbox["z_max"], 1])
+            size_local = np.abs(max_local - min_local)[:3].tolist()
+            center_local = min_local + (max_local - min_local) / 2
+            if self._write_debug_images:
+                self._debug_frame_data["size_local"].append(size_local)
+                self._debug_frame_data["center_local"].append(center_local[:3].tolist())
 
-            # Cuboid keypoints in local frame (NOTE: scale is not applied yet to objects in local frame)
+            # Cuboid keypoints in local frame
             keypoints_local = {
-                "Center": np.array([0, 0, 0, 1]),
+                "Center": center_local,
                 "LDB": np.array([bbox["x_min"], bbox["y_min"], bbox["z_min"], 1]),  # Left-Down-Back
                 "LDF": np.array([bbox["x_min"], bbox["y_min"], bbox["z_max"], 1]),  # Left-Down-Front
                 "LUB": np.array([bbox["x_min"], bbox["y_max"], bbox["z_min"], 1]),  # Left-Up-Back
@@ -264,6 +266,15 @@ class PoseWriter(Writer):
                 "RUB": np.array([bbox["x_max"], bbox["y_max"], bbox["z_min"], 1]),  # Right-Up-Back
                 "RUF": np.array([bbox["x_max"], bbox["y_max"], bbox["z_max"], 1]),  # Right-Up-Front
             }
+
+            # Calculate the (scaled) size of the object from its world bounds (NOTE: scale is applied through the transform)
+            min_world = min_local @ local_to_world_tf
+            max_world = max_local @ local_to_world_tf
+            size_world = np.abs(max_world - min_world)[:3].tolist()
+            if self._format is None:
+                obj["size"] = size_world
+            elif self._format == "centerpose":
+                obj["scale"] = size_world
 
             # Transform the cuboid keypoints from local to world frame in the given order
             keypoints_world_ordered = [keypoints_local[k] @ local_to_world_tf for k in self.CUBOID_KEYPOINTS_ORDER]
@@ -364,8 +375,18 @@ class PoseWriter(Writer):
         screen_size = self._debug_frame_data["resolution"]
 
         # Draw objects local frame axes
-        for tf in self._debug_frame_data["world_frame_transforms"]:
-            self._draw_local_frame_axes(draw, tf, camera_view_matrix, camera_projection_matrix, screen_size)
+        for i, tf in enumerate(self._debug_frame_data["world_frame_transforms"]):
+            size = self._debug_frame_data["size_local"][i]
+            center = self._debug_frame_data["center_local"][i]
+            self._draw_local_frame_axes(
+                draw,
+                tf,
+                camera_view_matrix,
+                camera_projection_matrix,
+                screen_size,
+                size_local=size,
+                origin_local=center,
+            )
 
         # Overlay the world frame axes on the bottom left part of the RGB image
         self._draw_world_frame_axes_bottom_left(draw, camera_view_matrix, camera_projection_matrix, screen_size)
@@ -402,16 +423,29 @@ class PoseWriter(Writer):
         point_camera = self._world_point_to_camera_point(world_point, view_matrix)
         return self._project_camera_point_to_screen(point_camera, projection_matrix, screen_size)
 
-    # Projects the local frame axes of the object to the screen, axes_length is the length of the axes in world units
+    # Projects the local frame axes of the object to the screen
     def _draw_local_frame_axes(
-        self, draw, local_to_world_transform, camera_view_matrix, camera_projection_matrix, screen_size, axes_length=0.2
+        self,
+        draw,
+        local_to_world_transform,
+        camera_view_matrix,
+        camera_projection_matrix,
+        screen_size,
+        size_local=[1, 1, 1],
+        origin_local=[0, 0, 0],
+        axes_length_perc=0.25,
     ):
-        # Define the end points of the local coordinate system axes
-        x_axis_end_point_local = np.array([axes_length, 0, 0, 1])
-        y_axis_end_point_local = np.array([0, axes_length, 0, 1])
-        z_axis_end_point_local = np.array([0, 0, axes_length, 1])
+        # The length of the local axes is a percentage of the mean size of the object in local frame (before any scaling)
+        local_axes_length = np.mean(size_local) * axes_length_perc
+
+        # Define the end points of the local coordinate system axes include the local center of the object bounds
+        origin_local = np.array([origin_local[0], origin_local[1], origin_local[2], 1])
+        x_axis_end_point_local = np.array([local_axes_length + origin_local[0], origin_local[1], origin_local[2], 1])
+        y_axis_end_point_local = np.array([origin_local[0], local_axes_length + origin_local[1], origin_local[2], 1])
+        z_axis_end_point_local = np.array([origin_local[0], origin_local[1], local_axes_length + origin_local[2], 1])
 
         # Transform local end points to world frame using row-major matrix multiplication (translation on the left side)
+        origin_world = origin_local @ local_to_world_transform
         x_axis_end_point_world = x_axis_end_point_local @ local_to_world_transform
         y_axis_end_point_world = y_axis_end_point_local @ local_to_world_transform
         z_axis_end_point_world = z_axis_end_point_local @ local_to_world_transform
@@ -423,9 +457,6 @@ class PoseWriter(Writer):
             projection_matrix=camera_projection_matrix,
             screen_size=screen_size,
         )
-
-        # Extract world location from the row-major transform matrix (last row)
-        origin_world = local_to_world_transform[3]
 
         # Project the origin and axes end points from 3D world coordinates to 2D screen coordinates
         origin_2d = project_to_screen(origin_world)
@@ -440,23 +471,17 @@ class PoseWriter(Writer):
 
     # Draws the world frame axes at the bottom left corner of the image.
     def _draw_world_frame_axes_bottom_left(
-        self, draw, camera_view_matrix, camera_projection_matrix, screen_size, axes_scale=75.0, margin_percentage=0.03
+        self, draw, camera_view_matrix, camera_projection_matrix, screen_size, axes_scale=0.03, margin_percentage=0.03
     ):
-        if min(screen_size) < 32:
-            print(f"Skipping drawing world frame axes due to small image size {screen_size}")
-            return
-
-        # Maintain a consistent axes length using the distance of the camera to the origin
+        # Set a world location for the axes origin (1 unit in front of the camera) where -Z is the camera's forward direction
         camera_to_world_matrix = np.linalg.inv(camera_view_matrix)
-        camera_world_location = camera_to_world_matrix[3, :3]  # row-major representation
-        camera_to_origin_distance = np.linalg.norm(camera_world_location)
-        axes_length = camera_to_origin_distance / axes_scale
+        point_in_camera_space = np.array([0, 0, -1, 1])
 
-        # Define the origin and the end points of the axes in the world coordinate system
-        origin = np.array([0, 0, 0])
-        x_axis_end_point = np.array([axes_length, 0, 0])
-        y_axis_end_point = np.array([0, axes_length, 0])
-        z_axis_end_point = np.array([0, 0, axes_length])
+        # Create the axes in world (1 unit in front of the camera) with the given axes size
+        origin_world = point_in_camera_space @ camera_to_world_matrix
+        x_axis_end_point_world = np.array([axes_scale + origin_world[0], origin_world[1], origin_world[2], 1])
+        y_axis_end_point_world = np.array([origin_world[0], axes_scale + origin_world[1], origin_world[2], 1])
+        z_axis_end_point_world = np.array([origin_world[0], origin_world[1], axes_scale + origin_world[2], 1])
 
         # Create a partial function with fixed camera parameters
         project_to_screen = partial(
@@ -467,10 +492,10 @@ class PoseWriter(Writer):
         )
 
         # Project the origin and axes end points into 2D screen coordinates
-        origin_2d = project_to_screen(origin)
-        x_axis_end_2d = project_to_screen(x_axis_end_point)
-        y_axis_end_2d = project_to_screen(y_axis_end_point)
-        z_axis_end_2d = project_to_screen(z_axis_end_point)
+        origin_2d = project_to_screen(origin_world)
+        x_axis_end_2d = project_to_screen(x_axis_end_point_world)
+        y_axis_end_2d = project_to_screen(y_axis_end_point_world)
+        z_axis_end_2d = project_to_screen(z_axis_end_point_world)
 
         # Calculate offset margin (a percentage of the screen size) to ensure axes are not on the edge of the screen
         margin = int(margin_percentage * min(screen_size))
