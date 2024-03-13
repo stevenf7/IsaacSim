@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.5.1] - 2024-03-13
+### Fixed
+- Fixed get_prim_object_type function in prim utils.
+
 ## [3.5.0] - 2024-03-11
 ### Added
 - Enable joint velocities computation using finite difference with TGS solver

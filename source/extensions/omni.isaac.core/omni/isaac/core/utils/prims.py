@@ -827,20 +827,20 @@ def get_prim_object_type(prim_path: str) -> typing.Union[str, None]:
         xform
     """
     prim = get_prim_at_path(prim_path)
-    if prim.IsA(UsdGeom.Xformable):
-        return "xform"
+    if prim.HasAPI(UsdPhysics.ArticulationRootAPI):
+        return "articulation"
     elif prim.HasAPI(UsdPhysics.RigidBodyAPI):
         return "rigid_body"
     elif (
         prim.IsA(UsdPhysics.PrismaticJoint) or prim.IsA(UsdPhysics.RevoluteJoint) or prim.IsA(UsdPhysics.SphericalJoint)
     ):
         return "joint"
-    elif prim.HasAPI(UsdPhysics.ArticulationRootAPI):
-        return "articulation"
-    elif prim.IsA(UsdPhysicsJoint):
+    elif prim.IsA(UsdPhysics.Joint):
         return "d6joint"
+    elif prim.IsA(UsdGeom.Xformable):
+        return "xform"
     else:
-        raise Exception("the object type is not support yet")
+        return None
 
 
 def is_prim_non_root_articulation_link(prim_path: str) -> bool:
