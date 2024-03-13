@@ -27,7 +27,7 @@ else
     # Run command below to skip warm up
     #  echo "export ISAACSIM_SKIP_WARMUP=Y" >> ~/.profile
     if [[ -z "${ISAACSIM_SKIP_WARMUP}" ]]; then
-        gnome-terminal -- "${SCRIPT_DIR}/omni.isaac.sim.post.install.run.sh"
+        x-terminal-emulator -e "${SCRIPT_DIR}/omni.isaac.sim.post.install.run.sh"
     else
         echo ISAACSIM_SKIP_WARMUP was set. Warm up skipped. |& tee -a ${SCRIPT_DIR}/omni.isaac.sim.post.install.log
     fi

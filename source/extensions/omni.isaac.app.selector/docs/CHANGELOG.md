@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.0] - 2024-03-11
+### Changed
+- Replace gnome-terminal with x-terminal-emulator to support non-gnome-based desktops
+
 ## [2.3.2] - 2023-10-13
 
 ### Changed
