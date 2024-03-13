@@ -56,7 +56,7 @@ public:
         cx = width * 0.5f;
         cy = height * 0.5f;
         {
-            isaac::utils::ScopedDevice(db.inputs.cudaDeviceIndex());
+            isaac::utils::ScopedDevice scopedDev(db.inputs.cudaDeviceIndex());
             uint64_t handle = db.inputs.dataPtr();
             isaac::utils::ScopedCudaTextureObject srcTexObj(reinterpret_cast<cudaMipmappedArray_t>(handle), 0);
             state.mBuffer.resize(db.inputs.width() * db.inputs.height());

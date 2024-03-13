@@ -1,4 +1,4 @@
-// Copyright (c) 2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2023-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -29,12 +29,13 @@ public:
         if (device == -1 || cudaGetDevice(&mOldDevice) != cudaError::cudaSuccess)
         {
             mOldDevice = mDevice = -1;
+            return;
         }
 
         // if we want a device, and its not the current threads host device, then set it.
         if (mDevice != mOldDevice)
         {
-            cudaSetDevice(mDevice);
+            CUDA_CHECK(cudaSetDevice(mDevice));
             // NOTE: what do you want to do with an error here?  set mOldDevice to mDevice so you do nothing in dtor?
         }
     }
@@ -44,7 +45,7 @@ public:
         // return device back to what we had before if we set earlier
         if (mDevice != mOldDevice)
         {
-            cudaSetDevice(mOldDevice);
+            CUDA_CHECK(cudaSetDevice(mOldDevice));
         }
     }
 

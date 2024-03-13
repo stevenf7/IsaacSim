@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.13.1] - 2024-03-12
+### Fixed
+- Multi GPU support in RGBA to RGB node
+
 ## [1.13.0] - 2024-03-11
 ### Added
 - Isaac Get Wold Pose Node

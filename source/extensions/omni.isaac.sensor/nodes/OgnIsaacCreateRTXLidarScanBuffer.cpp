@@ -300,7 +300,7 @@ public:
 
         // std::cout << "Before cuda calls  -------------------\n";
         {
-            isaac::utils::ScopedDevice scopedDevice(cudaDeviceIndex);
+            isaac::utils::ScopedDevice scopedDev(cudaDeviceIndex);
             if (db.inputs.outputTimestamp())
             {
                 state.deltaTimesBuffer.copyAsync(lidarReturnsHost.deltaTimes, numReturnsInput, cudaMemcpyHostToDevice);
