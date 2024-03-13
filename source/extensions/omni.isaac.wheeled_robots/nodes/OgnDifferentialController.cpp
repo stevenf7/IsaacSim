@@ -45,10 +45,24 @@ public:
                 state.mWheelDistance = db.inputs.wheelDistance();
             }
 
-
             if (std::fabs(db.inputs.maxLinearSpeed()) > 0)
             {
                 state.mMaxLinearSpeed = std::fabs(db.inputs.maxLinearSpeed());
+            }
+
+            if (std::fabs(db.inputs.maxAcceleration()) > 0)
+            {
+                state.mMaxAcceleration = std::fabs(db.inputs.maxAcceleration());
+            }
+
+            if (std::fabs(db.inputs.maxDeceleration()) > 0)
+            {
+                state.mMaxDeceleration = std::fabs(db.inputs.maxDeceleration());
+            }
+
+            if (std::fabs(db.inputs.maxAngularAcceleration()) > 0)
+            {
+                state.mMaxAngularAcceleration = std::fabs(db.inputs.maxAngularAcceleration());
             }
 
             if (std::fabs(db.inputs.maxAngularSpeed()) > 0)
@@ -61,14 +75,54 @@ public:
                 state.mMaxWheelSpeed = std::fabs(db.inputs.maxWheelSpeed());
             }
 
+            state.mPreviousAngularSpeed = 0;
+            state.mPreviousAngularSpeed = 0;
             state.mInitialized = true;
         }
+        double dt = db.inputs.dt();
 
+        // if dt is invalid, but acceleration checks are required, skip compute
+        if (dt <= 0.0 &&
+            (state.mMaxAcceleration != 0.0 || state.mMaxDeceleration != 0.0 || state.mMaxAngularAcceleration != 0.0))
+        {
+            db.logWarning("invalid dt %f, cannot check for acceleration limits, skipping current step", dt);
+            return false;
+        }
+
+        // if the command velocity is higher than max velocity, clip the command velocity to max velocity
         double linearVelocity =
             std::max(-state.mMaxLinearSpeed, std::min(state.mMaxLinearSpeed, db.inputs.linearVelocity()));
         double angularVelocity =
             std::max(-state.mMaxAngularSpeed, std::min(state.mMaxAngularSpeed, db.inputs.angularVelocity()));
 
+        if (state.mMaxAcceleration != 0.0 && state.mMaxDeceleration != 0.0)
+        {
+            // if the magnitude is increasing, and the sign is the same, the robot is accelerating
+            if (std::fabs(linearVelocity) > std::fabs(state.mPreviousLinearSpeed) &&
+                linearVelocity * state.mPreviousLinearSpeed >= 0)
+            {
+                linearVelocity =
+                    std::max(state.mPreviousLinearSpeed - state.mMaxAcceleration * dt,
+                             std::min(linearVelocity, state.mPreviousLinearSpeed + state.mMaxAcceleration * dt));
+            }
+            // if the magnitude is decreasing, or the sign is not the same, the robot is braking (decelerating)
+            else
+            {
+                linearVelocity =
+                    std::max(state.mPreviousLinearSpeed - state.mMaxDeceleration * dt,
+                             std::min(linearVelocity, state.mPreviousLinearSpeed + state.mMaxDeceleration * dt));
+            }
+        }
+
+        if (state.mMaxAngularAcceleration != 0.0)
+        {
+            angularVelocity =
+                std::max(state.mPreviousAngularSpeed - state.mMaxAngularAcceleration * dt,
+                         std::min(angularVelocity, state.mPreviousAngularSpeed + state.mMaxAngularAcceleration * dt));
+        }
+
+        state.mPreviousAngularSpeed = angularVelocity;
+        state.mPreviousLinearSpeed = linearVelocity;
         // calculate wheel speed
         auto& jointVelocities = db.outputs.velocityCommand();
         jointVelocities.resize(2);
@@ -98,6 +152,10 @@ public:
         double* angularVelocity = getDataW<double>(context, angularHandle);
         *angularVelocity = 0;
 
+        mPreviousLinearSpeed = 0.0;
+        mPreviousAngularSpeed = 0.0;
+        mInitialized = false;
+
         // set the node's input and output
         // TODO: Disabled because this causes a crash on reset when next compute is called
         // AttributeObj velocityAttr = nodeObj.iNode->getAttribute(nodeObj, "outputs:velocityCommand");
@@ -112,6 +170,11 @@ private:
     double mMaxAngularSpeed = 1.0e7;
     double mMaxWheelSpeed = 1.0e7;
     double mMaxLinearSpeed = 1.0e7;
+    double mMaxAcceleration = 0.0;
+    double mMaxDeceleration = 0.0;
+    double mMaxAngularAcceleration = 0.0;
+    double mPreviousLinearSpeed = 0.0;
+    double mPreviousAngularSpeed = 0.0;
     double mWheelDistance = 0;
     double mWheelRadius = 0;
     NodeObj nodeObj;
