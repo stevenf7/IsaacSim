@@ -1,6 +1,13 @@
 # Changelog
 
-## [9.14.2] - 2024-03-07
+## [9.14.3] - 2024-03-11
+### Fixed
+- Fixed contact sensor threshold bug
+
+### Changed
+- Changed XT-32 lidar name from PandarXT-32 to XT-32
+
+## [9.14.2] - 2023-03-07
 ### Changed
 - Removed the usage of the deprecated dynamic_control extension 
 
