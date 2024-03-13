@@ -3,6 +3,7 @@
 ## [9.14.3] - 2024-03-11
 ### Fixed
 - Fixed contact sensor threshold bug
+- Multi GPU support
 
 ### Changed
 - Changed XT-32 lidar name from PandarXT-32 to XT-32

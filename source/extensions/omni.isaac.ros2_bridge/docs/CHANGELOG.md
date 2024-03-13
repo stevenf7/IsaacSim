@@ -7,6 +7,7 @@
 ## [2.10.1] - 2024-03-12
 ### Fixed
 - Fixed logging in ROS2 bridge backend
+- Multi GPU support
 
 ## [2.10.0] - 2024-03-11
 ### Changed

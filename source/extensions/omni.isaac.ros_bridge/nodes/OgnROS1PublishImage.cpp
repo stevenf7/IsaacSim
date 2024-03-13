@@ -124,7 +124,7 @@ public:
         }
         else
         {
-            omni::isaac::utils::ScopedDevice(db.inputs.cudaDeviceIndex());
+            omni::isaac::utils::ScopedDevice scopedDev(db.inputs.cudaDeviceIndex());
 
             if (db.inputs.bufferSize() == 0)
             {

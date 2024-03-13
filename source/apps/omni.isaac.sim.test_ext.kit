@@ -42,6 +42,7 @@ app.fastShutdown=1
 app.viewport.createCameraModelRep=false # needed for replicator
 renderer.multiGpu.enabled = true
 renderer.multiGpu.autoEnable = true
+app.gatherRenderResults = false
 exts."omni.kit.pipapi".installCheckIgnoreVersion = true
 exts."omni.kit.window.viewport".blockingGetViewportDrawable = true
 exts."omni.kit.thumbnails.usd".thumbnail_on_save = false
@@ -80,6 +81,7 @@ exts.omni.kit.renderer.core.present.enabled = false
 exts.omni.kit.renderer.core.present.presentAfterRendering = false
 persistent.app.viewport.defaults.tickRate = 120
 rtx-transient.dlssg.enabled = false
+exts."omni.isaac.ros2_bridge".publish_without_verification = true
 
 crashreporter.data.experience = "Isaac Sim"
 # crashreporter.enabled = false

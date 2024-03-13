@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.15.9] - 2024-03-12
+### Fixed
+- Multi GPU support
+
 ## [1.15.8] - 2024-03-05
 ### Fixed
 - RGB being published twice per frame

@@ -109,7 +109,7 @@ public:
                 size_t totalBytes = point_cloud_msg.row_step;
                 point_cloud_msg.data.resize(totalBytes);
 
-                omni::isaac::utils::ScopedDevice(db.inputs.cudaDeviceIndex());
+                omni::isaac::utils::ScopedDevice scopedDev(db.inputs.cudaDeviceIndex());
                 auto src = reinterpret_cast<void*>(db.inputs.dataPtr());
                 CUDA_CHECK(cudaMemcpy(&point_cloud_msg.data[0], src, db.inputs.bufferSize(), cudaMemcpyDeviceToHost));
             }

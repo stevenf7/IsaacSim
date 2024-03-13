@@ -70,6 +70,7 @@ dependencies = [
 
 args = [
     "--/exts/omni.isaac.ros2_bridge/publish_without_verification=1",
+    "--/app/gatherRenderResults=false"
 ]
 
 stdoutFailPatterns.exclude = [

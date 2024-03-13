@@ -120,7 +120,7 @@ public:
                 // size_t totalBytes = row_step;
                 state.mMessage->fillMetadata(mFrameId, db.inputs.timeStamp(), width, height, point_step);
 
-                omni::isaac::utils::ScopedDevice(db.inputs.cudaDeviceIndex());
+                omni::isaac::utils::ScopedDevice scopedDev(db.inputs.cudaDeviceIndex());
                 auto src = reinterpret_cast<void*>(db.inputs.dataPtr());
                 CUDA_CHECK(cudaMemcpy(state.mMessage->getDataPtr(), src, db.inputs.bufferSize(), cudaMemcpyDeviceToHost));
             }
