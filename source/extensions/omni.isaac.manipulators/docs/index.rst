@@ -5,7 +5,7 @@ Manipulators [omni.isaac.manipulators]
 Single Manipulator
 -------------------
 
-.. automodule:: omni.isaac.manipulators.single_manipulator
+.. automodule:: omni.isaac.manipulators.manipulators.SingleManipulator
     :inherited-members:
     :members:
     :undoc-members:

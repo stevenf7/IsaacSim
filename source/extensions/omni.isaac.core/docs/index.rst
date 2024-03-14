@@ -686,14 +686,6 @@ Mesh Utils
     :undoc-members:
     :exclude-members:
 
-Nucleus Utils
-==================
-
-.. automodule:: omni.isaac.nucleus
-    :members:
-    :undoc-members:
-    :exclude-members:
-
 |
 
 Physics Utils

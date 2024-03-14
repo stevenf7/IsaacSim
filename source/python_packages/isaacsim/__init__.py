@@ -17,8 +17,11 @@ if not os.getenv("CARB_APP_PATH"):
     root_path = os.path.dirname(os.path.abspath(__file__))
     root_path = os.path.normpath(os.path.join(root_path, "..", ".."))
 
-    # preload libcarb.so
-    ctypes.PyDLL(os.path.join(root_path, "kit", "libcarb.so"), mode=ctypes.RTLD_GLOBAL)
+    # preload carb libraries
+    if sys.platform == "win32":
+        ctypes.PyDLL(os.path.join(root_path, "kit", "carb.dll"), mode=ctypes.RTLD_GLOBAL)
+    else:
+        ctypes.PyDLL(os.path.join(root_path, "kit", "libcarb.so"), mode=ctypes.RTLD_GLOBAL)
 
     # set environment variables
     if not os.environ.get("CARB_APP_PATH", None):
