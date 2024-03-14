@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.5.1] - 2024-03-14
+### Changed
+- Changed the extension structure to allow for Cpp files to be added.
+- Changed the find_matching_prim_paths util to a cpp implmentation for higher perf.
+
 ## [3.5.1] - 2024-03-13
 ### Fixed
 - Fixed get_prim_object_type function in prim utils.

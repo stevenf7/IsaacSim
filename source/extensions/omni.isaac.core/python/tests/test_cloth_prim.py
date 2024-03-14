@@ -53,8 +53,8 @@ class TestClothPrim(omni.kit.test.AsyncTestCase, TestProperties):
         physicsUtils.setup_transform_as_scale_orient_translate(self.plane_mesh)
         physicsUtils.set_or_add_translate_op(self.plane_mesh, Gf.Vec3f(0.0, 0.0, 2.0))
         physicsUtils.set_or_add_orient_op(self.plane_mesh, Gf.Rotation(Gf.Vec3d([1, 0, 0]), 10.0).GetQuat())
-        particle_system_path = env.GetPrim().GetPath().AppendChild("particleSystem")
-        particle_material_path = env.GetPrim().GetPath().AppendChild("particleMaterial")
+        particle_system_path = str(env.GetPrim().GetPath().AppendChild("particleSystem"))
+        particle_material_path = str(env.GetPrim().GetPath().AppendChild("particleMaterial"))
 
         self.particle_material = ParticleMaterial(prim_path=particle_material_path, drag=0.1, lift=0.3, friction=0.6)
         radius = 0.5 * (0.6 / 5.0)
