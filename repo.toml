@@ -193,6 +193,7 @@ python_paths = [
   "${root}/_build/${platform}/${config}/kit/extscore/*",
   "${root}/_build/${platform}/${config}/kit/kernel/py",
   # "${root}/_build/${platform}/${config}/kit/plugins/bindings-python/",
+  "${root}/_build/${platform}/${config}/python_packages",
   "${root}/_build/${platform}/${config}/kit/exts/omni.kit.pip_archive/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.isaac.core_archive/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.isaac.ml_archive/pip_prebundle",
@@ -240,7 +241,10 @@ sphinx_conf_py_extra = """
     html_static_path = [
         "docs/media/NVIDIA-LogoBlack.svg",
     ]
-    autodoc_mock_imports = ["omni.ui", "usdrt",  "omni.kit.window", "omni.kit.helper", "omni.kit.ui", "omni.graph", "omni.replicator.core"]
+    autodoc_mock_imports = ["omni.ui", "usdrt",  "omni.kit.window", "omni.kit.helper", "omni.kit.ui", "omni.graph", "omni.replicator.core", "omni.activity", "omni.kit.app"]
+    import sys
+    if sys.platform == "win32":
+        autodoc_mock_imports.extend(["omni.isaac.IsaacSensorSchema", "omni.isaac.RangeSensorSchema", "omni.isaac.gym", "osqp", "omni.isaac.ros_bridge"])
 
     rst_prolog = '''
     .. |br| raw:: html
