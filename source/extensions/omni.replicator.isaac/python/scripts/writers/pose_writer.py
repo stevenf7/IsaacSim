@@ -11,6 +11,7 @@ from functools import partial
 import numpy as np
 from omni.replicator.core import AnnotatorRegistry, BackendDispatch, Writer, WriterRegistry
 from omni.replicator.core.scripts.functional import write_image, write_json
+from omni.replicator.isaac.scripts.utils import calculate_truncation_ratio_simple
 from PIL import Image, ImageDraw
 from pxr import Gf
 
@@ -190,7 +191,7 @@ class PoseWriter(Writer):
             obj = {}
             # `occlusionRatio` represents (visible pixels / total pixels) where `0.0` is fully visible and `1.0` is fully occluded
             # NOTE: `obj_visibility` is inverted to match the format where `0.0` is fully occluded and `1.0`` is fully visible
-            obj_visibility = 1.0 - float(bbox["occlusionRatio"])
+            obj_visibility = 1.0 - abs(float(bbox["occlusionRatio"]))
 
             # Early exit if visibility is below the given threshold
             if obj_visibility <= self._visibility_threshold:
@@ -198,7 +199,7 @@ class PoseWriter(Writer):
 
             obj["label"] = id_to_labels[bbox["semanticId"]]
             obj["prim_path"] = bb3d_info["primPaths"][i]
-            obj["visibility"] = obj_visibility
+            obj["visibility"] = round(obj_visibility, 3)
 
             # Local space to to world transform (row-major)
             local_to_world_tf = bbox["transform"]
@@ -299,6 +300,11 @@ class PoseWriter(Writer):
                 obj["projected_cuboid"] = keypoints_projected_ordered
             if self._write_debug_images:
                 self._debug_frame_data["projected_keypoints"].append(keypoints_projected_ordered)
+
+            obj["truncation_ratio"] = calculate_truncation_ratio_simple(
+                keypoints_projected_ordered, screen_size[0], screen_size[1]
+            )
+
             objs.append(obj)
 
         return objs
@@ -322,8 +328,8 @@ class PoseWriter(Writer):
             "cx": camera_params["renderProductResolution"][0] / 2.0 + camera_params["cameraApertureOffset"][0],
             "cy": camera_params["renderProductResolution"][1] / 2.0 + camera_params["cameraApertureOffset"][1],
         }
-        camera_data["camera_view_matrix"] = camera_params["cameraViewTransform"].reshape(4, 4).tolist()
-        camera_data["camera_projection_matrix"] = camera_params["cameraProjection"].reshape(4, 4).tolist()
+        camera_data["camera_view_matrix"] = np.round(camera_params["cameraViewTransform"], 5).reshape(4, 4).tolist()
+        camera_data["camera_projection_matrix"] = np.round(camera_params["cameraProjection"], 5).reshape(4, 4).tolist()
 
         if self._format == "centerpose":
             camera_data["width"] = camera_params["renderProductResolution"].tolist()[0]

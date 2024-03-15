@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.14.0] - 2024-03-14
+### Added 
+- Function to approximate truncation of object based on comparing 3D bounding box with visible portion on screen 
+- DOPE and CenterPose now output truncation value in addition to visibility 
+
 ## [1.13.4] - 2024-03-12
 ### Fixed
 - Pose writer fixes for assets with origin not at the center of the bounds
