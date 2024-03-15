@@ -39,6 +39,11 @@ std::shared_ptr<Ros2Subscriber> Ros2FactoryHumble::CreateSubscriber(Ros2NodeBase
     return std::make_shared<Ros2SubscriberHumble>(node, topic_name, type, history_depth);
 }
 
+std::shared_ptr<Ros2Service> Ros2FactoryHumble::CreateService(Ros2NodeBase* node, const char* service_name, const void* type)
+{
+    return std::make_shared<Ros2ServiceHumble>(node, service_name, type);
+}
+
 std::shared_ptr<Ros2ClockMessage> Ros2FactoryHumble::CreateClockMessage()
 {
     return std::make_shared<Ros2ClockMessageHumble>();
@@ -178,9 +183,10 @@ bool Ros2FactoryHumble::validateNodeName(const std::string& nodeName)
 
 std::shared_ptr<Ros2Message> Ros2FactoryHumble::createDynamicMessage(const std::string& pkgName,
                                                                      const std::string& msgSubfolder,
-                                                                     const std::string& msgName)
+                                                                     const std::string& msgName,
+                                                                     BackendMessageType messageType)
 {
-    return std::make_shared<Ros2DynamicMessageHumble>(pkgName, msgSubfolder, msgName);
+    return std::make_shared<Ros2DynamicMessageHumble>(pkgName, msgSubfolder, msgName, messageType);
 }
 
 Ros2Factory* createFactory()

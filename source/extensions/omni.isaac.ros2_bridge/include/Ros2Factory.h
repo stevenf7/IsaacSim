@@ -26,6 +26,22 @@
 // #include <omni/fabric/FabricUSD.h>
 // #include <omni/usd/UsdUtils.h>
 
+
+enum class BackendMessageType : uint8_t
+{
+    eMessage = 0, // topic message ()
+    eRequest, // service request (_Request)
+    eResponse, // service response (_Response)
+    eGoal, // action goal (_Goal)
+    eResult, // action result (_Result)
+    eFeedback, // action feedback (_Feedback)
+    eSendGoalRequest, // action goal request (_SendGoal_Request)
+    eSendGoalResponse, // action goal request (_SendGoal_Response)
+    eFeedbackMessage, // action feedback (_FeedbackMessage)
+    eGetResultRequest, // action result request (_GetResult_Request)
+    eGetResultResponse, // action result response (_GetResult_Response)
+};
+
 struct MessageField
 {
     std::string name; // field name
@@ -54,6 +70,7 @@ class Ros2DynamicMessage : public Ros2Message
 {
 public:
     virtual void getData(std::vector<std::shared_ptr<const void>>& data, bool asOgnType) = 0;
+    virtual void setData(const std::vector<std::shared_ptr<const void>>& data, bool fromOgnType) = 0;
     std::vector<MessageField> getMessageFields()
     {
         return mMessagesFields;
@@ -98,11 +115,22 @@ public:
     virtual bool isValid() = 0;
 };
 
+class Ros2Service
+{
+public:
+    virtual bool spin(void* msg) = 0;
+    virtual bool sendResponse(void* msg) = 0;
+    virtual bool isValid() = 0;
+};
+
 class Ros2Backend
 {
 public:
-    Ros2Backend(std::string pkgName, std::string msgSubfolder, std::string msgName)
-        : mPkgName(pkgName), mMsgSubfolder(msgSubfolder), mMsgName(msgName)
+    Ros2Backend(std::string pkgName,
+                std::string msgSubfolder,
+                std::string msgName,
+                BackendMessageType messageType = BackendMessageType::eMessage)
+        : mPkgName(pkgName), mMsgSubfolder(msgSubfolder), mMsgName(msgName), mMessageType(messageType)
     {
         mGeneratorLibrary =
             std::make_shared<omni::isaac::utils::LibraryLoader>(std::string(mPkgName) + "__rosidl_generator_c");
@@ -110,40 +138,77 @@ public:
             std::make_shared<omni::isaac::utils::LibraryLoader>(std::string(mPkgName) + "__rosidl_typesupport_c");
         mTypesupportIntrospectionLibrary = std::make_shared<omni::isaac::utils::LibraryLoader>(
             std::string(mPkgName) + "__rosidl_typesupport_introspection_c");
+        mTypesupportIntrospectionLibrary = std::make_shared<omni::isaac::utils::LibraryLoader>(
+            std::string(mPkgName) + "__rosidl_typesupport_introspection_c");
     }
     void* getTypeSupportHandleDynamic()
     {
-        return mTypesupportLibrary->callSymbol<void*>("rosidl_typesupport_c__get_message_type_support_handle__" +
-                                                      std::string(mPkgName) + "__" + std::string(mMsgSubfolder) + "__" +
-                                                      std::string(mMsgName));
+        return mTypesupportLibrary->callSymbol<void*>("rosidl_typesupport_c__get_" + getMessageSpec(true) +
+                                                      "_type_support_handle__" + std::string(mPkgName) + "__" +
+                                                      std::string(mMsgSubfolder) + "__" + std::string(mMsgName));
     }
     void* getTypeSupportIntrospectionHandleDynamic()
     {
         return mTypesupportIntrospectionLibrary->callSymbol<void*>(
-            "rosidl_typesupport_introspection_c__get_message_type_support_handle__" + std::string(mPkgName) + "__" +
-            std::string(mMsgSubfolder) + "__" + std::string(mMsgName));
+            "rosidl_typesupport_introspection_c__get_" + getMessageSpec(true) + "_type_support_handle__" +
+            std::string(mPkgName) + "__" + std::string(mMsgSubfolder) + "__" + std::string(mMsgName));
     }
     void* create()
     {
         return mGeneratorLibrary->callSymbol<void*>(std::string(mPkgName) + "__" + std::string(mMsgSubfolder) + "__" +
-                                                    std::string(mMsgName) + "__create");
+                                                    std::string(mMsgName) + getMessageSpec(false) + "__create");
     }
     template <typename T>
     void destroy(T msg)
     {
         if (!msg)
             return;
-        mGeneratorLibrary->callSymbolWithArg<void>(
-            std::string(mPkgName) + "__" + std::string(mMsgSubfolder) + "__" + std::string(mMsgName) + "__destroy", msg);
+        mGeneratorLibrary->callSymbolWithArg<void>(std::string(mPkgName) + "__" + std::string(mMsgSubfolder) + "__" +
+                                                       std::string(mMsgName) + getMessageSpec(false) + "__destroy",
+                                                   msg);
     }
 
 protected:
     std::string mPkgName;
     std::string mMsgSubfolder;
     std::string mMsgName;
+    BackendMessageType mMessageType;
     std::shared_ptr<omni::isaac::utils::LibraryLoader> mTypesupportIntrospectionLibrary;
     std::shared_ptr<omni::isaac::utils::LibraryLoader> mTypesupportLibrary;
     std::shared_ptr<omni::isaac::utils::LibraryLoader> mGeneratorLibrary;
+
+private:
+    std::string getMessageSpec(const bool& asType)
+    {
+        switch (BackendMessageType(mMessageType))
+        {
+        case BackendMessageType::eMessage:
+            return asType ? "message" : "";
+        case BackendMessageType::eRequest:
+            return asType ? "service" : "_Request";
+        case BackendMessageType::eResponse:
+            return asType ? "service" : "_Response";
+        case BackendMessageType::eGoal:
+            return asType ? "action" : "_Goal";
+        case BackendMessageType::eResult:
+            return asType ? "action" : "_Result";
+        case BackendMessageType::eFeedback:
+            return asType ? "action" : "_Feedback";
+        case BackendMessageType::eSendGoalRequest:
+            return asType ? "action" : "_SendGoal_Request";
+        case BackendMessageType::eSendGoalResponse:
+            return asType ? "action" : "_SendGoal_Response";
+        case BackendMessageType::eFeedbackMessage:
+            return asType ? "action" : "_FeedbackMessage";
+        case BackendMessageType::eGetResultRequest:
+            return asType ? "action" : "_GetResult_Request";
+        case BackendMessageType::eGetResultResponse:
+            return asType ? "action" : "_GetResult_Response";
+        default:
+            break;
+        }
+        return "";
+    }
 };
 
 
@@ -368,6 +433,8 @@ public:
                                                              const char* topic_name,
                                                              const void* type,
                                                              const size_t history_depth) = 0;
+    virtual std::shared_ptr<Ros2Service> CreateService(Ros2NodeBase* node, const char* service_name, const void* type) = 0;
+
     virtual std::shared_ptr<Ros2ClockMessage> CreateClockMessage() = 0;
 
     virtual std::shared_ptr<Ros2ImuMessage> CreateImuMessage() = 0;
@@ -402,7 +469,9 @@ public:
     virtual bool validateNodeNamespace(const std::string& nodeNamespace) = 0;
     virtual bool validateNodeName(const std::string& nodeName) = 0;
 
-    virtual std::shared_ptr<Ros2Message> createDynamicMessage(const std::string& pkgName,
-                                                              const std::string& msgSubfolder,
-                                                              const std::string& msgName) = 0;
+    virtual std::shared_ptr<Ros2Message> createDynamicMessage(
+        const std::string& pkgName,
+        const std::string& msgSubfolder,
+        const std::string& msgName,
+        BackendMessageType messageType = BackendMessageType::eMessage) = 0;
 };

@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.11.0] - 2024-03-13
+### Added
+- ROS2 service
+- Dynamic ROS2 message for services and actions
+
 ## [2.10.2] - 2024-03-12
 ### Added
 - Added differential base unit test for nova carter

@@ -12,8 +12,11 @@
 #include <include/Ros2Macros.h>
 #include <rcl/rcl.h>
 
-Ros2BackendHumble::Ros2BackendHumble(std::string pkgName, std::string msgSubfolder, std::string msgName)
-    : Ros2Backend(pkgName, msgSubfolder, msgName)
+Ros2BackendHumble::Ros2BackendHumble(std::string pkgName,
+                                     std::string msgSubfolder,
+                                     std::string msgName,
+                                     BackendMessageType messageType)
+    : Ros2Backend(pkgName, msgSubfolder, msgName, messageType)
 {
 }
 

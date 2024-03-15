@@ -13,10 +13,12 @@
 #include "geometry_msgs/msg/transform_stamped.h"
 #include "geometry_msgs/msg/twist.h"
 #include "nav_msgs/msg/odometry.h"
+#include "rosidl_runtime_c/action_type_support_struct.h"
 #include "rosidl_runtime_c/primitives_sequence_functions.h"
 #include "rosidl_runtime_c/string_functions.h"
 #include "rosidl_typesupport_introspection_c/field_types.h"
 #include "rosidl_typesupport_introspection_c/message_introspection.h"
+#include "rosidl_typesupport_introspection_c/service_introspection.h"
 #include "sensor_msgs/msg/image.h"
 #include "sensor_msgs/msg/imu.h"
 #include "sensor_msgs/msg/joint_state.h"
@@ -40,7 +42,10 @@
 class Ros2BackendFoxy : public Ros2Backend
 {
 public:
-    Ros2BackendFoxy(std::string pkgName, std::string msgSubfolder, std::string msgName);
+    Ros2BackendFoxy(std::string pkgName,
+                    std::string msgSubfolder,
+                    std::string msgName,
+                    BackendMessageType messageType = BackendMessageType::eMessage);
     void set_timestamp(const int64_t nanoseconds, builtin_interfaces__msg__Time& time);
     void set_string(const std::string& input, rosidl_runtime_c__String& output);
     void set_header(const std::string& frame_id, const int64_t nanoseconds, std_msgs__msg__Header& header);
@@ -316,29 +321,66 @@ private:
     bool wait_set_initialized = false;
 };
 
+class Ros2ServiceFoxy : public Ros2Service
+{
+public:
+    Ros2ServiceFoxy(Ros2NodeBase* node, const char* service_name, const void* type);
+    virtual ~Ros2ServiceFoxy();
+    virtual bool spin(void* msg);
+    virtual bool sendResponse(void* msg);
+    virtual bool isValid()
+    {
+        return mService != nullptr;
+    }
+
+private:
+    Ros2NodeBase* mNode;
+    std::shared_ptr<rcl_service_t> mService = nullptr;
+    rcl_wait_set_t wait_set;
+    rmw_request_id_t request_id;
+    bool wait_set_initialized = false;
+};
+
 class Ros2DynamicMessageFoxy : public Ros2DynamicMessage, Ros2BackendFoxy
 {
 public:
-    Ros2DynamicMessageFoxy(std::string pkgName, std::string msgSubfolder, std::string msgName);
+    Ros2DynamicMessageFoxy(std::string pkgName,
+                           std::string msgSubfolder,
+                           std::string msgName,
+                           BackendMessageType messageType = BackendMessageType::eMessage);
     virtual ~Ros2DynamicMessageFoxy();
     virtual const void* getTypeSupportHandle();
     virtual void getData(std::vector<std::shared_ptr<const void>>& data, bool asOgnType);
+    virtual void setData(const std::vector<std::shared_ptr<const void>>& data, bool fromOgnType);
 
 protected:
+    virtual const void* getIntrospectionMembers();
     virtual void parseMessageFields(const std::string& parentName, const void* members);
     virtual void parseMessageValues(const void* members,
                                     uint8_t* data,
                                     std::vector<std::shared_ptr<const void>>& messageValues,
                                     bool asOgnType);
+    virtual void setMessageValues(const void* members,
+                                  uint8_t* messageData,
+                                  const std::vector<std::shared_ptr<const void>>& messageValues,
+                                  bool fromOgnType);
 
-private:
     template <typename ArrayType, typename RosType, typename OgnType>
     std::shared_ptr<const void> getArray(const rosidl_typesupport_introspection_c__MessageMember* member,
                                          uint8_t* data,
                                          bool asOgnType);
 
+    template <typename ArrayType, auto ArrayInit, typename RosType, typename OgnType>
+    void setArray(const rosidl_typesupport_introspection_c__MessageMember* member,
+                  uint8_t* data,
+                  std::shared_ptr<const void> value,
+                  bool fromOgnType);
+
     template <typename RosType, typename OgnType>
     std::shared_ptr<const void> getSingleValue(uint8_t* data, bool asOgnType);
+
+    template <typename RosType, typename OgnType>
+    void setSingleValue(uint8_t* data, std::shared_ptr<const void> value, bool fromOgnType);
 
     void messageValuesToJson(const void* members,
                              uint8_t* messageData,
