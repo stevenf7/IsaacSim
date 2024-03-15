@@ -30,6 +30,7 @@ std::shared_ptr<Ros2Publisher> Ros2FactoryFoxy::CreatePublisher(Ros2NodeBase* no
 {
     return std::make_shared<Ros2PublisherFoxy>(node, topic_name, type, history_depth);
 }
+
 std::shared_ptr<Ros2Subscriber> Ros2FactoryFoxy::CreateSubscriber(Ros2NodeBase* node,
                                                                   const char* topic_name,
                                                                   const void* type,
@@ -37,6 +38,12 @@ std::shared_ptr<Ros2Subscriber> Ros2FactoryFoxy::CreateSubscriber(Ros2NodeBase* 
 {
     return std::make_shared<Ros2SubscriberFoxy>(node, topic_name, type, history_depth);
 }
+
+std::shared_ptr<Ros2Service> Ros2FactoryFoxy::CreateService(Ros2NodeBase* node, const char* service_name, const void* type)
+{
+    return std::make_shared<Ros2ServiceFoxy>(node, service_name, type);
+}
+
 std::shared_ptr<Ros2ClockMessage> Ros2FactoryFoxy::CreateClockMessage()
 {
     return std::make_shared<Ros2ClockMessageFoxy>();
@@ -175,9 +182,10 @@ bool Ros2FactoryFoxy::validateNodeName(const std::string& nodeName)
 
 std::shared_ptr<Ros2Message> Ros2FactoryFoxy::createDynamicMessage(const std::string& pkgName,
                                                                    const std::string& msgSubfolder,
-                                                                   const std::string& msgName)
+                                                                   const std::string& msgName,
+                                                                   BackendMessageType messageType)
 {
-    return std::make_shared<Ros2DynamicMessageFoxy>(pkgName, msgSubfolder, msgName);
+    return std::make_shared<Ros2DynamicMessageFoxy>(pkgName, msgSubfolder, msgName, messageType);
 }
 
 Ros2Factory* createFactory()

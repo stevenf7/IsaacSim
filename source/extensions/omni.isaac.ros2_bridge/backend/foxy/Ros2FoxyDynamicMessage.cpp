@@ -14,19 +14,19 @@
 #include <nlohmann/json.hpp>
 
 
-Ros2DynamicMessageFoxy::Ros2DynamicMessageFoxy(std::string pkgName, std::string msgSubfolder, std::string msgName)
-    : Ros2BackendFoxy(pkgName, msgSubfolder, msgName)
+Ros2DynamicMessageFoxy::Ros2DynamicMessageFoxy(std::string pkgName,
+                                               std::string msgSubfolder,
+                                               std::string msgName,
+                                               BackendMessageType messageType)
+    : Ros2BackendFoxy(pkgName, msgSubfolder, msgName, messageType)
 {
     // create message
     msg = create();
     // get message fields
     mMessagesFields.clear();
-    void* typeSupportHandle = getTypeSupportIntrospectionHandleDynamic();
-    if (typeSupportHandle)
-    {
-        auto members = static_cast<const rosidl_message_type_support_t*>(typeSupportHandle)->data;
+    const void* members = getIntrospectionMembers();
+    if (members)
         parseMessageFields("", members);
-    }
 }
 
 Ros2DynamicMessageFoxy::~Ros2DynamicMessageFoxy()
@@ -42,13 +42,81 @@ const void* Ros2DynamicMessageFoxy::getTypeSupportHandle()
 
 void Ros2DynamicMessageFoxy::getData(std::vector<std::shared_ptr<const void>>& data, bool asOgnType)
 {
+    const void* members = getIntrospectionMembers();
+    if (members)
+        parseMessageValues(members, reinterpret_cast<uint8_t*>(msg), data, asOgnType);
+}
+
+void Ros2DynamicMessageFoxy::setData(const std::vector<std::shared_ptr<const void>>& data, bool fromOgnType)
+{
+    const void* members = getIntrospectionMembers();
+    if (members)
+        setMessageValues(members, reinterpret_cast<uint8_t*>(msg), data, fromOgnType);
+}
+
+const void* Ros2DynamicMessageFoxy::getIntrospectionMembers()
+{
     void* typeSupportHandle = getTypeSupportIntrospectionHandleDynamic();
     if (typeSupportHandle)
     {
-        auto members = static_cast<const rosidl_message_type_support_t*>(typeSupportHandle)->data;
-        parseMessageValues(members, reinterpret_cast<uint8_t*>(msg), data, asOgnType);
+        switch (BackendMessageType(mMessageType))
+        {
+        case BackendMessageType::eMessage:
+        {
+            return static_cast<const rosidl_message_type_support_t*>(typeSupportHandle)->data;
+        }
+        case BackendMessageType::eRequest:
+        {
+            auto typeSupportData = static_cast<const rosidl_service_type_support_t*>(typeSupportHandle)->data;
+            return reinterpret_cast<const rosidl_typesupport_introspection_c__ServiceMembers*>(typeSupportData)
+                ->request_members_;
+        }
+        case BackendMessageType::eResponse:
+        {
+            auto typeSupportData = static_cast<const rosidl_service_type_support_t*>(typeSupportHandle)->data;
+            return reinterpret_cast<const rosidl_typesupport_introspection_c__ServiceMembers*>(typeSupportData)
+                ->response_members_;
+        }
+        case BackendMessageType::eSendGoalRequest:
+        {
+            auto typeSupportAction = static_cast<const rosidl_action_type_support_t*>(typeSupportHandle);
+            auto typeSupportData = typeSupportAction->goal_service_type_support->data;
+            return reinterpret_cast<const rosidl_typesupport_introspection_c__ServiceMembers*>(typeSupportData)
+                ->request_members_;
+        }
+        case BackendMessageType::eSendGoalResponse:
+        {
+            auto typeSupportAction = static_cast<const rosidl_action_type_support_t*>(typeSupportHandle);
+            auto typeSupportData = typeSupportAction->goal_service_type_support->data;
+            return reinterpret_cast<const rosidl_typesupport_introspection_c__ServiceMembers*>(typeSupportData)
+                ->response_members_;
+        }
+        case BackendMessageType::eFeedbackMessage:
+        {
+            auto typeSupportAction = static_cast<const rosidl_action_type_support_t*>(typeSupportHandle);
+            return typeSupportAction->feedback_message_type_support->data;
+        }
+        case BackendMessageType::eGetResultRequest:
+        {
+            auto typeSupportAction = static_cast<const rosidl_action_type_support_t*>(typeSupportHandle);
+            auto typeSupportData = typeSupportAction->result_service_type_support->data;
+            return reinterpret_cast<const rosidl_typesupport_introspection_c__ServiceMembers*>(typeSupportData)
+                ->request_members_;
+        }
+        case BackendMessageType::eGetResultResponse:
+        {
+            auto typeSupportAction = static_cast<const rosidl_action_type_support_t*>(typeSupportHandle);
+            auto typeSupportData = typeSupportAction->result_service_type_support->data;
+            return reinterpret_cast<const rosidl_typesupport_introspection_c__ServiceMembers*>(typeSupportData)
+                ->response_members_;
+        }
+        default:
+            break;
+        }
     }
+    return nullptr;
 }
+
 
 void Ros2DynamicMessageFoxy::parseMessageFields(const std::string& parentName, const void* members)
 {
@@ -192,6 +260,47 @@ std::shared_ptr<const void> Ros2DynamicMessageFoxy::getArray(
     return rosArray;
 }
 
+template <typename ArrayType, auto ArrayInit, typename RosType, typename OgnType>
+void Ros2DynamicMessageFoxy::setArray(const rosidl_typesupport_introspection_c__MessageMember* member,
+                                      uint8_t* data,
+                                      std::shared_ptr<const void> value,
+                                      bool fromOgnType)
+{
+    // OGN data type array
+    if (fromOgnType)
+    {
+        auto ognArray = std::static_pointer_cast<const std::vector<OgnType>>(value);
+        // non-fixed size array
+        if (member->is_upper_bound_ || !member->array_size_)
+        {
+            ArrayType* dest = reinterpret_cast<ArrayType*>(data);
+            ArrayInit(dest, ognArray->size());
+            for (size_t i = 0; i < dest->size; ++i)
+                *reinterpret_cast<RosType*>(&dest->data[i]) = static_cast<RosType>(ognArray->at(i));
+        }
+        // fixed size array
+        else
+            for (size_t i = 0; i < member->array_size_; ++i)
+                *reinterpret_cast<RosType*>(&data[i * sizeof(RosType)]) = static_cast<RosType>(ognArray->at(i));
+        return;
+    }
+    // ROS data type array
+    auto rosArray = std::static_pointer_cast<const std::vector<RosType>>(value);
+    // non-fixed size array
+    if (member->is_upper_bound_ || !member->array_size_)
+    {
+        ArrayType* dest = reinterpret_cast<ArrayType*>(data);
+        ArrayInit(dest, rosArray->size());
+        for (size_t i = 0; i < dest->size; ++i)
+            *reinterpret_cast<RosType*>(&dest->data[i]) = rosArray->at(i);
+    }
+    // fixed size array
+    else
+        for (size_t i = 0; i < member->array_size_; ++i)
+            *reinterpret_cast<RosType*>(&data[i * sizeof(RosType)]) = rosArray->at(i);
+}
+
+
 template <typename RosType, typename OgnType>
 std::shared_ptr<const void> Ros2DynamicMessageFoxy::getSingleValue(uint8_t* data, bool asOgnType)
 {
@@ -199,6 +308,15 @@ std::shared_ptr<const void> Ros2DynamicMessageFoxy::getSingleValue(uint8_t* data
     if (asOgnType)
         return std::make_shared<OgnType>(static_cast<OgnType>(*value));
     return std::make_shared<RosType>(*value);
+}
+
+template <typename RosType, typename OgnType>
+void Ros2DynamicMessageFoxy::setSingleValue(uint8_t* data, std::shared_ptr<const void> value, bool fromOgnType)
+{
+    if (fromOgnType)
+        *reinterpret_cast<RosType*>(data) = static_cast<RosType>(*std::static_pointer_cast<const OgnType>(value));
+    else
+        *reinterpret_cast<RosType*>(data) = *std::static_pointer_cast<const RosType>(value);
 }
 
 
@@ -580,6 +698,194 @@ void Ros2DynamicMessageFoxy::parseMessageValues(const void* members,
             else
             {
                 parseMessageValues(member->members_->data, data, messageValues, asOgnType);
+                continue;
+            }
+            break;
+        }
+        default:
+            break;
+        }
+    }
+}
+
+
+void Ros2DynamicMessageFoxy::setMessageValues(const void* members,
+                                              uint8_t* messageData,
+                                              const std::vector<std::shared_ptr<const void>>& messageValues,
+                                              bool fromOgnType)
+{
+    auto messageMembers = reinterpret_cast<const rosidl_typesupport_introspection_c__MessageMembers*>(members);
+    for (size_t i = 0; i < messageMembers->member_count_; ++i)
+    {
+        const rosidl_typesupport_introspection_c__MessageMember* member = messageMembers->members_ + i;
+        auto data = &messageData[member->offset_];
+        auto value = messageValues.at(i);
+        switch (member->type_id_)
+        {
+        case rosidl_typesupport_introspection_c__ROS_TYPE_FLOAT:
+        {
+            if (member->is_array_)
+                setArray<rosidl_runtime_c__float__Sequence, rosidl_runtime_c__float__Sequence__init, float, float>(
+                    member, data, value, false);
+            else
+                setSingleValue<float, float>(data, value, false);
+            break;
+        }
+        case rosidl_typesupport_introspection_c__ROS_TYPE_DOUBLE:
+        {
+            if (member->is_array_)
+                setArray<rosidl_runtime_c__double__Sequence, rosidl_runtime_c__double__Sequence__init, double, double>(
+                    member, data, value, false);
+            else
+                setSingleValue<double, double>(data, value, false);
+            break;
+        }
+        case rosidl_typesupport_introspection_c__ROS_TYPE_LONG_DOUBLE:
+        {
+            if (member->is_array_)
+                setArray<rosidl_runtime_c__long_double__Sequence, rosidl_runtime_c__long_double__Sequence__init,
+                         long double, double>(member, data, value, fromOgnType);
+            else
+                setSingleValue<long double, double>(data, value, fromOgnType);
+            break;
+        }
+        case rosidl_typesupport_introspection_c__ROS_TYPE_CHAR:
+        {
+            if (member->is_array_)
+                setArray<rosidl_runtime_c__char__Sequence, rosidl_runtime_c__char__Sequence__init, uint8_t, uint8_t>(
+                    member, data, value, false);
+            else
+                setSingleValue<uint8_t, uint8_t>(data, value, false);
+            break;
+        }
+        case rosidl_typesupport_introspection_c__ROS_TYPE_WCHAR:
+        {
+            if (member->is_array_)
+                setArray<rosidl_runtime_c__wchar__Sequence, rosidl_runtime_c__wchar__Sequence__init, uint16_t, uint32_t>(
+                    member, data, value, fromOgnType);
+            else
+                setSingleValue<uint16_t, uint32_t>(data, value, fromOgnType);
+            break;
+        }
+        case rosidl_typesupport_introspection_c__ROS_TYPE_BOOLEAN:
+        {
+            if (member->is_array_)
+                setArray<rosidl_runtime_c__boolean__Sequence, rosidl_runtime_c__bool__Sequence__init, bool, bool>(
+                    member, data, value, false);
+            else
+                setSingleValue<bool, bool>(data, value, false);
+            break;
+        }
+        case rosidl_typesupport_introspection_c__ROS_TYPE_OCTET:
+        {
+            if (member->is_array_)
+                setArray<rosidl_runtime_c__octet__Sequence, rosidl_runtime_c__octet__Sequence__init, uint8_t, uint8_t>(
+                    member, data, value, false);
+            else
+                setSingleValue<uint8_t, uint8_t>(data, value, false);
+            break;
+        }
+        case rosidl_typesupport_introspection_c__ROS_TYPE_UINT8:
+        {
+            if (member->is_array_)
+                setArray<rosidl_runtime_c__uint8__Sequence, rosidl_runtime_c__uint8__Sequence__init, uint8_t, uint32_t>(
+                    member, data, value, fromOgnType);
+            else
+                setSingleValue<uint8_t, uint32_t>(data, value, fromOgnType);
+            break;
+        }
+        case rosidl_typesupport_introspection_c__ROS_TYPE_INT8:
+        {
+            if (member->is_array_)
+                setArray<rosidl_runtime_c__int8__Sequence, rosidl_runtime_c__int8__Sequence__init, int8_t, int32_t>(
+                    member, data, value, fromOgnType);
+            else
+                setSingleValue<int8_t, int32_t>(data, value, fromOgnType);
+            break;
+        }
+        case rosidl_typesupport_introspection_c__ROS_TYPE_UINT16:
+        {
+            if (member->is_array_)
+                setArray<rosidl_runtime_c__uint16__Sequence, rosidl_runtime_c__uint16__Sequence__init, uint16_t, uint32_t>(
+                    member, data, value, fromOgnType);
+            else
+                setSingleValue<uint16_t, uint32_t>(data, value, fromOgnType);
+            break;
+        }
+        case rosidl_typesupport_introspection_c__ROS_TYPE_INT16:
+        {
+            if (member->is_array_)
+                setArray<rosidl_runtime_c__int16__Sequence, rosidl_runtime_c__int16__Sequence__init, int16_t, int32_t>(
+                    member, data, value, fromOgnType);
+            else
+                setSingleValue<int16_t, int32_t>(data, value, fromOgnType);
+            break;
+        }
+        case rosidl_typesupport_introspection_c__ROS_TYPE_UINT32:
+        {
+            if (member->is_array_)
+                setArray<rosidl_runtime_c__uint32__Sequence, rosidl_runtime_c__uint32__Sequence__init, uint32_t, uint32_t>(
+                    member, data, value, false);
+            else
+                setSingleValue<uint32_t, uint32_t>(data, value, false);
+            break;
+        }
+        case rosidl_typesupport_introspection_c__ROS_TYPE_INT32:
+        {
+            if (member->is_array_)
+                setArray<rosidl_runtime_c__int32__Sequence, rosidl_runtime_c__int32__Sequence__init, int32_t, int32_t>(
+                    member, data, value, false);
+            else
+                setSingleValue<int32_t, int32_t>(data, value, false);
+            break;
+        }
+        case rosidl_typesupport_introspection_c__ROS_TYPE_UINT64:
+        {
+            if (member->is_array_)
+                setArray<rosidl_runtime_c__uint64__Sequence, rosidl_runtime_c__uint64__Sequence__init, uint64_t, uint64_t>(
+                    member, data, value, false);
+            else
+                setSingleValue<uint64_t, uint64_t>(data, value, false);
+            break;
+        }
+        case rosidl_typesupport_introspection_c__ROS_TYPE_INT64:
+        {
+            if (member->is_array_)
+                setArray<rosidl_runtime_c__int64__Sequence, rosidl_runtime_c__int64__Sequence__init, int64_t, int64_t>(
+                    member, data, value, false);
+            else
+                setSingleValue<int64_t, int64_t>(data, value, false);
+            break;
+        }
+        case rosidl_typesupport_introspection_c__ROS_TYPE_STRING:
+        {
+            if (member->is_array_)
+            {
+                auto typedValue = std::static_pointer_cast<const std::vector<std::string>>(value);
+                auto stringValue = std::make_shared<std::vector<rosidl_runtime_c__String>>(typedValue->size());
+                for (size_t j = 0; j < typedValue->size(); ++j)
+                    rosidl_runtime_c__String__assign(&stringValue->at(j), typedValue->at(j).c_str());
+                setArray<rosidl_runtime_c__String__Sequence, rosidl_runtime_c__String__Sequence__init,
+                         rosidl_runtime_c__String, rosidl_runtime_c__String>(member, data, stringValue, false);
+            }
+            else
+                rosidl_runtime_c__String__assign(reinterpret_cast<rosidl_runtime_c__String*>(data),
+                                                 std::static_pointer_cast<const std::string>(value)->c_str());
+            break;
+        }
+        case rosidl_typesupport_introspection_c__ROS_TYPE_WSTRING:
+        {
+            // TODO: proccess WSTRING (no messages with 'path:*/msgs/*.msg "wstring"')
+        }
+        case rosidl_typesupport_introspection_c__ROS_TYPE_MESSAGE:
+        {
+            if (member->is_array_)
+            {
+                // TODO:
+            }
+            else
+            {
+                setMessageValues(member->members_->data, data, messageValues, fromOgnType);
                 continue;
             }
             break;
