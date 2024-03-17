@@ -1,4 +1,7 @@
 # Changelog
+## [2.0.0] - 2024-3-12
+### Changed
+- Extension refactored into separate components.  See omni.isaac.wheeled_robots.ui for UI components of the extension.
 
 ## [1.1.5] - 2024-03-13
 ### Changed
@@ -12,6 +15,10 @@
 ## [1.1.3] - 2024-03-06
 ### Fixed
 - Removed commented out code
+
+## [2.0.0] - 2024-02-28
+### Changed
+- extension refactored into multiple components
 
 ## [1.1.2] - 2024-02-24
 ### Changed

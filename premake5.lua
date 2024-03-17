@@ -327,7 +327,10 @@ group "exts"
     include ("source/extensions/omni.isaac.ui_template")
     include ("source/extensions/omni.isaac.unit_converter")
     include ("source/extensions/omni.isaac.vscode")
+
     include ("source/extensions/omni.isaac.wheeled_robots")
+    include ("source/extensions/omni.isaac.wheeled_robots.ui")
+    
     include ("source/extensions/omni.isaac.window.about")
     include ("source/extensions/omni.kit.property.isaac")
     include ("source/extensions/omni.kit.loop-isaac")

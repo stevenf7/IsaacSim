@@ -3,10 +3,10 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.1.5"
+version = "2.0.0"
 category = "Simulation"
-title = "Wheeled Drives"
-description = "This extension provides wheeled robots utilities"
+title = "Wheeled Robots"
+description = "This extension provides wheeled robot utilities"
 authors = ["Isaac Sim Team"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.wheeled_robots"
 keywords = ["isaac", "physics", "analyze", "tune"]
@@ -40,7 +40,6 @@ recursive = false
 include = ["*.ogn", "*.py"]
 exclude = ["Ogn*Database.py"]
 
-
 [[test]]
 stdoutFailPatterns.exclude = [
     "*Invalid Bundle object in Py_Bundle in getPrimPath*", # Per node tests won't have valid bundles
@@ -50,3 +49,4 @@ stdoutFailPatterns.exclude = [
 dependencies = [
     "omni.isaac.nucleus" # test only
 ]
+
