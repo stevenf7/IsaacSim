@@ -970,6 +970,37 @@ void Ros2TfTreeMessageHumble::fillData(const double& timeStamp, std::vector<tfMe
     }
 }
 
+void Ros2TfTreeMessageHumble::getData(std::vector<tfMessageStruct>& tfMsg_vec)
+{
+    if (!msg)
+        return;
+
+    tf2_msgs__msg__TFMessage* tfMsg = static_cast<tf2_msgs__msg__TFMessage*>(msg);
+
+    const size_t numTransform = tfMsg->transforms.size;
+
+    tfMsg_vec.resize(numTransform);
+
+
+    for (size_t i = 0; i < numTransform; i++)
+    {
+        tfMsg_vec[i].parentFrame = std::string(tfMsg->transforms.data[i].header.frame_id.data);
+        tfMsg_vec[i].childFrame = std::string(tfMsg->transforms.data[i].child_frame_id.data);
+
+        tfMsg_vec[i].trans_x = tfMsg->transforms.data[i].transform.translation.x;
+        tfMsg_vec[i].trans_y = tfMsg->transforms.data[i].transform.translation.y;
+        tfMsg_vec[i].trans_z = tfMsg->transforms.data[i].transform.translation.z;
+
+        tfMsg_vec[i].quat_x = tfMsg->transforms.data[i].transform.rotation.x;
+        tfMsg_vec[i].quat_y = tfMsg->transforms.data[i].transform.rotation.y;
+        tfMsg_vec[i].quat_z = tfMsg->transforms.data[i].transform.rotation.z;
+        tfMsg_vec[i].quat_w = tfMsg->transforms.data[i].transform.rotation.w;
+    }
+
+    return;
+}
+
+
 Ros2TfTreeMessageHumble::~Ros2TfTreeMessageHumble()
 {
     tf2_msgs__msg__TFMessage__destroy(static_cast<tf2_msgs__msg__TFMessage*>(msg));

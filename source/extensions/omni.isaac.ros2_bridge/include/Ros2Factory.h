@@ -416,6 +416,7 @@ class Ros2TfTreeMessage : public Ros2Message
 {
 public:
     virtual void fillData(const double& timeStamp, std::vector<tfMessageStruct>& tfMsg_vec) = 0;
+    virtual void getData(std::vector<tfMessageStruct>& tfMsg_vec) = 0;
 };
 
 

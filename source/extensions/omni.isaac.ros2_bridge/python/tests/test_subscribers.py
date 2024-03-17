@@ -26,9 +26,14 @@ import omni.kit.test
 import omni.kit.usd
 import usdrt.Sdf
 from omni.isaac.core.articulations import Articulation
+from omni.isaac.core.objects import DynamicCuboid
 from omni.isaac.core.utils.physics import simulate_async
+
+# from omni.isaac.benchmark.services.utils import wait_until_stage_is_fully_loaded_async
 from omni.isaac.core.utils.stage import open_stage_async
+from omni.isaac.core.utils.xforms import get_world_pose
 from omni.isaac.nucleus import get_assets_root_path_async
+from pxr import Gf, Sdf, UsdGeom, UsdPhysics
 
 from .common import get_qos_profile
 
@@ -432,5 +437,184 @@ class TestRos2Subscribers(omni.kit.test.AsyncTestCase):
 
         self._timeline.stop()
         self.assertTrue(self.sub_data == [self.MAX_COUNT - self.queue_size + i for i in range(self.queue_size)])
+
+        pass
+
+    async def test_transform_tree_subscriber(self):
+
+        import rclpy
+        from geometry_msgs.msg import TransformStamped
+        from tf2_msgs.msg import TFMessage
+
+        self._stage = omni.usd.get_context().get_stage()
+
+        # Create a node to subscribe to TFs
+        node = rclpy.create_node("isaac_sim_test_transform_tree_sub_queue")
+        ros_topic = "tf_sub"
+        test_pub = node.create_publisher(TFMessage, ros_topic, 1)
+
+        self.graph_path = "/ActionGraph"
+
+        try:
+            og.Controller.edit(
+                {"graph_path": self.graph_path, "evaluator_name": "execution"},
+                {
+                    og.Controller.Keys.CREATE_NODES: [
+                        ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                        ("SubscribeTransformTree", "omni.isaac.ros2_bridge.ROS2SubscribeTransformTree"),
+                    ],
+                    og.Controller.Keys.SET_VALUES: [
+                        ("SubscribeTransformTree.inputs:topicName", ros_topic),
+                        ("SubscribeTransformTree.inputs:frameNamesMap", ["/World", "world", "/World/cube", "cube"]),
+                    ],
+                    og.Controller.Keys.CONNECT: [
+                        ("OnPlaybackTick.outputs:tick", "SubscribeTransformTree.inputs:execIn"),
+                    ],
+                },
+            )
+        except Exception as e:
+            print(e)
+
+        # Create our scene
+        UsdGeom.Xform.Define(self._stage, "/World")
+
+        scene = UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
+        scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
+        scene.CreateGravityMagnitudeAttr().Set(9.81)
+
+        cube = DynamicCuboid(prim_path="/World/cube", position=np.array([0, 0, 5]))
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+
+        for i in range(10):
+            msg = TransformStamped()
+            msg.header.stamp = node.get_clock().now().to_msg()
+            msg.child_frame_id = "cube"
+            msg.header.frame_id = "world"
+
+            pos = np.array([float(i) / 5.0, float(i) * float(i) / 25.0, 1.0])
+
+            msg.transform.translation.x = pos[0]
+            msg.transform.translation.y = pos[1]
+            msg.transform.translation.z = pos[2]
+
+            # Rotation of i radians around (1,1,1)
+            a = np.sin(float(i) / 2.0) / np.sqrt(3.0)
+
+            rot = [np.cos(float(i) / 2.0), a, a, a]
+            msg.transform.rotation.x = rot[1]
+            msg.transform.rotation.y = rot[2]
+            msg.transform.rotation.z = rot[3]
+            msg.transform.rotation.w = rot[0]
+
+            tf_msg = TFMessage()
+            tf_msg.transforms.append(msg)
+
+            test_pub.publish(tf_msg)
+
+            time.sleep(0.01)
+
+            await simulate_async(1.0, 60)
+            await omni.kit.app.get_app().next_update_async()
+
+            x, r = get_world_pose("/World/cube")
+
+            # NOTE : a quaterion q and -q represent the same rotation
+            self.assertTrue(np.linalg.norm(x - pos) < 1e-5)
+            self.assertTrue(np.linalg.norm(r - rot) < 1e-5 or np.linalg.norm(r + rot) < 1e-5)
+
+        self._timeline.stop()
+
+        pass
+
+    async def test_transform_tree_subscriber_nova_carter(self):
+
+        import rclpy
+        from geometry_msgs.msg import TransformStamped
+        from tf2_msgs.msg import TFMessage
+
+        # Load our Nova Carter ROS stage
+        stage_path = "/Isaac/Robots/Carter/nova_carter_sensors.usd"
+        await open_stage_async(self._assets_root_path + stage_path)
+
+        self._stage = omni.usd.get_context().get_stage()
+
+        # Create a node to subscribe to TFs
+        node = rclpy.create_node("isaac_sim_test_transform_tree_sub_nova_carter")
+        ros_topic = "tf_sub"
+        test_pub = node.create_publisher(TFMessage, ros_topic, 1)
+
+        self.graph_path = "/ActionGraph"
+
+        try:
+            og.Controller.edit(
+                {"graph_path": self.graph_path, "evaluator_name": "execution"},
+                {
+                    og.Controller.Keys.CREATE_NODES: [
+                        ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                        ("SubscribeTransformTree", "omni.isaac.ros2_bridge.ROS2SubscribeTransformTree"),
+                    ],
+                    og.Controller.Keys.SET_VALUES: [
+                        ("SubscribeTransformTree.inputs:topicName", ros_topic),
+                        (
+                            "SubscribeTransformTree.inputs:frameNamesMap",
+                            ["/nova_carter/chassis_link", "base_link", "/nova_carter", "odom"],
+                        ),
+                        ("SubscribeTransformTree.inputs:articulationRoots", ["/nova_carter"]),
+                    ],
+                    og.Controller.Keys.CONNECT: [
+                        ("OnPlaybackTick.outputs:tick", "SubscribeTransformTree.inputs:execIn"),
+                    ],
+                },
+            )
+        except Exception as e:
+            print(e)
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+
+        for i in range(10):
+            msg = TransformStamped()
+            msg.header.stamp = node.get_clock().now().to_msg()
+            msg.child_frame_id = "base_link"
+            msg.header.frame_id = "odom"
+
+            pos = np.array([float(i) / 5.0, float(i) * float(i) / 25.0, 1.0])
+
+            msg.transform.translation.x = pos[0]
+            msg.transform.translation.y = pos[1]
+            msg.transform.translation.z = pos[2]
+
+            # Rotation of i radians around (1,1,1)
+            a = np.sin(float(i) / 2.0) / np.sqrt(3.0)
+
+            rot = [np.cos(float(i) / 2.0), a, a, a]
+            msg.transform.rotation.x = rot[1]
+            msg.transform.rotation.y = rot[2]
+            msg.transform.rotation.z = rot[3]
+            msg.transform.rotation.w = rot[0]
+
+            tf_msg = TFMessage()
+            tf_msg.transforms.append(msg)
+
+            test_pub.publish(tf_msg)
+
+            time.sleep(0.01)
+
+            await simulate_async(1.0, 60)
+            await omni.kit.app.get_app().next_update_async()
+
+            x, r = get_world_pose("/nova_carter/chassis_link")
+
+            # NOTE : a quaterion q and -q represent the same rotation
+            self.assertTrue(np.linalg.norm(x - pos) < 1e-5)
+            self.assertTrue(np.linalg.norm(r - rot) < 1e-5 or np.linalg.norm(r + rot) < 1e-5)
+
+        self._timeline.stop()
 
         pass

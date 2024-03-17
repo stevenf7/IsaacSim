@@ -25,7 +25,7 @@
 #include <omni/usd/UsdContext.h>
 
 /**
- * @brief Base class for all ROS1 bridge nodes. It handles the lifetime of the internal ROS node handle automatically.
+ * @brief Base class for all ROS2 bridge nodes. It handles the lifetime of the internal ROS node handle automatically.
  *
  */
 class Ros2Node : public BaseResetNode
