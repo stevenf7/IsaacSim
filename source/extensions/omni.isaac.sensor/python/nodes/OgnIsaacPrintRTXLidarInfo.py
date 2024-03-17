@@ -207,8 +207,8 @@ class OgnIsaacPrintRTXLidarInfo:
         print("-------------------- first and last return:")
         # print(return2string(returns, 0, f"{returns.objectIds[0]}"))  # object_id_to_prim_path(returns.objectIds[0])))
         # print(return2string(returns, numReturns - 1, f"{returns.objectIds[numReturns - 1]}"))
-        print(return2string(returns, 0, object_id_to_prim_path(returns.objectIds[0])))
-        print(return2string(returns, numReturns - 1, object_id_to_prim_path(returns.objectIds[numReturns - 1])))
+        print(return2string(returns, 0, f"{returns.objectIds[0]}"))
+        print(return2string(returns, numReturns - 1, f"{returns.objectIds[numReturns - 1]}"))
         objId2mats = {}
         num0dist = 0
         num0inte = 0
