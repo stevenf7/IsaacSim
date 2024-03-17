@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.16.3] - 2024-03-14
+### Changed
+- Update tolerances of O3dyn tests
+
 ## [1.16.2] - 2024-03-07
 ### Changed
 - Removed the usage of the deprecated dynamic_control extension 

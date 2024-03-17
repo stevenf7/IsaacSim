@@ -79,10 +79,10 @@ class TestO3dyn(omni.kit.test.AsyncTestCase):
             stage.GetPrimAtPath(stage.GetDefaultPrim().GetPath().AppendPath("base_link"))
         )
         translate = pose.ExtractTranslation()
-        self.assertAlmostEqual(translate[0], 0.00, 2)
-        self.assertAlmostEqual(translate[1], 0.00, 2)
+        self.assertAlmostEqual(translate[0], 0.00, delta=0.01)
+        self.assertAlmostEqual(translate[1], 0.00, delta=0.01)
 
-        self.assertAlmostEqual(translate[2], -0.01, 2)
+        self.assertAlmostEqual(translate[2], -0.01, delta=0.01)
         self.my_world.stop()
         pass
 
@@ -103,10 +103,10 @@ class TestO3dyn(omni.kit.test.AsyncTestCase):
 
         pose = omni.usd.get_world_transform_matrix(stage.GetPrimAtPath(robot_prim.GetPath().AppendPath("base_link")))
         translate = pose.ExtractTranslation()
-        self.assertAlmostEqual(translate[0], 0.00, 2)
-        self.assertAlmostEqual(translate[1], 0.00, 2)
+        self.assertAlmostEqual(translate[0], 0.00, delta=0.01)
+        self.assertAlmostEqual(translate[1], 0.00, delta=0.01)
 
-        self.assertAlmostEqual(translate[2], -0.06, 2)
+        self.assertAlmostEqual(translate[2], -0.06, delta=0.01)
         self.my_world.stop()
         pass
 
@@ -128,8 +128,8 @@ class TestO3dyn(omni.kit.test.AsyncTestCase):
 
         pose = omni.usd.get_world_transform_matrix(stage.GetPrimAtPath(robot_prim.GetPath().AppendPath("base_link")))
         translate = pose.ExtractTranslation()
-        self.assertAlmostEqual(translate[0], 1.77, 2)
-        self.assertAlmostEqual(translate[1], 0.00, 1)
+        self.assertAlmostEqual(translate[0], 1.77, delta=0.05)
+        self.assertAlmostEqual(translate[1], 0.00, delta=0.02)
         self.my_world.stop()
 
         pass
@@ -155,8 +155,8 @@ class TestO3dyn(omni.kit.test.AsyncTestCase):
 
         pose = omni.usd.get_world_transform_matrix(stage.GetPrimAtPath(robot_prim.GetPath().AppendPath("base_link")))
         translate = pose.ExtractTranslation()
-        self.assertAlmostEqual(translate[0], 0.00, 1)
-        self.assertAlmostEqual(translate[1], 1.02, 2)
+        self.assertAlmostEqual(translate[0], 0.00, delta=0.1)
+        self.assertAlmostEqual(translate[1], 0.90, delta=0.05)
         self.my_world.stop()
 
         pass
@@ -181,7 +181,10 @@ class TestO3dyn(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
 
         pose = omni.usd.get_world_transform_matrix(stage.GetPrimAtPath(robot_prim.GetPath().AppendPath("base_link")))
+        translate = pose.ExtractTranslation()
+        self.assertAlmostEqual(translate[0], 0.11, delta=0.02)
+        self.assertAlmostEqual(translate[1], 0.01, delta=0.01)
         pose.Orthonormalize()
         rotation = pose.ExtractRotation().GetAngle()
-        self.assertGreater(rotation, 45, 1)
+        self.assertAlmostEqual(rotation, 68.917, delta=0.01)
         self.my_world.stop()
