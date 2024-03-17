@@ -3,6 +3,9 @@
 ## [2.12.0] - 2024-03-15
 ### Added
 - Added ROS2SubscribeTransformTree omnigraph node
+- New folder under python/scripts/ for omnigraph shortcuts
+- Menu shortcuts to generate ROS Omnigraphs
+- Shortcuts for ROS clock, jointstate publisher and subscriber, and camera
 
 ## [2.11.0] - 2024-03-13
 ### Added
