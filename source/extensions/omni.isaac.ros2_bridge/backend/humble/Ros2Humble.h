@@ -226,6 +226,7 @@ public:
     virtual ~Ros2TfTreeMessageHumble();
     virtual const void* getTypeSupportHandle();
     virtual void fillData(const double& timeStamp, std::vector<tfMessageStruct>& tfMsg_vec);
+    virtual void getData(std::vector<tfMessageStruct>& tfMsg_vec);
 };
 
 

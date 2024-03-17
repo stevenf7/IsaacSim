@@ -187,7 +187,7 @@ project_ext_plugin(ext, "omni.isaac.ros2_bridge.plugin")
         "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace",
         "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
         "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "omni.usd", "usdPhysics",
-        "sdf", "usdGeom", "rangeSensorSchema", "isaacSensorSchema", "carb",
+        "physxSchema", "sdf", "usdGeom", "rangeSensorSchema", "isaacSensorSchema", "carb",
     }
 
     filter { "system:linux" }

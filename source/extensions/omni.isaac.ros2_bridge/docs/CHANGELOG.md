@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.12.0] - 2024-03-15
+### Added
+- Added ROS2SubscribeTransformTree omnigraph node
+
 ## [2.11.0] - 2024-03-13
 ### Added
 - ROS2 service
