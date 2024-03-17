@@ -215,7 +215,7 @@ class OsmoKPIFile(MetricsBackendInterface):
                     dir=metrics_output_folder, prefix=f"kpis_{test_name}_{phase_name}", suffix=".json"
                 )
             else:
-                metrics_filename_out = Path(metrics_output_folder) / f"metrics_{self.test_name}.json"
+                metrics_filename_out = Path(metrics_output_folder) / f"kpis_{test_name}_{phase_name}.json"
             # Dump key-value pairs (fields) to the JSON document
             json_data = json.dumps(osmo_kpis, indent=4)
             with open(metrics_filename_out, "w") as f:
