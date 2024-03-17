@@ -19,6 +19,7 @@ project_ext_plugin(ext, "omni.isaac.wheeled_robots.plugin")
     filter {}
 
     add_ogn_dependencies(ogn, {"python/nodes"})
+    add_ogn_dependencies(ogn, {"nodes"})
 
     includedirs {
         "%{root}/include/pch",
@@ -59,9 +60,8 @@ project_ext_bindings {
     add_files("python", "python/*.py")
     add_files("python/controllers", "python/controllers/*.py")
     add_files("python/nodes", "python/nodes/*.py")
-    add_files("python/robots", "python/robots/*.py")
     add_files("python/tests", "python/tests/*.py")
-    add_files("python/impl", "python/impl/*.py")
+    add_files("python/robots", "python/robots/*.py")
 
     includedirs {
         "%{root}/_build/target-deps/rtx_plugins/include",
@@ -77,8 +77,9 @@ repo_build.prebuild_link {
     { "docs", ext.target_dir.."/docs" },
     { "data", ext.target_dir.."/data" },
     { "python/controllers", ogn.python_target_path.."/controllers" },
-    { "python/nodes", ogn.python_target_path.."/nodes" },
     { "python/robots", ogn.python_target_path.."/robots" },
     { "python/impl", ogn.python_target_path.."/impl" },
+    { "python/nodes", ogn.python_target_path.."/nodes" },
     { "python/tests", ogn.python_tests_target_path },
+
 }
