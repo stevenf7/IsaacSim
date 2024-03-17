@@ -49,4 +49,4 @@ class Extension(omni.ext.IExt):
         ArticulationVelocityGraph().create_articulation_controller_graph()
 
     def _open_gripper_graph(self):
-        pass
+        GripperGraph().create_gripper_controller_graph()

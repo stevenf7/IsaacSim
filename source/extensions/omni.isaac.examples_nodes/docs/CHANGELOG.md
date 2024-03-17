@@ -1,5 +1,4 @@
 # Changelog
-
 ## [0.1.3] - 2024-03-04
 ### Updated
 - Updated omnigraph nodes to use per instance state instead of internal state

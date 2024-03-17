@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.2.0"
+version = "1.3.0"
 category = "Simulation"
 title = "Isaac Sim Manipulators"
 description = "Manipulators"
@@ -18,6 +18,7 @@ writeTarget.kit = true
 
 [dependencies]
 "omni.isaac.core" = {}
+"omni.isaac.core_nodes" = {}
 "omni.isaac.surface_gripper" = {}
 
 [[python.module]]
@@ -25,3 +26,13 @@ name = "omni.isaac.manipulators"
 
 [[python.module]]
 name = "omni.isaac.manipulators.tests"
+
+[fswatcher.patterns]
+include = ["*.ogn", "*.py"]
+exclude = ["Ogn*Database.py"]
+
+[[test]]
+
+stdoutFailPatterns.exclude = [
+    "*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_manipulators_IsaacGripperController: [/TestGraph] OmniGraph Error: Omnigraph Error: No robot prim found for the articulation controller*",
+]
