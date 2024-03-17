@@ -29,6 +29,7 @@ preview_image = "data/preview.png"
 "omni.isaac.sensor" = {}
 "usdrt.scenegraph" = {}
 "omni.isaac.nucleus" = {}
+"omni.isaac.ui" = {}
 
 [settings]
 exts."omni.isaac.ros2_bridge".ros_distro = "humble" # This setting specified which ros distro to fallback onto if none were sourced.
@@ -52,6 +53,9 @@ name = "omni.isaac.ros2_bridge.scripts.samples.ros_samples"
 
 [[python.module]]
 name = "omni.isaac.ros2_bridge.scripts.samples.ros_moveit_sample"
+
+[[python.module]]
+name = "omni.isaac.ros2_bridge.scripts.og_shortcuts.og_shortcut_menu"
 
 [fswatcher.paths]
 exclude = ["*/rclpy/*", "*/bin", "*/__pycache__/*", "*/.git/*"]
