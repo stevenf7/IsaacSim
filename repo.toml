@@ -913,7 +913,7 @@ deps_for_isaac = [
   "omni.kit.streamsdk.plugins-3.2.1",
   "omni.kit.livestream.webrtc-3.2.0",
   "omni.replicator.replicator_yaml-2.0.5",
-  "omni.replicator.core-1.11.1-dev1",
+  "omni.replicator.core-1.11.1",
   "omni.sensors.nv.common-0.4.0",
   "omni.sensors.nv.lidar-0.4.1",
   "omni.sensors.nv.materials-0.4.0",
