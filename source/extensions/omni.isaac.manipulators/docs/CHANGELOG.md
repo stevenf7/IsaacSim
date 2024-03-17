@@ -1,4 +1,12 @@
 # Changelog
+## [1.3.0] - 2024-03-15
+### Changed
+- moved all python code into a python folder. deleted omni/isaac/manipulators
+
+### Added
+- Gripper Controller Node
+- automatically populated omnigraph for gripper controller 
+- pointer to open up the python script that generates the omnigraph for the menu shortcut graphs
 
 ## [1.2.0] - 2024-02-07
 ### Added

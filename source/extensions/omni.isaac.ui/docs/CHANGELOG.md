@@ -1,5 +1,4 @@
 # Changelog
-
 ## [0.14.1] - 2024-02-27
 ### Changed
 - Use action registry in make_menu_item_description by deregistering actions first
