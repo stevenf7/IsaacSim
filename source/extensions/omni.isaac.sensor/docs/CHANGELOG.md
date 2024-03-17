@@ -1,5 +1,13 @@
 # Changelog
 
+## [9.14.4] - 2024-03-14
+### Fixed
+- IsaacComputeRTXLidarFlatScan works with CCW Solid State lidar configs
+- Crash in PrintRTXLidarInfo node
+
+### Added
+- Test for IsaacComputeRTXLidarFlatScan Node
+
 ## [9.14.3] - 2024-03-11
 ### Fixed
 - Fixed contact sensor threshold bug

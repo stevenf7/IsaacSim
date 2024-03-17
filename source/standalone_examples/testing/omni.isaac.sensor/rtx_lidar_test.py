@@ -20,7 +20,10 @@ import omni.kit.viewport.utility
 import omni.replicator.core as rep
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils import nucleus, stage
+from omni.isaac.core.utils.extensions import enable_extension
 from pxr import Gf, Sdf, UsdGeom, UsdPhysics
+
+enable_extension("omni.isaac.ros2_bridge")
 
 
 def printinc(i):
@@ -89,6 +92,16 @@ omni.kit.commands.execute(
     "CreatePrim", prim_type="DomeLight", attributes={"inputs:intensity": 1000, "inputs:texture:format": "latlong"}
 )
 
+configNames = [
+    "SICK_tim781",  # ok, ros2 scan looks like curve
+    "SICK_tim781_legacy",  # ok
+    "SICK_picoScan150",  # ok
+    "SICK_multiScan136",  # crash on "Writer" + "IsaacPrintRTXLidarInfo", flat scan strange (OK, not evenly spaced or single elevation in the line)
+    "SICK_multiScan165",  # crash on "Writer" + "IsaacPrintRTXLidarInfo", flat scan strange (OK, not evenly spaced or single elevation in the line)
+]
+lidar_config = "SICK_multiScan165"
+
+
 i = printinc(i)  # 3
 simulation_app.update()
 
@@ -118,15 +131,30 @@ i = printinc(i)
 simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=1.0)
 
 i = printinc(i)
-writer = rep.writers.get("" + "RtxLidar" + "DebugDrawPointCloud" + "Buffer")
-# writer = rep.writers.get("Writer" + "IsaacPrintRTXLidarInfo")
+writerNames = [
+    # "Writer" + "IsaacPrintRTXLidarInfo",
+    # "Writer" + "IsaacReadRTXLidarData",
+    # "RtxLidar" + "DebugDrawPointCloud",
+    "RtxLidar" + "DebugDrawPointCloud" + "Buffer",
+    "RtxLidar" + "ROS2PublishLaserScan",
+]
+
+annoNames = [
+    # "RtxSensorCpuIsaacReadRTXLidarData",
+    # "RtxSensorCpuIsaacComputeRTXLidarPointCloud",
+    # "RtxSensorCpuIsaacCreateRTXLidarScanBuffer",
+    # "RtxSensorCpuIsaacComputeRTXLidarFlatScan",
+]
+writers = {}
+for writ in writerNames:
+    writers[writ] = rep.writers.get(writ)
+    writers[writ].attach([hydra_texture])  # , render_product_path2])
 # writer.initialize(testMode=True)
-# writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
-# writer = rep.writers.get("Writer" + "IsaacReadRTXLidarData")
-
-i = printinc(i)
-writer.attach([hydra_texture])  # , render_product_path2])
-
+annotators = {}
+for anno in annoNames:
+    annotators[anno] = rep.AnnotatorRegistry.get_annotator(anno)
+    # annotators[anno].initialize(keepOnlyPositiveDistance=True)
+    annotators[anno].attach([hydra_texture])
 
 # disable_extension("omni.replicator.core")
 i = printinc(i)
@@ -146,18 +174,6 @@ simulation_context.play()
 
 i = printinc(i)
 
-
-annoNames = [
-    "RtxSensorCpuIsaacReadRTXLidarData",
-    "RtxSensorCpuIsaacComputeRTXLidarPointCloud",
-    "RtxSensorCpuIsaacCreateRTXLidarScanBuffer",
-    "RtxSensorCpuIsaacComputeRTXLidarFlatScan",
-]
-annotators = {}
-for anno in annoNames:
-    annotators[anno] = rep.AnnotatorRegistry.get_annotator(anno)
-    # annotators[anno].initialize(keepOnlyPositiveDistance=True)
-    annotators[anno].attach([hydra_texture])
 
 while simulation_app.is_running():
     simulation_app.update()
