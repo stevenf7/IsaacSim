@@ -22,7 +22,6 @@ workflow:
 pages:
   tags:
     - pages
-  stage: docs
   image:
     alpine:latest
   script:
