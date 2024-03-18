@@ -37,18 +37,10 @@ namespace core_nodes
 class OgnIsaacReadWorldPose
 {
 public:
-    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
-    // {
-    //     auto& state = OgnIsaacReadFabricXformDatabase::sPerInstanceState<OgnIsaacReadFabricXform>(nodeObj,
-    //     instanceId);
-    // }
-
     static bool compute(OgnIsaacReadWorldPoseDatabase& db)
     {
-        // auto& nodeObj = db.abi_node();
         auto& context = db.abi_context();
 
-        // const auto* const iContext = context.iContext;
         const auto* const iToken = context.iToken;
         const auto* const iBundle = context.iBundle;
 
@@ -80,6 +72,10 @@ public:
         }
         usdrt::GfMatrix4d usdTransform =
             omni::isaac::utils::pose::computeWorldXformNoCache(state.mStage, state.mUsdrtStage, primPath);
+        const double* sourceOrientation_i =
+            usdTransform.ExtractRotationMatrix().ExtractRotation().GetImaginary().GetArray();
+        const double sourceOrientation_r = usdTransform.ExtractRotationMatrix().ExtractRotation().GetReal();
+        const double* sourceTranslation = usdTransform.ExtractTranslation().GetArray();
         auto& bundleContents = db.outputs.primsBundle();
         auto bundleHandle = bundleContents.abi_bundleHandle();
 
@@ -92,13 +88,10 @@ public:
 
         double* orientationData = getDataW<double>(context, orientationAttr);
         double* positionData = getDataW<double>(context, positionAttr);
-        auto transform = usdrt::GfTransform(usdTransform);
 
-
-        const double* sourceOrientation = transform.GetRotation().GetQuat().data();
-        const double* sourceTranslation = transform.GetTranslation().data();
         if (includeScale)
         {
+            auto transform = usdrt::GfTransform(usdTransform);
             AttributeDataHandle scaleAttr =
                 iBundle->addAttribute(context, bundleHandle, iToken->getHandle("xformOp:scale"),
                                       Type(BaseDataType::eDouble, 3, 0, AttributeRole::eNone));
@@ -109,10 +102,10 @@ public:
             scaleData[2] = sourceScale[2];
         }
 
-        orientationData[0] = sourceOrientation[0];
-        orientationData[1] = sourceOrientation[1];
-        orientationData[2] = sourceOrientation[2];
-        orientationData[3] = sourceOrientation[3];
+        orientationData[0] = sourceOrientation_r;
+        orientationData[1] = sourceOrientation_i[0];
+        orientationData[2] = sourceOrientation_i[1];
+        orientationData[3] = sourceOrientation_i[2];
 
         positionData[0] = sourceTranslation[0];
         positionData[1] = sourceTranslation[1];
@@ -130,13 +123,3 @@ REGISTER_OGN_NODE()
 }
 }
 }
-
-// Bundle 'read_prims_outputs_primsBundle' from /World/ActionGraph/bundle_inspector (attributes = 0 children = 1)
-//     Has Child Bundle 'prim0' from /World/ActionGraph/bundle_inspector (attributes = 6 children = 0)
-//         [0] sourcePrimPath(token) = "/World/Cube"
-//         [1] sourcePrimType(token) = "Mesh"
-//         [2] xformOp:scale(double3) = (1.000000, 1.000000, 1.000000)
-//         [3] xformOp:translate(double3) = (0.000000, 0.000000, -2.974375)
-//         [4] xformOp:orient(double4 (quaternion)) = (0.000000, 0.000000, 0.000000, 1.000000)
-//         [5] worldMatrix(double16 (matrix)) = ((1.000000, 0.000000, 0.000000, 0.000000), (0.000000, 1.000000,
-//         0.000000, 0.000000), (0.000000, 0.000000, 1.000000, 0.000000), (0.000000, 0.000000, -2.974375, 1.000000))

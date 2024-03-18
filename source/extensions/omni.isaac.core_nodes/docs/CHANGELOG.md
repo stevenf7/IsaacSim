@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.13.2] - 2024-03-18
+### Fixed
+- Bug in Isaac Get Wold Pose Node's orientation
+
 ## [1.13.1] - 2024-03-12
 ### Fixed
 - Multi GPU support in RGBA to RGB node
