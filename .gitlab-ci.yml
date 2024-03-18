@@ -6,7 +6,11 @@ include:
 variables:
     OSEC_NSPECT_ID: "NSPECT-8CX1-LP1G"
     OSEC_CHECKMARX_ENABLED: 'true'
-    OSEC_README_ENABLED: 'false'
+    OSEC_GITLAB_SAST_ENABLED: 'false'
+    OSEC_PULSE_TRUFFLEHOG_ENABLED: 'true'
+    OSEC_OMNI_PULSE_ENABLED: 'false'
+    OSEC_README_ENABLED: 'true' # WARNING: Also have the init() function get_nspectid_from_repo_toml() in there...
+
 
 workflow:
   rules:
@@ -18,6 +22,7 @@ workflow:
 pages:
   tags:
     - pages
+  stage: docs
   image:
     alpine:latest
   script:
