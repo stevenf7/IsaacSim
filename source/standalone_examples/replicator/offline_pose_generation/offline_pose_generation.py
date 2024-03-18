@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -6,7 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-"""Generate a [YCBVideo, DOPE] synthetic datasets
+"""Generate a [DOPE, CenterPose, YCBVideo] synthetic datasets
 """
 
 import argparse
@@ -37,7 +37,7 @@ parser.add_argument(
     help="Bucket name to store output in. See naming rules: https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html",
 )
 parser.add_argument("--s3_region", type=str, default="us-east-1", help="s3 region.")
-parser.add_argument("--endpoint", type=str, default=None, help="s3 endpoint to write to.")
+parser.add_argument("--endpoint", "--endpoint_url", type=str, default=None, help="s3 endpoint to write to.")
 parser.add_argument(
     "--writer",
     type=str,
@@ -165,15 +165,6 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self.s3_region = s3_region
         self.bucket = bucket
 
-        self.writer_config = {
-            "output_folder": self._output_folder,
-            "use_s3": self.use_s3,
-            "bucket_name": self.bucket,
-            "endpoint_url": self.endpoint,
-            "s3_region": self.s3_region,
-            "train_size": self.train_size,
-        }
-
         self._setup_world()
 
         self.cur_idx = 0
@@ -226,11 +217,20 @@ class RandomScenario(torch.utils.data.IterableDataset):
                 output_dir=self._output_folder,
                 write_debug_images=self.debug,
                 format=self.writer_format,
-                frame_padding=6,
+                use_s3=self.use_s3,
+                s3_bucket=self.bucket,
+                s3_endpoint_url=self.endpoint,
+                s3_region=self.s3_region,
             )
         else:
             self.writer_helper.register_pose_annotator(config_data=config_data)
-            self.writer = self.writer_helper.setup_writer(config_data=config_data, writer_config=self.writer_config)
+            self.writer = self.writer_helper.setup_writer(
+                config_data=config_data,
+                writer_config={
+                    "output_folder": self._output_folder,
+                    "train_size": self.train_size,
+                },
+            )
         self.writer.attach([self.render_product])
 
         self.dome_distractors.set_visible(False)
@@ -242,13 +242,16 @@ class RandomScenario(torch.utils.data.IterableDataset):
         focal_length_mm = (config_data["F_X"] + config_data["F_Y"]) * config_data["pixel_size"] / 2
         horiztonal_aperture_mm = config_data["pixel_size"] * config_data["WIDTH"]
 
+        print(
+            f"Creating camera with focal length: {focal_length_mm}mm, horizontal aperture: {horiztonal_aperture_mm}mm"
+        )
         # Setup camera and render product
         # See https://docs.omniverse.nvidia.com/py/replicator/1.10.10/source/extensions/omni.replicator.core/docs/API.html#cameras
         self.camera = rep.create.camera(
             position=(0, 0, 0),
             rotation=np.array(config_data["CAMERA_RIG_ROTATION"]),
-            focal_length=focal_length_mm / 10.0,  # convert to cm
-            horizontal_aperture=horiztonal_aperture_mm / 10.0,  # convert to cm
+            focal_length=focal_length_mm,
+            horizontal_aperture=horiztonal_aperture_mm,
             clipping_range=(0.01, 10000),
         )
 
