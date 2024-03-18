@@ -73,12 +73,22 @@ class PoseWriter(Writer):
         visibility_threshold: float = 0.0,
         skip_empty_frames: bool = True,
         write_debug_images: bool = False,
-        frame_padding: int = 4,
+        frame_padding: int = 6,
         format: str = None,
+        use_s3: bool = False,
+        s3_bucket: str = None,
+        s3_endpoint_url: str = None,
+        s3_region: str = None,
     ):
         self.version = __version__
-        self._output_dir = output_dir
-        self.backend = BackendDispatch({"paths": {"out_dir": output_dir}})
+
+        if not use_s3:
+            self.backend = BackendDispatch(output_dir=output_dir)
+        else:
+            self.backend = BackendDispatch(
+                key_prefix=output_dir, bucket=s3_bucket, endpoint_url=s3_endpoint_url, region=s3_region
+            )
+
         self._use_subfolders = use_subfolders
         self._visibility_threshold = visibility_threshold
         self._skip_empty_frames = skip_empty_frames

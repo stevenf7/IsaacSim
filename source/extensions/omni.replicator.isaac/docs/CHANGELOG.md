@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.14.1] - 2024-03-15
+### Updated 
+- re-enable s3 writing functionality for PoseWriter 
+
 ## [1.14.0] - 2024-03-14
 ### Added 
 - Function to approximate truncation of object based on comparing 3D bounding box with visible portion on screen 

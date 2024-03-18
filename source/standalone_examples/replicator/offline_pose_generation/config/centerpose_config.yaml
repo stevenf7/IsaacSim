@@ -22,13 +22,13 @@ WIDTH: 1920
 HEIGHT: 1440
 F_X: 1544.0
 F_Y: 1544.0 # F_X, F_Y should be the same.
-pixel_size: 0.003 # in mm 
+pixel_size: 0.018 # in mm
 
 # Number of sphere lights added to the scene
 NUM_LIGHTS: 6
 
 # Minimum and maximum distances of objects away from the camera (along the optical axis)
-MIN_DISTANCE: 0.2
+MIN_DISTANCE: 0.4
 MAX_DISTANCE: 1.4
 
 # Rotation of camera rig with respect to world frame, expressed as XYZ euler angles
@@ -100,7 +100,7 @@ MESH_FILENAMES:
 - 009_gelatin_box
 - 010_potted_meat_can
 - 011_banana
-- 019_pitcher_base
+# - 019_pitcher_base # Do not add YCB Pitcher if using mugs to avoid confusion 
 - 021_bleach_cleanser
 - 024_bowl
 # - 025_mug # Do not add YCB Mug as distractor if training objects are already mugs 
