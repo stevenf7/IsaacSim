@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.12.1] - 2024-03-18
+### Changed
+- Updated the stdoutFailPatterns.exclude to ignore articulation related error
+
 ## [2.12.0] - 2024-03-15
 ### Added
 - Added ROS2SubscribeTransformTree omnigraph node
