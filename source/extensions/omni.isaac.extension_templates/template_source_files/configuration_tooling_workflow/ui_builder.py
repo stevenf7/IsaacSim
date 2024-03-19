@@ -42,11 +42,14 @@ class UIBuilder:
         # Reset internal state when UI window is closed and reopened
         self._invalidate_articulation()
 
+        self._selection_menu.repopulate()
+
         # Handles the case where the user loads their Articulation and
         # presses play before opening this extension
         if self._timeline.is_playing():
-            self._selection_menu.repopulate()
-        pass
+            self._stop_text.visible = False
+        elif self._timeline.is_stopped():
+            self._stop_text.visible = True
 
     def on_timeline_event(self, event):
         """Callback for Timeline events (Play, Pause, Stop)
@@ -74,9 +77,14 @@ class UIBuilder:
         if event.type == int(omni.usd.StageEventType.ASSETS_LOADED):  # Any asset added or removed
             self._selection_menu.repopulate()
         elif event.type == int(omni.usd.StageEventType.SIMULATION_START_PLAY):  # Timeline played
-            self._selection_menu.repopulate()
+            # Treat a playing timeline as a trigger for selecting an Articulation
+            self._selection_menu.trigger_on_selection_fn_with_current_selection()
+            self._stop_text.visible = False
         elif event.type == int(omni.usd.StageEventType.SIMULATION_STOP_PLAY):  # Timeline stopped
-            self._selection_menu.repopulate()
+            # Ignore pause events
+            if self._timeline.is_stopped():
+                self._invalidate_articulation()
+                self._stop_text.visible = True
 
     def cleanup(self):
         """
@@ -107,13 +115,21 @@ class UIBuilder:
                 # Figure out the type of an object with get_prim_object_type(prim_path)
                 self._selection_menu.set_populate_fn_to_find_all_usd_objects_of_type("articulation", repopulate=False)
 
-        self._robot_control_frame = CollapsableFrame("Robot Control Frame", collapsed=False)
+                self._stop_text = TextBlock(
+                    "README",
+                    "Select an Articulation and click the PLAY button on the left to get started.",
+                    include_copy_button=False,
+                    num_lines=2,
+                )
+
+        self._robot_control_frame = CollapsableFrame("Robot Control Frame", collapsed=True, enabled=False)
 
         def build_robot_control_frame_fn():
             self._joint_control_frames = []
             self._joint_position_float_fields = []
+
+            # Don't build the frame unless there is a valid Articulation.
             if self.articulation is None:
-                TextBlock("Status", text="There is no Articulation Selected", num_lines=2)
                 return
 
             with ui.VStack(style=get_style(), spacing=5, height=0):
@@ -146,7 +162,8 @@ class UIBuilder:
         stopped and when the DropDown menu finds no articulations on the stage.
         """
         self.articulation = None
-        self._robot_control_frame.rebuild()
+        self._robot_control_frame.collapsed = True
+        self._robot_control_frame.enabled = False
 
     def _on_articulation_selection(self, selection: str):
         """
@@ -158,13 +175,16 @@ class UIBuilder:
         Args:
             selection (str): The item that is currently selected in the drop-down menu.
         """
-        if selection is None:
+        # If the timeline is stopped, the Articulation won't be usable.
+        if selection is None or self._timeline.is_stopped():
             self._invalidate_articulation()
             return
 
         self.articulation = Articulation(selection)
         self.articulation.initialize()
 
+        self._robot_control_frame.collapsed = False
+        self._robot_control_frame.enabled = True
         self._robot_control_frame.rebuild()
 
     def _setup_joint_control_frames(self):

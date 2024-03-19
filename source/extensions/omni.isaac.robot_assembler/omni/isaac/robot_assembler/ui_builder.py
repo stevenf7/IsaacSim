@@ -77,13 +77,7 @@ class UIBuilder:
         Args:
             event (omni.timeline.TimelineEventType): Event Type
         """
-
-        if event.type == int(omni.timeline.TimelineEventType.PLAY):
-            # Populate Articulation selection menu when the user presses PLAY
-            self.assembly_frame.enabled = True
-        elif event.type == int(omni.timeline.TimelineEventType.STOP):
-            self.assembly_frame.enabled = False
-            self.assembly_frame.collapsed = True
+        pass
 
     def on_physics_step(self, step):
         """Callback for Physics Step.
@@ -100,9 +94,16 @@ class UIBuilder:
         Args:
             event (omni.usd.StageEventType): Event Type
         """
-        # print("Stage Event: ", omni.usd.StageEventType(event.type).name)
         if event.type == int(omni.usd.StageEventType.ASSETS_LOADED):
             self._repopulate_all_dropdowns()
+        elif event.type == int(omni.usd.StageEventType.SIMULATION_START_PLAY):  # Timeline played
+            self.assembly_frame.enabled = True
+            self._handle_articulations_on_play()
+        elif event.type == int(omni.usd.StageEventType.SIMULATION_STOP_PLAY):  # Timeline played
+            if self._timeline.is_stopped():
+                self.assembly_frame.enabled = False
+                self.assembly_frame.collapsed = True
+                self._handle_articulations_on_stop()
 
     def cleanup(self):
         """
@@ -527,6 +528,7 @@ class UIBuilder:
         if self._assembled_robot is not None and self._assembled_robot.is_assembled():
             self._assembled_robot.disassemble()
             self.undo_assemble_btn.enabled = False
+
             self._repopulate_all_dropdowns()
 
     ##########################################################################################
@@ -696,6 +698,18 @@ class UIBuilder:
     ##########################################################################################
     #                            Robot Selection Frame Functions
     ##########################################################################################
+
+    def _handle_articulations_on_play(self):
+        async def wait_and_reselect():
+            await update_stage_async()
+            for dropdown in self._robot_dropdowns:
+                dropdown.trigger_on_selection_fn_with_current_selection()
+
+        asyncio.ensure_future(wait_and_reselect())
+
+    def _handle_articulations_on_stop(self):
+        for dropdown in self._robot_dropdowns:
+            dropdown.trigger_on_selection_fn_with_current_selection()
 
     def _on_prim_selection(self, art_ind: int, selection: str):
         if selection is None or self._timeline.is_stopped() or get_prim_object_type(selection) != "articulation":

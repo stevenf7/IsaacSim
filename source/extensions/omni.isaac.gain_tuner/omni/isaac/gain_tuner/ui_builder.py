@@ -30,7 +30,7 @@ from omni.isaac.ui.ui_utils import get_style, setup_ui_headers
 from omni.usd import StageEventType
 
 from .custom_ui_elements import LogFloatField
-from .gains_tuner import GainsAutoTuner, GainsTestMode
+from .gains_tuner import GainsTestMode, GainTuner
 from .global_variables import EXTENSION_TITLE
 
 
@@ -45,7 +45,7 @@ class UIBuilder:
         self._timeline = omni.timeline.get_timeline_interface()
 
         self._articulation = None
-        self._gains_tuner = GainsAutoTuner()
+        self._gains_tuner = GainTuner()
 
         self._test_mode = None
         self._built_advanced_settings_frame = False
@@ -68,7 +68,9 @@ class UIBuilder:
         # presses play before opening this extension
         if self._timeline.is_playing():
             self._articulation_menu.repopulate()
-        pass
+            self._stop_text.visible = False
+        elif self._timeline.is_stopped():
+            self._stop_text.visible = True
 
     def on_timeline_event(self, event):
         """Callback for Timeline events (Play, Pause, Stop)
@@ -125,7 +127,8 @@ class UIBuilder:
         elif event.type == int(omni.usd.StageEventType.ASSETS_LOADED):  # Any asset added or removed
             self._articulation_menu.repopulate()
         elif event.type == int(omni.usd.StageEventType.SIMULATION_START_PLAY):  # Timeline played
-            self._articulation_menu.repopulate()
+            self._articulation_menu.trigger_on_selection_fn_with_current_selection()
+            self._stop_text.visible = False
         elif event.type == int(omni.usd.StageEventType.SIMULATION_STOP_PLAY):  # Timeline stopped
             # Ignore pause events
             if self._timeline.is_stopped():
@@ -138,6 +141,7 @@ class UIBuilder:
 
                 self._advanced_settings_frame.collapsed = True
                 self._advanced_settings_frame.enabled = False
+                self._stop_text.visible = True
 
     def cleanup(self):
         """
@@ -151,8 +155,9 @@ class UIBuilder:
     def build_ui(self):
         self._build_info_ui()
 
-        asset_path_frame = CollapsableFrame("Robot Selection", collapsed=False)
-        with asset_path_frame:
+        self._articulation_selection_frame = CollapsableFrame("Robot Selection", collapsed=False)
+
+        with self._articulation_selection_frame:
             with ui.VStack(style=get_style(), spacing=5, height=0):
                 self._articulation_menu = DropDown(
                     "Select Articulation",
@@ -162,6 +167,13 @@ class UIBuilder:
                 )
                 self._articulation_menu.set_populate_fn_to_find_all_usd_objects_of_type(
                     "articulation", repopulate=False
+                )
+
+                self._stop_text = TextBlock(
+                    "README",
+                    "Select an Articulation and click the PLAY button on the left to get started.",
+                    include_copy_button=False,
+                    num_lines=2,
                 )
 
         self._gains_tuning_frame = CollapsableFrame("Tune Gains", collapsed=True, enabled=False)
@@ -330,7 +342,11 @@ class UIBuilder:
                         + "gains test, including the range of motion and the maximum velocity "
                         + "reached.  Behavior in the sinusoidal gains test is over-specified by "
                         + "the parameters below, and so adjusting one parameter may cause others to "
-                        + "be automatically changed."
+                        + "be automatically changed.\n\nMax Velocity and Period are exclusive to the "
+                        + "sinusoidal gains test. Period is bounded below by Max Velocity and Max "
+                        + "Velocity is bounded above by the Articulation max_velocity and max_effort "
+                        + "properties.  I.e. the gains test will not exceed a joint's maximum velocity "
+                        + "or acceleration in the commanded sinusoid."
                     ),
                     num_lines=4,
                     include_copy_button=False,
@@ -663,7 +679,7 @@ class UIBuilder:
         self._test_mode = None
 
     def _on_articulation_selection(self, articulation_path):
-        if articulation_path is None:
+        if articulation_path is None or self._timeline.is_stopped():
             return
 
         # Do nothing if the articulation is already selected
@@ -732,4 +748,4 @@ class UIBuilder:
         All state should be reset.
         """
         self._articulation = None
-        self._gains_tuner = GainsAutoTuner()
+        self._gains_tuner = GainTuner()

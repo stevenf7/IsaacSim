@@ -1,4 +1,9 @@
 # Changelog
+## [2.2.1] - 2024-03-15
+### Fixed
+- Fixed logic around selecting Articulation on STOP/PLAY given new behavior in Core
+  get_prim_object_type() function.
+
 ## [2.2.0] - 2024-02-06
 ### Changed
 - Improved sphere creation time by reusing `VisualMaterial`s and

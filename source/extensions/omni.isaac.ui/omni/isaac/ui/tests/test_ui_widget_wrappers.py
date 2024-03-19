@@ -15,7 +15,9 @@ import omni.kit.test
 import omni.kit.ui_test as ui_test
 import omni.timeline
 import omni.ui as ui
-from omni.isaac.core.utils.stage import update_stage_async
+from omni.isaac.core.utils.prims import delete_prim
+from omni.isaac.core.utils.stage import add_reference_to_stage, create_new_stage, update_stage_async
+from omni.isaac.nucleus import get_assets_root_path
 from omni.isaac.ui.element_wrappers import (
     Button,
     CheckBox,
@@ -158,14 +160,14 @@ class TestUI(omni.kit.test.AsyncTestCase):
 
         window.destroy()
 
-    async def testDropDownWrapper(self):
+    async def testDropDownWrapperBasicFunctionality(self):
         # This test emulates selecting an item from a DropDown and setting one manually using the API
         window_title = "UI_Widget_Wrapper_Test_Window_DropDown_Test"
         width = 500
         height = 200
         window = await self._create_window(window_title, width, height)
 
-        self.selections = ["A", "B", "C"]
+        self.selections = ["A", "B", "C", "D"]
         self.sel_ind = 0
 
         def on_dropdown_selected(selection):
@@ -184,7 +186,7 @@ class TestUI(omni.kit.test.AsyncTestCase):
         self.assertTrue(dropdown.get_selection() == "A")
         self.assertTrue(dropdown.get_selection_index() == 0)
 
-        self.assertTrue(dropdown.get_items() == ["A", "B", "C"])
+        self.assertTrue(dropdown.get_items() == ["A", "B", "C", "D"])
 
         await update_stage_async()
 
@@ -202,10 +204,59 @@ class TestUI(omni.kit.test.AsyncTestCase):
         self.assertTrue(dropdown.get_selection_index() == 1)
 
         dropdown.set_selection("C")
-        dropdown.repopulate()
-        dropdown.set_selection_by_index(2)
+        self.assertTrue(dropdown.get_selection() == "C")
+
+        dropdown.set_selection_by_index(3)
+        self.assertTrue(dropdown.get_selection() == "D")
 
         window.destroy()
+
+    async def testDropDownWrapperArticulationSelection(self):
+        window_title = "UI_Widget_Wrapper_Test_Window_DropDown_Articulation_Selection_Test"
+        width = 500
+        height = 200
+        window = await self._create_window(window_title, width, height)
+
+        self._no_path_ct = 0
+        self._valid_path_ct = 0
+
+        self._robot_path = "/ur10"
+
+        create_new_stage()
+
+        def on_articulation_selected(articulation_path):
+            if articulation_path is None:
+                self._no_path_ct += 1
+            elif articulation_path == self._robot_path:
+                self._valid_path_ct += 1
+            else:
+                self.assertTrue(False, "Invalid Articulation Selection")
+
+        with window.frame:
+            with CollapsableFrame("", collapsed=False):
+                dropdown = DropDown("DropDown", on_selection_fn=on_articulation_selected, keep_old_selections=True)
+                dropdown.set_populate_fn_to_find_all_usd_objects_of_type("articulation")
+
+        dropdown.repopulate()
+        dropdown.trigger_on_selection_fn_with_current_selection()
+        self.assertTrue(self._no_path_ct == 1)
+
+        self._timeline = omni.timeline.get_timeline_interface()
+
+        add_reference_to_stage(get_assets_root_path() + "/Isaac/Robots/UR10/ur10.usd", self._robot_path)
+        # Test that articulations are found both when the timeline is stopped and playing
+        dropdown.repopulate()
+        self.assertTrue(self._valid_path_ct == 1)
+
+        self._timeline.play()
+        dropdown.repopulate()
+        self.assertTrue(self._valid_path_ct == 1)
+        dropdown.trigger_on_selection_fn_with_current_selection()
+        self.assertTrue(self._valid_path_ct == 2)
+
+        delete_prim(self._robot_path)
+        dropdown.repopulate()
+        self.assertTrue(self._no_path_ct == 2)
 
     async def testFloatFieldWrapper(self):
         # This test emulates modifying a FloatField by dragging
