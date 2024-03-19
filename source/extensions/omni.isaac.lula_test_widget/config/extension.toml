@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.2.1"
+version = "0.2.2"
 category = "Simulation"
 title = "Lula Test Widget"
 description = "Run Simple Tests Using Lula Algorithms"

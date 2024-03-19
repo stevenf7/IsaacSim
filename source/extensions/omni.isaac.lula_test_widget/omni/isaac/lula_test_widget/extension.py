@@ -263,6 +263,8 @@ class Extension(omni.ext.IExt):
             list(str): list of prim_paths as strings
         """
         articulations = ["None"]
+        if self._timeline.is_stopped():
+            return articulations
         stage = self._usd_context.get_stage()
         if stage:
             for prim in Usd.PrimRange(stage.GetPrimAtPath("/")):
@@ -325,11 +327,12 @@ class Extension(omni.ext.IExt):
         self.get_articulation_values(articulation)
 
         if is_yaml_file(self._models["input_robot_description_file"].get_value_as_string()):
-            self._enable_load_button
+            self._enable_load_button()
 
     def _reset_ui(self):
         """Reset / Hide UI Elements."""
         self._clear_selection_combobox()
+        self._disable_lula_dropdowns()
         self._test_scenarios.full_reset()
         self._prev_art_prim_path = None
         self._visualize_end_effector = True
@@ -355,6 +358,16 @@ class Extension(omni.ext.IExt):
         elif event.type == int(omni.usd.StageEventType.OPENED) or event.type == int(omni.usd.StageEventType.CLOSED):
             # stage was opened or closed, cleanup
             self._physx_subscription = None
+
+        elif event.type == int(omni.usd.StageEventType.SIMULATION_START_PLAY):
+            self._refresh_selection_combobox()
+            index = self._models["ar_selection_model"].get_item_value_model().as_int
+            selected_articulation = self.articulation_list[index]
+            self._on_selection(selected_articulation)
+
+        elif event.type == int(omni.usd.StageEventType.SIMULATION_STOP_PLAY):
+            if self._timeline.is_stopped():
+                self._on_selection("None")
 
     def _on_physics_step(self, step):
         """Callback for Physics Step.
@@ -391,12 +404,7 @@ class Extension(omni.ext.IExt):
         Args:
             event (omni.timeline.TimelineEventType): Event Type
         """
-
-        if e.type == int(omni.timeline.TimelineEventType.PLAY):
-            # BUG: get_all_articulations returns ['None'] after STOP/PLAY <-- articulations show up as xforms
-            self._refresh_selection_combobox()
-        elif e.type == int(omni.timeline.TimelineEventType.STOP):
-            self._reset_ui()
+        pass
 
     ##################################
     # UI Builders

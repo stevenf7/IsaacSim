@@ -41,7 +41,7 @@ from omni.isaac.ui.ui_utils import (
     xyz_builder,
 )
 from omni.isaac.ui.widgets import DynamicComboBoxModel
-from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+from omni.kit.menu.utils import add_menu_items, remove_menu_items
 from omni.kit.window.property.templates import LABEL_WIDTH
 from pxr import Usd, UsdGeom
 
@@ -160,8 +160,7 @@ class Extension(omni.ext.IExt):
     def _menu_callback(self):
         self._window.visible = not self._window.visible
         # Update the Selection Box if the Timeline is already playing
-        if self._timeline.is_playing():
-            self._refresh_selection_combobox()
+        self._refresh_selection_combobox()
 
     def _build_ui(self):
         # if not self._window:
@@ -202,14 +201,13 @@ class Extension(omni.ext.IExt):
         """
         if prim_path == self._prev_art_prim_path:
             return
-        else:
+        elif not self._timeline.is_stopped():
             self._prev_art_prim_path = prim_path
 
         self.new_selection = True
         self._prev_link = None
 
-        if self.articulation_list and prim_path != "None":
-
+        if self.articulation_list and prim_path != "None" and not self._timeline.is_stopped():
             # Create and Initialize the Articulation
             self.articulation = Articulation(prim_path)
             if not self.articulation.handles_initialized:
@@ -232,12 +230,9 @@ class Extension(omni.ext.IExt):
                 self._show_robot_if_hidden()
                 self._reset_ui()
                 self._refresh_selection_combobox()
-                self._refresh_sphere_gen_link_combobox()
             self.articulation = None
-            # carb.log_warn("Resetting Articulation Inspector")
 
     def _on_combobox_selection(self, model=None, val=None):
-        # index = model.get_item_value_model().as_int
         index = self._models["ar_selection_model"].get_item_value_model().as_int
         if index >= 0 and index < len(self.articulation_list):
             self._selected_index = index
@@ -267,6 +262,14 @@ class Extension(omni.ext.IExt):
         self._models["ar_selection_model"] = DynamicComboBoxModel(self.articulation_list)
         self._models["ar_selection_combobox"].model = self._models["ar_selection_model"]
         self._models["ar_selection_combobox"].model.add_item_changed_fn(self._on_combobox_selection)
+
+    def _clear_link_selection_combobox(self):
+        self._sphere_gen_link_2_mesh = OrderedDict()
+        self._models["sphere_gen_link_selection_model"] = DynamicComboBoxModel([])
+        self._models["sphere_gen_link_selection_model_combobox"].model = self._models["sphere_gen_link_selection_model"]
+        self._models["sphere_gen_link_selection_model_combobox"].model.add_item_changed_fn(
+            self._on_select_sphere_gen_link
+        )
 
     def _on_select_sphere_gen_link(self, model, val):
         index = model.get_item_value_model().as_int
@@ -422,6 +425,7 @@ class Extension(omni.ext.IExt):
     def _reset_ui(self):
         """Reset / Hide UI Elements."""
         self._clear_selection_combobox()
+        self._clear_link_selection_combobox()
         self._prev_art_prim_path = None
 
         self._show_robot_if_hidden()
@@ -460,7 +464,6 @@ class Extension(omni.ext.IExt):
         self._refresh_selection_combobox()
 
         if event.type == int(omni.usd.StageEventType.SELECTION_CHANGED):
-            # self._on_selection_changed()
             self._collision_sphere_editor.copy_all_sphere_data()
             self._refresh_collision_sphere_comboboxes(keep_sphere_selection=True)
             pass
@@ -468,6 +471,15 @@ class Extension(omni.ext.IExt):
         elif event.type == int(omni.usd.StageEventType.OPENED) or event.type == int(omni.usd.StageEventType.CLOSED):
             # stage was opened or closed, cleanup
             self._physx_subscription = None
+
+        elif event.type == int(omni.usd.StageEventType.SIMULATION_START_PLAY):  # Timeline played
+            self._refresh_selection_combobox()
+            self._on_selection(self._get_selected_articulation())
+
+        elif event.type == int(omni.usd.StageEventType.SIMULATION_STOP_PLAY):  # Timeline stopped
+            if self._timeline.is_stopped():
+                self._reset_ui()
+                self._on_selection("None")
 
     def _on_physics_step(self, step):
         """Callback for Physics Step.
@@ -493,11 +505,7 @@ class Extension(omni.ext.IExt):
             event (omni.timeline.TimelineEventType): Event Type
         """
 
-        if e.type == int(omni.timeline.TimelineEventType.PLAY):
-            # BUG: get_all_articulations returns ['None'] after STOP/PLAY <-- articulations show up as xforms
-            self._refresh_selection_combobox()
-        elif e.type == int(omni.timeline.TimelineEventType.STOP):
-            self._reset_ui()
+        pass
 
     def _set_joint_positions(self, step):
         if self.articulation is not None:
@@ -1254,6 +1262,10 @@ class Extension(omni.ext.IExt):
         link = list(self._sphere_gen_link_2_mesh.keys())[link_index]
 
         return link
+
+    def _get_selected_articulation(self):
+        index = self._models["ar_selection_model"].get_item_value_model().as_int
+        return self.articulation_list[index]
 
     def _preview_collision_spheres(self, model=None):
         if self._preview_spheres:

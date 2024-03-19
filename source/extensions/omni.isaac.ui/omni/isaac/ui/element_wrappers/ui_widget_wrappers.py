@@ -1298,6 +1298,11 @@ class DropDown(UIWidgetWrapper):
         """
         self.set_populate_fn(lambda: self._find_all_usd_objects_of_type(object_type), repopulate=repopulate)
 
+    def trigger_on_selection_fn_with_current_selection(self):
+        """Call the user on_selection_fn() with whatever item is currently selected in the DropDown."""
+        if self._on_selection_fn is not None:
+            self._on_selection_fn(self.get_selection())
+
     def _item_changed_fn_wrapper(self, model, val):
         if self._on_selection_fn is not None:
             selected_item = self._items[model.get_item_value_model().as_int]

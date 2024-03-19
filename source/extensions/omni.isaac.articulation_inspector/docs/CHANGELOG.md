@@ -1,4 +1,8 @@
 # Changelog
+## [0.1.8] - 2024-03-14
+### Fixed
+- Fixed Articulation Selection DropDown menu due to change in behavior of Core function get_prim_object_type().
+
 ## [0.1.7] - 2024-03-07
 ### Changed
 - Removed the usage of the deprecated dynamic_control extension 

@@ -1,4 +1,9 @@
 # Changelog
+## [0.15.0] - 2024-03-14
+### Added
+- Added function to trigger user callback manually for DropDown widget.
+- Added test of expected behavior when populating DropDown widge with Articulations on the stage.
+
 ## [0.14.1] - 2024-02-27
 ### Changed
 - Use action registry in make_menu_item_description by deregistering actions first

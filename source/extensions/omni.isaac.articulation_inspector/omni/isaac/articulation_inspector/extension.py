@@ -147,7 +147,7 @@ class Extension(omni.ext.IExt):
         """
         self.new_selection = True
 
-        if self.articulation_list and prim_path != "None":
+        if self.articulation_list and prim_path != "None" and not self._timeline.is_stopped():
 
             # Create and Initialize the Articulation
             self.articulation = Articulation(prim_path)
@@ -195,6 +195,7 @@ class Extension(omni.ext.IExt):
                 self._models["ar_selection_combobox"].model.set_item_value_model(
                     ui.SimpleIntModel(self._selected_index)
                 )
+                self._on_selection(self._selected_prim_path)
 
     def _clear_selection_combobox(self):
         self._selected_index = None
@@ -534,10 +535,10 @@ class Extension(omni.ext.IExt):
             event (omni.timeline.TimelineEventType): Event Type
         """
 
-        if e.type == int(omni.timeline.TimelineEventType.PLAY):
+        if e.type == int(omni.usd.StageEventType.SIMULATION_START_PLAY):
             # BUG: get_all_articulations returns ['None'] after STOP/PLAY <-- articulations show up as xforms
             self._refresh_selection_combobox()
-        elif e.type == int(omni.timeline.TimelineEventType.STOP):
+        elif e.type == int(omni.usd.StageEventType.SIMULATION_STOP_PLAY) and self._timeline.is_stopped():
             self._reset_ui()
 
     ##################################

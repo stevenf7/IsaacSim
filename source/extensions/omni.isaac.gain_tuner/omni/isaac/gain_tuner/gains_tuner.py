@@ -12,7 +12,7 @@ from enum import Enum
 import carb
 import numpy as np
 import omni.timeline as timeline
-from omni.isaac.core.articulations import Articulation, ArticulationView
+from omni.isaac.core.articulations import Articulation
 from omni.isaac.core.utils.types import ArticulationAction
 
 
@@ -21,7 +21,7 @@ class GainsTestMode(Enum):
     STEP_FUNCTION = 2
 
 
-class GainsAutoTuner:
+class GainTuner:
     def __init__(self):
         self._articulation = None
         self._robot_prim_path = None
@@ -310,9 +310,6 @@ class GainsAutoTuner:
         self._articulation.set_joint_positions(position_command_fn(0), self._joint_indices)
         self._articulation.set_joint_positions(self._fixed_positions, self._fixed_joint_indices)
         self._articulation.set_solver_velocity_iteration_count(10)
-
-        art_view = ArticulationView(self._articulation.prim_path)
-        art_view.initialize()
 
         yield ()
 

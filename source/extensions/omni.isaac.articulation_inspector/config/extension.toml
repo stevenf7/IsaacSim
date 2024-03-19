@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.7"
+version = "0.1.8"
 category = "Simulation"
 title = "Articulation Inspector"
 description = "This extension can inspect and modify the properties of an articulation."
