@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.16.4] - 2024-03-20
+### Changed
+- Updated nvblox tests to match the sample
+
 ## [1.16.3] - 2024-03-14
 ### Changed
 - Update tolerances of O3dyn tests

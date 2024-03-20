@@ -32,8 +32,10 @@ from omni.isaac.core.utils.extensions import enable_extension
 
 for e in ADDITIONAL_EXTENSIONS_PEOPLE:
     enable_extension(e)
+    kit.update()
 
 enable_extension("omni.isaac.ros2_bridge")
+kit.update()
 
 # Locate Isaac Sim assets folder to load sample
 from omni.isaac.nucleus import get_assets_root_path, is_file
@@ -43,7 +45,7 @@ if assets_root_path is None:
     carb.log_error("Could not find Isaac Sim assets folder")
     kit.close()
     sys.exit()
-usd_path = assets_root_path + "/Isaac/Samples/NvBlox/carter_warehouse_navigation_with_dynamics.usd"
+usd_path = assets_root_path + "/Isaac/Samples/NvBlox/nvblox_sample_scene.usd"
 
 omni.usd.get_context().open_stage(usd_path)
 

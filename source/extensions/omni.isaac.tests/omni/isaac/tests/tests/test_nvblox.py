@@ -35,77 +35,9 @@ class TestNvBloxScenes(omni.kit.test.AsyncTestCase):
         self._timeline = None
         pass
 
-    async def test_NvBlox_carter_warehouse_navigation(self):
+    async def test_nvBlox_sample_scene(self):
         # open scene
-        self.usd_path = self._assets_root_path + "/Isaac/Samples/NvBlox/carter_warehouse_navigation.usd"
-        (result, error) = await open_stage_async(self.usd_path)
-
-        # Make sure the stage loaded
-        self.assertTrue(result)
-        await omni.kit.app.get_app().next_update_async()
-
-        self._timeline.play()
-
-        for i in range(10):
-            await omni.kit.app.get_app().next_update_async()
-
-        self._timeline.stop()
-        return True
-
-    async def test_NvBlox_carter_warehouse_navigation(self):
-        # open scene
-        self.usd_path = self._assets_root_path + "/Isaac/Samples/NvBlox/carter_warehouse_navigation.usd"
-        (result, error) = await open_stage_async(self.usd_path)
-
-        # Make sure the stage loaded
-        self.assertTrue(result)
-        await omni.kit.app.get_app().next_update_async()
-
-        self._timeline.play()
-
-        for i in range(10):
-            await omni.kit.app.get_app().next_update_async()
-
-        self._timeline.stop()
-        return True
-
-    async def test_NvBlox_carter_warehouse_navigation_with_people(self):
-        # open scene
-        self.usd_path = self._assets_root_path + "/Isaac/Samples/NvBlox/carter_warehouse_navigation_with_people.usd"
-        (result, error) = await open_stage_async(self.usd_path)
-
-        # Make sure the stage loaded
-        self.assertTrue(result)
-        await omni.kit.app.get_app().next_update_async()
-
-        self._timeline.play()
-
-        for i in range(10):
-            await omni.kit.app.get_app().next_update_async()
-
-        self._timeline.stop()
-        return True
-
-    async def test_NvBlox_carter_warehouse_navigation_with_dynamics(self):
-        # open scene
-        self.usd_path = self._assets_root_path + "/Isaac/Samples/NvBlox/carter_warehouse_navigation_with_dynamics.usd"
-        (result, error) = await open_stage_async(self.usd_path)
-
-        # Make sure the stage loaded
-        self.assertTrue(result)
-        await omni.kit.app.get_app().next_update_async()
-
-        self._timeline.play()
-
-        for i in range(10):
-            await omni.kit.app.get_app().next_update_async()
-
-        self._timeline.stop()
-        return True
-
-    async def test_NvBlox_carter_v2_ROS2(self):
-        # open scene
-        self.usd_path = self._assets_root_path + "/Isaac/Samples/NvBlox/Robots/Carter_v2_ROS2.usd"
+        self.usd_path = self._assets_root_path + "/Isaac/Samples/NvBlox/nvblox_sample_scene.usd"
         (result, error) = await open_stage_async(self.usd_path)
 
         # Make sure the stage loaded
