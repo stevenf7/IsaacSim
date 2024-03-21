@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.15.0] - 2024-03-13
+### Added
+- Added Sick sensor config files for multiScan136, multiScan165, picoScan150
+
+### Changed
+- Replaced current sensor config files for tim781
+
 ## [9.14.4] - 2024-03-14
 ### Fixed
 - IsaacComputeRTXLidarFlatScan works with CCW Solid State lidar configs
