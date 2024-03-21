@@ -3,7 +3,7 @@
     "_comment3": "parameters without comments are assumed correct, but will ultimately need checking",
     "class": "sensor",
     "type": "lidar",
-    "name": "SICK TiM781", "_comment0": "Sick Tim-781 2D lidar",
+    "name": "SICK tim781 legacy", "_comment0": "Sick Tim-781 2D lidar",
     "driveWorksId": "GENERIC", "_comment1": "Using generic, because no LidarDWId in drivesim-ov/include/omni/sensors/lidar/LidarProfileTypes.h",
     "profile":
     {
