@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.13.1] - 2024-03-20
+### Added
+- OG shortcuts to RTX lidar, odometry, tf pub
+- node namespace options for all the shortcuts
+- popup notifications instead of print statements for errors in OG shortcuts
+
+
+## [2.13.0] - 2024-03-12
+### Added
+- New folder under python/scripts/ for omnigraph shortcuts
+- Menu shortcuts to generate ROS Omnigraphs
+- Shortcuts for ROS clock, jointstate publisher and subscriber, and camera
+
 ## [2.12.1] - 2024-03-18
 ### Changed
 - Updated the stdoutFailPatterns.exclude to ignore articulation related error

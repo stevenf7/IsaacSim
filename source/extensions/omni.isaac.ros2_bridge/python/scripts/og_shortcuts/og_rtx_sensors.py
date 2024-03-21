@@ -17,6 +17,7 @@ from omni.isaac.core.utils.stage import get_next_free_path
 from omni.isaac.ui.callbacks import on_open_IDE_clicked
 from omni.isaac.ui.style import get_style
 from omni.isaac.ui.widgets import ParamWidget, SelectPrimWidget
+from omni.kit.notification_manager import NotificationStatus, post_notification
 from omni.kit.window.extensions import SimpleCheckBox
 from pxr import OmniGraphSchema
 
@@ -24,7 +25,9 @@ from pxr import OmniGraphSchema
 class Ros2CameraGraph:
     def __init__(self):
         self._og_path = "/Graph/ROS_Camera"
-        self._existing_graph = False
+        self._add_to_existing_graph = False
+        self._frame_id = "sim_camera"
+        self._node_namespace = ""
         self._camera_info_topic = "camera_info"
         self._rgb_pub = True
         self._rgb_topic = "/rgb"
@@ -48,8 +51,8 @@ class Ros2CameraGraph:
         self._timeline.stop()
 
         keys = og.Controller.Keys
-        # if starting from a new graph, start it with just a tick,context, and sim_time node, the rest is the same for adding to exsiting graph
-        if not self._existing_graph:
+        # if starting from a new graph, start it with just a tick and context, render product and camera info (no sim time), the rest is the same for adding to exsiting graph
+        if not self._add_to_existing_graph:
             self._og_path = get_next_free_path(self._og_path, "")
             (graph_handle, nodes, _, _) = og.Controller.edit(
                 {"graph_path": self._og_path, "evaluator_name": "execution"},
@@ -63,6 +66,8 @@ class Ros2CameraGraph:
                     keys.SET_VALUES: [
                         ("CameraInfoPublish.inputs:topicName", self._camera_info_topic),
                         ("CameraInfoPublish.inputs:type", "camera_info"),
+                        ("CameraInfoPublish.inputs:frameId", self._frame_id),
+                        ("CameraInfoPublish.inputs:nodeNamespace", self._node_namespace),
                         ("CameraInfoPublish.inputs:resetSimulationTimeOnStop", True),
                     ],
                     keys.CONNECT: [
@@ -74,21 +79,13 @@ class Ros2CameraGraph:
                 },
             )
         else:
-            # make sure the "existing" graph exist
-            stage = omni.usd.get_context().get_stage()
-            og_prim = stage.GetPrimAtPath(self._og_path)
-            if og_prim.IsValid() and og_prim.IsA(OmniGraphSchema.OmniGraph):
-                graph_handle = og.get_graph_by_path(self._og_path)
-            else:
-                print(f"{self._og_path} is not an existing graph, check the og path")
-                return
+            graph_handle = og.get_graph_by_path(self._og_path)
 
         # to an existin graph
         # traverse through the graph
         all_nodes = graph_handle.get_nodes()
         tick_node = None
         context_node = None
-        sim_time_node = None
         render_node = None
         for node in all_nodes:
             node_path = node.get_prim_path()
@@ -97,8 +94,6 @@ class Ros2CameraGraph:
                 tick_node = node_path
             elif node_type == "omni.isaac.ros2_bridge.ROS2Context":
                 context_node = node_path
-            elif node_type == "omni.isaac.core_nodes.IsaacReadSimulationTime":
-                sim_time_node = node_path
             elif node_type == "omni.isaac.core_nodes.IsaacGetViewportRenderProduct":
                 render_node = node_path
 
@@ -115,14 +110,21 @@ class Ros2CameraGraph:
                         (rgb_node + ".inputs:topicName", self._rgb_topic),
                         (rgb_node + ".inputs:type", "rgb"),
                         (rgb_node + ".inputs:resetSimulationTimeOnStop", True),
+                        (rgb_node + ".inputs:frameId", self._frame_id),
+                        (rgb_node + ".inputs:nodeNamespace", self._node_namespace),
                     ],
                     keys.CONNECT: [
                         (render_node + ".outputs:execOut", rgb_node + ".inputs:execIn"),
                         (render_node + ".outputs:renderProductPath", rgb_node + ".inputs:renderProductPath"),
-                        (context_node + ".outputs:context", rgb_node + ".inputs:context"),
                     ],
                 },
             )
+
+            if context_node:
+                og.Controller.connect(
+                    og.Controller.attribute(context_node + ".outputs:context"),
+                    og.Controller.attribute(rgb_node + ".inputs:context"),
+                )
 
         if self._depth_pub:
             depth_node = get_next_free_path(self._og_path + "/DepthPublish", "")
@@ -137,14 +139,20 @@ class Ros2CameraGraph:
                         (depth_node + ".inputs:topicName", self._depth_topic),
                         (depth_node + ".inputs:type", "depth"),
                         (depth_node + ".inputs:resetSimulationTimeOnStop", True),
+                        (depth_node + ".inputs:frameId", self._frame_id),
+                        (depth_node + ".inputs:nodeNamespace", self._node_namespace),
                     ],
                     keys.CONNECT: [
                         (render_node + ".outputs:execOut", depth_node + ".inputs:execIn"),
                         (render_node + ".outputs:renderProductPath", depth_node + ".inputs:renderProductPath"),
-                        (context_node + ".outputs:context", depth_node + ".inputs:context"),
                     ],
                 },
             )
+            if context_node:
+                og.Controller.connect(
+                    og.Controller.attribute(context_node + ".outputs:context"),
+                    og.Controller.attribute(depth_node + ".inputs:context"),
+                )
 
         if self._depth_pcl_pub:
             depth_pcl_node = get_next_free_path(self._og_path + "/DepthPclPublish", "")
@@ -159,6 +167,8 @@ class Ros2CameraGraph:
                         (depth_pcl_node + ".inputs:topicName", self._depth_pcl_topic),
                         (depth_pcl_node + ".inputs:type", "depth_pcl"),
                         (depth_pcl_node + ".inputs:resetSimulationTimeOnStop", True),
+                        (depth_pcl_node + ".inputs:frameId", self._frame_id),
+                        (depth_pcl_node + ".inputs:nodeNamespace", self._node_namespace),
                     ],
                     keys.CONNECT: [
                         (render_node + ".outputs:execOut", depth_pcl_node + ".inputs:execIn"),
@@ -167,6 +177,11 @@ class Ros2CameraGraph:
                     ],
                 },
             )
+            if context_node:
+                og.Controller.connect(
+                    og.Controller.attribute(context_node + ".outputs:context"),
+                    og.Controller.attribute(depth_pcl_node + ".inputs:context"),
+                )
 
         if self._instance_pub:
             instance_node = get_next_free_path(self._og_path + "/InstancePublish", "")
@@ -181,6 +196,8 @@ class Ros2CameraGraph:
                         (instance_node + ".inputs:topicName", self._instance_topic),
                         (instance_node + ".inputs:type", "instance_segmentation"),
                         (instance_node + ".inputs:resetSimulationTimeOnStop", True),
+                        (instance_node + ".inputs:frameId", self._frame_id),
+                        (instance_node + ".inputs:nodeNamespace", self._node_namespace),
                     ],
                     keys.CONNECT: [
                         (render_node + ".outputs:execOut", instance_node + ".inputs:execIn"),
@@ -189,6 +206,11 @@ class Ros2CameraGraph:
                     ],
                 },
             )
+            if context_node:
+                og.Controller.connect(
+                    og.Controller.attribute(context_node + ".outputs:context"),
+                    og.Controller.attribute(instance_node + ".inputs:context"),
+                )
 
         if self._semantic_pub:
             semantic_node = get_next_free_path(self._og_path + "/SemanticPublish", "")
@@ -203,6 +225,8 @@ class Ros2CameraGraph:
                         (semantic_node + ".inputs:topicName", self._semantic_topic),
                         (semantic_node + ".inputs:type", "semantic_segmentation"),
                         (semantic_node + ".inputs:resetSimulationTimeOnStop", True),
+                        (semantic_node + ".inputs:frameId", self._frame_id),
+                        (semantic_node + ".inputs:nodeNamespace", self._node_namespace),
                     ],
                     keys.CONNECT: [
                         (render_node + ".outputs:execOut", semantic_node + ".inputs:execIn"),
@@ -211,6 +235,11 @@ class Ros2CameraGraph:
                     ],
                 },
             )
+            if context_node:
+                og.Controller.connect(
+                    og.Controller.attribute(context_node + ".outputs:context"),
+                    og.Controller.attribute(semantic_node + ".inputs:context"),
+                )
 
         if self._bbox2d_tight_pub:
             bbox2d_tight_node = get_next_free_path(self._og_path + "/Bbox2dTightPublish", "")
@@ -225,6 +254,8 @@ class Ros2CameraGraph:
                         (bbox2d_tight_node + ".inputs:topicName", self._bbox2d_tight_topic),
                         (bbox2d_tight_node + ".inputs:type", "bbox_2d_tight"),
                         (bbox2d_tight_node + ".inputs:resetSimulationTimeOnStop", True),
+                        (bbox2d_tight_node + ".inputs:frameId", self._frame_id),
+                        (bbox2d_tight_node + ".inputs:nodeNamespace", self._node_namespace),
                     ],
                     keys.CONNECT: [
                         (render_node + ".outputs:execOut", bbox2d_tight_node + ".inputs:execIn"),
@@ -233,6 +264,11 @@ class Ros2CameraGraph:
                     ],
                 },
             )
+            if context_node:
+                og.Controller.connect(
+                    og.Controller.attribute(context_node + ".outputs:context"),
+                    og.Controller.attribute(bbox2d_tight_node + ".inputs:context"),
+                )
 
         if self._bbox2d_loose_pub:
             bbox2d_loose_node = get_next_free_path(self._og_path + "/Bbox2dLoosePublish", "")
@@ -247,6 +283,8 @@ class Ros2CameraGraph:
                         (bbox2d_loose_node + ".inputs:topicName", self._bbox2d_loose_topic),
                         (bbox2d_loose_node + ".inputs:type", "bbox_2d_loose"),
                         (bbox2d_loose_node + ".inputs:resetSimulationTimeOnStop", True),
+                        (bbox2d_loose_node + ".inputs:frameId", self._frame_id),
+                        (bbox2d_loose_node + ".inputs:nodeNamespace", self._node_namespace),
                     ],
                     keys.CONNECT: [
                         (render_node + ".outputs:execOut", bbox2d_loose_node + ".inputs:execIn"),
@@ -255,6 +293,11 @@ class Ros2CameraGraph:
                     ],
                 },
             )
+            if context_node:
+                og.Controller.connect(
+                    og.Controller.attribute(context_node + ".outputs:context"),
+                    og.Controller.attribute(bbox2d_loose_node + ".inputs:context"),
+                )
 
         if self._bbox3d_pub:
             bbox3d_node = get_next_free_path(self._og_path + "/Bbox3dPublish", "")
@@ -269,6 +312,8 @@ class Ros2CameraGraph:
                         (bbox3d_node + ".inputs:topicName", self._bbox3d_topic),
                         (bbox3d_node + ".inputs:type", "bbox_3d"),
                         (bbox3d_node + ".inputs:resetSimulationTimeOnStop", True),
+                        (bbox3d_node + ".inputs:frameId", self._frame_id),
+                        (bbox3d_node + ".inputs:nodeNamespace", self._node_namespace),
                     ],
                     keys.CONNECT: [
                         (render_node + ".outputs:execOut", bbox3d_node + ".inputs:execIn"),
@@ -277,10 +322,21 @@ class Ros2CameraGraph:
                     ],
                 },
             )
+            if context_node:
+                og.Controller.connect(
+                    og.Controller.attribute(context_node + ".outputs:context"),
+                    og.Controller.attribute(bbox3d_node + ".inputs:context"),
+                )
 
     def create_camera_graph(self):
         og_path_def = ParamWidget.FieldDef(
             name="og_path", label="Graph Path", type=ui.StringField, default=self._og_path
+        )
+        frame_id_def = ParamWidget.FieldDef(
+            name="frame_id", label="Frame ID", type=ui.StringField, default=self._frame_id
+        )
+        node_namespace_def = ParamWidget.FieldDef(
+            name="node_namespace", label="Node Namespace", type=ui.StringField, default=self._node_namespace
         )
         rgb_topic_def = ParamWidget.FieldDef(
             name="rgb topic", label="RGB Topic", type=ui.StringField, default=self._rgb_topic
@@ -312,9 +368,11 @@ class Ros2CameraGraph:
             with ui.VStack(spacing=4):
                 with ui.HStack():
                     ui.Label("Add to an existing graph?", width=ui.Percent(30))
-                    cb = ui.SimpleBoolModel(default_value=self._existing_graph)
-                    SimpleCheckBox(self._existing_graph, self._on_use_existing_graph, model=cb)
+                    cb = ui.SimpleBoolModel(default_value=self._add_to_existing_graph)
+                    SimpleCheckBox(self._add_to_existing_graph, self._on_use_existing_graph, model=cb)
                 self.og_path_input = ParamWidget(field_def=og_path_def)
+                self.frame_id_input = ParamWidget(field_def=frame_id_def)
+                self.node_namespace_input = ParamWidget(field_def=node_namespace_def)
                 ui.Spacer(height=5)
                 with ui.HStack():
                     ui.Label("RGB", width=ui.Percent(15))
@@ -381,9 +439,12 @@ class Ros2CameraGraph:
                             clicked_fn=lambda: on_open_IDE_clicked("", __file__),
                             style=get_style()["IconButton.Image::OpenConfig"],
                         )
+        return self._window
 
     def _on_ok(self):
         self._og_path = self.og_path_input.get_value()
+        self._frame_id = self.frame_id_input.get_value()
+        self._node_namespace = self.node_namespace_input.get_value()
         self._rgb_topic = self.rgb_topic_input.get_value()
         self._depth_topic = self.depth_topic_input.get_value()
         self._depth_pcl_topic = self.depth_pcl_topic_input.get_value()
@@ -393,14 +454,33 @@ class Ros2CameraGraph:
         self._bbox2d_loose_topic = self.bbox2d_loose_topic_input.get_value()
         self._bbox3d_topic = self.bbox3d_topic_input.get_value()
 
-        self.make_graph()
-        self._window.visible = False
+        param_check = self._check_params()
+        if param_check:
+            self.make_graph()
+            self._window.visible = False
+        else:
+            post_notification("Parameter check failed", status=NotificationStatus.WARNING)
+
+    def _check_params(self):
+        stage = omni.usd.get_context().get_stage()
+
+        if self._add_to_existing_graph:
+            # make sure the "existing" graph exist
+            og_prim = stage.GetPrimAtPath(self._og_path)
+            if og_prim.IsValid() and og_prim.IsA(OmniGraphSchema.OmniGraph):
+                pass
+            else:
+                msg = self._og_path + "is not an existing graph, check the og path"
+                post_notification(msg, status=NotificationStatus.WARNING)
+                return False
+
+        return True
 
     def _on_cancel(self):
         self._window.visible = False
 
     def _on_use_existing_graph(self, check_state):
-        self._existing_graph = check_state
+        self._add_to_existing_graph = check_state
 
     def _on_rgb_pub(self, check_state):
         self._rgb_pub = check_state
@@ -430,7 +510,9 @@ class Ros2CameraGraph:
 class Ros2RtxLidarGraph:
     def __init__(self):
         self._og_path = "/Graph/ROS_LidarRTX"
-        self._existing_graph = False
+        self._frame_id = "sim_lidar"
+        self._node_namespace = ""
+        self._add_to_existing_graph = False
         self._lidar_prim = ""
         self._laser_scan_pub = True
         self._laser_scan_topic = "/laser_scan"
@@ -442,8 +524,8 @@ class Ros2RtxLidarGraph:
         self._timeline.stop()
 
         keys = og.Controller.Keys
-        # if starting from a new graph, start it with just a tick,context, and sim_time node, the rest is the same for adding to exsiting graph
-        if not self._existing_graph:
+        # if starting from a new graph, start it with just a tick, context, and render product, (no sim time), the rest is the same for adding to exsiting graph
+        if not self._add_to_existing_graph:
             self._og_path = get_next_free_path(self._og_path, "")
             (graph_handle, nodes, _, _) = og.Controller.edit(
                 {"graph_path": self._og_path, "evaluator_name": "execution"},
@@ -460,14 +542,7 @@ class Ros2RtxLidarGraph:
                 },
             )
         else:
-            # make sure the "existing" graph exist
-            stage = omni.usd.get_context().get_stage()
-            og_prim = stage.GetPrimAtPath(self._og_path)
-            if og_prim.IsValid() and og_prim.IsA(OmniGraphSchema.OmniGraph):
-                graph_handle = og.get_graph_by_path(self._og_path)
-            else:
-                print(f"{self._og_path} is not an existing graph, check the og path")
-                return
+            graph_handle = og.get_graph_by_path(self._og_path)
 
         # to an existin graph
         # traverse through the graph
@@ -482,6 +557,8 @@ class Ros2RtxLidarGraph:
                 tick_node = node_path
             elif node_type == "omni.isaac.ros2_bridge.ROS2Context":
                 context_node = node_path
+            elif node_type == "omni.isaac.core_nodes.IsaacReadSimulationTime":
+                sim_time_node = node_path
             elif node_type == "omni.isaac.core_nodes.IsaacCreateRenderProduct":
                 render_node = node_path
 
@@ -497,14 +574,20 @@ class Ros2RtxLidarGraph:
                     keys.SET_VALUES: [
                         (laser_scan_node + ".inputs:topicName", self._laser_scan_topic),
                         (laser_scan_node + ".inputs:type", "laser_scan"),
+                        (laser_scan_node + ".inputs:frameId", self._frame_id),
+                        (laser_scan_node + ".inputs:nodeNamespace", self._node_namespace),
                     ],
                     keys.CONNECT: [
                         (render_node + ".outputs:execOut", laser_scan_node + ".inputs:execIn"),
                         (render_node + ".outputs:renderProductPath", laser_scan_node + ".inputs:renderProductPath"),
-                        (context_node + ".outputs:context", laser_scan_node + ".inputs:context"),
                     ],
                 },
             )
+            if context_node:
+                og.Controller.connect(
+                    og.Controller.attribute(context_node + ".outputs:context"),
+                    og.Controller.attribute(laser_scan_node + ".inputs:context"),
+                )
 
         if self._point_cloud_pub:
             point_cloud_node = get_next_free_path(self._og_path + "/PointCloudPublish", "")
@@ -518,18 +601,30 @@ class Ros2RtxLidarGraph:
                     keys.SET_VALUES: [
                         (point_cloud_node + ".inputs:topicName", self._point_cloud_topic),
                         (point_cloud_node + ".inputs:type", "point_cloud"),
+                        (point_cloud_node + ".inputs:frameId", self._frame_id),
+                        (point_cloud_node + ".inputs:nodeNamespace", self._node_namespace),
                     ],
                     keys.CONNECT: [
                         (render_node + ".outputs:execOut", point_cloud_node + ".inputs:execIn"),
                         (render_node + ".outputs:renderProductPath", point_cloud_node + ".inputs:renderProductPath"),
-                        (context_node + ".outputs:context", point_cloud_node + ".inputs:context"),
                     ],
                 },
             )
+            if context_node:
+                og.Controller.connect(
+                    og.Controller.attribute(context_node + ".outputs:context"),
+                    og.Controller.attribute(point_cloud_node + ".inputs:context"),
+                )
 
     def create_lidar_graph(self):
         og_path_def = ParamWidget.FieldDef(
             name="og_path", label="Graph Path", type=ui.StringField, default=self._og_path
+        )
+        frame_id_def = ParamWidget.FieldDef(
+            name="frame_id", label="Frame ID", type=ui.StringField, default=self._frame_id
+        )
+        node_namespace_def = ParamWidget.FieldDef(
+            name="node_namespace", label="Node Namespace", type=ui.StringField, default=self._node_namespace
         )
         laser_scan_topic_def = ParamWidget.FieldDef(
             name="laser_scan_topic", label="LaserScan Topic", type=ui.StringField, default=self._laser_scan_topic
@@ -543,10 +638,12 @@ class Ros2RtxLidarGraph:
             with ui.VStack(spacing=4):
                 with ui.HStack():
                     ui.Label("Add to an existing graph?", width=ui.Percent(30))
-                    cb = ui.SimpleBoolModel(default_value=self._existing_graph)
-                    SimpleCheckBox(self._existing_graph, self._on_use_existing_graph, model=cb)
+                    cb = ui.SimpleBoolModel(default_value=self._add_to_existing_graph)
+                    SimpleCheckBox(self._add_to_existing_graph, self._on_use_existing_graph, model=cb)
                 self.og_path_input = ParamWidget(field_def=og_path_def)
                 self.lidar_prim_input = SelectPrimWidget(label="Lidar Prim", default=self._lidar_prim)
+                self.frame_id_input = ParamWidget(field_def=frame_id_def)
+                self.node_namespace_input = ParamWidget(field_def=node_namespace_def)
                 ui.Spacer(height=5)
                 with ui.HStack():
                     ui.Label("Laser Scan", width=ui.Percent(15))
@@ -577,21 +674,43 @@ class Ros2RtxLidarGraph:
                             clicked_fn=lambda: on_open_IDE_clicked("", __file__),
                             style=get_style()["IconButton.Image::OpenConfig"],
                         )
+        return self._window
 
     def _on_ok(self):
         self._og_path = self.og_path_input.get_value()
         self._lidar_prim = self.lidar_prim_input.get_value()
+        self._frame_id = self.frame_id_input.get_value()
+        self._node_namespace = self.node_namespace_input.get_value()
         self._laser_scan_topic = self.laser_scan_topic_input.get_value()
         self._point_cloud_topic = self.point_cloud_topic_input.get_value()
 
-        self.make_graph()
-        self._window.visible = False
+        param_check = self._check_params()
+        if param_check:
+            self.make_graph()
+            self._window.visible = False
+        else:
+            post_notification("Parameter check failed", status=NotificationStatus.WARNING)
 
     def _on_cancel(self):
         self._window.visible = False
 
+    def _check_params(self):
+        stage = omni.usd.get_context().get_stage()
+
+        if self._add_to_existing_graph:
+            # make sure the "existing" graph exist
+            og_prim = stage.GetPrimAtPath(self._og_path)
+            if og_prim.IsValid() and og_prim.IsA(OmniGraphSchema.OmniGraph):
+                pass
+            else:
+                msg = self._og_path + "is not an existing graph, check the og path"
+                post_notification(msg, status=NotificationStatus.WARNING)
+                return False
+
+        return True
+
     def _on_use_existing_graph(self, check_state):
-        self._existing_graph = check_state
+        self._add_to_existing_graph = check_state
 
     def _on_laser_scan_pub(self, check_state):
         self._laser_scan_pub = check_state
