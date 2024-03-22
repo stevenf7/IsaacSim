@@ -667,6 +667,24 @@ Utilities for enabling and disabling extensions from the Extension Manager and k
     :members:
     :undoc-members:
     :exclude-members:
+|
+
+Interoperability Utils
+========================
+
+Utilities for interoperability between different (ML) frameworks.
+|br| Supported frameworks are:
+
+* `Warp <https://nvidia.github.io/warp/index.html>`_
+* `PyTorch <https://pytorch.org>`_
+* `JAX <https://jax.readthedocs.io/>`_
+* `TensorFlow <https://www.tensorflow.org>`_
+* `NumPy <https://numpy.org>`_
+
+.. automodule:: omni.isaac.core.utils.interops
+    :members:
+    :undoc-members:
+    :exclude-members:
 
 Math Utils
 ==================

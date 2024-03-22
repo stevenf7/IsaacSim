@@ -1,6 +1,10 @@
 # Changelog
 
-## [3.5.1] - 2024-03-14
+## [3.7.0] - 2024-03-19
+### Added
+- Interops utility to convert tensors/arrays between ML frameworks (Warp, PyTorch, JAX, TensorFlow and NumPy)
+
+## [3.6.0] - 2024-03-14
 ### Changed
 - Changed the extension structure to allow for Cpp files to be added.
 - Changed the find_matching_prim_paths util to a cpp implmentation for higher perf.
