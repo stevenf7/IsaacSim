@@ -42,7 +42,7 @@ project_with_location("omni.isaac.core.plugins")
         "%{root}/include/pch",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/source/extensions/omni.isaac.core/include",
-        "%{root}/_build/target-deps/usdrt/include",
+        "%{kit_sdk_bin_dir}/dev/fabric/include/",
     }
     libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",

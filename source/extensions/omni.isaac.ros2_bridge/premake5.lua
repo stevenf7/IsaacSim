@@ -172,7 +172,7 @@ project_ext_plugin(ext, "omni.isaac.ros2_bridge.plugin")
         "%{root}/source/extensions/omni.isaac.ros2_bridge",
         "%{root}/_build/target-deps/nlohmann-json/include",
         "%{root}/source/extensions/omni.isaac.core_nodes/include",
-        "%{root}/_build/target-deps/usdrt/include",
+        "%{kit_sdk_bin_dir}/dev/fabric/include/",
         "%{root}/source/extensions/omni.isaac.dynamic_control/include",
      }
      libdirs {
