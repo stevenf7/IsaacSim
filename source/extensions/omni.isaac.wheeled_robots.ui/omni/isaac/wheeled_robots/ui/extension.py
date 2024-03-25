@@ -38,16 +38,13 @@ class Extension(omni.ext.IExt):
         add_menu_items(self._menu_controller, "Isaac Utils")
         self._window = None
 
-        self._differential_graph = None
-
     def on_shutdown(self):
-        self._differential_graph = None
         remove_menu_items(self._menu_controller, "Isaac Utils")
+        if self._window:
+            self._window.visible = False
         release_interface(self.__interface)
         gc.collect()
 
     def _open_differential_graph(self):
-        if not self._differential_graph:
-            # only initialize the graph once each session, so defaults can be saved
-            self._differential_graph = DifferentialRobotGraph()
-        self._differential_graph.create_differential_robot_graph()
+        self._differential_graph = DifferentialRobotGraph()
+        self._window = self._differential_graph.create_differential_robot_graph()
