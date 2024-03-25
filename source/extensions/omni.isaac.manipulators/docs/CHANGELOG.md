@@ -1,4 +1,8 @@
 # Changelog
+## [1.3.1] - 2024-03-21
+### Changed
+- enabled "add to existing graph" for all the shortcuts
+
 ## [1.3.0] - 2024-03-15
 ### Changed
 - moved all python code into a python folder. deleted omni/isaac/manipulators

@@ -8,90 +8,126 @@
 #
 import os
 
-import numpy as np
 import omni.graph.core as og
 import omni.ui as ui
 import omni.usd
+from numpy import pi as PI
 from omni.isaac.core.utils.stage import get_next_free_path
 from omni.isaac.ui.callbacks import on_open_IDE_clicked
 from omni.isaac.ui.style import get_style
 from omni.isaac.ui.widgets import ParamWidget, SelectPrimWidget
+from omni.kit.notification_manager import NotificationStatus, post_notification
 from omni.kit.window.extensions import SimpleCheckBox
-from pxr import Usd, UsdPhysics
+from pxr import OmniGraphSchema, Usd, UsdPhysics
 
 
 class ArticulationPositionGraph:
     def __init__(self):
-        self._og_path = ""
+        self._og_path = "/Graphs/Position_Controller"
         self._art_root_path = ""
+        self._add_to_existing_graph = False
         self._num_dofs = None
         self._joint_names = []
         self._default_pos = []
+        self._window = None
 
     def make_graph(self):
+        self._timeline = omni.timeline.get_timeline_interface()
+        self._timeline.stop()
+
         keys = og.Controller.Keys
+
+        if not self._add_to_existing_graph:
+            self._og_path = get_next_free_path(self._og_path, "")
+            graph_handle = og.Controller.create_graph({"graph_path": self._og_path, "evaluator_name": "execution"})
+            og.Controller.create_node(self._og_path + "/OnPlaybackTick", "omni.graph.action.OnPlaybackTick")
+        else:
+            graph_handle = og.get_graph_by_path(self._og_path)
+
+        all_nodes = graph_handle.get_nodes()
+        joint_command_array_node = None
+        joint_command_array_name = "JointCommandArray"
+        joint_names_array_node = None
+        joint_names_array_name = "JointNameArray"
+        art_controller_node = None
+        art_controller_node_name = "ArticulationController"
+        tick_node = None
+
+        for node in all_nodes:
+            node_path = node.get_prim_path()
+            node_type = node.get_type_name()
+            # find the tick node
+            if node_type == "omni.graph.action.OnPlaybackTick" or node_type == "omni.graph.action.OnTick":
+                tick_node = node_path
+
+        # make sure joint_command and joint_names arrays will have unique names
+        joint_command_array_base = self._og_path + "/JointCommandArray"
+        joint_command_array_node = get_next_free_path(joint_command_array_base, "")
+        joint_command_array_name = joint_command_array_node.split("/")[-1]
+        joint_names_array_base = self._og_path + "/JointNameArray"
+        joint_names_array_node = get_next_free_path(joint_names_array_base, "")
+        joint_names_array_name = joint_names_array_node.split("/")[-1]
+        art_controller_node_base = self._og_path + "/ArticulationController"
+        art_controller_node = get_next_free_path(art_controller_node_base, "")
+        art_controller_node_name = art_controller_node.split("/")[-1]
+
         og.Controller.edit(
-            {"graph_path": self._og_path, "evaluator_name": "execution"},
+            graph_handle,
             {
                 keys.CREATE_NODES: [
-                    ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                    ("JointCommandArray", "omni.graph.nodes.ConstructArray"),
-                    ("ArticulationController", "omni.isaac.core_nodes.IsaacArticulationController"),
-                    ("JointNameArray", "omni.graph.nodes.ConstructArray"),
+                    (joint_command_array_name, "omni.graph.nodes.ConstructArray"),
+                    (art_controller_node_name, "omni.isaac.core_nodes.IsaacArticulationController"),
+                    (joint_names_array_name, "omni.graph.nodes.ConstructArray"),
                 ],
                 keys.SET_VALUES: [
-                    ("JointCommandArray.inputs:arrayType", "double[]"),
-                    ("JointCommandArray.inputs:arraySize", self._num_dofs),
-                    ("ArticulationController.inputs:targetPrim", self._art_root_path),
-                    ("JointNameArray.inputs:arrayType", "token[]"),
-                    ("JointNameArray.inputs:arraySize", self._num_dofs),
+                    (joint_command_array_name + ".inputs:arrayType", "double[]"),
+                    (joint_command_array_name + ".inputs:arraySize", self._num_dofs),
+                    (art_controller_node_name + ".inputs:robotPath", self._art_root_path),
+                    (joint_names_array_name + ".inputs:arrayType", "token[]"),
+                    (joint_names_array_name + ".inputs:arraySize", self._num_dofs),
                 ],
                 keys.CONNECT: [
-                    ("OnPlaybackTick.outputs:tick", "ArticulationController.inputs:execIn"),
-                    ("JointCommandArray.outputs:array", "ArticulationController.inputs:positionCommand"),
-                    ("JointNameArray.outputs:array", "ArticulationController.inputs:jointNames"),
+                    (tick_node + ".outputs:tick", art_controller_node_name + ".inputs:execIn"),
+                    (joint_command_array_name + ".outputs:array", art_controller_node_name + ".inputs:positionCommand"),
+                    (joint_names_array_name + ".outputs:array", art_controller_node_name + ".inputs:jointNames"),
                 ],
             },
         )
 
         for i in range(1, self._num_dofs):
             og.Controller.create_attribute(
-                self._og_path + "/JointCommandArray",
+                joint_command_array_node,
                 "inputs:input" + str(i),
                 og.Type(og.BaseDataType.DOUBLE, 1, 0, og.AttributeRole.NONE),
                 og.AttributePortType.ATTRIBUTE_PORT_TYPE_INPUT,
             )
             og.Controller.create_attribute(
-                self._og_path + "/JointNameArray",
+                joint_names_array_node,
                 "inputs:input" + str(i),
                 og.Type(og.BaseDataType.TOKEN, 1, 0, og.AttributeRole.NONE),
                 og.AttributePortType.ATTRIBUTE_PORT_TYPE_INPUT,
             )
 
         for i in range(self._num_dofs):
-            og.Controller.attribute(self._og_path + "/JointCommandArray.inputs:input" + str(i)).set(
-                self._default_pos[i]
-            )
-            og.Controller.attribute(self._og_path + "/JointNameArray.inputs:input" + str(i)).set(self._joint_names[i])
-
-        og.Controller.node(self._og_path + "/JointCommandArray")
+            og.Controller.attribute(joint_command_array_node + ".inputs:input" + str(i)).set(self._default_pos[i])
+            og.Controller.attribute(joint_names_array_node + ".inputs:input" + str(i)).set(self._joint_names[i])
 
     def create_articulation_controller_graph(self):
-        default_og_path = "/Graphs/articulation_position_controller"
-        og_path = get_next_free_path(default_og_path, "")
-        og_path_def = ParamWidget.FieldDef(name="og_path", label="Graph Path", type=ui.StringField, default=og_path)
+        self._og_path = get_next_free_path(self._og_path, "")
+        og_path_def = ParamWidget.FieldDef(
+            name="og_path", label="Graph Path", type=ui.StringField, default=self._og_path
+        )
 
         instructions = "Add Articulation root and then Press 'OK' to create graph. \n\n To move the joints, highlight the JointCommandArray on the stage tree under /World/Graphs/articulation_position_controller{_n} (after pressed 'OK'), \n\n Start simulation by pressing 'play', then change the joint angles in the Property Manager Tab -> Raw USD Properties"
         ## populate the popup window
-        self._art_window = ui.Window("Parameters", width=500, height=450)
-        with self._art_window.frame:
+        self._window = ui.Window("Articulation Position Controller Inputs", width=500, height=470)
+        with self._window.frame:
             with ui.VStack(spacing=4):
-                ui.Label(
-                    "REQUIRED",
-                    style_type_name_override="Label.Label",
-                    height=40,
-                    style={"font_size": 18, "color": 0xFFA8A8A8},
-                )
+                with ui.HStack():
+                    ui.Label("Add to an existing graph?", width=ui.Percent(30))
+                    cb = ui.SimpleBoolModel(default_value=self._add_to_existing_graph)
+                    SimpleCheckBox(self._add_to_existing_graph, self._on_use_existing_graph, model=cb)
+
                 self.art_root_input = SelectPrimWidget(label="Articulation Root", default=self._art_root_path)
                 self.og_path_input = ParamWidget(field_def=og_path_def)
                 ui.Spacer(height=2)
@@ -138,111 +174,172 @@ class ArticulationPositionGraph:
                             clicked_fn=lambda: on_open_IDE_clicked("", __file__),
                             style=get_style()["IconButton.Image::OpenConfig"],
                         )
+        return self._window
 
     def _on_ok(self):
         self._og_path = self.og_path_input.get_value()
         self._art_root_path = self.art_root_input.get_value()
 
-        PI = 3.1415926535
-        # if the art_root_path is an articulation root, get the number of dof automatically
+        param_check = self._check_params()
+        if param_check:
+            self.make_graph()
+            self._window.visible = False
+        else:
+            post_notification("Parameter check failed", status=NotificationStatus.WARNING)
+
+    def _check_params(self):
         stage = omni.usd.get_context().get_stage()
+
+        if self._add_to_existing_graph:
+            # make sure the "existing" graph exist
+            og_prim = stage.GetPrimAtPath(self._og_path)
+            if og_prim.IsValid() and og_prim.IsA(OmniGraphSchema.OmniGraph):
+                pass
+            else:
+                msg = self._og_path + " is not an existing graph, check the og path"
+                post_notification(msg, status=NotificationStatus.WARNING)
+                return False
+
+        # check if the art_root_path is an articulation root, if yes, get the number of dof and default positions automatically
         current_prim = stage.GetPrimAtPath(self._art_root_path)
         self._joint_names = []
         self._default_pos = []
+        ## TODO: check for possibilities that the subsequent joints are not under the root prim on stage
         if current_prim.HasAPI(UsdPhysics.ArticulationRootAPI):
             for prim in Usd.PrimRange(current_prim, Usd.TraverseInstanceProxies()):
-                if prim.IsA(UsdPhysics.RevoluteJoint):
+                if prim.IsA(UsdPhysics.RevoluteJoint) and prim.HasAPI(UsdPhysics.DriveAPI):
                     self._joint_names.append(os.path.basename(prim.GetPath().pathString))
                     joint_drive = UsdPhysics.DriveAPI.Get(prim, "angular")
                     default_pos_deg = joint_drive.GetTargetPositionAttr().Get()
                     self._default_pos.append(
                         default_pos_deg * PI / 180
                     )  # USD property is in degrees, PhysX (articulation controller) is in radians
-                elif prim.IsA(UsdPhysics.PrismaticJoint):
+                elif prim.IsA(UsdPhysics.PrismaticJoint) and prim.HasAPI(UsdPhysics.DriveAPI):
                     self._joint_names.append(os.path.basename(prim.GetPath().pathString))
                     joint_drive = UsdPhysics.DriveAPI.Get(prim, "linear")
                     self._default_pos.append(joint_drive.GetTargetPositionAttr().Get())
+            self._num_dofs = len(self._joint_names)
+        else:
+            msg = "given articulation root path does not have ArticulationRootAPI, check the path"
+            post_notification(msg, status=NotificationStatus.WARNING)
+            return False
 
-        self._num_dofs = len(self._joint_names)
-        self.make_graph()
-        self._art_window.visible = False
+        return True
 
     def _on_cancel(self):
-        self._art_window.visible = False
+        self._window.visible = False
+
+    def _on_use_existing_graph(self, check_state):
+        self._add_to_existing_graph = check_state
 
 
 class ArticulationVelocityGraph:
     def __init__(self):
-        self._og_path = ""
+        self._og_path = "/Graphs/Velocity_Controller"
         self._art_root_path = ""
+        self._add_to_existing_graph = False
         self._num_dofs = None
         self._joint_names = []
         self._default_vel = []
+        self._window = None
 
     def make_graph(self):
+        self._timeline = omni.timeline.get_timeline_interface()
+        self._timeline.stop()
+
         keys = og.Controller.Keys
+
+        if not self._add_to_existing_graph:
+            self._og_path = get_next_free_path(self._og_path, "")
+            graph_handle = og.Controller.create_graph({"graph_path": self._og_path, "evaluator_name": "execution"})
+            og.Controller.create_node(self._og_path + "/OnPlaybackTick", "omni.graph.action.OnPlaybackTick")
+        else:
+            graph_handle = og.get_graph_by_path(self._og_path)
+
+        all_nodes = graph_handle.get_nodes()
+        joint_command_array_node = None
+        joint_command_array_name = "JointCommandArray"
+        joint_names_array_node = None
+        joint_names_array_name = "JointNameArray"
+        art_controller_node = None
+        art_controller_node_name = "ArticulationController"
+        tick_node = None
+
+        for node in all_nodes:
+            node_path = node.get_prim_path()
+            node_type = node.get_type_name()
+            # find the tick node
+            if node_type == "omni.graph.action.OnPlaybackTick" or node_type == "omni.graph.action.OnTick":
+                tick_node = node_path
+
+        # make sure joint_command and joint_names arrays will have unique names
+        joint_command_array_base = self._og_path + "/JointCommandArray"
+        joint_command_array_node = get_next_free_path(joint_command_array_base, "")
+        joint_command_array_name = joint_command_array_node.split("/")[-1]
+        joint_names_array_base = self._og_path + "/JointNameArray"
+        joint_names_array_node = get_next_free_path(joint_names_array_base, "")
+        joint_names_array_name = joint_names_array_node.split("/")[-1]
+        art_controller_node_base = self._og_path + "/ArticulationController"
+        art_controller_node = get_next_free_path(art_controller_node_base, "")
+        art_controller_node_name = art_controller_node.split("/")[-1]
+
         og.Controller.edit(
-            {"graph_path": self._og_path, "evaluator_name": "execution"},
+            graph_handle,
             {
                 keys.CREATE_NODES: [
-                    ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                    ("JointCommandArray", "omni.graph.nodes.ConstructArray"),
-                    ("ArticulationController", "omni.isaac.core_nodes.IsaacArticulationController"),
-                    ("JointNameArray", "omni.graph.nodes.ConstructArray"),
+                    (joint_command_array_name, "omni.graph.nodes.ConstructArray"),
+                    (art_controller_node_name, "omni.isaac.core_nodes.IsaacArticulationController"),
+                    (joint_names_array_name, "omni.graph.nodes.ConstructArray"),
                 ],
                 keys.SET_VALUES: [
-                    ("JointCommandArray.inputs:arrayType", "double[]"),
-                    ("JointCommandArray.inputs:arraySize", self._num_dofs),
-                    ("ArticulationController.inputs:targetPrim", self._art_root_path),
-                    ("JointNameArray.inputs:arrayType", "token[]"),
-                    ("JointNameArray.inputs:arraySize", self._num_dofs),
+                    (joint_command_array_name + ".inputs:arrayType", "double[]"),
+                    (joint_command_array_name + ".inputs:arraySize", self._num_dofs),
+                    (art_controller_node_name + ".inputs:targetPrim", self._art_root_path),
+                    (joint_names_array_name + ".inputs:arrayType", "token[]"),
+                    (joint_names_array_name + ".inputs:arraySize", self._num_dofs),
                 ],
                 keys.CONNECT: [
-                    ("OnPlaybackTick.outputs:tick", "ArticulationController.inputs:execIn"),
-                    ("JointCommandArray.outputs:array", "ArticulationController.inputs:velocityCommand"),
-                    ("JointNameArray.outputs:array", "ArticulationController.inputs:jointNames"),
+                    (tick_node + ".outputs:tick", art_controller_node_name + ".inputs:execIn"),
+                    (joint_command_array_name + ".outputs:array", art_controller_node_name + ".inputs:velocityCommand"),
+                    (joint_names_array_name + ".outputs:array", art_controller_node_name + ".inputs:jointNames"),
                 ],
             },
         )
 
         for i in range(1, self._num_dofs):
             og.Controller.create_attribute(
-                self._og_path + "/JointCommandArray",
+                joint_command_array_node,
                 "inputs:input" + str(i),
                 og.Type(og.BaseDataType.DOUBLE, 1, 0, og.AttributeRole.NONE),
                 og.AttributePortType.ATTRIBUTE_PORT_TYPE_INPUT,
             )
             og.Controller.create_attribute(
-                self._og_path + "/JointNameArray",
+                joint_names_array_node,
                 "inputs:input" + str(i),
                 og.Type(og.BaseDataType.TOKEN, 1, 0, og.AttributeRole.NONE),
                 og.AttributePortType.ATTRIBUTE_PORT_TYPE_INPUT,
             )
 
         for j in range(self._num_dofs):
-            og.Controller.attribute(self._og_path + "/JointCommandArray.inputs:input" + str(j)).set(
-                self._default_vel[j]
-            )
-            og.Controller.attribute(self._og_path + "/JointNameArray.inputs:input" + str(j)).set(self._joint_names[j])
-
-        og.Controller.node(self._og_path + "/JointCommandArray")
+            og.Controller.attribute(joint_command_array_node + ".inputs:input" + str(j)).set(self._default_vel[j])
+            og.Controller.attribute(joint_names_array_node + ".inputs:input" + str(j)).set(self._joint_names[j])
 
     def create_articulation_controller_graph(self):
-        default_og_path = "/Graphs/articulation_velocity_controller"
-        og_path = get_next_free_path(default_og_path, "")
-        og_path_def = ParamWidget.FieldDef(name="og_path", label="Graph Path", type=ui.StringField, default=og_path)
+        self._og_path = get_next_free_path(self._og_path, "")
+        og_path_def = ParamWidget.FieldDef(
+            name="og_path", label="Graph Path", type=ui.StringField, default=self._og_path
+        )
 
         instructions = "Add Articulation root and then Press 'OK' to create graph. \n\n To move the joints, highlight the JointCommandArray on the stage tree under /World/Graphs/articulation_velocity_controller{_n} (after pressed 'OK'), \n\n Start simulation by pressing 'play', then change the joint angles in the Property Manager Tab -> Raw USD Properties"
         ## populate the popup window
-        self._art_window = ui.Window("Parameters", width=500, height=450)
-        with self._art_window.frame:
+        self._window = ui.Window("Articulation Velocity Controller Input", width=500, height=470)
+        with self._window.frame:
             with ui.VStack(spacing=4):
-                ui.Label(
-                    "REQUIRED",
-                    style_type_name_override="Label.Label",
-                    height=40,
-                    style={"font_size": 18, "color": 0xFFA8A8A8},
-                )
+                with ui.HStack():
+                    ui.Label("Add to an existing graph?", width=ui.Percent(30))
+                    cb = ui.SimpleBoolModel(default_value=self._add_to_existing_graph)
+                    SimpleCheckBox(self._add_to_existing_graph, self._on_use_existing_graph, model=cb)
+
                 self.art_root_input = SelectPrimWidget(label="Articulation Root", default=self._art_root_path)
                 self.og_path_input = ParamWidget(field_def=og_path_def)
                 ui.Spacer(height=2)
@@ -290,16 +387,37 @@ class ArticulationVelocityGraph:
                             style=get_style()["IconButton.Image::OpenConfig"],
                         )
 
+        return self._window
+
     def _on_ok(self):
         self._og_path = self.og_path_input.get_value()
         self._art_root_path = self.art_root_input.get_value()
 
-        PI = 3.1415926535
-        # if the art_root_path is an articulation root, get the number of dof automatically
+        param_check = self._check_params()
+        if param_check:
+            self.make_graph()
+            self._window.visible = False
+        else:
+            post_notification("Parameter check failed", status=NotificationStatus.WARNING)
+
+    def _check_params(self):
         stage = omni.usd.get_context().get_stage()
+
+        if self._add_to_existing_graph:
+            # make sure the "existing" graph exist
+            og_prim = stage.GetPrimAtPath(self._og_path)
+            if og_prim.IsValid() and og_prim.IsA(OmniGraphSchema.OmniGraph):
+                pass
+            else:
+                msg = self._og_path + " is not an existing graph, check the og path"
+                post_notification(msg, status=NotificationStatus.WARNING)
+                return False
+
+        # check if the art_root_path is an articulation root, if yes, get the number of dof and default positions automatically
         current_prim = stage.GetPrimAtPath(self._art_root_path)
         self._joint_names = []
         self._default_vel = []
+        ## TODO: check for possibilities that the subsequent joints are not under the root prim on stage
         if current_prim.HasAPI(UsdPhysics.ArticulationRootAPI):
             for prim in Usd.PrimRange(current_prim, Usd.TraverseInstanceProxies()):
                 if prim.IsA(UsdPhysics.RevoluteJoint) and prim.HasAPI(UsdPhysics.DriveAPI):
@@ -313,22 +431,28 @@ class ArticulationVelocityGraph:
                     self._joint_names.append(os.path.basename(prim.GetPath().pathString))
                     joint_drive = UsdPhysics.DriveAPI.Get(prim, "linear")
                     self._default_vel.append(joint_drive.GetTargetVelocityAttr().Get())
+            self._num_dofs = len(self._joint_names)
+        else:
+            msg = "given articulation root path does not have ArticulationRootAPI, check the path"
+            post_notification(msg, status=NotificationStatus.WARNING)
+            return False
 
-        self._num_dofs = len(self._joint_names)
-        print(self._num_dofs)
-        self.make_graph()
-        self._art_window.visible = False
+        return True
 
     def _on_cancel(self):
-        self._art_window.visible = False
+        self._window.visible = False
+
+    def _on_use_existing_graph(self, check_state):
+        self._add_to_existing_graph = check_state
 
 
 class GripperGraph:
     def __init__(self):
 
-        self._og_path = ""
+        self._og_path = "/Graphs/Gripper_Controller"
         self._art_root_path = ""
         self._gripper_root_path = ""
+        self._add_to_existing_graph = False
         self._use_keyboard = False
         self._dof_actuation = None
         self._joint_names = ""
@@ -337,14 +461,33 @@ class GripperGraph:
         self._speed = None
 
     def make_graph(self):
-        controller = og.Controller()
-        keys = controller.Keys
-        (graph, _, _, _) = og.Controller.edit(
-            {"graph_path": self._og_path, "evaluator_name": "execution"},
+        self._timeline = omni.timeline.get_timeline_interface()
+        self._timeline.stop()
+
+        keys = og.Controller.Keys
+
+        if not self._add_to_existing_graph:
+            self._og_path = get_next_free_path(self._og_path, "")
+            graph_handle = og.Controller.create_graph({"graph_path": self._og_path, "evaluator_name": "execution"})
+            og.Controller.create_node(self._og_path + "/OnPlaybackTick", "omni.graph.action.OnPlaybackTick")
+        else:
+            graph_handle = og.get_graph_by_path(self._og_path)
+
+        all_nodes = graph_handle.get_nodes()
+        tick_node = None
+
+        for node in all_nodes:
+            node_path = node.get_prim_path()
+            node_type = node.get_type_name()
+            # find the tick node
+            if node_type == "omni.graph.action.OnPlaybackTick" or node_type == "omni.graph.action.OnTick":
+                tick_node = node_path
+
+        og.Controller.edit(
+            graph_handle,
             {
                 keys.CREATE_NODES: [
                     ("GripperController", "omni.isaac.manipulators.IsaacGripperController"),
-                    ("OnTick", "omni.graph.action.OnTick"),
                     ("OpenPositionArray", "omni.graph.nodes.ConstructArray"),
                     ("ClosePositionArray", "omni.graph.nodes.ConstructArray"),
                     ("GripperSpeedArray", "omni.graph.nodes.ConstructArray"),
@@ -353,7 +496,6 @@ class GripperGraph:
                     ("Speed", "omni.graph.nodes.ConstantDouble"),
                 ],
                 keys.SET_VALUES: [
-                    ("OnTick.inputs:onlyPlayback", True),  # only tick when simulator is playing
                     ("GripperController.inputs:articulationRootPrim", self._art_root_path),
                     ("GripperController.inputs:gripperPrim", self._gripper_root_path),
                     ("Speed.inputs:value", self._speed),
@@ -361,7 +503,7 @@ class GripperGraph:
                     ("CloseJointLimit.inputs:value", self._close_position),
                 ],
                 keys.CONNECT: [
-                    ("OnTick.outputs:tick", "GripperController.inputs:execIn"),
+                    (tick_node + ".outputs:tick", "GripperController.inputs:execIn"),
                     ("OpenJointLimit.inputs:value", "OpenPositionArray.inputs:input0"),
                     ("CloseJointLimit.inputs:value", "ClosePositionArray.inputs:input0"),
                     ("Speed.inputs:value", "GripperSpeedArray.inputs:input0"),
@@ -377,8 +519,8 @@ class GripperGraph:
             n_joints = len(self._joint_names)
 
             # create an array node to collect joint names
-            (_, [joint_names_node], _, _) = controller.edit(
-                graph,
+            (_, [joint_names_node], _, _) = og.Controller.edit(
+                graph_handle,
                 {
                     keys.CREATE_NODES: [("ArrayJointNames", "omni.graph.nodes.ConstructArray")],
                     keys.SET_VALUES: [
@@ -387,16 +529,16 @@ class GripperGraph:
                     ],
                 },
             )
-            controller.connect(
-                controller.attribute(self._og_path + "/ArrayJointNames.outputs:array"),
-                controller.attribute(self._og_path + "/GripperController.inputs:jointNames"),
+            og.Controller.connect(
+                og.Controller.attribute(self._og_path + "/ArrayJointNames.outputs:array"),
+                og.Controller.attribute(self._og_path + "/GripperController.inputs:jointNames"),
             )
             # create the matching number of inputs in array node and input token nodes
             for i in range(n_joints):
                 node_name = "JointName" + str(i)
                 joint_name = self._joint_names[i]
-                controller.create_node((node_name, graph), "omni.graph.nodes.ConstantToken")
-                controller.attribute(self._og_path + "/" + node_name + ".inputs:value").set(joint_name)
+                og.Controller.create_node((node_name, graph_handle), "omni.graph.nodes.ConstantToken")
+                og.Controller.attribute(self._og_path + "/" + node_name + ".inputs:value").set(joint_name)
                 if i > 0:
                     joint_names_node.create_attribute(
                         "input" + str(i),
@@ -405,7 +547,7 @@ class GripperGraph:
                     )
 
                 # make connections to arrayNames node
-                controller.connect(
+                og.Controller.connect(
                     og.Controller.attribute(self._og_path + "/JointName" + str(i) + ".inputs:value"),
                     og.Controller.attribute(self._og_path + "/ArrayJointNames.inputs:input" + str(i)),
                 )
@@ -415,7 +557,7 @@ class GripperGraph:
         if self._use_keyboard:
             print("using keyboard input to open/close gripper")
             og.Controller.edit(
-                graph,
+                graph_handle,
                 {
                     keys.CREATE_NODES: [
                         ("Open", "omni.graph.action.OnKeyboardInput"),
@@ -430,26 +572,27 @@ class GripperGraph:
                 },
             )
 
-            controller.connect(
+            og.Controller.connect(
                 og.Controller.attribute(self._og_path + "/Open.outputs:pressed"),
                 og.Controller.attribute(self._og_path + "/GripperController.inputs:open"),
             )
 
-            controller.connect(
+            og.Controller.connect(
                 og.Controller.attribute(self._og_path + "/Close.outputs:pressed"),
                 og.Controller.attribute(self._og_path + "/GripperController.inputs:close"),
             )
 
-            controller.connect(
+            og.Controller.connect(
                 og.Controller.attribute(self._og_path + "/Stop.outputs:pressed"),
                 og.Controller.attribute(self._og_path + "/GripperController.inputs:stop"),
             )
 
     def create_gripper_controller_graph(self):
-        default_og_path = "/Graphs/gripper_controller"
-        og_path = get_next_free_path(default_og_path, "")
-        og_path_def = ParamWidget.FieldDef(name="og_path", label="Graph Path", type=ui.StringField, default=og_path)
 
+        self._og_path = get_next_free_path(self._og_path, "")
+        og_path_def = ParamWidget.FieldDef(
+            name="og_path", label="Graph Path", type=ui.StringField, default=self._og_path
+        )
         speed_def = ParamWidget.FieldDef(
             name="gripper_speed", label="Gripper Speed (distance per frame)", type=ui.FloatField, default=self._speed
         )
@@ -464,15 +607,14 @@ class GripperGraph:
         )
 
         ## populate the popup window
-        self._window = ui.Window("Parameters", width=400, height=550)
+        self._window = ui.Window("Gripper Controller Inputs", width=400, height=550)
         with self._window.frame:
             with ui.VStack(spacing=4):
-                ui.Label(
-                    "REQUIRED",
-                    style_type_name_override="Label.Label",
-                    height=40,
-                    style={"font_size": 18, "color": 0xFFA8A8A8},
-                )
+                with ui.HStack():
+                    ui.Label("Add to an existing graph?", width=ui.Percent(30))
+                    cb = ui.SimpleBoolModel(default_value=self._add_to_existing_graph)
+                    SimpleCheckBox(self._add_to_existing_graph, self._on_use_existing_graph, model=cb)
+
                 self.art_root_input = SelectPrimWidget(label="Articulation Root", default=self._art_root_path)
                 self.gripper_root_input = SelectPrimWidget(label="Gripper Root Prim", default=self._gripper_root_path)
                 self.og_path_input = ParamWidget(field_def=og_path_def)
@@ -528,6 +670,7 @@ class GripperGraph:
                             clicked_fn=lambda: on_open_IDE_clicked("", __file__),
                             style=get_style()["IconButton.Image::OpenConfig"],
                         )
+        return self._window
 
     def _on_ok(self):
         self._og_path = self.og_path_input.get_value()
@@ -539,9 +682,36 @@ class GripperGraph:
         self._close_position = self.close_position_input.get_value()
         self._joint_names = self.joint_names_input.get_value()
 
-        self._parameter_checks()
-        self.make_graph()
-        self._window.visible = False
+        param_check = self._check_params()
+        if param_check:
+            self.make_graph()
+            self._window.visible = False
+        else:
+            post_notification("Parameter check failed", status=NotificationStatus.WARNING)
+
+    def _check_params(self):
+        # turn joint names from tokens to a list
+        self._joint_names = [item.strip() for item in self._joint_names.split(",")]
+
+        # make sure the "existing" graph exist, and that there isn't already a gripper controller in it
+        stage = omni.usd.get_context().get_stage()
+        if self._add_to_existing_graph:
+            og_prim = stage.GetPrimAtPath(self._og_path)
+            if og_prim.IsValid() and og_prim.IsA(OmniGraphSchema.OmniGraph):
+                graph_handle = og.get_graph_by_path(self._og_path)
+                all_nodes = graph_handle.get_nodes()
+                for node in all_nodes:
+                    node_type = node.get_type_name()
+                    # find the tick node
+                    if node_type == "omni.isaac.manipulators.IsaacGripperController":
+                        msg = "There already exist an GripperController in given graph. Use a different graph or manually add multiple gripper controllers to the same graph"
+                        post_notification(msg, status=NotificationStatus.WARNING)
+                        return False
+            else:
+                msg = self._og_path + " is not an existing graph, check the og path"
+                post_notification(msg, status=NotificationStatus.WARNING)
+                return False
+        return True
 
     def _on_cancel(self):
         self._window.visible = False
@@ -550,7 +720,5 @@ class GripperGraph:
         self._use_keyboard = check_state
         print(f"using keyboard set to {self._use_keyboard}\n O-open, C-close, N-stop")
 
-    def _parameter_checks(self):
-        # turn joint names from tokens to a list
-        self._joint_names = [item.strip() for item in self._joint_names.split(",")]
-        print(f"joint names {self._joint_names}, dof: {len(self._joint_names)}")
+    def _on_use_existing_graph(self, check_state):
+        self._add_to_existing_graph = check_state

@@ -9,7 +9,6 @@
 """
 Support required by the Carbonite extension loader
 """
-import gc
 
 import omni.ext
 import omni.kit.commands
@@ -21,6 +20,7 @@ from .menu_graphs import ArticulationPositionGraph, ArticulationVelocityGraph, G
 
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
+        self.window_handle = None
         controller_menu = [
             make_menu_item_description(
                 ext_id, "Articulation Position Controller", onclick_fun=self._open_articulation_position
@@ -40,13 +40,21 @@ class Extension(omni.ext.IExt):
 
     def on_shutdown(self):
         remove_menu_items(self._menu_controller, "Isaac Utils")
-        gc.collect()
+        if self.window_handle:
+            self.window_handle.visible = False
 
     def _open_articulation_position(self):
-        ArticulationPositionGraph().create_articulation_controller_graph()
+        if self.window_handle:
+            self.window_handle.visible = False
+        art_pos_graph = ArticulationPositionGraph()
+        self.window_handle = art_pos_graph.create_articulation_controller_graph()
 
     def _open_articulation_velocity(self):
-        ArticulationVelocityGraph().create_articulation_controller_graph()
+        if self.window_handle:
+            self.window_handle.visible = False
+        self.window_handle = ArticulationVelocityGraph().create_articulation_controller_graph()
 
     def _open_gripper_graph(self):
-        GripperGraph().create_gripper_controller_graph()
+        if self.window_handle:
+            self.window_handle.visible = False
+        self.window_handle = GripperGraph().create_gripper_controller_graph()
