@@ -318,6 +318,7 @@ group "exts"
     include ("source/extensions/omni.isaac.robot_benchmark")
     include ("source/extensions/omni.isaac.robot_assembler")
     include ("source/extensions/omni.isaac.surface_gripper")
+    include ("source/extensions/omni.isaac.surface_gripper.ui")
     include ("source/extensions/omni.isaac.synthetic_recorder")
     include ("source/extensions/omni.isaac.tests")
     include ("source/extensions/omni.isaac.throttling")

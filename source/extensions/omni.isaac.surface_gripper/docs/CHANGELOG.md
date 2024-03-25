@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.0] - 2024-03-13
+### Changed
+- Extension refactored into multiple components.  See omni.isaac.surface_gripper.ui.
+
 ## [0.8.2] - 2024-03-07
 ### Changed
 - Removed the usage of the deprecated dynamic_control extension 

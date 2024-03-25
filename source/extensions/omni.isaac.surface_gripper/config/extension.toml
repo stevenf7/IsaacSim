@@ -3,13 +3,13 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.8.2"
+version = "1.0.0"
 category = "Simulation"
 title = "Isaac Sim Surface Gripper"
 description = "Helper to model Suction and Distance based grippers"
 authors = ["Isaac Sim Team"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.surface_gripper"
-keywords = ["isaac", "physics", "inspect",]
+keywords = ["isaac", "physics", "end-effector",]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
 icon = "data/icon.png"
