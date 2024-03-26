@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.1] - 2023-03-25
+### Fixed
+- Frametime collector skips frametime collection if start time is `None`
+  (i.e if `set_phase(start_recording_time=False)` is called
+
 ## [1.4.0] - 2023-02-02
 ### Added
 - User can now specify per-benchmark metadata when using BaseIsaacBenchmark, which will persist across phases

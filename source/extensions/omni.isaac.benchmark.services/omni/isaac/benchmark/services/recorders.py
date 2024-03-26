@@ -47,6 +47,9 @@ class IsaacFrameTimeRecorder(interface.MeasurementDataRecorder):
         self.frametime_collector.start_collecting()
 
     def stop_collecting(self):
+        if self.sim_time_start is None:
+            # Frametime collection never began, so skip.
+            return
         self.elapsed_sim_time = (self._core_nodes.get_sim_time_monotonic() - self.sim_time_start) * 1000
         self.elapsed_real_time = (time.perf_counter_ns() - self.real_time_start) / 1000000
         self.frametime_collector.stop_collecting()
