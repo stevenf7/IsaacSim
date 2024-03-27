@@ -6,7 +6,6 @@
 command = "publish_launcher"
 entry_point = "${config_root}/tools/repoman/publish_launcher.py:setup_repo_tool"
 
-
 ########################################################################################################################
 # Omniverse Launcher Images package publish and deploy tool
 ########################################################################################################################
@@ -14,7 +13,6 @@ entry_point = "${config_root}/tools/repoman/publish_launcher.py:setup_repo_tool"
 [publish_launcher_images]
 command = "publish_launcher_images"
 entry_point = "${config_root}/tools/repoman/publish_launcher_images.py:setup_repo_tool"
-
 
 ########################################################################################################################
 # Isaac Sim internal package publish tool
@@ -24,7 +22,6 @@ entry_point = "${config_root}/tools/repoman/publish_launcher_images.py:setup_rep
 command = "publish_internal_packages"
 entry_point = "${config_root}/tools/repoman/publish_internal_packages.py:setup_repo_tool"
 
-
 ########################################################################################################################
 # Isaac Sim binaryscan package publish tool
 ########################################################################################################################
@@ -33,8 +30,6 @@ entry_point = "${config_root}/tools/repoman/publish_internal_packages.py:setup_r
 command = "publish_binaryscan_packages"
 entry_point = "${config_root}/tools/repoman/publish_binaryscan_packages.py:setup_repo_tool"
 
-
-
 ########################################################################################################################
 # Isaac Sim package publish tool
 ########################################################################################################################
@@ -42,7 +37,6 @@ entry_point = "${config_root}/tools/repoman/publish_binaryscan_packages.py:setup
 [publish_packages]
 command = "publish_packages"
 entry_point = "${config_root}/tools/repoman/publish_packages.py:setup_repo_tool"
-
 
 ########################################################################################################################
 # Bump version
@@ -68,6 +62,7 @@ entry_point = "${config_root}/tools/repoman/publish_assets_launcher_2.py:setup_r
 [publish_assets_launcher_3]
 command = "publish_assets_launcher_3"
 entry_point = "${config_root}/tools/repoman/publish_assets_launcher_3.py:setup_repo_tool"
+
 ########################################################################################################################
 # Generate Omnigraph Docs
 ########################################################################################################################
@@ -79,7 +74,6 @@ entry_point = "${config_root}/tools/ogn/ogn_docs_generator.py:setup_repo_tool"
 ########################################################################################################################
 # Generate Vscode Settings
 ########################################################################################################################
-
 
 [generate_vscode_settings]
 command = "generate_vscode_settings"

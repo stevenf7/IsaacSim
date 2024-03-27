@@ -33,12 +33,12 @@ project_with_location("omni.isaac.ros2_bridge.foxy")
         "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "omni.usd", "usdPhysics",
         "sdf", "usdGeom", "carb",
         "rosidl_runtime_c", "rcutils", "rcl", "rmw",
-        "tf2_msgs__rosidl_typesupport_c", "tf2_msgs__rosidl_generator_c", 
+        "tf2_msgs__rosidl_typesupport_c", "tf2_msgs__rosidl_generator_c",
         "geometry_msgs__rosidl_typesupport_c", "geometry_msgs__rosidl_generator_c",
-        "nav_msgs__rosidl_typesupport_c", "nav_msgs__rosidl_generator_c", 
+        "nav_msgs__rosidl_typesupport_c", "nav_msgs__rosidl_generator_c",
         "std_msgs__rosidl_typesupport_c", "std_msgs__rosidl_generator_c",
-        "rosgraph_msgs__rosidl_typesupport_c", "rosgraph_msgs__rosidl_generator_c", 
-        "sensor_msgs__rosidl_typesupport_c", "sensor_msgs__rosidl_generator_c", 
+        "rosgraph_msgs__rosidl_typesupport_c", "rosgraph_msgs__rosidl_generator_c",
+        "sensor_msgs__rosidl_typesupport_c", "sensor_msgs__rosidl_generator_c",
         -- "vision_msgs__rosidl_typesupport_c", "vision_msgs__rosidl_generator_c"
         -- "ackermann_msgs__rosidl_typesupport_c", "ackermann_msgs__rosidl_generator_c"
     }
@@ -93,12 +93,12 @@ project_with_location("omni.isaac.ros2_bridge.humble")
         "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "omni.usd", "usdPhysics",
         "sdf", "usdGeom", "carb",
         "rosidl_runtime_c", "rcutils", "rcl", "rmw",
-        "tf2_msgs__rosidl_typesupport_c", "tf2_msgs__rosidl_generator_c", 
+        "tf2_msgs__rosidl_typesupport_c", "tf2_msgs__rosidl_generator_c",
         "geometry_msgs__rosidl_typesupport_c", "geometry_msgs__rosidl_generator_c",
-        "nav_msgs__rosidl_typesupport_c", "nav_msgs__rosidl_generator_c", 
+        "nav_msgs__rosidl_typesupport_c", "nav_msgs__rosidl_generator_c",
         "std_msgs__rosidl_typesupport_c", "std_msgs__rosidl_generator_c",
-        "rosgraph_msgs__rosidl_typesupport_c", "rosgraph_msgs__rosidl_generator_c", 
-        "sensor_msgs__rosidl_typesupport_c", "sensor_msgs__rosidl_generator_c", 
+        "rosgraph_msgs__rosidl_typesupport_c", "rosgraph_msgs__rosidl_generator_c",
+        "sensor_msgs__rosidl_typesupport_c", "sensor_msgs__rosidl_generator_c",
         -- "vision_msgs__rosidl_typesupport_c", "vision_msgs__rosidl_generator_c"
         -- "ackermann_msgs__rosidl_typesupport_c", "ackermann_msgs__rosidl_generator_c"
     }
@@ -203,7 +203,7 @@ project_ext_plugin(ext, "omni.isaac.ros2_bridge.plugin")
     filter {}
 
 project_ext_ogn( ext, ogn )
-    
+
 -- Python Bindings for Carobnite Plugin
 project_ext_bindings {
     ext = ext,

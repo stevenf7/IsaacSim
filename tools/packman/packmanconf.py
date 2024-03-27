@@ -56,7 +56,7 @@ def get_packages_root(conf_dir: str) -> str:
         elif platform_name == "Darwin":
             # macOS
             root = os.path.join(
-                os.path.expanduser("~"), "/Library/Application Support/packman-cache"
+                os.path.expanduser("~"), "Library/Application Support/packman-cache"
             )
         elif platform_name == "Linux":
             try:
