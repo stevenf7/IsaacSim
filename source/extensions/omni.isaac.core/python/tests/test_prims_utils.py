@@ -86,3 +86,49 @@ class TestPrims(omni.kit.test.AsyncTestCase):
         self.assertTrue(is_prim_non_root_articulation_link(prim_path="/World/Franka/panda_link0"))
         self.assertFalse(is_prim_non_root_articulation_link(prim_path="/World/Franka/panda_link1/test_1"))
         self.assertFalse(is_prim_non_root_articulation_link(prim_path="/World/Franka/test_1"))
+
+    async def test_get_articulation_root_api_prim_path(self):
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        ext_manager.get_enabled_extension_id("omni.isaac.cloner")
+        await omni.kit.app.get_app().next_update_async()
+
+        from omni.isaac.cloner import GridCloner
+        from omni.isaac.core.utils.prims import get_articulation_root_api_prim_path
+        from omni.isaac.core.utils.stage import clear_stage, get_current_stage
+        from omni.isaac.nucleus import get_assets_root_path_async
+        from pxr import UsdGeom
+
+        env_zero_path = "/World/envs/env_0"
+        num_envs = 5
+
+        clear_stage()
+        # add asset
+        assets_root_path = await get_assets_root_path_async()
+        if assets_root_path is None:
+            raise Exception("Asset root path doesn't exist")
+        asset_path = assets_root_path + "/Isaac/Robots/Humanoid/humanoid.usd"
+        add_reference_to_stage(usd_path=asset_path, prim_path=f"{env_zero_path}/articulation")
+        # clone env
+        cloner = GridCloner(spacing=1.5)
+        cloner.define_base_env(env_zero_path)
+        UsdGeom.Xform.Define(get_current_stage(), env_zero_path)
+        cloner.clone(source_prim_path=env_zero_path, prim_paths=cloner.generate_paths("/World/envs/env", num_envs))
+
+        self.assertListEqual(
+            [
+                get_articulation_root_api_prim_path("/World/envs/env_0"),
+                get_articulation_root_api_prim_path("/World/envs/env_1/articulation"),
+                get_articulation_root_api_prim_path("/World/envs/env_2/articulation/torso"),
+                get_articulation_root_api_prim_path("/World/envs/.*/articulation"),
+                get_articulation_root_api_prim_path("/World/envs/.*/articulation/torso"),
+                get_articulation_root_api_prim_path("/World/.*/env_3/articulation"),
+            ],
+            [
+                "/World/envs/env_0/articulation/torso",
+                "/World/envs/env_1/articulation/torso",
+                "/World/envs/env_2/articulation/torso",
+                "/World/envs/.*/articulation/torso",
+                "/World/envs/.*/articulation/torso",
+                "/World/.*/env_3/articulation/torso",
+            ],
+        )

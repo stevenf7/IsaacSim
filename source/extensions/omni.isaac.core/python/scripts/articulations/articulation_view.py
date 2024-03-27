@@ -18,7 +18,13 @@ import torch
 import warp as wp
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.prims.xform_prim_view import XFormPrimView
-from omni.isaac.core.utils.prims import get_prim_at_path, get_prim_parent, get_prim_property, set_prim_property
+from omni.isaac.core.utils.prims import (
+    get_articulation_root_api_prim_path,
+    get_prim_at_path,
+    get_prim_parent,
+    get_prim_property,
+    set_prim_property,
+)
 from omni.isaac.core.utils.types import ArticulationActions, JointsState, XFormPrimViewState
 from pxr import PhysxSchema, Usd, UsdGeom, UsdPhysics
 
@@ -113,7 +119,7 @@ class ArticulationView(XFormPrimView):
         self._physics_view = None
         XFormPrimView.__init__(
             self,
-            prim_paths_expr=prim_paths_expr,
+            prim_paths_expr=get_articulation_root_api_prim_path(prim_paths_expr),
             name=name,
             positions=positions,
             translations=translations,
