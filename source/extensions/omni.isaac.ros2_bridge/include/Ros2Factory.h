@@ -138,20 +138,19 @@ public:
             std::make_shared<omni::isaac::utils::LibraryLoader>(std::string(mPkgName) + "__rosidl_typesupport_c");
         mTypesupportIntrospectionLibrary = std::make_shared<omni::isaac::utils::LibraryLoader>(
             std::string(mPkgName) + "__rosidl_typesupport_introspection_c");
-        mTypesupportIntrospectionLibrary = std::make_shared<omni::isaac::utils::LibraryLoader>(
-            std::string(mPkgName) + "__rosidl_typesupport_introspection_c");
     }
     void* getTypeSupportHandleDynamic()
     {
-        return mTypesupportLibrary->callSymbol<void*>("rosidl_typesupport_c__get_" + getMessageSpec(true) +
+        return mTypesupportLibrary->callSymbol<void*>("rosidl_typesupport_c__get_" + getTypeSupportSpec(false) +
                                                       "_type_support_handle__" + std::string(mPkgName) + "__" +
                                                       std::string(mMsgSubfolder) + "__" + std::string(mMsgName));
     }
     void* getTypeSupportIntrospectionHandleDynamic()
     {
         return mTypesupportIntrospectionLibrary->callSymbol<void*>(
-            "rosidl_typesupport_introspection_c__get_" + getMessageSpec(true) + "_type_support_handle__" +
-            std::string(mPkgName) + "__" + std::string(mMsgSubfolder) + "__" + std::string(mMsgName));
+            "rosidl_typesupport_introspection_c__get_" + getTypeSupportSpec(true) + "_type_support_handle__" +
+            std::string(mPkgName) + "__" + std::string(mMsgSubfolder) + "__" + std::string(mMsgName) +
+            getMessageSpec(true));
     }
     void* create()
     {
@@ -178,32 +177,55 @@ protected:
     std::shared_ptr<omni::isaac::utils::LibraryLoader> mGeneratorLibrary;
 
 private:
-    std::string getMessageSpec(const bool& asType)
+    std::string getTypeSupportSpec(const bool& introspection)
     {
         switch (BackendMessageType(mMessageType))
         {
         case BackendMessageType::eMessage:
-            return asType ? "message" : "";
+            return "message";
         case BackendMessageType::eRequest:
-            return asType ? "service" : "_Request";
         case BackendMessageType::eResponse:
-            return asType ? "service" : "_Response";
+            return "service";
         case BackendMessageType::eGoal:
-            return asType ? "action" : "_Goal";
         case BackendMessageType::eResult:
-            return asType ? "action" : "_Result";
         case BackendMessageType::eFeedback:
-            return asType ? "action" : "_Feedback";
         case BackendMessageType::eSendGoalRequest:
-            return asType ? "action" : "_SendGoal_Request";
         case BackendMessageType::eSendGoalResponse:
-            return asType ? "action" : "_SendGoal_Response";
         case BackendMessageType::eFeedbackMessage:
-            return asType ? "action" : "_FeedbackMessage";
         case BackendMessageType::eGetResultRequest:
-            return asType ? "action" : "_GetResult_Request";
         case BackendMessageType::eGetResultResponse:
-            return asType ? "action" : "_GetResult_Response";
+            return introspection ? "message" : "action";
+        default:
+            break;
+        }
+        return "";
+    }
+    std::string getMessageSpec(const bool& introspection)
+    {
+        switch (BackendMessageType(mMessageType))
+        {
+        case BackendMessageType::eMessage:
+            return "";
+        case BackendMessageType::eRequest:
+            return introspection ? "" : "_Request";
+        case BackendMessageType::eResponse:
+            return introspection ? "" : "_Response";
+        case BackendMessageType::eGoal:
+            return "_Goal";
+        case BackendMessageType::eResult:
+            return "_Result";
+        case BackendMessageType::eFeedback:
+            return "_Feedback";
+        case BackendMessageType::eSendGoalRequest:
+            return "_SendGoal_Request";
+        case BackendMessageType::eSendGoalResponse:
+            return "_SendGoal_Response";
+        case BackendMessageType::eFeedbackMessage:
+            return "_FeedbackMessage";
+        case BackendMessageType::eGetResultRequest:
+            return "_GetResult_Request";
+        case BackendMessageType::eGetResultResponse:
+            return "_GetResult_Response";
         default:
             break;
         }

@@ -62,9 +62,12 @@ const void* Ros2DynamicMessageFoxy::getIntrospectionMembers()
         switch (BackendMessageType(mMessageType))
         {
         case BackendMessageType::eMessage:
-        {
+        case BackendMessageType::eSendGoalRequest:
+        case BackendMessageType::eSendGoalResponse:
+        case BackendMessageType::eFeedbackMessage:
+        case BackendMessageType::eGetResultRequest:
+        case BackendMessageType::eGetResultResponse:
             return static_cast<const rosidl_message_type_support_t*>(typeSupportHandle)->data;
-        }
         case BackendMessageType::eRequest:
         {
             auto typeSupportData = static_cast<const rosidl_service_type_support_t*>(typeSupportHandle)->data;
@@ -74,39 +77,6 @@ const void* Ros2DynamicMessageFoxy::getIntrospectionMembers()
         case BackendMessageType::eResponse:
         {
             auto typeSupportData = static_cast<const rosidl_service_type_support_t*>(typeSupportHandle)->data;
-            return reinterpret_cast<const rosidl_typesupport_introspection_c__ServiceMembers*>(typeSupportData)
-                ->response_members_;
-        }
-        case BackendMessageType::eSendGoalRequest:
-        {
-            auto typeSupportAction = static_cast<const rosidl_action_type_support_t*>(typeSupportHandle);
-            auto typeSupportData = typeSupportAction->goal_service_type_support->data;
-            return reinterpret_cast<const rosidl_typesupport_introspection_c__ServiceMembers*>(typeSupportData)
-                ->request_members_;
-        }
-        case BackendMessageType::eSendGoalResponse:
-        {
-            auto typeSupportAction = static_cast<const rosidl_action_type_support_t*>(typeSupportHandle);
-            auto typeSupportData = typeSupportAction->goal_service_type_support->data;
-            return reinterpret_cast<const rosidl_typesupport_introspection_c__ServiceMembers*>(typeSupportData)
-                ->response_members_;
-        }
-        case BackendMessageType::eFeedbackMessage:
-        {
-            auto typeSupportAction = static_cast<const rosidl_action_type_support_t*>(typeSupportHandle);
-            return typeSupportAction->feedback_message_type_support->data;
-        }
-        case BackendMessageType::eGetResultRequest:
-        {
-            auto typeSupportAction = static_cast<const rosidl_action_type_support_t*>(typeSupportHandle);
-            auto typeSupportData = typeSupportAction->result_service_type_support->data;
-            return reinterpret_cast<const rosidl_typesupport_introspection_c__ServiceMembers*>(typeSupportData)
-                ->request_members_;
-        }
-        case BackendMessageType::eGetResultResponse:
-        {
-            auto typeSupportAction = static_cast<const rosidl_action_type_support_t*>(typeSupportHandle);
-            auto typeSupportData = typeSupportAction->result_service_type_support->data;
             return reinterpret_cast<const rosidl_typesupport_introspection_c__ServiceMembers*>(typeSupportData)
                 ->response_members_;
         }
