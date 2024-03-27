@@ -1,11 +1,14 @@
 # Changelog
 
+## [2.13.2] - 2024-03-26
+### Fixed
+- Fix dynamic message typesupport and introspection for actions
+
 ## [2.13.1] - 2024-03-20
 ### Added
 - OG shortcuts to RTX lidar, odometry, tf pub
 - node namespace options for all the shortcuts
 - popup notifications instead of print statements for errors in OG shortcuts
-
 
 ## [2.13.0] - 2024-03-12
 ### Added
