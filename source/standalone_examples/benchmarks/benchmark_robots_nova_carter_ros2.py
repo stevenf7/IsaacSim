@@ -71,6 +71,7 @@ benchmark = base_isaac_benchmark.BaseIsaacBenchmark(
 benchmark.set_phase("loading")
 
 enable_extension("omni.isaac.ros2_bridge")
+omni.kit.app.get_app().update()
 
 robot_path = "/Isaac/Samples/ROS2/Robots/Nova_Carter_ROS.usd"
 scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
@@ -157,3 +158,4 @@ benchmark.store_measurements()
 benchmark.stop()
 
 timeline.stop()
+simulation_app.close()

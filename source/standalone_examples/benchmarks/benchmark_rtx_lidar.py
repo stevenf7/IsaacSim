@@ -102,3 +102,5 @@ omni.kit.app.get_app().update()
 for texture in hydra_textures:
     texture = None
 omni.kit.app.get_app().update()
+
+simulation_app.close()

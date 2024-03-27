@@ -95,4 +95,4 @@ benchmark.store_measurements()
 benchmark.stop()
 
 timeline.stop()
-cameras = None
+simulation_app.close()
