@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.3] - 2024-03-22
+
+### Fixed
+- Prim Custom Data field can support nested objects (dictionaries) now
+
 ## [0.2.2] - 2023-11-14
 
 ### Changed
