@@ -1,51 +1,607 @@
 include:
-  - project: "omniverse/devplat/gitlab/templates/common/compliance"
-    file: "modules/omniverse-repo-compliance.gitlab-ci.yml"
-    ref: "v1_latest"
+# external
+- project: 'omniverse/devplat/gitlab/templates/runners'
+  file: 'modules/include.yml'
+  ref: v1_latest
+- project: 'omniverse/devplat/gitlab/templates/common/utilities'
+  file: 'modules/include.yml'
+  ref: v1_latest
+- project: 'omniverse/sectools/vault'
+  file: 'templates/v2/omni-codesign-creds.yml'
+- project: 'omniverse/sectools/vault'
+  file: 'templates/v2/windows/repo-codesign-creds.yml'
+- project: 'omniverse/sectools/vault'
+  file: 'templates/v2/omni-packman-s3-creds.yml'
+- project: 'omniverse/sectools/vault'
+  file: 'templates/v2/windows/packman-s3-creds.gitlab-ci.yml'
+- project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
+  # local to devplat/gitlab/templates/runners, external to this repo:
+  file: 'modules/common.yml'
+- project: omniverse/benchmark/reggie
+  #- project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
+  #  file: 'modules/benchmarks.yml'
+  ref: release/v2
+  file: /ci/detect.yml
+- project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
+  file: 'modules/coverage.yml'
+- project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
+  # - project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
+  #   file: 'modules/etm.yml'
+  file: 'modules/publishing.yml'
+- project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
+  file: 'modules/security.yml'
+- project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
+  file: 'modules/sanitizers.yml'
 
+
+# ==============================================================================================================
+stages:
+- check
+- build
+- test
+- security
+- deploy
+- prod-test
+
+
+# ==============================================================================================================
+# Default values applied to all jobs
+default:
+  # Only retry on Gitlab failures (not on script failures for example)
+  retry:
+    max: 2
+    when:
+    - api_failure
+    - runner_system_failure
+    - stuck_or_timeout_failure
+    - scheduler_failure
+    - unknown_failure
+  interruptible: true
+
+
+# ==============================================================================================================
+# More variables can be found in common.yml - here we put the ones controlling the jobs workflow
 variables:
-    OSEC_NSPECT_ID: "NSPECT-8CX1-LP1G"
-    OSEC_CHECKMARX_ENABLED: 'false'
-    OSEC_GITLAB_SAST_ENABLED: 'false'
-    OSEC_PULSE_TRUFFLEHOG_ENABLED: 'false'
-    OSEC_OMNI_PULSE_ENABLED: 'false'
-    OSEC_README_ENABLED: 'false' # WARNING: Also have the init() function get_nspectid_from_repo_toml() in there...
+  OSEC_NSPECT_ID: "NSPECT-8CX1-LP1G"
+  OSEC_CHECKMARX_ENABLED: 'false'
+  OSEC_GITLAB_SAST_ENABLED: 'false'
+  OSEC_PULSE_TRUFFLEHOG_ENABLED: 'false'
+  OSEC_OMNI_PULSE_ENABLED: 'false'
+  OSEC_README_ENABLED: 'false' # WARNING: Also have the init() function get_nspectid_from_repo_toml() in there...
+  ALLOW_PUBLISH_DOCS:
+    value: "false"
+    description: "Set to true to publish docs"
+  ALLOW_PUBLISH_TO_LAUNCHER:
+    value: "false"
+    description: "Set to true to for Kit apps that are published to the Launcher. That adds jobs for that."
+  ALLOW_SECURITY_SCAN:
+    value: "false"
+    description: "Set to true to trigger a security scan as a child pipeline (non blocking)"
+  ALLOW_SCHEDULE_PIPELINE:
+    value: "true"
+    description: "Set to 'false' to disable schedule pipeline on a all jobs, useful to set it back on only some jobs."
+  ALLOW_TAG_PIPELINE:
+    value: "true"
+    description: "Set to 'false' to disable tag pipeline on a all push jobs."
+  RUN_EXTENSION_BENCHMARKS:
+    value: "false"
+    description: "Set to true to run benchmarks for kit extensions."
+  RUN_ETM_TESTS:
+    value: "false"
+    description: "Set to true to run ETM tests for kit extensions. Only happens on push (extensions need to be published first)."
+  DATADOG_TEST_VISIBILITY:
+    value: "true"
+    description: "Set to false to skip sending tests results to Datadog (internal)"
+  OMNI_CI_ENABLE_CXX_COVERAGE:
+    value: "false"
+    description: "Set to 'true' to enable C++ code coverage testing."
+  OMNI_CI_ENABLE_SANITIZERS:
+    value: "false"
+    description: "Set to 'true' to enable C++ sanitizer builds."
+  ALLOW_BUMP_VERSION:
+    value: "false"
+    description: "Set to true to run bump version. Only happens on push or schedule."
 
 
-workflow:
+# ==============================================================================================================
+.check-common:
+  stage: check
+  timeout: 20 minutes
   rules:
-    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
-    - if: '$CI_COMMIT_REF_PROTECTED == "true"'
-    - if: $CI_MERGE_REQUEST_IID
-    - if: $CI_COMMIT_TAG
+  - !reference [.rules-workflow, rules]
+
+.repo-artifacts:
+  artifacts:
+    when: always
+    expire_in: 2 weeks
+    paths:
+    - _repo/repo.log
+    - _repo/repolog*.txt
+
+# ==============================================================================================================
+# Rule for running on either push/schedule/web/trigger/pipeline/parent_pipeline on protected and release branches
+.rules-bump-version:
+  rules:
+  # allow schedule pipeline on protected and release/* branches
+  - if: $CI_PIPELINE_SOURCE == "schedule" && ($CI_COMMIT_REF_PROTECTED == "true" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
+  - if: $CI_PIPELINE_SOURCE == "schedule" && $ALLOW_BUMP_VERSION == "true"
+    # allow schedule pipeline if ALLOW_BUMP_VERSION is set to "true"
+
+
+# ==============================================================================================================
+# Job that ensures that the MR has a JIRA ticket reference in the title
+check-jira-ticket:
+  extends:
+  - .check-common
+  - .check-jira-ticket
+  - .omni_nvks_runner
+  allow_failure: true
+  rules:
+  - !reference [.rules-mr, rules]
+
+
+# ==============================================================================================================
+# Job to dump out the current configuration environment variables
+dump-env-vars:
+  extends:
+  - .check-common
+  - .dump-env-vars
+  - .omni_nvks_runner
+  allow_failure: true
+  when: manual
+  rules:
+  - !reference [.rules-workflow, rules]
+
+
+# ==============================================================================================================
+check-code-format:
+  extends:
+  - .check-common
+  - .repo-artifacts
+  - .runner-utility-linux-x86_64
+  variables:
+    GIT_DEPTH: 0 # needed to update copyrights
+  script:
+  - ./repo.sh format --verify
+
+
+# ==============================================================================================================
+.build-artifacts:
+  artifacts:
+    when: always
+    expire_in: 2 weeks
+    paths:
+    - _build/**/*.gcno # produced by the coverage build
+    - _build/**/*.log
+    - _build/packages/
+    - _repo/repo.log
+    - _repo/repolog*.txt
+
+
+# ==============================================================================================================
+.build-common:
+  stage: build
+  timeout: 1 hour
+  extends:
+  - .build-artifacts
+  rules:
+  - !reference [.rules-workflow, rules]
+
+
+# ==============================================================================================================
+build-linux-x86_64-release:
+  extends:
+  - .build-common
+  - .omni_nvks_runner_large_with_docker
+  before_script:
+  - set -eu
+  - !reference [.omni_s3_write_get_secrets, omni_s3_write_get_secrets]
+  script:
+  - ./repo.sh ci build -c release
+
+# ==============================================================================================================
+build-linux-x86_64-debug:
+  extends:
+  - .build-common
+  - .omni_nvks_runner_large_with_docker
+  before_script:
+  - set -eu
+  - !reference [.omni_s3_write_get_secrets, omni_s3_write_get_secrets]
+  script:
+  - ./repo.sh ci build -c debug
+
+# ==============================================================================================================
+build-windows-x86_64-release:
+  extends:
+  - .build-common
+  - .runner-build-windows-x86_64
+  before_script:
+  - !reference [.windows_packman_s3_creds_get_powershell, windows_packman_s3_creds_get_powershell]
+  script:
+  - ./repo.bat ci build -c release
+
+# ==============================================================================================================
+build-windows-x86_64-debug:
+  extends:
+  - .build-common
+  - .runner-build-windows-x86_64
+  before_script:
+  - !reference [.windows_packman_s3_creds_get_powershell, windows_packman_s3_creds_get_powershell]
+  script:
+  - ./repo.bat ci build -c debug
+
+
+
+# ==============================================================================================================
+.test-artifacts:
+  artifacts:
+    when: always
+    expire_in: 2 weeks
+    paths:
+    - _build/**/*.log
+    - _build/*/debug/*.xml
+    - _build/*/release/*.xml
+    - _build/coverage.info
+    - _build/coverage/**
+    - _repo/repo.log
+    - _repo/repolog*.txt
+    - _testoutput/
+    reports:
+      junit:
+      - _build/*/debug/*.xml
+      - _build/*/release/*.xml
+      - _testoutput/results.xml
+
+
+# ==============================================================================================================
+.test-common:
+  stage: test
+  timeout: 2 hour
+  extends:
+  - .test-artifacts
+  rules:
+  - !reference [.rules-workflow, rules]
+
+
+# ==============================================================================================================
+test-linux-x86_64-startuptests:
+  extends:
+  - .test-common
+  - .install-linux-test-packages
+  - .runner-test-linux-x86_64-gpu
+  script:
+  - ./repo.sh ci test -- -s startuptests
+  after_script:
+  - !reference [.datadog-test-visibility-linux-x86_64, script]
+  needs:
+  - job: build-linux-x86_64-release
+    artifacts: true
+  retry:
+    max: 2
+    when:
+    - runner_system_failure
+    - stuck_or_timeout_failure
+
+test-linux-x86_64-pythontests:
+  extends:
+  - .test-common
+  - .install-linux-test-packages
+  - .runner-test-linux-x86_64-gpu
+  script:
+  - ./repo.sh ci test -- -s pythontests
+  allow_failure: true
+  after_script:
+  - !reference [.datadog-test-visibility-linux-x86_64, script]
+  needs:
+  - job: build-linux-x86_64-release
+    artifacts: true
+
+# test-linux-x86_64-gympythontests:
+#   extends:
+#     - .test-common
+#     - .install-linux-test-packages
+#     - .runner-test-linux-x86_64-gpu
+#   script:
+#     - ./repo.sh ci test -- -s gympythontests
+#   after_script:
+#     - !reference [.datadog-test-visibility-linux-x86_64, script]
+#   needs:
+#     - job: build-linux-x86_64-release
+#       artifacts: true
+
+test-linux-x86_64-selectortests:
+  extends:
+  - .test-common
+  - .install-linux-test-packages
+  - .runner-test-linux-x86_64-gpu
+  script:
+  - ./repo.sh ci test -- -s selectortests
+  after_script:
+  - !reference [.datadog-test-visibility-linux-x86_64, script]
+  needs:
+  - job: build-linux-x86_64-release
+    artifacts: true
+
+test-linux-x86_64-warmuptests:
+  extends:
+  - .test-common
+  - .install-linux-test-packages
+  - .runner-test-linux-x86_64-gpu
+  script:
+  - ./repo.sh ci test -- -s warmuptests
+  after_script:
+  - !reference [.datadog-test-visibility-linux-x86_64, script]
+  needs:
+  - job: build-linux-x86_64-release
+    artifacts: true
+
+test-linux-x86_64-postinstalltests:
+  extends:
+  - .test-common
+  - .install-linux-test-packages
+  - .runner-test-linux-x86_64-gpu
+  script:
+  - ./repo.sh ci test -- -s postinstalltests
+  after_script:
+  - !reference [.datadog-test-visibility-linux-x86_64, script]
+  needs:
+  - job: build-linux-x86_64-release
+    artifacts: true
+
+# test-linux-x86_64-unittests:
+#   extends:
+#     - .test-common
+#     - .install-linux-test-packages
+#     - .runner-test-linux-x86_64-gpu
+#   script:
+#     - ./repo.sh ci test -- -s unittests
+#   after_script:
+#     - !reference [.datadog-test-visibility-linux-x86_64, script]
+#   needs:
+#     - job: build-linux-x86_64-release
+#       artifacts: true
+
+test-linux-x86_64-internalpythontests:
+  extends:
+  - .test-common
+  - .install-linux-test-packages
+  - .runner-test-linux-x86_64-gpu
+  script:
+  - ./repo.sh ci test -- -s internalpythontests
+  after_script:
+  - !reference [.datadog-test-visibility-linux-x86_64, script]
+  needs:
+  - job: build-linux-x86_64-release
+    artifacts: true
+
+
+# ==============================================================================================================
+# test-windows-x86_64:
+#   extends:
+#     - .test-common
+#     - .runner-test-windows-x86_64-gpu
+#   script:
+#     - ./repo.bat ci test
+#   after_script:
+#     - !reference [.datadog-test-visibility-windows-x86_64, script]
+#   needs:
+#     - job: build-windows-x86_64-release
+#       artifacts: true
+
+test-windows-x86_64-startuptests:
+  extends:
+  - .test-common
+  - .runner-test-windows-x86_64-gpu
+  script:
+  - ./repo.bat ci test -- -s startuptests
+  after_script:
+  - !reference [.datadog-test-visibility-windows-x86_64, script]
+  needs:
+  - job: build-windows-x86_64-release
+    artifacts: true
+  retry:
+    max: 2
+    when:
+    - runner_system_failure
+    - stuck_or_timeout_failure
+
+test-windows-x86_64-pythontests:
+  extends:
+  - .test-common
+  - .runner-test-windows-x86_64-gpu
+  script:
+  - ./repo.bat ci test -- -s pythontests
+  allow_failure: true
+  after_script:
+  - !reference [.datadog-test-visibility-windows-x86_64, script]
+  needs:
+  - job: build-windows-x86_64-release
+    artifacts: true
+
+# test-windows-x86_64-gympythontests:
+#   extends:
+#     - .test-common
+#     - .runner-test-windows-x86_64-gpu
+#   script:
+#     - ./repo.bat ci test -- -s gympythontests
+#   after_script:
+#     - !reference [.datadog-test-visibility-windows-x86_64, script]
+#   needs:
+#     - job: build-windows-x86_64-release
+#       artifacts: true
+
+test-windows-x86_64-selectortests:
+  extends:
+  - .test-common
+  - .runner-test-windows-x86_64-gpu
+  script:
+  - ./repo.bat ci test -- -s selectortests
+  after_script:
+  - !reference [.datadog-test-visibility-windows-x86_64, script]
+  needs:
+  - job: build-windows-x86_64-release
+    artifacts: true
+
+test-windows-x86_64-warmuptests:
+  extends:
+  - .test-common
+  - .runner-test-windows-x86_64-gpu
+  script:
+  - ./repo.bat ci test -- -s warmuptests
+  after_script:
+  - !reference [.datadog-test-visibility-windows-x86_64, script]
+  needs:
+  - job: build-windows-x86_64-release
+    artifacts: true
+
+test-windows-x86_64-postinstalltests:
+  extends:
+  - .test-common
+  - .runner-test-windows-x86_64-gpu
+  script:
+  - ./repo.bat ci test -- -s postinstalltests
+  after_script:
+  - !reference [.datadog-test-visibility-windows-x86_64, script]
+  needs:
+  - job: build-windows-x86_64-release
+    artifacts: true
+
+# test-windows-x86_64-unittests:
+#   extends:
+#     - .test-common
+#     - .runner-test-windows-x86_64-gpu
+#   script:
+#     - ./repo.bat ci test -- -s unittests
+#   after_script:
+#     - !reference [.datadog-test-visibility-windows-x86_64, script]
+#   needs:
+#     - job: build-windows-x86_64-release
+#       artifacts: true
+
+test-windows-x86_64-internalpythontests:
+  extends:
+  - .test-common
+  - .runner-test-windows-x86_64-gpu
+  script:
+  - ./repo.bat ci test -- -s internalpythontests
+  after_script:
+  - !reference [.datadog-test-visibility-windows-x86_64, script]
+  needs:
+  - job: build-windows-x86_64-release
+    artifacts: true
+
+# ==============================================================================================================
+.deploy-artifacts:
+  artifacts:
+    when: always
+    expire_in: 2 weeks
+    paths:
+    - _build/**/*.log
+    - _repo/repo.log
+    - _repo/repolog*.txt
+
+
+# ==============================================================================================================
+.deploy-common:
+  stage: deploy
+  extends:
+  - .deploy-artifacts
+  timeout: 1 hour
+  interruptible: false
+  before_script:
+  - set -eu
+  - !reference [.omni_codesign_get_secrets, omni_codesign_get_secrets]
+  - !reference [.omni_s3_write_get_secrets, omni_s3_write_get_secrets]
 
 pages:
   tags:
-    - pages
-  image:
-    alpine:latest
+  - pages
+  image: alpine:latest
   script:
-    - apk add --no-cache p7zip wget curl
-    - mkdir .public
-    - echo "10.36.168.30 teamcity.nvidia.com" >> /etc/hosts
-    - echo "24.51.7.209 swiftstack-maglev.ngc.nvidia.com" >> /etc/hosts
-    - 'curl -L --output docs.7z --header "Authorization: Bearer $TC_TOKEN" https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Develop_BuildAndPackaging_OmniDocsBuildLinuxX8664/.lastSuccessful/omniverse-robotics-docs%40%7Bbuild.number%7D.7z'
-    - 'curl -L --output pydocs.zip --header "Authorization: Bearer $TC_TOKEN" https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Develop_BuildAndValidation/.lastSuccessful/artifacts/Linux/docs%40%7Bbuild.number%7D.linux-x86_64.zip'
-    - 7z x docs.7z -o.public
-    - 7z x pydocs.zip -oisaacsim
-    - mkdir -p .public/py/
-    - mv isaacsim .public/py/
-    - ls .public/py/isaacsim
-    - mv .public public
+  - apk add --no-cache p7zip wget curl
+  - mkdir .public
+  - echo "10.36.168.30 teamcity.nvidia.com" >> /etc/hosts
+  - echo "24.51.7.209 swiftstack-maglev.ngc.nvidia.com" >> /etc/hosts
+  - 'curl -L --output docs.7z --header "Authorization: Bearer $TC_TOKEN" https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Develop_BuildAndPackaging_OmniDocsBuildLinuxX8664/.lastSuccessful/omniverse-robotics-docs%40%7Bbuild.number%7D.7z'
+  - 'curl -L --output pydocs.zip --header "Authorization: Bearer $TC_TOKEN" https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Develop_BuildAndValidation/.lastSuccessful/artifacts/Linux/docs%40%7Bbuild.number%7D.linux-x86_64.zip'
+  - 7z x docs.7z -o.public
+  - 7z x pydocs.zip -oisaacsim
+  - mkdir -p .public/py/
+  - mv isaacsim .public/py/
+  - ls .public/py/isaacsim
+  - mv .public public
   artifacts:
     paths:
-      - public
+    - public
   only:
-    - develop@omniverse/isaac/omni_isaac_sim
+  - develop@omniverse/isaac/omni_isaac_sim
 
-stages:
-  - check
-  - test
+# ==============================================================================================================
+.benchmark-artifacts:
+  artifacts:
+    when: always
+    expire_in: 2 weeks
+    paths:
+    - '_testoutput/benchmark.*.json'
+    - .reggie-out/
+
+# ==============================================================================================================
+.benchmark-common:
+  stage: test
+  timeout: 1 hour
+  extends:
+  - .benchmark-artifacts
+  variables:
+    MAX_RETRIES: 2
+  retry: 2
+  rules:
+  - if: $RUN_EXTENSION_BENCHMARKS != "true"
+    when: never
+  - !reference [.rules-workflow, rules]
+
+
+# ==============================================================================================================
+benchmark-linux-x86_64:
+  extends:
+  - .benchmark-common
+  tags:
+  - instance/gitlab-gtl-performance
+  - omni-perf-only/linux
+  variables:
+    MACHINE_OS: "ubuntu22"
+    MACHINE_KIND: "AMD EPYC 7313P"
+    MACHINE_DRIVER: "NVIDIA-Linux-x86_64-525.85.05"
+  script:
+  - ./repo.sh bench
+  - !reference [.reggie_detect_ubuntu, commands]
+  needs:
+  - job: build-linux-x86_64-release
+    artifacts: true
+
+
+# ==============================================================================================================
+benchmark-windows-x86_64:
+  extends:
+  - .benchmark-common
+  tags:
+  - instance/gitlab-gtl-performance
+  - omni-perf-only/windows
+  variables:
+    MACHINE_OS: "windows10-20H2"
+    MACHINE_KIND: "AMD EPYC 7313P"
+    MACHINE_DRIVER: "537.70-sandbag_UDA_QuadroWeb_Public-wddm2-x64-dch-AttestedDriverSigning"
+  script:
+  - ./repo.bat bench
+  - !reference [.reggie_detect_windows, commands]
+  needs:
+  - job: build-windows-x86_64-release
+    artifacts: true
+
+
+
+# autoupdate-kit:
+#   rules:
+#    - when: never
 
 # include:
 #   - project: 'omniverse/sectools/omni-pulse'
@@ -102,3 +658,127 @@ stages:
 #     - if: $CI_COMMIT_REF_NAME =~ /^release\/.*$/
 #       when: always
 #     - when: never
+
+
+# ==============================================================================================================
+# By default, all platforms (windows-x86_64, linux-x86_64) are published,
+# but this can be changed in repo.toml config if necessary:
+#    [repo_publish_exts]
+#    platforms = ["linux-x86_64"]
+publish-extensions:
+  extends:
+  - .deploy-common
+  - .omni_nvks_runner_with_docker
+  script:
+  - ./repo.sh ci publish_extensions
+  needs:
+  # We set all dependencies as optional just in case a platform is not needed,
+  # then the yml file can override both build/test on one platform and deploy will still work.
+  - job: build-windows-x86_64-release
+    artifacts: true
+    optional: true
+  - job: build-linux-x86_64-release
+    artifacts: true
+    optional: true
+  #   - job: test-windows-x86_64-startuptests
+  #     artifacts: false
+  #     optional: true
+  #   - job: test-linux-x86_64-startuptests
+  #     artifacts: false
+  #     optional: true
+  rules:
+  - !reference [.rules-push, rules]
+
+
+# ==============================================================================================================
+publish-docs:
+  extends:
+  - .deploy-common
+  - .omni_nvks_runner_with_docker
+  variables:
+    # Required access tokens for publishing to S3
+    AWS_ACCESS_KEY_ID: $AWS_OMNIVERSEDOCS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY: $AWS_OMNIVERSEDOCS_SECRET_ACCESS_KEY
+  needs:
+  - job: build-windows-x86_64-release
+    artifacts: true
+  script:
+  - ./repo.sh ci publish_docs
+  rules:
+  - if: $ALLOW_PUBLISH_DOCS != "true"
+    when: never
+  - !reference [.rules-push, rules]
+
+
+# ==============================================================================================================
+publish-to-launcher:
+  extends:
+  - .deploy-common
+  - .omni_nvks_runner_with_docker
+  script:
+  - ./repo.sh ci publish_to_launcher
+  needs:
+  - job: build-windows-x86_64-release
+    artifacts: true
+  - job: build-linux-x86_64-release
+    artifacts: true
+  rules:
+  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+    when: never
+  - !reference [.rules-version-changed, rules]
+  # Can also be triggered manually
+  - !reference [.rules-push-manual, rules]
+  allow_failure: true
+
+
+# ==============================================================================================================
+release-new-version:
+  extends:
+  - .deploy-common
+  - .omni_nvks_runner_with_docker
+  needs: []
+  script:
+  - ./repo.sh ci release_new_version
+  rules:
+  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+    when: never
+  - !reference [.rules-push-daily, rules]
+  - !reference [.rules-push-manual, rules]
+  allow_failure: true
+
+
+# ==============================================================================================================
+# update Kit SDK and extensions, merge master, typically done in daily branch
+# set AUTOUPDATE_KIT=true for scheduled pipeline to run
+autoupdate-kit:
+  extends:
+  - .deploy-common
+  - .omni_nvks_runner_with_docker
+  needs: []
+  script:
+  - ./repo.sh ci autoupdate_kit
+  rules:
+  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+    when: never
+  - if: $AUTOUPDATE_KIT == "true" && ($CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "schedule")
+    when: always
+
+
+
+# ==============================================================================================================
+bump-version:
+  stage: deploy
+  extends:
+  - .omni_nvks_runner_with_docker
+  script:
+  - ./repo.sh bump_version
+  needs:
+  - job: build-windows-x86_64-release
+    artifacts: true
+  - job: build-linux-x86_64-release
+    artifacts: true
+  rules:
+  - if: $ALLOW_BUMP_VERSION != "true"
+    when: never
+  - !reference [.rules-push-manual, rules]
+  - !reference [.rules-bump-version, rules]

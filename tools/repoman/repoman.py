@@ -1,11 +1,3 @@
-# Copyright (c) 2019-2024, NVIDIA CORPORATION. All rights reserved.
-#
-# NVIDIA CORPORATION and its licensors retain all intellectual property
-# and proprietary rights in and to this software, related documentation
-# and any modifications thereto. Any use, reproduction, disclosure or
-# distribution of this software and related documentation without an express
-# license agreement from NVIDIA CORPORATION is strictly prohibited.
-#
 import contextlib
 import io
 import os
@@ -23,8 +15,8 @@ def bootstrap():
 
     Pull with packman from repo.packman.xml and add them all to python sys.path to enable importing.
     """
-    with contextlib.redirect_stdout(io.StringIO()):
-        deps = packmanapi.pull(REPO_DEPS_FILE)
+    # with contextlib.redirect_stdout(io.StringIO()):
+    deps = packmanapi.pull(REPO_DEPS_FILE)
     for dep_path in deps.values():
         if dep_path not in sys.path:
             sys.path.append(dep_path)

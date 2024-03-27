@@ -18,6 +18,9 @@
     <filter include="usd_schema_semantics_${config}" />
     <filter include="omni_usd_resolver" />
     <filter include="usdrt" />
+    <filter include="winsdk" linkPath="../_build/host-deps/winsdk"  tags="non-redist" />
+    <filter include="premake" linkPath="../_build/host-deps/premake" />
+    <filter include="msvc" linkPath="../_build/host-deps/msvc"  tags="non-redist" />
   </import>
 
   <!-- Import Physics plugins deps -->
@@ -52,5 +55,9 @@
   <dependency name="gsl" linkPath="../_build/target-deps/gsl" />
   <dependency name="omni_usd_resolver" linkPath="../_build/target-deps/omni_usd_resolver" />
   <dependency name="usdrt" linkPath="../_build/target-deps/usdrt" />
+
+  <import path="../_build/${platform}/${config}/kit/dev/deps/linbuild.packman.xml">
+    <filter include="linbuild" linkPath="../_build/host-deps/linbuild" tags="non-redist" />
+  </import>
 </project>
 

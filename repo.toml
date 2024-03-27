@@ -3,19 +3,24 @@
 ########################################################################################################################
 
 [repo]
-logging = "warn"
-extra_tool_paths = [
-	"${root}/_build/$platform/release/kit/dev",
-	"${root}/_build/$platform/debug/kit/dev"
+# Use Kit Template repo configuration as a base. Only override things specific to the repo.
+import_configs = [
+    # Shared config for all kit extensions repos
+    "${root}/_repo/deps/repo_kit_tools/kit-template/repo.toml",
+    # Shared config for kit extensions repos that also publish an app to the Launcher
+    "${root}/_repo/deps/repo_kit_tools/kit-template/repo-app.toml"
 ]
 
+# Repository Name. It is used for solution name and final package name
+name = "isaac-sim"
+
+#logging = "warn"
 ########################################################################################################################
 # Override VERSION File
 ########################################################################################################################
 
 [repo.folders]
 version_file = "${root}/VERSION"
-
 
 ########################################################################################################################
 # Build tool setup
@@ -24,9 +29,6 @@ version_file = "${root}/VERSION"
 [repo_build]
 
 # List of packman projects to pull (in order)
-fetch.packman_host_files_to_pull = [
-    "${root}/deps/host-deps.packman.xml",
-]
 
 fetch.packman_target_files_to_pull = [
     "${root}/deps/kit-sdk.packman.xml",
@@ -49,16 +51,16 @@ fetch.pip.files_to_pull = [
     "${root}/deps/pip_cloud.toml",
 ]
 
-# Extensions precache
-# This is one way to get the headers and bin files from extensions to show up... like needed in omni.sensors.nv.common
-pre_build.commands = [
-    ["${root}/repo${shell_ext}", "precache_exts", "-c", "${config}", "${precache_flag_0}"],
-]
+# # Extensions precache
+# # This is one way to get the headers and bin files from extensions to show up... like needed in omni.sensors.nv.common
+# pre_build.commands = [
+#     ["${root}/repo${shell_ext}", "precache_exts", "-c", "${config}", "${precache_flag_0}"],
+# ]
 
-stage_files.extra_mapping.kit_sdk_debug = "${root}/_build/$platform/debug/kit"
-stage_files.extra_mapping.kit_sdk_release = "${root}/_build/$platform/release/kit"
+# stage_files.extra_mapping.kit_sdk_debug = "${root}/_build/$platform/debug/kit"
+# stage_files.extra_mapping.kit_sdk_release = "${root}/_build/$platform/release/kit"
 
-vscode.python = "${root}/_build/$platform/release/kit/python"
+# vscode.python = "${root}/_build/$platform/release/kit/python"
 
 vscode.python_env.PYTHONPATH= [
   "$$$${PYTHONPATH}",
@@ -98,19 +100,26 @@ vscode.python_env.PATH= [
 ]
 
 vscode.write_python_paths_in_settings_json = false # We do this manually as a post processing step now to guarantee extscache is downloaded
-vscode.generate_python_env_file = false
+# vscode.generate_python_env_file = false
 
 msbuild.sln_file = "isaac-sim.sln"
 msbuild.vs_version = "vs2017"
 
-stage_files.error_if_missing = true
+# stage_files.error_if_missing = true
 
-licensing.enabled = true
+# licensing.enabled = true
 licensing.packages = ["${root}/deps/rtx-target-deps.packman.xml", "${root}/deps/ext-deps.packman.xml", "${root}/deps/isaac-sim.packman.xml"]
-licensing.fail_on_missing = true
+# licensing.fail_on_missing = true
 
+# By default, precache_exts is run after pull. Instead, running it after generating projects and staging files, so the necessary app file exists.
+fetch.after_pull_commands = []
+# Extensions precache before build to pick up headers/binaries for linking
+pre_build.commands = [
+    ["${root}/repo${shell_ext}", "precache_exts", "-c", "${config}", "${precache_flag_0}"] ,
+]
 post_build.commands = [
-    #["${root}/repo${shell_ext}", "precache_exts", "-c", "${config}", "${precache_flag_0}"] ,
+    # ["${root}/repo${shell_ext}", "stubgen", "-c", "${config}"],
+    # ["${root}/repo${shell_ext}", "precache_exts", "-c", "${config}", "${precache_flag_0}"] ,
     # ["${root}/tools/build_docs${shell_ext}", "--config", "${config}", "--warn-as-error=0"], # disabled to reduce local build times
     ["${root}/repo${shell_ext}", "generate_vscode_settings", "-c", "${config}"],
     ["${root}/repo${shell_ext}", "edit_sysconfig", "-c", "${config}"]
@@ -126,7 +135,7 @@ kwargs.required = false
 ########################################################################################################################
 
 [repo_precache_exts]
-generated_app_path = ""
+# generated_app_path = ""
 enabled = true
 kit_omit_ext_version = false
 # Extra args to pass to kit
@@ -302,13 +311,12 @@ region = "us-west-1"
 bucket_dir = "py/isaacsim/"
 s3_exclude_patterns = []
 
-########################################################################################################################
-# Build Number
-########################################################################################################################
+# ########################################################################################################################
+# # Build Number
+# ########################################################################################################################
 
-[repo_build_number]
-enabled = true
-
+# [repo_build_number]
+# enabled = true
 
 ########################################################################################################################
 # Packaging
@@ -316,20 +324,17 @@ enabled = true
 
 [repo_package]
 windows_max_path_length=200
+ziponly = false
+archive_format = "7z"
 
 [repo_package.packages.isaac-sim]
 root = "_build/$${platform}/$${config}"
 omniverse_flow_version_scheme = true
-ziponly = false
 package_per_config = true
-"platform:linux-x86_64".archive_format = "7z" # Use 7z on linux
 
 [repo_package.packages.isaac-sim-standalone]
 root = "_build/$${platform}/$${config}"
 omniverse_flow_version_scheme = true
-ziponly = false
-"platform:linux-x86_64".archive_format = "7z" # Use 7z on linux
-"platform:windows-x86_64".archive_format = "7z"
 package_per_config = true
 append_config = true
 replace_authors_in_kit_extensions = true
@@ -339,16 +344,11 @@ windows_max_path_length = 220 #TODO: changed from default of 180 to make builds 
 [repo_package.packages.isaac-sim-internal]
 root = "_build/$${platform}/$${config}"
 omniverse_flow_version_scheme = true
-ziponly = false
 package_per_config = true
-"platform:linux-x86_64".archive_format = "7z" # Use 7z on linux
 
 [repo_package.packages.isaac-sim-binaryscan]
 root = "_build/$${platform}/$${config}"
 omniverse_flow_version_scheme = true
-ziponly = false
-"platform:linux-x86_64".archive_format = "7z" # Use 7z on linux
-"platform:windows-x86_64".archive_format = "7z"
 package_per_config = true
 append_config = true
 replace_authors_in_kit_extensions = true
@@ -358,6 +358,7 @@ windows_max_path_length = 220 #TODO: changed from default of 180 to make builds 
 # to generate test runner package for isaac sim
 [repo_package.packages.test_runner]
 omniverse_flow_version_scheme = true
+archive_format = "zip"
 ziponly = true
 
 # to generate launcher images package
@@ -442,9 +443,17 @@ branch_prefix = "integ"
 [repo_test]
 
 test_root = "$root/_build/$platform/$config"
+env_vars = [
+  ["LD_PRELOAD", "${root}/_build/${platform}/${config}/kit/libcarb.so"],
+  ["RMW_IMPLEMENTATION", "rmw_fastrtps_cpp"],
+  ["LD_LIBRARY_PATH", "${root}/_build/${platform}/${config}/exts/omni.isaac.ros2_bridge/humble/lib"],
+]
 
 # When running from package, look for package using that path/pattern:
-archive_pattern = "${root}/_build/packages/isaac-sim-*.7z"
+archive_pattern = "${root}/_build/packages/isaac-sim*.7z"
+
+# archive_post_unpack_cmd = ["${test_root}/pull_kit_sdk${shell_ext}", "--registry=internal"]
+archive_post_unpack_cmd = []
 
 [repo_test.suites.startuptests]
 kind = "glob_and_exec"
@@ -517,7 +526,7 @@ tests_per_process = 1
 
 [[repo_test.suites.postinstalltests.group]]
 include = ["omni.isaac.sim.post.install.run${shell_ext}"]
-timeout = 960
+timeout = 1500
 
 [repo_test.suites.warmuptests]
 kind = "glob_and_exec"
@@ -526,14 +535,14 @@ tests_per_process = 1
 
 [[repo_test.suites.warmuptests.group]]
 include = ["omni.isaac.sim.warmup${shell_ext}"]
-timeout = 960
+timeout = 1500
 
 [repo_test.suites.pythontests]
 kind = "glob_and_exec"
-path = "${test_root}/tests"
+path = "${test_root}"
   [[repo_test.suites.pythontests.group]]
-  include = ["tests-python*${shell_ext}"]
-  exclude = ["tests-python-omni.isaac.gym${shell_ext}", "tests-python-omni.isaac.internal_tools*${shell_ext}", "tests-python-omni.isaac.benchmarks*${shell_ext}", "tests-python-omni.isaac.gym.benchmark*${shell_ext}", "tests-python-omni.isaac.onshape*${shell_ext}"]
+  include = ["tests-*${shell_ext}"]
+  exclude = ["tests-omni.isaac.gym${shell_ext}", "tests-omni.isaac.internal_tools*${shell_ext}", "tests-omni.isaac.benchmarks*${shell_ext}", "tests-omni.isaac.gym.benchmark*${shell_ext}", "tests-omni.isaac.onshape*${shell_ext}"]
   args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
   tc_report_enabled = false
   timeout = 960
@@ -544,38 +553,38 @@ stdout_fail_patterns.exclude = [
 ]
 [[repo_test.suites.pythontests.bucket]]
 name = "1"
-include = ["tests-python-omni.isaac.*benchmark_environments*${shell_ext}", "tests-python-omni.isaac.*motion*${shell_ext}", "tests-python-omni.isaac.*dynamic*${shell_ext}"]
+include = ["tests-omni.isaac.*benchmark_environments*${shell_ext}", "tests-omni.isaac.*motion*${shell_ext}", "tests-omni.isaac.*dynamic*${shell_ext}"]
 [[repo_test.suites.pythontests.bucket]]
 name = "2"
-include = ["tests-python-omni.isaac.example*${shell_ext}"]
+include = ["tests-omni.isaac.example*${shell_ext}"]
 [[repo_test.suites.pythontests.bucket]]
 name = "3"
-include = ["tests-python-omni.isaac.ros*${shell_ext}"]
+include = ["tests-omni.isaac.ros*${shell_ext}"]
 [[repo_test.suites.pythontests.bucket]]
 name = "4"
-include = ["tests-python-omni.isaac.core*${shell_ext}"]
+include = ["tests-omni.isaac.core*${shell_ext}"]
 [[repo_test.suites.pythontests.bucket]]
 name = "5"
-include = ["tests-python-omni.isaac.tests*${shell_ext}"]
+include = ["tests-omni.isaac.tests*${shell_ext}"]
 [[repo_test.suites.pythontests.bucket]]
 name = "6"
-include = ["tests-python-omni.isaac.demo*${shell_ext}", "tests-python-omni.isaac.debug_draw*${shell_ext}", "tests-python-omni.isaac.synthetic*${shell_ext}"]
+include = ["tests-omni.isaac.demo*${shell_ext}", "tests-omni.isaac.debug_draw*${shell_ext}", "tests-omni.isaac.synthetic*${shell_ext}"]
 [[repo_test.suites.pythontests.bucket]]
 name = "7"
-include = ["tests-python-omni.isaac.*motion*${shell_ext}","tests-python-omni.isaac.*sensor*${shell_ext}"]
+include = ["tests-omni.isaac.*motion*${shell_ext}","tests-omni.isaac.*sensor*${shell_ext}"]
 [[repo_test.suites.pythontests.bucket]]
 name = "8"
-include = ["tests-python-omni.isaac*${shell_ext}"]
+include = ["tests-omni.isaac*${shell_ext}"]
 [[repo_test.suites.pythontests.bucket]]
 name = "9"
 include = ["*"]
-exclude =["tests-python-omni.isaac.internal_tools*${shell_ext}", "tests-python-omni.isaac.benchmarks*${shell_ext}", "tests-python-omni.isaac.gym.benchmark*${shell_ext}"]
+exclude =["tests-omni.isaac.internal_tools*${shell_ext}", "tests-omni.isaac.benchmarks*${shell_ext}", "tests-omni.isaac.gym.benchmark*${shell_ext}"]
 
 [repo_test.suites.internalpythontests]
 kind = "glob_and_exec"
-path = "${test_root}/tests"
+path = "${test_root}"
   [[repo_test.suites.internalpythontests.group]]
-  include = ["tests-python-omni.isaac.internal_tools*${shell_ext}", "tests-python-omni.isaac.benchmarks*${shell_ext}", "tests-python-omni.importer.onshape*${shell_ext}"]
+  include = ["tests-omni.isaac.internal_tools*${shell_ext}", "tests-omni.isaac.benchmarks*${shell_ext}", "tests-omni.importer.onshape*${shell_ext}"]
   exclude =[]
   args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
   tc_report_enabled = false
@@ -588,98 +597,98 @@ stdout_fail_patterns.exclude = [
 ]
 [[repo_test.suites.internalpythontests.bucket]]
 name = "1"
-include = ["tests-python-omni.isaac.internal_tools*${shell_ext}", "tests-python-omni.importer.onshape*${shell_ext}"]
+include = ["tests-omni.isaac.internal_tools*${shell_ext}", "tests-omni.importer.onshape*${shell_ext}"]
 [[repo_test.suites.internalpythontests.bucket]]
 name = "2"
-include = ["tests-python-omni.isaac.benchmarks*${shell_ext}"]
+include = ["tests-omni.isaac.benchmarks*${shell_ext}"]
 
-[repo_test.suites.internalnativepythontests]
-kind = "glob_and_exec"
-path = "${test_root}/tests"
-  [[repo_test.suites.internalnativepythontests.group]]
-  include = ["tests-internalnativepython*${shell_ext}"]
-  exclude =[]
-  args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
-  tc_report_enabled = false
-  timeout = 960
-
-stdout_fail_patterns.exclude = [
-	"*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*",  # optix disk cache errors
-	"*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*", # optix disk cache errors
-]
-
-[repo_test.suites.nativepythontests]
-kind = "glob_and_exec"
-path = "${test_root}/tests"
-  [[repo_test.suites.nativepythontests.group]]
-  include = ["tests-nativepython*${shell_ext}"]
-  exclude =[]
-  args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
-  tc_report_enabled = false
-  timeout = 960
-
-stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
-
-[[repo_test.suites.nativepythontests.bucket]]
-name = "1"
-include = ["tests-nativepython-replicator*${shell_ext}"]
-[[repo_test.suites.nativepythontests.bucket]]
-name = "2"
-include = ["*"]
-
-[repo_test.suites.jupytertests]
-kind = "glob_and_exec"
-path = "${test_root}/tests"
-  [[repo_test.suites.jupytertests.group]]
-  include = ["tests-jupyter*${shell_ext}"]
-  exclude =[]
-  args = []
-  tc_report_enabled = false
-  timeout = 960
-
-[repo_test.suites.dockertests]
-kind = "glob_and_exec"
-path = "${test_root}"
-tests_per_process = 1
-  [[repo_test.suites.dockertests.group]]
-  include = ["isaac-sim.docker${shell_ext}"]
-  args = ["nvidia-smi && ls && ./isaac-sim.headless.native.sh --allow-root --/app/quitAfter=500"]
-  timeout = 1200
-  [[repo_test.suites.dockertests.group]]
-  include = ["isaac-sim.docker.gui${shell_ext}"]
-  args = ["nvidia-smi && ls && ./isaac-sim.sh --allow-root --/app/quitAfter=500"]
-  timeout = 1200
+# [repo_test.suites.internalnativepythontests]
+# kind = "glob_and_exec"
+# path = "${test_root}"
+#   [[repo_test.suites.internalnativepythontests.group]]
+#   include = ["tests-internalnativepython*${shell_ext}"]
+#   exclude =[]
+#   args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
+#   tc_report_enabled = false
+#   timeout = 960
+#
+# stdout_fail_patterns.exclude = [
+# 	"*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*",  # optix disk cache errors
+# 	"*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*", # optix disk cache errors
+# ]
+#
+# [repo_test.suites.nativepythontests]
+# kind = "glob_and_exec"
+# path = "${test_root}"
+#   [[repo_test.suites.nativepythontests.group]]
+#   include = ["tests-nativepython*${shell_ext}"]
+#   exclude =[]
+#   args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
+#   tc_report_enabled = false
+#   timeout = 960
+#
 # stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
-
-[repo_test.suites.internaldockertests]
-kind = "glob_and_exec"
-path = "${test_root}/tests"
-tests_per_process = 1
-  [[repo_test.suites.internaldockertests.group]]
-  include = ["tests-internaldocker*${shell_ext}"]
-  timeout = 1500
-# stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
-
-[[repo_test.suites.internaldockertests.bucket]]
-name = "1"
-include = ["tests-internaldocker-python*${shell_ext}"]
-[[repo_test.suites.internaldockertests.bucket]]
-name = "2"
-include = ["*"]
+#
+# [[repo_test.suites.nativepythontests.bucket]]
+# name = "1"
+# include = ["tests-nativepython-replicator*${shell_ext}"]
+# [[repo_test.suites.nativepythontests.bucket]]
+# name = "2"
+# include = ["*"]
+#
+# [repo_test.suites.jupytertests]
+# kind = "glob_and_exec"
+# path = "${test_root}"
+#   [[repo_test.suites.jupytertests.group]]
+#   include = ["tests-jupyter*${shell_ext}"]
+#   exclude =[]
+#   args = []
+#   tc_report_enabled = false
+#   timeout = 960
+#
+# [repo_test.suites.dockertests]
+# kind = "glob_and_exec"
+# path = "${test_root}"
+# tests_per_process = 1
+#   [[repo_test.suites.dockertests.group]]
+#   include = ["isaac-sim.docker${shell_ext}"]
+#   args = ["nvidia-smi && ls && ./isaac-sim.headless.native.sh --allow-root --/app/quitAfter=500"]
+#   timeout = 1200
+#   [[repo_test.suites.dockertests.group]]
+#   include = ["isaac-sim.docker.gui${shell_ext}"]
+#   args = ["nvidia-smi && ls && ./isaac-sim.sh --allow-root --/app/quitAfter=500"]
+#   timeout = 1200
+# # stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
+#
+# [repo_test.suites.internaldockertests]
+# kind = "glob_and_exec"
+# path = "${test_root}/tests"
+# tests_per_process = 1
+#   [[repo_test.suites.internaldockertests.group]]
+#   include = ["tests-internaldocker*${shell_ext}"]
+#   timeout = 1500
+# # stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
+#
+# [[repo_test.suites.internaldockertests.bucket]]
+# name = "1"
+# include = ["tests-internaldocker-python*${shell_ext}"]
+# [[repo_test.suites.internaldockertests.bucket]]
+# name = "2"
+# include = ["*"]
 
 # Catch2 Unit Tests
 [repo_test.suites.unittests]
 kind = "catch2"
-default = true
+# default = true
 executables = [
 	"${test_root}/tests/tests-unit-omni.isaac.range_sensor${exe_ext}",
 ]
 
 [repo_test.suites.gympythontests]
 kind = "glob_and_exec"
-path = "${test_root}/tests"
+path = "${test_root}"
   [[repo_test.suites.gympythontests.group]]
-  include = ["tests-python-omni.isaac.gym${shell_ext}"]
+  include = ["tests-omni.isaac.gym${shell_ext}"]
   exclude =[]
   args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
   tc_report_enabled = false
@@ -695,7 +704,7 @@ stdout_fail_patterns.exclude = [
 ########################################################################################################################
 
 [bump_version]
-git_url = "https://oauth2:${env:ISAAC_SIM_PIPELINE_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim.git"
+git_url = "https://oauth2:${env:GITLAB_PUSH_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim.git"
 # FOR DEVELOPMENT #
 branch_name = "develop"
 # # FOR PRODUCTION #
@@ -708,14 +717,14 @@ branch_name = "develop"
 # For publishing an ext locally, set the extension you want in exts.include (wild cards work) and run the following:
 # ./repo.sh publish_exts -c release
 [repo_publish_exts]
-enabled = true
-kit_path = "${root}/_build/$platform/$config/kit/kit${exe_ext}"
+# enabled = true
+# kit_path = "${root}/_build/$platform/$config/kit/kit${exe_ext}"
 
-publish_root = "${root}/_build/$platform/$config"
+# publish_root = "${root}/_build/$platform/$config"
 
-ext_folders = [
-  "${publish_root}/exts"
-]
+# ext_folders = [
+#   "${publish_root}/exts"
+# ]
 
 # Extensions to publish, include and exclude among those discovered by kit. Wildcards are supported.
 exts.include = [
@@ -796,16 +805,16 @@ exts.include = [
 ]
 exts.exclude = []
 
-# Registries to publish to.
-registries = [
-    { name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default" },
-]
+# # Registries to publish to.
+# registries = [
+#     { name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default" },
+# ]
 
 # verify before publishing
 publish_verification = true
 
 # upload archives using packman (switch to using packman by default to reduce load on nucleus registry)
-use_packman_to_upload_archive = false
+# use_packman_to_upload_archive = false
 
 # When running from package, look for package using that path/pattern:
 archive_pattern = "${root}/_build/packages/isaac-sim-*.7z"
@@ -974,3 +983,51 @@ output_file = "${root}/source/apps/omni.isaac.sim.extscache.kit"
 min_file_size_to_warn = 0
 
 min_file_size_to_fail = 5242880 # 5 MB
+
+########################################################################################################################
+# Custom scripts for repo_ci
+########################################################################################################################
+[repo_ci.jobs.build]
+script = "${config_root}/tools/ci/build_isaac.py"
+
+[repo_ci.jobs.test]
+script = "${config_root}/tools/ci/test_isaac.py"
+
+########################################################################################################################
+# Tool to pull kit kernel and extensions before running
+########################################################################################################################
+
+[repo_kit_pull_extensions]
+precache_exts_enabled = false
+
+########################################################################################################################
+# Omniverse Launcher package publish and deploy tool
+########################################################################################################################
+
+[[repo_deploy_launcher.package_verification]]
+cmd = [""]
+failure_message = "Failed to verify that all extensions are available and installable from the registry. Look for the errors above."
+
+########################################################################################################################
+# Launcher publish and deploy
+########################################################################################################################
+
+[repo_deploy_launcher]
+enabled = true
+git_url = "https://oauth2:${env:ISAAC_SIM_PIPELINE_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac-sim/release-pipelines/isaac_sim-app.git"
+
+[repo_deploy_launcher.slack]
+slack_url = "${env:SLACK_CHANGELOG_PUBLISH_URL}" # omni-usd-composer
+write_jira = true
+inline_changelog = false
+repo_url = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/"
+jira_service_account_name = "${env:JIRA_AUTOMATION_SERVICE_ACCOUNT_NAME}"
+jira_service_account_api_key = "${env:JIRA_AUTOMATION_SERVICE_ACCOUNT_API_KEY}"
+jira_server_url = "https://omniverse-jirasw.nvidia.com"
+
+########################################################################################################################
+# Tool to promote extensions to the public registry pipeline
+########################################################################################################################
+
+[repo_deploy_exts.pipeline_repo.branch.prod]
+fail_if_exts_are_missing = false
