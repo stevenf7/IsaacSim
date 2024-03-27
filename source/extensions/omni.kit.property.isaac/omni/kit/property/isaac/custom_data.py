@@ -26,6 +26,14 @@ from omni.kit.window.property.templates import (
 from pxr import Gf, Sdf, Tf, Usd
 
 
+def iterate_custom_data(custom_data):
+    for key, value in custom_data.items():
+        if isinstance(value, dict):
+            iterate_custom_data(value)
+        else:
+            custom_data[key] = np.array(custom_data[key]).tolist()
+
+
 class CustomDataWidget(SimplePropertyWidget):
     def _get_prim(self, prim_path):
         if prim_path:
@@ -82,8 +90,8 @@ class CustomDataWidget(SimplePropertyWidget):
             self._prim.SetCustomData(decoder.decode(t.get_value_as_string()))
 
         custom_data = self._prim.GetCustomData()
-        for key in custom_data:
-            custom_data[key] = np.array(custom_data[key]).tolist()
+
+        iterate_custom_data(custom_data)
 
         j = json.dumps(custom_data, sort_keys=False, indent=4)
 
