@@ -99,3 +99,4 @@ benchmark.store_measurements()
 benchmark.stop()
 
 timeline.stop()
+simulation_app.close()
