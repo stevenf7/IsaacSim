@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.8.0] - 2023-03-24
+### Added
+- Utility function to get the prim path that has the Articulation Root API
+### Changed
+- Get the prim path that has the Articulation Root API when the ArticulationView class is instantiated
+
 ## [3.7.0] - 2024-03-19
 ### Added
 - Interops utility to convert tensors/arrays between ML frameworks (Warp, PyTorch, JAX, TensorFlow and NumPy)
@@ -7,7 +13,7 @@
 ## [3.6.0] - 2024-03-14
 ### Changed
 - Changed the extension structure to allow for Cpp files to be added.
-- Changed the find_matching_prim_paths util to a cpp implmentation for higher perf.
+- Changed the find_matching_prim_paths util to a cpp implementation for higher perf.
 
 ## [3.5.1] - 2024-03-13
 ### Fixed
