@@ -1,0 +1,24 @@
+[manipulators]
+reloadable = true
+order = 0
+
+[package]
+version = "1.0.0"
+category = "Simulation"
+title = "Isaac Sim Manipulators UI"
+description = "Manipulators"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.manipulators.ui"
+keywords = ["isaac", "manipulators", "ui"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+icon = "data/icon.png"
+preview_image = "data/preview.png"
+writeTarget.kit = true
+
+[dependencies]
+"omni.isaac.core" = {}
+"omni.isaac.manipulators" = {}
+
+[[python.module]]
+name = "omni.isaac.manipulators.ui"
