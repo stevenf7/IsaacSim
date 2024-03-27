@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.1.2"
+version = "3.0.0"
 category = "Simulation"
 title = "Isaac Sim Range Sensor"
 description = "Range based sensor simulation using physx"
@@ -34,15 +34,6 @@ writeTarget.kit = true
 
 [[python.module]]
 name = "omni.isaac.range_sensor"
-
-[[python.module]]
-name = "omni.isaac.range_sensor.scripts.samples.lidar_info"
-
-[[python.module]]
-name = "omni.isaac.range_sensor.scripts.samples.ultrasonic_info"
-
-[[python.module]]
-name = "omni.isaac.range_sensor.scripts.samples.generic_info"
 
 [[python.module]]
 name = "omni.isaac.range_sensor.tests"

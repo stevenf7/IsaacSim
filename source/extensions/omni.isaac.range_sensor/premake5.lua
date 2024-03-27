@@ -127,8 +127,9 @@ includedirs {
 }
 
 repo_build.prebuild_link {
-    { "python/scripts", ext.target_dir.."/omni/isaac/range_sensor/scripts" },
+    { "python/impl", ext.target_dir.."/omni/isaac/range_sensor/impl" },
     { "python/tests", ext.target_dir.."/omni/isaac/range_sensor/tests" },
+    { "python/commands", ext.target_dir.."/omni/isaac/range_sensor/commands" },
     { "docs", ext.target_dir.."/docs" },
     { "data", ext.target_dir.."/data" },
     { "include", ext.target_dir.."/include" },

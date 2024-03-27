@@ -7,5 +7,4 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .commands import *
-from .impl import *
+from .extension import *

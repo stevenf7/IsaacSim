@@ -8,7 +8,7 @@ Lidar Sensor
 
 This submodule provides an interface to a simulated lidar sensor. A simplified command is provided to create a lidar sensor in the stage:
 
-.. automethod:: omni.isaac.range_sensor.scripts.commands.RangeSensorCreateLidar        
+.. automethod:: omni.isaac.range_sensor.commands.RangeSensorCreateLidar        
 
 Once a lidar sensor is in the stage you can use this interface to interact with the simulated lidar data. 
 You must first call the acquire interface function.
@@ -34,9 +34,9 @@ Ultrasonic Sensor
 
 This submodule provides an interface to a simulated ultrasonic sensor.
 
-.. automethod:: omni.isaac.range_sensor.scripts.commands.RangeSensorCreateUltrasonicArray
-.. automethod:: omni.isaac.range_sensor.scripts.commands.RangeSensorCreateUltrasonicEmitter    
-.. automethod:: omni.isaac.range_sensor.scripts.commands.RangeSensorCreateUltrasonicFiringGroup  
+.. automethod:: omni.isaac.range_sensor.commands.RangeSensorCreateUltrasonicArray
+.. automethod:: omni.isaac.range_sensor.commands.RangeSensorCreateUltrasonicEmitter    
+.. automethod:: omni.isaac.range_sensor.commands.RangeSensorCreateUltrasonicFiringGroup  
 
 **Example**
 
@@ -63,7 +63,7 @@ Generic Sensor
 
 This submodule provides an interface to a simulated generic sensor.
 
-.. automethod:: omni.isaac.range_sensor.scripts.commands.RangeSensorCreateGeneric    
+.. automethod:: omni.isaac.range_sensor.commands.RangeSensorCreateGeneric    
 
 **Example**
 

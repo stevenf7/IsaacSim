@@ -315,6 +315,8 @@ group "exts"
     include ("source/extensions/omni.isaac.physics_utilities")
     include ("source/extensions/omni.isaac.quadruped")
     include ("source/extensions/omni.isaac.range_sensor")
+    include ("source/extensions/omni.isaac.range_sensor.ui")
+    include ("source/extensions/omni.isaac.range_sensor.examples")
     include ("source/extensions/omni.isaac.robot_benchmark")
     include ("source/extensions/omni.isaac.robot_assembler")
     include ("source/extensions/omni.isaac.surface_gripper")
