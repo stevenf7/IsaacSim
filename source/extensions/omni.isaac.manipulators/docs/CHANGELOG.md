@@ -1,4 +1,8 @@
 # Changelog
+## [2.0.0] - 2024-03-26
+### Changed
+- Extension factored into multiple components.  See omni.isaac.manipulators.ui
+
 ## [1.3.1] - 2024-03-21
 ### Changed
 - enabled "add to existing graph" for all the shortcuts

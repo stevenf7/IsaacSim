@@ -297,6 +297,7 @@ group "exts"
     include ("source/extensions/omni.isaac.extension_templates")
     include ("source/extensions/omni.isaac.franka")
     include ("source/extensions/omni.isaac.manipulators")
+    include ("source/extensions/omni.isaac.manipulators.ui")
     include ("source/extensions/omni.isaac.gain_tuner")
     include ("source/extensions/omni.isaac.gym")
     include ("source/extensions/omni.isaac.internal_tools")
