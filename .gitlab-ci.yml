@@ -184,6 +184,10 @@ check-code-format:
   timeout: 1 hour
   extends:
   - .build-artifacts
+  retry:
+    max: 2
+    when:
+    - always
   rules:
   - !reference [.rules-workflow, rules]
 
