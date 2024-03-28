@@ -19,7 +19,7 @@ no_compile_commands_file = false
 -- end
 
 -- Shared build scripts from isaac sim
-include("isaac_sim_premake5.lua")
+-- include("isaac_sim_premake5.lua")
 
 
 -- -- Setup where to write generate prebuild.toml file
@@ -519,6 +519,8 @@ carbSDKLibs = carbSDKPath.."/_build/"..platform.."/%{config}"
     setup_common_folder_links()
     kit.setup_kit_autopull()
     -- kit.autoinclude_extensions()
+    -- Shared build scripts from isaac sim
+    include("isaac_sim_premake5.lua")
     include_extensions()
     -- kit.group_apps()
     group_apps()
