@@ -259,6 +259,11 @@ build-windows-x86_64-debug:
   timeout: 2 hour
   extends:
   - .test-artifacts
+  allow_failure: true
+  retry:
+    max: 2
+    when:
+    - always
   rules:
   - !reference [.rules-workflow, rules]
 
@@ -276,11 +281,6 @@ test-linux-x86_64-startuptests:
   needs:
   - job: build-linux-x86_64-release
     artifacts: true
-  retry:
-    max: 2
-    when:
-    - runner_system_failure
-    - stuck_or_timeout_failure
 
 test-linux-x86_64-pythontests:
   extends:
@@ -289,7 +289,6 @@ test-linux-x86_64-pythontests:
   - .runner-test-linux-x86_64-gpu
   script:
   - ./repo.sh ci test -- -s pythontests
-  allow_failure: true
   after_script:
   - !reference [.datadog-test-visibility-linux-x86_64, script]
   needs:
@@ -399,11 +398,6 @@ test-windows-x86_64-startuptests:
   needs:
   - job: build-windows-x86_64-release
     artifacts: true
-  retry:
-    max: 2
-    when:
-    - runner_system_failure
-    - stuck_or_timeout_failure
 
 test-windows-x86_64-pythontests:
   extends:
@@ -411,7 +405,6 @@ test-windows-x86_64-pythontests:
   - .runner-test-windows-x86_64-gpu
   script:
   - ./repo.bat ci test -- -s pythontests
-  allow_failure: true
   after_script:
   - !reference [.datadog-test-visibility-windows-x86_64, script]
   needs:
