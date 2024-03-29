@@ -539,7 +539,7 @@ timeout = 1500
 
 [repo_test.suites.pythontests]
 kind = "glob_and_exec"
-path = "${test_root}"
+path = "${test_root}/tests"
   [[repo_test.suites.pythontests.group]]
   include = ["tests-*${shell_ext}"]
   exclude = ["tests-omni.isaac.gym${shell_ext}", "tests-omni.isaac.internal_tools*${shell_ext}", "tests-omni.isaac.benchmarks*${shell_ext}", "tests-omni.isaac.gym.benchmark*${shell_ext}", "tests-omni.isaac.onshape*${shell_ext}"]
