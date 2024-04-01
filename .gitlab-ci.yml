@@ -513,6 +513,7 @@ test-windows-x86_64-internalpythontests:
 pages:
   tags:
   - pages
+  stage: deploy
   image: alpine:latest
   script:
   - apk add --no-cache p7zip wget curl
@@ -520,9 +521,9 @@ pages:
   - echo "10.36.168.30 teamcity.nvidia.com" >> /etc/hosts
   - echo "24.51.7.209 swiftstack-maglev.ngc.nvidia.com" >> /etc/hosts
   - 'curl -L --output docs.7z --header "Authorization: Bearer $TC_TOKEN" https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Develop_BuildAndPackaging_OmniDocsBuildLinuxX8664/.lastSuccessful/omniverse-robotics-docs%40%7Bbuild.number%7D.7z'
-  - 'curl -L --output pydocs.zip --header "Authorization: Bearer $TC_TOKEN" https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Develop_BuildAndValidation/.lastSuccessful/artifacts/Linux/docs%40%7Bbuild.number%7D.linux-x86_64.zip'
+  - 'curl -L --output pydocs.7z --header "Authorization: Bearer $TC_TOKEN" https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Develop_BuildAndValidation/.lastSuccessful/artifacts/Linux/docs%40%7Bbuild.number%7D.linux-x86_64.7z'
   - 7z x docs.7z -o.public
-  - 7z x pydocs.zip -oisaacsim
+  - 7z x pydocs.7z -oisaacsim
   - mkdir -p .public/py/
   - mv isaacsim .public/py/
   - ls .public/py/isaacsim
