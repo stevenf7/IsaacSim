@@ -1,3 +1,3 @@
-echo "Skipping docs build on windows"
-@REM @echo off
-@REM call "%~dp0..\repo.bat" docs --config release %*
+@echo off
+call "%~dp0..\repo.bat" omnigraph_docs %*
+call "%~dp0..\repo.bat" docs --config release %*
