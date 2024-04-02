@@ -1031,3 +1031,11 @@ jira_server_url = "https://omniverse-jirasw.nvidia.com"
 
 [repo_deploy_exts.pipeline_repo.branch.prod]
 fail_if_exts_are_missing = false
+
+########################################################################################################################
+# Tool to sign package
+########################################################################################################################
+[repo_codesign]
+enabled = true
+folder_input = "${root}/_unsignedpackages"
+folder_output = "${root}/_signedpackages"
