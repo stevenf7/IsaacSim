@@ -116,34 +116,12 @@ public:
 
     static inline std::string addTopicPrefix(const std::string& prefix, const std::string& topic_name)
     {
-        std::string full_topic_name;
-
-        size_t start_idx = 0;
-        size_t start_topic_idx = 0;
         if (topic_name.size() == 0)
-        {
-            return full_topic_name;
-        }
-        if (prefix.size() > 0)
-        {
-            for (size_t i = 0; !(::isalnum(prefix[i])); i++)
-            {
-                start_idx++;
-            }
-        }
-        for (size_t i = 0; !(::isalnum(topic_name[i])); i++)
-        {
-            start_topic_idx++;
-        }
+            return std::string("");
 
-        full_topic_name.insert(0, "/" + topic_name.substr(start_topic_idx));
+        std::string str = prefix + std::string("/") + trimNonAlnum(topic_name);
 
-        if (prefix.size() != start_idx)
-        {
-            // Setting prefix to full topic
-            full_topic_name.insert(0, "/" + prefix.substr(start_idx));
-        }
-        return full_topic_name;
+        return str;
     }
 
     static inline std::string sanitizeName(std::string input)
@@ -151,6 +129,23 @@ public:
         std::replace_if(
             input.begin(), input.end(), [](auto ch) { return !(::isalnum(ch) || ch == '_'); }, '_');
         return input;
+    }
+
+    static inline std::string trimNonAlnum(const std::string& s)
+    {
+        if (s.size() == 0)
+            return "";
+
+        size_t startIdx = 0;
+        size_t endIdx = s.size() - 1;
+
+        while (startIdx < s.size() && !std::isalnum(s[startIdx]))
+            startIdx++;
+
+        while (endIdx > startIdx && !std::isalnum(s[endIdx]))
+            endIdx--;
+
+        return s.substr(startIdx, endIdx - startIdx + 1);
     }
 
 private:
@@ -182,6 +177,10 @@ private:
             return false;
         }
 
+        mNamespaceName = trimNonAlnum(nodeNamespace);
+        if (mNamespaceName.size() > 0)
+            mNamespaceName = std::string("/") + mNamespaceName;
+
         // Set the ROS context if its available, if this is zero we use the default context
         if (contexthandle)
         {
@@ -200,15 +199,18 @@ private:
             contextPtr = reinterpret_cast<std::shared_ptr<Ros2HandleBase>*>(mRos2Bridge->getDefaultContextHandle());
         }
 
-        if (nodeNamespace.size() == 0 || !mFactory->validateNodeNamespace(nodeNamespace))
+        if (mNamespaceName.size() == 0)
         {
             mNodeHandle = mFactory->CreateNode(sanitizedNodeName.c_str(), "", contextPtr->get());
         }
-        else
+        else if (mFactory->validateNodeNamespace(mNamespaceName))
         {
-            mNodeHandle = mFactory->CreateNode(sanitizedNodeName.c_str(), nodeNamespace.c_str(), contextPtr->get());
+            mNodeHandle = mFactory->CreateNode(sanitizedNodeName.c_str(), mNamespaceName.c_str(), contextPtr->get());
         }
-        return true;
+        else
+            return false;
+
+        return mNodeHandle->node() != nullptr;
     }
 
 protected:
@@ -219,4 +221,5 @@ protected:
     std::shared_ptr<Ros2HandleBase>* contextPtr;
     omni::isaac::core_nodes::CoreNodes* mCoreNodeFramework;
     Ros2Factory* mFactory = nullptr;
+    std::string mNamespaceName;
 };

@@ -39,7 +39,10 @@ public:
         const auto& nodeObj = db.abi_node();
         if (!state.spinOnce(
                 std::string(nodeObj.iNode->getPrimPath(nodeObj)), db.inputs.nodeNamespace(), db.inputs.context()))
+        {
+            db.logError("Unable to create ROS2 node, please check that namespace is valid");
             return false;
+        }
 
         // check for changes in message type
         std::string messagePackage = std::string(db.inputs.messagePackage());
@@ -73,14 +76,8 @@ public:
         }
 
         // check for changes in subscriber
-        std::string nodeNamespace = std::string(db.inputs.nodeNamespace());
         std::string topicName = std::string(db.inputs.topicName());
         uint64_t queueSize = db.inputs.queueSize();
-        if (nodeNamespace != state.mNodeNamespace)
-        {
-            state.mIsSubscriberUpdateNeeded = true;
-            state.mNodeNamespace = nodeNamespace;
-        }
         if (topicName != state.mTopicName)
         {
             state.mIsSubscriberUpdateNeeded = true;
@@ -97,9 +94,12 @@ public:
             // destroy previous subscriber
             state.mSubscriber.reset();
             // get topic name
-            std::string fullTopicName = addTopicPrefix(state.mNodeNamespace, state.mTopicName);
+            std::string fullTopicName = addTopicPrefix(state.mNamespaceName, state.mTopicName);
             if (!state.mFactory->validateTopic(fullTopicName))
+            {
+                db.logError("Unable to create ROS2 subscriber, invalid topic name");
                 return false;
+            }
             // create subscriber
             std::string messageType = messagePackage + "/" + messageSubfolder + "/" + messageName;
             CARB_LOG_INFO("OgnROS2Subscriber: creating subscriber: %s (%s)", fullTopicName.c_str(), messageType.c_str());
@@ -127,7 +127,18 @@ public:
 
     virtual void reset()
     {
+        mIsSubscriberUpdateNeeded = false;
+        mIsMessageUpdateNeeded = false;
+
+        mMessagePackage.clear();
+        mMessageSubfolder.clear();
+        mMessageName.clear();
+        mTopicName.clear();
+        mQueueSize = 0;
+
+        mMessage.reset();
         mSubscriber.reset(); // this should be reset before reset the handle
+
         Ros2Node::reset();
     }
 
@@ -323,7 +334,6 @@ private:
     std::string mMessagePackage;
     std::string mMessageSubfolder;
     std::string mMessageName;
-    std::string mNodeNamespace;
     std::string mTopicName;
     uint64_t mQueueSize;
 
