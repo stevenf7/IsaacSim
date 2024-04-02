@@ -11,7 +11,8 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "env": {
-                "RESOURCE_NAME": "IsaacSim"
+                "RESOURCE_NAME": "IsaacSim",
+                "RMW_IMPLEMENTATION": "rmw_fastrtps_cpp",
             },
             "python": "${workspaceFolder}/_build/linux-x86_64/release/kit/python/bin/python3",
             "envFile": "${workspaceFolder}/.vscode/.python_samples.env",
