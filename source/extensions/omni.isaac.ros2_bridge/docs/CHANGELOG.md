@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.14.0] - 2024-04-02
+### Added
+- ROS2 Service Prim node to list prims and their attributes, as well as read and write a specific attribute
+
 ## [2.13.3] - 2024-04-01
 ### Changed
 - used IsaacCreateRenderProduct for the camera OG shortcuts
