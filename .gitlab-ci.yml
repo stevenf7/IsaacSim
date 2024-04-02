@@ -40,6 +40,7 @@ stages:
 - build
 - test
 - security
+- sign
 - deploy
 - prod-test
 
@@ -72,7 +73,7 @@ variables:
     value: "false"
     description: "Set to true to publish docs"
   ALLOW_PUBLISH_TO_LAUNCHER:
-    value: "false"
+    value: "true"
     description: "Set to true to for Kit apps that are published to the Launcher. That adds jobs for that."
   ALLOW_SECURITY_SCAN:
     value: "false"
@@ -696,6 +697,7 @@ test-windows-x86_64-internalpythontests:
     - _build/**/*.log
     - _repo/repo.log
     - _repo/repolog*.txt
+    - _logs/**/*.log
 
 
 # ==============================================================================================================
@@ -923,8 +925,6 @@ publish-to-launcher:
   rules:
   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
     when: never
-  - !reference [.rules-version-changed, rules]
-  # Can also be triggered manually
   - !reference [.rules-push-manual, rules]
   allow_failure: true
 
@@ -940,7 +940,6 @@ release-new-version:
   rules:
   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
     when: never
-  - !reference [.rules-push-daily, rules]
   - !reference [.rules-push-manual, rules]
   allow_failure: true
 
@@ -962,7 +961,6 @@ autoupdate-kit:
     when: always
 
 
-
 # ==============================================================================================================
 bump-version:
   stage: deploy
@@ -980,3 +978,33 @@ bump-version:
     when: never
   - !reference [.rules-push-manual, rules]
   - !reference [.rules-bump-version, rules]
+
+
+# ==============================================================================================================
+sign-package:
+  stage: sign
+  timeout: 2 hour
+  extends:
+  - .build-common
+  - .runner-build-windows-x86_64
+  before_script:
+  - !reference [.repo_codesign_get_secrets_windows_powershell, repo_codesign_get_secrets_windows_powershell]
+  - !reference [.windows_packman_s3_creds_get_powershell, windows_packman_s3_creds_get_powershell]
+  script:
+  - ls _build/packages/
+  - mkdir _unsignedpackages
+  - mkdir _signedpackages
+  - mv -Force _build/packages/*windows-x86_64.release.7z _unsignedpackages/
+  - ./repo.bat codesign
+  - mv -Force _signedpackages/*windows-x86_64.release.7z _build/packages/
+  - ls _build/packages/
+  needs:
+  - job: build-windows-x86_64-release
+    artifacts: true
+  rules:
+  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+    when: never
+  - !reference [.rules-push, rules]
+  # Can also be triggered manually
+  - !reference [.rules-push-manual, rules]
+  allow_failure: true
