@@ -32,6 +32,7 @@ public:
         if (!state.spinOnce(
                 std::string(nodeObj.iNode->getPrimPath(nodeObj)), db.inputs.nodeNamespace(), db.inputs.context()))
         {
+            db.logError("Unable to create ROS2 node, please check that namespace is valid");
             return false;
         }
         // Publisher was not valid, create a new one
@@ -39,10 +40,11 @@ public:
         {
             const std::string& topicName = db.inputs.topicName();
 
-            std::string fullTopicName = addTopicPrefix(db.inputs.nodeNamespace(), topicName);
+            std::string fullTopicName = addTopicPrefix(state.mNamespaceName, topicName);
 
             if (!state.mFactory->validateTopic(fullTopicName))
             {
+                db.logError("Unable to create ROS2 publisher, invalid topic name");
                 return false;
             }
 
