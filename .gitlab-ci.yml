@@ -286,13 +286,117 @@ test-linux-x86_64-startuptests:
   - job: build-linux-x86_64-release
     artifacts: true
 
-test-linux-x86_64-pythontests:
+test-linux-x86_64-pythontests-1:
   extends:
   - .test-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
   script:
-  - ./repo.sh ci test -- -s pythontests
+  - ./repo.sh ci test -- -s pythontests -b 1
+  after_script:
+  - !reference [.datadog-test-visibility-linux-x86_64, script]
+  needs:
+  - job: build-linux-x86_64-release
+    artifacts: true
+
+test-linux-x86_64-pythontests-2:
+  extends:
+  - .test-common
+  - .install-linux-test-packages
+  - .runner-test-linux-x86_64-gpu
+  script:
+  - ./repo.sh ci test -- -s pythontests -b 2
+  after_script:
+  - !reference [.datadog-test-visibility-linux-x86_64, script]
+  needs:
+  - job: build-linux-x86_64-release
+    artifacts: true
+
+test-linux-x86_64-pythontests-3:
+  extends:
+  - .test-common
+  - .install-linux-test-packages
+  - .runner-test-linux-x86_64-gpu
+  script:
+  - ./repo.sh ci test -- -s pythontests -b 3
+  after_script:
+  - !reference [.datadog-test-visibility-linux-x86_64, script]
+  needs:
+  - job: build-linux-x86_64-release
+    artifacts: true
+
+test-linux-x86_64-pythontests-4:
+  extends:
+  - .test-common
+  - .install-linux-test-packages
+  - .runner-test-linux-x86_64-gpu
+  script:
+  - ./repo.sh ci test -- -s pythontests -b 4
+  after_script:
+  - !reference [.datadog-test-visibility-linux-x86_64, script]
+  needs:
+  - job: build-linux-x86_64-release
+    artifacts: true
+
+test-linux-x86_64-pythontests-5:
+  extends:
+  - .test-common
+  - .install-linux-test-packages
+  - .runner-test-linux-x86_64-gpu
+  script:
+  - ./repo.sh ci test -- -s pythontests -b 5
+  after_script:
+  - !reference [.datadog-test-visibility-linux-x86_64, script]
+  needs:
+  - job: build-linux-x86_64-release
+    artifacts: true
+
+test-linux-x86_64-pythontests-6:
+  extends:
+  - .test-common
+  - .install-linux-test-packages
+  - .runner-test-linux-x86_64-gpu
+  script:
+  - ./repo.sh ci test -- -s pythontests -b 6
+  after_script:
+  - !reference [.datadog-test-visibility-linux-x86_64, script]
+  needs:
+  - job: build-linux-x86_64-release
+    artifacts: true
+
+test-linux-x86_64-pythontests-7:
+  extends:
+  - .test-common
+  - .install-linux-test-packages
+  - .runner-test-linux-x86_64-gpu
+  script:
+  - ./repo.sh ci test -- -s pythontests -b 7
+  after_script:
+  - !reference [.datadog-test-visibility-linux-x86_64, script]
+  needs:
+  - job: build-linux-x86_64-release
+    artifacts: true
+
+test-linux-x86_64-pythontests-8:
+  extends:
+  - .test-common
+  - .install-linux-test-packages
+  - .runner-test-linux-x86_64-gpu
+  script:
+  - ./repo.sh ci test -- -s pythontests -b 8
+  after_script:
+  - !reference [.datadog-test-visibility-linux-x86_64, script]
+  needs:
+  - job: build-linux-x86_64-release
+    artifacts: true
+
+test-linux-x86_64-pythontests-9:
+  extends:
+  - .test-common
+  - .install-linux-test-packages
+  - .runner-test-linux-x86_64-gpu
+  script:
+  - ./repo.sh ci test -- -s pythontests -b 9
   after_script:
   - !reference [.datadog-test-visibility-linux-x86_64, script]
   needs:
@@ -403,12 +507,108 @@ test-windows-x86_64-startuptests:
   - job: build-windows-x86_64-release
     artifacts: true
 
-test-windows-x86_64-pythontests:
+test-windows-x86_64-pythontests-1:
   extends:
   - .test-common
   - .runner-test-windows-x86_64-gpu
   script:
-  - ./repo.bat ci test -- -s pythontests
+  - ./repo.bat ci test -- -s pythontests -b 1
+  after_script:
+  - !reference [.datadog-test-visibility-windows-x86_64, script]
+  needs:
+  - job: build-windows-x86_64-release
+    artifacts: true
+
+test-windows-x86_64-pythontests-2:
+  extends:
+  - .test-common
+  - .runner-test-windows-x86_64-gpu
+  script:
+  - ./repo.bat ci test -- -s pythontests -b 2
+  after_script:
+  - !reference [.datadog-test-visibility-windows-x86_64, script]
+  needs:
+  - job: build-windows-x86_64-release
+    artifacts: true
+
+test-windows-x86_64-pythontests-3:
+  extends:
+  - .test-common
+  - .runner-test-windows-x86_64-gpu
+  script:
+  - ./repo.bat ci test -- -s pythontests -b 3
+  after_script:
+  - !reference [.datadog-test-visibility-windows-x86_64, script]
+  needs:
+  - job: build-windows-x86_64-release
+    artifacts: true
+
+test-windows-x86_64-pythontests-4:
+  extends:
+  - .test-common
+  - .runner-test-windows-x86_64-gpu
+  script:
+  - ./repo.bat ci test -- -s pythontests -b 4
+  after_script:
+  - !reference [.datadog-test-visibility-windows-x86_64, script]
+  needs:
+  - job: build-windows-x86_64-release
+    artifacts: true
+
+test-windows-x86_64-pythontests-5:
+  extends:
+  - .test-common
+  - .runner-test-windows-x86_64-gpu
+  script:
+  - ./repo.bat ci test -- -s pythontests -b 5
+  after_script:
+  - !reference [.datadog-test-visibility-windows-x86_64, script]
+  needs:
+  - job: build-windows-x86_64-release
+    artifacts: true
+
+test-windows-x86_64-pythontests-6:
+  extends:
+  - .test-common
+  - .runner-test-windows-x86_64-gpu
+  script:
+  - ./repo.bat ci test -- -s pythontests -b 6
+  after_script:
+  - !reference [.datadog-test-visibility-windows-x86_64, script]
+  needs:
+  - job: build-windows-x86_64-release
+    artifacts: true
+
+test-windows-x86_64-pythontests-7:
+  extends:
+  - .test-common
+  - .runner-test-windows-x86_64-gpu
+  script:
+  - ./repo.bat ci test -- -s pythontests -b 7
+  after_script:
+  - !reference [.datadog-test-visibility-windows-x86_64, script]
+  needs:
+  - job: build-windows-x86_64-release
+    artifacts: true
+
+test-windows-x86_64-pythontests-8:
+  extends:
+  - .test-common
+  - .runner-test-windows-x86_64-gpu
+  script:
+  - ./repo.bat ci test -- -s pythontests -b 8
+  after_script:
+  - !reference [.datadog-test-visibility-windows-x86_64, script]
+  needs:
+  - job: build-windows-x86_64-release
+    artifacts: true
+
+test-windows-x86_64-pythontests-9:
+  extends:
+  - .test-common
+  - .runner-test-windows-x86_64-gpu
+  script:
+  - ./repo.bat ci test -- -s pythontests -b 9
   after_script:
   - !reference [.datadog-test-visibility-windows-x86_64, script]
   needs:
