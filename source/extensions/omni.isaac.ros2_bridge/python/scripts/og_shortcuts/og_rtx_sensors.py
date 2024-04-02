@@ -11,6 +11,7 @@
 from pathlib import Path
 
 import omni.graph.core as og
+import omni.isaac.IsaacSensorSchema as IsaacSensorSchema
 import omni.kit.viewport.utility
 import omni.ui as ui
 from omni.isaac.core.utils.stage import get_next_free_path
@@ -19,12 +20,13 @@ from omni.isaac.ui.style import get_style
 from omni.isaac.ui.widgets import ParamWidget, SelectPrimWidget
 from omni.kit.notification_manager import NotificationStatus, post_notification
 from omni.kit.window.extensions import SimpleCheckBox
-from pxr import OmniGraphSchema
+from pxr import OmniGraphSchema, UsdGeom
 
 
 class Ros2CameraGraph:
     def __init__(self):
         self._og_path = "/Graph/ROS_Camera"
+        self._camera_prim = "/OmniverseKit_Persp"  # default camera prim is the perspective camera
         self._add_to_existing_graph = False
         self._frame_id = "sim_camera"
         self._node_namespace = ""
@@ -60,10 +62,11 @@ class Ros2CameraGraph:
                     keys.CREATE_NODES: [
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                         ("CameraInfoPublish", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
-                        ("RenderProduct", "omni.isaac.core_nodes.IsaacGetViewportRenderProduct"),
+                        ("RenderProduct", "omni.isaac.core_nodes.IsaacCreateRenderProduct"),
                         ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
                     ],
                     keys.SET_VALUES: [
+                        ("RenderProduct.inputs:cameraPrim", self._camera_prim),
                         ("CameraInfoPublish.inputs:topicName", self._camera_info_topic),
                         ("CameraInfoPublish.inputs:type", "camera_info"),
                         ("CameraInfoPublish.inputs:frameId", self._frame_id),
@@ -94,8 +97,34 @@ class Ros2CameraGraph:
                 tick_node = node_path
             elif node_type == "omni.isaac.ros2_bridge.ROS2Context":
                 context_node = node_path
-            elif node_type == "omni.isaac.core_nodes.IsaacGetViewportRenderProduct":
-                render_node = node_path
+            elif node_type == "omni.isaac.core_nodes.IsaacCreateRenderProduct":
+                render_node_path = node_path
+                render_node = node
+
+        # if the existing graph doesn't already have a render node, or if the existing node does not use the same camera, then create a new render node and connect it to the new camera
+        # TODO: so far only support if there's one existing render node. If there are multiple render nodes, it won't check if every node has unique camera prims.
+        if render_node is None or render_node.get_attribute("inputs:cameraPrim").get()[0] != self._camera_prim:
+            print("creating a new rendering node")
+            render_node = get_next_free_path(
+                self._og_path + "/RenderProduct", ""
+            )  # this is actually a string path at this point, not a node prim despite the name. This is so that it's consistent with the others.
+            render_node_name = Path(render_node).name
+            og.Controller.edit(
+                graph_handle,
+                {
+                    keys.CREATE_NODES: [
+                        (render_node_name, "omni.isaac.core_nodes.IsaacCreateRenderProduct"),
+                    ],
+                    keys.SET_VALUES: [
+                        (render_node_name + ".inputs:cameraPrim", self._camera_prim),
+                    ],
+                    keys.CONNECT: [
+                        (tick_node + ".outputs:tick", render_node_name + ".inputs:execIn"),
+                    ],
+                },
+            )
+        else:
+            render_node = render_node_path  # once again set render_node to the actual path, as oppose to the node_prim, just for consistency
 
         if self._rgb_pub:
             rgb_node = get_next_free_path(self._og_path + "/RGBPublish", "")
@@ -198,6 +227,7 @@ class Ros2CameraGraph:
                         (instance_node + ".inputs:resetSimulationTimeOnStop", True),
                         (instance_node + ".inputs:frameId", self._frame_id),
                         (instance_node + ".inputs:nodeNamespace", self._node_namespace),
+                        (instance_node + ".inputs:enableSemanticLabels", True),
                     ],
                     keys.CONNECT: [
                         (render_node + ".outputs:execOut", instance_node + ".inputs:execIn"),
@@ -227,6 +257,7 @@ class Ros2CameraGraph:
                         (semantic_node + ".inputs:resetSimulationTimeOnStop", True),
                         (semantic_node + ".inputs:frameId", self._frame_id),
                         (semantic_node + ".inputs:nodeNamespace", self._node_namespace),
+                        (semantic_node + ".inputs:enableSemanticLabels", True),
                     ],
                     keys.CONNECT: [
                         (render_node + ".outputs:execOut", semantic_node + ".inputs:execIn"),
@@ -256,6 +287,7 @@ class Ros2CameraGraph:
                         (bbox2d_tight_node + ".inputs:resetSimulationTimeOnStop", True),
                         (bbox2d_tight_node + ".inputs:frameId", self._frame_id),
                         (bbox2d_tight_node + ".inputs:nodeNamespace", self._node_namespace),
+                        (bbox2d_tight_node + ".inputs:enableSemanticLabels", True),
                     ],
                     keys.CONNECT: [
                         (render_node + ".outputs:execOut", bbox2d_tight_node + ".inputs:execIn"),
@@ -285,6 +317,7 @@ class Ros2CameraGraph:
                         (bbox2d_loose_node + ".inputs:resetSimulationTimeOnStop", True),
                         (bbox2d_loose_node + ".inputs:frameId", self._frame_id),
                         (bbox2d_loose_node + ".inputs:nodeNamespace", self._node_namespace),
+                        (bbox2d_loose_node + ".inputs:enableSemanticLabels", True),
                     ],
                     keys.CONNECT: [
                         (render_node + ".outputs:execOut", bbox2d_loose_node + ".inputs:execIn"),
@@ -314,6 +347,7 @@ class Ros2CameraGraph:
                         (bbox3d_node + ".inputs:resetSimulationTimeOnStop", True),
                         (bbox3d_node + ".inputs:frameId", self._frame_id),
                         (bbox3d_node + ".inputs:nodeNamespace", self._node_namespace),
+                        (bbox3d_node + ".inputs:enableSemanticLabels", True),
                     ],
                     keys.CONNECT: [
                         (render_node + ".outputs:execOut", bbox3d_node + ".inputs:execIn"),
@@ -371,6 +405,7 @@ class Ros2CameraGraph:
                     cb = ui.SimpleBoolModel(default_value=self._add_to_existing_graph)
                     SimpleCheckBox(self._add_to_existing_graph, self._on_use_existing_graph, model=cb)
                 self.og_path_input = ParamWidget(field_def=og_path_def)
+                self.camera_prim_input = SelectPrimWidget(label="Camera Prim", default=self._camera_prim)
                 self.frame_id_input = ParamWidget(field_def=frame_id_def)
                 self.node_namespace_input = ParamWidget(field_def=node_namespace_def)
                 ui.Spacer(height=5)
@@ -443,6 +478,7 @@ class Ros2CameraGraph:
 
     def _on_ok(self):
         self._og_path = self.og_path_input.get_value()
+        self._camera_prim = self.camera_prim_input.get_value()
         self._frame_id = self.frame_id_input.get_value()
         self._node_namespace = self.node_namespace_input.get_value()
         self._rgb_topic = self.rgb_topic_input.get_value()
@@ -473,6 +509,13 @@ class Ros2CameraGraph:
                 msg = self._og_path + "is not an existing graph, check the og path"
                 post_notification(msg, status=NotificationStatus.WARNING)
                 return False
+
+        # check if the camera prim is valid
+        camera_prim = stage.GetPrimAtPath(self._camera_prim)
+        if not camera_prim.IsValid() or not camera_prim.IsA(UsdGeom.Camera):
+            msg = self._camera_prim + " is not a valid camera prim, check the camera prim"
+            post_notification(msg, status=NotificationStatus.WARNING)
+            return False
 
         return True
 
@@ -706,6 +749,13 @@ class Ros2RtxLidarGraph:
                 msg = self._og_path + "is not an existing graph, check the og path"
                 post_notification(msg, status=NotificationStatus.WARNING)
                 return False
+
+        # check if the lidar prim is valid
+        lidar_prim = stage.GetPrimAtPath(self._lidar_prim)
+        if not lidar_prim.IsA(UsdGeom.Camera) or not lidar_prim.HasAPI(IsaacSensorSchema.IsaacRtxLidarSensorAPI):
+            msg = self._lidar_prim + " is not a valid RTX lidar prim, check the lidar prim"
+            post_notification(msg, status=NotificationStatus.WARNING)
+            return False
 
         return True
 

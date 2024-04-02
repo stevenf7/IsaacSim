@@ -1,4 +1,8 @@
 # Changelog
+## [2.13.3] - 2024-04-01
+### Changed
+- used IsaacCreateRenderProduct for the camera OG shortcuts
+- default to enable semanticlabels for some camera topics
 
 ## [2.13.2] - 2024-03-26
 ### Fixed
