@@ -897,7 +897,8 @@ publish-extensions:
   #     artifacts: false
   #     optional: true
   rules:
-  - !reference [.rules-push, rules]
+    - !reference [.rules-version-changed, rules]
+    - !reference [.rules-push, rules]
 
 
 # ==============================================================================================================
@@ -933,6 +934,12 @@ publish-to-launcher:
       artifacts: true
     - job: build-linux-x86_64-release
       artifacts: true
+  #   - job: test-windows-x86_64-startuptests
+  #     artifacts: false
+  #     optional: true
+  #   - job: test-linux-x86_64-startuptests
+  #     artifacts: false
+  #     optional: true
   rules:
     - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
       when: never
@@ -979,23 +986,25 @@ release-new-version:
 # update Kit SDK and extensions, merge master, typically done in daily branch
 # set AUTOUPDATE_KIT=true for scheduled pipeline to run
 autoupdate-kit:
-  extends:
-  - .deploy-common
-  - .omni_nvks_runner_with_docker
-  needs: []
-  script:
-  - ./repo.sh ci autoupdate_kit
   rules:
-  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
-    when: never
-  - if: $AUTOUPDATE_KIT == "true" && ($CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "schedule")
-    when: always
+    - when: never
+#   extends:
+#   - .deploy-common
+#   - .omni_nvks_runner_with_docker
+#   needs: []
+#   script:
+#   - ./repo.sh ci autoupdate_kit
+#   rules:
+#   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+#     when: never
+#   - if: $AUTOUPDATE_KIT == "true" && ($CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "schedule")
+#     when: always
 
 
 # ==============================================================================================================
 bump-version:
-  stage: deploy
   extends:
+  - .deploy-common
   - .omni_nvks_runner_with_docker
   script:
   - ./repo.sh bump_version
@@ -1004,10 +1013,16 @@ bump-version:
     artifacts: true
   - job: build-linux-x86_64-release
     artifacts: true
+  #   - job: test-windows-x86_64-startuptests
+  #     artifacts: false
+  #     optional: true
+  #   - job: test-linux-x86_64-startuptests
+  #     artifacts: false
+  #     optional: true
   rules:
   - if: $ALLOW_BUMP_VERSION != "true"
     when: never
-  - !reference [.rules-push-manual, rules]
+#   - !reference [.rules-push-manual, rules]
   - !reference [.rules-bump-version, rules]
 
 
@@ -1034,7 +1049,6 @@ sign-windows-x86_64-release:
   rules:
   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
     when: never
-  - !reference [.rules-push, rules]
-  # Can also be triggered manually
+  - !reference [.rules-version-changed, rules]
   - !reference [.rules-push-manual, rules]
   allow_failure: true
