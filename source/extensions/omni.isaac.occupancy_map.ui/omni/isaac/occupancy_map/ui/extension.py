@@ -16,6 +16,8 @@ import omni
 import omni.ext
 import omni.ui as ui
 from omni.isaac.core.utils.stage import get_stage_units
+from omni.isaac.occupancy_map.bindings import _occupancy_map
+from omni.isaac.occupancy_map.utils import compute_coordinates, generate_image, update_location
 from omni.isaac.ui.element_wrappers import ScrollingWindow
 from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.ui.ui_utils import (
@@ -30,9 +32,6 @@ from omni.isaac.ui.ui_utils import (
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from omni.physx.scripts import utils
 from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics
-
-from .. import _occupancy_map
-from .utils import compute_coordinates, generate_image, update_location
 
 
 class Extension(omni.ext.IExt):

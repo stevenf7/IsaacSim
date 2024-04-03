@@ -6,3 +6,15 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+import omni.ext
+import omni.kit.commands
+
+from ..bindings import _occupancy_map
+
+
+class Extension(omni.ext.IExt):
+    def on_startup(self, ext_id: str):
+        self._interface = _occupancy_map.acquire_occupancy_map_interface()
+
+    def on_shutdown(self):
+        _occupancy_map.release_occupancy_map_interface(self._interface)

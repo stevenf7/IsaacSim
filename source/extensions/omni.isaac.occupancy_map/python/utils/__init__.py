@@ -6,6 +6,4 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from .impl import *
-from .tests import *
 from .utils import *

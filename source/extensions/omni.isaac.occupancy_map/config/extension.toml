@@ -3,13 +3,13 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.4.2"
+version = "1.0.0"
 category = "Simulation"
-title = "Isaac Sim Occupancy Map"
-description = "2D Occupancy Map Generation"
+title = "Block Worlds"
+description = "Generate 3D block worlds from 2D occupancy maps"
 authors = ["Isaac Sim Team"]
-repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.occupancy_map"
-keywords = ["isaac", "occupancy map"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.block_world"
+keywords = ["isaac", "block world"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
 icon = "data/icon.png"
@@ -24,15 +24,13 @@ writeTarget.kit = true
 "omni.kit.pip_archive" = {} # pulls in pillow
 "omni.isaac.ui" = {}
 "omni.isaac.core" = {}
+"omni.isaac.block_world" = {}
 
 [[python.module]]
 name = "omni.isaac.occupancy_map"
 
 [[python.module]]
 name = "omni.isaac.occupancy_map.tests"
-
-[[python.module]]
-name = "omni.isaac.occupancy_map.scripts.block_world"
 
 [[native.plugin]]
 path = "bin/*.plugin"
