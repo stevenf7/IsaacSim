@@ -40,7 +40,6 @@ stages:
 - build
 - test
 - security
-- sign
 - deploy
 - prod-test
 
@@ -119,6 +118,7 @@ variables:
     - _repo/repo.log
     - _repo/repolog*.txt
 
+
 # ==============================================================================================================
 # Rule for running on either push/schedule/web/trigger/pipeline/parent_pipeline on protected and release branches
 .rules-bump-version:
@@ -127,6 +127,16 @@ variables:
   - if: $CI_PIPELINE_SOURCE == "schedule" && ($CI_COMMIT_REF_PROTECTED == "true" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
   - if: $CI_PIPELINE_SOURCE == "schedule" && $ALLOW_BUMP_VERSION == "true"
     # allow schedule pipeline if ALLOW_BUMP_VERSION is set to "true"
+
+
+# ==============================================================================================================
+# Rule for running on either push/schedule/web/trigger/pipeline/parent_pipeline on protected and release branches
+.rules-version-changed:
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_REF_PROTECTED == "true" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
+    changes:
+    - VERSION.md
+    - VERSION
 
 
 # ==============================================================================================================
@@ -916,32 +926,53 @@ publish-to-launcher:
   - .deploy-common
   - .omni_nvks_runner_with_docker
   script:
-  - ./repo.sh ci publish_to_launcher
+    - ls _build/packages/
+    - ./repo.sh publish_launcher
   needs:
-  - job: build-windows-x86_64-release
-    artifacts: true
-  - job: build-linux-x86_64-release
-    artifacts: true
+    - job: sign-windows-x86_64-release
+      artifacts: true
+    - job: build-linux-x86_64-release
+      artifacts: true
   rules:
-  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
-    when: never
-  - !reference [.rules-push-manual, rules]
+    - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+      when: never
+    - !reference [.rules-version-changed, rules]
+    - !reference [.rules-push-manual, rules]
   allow_failure: true
+
+#   extends:
+#   - .deploy-common
+#   - .omni_nvks_runner_with_docker
+#   script:
+#   - ./repo.sh ci publish_to_launcher
+#   needs:
+#   - job: build-windows-x86_64-release
+#     artifacts: true
+#   - job: build-linux-x86_64-release
+#     artifacts: true
+#   rules:
+#   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+#     when: never
+#   - !reference [.rules-push-manual, rules]
+#   allow_failure: true
 
 
 # ==============================================================================================================
 release-new-version:
-  extends:
-  - .deploy-common
-  - .omni_nvks_runner_with_docker
-  needs: []
-  script:
-  - ./repo.sh ci release_new_version
   rules:
-  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
-    when: never
-  - !reference [.rules-push-manual, rules]
-  allow_failure: true
+    - when: never
+
+#   extends:
+#   - .deploy-common
+#   - .omni_nvks_runner_with_docker
+#   needs: []
+#   script:
+#   - ./repo.sh ci release_new_version
+#   rules:
+#   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+#     when: never
+#   - !reference [.rules-push-manual, rules]
+#   allow_failure: true
 
 
 # ==============================================================================================================
@@ -981,8 +1012,7 @@ bump-version:
 
 
 # ==============================================================================================================
-sign-package:
-  stage: sign
+sign-windows-x86_64-release:
   timeout: 2 hour
   extends:
   - .build-common
