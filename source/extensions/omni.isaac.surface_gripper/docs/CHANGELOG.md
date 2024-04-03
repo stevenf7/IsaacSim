@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.1] - 2024-04-01
+### Changed
+- Changed Dynamic Control Raycast into Physx scene query raycast. 
+
 ## [1.0.0] - 2024-03-13
 ### Changed
 - Extension refactored into multiple components.  See omni.isaac.surface_gripper.ui.
