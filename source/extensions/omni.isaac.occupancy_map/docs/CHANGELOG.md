@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.0.0] - 2024-03-11
+### Changed
+- Refactored into components
+
 ## [0.4.2] - 2023-02-02
 ### Changed
 - Updated path to the nucleus extension

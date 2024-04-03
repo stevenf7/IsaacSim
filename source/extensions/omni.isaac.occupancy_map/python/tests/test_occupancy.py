@@ -19,8 +19,8 @@ from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.nucleus import get_assets_root_path_async
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.occupancy_map import _occupancy_map
-from omni.isaac.occupancy_map.scripts.utils import compute_coordinates, generate_image, update_location
+from omni.isaac.occupancy_map.bindings import _occupancy_map
+from omni.isaac.occupancy_map.utils import compute_coordinates, generate_image, update_location
 from pxr import PhysxSchema, Sdf, UsdGeom, UsdPhysics
 
 

@@ -1,4 +1,5 @@
 local ext = get_current_extension_info()
+local ogn = get_ogn_project_information(ext, "omni/isaac/occupancy_map")
 project_ext (ext)
 
 
@@ -104,8 +105,10 @@ project_ext_bindings ({
     ext = ext,
     project_name = "omni.isaac.occupancy_map.python",
     module = "_occupancy_map",
-    src = "bindings",
-    target_subdir = "omni/isaac/occupancy_map"})
+    src = ogn.bindings_path,
+    target_subdir = ogn.bindings_target_path})
+
+    add_files("bindings", "bindings/*.*")
 
     dependson {"omni.isaac.occupancy_map.generator"}
 
@@ -147,8 +150,9 @@ project_ext_bindings ({
 
 
 repo_build.prebuild_link {
-    { "python/scripts", ext.target_dir.."/omni/isaac/occupancy_map/scripts" },
-    { "python/tests", ext.target_dir.."/omni/isaac/occupancy_map/tests" },
+    { "python/impl", ogn.python_target_path.."/impl" },
+    { "python/tests", ogn.python_target_path.."/tests" },
+    { "python/utils", ogn.python_target_path.."/utils" },
     { "docs", ext.target_dir.."/docs" },
     { "data", ext.target_dir.."/data" },
     { "include", ext.target_dir.."/include" },
