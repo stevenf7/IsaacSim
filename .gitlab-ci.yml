@@ -58,6 +58,16 @@ default:
     - unknown_failure
   interruptible: true
 
+workflow:
+  auto_cancel:
+    on_new_commit: interruptible
+    on_job_failure: all
+  rules:
+    - if: $CI_COMMIT_REF_PROTECTED
+      auto_cancel:
+        on_new_commit: none
+        on_job_failure: none
+
 
 # ==============================================================================================================
 # More variables can be found in common.yml - here we put the ones controlling the jobs workflow
