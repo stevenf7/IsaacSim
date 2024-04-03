@@ -12,6 +12,7 @@
 #include "omni/isaac/utils/Math.h"
 
 #include <omni/physics/tensors/BodyTypes.h>
+#include <omni/physx/IPhysxSceneQuery.h>
 
 #include <DynamicControl.h>
 
@@ -26,6 +27,13 @@ namespace surface_gripper
 using namespace omni::isaac::dynamic_control;
 using namespace omni::isaac::utils::math;
 using omni::physics::tensors::Transform;
+
+inline const pxr::SdfPath& intToPath(const uint64_t& path)
+{
+    static_assert(sizeof(pxr::SdfPath) == sizeof(uint64_t), "Change to make the same size as pxr::SdfPath");
+
+    return reinterpret_cast<const pxr::SdfPath&>(path);
+}
 
 
 /**
@@ -66,6 +74,7 @@ public:
     SurfaceGripper()
     {
         mDc = carb::getCachedInterface<omni::isaac::dynamic_control::DynamicControl>();
+        mPhysxQuery = carb::getCachedInterface<omni::physx::IPhysxSceneQuery>();
         mJointProperties.body0 = 0;
         mJointProperties.axes = kDcAxisNone;
         mJointProperties.jointType = DcJointType::eSpherical;
@@ -198,31 +207,30 @@ public:
         // _t_0 = _t_0 * threshOffset; //Disabling until we get soft meshes for grippers
         uint32_t attempts = 1000000;
         additional_offset = 0.0f;
-        DcRayCastResult hit;
+        omni::physx::RaycastHit result;
+        bool hit = false;
         while (attempts)
         {
             attempts--;
             carb::Float3 p = _t_0.p + dir * additional_offset;
-            hit = mDc->rayCast(p, dir, mProps.gripThreshold);
+            hit = mPhysxQuery->raycastClosest(p, dir, mProps.gripThreshold, result, false);
 
-            if (hit.hit)
+            if (hit)
             {
 
-
-                if (hit.rigidBody == rb_0)
+                DcHandle body = mDc->getRigidBody(intToPath(result.rigidBody).GetString().c_str());
+                if (body == rb_0)
                 {
-                    // CARB_LOG_WARN(
-                    //     "Surface Gripper is inside the parent mesh. please move it outside to be able to use the
-                    //     Gripper (%f, %d)", hit.distance, attempts);
                     additional_offset += 1.0e-3f;
                     continue;
                 }
-                CARB_LOG_INFO("Gripping prim %s at distance %f with parent %s", mDc->getRigidBodyPath(hit.rigidBody),
-                              hit.distance, mProps.parentPath.c_str());
-                DcTransform t_1 = inverse(mDc->getRigidBodyPose(hit.rigidBody)) * _t_0;
+                CARB_LOG_INFO("Gripping prim %s at distance %f with parent %s",
+                              intToPath(result.rigidBody).GetString().c_str(), result.distance,
+                              mProps.parentPath.c_str());
+                DcTransform t_1 = inverse(mDc->getRigidBodyPose(body)) * _t_0;
 
                 mJointProperties.body0 = rb_0;
-                mJointProperties.body1 = hit.rigidBody;
+                mJointProperties.body1 = body;
                 mDc->setRigidBodyDisableGravity(mJointProperties.body1, mProps.disableGravity);
                 DcTransform* offsetPtr = reinterpret_cast<DcTransform*>(&mProps.offset);
                 mJointProperties.pose0 = *offsetPtr;
@@ -278,7 +286,7 @@ public:
                 "Surface Gripper is inside the parent Rigid body collider. please move it forward in the X offset direction by %f to avoid wasted computation",
                 additional_offset);
         }
-        return hit.hit;
+        return hit;
     }
     /**
      * @brief opens the Surface Gripper, releasing the object
@@ -311,6 +319,7 @@ public:
 
 private:
     DynamicControl* mDc = nullptr;
+    omni::physx::IPhysxSceneQuery* mPhysxQuery = nullptr;
     DcHandle mJointHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
 
     DcD6JointProperties mJointProperties;
