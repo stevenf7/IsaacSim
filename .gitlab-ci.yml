@@ -108,7 +108,7 @@ variables:
   OMNI_CI_ENABLE_SANITIZERS:
     value: "false"
     description: "Set to 'true' to enable C++ sanitizer builds."
-  ALLOW_BUMP_VERSION:
+  RUN_BUMP_VERSION:
     value: "false"
     description: "Set to true to run bump version. Only happens on schedule."
   RUN_NIGHTLY_TESTS:
@@ -121,6 +121,8 @@ variables:
   stage: check
   timeout: 20 minutes
   rules:
+  - if: $RUN_BUMP_VERSION == "true"
+    when: never
   - !reference [.rules-workflow, rules]
 
 .repo-artifacts:
@@ -136,14 +138,16 @@ variables:
 # Rule for running nightly tests on scheduled pipeline on develop and release branches
 .rules-bump-version:
   rules:
-  - if: $CI_PIPELINE_SOURCE == "schedule" && $ALLOW_BUMP_VERSION == "true" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
+  - if: $CI_COMMIT_TITLE =~ /^Bumped version/
+    when: never
+  - if: $CI_PIPELINE_SOURCE == "schedule" && $RUN_BUMP_VERSION == "true" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
 
 
 # ==============================================================================================================
 # Rule for running nightly tests on scheduled pipeline on protected and release branches
 .rules-nightly-tests:
   rules:
-  # allow schedule pipeline if ALLOW_BUMP_VERSION is set to "true" and on protected and release/* branches
+  # allow schedule pipeline if RUN_NIGHTLY_TESTS is set to "true" and on protected and release/* branches
   - if: $CI_PIPELINE_SOURCE == "schedule" && $RUN_NIGHTLY_TESTS == "true" && ($CI_COMMIT_REF_PROTECTED == "true" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
   - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
     # allow on bump version
@@ -223,6 +227,8 @@ check-code-format:
     when:
     - always
   rules:
+  - if: $RUN_BUMP_VERSION == "true"
+    when: never
   - !reference [.rules-workflow, rules]
 
 
@@ -301,6 +307,8 @@ build-windows-x86_64-debug:
   - .test-artifacts
   allow_failure: true
   rules:
+  - if: $RUN_BUMP_VERSION == "true"
+    when: never
   - !reference [.rules-workflow, rules]
 
 
@@ -1027,6 +1035,8 @@ publish-extensions:
   #     artifacts: false
   #     optional: true
   rules:
+  - if: $RUN_BUMP_VERSION == "true"
+    when: never
   - !reference [.rules-version-changed, rules]
   - !reference [.rules-push, rules]
 
@@ -1047,6 +1057,8 @@ publish-docs:
   - ./repo.sh ci publish_docs
   rules:
   - if: $ALLOW_PUBLISH_DOCS != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true"
     when: never
   - !reference [.rules-push, rules]
 
@@ -1072,6 +1084,8 @@ publish-to-launcher:
   #     optional: true
   rules:
   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true"
     when: never
   - !reference [.rules-version-changed, rules]
   - !reference [.rules-push-manual, rules]
@@ -1138,19 +1152,9 @@ bump-version:
   - .omni_nvks_runner_with_docker
   script:
   - ./repo.sh bump_version
-  needs:
-  - job: build-windows-x86_64-release
-    artifacts: true
-  - job: build-linux-x86_64-release
-    artifacts: true
-  #   - job: test-windows-x86_64-startuptests
-  #     artifacts: false
-  #     optional: true
-  #   - job: test-linux-x86_64-startuptests
-  #     artifacts: false
-  #     optional: true
+  needs: []
   rules:
-  - if: $ALLOW_BUMP_VERSION != "true"
+  - if: $RUN_BUMP_VERSION != "true"
     when: never
   - !reference [.rules-bump-version, rules]
 
@@ -1177,6 +1181,8 @@ sign-windows-x86_64-release:
     artifacts: true
   rules:
   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true"
     when: never
   - !reference [.rules-version-changed, rules]
   - !reference [.rules-push-manual, rules]
