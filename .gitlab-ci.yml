@@ -883,6 +883,9 @@ pages:
     - public
   only:
   - develop@omniverse/isaac/omni_isaac_sim
+  rules:
+  - if: $RUN_BUMP_VERSION == "true"
+    when: never
 
 # ==============================================================================================================
 .benchmark-artifacts:
