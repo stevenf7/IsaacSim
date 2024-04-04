@@ -33,6 +33,7 @@
 #include "vision_msgs/msg/object_hypothesis_with_pose.h"
 
 #include <include/Ros2FactoryFoxy.h>
+#include <nlohmann/json.hpp>
 #include <rcl/error_handling.h>
 #include <rcl/rcl.h>
 #include <rosgraph_msgs/msg/clock.h>
@@ -351,42 +352,66 @@ public:
                            BackendMessageType messageType = BackendMessageType::eMessage);
     virtual ~Ros2DynamicMessageFoxy();
     virtual const void* getTypeSupportHandle();
-    virtual void getData(std::vector<std::shared_ptr<const void>>& data, bool asOgnType);
-    virtual void setData(const std::vector<std::shared_ptr<const void>>& data, bool fromOgnType);
+    virtual std::string summary(bool print);
+    virtual const nlohmann::json& getData();
+    virtual const std::vector<std::shared_ptr<void>>& getData(bool asOgnType);
+    virtual void setData(const nlohmann::json& data);
+    virtual void setData(const std::vector<std::shared_ptr<void>>& data, bool fromOgnType);
 
 protected:
     virtual const void* getIntrospectionMembers();
     virtual void parseMessageFields(const std::string& parentName, const void* members);
-    virtual void parseMessageValues(const void* members,
-                                    uint8_t* data,
-                                    std::vector<std::shared_ptr<const void>>& messageValues,
-                                    bool asOgnType);
+
+    virtual void getMessageValues(const void* members, uint8_t* messageData, nlohmann::json& container);
+    virtual void getMessageValues(const void* members,
+                                  uint8_t* messageData,
+                                  std::vector<std::shared_ptr<void>>& container,
+                                  size_t& index,
+                                  bool asOgnType);
+    virtual void setMessageValues(const void* members, uint8_t* messageData, const nlohmann::json& container);
     virtual void setMessageValues(const void* members,
                                   uint8_t* messageData,
-                                  const std::vector<std::shared_ptr<const void>>& messageValues,
+                                  const std::vector<std::shared_ptr<void>>& container,
+                                  size_t& index,
                                   bool fromOgnType);
 
+    template <typename ArrayType, typename RosType>
+    void getArray(const rosidl_typesupport_introspection_c__MessageMember* member, uint8_t* data, nlohmann::json& array);
     template <typename ArrayType, typename RosType, typename OgnType>
-    std::shared_ptr<const void> getArray(const rosidl_typesupport_introspection_c__MessageMember* member,
-                                         uint8_t* data,
-                                         bool asOgnType);
+    void getArray(const rosidl_typesupport_introspection_c__MessageMember* member,
+                  uint8_t* data,
+                  std::shared_ptr<void>& valuePtr,
+                  bool asOgnType);
+    template <typename ArrayType, typename RosType>
+    void getArray(const rosidl_typesupport_introspection_c__MessageMember* member,
+                  uint8_t* data,
+                  std::vector<RosType>& array);
 
+    template <typename ArrayType, auto ArrayInit, typename RosType>
+    void setArray(const rosidl_typesupport_introspection_c__MessageMember* member,
+                  uint8_t* data,
+                  const nlohmann::json& value);
     template <typename ArrayType, auto ArrayInit, typename RosType, typename OgnType>
     void setArray(const rosidl_typesupport_introspection_c__MessageMember* member,
                   uint8_t* data,
-                  std::shared_ptr<const void> value,
+                  const std::shared_ptr<void>& valuePtr,
                   bool fromOgnType);
+    template <typename ArrayType, auto ArrayInit, typename RosType>
+    void setArray(const rosidl_typesupport_introspection_c__MessageMember* member,
+                  uint8_t* data,
+                  const std::vector<RosType>& array);
 
     template <typename RosType, typename OgnType>
-    std::shared_ptr<const void> getSingleValue(uint8_t* data, bool asOgnType);
+    void getSingleValue(uint8_t* data, std::shared_ptr<void>& valuePtr, bool asOgnType);
 
     template <typename RosType, typename OgnType>
-    void setSingleValue(uint8_t* data, std::shared_ptr<const void> value, bool fromOgnType);
+    void setSingleValue(uint8_t* data, const std::shared_ptr<void>& valuePtr, bool fromOgnType);
 
-    void messageValuesToJson(const void* members,
-                             uint8_t* messageData,
-                             const std::shared_ptr<std::vector<std::string>> messageValues);
-    void embeddedMessageArrayToJson(const rosidl_typesupport_introspection_c__MessageMember* member,
-                                    uint8_t* data,
-                                    const std::shared_ptr<std::vector<std::string>> messageValues);
+    void getArrayEmbeddedMessage(const rosidl_typesupport_introspection_c__MessageMember* member,
+                                 uint8_t* data,
+                                 nlohmann::json& array);
+
+    void setArrayEmbeddedMessage(const rosidl_typesupport_introspection_c__MessageMember* member,
+                                 uint8_t* data,
+                                 const nlohmann::json& array);
 };

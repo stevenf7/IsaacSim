@@ -150,10 +150,8 @@ public:
         if (!state.mSubscriber->spin(state.mMessage->ptr()))
             return false;
 
-        std::vector<std::shared_ptr<const void>> messageData;
-        std::static_pointer_cast<Ros2DynamicMessage>(state.mMessage)->getData(messageData, true);
+        auto messageData = std::static_pointer_cast<Ros2DynamicMessage>(state.mMessage)->getData(true);
         auto messageFields = std::static_pointer_cast<Ros2DynamicMessage>(state.mMessage)->getMessageFields();
-        CARB_ASSERT(messageFields.size() == messageData.size());
 
         for (size_t i = 0; i < messageFields.size(); ++i)
         {
@@ -311,6 +309,18 @@ public:
                     auto stringValue = *std::static_pointer_cast<const std::string>(messageData.at(i));
                     auto outputValue = getAttributeWritableData<NameToken>(db.abi_node(), "outputs:" + messageField.name);
                     *outputValue = db.stringToToken(stringValue.c_str());
+                }
+                break;
+            }
+            case omni::fabric::BaseDataType::eUnknown:
+            {
+                if (messageField.isArray)
+                {
+                    auto array = *std::static_pointer_cast<const std::vector<nlohmann::json>>(messageData.at(i));
+                    auto outputValue = getAttributeWritableArrayData<NameToken*>(
+                        db.abi_node(), "outputs:" + messageField.name, array.size());
+                    for (size_t j = 0; j < array.size(); ++j)
+                        *((*outputValue) + j) = db.stringToToken(array.at(j).dump().c_str());
                 }
                 break;
             }

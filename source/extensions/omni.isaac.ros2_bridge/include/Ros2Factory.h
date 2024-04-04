@@ -12,6 +12,7 @@
 #include <UsdPCH.h>
 // clang-format on
 
+#include <nlohmann/json.hpp>
 #include <omni/fabric/Type.h>
 #include <omni/isaac/utils/LibraryLoader.h>
 #include <omni/isaac/utils/Math.h>
@@ -36,7 +37,7 @@ enum class BackendMessageType : uint8_t
     eResult, // action result (_Result)
     eFeedback, // action feedback (_Feedback)
     eSendGoalRequest, // action goal request (_SendGoal_Request)
-    eSendGoalResponse, // action goal request (_SendGoal_Response)
+    eSendGoalResponse, // action goal response (_SendGoal_Response)
     eFeedbackMessage, // action feedback (_FeedbackMessage)
     eGetResultRequest, // action result request (_GetResult_Request)
     eGetResultResponse, // action result response (_GetResult_Response)
@@ -51,6 +52,16 @@ struct MessageField
     std::string ognType; // OGN type name:
                          // https://docs.omniverse.nvidia.com/kit/docs/omni.graph.docs/latest/dev/ogn/attribute_types.html
     omni::fabric::BaseDataType dataType; // fabric type
+
+    std::vector<std::string> names(char delim = ':')
+    {
+        std::vector<std::string> fieldNames;
+        std::stringstream stringStream(name);
+        std::string segment;
+        while (std::getline(stringStream, segment, delim))
+            fieldNames.push_back(segment);
+        return fieldNames;
+    }
 };
 
 class Ros2Message
@@ -69,11 +80,18 @@ protected:
 class Ros2DynamicMessage : public Ros2Message
 {
 public:
-    virtual void getData(std::vector<std::shared_ptr<const void>>& data, bool asOgnType) = 0;
-    virtual void setData(const std::vector<std::shared_ptr<const void>>& data, bool fromOgnType) = 0;
-    std::vector<MessageField> getMessageFields()
+    virtual std::string summary(bool print) = 0;
+    virtual const nlohmann::json& getData() = 0;
+    virtual const std::vector<std::shared_ptr<void>>& getData(bool asOgnType) = 0;
+    virtual void setData(const nlohmann::json& data) = 0;
+    virtual void setData(const std::vector<std::shared_ptr<void>>& data, bool fromOgnType) = 0;
+    const std::vector<MessageField>& getMessageFields()
     {
         return mMessagesFields;
+    };
+    const std::vector<std::shared_ptr<void>>& getVectorContainer(bool asOgnType)
+    {
+        return asOgnType ? mMessageVectorOgnContainer : mMessageVectorRosContainer;
     };
     bool isValid()
     {
@@ -82,6 +100,9 @@ public:
 
 protected:
     std::vector<MessageField> mMessagesFields;
+    nlohmann::json mMessageJsonContainer;
+    std::vector<std::shared_ptr<void>> mMessageVectorRosContainer;
+    std::vector<std::shared_ptr<void>> mMessageVectorOgnContainer;
 };
 
 class Ros2HandleBase

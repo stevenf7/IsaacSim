@@ -573,16 +573,15 @@ private:
         if (!state.mServiceGetPrims->spin(state.mMessageGetPrimsRequest->ptr()))
             return false;
 
-        std::vector<std::shared_ptr<const void>> requestData;
-        std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageGetPrimsRequest)->getData(requestData, false);
+        auto requestData = std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageGetPrimsRequest)->getData(false);
         auto messageFields =
             std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageGetPrimsRequest)->getMessageFields();
         CARB_ASSERT(messageFields.size() == requestData.size());
 
-        std::string path = *std::static_pointer_cast<const std::string>(requestData.at(0));
+        std::string path = *std::static_pointer_cast<std::string>(requestData.at(0));
         CARB_LOG_INFO("OgnROS2ServicePrim: get prims: %s", path.c_str());
 
-        std::vector<std::shared_ptr<const void>> responseData;
+        std::vector<std::shared_ptr<void>> responseData;
         std::vector<std::string> paths;
         std::vector<std::string> types;
         bool success = false;
@@ -629,16 +628,16 @@ private:
         if (!state.mServiceGetAttributes->spin(state.mMessageGetAttributesRequest->ptr()))
             return false;
 
-        std::vector<std::shared_ptr<const void>> requestData;
-        std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageGetAttributesRequest)->getData(requestData, false);
+        auto requestData =
+            std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageGetAttributesRequest)->getData(false);
         auto messageFields =
             std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageGetAttributesRequest)->getMessageFields();
         CARB_ASSERT(messageFields.size() == requestData.size());
 
-        std::string path = *std::static_pointer_cast<const std::string>(requestData.at(0));
+        std::string path = *std::static_pointer_cast<std::string>(requestData.at(0));
         CARB_LOG_INFO("OgnROS2ServicePrim: get attributes: %s", path.c_str());
 
-        std::vector<std::shared_ptr<const void>> responseData;
+        std::vector<std::shared_ptr<void>> responseData;
         std::vector<std::string> names;
         std::vector<std::string> displays;
         std::vector<std::string> types;
@@ -691,17 +690,17 @@ private:
         if (!state.mServiceGetAttribute->spin(state.mMessageGetAttributeRequest->ptr()))
             return false;
 
-        std::vector<std::shared_ptr<const void>> requestData;
-        std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageGetAttributeRequest)->getData(requestData, false);
+        auto requestData =
+            std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageGetAttributeRequest)->getData(false);
         auto messageFields =
             std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageGetAttributeRequest)->getMessageFields();
         CARB_ASSERT(messageFields.size() == requestData.size());
 
-        std::string path = *std::static_pointer_cast<const std::string>(requestData.at(0));
-        std::string attrName = *std::static_pointer_cast<const std::string>(requestData.at(1));
+        std::string path = *std::static_pointer_cast<std::string>(requestData.at(0));
+        std::string attrName = *std::static_pointer_cast<std::string>(requestData.at(1));
         CARB_LOG_INFO("OgnROS2ServicePrim: get attribute value: %s (%s)", path.c_str(), attrName.c_str());
 
-        std::vector<std::shared_ptr<const void>> responseData;
+        std::vector<std::shared_ptr<void>> responseData;
         std::string value;
         std::string type;
         bool success = false;
@@ -759,18 +758,18 @@ private:
         if (!state.mServiceSetAttribute->spin(state.mMessageSetAttributeRequest->ptr()))
             return false;
 
-        std::vector<std::shared_ptr<const void>> requestData;
-        std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageSetAttributeRequest)->getData(requestData, false);
+        auto requestData =
+            std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageSetAttributeRequest)->getData(false);
         auto messageFields =
             std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageSetAttributeRequest)->getMessageFields();
         CARB_ASSERT(messageFields.size() == requestData.size());
 
-        std::string path = *std::static_pointer_cast<const std::string>(requestData.at(0));
-        std::string attrName = *std::static_pointer_cast<const std::string>(requestData.at(1));
-        std::string attrValueAsString = *std::static_pointer_cast<const std::string>(requestData.at(2));
+        std::string path = *std::static_pointer_cast<std::string>(requestData.at(0));
+        std::string attrName = *std::static_pointer_cast<std::string>(requestData.at(1));
+        std::string attrValueAsString = *std::static_pointer_cast<std::string>(requestData.at(2));
         CARB_LOG_INFO("OgnROS2ServicePrim: set attribute value: %s (%s)", path.c_str(), attrName.c_str());
 
-        std::vector<std::shared_ptr<const void>> responseData;
+        std::vector<std::shared_ptr<void>> responseData;
         bool success = false;
         std::string message;
 
