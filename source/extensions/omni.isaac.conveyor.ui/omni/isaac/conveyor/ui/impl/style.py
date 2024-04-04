@@ -8,30 +8,42 @@
 #
 
 import os
+from pathlib import Path
 
 import carb
 import omni.ui as ui
 
 settings = carb.settings.get_settings()
 
+CURRENT_PATH = Path(__file__).parent
+ICON_PATH = CURRENT_PATH.parent.parent.parent.parent.parent.joinpath("data")
+
 UI_STYLES = {}
 
 UI_STYLES["NvidiaLight"] = {
-    "Button.Image::filter": {"image_url": os.path.join("{}", "icons/filter.svg"), "color": 0xFF535354},
-    "Button.Image::options": {"image_url": os.path.join("{}", "icons/options.svg"), "color": 0xFF535354},
-    "Button.Image::arrow_up": {"image_url": os.path.join("{}", "icons/arrow_up.svg"), "color": 0xFF535354, "margin": 0},
-    "Button.Image::arrow_down": {
-        "image_url": os.path.join("{}", "icons/arrow_down.svg"),
+    "Button.Image::filter": {"image_url": os.path.join(ICON_PATH, "icons/filter.svg"), "color": 0xFF535354},
+    "Button.Image::options": {"image_url": os.path.join(ICON_PATH, "icons/options.svg"), "color": 0xFF535354},
+    "Button.Image::arrow_up": {
+        "image_url": os.path.join(ICON_PATH, "icons/arrow_up.svg"),
         "color": 0xFF535354,
         "margin": 0,
     },
-    "Button.Image::accept": {"image_url": os.path.join("{}", "icons/check_square.svg"), "color": 0xFF535354},
-    "Button.Image::cancel": {"image_url": os.path.join("{}", "icons/times_circle.svg"), "color": 0xFF535354},
-    "Image::assembly": {"image_url": os.path.join("{}", "icons/assembly.svg"), "color": 0xFF535354, "margin": 0},
-    "Image::part_studio": {"image_url": os.path.join("{}", "icons/part_studio.svg"), "color": 0xFF535354, "margin": 0},
-    "Image::blob": {"image_url": os.path.join("{}", "icons/blob.svg"), "color": 0xFF535354, "margin": 0},
-    "Image::bom": {"image_url": os.path.join("{}", "icons/bom.svg"), "color": 0xFF535354, "margin": 0},
-    "Image::part": {"image_url": os.path.join("{}", "icons/part_studio.svg"), "color": 0xFF535354, "margin": 0},
+    "Button.Image::arrow_down": {
+        "image_url": os.path.join(ICON_PATH, "icons/arrow_down.svg"),
+        "color": 0xFF535354,
+        "margin": 0,
+    },
+    "Button.Image::accept": {"image_url": os.path.join(ICON_PATH, "icons/check_square.svg"), "color": 0xFF535354},
+    "Button.Image::cancel": {"image_url": os.path.join(ICON_PATH, "icons/times_circle.svg"), "color": 0xFF535354},
+    "Image::assembly": {"image_url": os.path.join(ICON_PATH, "icons/assembly.svg"), "color": 0xFF535354, "margin": 0},
+    "Image::part_studio": {
+        "image_url": os.path.join(ICON_PATH, "icons/part_studio.svg"),
+        "color": 0xFF535354,
+        "margin": 0,
+    },
+    "Image::blob": {"image_url": os.path.join(ICON_PATH, "icons/blob.svg"), "color": 0xFF535354, "margin": 0},
+    "Image::bom": {"image_url": os.path.join(ICON_PATH, "icons/bom.svg"), "color": 0xFF535354, "margin": 0},
+    "Image::part": {"image_url": os.path.join(ICON_PATH, "icons/part_studio.svg"), "color": 0xFF535354, "margin": 0},
     "Button::filter": {"background_color": 0x0, "margin": 0},
     "Button::options": {"background_color": 0x0, "margin": 0},
     "Button::arrow_up": {"background_color": 0x0, "margin": 0},
@@ -116,49 +128,53 @@ UI_STYLES["NvidiaDark"] = {
     "CardButton:hovered": {"background_color": 0xDDDDDDDD},
     "CardButton:pressed": {"background_color": 0xFFEEEEEE},
     "CardButton:selected": {"background_color": 0xFF777777},
-    "CardButton.Image::add_box": {"image_url": os.path.join("{}", "icons/add_box.svg")},
-    "CardButton.Image::delete": {"image_url": os.path.join("{}", "icons/delete.svg")},
+    "CardButton.Image::add_box": {"image_url": os.path.join(ICON_PATH, "icons/add_box.svg")},
+    "CardButton.Image::delete": {"image_url": os.path.join(ICON_PATH, "icons/delete.svg")},
     "Button.Image:selected": {"color": 0xFF00B976},
     "Button.Image:disabled": {"color": 0x33000000},
-    "Button.Image::arrow_down": {"image_url": os.path.join("{}", "icons/arrow_down.svg")},
+    "Button.Image::arrow_down": {"image_url": os.path.join(ICON_PATH, "icons/arrow_down.svg")},
     "Button::square": {"padding": 0, "margin": 0},
     "Button::square:selected": {"padding": 0, "margin": 0},
-    "Button.Image::square": {"image_url": os.path.join("{}", "icons/square.svg"), "padding": 0, "margin": 0},
-    "Button.Image::delete": {"image_url": os.path.join("{}", "icons/delete.svg")},
-    "Button.Image::add_box": {"image_url": os.path.join("{}", "icons/add_box.svg")},
-    "Button.Image::flip": {"image_url": os.path.join("{}", "icons/flip.svg")},
-    "Button.Image::rotate_left": {"image_url": os.path.join("{}", "icons/rotate_left.svg")},
-    "Button.Image::rotate_right": {"image_url": os.path.join("{}", "icons/rotate_right.svg")},
+    "Button.Image::square": {"image_url": os.path.join(ICON_PATH, "icons/square.svg"), "padding": 0, "margin": 0},
+    "Button.Image::delete": {"image_url": os.path.join(ICON_PATH, "icons/delete.svg")},
+    "Button.Image::add_box": {"image_url": os.path.join(ICON_PATH, "icons/add_box.svg")},
+    "Button.Image::flip": {"image_url": os.path.join(ICON_PATH, "icons/flip.svg")},
+    "Button.Image::rotate_left": {"image_url": os.path.join(ICON_PATH, "icons/rotate_left.svg")},
+    "Button.Image::rotate_right": {"image_url": os.path.join(ICON_PATH, "icons/rotate_right.svg")},
     # Arrows
-    "Button.Image::arrow_90_left": {"image_url": os.path.join("{}", "icons/arrows/arrow_90_left.svg")},
-    "Button.Image::arrow_90_right": {"image_url": os.path.join("{}", "icons/arrows/arrow_90_right.svg")},
-    "Button.Image::arrow_180_left": {"image_url": os.path.join("{}", "icons/arrows/arrow_180_left.svg")},
-    "Button.Image::arrow_180_right": {"image_url": os.path.join("{}", "icons/arrows/arrow_180_right.svg")},
-    "Button.Image::arrow_up": {"image_url": os.path.join("{}", "icons/arrows/arrow_up.svg")},
+    "Button.Image::arrow_90_left": {"image_url": os.path.join(ICON_PATH, "icons/arrows/arrow_90_left.svg")},
+    "Button.Image::arrow_90_right": {"image_url": os.path.join(ICON_PATH, "icons/arrows/arrow_90_right.svg")},
+    "Button.Image::arrow_180_left": {"image_url": os.path.join(ICON_PATH, "icons/arrows/arrow_180_left.svg")},
+    "Button.Image::arrow_180_right": {"image_url": os.path.join(ICON_PATH, "icons/arrows/arrow_180_right.svg")},
+    "Button.Image::arrow_up": {"image_url": os.path.join(ICON_PATH, "icons/arrows/arrow_up.svg")},
     # styles
-    "Button.Image::conveyor_belt": {"image_url": os.path.join("{}", "icons/conveyor_styles/conveyor_belt.svg")},
-    "Button.Image::conveyor_combine": {"image_url": os.path.join("{}", "icons/conveyor_styles/conveyor_combine.svg")},
-    "Button.Image::conveyor_roller": {"image_url": os.path.join("{}", "icons/conveyor_styles/conveyor_roller.svg")},
+    "Button.Image::conveyor_belt": {"image_url": os.path.join(ICON_PATH, "icons/conveyor_styles/conveyor_belt.svg")},
+    "Button.Image::conveyor_combine": {
+        "image_url": os.path.join(ICON_PATH, "icons/conveyor_styles/conveyor_combine.svg")
+    },
+    "Button.Image::conveyor_roller": {
+        "image_url": os.path.join(ICON_PATH, "icons/conveyor_styles/conveyor_roller.svg")
+    },
     # Ramps
-    "Button.Image::ramp_1l": {"image_url": os.path.join("{}", "icons/ramps/ramp_1l.svg")},
-    "Button.Image::ramp_1r": {"image_url": os.path.join("{}", "icons/ramps/ramp_1r.svg")},
-    "Button.Image::ramp_2l": {"image_url": os.path.join("{}", "icons/ramps/ramp_2l.svg")},
-    "Button.Image::ramp_2r": {"image_url": os.path.join("{}", "icons/ramps/ramp_2r.svg")},
-    "Button.Image::ramp_flat": {"image_url": os.path.join("{}", "icons/ramps/ramp_flat.svg")},
+    "Button.Image::ramp_1l": {"image_url": os.path.join(ICON_PATH, "icons/ramps/ramp_1l.svg")},
+    "Button.Image::ramp_1r": {"image_url": os.path.join(ICON_PATH, "icons/ramps/ramp_1r.svg")},
+    "Button.Image::ramp_2l": {"image_url": os.path.join(ICON_PATH, "icons/ramps/ramp_2l.svg")},
+    "Button.Image::ramp_2r": {"image_url": os.path.join(ICON_PATH, "icons/ramps/ramp_2r.svg")},
+    "Button.Image::ramp_flat": {"image_url": os.path.join(ICON_PATH, "icons/ramps/ramp_flat.svg")},
     # Types
-    "Button.Image::type_straight": {"image_url": os.path.join("{}", "icons/types/straight.svg")},
-    "Button.Image::type_start": {"image_url": os.path.join("{}", "icons/types/start.svg")},
-    "Button.Image::type_end": {"image_url": os.path.join("{}", "icons/types/end.svg")},
-    "Button.Image::type_y": {"image_url": os.path.join("{}", "icons/types/y_merge.svg")},
-    "Button.Image::type_t": {"image_url": os.path.join("{}", "icons/types/t_merge.svg")},
+    "Button.Image::type_straight": {"image_url": os.path.join(ICON_PATH, "icons/types/straight.svg")},
+    "Button.Image::type_start": {"image_url": os.path.join(ICON_PATH, "icons/types/start.svg")},
+    "Button.Image::type_end": {"image_url": os.path.join(ICON_PATH, "icons/types/end.svg")},
+    "Button.Image::type_y": {"image_url": os.path.join(ICON_PATH, "icons/types/y_merge.svg")},
+    "Button.Image::type_t": {"image_url": os.path.join(ICON_PATH, "icons/types/t_merge.svg")},
     # Others
-    "Button.Image::accept": {"image_url": os.path.join("{}", "icons/check_square.svg"), "margin": 0, "padding": 0},
-    "Button.Image::cancel": {"image_url": os.path.join("{}", "icons/times_circle.svg"), "margin": 0, "padding": 0},
-    "Button.Image::options": {"image_url": os.path.join("{}", "icons/options.svg")},
-    "Image::processing": {"image_url": os.path.join("{}", "icons/spinner.svg"), "margin": 0},
-    "Image::error": {"image_url": os.path.join("{}", "icons/times_circle.svg"), "color": 0x88AAAAFF, "margin": 0},
-    "Image::warning": {"image_url": os.path.join("{}", "icons/exclamation.svg"), "color": 0x88AAFFFF, "margin": 0},
-    "Image::changed": {"image_url": os.path.join("{}", "icons/info.svg"), "margin": 0},
+    "Button.Image::accept": {"image_url": os.path.join(ICON_PATH, "icons/check_square.svg"), "margin": 0, "padding": 0},
+    "Button.Image::cancel": {"image_url": os.path.join(ICON_PATH, "icons/times_circle.svg"), "margin": 0, "padding": 0},
+    "Button.Image::options": {"image_url": os.path.join(ICON_PATH, "icons/options.svg")},
+    "Image::processing": {"image_url": os.path.join(ICON_PATH, "icons/spinner.svg"), "margin": 0},
+    "Image::error": {"image_url": os.path.join(ICON_PATH, "icons/times_circle.svg"), "color": 0x88AAAAFF, "margin": 0},
+    "Image::warning": {"image_url": os.path.join(ICON_PATH, "icons/exclamation.svg"), "color": 0x88AAFFFF, "margin": 0},
+    "Image::changed": {"image_url": os.path.join(ICON_PATH, "icons/info.svg"), "margin": 0},
     "Button::filter": {"background_color": 0x0, "margin": 0},
     "Button::options": {"background_color": 0x0, "margin": 0},
     "Button::accept": {"padding": 3, "margin": 1},

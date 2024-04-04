@@ -18,7 +18,7 @@ import omni.kit.commands
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-from omni.isaac.conveyor.scripts.commands import CreateConveyorBelt
+from omni.isaac.conveyor.commands import CreateConveyorBelt
 from pxr import Gf, PhysxSchema, UsdGeom, UsdPhysics
 from usdrt import Sdf, Usd
 

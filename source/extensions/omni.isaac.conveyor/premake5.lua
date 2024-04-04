@@ -55,18 +55,19 @@ project_ext_bindings {
 }
     add_files("bindings", "bindings/*.*")
     add_files("python", "python/*.py")
-    add_files("python/scripts", "python/scripts/**.py")
-    add_files("python/scripts/ui", "python/scripts/ui/**.py")
+    add_files("python/impl", "python/impl/**.py")
     add_files("python/tests", "python/tests/**.py")
+    add_files("python/conveyor_builder", "python/conveyor_builder/**.py")
 
     add_ogn_dependencies(ogn)
 
     repo_build.prebuild_link {
         { "docs", ext.target_dir.."/docs" },
         { "data", ext.target_dir.."/data" },
-        { "python/scripts", ogn.python_target_path.."/scripts" },    
+        { "python/impl", ogn.python_target_path.."/impl" },    
         { "python/tests", ogn.python_target_path.."/tests" },    
-        { "icons", ogn.python_target_path.."/icons" },
+        { "python/commands", ogn.python_target_path.."/commands" },    
+        { "python/conveyor_builder", ogn.python_target_path.."/conveyor_builder" },  
     }
 
     repo_build.prebuild_copy {
