@@ -480,7 +480,9 @@ stdout_fail_patterns.exclude = [
 
 [[repo_test.suites.startuptests.group]]
 # Run Kit App Full.
-include = ["tests-startup*${shell_ext}"]
+include = [
+  "tests-startup*${shell_ext}",
+]
 exclude = []
 args = [
   "--/app/settings/persistent=0",
@@ -506,7 +508,9 @@ stdout_fail_patterns.exclude = [
 	"*Failed to obtain username for current process, using cache directory without username as suffix*",  # This should be a warning but is classed as an error but seems to be an issue on the colossus machines only. https://nvidia.slack.com/archives/CGNV10TFX/p1617377550298400
 ]
 [[repo_test.suites.selectortests.group]]
-include = ["tests-selector*${shell_ext}"]
+include = [
+  "tests-selector*${shell_ext}",
+]
 args = [
   "--/app/settings/persistent=0",
   "--/app/settings/loadUserConfig=0",
@@ -525,7 +529,9 @@ path = "${test_root}"
 tests_per_process = 1
 
 [[repo_test.suites.postinstalltests.group]]
-include = ["omni.isaac.sim.post.install.run${shell_ext}"]
+include = [
+  "omni.isaac.sim.post.install.run${shell_ext}",
+]
 timeout = 1500
 
 [repo_test.suites.warmuptests]
@@ -534,114 +540,162 @@ path = "${test_root}"
 tests_per_process = 1
 
 [[repo_test.suites.warmuptests.group]]
-include = ["omni.isaac.sim.warmup${shell_ext}"]
+include = [
+  "omni.isaac.sim.warmup${shell_ext}",
+]
 timeout = 1500
 
 [repo_test.suites.pythontests]
 kind = "glob_and_exec"
 path = "${test_root}/tests"
-  [[repo_test.suites.pythontests.group]]
-  include = ["tests-*${shell_ext}"]
-  exclude = ["tests-omni.isaac.gym${shell_ext}", "tests-omni.isaac.internal_tools*${shell_ext}", "tests-omni.isaac.benchmarks*${shell_ext}", "tests-omni.isaac.gym.benchmark*${shell_ext}", "tests-omni.isaac.onshape*${shell_ext}"]
-  args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
-  tc_report_enabled = false
-  timeout = 960
+
+[[repo_test.suites.pythontests.group]]
+include = ["tests-*${shell_ext}"]
+exclude = [
+  "tests-startup*${shell_ext}",
+  "tests-selector*${shell_ext}",
+  "omni.isaac.sim.post.install.run${shell_ext}",
+  "omni.isaac.sim.warmup${shell_ext}",
+  "tests-omni.isaac.gym${shell_ext}",
+  "tests-omni.isaac.gym.benchmark*${shell_ext}",
+  "tests-omni.isaac.internal_tools*${shell_ext}",
+  "tests-omni.isaac.benchmarks*${shell_ext}",
+  "tests-omni.isaac.onshape*${shell_ext}",
+  "tests-nativepython*${shell_ext}",
+  "tests-internalnativepython*${shell_ext}",
+]
+args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
+tc_report_enabled = false
+timeout = 960
 stdout_fail_patterns.exclude = [
 	"*Remote server does not support WebSockets*",
   "*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*",  # optix disk cache errors
 	"*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*", # optix disk cache errors
 ]
+
 [[repo_test.suites.pythontests.bucket]]
 name = "1"
-include = ["tests-omni.isaac.*benchmark_environments*${shell_ext}", "tests-omni.isaac.*motion*${shell_ext}", "tests-omni.isaac.*dynamic*${shell_ext}"]
+include = [
+  "tests-omni.isaac.*benchmark_environments*${shell_ext}",
+  "tests-omni.isaac.*motion*${shell_ext}",
+  "tests-omni.isaac.*dynamic*${shell_ext}",
+]
 [[repo_test.suites.pythontests.bucket]]
 name = "2"
-include = ["tests-omni.isaac.example*${shell_ext}"]
+include = [
+  "tests-omni.isaac.example*${shell_ext}",
+]
 [[repo_test.suites.pythontests.bucket]]
 name = "3"
-include = ["tests-omni.isaac.ros*${shell_ext}"]
+include = [
+  "tests-omni.isaac.ros*${shell_ext}",
+]
 [[repo_test.suites.pythontests.bucket]]
 name = "4"
-include = ["tests-omni.isaac.core*${shell_ext}"]
+include = [
+  "tests-omni.isaac.core*${shell_ext}",
+]
 [[repo_test.suites.pythontests.bucket]]
 name = "5"
-include = ["tests-omni.isaac.tests*${shell_ext}"]
+include = [
+  "tests-omni.isaac.tests*${shell_ext}",
+]
 [[repo_test.suites.pythontests.bucket]]
 name = "6"
-include = ["tests-omni.isaac.demo*${shell_ext}", "tests-omni.isaac.debug_draw*${shell_ext}", "tests-omni.isaac.synthetic*${shell_ext}"]
+include = [
+  "tests-omni.isaac.demo*${shell_ext}",
+  "tests-omni.isaac.debug_draw*${shell_ext}",
+  "tests-omni.isaac.synthetic*${shell_ext}",
+]
 [[repo_test.suites.pythontests.bucket]]
 name = "7"
-include = ["tests-omni.isaac.*motion*${shell_ext}","tests-omni.isaac.*sensor*${shell_ext}"]
+include = [
+  "tests-omni.isaac.*motion*${shell_ext}",
+  "tests-omni.isaac.*sensor*${shell_ext}",
+]
 [[repo_test.suites.pythontests.bucket]]
 name = "8"
-include = ["tests-omni.isaac*${shell_ext}"]
+include = [
+  "tests-omni.isaac*${shell_ext}",
+]
 [[repo_test.suites.pythontests.bucket]]
 name = "9"
 include = ["*"]
-exclude =["tests-omni.isaac.internal_tools*${shell_ext}", "tests-omni.isaac.benchmarks*${shell_ext}", "tests-omni.isaac.gym.benchmark*${shell_ext}"]
 
 [repo_test.suites.internalpythontests]
 kind = "glob_and_exec"
-path = "${test_root}"
-  [[repo_test.suites.internalpythontests.group]]
-  include = ["tests-omni.isaac.internal_tools*${shell_ext}", "tests-omni.isaac.benchmarks*${shell_ext}", "tests-omni.importer.onshape*${shell_ext}"]
-  exclude =[]
-  args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
-  tc_report_enabled = false
-  timeout = 5000
+path = "${test_root}/tests"
 
+[[repo_test.suites.internalpythontests.group]]
+include = [
+  "tests-omni.isaac.internal_tools*${shell_ext}",
+  "tests-omni.isaac.benchmarks*${shell_ext}",
+]
+exclude = []
+args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
+tc_report_enabled = false
+timeout = 5000
 stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
 stdout_fail_patterns.exclude = [
 	"*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*",  # optix disk cache errors
 	"*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*", # optix disk cache errors
 ]
+
 [[repo_test.suites.internalpythontests.bucket]]
 name = "1"
-include = ["tests-omni.isaac.internal_tools*${shell_ext}", "tests-omni.importer.onshape*${shell_ext}"]
+include = [
+  "tests-omni.isaac.internal_tools*${shell_ext}",
+]
 [[repo_test.suites.internalpythontests.bucket]]
 name = "2"
 include = ["tests-omni.isaac.benchmarks*${shell_ext}"]
 
-# [repo_test.suites.internalnativepythontests]
-# kind = "glob_and_exec"
-# path = "${test_root}"
-#   [[repo_test.suites.internalnativepythontests.group]]
-#   include = ["tests-internalnativepython*${shell_ext}"]
-#   exclude =[]
-#   args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
-#   tc_report_enabled = false
-#   timeout = 960
-#
-# stdout_fail_patterns.exclude = [
-# 	"*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*",  # optix disk cache errors
-# 	"*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*", # optix disk cache errors
-# ]
-#
-# [repo_test.suites.nativepythontests]
-# kind = "glob_and_exec"
-# path = "${test_root}"
-#   [[repo_test.suites.nativepythontests.group]]
-#   include = ["tests-nativepython*${shell_ext}"]
-#   exclude =[]
-#   args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
-#   tc_report_enabled = false
-#   timeout = 960
-#
-# stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
-#
-# [[repo_test.suites.nativepythontests.bucket]]
-# name = "1"
-# include = ["tests-nativepython-replicator*${shell_ext}"]
-# [[repo_test.suites.nativepythontests.bucket]]
-# name = "2"
-# include = ["*"]
-#
+[repo_test.suites.internalnativepythontests]
+kind = "glob_and_exec"
+path = "${test_root}/tests"
+
+[[repo_test.suites.internalnativepythontests.group]]
+include = [
+  "tests-internalnativepython*${shell_ext}"
+]
+exclude = []
+args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
+tc_report_enabled = false
+timeout = 960
+stdout_fail_patterns.exclude = [
+	"*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*",  # optix disk cache errors
+	"*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*", # optix disk cache errors
+]
+
+[repo_test.suites.nativepythontests]
+kind = "glob_and_exec"
+path = "${test_root}/tests"
+
+[[repo_test.suites.nativepythontests.group]]
+include = [
+  "tests-nativepython*${shell_ext}"
+]
+exclude = []
+args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
+tc_report_enabled = false
+timeout = 960
+stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
+
+[[repo_test.suites.nativepythontests.bucket]]
+name = "1"
+include = [
+  "tests-nativepython-replicator*${shell_ext}"
+]
+[[repo_test.suites.nativepythontests.bucket]]
+name = "2"
+include = ["*"]
+
 # [repo_test.suites.jupytertests]
 # kind = "glob_and_exec"
 # path = "${test_root}"
 #   [[repo_test.suites.jupytertests.group]]
 #   include = ["tests-jupyter*${shell_ext}"]
-#   exclude =[]
+#   exclude = []
 #   args = []
 #   tc_report_enabled = false
 #   timeout = 960
@@ -686,13 +740,16 @@ executables = [
 
 [repo_test.suites.gympythontests]
 kind = "glob_and_exec"
-path = "${test_root}"
-  [[repo_test.suites.gympythontests.group]]
-  include = ["tests-omni.isaac.gym${shell_ext}"]
-  exclude =[]
-  args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
-  tc_report_enabled = false
-  timeout = 100000
+path = "${test_root}/tests"
+
+[[repo_test.suites.gympythontests.group]]
+include = [
+  "tests-omni.isaac.gym${shell_ext}",
+]
+exclude = []
+args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
+tc_report_enabled = false
+timeout = 100000
 stdout_fail_patterns.exclude = [
   "*Remote server does not support WebSockets*",
   "*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*",  # optix disk cache errors
