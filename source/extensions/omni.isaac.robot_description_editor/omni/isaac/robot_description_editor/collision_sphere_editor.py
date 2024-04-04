@@ -357,6 +357,103 @@ class CollisionSphereEditor:
 
         return sphere_path
 
+    def _get_sphere_list_from_xrdf_geometries(self, parsed_file, geometry_group_name) -> dict:
+        spheres = {}
+        if "geometry" not in parsed_file:
+            carb.log_warn("No geometry groups specified under 'geometry' in XRDF file.  No spheres will be imported.")
+            return spheres
+        elif geometry_group_name not in parsed_file["geometry"]:
+            carb.log_warn("Collision geometry group could not be found under 'geometry'.  No spheres will be imported.")
+            return spheres
+
+        geometry_groups = parsed_file["geometry"]
+        imported_group = geometry_groups[geometry_group_name]
+
+        if "spheres" in imported_group:
+            spheres = imported_group["spheres"]
+
+        from collections import deque
+
+        handled_groups = set([geometry_group_name])
+        clones = deque()
+        if "clone" in imported_group:
+            for clone_group_name in imported_group["clone"]:
+                clones.append(clone_group_name)
+
+        while len(clones) > 0:
+            clone_group_name = clones.popleft()
+            if clone_group_name in handled_groups:
+                continue
+            handled_groups.add(clone_group_name)
+            if clone_group_name in geometry_groups:
+                clone_group = geometry_groups[clone_group_name]
+            else:
+                continue
+            if "spheres" in clone_group:
+                for key in clone_group["spheres"]:
+                    if key in spheres:
+                        spheres[key].extend(clone_group["spheres"][key])
+                    else:
+                        spheres[key] = clone_group["spheres"][key]
+            if "clone" in clone_group:
+                clones.extend(clone_group["clone"])
+
+        return spheres
+
+    def load_xrdf_spheres(self, robot, parsed_file: dict):
+        self.clear_spheres(store_op=False)
+
+        self._redo = []
+        self._operations = []
+
+        if "collision" not in parsed_file:
+            carb.log_warn("No collision group specified in XRDF file. No spheres will be imported")
+            return
+        elif "geometry" not in parsed_file["collision"]:
+            carb.log_warn("No geometry group specified under 'collision' in XRDF file. No spheres will be imported")
+            return
+
+        geometry_group_name = parsed_file["collision"]["geometry"]
+
+        if (
+            "self_collision" in parsed_file
+            and "geometry" in parsed_file["self_collision"]
+            and parsed_file["self_collision"]["geometry"]
+        ) != geometry_group_name:
+            carb.log_warn(
+                "Specifying a 'self_collision' geometry group that is not the same as "
+                + "the 'collision' geometry group is not supported by this importer. "
+                + "The 'self_collision' group will be ignored."
+            )
+
+        buffer_distances = parsed_file["collision"].get("buffer_distance", {})
+
+        sphere_dict = self._get_sphere_list_from_xrdf_geometries(parsed_file, geometry_group_name)
+        if len(sphere_dict.keys()) == 0:
+            return
+
+        added_sphere_paths = ["ADD"]
+        for key, val in sphere_dict.items():
+            link_path = robot.prim_path + "/" + key
+            if is_prim_path_valid(link_path):
+                for sphere in val:
+                    center = np.array(sphere["center"])
+                    radius = sphere["radius"]
+                    sphere_path = self.add_sphere(link_path, center, radius, store_op=False)
+                    added_sphere_paths.append(sphere_path)
+            else:
+                carb.log_warn("Could not place sphere from xrdf at path: {}".format(link_path))
+
+        self._operations.append(added_sphere_paths)
+
+        for k, v in buffer_distances.items():
+            link_path = robot.prim_path + "/" + k
+            for p in self.path_2_spheres.keys():
+                if is_prim_path_valid(p) and p[: len(link_path)] == link_path:
+                    sphere = self.path_2_spheres[p]
+                    rad = sphere.get_radius()
+                    sphere.set_radius(rad + v)
+
     def load_spheres(self, robot, robot_description_file_path):
         self.clear_spheres(store_op=False)
 
@@ -378,9 +475,6 @@ class CollisionSphereEditor:
 
         added_sphere_paths = ["ADD"]
 
-        import time
-
-        s = time.perf_counter()
         for sphere_dict in sphere_list:
             for key, val in sphere_dict.items():
                 link_path = robot_path + "/" + key
@@ -394,8 +488,6 @@ class CollisionSphereEditor:
                     carb.log_warn("Could not place sphere from robot description at path: {}".format(link_path))
 
         self._operations.append(added_sphere_paths)
-
-        print("Load Time = ", time.perf_counter() - s)
 
     def interpolate_spheres(self, path1, path2, num_spheres):
         if not is_prim_path_valid(path1):
@@ -467,6 +559,27 @@ class CollisionSphereEditor:
 
         return sphere_names
 
+    # Used for XRDF files
+    def write_spheres_to_dict(self, robot, link_to_spheres):
+        robot_path_split = robot.prim_path.split("/")
+        for sphere in self.path_2_spheres.values():
+            prim_path = sphere.prim_path
+            if is_prim_path_valid(prim_path):
+                s = prim_path.split("/")
+                if s[:-2] != robot_path_split:
+                    carb.log_warn(
+                        "Not writing sphere at path {} to file because it is not nested under the robot Articulation".format(
+                            prim_path
+                        )
+                    )
+                    continue
+                link_name = s[-2]
+                link_spheres = link_to_spheres.get(link_name, [])
+                sphere_pose = self._round_list_floats(sphere.get_local_pose()[0])
+                link_spheres.append({"center": sphere_pose, "radius": sphere.get_radius()})
+                link_to_spheres[link_name] = link_spheres
+
+    # Used for Robot Description Files
     def save_spheres(self, robot, f):
         link_to_spheres = OrderedDict()
         robot_path_split = robot.prim_path.split("/")
@@ -484,7 +597,7 @@ class CollisionSphereEditor:
                 link_name = s[-2]
                 link_spheres = link_to_spheres.get(link_name, [])
                 sphere_pose = self._round_list_floats(sphere.get_local_pose()[0])
-                link_spheres.append({"center": sphere_pose, "radius": round(sphere.get_radius(), 3)})
+                link_spheres.append({"center": sphere_pose, "radius": round(sphere.get_radius(), 5)})
                 link_to_spheres[link_name] = link_spheres
 
         f.write("collision_spheres:\n")

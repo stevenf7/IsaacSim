@@ -1,4 +1,9 @@
 # Changelog
+## [2.3.0] - 2024-03-27
+### Add
+- Add support for importing and exporting Curobo XRDF files
+- Add maximum acceleration and jerk properties to Command Panel
+
 ## [2.2.1] - 2024-03-15
 ### Fixed
 - Fixed logic around selecting Articulation on STOP/PLAY given new behavior in Core
