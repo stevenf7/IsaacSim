@@ -17,13 +17,15 @@ def pull_library_from_linbuild_usr_lib64(d: str, name: str):
 def main(args: argparse.Namespace):
     build_config = args.build_config
 
+    extra_flags = []
     if build_config == "release":
-        config_arg = ["-r"]
+        extra_flags.append("-r")
     elif build_config == "debug":
-        config_arg = ["-d"]
-    else:
-        config_arg = []
-    build_cmd = ["${root}/repo${shell_ext}", "build", "-x"] + config_arg
+        extra_flags.append("-d")
+    if not omni.repo.ci.is_windows():
+        extra_flags.append("--no-docker")
+
+    build_cmd = ["${root}/repo${shell_ext}", "build", "-x"] + extra_flags
 
     # Full rebuild config
     omni.repo.ci.launch(build_cmd)
@@ -51,10 +53,6 @@ def main(args: argparse.Namespace):
 
         # Package release
         omni.repo.ci.launch(["${root}/repo${shell_ext}", "package", "-m", "isaac-sim-standalone", "-c", build_config])
-
-    elif build_config == "debug":
-        # Package debug
-        omni.repo.ci.launch(["${root}/repo${shell_ext}", "package", "-m", "isaac-sim", "-c", build_config])
 
     # publish artifacts to teamcity
     print("##teamcity[publishArtifacts '_build/packages']")

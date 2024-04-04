@@ -217,9 +217,10 @@ check-code-format:
 build-linux-x86_64-release:
   extends:
   - .build-common
-  - .omni_nvks_runner_large_with_docker
+  - .runner-build-linux-x86_64
   before_script:
   - set -eu
+  - yum install -y bsdtar
   - !reference [.omni_s3_write_get_secrets, omni_s3_write_get_secrets]
   script:
   - ./repo.sh ci build -c release
@@ -228,9 +229,10 @@ build-linux-x86_64-release:
 build-linux-x86_64-debug:
   extends:
   - .build-common
-  - .omni_nvks_runner_large_with_docker
+  - .runner-build-linux-x86_64
   before_script:
   - set -eu
+  - yum install -y bsdtar
   - !reference [.omni_s3_write_get_secrets, omni_s3_write_get_secrets]
   script:
   - ./repo.sh ci build -c debug
@@ -285,10 +287,6 @@ build-windows-x86_64-debug:
   extends:
   - .test-artifacts
   allow_failure: true
-  retry:
-    max: 2
-    when:
-    - always
   rules:
   - !reference [.rules-workflow, rules]
 
@@ -299,6 +297,7 @@ test-linux-x86_64-startuptests:
   - .test-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
+  - .omni_nvks_gpu
   script:
   - ./repo.sh ci test -- -s startuptests
   after_script:
@@ -312,6 +311,7 @@ test-linux-x86_64-pythontests-1:
   - .test-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
+  - .omni_nvks_gpu
   script:
   - ./repo.sh ci test -- -s pythontests -b 1
   after_script:
@@ -325,6 +325,7 @@ test-linux-x86_64-pythontests-2:
   - .test-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
+  - .omni_nvks_gpu
   script:
   - ./repo.sh ci test -- -s pythontests -b 2
   after_script:
@@ -338,6 +339,7 @@ test-linux-x86_64-pythontests-3:
   - .test-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
+  - .omni_nvks_gpu
   script:
   - ./repo.sh ci test -- -s pythontests -b 3
   after_script:
@@ -351,6 +353,7 @@ test-linux-x86_64-pythontests-4:
   - .test-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
+  - .omni_nvks_gpu
   script:
   - ./repo.sh ci test -- -s pythontests -b 4
   after_script:
@@ -364,6 +367,7 @@ test-linux-x86_64-pythontests-5:
   - .test-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
+  - .omni_nvks_gpu
   script:
   - ./repo.sh ci test -- -s pythontests -b 5
   after_script:
@@ -377,6 +381,7 @@ test-linux-x86_64-pythontests-6:
   - .test-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
+  - .omni_nvks_gpu
   script:
   - ./repo.sh ci test -- -s pythontests -b 6
   after_script:
@@ -390,6 +395,7 @@ test-linux-x86_64-pythontests-7:
   - .test-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
+  - .omni_nvks_gpu
   script:
   - ./repo.sh ci test -- -s pythontests -b 7
   after_script:
@@ -403,6 +409,7 @@ test-linux-x86_64-pythontests-8:
   - .test-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
+  - .omni_nvks_gpu
   script:
   - ./repo.sh ci test -- -s pythontests -b 8
   after_script:
@@ -416,6 +423,7 @@ test-linux-x86_64-pythontests-9:
   - .test-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
+  - .omni_nvks_gpu
   script:
   - ./repo.sh ci test -- -s pythontests -b 9
   after_script:
@@ -429,6 +437,7 @@ test-linux-x86_64-pythontests-9:
 #     - .test-common
 #     - .install-linux-test-packages
 #     - .runner-test-linux-x86_64-gpu
+#     - .omni_nvks_gpu
 #   script:
 #     - ./repo.sh ci test -- -s gympythontests
 #   after_script:
@@ -442,6 +451,7 @@ test-linux-x86_64-selectortests:
   - .test-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
+  - .omni_nvks_gpu
   script:
   - ./repo.sh ci test -- -s selectortests
   after_script:
@@ -455,6 +465,7 @@ test-linux-x86_64-warmuptests:
   - .test-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
+  - .omni_nvks_gpu
   script:
   - ./repo.sh ci test -- -s warmuptests
   after_script:
@@ -468,6 +479,7 @@ test-linux-x86_64-postinstalltests:
   - .test-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
+  - .omni_nvks_gpu
   script:
   - ./repo.sh ci test -- -s postinstalltests
   after_script:
@@ -481,6 +493,7 @@ test-linux-x86_64-postinstalltests:
 #     - .test-common
 #     - .install-linux-test-packages
 #     - .runner-test-linux-x86_64-gpu
+#     - .omni_nvks_gpu
 #   script:
 #     - ./repo.sh ci test -- -s unittests
 #   after_script:
@@ -489,19 +502,69 @@ test-linux-x86_64-postinstalltests:
 #     - job: build-linux-x86_64-release
 #       artifacts: true
 
-test-linux-x86_64-internalpythontests:
+test-linux-x86_64-internalpythontests-1:
   extends:
   - .test-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
+  - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s internalpythontests
+  - ./repo.sh ci test -- -s internalpythontests -b 1
   after_script:
   - !reference [.datadog-test-visibility-linux-x86_64, script]
+  rules:
+  - !reference [.rules-version-changed, rules]
   needs:
   - job: build-linux-x86_64-release
     artifacts: true
 
+test-linux-x86_64-internalpythontests-1:
+  extends:
+  - .test-common
+  - .install-linux-test-packages
+  - .runner-test-linux-x86_64-gpu
+  - .omni_nvks_gpu
+  script:
+  - ./repo.sh ci test -- -s internalpythontests -b 2
+  after_script:
+  - !reference [.datadog-test-visibility-linux-x86_64, script]
+  rules:
+  - !reference [.rules-version-changed, rules]
+  needs:
+  - job: build-linux-x86_64-release
+    artifacts: true
+
+test-linux-x86_64-nativepythontests-1:
+  extends:
+  - .test-common
+  - .install-linux-test-packages
+  - .runner-test-linux-x86_64-gpu
+  - .omni_nvks_gpu
+  script:
+  - ./repo.sh ci test -- -s nativepythontests -b 1
+  after_script:
+  - !reference [.datadog-test-visibility-linux-x86_64, script]
+  rules:
+  - !reference [.rules-version-changed, rules]
+  needs:
+  - job: build-linux-x86_64-release
+    artifacts: true
+
+test-linux-x86_64-nativepythontests-2:
+  extends:
+  - .test-common
+  - .install-linux-test-packages
+  - .runner-test-linux-x86_64-gpu
+  - .omni_nvks_gpu
+  script:
+  - ./repo.sh ci test -- -s nativepythontests -b 2
+  after_script:
+  - !reference [.datadog-test-visibility-linux-x86_64, script]
+  rules:
+  - !reference [.rules-version-changed, rules]
+  needs:
+  - job: build-linux-x86_64-release
+    artifacts: true
 
 # ==============================================================================================================
 # test-windows-x86_64:
@@ -696,14 +759,58 @@ test-windows-x86_64-postinstalltests:
 #     - job: build-windows-x86_64-release
 #       artifacts: true
 
-test-windows-x86_64-internalpythontests:
+test-windows-x86_64-internalpythontests-1:
   extends:
   - .test-common
   - .runner-test-windows-x86_64-gpu
   script:
-  - ./repo.bat ci test -- -s internalpythontests
+  - ./repo.bat ci test -- -s internalpythontests -b 1
   after_script:
   - !reference [.datadog-test-visibility-windows-x86_64, script]
+  rules:
+  - !reference [.rules-version-changed, rules]
+  needs:
+  - job: build-windows-x86_64-release
+    artifacts: true
+
+test-windows-x86_64-internalpythontests-1:
+  extends:
+  - .test-common
+  - .runner-test-windows-x86_64-gpu
+  script:
+  - ./repo.bat ci test -- -s internalpythontests -b 2
+  after_script:
+  - !reference [.datadog-test-visibility-windows-x86_64, script]
+  rules:
+  - !reference [.rules-version-changed, rules]
+  needs:
+  - job: build-windows-x86_64-release
+    artifacts: true
+
+test-windows-x86_64-nativepythontests-1:
+  extends:
+  - .test-common
+  - .runner-test-windows-x86_64-gpu
+  script:
+  - ./repo.bat ci test -- -s nativepythontests -b 1
+  after_script:
+  - !reference [.datadog-test-visibility-windows-x86_64, script]
+  rules:
+  - !reference [.rules-version-changed, rules]
+  needs:
+  - job: build-windows-x86_64-release
+    artifacts: true
+
+test-windows-x86_64-nativepythontests-2:
+  extends:
+  - .test-common
+  - .runner-test-windows-x86_64-gpu
+  script:
+  - ./repo.bat ci test -- -s nativepythontests -b 2
+  after_script:
+  - !reference [.datadog-test-visibility-windows-x86_64, script]
+  rules:
+  - !reference [.rules-version-changed, rules]
   needs:
   - job: build-windows-x86_64-release
     artifacts: true

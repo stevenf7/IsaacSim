@@ -186,6 +186,7 @@ function define_ext_test_experience(ext_name, args)
         "--enable omni.kit.test", -- We always need omni.kit.test extension as testing framework
         "--/exts/omni.kit.test/testExtEnableProfiler=0",
         "--/exts/omni.kit.test/testExtDefaultTimeout=600",
+        "--/exts/omni.kit.test/testExtRetryStrategy=\"retry-on-failure-ci-only\"",
         "--/exts/omni.kit.test/testExtArgs/0=\"--no-window\"",
         "--/exts/omni.kit.test/testExtArgs/1=\"--allow-root\"",
         "--/exts/omni.kit.test/testExtApp=\""..script_dir_token.."/../apps/omni.isaac.sim.test_ext.kit\"",
@@ -335,7 +336,7 @@ SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 SAMPLE_DIR=$SCRIPT_DIR/../
 %s
 "$SCRIPT_DIR/../python.sh" -m pip install -r $SCRIPT_DIR/../requirements.txt
-"$SCRIPT_DIR/../python.sh" $SAMPLE_DIR/%s %s $@
+"$SCRIPT_DIR/../python.sh" $SAMPLE_DIR/%s %s --/exts/omni.kit.test/testExtRetryStrategy="retry-on-failure-ci-only" $@
 echo "##teamcity[testFinished name='%s']"
         ]], name, extra, sample_path, extra_args, name))
         f:close()
@@ -352,7 +353,7 @@ setlocal
 echo "##teamcity[testStarted name='%s']"
 %s
 call "%%~dp0..\python.bat" -m pip install -r "%%~dp0..\requirements.txt"
-call "%%~dp0..\python.bat" "%%~dp0..\%s" %s %%*
+call "%%~dp0..\python.bat" "%%~dp0..\%s" %s --/exts/omni.kit.test/testExtRetryStrategy="retry-on-failure-ci-only" %%*
 echo "##teamcity[testFinished name='%s']"
         ]], name, extra, sample_path, extra_args, name))
         f:close()
@@ -377,7 +378,7 @@ set -e
 echo "##teamcity[testStarted name='%s']"
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 SAMPLE_DIR=$SCRIPT_DIR/../
-"$SCRIPT_DIR/../jupyter_notebook.sh" test $SAMPLE_DIR/%s %s $@
+"$SCRIPT_DIR/../jupyter_notebook.sh" test $SAMPLE_DIR/%s %s --/exts/omni.kit.test/testExtRetryStrategy="retry-on-failure-ci-only" $@
 echo "##teamcity[testFinished name='%s']"
         ]], name, sample_path, extra_args, name))
         f:close()
