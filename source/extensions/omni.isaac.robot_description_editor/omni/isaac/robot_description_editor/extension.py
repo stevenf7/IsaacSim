@@ -8,9 +8,11 @@
 #
 
 import asyncio
+import copy
 import gc
 import os
 import weakref
+from functools import partial
 from typing import OrderedDict
 
 import carb
@@ -22,12 +24,16 @@ import omni.timeline
 import omni.ui as ui
 import omni.usd
 import yaml
-from omni.isaac.core.articulations import Articulation
+from omni.isaac.core.articulations import Articulation, ArticulationView
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices
 from omni.isaac.core.utils.prims import get_prim_at_path, get_prim_object_type
-from omni.isaac.ui.element_wrappers import ScrollingWindow
+
+# New way of making UI being integrated in through feature updates
+from omni.isaac.ui.element_wrappers import Button, CheckBox, CollapsableFrame, DropDown, FloatField, ScrollingWindow
 from omni.isaac.ui.menu import make_menu_item_description
+
+# Old way of making UI
 from omni.isaac.ui.ui_utils import (
     add_line_rect_flourish,
     btn_builder,
@@ -43,18 +49,31 @@ from omni.isaac.ui.ui_utils import (
 from omni.isaac.ui.widgets import DynamicComboBoxModel
 from omni.kit.menu.utils import add_menu_items, remove_menu_items
 from omni.kit.window.property.templates import LABEL_WIDTH
-from pxr import Usd, UsdGeom
+from pxr import Usd, UsdGeom, UsdPhysics
 
 from .collision_sphere_editor import CollisionSphereEditor
 
 EXTENSION_NAME = "Lula Robot Description Editor"
 
+DEFAULT_JERK_LIMIT = 10000
+DEFAULT_ACCELERATION_LIMIT = 10
 MAX_DOF_NUM = 100
 
 
 def is_yaml_file(path: str):
     _, ext = os.path.splitext(path.lower())
-    return ext in [".yaml", ".YAML"]
+    return ext in [".yaml", ".yml"]
+
+
+def is_xrdf_file(path: str):
+    _, ext = os.path.splitext(path.lower())
+    return ext in [".yaml", ".yml", ".xrdf"]
+
+
+def on_filter_xrdf_item(item) -> bool:
+    if not item or item.is_folder:
+        return not (item.name == "Omniverse" or item.path.startswith("omniverse:"))
+    return is_xrdf_file(item.path)
 
 
 def on_filter_item(item) -> bool:
@@ -123,6 +142,8 @@ class Extension(omni.ext.IExt):
         # Active Joints
         self._joint_positions = np.zeros(MAX_DOF_NUM)
         self._active_joints = np.zeros(MAX_DOF_NUM, dtype=bool)
+        self._acceleration_limits = np.full(MAX_DOF_NUM, DEFAULT_ACCELERATION_LIMIT)
+        self._jerk_limits = np.full(MAX_DOF_NUM, DEFAULT_JERK_LIMIT)
 
         self._collision_sphere_editor = CollisionSphereEditor()
 
@@ -392,6 +413,8 @@ class Extension(omni.ext.IExt):
 
             self._joint_positions = articulation.get_joint_positions()
             self._active_joints = np.zeros(MAX_DOF_NUM, dtype=bool)
+            self._acceleration_limits = np.full(MAX_DOF_NUM, DEFAULT_ACCELERATION_LIMIT)
+            self._jerk_limits = np.full(MAX_DOF_NUM, DEFAULT_JERK_LIMIT)
 
             self.lower_joint_limits = articulation.dof_properties["lower"]
             self.upper_joint_limits = articulation.dof_properties["upper"]
@@ -434,8 +457,8 @@ class Extension(omni.ext.IExt):
         self._models["frame_command_ui"].collapsed = True
         self._models["frame_command_ui"].enabled = False
 
-        for i in range(MAX_DOF_NUM):
-            self._models[f"joint_{i}_frame"].visible = False
+        for joint_frame in self._joint_frames:
+            joint_frame.rebuild()
 
         self._models["sphere_editor_ui"].collapsed = True
         self._models["sphere_editor_ui"].enabled = False
@@ -595,98 +618,81 @@ class Extension(omni.ext.IExt):
                 self._models[name + "_combobox"].model.add_item_changed_fn(self._on_select_sphere_gen_link)
 
     def _build_command_ui(self):
-        self._models["frame_command_ui"] = ui.CollapsableFrame(
-            title="Command Panel",
-            name="Command Panel",
-            height=0,
-            collapsed=True,
-            style=get_style(),
-            style_type_name_override="CollapsableFrame",
-            horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
-            vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
-        )
-        self._models["frame_command_ui"].enabled = False
+        def command_panel_build_fn():
+            self._joint_frames = []
 
-        with self._models["frame_command_ui"]:
+            if self.articulation is None:
+                return
+
+            def on_set_joint_position(i, value):
+                self._joint_positions[i] = value
+                self._set_joint_positions_on_step = True
+
+            def on_max_acceleration_changed(i, value):
+                self._acceleration_limits[i] = value
+
+            def on_max_jerk_changed(i, value):
+                self._jerk_limits[i] = value
+
+            def update_active_joints(i, value):
+                if value == "Active Joint":
+                    is_active = True
+                else:
+                    is_active = False
+                self._active_joints[i] = is_active
+
+                self._joint_frames[i].rebuild()
+
+            def joint_frame_build_fn(i):
+                lower_joint_limit = self.articulation.dof_properties["lower"][i]
+                upper_joint_limit = self.articulation.dof_properties["upper"][i]
+                with ui.VStack(style=get_style(), spacing=5, height=0):
+                    position_field = FloatField(
+                        "Joint Position",
+                        default_value=self._joint_positions[i],
+                        tooltip="If an active joint, this indicates a default position.  If a fixed joint, this indicates a fixed position.",
+                        on_value_changed_fn=partial(on_set_joint_position, i),
+                        lower_limit=lower_joint_limit,
+                        upper_limit=upper_joint_limit,
+                    )
+
+                    if self._active_joints[i]:
+                        acceleration_field = FloatField(
+                            "Acceleration Limit",
+                            tooltip="Maximum acceleration that can be commanded for this joint.",
+                            default_value=self._acceleration_limits[i],
+                            lower_limit=0.0001,
+                            on_value_changed_fn=partial(on_max_acceleration_changed, i),
+                        )
+                        jerk_field = FloatField(
+                            "Jerk Limit",
+                            tooltip="Maximum jerk that can be commanded for this joint.",
+                            default_value=self._jerk_limits[i],
+                            lower_limit=0.0001,
+                            step=1.0,
+                            on_value_changed_fn=partial(on_max_jerk_changed, i),
+                        )
+
+                    joint_status = DropDown(
+                        "Joint Status",
+                        tooltip="Active Joint: Lula will directly control this joint, using a default position equal to the value set above.\n"
+                        + "Fixed Joint: Lula will assume a fixed position of the joint equal to the value set above.",
+                        populate_fn=lambda: ["Fixed Joint", "Active Joint"],
+                    )
+                    joint_status.repopulate()
+                    joint_status.set_selection_by_index(self._active_joints[i])
+
+                    joint_status.set_on_selection_fn(partial(update_active_joints, i))
+
             with ui.VStack(style=get_style(), spacing=5, height=0):
+                for i in range(self.articulation.num_dof):
+                    frame = CollapsableFrame(
+                        self.articulation.dof_names[i], build_fn=partial(joint_frame_build_fn, i), collapsed=False
+                    )
+                    self._joint_frames.append(frame)
 
-                frame = ui.CollapsableFrame(
-                    title="Set Joint Positions",
-                    name="subFrame",
-                    height=0,
-                    collapsed=False,
-                    style=get_style(),
-                    style_type_name_override="CollapsableFrame",
-                    horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
-                    vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
-                )
-                with frame:
-                    with ui.VStack(style=get_style(), spacing=5, height=0):
-                        for i in range(MAX_DOF_NUM):
-                            name = f"joint_{i}_frame"
-                            frame = ui.CollapsableFrame(
-                                title=name,
-                                name="subFrame",
-                                height=0,
-                                collapsed=False,
-                                style=get_style(),
-                                style_type_name_override="CollapsableFrame",
-                                horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
-                                vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
-                            )
-                            if self.articulation is None:
-                                frame.visible = False
-                            self._models[f"joint_{i}_frame"] = frame
-
-                            kwargs = {
-                                "label": "Joint Position",
-                                "default_val": 0,
-                                "tooltip": f"Desired Position for Robot Joint: {i}",
-                            }
-
-                            def on_set_joint_position(i, model):
-                                model.set_max(self.upper_joint_limits[i])
-                                model.set_min(self.lower_joint_limits[i])
-                                joint_val = model.get_value_as_float()
-                                if self.upper_joint_limits[i] < joint_val:
-                                    joint_val = self.upper_joint_limits[i]
-                                    model.set_value(float(joint_val + 1))
-                                    return
-                                elif self.lower_joint_limits[i] > joint_val:
-                                    joint_val = self.lower_joint_limits[i]
-                                    model.set_value(float(joint_val - 1))
-                                    return
-
-                                self._joint_positions[i] = joint_val
-                                self._set_joint_positions_on_step = True
-
-                            def update_active_joints(i, model):
-                                self._active_joints[i] = model.get_item_value_model().as_int
-
-                            with frame:
-                                with ui.VStack(style=get_style(), spacing=5, height=0):
-                                    self._models["joint_{}_position".format(i)] = float_builder(**kwargs)
-                                    self._models["joint_{}_position".format(i)].add_value_changed_fn(
-                                        lambda model, index=i: on_set_joint_position(index, model)
-                                    )
-
-                                    with ui.HStack():
-                                        name = f"joint_{i}_status"
-                                        self._models[name] = DynamicComboBoxModel(["Fixed Joint", "Active Joint"])
-
-                                        ui.Label(
-                                            "Joint Status",
-                                            width=LABEL_WIDTH,
-                                            alignment=ui.Alignment.LEFT_CENTER,
-                                            tooltip="Active Joint: Lula will directly control this joint, using a default position equal to the value set above.\n"
-                                            + "Fixed Joint: Lula will assume a fixed position of the joint equal to the value set above.",
-                                        )
-                                        self._models[name + "_combobox"] = ui.ComboBox(self._models[name])
-                                        add_line_rect_flourish(False)
-
-                                        self._models[name + "_combobox"].model.add_item_changed_fn(
-                                            lambda model, value, index=i: update_active_joints(index, model)
-                                        )
+        self._models["frame_command_ui"] = CollapsableFrame("Set Joint Properties", build_fn=command_panel_build_fn)
+        self._models["frame_command_ui"].enabled = False
 
     def _build_editor_ui(self):
         self._models["sphere_editor_ui"] = ui.CollapsableFrame(
@@ -1075,8 +1081,8 @@ class Extension(omni.ext.IExt):
         ###################################################################
         #                            Save to File
         ###################################################################
-        frame = ui.CollapsableFrame(
-            title="Export Robot Description File",
+        export_frame = ui.CollapsableFrame(
+            title="Export To File",
             name="subFrame",
             height=0,
             collapsed=True,
@@ -1085,20 +1091,34 @@ class Extension(omni.ext.IExt):
             horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
             vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
         )
-        self._models["save_spheres_ui"] = frame
-        frame.enabled = False
+        self._models["save_spheres_ui"] = export_frame
+        export_frame.enabled = False
 
-        with frame:
+        def check_robot_description_file_type(model=None):
+            path = model.get_value_as_string()
+            if is_yaml_file(path) and "omniverse:" not in path.lower():
+                self._models["robot_description_export_btn"].enabled = True
+            else:
+                self._models["robot_description_export_btn"].enabled = False
+                carb.log_warn(f"Invalid path to Robot Desctiption YAML: {path}")
+
+        def on_select_xrdf_output_file(model=None):
+            path = model.get_value_as_string()
+            if is_xrdf_file(path) and "omniverse:" not in path.lower():
+                self._models["xrdf_export_btn"].enabled = True
+                if self._is_valid_xrdf_file(path):
+                    self._models["xrdf_merge_cb"].visible = True
+                    self._models["xrdf_merge_cb"].set_value(True)
+                else:
+                    self._models["xrdf_merge_cb"].visible = False
+                    self._models["xrdf_merge_cb"].set_value(False)
+            else:
+                self._models["robot_description_export_btn"].enabled = False
+                carb.log_warn(f"Invalid path to XRDF: {path}")
+
+        with export_frame:
             with ui.VStack(style=get_style(), spacing=5, height=0):
-
-                def check_file_type(model=None):
-                    path = model.get_value_as_string()
-                    if is_yaml_file(path) and "omniverse:" not in path.lower():
-                        self._models["export_btn"].enabled = True
-                    else:
-                        self._models["export_btn"].enabled = False
-                        carb.log_warn(f"Invalid path to Robot Desctiption YAML: {path}")
-
+                frame = CollapsableFrame("Export to Lula Robot Description File", collapsed=True)
                 kwargs = {
                     "label": "Output File",
                     "default_val": "",
@@ -1108,70 +1128,141 @@ class Extension(omni.ext.IExt):
                     "folder_dialog_title": "Write all sphere to a YAML file",
                     "folder_button_title": "Select YAML",
                 }
-                self._models["output_file"] = str_builder(**kwargs)
-                self._models["output_file"].add_value_changed_fn(check_file_type)
+                with frame:
+                    with ui.VStack(style=get_style(), spacing=5, height=0):
+                        self._models["robot_description_output_file"] = str_builder(**kwargs)
+                        self._models["robot_description_output_file"].add_value_changed_fn(
+                            check_robot_description_file_type
+                        )
 
-                self._models["export_btn"] = btn_builder(
-                    "Save", text="Save", on_clicked_fn=self._save_robot_description_file
-                )
-                self._models["export_btn"].enabled = False
+                        self._models["robot_description_export_btn"] = btn_builder(
+                            "Save", text="Save", on_clicked_fn=self._save_robot_description_file
+                        )
+                        self._models["robot_description_export_btn"].enabled = False
+
+                kwargs = {
+                    "label": "Output File",
+                    "default_val": "",
+                    "tooltip": "Click the Folder Icon to Set Filepath",
+                    "use_folder_picker": True,
+                    "item_filter_fn": on_filter_xrdf_item,
+                    "folder_dialog_title": "Write all sphere to an XRDF file",
+                    "folder_button_title": "Select XRDF",
+                }
+
+                frame = CollapsableFrame("Export to Curobo XRDF", collapsed=True)
+                with frame:
+                    with ui.VStack(style=get_style(), spacing=5, height=0):
+                        self._models["xrdf_output_file"] = str_builder(**kwargs)
+                        self._models["xrdf_output_file"].add_value_changed_fn(on_select_xrdf_output_file)
+
+                        self._models["xrdf_export_btn"] = Button("Export XRDF", "Export", on_click_fn=self._export_xrdf)
+                        self._models["xrdf_export_btn"].enabled = False
+
+                        cb_tooltip = (
+                            "Merge with the XRDF that already exists at the specified path. "
+                            + "Merging will maintain any data written into the XRDF file that is "
+                            + "not represented in the Robot Description Editor. Specifically, "
+                            + "self_collision ignore rules and buffer distances, modifiers, "
+                            + "tool_frames, and spheres for unrecognized robot frames."
+                        )
+                        self._models["xrdf_merge_cb"] = CheckBox("Merge With Existing XRDF", tooltip=cb_tooltip)
+                        self._models["xrdf_merge_cb"].visible = False
+                        self._models["xrdf_merge_cb"].set_value(False)
 
         ###################################################################
         #                   Import Robot Description File
         ###################################################################
 
-        frame = ui.CollapsableFrame(
-            title="Import Robot Description File",
-            name="subFrame",
-            height=0,
-            collapsed=True,
-            style=get_style(),
-            style_type_name_override="CollapsableFrame",
-            horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
-            vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
-        )
-        self._models["load_spheres_ui"] = frame
-        frame.enabled = False
+        import_frame = CollapsableFrame("Import From File", collapsed=True, enabled=False)
+        self._models["load_spheres_ui"] = import_frame
 
-        with frame:
-            with ui.VStack(style=get_style(), spacing=5, height=0):
-
-                def check_file_type(model=None):
-                    path = model.get_value_as_string()
-                    if is_yaml_file(path) and "omniverse:" not in path.lower() and self.articulation is not None:
-                        self._models["import_btn"].enabled = True
-                    elif self.articulation is None:
-                        self._models["import_btn"].enabled = False
-                        carb.log_warn(
-                            "Robot Articulation must be selected in the Selection Panel in order to import spheres for a robot"
-                        )
-                    else:
-                        self._models["import_btn"].enabled = False
-                        carb.log_warn(f"Invalid path to Robot Desctiption YAML: {path}")
-
-                kwargs = {
-                    "label": "Input File",
-                    "default_val": "",
-                    "tooltip": "Click the Folder Icon to Set Filepath",
-                    "use_folder_picker": True,
-                    "item_filter_fn": on_filter_item,
-                    "folder_dialog_title": "Select Robot Description YAML file, clearing all spheres",
-                    "folder_button_title": "Select YAML",
-                }
-                self._models["input_file"] = str_builder(**kwargs)
-                self._models["input_file"].add_value_changed_fn(check_file_type)
-
-                self._models["import_btn"] = btn_builder(
-                    "Import", text="Import", on_clicked_fn=self._load_robot_description_file
+        def check_lula_robot_description_file_type(model=None):
+            path = model.get_value_as_string()
+            if is_yaml_file(path) and self.articulation is not None:
+                self._models["robot_description_import_btn"].enabled = True
+            elif self.articulation is None:
+                self._models["robot_description_import_btn"].enabled = False
+                carb.log_warn(
+                    "Robot Articulation must be selected in the Selection Panel in order to import spheres for a robot"
                 )
-                self._models["import_btn"].enabled = False
+            else:
+                self._models["robot_description_import_btn"].enabled = False
+                carb.log_warn(f"Invalid path to Robot Desctiption YAML: {path}")
+
+        def check_xrdf_file_type(model=None):
+            path = model.get_value_as_string()
+            if is_xrdf_file(path) and self.articulation is not None:
+                self._models["xrdf_import_btn"].enabled = True
+            elif self.articulation is None:
+                self._models["xrdf_import_btn"].enabled = False
+                carb.log_warn(
+                    "Robot Articulation must be selected in the Selection Panel in order to import spheres for a robot"
+                )
+            else:
+                self._models["xrdf_import_btn"].enabled = False
+                carb.log_warn(f"Invalid path to XRDF: {path}")
+
+        with import_frame:
+            with ui.VStack(style=get_style(), spacing=5, height=0):
+                frame = ui.CollapsableFrame(
+                    title="Import Lula Robot Description File",
+                    name="subFrame",
+                    height=0,
+                    collapsed=True,
+                    style=get_style(),
+                    style_type_name_override="CollapsableFrame",
+                    horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                    vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+                )
+
+                with frame:
+                    with ui.VStack(style=get_style(), spacing=5, height=0):
+                        kwargs = {
+                            "label": "Input File",
+                            "default_val": "",
+                            "tooltip": "Click the Folder Icon to Set Filepath",
+                            "use_folder_picker": True,
+                            "item_filter_fn": on_filter_item,
+                            "folder_dialog_title": "Select Robot Description YAML file, clearing all spheres",
+                            "folder_button_title": "Select YAML",
+                        }
+                        self._models["lula_robot_description_input_file"] = str_builder(**kwargs)
+                        self._models["lula_robot_description_input_file"].add_value_changed_fn(
+                            check_lula_robot_description_file_type
+                        )
+
+                        self._models["robot_description_import_btn"] = btn_builder(
+                            "Import", text="Import", on_clicked_fn=self._load_robot_description_file
+                        )
+                        self._models["robot_description_import_btn"].enabled = False
+
+                frame = CollapsableFrame("Import Curobo XRDF", collapsed=True)
+                with frame:
+                    with ui.VStack(style=get_style(), spacing=5, height=0):
+                        kwargs = {
+                            "label": "Input File",
+                            "default_val": "",
+                            "tooltip": "Click the Folder Icon to Set Filepath",
+                            "use_folder_picker": True,
+                            "item_filter_fn": on_filter_xrdf_item,
+                            "folder_dialog_title": "Select Curobo XRDF YAML file, clearing all spheres",
+                            "folder_button_title": "Select YAML",
+                        }
+                        self._models["xrdf_input_file"] = str_builder(**kwargs)
+                        self._models["xrdf_input_file"].add_value_changed_fn(check_xrdf_file_type)
+
+                        self._models["xrdf_import_btn"] = Button("Import XRDF", "Import", on_click_fn=self._load_xrdf)
+                        self._models["xrdf_import_btn"].enabled = False
 
     def _update_editor_ui(self):
         self._models["sphere_editor_ui"].collapsed = False
         self._models["sphere_editor_ui"].visible = True
 
-        if is_yaml_file(self._models["input_file"].get_value_as_string()):
-            self._models["import_btn"].enabled = True
+        if is_yaml_file(self._models["lula_robot_description_input_file"].get_value_as_string()):
+            self._models["robot_description_import_btn"].enabled = True
+        if is_xrdf_file(self._models["xrdf_input_file"].get_value_as_string()):
+            self._models["xrdf_import_btn"].enabled = True
 
         self._refresh_collision_sphere_comboboxes()
 
@@ -1180,17 +1271,9 @@ class Extension(omni.ext.IExt):
             return
 
         self._models["frame_command_ui"].enabled = True
+        self._models["frame_command_ui"].rebuild()
 
-        for i, joint_name in enumerate(self.dof_names):
-            self._models[f"joint_{i}_frame"].title = joint_name
-            self._models[f"joint_{i}_frame"].visible = True
-
-            self._models[f"joint_{i}_position"].set_value(float(self._joint_positions[i]))
-
-            self._models[f"joint_{i}_status"].get_item_value_model().set_value(int(self._active_joints[i]))
-
-        for i in range(self.num_dof, MAX_DOF_NUM):
-            self._models[f"joint_{i}_frame"].visible = False
+        self.articulation.set_joint_positions(self._joint_positions)
 
     def _trigger_preview_generate_spheres_for_link(self, model=None, val=None):
         self._generate_spheres_for_link()
@@ -1303,22 +1386,99 @@ class Extension(omni.ext.IExt):
         if self._hiding_link:
             self._models["hide_link_btn"].call_clicked_fn()
 
+    def _load_xrdf(self):
+        if self.articulation is None:
+            return
+        path = self._models["xrdf_input_file"].get_value_as_string()
+
+        parsed_file = self.safe_load_yaml(path)
+
+        if "format" not in parsed_file or parsed_file["format"] != "xrdf":
+            carb.log_error(
+                "XRDF file is expected to contain the line \nformat: xrdf\n"
+                + "but this line is missing.  Aborting Import."
+            )
+        if "format_version" not in parsed_file:
+            carb.log_error(
+                "XRDF file is expected to have a field:\nformat_version\nBut this field "
+                + "is missing. Aborting Import."
+            )
+        elif parsed_file["format_version"] != 1.0:
+            carb.log_error("This importer only supports XRDF files with format_version '1.0'")
+
+        self._active_joints = np.zeros(MAX_DOF_NUM, dtype=bool)
+        self._acceleration_limits = np.full(MAX_DOF_NUM, DEFAULT_ACCELERATION_LIMIT)
+        self._jerk_limits = np.full(MAX_DOF_NUM, DEFAULT_JERK_LIMIT)
+        self._joint_positions[:] = 0
+        dof_names = np.array(self.dof_names)
+
+        cspace = parsed_file["cspace"]["joint_names"]
+        file_acceleration_limits = parsed_file["cspace"]["acceleration_limits"]
+        file_jerk_limits = parsed_file["cspace"]["jerk_limits"]
+
+        default_q_map = parsed_file["default_joint_positions"]
+
+        in_mask = np.in1d(cspace, dof_names)
+        if not np.all(in_mask):
+            carb.log_warn(
+                "Some joints listed in the cspace of the provided robot_description YAML file are not present in the robot Articulation:"
+                + f" {cspace[~in_mask]}"
+            )
+            cspace = cspace[in_mask]
+
+        for i, joint in enumerate(cspace):
+            ind = self.dof_names.index(joint)
+            self._active_joints[ind] = True
+            self._acceleration_limits[ind] = file_acceleration_limits[i]
+            self._jerk_limits[ind] = file_jerk_limits[i]
+
+        # Maps joint names to default joint positions
+        for dof_name in default_q_map:
+            if dof_name in self.articulation.dof_names:
+                dof_index = self.articulation.dof_names.index(dof_name)
+                self._joint_positions[dof_index] = default_q_map[dof_name]
+            else:
+                carb.log_warn(
+                    "Invalid DOF name ["
+                    + dof_name
+                    + "] specified in XRDF file "
+                    + "'default_joint_positions' field that could not be found in the currently "
+                    + "selected Articulation."
+                )
+
+        lower_limit = self.articulation.dof_properties["lower"]
+        upper_limit = self.articulation.dof_properties["upper"]
+        self._joint_positions[: self.articulation.num_dof] = np.clip(
+            self._joint_positions[: self.articulation.num_dof], lower_limit, upper_limit
+        )
+
+        self._collision_sphere_editor.load_xrdf_spheres(self.articulation, parsed_file)
+
+        self._update_command_ui()
+
     def _load_robot_description_file(self, model=None):
         if self.articulation is None:
             return
-        path = self._models["input_file"].get_value_as_string()
+        path = self._models["lula_robot_description_input_file"].get_value_as_string()
 
-        with open(path, "r") as stream:
-            try:
-                parsed_file = yaml.safe_load(stream)
-            except yaml.YAMLError as exc:
-                carb.log_error("Attempted to load invalid yaml file " + str(exc))
+        parsed_file = self.safe_load_yaml(path)
 
         self._active_joints = np.zeros(MAX_DOF_NUM, dtype=bool)
         dof_names = np.array(self.dof_names)
 
         cspace = parsed_file["cspace"]
         default_q = parsed_file["default_q"]
+
+        self._acceleration_limits = np.full(MAX_DOF_NUM, DEFAULT_ACCELERATION_LIMIT)
+        self._jerk_limits = np.full(MAX_DOF_NUM, DEFAULT_JERK_LIMIT)
+
+        file_acceleration_limits = None
+        if "acceleration_limits" in parsed_file:
+            file_acceleration_limits = parsed_file["acceleration_limits"]
+
+        file_jerk_limits = None
+        if "jerk_limits" in parsed_file:
+            file_jerk_limits = parsed_file["jerk_limits"]
 
         in_mask = np.in1d(cspace, dof_names)
         if not np.all(in_mask):
@@ -1333,7 +1493,13 @@ class Extension(omni.ext.IExt):
             self._active_joints[ind] = True
             self._joint_positions[ind] = default_q[i]
 
+            if file_acceleration_limits is not None:
+                self._acceleration_limits[ind] = file_acceleration_limits[i]
+            if file_jerk_limits is not None:
+                self._jerk_limits[ind] = file_jerk_limits[i]
+
         fixed_joints = parsed_file["cspace_to_urdf_rules"]
+
         if fixed_joints is not None:
             for item in fixed_joints:
                 if item["rule"] != "fixed":
@@ -1352,6 +1518,249 @@ class Extension(omni.ext.IExt):
 
         self._update_command_ui()
 
+    def _is_valid_xrdf_file(self, path):
+        if not os.path.isfile(path):
+            return False
+        with open(path, "r") as stream:
+            try:
+                parsed_file = yaml.safe_load(stream)
+            except yaml.YAMLError as exc:
+                return False
+
+        if (
+            "format" in parsed_file
+            and parsed_file["format"] == "xrdf"
+            and "format_version" in parsed_file
+            and parsed_file["format_version"] == 1.0
+        ):
+            return True
+        else:
+            return False
+
+    def recursive_cast_to_float(self, d):
+        from collections.abc import Iterable
+
+        for k, v in d.items():
+            if isinstance(v, str):
+                try:
+                    f = float(v)
+                    d[k] = f
+                except:
+                    pass
+            elif isinstance(v, dict):
+                self.recursive_cast_to_float(v)
+            elif isinstance(v, Iterable):
+                l = []
+                for item in v:
+                    f = item
+                    if isinstance(item, str):
+                        try:
+                            f = float(item)
+                        except:
+                            pass
+                    l.append(f)
+                d[k] = l
+
+    def safe_load_yaml(self, path):
+        with open(path, "r") as stream:
+            try:
+                parsed_file = yaml.safe_load(stream)
+            except yaml.YAMLError as exc:
+                carb.log_error("Attempted to load invalid yaml file " + str(exc))
+
+        self.recursive_cast_to_float(parsed_file)
+        return parsed_file
+
+    def _copy_information_from_existing_xrdf(self, path):
+        parsed_file = {}
+        if not self._is_valid_xrdf_file(path):
+            return parsed_file
+
+        articulation_frames = {link_path[1:] for link_path in self._sphere_gen_link_2_mesh.keys()}
+        parsed_file = self.safe_load_yaml(path)
+
+        parsed_file.pop("default_joint_positions", None)
+        parsed_file.pop("cspace", None)
+
+        if (
+            "self_collision" in parsed_file
+            and "geometry" in parsed_file["self_collision"]
+            and "collision" in parsed_file
+            and "geometry" in parsed_file["collision"]
+        ):
+            if parsed_file["self_collision"]["geometry"] == parsed_file["collision"]["geometry"]:
+                # Since buffer distances in the "collision" group are going to be set to zero,
+                # to keep the relative sphere sizes between "collision" and "self_collision" the
+                # same, "collision" buffer distances will be subtracted "self_collision" buffer
+                # distances.
+                if "buffer_distance" in parsed_file["collision"]:
+                    collision_buffer_distance = parsed_file["collision"]["buffer_distance"]
+                    self_collision_buffer_distance = parsed_file["self_collision"].get("buffer_distance", {})
+                    for k, v in collision_buffer_distance.items():
+                        if k in articulation_frames:
+                            if k in self_collision_buffer_distance:
+                                self_collision_buffer_distance[k] -= v
+                            else:
+                                self_collision_buffer_distance[k] = -v
+                            collision_buffer_distance[k] = 0
+            else:
+                parsed_file["self_collision"] = {"geometry": parsed_file["collision"]["geometry"]}
+
+        if "collision" not in parsed_file or "geometry" not in parsed_file["collision"]:
+            parsed_file.pop("geometry", None)
+            parsed_file.pop("collision", None)
+            parsed_file.pop("self_collision", None)
+        else:
+            for k in list(parsed_file["geometry"].keys()):
+                if k != parsed_file["collision"]["geometry"]:
+                    parsed_file["geometry"].pop(k, None)
+                else:
+                    parsed_file["geometry"][k].pop("clone", None)
+
+        return parsed_file
+
+    def get_ignore_dict(self, ordered_links):
+        articulation_path = self.articulation.prim_path
+        ignore_dict = {}
+
+        # Any links conencted by a joint should ignore each other
+        for p in Usd.PrimRange(get_prim_at_path(articulation_path)):
+            if UsdPhysics.Joint(p):
+                b0 = p.GetProperty("physics:body0").GetTargets()
+                b1 = p.GetProperty("physics:body1").GetTargets()
+
+                if len(b0) == 1 and len(b1) == 1:
+                    b0 = str(b0[0])
+                    b1 = str(b1[0])
+                    l0 = b0.split("/")[-1]
+                    l1 = b1.split("/")[-1]
+                    if l0 in ordered_links and l1 in ordered_links:
+                        if l0 in ignore_dict:
+                            ignore_dict[l0].append(l1)
+                        else:
+                            ignore_dict[l0] = [l1]
+
+        # If A connects to B,C,D then B,C,D should all ignore each other.
+        extended_ignore_dict = copy.deepcopy(ignore_dict)
+        for k, v in ignore_dict.items():
+            for i in range(len(v) - 1):
+                for j in range(i + 1, len(v)):
+                    if v[i] in extended_ignore_dict:
+                        extended_ignore_dict[v[i]].append(v[j])
+                    else:
+                        extended_ignore_dict[v[i]] = [v[j]]
+
+        return extended_ignore_dict
+
+    def _export_xrdf(self, model=None):
+        if self.articulation is None:
+            return
+
+        path = self._models["xrdf_output_file"].get_value_as_string()
+        if self._models["xrdf_merge_cb"].get_value():
+            parsed_file = self._copy_information_from_existing_xrdf(path)
+        else:
+            parsed_file = {}
+
+        art_view = ArticulationView(self.articulation.prim_path)
+        art_view.initialize()
+        ordered_links = art_view.body_names  # Links in order from root to end effector
+
+        parsed_file["format"] = "xrdf"
+        parsed_file["format_version"] = 1.0
+
+        active_joints_mask = self._active_joints[: self.num_dof]
+        acceleration_limits = self._acceleration_limits[: self.num_dof][active_joints_mask]
+        jerk_limits = self._jerk_limits[: self.num_dof][active_joints_mask]
+        dof_names = np.array(self.dof_names)
+
+        default_joint_positions_dict = dict()
+        for i, dof_name in enumerate(dof_names):
+            default_joint_positions_dict[dof_name] = self._joint_positions[i]
+        parsed_file["default_joint_positions"] = default_joint_positions_dict
+
+        cspace_dict = {"joint_names": [], "acceleration_limits": [], "jerk_limits": []}
+        for i, dof_name in enumerate(dof_names[active_joints_mask]):
+            cspace_dict["joint_names"].append(dof_name)
+            cspace_dict["acceleration_limits"].append(acceleration_limits[i])
+            cspace_dict["jerk_limits"].append(jerk_limits[i])
+        parsed_file["cspace"] = cspace_dict
+
+        if "geometry" not in parsed_file or "collision" not in parsed_file:
+            default_name = "auto_generated_collision_sphere_group"
+            parsed_file["collision"] = {"geometry": default_name}
+            parsed_file["geometry"] = {default_name: {"spheres": {}}}
+            parsed_file["self_collision"] = {"geometry": default_name}
+
+        if "ignore" not in parsed_file["self_collision"]:
+            ignore_dict = self.get_ignore_dict(ordered_links)
+            parsed_file["self_collision"]["ignore"] = ignore_dict
+
+        geometry_group_name = parsed_file["collision"]["geometry"]
+        sphere_dict = parsed_file["geometry"][geometry_group_name].get("spheres", None)
+        if sphere_dict is None:
+            sphere_dict = {}
+            parsed_file["geometry"][geometry_group_name]["spheres"] = sphere_dict
+        for link in ordered_links:
+            sphere_dict.pop(link, None)
+        self._collision_sphere_editor.write_spheres_to_dict(self.articulation, sphere_dict)
+
+        key_order = [
+            "format",
+            "format_version",
+            "modifiers",
+            "default_joint_positions",
+            "cspace",
+            "tool_frames",
+            "collision",
+            "self_collision",
+            "geometry",
+        ]
+
+        def write_item(f, item, tabbing):
+            if isinstance(item, dict):
+                for k in list(item.keys()):
+                    f.write(f"{tabbing}{k}: ")
+                    tabbing = " " * len(tabbing)
+                    if isinstance(item[k], dict):
+                        f.write("\n")
+                    write_item(f, item[k], tabbing + "  ")
+            elif isinstance(item, list) or isinstance(item, np.ndarray):
+                # Assume all elements are the same type
+                if len(item) == 0:
+                    f.write(f"[]\n")
+                    return
+                if isinstance(item[0], dict):
+                    f.write("\n")
+                    for d in item:
+                        write_item(f, d, tabbing + "- ")
+                elif isinstance(item[0], str):
+                    f.write("\n")
+                    for val in item:
+                        f.write(tabbing + "- ")
+                        write_item(f, val, "")
+                else:
+                    f.write(f"[")
+                    for val in item[:-1]:
+                        f.write(f"{str(np.around(val, 4))}, ")
+                    f.write(f"{str(np.around(item[-1],4))}]\n")
+            else:
+                if isinstance(item, str):
+                    f.write(f'"{item}"\n')
+                else:
+                    f.write(f"{str(np.around(item, 4))}\n")
+
+        with open(path, "w") as f:
+            for key in key_order:
+                if key in parsed_file:
+                    f.write(f"{key}: ")
+                    value = parsed_file[key]
+                    if isinstance(value, dict):
+                        f.write("\n")
+                    write_item(f, value, "  ")
+                    if key != key_order[-1]:
+                        f.write("\n")
+
     def _save_robot_description_file(self, model=None):
         if self.articulation is None:
             return
@@ -1365,9 +1774,12 @@ class Extension(omni.ext.IExt):
 
         fixed_joints_mask = ~active_joints_mask
 
+        acceleration_limits = self._acceleration_limits[: self.num_dof]
+        jerk_limits = self._jerk_limits[: self.num_dof]
+
         dof_names = np.array(self.dof_names)
 
-        path = self._models["output_file"].get_value_as_string()
+        path = self._models["robot_description_output_file"].get_value_as_string()
         if not path:
             carb.log_error(f"Cannot Save to Invalid Path {path}")
             return
@@ -1391,6 +1803,22 @@ class Extension(omni.ext.IExt):
                 pos = np.around(joint_pos, 4)
                 f.write(f"{str(pos)},")
             f.write(f"{str(np.around(self._joint_positions[active_joints_mask][-1],4))}\n")
+            f.write("]\n\n")
+
+            f.write("acceleration_limits: [\n")
+            f.write("   ")
+            for accel_limit in acceleration_limits[active_joints_mask][:-1]:
+                l = np.around(accel_limit, 2)
+                f.write(f"{str(l)},")
+            f.write(f"{str(np.around(acceleration_limits[active_joints_mask][-1],2))}\n")
+            f.write("]\n\n")
+
+            f.write("jerk_limits: [\n")
+            f.write("   ")
+            for jerk_limit in jerk_limits[active_joints_mask][:-1]:
+                l = np.around(jerk_limit, 2)
+                f.write(f"{str(l)},")
+            f.write(f"{str(np.around(jerk_limits[active_joints_mask][-1],2))}\n")
             f.write("]\n\n")
 
             f.write("# Most dimensions of the cspace have a direct corresponding element\n")
