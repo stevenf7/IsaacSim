@@ -1039,7 +1039,7 @@ publish-extensions:
   - if: $RUN_BUMP_VERSION == "true"
     when: never
   - !reference [.rules-version-changed, rules]
-  - !reference [.rules-push, rules]
+  - !reference [.rules-push-manual, rules]
 
 
 # ==============================================================================================================
@@ -1061,7 +1061,8 @@ publish-docs:
     when: never
   - if: $RUN_BUMP_VERSION == "true"
     when: never
-  - !reference [.rules-push, rules]
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push-manual, rules]
 
 
 # ==============================================================================================================
