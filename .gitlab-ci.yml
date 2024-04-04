@@ -110,7 +110,10 @@ variables:
     description: "Set to 'true' to enable C++ sanitizer builds."
   ALLOW_BUMP_VERSION:
     value: "false"
-    description: "Set to true to run bump version. Only happens on push or schedule."
+    description: "Set to true to run bump version. Only happens on schedule."
+  RUN_NIGHTLY_TESTS:
+    value: "false"
+    description: "Set to true to run nightly tests. Only happens on schedule."
 
 
 # ==============================================================================================================
@@ -130,20 +133,30 @@ variables:
 
 
 # ==============================================================================================================
-# Rule for running on either push/schedule/web/trigger/pipeline/parent_pipeline on protected and release branches
+# Rule for running nightly tests on scheduled pipeline on develop and release branches
 .rules-bump-version:
   rules:
-  # allow schedule pipeline on protected and release/* branches
-  - if: $CI_PIPELINE_SOURCE == "schedule" && ($CI_COMMIT_REF_PROTECTED == "true" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
-  - if: $CI_PIPELINE_SOURCE == "schedule" && $ALLOW_BUMP_VERSION == "true"
-    # allow schedule pipeline if ALLOW_BUMP_VERSION is set to "true"
+  - if: $CI_PIPELINE_SOURCE == "schedule" && $ALLOW_BUMP_VERSION == "true" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
 
 
 # ==============================================================================================================
-# Rule for running on either push/schedule/web/trigger/pipeline/parent_pipeline on protected and release branches
+# Rule for running nightly tests on scheduled pipeline on protected and release branches
+.rules-nightly-tests:
+  rules:
+  # allow schedule pipeline if ALLOW_BUMP_VERSION is set to "true" and on protected and release/* branches
+  - if: $CI_PIPELINE_SOURCE == "schedule" && $RUN_NIGHTLY_TESTS == "true" && ($CI_COMMIT_REF_PROTECTED == "true" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
+  - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
+    # allow on bump version
+    changes:
+    - VERSION.md
+    - VERSION
+
+
+# ==============================================================================================================
+# Rule for running publisher on push on develop and release branches
 .rules-version-changed:
   rules:
-  - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_REF_PROTECTED == "true" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
+  - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
     changes:
     - VERSION.md
     - VERSION
@@ -513,7 +526,7 @@ test-linux-x86_64-internalpythontests-1:
   after_script:
   - !reference [.datadog-test-visibility-linux-x86_64, script]
   rules:
-  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-nightly-tests, rules]
   needs:
   - job: build-linux-x86_64-release
     artifacts: true
@@ -529,7 +542,7 @@ test-linux-x86_64-internalpythontests-1:
   after_script:
   - !reference [.datadog-test-visibility-linux-x86_64, script]
   rules:
-  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-nightly-tests, rules]
   needs:
   - job: build-linux-x86_64-release
     artifacts: true
@@ -545,7 +558,7 @@ test-linux-x86_64-nativepythontests-1:
   after_script:
   - !reference [.datadog-test-visibility-linux-x86_64, script]
   rules:
-  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-nightly-tests, rules]
   needs:
   - job: build-linux-x86_64-release
     artifacts: true
@@ -561,7 +574,7 @@ test-linux-x86_64-nativepythontests-2:
   after_script:
   - !reference [.datadog-test-visibility-linux-x86_64, script]
   rules:
-  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-nightly-tests, rules]
   needs:
   - job: build-linux-x86_64-release
     artifacts: true
@@ -768,7 +781,7 @@ test-windows-x86_64-internalpythontests-1:
   after_script:
   - !reference [.datadog-test-visibility-windows-x86_64, script]
   rules:
-  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-nightly-tests, rules]
   needs:
   - job: build-windows-x86_64-release
     artifacts: true
@@ -782,7 +795,7 @@ test-windows-x86_64-internalpythontests-1:
   after_script:
   - !reference [.datadog-test-visibility-windows-x86_64, script]
   rules:
-  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-nightly-tests, rules]
   needs:
   - job: build-windows-x86_64-release
     artifacts: true
@@ -796,7 +809,7 @@ test-windows-x86_64-nativepythontests-1:
   after_script:
   - !reference [.datadog-test-visibility-windows-x86_64, script]
   rules:
-  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-nightly-tests, rules]
   needs:
   - job: build-windows-x86_64-release
     artifacts: true
@@ -810,7 +823,7 @@ test-windows-x86_64-nativepythontests-2:
   after_script:
   - !reference [.datadog-test-visibility-windows-x86_64, script]
   rules:
-  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-nightly-tests, rules]
   needs:
   - job: build-windows-x86_64-release
     artifacts: true
@@ -1014,8 +1027,8 @@ publish-extensions:
   #     artifacts: false
   #     optional: true
   rules:
-    - !reference [.rules-version-changed, rules]
-    - !reference [.rules-push, rules]
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push, rules]
 
 
 # ==============================================================================================================
@@ -1044,13 +1057,13 @@ publish-to-launcher:
   - .deploy-common
   - .omni_nvks_runner_with_docker
   script:
-    - ls _build/packages/
-    - ./repo.sh publish_launcher
+  - ls _build/packages/
+  - ./repo.sh publish_launcher
   needs:
-    - job: sign-windows-x86_64-release
-      artifacts: true
-    - job: build-linux-x86_64-release
-      artifacts: true
+  - job: sign-windows-x86_64-release
+    artifacts: true
+  - job: build-linux-x86_64-release
+    artifacts: true
   #   - job: test-windows-x86_64-startuptests
   #     artifacts: false
   #     optional: true
@@ -1058,10 +1071,10 @@ publish-to-launcher:
   #     artifacts: false
   #     optional: true
   rules:
-    - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
-      when: never
-    - !reference [.rules-version-changed, rules]
-    - !reference [.rules-push-manual, rules]
+  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+    when: never
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push-manual, rules]
   allow_failure: true
 
 #   extends:
@@ -1084,7 +1097,7 @@ publish-to-launcher:
 # ==============================================================================================================
 release-new-version:
   rules:
-    - when: never
+  - when: never
 
 #   extends:
 #   - .deploy-common
@@ -1104,7 +1117,7 @@ release-new-version:
 # set AUTOUPDATE_KIT=true for scheduled pipeline to run
 autoupdate-kit:
   rules:
-    - when: never
+  - when: never
 #   extends:
 #   - .deploy-common
 #   - .omni_nvks_runner_with_docker
@@ -1139,7 +1152,6 @@ bump-version:
   rules:
   - if: $ALLOW_BUMP_VERSION != "true"
     when: never
-#   - !reference [.rules-push-manual, rules]
   - !reference [.rules-bump-version, rules]
 
 

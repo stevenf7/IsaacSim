@@ -97,8 +97,8 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
             cloned_repo_dir = os.path.join(temp_dir, repo_name)
 
             # setup user
-            call_git_safe(cloned_repo_dir, ["config", "user.email", '"teamcity@nvidia.com"'])
-            call_git_safe(cloned_repo_dir, ["config", "user.name", '"Team City"'])
+            call_git_safe(cloned_repo_dir, ["config", "user.email", '"gitlab@nvidia.com"'])
+            call_git_safe(cloned_repo_dir, ["config", "user.name", '"gitlab"'])
 
             # create branch
             # branch_name = "develop-bump-test"
@@ -115,8 +115,8 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
                 # push/commit everything
                 logger.info("push/commit everything")
                 call_git_safe(cloned_repo_dir, ["add", "VERSION"])
-                call_git_safe(cloned_repo_dir, ["config", "user.email", '"teamcity@nvidia.com"'])
-                call_git_safe(cloned_repo_dir, ["config", "user.name", '"Team City"'])
+                call_git_safe(cloned_repo_dir, ["config", "user.email", '"gitlab@nvidia.com"'])
+                call_git_safe(cloned_repo_dir, ["config", "user.name", '"gitlab"'])
                 call_git_safe(cloned_repo_dir, ["commit", "-m", f"Bumped version: {new_version}"])
                 call_git_safe(cloned_repo_dir, ["lfs", "fetch", "--all"])
                 call_git_safe(cloned_repo_dir, ["push", git_url, branch_name])
