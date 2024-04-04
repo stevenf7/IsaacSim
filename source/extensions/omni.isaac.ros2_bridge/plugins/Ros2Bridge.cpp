@@ -251,7 +251,7 @@ CARB_EXPORT void carbOnPluginStartup()
         }
         else
         {
-            CARB_LOG_ERROR(
+            CARB_LOG_WARN(
                 "Could not load ROS2 Bridge due to missing library dependencies, please make sure your sourced ROS2 workspace has the correct packages/libraries installed");
             return;
         }
@@ -264,7 +264,7 @@ CARB_EXPORT void carbOnPluginStartup()
         if (!handle->is_valid())
         {
             handle->shutdown();
-            CARB_LOG_ERROR(
+            CARB_LOG_WARN(
                 "Could not load ROS2 Bridge due to missing library dependencies, please make sure your sourced ROS2 workspace has the correct packages/libraries installed");
             return;
         }
