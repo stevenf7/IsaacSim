@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.14.1] - 2024-04-02
+### Fixed
+- Error on startup due to missing libraries is now a warning, prevents errors on startup for users that don't want to use ROS2 by default. 
+
 ## [2.14.0] - 2024-04-02
 ### Added
 - ROS2 Service Prim node to list prims and their attributes, as well as read and write a specific attribute
