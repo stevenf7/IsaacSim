@@ -155,8 +155,8 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
             cloned_repo_dir = os.path.join(temp_dir, pipeline_repo)
 
             # setup user
-            call_git_safe(cloned_repo_dir, ["config", "user.email", '"teamcity@nvidia.com"'])
-            call_git_safe(cloned_repo_dir, ["config", "user.name", '"Team City"'])
+            call_git_safe(cloned_repo_dir, ["config", "user.email", '"gitlab@nvidia.com"'])
+            call_git_safe(cloned_repo_dir, ["config", "user.name", '"gitlab"'])
 
             # create branch
             call_git_safe(cloned_repo_dir, ["checkout", "-b", branch_name])
