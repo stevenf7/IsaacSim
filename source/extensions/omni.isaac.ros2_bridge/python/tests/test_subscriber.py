@@ -185,6 +185,7 @@ class TestRos2Subscriber(ogts.OmniGraphTestCase):
 
                 for md, d in zip(message_value.joint_names, joint_names):
                     self.assertEqual(md, d)
+                self.assertEqual(len(message_value.points), len(points))
                 for md, d in zip(message_value.points, points):
                     point = json.loads(d)
                     for mv, v in zip(md.positions, point["positions"]):
@@ -195,7 +196,7 @@ class TestRos2Subscriber(ogts.OmniGraphTestCase):
                         self.assertAlmostEqual(mv, v)
                     for mv, v in zip(md.effort, point["effort"]):
                         self.assertAlmostEqual(mv, v)
-                    time_from_start = json.loads(point["time_from_start"])
+                    time_from_start = point["time_from_start"]
                     self.assertEqual(md.time_from_start.sec, time_from_start["sec"])
                     self.assertEqual(md.time_from_start.nanosec, time_from_start["nanosec"])
 
@@ -213,6 +214,7 @@ class TestRos2Subscriber(ogts.OmniGraphTestCase):
                     else:
                         self.assertEqual(md, d)
                 self.assertEqual(message_value.layout.data_offset, layout_data_offset)
+                self.assertEqual(len(message_value.layout.dim), len(layout_dim))
                 for md, d in zip(message_value.layout.dim, layout_dim):
                     dim = json.loads(d)
                     self.assertEqual(md.label, dim["label"])

@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.15.0] - 2024-04-03
+### Changed
+- Improve dynamic message API and add support for JSON data
+
 ## [2.14.1] - 2024-04-02
 ### Fixed
 - Error on startup due to missing libraries is now a warning, prevents errors on startup for users that don't want to use ROS2 by default. 
