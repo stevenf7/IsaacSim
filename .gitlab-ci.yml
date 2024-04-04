@@ -881,10 +881,8 @@ pages:
   artifacts:
     paths:
     - public
-  only:
-  - develop@omniverse/isaac/omni_isaac_sim
   rules:
-  - if: $RUN_BUMP_VERSION == "true"
+  - if: $RUN_BUMP_VERSION == "true" || $CI_COMMIT_BRANCH != "develop"
     when: never
 
 # ==============================================================================================================
