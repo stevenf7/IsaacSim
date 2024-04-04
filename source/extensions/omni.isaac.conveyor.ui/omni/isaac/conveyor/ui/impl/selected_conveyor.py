@@ -7,8 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 import omni.ui as ui
-
-from ..conveyor_builder.conveyor_track import Ramp, Type
+from omni.isaac.conveyor.conveyor_builder.conveyor_track import Ramp, Type
 
 
 class SelectedConveyorWidget:

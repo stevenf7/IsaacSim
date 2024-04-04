@@ -6,6 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from .scripts.commands import *
-from .scripts.extension import *
-from .scripts.ui.conveyor_builder import *
+
+from .commands import *
+from .conveyor_builder import *
+from .impl import *

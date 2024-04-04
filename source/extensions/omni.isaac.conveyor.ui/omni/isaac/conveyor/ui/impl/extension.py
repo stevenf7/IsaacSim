@@ -13,14 +13,14 @@ import carb
 import omni.ext
 import omni.kit.commands
 import omni.ui as ui
+from omni.isaac.conveyor.bindings._omni_isaac_conveyor import acquire_interface as _acquire
+from omni.isaac.conveyor.bindings._omni_isaac_conveyor import release_interface as _release
 from omni.isaac.ui.menu import make_menu_item_description
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from pxr import Gf, Sdf, UsdGeom
 
-from ..bindings._omni_isaac_conveyor import acquire_interface as _acquire
-from ..bindings._omni_isaac_conveyor import release_interface as _release
+from .conveyor_builder import ConveyorBuilderWidget
 from .style import UI_STYLES
-from .ui.conveyor_builder import ConveyorBuilderWidget
 
 EXTENSION_NAME = "Conveyor Utility"
 
