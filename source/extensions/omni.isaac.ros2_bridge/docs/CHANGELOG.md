@@ -3,6 +3,7 @@
 ## [2.16.0] - 2024-04-04
 ### Added
 - Generic ROS2 Publisher node
+- Isaac Sim now supports CycloneDDS (Linux ROS2 Humble only)
 
 ## [2.15.0] - 2024-04-03
 ### Changed

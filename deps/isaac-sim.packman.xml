@@ -7,7 +7,7 @@
         <package name="nv_ros2" version="foxy_20231120_win64_release.7z" platforms="windows-x86_64"/>
     </dependency>
     <dependency name="nv_ros2_humble" linkPath="../_build/target-deps/nv_ros2_humble">
-        <package name="nv_ros2" version="humble_20231114_0ce33ed-linux64_release" platforms="linux-x86_64"/>
+        <package name="nv_ros2" version="humble_20240327_d75df21-linux64_release" platforms="linux-x86_64"/>
         <package name="nv_ros2" version="humble_20231121_win64_release.7z" platforms="windows-x86_64"/>
     </dependency>
     <dependency name="lula" linkPath="../_build/target-deps/lula">
