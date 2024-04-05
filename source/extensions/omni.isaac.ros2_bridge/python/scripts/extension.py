@@ -76,7 +76,7 @@ class ROS2BridgeExtension(omni.ext.IExt):
         if self._ros2bridge.get_startup_status() is False:
             if sys.platform == "linux":
                 omni.kit.app.get_app().print_and_log(
-                    f"To use the internal libraries included with the extension please set: \nRMW_IMPLEMENTATION=rmw_fastrtps_cpp\nLD_LIBRARY_PATH=$LD_LIBRARY_PATH:{self._extension_path}/{ros_distro}/lib\nBefore starting Isaac Sim"
+                    f"To use the internal libraries included with the extension please set the following environment variables to use with FastDDS (default) or CycloneDDS (ROS2 Humble only): \nRMW_IMPLEMENTATION=rmw_fastrtps_cpp\nLD_LIBRARY_PATH=$LD_LIBRARY_PATH:{self._extension_path}/{ros_distro}/lib\n\nOR \n\nRMW_IMPLEMENTATION=rmw_cyclonedds_cpp\nLD_LIBRARY_PATH=$LD_LIBRARY_PATH:{self._extension_path}/{ros_distro}/lib\nBefore starting Isaac Sim"
                 )
             else:
                 omni.kit.app.get_app().print_and_log(
