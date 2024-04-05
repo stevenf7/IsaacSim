@@ -299,10 +299,14 @@ public:
     virtual ~Ros2PublisherHumble();
     virtual void publish(const void* msg);
     virtual size_t get_subscription_count();
+    virtual bool isValid()
+    {
+        return mPub != nullptr;
+    }
 
 private:
     Ros2NodeBase* mNode;
-    std::shared_ptr<rcl_publisher_t> mPub;
+    std::shared_ptr<rcl_publisher_t> mPub = nullptr;
 };
 
 class Ros2SubscriberHumble : public Ros2Subscriber
