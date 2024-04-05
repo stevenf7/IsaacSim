@@ -1,0 +1,23 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.2.0"
+category = "Other"
+title = "Isaac Sim Import Wizard"
+description = "wizard to guide users through importing and configuration tools inside isaac sim"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.import_wizard"
+keywords = ["isaac","wizard","import"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+
+[dependencies]
+"omni.isaac.ui" = {}
+"omni.kit.menu.utils" = {}
+
+[[python.module]]
+name = "omni.isaac.import_wizard"
