@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.16.0] - 2024-04-04
+### Added
+- Generic ROS2 Publisher node
+
 ## [2.15.0] - 2024-04-03
 ### Changed
 - Improve dynamic message API and add support for JSON data
