@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.16.0] - 2024-04-04
+### Added
+- Option to use system timestamp for RTX Lidar and Camera Helper Nodes
+
+### Changed
+- Updated Camera and RTX Lidar unit tests for publishing using system timestamp
+
 ## [1.15.9] - 2024-03-12
 ### Fixed
 - Multi GPU support

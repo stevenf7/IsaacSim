@@ -54,221 +54,231 @@ class Extension(omni.ext.IExt):
         self.unregister_nodes()
 
     def register_nodes(self):
-        ##### Publish RGB
-        rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
 
-        rep.writers.register_node_writer(
-            name=f"{rv}{BRIDGE_PREFIX}PublishImage",
-            node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
-            annotators=[
-                f"{rv}IsaacConvertRGBAToRGB",
-                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
-                ),
-            ],
-            category=BRIDGE_NAME,
-        )
-        ##### Publish Depth
-        rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.DistanceToImagePlane.name)
-        rep.writers.register_node_writer(
-            name=f"{rv}{BRIDGE_PREFIX}PublishImage",
-            node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
-            annotators=[
-                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(rv + "ExportRawArray"),
-                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
-                ),
-                f"{rv}IsaacSimulationGate",
-            ],
-            encoding="32FC1",
-            category=BRIDGE_NAME,
-        )
+        # For Simulation and System time. Removed first S char in keys to account for both upper and lower cases.
+        TIME_TYPES = [("imulationTime", ""), ("ystemTime", "SystemTime")]
 
-        # publish depth pcl
-        rep.writers.register_node_writer(
-            name=f"{rv}{BRIDGE_PREFIX}PublishPointCloud",
-            node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
-            annotators=[
-                f"{rv}IsaacConvertDepthToPointCloud",
-                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
-                ),
-            ],
-            category=BRIDGE_NAME,
-        )
-        # instance
-        rep.writers.register_node_writer(
-            name=f"{BRIDGE_PREFIX}PublishInstanceSegmentation",
-            node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
-            annotators=[
-                "instance_segmentation_fast",
-                f'{omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("InstanceSegmentation")}IsaacSimulationGate',
-                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
-                ),
-            ],
-            encoding="32SC1",
-            category=BRIDGE_NAME,
-        )
-        # Semantic
-        rep.writers.register_node_writer(
-            name=f"{BRIDGE_PREFIX}PublishSemanticSegmentation",
-            node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
-            annotators=[
-                "semantic_segmentation",
-                f'{omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("SemanticSegmentation")}IsaacSimulationGate',
-                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
-                ),
-            ],
-            encoding="32SC1",
-            category=BRIDGE_NAME,
-        )
-        # Bbox2d tight
-        rep.writers.register_node_writer(
-            name=f"{BRIDGE_PREFIX}PublishBoundingBox2DTight",
-            node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishBbox2D",
-            annotators=[
-                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    "bounding_box_2d_tight_fast", attributes_mapping={"input:semanticTypes": ["class"]}
-                ),
-                f'{omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("BoundingBox2DTight")}IsaacSimulationGate',
-                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
-                ),
-            ],
-            category=BRIDGE_NAME,
-        )
+        for time_type in TIME_TYPES:
+            ##### Publish RGB
+            rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
 
-        # bbox2d Loose
-        rep.writers.register_node_writer(
-            name=f"{BRIDGE_PREFIX}PublishBoundingBox2DLoose",
-            node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishBbox2D",
-            annotators=[
-                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    "bounding_box_2d_loose_fast",
-                    attributes_mapping={"input:semanticTypes": ["class"], "outputs:data": "inputs:data"},
-                ),
-                f'{omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("BoundingBox2DLoose")}IsaacSimulationGate',
-                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
-                ),
-            ],
-            category=BRIDGE_NAME,
-        )
-        # bbox3d Loose
-        rep.writers.register_node_writer(
-            name=f"{BRIDGE_PREFIX}PublishBoundingBox3D",
-            node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishBbox3D",
-            annotators=[
-                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    "bounding_box_3d_fast",
-                    attributes_mapping={"input:semanticTypes": ["class"], "outputs:data": "inputs:data"},
-                ),
-                f'{omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("BoundingBox3D")}IsaacSimulationGate',
-                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
-                ),
-            ],
-            category=BRIDGE_NAME,
-        )
-        # camera info
-        rep.writers.register_node_writer(
-            name=f"{BRIDGE_PREFIX}PublishCameraInfo",
-            node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishCameraInfo",
-            annotators=[
-                "IsaacReadCameraInfo",
-                "PostProcessDispatchIsaacSimulationGate",
-                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
-                ),
-            ],
-            category=BRIDGE_NAME,
-        )
-        # outputs that we can publish labels for
-        label_names = {
-            "instance_segmentation_fast": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
-                "InstanceSegmentation"
-            ),
-            "semantic_segmentation": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
-                "SemanticSegmentation"
-            ),
-            "bounding_box_2d_tight_fast": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
-                "BoundingBox2DTight"
-            ),
-            "bounding_box_2d_loose_fast": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
-                "BoundingBox2DLoose"
-            ),
-            "bounding_box_3d_fast": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("BoundingBox3D"),
-        }
-        for annotator, annotator_name in label_names.items():
             rep.writers.register_node_writer(
-                name=f"{annotator_name}{BRIDGE_PREFIX}PublishSemanticLabels",
-                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishSemanticLabels",
+                name=f"{rv}{BRIDGE_PREFIX}{time_type[1]}PublishImage",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
                 annotators=[
-                    annotator,
-                    f"{annotator_name}IsaacSimulationGate",
+                    f"{rv}IsaacConvertRGBAToRGB",
                     omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                        "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
+                        f"IsaacReadS{time_type[0]}", attributes_mapping={f"outputs:s{time_type[0]}": "inputs:timeStamp"}
+                    ),
+                ],
+                category=BRIDGE_NAME,
+            )
+            ##### Publish Depth
+            rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
+                sd.SensorType.DistanceToImagePlane.name
+            )
+            rep.writers.register_node_writer(
+                name=f"{rv}{BRIDGE_PREFIX}{time_type[1]}PublishImage",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
+                annotators=[
+                    omni.syntheticdata.SyntheticData.NodeConnectionTemplate(rv + "ExportRawArray"),
+                    omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                        f"IsaacReadS{time_type[0]}", attributes_mapping={f"outputs:s{time_type[0]}": "inputs:timeStamp"}
+                    ),
+                    f"{rv}IsaacSimulationGate",
+                ],
+                encoding="32FC1",
+                category=BRIDGE_NAME,
+            )
+
+            # publish depth pcl
+            rep.writers.register_node_writer(
+                name=f"{rv}{BRIDGE_PREFIX}{time_type[1]}PublishPointCloud",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
+                annotators=[
+                    f"{rv}IsaacConvertDepthToPointCloud",
+                    omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                        f"IsaacReadS{time_type[0]}", attributes_mapping={f"outputs:s{time_type[0]}": "inputs:timeStamp"}
+                    ),
+                ],
+                category=BRIDGE_NAME,
+            )
+            # instance
+            rep.writers.register_node_writer(
+                name=f"{BRIDGE_PREFIX}{time_type[1]}PublishInstanceSegmentation",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
+                annotators=[
+                    "instance_segmentation_fast",
+                    f'{omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("InstanceSegmentation")}IsaacSimulationGate',
+                    omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                        f"IsaacReadS{time_type[0]}", attributes_mapping={f"outputs:s{time_type[0]}": "inputs:timeStamp"}
+                    ),
+                ],
+                encoding="32SC1",
+                category=BRIDGE_NAME,
+            )
+            # Semantic
+            rep.writers.register_node_writer(
+                name=f"{BRIDGE_PREFIX}{time_type[1]}PublishSemanticSegmentation",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
+                annotators=[
+                    "semantic_segmentation",
+                    f'{omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("SemanticSegmentation")}IsaacSimulationGate',
+                    omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                        f"IsaacReadS{time_type[0]}", attributes_mapping={f"outputs:s{time_type[0]}": "inputs:timeStamp"}
+                    ),
+                ],
+                encoding="32SC1",
+                category=BRIDGE_NAME,
+            )
+            # Bbox2d tight
+            rep.writers.register_node_writer(
+                name=f"{BRIDGE_PREFIX}{time_type[1]}PublishBoundingBox2DTight",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishBbox2D",
+                annotators=[
+                    omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                        "bounding_box_2d_tight_fast", attributes_mapping={"input:semanticTypes": ["class"]}
+                    ),
+                    f'{omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("BoundingBox2DTight")}IsaacSimulationGate',
+                    omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                        f"IsaacReadS{time_type[0]}", attributes_mapping={f"outputs:s{time_type[0]}": "inputs:timeStamp"}
                     ),
                 ],
                 category=BRIDGE_NAME,
             )
 
-        # RTX lidar PCL publisher
-        rep.writers.register_node_writer(
-            name=f"RtxLidar{BRIDGE_PREFIX}PublishPointCloud",
-            node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
-            annotators=[
-                "RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud",
-                "PostProcessDispatchIsaacSimulationGate",
-                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
+            # bbox2d Loose
+            rep.writers.register_node_writer(
+                name=f"{BRIDGE_PREFIX}{time_type[1]}PublishBoundingBox2DLoose",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishBbox2D",
+                annotators=[
+                    omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                        "bounding_box_2d_loose_fast",
+                        attributes_mapping={"input:semanticTypes": ["class"], "outputs:data": "inputs:data"},
+                    ),
+                    f'{omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("BoundingBox2DLoose")}IsaacSimulationGate',
+                    omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                        f"IsaacReadS{time_type[0]}", attributes_mapping={f"outputs:s{time_type[0]}": "inputs:timeStamp"}
+                    ),
+                ],
+                category=BRIDGE_NAME,
+            )
+            # bbox3d Loose
+            rep.writers.register_node_writer(
+                name=f"{BRIDGE_PREFIX}{time_type[1]}PublishBoundingBox3D",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishBbox3D",
+                annotators=[
+                    omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                        "bounding_box_3d_fast",
+                        attributes_mapping={"input:semanticTypes": ["class"], "outputs:data": "inputs:data"},
+                    ),
+                    f'{omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("BoundingBox3D")}IsaacSimulationGate',
+                    omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                        f"IsaacReadS{time_type[0]}", attributes_mapping={f"outputs:s{time_type[0]}": "inputs:timeStamp"}
+                    ),
+                ],
+                category=BRIDGE_NAME,
+            )
+            # camera info
+            rep.writers.register_node_writer(
+                name=f"{BRIDGE_PREFIX}{time_type[1]}PublishCameraInfo",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishCameraInfo",
+                annotators=[
+                    "IsaacReadCameraInfo",
+                    "PostProcessDispatchIsaacSimulationGate",
+                    omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                        f"IsaacReadS{time_type[0]}", attributes_mapping={f"outputs:s{time_type[0]}": "inputs:timeStamp"}
+                    ),
+                ],
+                category=BRIDGE_NAME,
+            )
+            # outputs that we can publish labels for
+            label_names = {
+                "instance_segmentation_fast": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
+                    "InstanceSegmentation"
                 ),
-            ],
-            category=BRIDGE_NAME,
-        )
+                "semantic_segmentation": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
+                    "SemanticSegmentation"
+                ),
+                "bounding_box_2d_tight_fast": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
+                    "BoundingBox2DTight"
+                ),
+                "bounding_box_2d_loose_fast": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
+                    "BoundingBox2DLoose"
+                ),
+                "bounding_box_3d_fast": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
+                    "BoundingBox3D"
+                ),
+            }
+            for annotator, annotator_name in label_names.items():
+                rep.writers.register_node_writer(
+                    name=f"{annotator_name}{BRIDGE_PREFIX}{time_type[1]}PublishSemanticLabels",
+                    node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishSemanticLabels",
+                    annotators=[
+                        annotator,
+                        f"{annotator_name}IsaacSimulationGate",
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            f"IsaacReadS{time_type[0]}",
+                            attributes_mapping={f"outputs:s{time_type[0]}": "inputs:timeStamp"},
+                        ),
+                    ],
+                    category=BRIDGE_NAME,
+                )
 
-        rep.writers.register_node_writer(
-            name=f"RtxLidar{BRIDGE_PREFIX}PublishPointCloudBuffer",
-            node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
-            annotators=[
-                "RtxSensorCpu" + "IsaacCreateRTXLidarScanBuffer",
-                "PostProcessDispatchIsaacSimulationGate",
-                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
-                ),
-            ],
-            category=BRIDGE_NAME,
-        )
+            # RTX lidar PCL publisher
+            rep.writers.register_node_writer(
+                name=f"RtxLidar{BRIDGE_PREFIX}{time_type[1]}PublishPointCloud",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
+                annotators=[
+                    "RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud",
+                    "PostProcessDispatchIsaacSimulationGate",
+                    omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                        f"IsaacReadS{time_type[0]}", attributes_mapping={f"outputs:s{time_type[0]}": "inputs:timeStamp"}
+                    ),
+                ],
+                category=BRIDGE_NAME,
+            )
 
-        # RTX Radar PCL publisher
-        rep.writers.register_node_writer(
-            name=f"RtxRadar{BRIDGE_PREFIX}PublishPointCloud",
-            node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
-            annotators=[
-                "RtxSensorCpu" + "IsaacComputeRTXRadarPointCloud",
-                "PostProcessDispatchIsaacSimulationGate",
-                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
-                ),
-            ],
-            category=BRIDGE_NAME,
-        )
+            rep.writers.register_node_writer(
+                name=f"RtxLidar{BRIDGE_PREFIX}{time_type[1]}PublishPointCloudBuffer",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
+                annotators=[
+                    "RtxSensorCpu" + "IsaacCreateRTXLidarScanBuffer",
+                    "PostProcessDispatchIsaacSimulationGate",
+                    omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                        f"IsaacReadS{time_type[0]}", attributes_mapping={f"outputs:s{time_type[0]}": "inputs:timeStamp"}
+                    ),
+                ],
+                category=BRIDGE_NAME,
+            )
 
-        # RTX lidar LaserScan publisher
-        rep.writers.register_node_writer(
-            name=f"RtxLidar{BRIDGE_PREFIX}PublishLaserScan",
-            node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishLaserScan",
-            annotators=[
-                "RtxSensorCpu" + "IsaacComputeRTXLidarFlatScan",
-                "PostProcessDispatchIsaacSimulationGate",
-                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
-                ),
-            ],
-            category=BRIDGE_NAME,
-        )
+            # RTX Radar PCL publisher
+            rep.writers.register_node_writer(
+                name=f"RtxRadar{BRIDGE_PREFIX}{time_type[1]}PublishPointCloud",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
+                annotators=[
+                    "RtxSensorCpu" + "IsaacComputeRTXRadarPointCloud",
+                    "PostProcessDispatchIsaacSimulationGate",
+                    omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                        f"IsaacReadS{time_type[0]}", attributes_mapping={f"outputs:s{time_type[0]}": "inputs:timeStamp"}
+                    ),
+                ],
+                category=BRIDGE_NAME,
+            )
+
+            # RTX lidar LaserScan publisher
+            rep.writers.register_node_writer(
+                name=f"RtxLidar{BRIDGE_PREFIX}{time_type[1]}PublishLaserScan",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishLaserScan",
+                annotators=[
+                    "RtxSensorCpu" + "IsaacComputeRTXLidarFlatScan",
+                    "PostProcessDispatchIsaacSimulationGate",
+                    omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                        f"IsaacReadS{time_type[0]}", attributes_mapping={f"outputs:s{time_type[0]}": "inputs:timeStamp"}
+                    ),
+                ],
+                category=BRIDGE_NAME,
+            )
 
     def unregister_nodes(self):
         for writer in rep.WriterRegistry.get_writers(category=BRIDGE_NAME):

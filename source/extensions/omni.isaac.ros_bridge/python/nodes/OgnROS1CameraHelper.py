@@ -81,11 +81,18 @@ class OgnROS1CameraHelper:
                         return False
                 db.per_instance_state.resetSimulationTimeOnStop = db.inputs.resetSimulationTimeOnStop
                 writer = None
+
+                time_type = ""
+                if db.inputs.useSystemTime:
+                    time_type = "SystemTime"
+                    if db.inputs.resetSimulationTimeOnStop:
+                        carb.log_warn("System timestamp is being used. Ignoring resetSimulationTimeOnStop input")
+
                 try:
                     if sensor_type == "rgb":
 
                         rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
-                        writer = rep.writers.get(rv + "ROS1PublishImage")
+                        writer = rep.writers.get(rv + f"ROS1{time_type}PublishImage")
                         writer.initialize(
                             frameId=db.inputs.frameId,
                             nodeNamespace=db.inputs.nodeNamespace,
@@ -96,7 +103,7 @@ class OgnROS1CameraHelper:
                         rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
                             sd.SensorType.DistanceToImagePlane.name
                         )
-                        writer = rep.writers.get(rv + "ROS1PublishImage")
+                        writer = rep.writers.get(rv + f"ROS1{time_type}PublishImage")
                         writer.initialize(
                             frameId=db.inputs.frameId,
                             nodeNamespace=db.inputs.nodeNamespace,
@@ -109,7 +116,7 @@ class OgnROS1CameraHelper:
                             sd.SensorType.DistanceToImagePlane.name
                         )
 
-                        writer = rep.writers.get(rv + "ROS1PublishPointCloud")
+                        writer = rep.writers.get(rv + f"ROS1{time_type}PublishPointCloud")
                         writer.initialize(
                             frameId=db.inputs.frameId,
                             nodeNamespace=db.inputs.nodeNamespace,
@@ -119,7 +126,7 @@ class OgnROS1CameraHelper:
 
                     elif sensor_type == "instance_segmentation":
 
-                        writer = rep.writers.get("ROS1PublishInstanceSegmentation")
+                        writer = rep.writers.get(f"ROS1{time_type}PublishInstanceSegmentation")
                         writer.initialize(
                             frameId=db.inputs.frameId,
                             nodeNamespace=db.inputs.nodeNamespace,
@@ -128,7 +135,7 @@ class OgnROS1CameraHelper:
                         )
 
                     elif sensor_type == "semantic_segmentation":
-                        writer = rep.writers.get("ROS1PublishSemanticSegmentation")
+                        writer = rep.writers.get(f"ROS1{time_type}PublishSemanticSegmentation")
                         writer.initialize(
                             frameId=db.inputs.frameId,
                             nodeNamespace=db.inputs.nodeNamespace,
@@ -137,7 +144,7 @@ class OgnROS1CameraHelper:
                         )
 
                     elif sensor_type == "bbox_2d_tight":
-                        writer = rep.writers.get("ROS1PublishBoundingBox2DTight")
+                        writer = rep.writers.get(f"ROS1{time_type}PublishBoundingBox2DTight")
                         writer.initialize(
                             frameId=db.inputs.frameId,
                             nodeNamespace=db.inputs.nodeNamespace,
@@ -146,7 +153,7 @@ class OgnROS1CameraHelper:
                         )
 
                     elif sensor_type == "bbox_2d_loose":
-                        writer = rep.writers.get("ROS1PublishBoundingBox2DLoose")
+                        writer = rep.writers.get(f"ROS1{time_type}PublishBoundingBox2DLoose")
                         writer.initialize(
                             frameId=db.inputs.frameId,
                             nodeNamespace=db.inputs.nodeNamespace,
@@ -155,7 +162,7 @@ class OgnROS1CameraHelper:
                         )
 
                     elif sensor_type == "bbox_3d":
-                        writer = rep.writers.get("ROS1PublishBoundingBox3D")
+                        writer = rep.writers.get(f"ROS1{time_type}PublishBoundingBox3D")
                         writer.initialize(
                             frameId=db.inputs.frameId,
                             nodeNamespace=db.inputs.nodeNamespace,
@@ -163,7 +170,7 @@ class OgnROS1CameraHelper:
                             topicName=db.inputs.topicName,
                         )
                     elif sensor_type == "camera_info":
-                        writer = rep.writers.get("ROS1PublishCameraInfo")
+                        writer = rep.writers.get(f"ROS1{time_type}PublishCameraInfo")
                         writer.initialize(
                             frameId=db.inputs.frameId,
                             nodeNamespace=db.inputs.nodeNamespace,
@@ -189,7 +196,9 @@ class OgnROS1CameraHelper:
                     }
                     if sensor_type in type_dict:
                         if db.inputs.enableSemanticLabels:
-                            semantic_writer = rep.writers.get(type_dict[sensor_type] + "ROS1PublishSemanticLabels")
+                            semantic_writer = rep.writers.get(
+                                type_dict[sensor_type] + f"ROS1{time_type}PublishSemanticLabels"
+                            )
                             semantic_writer.initialize(
                                 nodeNamespace=db.inputs.nodeNamespace,
                                 queueSize=db.inputs.queueSize,

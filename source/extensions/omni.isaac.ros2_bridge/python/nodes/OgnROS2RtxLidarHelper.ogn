@@ -12,7 +12,7 @@
         "inputs": {
             "execIn" : {
                 "type" : "execution",
-                "description": "Triggering this causes the sesnor pipeline to be generated"
+                "description": "Triggering this causes the sensor pipeline to be generated"
             },
             "enabled": {
                 "type": "bool",
@@ -61,7 +61,7 @@
             },
             "resetSimulationTimeOnStop": {
                 "type": "bool",
-                "description": "If True the simulation time will reset when stop is pressed, False means time increases monotonically",
+                "description": "If True the simulation time will reset when stop is pressed, False means time increases monotonically. This setting is ignored if useSystemTime is enabled.",
                 "uiName": "Reset Time On Stop",
                 "default": false
             },
@@ -75,6 +75,11 @@
                 "type": "bool",
                 "description": "If True a debug view of the lidar particles will appear in the scene.",
                 "uiName": "Show Debug View",
+                "default": false
+            },
+            "useSystemTime": {
+                "type": "bool",
+                "description": "If True, system timestamp will be included in messages. If False, simulation timestamp will be included in messages",
                 "default": false
             }
         }

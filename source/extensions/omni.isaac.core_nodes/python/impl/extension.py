@@ -145,6 +145,15 @@ class Extension(omni.ext.IExt):
         )
         self.registered_annotators.append(annotator_name)
 
+        annotator_name = "IsaacReadSystemTime"
+        AnnotatorRegistry.register_annotator_from_node(
+            name=annotator_name,
+            input_rendervars=["IsaacReadTimes"],
+            node_type_id="omni.isaac.core_nodes.IsaacReadSystemTime",
+        )
+
+        self.registered_annotators.append(annotator_name)
+
         ##### Simulation Gates
         for rv in sensors.get_synthetic_data()._ogn_rendervars:
             if sensors.get_synthetic_data().is_node_template_registered(rv + "Ptr"):
