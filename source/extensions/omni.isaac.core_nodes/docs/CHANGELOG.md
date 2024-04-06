@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.14.0] - 2024-04-04
+### Added
+- New Isaac Read System Time node to allow users to incorporate latest system time or system time at specified simulation frame (swh frame number).
+
 ## [1.13.3] - 2024-03-26
 ### Fixed
 - Unit tests

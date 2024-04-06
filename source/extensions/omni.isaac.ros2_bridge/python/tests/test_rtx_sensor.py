@@ -182,6 +182,8 @@ class TestROS2RTXSensor(omni.kit.test.AsyncTestCase):
                         ("PCLPublish.inputs:topicName", "point_cloud"),
                         ("PCLPublish.inputs:type", "point_cloud"),
                         ("PCLPublish.inputs:resetSimulationTimeOnStop", True),
+                        ("PCLPublish.inputs:fullScan", False),
+                        ("LaserScanPublish.inputs:fullScan", False),
                         ("LaserScanPublish.inputs:renderProductPath", render_product_path),
                         ("LaserScanPublish.inputs:topicName", "laser_scan"),
                         ("LaserScanPublish.inputs:type", "laser_scan"),
@@ -229,6 +231,102 @@ class TestROS2RTXSensor(omni.kit.test.AsyncTestCase):
 
         await asyncio.sleep(2.0)
 
+        import time
+
+        system_time = time.time()
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await simulate_async(1.5, callback=spin)
+        for _ in range(10):
+            if self._pcl_data is None:
+                await simulate_async(1, callback=spin)
+
+        self.assertIsNotNone(self._scan_data)
+        self.assertIsNotNone(self._pcl_data)
+
+        self.assertGreaterEqual(self._scan_data.header.stamp.sec, 1)
+        self.assertLess(self._scan_data.header.stamp.sec, system_time / 2.0)
+        self.assertGreaterEqual(self._pcl_data.header.stamp.sec, 1)
+        self.assertLess(self._pcl_data.header.stamp.sec, system_time / 2.0)
+
+        # check laser scan
+        self.assertGreater(len(self._scan_data.ranges), 10)
+
+        for r in self._scan_data.ranges:
+            self.assertGreater(r, 3.49)  # this is the distance to the inset cube
+            self.assertLess(r, 6.37)  # should be less than sqrt(4.5&2+4.5^2) ~ 6.3639
+
+        ff = fields_to_dtype(self._pcl_data.fields, self._pcl_data.point_step)
+        arr = np.frombuffer(self._pcl_data.data, ff)
+
+        # print(arr)
+        self.assertGreater(len(arr), 10)
+        for p in arr:
+            self.assertGreater(p[2], -4.5)
+            self.assertLess(p[2], 4.5)
+
+        self._timeline.stop()
+        # make sure all previous messages are cleared
+        await omni.kit.app.get_app().next_update_async()
+        spin()
+        await asyncio.sleep(2.0)
+
+        self._pcl_data = None
+        self._scan_data = None
+
+        # Turn on SystemTime for timestamp of all lidar publishers. And retry test.
+        og.Controller.attribute("/ActionGraph/PCLPublish" + ".inputs:useSystemTime").set(True)
+        og.Controller.attribute("/ActionGraph/LaserScanPublish" + ".inputs:useSystemTime").set(True)
+
+        await omni.kit.app.get_app().next_update_async()
+        system_time = time.time()
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await simulate_async(2, callback=spin)
+        for _ in range(10):
+            if self._pcl_data is None:
+                await simulate_async(1, callback=spin)
+
+        self.assertIsNotNone(self._scan_data)
+        self.assertIsNotNone(self._pcl_data)
+
+        self.assertGreaterEqual(self._pcl_data.header.stamp.sec, system_time)
+        self.assertGreaterEqual(self._scan_data.header.stamp.sec, system_time)
+
+        # check laser scan
+        self.assertGreater(len(self._scan_data.ranges), 10)
+
+        for r in self._scan_data.ranges:
+            self.assertGreater(r, 3.49)  # this is the distance to the inset cube
+            self.assertLess(r, 6.37)  # should be less than sqrt(4.5&2+4.5^2) ~ 6.3639
+
+        ff = fields_to_dtype(self._pcl_data.fields, self._pcl_data.point_step)
+        arr = np.frombuffer(self._pcl_data.data, ff)
+
+        # print(arr)
+        self.assertGreater(len(arr), 10)
+        for p in arr:
+            self.assertGreater(p[2], -4.5)
+            self.assertLess(p[2], 4.5)
+
+        self._timeline.stop()
+
+        # make sure all previous messages are cleared
+        await omni.kit.app.get_app().next_update_async()
+        spin()
+        await asyncio.sleep(2.0)
+
+        self._pcl_data = None
+        self._scan_data = None
+
+        # Turn off SystemTime for timestamp for lidar point_cloud publisher with full scan enabled.
+        # And run test to check timestamp.
+        og.Controller.attribute("/ActionGraph/PCLPublish" + ".inputs:useSystemTime").set(False)
+        og.Controller.attribute("/ActionGraph/PCLPublish" + ".inputs:fullScan").set(True)
+
+        await omni.kit.app.get_app().next_update_async()
+        system_time = time.time()
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         await simulate_async(1, callback=spin)
@@ -239,12 +337,53 @@ class TestROS2RTXSensor(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(self._pcl_data)
         self.assertIsNotNone(self._scan_data)
 
-        # check laser scan
-        self.assertGreater(len(self._scan_data.ranges), 10)
+        self.assertGreaterEqual(self._pcl_data.header.stamp.sec, 1)
+        self.assertLess(self._pcl_data.header.stamp.sec, system_time / 2.0)
 
-        for r in self._scan_data.ranges:
-            self.assertGreater(r, 3.49)  # this is the distance to the inset cube
-            self.assertLess(r, 6.37)  # should be less than sqrt(4.5&2+4.5^2) ~ 6.3639
+        ff = fields_to_dtype(self._pcl_data.fields, self._pcl_data.point_step)
+        arr = np.frombuffer(self._pcl_data.data, ff)
+
+        # print(arr)
+        self.assertGreater(len(arr), 10)
+        for p in arr:
+            self.assertGreater(p[2], -4.5)
+            self.assertLess(p[2], 4.5)
+
+        self._timeline.stop()
+
+        # make sure all previous messages are cleared
+        await omni.kit.app.get_app().next_update_async()
+        spin()
+        await asyncio.sleep(2.0)
+
+        self._pcl_data = None
+        self._scan_data = None
+
+        # Turn on SystemTime for timestamp for lidar point_cloud publisher with full scan enabled.
+        # And run test to check timestamp.
+        # Turn off systemTime for laser_scan publisher
+
+        og.Controller.attribute("/ActionGraph/PCLPublish" + ".inputs:useSystemTime").set(True)
+        og.Controller.attribute("/ActionGraph/PCLPublish" + ".inputs:fullScan").set(True)
+
+        og.Controller.attribute("/ActionGraph/LaserScanPublish" + ".inputs:useSystemTime").set(False)
+
+        await omni.kit.app.get_app().next_update_async()
+        system_time = time.time()
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await simulate_async(1.5, callback=spin)
+        for _ in range(10):
+            if self._pcl_data is None:
+                await simulate_async(1, callback=spin)
+
+        self.assertIsNotNone(self._pcl_data)
+        self.assertIsNotNone(self._scan_data)
+
+        self.assertGreaterEqual(self._pcl_data.header.stamp.sec, system_time)
+
+        self.assertGreaterEqual(self._scan_data.header.stamp.sec, 1)
+        self.assertLess(self._scan_data.header.stamp.sec, system_time / 2.0)
 
         ff = fields_to_dtype(self._pcl_data.fields, self._pcl_data.point_step)
         arr = np.frombuffer(self._pcl_data.data, ff)

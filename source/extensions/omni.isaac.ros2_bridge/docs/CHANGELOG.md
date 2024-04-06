@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.17.0] - 2024-04-04
+### Added
+- Option to use system timestamp for ROS2 RTX Lidar and ROS2 Camera Helper Nodes
+
+### Changed
+- Updated ROS2 Camera and RTX Lidar unit tests for publishing using system timestamp
+
 ## [2.16.0] - 2024-04-04
 ### Added
 - Generic ROS2 Publisher node
