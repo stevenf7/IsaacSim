@@ -1084,6 +1084,10 @@ publish-to-launcher:
   #   - job: test-linux-x86_64-startuptests
   #     artifacts: false
   #     optional: true
+  retry:
+    max: 2
+    when:
+    - always
   rules:
   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
     when: never
