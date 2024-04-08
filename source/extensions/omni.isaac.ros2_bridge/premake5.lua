@@ -192,7 +192,7 @@ project_ext_plugin(ext, "omni.isaac.ros2_bridge.plugin")
 
     filter { "system:linux" }
         disablewarnings {"error=narrowing", "error=unused-but-set-variable", "error=unused-variable"}
-        links {"boost_system"}
+        links {"boost_system", "stdc++fs"}
     filter { "system:windows" }
     filter {}
 

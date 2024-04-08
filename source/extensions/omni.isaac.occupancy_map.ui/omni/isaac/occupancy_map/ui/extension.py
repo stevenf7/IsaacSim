@@ -14,6 +14,7 @@ import weakref
 import carb
 import omni
 import omni.ext
+import omni.kit.usd.layers
 import omni.ui as ui
 from omni.isaac.core.utils.stage import get_stage_units
 from omni.isaac.occupancy_map.bindings import _occupancy_map
@@ -46,7 +47,7 @@ class Extension(omni.ext.IExt):
         ]
         add_menu_items(self._menu_items, "Isaac Utils")
         self._om = _occupancy_map.acquire_occupancy_map_interface()
-        self._layers = omni.usd.get_context().get_layers()
+        self._layers = omni.kit.usd.layers.get_layers()
         self._filepicker = None
         self._models = {}
 
