@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "3.8.0"
+version = "3.8.1"
 category = "Simulation"
 title = "Isaac Sim Core"
 description = "Core"
@@ -35,6 +35,10 @@ name = "omni.isaac.core"
 
 [[python.module]]
 name = "omni.isaac.core.tests"
+
+[[native.plugin]]
+path = "bin/*.plugin"
+recursive = false
 
 [[test]]
 timeout = 12000

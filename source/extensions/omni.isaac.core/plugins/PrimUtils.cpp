@@ -13,12 +13,7 @@
 #include <pxr/base/tf/patternMatcher.h>
 // clang-format on
 
-#define CARB_EXPORTS
-
-#include <carb/PluginUtils.h>
-
 #include <PrimUtils.h>
-
 
 void omni::isaac::core::findMatchingChildren(pxr::UsdPrim root,
                                              const std::string& pattern,

@@ -294,6 +294,64 @@ function write_version_file(config)
 
 end
 
+function get_git_info(params, env_var)
+    local val = os.getenv(env_var)
+    if val ~= nil then
+        return val
+    end
+
+    local str = nil
+    local cmd = "git "..params
+
+    local proc = io.popen(cmd)
+    if proc then
+        str = proc:read("*a")
+        local success, what, code = proc:close()
+        if success then
+            str = string.explode(str, "\n")[1]
+        else
+            str = nil
+        end
+    end
+
+    if str == nil then
+        str = "MISSING "..env_var
+    else
+        print (env_var.." "..str)
+    end
+    return str
+end
+
+function generate_version_header()
+    shortSha = get_git_info("rev-parse --short HEAD", "ISAACSIM_BUILD_SHA")
+    commitDate = get_git_info("show -s --format=\"%ad\"", "ISAACSIM_BUILD_DATE")
+    branch = get_git_info("rev-parse --abbrev-ref HEAD", "ISAACSIM_BUILD_BRANCH")
+    version = get_git_info("show HEAD:VERSION", "ISAACSIM_BUILD_VERSION")
+    print("Generating version header file: "..branch.." "..shortSha.." "..version.." "..commitDate)
+
+    os.mkdir("_build/generated/include/isaacSim")
+    local new_text = "#pragma once\n#define ISAACSIM_BUILD_SHA \""..shortSha.."\"\n#define ISAACSIM_BUILD_DATE \""..commitDate.."\"\n#define ISAACSIM_BUILD_BRANCH \""..branch.."\"\n#define ISAACSIM_BUILD_VERSION \""..version.."\"\n"
+
+    local file = io.open("_build/generated/include/isaacSim/Version.h", "r")
+    local old_text = ""
+    if file then
+        old_text = file:read "*all"
+        file:close()
+    end
+
+    -- if we overwrite Version.h with identical content, anything including that header will always get rebuilt
+    -- let's try to avoid that
+    if old_text and new_text == old_text then
+        return
+    end
+
+    file = io.open("_build/generated/include/isaacSim/Version.h", "w")
+    file:write(new_text)
+    file:close(file)
+end
+
+
+
 -- Helper to create bat/sh files to run local kit files
 function define_local_experience(app_name, kit_file, extra_args)
     local script_dir_token = (os.target() == "windows") and "%~dp0" or "$SCRIPT_DIR"
@@ -513,6 +571,7 @@ carbSDKLibs = carbSDKPath.."/_build/"..platform.."/%{config}"
     -- kit.workspace_kit_settings()
     workspace_kit_settings()
     -- kit.setup_toolchain()
+    generate_version_header()
 
     -- Common settings for kit-based apps and extensions
     -- kit.setup_common_folder_links()
