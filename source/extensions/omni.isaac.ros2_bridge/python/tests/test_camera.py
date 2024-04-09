@@ -89,9 +89,8 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
         await open_stage_async(self._assets_root_path + scene_path)
 
         import rclpy
+        import usdrt.Sdf
 
-        viewport_api = omni.kit.viewport.utility.get_active_viewport()
-        render_product_path = viewport_api.get_render_product_path()
         try:
             og.Controller.edit(
                 {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
@@ -107,67 +106,71 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
                         ("Bbox2dLoosePublish", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
                         ("Bbox3dPublish", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
                         ("CameraInfoPublish", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
+                        ("CreateRenderProduct", "omni.isaac.core_nodes.IsaacCreateRenderProduct"),
                     ],
                     og.Controller.Keys.SET_VALUES: [
-                        ("RGBPublish.inputs:renderProductPath", render_product_path),
+                        ("CreateRenderProduct.inputs:cameraPrim", [usdrt.Sdf.Path("/OmniverseKit_Persp")]),
+                        ("CreateRenderProduct.inputs:height", 600),
+                        ("CreateRenderProduct.inputs:width", 800),
                         ("RGBPublish.inputs:topicName", "rgb"),
                         ("RGBPublish.inputs:type", "rgb"),
                         ("RGBPublish.inputs:resetSimulationTimeOnStop", True),
-                        ("DepthPublish.inputs:renderProductPath", render_product_path),
                         ("DepthPublish.inputs:topicName", "depth"),
                         ("DepthPublish.inputs:type", "depth"),
                         ("DepthPublish.inputs:resetSimulationTimeOnStop", True),
-                        ("DepthPclPublish.inputs:renderProductPath", render_product_path),
                         ("DepthPclPublish.inputs:topicName", "depth_pcl"),
                         ("DepthPclPublish.inputs:type", "depth_pcl"),
                         ("DepthPclPublish.inputs:resetSimulationTimeOnStop", True),
-                        ("InstancePublish.inputs:renderProductPath", render_product_path),
                         ("InstancePublish.inputs:topicName", "instance_segmentation"),
                         ("InstancePublish.inputs:type", "instance_segmentation"),
                         ("InstancePublish.inputs:resetSimulationTimeOnStop", True),
-                        ("SemanticPublish.inputs:renderProductPath", render_product_path),
                         ("SemanticPublish.inputs:topicName", "semantic_segmentation"),
                         ("SemanticPublish.inputs:type", "semantic_segmentation"),
                         ("SemanticPublish.inputs:resetSimulationTimeOnStop", True),
-                        ("Bbox2dTightPublish.inputs:renderProductPath", render_product_path),
                         ("Bbox2dTightPublish.inputs:topicName", "bbox_2d_tight"),
                         ("Bbox2dTightPublish.inputs:type", "bbox_2d_tight"),
                         ("Bbox2dTightPublish.inputs:resetSimulationTimeOnStop", True),
-                        ("Bbox2dLoosePublish.inputs:renderProductPath", render_product_path),
                         ("Bbox2dLoosePublish.inputs:topicName", "bbox_2d_loose"),
                         ("Bbox2dLoosePublish.inputs:type", "bbox_2d_loose"),
                         ("Bbox2dLoosePublish.inputs:resetSimulationTimeOnStop", True),
-                        ("Bbox3dPublish.inputs:renderProductPath", render_product_path),
                         ("Bbox3dPublish.inputs:topicName", "bbox_3d"),
                         ("Bbox3dPublish.inputs:type", "bbox_3d"),
                         ("Bbox3dPublish.inputs:resetSimulationTimeOnStop", True),
-                        ("CameraInfoPublish.inputs:renderProductPath", render_product_path),
                         ("CameraInfoPublish.inputs:topicName", "camera_info"),
                         ("CameraInfoPublish.inputs:type", "camera_info"),
                         ("CameraInfoPublish.inputs:resetSimulationTimeOnStop", True),
                     ],
                     og.Controller.Keys.CONNECT: [
-                        ("OnPlaybackTick.outputs:tick", "RGBPublish.inputs:execIn"),
-                        ("OnPlaybackTick.outputs:tick", "CameraInfoPublish.inputs:execIn"),
-                        ("OnPlaybackTick.outputs:tick", "DepthPublish.inputs:execIn"),
-                        ("OnPlaybackTick.outputs:tick", "DepthPclPublish.inputs:execIn"),
-                        ("OnPlaybackTick.outputs:tick", "InstancePublish.inputs:execIn"),
-                        ("OnPlaybackTick.outputs:tick", "SemanticPublish.inputs:execIn"),
-                        ("OnPlaybackTick.outputs:tick", "Bbox2dTightPublish.inputs:execIn"),
-                        ("OnPlaybackTick.outputs:tick", "Bbox2dLoosePublish.inputs:execIn"),
-                        ("OnPlaybackTick.outputs:tick", "Bbox3dPublish.inputs:execIn"),
+                        ("OnPlaybackTick.outputs:tick", "CreateRenderProduct.inputs:execIn"),
+                        ("CreateRenderProduct.outputs:execOut", "RGBPublish.inputs:execIn"),
+                        ("CreateRenderProduct.outputs:execOut", "CameraInfoPublish.inputs:execIn"),
+                        ("CreateRenderProduct.outputs:execOut", "DepthPublish.inputs:execIn"),
+                        ("CreateRenderProduct.outputs:execOut", "DepthPclPublish.inputs:execIn"),
+                        ("CreateRenderProduct.outputs:execOut", "InstancePublish.inputs:execIn"),
+                        ("CreateRenderProduct.outputs:execOut", "SemanticPublish.inputs:execIn"),
+                        ("CreateRenderProduct.outputs:execOut", "Bbox2dTightPublish.inputs:execIn"),
+                        ("CreateRenderProduct.outputs:execOut", "Bbox2dLoosePublish.inputs:execIn"),
+                        ("CreateRenderProduct.outputs:execOut", "Bbox3dPublish.inputs:execIn"),
+                        ("CreateRenderProduct.outputs:renderProductPath", "RGBPublish.inputs:renderProductPath"),
+                        ("CreateRenderProduct.outputs:renderProductPath", "CameraInfoPublish.inputs:renderProductPath"),
+                        ("CreateRenderProduct.outputs:renderProductPath", "DepthPublish.inputs:renderProductPath"),
+                        ("CreateRenderProduct.outputs:renderProductPath", "DepthPclPublish.inputs:renderProductPath"),
+                        ("CreateRenderProduct.outputs:renderProductPath", "InstancePublish.inputs:renderProductPath"),
+                        ("CreateRenderProduct.outputs:renderProductPath", "SemanticPublish.inputs:renderProductPath"),
+                        (
+                            "CreateRenderProduct.outputs:renderProductPath",
+                            "Bbox2dTightPublish.inputs:renderProductPath",
+                        ),
+                        (
+                            "CreateRenderProduct.outputs:renderProductPath",
+                            "Bbox2dLoosePublish.inputs:renderProductPath",
+                        ),
+                        ("CreateRenderProduct.outputs:renderProductPath", "Bbox3dPublish.inputs:renderProductPath"),
                     ],
                 },
             )
         except Exception as e:
             print(e)
-        await omni.kit.app.get_app().next_update_async()
-
-        # acquire the viewport window
-        viewport_api = omni.kit.viewport.utility.get_active_viewport()
-        # Set viewport resolution, changes will occur on next frame
-        viewport_api.set_texture_resolution((800, 600))
-
         await omni.kit.app.get_app().next_update_async()
 
         from sensor_msgs.msg import CameraInfo, Image, PointCloud2
@@ -246,43 +249,50 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
 
         system_time = time.time()
 
-        self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
-        await simulate_async(1.5, callback=spin)
-        for _ in range(10):
-            if self._camera_info is None:
-                await simulate_async(1, callback=spin)
+        for num in range(5):
+            print(f"Play #{num+1}")
+            self._timeline.play()
+            await omni.kit.app.get_app().next_update_async()
+            await simulate_async(1.5, callback=spin)
+            for _ in range(10):
+                if self._camera_info is None:
+                    await simulate_async(1, callback=spin)
 
-        self.assertEqual(self._camera_info.width, 800)
-        self.assertEqual(self._camera_info.height, 600)
-        self.assertAlmostEqual(self._camera_info.p[0], self._camera_info.p[5], delta=1.5)
-        self.assertAlmostEqual(self._camera_info.k[0], self._camera_info.k[4], delta=1.5)
-        self.assertGreaterEqual(self._camera_info.header.stamp.sec, 1)
-        self.assertLess(self._camera_info.header.stamp.sec, system_time / 2.0)
-        self.assertIsNotNone(self._rgb)
-        self.assertIsNotNone(self._depth)
-        self.assertIsNotNone(self._depth_pcl)
-        self.assertIsNotNone(self._instance_segmentation)
-        self.assertIsNotNone(self._semantic_segmentation)
-        self.assertIsNotNone(self._bbox_2d_tight)
-        self.assertIsNotNone(self._bbox_2d_loose)
-        self.assertIsNotNone(self._bbox_3d)
-        # self.assertAlmostEqual(self._camera_info.K[0], self._camera_info.K[4], delta=1.5)
+            self.assertIsNotNone(self._camera_info)
+            self.assertIsNotNone(self._rgb)
+            self.assertIsNotNone(self._instance_segmentation)
+            self.assertIsNotNone(self._semantic_segmentation)
+            self.assertIsNotNone(self._bbox_2d_tight)
+            self.assertIsNotNone(self._bbox_2d_loose)
+            self.assertIsNotNone(self._bbox_3d)
+            self.assertIsNotNone(self._depth)
+            self.assertIsNotNone(self._depth_pcl)
 
-        self._timeline.stop()
-        # make sure all previous messages are cleared
-        await omni.kit.app.get_app().next_update_async()
-        spin()
-        await asyncio.sleep(2.0)
-        self._camera_info = None
-        self._rgb = None
-        self._depth = None
-        self._depth_pcl = None
-        self._instance_segmentation = None
-        self._semantic_segmentation = None
-        self._bbox_2d_tight = None
-        self._bbox_2d_loose = None
-        self._bbox_3d = None
+            self.assertEqual(self._camera_info.width, 800)
+            self.assertEqual(self._camera_info.height, 600)
+            self.assertGreaterEqual(self._camera_info.header.stamp.sec, 1)
+            self.assertLess(self._camera_info.header.stamp.sec, system_time / 2.0)
+
+            self.assertAlmostEqual(self._camera_info.p[0], self._camera_info.p[5], delta=1.5)
+            self.assertAlmostEqual(self._camera_info.k[0], self._camera_info.k[4], delta=1.5)
+            self.assertGreaterEqual(self._camera_info.header.stamp.sec, 1)
+            # self.assertAlmostEqual(self._camera_info.K[0], self._camera_info.K[4], delta=1.5)
+
+            self._timeline.stop()
+
+            # make sure all previous messages are cleared
+            await omni.kit.app.get_app().next_update_async()
+            spin()
+            await asyncio.sleep(2.0)
+            self._camera_info = None
+            self._rgb = None
+            self._depth = None
+            self._depth_pcl = None
+            self._instance_segmentation = None
+            self._semantic_segmentation = None
+            self._bbox_2d_tight = None
+            self._bbox_2d_loose = None
+            self._bbox_3d = None
 
         omni.kit.commands.execute(
             "ChangeProperty", prop_path=Sdf.Path("/OmniverseKit_Persp.horizontalAperture"), value=6, prev=0
@@ -292,6 +302,32 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
         # omni.kit.commands.execute(
         #     "ChangeProperty", prop_path=Sdf.Path("/OmniverseKit_Persp.verticalAperture"), value=6, prev=0
         # )
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await simulate_async(1.5, callback=spin)
+        for _ in range(10):
+            if self._camera_info is None:
+                await simulate_async(1, callback=spin)
+
+        self.assertIsNotNone(self._camera_info)
+        self.assertIsNotNone(self._rgb)
+        self.assertIsNotNone(self._instance_segmentation)
+        self.assertIsNotNone(self._semantic_segmentation)
+        self.assertIsNotNone(self._bbox_2d_tight)
+        self.assertIsNotNone(self._bbox_2d_loose)
+        self.assertIsNotNone(self._bbox_3d)
+        self.assertIsNotNone(self._depth_pcl)
+        self.assertIsNotNone(self._depth)
+
+        self.assertEqual(self._camera_info.width, 800)
+        self.assertEqual(self._camera_info.height, 600)
+        self.assertAlmostEqual(self._camera_info.p[0], self._camera_info.p[5], delta=1.5)
+        self.assertAlmostEqual(self._camera_info.k[0], self._camera_info.k[4], delta=1.5)
+        self.assertGreaterEqual(self._camera_info.header.stamp.sec, 1)
+        # self.assertAlmostEqual(self._camera_info.K[0], self._camera_info.K[4], delta=1.5)
+
+        self._timeline.stop()
 
         await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
@@ -358,8 +394,6 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(self._camera_info.p[5], 2419, delta=1)
 
         self.assertIsNotNone(self._rgb)
-        self.assertIsNotNone(self._depth)
-        self.assertIsNotNone(self._depth_pcl)
         self.assertIsNotNone(self._instance_segmentation)
         self.assertIsNotNone(self._semantic_segmentation)
         self.assertIsNotNone(self._bbox_2d_tight)

@@ -12,6 +12,10 @@
 - Generic ROS2 Publisher node
 - Isaac Sim now supports CycloneDDS (Linux ROS2 Humble only)
 
+## [2.15.1] - 2024-04-03
+### Fixed
+- Depth not publishing after stop -> play
+
 ## [2.15.0] - 2024-04-03
 ### Changed
 - Improve dynamic message API and add support for JSON data
