@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.8.1] - 2023-04-08
+### Added
+- Added crash metadata 
+
 ## [3.8.0] - 2023-03-24
 ### Added
 - Utility function to get the prim path that has the Articulation Root API

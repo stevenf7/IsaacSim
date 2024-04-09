@@ -7,11 +7,19 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
-#define CARB_EXPORTS
-
-#include <carb/ObjectUtils.h>
+#pragma once
 
 #include <UsdPCH.h>
+
+#ifdef _MSC_VER
+#    if OMPRIMUTILSEXPORT
+#        define DllExport __declspec(dllexport)
+#    else
+#        define DllExport __declspec(dllimport)
+#    endif
+#else
+#    define DllExport
+#endif
 
 namespace omni
 {
@@ -20,9 +28,9 @@ namespace isaac
 namespace core
 {
 
-std::vector<std::string> findMatchingPrimPaths(const std::string& pattern, long int stageId);
+DllExport std::vector<std::string> findMatchingPrimPaths(const std::string& pattern, long int stageId);
 
-void findMatchingChildren(pxr::UsdPrim root, const std::string& pattern, std::vector<pxr::UsdPrim>& primsRet);
+DllExport void findMatchingChildren(pxr::UsdPrim root, const std::string& pattern, std::vector<pxr::UsdPrim>& primsRet);
 }
 }
 }

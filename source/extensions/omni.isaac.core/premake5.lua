@@ -29,26 +29,29 @@ repo_build.prebuild_copy {
         { "python/scripts/*.py", ext.target_dir.."/omni/isaac/core" }}
 
 -- Build the C++ plugin that will be loaded by the extension.
-project_with_location("omni.isaac.core.plugins")
+project_ext_plugin(ext, "omni.isaac.core.plugin")
     targetdir (ext.bin_dir)
-    kind "StaticLib"
     language "C++"
-
-    pic "On"
+    -- pic "On"
     staticruntime "Off"
     add_files("impl", "plugins")
     add_files("iface", "include")
+    defines { "OMPRIMUTILSEXPORT" }
+
+    
     includedirs {
         "%{root}/include/pch",
+        "%{root}/_build/generated/include/",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/source/extensions/omni.isaac.core/include",
         "%{kit_sdk_bin_dir}/dev/fabric/include/",
+        "%{target_deps}/carb_sdk_plugins/include",
     }
     libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
         "%{kit_sdk_bin_dir}/exts/omni.usd.core/bin"
     }
-    links{"sdf", "omni.usd", "usd", "usdGeom", "usdUtils"}
+    links{"sdf", "tf", "omni.usd", "usd", "usdGeom", "usdUtils"}
 
     filter { "system:linux" }
         disablewarnings {"error=pragmas"}
@@ -78,19 +81,19 @@ project_ext_bindings ({
     src = "bindings",
     target_subdir = "omni/isaac/core"})
     
+    add_files("bindings", "bindings/*.*")
     -- Add the standard dependencies all OGN projects have, and link directories with Python nodes
-    dependson {"omni.isaac.core.plugins"}
+    dependson {"omni.isaac.core.plugin"}
     includedirs {
         "%{root}/include/pch",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/source/extensions/omni.isaac.core/include",
     }
-
     libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/nv_usd/release/lib"
     }
-    links {"sdf", "usd", "tf","usdUtils", "omni.isaac.core.plugins"}
+    links {"sdf", "usd", "tf","usdUtils", "omni.isaac.core.plugin"}
 
     filter { "system:linux", "platforms:x86_64" }        
         links {"tbb", "boost_python310" }
