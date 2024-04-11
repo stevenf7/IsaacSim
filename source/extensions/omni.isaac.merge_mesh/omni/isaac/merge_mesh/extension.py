@@ -240,34 +240,33 @@ class Extension(omni.ext.IExt):
                 mesh["name"] = child_prim.GetName()
                 mat, rel = UsdShade.MaterialBindingAPI(usdMesh).ComputeBoundMaterial()
                 mat_path = str(mat.GetPath())
-                if self.override_looks_directory[0].get_value_as_bool():
-                    _mat_path = "{}/{}".format(
-                        self.override_looks_directory[1].get_value_as_string(), mat_path.rsplit("/", 1)[-1]
-                    )
-                    if stage.GetPrimAtPath(_mat_path):
-                        mat_path = _mat_path
-                    else:
-                        carb.log_error(f"Overriden material not found ({mat_path})")
-                if not rel:
-                    mat_path = "/None"
-                # if rel:
-                #     mesh["mat"] = str(mat.GetPath())
-                # else:
-                mesh["mat"] = mat_path
-                subsets = UsdGeom.Subset.GetAllGeomSubsets(UsdGeom.Imageable(child_prim))
-                mesh["subset"] = []
-                for s in subsets:
-                    mat, rel = UsdShade.MaterialBindingAPI(s).ComputeBoundMaterial()
-                    mat_path = str(mat.GetPath())
+                if mat and rel:
                     if self.override_looks_directory[0].get_value_as_bool():
                         _mat_path = "{}/{}".format(
                             self.override_looks_directory[1].get_value_as_string(), mat_path.rsplit("/", 1)[-1]
                         )
                         if stage.GetPrimAtPath(_mat_path):
                             mat_path = _mat_path
-                    if not rel:
+                        else:
+                            carb.log_error(f"{mesh['name'] }: Overriden material not found ({mat_path})")
+                else:
+                    mat_path = "/None"
+                mesh["mat"] = mat_path
+                subsets = UsdGeom.Subset.GetAllGeomSubsets(UsdGeom.Imageable(child_prim))
+                mesh["subset"] = []
+                for s in subsets:
+                    mat, rel = UsdShade.MaterialBindingAPI(s).ComputeBoundMaterial()
+                    if mat and rel:
+                        mat_path = str(mat.GetPath())
+                        if self.override_looks_directory[0].get_value_as_bool():
+                            _mat_path = "{}/{}".format(
+                                self.override_looks_directory[1].get_value_as_string(), mat_path.rsplit("/", 1)[-1]
+                            )
+                            if stage.GetPrimAtPath(_mat_path):
+                                mat_path = _mat_path
+                        mesh["subset"].append((mat_path, s.GetIndicesAttr().Get()))
+                    else:
                         mat_path = "/None"
-                    mesh["subset"].append((mat_path, s.GetIndicesAttr().Get()))
                 # print(mat.GetPath(), rel)
                 # print("INDICES", mesh["normals"])
                 meshes.append(mesh)
@@ -350,13 +349,12 @@ class Extension(omni.ext.IExt):
         # texCoord.Set(all_st)
         # print(all_mats)
         for name, counts in sorted(all_mats.items(), key=lambda a: a[0].rsplit("/", 1)[-1]):
-            subset_name = merged_path + "/{}".format(name.rsplit("/", 1)[-1])
-            geomSubset = UsdGeom.Subset.Define(stage, omni.usd.get_stage_next_free_path(stage, subset_name, False))
-            geomSubset.CreateElementTypeAttr("face")
-            geomSubset.CreateFamilyNameAttr("materialBind")
-            # print(mesh["vertex_indices"])
-            geomSubset.CreateIndicesAttr(counts)
-            if name != "/None":
+            if name and name != "/None":
+                subset_name = merged_path + "/{}".format(name.rsplit("/", 1)[-1])
+                geomSubset = UsdGeom.Subset.Define(stage, omni.usd.get_stage_next_free_path(stage, subset_name, False))
+                geomSubset.CreateElementTypeAttr("face")
+                geomSubset.CreateFamilyNameAttr("materialBind")
+                geomSubset.CreateIndicesAttr(counts)
                 material = UsdShade.Material.Get(stage, name)
                 binding_api = UsdShade.MaterialBindingAPI(geomSubset)
                 binding_api.Bind(material)
