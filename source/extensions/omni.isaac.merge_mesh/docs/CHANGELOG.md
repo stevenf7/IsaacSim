@@ -1,4 +1,8 @@
 # Changelog
+## [0.1.5] - 2023-04-10
+### Fixed
+- Fix Broken empty Material binding check
+
 ## [0.1.4] - 2023-08-09
 ### Fixed
 - Switch from ui.Window to ScrollingWindow wrapper for extension because scrolling was broken
