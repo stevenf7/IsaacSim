@@ -142,8 +142,8 @@
         "App Name": "Gain Tuner",
         "Extension":"omni.isaac.gain_tuner",
         "Window": 1,
-        "Summary":"Tune gain parameters for sim to real transfer",
-        "Basic Instructions":"",
+        "Summary":"Tune gain parameters for a simulated Articulation asset.",
+        "Basic Instructions":"Unlike many platforms for robot simulation, an Articulation in Isaac Sim is physically simulated with tunable parameters.  I.e. it does not simply teleport to the commanded position; there are proportional and damping gains for each joint driving them to the desired positions and determining the dynamics of interaction with the environment.  A common source of issues with a new asset in Isaac Sim is poorly-tuned gains.\n\nThe Gain Tuner allows you to visualize the performance of the current gains and helps you to quickly tune the asset to have desirable behavior.  The default desirable outcome is for the joint position tracking to be near-perfect, which can usually be acheived by simply clicking the `Set Stiff Gains` button.  The potential downside to stiff gains is that the robot will have no compliance when colliding with the environment.",
         "Advanced Instructions":"",
         "Menu": "Isaac Utils -> Workflows -> Gain Tuner",
         "Useful Links":{
@@ -159,7 +159,7 @@
         "Extension":"omni.isaac.robot_assembler",
         "Window": 1,
         "Summary":"Attach end effectors to robot arms, and robots to other things!",
-        "Basic Instructions":"The robot assembler can be used to combine articulations, such as a gripper to an arm, an arm to a mobile base, etc.\n\n Click ASSEMBLE to get your assembled robot and the associated boilerplate code",
+        "Basic Instructions":"The robot assembler can be used to combine articulations, such as a gripper to an arm, an arm to a mobile base, etc.\n\nThe result is a either a new asset that can be saved and loaded, or it is a snippet of boilerplate code that will assemble two assets together on the fly.\n\nSee the Information panel for detailed instructions.",
         "Advanced Instructions":"",
         "Menu": "Isaac Utils -> Workflows -> Robot Assembler",
         "Useful Links":{
@@ -174,8 +174,8 @@
         "App Name": "Lula Robot Description Editor",
         "Extension":"omni.isaac.robot_description_editor",
         "Window": 1,
-        "Summary":"Create and edit kinematic chains",
-        "Basic Instructions":"",
+        "Summary":"Create config files for use with NVIDIA motion generation libraries.",
+        "Basic Instructions":"The Robot Description Editor is used to create config files for the NVIDIA Lula and cuMotion motion generation libraries.  This primarily involves specifying what joints are in the robot configuration space and creating a collision sphere representation for the robot.\n\nSee the Information window for detailed instructions.",
         "Advanced Instructions":"",
         "Menu": "Isaac Utils -> Lula Robot Description Editor",
         "Useful Links":{
