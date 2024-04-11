@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.16.5] - 2024-04-10
+### Added
+- Tests for the Create 3 robot.
+
 ## [1.16.4] - 2024-03-20
 ### Changed
 - Updated nvblox tests to match the sample
@@ -39,7 +43,6 @@
 ### Added
 - Added unit tests for O3Dyn Robot.
 - Update unit test to use get_assets_root_path_async
-
 
 ## [1.14.4] 2023-11-29
 ### Added
