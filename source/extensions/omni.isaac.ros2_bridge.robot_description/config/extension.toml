@@ -1,0 +1,30 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.1.0"
+category = "Simulation"
+title = "Ros2 Robot Description URDF Importer"
+description = "This extensions expands the URDF Importer by enabling importing the robot description from a given ROS node"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.ros2_bridge.robot_description"
+keywords = ["isaac", "ROS2", "URDF"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+icon = "data/icon.png"
+preview_image = "data/preview.png"
+writeTarget.kit = true
+
+[dependencies]
+"omni.kit.pip_archive" = {} # import the base kit python archive
+"omni.kit.viewport.utility"= {}
+"omni.kit.viewport.window"= {}
+"omni.isaac.ros2_bridge" = {}
+"omni.importer.urdf" = {}
+"omni.ui" = {}
+
+
+[[python.module]]
+name = "omni.isaac.ros2_bridge.robot_description"
+
