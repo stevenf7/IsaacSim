@@ -10,10 +10,11 @@
 
 #include <include/Ros2Macros.h>
 #include <rcl/rcl.h>
+
 Ros2SubscriberFoxy::Ros2SubscriberFoxy(Ros2NodeBase* node,
                                        const char* topic_name,
                                        const void* type,
-                                       const size_t history_depth)
+                                       const Ros2QoSProfile& qos)
     : mNode(node), wait_set_initialized(false)
 {
     mSub = std::shared_ptr<rcl_subscription_t>(new rcl_subscription_t,
@@ -29,9 +30,10 @@ Ros2SubscriberFoxy::Ros2SubscriberFoxy(Ros2NodeBase* node,
                                                    }
                                                    delete subscription;
                                                });
+
     (*mSub) = rcl_get_zero_initialized_subscription();
     rcl_subscription_options_t sub_ops = rcl_subscription_get_default_options();
-    sub_ops.qos.depth = history_depth;
+    sub_ops.qos = Ros2QoSProfileFoxyConverter::convert(qos);
 
     // rcl_subscription_default_options sub_ops = {
     //     RMW_QOS_POLICY_HISTORY_KEEP_LAST,

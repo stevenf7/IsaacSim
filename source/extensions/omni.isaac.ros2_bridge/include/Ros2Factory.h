@@ -12,6 +12,7 @@
 #include <UsdPCH.h>
 // clang-format on
 
+#include <include/Ros2QoS.h>
 #include <nlohmann/json.hpp>
 #include <omni/fabric/Type.h>
 #include <omni/isaac/utils/LibraryLoader.h>
@@ -473,11 +474,11 @@ public:
     virtual std::shared_ptr<Ros2Publisher> CreatePublisher(Ros2NodeBase* node,
                                                            const char* topic_name,
                                                            const void* type,
-                                                           const size_t history_depth) = 0;
+                                                           const Ros2QoSProfile& qos) = 0;
     virtual std::shared_ptr<Ros2Subscriber> CreateSubscriber(Ros2NodeBase* node,
                                                              const char* topic_name,
                                                              const void* type,
-                                                             const size_t history_depth) = 0;
+                                                             const Ros2QoSProfile& qos) = 0;
     virtual std::shared_ptr<Ros2Service> CreateService(Ros2NodeBase* node, const char* service_name, const void* type) = 0;
 
     virtual std::shared_ptr<Ros2ClockMessage> CreateClockMessage() = 0;

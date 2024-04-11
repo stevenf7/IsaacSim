@@ -81,9 +81,10 @@ public:
             // Create message and subscriber
             state.mMessage = state.mFactory->CreateTfTreeMessage();
 
-            state.mSubscriber =
-                state.mFactory->CreateSubscriber(state.mNodeHandle.get(), fullTopicName.c_str(),
-                                                 state.mMessage->getTypeSupportHandle(), db.inputs.queueSize());
+            Ros2QoSProfile qos;
+            qos.depth = db.inputs.queueSize();
+            state.mSubscriber = state.mFactory->CreateSubscriber(
+                state.mNodeHandle.get(), fullTopicName.c_str(), state.mMessage->getTypeSupportHandle(), qos);
 
 
             return true;

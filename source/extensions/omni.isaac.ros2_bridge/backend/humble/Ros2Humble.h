@@ -295,7 +295,7 @@ private:
 class Ros2PublisherHumble : public Ros2Publisher
 {
 public:
-    Ros2PublisherHumble(Ros2NodeBase* node, const char* topic_name, const void* type, const size_t history_depth);
+    Ros2PublisherHumble(Ros2NodeBase* node, const char* topic_name, const void* type, const Ros2QoSProfile& qos);
     virtual ~Ros2PublisherHumble();
     virtual void publish(const void* msg);
     virtual size_t get_subscription_count();
@@ -312,7 +312,7 @@ private:
 class Ros2SubscriberHumble : public Ros2Subscriber
 {
 public:
-    Ros2SubscriberHumble(Ros2NodeBase* node, const char* topic_name, const void* type, const size_t history_depth);
+    Ros2SubscriberHumble(Ros2NodeBase* node, const char* topic_name, const void* type, const Ros2QoSProfile& qos);
     virtual ~Ros2SubscriberHumble();
     virtual bool spin(void* msg);
     virtual bool isValid()
@@ -418,4 +418,10 @@ protected:
     void setArrayEmbeddedMessage(const rosidl_typesupport_introspection_c__MessageMember* member,
                                  uint8_t* data,
                                  const nlohmann::json& array);
+};
+
+class Ros2QoSProfileHumbleConverter
+{
+public:
+    static rmw_qos_profile_t convert(const Ros2QoSProfile& qos);
 };

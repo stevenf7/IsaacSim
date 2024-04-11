@@ -26,17 +26,17 @@ std::shared_ptr<Ros2NodeBase> Ros2FactoryHumble::CreateNode(const char* name, co
 std::shared_ptr<Ros2Publisher> Ros2FactoryHumble::CreatePublisher(Ros2NodeBase* node,
                                                                   const char* topic_name,
                                                                   const void* type,
-                                                                  const size_t history_depth)
+                                                                  const Ros2QoSProfile& qos)
 {
-    return std::make_shared<Ros2PublisherHumble>(node, topic_name, type, history_depth);
+    return std::make_shared<Ros2PublisherHumble>(node, topic_name, type, qos);
 }
 
 std::shared_ptr<Ros2Subscriber> Ros2FactoryHumble::CreateSubscriber(Ros2NodeBase* node,
                                                                     const char* topic_name,
                                                                     const void* type,
-                                                                    const size_t history_depth)
+                                                                    const Ros2QoSProfile& qos)
 {
-    return std::make_shared<Ros2SubscriberHumble>(node, topic_name, type, history_depth);
+    return std::make_shared<Ros2SubscriberHumble>(node, topic_name, type, qos);
 }
 
 std::shared_ptr<Ros2Service> Ros2FactoryHumble::CreateService(Ros2NodeBase* node, const char* service_name, const void* type)

@@ -61,9 +61,10 @@ public:
 
             state.mMessage = state.mFactory->CreatePointCloudMessage();
 
-            state.mPublisher =
-                state.mFactory->CreatePublisher(state.mNodeHandle.get(), fullTopicName.c_str(),
-                                                state.mMessage->getTypeSupportHandle(), db.inputs.queueSize());
+            Ros2QoSProfile qos;
+            qos.depth = db.inputs.queueSize();
+            state.mPublisher = state.mFactory->CreatePublisher(
+                state.mNodeHandle.get(), fullTopicName.c_str(), state.mMessage->getTypeSupportHandle(), qos);
 
             state.mFrameId = db.inputs.frameId();
 

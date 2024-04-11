@@ -103,8 +103,11 @@ public:
             // create subscriber
             std::string messageType = messagePackage + "/" + messageSubfolder + "/" + messageName;
             CARB_LOG_INFO("OgnROS2Subscriber: creating subscriber: %s (%s)", fullTopicName.c_str(), messageType.c_str());
+
+            Ros2QoSProfile qos;
+            qos.depth = state.mQueueSize;
             state.mSubscriber = state.mFactory->CreateSubscriber(
-                state.mNodeHandle.get(), fullTopicName.c_str(), state.mMessage->getTypeSupportHandle(), state.mQueueSize);
+                state.mNodeHandle.get(), fullTopicName.c_str(), state.mMessage->getTypeSupportHandle(), qos);
             if (!state.mSubscriber->isValid())
             {
                 db.logWarning(

@@ -1,4 +1,4 @@
-// Copyright (c) 2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2023-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -14,7 +14,7 @@
 Ros2PublisherHumble::Ros2PublisherHumble(Ros2NodeBase* node,
                                          const char* topic_name,
                                          const void* type,
-                                         const size_t history_depth)
+                                         const Ros2QoSProfile& qos)
     : mNode(node)
 {
     // Allocate memory for publisher
@@ -32,7 +32,7 @@ Ros2PublisherHumble::Ros2PublisherHumble(Ros2NodeBase* node,
     // Init publisher
     (*mPub) = rcl_get_zero_initialized_publisher();
     rcl_publisher_options_t pub_opt = rcl_publisher_get_default_options();
-    pub_opt.qos.depth = history_depth;
+    pub_opt.qos = Ros2QoSProfileHumbleConverter::convert(qos);
     rcl_ret_t rc = rcl_publisher_init(mPub.get(), static_cast<rcl_node_t*>(mNode->node()),
                                       static_cast<const rosidl_message_type_support_t*>(type), topic_name, &pub_opt);
     if (rc != RCL_RET_OK)

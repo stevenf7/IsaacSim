@@ -17,11 +17,11 @@ public:
     virtual std::shared_ptr<Ros2Publisher> CreatePublisher(Ros2NodeBase* node,
                                                            const char* topic_name,
                                                            const void* type,
-                                                           const size_t history_depth);
+                                                           const Ros2QoSProfile& qos);
     virtual std::shared_ptr<Ros2Subscriber> CreateSubscriber(Ros2NodeBase* node,
                                                              const char* topic_name,
                                                              const void* type,
-                                                             const size_t history_depth);
+                                                             const Ros2QoSProfile& qos);
     virtual std::shared_ptr<Ros2Service> CreateService(Ros2NodeBase* node, const char* service_name, const void* type);
 
     virtual std::shared_ptr<Ros2ClockMessage> CreateClockMessage();
