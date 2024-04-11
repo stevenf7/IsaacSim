@@ -22,8 +22,8 @@ include:
   #  file: 'modules/benchmarks.yml'
   ref: release/v2
   file: /ci/detect.yml
-- project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
-  file: 'modules/stage-build.yml'
+# - project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
+#   file: 'modules/stage-build.yml'
 - project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
   # - project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
   #   file: 'modules/etm.yml'
