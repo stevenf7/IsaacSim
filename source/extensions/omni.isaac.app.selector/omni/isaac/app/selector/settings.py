@@ -18,6 +18,7 @@ AUTO_START_SETTING = "/persistent/ext/omni.isaac.selector/auto_start"
 
 DEFAULT_APP_SETTING = "/persistent/ext/omni.isaac.selector/default_app"
 EXTRA_ARGS_SETTING = "/persistent/ext/omni.isaac.selector/extra_args"
+ECO_MODE_SETTING = "/rtx/ecoMode/enabled"
 
 PERSISTENT_ROS_BRIDGE_SETTING = "/persistent/ext/omni.isaac.selector/ros_bridge_extension"
 if platform.system().lower() == "windows":

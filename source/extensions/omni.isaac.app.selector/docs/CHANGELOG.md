@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.5.0] - 2024-04-10
+### Added
+- Added checkbox to enable eco mode on startup
+
 ## [2.4.0] - 2024-03-11
 ### Changed
 - Replace gnome-terminal with x-terminal-emulator to support non-gnome-based desktops
