@@ -26,17 +26,17 @@ std::shared_ptr<Ros2NodeBase> Ros2FactoryFoxy::CreateNode(const char* name, cons
 std::shared_ptr<Ros2Publisher> Ros2FactoryFoxy::CreatePublisher(Ros2NodeBase* node,
                                                                 const char* topic_name,
                                                                 const void* type,
-                                                                const size_t history_depth)
+                                                                const Ros2QoSProfile& qos)
 {
-    return std::make_shared<Ros2PublisherFoxy>(node, topic_name, type, history_depth);
+    return std::make_shared<Ros2PublisherFoxy>(node, topic_name, type, qos);
 }
 
 std::shared_ptr<Ros2Subscriber> Ros2FactoryFoxy::CreateSubscriber(Ros2NodeBase* node,
                                                                   const char* topic_name,
                                                                   const void* type,
-                                                                  const size_t history_depth)
+                                                                  const Ros2QoSProfile& qos)
 {
-    return std::make_shared<Ros2SubscriberFoxy>(node, topic_name, type, history_depth);
+    return std::make_shared<Ros2SubscriberFoxy>(node, topic_name, type, qos);
 }
 
 std::shared_ptr<Ros2Service> Ros2FactoryFoxy::CreateService(Ros2NodeBase* node, const char* service_name, const void* type)

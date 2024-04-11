@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.18.0] - 2024-04-09
+### Added
+- Added quality of service support for ROS2 bridge subscribers and publishers
+
 ## [2.17.0] - 2024-04-04
 ### Added
 - Option to use system timestamp for ROS2 RTX Lidar and ROS2 Camera Helper Nodes

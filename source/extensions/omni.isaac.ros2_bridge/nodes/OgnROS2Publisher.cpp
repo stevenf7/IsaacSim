@@ -101,8 +101,10 @@ public:
             // create publisher
             std::string messageType = messagePackage + "/" + messageSubfolder + "/" + messageName;
             CARB_LOG_INFO("OgnROS2Publisher: creating publisher: %s (%s)", fullTopicName.c_str(), messageType.c_str());
-            state.mPublisher = state.mFactory->CreatePublisher(state.mNodeHandle.get(), fullTopicName.c_str(),
-                                                               state.mMessage->getTypeSupportHandle(), state.mQueueSize);
+            Ros2QoSProfile qos;
+            qos.depth = state.mQueueSize;
+            state.mPublisher = state.mFactory->CreatePublisher(
+                state.mNodeHandle.get(), fullTopicName.c_str(), state.mMessage->getTypeSupportHandle(), qos);
             if (!state.mPublisher->isValid())
             {
                 db.logWarning(
