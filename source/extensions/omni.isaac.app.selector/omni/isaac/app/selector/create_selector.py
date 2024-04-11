@@ -21,6 +21,7 @@ from .selector_window import SelectorWindow
 from .settings import (
     AUTO_START_SETTING,
     DEFAULT_APP_SETTING,
+    ECO_MODE_SETTING,
     EXTRA_ARGS_SETTING,
     PERSISTENT_ROS_BRIDGE_SETTING,
     PERSISTENT_SELECTOR_SETTING,
@@ -45,6 +46,7 @@ class CreateSelectorExtension(omni.ext.IExt):
         user_show_console = self._settings.get(SHOW_CONSOLE_SETTING)
         user_extra_args = self._settings.get(EXTRA_ARGS_SETTING)
         user_ros_bridge_extension = self._settings.get(PERSISTENT_ROS_BRIDGE_SETTING)
+        user_eco_mode = self._settings.get(ECO_MODE_SETTING)
 
         app_extra_args = []
 
@@ -88,6 +90,9 @@ class CreateSelectorExtension(omni.ext.IExt):
             app_extra_args.append(
                 "--/isaac/startup/ros_bridge_extension=" + ROS_BRIDGE_EXTENSIONS[ros_bridge_extension]
             )
+
+        if user_eco_mode:
+            app_extra_args.append("--/rtx/ecoMode/enabled=True")
 
         # Auto-starting default app
         if user_auto_start:

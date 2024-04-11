@@ -22,6 +22,7 @@ from .settings import (
     APPS_SETTING,
     AUTO_START_SETTING,
     DEFAULT_APP_SETTING,
+    ECO_MODE_SETTING,
     EXPERIMENTAL_APPS_SETTING,
     EXTRA_ARGS_SETTING,
     PERSISTENT_ROS_BRIDGE_SETTING,
@@ -76,6 +77,7 @@ class SelectorWindow:
         self._default_app = self._settings.get(DEFAULT_APP_SETTING)
         self._show_console = self._settings.get(SHOW_CONSOLE_SETTING)
         self._extra_args = self._settings.get(EXTRA_ARGS_SETTING)
+        self._eco_mode = self._settings.get(ECO_MODE_SETTING)
 
         self._app_list_frame = None  # the frame for the application list
         self._detail_label = None  # label of the active app
@@ -100,6 +102,9 @@ class SelectorWindow:
                 + ROS_BRIDGE_EXTENSIONS[self._ros_bridge_selection.get_item_value_model().as_int]
             ]
         )
+        if self._set_eco_mode.get_value_as_bool():
+            all_additional_args.append("--/rtx/ecoMode/enabled=True")
+
         start_app(
             app_id=app_id,
             app_version=app_version,
@@ -468,6 +473,21 @@ class SelectorWindow:
                 self._show_app_console.add_value_changed_fn(on_console_value_changed)
 
                 ui.Label("Show startup console", width=100, style={"font_size": 18, "color": 0xFFBBBBBB})
+
+            # checkbox to enable eco mode on startup
+            ui.Spacer(height=5)
+            with ui.HStack(height=0):
+                ui.Spacer(width=10)
+                self._set_eco_mode = ui.CheckBox(height=10, width=30).model
+
+                def on_eco_mode_value_changed(model):
+                    value = model.get_value_as_bool()
+                    self._settings.set(ECO_MODE_SETTING, value)
+
+                self._set_eco_mode.set_value(self._settings.get(ECO_MODE_SETTING))
+                self._set_eco_mode.add_value_changed_fn(on_eco_mode_value_changed)
+
+                ui.Label("Enable eco mode on app startup", width=100, style={"font_size": 18, "color": 0xFFBBBBBB})
 
             ui.Spacer(height=5)
             with ui.HStack(height=45, style={"font_size": 18, "margin": 4}):

@@ -18,7 +18,13 @@ import omni.kit.app
 from .settings import DEFAULT_APP_SETTING, SHOW_CONSOLE_SETTING
 
 
-def start_app(app_id: str, app_version: str, app_become_new_default=False, persistent_selector=False, extra_args=[]):
+def start_app(
+    app_id: str,
+    app_version: str,
+    app_become_new_default=False,
+    persistent_selector=False,
+    extra_args=[],
+):
     """show the omniverse ui documentation as an external Application"""
     _settings = carb.settings.get_settings()
 
