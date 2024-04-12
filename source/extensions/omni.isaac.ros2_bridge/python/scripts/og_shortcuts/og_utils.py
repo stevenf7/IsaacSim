@@ -16,6 +16,7 @@ import omni.usd
 from omni.isaac.core.utils.stage import get_next_free_path
 from omni.isaac.ui.callbacks import on_open_IDE_clicked
 from omni.isaac.ui.style import get_style
+from omni.isaac.ui.ui_utils import dropdown_builder
 from omni.isaac.ui.widgets import ParamWidget, SelectPrimWidget
 from omni.kit.notification_manager import NotificationStatus, post_notification
 from omni.kit.window.extensions import SimpleCheckBox
@@ -46,7 +47,7 @@ class Ros2ClockGraph:
                     ("ReadSimTime.outputs:simulationTime", "PublishClock.inputs:timeStamp"),
                 ],
                 keys.SET_VALUES: [
-                    ("ReadSimTime.inputs:resetOnStop", True),
+                    ("ReadSimTime.inputs:resetOnStop", False),
                 ],
             },
         )
@@ -106,6 +107,210 @@ class Ros2ClockGraph:
         return True
 
 
+class Ros2GenericPubGraph:
+    def __init__(self):
+        self._og_path = "/Graph/ROS_RTF"
+        self._dropdown_model = None
+        self._dropdown_operations_list = [
+            ("Publish RTF as Float32", self.make_rtf_graph),
+            ("Publish Bool", self.make_bool_graph),
+            ("Publish Int64", self.make_int64_graph),
+            ("Publish String", self.make_string_graph),
+        ]
+
+    def make_rtf_graph(self):
+        self._timeline = omni.timeline.get_timeline_interface()
+        self._timeline.stop()
+
+        keys = og.Controller.Keys
+        (graph, nodes, _, _) = og.Controller.edit(
+            {"graph_path": self._og_path, "evaluator_name": "execution"},
+            {
+                keys.CREATE_NODES: [
+                    ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                    ("GenericPublisher", "omni.isaac.ros2_bridge.ROS2Publisher"),
+                    ("RTF", "omni.isaac.core_nodes.IsaacRealTimeFactor"),
+                    ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
+                ],
+                keys.SET_VALUES: [
+                    ("GenericPublisher.inputs:messageName", "Float32"),
+                    ("GenericPublisher.inputs:messagePackage", "std_msgs"),
+                    ("GenericPublisher.inputs:messageSubfolder", "msg"),
+                ],
+                keys.CONNECT: [
+                    ("OnPlaybackTick.outputs:tick", "GenericPublisher.inputs:execIn"),
+                    ("Context.outputs:context", "GenericPublisher.inputs:context"),
+                ],
+            },
+        )
+
+        # Have a separate connection since we need GenericPublisher to run least one frame for it generate the input fields
+        og.Controller.connect(
+            og.Controller.attribute(self._og_path + "/RTF.outputs:rtf"),
+            og.Controller.attribute(self._og_path + "/GenericPublisher.inputs:data"),
+        )
+
+    def make_bool_graph(self):
+        self._timeline = omni.timeline.get_timeline_interface()
+        self._timeline.stop()
+
+        keys = og.Controller.Keys
+        (graph, nodes, _, _) = og.Controller.edit(
+            {"graph_path": self._og_path, "evaluator_name": "execution"},
+            {
+                keys.CREATE_NODES: [
+                    ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                    ("GenericPublisher", "omni.isaac.ros2_bridge.ROS2Publisher"),
+                    ("ConstBool", "omni.graph.nodes.ConstantBool"),
+                    ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
+                ],
+                keys.SET_VALUES: [
+                    ("GenericPublisher.inputs:messageName", "Bool"),
+                    ("GenericPublisher.inputs:messagePackage", "std_msgs"),
+                    ("GenericPublisher.inputs:messageSubfolder", "msg"),
+                    ("ConstBool.inputs:value", True),
+                ],
+                keys.CONNECT: [
+                    ("OnPlaybackTick.outputs:tick", "GenericPublisher.inputs:execIn"),
+                    ("Context.outputs:context", "GenericPublisher.inputs:context"),
+                ],
+            },
+        )
+
+        # Have a separate connection since we need GenericPublisher to run least one frame for it generate the input fields
+        og.Controller.connect(
+            og.Controller.attribute(self._og_path + "/ConstBool.inputs:value"),
+            og.Controller.attribute(self._og_path + "/GenericPublisher.inputs:data"),
+        )
+
+    def make_int64_graph(self):
+        self._timeline = omni.timeline.get_timeline_interface()
+        self._timeline.stop()
+
+        keys = og.Controller.Keys
+        (graph, nodes, _, _) = og.Controller.edit(
+            {"graph_path": self._og_path, "evaluator_name": "execution"},
+            {
+                keys.CREATE_NODES: [
+                    ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                    ("GenericPublisher", "omni.isaac.ros2_bridge.ROS2Publisher"),
+                    ("ConstInt", "omni.graph.nodes.ConstantInt64"),
+                    ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
+                ],
+                keys.SET_VALUES: [
+                    ("GenericPublisher.inputs:messageName", "Int64"),
+                    ("GenericPublisher.inputs:messagePackage", "std_msgs"),
+                    ("GenericPublisher.inputs:messageSubfolder", "msg"),
+                    ("ConstInt.inputs:value", 42),
+                ],
+                keys.CONNECT: [
+                    ("OnPlaybackTick.outputs:tick", "GenericPublisher.inputs:execIn"),
+                    ("Context.outputs:context", "GenericPublisher.inputs:context"),
+                ],
+            },
+        )
+
+        # Have a separate connection since we need GenericPublisher to run least one frame for it generate the input fields
+        og.Controller.connect(
+            og.Controller.attribute(self._og_path + "/ConstInt.inputs:value"),
+            og.Controller.attribute(self._og_path + "/GenericPublisher.inputs:data"),
+        )
+
+    def make_string_graph(self):
+        self._timeline = omni.timeline.get_timeline_interface()
+        self._timeline.stop()
+
+        keys = og.Controller.Keys
+        (graph, nodes, _, _) = og.Controller.edit(
+            {"graph_path": self._og_path, "evaluator_name": "execution"},
+            {
+                keys.CREATE_NODES: [
+                    ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                    ("GenericPublisher", "omni.isaac.ros2_bridge.ROS2Publisher"),
+                    ("ConstToken", "omni.graph.nodes.ConstantToken"),
+                    ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
+                ],
+                keys.SET_VALUES: [
+                    ("GenericPublisher.inputs:messageName", "String"),
+                    ("GenericPublisher.inputs:messagePackage", "std_msgs"),
+                    ("GenericPublisher.inputs:messageSubfolder", "msg"),
+                    ("ConstToken.inputs:value", "Hello from Isaac Sim!"),
+                ],
+                keys.CONNECT: [
+                    ("OnPlaybackTick.outputs:tick", "GenericPublisher.inputs:execIn"),
+                    ("Context.outputs:context", "GenericPublisher.inputs:context"),
+                ],
+            },
+        )
+
+        # Have a separate connection since we need GenericPublisher to run least one frame for it generate the input fields
+        og.Controller.connect(
+            og.Controller.attribute(self._og_path + "/ConstToken.inputs:value"),
+            og.Controller.attribute(self._og_path + "/GenericPublisher.inputs:data"),
+        )
+
+    def create_generic_pub_graph(self):
+        default_og_path = "/Graph/ROS_GenericPub"
+        og_path_def = ParamWidget.FieldDef(
+            name="og_path", label="Graph Path", type=ui.StringField, default=default_og_path
+        )
+
+        self._window = ui.Window("Parameters", width=350, height=180)
+        with self._window.frame:
+            with ui.VStack(spacing=4):
+                self.og_path_input = ParamWidget(field_def=og_path_def)
+
+                self._dropdown_model = dropdown_builder(
+                    label="Generic Publisher Graph",
+                    items=[names for (names, _) in self._dropdown_operations_list],
+                    tooltip="Select an example generic publisher graph",
+                )
+                with ui.HStack():
+                    ui.Spacer(width=ui.Percent(10))
+                    ui.Button("OK", height=40, width=ui.Percent(30), clicked_fn=self._on_ok)
+                    ui.Spacer(width=ui.Percent(20))
+                    ui.Button("Cancel", height=40, width=ui.Percent(30), clicked_fn=self._on_cancel)
+                    ui.Spacer(width=ui.Percent(10))
+                with ui.Frame(height=30):
+                    with ui.HStack():
+                        ui.Label("Python Script for Graph Generation", width=ui.Percent(30))
+                        ui.Button(
+                            name="IconButton",
+                            width=24,
+                            height=24,
+                            clicked_fn=lambda: on_open_IDE_clicked("", __file__),
+                            style=get_style()["IconButton.Image::OpenConfig"],
+                        )
+
+        return self._window
+
+    def _on_ok(self):
+        self._og_path = self.og_path_input.get_value()
+
+        param_check = self._check_params()
+        if param_check:
+            # self.make_graph()
+            self._dropdown_operations_list[self._dropdown_model.get_item_value_model().as_int][1]()
+            self._window.visible = False
+        else:
+            post_notification("Parameter check failed", status=NotificationStatus.WARNING)
+
+    def _on_cancel(self):
+        self._window.visible = False
+
+    def _check_params(self):
+        stage = omni.usd.get_context().get_stage()
+        og_prim = stage.GetPrimAtPath(self._og_path)
+        if og_prim.IsValid() and og_prim.IsA(OmniGraphSchema.OmniGraph):
+            msg = self._og_path + "already exist. Delete the existing clock graph or change the graph path"
+            post_notification(msg, status=NotificationStatus.WARNING)
+            return False
+        else:
+            pass
+
+        return True
+
+
 class Ros2JointStatesGraph:
     def __init__(self):
         self._og_path = "/Graph/ROS_JointStates"
@@ -136,7 +341,7 @@ class Ros2JointStatesGraph:
                         ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
                     ],
                     keys.SET_VALUES: [
-                        ("ReadSimTime.inputs:resetOnStop", True),
+                        ("ReadSimTime.inputs:resetOnStop", False),
                     ],
                 },
             )
@@ -400,7 +605,7 @@ class Ros2TfPubGraph:
                         ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
                     ],
                     keys.SET_VALUES: [
-                        ("ReadSimTime.inputs:resetOnStop", True),
+                        ("ReadSimTime.inputs:resetOnStop", False),
                     ],
                 },
             )
@@ -603,7 +808,7 @@ class Ros2OdometryGraph:
                         ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
                     ],
                     keys.SET_VALUES: [
-                        ("ReadSimTime.inputs:resetOnStop", True),
+                        ("ReadSimTime.inputs:resetOnStop", False),
                     ],
                 },
             )

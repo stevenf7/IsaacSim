@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.19.0] - 2024-04-11
+### Added
+- Added OmniGraph shortcuts for sample ROS2 generic publisher node  
+
 ## [2.18.0] - 2024-04-09
 ### Added
 - Added quality of service support for ROS2 bridge subscribers and publishers
