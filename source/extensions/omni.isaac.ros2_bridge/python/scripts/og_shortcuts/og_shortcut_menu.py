@@ -13,6 +13,7 @@ import omni.usd
 from omni.isaac.ros2_bridge.scripts.og_shortcuts.og_rtx_sensors import Ros2CameraGraph, Ros2RtxLidarGraph
 from omni.isaac.ros2_bridge.scripts.og_shortcuts.og_utils import (
     Ros2ClockGraph,
+    Ros2GenericPubGraph,
     Ros2JointStatesGraph,
     Ros2OdometryGraph,
     Ros2TfPubGraph,
@@ -31,6 +32,7 @@ class Extension(omni.ext.IExt):
             make_menu_item_description(ext_id, "ROS2 Odometry Publisher", onclick_fun=self._open_odometry_publisher),
             make_menu_item_description(ext_id, "ROS2 JointStates", onclick_fun=self._open_joint_states_pubsub),
             make_menu_item_description(ext_id, "ROS2 Clock", onclick_fun=self._open_clock),
+            make_menu_item_description(ext_id, "ROS2 Generic Publisher", onclick_fun=self._open_rtf),
         ]
 
         self._menu_items = [
@@ -52,6 +54,12 @@ class Extension(omni.ext.IExt):
             self.window_handle.visible = False
         clock_graph = Ros2ClockGraph()
         self.window_handle = clock_graph.create_clock_graph()
+
+    def _open_rtf(self):
+        if self.window_handle:
+            self.window_handle.visible = False
+        clock_graph = Ros2GenericPubGraph()
+        self.window_handle = clock_graph.create_generic_pub_graph()
 
     def _open_camera_sensor(self):
         if self.window_handle:
