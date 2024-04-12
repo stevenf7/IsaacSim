@@ -1,15 +1,14 @@
 {
-
-    "Import Pipeline":
-    [
+    "Saved Pipeline": [
+        "Robot Assembler"
+    ],
+    "Import Pipeline": [
         "Import URDF from File",
         "Articulation and Physics Inspector",
         "Gain Tuner",
         "Controller OmniGraphs"
     ],
-    
-    "ROS Pipeline":
-    [
+    "ROS Pipeline": [
         "Import URDF from File",
         "Articulation and Physics Inspector",
         "Gain Tuner",
@@ -18,9 +17,7 @@
         "Controller OmniGraphs",
         "ROS Bridge OmniGraphs"
     ],
-
-    "Manipulator Pipeline":
-    [
+    "Manipulator Pipeline": [
         "Import from CAD",
         "Articulation and Physics Inspector",
         "Gain Tuner",

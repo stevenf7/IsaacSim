@@ -1,4 +1,4 @@
-# Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2022-2024, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -19,7 +19,19 @@ import omni.physxsupportui.bindings._physxSupportUi as pxsupportui
 import omni.timeline
 import omni.ui as ui
 import omni.usd
-from omni.isaac.import_wizard.ui_utils import label_kwargs, scroll_kwargs, text_kwargs
+from omni.isaac.import_wizard.questionnaire import Questionnaire
+from omni.isaac.import_wizard.ui_utils import (
+    BUTTON_FONT,
+    HIGHLIGHT_COLOR,
+    Singleton,
+    label_kwargs,
+    large_btn_kwargs,
+    medium_btn_kwargs,
+    scroll_kwargs,
+    small_btn_kwargs,
+    text_kwargs,
+    x_large_btn_kwargs,
+)
 from omni.isaac.ui.callbacks import on_docs_link_clicked, on_open_folder_clicked
 from omni.isaac.ui.element_wrappers import ScrollingWindow
 from omni.isaac.ui.menu import MenuItemDescription
@@ -35,29 +47,13 @@ from omni.kit.window.property.templates import LABEL_HEIGHT, LABEL_WIDTH
 EXTENSION_TITLE = "Isaac Sim Import Wizard"
 EXTENSION_FOLDER_PATH = omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module(__name__)
 
-BUTTON_FONT = 16
-
 
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
-        """Initialize extension and UI elements"""
-
         self.ext_id = ext_id
-        self._usd_context = omni.usd.get_context()
-        self._settings = carb.settings.get_settings()
-        self._current_tool_name = None
 
-        # Build Window
-        self._window = ScrollingWindow(
-            title=EXTENSION_TITLE,
-            width=400,
-            height=500,
-            visible=False,
-            dockPreference=ui.DockPreference.LEFT_BOTTOM,
-            horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
-            vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
-        )
-        self._window.set_visibility_changed_fn(self._on_window)
+        # creating window for the wizard
+        self._ext_window = ImportWizard(ext_id)
 
         action_registry = omni.kit.actions.core.get_action_registry()
         action_registry.register_action(
@@ -73,28 +69,15 @@ class Extension(omni.ext.IExt):
         add_menu_items(self._menu_items, "Isaac Utils")
 
     def on_shutdown(self):
-        self.reset()
+        self._ext_window.on_shutdown()
+
         remove_menu_items(self._menu_items, "Isaac Utils")
 
         action_registry = omni.kit.actions.core.get_action_registry()
         action_registry.deregister_action(self.ext_id, f"CreateUIExtension:{EXTENSION_TITLE}")
 
-        if self._window:
-            self._window = None
-        gc.collect()
-
-    def _on_window(self, visible):
-        if self._window.visible:
-            self._usd_context = omni.usd.get_context()
-            self._settings = carb.settings.get_settings()
-            # if the window was closed during use, it should open at the place it was closed, not from the beginning
-            if self._current_tool_name:
-                self._build_instructions_page(self._current_tool_name)
-            else:
-                self._build_welcome_page()
-
     def _menu_callback(self):
-        self._window.visible = not self._window.visible
+        self._ext_window._window.visible = not self._ext_window._window.visible
 
         async def dock_window():
             await omni.kit.app.get_app().next_update_async()
@@ -111,22 +94,75 @@ class Extension(omni.ext.IExt):
 
         self._task = asyncio.ensure_future(dock_window())
 
-    def _on_clicked_stop(self):
-        # close the last app
-        self._app_window = ui.Workspace.get_window(self._current_app_name)
-        if self._app_window is not None:
-            self._app_window.visible = False
-        self.reset()
-        self._window.visible = False
+
+@Singleton
+class ImportWizard(object):
+    def __init__(self, ext_id: str):
+        self._ext_id = ext_id
+        self._settings = carb.settings.get_settings()
+
+        # params for initializing the wizard
+        self._current_tool_name = None
+        self.qa = None
+
+        self._window = ScrollingWindow(
+            title=EXTENSION_TITLE,
+            width=400,
+            height=500,
+            visible=False,
+            dockPreference=ui.DockPreference.LEFT_BOTTOM,
+            horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+            vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+        )
+        self._window.set_visibility_changed_fn(self._on_window)
+
+        # get the carb setting variable on whether to open the window on startup
+        self._not_show_on_startup = self._settings.get("persistent/ext/omni.isaac.import_wizard/not_show_on_startup")
+        if self._not_show_on_startup:
+            self._window.visible = False
+        else:
+            self._window.visible = True
+
+    def on_shutdown(self):
+        # close the wizard and shutdown the questionnaire popup if exist
+        if self._window:
+            self._window.visible = False
+            self._window = None
+        if self.qa is not None:
+            self.qa.on_shutdown()
+
+        gc.collect()
+
+    def _on_window(self, visible):
+        if visible:
+            # if the window was closed by accident, it should open at the place it was closed, not from the beginning
+            # the wizard instruction page should just be the opening page
+            if self._current_tool_name and self._current_tool_name != "Isaac Sim Import Wizard":
+                self._build_instructions_page(self._current_tool_name)
+            else:
+                self._build_welcome_page()
+        else:
+            # if wizard window closed, also close the questionnaire window if it's open
+            if self.qa is not None:
+                self.qa.on_shutdown()
 
     def reset(self):
+        self.available_tools_list = []
+        self.full_app_list = []
         self.user_tools_list = []
         self.selection_state = []
         self._current_app_name = ""
         self._current_tool_name = ""
         self._use_custom_file = False
+        self._app_data = None
         self.pipeline_file = EXTENSION_FOLDER_PATH + "/data/pipeline.json"
         self.custom_file = EXTENSION_FOLDER_PATH + "/data/custom_pipeline.json"
+        self.tools_file = EXTENSION_FOLDER_PATH + "/data/available_tools.json"
+        self._not_show_on_startup = self._settings.get("persistent/ext/omni.isaac.import_wizard/not_show_on_startup")
+
+        # shutdown questionnaire if it's active
+        if self.qa is not None:
+            self.qa.on_shutdown()
 
     def _build_welcome_page(self):
 
@@ -134,60 +170,78 @@ class Extension(omni.ext.IExt):
         self.reset()
 
         # # get data for available pipelines
-        with open(self.pipeline_file, "r") as file:
-            data = json.load(file)
+        with open(self.tools_file, "r") as file:
+            tools_file = json.load(file)
+        with open(self.pipeline_file, "r") as f:
+            pipeline_data = json.load(f)
 
+        # data needed for the welcome page
         self._get_data_from_file(self.pipeline_file, "Isaac Sim Import Wizard")
-        # data needed for the wizard
-        self.available_tools_list = data["Available Tools"]  # names of tools that are presented to users
+        self.available_tools_list = tools_file["Available Tools"]  # names of tools that are presented to users
+
         self.full_app_list = [
-            data[tool]["App Name"] for tool in self.available_tools_list
+            pipeline_data[tool]["App Name"] for tool in self.available_tools_list
         ]  # names of apps that matches the extension name
         self.selection_state = [False] * len(self.full_app_list)
-        self._func_list = []  # func_list attached to the checkboxes
-        for i in range(len(self.full_app_list)):
-            self._func_list.append(SelectFunc(self, i))
 
         # build the wizard welcome page ui
         with self._window.frame:
-            with ui.Frame(style=get_style()):
+            with ui.Frame():
                 with ui.VStack(height=0):
-                    ui.Label(
-                        "Welcome!",
-                        alignment=ui.Alignment.LEFT_TOP,
-                        style={"font_size": 20, "color": 0xFFC7C7C7},
-                    )
-                    ui.Button(
-                        "NEED HELP WITH STARTING?",
-                        style={"font_size": BUTTON_FONT},
-                        height=60,
-                        word_wrap=True,
-                        clicked_fn=self._build_welcome_page,  ## launch the "chatbot"
-                    )
+                    with ui.HStack():
+                        ui.Label(
+                            "Welcome!",
+                            alignment=ui.Alignment.LEFT_TOP,
+                            style={"font_size": 20, "color": 0xFFC7C7C7},
+                        )
+                        ui.Spacer(height=10)
+                        self.check_frame = ui.Frame()
+                        with self.check_frame:
+                            with ui.HStack():
+                                test_label = ui.Label("Don't Show This Again", width=0, alignment=ui.Alignment.RIGHT)
+                                ui.Spacer(width=10)
+                                cb_show = ui.SimpleBoolModel(default_value=self._not_show_on_startup)
+                                # make the label clickable
+                                test_label.set_mouse_released_fn(lambda x, y, b, c: self._trigger_checkbox(cb_show))
+                                ui.CheckBox(model=cb_show)
+                                cb_show.add_value_changed_fn(self._on_open_on_startup)
+                    with ui.HStack():
+                        ui.Spacer()
+                        ui.Button(
+                            "DO YOU NEED HELP GETTING STARTED?",
+                            height=60,
+                            width=ui.Percent(60),
+                            word_wrap=True,
+                            alignment=ui.Alignment.CENTER,
+                            clicked_fn=self._build_questionnaire_window,  ## launch the "chatbot",
+                            **large_btn_kwargs,
+                        )
+                        ui.Spacer()
 
                     self._build_instruction_frame()
                     self._build_checkboxes()
-
+                    ui.Spacer(height=10)
                     # wizard footer
                     with ui.CollapsableFrame(
                         "Advanced Tips",
                         collapsed=True,
-                        style=get_style(),
+                        style={
+                            "font_size": BUTTON_FONT,
+                            "background_color": 0xFF2C2C2C,
+                            "color": "0xFF00B976",
+                        },
                         style_type_name_override="CollapsableFrame",
                     ):
                         with ui.ScrollingFrame(
                             height=LABEL_HEIGHT * 8,
                             **scroll_kwargs,
                         ):
-                            with ui.ZStack(style={"ZStack": {"margin": 10}}):
-                                ui.Rectangle()
+                            with ui.HStack():
+                                ui.Spacer(width=10)
                                 ui.Label(
                                     self._app_data["Advanced Instructions"],
                                     **text_kwargs,
                                 )
-
-                    ui.Spacer(height=10)
-                    ui.Button("Next", height=60, style={"font_size": BUTTON_FONT}, clicked_fn=self._build_pipeline_page)
                     ui.Spacer(height=10)
                     with ui.HStack():
                         ui.Label(
@@ -201,7 +255,28 @@ class Extension(omni.ext.IExt):
 
                         combo_box.add_item_changed_fn(self._on_clicked_dropdown)
 
+                    ui.Spacer(height=10)
+                    ui.Button(
+                        "Next",
+                        height=60,
+                        clicked_fn=self._build_pipeline_page,
+                        **large_btn_kwargs,
+                    )
+                    ui.Spacer(height=10)
+
+    def _trigger_checkbox(self, model):
+        toggled_value = not model.get_value_as_bool()
+        model.set_value(toggled_value)
+
+    def _on_open_on_startup(self, checked_state):
+        self._settings.set(
+            "persistent/ext/omni.isaac.import_wizard/not_show_on_startup", checked_state.get_value_as_bool()
+        )
+
     def _build_pipeline_page(self):
+        """
+        this page displays the list of tools of the pipeline before starting the process
+        """
         # if the user wants to use a custom file, we get the user_tools_list from the custom file
         if self._use_custom_file:
             try:
@@ -210,13 +285,21 @@ class Extension(omni.ext.IExt):
                 self.user_tools_list = user_data[self.pipeline_name.model.get_value_as_string()]
             except:
                 msg = "Invalid File name and/or Pipeline name. Please select a valid file and a valid pipeline."
-                post_notification(msg, status=NotificationStatus.WARNING)
+                post_notification(msg, status=NotificationStatus.WARNING, duration=8)
                 return
+
+            # if it's a custom file, need to make sure the tool names listed are valid ones
+            for tool in self.user_tools_list:
+                if tool not in self.available_tools_list:
+                    msg = (
+                        tool
+                        + " not a valid tool. Please check your pipeline list, and use the exact names appeared next to the checkboxes."
+                    )
+                    post_notification(msg, status=NotificationStatus.WARNING, duration=8)
+                    return
         else:
             user_app_idx = [index for index, item in enumerate(self.selection_state) if item]
             self.user_tools_list = [self.available_tools_list[idx] for idx in user_app_idx]
-
-        print("user tools list is", self.user_tools_list)
 
         # if there is a user_tools_list, start at the beginning
         if self.user_tools_list:
@@ -258,26 +341,29 @@ class Extension(omni.ext.IExt):
                             ui.Button(
                                 "Next",
                                 height=60,
-                                style={"font_size": BUTTON_FONT},
                                 clicked_fn=lambda: self._build_instructions_page(self.user_tools_list[0]),
+                                **medium_btn_kwargs,
                             )
                             ui.Spacer(width=5)
                             ui.Button(
                                 "Cancel",
                                 height=60,
-                                style={"font_size": BUTTON_FONT},
                                 clicked_fn=self._build_welcome_page,
+                                **medium_btn_kwargs,
                             )
         else:
             msg = "No tools selected. Please select at least one tool to include in the pipeline."
             post_notification(msg, status=NotificationStatus.WARNING)
 
     def _build_instructions_page(self, tool_name):
+        """
+        this sets up the wizard for the current app, by enable the extension if needed, build the UI, and open the current app window if there is one
+        """
 
         self._prep_page(tool_name)
         self._get_data_from_file(self.pipeline_file, tool_name)  # this sets the parameters for the current app
 
-        # first check if this extension is enabled
+        # check if this extension is enabled
         if self._current_app_name == "Articulation Inspector":
             # physX tool are not an extension so we skip this check
             pass
@@ -301,20 +387,26 @@ class Extension(omni.ext.IExt):
                     self._app_window.visible = True
 
     def _build_wizard_ui(self, app_data):
+        """
+        this builds the UI for each instruction page
+        """
         with self._window.frame:
             with ui.VStack():
                 ui.Button(
                     "Start Over",
-                    style={"font_size": BUTTON_FONT},
-                    width=60,
+                    width=100,
                     height=40,
                     clicked_fn=self._build_welcome_page,
+                    **small_btn_kwargs,
                 )
                 self._build_instruction_frame()
                 self._build_wizard_footer()
 
     def _prep_page(self, tool_name):
-        # clean up the previous app, setup parameters for this app
+        """
+        close the previous app, setup parameters for this app
+
+        """
 
         # before resetting the self._current_app_name, close the current tool's window if it has one. physX tool needs a special call
         if self._current_app_name == "Articulation Inspector":
@@ -367,10 +459,17 @@ class Extension(omni.ext.IExt):
             msg = f"Failed to enable extension {ext_name}"
             post_notification(msg, status=NotificationStatus.WARNING)
 
-    def _on_use_custom_pipeline(self, check_state):
-        self._selection_frame.visible = not check_state
-        self._select_file_frame.visible = check_state
-        self._use_custom_file = check_state
+    def _on_clicked_stop(self):
+        # close the last app
+        self._app_window = ui.Workspace.get_window(self._current_app_name)
+        if self._app_window is not None:
+            self._app_window.visible = False
+
+        # reset params collected or modified by the wizard
+        self.reset()
+
+        # close wizard window
+        self._window.visible = False
 
     def _on_file_select_callback(self, file, path):
         self.custom_file = path + file
@@ -398,7 +497,7 @@ class Extension(omni.ext.IExt):
         self._build_instructions_page(self.available_tools_list[model.get_item_value_model().as_int])
 
     def _build_instruction_frame(self):
-        with ui.Frame(style=get_style()):
+        with ui.Frame(style=get_style(), spacing=10):
             with ui.VStack(height=0):
                 ui.Spacer(height=5)
                 ui.Line(style={"color": 0x338A8777}, width=ui.Fraction(1), alignment=ui.Alignment.CENTER)
@@ -415,12 +514,15 @@ class Extension(omni.ext.IExt):
                         "Summary:",
                         **label_kwargs,
                     )
-                    with ui.ZStack(style={"ZStack": {"margin": 10}}):
-                        ui.Rectangle(height=20)
-                        ui.Label(
-                            self._app_data["Summary"],
-                            **text_kwargs,
-                        )
+                    with ui.ZStack(style={"ZStack": {"margin": 0}}):
+                        ui.Rectangle(height=ui.Fraction(1))
+                        with ui.HStack(spacing=0):
+                            ui.Spacer(width=5)
+                            ui.Label(
+                                self._app_data["Summary"],
+                                **text_kwargs,
+                            )
+                ui.Spacer(height=10)
                 with ui.HStack():
                     ui.Label(
                         "Basic Instructions:",
@@ -432,22 +534,29 @@ class Extension(omni.ext.IExt):
                     ):
                         with ui.ZStack(style={"ZStack": {"margin": 10}}):
                             ui.Rectangle()
-                            ui.Label(
-                                self._app_data["Basic Instructions"],
-                                **text_kwargs,
-                            )
+                            with ui.HStack(spacing=0):
+                                ui.Spacer(width=5)
+                                ui.Label(
+                                    self._app_data["Basic Instructions"],
+                                    **text_kwargs,
+                                )
+                                ui.Spacer(width=5)
+                ui.Spacer(height=10)
                 with ui.HStack():
                     ui.Label(
                         "Menu Location:",
                         **label_kwargs,
                         tooltip="Where to find this tool in the GUI",
                     )
-                    with ui.ZStack(style={"ZStack": {"margin": 10}}):
-                        ui.Rectangle(height=20)
-                        ui.Label(
-                            self._app_data["Menu"],
-                            **text_kwargs,
-                        )
+                    with ui.ZStack(style={"ZStack": {"margin": 0}}):
+                        ui.Rectangle(height=ui.Fraction(1))
+                        with ui.HStack(spacing=0):
+                            ui.Spacer(width=5)
+                            ui.Label(
+                                self._app_data["Menu"],
+                                **text_kwargs,
+                            )
+                ui.Spacer(height=10)
                 with ui.HStack():
                     ui.Label(
                         "Additional Resources:",
@@ -537,51 +646,25 @@ class Extension(omni.ext.IExt):
                 with ui.CollapsableFrame(
                     "Advanced Tips",
                     collapsed=True,
-                    style=get_style(),
-                    style_type_name_override="CollapsableFrame",
+                    style={
+                        "font_size": BUTTON_FONT,
+                        "background_color": 0xFF2C2C2C,
+                        "color": "0xFF00B976",
+                    },
                 ):
                     with ui.ScrollingFrame(
-                        height=LABEL_HEIGHT * 8,
+                        height=LABEL_HEIGHT * 15,
                         **scroll_kwargs,
                     ):
-                        with ui.ZStack(style={"ZStack": {"margin": 10}}):
-                            ui.Rectangle()
+                        with ui.HStack():
+                            ui.Spacer(width=10)
                             ui.Label(
                                 self._app_data["Advanced Instructions"],
                                 **text_kwargs,
                             )
+                            ui.Spacer(width=10)
                 ui.Spacer(height=10)
                 ui.Line(style={"color": 0x338A8777}, width=ui.Fraction(1), alignment=ui.Alignment.CENTER)
-                ui.Spacer(height=10)
-                with ui.HStack(spacing=5):
-                    if self._prev_tool_name == "At the Beginning":
-                        prev_btn_enabled = False
-                    else:
-                        prev_btn_enabled = True
-
-                    if self._next_tool_name == "End of Pipeline":
-                        next_btn_enabled = False
-                    else:
-                        next_btn_enabled = True
-
-                    self._prev_btn = ui.Button(
-                        "Previous: " + self._prev_tool_name,
-                        height=60,
-                        style={"font_size": BUTTON_FONT},
-                        clicked_fn=lambda: self._build_instructions_page(self._prev_tool_name),
-                        enabled=prev_btn_enabled,
-                    )
-                    ui.Spacer(width=5)
-                    self._next_btn = ui.Button(
-                        "Next: " + self._next_tool_name,
-                        width=ui.Percent(40),
-                        height=60,
-                        style={"font_size": BUTTON_FONT},
-                        clicked_fn=lambda: self._build_instructions_page(self._next_tool_name),
-                        enabled=next_btn_enabled,
-                    )
-                    ui.Spacer(width=5)
-                    ui.Button("Done", height=60, style={"font_size": BUTTON_FONT}, clicked_fn=self._on_clicked_stop)
                 ui.Spacer(height=10)
                 with ui.HStack():
                     ui.Label(
@@ -589,10 +672,55 @@ class Extension(omni.ext.IExt):
                         **label_kwargs,
                     )
                     combo_box = ui.ComboBox(0, *self.full_app_list, width=200, alignment=ui.Alignment.LEFT_CENTER).model
-
                     combo_box.add_item_changed_fn(self._on_clicked_dropdown)
+                with ui.HStack(spacing=5, width=ui.Fraction(1)):
+                    prepend_previous = "Previous: "
+                    prepend_next = "Next: "
+                    if self._prev_tool_name == "At the Beginning":
+                        prev_btn_enabled = False
+                        prepend_previous = ""
+                    else:
+                        prev_btn_enabled = True
+
+                    if self._next_tool_name == "End of Pipeline":
+                        next_btn_enabled = False
+                        prepend_next = ""
+                    else:
+                        next_btn_enabled = True
+
+                    self._prev_btn = ui.Button(
+                        prepend_previous + self._prev_tool_name,
+                        height=60,
+                        clicked_fn=lambda: self._build_instructions_page(self._prev_tool_name),
+                        enabled=prev_btn_enabled,
+                        word_wrap=True,
+                        **medium_btn_kwargs,
+                    )
+                    # ui.Spacer(width=5)
+                    self._next_btn = ui.Button(
+                        prepend_next + self._next_tool_name,
+                        height=60,
+                        clicked_fn=lambda: self._build_instructions_page(self._next_tool_name),
+                        enabled=next_btn_enabled,
+                        word_wrap=True,
+                        **medium_btn_kwargs,
+                    )
+                    # ui.Spacer(width=5)
+                    ui.Button(
+                        "Done",
+                        width=80,
+                        height=60,
+                        clicked_fn=self._on_clicked_stop,
+                        **medium_btn_kwargs,
+                    )
 
     def _build_checkboxes(self):
+
+        self._func_list = []  # func_list attached to the checkboxes
+        for i in range(len(self.full_app_list)):
+            func_handle = SelectFunc(self, i)
+            self._func_list.append(func_handle)
+
         with ui.Frame():
             with ui.VStack():
                 with ui.HStack():
@@ -600,62 +728,99 @@ class Extension(omni.ext.IExt):
                         "Use Custom Pipeline:",
                         **label_kwargs,
                     )
-                    cb = ui.SimpleBoolModel(default_value=False)
-                    SimpleCheckBox(False, on_checked_fn=self._on_use_custom_pipeline, model=cb)
+                    self.custom_file_cb = ui.SimpleBoolModel(default_value=False)
+                    SimpleCheckBox(False, on_checked_fn=self._on_use_custom_pipeline, model=self.custom_file_cb)
 
-                ui.Spacer(height=10)
+                ui.Spacer(height=5)
+
                 self._selection_frame = ui.Frame(height=200)
                 with self._selection_frame:
                     with ui.VStack():
+                        ui.Line(style={"color": 0x338A8777}, width=ui.Fraction(1), alignment=ui.Alignment.CENTER)
+                        ui.Spacer(height=3)
                         ui.Label(
                             "Check all the tools you wish to include in the pipeline",
                             style={"font_size": 20, "color": 0xFFC7C7C7},
                         )
+                        ui.Spacer(height=10)
                         with ui.ScrollingFrame(
-                            height=LABEL_HEIGHT * 10,
+                            height=LABEL_HEIGHT * 7,
                             **scroll_kwargs,
                         ):
                             with ui.VGrid(row_count=4, column_count=3):
                                 for i in range(1, len(self.full_app_list)):
                                     with ui.HStack():
-                                        cb = ui.SimpleBoolModel(default_value=False)
+                                        this_cb_model = ui.SimpleBoolModel(default_value=False)
                                         SimpleCheckBox(
-                                            self.selection_state[i], on_checked_fn=self._func_list[i], model=cb
+                                            self.selection_state[i],
+                                            on_checked_fn=self._func_list[i],
+                                            model=this_cb_model,
                                         )
                                         ui.Label(self.available_tools_list[i], word_wrap=True)
 
                 self._select_file_frame = ui.Frame(visible=False)
-                self.folder_picker = weakref.proxy(
-                    FilePickerDialog(
-                        title="File Picker",
-                        click_apply_handler=weakref.proxy(self)._on_file_select_callback,
-                    )
+
+    def _build_questionnaire_window(self):
+        if self.qa is not None:
+            self.qa._qa_window.visible = True
+            self.qa.start()
+        else:
+            self.qa = Questionnaire(self, self.available_tools_list)
+            self.qa.start()
+
+    def _on_use_custom_pipeline(self, check_state):
+
+        if check_state:
+            # build the custom pipeline ui every time, so that it can catch saved pipelines from questionnaires
+            self.folder_picker = weakref.proxy(
+                FilePickerDialog(
+                    title="File Picker",
+                    click_apply_handler=weakref.proxy(self)._on_file_select_callback,
                 )
-                self.folder_picker.hide()
+            )
+            self.folder_picker.hide()
 
-                with self._select_file_frame:
-                    with ui.VStack():
-                        with ui.HStack():
-                            ui.Label("Select File", width=LABEL_WIDTH / 1.5)
-                            self.user_file_field = ui.StringField(
-                                name="StringField", height=0, alignment=ui.Alignment.LEFT_CENTER, read_only=True
-                            ).model
-                            self.user_file_field.set_value(self.custom_file)
+            with self._select_file_frame:
+                with ui.VStack():
+                    with ui.HStack():
+                        ui.Label("Select File", width=LABEL_WIDTH / 1.5)
+                        # if saved file from the questionnaire exist, use it. otherwise use the default custom parameters
+                        if self.qa:
+                            if self.qa.save_pipeline_file is not None:
+                                self.custom_file = self.qa.save_pipeline_file
+                                custom_pipeline_name = self.qa.save_pipeline_name
+                            else:
+                                custom_pipeline_name = "Import Pipeline"
+                        else:
+                            custom_pipeline_name = "Import Pipeline"
 
-                            add_folder_picker_icon(
-                                self._on_file_select_callback,
-                                dialog_title="Select User File",
-                                button_title="Select File",
-                            )
+                        self.user_file_field = ui.StringField(
+                            name="StringField", height=0, alignment=ui.Alignment.LEFT_CENTER, read_only=True
+                        ).model
+                        self.user_file_field.set_value(self.custom_file)
 
-                        ui.Spacer(height=3)
-                        with ui.HStack():
-                            ui.Label("Pipeline Name", width=LABEL_WIDTH / 1.5)
-                            pipeline_name_model = ui.SimpleStringModel("Import Pipeline")
-                            self.pipeline_name = ui.StringField(model=pipeline_name_model)
+                        add_folder_picker_icon(
+                            self._on_file_select_callback,
+                            dialog_title="Select User File",
+                            button_title="Select File",
+                        )
+
+                    ui.Spacer(height=3)
+                    with ui.HStack():
+                        ui.Label("Pipeline Name", width=LABEL_WIDTH / 1.5)
+                        pipeline_name_model = ui.SimpleStringModel(custom_pipeline_name)
+                        self.pipeline_name = ui.StringField(model=pipeline_name_model)
+
+        self._selection_frame.visible = not check_state
+        self._select_file_frame.visible = check_state
+        self._use_custom_file = check_state
 
 
 class SelectFunc:
+    """
+    this class is used to attach the checkboxes so that the checkboxes UI can be iteratively created with the correct functions attached to them
+    """
+
     def __init__(self, ext, idx):
         self.idx = idx
         self.ext = ext
