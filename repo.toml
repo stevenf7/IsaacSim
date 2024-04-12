@@ -833,6 +833,7 @@ exts.include = [
     "omni.isaac.cortex",
     "omni.isaac.ocs2",
     "omni.isaac.vscode",
+    "omni.isaac.jupyter_notebook",
     "omni.isaac.cortex.sample_behaviors",
     "omni.isaac.partition",
     "omni.isaac.wheeled_robots.*",

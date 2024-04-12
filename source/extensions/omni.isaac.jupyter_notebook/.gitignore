@@ -1,0 +1,6 @@
+# python cache
+__pycache__/
+
+# omni.isaac.jupyter_notebook extension runtime data
+data/launchers/*.txt
+data/notebooks/*.ipynb
