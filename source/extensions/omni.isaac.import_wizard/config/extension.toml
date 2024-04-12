@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.2.0"
+version = "0.3.0"
 category = "Other"
 title = "Isaac Sim Import Wizard"
 description = "wizard to guide users through importing and configuration tools inside isaac sim"
@@ -21,3 +21,6 @@ icon = "data/icon.png"
 
 [[python.module]]
 name = "omni.isaac.import_wizard"
+
+[settings]
+persistent.exts."omni.isaac.import_wizard".not_show_on_startup = true

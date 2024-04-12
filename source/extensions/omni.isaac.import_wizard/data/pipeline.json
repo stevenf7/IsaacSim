@@ -1,37 +1,12 @@
 {
-
-    "Available Tools":
-    [
-        "Isaac Sim Import Wizard",            
-        "Import URDF from File",
-        "Import MJCF from File",
-        "Import from CAD",
-        "Merge Meshes",
-        "Onshape Importer",
-        "Articulation and Physics Inspector",
-        "Gain Tuner",
-        "Robot Assembler",
-        "Lula Tools for Kinematics",
-        "Camera Inspector",
-        "Sensors: IMU",
-        "Sensors: RTX Lidar",
-        "Sensors: Contact",
-        "Controller OmniGraphs",
-        "ROS Bridge OmniGraphs",
-        "April Tags",
-        "Occupancy Map",
-        "Record and Playback"
-    ],
-
-    
     "Isaac Sim Import Wizard":
     {
         "App Name": "Isaac Sim Import Wizard",
         "Extension": "omni.isaac.import_wizard",
         "Window": 1,
-        "Summary":"An guide providing offline instructions to Isaac Sim tools, hub for documentation links",
-        "Basic Instructions":"The wizard provides instructions for a group of tools in Isaac Sim and a hub for all the links to documentation, API, and examples for each tool. It also predefines the sequence to go through these tools in, guiding the user to produce sim-ready scenes and robots at the end of the pipeline. \n\n  To follow a predetermined sequence, check the boxes that applies to your workflow, then click 'Next'. If you don't know which tools to use for your workflow, click the button on the top to get started. \n\n For each tool, there will be \n- a 'Basic Instruction' for getting started, and an 'Advanced Instruction' section below the buttons for more involved tips, \n- a 'Menu Location' section where you can find the tool again outside of using this wizard, \n- an 'Additional Resources' section where there are direct links to our documentation, API, and examples, as well as the folder where the relevant python files are located.\n- A 'Jump To` dropdown list below the buttons in case you want to open any tool that's not in the sequence \n\n Find more tips by expanding the 'Advanced Instructions' section below.",
-        "Advanced Instructions":"- you can always add it to the pipeline, read the instructions and skip as needed. \n\n- if you `Jump to` a tool that's outside of your customized pipeline, you will effectively abandon the pipeline and go through rest of the tools in order that they are listed in the dropdown box, starting with the one that you jumped to. \n\n- If you have multiple robots that you wish to combine (e.g. mobile base + arm, or arm + gripper, make sure the individual parts are all sim-ready first, save each as a usd file, then use the 'Robot Assembler' to combine them. \n \n- If wish to customize the sequence, check 'Use Custom Pipeline', update the file /data/custom_pipeline.json (or write your own using the same structure). The pipeline will be executed in the order that it is listed in the file. Select only tools that are listed with the checkboxes above, and use the same names that are displayed. \n\n- For tools that are not listed in this Wizard, please go to our document for more information",
+        "Summary":"A guide providing offline instructions to Isaac Sim importing tools, hub for documentation links",
+        "Basic Instructions":"The wizard provides tool-by-tool instructions for importing robots into Isaac Sim. It is also a hub for all the links to documentation, API, and examples for each tool. \n\n If you don't know where to start, click on the `Need Help Getting Started` button on the top. A questionnaire will help determining a workflow for your needs. The wizard will take you through each tool in the workflow if you save it as a json file. \n- If you already know which tools you need, select them in the checkboxes below. \n- If you want to go through all of the tools listed. Select `Common Tools` in the `Jump To` dropbox and go from there. \n\n For each tool, there will be \n- a 'Basic Instruction' for getting started, and an 'Advanced Instruction' section below the buttons for more involved tips, \n- a 'Menu Location' section where you can find the tool again outside of using this wizard, \n- an 'Additional Resources' section where there are direct links to our documentation, API, and examples, as well as the folder where the relevant python files are located. \n\n Find more tips by expanding the 'Advanced Instructions' section below.",
+        "Advanced Instructions":"- if you `Jump to` a tool that's not in your customized pipeline, you will effectively abandon the pipeline and go through rest of the tools in order that they are listed in the dropdown box, starting with the one that you jumped to. \n\n- If you have multiple robots that you wish to combine (e.g. mobile base + arm, or arm + gripper, make sure the individual parts are all sim-ready first, save each as a usd file, then use the 'Robot Assembler' to combine them. \n \n- You can customize a sequence by writing your own pipeline Json file. Append to the file /data/custom_pipeline.json, or use that as a template to write your own. Check the `use Custom Pipeline` box to load your custom file. The pipeline will be executed in the order that it is listed. Use only tools that are listed with the checkboxes above, and use the same names that are displayed. \n\n- For tools that are not listed in this Wizard, please go to our document for more information",
         "Menu": "Isaac Utils -> Isaac Sim Import Wizard",
         "Useful Links":{
             "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html",
@@ -46,7 +21,7 @@
         "Extension": "omni.importer.urdf",
         "Window": 1,
         "Summary":"Import assets from URDF",
-        "Basic Instructions":"- Merge Fixed Joints: Consolidate links that are connected by fixed joints, so that an articulation is only applied to joints that move. Merged frames will still appear as children of the parent Frame they were merged to.\n\n- Fix Base Link: Uncheck for robots that will travel, Check for fixed arms \n\n- Clean Stage: When checked, cleans the stage before loading the new MJCF, otherwise loads it on current open stage at position (0,0,0).\n\n- For position drive, set Stiffness >> Damping; for velocity drive, set stiffness = 0 \n\n- the importer will automatically create folders pertaining to the usd files in the source folder if you do not specify an Output Directory. \n\n Find more tips by expanding the 'Advanced Instructions' section below.",
+        "Basic Instructions":"- Merge Fixed Joints: Consolidate links that are connected by fixed joints, so that an articulation is only applied to joints that move. Merged frames will still appear as children of the parent Frame they were merged to.\n\n- Fix Base Link: Uncheck for robots that will travel, Check for fixed arms \n\n- Clean Stage: When checked, cleans the stage before loading the new MJCF, otherwise loads it on current open stage at position (0,0,0).\n\n- Drive Strength: How strongly the default drive force will be for joints when importing. On position based joints it will add on the drive stiffness. On velocity drives it adds to the drive damping \n\n- the importer will create folders pertaining to the usd files in the source folder if you do not specify an Output Directory. \n\n Find more tips by expanding the 'Advanced Instructions' section below.",
         "Advanced Instructions":"- If the source URDF file seeks meshes that are located in different packages than itself, make sure those folders are also inside the ROS python paths.\n\n- After importing, play the simulation and let the robot sit for a bit. If the robot flies off without any input, make sure to uncheck self-collision. \n\n- Go to `Isaac Examples -> Import Robots, select any of the URDF robot, a popup box will appear. From there, you can  `Open Source Code` on the upper right hand corner to see how to use the URDF importer python API in a script",
         "Menu": "Isaac Utils -> Workflows -> URDF Importer",
         "Useful Links":{
@@ -67,8 +42,8 @@
         "Menu": "Isaac Utils -> Workflows -> MJCF Importer",
         "Useful Links":{
             "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/features/environment_setup/ext_omni_isaac_mjcf.html",
-            "API Link":"https://docs.omniverse.nvidia.com/py/isaacsim/source/extensions/omni.isaac.mjcf/docs/index.html",
-            "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/advanced_tutorials/tutorial_advanced_import_mjcf.html#isaac-sim-app-tutorial-advanced-import-mjcf"
+            "API Link":"https://docs.omniverse.nvidia.com/py/isaacsim/index.html",
+            "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/advanced_tutorials/tutorial_advanced_import_mjcf.html"
         }                      
     },
 
@@ -78,14 +53,30 @@
         "Extension": "omni.isaac.core",
         "Window": 0,
         "Summary":"Importing CAD files",
-        "Basic Instructions":"There is no separate windows for this tool. Simply import the CAD file by `File->Import. Make sure to select the file format that matches the source. \n\nOnce import completes. You may need to manually add joints and actuators for your robot. For that, check our documentation \n\n- Find more tips by expanding the 'Advanced Instructions' section below.",
-        "Advanced Instructions":"If the CAD file has many parts and you wish to merge some of the parts into a single prim on stage. Use the Mesh Merge Tool",
+        "Basic Instructions":"There is no separate windows for this tool. Simply import the CAD file by `File->Import. Make sure to select the file format that matches the source.\nBe sure to check the additional options on the right side panel if the basic import is missing some desired function. \n\nOnce import completes. You may need to manually add joints and actuators for your robot. For that, check our documentation \n\n- Find more tips by expanding the 'Advanced Instructions' section below.",
+        "Advanced Instructions":"If the CAD file has many parts and you wish to merge some of the parts into a single prim on stage. Use the Mesh Merge Tool afterwards",
         "Menu": "File -> Import",
         "Useful Links":{
-            "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/features/environment_setup/ext_omni_isaac_cad.html",
-            "API Link":"https://docs.omniverse.nvidia.com/py/isaacsim/source/extensions/omni.isaac.cad/docs/index.html",
-            "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/features/environment_setup/ext_omni_isaac_cad.html#tutorials-examples"
+            "Documentation Link":"https://docs.omniverse.nvidia.com/extensions/latest/ext_cad-converter.html",
+            "API Link":"https://docs.omniverse.nvidia.com/py/isaacsim/index.html",
+            "Examples Link": "https://docs.omniverse.nvidia.com/extensions/latest/ext_cad-converter/manual.html"
         }   
+    },
+
+    "Rigging Robots":
+    {
+        "App Name": "Rigging Robots",
+        "Extension": "omni.isaac.core",
+        "Window": 0,
+        "Summary":"Manually Adding Joints, Actuation, and Physics and Material Properties",
+        "Basic Instructions":"There is no separate windows for this tool. \n\n Joints can be added by`Create -> Physics -> Joint`. \n\n Actuators can be added by selecting the joint on the stage, and Right click `Add -> Physics -> Angular/Linear Drive` . \n\n Physics properties (such as friction) can be added by `Create -> Physics -> Physics Material`, then assign the material to the associated body under `Physics material on selected body` \n\n Geometry material (such as color) can be added by `Create -> Material -> OmniPBR`, then assign the material to the body under `Material on selected body`",
+        "Advanced Instructions":"- For position drives, set joint stiffness >> damping; for velocity drives, set stiffness = 0 \n\n- Use the Articulation and Physics Inspector to check joint behaviors",
+        "Menu": "Create -> Physics -> Joint",
+        "Useful Links":{
+            "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/gui_tutorials/tutorial_gui_simple_robot.html",
+            "API Link":"https://docs.omniverse.nvidia.com/py/isaacsim/index.html",
+            "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/index.html"
+        }
     },
 
     "Merge Meshes":
@@ -94,16 +85,31 @@
         "Extension": "omni.isaac.merge_mesh",
         "Window": 1,
         "Summary":"Merge multiple meshes into a single prim",
-        "Basic Instructions": "",
+        "Basic Instructions": "Place all meshes you want to merge under a common parent, and select this parent on the stage. Click on Merge. \n\n If you want to reset the parent transform to origin, select the \"Clear Parent Transform\". \n\n If the asset contains Repeat references to the same materials (e.g. Multiple part References each with it's own Materials library), Select the \"Override Looks Directory\" - It will search for the materials with same name in the provided folder (make sure the material exists in that folder first) ",
         "Advanced Instructions": "",
         "Menu": "Isaac Utils -> Mesh Merge Tool",
         "Useful Links":{
-            "Documentation Link":"https://docs.omniverse.nvidia.com/extensions/latest/ext_scene-optimizer/operations.html?generate-projection-uvs#merge-static-meshes",
-            "API Link":"https://docs.omniverse.nvidia.com/py/isaacsim/source/extensions/omni.isaac.mesh_merge/docs/index.html",
-            "Examples Link": "https://docs.omniverse.nvidia.com/extensions/latest/ext_scene-optimizer/operations.html?generate-projection-uvs#merge-static-meshes"
+            "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/features/environment_setup/ext_omni_isaac_merge_mesh.html",
+            "API Link":"https://docs.omniverse.nvidia.com/py/isaacsim/index.html",
+            "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/features/environment_setup/ext_omni_isaac_merge_mesh.html"
         }
     },
 
+    "Scene Optimizer":
+    {
+        "App Name": "Scene Optimizer",
+        "Extension": "omni.scene.optimizer.bundle",
+        "Window": 1,
+        "Summary":"Wide array of scene optimization functions",
+        "Basic Instructions": ", This extension is used for general Scene optimization, and contains a series of configurable functions to operate on the scene, like Compute new UV maps for assets, remove coincident mesh vertices, Mesh decimation. It is best for whole scene optimization. so if Optimizing a robot It is suggested to break the robot down in one stage per robot component. Select the optimization processes or load a preset of processes to use. Configure which assets or prims to use on each process, and execute, either one by one or bulk execute through the UI ",
+        "Advanced Instructions": "",
+        "Menu": "Window -> Utilities -> Scene Optimizer",
+        "Useful Links":{
+            "Documentation Link":"https://docs.omniverse.nvidia.com/extensions/latest/ext_scene-optimizer/user-manual.html",
+            "API Link":"https://docs.omniverse.nvidia.com/kit/docs/omni.services.scene.optimizer/latest/overview.html",
+            "Examples Link": "https://docs.omniverse.nvidia.com/extensions/latest/ext_scene-optimizer/user-manual.html"
+        }
+    },
 
     "Onshape Importer":
     {
@@ -111,7 +117,7 @@
         "Extension": "omni.importer.onshape",
         "Window": 0,
         "Summary":"Importing files from OnShape",
-        "Basic Instructions":"There is no separate windows for this tool. You will need an Onshape account to use the importer, and you will need to authorize that account either through Oauth or your API key.\n\n Follow the instructions in the documentation link below for further details.",
+        "Basic Instructions":"There is no separate windows for this tool. You will need an Onshape account to use the importer, and you will need to authorize that account either through Oauth or your API key.",
         "Advanced Instructions":"",
         "Menu": "File -> Import from Onshape (extension must be enabled for this to show up)",
         "Useful Links":{
@@ -196,7 +202,7 @@
         "Menu": "Isaac Utils -> Workflows -> Camera Inspector",
         "Useful Links":{
             "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/gui_tutorials/tutorial_gui_camera_sensors.html?highlight=camera%20inspector#camera-inspector-extension",
-            "API Link":"N/A",
+            "API Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html",
             "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/gui_tutorials/tutorial_gui_camera_sensors.html?highlight=camera%20inspector#camera-inspector-extension"
         }
     },
@@ -216,7 +222,23 @@
             "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/isaac_sim_sensors_physics_based_imu.html#isaac-example"
         }
     },
-    
+
+    "Sensors: PhysX Lidar":
+    {
+        "App Name": "PhysX Lidar Sensor",
+        "Extension":"omni.isaac.sensor",
+        "Window": 0,
+        "Summary":"How to add an physics Lidar sensor to your robot",
+        "Basic Instructions":"There is no separate windows for this tool. \n\n- Add the physX Lidar sensor to the robot by navigating to `Create -> Isaac -> Sensors -> physX Lidar -> (your choice of Lidar). `Rotating` Lidar is the most generic one.\n- attach sensor the robot by dragging the sensor to be a child of the link that you wish to attach the sensor to on the Stage window. \n- You can edits its properties by select the Lidar on Stage and open its raw properties under `Property` tab. \n- Play the simulation and interact with the robot to see the sensor data",
+        "Advanced Instructions":"- If you need to input a custom scanning pattern, use a Generic Lidar in a standalone python script.",
+        "Menu": "Create -> Isaac -> Sensors -> physX Lidar",
+        "Useful Links":{
+            "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/isaac_sim_sensors_physX_based_lidar.html",
+            "API Link":"https://docs.omniverse.nvidia.com/py/isaacsim/source/extensions/omni.isaac.sensor/docs/index.html#module-omni.isaac.sensor.scripts.lidar_physX",
+            "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/isaac_sim_sensors_physX_based_lidar/node_overview.html"
+        }
+    },   
+
     "Sensors: RTX Lidar":
     {
         "App Name": "RTX Lidar Sensor",
@@ -255,13 +277,13 @@
         "Extension":"omni.isaac.core_nodes",
         "Window": 0,
         "Summary":"Create and edit control graphs",
-        "Basic Instructions":"There is no separate windows for this tool. ",
-        "Advanced Instructions":"",
+        "Basic Instructions":"One way to control your robot is using the Omnigraph interface (another way is via Python APIs). While you can build these graphs from scratch, we also provide some shortcuts to the most commonly needed graphs. \n\n- To control your robot by issuing commands directly to the joints, go to `Isaac Utils -> Common Omnigraphs -> Articulation Position (or Velocity) Controller.` \n- a popup box will appear asking for a few required parameters, as well as instructions on how to use the generated graph. \n\n- There are several other specialized controllers for specific types of robots, such as Differential Controller for wheeled robots and Gripper Controller for any end-effector that has a single degree of actuation for each finger. \n\n- All Omnigraphs created can be edited using a Visual Scripting Editor (Window->Visual Scripting -> Action Graph).",
+        "Advanced Instructions":"- a `Push Graph` is a graph that will automatically execute on each rendering tick. \n- a `Action (Execution) Graphs` are graphs that require triggers to run. These triggers could be a tick in rendering cycle or physics cycle, they could also be keyboard inputs or specific events.",
         "Menu": "Isaac Utils -> Common Omnigraphs",
         "Useful Links":{
-            "Documentation Link":"coming soon",
+            "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html",
             "API Link":"https://docs.omniverse.nvidia.com/py/isaacsim/source/extensions/omni.isaac.manipulators/docs/index.html",
-            "Examples Link": "coming soon"
+            "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html"
         }
     },
 
@@ -271,8 +293,8 @@
         "Extension":"omni.isaac.ros2_bridge",
         "Window": 0,
         "Summary":"Create and edit ROS bridge graphs",
-        "Basic Instructions":"There is no separate windows for this tool. All ROS bridge functions are in form of Omnigraph Nodes. \n\n There are some shortcuts for generating commonly used graphs. These can be found in `Isaac Utils -> Common Omnigraphs` and select the ROS bridge omnigraphs from the dropdown menu. \n\n Find more tips by expanding the 'Advanced Instructions' section below.",
-        "Advanced Instructions":"",
+        "Basic Instructions":"All ROS bridge functions are in form of Omnigraph Nodes and Graphs. \n\n For the most commonly used ROS bridges, you can find their shortcuts in `Isaac Utils -> Common Omnigraphs -> ROS*`. If you don't see any ROS graphs, make sure your ROS2 bridge is enabled.  \n\n- a popup box will appear asking for a few required parameters, as well as instructions on how to use the generated graph. \n\n Find more tips by expanding the 'Advanced Instructions' section below.",
+        "Advanced Instructions":"The shortcuts are only available for ROS2 Humble. \n\n- All Omnigraphs created can be edited using a Visual Scripting Editor (Window->Visual Scripting -> Action Graph). \n\n- Yes, you can write your own omnigraph nodes",
         "Menu": "Isaac Utils -> Common Omnigraphs (ROS/ROS2 bridge extension must be enabled for this to show up)",
         "Useful Links":{
             "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/installation/install_ros.html",
@@ -313,19 +335,35 @@
         }
     },
 
-    "Record and Playback":
+    "Record Movies":
     {
         "App Name": "Record and Playback",
         "Extension":"omni.isaac.core",
         "Window": 0,
         "Summary":"Record and playback robot trajectories",
-        "Basic Instructions":"",
-        "Advanced Instructions":"",
-        "Menu": "Isaac Utils -> Record and Playback",
+        "Basic Instructions":"There is no separate window for this tool. Instead, there is a stand alone example demonstrating it's usage. To begin, follow menu path to the `Follow Target` stand alone example. Load the world, specify where you want the data saved, and click `start` to begin logging data.  Move the target cube around the scene and then click `save data` to save the trajectory to a file. You can load and replay the recorded trajectory with the `Replay Follow Target` example in a similar fashion. The source code for these examples can be found in the `/standalone_examples` directory of your Isaac Sim installation.",
+        "Advanced Instructions":"The `World` simulation context object is equipped with a data logger that can be retrieved from the instance. This logger is configured by way of a function definition, which accepts the tasks and scene as input arguments, and returns a dictionary binding specific scene references to string keys. Replaying the scene is done by way of physics callback, within which you can retrieve specific data frames from the log file and apply them to the scene.  Please consult the documentation below for further details. ",
+        "Menu": "Isaac Examples -> Manipulators -> Follow Target, Replay Follow Target",
         "Useful Links":{
             "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/core_api_tutorials/tutorial_advanced_data_logging.html",
             "API Link":"https://docs.omniverse.nvidia.com/py/isaacsim/source/extensions/omni.isaac.core/docs/index.html",
             "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/core_api_tutorials/tutorial_advanced_data_logging.html#id1"
+        }
+    },
+    
+    "Common Tools":
+    {
+        "App Name": "Common Tools",
+        "Extension":"omni.isaac.core",
+        "Window": 0,
+        "Summary":"Some Helpful tips for Isaac Sim",
+        "Basic Instructions":"- There is a library of sim-ready assets that you can find under `Create -> Isaac -> Robots(Environments/End Effectors)'. Feel free to load any of them to experiment. You may need to add a ground for some mobile robots (Create->Physics->Ground Plane). Large environments and complex robots may take a while to load. \n\n- FPS display can be found under the `eye` icon on the upper left hand corner of the viewport `eye -> Heads up Disply -> FPS`\n\n- to visualize collision frame, 'eye ->Show by type -> Physics -> Colliders \n\n- To check if you have joints and/or joint drives, click on the funnel icon trailing the search bar on the Stage tab. You can filter for a number of things, including Physics Joints and Physics Drives.\n\n- the grid on stage (`eye->Grid` if you don't see one) is 1 meter x 1 meter. If your robot is looking disporpotional against the grid, use the `Isaac Utils -> USD Unit Converter` to scale it.",
+        "Advanced Instructions":"",
+        "Menu": "N/A",
+        "Useful Links":{
+            "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html",
+            "API Link":"https://docs.omniverse.nvidia.com/py/isaacsim/index.html",
+            "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html"
         }
     }
 
