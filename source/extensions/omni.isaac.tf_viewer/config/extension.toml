@@ -1,0 +1,28 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.1.0"
+category = "Utility"
+title = "TF Viewer"
+description = "Show the tf transform tree in the viewport"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.tf_viewer"
+keywords = ["isaac", "ROS2", "tf"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+
+[dependencies]
+"omni.ui.scene" = {}
+"omni.kit.uiapp" = {}
+"omni.kit.viewport.utility" = {}
+"omni.isaac.ros2_bridge" = {}
+
+[[python.module]]
+name = "omni.isaac.tf_viewer"
+
+[settings]
+exts."omni.isaac.tf_viewer".cpp = true
