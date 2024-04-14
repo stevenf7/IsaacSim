@@ -3,6 +3,7 @@
 ## [2.19.0] - 2024-04-11
 ### Added
 - Added OmniGraph shortcuts for sample ROS2 generic publisher node  
+- Add skipFrameCount option to ROS2  RTX Lidar and Camera Helper Nodes to modify the rate of lidar and point cloud publishing
 
 ## [2.18.0] - 2024-04-09
 ### Added

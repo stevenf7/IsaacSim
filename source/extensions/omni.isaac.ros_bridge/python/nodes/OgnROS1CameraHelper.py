@@ -23,14 +23,23 @@ class OgnROS1CameraHelperInternalState(BaseWriterNode):
     def __init__(self):
         self.viewport = None
         self.viewport_name = ""
+        self.rv = ""
         self.resetSimulationTimeOnStop = False
+        self.publishStepSize = 1
+
         super().__init__(initialize=False)
 
     def post_attach(self, writer, render_product):
         try:
+            if self.rv != "":
+                omni.syntheticdata.SyntheticData.Get().set_node_attributes(
+                    self.rv + "IsaacSimulationGate", {"inputs:step": self.publishStepSize}, render_product
+                )
+
             omni.syntheticdata.SyntheticData.Get().set_node_attributes(
                 "IsaacReadSimulationTime", {"inputs:resetOnStop": self.resetSimulationTimeOnStop}, render_product
             )
+
         except:
             pass
 
@@ -80,6 +89,9 @@ class OgnROS1CameraHelper:
                         db.per_instance_state.initialized = False
                         return False
                 db.per_instance_state.resetSimulationTimeOnStop = db.inputs.resetSimulationTimeOnStop
+
+                db.per_instance_state.publishStepSize = db.inputs.frameSkipCount + 1
+
                 writer = None
 
                 time_type = ""
@@ -88,11 +100,15 @@ class OgnROS1CameraHelper:
                     if db.inputs.resetSimulationTimeOnStop:
                         carb.log_warn("System timestamp is being used. Ignoring resetSimulationTimeOnStop input")
 
+                db.per_instance_state.rv = ""
+
                 try:
                     if sensor_type == "rgb":
 
-                        rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
-                        writer = rep.writers.get(rv + f"ROS1{time_type}PublishImage")
+                        db.per_instance_state.rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
+                            sd.SensorType.Rgb.name
+                        )
+                        writer = rep.writers.get(db.per_instance_state.rv + f"ROS1{time_type}PublishImage")
                         writer.initialize(
                             frameId=db.inputs.frameId,
                             nodeNamespace=db.inputs.nodeNamespace,
@@ -100,10 +116,10 @@ class OgnROS1CameraHelper:
                             topicName=db.inputs.topicName,
                         )
                     elif sensor_type == "depth":
-                        rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
+                        db.per_instance_state.rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
                             sd.SensorType.DistanceToImagePlane.name
                         )
-                        writer = rep.writers.get(rv + f"ROS1{time_type}PublishImage")
+                        writer = rep.writers.get(db.per_instance_state.rv + f"ROS1{time_type}PublishImage")
                         writer.initialize(
                             frameId=db.inputs.frameId,
                             nodeNamespace=db.inputs.nodeNamespace,
@@ -112,11 +128,11 @@ class OgnROS1CameraHelper:
                         )
                     elif sensor_type == "depth_pcl":
 
-                        rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
+                        db.per_instance_state.rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
                             sd.SensorType.DistanceToImagePlane.name
                         )
 
-                        writer = rep.writers.get(rv + f"ROS1{time_type}PublishPointCloud")
+                        writer = rep.writers.get(db.per_instance_state.rv + f"ROS1{time_type}PublishPointCloud")
                         writer.initialize(
                             frameId=db.inputs.frameId,
                             nodeNamespace=db.inputs.nodeNamespace,
@@ -170,6 +186,7 @@ class OgnROS1CameraHelper:
                             topicName=db.inputs.topicName,
                         )
                     elif sensor_type == "camera_info":
+                        db.per_instance_state.rv = "PostProcessDispatch"
                         writer = rep.writers.get(f"ROS1{time_type}PublishCameraInfo")
                         writer.initialize(
                             frameId=db.inputs.frameId,
@@ -205,6 +222,8 @@ class OgnROS1CameraHelper:
                                 topicName=db.inputs.semanticLabelsTopicName,
                             )
                             db.per_instance_state.append_writer(semantic_writer)
+
+                        db.per_instance_state.rv = type_dict[sensor_type]
 
                     db.per_instance_state.attach_writers(render_product_path)
                 except Exception as e:

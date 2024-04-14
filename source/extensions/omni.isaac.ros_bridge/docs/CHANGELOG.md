@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.17.0] - 2024-04-11
+### Added
+- Add skipFrameCount option to RTX Lidar and Camera Helper Nodes to modify the rate of lidar and point cloud publishing
+
 ## [1.16.0] - 2024-04-04
 ### Added
 - Option to use system timestamp for RTX Lidar and Camera Helper Nodes
