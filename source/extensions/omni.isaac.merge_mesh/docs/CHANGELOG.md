@@ -1,4 +1,14 @@
 # Changelog
+
+## [1.0.0] - 2023-04-12
+### Added
+- Code-Accessible Merge Mesh functionality (API)
+- Merge Command
+- Unit Tests
+- Disable source assets when merging
+### Changed
+- Combine Materials now Creates the materials in the provided path if they don't exist
+
 ## [0.1.5] - 2023-04-10
 ### Fixed
 - Fix Broken empty Material binding check
