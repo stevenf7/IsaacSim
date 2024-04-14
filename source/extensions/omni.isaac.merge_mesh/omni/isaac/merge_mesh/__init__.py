@@ -7,4 +7,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+from .commands import *
 from .extension import *
+from .mesh_merger import *
