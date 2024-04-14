@@ -31,7 +31,7 @@
             },
             "frameId": {
                 "type": "string",
-                "description": "FrameId for ROS2 messagem, the nodeNamespace will not be prefixed to the frame id",
+                "description": "FrameId for ROS2 message, the nodeNamespace will not be prefixed to the frame id",
                 "default": "sim_camera"
             },
             "topicName": {
@@ -97,6 +97,11 @@
                 "type": "bool",
                 "description": "If True, system timestamp will be included in messages. If False, simulation timestamp will be included in messages",
                 "default": false
+            },
+            "frameSkipCount": {
+                "type": "uint",
+                "description": "Specifies the number of simulation frames to skip between each message publish. (e.g. Set to 0 to publish each frame. Set 1 to publish every other frame)",
+                "default": 0
             }
         }
     }
