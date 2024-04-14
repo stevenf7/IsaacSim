@@ -218,8 +218,128 @@ class ImportWizard(object):
                         )
                         ui.Spacer()
 
-                    self._build_instruction_frame()
+                    with ui.VStack(height=0):
+                        ui.Spacer(height=5)
+                        ui.Line(style={"color": 0x338A8777}, width=ui.Fraction(1), alignment=ui.Alignment.CENTER)
+                        ui.Spacer(height=10)
+                        ui.Label(
+                            self._current_app_name,
+                            width=0,
+                            alignment=ui.Alignment.LEFT_TOP,
+                            style={"font_size": 20, "color": 0xFFC7C7C7},
+                        )
+                        ui.Spacer(height=10)
+                        with ui.HStack():
+                            ui.Label(
+                                "Summary:",
+                                **label_kwargs,
+                            )
+                            with ui.ZStack(style={"ZStack": {"margin": 0}}):
+                                ui.Rectangle(height=ui.Fraction(1))
+                                with ui.HStack(spacing=0):
+                                    ui.Spacer(width=5)
+                                    ui.Label(
+                                        self._app_data["Summary"],
+                                        **text_kwargs,
+                                    )
+                        ui.Spacer(height=10)
+                        with ui.HStack():
+                            ui.Label(
+                                "Basic Instructions:",
+                                **label_kwargs,
+                            )
+                            with ui.ScrollingFrame(
+                                height=LABEL_HEIGHT * 15,
+                                **scroll_kwargs,
+                            ):
+                                with ui.ZStack(style={"ZStack": {"margin": 10}}):
+                                    ui.Rectangle()
+                                    with ui.HStack(spacing=0):
+                                        ui.Spacer(width=5)
+                                        ui.Label(
+                                            self._app_data["Basic Instructions"],
+                                            **text_kwargs,
+                                        )
+                                        ui.Spacer(width=5)
+                        ui.Spacer(height=10)
+                        with ui.HStack():
+                            ui.Label(
+                                "Menu Location:",
+                                **label_kwargs,
+                                tooltip="Where to find this tool in the GUI",
+                            )
+                            with ui.ZStack(style={"ZStack": {"margin": 0}}):
+                                ui.Rectangle(height=ui.Fraction(1))
+                                with ui.HStack(spacing=0):
+                                    ui.Spacer(width=5)
+                                    ui.Label(
+                                        self._app_data["Menu"],
+                                        **text_kwargs,
+                                    )
+                        ui.Spacer(height=10)
+                        with ui.HStack():
+                            ui.Label(
+                                "Additional Resources:",
+                                width=LABEL_WIDTH / 2,
+                                style_type_name_override="Label::label",
+                                word_wrap=True,
+                                alignment=ui.Alignment.LEFT_TOP,
+                            )
+                            with ui.VStack():
+                                with ui.HStack():
+                                    ui.Label(
+                                        "Documentation:",
+                                        style_type_name_override="Label::label",
+                                        word_wrap=True,
+                                        alignment=ui.Alignment.LEFT_TOP,
+                                        width=LABEL_WIDTH,
+                                    )
+                                    with ui.Frame(tooltip="Link to Docs"):
+                                        ui.Button(
+                                            name="DocLink",
+                                            width=24,
+                                            height=24,
+                                            clicked_fn=lambda: on_docs_link_clicked(self._links["Documentation Link"]),
+                                            style=get_style()["IconButton.Image::OpenLink"],
+                                            alignment=ui.Alignment.LEFT_TOP,
+                                        )
+                                with ui.HStack():
+                                    ui.Label(
+                                        "Forum:",
+                                        style_type_name_override="Label::label",
+                                        word_wrap=True,
+                                        alignment=ui.Alignment.LEFT_TOP,
+                                        width=LABEL_WIDTH,
+                                    )
+                                    with ui.Frame(tooltip="Link to Forum"):
+                                        ui.Button(
+                                            name="ForumLink",
+                                            width=24,
+                                            height=24,
+                                            clicked_fn=lambda: on_docs_link_clicked(self._links["API Link"]),
+                                            style=get_style()["IconButton.Image::OpenLink"],
+                                            alignment=ui.Alignment.LEFT_TOP,
+                                        )
+                                with ui.HStack():
+                                    ui.Label(
+                                        "Pipeline Data Folder:",
+                                        style_type_name_override="Label::label",
+                                        word_wrap=True,
+                                        alignment=ui.Alignment.LEFT_TOP,
+                                        width=LABEL_WIDTH,
+                                    )
+                                    with ui.Frame(tooltip="Open Containing Folder"):
+                                        ui.Button(
+                                            name="IconButton",
+                                            width=24,
+                                            height=24,
+                                            clicked_fn=lambda: on_open_folder_clicked(EXTENSION_FOLDER_PATH + "/data/"),
+                                            style=get_style()["IconButton.Image::OpenFolder"],
+                                            alignment=ui.Alignment.LEFT_CENTER,
+                                        )
+
                     self._build_checkboxes()
+
                     ui.Spacer(height=10)
                     # wizard footer
                     with ui.CollapsableFrame(
@@ -572,15 +692,9 @@ class ImportWizard(object):
                                 style_type_name_override="Label::label",
                                 word_wrap=True,
                                 alignment=ui.Alignment.LEFT_TOP,
+                                width=LABEL_WIDTH,
                             )
                             with ui.Frame(tooltip="Link to Docs"):
-                                ui.Label(
-                                    "Documentation:",
-                                    width=LABEL_WIDTH / 2,
-                                    style_type_name_override="Label::label",
-                                    word_wrap=True,
-                                    alignment=ui.Alignment.LEFT_TOP,
-                                )
                                 ui.Button(
                                     name="DocLink",
                                     width=18,
@@ -595,6 +709,7 @@ class ImportWizard(object):
                                 style_type_name_override="Label::label",
                                 word_wrap=True,
                                 alignment=ui.Alignment.LEFT_TOP,
+                                width=LABEL_WIDTH,
                             )
                             with ui.Frame(tooltip="Link to API Doc"):
                                 ui.Button(
@@ -611,6 +726,7 @@ class ImportWizard(object):
                                 style_type_name_override="Label::label",
                                 word_wrap=True,
                                 alignment=ui.Alignment.LEFT_TOP,
+                                width=LABEL_WIDTH,
                             )
                             with ui.Frame(tooltip="Link to Examples"):
                                 ui.Button(
@@ -627,6 +743,7 @@ class ImportWizard(object):
                                 style_type_name_override="Label::label",
                                 word_wrap=True,
                                 alignment=ui.Alignment.LEFT_TOP,
+                                width=LABEL_WIDTH,
                             )
                             with ui.Frame(tooltip="Open Containing Folder"):
                                 ui.Button(
@@ -653,7 +770,7 @@ class ImportWizard(object):
                     },
                 ):
                     with ui.ScrollingFrame(
-                        height=LABEL_HEIGHT * 15,
+                        height=LABEL_HEIGHT * 12,
                         **scroll_kwargs,
                     ):
                         with ui.HStack():

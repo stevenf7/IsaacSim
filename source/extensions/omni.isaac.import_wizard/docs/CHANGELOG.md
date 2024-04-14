@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.3.1] - 2024-04-13
+### Changed
+- Welcome Page links to forum
+
 ## [0.3.0] - 2024-04-03
 ### Added
 - Questionnaire UI
