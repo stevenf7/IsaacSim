@@ -94,7 +94,6 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
         efforts = torch.ones((robot.num_dof), device="cpu") * 1000
         robot.set_joint_efforts(efforts)
         self._my_world.step_async()
-        self._my_world._physics_sim_view.flush()
         await omni.kit.app.get_app().next_update_async()
         current_efforts = robot.get_measured_joint_efforts()
         await self._my_world.stop_async()
@@ -110,7 +109,6 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
         efforts = torch.ones((franka.num_dof), device="cuda") * 100
         franka.set_joint_efforts(efforts)
         self._my_world.step_async()
-        self._my_world._physics_sim_view.flush()
         await omni.kit.app.get_app().next_update_async()
         forces = franka.get_measured_joint_forces()
         await self._my_world.stop_async()
@@ -125,7 +123,6 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
         # test_position = torch.Tensor([0.14, 0.5, -0.14])
         test_position = test_art.get_joint_positions()
         self._my_world.step_async()
-        self._my_world._physics_sim_view.flush()
         await omni.kit.app.get_app().next_update_async()
 
         center_rev_drive = UsdPhysics.DriveAPI.Get(
