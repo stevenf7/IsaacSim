@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.0"
+version = "1.1.0"
 category = "Other"
 title = "Isaac Sim Throlling"
 description = "Control throttling behaviors for isaac sim"
@@ -25,4 +25,5 @@ name = "omni.isaac.throttling"
 name = "omni.isaac.throttling.tests"
 
 [[test]]
-dependencies = ["omni.kit.test"]
+args = ["--/rtx/ecoMode/enabled=True"]
+dependencies = ["omni.kit.test", "omni.timeline"]
