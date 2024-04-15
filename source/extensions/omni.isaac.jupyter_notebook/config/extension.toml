@@ -24,7 +24,7 @@ writeTarget.kit = true
 name = "omni.isaac.jupyter_notebook"
 
 [python.pipapi]
-requirements = ["jupyterlab", "notebook", "nbclassic", "jedi"]
+requirements = ["jupyterlab", "notebook", "nbclassic", "chardet", "python-language-server", "jedi"]
 use_online_index = true
 
 [settings]
