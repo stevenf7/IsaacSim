@@ -774,14 +774,14 @@ branch_name = "develop"
 # For publishing an ext locally, set the extension you want in exts.include (wild cards work) and run the following:
 # ./repo.sh publish_exts -c release
 [repo_publish_exts]
-# enabled = true
-# kit_path = "${root}/_build/$platform/$config/kit/kit${exe_ext}"
+enabled = true
+kit_path = "${root}/_build/$platform/$config/kit/kit${exe_ext}"
 
-# publish_root = "${root}/_build/$platform/$config"
+publish_root = "${root}/_build/$platform/$config"
 
-# ext_folders = [
-#   "${publish_root}/exts"
-# ]
+ext_folders = [
+  "${publish_root}/exts"
+]
 
 # Extensions to publish, include and exclude among those discovered by kit. Wildcards are supported.
 exts.include = [

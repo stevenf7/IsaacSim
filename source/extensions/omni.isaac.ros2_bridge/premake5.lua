@@ -3,6 +3,32 @@ local ogn = get_ogn_project_information(ext, "omni/isaac/ros2_bridge")
 project_ext (ext)
 
 
+project_with_location("omni.isaac.ros2_bridge.check")
+    targetdir (ext.bin_dir)
+    kind "ConsoleApp"
+    language "C++"
+    add_files("impl", "compatibility")
+
+    includedirs {
+        "%{root}/_build/target-deps/nv_ros2_humble/include",
+    }
+    
+    filter { "system:linux" }
+        links{"dl"}
+    filter { "system:windows" }
+        includedirs {
+            "%{root}/_build/target-deps/nv_ros2_humble/include/rosidl_runtime_c",
+            "%{root}/_build/target-deps/nv_ros2_humble/include/builtin_interfaces",
+            "%{root}/_build/target-deps/nv_ros2_humble/include/rosidl_typesupport_interface",
+            "%{root}/_build/target-deps/nv_ros2_humble/include/rosidl_typesupport_introspection_c",
+            "%{root}/_build/target-deps/nv_ros2_humble/include/rcl",
+            "%{root}/_build/target-deps/nv_ros2_humble/include/rcutils",
+            "%{root}/_build/target-deps/nv_ros2_humble/include/rmw",
+            "%{root}/_build/target-deps/nv_ros2_humble/include/rcl_yaml_param_parser",
+        }
+    filter {}
+
+
 project_with_location("omni.isaac.ros2_bridge.foxy")
     targetdir (ext.bin_dir)
     kind "SharedLib"

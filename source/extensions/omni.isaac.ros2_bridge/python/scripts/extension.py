@@ -10,6 +10,7 @@
 
 import asyncio
 import os
+import subprocess
 import sys
 
 import carb
@@ -28,6 +29,7 @@ class ROS2BridgeExtension(omni.ext.IExt):
         self._ros2bridge = None
         self.registered_template = []
         self._module = None
+        self._rclpy_instance = None
 
         # WAR for incorrect extension trying to be started
         ext_manager = omni.kit.app.get_app().get_extension_manager()
@@ -72,8 +74,8 @@ class ROS2BridgeExtension(omni.ext.IExt):
         from omni.isaac.ros2_bridge import _ros2_bridge
 
         self._module = _ros2_bridge
-        self._ros2bridge = self._module.acquire_ros2_bridge_interface()
-        if self._ros2bridge.get_startup_status() is False:
+
+        if self.check_status(os.environ["ROS_DISTRO"]) is False:
             if sys.platform == "linux":
                 omni.kit.app.get_app().print_and_log(
                     f"To use the internal libraries included with the extension please set the following environment variables to use with FastDDS (default) or CycloneDDS (ROS2 Humble only): \nRMW_IMPLEMENTATION=rmw_fastrtps_cpp\nLD_LIBRARY_PATH=$LD_LIBRARY_PATH:{self._extension_path}/{ros_distro}/lib\n\nOR \n\nRMW_IMPLEMENTATION=rmw_cyclonedds_cpp\nLD_LIBRARY_PATH=$LD_LIBRARY_PATH:{self._extension_path}/{ros_distro}/lib\nBefore starting Isaac Sim"
@@ -84,7 +86,26 @@ class ROS2BridgeExtension(omni.ext.IExt):
                 )
             carb.log_error(f"ROS2 Bridge startup failed")
             ext_manager.set_extension_enabled("omni.isaac.ros2_bridge", False)
-        self.register_nodes()
+        else:
+            self._ros2bridge = self._module.acquire_ros2_bridge_interface()
+            if self._ros2bridge.get_startup_status() is False:
+                carb.log_error(f"ROS2 Bridge startup failed")
+                return
+            self.register_nodes()
+
+            # manually load the rclpy extension, only if we know ROS 2 is working
+            if f"{self._extension_path}" not in sys.path:
+                sys.path.append(f"{self._extension_path}")
+            if ros_distro == "foxy":
+                from foxy.rclpy import Extension as rclpy_ext
+
+                self._rclpy_instance = rclpy_ext()
+            elif ros_distro == "humble":
+                from humble.rclpy import Extension as rclpy_ext
+
+                self._rclpy_instance = rclpy_ext()
+            if self._rclpy_instance is not None:
+                self._rclpy_instance.on_startup("omni.isaac.ros2_bridge")
 
     def on_shutdown(self):
         async def safe_shutdown(module, bridge):
@@ -95,6 +116,26 @@ class ROS2BridgeExtension(omni.ext.IExt):
 
         asyncio.ensure_future(safe_shutdown(self._module, self._ros2bridge))
         self.unregister_nodes()
+        if self._rclpy_instance is not None:
+            self._rclpy_instance.on_shutdown()
+
+    def check_status(self, distro):
+        # Run an external process that checks if ROS2 can be loaded
+        # If ROS2 cannot be loaded a memory leak occurs, running in a separate process prevent this
+        path = os.path.abspath(self._extension_path + "/bin")
+        ros_lib_path = os.path.join(os.path.abspath(f"{self._extension_path}/{distro}/lib"), "")
+
+        command = [f'./omni.isaac.ros2_bridge.check "{ros_lib_path}"']
+        if sys.platform == "win32":
+
+            command = [f"omni.isaac.ros2_bridge.check.exe", f"{ros_lib_path}"]
+
+        try:
+            output = subprocess.check_output(command, shell=True, cwd=f"{path}")
+            return True
+        except subprocess.CalledProcessError as grepexc:
+            print(grepexc.output.decode("utf-8"))
+            return False
 
     def register_nodes(self):
 

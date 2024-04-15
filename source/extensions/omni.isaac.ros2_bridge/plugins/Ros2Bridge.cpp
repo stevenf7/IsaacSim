@@ -197,7 +197,8 @@ CARB_EXPORT void carbOnPluginStartup()
     }
     else
     {
-        auto temp_loader = std::make_shared<omni::isaac::utils::LibraryLoader>("rosidl_runtime_c", "", true);
+        // load test library, print error if it fails
+        auto temp_loader = std::make_shared<omni::isaac::utils::LibraryLoader>("rosidl_runtime_c", "", false);
         if (temp_loader->loadedLibrary == carb::extras::kInvalidLibraryHandle)
         {
 #ifdef _WIN32
@@ -208,14 +209,21 @@ CARB_EXPORT void carbOnPluginStartup()
                 "Loading librosidl_runtime_c.so from sourced ROS_DISTRO failed, falling back to internal libraries.");
 #endif
 
-            std::string bridgePath = "${app}";
-
             carb::tokens::ITokens* tokens = carb::getCachedInterface<carb::tokens::ITokens>();
-            g_extensionPath = carb::tokens::resolveString(tokens, bridgePath.c_str());
-            std::experimental::filesystem::path p = g_extensionPath;
+            std::experimental::filesystem::path p = carb::tokens::resolveString(tokens, "${app}");
             g_extensionPath =
                 p.parent_path().string() + "/exts/omni.isaac.ros2_bridge/" + std::string(rosDistro) + "/lib/";
-            // CARB_LOG_ERROR("PATHA %s", g_extensionPath.c_str());
+
+            // Try and load internal lib, this will fail if ENV vars are not set correctly due to dependency tree
+            // Do not print lib specific error
+            auto temp_loader =
+                std::make_shared<omni::isaac::utils::LibraryLoader>("rosidl_runtime_c", g_extensionPath, true);
+            if (temp_loader->loadedLibrary == carb::extras::kInvalidLibraryHandle)
+            {
+                CARB_LOG_WARN(
+                    "Could not load ROS2 Bridge due to missing library dependencies, please make sure your sourced ROS2 workspace has the correct packages/libraries installed");
+                return;
+            }
             for (std::string lib : lib_list)
             {
                 g_backupLibLoader.LoadLibrary(lib, g_extensionPath);
@@ -240,11 +248,6 @@ CARB_EXPORT void carbOnPluginStartup()
         typedef Ros2Factory* (*createFactory_binding)(void);
         createFactory_binding createFactory = (g_factoryLoader->getSymbol<createFactory_binding>("createFactory"));
 
-        // typedef __typeof__(createFactory) createFactory_binding;
-        // std::function<createFactory_binding> createFactory;
-        // createFactory = reinterpret_cast<createFactory_binding*>(dlsym(g_factoryLoader->loadedLibrary,
-        // "createFactory"));
-
         if (createFactory)
         {
             g_Factory = (Ros2Factory*)createFactory();
@@ -256,21 +259,6 @@ CARB_EXPORT void carbOnPluginStartup()
             return;
         }
     }
-// Test handle to make sure we can init
-#ifndef _MSC_VER
-    {
-        auto handle = g_Factory->CreateHandle();
-        handle->init(0, nullptr);
-        if (!handle->is_valid())
-        {
-            handle->shutdown();
-            CARB_LOG_WARN(
-                "Could not load ROS2 Bridge due to missing library dependencies, please make sure your sourced ROS2 workspace has the correct packages/libraries installed");
-            return;
-        }
-        handle->shutdown();
-    }
-#endif
 
     g_defaultHandle = g_Factory->CreateHandle();
 

@@ -1,5 +1,10 @@
 # Changelog
 
+
+## [3.8.2] - 2023-04-15
+### Fixed
+- Carb plugin used for crash metadata
+
 ## [3.8.1] - 2023-04-08
 ### Added
 - Added crash metadata 
