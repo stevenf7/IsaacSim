@@ -93,7 +93,6 @@ class TestDeformablePrimView(omni.kit.test.AsyncTestCase):
 
     async def _step(self):
         self.my_world.step_async()
-        self.my_world._physics_sim_view.flush()
         await omni.kit.app.get_app().next_update_async()
 
     async def _runner(self):

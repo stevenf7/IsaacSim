@@ -127,8 +127,6 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
 
     async def _step(self):
         self._my_world.step_async()
-        if self._my_world.is_playing():
-            self._my_world._physics_sim_view.flush()
         await omni.kit.app.get_app().next_update_async()
 
     async def test_world_poses_torch(self):

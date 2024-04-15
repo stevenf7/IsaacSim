@@ -145,7 +145,6 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else [0, 1, 2]
         self._my_world.step_async()
-        self._my_world._physics_sim_view.flush()
         await omni.kit.app.get_app().next_update_async()
 
         sdf_view = self._cubes_view
