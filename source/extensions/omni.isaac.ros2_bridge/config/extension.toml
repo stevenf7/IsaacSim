@@ -38,11 +38,6 @@ exts."omni.isaac.ros2_bridge".publish_without_verification = false # This settin
 [[python.module]]
 name = "omni.isaac.ros2_bridge"
 
-[[python.module]]
-name = "foxy.rclpy"
-
-[[python.module]]
-name = "humble.rclpy"
 
 [[python.module]]
 name = "omni.isaac.ros2_bridge.tests"

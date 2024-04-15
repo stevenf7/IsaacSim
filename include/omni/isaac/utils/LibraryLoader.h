@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -40,12 +40,7 @@ public:
 
             if (loadedLibrary == carb::extras::kInvalidLibraryHandle)
             {
-                if (test)
-                {
-                    printf("Could not load the dynamic library from %s. Error: %s\n", libraryPath.c_str(),
-                           carb::extras::getLastLoadLibraryError().c_str());
-                }
-                else
+                if (!test)
                 {
                     printf("Could not load the dynamic library from %s. Error: %s\n", libraryPath.c_str(),
                            carb::extras::getLastLoadLibraryError().c_str());

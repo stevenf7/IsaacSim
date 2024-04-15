@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -20,7 +20,7 @@
 #define RCL_ERROR_MSG(caller, called)                                                                                  \
     do                                                                                                                 \
     {                                                                                                                  \
-        CARB_LOG_ERROR("[" #caller "] error in " #called ": %s", rcutils_get_error_string().str);                      \
+        printf("[" #caller "] error in " #called ": %s\n", rcutils_get_error_string().str);                            \
         rcl_reset_error();                                                                                             \
     } while (0)
 
@@ -28,6 +28,6 @@
 #define RCL_WARN_MSG(caller, called)                                                                                   \
     do                                                                                                                 \
     {                                                                                                                  \
-        CARB_LOG_WARN("[" #caller "] warning in " #called ": %s", rcutils_get_error_string().str);                     \
+        printf("[" #caller "] warning in " #called ": %s\n", rcutils_get_error_string().str);                          \
         rcl_reset_error();                                                                                             \
     } while (0)

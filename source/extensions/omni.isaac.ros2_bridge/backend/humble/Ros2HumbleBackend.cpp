@@ -12,6 +12,8 @@
 #include <include/Ros2Macros.h>
 #include <rcl/rcl.h>
 
+#include <inttypes.h>
+
 Ros2BackendHumble::Ros2BackendHumble(std::string pkgName,
                                      std::string msgSubfolder,
                                      std::string msgName,
@@ -53,8 +55,9 @@ void Ros2BackendHumble::set_header(const std::string& frame_id, const int64_t na
     }
     else
     {
-        fprintf(
-            stdout,
-            "[Warning] Timestamp is invalid. Timestamp will be neglected for all published ROS CameraInfo messages\n");
+        fprintf(stdout,
+                "[Warning] Timestamp is invalid. Timestamp %" PRId64
+                " will be neglected for all published ROS CameraInfo messages\n",
+                nanoseconds);
     }
 }

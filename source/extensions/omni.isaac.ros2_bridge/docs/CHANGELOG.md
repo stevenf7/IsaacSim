@@ -3,6 +3,10 @@
 ### Added
 - A button to open documentation links for OmniGraph shortcuts
 
+## [2.19.1] - 2024-04-15
+### Fixed
+- Memory leak when ROS 2 libs were not loaded properly
+
 ## [2.19.0] - 2024-04-11
 ### Added
 - Added OmniGraph shortcuts for sample ROS2 generic publisher node  
