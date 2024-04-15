@@ -329,7 +329,7 @@ class TestROS2RTXSensor(omni.kit.test.AsyncTestCase):
         system_time = time.time()
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(1, callback=spin)
+        await simulate_async(1.5, callback=spin)
         for _ in range(10):
             if self._pcl_data is None:
                 await simulate_async(1, callback=spin)

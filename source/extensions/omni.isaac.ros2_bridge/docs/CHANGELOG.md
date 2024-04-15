@@ -1,11 +1,16 @@
 # Changelog
-## [2.19.1] - 2024-04-13
-### Added
-- A button to open documentation links for OmniGraph shortcuts
+
+## [2.19.2] - 2024-04-15
+### Fixed
+- Fixed flaky ROS2 rtx lidar unit test  
 
 ## [2.19.1] - 2024-04-15
 ### Fixed
 - Memory leak when ROS 2 libs were not loaded properly
+
+### Added
+- A button to open documentation links for OmniGraph shortcuts
+
 
 ## [2.19.0] - 2024-04-11
 ### Added
