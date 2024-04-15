@@ -66,6 +66,18 @@ class SelectorWindow:
 
         self._auto_start = None
         self._app_as_default = None
+        self._use_internal_libs = None
+        self._ros_bridge_selection = None
+        self.ros2_error_field = None
+        self.package_path = None
+
+        self.env_vars = {
+            "ROS_DISTRO": None,
+            "LD_LIBRARY_PATH": None,
+            "RMW_IMPLEMENTATION": None,
+            "PATH": None,
+        }
+
         self._apps = []
         if self._settings.get(APPS_SETTING):
             self._apps: List[str] = self._settings.get(APPS_SETTING)
@@ -119,8 +131,96 @@ class SelectorWindow:
         app_id = all_apps[application_index]
         return app_id
 
+    def _check_ros2_settings(self):
+        ros_bridge_selection = self._ros_bridge_selection.get_item_value_model().as_int
+        internal_libs_selection = self._use_internal_libs.get_item_value_model().as_int
+        # os.environ["RMW_IMPLEMENTATION"]
+        self.ros2_error_field.text = ""
+
+        # Windows
+        if sys.platform == "win32":
+            if ros_bridge_selection == 1:
+
+                # No internal libs selected. Check if ROS2 is sourced.
+                if internal_libs_selection == 0:
+
+                    # Check if ROS2 is sourced.
+                    if os.getenv("ROS_DISTRO") is None:
+
+                        self.ros2_error_field.text = "ROS_DISTRO not set. Is ROS2 sourced?"
+                        return
+
+                # Use Internal libs for Humble
+                elif internal_libs_selection == 1:
+
+                    if os.getenv("ROS_DISTRO") is not None:
+                        self.ros2_error_field.text = "ROS_DISTRO is already set. If ROS2 is already sourced, using internal libs can cause undefined behavior"
+
+                    if os.getenv("RMW_IMPLEMENTATION") is None:
+                        # Default to FastDDS
+                        self.env_vars["RMW_IMPLEMENTATION"] = "rmw_fastrtps_cpp"
+
+                    self.env_vars["ROS_DISTRO"] = "humble"
+
+                    self.env_vars[
+                        "PATH"
+                    ] = f"{'' if os.getenv('PATH') is None else os.getenv('PATH')};{self.package_path}\exts\omni.isaac.ros2_bridge\humble\lib"
+        # Linux
+        else:
+            if ros_bridge_selection == 2:
+
+                # No internal libs selected. Check if ROS2 is sourced.
+                if internal_libs_selection == 0:
+
+                    # Check if ROS2 is sourced.
+                    if os.getenv("ROS_DISTRO") is None:
+
+                        self.ros2_error_field.text = (
+                            "ROS_DISTRO not set. Is ROS2 sourced or included in your .bashrc file?"
+                        )
+                        return
+
+                # Use Internal libs for Humble
+                elif internal_libs_selection == 1:
+
+                    if os.getenv("ROS_DISTRO") is not None:
+                        self.ros2_error_field.text = "ROS_DISTRO is already set. If ROS2 is already sourced, using internal libs can cause undefined behavior"
+
+                    if os.getenv("RMW_IMPLEMENTATION") is None:
+                        # Default to FastDDS
+                        self.env_vars["RMW_IMPLEMENTATION"] = "rmw_fastrtps_cpp"
+
+                    self.env_vars["ROS_DISTRO"] = "humble"
+
+                    self.env_vars[
+                        "LD_LIBRARY_PATH"
+                    ] = f"{'' if os.getenv('LD_LIBRARY_PATH') is None else os.getenv('LD_LIBRARY_PATH')}:{self.package_path}/exts/omni.isaac.ros2_bridge/humble/lib"
+
+                # Use Internal libs for Foxy
+                elif internal_libs_selection == 2:
+
+                    if os.getenv("ROS_DISTRO") is not None:
+                        self.ros2_error_field.text = "ROS_DISTRO is already set. If ROS2 is already sourced, using internal libs can cause undefined behavior"
+
+                    if os.getenv("RMW_IMPLEMENTATION") is None:
+                        # Default to FastDDS
+                        self.env_vars["RMW_IMPLEMENTATION"] = "rmw_fastrtps_cpp"
+
+                    self.env_vars["ROS_DISTRO"] = "foxy"
+                    self.env_vars[
+                        "LD_LIBRARY_PATH"
+                    ] = f"{'' if os.getenv('LD_LIBRARY_PATH') is None else os.getenv('LD_LIBRARY_PATH')}:{self.package_path}/exts/omni.isaac.ros2_bridge/foxy/lib"
+
+        self._settings.set(PERSISTENT_ROS_BRIDGE_SETTING, ros_bridge_selection)
+
     def _start_selected_app(self):
         app_id = self._get_selected_app_id()
+        for key in self.env_vars:
+            env_var = self.env_vars.get(key)
+            if env_var is not None:
+
+                os.environ[key] = env_var
+
         self._start_app(app_id=app_id, app_version=self._app_version)
         if self._persistent_selector.get_value_as_bool():
             # update the default app display if needed
@@ -280,11 +380,11 @@ class SelectorWindow:
                     app_folder = self._settings.get_as_string("/app/folder")
                     if app_folder == "":
                         app_folder = carb.tokens.get_tokens_interface().resolve("${app}/../")
-                    package_path = os.path.abspath(app_folder)
+                    self.package_path = os.path.abspath(app_folder)
                     ui.Label("Package Path:", width=0)
                     ui.Spacer(width=5)
                     ui.StringField(
-                        tooltip=textwrap.fill(package_path, 60),
+                        tooltip=textwrap.fill(self.package_path, 60),
                         read_only=True,
                         style={
                             "background_color": DARK_GRAY,
@@ -292,7 +392,7 @@ class SelectorWindow:
                                 "color": 0xFFFFFFFF,
                             },
                         },
-                    ).model.set_value(package_path)
+                    ).model.set_value(self.package_path)
                     ui.Button(
                         width=25,
                         height=25,
@@ -302,7 +402,7 @@ class SelectorWindow:
                             "Button:hovered": {"background_color": LIGHT_GRAY},
                         },
                         image_url=f"{ICON_PATH}/copy.svg",
-                        clicked_fn=lambda: self._copy_to_clipboard(to_copy=package_path),
+                        clicked_fn=lambda: self._copy_to_clipboard(to_copy=self.package_path),
                         tooltip="Copy path to clipboard",
                     )
                 with ui.HStack(height=0):
@@ -415,10 +515,65 @@ class SelectorWindow:
                 ).model
 
                 def on_clicked_wrapper(model, val):
-                    self._settings.set(PERSISTENT_ROS_BRIDGE_SETTING, model.get_item_value_model().as_int)
+                    self._check_ros2_settings()
 
                 self._ros_bridge_selection.add_item_changed_fn(on_clicked_wrapper)
+
             ui.Spacer(height=5)
+
+            with ui.HStack(height=0):
+                ui.Spacer(width=10)
+                ui.Label("Use Internal ROS2 Libraries", width=100, style={"font_size": 18, "color": 0xFFBBBBBB})
+
+                ui.Spacer(width=10)
+
+                if sys.platform == "win32":
+                    self._use_internal_libs = ui.ComboBox(
+                        0,
+                        "",
+                        "humble",
+                        tooltip=textwrap.fill(
+                            "Select the distro for the internal ROS2 library. Leave blank to use source installed ROS. (Only applicable for ROS2 Bridge)",
+                            80,
+                        ),
+                    ).model
+
+                # Linux
+                else:
+                    self._use_internal_libs = ui.ComboBox(
+                        0,
+                        "",
+                        "humble",
+                        "foxy",
+                        tooltip=textwrap.fill(
+                            "Select the distro for the internal ROS2 library. Leave blank to use source installed ROS. (Only applicable for ROS2 Bridge)",
+                            80,
+                        ),
+                    ).model
+
+                def on_use_internal_lib_changed(model, val):
+                    self._check_ros2_settings()
+
+                self._use_internal_libs.add_item_changed_fn(on_use_internal_lib_changed)
+            ui.Spacer(height=5)
+
+            with ui.HStack(height=0):
+                ui.Spacer(width=210)
+
+                self.ros2_error_field = ui.Label(
+                    "",
+                    style_type_name_override="Label::label",
+                    word_wrap=True,
+                    alignment=ui.Alignment.LEFT_TOP,
+                    style={
+                        "color": 0xFF0000FF,
+                    },
+                )
+
+            ui.Spacer(height=5)
+
+            # Check ROS2 settings once
+            self._check_ros2_settings()
             with ui.HStack(height=0):
                 ui.Spacer(width=10)
                 self._app_as_default = ui.CheckBox(height=10, width=30).model

@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.6.0] - 2024-04-12
+### Added
+- Dropdown to use internal ros2 libraries when applicable
+- Warning messages for when ROS2 bridge is selected and env vars are incorrectly configured. 
+
 ## [2.5.0] - 2024-04-10
 ### Added
 - Added checkbox to enable eco mode on startup
