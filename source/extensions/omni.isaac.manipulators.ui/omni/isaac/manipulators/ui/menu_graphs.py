@@ -12,8 +12,9 @@ import omni.graph.core as og
 import omni.ui as ui
 import omni.usd
 from numpy import pi as PI
+from omni.isaac.core.articulations.articulation import Articulation
 from omni.isaac.core.utils.stage import get_next_free_path
-from omni.isaac.ui.callbacks import on_open_IDE_clicked
+from omni.isaac.ui.callbacks import on_docs_link_clicked, on_open_IDE_clicked
 from omni.isaac.ui.style import get_style
 from omni.isaac.ui.widgets import ParamWidget, SelectPrimWidget
 from omni.kit.notification_manager import NotificationStatus, post_notification
@@ -25,6 +26,7 @@ class ArticulationPositionGraph:
     def __init__(self):
         self._og_path = "/Graphs/Position_Controller"
         self._art_root_path = ""
+        self._robot_prim_path = ""
         self._add_to_existing_graph = False
         self._num_dofs = None
         self._joint_names = []
@@ -32,11 +34,13 @@ class ArticulationPositionGraph:
         self._window = None
 
     def make_graph(self):
+        # stop simulation before adding the graph
         self._timeline = omni.timeline.get_timeline_interface()
         self._timeline.stop()
 
         keys = og.Controller.Keys
 
+        # if creating a new graph. start with a blank graph with just a OnPlaybackTick node
         if not self._add_to_existing_graph:
             self._og_path = get_next_free_path(self._og_path, "")
             graph_handle = og.Controller.create_graph({"graph_path": self._og_path, "evaluator_name": "execution"})
@@ -71,6 +75,7 @@ class ArticulationPositionGraph:
         art_controller_node = get_next_free_path(art_controller_node_base, "")
         art_controller_node_name = art_controller_node.split("/")[-1]
 
+        # Add the nodes, set values and connect them
         og.Controller.edit(
             graph_handle,
             {
@@ -94,6 +99,7 @@ class ArticulationPositionGraph:
             },
         )
 
+        # need to add extra inputs for the construct array nodes depending on the number of joints
         for i in range(1, self._num_dofs):
             og.Controller.create_attribute(
                 joint_command_array_node,
@@ -108,6 +114,7 @@ class ArticulationPositionGraph:
                 og.AttributePortType.ATTRIBUTE_PORT_TYPE_INPUT,
             )
 
+        # set the default values for the joint command array and joint names array
         for i in range(self._num_dofs):
             og.Controller.attribute(joint_command_array_node + ".inputs:input" + str(i)).set(self._default_pos[i])
             og.Controller.attribute(joint_names_array_node + ".inputs:input" + str(i)).set(self._joint_names[i])
@@ -115,20 +122,34 @@ class ArticulationPositionGraph:
     def create_articulation_controller_graph(self):
         self._og_path = get_next_free_path(self._og_path, "")
         og_path_def = ParamWidget.FieldDef(
-            name="og_path", label="Graph Path", type=ui.StringField, default=self._og_path
+            name="og_path",
+            label="Graph Path",
+            type=ui.StringField,
+            tooltip="Path to the graph on stage",
+            default=self._og_path,
         )
 
-        instructions = "Add Articulation root and then Press 'OK' to create graph. \n\n To move the joints, highlight the JointCommandArray on the stage tree under /World/Graphs/articulation_position_controller{_n} (after pressed 'OK'), \n\n Start simulation by pressing 'play', then change the joint angles in the Property Manager Tab -> Raw USD Properties"
+        instructions = "Add Articulation root, add the Robot Prim if the articulation root is not the same prim as the robot.Press 'OK' to create graph. \n\n To move the joints, on the stage tree, highlight /World/Graphs/articulation_position_controller{_n}/JointCommandArray. \n\n Start simulation by pressing 'play', then change the joint angles in the Property Manager Tab -> Raw USD Properties\n\n NOTE: the articulation controller uses RADIANS, the usd properties (under the propert tabs) are in DEGREES"
         ## populate the popup window
         self._window = ui.Window("Articulation Position Controller Inputs", width=500, height=470)
         with self._window.frame:
             with ui.VStack(spacing=4):
-                with ui.HStack():
+                with ui.HStack(height=40):
                     ui.Label("Add to an existing graph?", width=ui.Percent(30))
                     cb = ui.SimpleBoolModel(default_value=self._add_to_existing_graph)
                     SimpleCheckBox(self._add_to_existing_graph, self._on_use_existing_graph, model=cb)
 
-                self.art_root_input = SelectPrimWidget(label="Articulation Root", default=self._art_root_path)
+                self.art_root_input = SelectPrimWidget(
+                    label="Articulation Root",
+                    default=self._art_root_path,
+                    tooltip="the prim that contains the Articulation Root",
+                )
+                self.robot_prim_input = SelectPrimWidget(
+                    label="Robot Root (if different from Articulation Root)",
+                    default=self._robot_prim_path,
+                    tooltip="the outer most prim of the robot",
+                )
+
                 self.og_path_input = ParamWidget(field_def=og_path_def)
                 ui.Spacer(height=2)
                 ui.Line(style={"color": 0x338A8777}, width=ui.Fraction(1), height=2)
@@ -165,20 +186,33 @@ class ArticulationPositionGraph:
                     ui.Button("Cancel", height=40, width=ui.Percent(30), clicked_fn=self._on_cancel)
                     ui.Spacer(width=ui.Percent(10))
                 with ui.Frame(height=30):
-                    with ui.HStack():
-                        ui.Label("Python Script for Graph Generation", width=ui.Percent(30))
-                        ui.Button(
-                            name="IconButton",
-                            width=24,
-                            height=24,
-                            clicked_fn=lambda: on_open_IDE_clicked("", __file__),
-                            style=get_style()["IconButton.Image::OpenConfig"],
-                        )
+                    with ui.VStack():
+                        with ui.HStack():
+                            ui.Label("Python Script for Graph Generation", width=ui.Percent(30))
+                            ui.Button(
+                                name="IconButton",
+                                width=24,
+                                height=24,
+                                clicked_fn=lambda: on_open_IDE_clicked("", __file__),
+                                style=get_style()["IconButton.Image::OpenConfig"],
+                            )
+                        with ui.HStack():
+                            ui.Label("Documentations", width=0, word_wrap=True)
+                            ui.Button(
+                                name="IconButton",
+                                width=24,
+                                height=24,
+                                clicked_fn=lambda: on_docs_link_clicked(
+                                    "https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html"
+                                ),
+                                style=get_style()["IconButton.Image::OpenLink"],
+                            )
         return self._window
 
     def _on_ok(self):
         self._og_path = self.og_path_input.get_value()
         self._art_root_path = self.art_root_input.get_value()
+        self._robot_prim_path = self.robot_prim_input.get_value()
 
         param_check = self._check_params()
         if param_check:
@@ -200,29 +234,53 @@ class ArticulationPositionGraph:
                 post_notification(msg, status=NotificationStatus.WARNING)
                 return False
 
-        # check if the art_root_path is an articulation root, if yes, get the number of dof and default positions automatically
-        current_prim = stage.GetPrimAtPath(self._art_root_path)
-        self._joint_names = []
-        self._default_pos = []
-        ## TODO: check for possibilities that the subsequent joints are not under the root prim on stage
-        if current_prim.HasAPI(UsdPhysics.ArticulationRootAPI):
-            for prim in Usd.PrimRange(current_prim, Usd.TraverseInstanceProxies()):
-                if prim.IsA(UsdPhysics.RevoluteJoint) and prim.HasAPI(UsdPhysics.DriveAPI):
-                    self._joint_names.append(os.path.basename(prim.GetPath().pathString))
-                    joint_drive = UsdPhysics.DriveAPI.Get(prim, "angular")
-                    default_pos_deg = joint_drive.GetTargetPositionAttr().Get()
-                    self._default_pos.append(
-                        default_pos_deg * PI / 180
-                    )  # USD property is in degrees, PhysX (articulation controller) is in radians
-                elif prim.IsA(UsdPhysics.PrismaticJoint) and prim.HasAPI(UsdPhysics.DriveAPI):
-                    self._joint_names.append(os.path.basename(prim.GetPath().pathString))
-                    joint_drive = UsdPhysics.DriveAPI.Get(prim, "linear")
-                    self._default_pos.append(joint_drive.GetTargetPositionAttr().Get())
-            self._num_dofs = len(self._joint_names)
+        # check if the art_root_path is an articulation root
+        art_root_prim = stage.GetPrimAtPath(self._art_root_path)
+        if art_root_prim.HasAPI(UsdPhysics.ArticulationRootAPI):
+            pass
         else:
             msg = "given articulation root path does not have ArticulationRootAPI, check the path"
             post_notification(msg, status=NotificationStatus.WARNING)
             return False
+
+        ## if robot prim is given and different from articulation root, get the joints from that, otherwise, get the joints from the articulation root prim
+        if self._robot_prim_path and self._robot_prim_path != self._art_root_path:
+            current_prim = stage.GetPrimAtPath(self._robot_prim_path)
+        else:
+            current_prim = stage.GetPrimAtPath(self._art_root_path)
+
+        ## get the joints by traversing through the robot/articulation prim
+        ## TODO: should we check possibilities that the subsequent joints are not under the root prim on stage (but should be discoverable under the articulation chain)
+
+        self._joint_names = []
+        self._default_vel = []
+
+        for prim in Usd.PrimRange(current_prim, Usd.TraverseInstanceProxies()):
+            if prim.IsA(UsdPhysics.RevoluteJoint) and prim.HasAPI(UsdPhysics.DriveAPI):
+                self._joint_names.append(os.path.basename(prim.GetPath().pathString))
+                joint_drive = UsdPhysics.DriveAPI.Get(prim, "angular")
+                default_pos_deg = joint_drive.GetTargetPositionAttr().Get()
+                self._default_pos.append(
+                    default_pos_deg * PI / 180
+                )  # USD property is in degrees, PhysX (articulation controller) is in radians
+            elif prim.IsA(UsdPhysics.PrismaticJoint) and prim.HasAPI(UsdPhysics.DriveAPI):
+                self._joint_names.append(os.path.basename(prim.GetPath().pathString))
+                joint_drive = UsdPhysics.DriveAPI.Get(prim, "linear")
+                self._default_pos.append(joint_drive.GetTargetPositionAttr().Get())
+        self._num_dofs = len(self._joint_names)
+
+        if self._num_dofs == 0:
+            # this may not catch every case of the wrong art_root prim. such as when only a subset of the joints are under the root prim, hence flash a info about how many joints are found
+            msg = "No valid joints found under the given articulation root prim, check if you need to give a different prim for robot root"
+            post_notification(msg, status=NotificationStatus.WARNING)
+            return False
+
+        msg = (
+            "Found "
+            + str(self._num_dofs)
+            + " joints under the given articulation root prim. \nIf different than expected, check if need to give a different prim for robot root"
+        )
+        post_notification(msg, status=NotificationStatus.INFO)
 
         return True
 
@@ -237,6 +295,7 @@ class ArticulationVelocityGraph:
     def __init__(self):
         self._og_path = "/Graphs/Velocity_Controller"
         self._art_root_path = ""
+        self._robot_prim_path = ""
         self._add_to_existing_graph = False
         self._num_dofs = None
         self._joint_names = []
@@ -244,11 +303,13 @@ class ArticulationVelocityGraph:
         self._window = None
 
     def make_graph(self):
+        # stop simulation before adding the graph
         self._timeline = omni.timeline.get_timeline_interface()
         self._timeline.stop()
 
         keys = og.Controller.Keys
 
+        # if creating a new graph. start with a blank graph with just a OnPlaybackTick node
         if not self._add_to_existing_graph:
             self._og_path = get_next_free_path(self._og_path, "")
             graph_handle = og.Controller.create_graph({"graph_path": self._og_path, "evaluator_name": "execution"})
@@ -283,6 +344,7 @@ class ArticulationVelocityGraph:
         art_controller_node = get_next_free_path(art_controller_node_base, "")
         art_controller_node_name = art_controller_node.split("/")[-1]
 
+        # Add the nodes, set values and connect them
         og.Controller.edit(
             graph_handle,
             {
@@ -306,6 +368,7 @@ class ArticulationVelocityGraph:
             },
         )
 
+        # need to add extra inputs for the construct array nodes depending on the number of joints
         for i in range(1, self._num_dofs):
             og.Controller.create_attribute(
                 joint_command_array_node,
@@ -313,6 +376,7 @@ class ArticulationVelocityGraph:
                 og.Type(og.BaseDataType.DOUBLE, 1, 0, og.AttributeRole.NONE),
                 og.AttributePortType.ATTRIBUTE_PORT_TYPE_INPUT,
             )
+
             og.Controller.create_attribute(
                 joint_names_array_node,
                 "inputs:input" + str(i),
@@ -320,6 +384,7 @@ class ArticulationVelocityGraph:
                 og.AttributePortType.ATTRIBUTE_PORT_TYPE_INPUT,
             )
 
+        # set the default values for the joint command array and joint names array
         for j in range(self._num_dofs):
             og.Controller.attribute(joint_command_array_node + ".inputs:input" + str(j)).set(self._default_vel[j])
             og.Controller.attribute(joint_names_array_node + ".inputs:input" + str(j)).set(self._joint_names[j])
@@ -327,20 +392,33 @@ class ArticulationVelocityGraph:
     def create_articulation_controller_graph(self):
         self._og_path = get_next_free_path(self._og_path, "")
         og_path_def = ParamWidget.FieldDef(
-            name="og_path", label="Graph Path", type=ui.StringField, default=self._og_path
+            name="og_path",
+            label="Graph Path",
+            type=ui.StringField,
+            default=self._og_path,
+            tooltip="Path to the graph on stage",
         )
 
-        instructions = "Add Articulation root and then Press 'OK' to create graph. \n\n To move the joints, highlight the JointCommandArray on the stage tree under /World/Graphs/articulation_velocity_controller{_n} (after pressed 'OK'), \n\n Start simulation by pressing 'play', then change the joint angles in the Property Manager Tab -> Raw USD Properties"
+        instructions = "Add Articulation root, add the Robot Prim if the articulation root is not the same prim as the robot.Press 'OK' to create graph. \n\n To move the joints, on the stage tree, highlight /World/Graphs/articulation_velocity_controller{_n}/JointCommandArray, \n\n Start simulation by pressing 'play', then change the joint angles in the Property Manager Tab -> Raw USD Properties. \n\n NOTE: the articulation controller uses RADIANS, the usd properties (under the propert tabs) are in DEGREES"
         ## populate the popup window
         self._window = ui.Window("Articulation Velocity Controller Input", width=500, height=470)
         with self._window.frame:
             with ui.VStack(spacing=4):
-                with ui.HStack():
+                with ui.HStack(height=40):
                     ui.Label("Add to an existing graph?", width=ui.Percent(30))
                     cb = ui.SimpleBoolModel(default_value=self._add_to_existing_graph)
                     SimpleCheckBox(self._add_to_existing_graph, self._on_use_existing_graph, model=cb)
 
-                self.art_root_input = SelectPrimWidget(label="Articulation Root", default=self._art_root_path)
+                self.art_root_input = SelectPrimWidget(
+                    label="Articulation Root",
+                    default=self._art_root_path,
+                    tooltip="the prim that contains the Articulation Root",
+                )
+                self.robot_prim_input = SelectPrimWidget(
+                    label="Robot Root (if different from Articulation Root)",
+                    default=self._robot_prim_path,
+                    tooltip="the outer most prim of the robot",
+                )
                 self.og_path_input = ParamWidget(field_def=og_path_def)
                 ui.Spacer(height=2)
                 ui.Line(style={"color": 0x338A8777}, width=ui.Fraction(1), height=2)
@@ -377,21 +455,34 @@ class ArticulationVelocityGraph:
                     ui.Button("Cancel", height=40, width=ui.Percent(30), clicked_fn=self._on_cancel)
                     ui.Spacer(width=ui.Percent(10))
                 with ui.Frame(height=30):
-                    with ui.HStack():
-                        ui.Label("Python Script for Graph Generation", width=ui.Percent(30))
-                        ui.Button(
-                            name="IconButton",
-                            width=24,
-                            height=24,
-                            clicked_fn=lambda: on_open_IDE_clicked("", __file__),
-                            style=get_style()["IconButton.Image::OpenConfig"],
-                        )
+                    with ui.VStack():
+                        with ui.HStack():
+                            ui.Label("Python Script for Graph Generation", width=ui.Percent(30))
+                            ui.Button(
+                                name="IconButton",
+                                width=24,
+                                height=24,
+                                clicked_fn=lambda: on_open_IDE_clicked("", __file__),
+                                style=get_style()["IconButton.Image::OpenConfig"],
+                            )
+                        with ui.HStack():
+                            ui.Label("Documentations", width=0, word_wrap=True)
+                            ui.Button(
+                                name="IconButton",
+                                width=24,
+                                height=24,
+                                clicked_fn=lambda: on_docs_link_clicked(
+                                    "https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html"
+                                ),
+                                style=get_style()["IconButton.Image::OpenLink"],
+                            )
 
         return self._window
 
     def _on_ok(self):
         self._og_path = self.og_path_input.get_value()
         self._art_root_path = self.art_root_input.get_value()
+        self._robot_prim_path = self.robot_prim_input.get_value()
 
         param_check = self._check_params()
         if param_check:
@@ -413,27 +504,42 @@ class ArticulationVelocityGraph:
                 post_notification(msg, status=NotificationStatus.WARNING)
                 return False
 
-        # check if the art_root_path is an articulation root, if yes, get the number of dof and default positions automatically
-        current_prim = stage.GetPrimAtPath(self._art_root_path)
-        self._joint_names = []
-        self._default_vel = []
-        ## TODO: check for possibilities that the subsequent joints are not under the root prim on stage
-        if current_prim.HasAPI(UsdPhysics.ArticulationRootAPI):
-            for prim in Usd.PrimRange(current_prim, Usd.TraverseInstanceProxies()):
-                if prim.IsA(UsdPhysics.RevoluteJoint) and prim.HasAPI(UsdPhysics.DriveAPI):
-                    self._joint_names.append(os.path.basename(prim.GetPath().pathString))
-                    joint_drive = UsdPhysics.DriveAPI.Get(prim, "angular")
-                    default_vel_deg = joint_drive.GetTargetVelocityAttr().Get()
-                    self._default_vel.append(
-                        default_vel_deg * PI / 180
-                    )  # USD property is in degrees, PhysX (articulation controller) is in radians
-                elif prim.IsA(UsdPhysics.PrismaticJoint) and prim.HasAPI(UsdPhysics.DriveAPI):
-                    self._joint_names.append(os.path.basename(prim.GetPath().pathString))
-                    joint_drive = UsdPhysics.DriveAPI.Get(prim, "linear")
-                    self._default_vel.append(joint_drive.GetTargetVelocityAttr().Get())
-            self._num_dofs = len(self._joint_names)
+        # check if the art_root_path is an articulation root
+        art_root_prim = stage.GetPrimAtPath(self._art_root_path)
+        if art_root_prim.HasAPI(UsdPhysics.ArticulationRootAPI):
+            pass
         else:
             msg = "given articulation root path does not have ArticulationRootAPI, check the path"
+            post_notification(msg, status=NotificationStatus.WARNING)
+            return False
+
+        ## if robot prim is given and different from articulation root, get the joints from that, otherwise, get the joints from the articulation root prim
+        if self._robot_prim_path and self._robot_prim_path != self._art_root_path:
+            current_prim = stage.GetPrimAtPath(self._robot_prim_path)
+        else:
+            current_prim = stage.GetPrimAtPath(self._art_root_path)
+
+        ## get the joints by traversing through the robot/articulation prim
+        ## TODO: should we check possibilities that the subsequent joints are not under the root prim on stage (but should be discoverable under the articulation chain)
+
+        self._joint_names = []
+        self._default_vel = []
+        for prim in Usd.PrimRange(current_prim, Usd.TraverseInstanceProxies()):
+            if prim.IsA(UsdPhysics.RevoluteJoint) and prim.HasAPI(UsdPhysics.DriveAPI):
+                self._joint_names.append(os.path.basename(prim.GetPath().pathString))
+                joint_drive = UsdPhysics.DriveAPI.Get(prim, "angular")
+                default_vel_deg = joint_drive.GetTargetVelocityAttr().Get()
+                self._default_vel.append(
+                    default_vel_deg * PI / 180
+                )  # USD property is in degrees, PhysX (articulation controller) is in radians
+            elif prim.IsA(UsdPhysics.PrismaticJoint) and prim.HasAPI(UsdPhysics.DriveAPI):
+                self._joint_names.append(os.path.basename(prim.GetPath().pathString))
+                joint_drive = UsdPhysics.DriveAPI.Get(prim, "linear")
+                self._default_vel.append(joint_drive.GetTargetVelocityAttr().Get())
+        self._num_dofs = len(self._joint_names)
+
+        if self._num_dofs == 0:
+            msg = "No valid joints found under the given articulation root prim, check if you need to give a different prim for robot root"
             post_notification(msg, status=NotificationStatus.WARNING)
             return False
 
@@ -461,11 +567,14 @@ class GripperGraph:
         self._speed = None
 
     def make_graph(self):
+
+        # stop physics before adding graphs
         self._timeline = omni.timeline.get_timeline_interface()
         self._timeline.stop()
 
         keys = og.Controller.Keys
 
+        # if adding a new graph, start with a blank graph with just a OnPlaybackTick node
         if not self._add_to_existing_graph:
             self._og_path = get_next_free_path(self._og_path, "")
             graph_handle = og.Controller.create_graph({"graph_path": self._og_path, "evaluator_name": "execution"})
@@ -483,6 +592,7 @@ class GripperGraph:
             if node_type == "omni.graph.action.OnPlaybackTick" or node_type == "omni.graph.action.OnTick":
                 tick_node = node_path
 
+        # the body of the graph
         og.Controller.edit(
             graph_handle,
             {
@@ -554,6 +664,7 @@ class GripperGraph:
         else:
             print("defaulting to move all joints in the robot")
 
+        # if user wants to use keyboard input
         if self._use_keyboard:
             print("using keyboard input to open/close gripper")
             og.Controller.edit(
@@ -591,32 +702,60 @@ class GripperGraph:
 
         self._og_path = get_next_free_path(self._og_path, "")
         og_path_def = ParamWidget.FieldDef(
-            name="og_path", label="Graph Path", type=ui.StringField, default=self._og_path
+            name="og_path",
+            label="Graph Path",
+            type=ui.StringField,
+            default=self._og_path,
+            tooltip="Path to the graph on stage",
         )
         speed_def = ParamWidget.FieldDef(
-            name="gripper_speed", label="Gripper Speed (distance per frame)", type=ui.FloatField, default=self._speed
+            name="gripper_speed",
+            label="Gripper Speed",
+            type=ui.FloatField,
+            default=self._speed,
+            tooltip="Distance per frame in meters",
         )
         joint_names_def = ParamWidget.FieldDef(
-            name="joint_names", label="Gripper Joint Names", type=ui.StringField, default=self._joint_names
+            name="joint_names",
+            label="Gripper Joint Names",
+            type=ui.StringField,
+            default=self._joint_names,
+            tooltip="Names of the joints that are included in the gripper, REQUIRED if not all joints inside the articulation are gripper joints",
         )
         open_position_def = ParamWidget.FieldDef(
-            name="open_position", label="Open Position Limit", type=ui.FloatField, default=self._open_position
+            name="open_position",
+            label="Open Position Limit",
+            type=ui.FloatField,
+            default=self._open_position,
+            tooltip="the joint position that indicates open. Unit: meter or radian",
         )
         close_position_def = ParamWidget.FieldDef(
-            name="close_position", label="Close Position Limit", type=ui.FloatField, default=self._close_position
+            name="close_position",
+            label="Close Position Limit",
+            type=ui.FloatField,
+            default=self._close_position,
+            tooltip="the joint position that indicates close. unit: meter or radian)",
         )
 
         ## populate the popup window
         self._window = ui.Window("Gripper Controller Inputs", width=400, height=550)
         with self._window.frame:
             with ui.VStack(spacing=4):
-                with ui.HStack():
+                with ui.HStack(height=40):
                     ui.Label("Add to an existing graph?", width=ui.Percent(30))
                     cb = ui.SimpleBoolModel(default_value=self._add_to_existing_graph)
                     SimpleCheckBox(self._add_to_existing_graph, self._on_use_existing_graph, model=cb)
 
-                self.art_root_input = SelectPrimWidget(label="Articulation Root", default=self._art_root_path)
-                self.gripper_root_input = SelectPrimWidget(label="Gripper Root Prim", default=self._gripper_root_path)
+                self.art_root_input = SelectPrimWidget(
+                    label="Articulation Root",
+                    default=self._art_root_path,
+                    tooltip="the prim that contains the Articulation Root",
+                )
+                self.gripper_root_input = SelectPrimWidget(
+                    label="Gripper Root Prim",
+                    default=self._gripper_root_path,
+                    tooltip="the prim that contains the gripper joints",
+                )
                 self.og_path_input = ParamWidget(field_def=og_path_def)
                 self.speed_input = ParamWidget(field_def=speed_def)
                 ui.Spacer(height=2)
@@ -651,7 +790,9 @@ class GripperGraph:
                 ui.Spacer(height=5)
                 ui.Line(style={"color": 0x338A8777}, width=ui.Fraction(1), height=2)
                 with ui.HStack():
-                    ui.Label("Use Keyboard Control", width=ui.Percent(30))
+                    ui.Label(
+                        "Use Keyboard Control", width=ui.Percent(30), word_wrap=False, tooltip="O-open, C-close, N-stop"
+                    )
                     cb = ui.SimpleBoolModel(default_value=self._use_keyboard)
                     SimpleCheckBox(self._use_keyboard, self._on_checked_box, model=cb)
                 with ui.HStack():
@@ -661,15 +802,28 @@ class GripperGraph:
                     ui.Button("Cancel", height=40, width=ui.Percent(30), clicked_fn=self._on_cancel)
                     ui.Spacer(width=ui.Percent(10))
                 with ui.Frame(height=30):
-                    with ui.HStack():
-                        ui.Label("Python Script for Graph Generation", width=ui.Percent(30))
-                        ui.Button(
-                            name="IconButton",
-                            width=24,
-                            height=24,
-                            clicked_fn=lambda: on_open_IDE_clicked("", __file__),
-                            style=get_style()["IconButton.Image::OpenConfig"],
-                        )
+                    with ui.VStack():
+                        with ui.HStack():
+                            ui.Label("Python Script for Graph Generation", width=0)
+                            ui.Button(
+                                name="IconButton",
+                                width=24,
+                                height=24,
+                                clicked_fn=lambda: on_open_IDE_clicked("", __file__),
+                                style=get_style()["IconButton.Image::OpenConfig"],
+                            )
+                        with ui.HStack():
+                            ui.Label("Documentations", width=0, word_wrap=True)
+                            ui.Button(
+                                name="IconButton",
+                                width=24,
+                                height=24,
+                                clicked_fn=lambda: on_docs_link_clicked(
+                                    "https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html"
+                                ),
+                                style=get_style()["IconButton.Image::OpenLink"],
+                            )
+
         return self._window
 
     def _on_ok(self):

@@ -13,7 +13,7 @@ import omni.graph.core as og
 import omni.ui as ui
 import omni.usd
 from omni.isaac.core.utils.stage import get_next_free_path
-from omni.isaac.ui.callbacks import on_open_IDE_clicked
+from omni.isaac.ui.callbacks import on_docs_link_clicked, on_open_IDE_clicked
 from omni.isaac.ui.style import get_style
 from omni.isaac.ui.widgets import ParamWidget, SelectPrimWidget
 from omni.kit.notification_manager import NotificationStatus, post_notification
@@ -36,6 +36,7 @@ class DifferentialRobotGraph:
         self._use_keyboard = False
 
     def make_graph(self):
+        # stop the simulation before adding nodes
         self._timeline = omni.timeline.get_timeline_interface()
         self._timeline.stop()
 
@@ -92,6 +93,7 @@ class DifferentialRobotGraph:
             },
         )
 
+        # if user input used joint indices
         if self._left_joint_index and self._right_joint_index:
             og.Controller.edit(
                 graph_handle,
@@ -139,6 +141,7 @@ class DifferentialRobotGraph:
             msg = "using all joints in the articulation"
             post_notification("Differential Robot Graph", msg, NotificationStatus.INFO)
 
+        # if user wants to use keyboard control
         if self._use_keyboard:
             og.Controller.edit(
                 graph_handle,
@@ -205,13 +208,18 @@ class DifferentialRobotGraph:
             name="og_path", label="graph path", type=ui.StringField, default=self._og_path
         )
         wheel_radius_def = ParamWidget.FieldDef(
-            name="wheel_radius", label="wheel radius(cm)", type=ui.FloatField, default=self._wheel_radius
+            name="wheel_radius",
+            label="wheel radius",
+            type=ui.FloatField,
+            default=self._wheel_radius,
+            tooltip="in meters",
         )
         wheel_distance_def = ParamWidget.FieldDef(
             name="wheel_distance",
-            label="distance between wheels (cm)",
+            label="distance between wheels",
             type=ui.FloatField,
             default=self._wheel_distance,
+            tooltip="in meters",
         )
         left_joint_name_def = ParamWidget.FieldDef(
             name="left_joint_name", label="Left Joint Name", type=ui.StringField, default=self._left_joint_name
@@ -227,10 +235,10 @@ class DifferentialRobotGraph:
         )
 
         ## populate the popup window
-        self._window = ui.Window("Differential Controller Inputs", width=400, height=470)
+        self._window = ui.Window("Differential Controller Inputs", width=400, height=500)
         with self._window.frame:
             with ui.VStack(spacing=4):
-                with ui.HStack():
+                with ui.HStack(height=40):
                     ui.Label("Add to an existing graph?", width=ui.Percent(30))
                     cb = ui.SimpleBoolModel(default_value=self._add_to_existing_graph)
                     SimpleCheckBox(self._add_to_existing_graph, self._on_use_existing_graph, model=cb)
@@ -266,15 +274,28 @@ class DifferentialRobotGraph:
                     ui.Button("Cancel", height=40, width=ui.Percent(30), clicked_fn=self._on_cancel)
                     ui.Spacer(width=ui.Percent(10))
                 with ui.Frame(height=30):
-                    with ui.HStack():
-                        ui.Label("Python Script for Graph Generation", width=ui.Percent(30))
-                        ui.Button(
-                            name="IconButton",
-                            width=24,
-                            height=24,
-                            clicked_fn=lambda: on_open_IDE_clicked("", __file__),
-                            style=get_style()["IconButton.Image::OpenConfig"],
-                        )
+                    with ui.VStack():
+                        with ui.HStack():
+                            ui.Label("Python Script for Graph Generation", width=ui.Percent(30))
+                            ui.Button(
+                                name="IconButton",
+                                width=24,
+                                height=24,
+                                clicked_fn=lambda: on_open_IDE_clicked("", __file__),
+                                style=get_style()["IconButton.Image::OpenConfig"],
+                            )
+                        with ui.HStack():
+                            ui.Label("Documentations", width=0, word_wrap=True)
+                            ui.Button(
+                                name="IconButton",
+                                width=24,
+                                height=24,
+                                clicked_fn=lambda: on_docs_link_clicked(
+                                    "https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html"
+                                ),
+                                style=get_style()["IconButton.Image::OpenLink"],
+                            )
+
         return self._window
 
     def _on_ok(self):

@@ -1,4 +1,7 @@
 # Changelog
+## [1.0.2] - 2024-04-14
+### Added
+- button to documentation for omnigraph shortcut
 
 ## [1.0.1] - 2024-03-25
 ### Changed

@@ -14,7 +14,7 @@ import omni.graph.core as og
 import omni.ui as ui
 import omni.usd
 from omni.isaac.core.utils.stage import get_next_free_path
-from omni.isaac.ui.callbacks import on_open_IDE_clicked
+from omni.isaac.ui.callbacks import on_docs_link_clicked, on_open_IDE_clicked
 from omni.isaac.ui.style import get_style
 from omni.isaac.ui.ui_utils import dropdown_builder
 from omni.isaac.ui.widgets import ParamWidget, SelectPrimWidget
@@ -58,7 +58,7 @@ class Ros2ClockGraph:
             name="og_path", label="Graph Path", type=ui.StringField, default=default_og_path
         )
 
-        self._window = ui.Window("Parameters", width=300, height=120)
+        self._window = ui.Window("ROS2 Clock Parameters", width=300, height=150)
         with self._window.frame:
             with ui.VStack(spacing=4):
                 self.og_path_input = ParamWidget(field_def=og_path_def)
@@ -69,15 +69,27 @@ class Ros2ClockGraph:
                     ui.Button("Cancel", height=40, width=ui.Percent(30), clicked_fn=self._on_cancel)
                     ui.Spacer(width=ui.Percent(10))
                 with ui.Frame(height=30):
-                    with ui.HStack():
-                        ui.Label("Python Script for Graph Generation", width=ui.Percent(30))
-                        ui.Button(
-                            name="IconButton",
-                            width=24,
-                            height=24,
-                            clicked_fn=lambda: on_open_IDE_clicked("", __file__),
-                            style=get_style()["IconButton.Image::OpenConfig"],
-                        )
+                    with ui.VStack():
+                        with ui.HStack():
+                            ui.Label("Python Script for Graph Generation", width=ui.Percent(30))
+                            ui.Button(
+                                name="IconButton",
+                                width=24,
+                                height=24,
+                                clicked_fn=lambda: on_open_IDE_clicked("", __file__),
+                                style=get_style()["IconButton.Image::OpenConfig"],
+                            )
+                        with ui.HStack():
+                            ui.Label("Documentations", width=0, word_wrap=True)
+                            ui.Button(
+                                name="IconButton",
+                                width=24,
+                                height=24,
+                                clicked_fn=lambda: on_docs_link_clicked(
+                                    "https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html"
+                                ),
+                                style=get_style()["IconButton.Image::OpenLink"],
+                            )
 
         return self._window
 
@@ -255,7 +267,7 @@ class Ros2GenericPubGraph:
             name="og_path", label="Graph Path", type=ui.StringField, default=default_og_path
         )
 
-        self._window = ui.Window("Parameters", width=350, height=180)
+        self._window = ui.Window("ROS2 Generic Publisher Parameters", width=350, height=180)
         with self._window.frame:
             with ui.VStack(spacing=4):
                 self.og_path_input = ParamWidget(field_def=og_path_def)
@@ -272,16 +284,27 @@ class Ros2GenericPubGraph:
                     ui.Button("Cancel", height=40, width=ui.Percent(30), clicked_fn=self._on_cancel)
                     ui.Spacer(width=ui.Percent(10))
                 with ui.Frame(height=30):
-                    with ui.HStack():
-                        ui.Label("Python Script for Graph Generation", width=ui.Percent(30))
-                        ui.Button(
-                            name="IconButton",
-                            width=24,
-                            height=24,
-                            clicked_fn=lambda: on_open_IDE_clicked("", __file__),
-                            style=get_style()["IconButton.Image::OpenConfig"],
-                        )
-
+                    with ui.VStack():
+                        with ui.HStack():
+                            ui.Label("Python Script for Graph Generation", width=ui.Percent(30))
+                            ui.Button(
+                                name="IconButton",
+                                width=24,
+                                height=24,
+                                clicked_fn=lambda: on_open_IDE_clicked("", __file__),
+                                style=get_style()["IconButton.Image::OpenConfig"],
+                            )
+                        with ui.HStack():
+                            ui.Label("Documentations", width=0, word_wrap=True)
+                            ui.Button(
+                                name="IconButton",
+                                width=24,
+                                height=24,
+                                clicked_fn=lambda: on_docs_link_clicked(
+                                    "https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html"
+                                ),
+                                style=get_style()["IconButton.Image::OpenLink"],
+                            )
         return self._window
 
     def _on_ok(self):
@@ -421,7 +444,7 @@ class Ros2JointStatesGraph:
                     ],
                     keys.SET_VALUES: [
                         (js_sub_node_name + ".inputs:topicName", self._sub_topic),
-                        (js_pub_node_name + ".inputs:nodeNamespace", self._node_namespace),
+                        (self._og_path + "/" + js_pub_node_name + ".inputs:nodeNamespace", self._node_namespace),
                     ],
                 },
             )
@@ -486,7 +509,7 @@ class Ros2JointStatesGraph:
         sub_topic_def = ParamWidget.FieldDef(
             name="sub topic", label="Subscriber Topic", type=ui.StringField, default=self._sub_topic
         )
-        self._window = ui.Window("Parameters", width=450, height=300)
+        self._window = ui.Window("ROS2 JointState Parameters", width=450, height=350)
         with self._window.frame:
             with ui.VStack(spacing=4):
                 with ui.HStack():
@@ -520,15 +543,27 @@ class Ros2JointStatesGraph:
                     ui.Button("Cancel", height=40, width=ui.Percent(30), clicked_fn=self._on_cancel)
                     ui.Spacer(width=ui.Percent(10))
                 with ui.Frame(height=30):
-                    with ui.HStack():
-                        ui.Label("Python Script for Graph Generation", width=ui.Percent(30))
-                        ui.Button(
-                            name="IconButton",
-                            width=24,
-                            height=24,
-                            clicked_fn=lambda: on_open_IDE_clicked("", __file__),
-                            style=get_style()["IconButton.Image::OpenConfig"],
-                        )
+                    with ui.VStack():
+                        with ui.HStack():
+                            ui.Label("Python Script for Graph Generation", width=ui.Percent(30))
+                            ui.Button(
+                                name="IconButton",
+                                width=24,
+                                height=24,
+                                clicked_fn=lambda: on_open_IDE_clicked("", __file__),
+                                style=get_style()["IconButton.Image::OpenConfig"],
+                            )
+                        with ui.HStack():
+                            ui.Label("Documentations", width=0, word_wrap=True)
+                            ui.Button(
+                                name="IconButton",
+                                width=24,
+                                height=24,
+                                clicked_fn=lambda: on_docs_link_clicked(
+                                    "https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html"
+                                ),
+                                style=get_style()["IconButton.Image::OpenLink"],
+                            )
         return self._window
 
     def _on_ok(self):
@@ -682,7 +717,7 @@ class Ros2TfPubGraph:
             name="pub topic", label="Publisher Topic", type=ui.StringField, default=self._pub_topic
         )
 
-        self._window = ui.Window("Parameters", width=450, height=300)
+        self._window = ui.Window("ROS2 TF Publisher Parameters", width=450, height=450)
         with self._window.frame:
             with ui.VStack(spacing=4):
                 with ui.HStack():
@@ -713,15 +748,27 @@ class Ros2TfPubGraph:
                     ui.Button("Cancel", height=40, width=ui.Percent(30), clicked_fn=self._on_cancel)
                     ui.Spacer(width=ui.Percent(10))
                 with ui.Frame(height=30):
-                    with ui.HStack():
-                        ui.Label("Python Script for Graph Generation", width=ui.Percent(30))
-                        ui.Button(
-                            name="IconButton",
-                            width=24,
-                            height=24,
-                            clicked_fn=lambda: on_open_IDE_clicked("", __file__),
-                            style=get_style()["IconButton.Image::OpenConfig"],
-                        )
+                    with ui.VStack():
+                        with ui.HStack():
+                            ui.Label("Python Script for Graph Generation", width=ui.Percent(30))
+                            ui.Button(
+                                name="IconButton",
+                                width=24,
+                                height=24,
+                                clicked_fn=lambda: on_open_IDE_clicked("", __file__),
+                                style=get_style()["IconButton.Image::OpenConfig"],
+                            )
+                        with ui.HStack():
+                            ui.Label("Documentations", width=0, word_wrap=True)
+                            ui.Button(
+                                name="IconButton",
+                                width=24,
+                                height=24,
+                                clicked_fn=lambda: on_docs_link_clicked(
+                                    "https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html"
+                                ),
+                                style=get_style()["IconButton.Image::OpenLink"],
+                            )
         return self._window
 
     def _on_ok(self):
@@ -971,7 +1018,7 @@ class Ros2OdometryGraph:
             name="node_namespace", label="Node Namespace", type=ui.StringField, default=self._node_namespace
         )
 
-        self._window = ui.Window("Parameters", width=450, height=300)
+        self._window = ui.Window("ROS2 Odometry Publisher Parameters", width=450, height=350)
         with self._window.frame:
             with ui.VStack(spacing=4):
                 with ui.HStack():
@@ -996,16 +1043,27 @@ class Ros2OdometryGraph:
                     ui.Button("Cancel", height=40, width=ui.Percent(30), clicked_fn=self._on_cancel)
                     ui.Spacer(width=ui.Percent(10))
                 with ui.Frame(height=30):
-                    with ui.HStack():
-                        ui.Label("Python Script for Graph Generation", width=ui.Percent(30))
-                        ui.Button(
-                            name="IconButton",
-                            width=24,
-                            height=24,
-                            clicked_fn=lambda: on_open_IDE_clicked("", __file__),
-                            style=get_style()["IconButton.Image::OpenConfig"],
-                        )
-
+                    with ui.VStack():
+                        with ui.HStack():
+                            ui.Label("Python Script for Graph Generation", width=ui.Percent(30))
+                            ui.Button(
+                                name="IconButton",
+                                width=24,
+                                height=24,
+                                clicked_fn=lambda: on_open_IDE_clicked("", __file__),
+                                style=get_style()["IconButton.Image::OpenConfig"],
+                            )
+                        with ui.HStack():
+                            ui.Label("Documentations", width=0, word_wrap=True)
+                            ui.Button(
+                                name="IconButton",
+                                width=24,
+                                height=24,
+                                clicked_fn=lambda: on_docs_link_clicked(
+                                    "https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html"
+                                ),
+                                style=get_style()["IconButton.Image::OpenLink"],
+                            )
         return self._window
 
     def _on_ok(self):
