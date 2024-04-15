@@ -117,7 +117,7 @@ class ImportWizard(object):
         self._window.set_visibility_changed_fn(self._on_window)
 
         # get the carb setting variable on whether to open the window on startup
-        self._not_show_on_startup = self._settings.get("persistent/ext/omni.isaac.import_wizard/not_show_on_startup")
+        self._not_show_on_startup = self._settings.get("persistent/exts/omni.isaac.import_wizard/not_show_on_startup")
         if self._not_show_on_startup:
             self._window.visible = False
         else:

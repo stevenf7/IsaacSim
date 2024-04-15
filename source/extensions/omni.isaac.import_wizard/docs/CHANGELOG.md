@@ -1,4 +1,6 @@
 # Changelog
+## [0.3.2] - 2024-04-15
+- Fixed typo when pulling carb setting for loading on startup
 
 ## [0.3.1] - 2024-04-13
 ### Changed
