@@ -1,4 +1,7 @@
 # Changelog
+## [2.19.1] - 2024-04-13
+### Added
+- A button to open documentation links for OmniGraph shortcuts
 
 ## [2.19.0] - 2024-04-11
 ### Added

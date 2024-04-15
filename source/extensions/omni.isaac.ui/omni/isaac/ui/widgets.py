@@ -9,7 +9,7 @@
 
 
 from collections import namedtuple
-from typing import Callable, Optional
+from typing import Callable, List, Optional
 
 import carb
 import omni
@@ -54,15 +54,22 @@ class SelectPrimWidget:
     modeled after FormWidget (from omni.kit.window.popup_dialog.form_dialog) to add a widget that opens relationship selector
     """
 
-    def __init__(self, label: str = None, default: str = None):
+    def __init__(self, label: str = None, default: str = None, tooltip: str = ""):
         self._label = label
         self._default_path = default
+        self._tooltip = tooltip
+
         self._build_ui()
 
     def _build_ui(self):
         with ui.HStack(height=0):
             ui.Label(
-                self._label, width=ui.Percent(29), style_type_name_override="Field.Label", word_wrap=True, name="prefix"
+                self._label,
+                width=ui.Percent(29),
+                style_type_name_override="Field.Label",
+                word_wrap=True,
+                name="prefix",
+                tooltip=self._tooltip,
             )
             ui.Spacer(width=ui.Percent(1))
             path_model = ui.SimpleStringModel()
@@ -103,9 +110,9 @@ class ParamWidget:
 
     """
 
-    FieldDef = namedtuple("FormDialogFieldDef", "name label type default focused", defaults=[False])
+    FieldDef = namedtuple("FormDialogFieldDef", "name label type default tooltip focused", defaults=["", False])
 
-    def __init__(self, field_def: FieldDef = ()):
+    def __init__(self, field_def: FieldDef):
         self._field = None
         self._build_ui(field_def)
 
@@ -117,6 +124,7 @@ class ParamWidget:
                 style_type_name_override="Field.Label",
                 word_wrap=True,
                 name="prefix",
+                tooltip=field_def.tooltip,
             )
             ui.Spacer(width=ui.Percent(1))
             self._field = field_def.type(width=ui.Percent(70))

@@ -1,4 +1,8 @@
 # Changelog
+## [0.15.1] - 2024-04-13
+### Added
+- optional tooltip entry for SelectPrimWidget and ParamWidget
+
 ## [0.15.0] - 2024-03-14
 ### Added
 - Added function to trigger user callback manually for DropDown widget.
