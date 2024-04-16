@@ -1381,7 +1381,8 @@ bool CARB_ABI DcSetArticulationDofStates(DcHandle artHandle, const DcDofState* s
         }
     }
 
-    ZeroArray(art->pxArticulationCache->jointSolverForces, art->pxArticulation->getDofs());
+    // deprecated jointSolverForces is removed from pxArticulationCache
+    // ZeroArray(art->pxArticulationCache->jointSolverForces, art->pxArticulation->getDofs());
     ZeroArray(art->pxArticulationCache->jointAcceleration, art->pxArticulation->getDofs());
 
     ZeroArray(art->pxArticulationCache->linkVelocity, art->pxArticulation->getNbLinks());
