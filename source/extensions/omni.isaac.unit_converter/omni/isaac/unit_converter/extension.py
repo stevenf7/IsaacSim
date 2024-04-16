@@ -12,6 +12,7 @@ import weakref
 from functools import partial
 from pathlib import PurePath, PurePosixPath
 
+import carb
 import omni.ext
 import omni.ui as ui
 from omni.client._omniclient import Result
@@ -76,6 +77,9 @@ class UsdUnitConverter(omni.ext.IExt):
     # ext_id is current extension id. It can be used with extension manager to query additional information, like where
     # this extension is located on filesystem.
     def on_startup(self, ext_id):
+        carb.log_warn(
+            "USD Unit Converter Has been deprecated. omni.usd.metrics_assembler Handles unit conversion on drag/drop to stage now."
+        )
         self._style = get_style()
         self.folder_picker = None
 
