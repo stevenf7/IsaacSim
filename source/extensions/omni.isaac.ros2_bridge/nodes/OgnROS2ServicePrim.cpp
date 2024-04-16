@@ -409,24 +409,13 @@ public:
             state.mSetAttributeServiceName = setAttributeServiceName;
         }
 
-        // check for changes in node
-        std::string nodeNamespace = std::string(db.inputs.nodeNamespace());
-        if (nodeNamespace != state.mNodeNamespace)
-        {
-            state.mIsServiceGetPrimsUpdateNeeded = true;
-            state.mIsServiceGetAttributesUpdateNeeded = true;
-            state.mIsServiceGetAttributeUpdateNeeded = true;
-            state.mIsServiceSetAttributeUpdateNeeded = true;
-            state.mNodeNamespace = nodeNamespace;
-        }
-
         // update services
         if (state.mIsServiceGetPrimsUpdateNeeded)
         {
             // destroy previous subscriber
             state.mServiceGetPrims.reset();
             // get service name
-            std::string fullServiceName = addTopicPrefix(state.mNodeNamespace, state.mGetPrimsServiceName);
+            std::string fullServiceName = addTopicPrefix(state.mNamespaceName, state.mGetPrimsServiceName);
             if (!state.mFactory->validateTopic(fullServiceName))
                 return false;
             // create service
@@ -448,7 +437,7 @@ public:
             // destroy previous subscriber
             state.mServiceGetAttributes.reset();
             // get service name
-            std::string fullServiceName = addTopicPrefix(state.mNodeNamespace, state.mGetAttributesServiceName);
+            std::string fullServiceName = addTopicPrefix(state.mNamespaceName, state.mGetAttributesServiceName);
             if (!state.mFactory->validateTopic(fullServiceName))
                 return false;
             // create service
@@ -471,7 +460,7 @@ public:
             // destroy previous subscriber
             state.mServiceGetAttribute.reset();
             // get service name
-            std::string fullServiceName = addTopicPrefix(state.mNodeNamespace, state.mGetAttributeServiceName);
+            std::string fullServiceName = addTopicPrefix(state.mNamespaceName, state.mGetAttributeServiceName);
             if (!state.mFactory->validateTopic(fullServiceName))
                 return false;
             // create service
@@ -494,7 +483,7 @@ public:
             // destroy previous subscriber
             state.mServiceSetAttribute.reset();
             // get service name
-            std::string fullServiceName = addTopicPrefix(state.mNodeNamespace, state.mSetAttributeServiceName);
+            std::string fullServiceName = addTopicPrefix(state.mNamespaceName, state.mSetAttributeServiceName);
             if (!state.mFactory->validateTopic(fullServiceName))
                 return false;
             // create service
@@ -529,6 +518,11 @@ public:
 
     virtual void reset()
     {
+        mGetPrimsServiceName.clear();
+        mGetAttributesServiceName.clear();
+        mGetAttributeServiceName.clear();
+        mSetAttributeServiceName.clear();
+
         mServiceGetPrims.reset(); // this should be reset before reset the handle
         mServiceGetAttributes.reset(); // this should be reset before reset the handle
         mServiceGetAttribute.reset(); // this should be reset before reset the handle
@@ -561,7 +555,6 @@ private:
     std::string mGetAttributesServiceName;
     std::string mGetAttributeServiceName;
     std::string mSetAttributeServiceName;
-    std::string mNodeNamespace;
 
     // node
 

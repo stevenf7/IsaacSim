@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.19.3] - 2024-04-15
+### Fixed
+- Fix ROS2 Service Prim service availability when resetting the simulation
+
 ## [2.19.2] - 2024-04-15
 ### Fixed
 - Fixed flaky ROS2 rtx lidar unit test  
@@ -10,7 +14,6 @@
 
 ### Added
 - A button to open documentation links for OmniGraph shortcuts
-
 
 ## [2.19.0] - 2024-04-11
 ### Added
