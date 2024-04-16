@@ -1,10 +1,10 @@
 # Changelog
 
-## [2.2.0] - 2024-04-15
+## [3.0.0] - 2024-04-15
 
 ### Changed
 
-- Upgraded Lula from release 0.9.1 to 0.10.0.  This new version includes a much-improved collision sphere generator and enhancements to the task-space global planner (JT-RRT), including support for full-pose targets and improved performance.
+- Upgraded Lula from release 0.9.1 to 0.10.0.  This new version includes a much-improved collision sphere generator and enhancements to the task-space global planner (JT-RRT), including support for full-pose targets and improved performance.  The global planner enhancements entail some parameter changes that break backward compatibility, as does a generalization of the kinematics API to support cases where only a subset of c-space coordinates have acceleration and/or jerk limits.
 
 ## [2.1.0] - 2023-08-22
 
