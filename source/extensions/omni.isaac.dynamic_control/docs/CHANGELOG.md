@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.3.5] - 2024-04-15
+### Changed
+- Removed the use of deprecated physX jointSolverForces
+
 ## [1.3.4] - 2024-03-07
 ### Changed
 - Deprecated the extension and removed its usage in other extensions in python
