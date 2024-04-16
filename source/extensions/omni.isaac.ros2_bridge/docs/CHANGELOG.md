@@ -1,9 +1,12 @@
 # Changelog
-## [2.19.3] - 2024-04-12
+## [2.19.4] - 2024-04-16
+### Fixed
+- Prevent ROS2 Service backend from printing unnecessary errors while waiting for service request
+
+## [2.19.3] - 2024-04-15
 ### Added
 - Unit test for jointstate publisher and subscriber
 
-## [2.19.3] - 2024-04-15
 ### Fixed
 - Fix ROS2 Service Prim service availability when resetting the simulation
 
