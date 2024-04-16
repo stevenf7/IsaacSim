@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.6.1] - 2024-04-15
+### Changed
+- Changed ecomode checkbox to persist if user checks or unchecks
+
 ## [2.6.0] - 2024-04-12
 ### Added
 - Dropdown to use internal ros2 libraries when applicable

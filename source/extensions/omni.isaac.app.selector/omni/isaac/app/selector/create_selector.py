@@ -91,6 +91,11 @@ class CreateSelectorExtension(omni.ext.IExt):
                 "--/isaac/startup/ros_bridge_extension=" + ROS_BRIDGE_EXTENSIONS[ros_bridge_extension]
             )
 
+        if user_eco_mode is None:
+            user_eco_mode = self._settings.get("/rtx/ecoMode/enabled")
+            self._settings.set(ECO_MODE_SETTING, user_eco_mode)
+        if user_eco_mode is None:
+            self._settings.set(ECO_MODE_SETTING, True)
         if user_eco_mode:
             app_extra_args.append("--/rtx/ecoMode/enabled=True")
 
