@@ -9,9 +9,10 @@ keywords = ["experience", "app", "usd"]
 
 [dependencies]
 "omni.isaac.sim.base" = {}
-"omni.kit.livestream.core" = {}
-"omni.kit.livestream.webrtc" = {}
-"omni.kit.streamsdk.plugins" = {}
+"omni.services.streamclient.webrtc" = {version = "1.3.8", exact = true}
+# "omni.kit.livestream.core" = {}
+# "omni.kit.livestream.webrtc" = {}
+# "omni.kit.streamsdk.plugins" = {}
 
 [settings]
 app.name = "Isaac-Sim"
@@ -22,15 +23,16 @@ app.fastShutdown = true
 folders = ["${app}/../exts", "${app}/../extscache", "${app}/../extsPhysics", "${app}/../extsUser"]
 
 [settings.app.livestream]
-# proto = "tcp"
+# proto = "ws"
+# allowResize = true
 outDirectory = "${data}"
 
 [settings.app.window]
 title = "Isaac Sim Headless WebRTC"
 hideUi = false
 
-width = 1700
-height = 900
+# width = 1700
+# height = 900
 drawMouse = true
 
 [settings.ngx]
