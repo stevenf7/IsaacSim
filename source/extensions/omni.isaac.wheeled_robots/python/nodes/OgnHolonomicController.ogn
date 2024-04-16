@@ -1,6 +1,6 @@
 {
     "HolonomicController": {
-        "version": 1,
+        "version": 2,
         "description": "Holonomic Controller",
         "language": "Python",
         "categories": {
@@ -41,8 +41,8 @@
                 "description": "the rotation axis of the vehicle",
                 "default": [0.0,0.0,1.0]
             },
-            "velocityCommands":{
-                "type":  "double[3]",
+            "inputVelocity":{
+                "type":  "double[3]", 
                 "description": "velocity in x and y and rotation",
                 "metadata": {
                     "uiName": "Velocity Commands for the vehicle"

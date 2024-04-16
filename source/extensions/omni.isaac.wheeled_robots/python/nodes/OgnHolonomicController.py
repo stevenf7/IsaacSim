@@ -55,7 +55,7 @@ class OgnHolonomicControllerInternalState(BaseResetNode):
 
     def custom_reset(self):
         if self.initialized:
-            self.node.get_attribute("inputs:velocityCommands").set([0, 0, 0])
+            self.node.get_attribute("inputs:inputVelocity").set([0, 0, 0])
             self.node.get_attribute("outputs:jointVelocityCommand").set([0, 0, 0])
 
 
@@ -106,7 +106,7 @@ class OgnHolonomicController:
 
                 state.initialize_controller()
 
-            joint_actions = state.forward(np.array(db.inputs.velocityCommands))
+            joint_actions = state.forward(np.array(db.inputs.inputVelocity))
 
             if joint_actions.joint_velocities is not None:
                 db.outputs.jointVelocityCommand = joint_actions.joint_velocities
