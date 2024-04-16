@@ -89,7 +89,7 @@ symbols.txt
 # petert: temp file i create for debugging
 output.txt
 
-# OVAT files 
+# OVAT files
 gcn_local.yml
 _venv/
 venv/
@@ -125,3 +125,9 @@ NvStreamer-*.etli
 
 # nodejs modules
 node_modules
+
+#container
+tools/container/report.json
+tools/container/_*
+7za
+report.json

@@ -1,0 +1,11 @@
+<project toolsVersion="6.1">
+
+  <dependency name="ovc" linkPath="packman-dependencies/ovc">
+
+    <package
+       name="omniverse_connection"
+       version="9.10.4468a496-python-linux64-release-107-4"
+    />
+
+  </dependency>
+</project>

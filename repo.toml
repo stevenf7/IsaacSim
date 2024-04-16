@@ -892,6 +892,7 @@ etm_emails = ["hmazhar@nvidia.com"]
 cpp.files.exclude = [
     "source/extensions/omni.isaac.ros_bridge/isaac_ros_messages/**",
     "source/extensions/omni.isaac.ros2_bridge/isaac_ros2_messages/**",
+    "tools/container/**",
 ]
 
 python.files.exclude = [
@@ -905,7 +906,8 @@ python.files.exclude = [
     ".local/*",
     ".nvidia-omniverse/*",
     "tools/packman/*",
-    "schemas/*"
+    "schemas/*",
+    "tools/container/**",
 ]
 
 

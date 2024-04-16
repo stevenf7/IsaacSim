@@ -1,0 +1,19 @@
+# Ignore all folders that start with _
+**/_*/
+**/~*/
+
+**/__pycache__
+.mypy_cache
+.pytest_cache
+*.log
+*.swp
+*.pyc
+*.dmp
+
+\.vs/
+.vscode/
+
+.idea/
+
+**/logall*.txt
+

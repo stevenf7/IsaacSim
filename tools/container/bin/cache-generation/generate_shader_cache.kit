@@ -1,0 +1,52 @@
+[package]
+title = "Omniverse App Cache Warmup"
+version = "1.0.0"
+
+[dependencies]
+# Extend the default "${APP_IMPORT_PATH}.kit" experience, located in the app's "${app}/../apps" folder:
+"${APP_IMPORT_PATH}" = {}
+# Download and enable the Streaming Manager extension:
+"omni.services.streaming.manager" = {}
+
+# [settings.app.exts]
+# folders."++" = [
+#     # Omniverse App cache generation base configuration:
+#     "${app}/../exts",
+#     "${app}/../extscache",
+#     "${app}/../apps",
+# ]
+
+[settings]
+# Application behavior settings:
+app.file.ignoreUnsavedOnExit = true
+app.hangDetector.enabled = false
+app.quitAfter = 10
+app.settings.persistent = false
+app.settings.loadUserConfig = false
+crashreporter.enabled = false
+crashreporter.preserveDump = false
+crashreporter.skipOldDumpUpload = true
+structuredlog.enable = false
+app.extensions.excluded = [
+    # Omniverse App cache generation base configuration:
+    "omni.kit.splash",
+    "omni.kit.splash.carousel",
+    "omni.kit.window.splash",
+    "omni.kit.window.modifier.titlebar",
+    "omni.kit.window.privacy",
+    "omni.curve.manipulator",
+    "omni.kit.pointclouds",
+    "omni.kit.browser.asset",
+    "omni.paint.system.bundle",
+    "omni.kit.manipulator.prim",
+]
+
+# Content settings:
+app.content.emptyStageOnStart = true
+"omni.kit.plugin".syncUsdLoads = true
+
+# Rendering settings:
+app.asyncRendering = false
+renderer.multiGpu.enabled = false
+rtx.hydra.materialSyncLoads = true
+rtx.materialDb.syncLoads = true

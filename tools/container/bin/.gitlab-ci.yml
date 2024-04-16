@@ -1,0 +1,6 @@
+---
+
+include:
+  - project: "omniverse/farm/devops/ci/gitlab/git"
+    ref: main
+    file: "/pipelines/tag_version.yml"

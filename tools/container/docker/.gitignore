@@ -1,0 +1,15 @@
+# Ignore all folders that start with _
+**/_*/
+
+**/package-links/
+**/__pycache__
+*.log
+*.swp
+*.pyc
+
+*.tar
+__most_recent_image_*
+
+dump.rdb
+logall.txt
+
