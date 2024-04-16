@@ -1,5 +1,9 @@
 # Changelog
-## [2.0.0] - 2024-3-12
+## [2.1.0] - 2024-04-15
+### Changed
+- Changed desired velocity input name from velocityCommands to inputVelocity to fix a type not match issue
+
+## [2.0.0] - 2024-03-12
 ### Changed
 - Extension refactored into separate components.  See omni.isaac.wheeled_robots.ui for UI components of the extension.
 

@@ -98,7 +98,7 @@ class TestHolonomicControllerOgn(ogts.OmniGraphTestCase):
                     ("XVelocity.inputs:value", "VelocityCommands.inputs:x"),
                     ("YVelocity.inputs:value", "VelocityCommands.inputs:y"),
                     ("Rotation.inputs:value", "VelocityCommands.inputs:z"),
-                    ("VelocityCommands.outputs:tuple", "HolonomicController.inputs:velocityCommands"),
+                    ("VelocityCommands.outputs:tuple", "HolonomicController.inputs:inputVelocity"),
                 ],
             },
         )
@@ -144,7 +144,7 @@ class TestHolonomicControllerOgn(ogts.OmniGraphTestCase):
                         [[0, 0, 0, 1], [0.866, 0, 0, -0.5], [0.866, 0, 0, 0.5]],
                     ),
                     ("HolonomicController.inputs:mecanumAngles", [90, 90, 90]),
-                    ("HolonomicController.inputs:velocityCommands", [1.0, 1.0, 0.1]),
+                    ("HolonomicController.inputs:inputVelocity", [1.0, 1.0, 0.1]),
                 ],
                 og.Controller.Keys.CONNECT: [
                     ("OnPlaybackTick.outputs:tick", "HolonomicController.inputs:execIn"),
