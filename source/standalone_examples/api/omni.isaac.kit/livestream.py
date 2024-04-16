@@ -32,8 +32,11 @@ kit.set_setting("/app/livestream/proto", "ws")
 kit.set_setting("/ngx/enabled", False)
 
 # Note: Only one livestream extension can be enabled at a time
+
 # Enable Native Livestream extension
 # Default App: Streaming Client from the Omniverse Launcher
+enable_extension("omni.kit.streamsdk.plugins-3.2.1")
+enable_extension("omni.kit.livestream.core-3.2.0")
 enable_extension("omni.kit.livestream.native")
 
 # Enable WebRTC Livestream extension
