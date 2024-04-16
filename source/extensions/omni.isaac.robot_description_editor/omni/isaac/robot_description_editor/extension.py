@@ -546,8 +546,8 @@ class Extension(omni.ext.IExt):
         title = EXTENSION_NAME
         doc_link = "https://docs.omniverse.nvidia.com/isaacsim/latest/advanced_tutorials/tutorial_motion_generation_robot_description_editor.html"
 
-        overview = "This utility is used to help generate a Lula robot_description.yaml file required to use Lula-based algorithms like RmpFlow, RRT, and Lula Kinematics.  "
-        overview += "A Lula robot_description file contains a collision sphere representation of the robot that is used for collision avoidance, and information that is required to interpret the robot URDF.\n\n"
+        overview = "This utility is used to help generate a Lula Robot Description YAML file required to use Lula-based algorithms like RmpFlow, RRT, and Lula Kinematics, or to generate an XRDF file for use with Isaac cuMotion or future releases of Lula. "
+        overview += "Both file types contain a collision sphere representation of the robot that is used for collision avoidance, and information that is required to interpret the robot URDF.\n\n"
 
         overview += (
             "To begin using this editor, load a robot USD file onto the stage and press the 'Play' button.  In the 'Selection Panel', select your robot from the 'Select Articulation' drop-down menu.  "
@@ -555,12 +555,12 @@ class Extension(omni.ext.IExt):
         )
 
         overview += (
-            "Command Panel:\nIn the Command Panel, the user may select the default positions of robot joints and choose a subset of joints that are considered 'Active Joints'. "
-            + "'Active Joints' are considered by Lula to be directly controllable, while 'Fixed Joints' are assumed to never move."
-            + "The default positions that 'Active Joints' are set to are used by Lula algorithms to resolve null-space behavior.  For example, RmpFlow is typically configured to control"
+            "Joint Properties Panel:\nIn the Joint Properties Panel, the user may select the default positions of robot joints and choose a subset of joints that are considered 'Active Joints'. "
+            + "'Active Joints' are considered to be directly controllable, while 'Fixed Joints' are assumed to never move. "
+            + "The default positions that 'Active Joints' are set to are used by Lula algorithms to resolve null-space behavior.  For example, RmpFlow is typically configured to control "
             + "only the joints in a robot arm, and assume the gripper to be in a fixed position.  While moving the gripper to a target, it will choose a path that moves the robot close to"
             + " the default 'Active Joints' configuration.  By default, all joints are marked as 'Fixed Joints', which will cause Lula not to control the robot at all.  The user must determine"
-            + "a set of joints that should be considered 'Active'.\n\n"
+            + "a set of joints that should be considered 'Active'.  Maximum jerk and accelerations are required to be specified for each active joint in the robot.\n\n"
         )
 
         overview += (
@@ -571,7 +571,11 @@ class Extension(omni.ext.IExt):
             + " the volume of the robot. \n\n"
         )
 
-        overview += "Importing and Exporting:\nThe user may import a pre-existing robot_description YAML file in the 'Import Robot Description File' panel.  And the user may export their work to a yaml file using the `Export Robot Description File` panel."
+        overview += (
+            "Importing and Exporting:\nLula robot description YAML files and cuMotion XRDF files are both supported file types for importing and exporting data from the Robot Description Editor. "
+            + "The Robot Description Editor does not represent every possible field in an XRDF file, and so when exporting to an existing XRDF file path, "
+            + "the user will have an option to pull data from the existing file that should not be overwritten by leaving the default setting to 'Merge With Existing XRDF'."
+        )
 
         setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
 
@@ -1150,7 +1154,7 @@ class Extension(omni.ext.IExt):
                     "folder_button_title": "Select XRDF",
                 }
 
-                frame = CollapsableFrame("Export to Curobo XRDF", collapsed=True)
+                frame = CollapsableFrame("Export to cuMotion XRDF", collapsed=True)
                 with frame:
                     with ui.VStack(style=get_style(), spacing=5, height=0):
                         self._models["xrdf_output_file"] = str_builder(**kwargs)
@@ -1237,7 +1241,7 @@ class Extension(omni.ext.IExt):
                         )
                         self._models["robot_description_import_btn"].enabled = False
 
-                frame = CollapsableFrame("Import Curobo XRDF", collapsed=True)
+                frame = CollapsableFrame("Import cuMotion XRDF", collapsed=True)
                 with frame:
                     with ui.VStack(style=get_style(), spacing=5, height=0):
                         kwargs = {
@@ -1246,7 +1250,7 @@ class Extension(omni.ext.IExt):
                             "tooltip": "Click the Folder Icon to Set Filepath",
                             "use_folder_picker": True,
                             "item_filter_fn": on_filter_xrdf_item,
-                            "folder_dialog_title": "Select Curobo XRDF YAML file, clearing all spheres",
+                            "folder_dialog_title": "Select cuMotion XRDF file, clearing all spheres",
                             "folder_button_title": "Select YAML",
                         }
                         self._models["xrdf_input_file"] = str_builder(**kwargs)
