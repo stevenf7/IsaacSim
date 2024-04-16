@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.2] - 2023-04-15
+### Fixed
+- Error when zero frames were collected
+- Test failure
+
 ## [1.4.1] - 2023-03-25
 ### Fixed
 - Frametime collector skips frametime collection if start time is `None`

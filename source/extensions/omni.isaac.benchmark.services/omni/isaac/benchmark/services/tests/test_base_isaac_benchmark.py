@@ -19,6 +19,6 @@ class TestBaseIsaacBenchmarkAsync(BaseIsaacBenchmarkAsync):
         pass
 
     async def test_base_isaac_benchmark(self):
-
+        self.benchmark_name = "test_base_isaac_benchmark"
         self.set_phase("loading")
         await self.store_measurements()
