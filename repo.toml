@@ -820,7 +820,6 @@ exts.include = [
     "omni.isaac.ui_template",
     "omni.isaac.conveyor",
     "omni.isaac.ml_archive",
-    "omni.isaac.unit_converter",
     "omni.isaac.core",
     "omni.isaac.motion_generation",
     "omni.isaac.universal_robots",

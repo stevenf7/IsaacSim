@@ -238,7 +238,6 @@ function include_extensions()
     include ("source/extensions/omni.isaac.utils")
     include ("source/extensions/omni.isaac.ui")
     include ("source/extensions/omni.isaac.ui_template")
-    include ("source/extensions/omni.isaac.unit_converter")
     include ("source/extensions/omni.isaac.vscode")
     include ("source/extensions/omni.isaac.jupyter_notebook")
 

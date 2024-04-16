@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.7"
+version = "0.1.8"
 category = "Other"
 title = "Distance Unit Converter"
 description="Utility tool to change the USD stage units per meter parameter. Converts most linear attributes that are bound by the units per meter stage attribute."
@@ -15,6 +15,10 @@ readme = "docs/README.md"
 icon = "data/icon.png"
 preview_image = "data/preview.png"
 writeTarget.kit = true
+
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 4.0.0. Replaced by omni.usd.metrics_assembler"
+
 
 [dependencies]
 "omni.isaac.ui" = {}

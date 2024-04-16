@@ -17,7 +17,6 @@ changelog_text = [f"### Fixed", f"- onclick_fn warning when creating UI"]
 
 extensions = [
     "omni.isaac.utils",
-    "omni.isaac.unit_converter",
     "omni.isaac.ui_template",
     "omni.isaac.synthetic_recorder",
     "omni.isaac.sensor",

@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.8] - 2023-09-11
+
+### Deprecated
+- Add Deprecation Warning
+
 ## [0.1.7] - 2023-09-11
 ### Fixed
 - UsdLux api change from Light to LightApi
