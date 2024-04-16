@@ -1,6 +1,10 @@
 # Changelog
 
 
+## [3.9.0] - 2023-04-16
+### Added
+- Friction reporting API
+
 ## [3.8.2] - 2023-04-15
 ### Fixed
 - Carb plugin used for crash metadata

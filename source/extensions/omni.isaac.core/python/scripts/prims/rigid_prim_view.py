@@ -2192,3 +2192,46 @@ class RigidPrimView(XFormPrimView):
                 "No filter is specified for get_contact_force_data. Initialize the RigidPrimView with the contact_filter_prim_paths_expr and specify a list of filters."
             )
             return None
+
+    def get_friction_data(
+        self,
+        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        clone: bool = True,
+        dt: float = 1.0,
+    ) -> Tuple[
+        Union[np.ndarray, torch.Tensor, wp.indexedarray],
+        Union[np.ndarray, torch.Tensor, wp.indexedarray],
+        Union[np.ndarray, torch.Tensor, wp.indexedarray],
+        Union[np.ndarray, torch.Tensor, wp.indexedarray],
+    ]:
+        """
+        Gets friction data between the prims in the view and the filter prims. Specifically, this method provides frictional contact forces,
+        and points. The data in reported for number of anchor points that includes tangential forces in a single tangent direction to contact normal.
+        Given to the dynamic nature of collision between bodies, this method will provide buffers of friction data arranged sequentially for each pair.
+        The starting index and the number of contact data points for each pair in this stream can be realized from pair_contacts_start_indices,
+        and pair_contacts_count tensors. They both have a dimension of (self.num_shapes, self.num_filters) where filter_count is determined
+        according to the filter_paths_expr parameter.
+
+        Args:
+            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indicies to specify which prims
+                                                                                 to query. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
+            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            dt (float): time step multiplier to convert the underlying impulses to forces. If the default value is used then the forces are in fact contact impulses
+
+        Returns:
+            Tuple[Union[np.ndarray, torch.Tensor, wp.indexedarray], Union[np.ndarray, torch.Tensor, wp.indexedarray],
+                Union[np.ndarray, torch.Tensor, wp.indexedarray], Union[np.ndarray, torch.Tensor, wp.indexedarray]]:
+                A set of buffers for tangential forces per patch (at number of anchor points, each in a single directions)
+                with shape (max_contact_count, 3), points with shape (max_contact_count, 3),
+                as well as two tensors with shape (M, self.num_filters) to indicate the starting index and the number of
+                contact data points per pair in the aforementioned buffers.
+        """
+        if len(self._contact_filter_prim_paths_expr) != 0:
+            return self._contact_view.get_friction_data(indices, clone, dt)
+        else:
+            carb.log_warn(
+                "No filter is specified for get_friction_data. Initialize the RigidPrimView with the contact_filter_prim_paths_expr and specify a list of filters."
+            )
+            return None

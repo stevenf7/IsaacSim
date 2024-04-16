@@ -16,11 +16,12 @@ import torch
 import warp as wp
 from omni.isaac.core import World
 from omni.isaac.core.objects import DynamicCuboid
+from omni.isaac.core.prims.geometry_prim_view import GeometryPrimView
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.core.prims.rigid_prim_view import RigidPrimView
 from omni.isaac.core.utils.numpy.rotations import euler_angles_to_quats as euler_angles_to_quats_numpy
-from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
+from omni.isaac.core.utils.stage import create_new_stage_async, get_current_stage, update_stage_async
 from omni.isaac.core.utils.torch.rotations import euler_angles_to_quats as euler_angles_to_quats_torch
 
 # NOTE:
@@ -28,6 +29,7 @@ from omni.isaac.core.utils.torch.rotations import euler_angles_to_quats as euler
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 from omni.isaac.core.utils.types import DynamicsViewState
 from omni.isaac.core.utils.warp.rotations import euler_angles_to_quats as euler_angles_to_quats_warp
+from omni.physx.scripts import physicsUtils
 
 default_physics_material = {"static_friction": 1.0, "dynamic_friction": 1.0, "restitution": 0.0}
 
@@ -176,11 +178,12 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
         self.top_cube_height = self.cube_height + 1.1
         World.clear_instance()
         await create_new_stage_async()
+        self.g = -10.0
         self._my_world = World(sim_params=self._sim_params, backend=self._test_cfg["backend"], device=self._device)
         await self._my_world.initialize_simulation_context_async()
         await update_stage_async()
         await omni.kit.app.get_app().next_update_async()
-        self._my_world._physics_context.set_gravity(-10)
+        self._my_world._physics_context.set_gravity(self.g)
         await omni.kit.app.get_app().next_update_async()
         self._my_world.scene.add_default_ground_plane()
 
@@ -219,6 +222,51 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
         self._top_box_view.set_sleep_thresholds([0, 0, 0])
         self._my_world.scene.add(self._box_view)
         self._my_world.scene.add(self._top_box_view)
+
+    async def _setup_friction_scene(self):
+        self.cube_height = 0.51
+        self.top_cube_height = self.cube_height + 1.1
+        World.clear_instance()
+        await create_new_stage_async()
+        self.g = -10.0
+        self._sim_params["dt"] = 1.0 / 60
+        self._sim_params["gravity"] = [0.0, 0.0, self.g]
+        self._sim_params["default_physics_material"] = {
+            "static_friction": 0.5,
+            "dynamic_friction": 0.5,
+            "restitution": 0.0,
+        }
+        self._my_world = World(sim_params=self._sim_params, backend=self._test_cfg["backend"], device=self._device)
+        await self._my_world.initialize_simulation_context_async()
+        await update_stage_async()
+        await omni.kit.app.get_app().next_update_async()
+        self._my_world.scene.add_default_ground_plane()
+        stage = get_current_stage()
+        for i in range(3):
+            path = f"/World/Box_{i+1}"
+            DynamicCuboid(prim_path=path, name=f"box_{i}", size=1.0, color=np.array([0.5, 0, 0]), mass=1.0)
+            physicsUtils.add_physics_material_to_prim(
+                stage,
+                stage.GetPrimAtPath(path),
+                str(self._my_world.get_physics_context().get_current_physics_scene_prim().GetPath())
+                + "/defaultMaterial",
+            )
+
+        self._geom_view = GeometryPrimView(prim_paths_expr="/World/Box_*")
+
+        # a view to receive contacts between the bottom boxes and top boxes
+        self._box_view = RigidPrimView(
+            prim_paths_expr="/World/Box_*",
+            name="box_view",
+            positions=self._array_container(
+                [[10.0, 10.0, self.cube_height], [10.0, 20.0, self.cube_height], [10.0, 30.0, self.cube_height]]
+            ),
+            contact_filter_prim_paths_expr=["/World/defaultGroundPlane/GroundPlane/CollisionPlane"],
+            max_contact_count=3 * 10,  # 3 box each with maximum of 20 potential contacts
+            prepare_contact_sensors=True,
+            disable_stablization=True,
+        )
+        self._my_world.scene.add(self._box_view)
 
     async def _runner(self):
         await self._setup_scene()
@@ -264,6 +312,13 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
 
             await self._setup_contacts_scene()
             await self.contact_force_test()
+
+            await self._setup_friction_scene()
+            await self.friction_force_test(force_multiplier=0.5)
+            await self._setup_friction_scene()
+            await self.friction_force_test(force_multiplier=1.0)
+            await self._setup_friction_scene()
+            await self.friction_force_test(force_multiplier=2.0)
 
         # test USD paths
         if self._device == "cpu":
@@ -396,6 +451,115 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
                 ).all()
             )
 
+    async def friction_force_test(self, force_multiplier):
+        print("friction force test with external force f= %.3f  * (mu * m * g)" % force_multiplier)
+        await self._my_world.reset_async()
+        await omni.kit.app.get_app().next_update_async()
+        indices = [1, 2] if self._test_cfg["indexed"] else None
+        view_size = 2 if self._test_cfg["indexed"] else 3
+        for i in range(60):
+            self._my_world.step_async()
+            await omni.kit.app.get_app().next_update_async()
+
+        # print("masses = \n", self._top_box_view.get_masses())
+        forces = np.array([[self.g, 0, 0], [self.g, 0, 0], [self.g, 0, 0]]) * force_multiplier
+        forces = self._array_container(forces.tolist() if indices is None else forces[indices].tolist())
+        self._box_view.apply_forces(forces, indices)
+
+        self._my_world.step_async()
+        await omni.kit.app.get_app().next_update_async()
+
+        states = self._box_view.get_current_dynamic_state()
+        (
+            forces,
+            points,
+            pair_contacts_count,
+            pair_contacts_start_indices,
+        ) = self._box_view.get_friction_data(indices, dt=self._sim_params["dt"])
+        # print(
+        #     "forces= \n",
+        #     forces,
+        #     "\npair_contacts_count= \n",
+        #     pair_contacts_count,
+        #     "\npair_contacts_start_indices= \n",
+        #     pair_contacts_start_indices,
+        # )
+        if self._test_cfg["backend"] == "torch":
+            pair_contacts_count = pair_contacts_count.cpu()
+            pair_contacts_start_indices = pair_contacts_start_indices.cpu()
+            forces = forces.cpu()
+            points = points.cpu()
+
+        if self._test_cfg["backend"] != "numpy":
+            pair_contacts_count = pair_contacts_count.numpy()
+            pair_contacts_start_indices = pair_contacts_start_indices.numpy()
+            forces = forces.numpy()
+            points = points.numpy()
+        force_aggregate = np.zeros((view_size, pair_contacts_count.shape[1], 3))  # shape # view_size x num_filters x 3
+        effective_position = np.zeros((view_size, pair_contacts_count.shape[1], 3))
+        for i in range(pair_contacts_count.shape[0]):
+            for j in range(pair_contacts_count.shape[1]):
+                start_idx = pair_contacts_start_indices[i, j]
+                count = pair_contacts_count[i, j]
+                if count > 0:
+                    pair_forces = forces[start_idx : start_idx + count]  # all the pair forces, shape [count, 3]
+                    force_aggregate[i, j] = np.sum(pair_forces, axis=0)  # sum across anchor points and contact points
+                    effective_position[i, j] = np.sum(points[start_idx : start_idx + count], axis=0) / count
+        m = 1
+        F_ext = -force_multiplier * self.g * m
+        F_t_max = -self._sim_params["default_physics_material"]["static_friction"] * self.g * m
+        friction_force = min(F_ext, F_t_max)
+        # print(F_ext,F_t_max,friction_force)
+        if self._test_cfg["backend"] == "warp":
+            # position test
+            self.assertTrue(
+                self.isclose(
+                    states.positions.numpy()[indices],
+                    np.array([[10.0, 10, 0.5], [10.0, 20.0, 0.5], [10.0, 30.0, 0.5]])[indices],
+                    atol=1.0e-2,
+                ).all()
+            )
+            self.assertTrue(
+                self.isclose(
+                    effective_position.squeeze(),
+                    np.array([[10.0, 10, 0.0], [10.0, 20.0, 0.0], [10.0, 30.0, 0.0]])[indices],
+                    atol=1.0e-2,
+                ).all()
+            )
+            # similar for the force aggregate
+            self.assertTrue(
+                self.isclose(
+                    force_aggregate,  # tangential compoenent
+                    np.array([[friction_force, 0, 0], [friction_force, 0, 0], [friction_force, 0, 0]])[indices],
+                    atol=2.0e-1,
+                ).all()
+            )
+        else:
+            # position test
+            self.assertTrue(
+                self.isclose(
+                    states.positions[indices],
+                    self._array_container([[10.0, 10, 0.5], [10.0, 20.0, 0.5], [10.0, 30.0, 0.5]])[indices].squeeze(),
+                    atol=1.0e-2,
+                ).all()
+            )
+            self.assertTrue(
+                self.isclose(
+                    self._array_container(effective_position).squeeze(),
+                    self._array_container([[10.0, 10, 0.0], [10.0, 20.0, 0.0], [10.0, 30.0, 0.0]])[indices].squeeze(),
+                    atol=1.0e-2,
+                ).all()
+            )
+            self.assertTrue(
+                self.isclose(
+                    self._array_container(force_aggregate).squeeze(),  # tangential compoenent
+                    self._array_container([[friction_force, 0, 0], [friction_force, 0, 0], [friction_force, 0, 0]])[
+                        indices
+                    ].squeeze(),
+                    atol=2.0e-1,
+                ).all()
+            )
+
     async def contact_force_test(self):
         print("contact force test")
         wp.config.verify_cuda = True
@@ -497,7 +661,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             self.assertTrue(
                 self.isclose(
                     forces_matrix.numpy()[:, 0, :],
-                    np.array([[0, 0, -10], [0, 0, -10], [0, 0, -10]])[indices],
+                    np.array([[0, 0, self.g], [0, 0, self.g], [0, 0, self.g]])[indices],
                     atol=2.0e-1,
                 ).all()
             )
@@ -505,7 +669,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             self.assertTrue(
                 self.isclose(
                     force_aggregate[:, 0, :],
-                    np.array([[0, 0, -10], [0, 0, -10], [0, 0, -10]])[indices],
+                    np.array([[0, 0, self.g], [0, 0, self.g], [0, 0, self.g]])[indices],
                     atol=2.0e-1,
                 ).all()
             )
@@ -513,7 +677,9 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             # force test : net forces on box
             self.assertTrue(
                 self.isclose(
-                    net_forces.numpy(), np.array([[0, 0, 10], [0, 0, 10], [0, 0, 10]])[indices], atol=2.0e-1
+                    net_forces.numpy(),
+                    np.array([[0, 0, -self.g], [0, 0, -self.g], [0, 0, -self.g]])[indices],
+                    atol=2.0e-1,
                 ).all()
             )
             self.assertTrue(
@@ -567,14 +733,14 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             self.assertTrue(
                 self.isclose(
                     forces_matrix[:, 0, :].squeeze(),
-                    self._array_container([[0, 0, -10], [0, 0, -10], [0, 0, -10]])[indices].squeeze(),
+                    self._array_container([[0, 0, self.g], [0, 0, self.g], [0, 0, self.g]])[indices].squeeze(),
                     atol=2.0e-1,
                 ).all()
             )
             self.assertTrue(
                 self.isclose(
                     self._array_container(force_aggregate[:, 0, :]).squeeze(),
-                    self._array_container([[0, 0, -10], [0, 0, -10], [0, 0, -10]])[indices].squeeze(),
+                    self._array_container([[0, 0, self.g], [0, 0, self.g], [0, 0, self.g]])[indices].squeeze(),
                     atol=2.0e-1,
                 ).all()
             )
@@ -583,14 +749,14 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             self.assertTrue(
                 self.isclose(
                     net_forces.squeeze(),
-                    self._array_container([[0, 0, 10], [0, 0, 10], [0, 0, 10]])[indices].squeeze(),
+                    self._array_container([[0, 0, -self.g], [0, 0, -self.g], [0, 0, -self.g]])[indices].squeeze(),
                     atol=2.0e-1,
                 ).all()
             )
             self.assertTrue(
                 self.isclose(
                     top_net_forces.squeeze(),
-                    self._array_container([[0, 0, 10], [0, 0, 10], [0, 0, 10]])[indices].squeeze(),
+                    self._array_container([[0, 0, -self.g], [0, 0, -self.g], [0, 0, -self.g]])[indices].squeeze(),
                     atol=2.0e-1,
                 ).all()
             )
