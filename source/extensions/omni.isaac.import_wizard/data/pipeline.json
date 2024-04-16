@@ -324,9 +324,9 @@
         "App Name": "Occupancy Map",
         "Extension":"omni.isaac.occupancy_map",
         "Window": 1,
-        "Summary":"Create and edit occupancy maps",
-        "Basic Instructions":"",
-        "Advanced Instructions":"",
+        "Summary":"Generate a 2D binary occupancy map flattened from a defined 3D space in a scene",
+        "Basic Instructions":"To start creating an occupancy map, load a USD scene and open the occupancy map generation tool by going to Isaac Utils -> Occupancy Map. \n\nNext, set the location of origin and the upper and lower bounds of the bounding area. Ensure to set a height difference between upper and lower bounds. You will notice a bounding box will appear in the stage. You can also select multiple objects in the scene and use the CENTER TO SELECTION and BOUND SELECTION buttons to center the map origin and define the bounds respective to the selected objects. \n\nClick CALCULATE followed by VISUALIZE IMAGE. This will open a popup window showing the generated occupancy map and letting you save the map as a png file.",
+        "Advanced Instructions":"You have the option to enable or disable the use of PhysX Collision Geometry when generating the map. \n\nIf this setting is enabled, collision approximations that are set within the scene will be used. If the setting is disabled, the original USD meshes are used when generating the map.",
         "Menu": "Isaac Utils -> Occupancy Map",
         "Useful Links":{
             "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/features/mapping/ext_omni_isaac_occupancy_map.html",
