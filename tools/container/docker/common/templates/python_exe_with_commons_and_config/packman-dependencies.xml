@@ -1,0 +1,10 @@
+<project toolsVersion="6.1">
+
+  <dependency name="common">
+    <package
+       name="py-common"
+       version="996c6ba2b85776d7fe33339dab476f868f0eb332"
+    />
+  </dependency>
+
+</project>

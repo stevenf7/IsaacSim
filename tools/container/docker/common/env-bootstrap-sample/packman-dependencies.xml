@@ -1,0 +1,25 @@
+<project toolsVersion="6.1">
+
+  <dependency name="ovc">
+
+    <package
+       name="omniverse_connection"
+       version="9.10.4468a496-python-linux64-release-107-4"
+       platforms="linux-x86_64"
+    />
+
+  </dependency>
+
+
+   <!--
+  <dependency name="omnitools">
+    <package
+       name="omnitools"
+       version="1ca4547ebffc74c1047b9783344eac5d01b4faae"
+    />
+    <source
+       path="../../omnitools"
+    />
+  </dependency>
+    -->
+</project>

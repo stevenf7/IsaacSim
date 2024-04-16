@@ -1,0 +1,15 @@
+<project toolsVersion="5.0">
+  <dependency name="python" linkPath="package-links/python">
+    <package name="python" version="3.6.4-windows-x64-1" platforms="win"/>
+  </dependency>
+  <dependency name="docker" linkPath="package-links/docker">
+    <package name="docker-client" version="18.02.0-ce_windows" platforms="win"/>
+    <package name="docker-client" version="17.12.1-ce-7390fc6_linux" platforms="linux"/>
+  </dependency>
+  <dependency name="docker_py" linkPath="package-links/docker-py">
+    <package name="docker-py3.6" version="3.7.0"/>
+  </dependency>
+  <dependency name="omniverse_deploy_modules" linkPath="package-links/site-packages">
+    <package name="omniverse-deploy-modules-python3.6-win" version="1.2" platforms="win"/>
+  </dependency>
+</project>
