@@ -1,4 +1,7 @@
 # Changelog
+## [1.17.1] - 2024-04-12
+### Added
+- Unit test for jointstate publisher and subscriber
 
 ## [1.17.0] - 2024-04-11
 ### Added

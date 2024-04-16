@@ -14,6 +14,7 @@ import numpy as np
 import omni
 from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.nucleus import get_assets_root_path_async
+from pxr import PhysxSchema, UsdGeom, UsdPhysics
 
 
 def set_translate(prim, new_loc):
@@ -186,3 +187,35 @@ def fields_to_dtype(fields, point_step):
         offset += 1
 
     return np_dtype_list
+
+
+def set_joint_drive_parameters(joint_path, joint_type, drive_type, target_value, stiffness=None, damping=None):
+    stage = omni.usd.get_context().get_stage()
+    drive = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(joint_path), joint_type)
+
+    if not drive:
+        # if no drive exists, return false
+        return False
+
+    if drive_type == "position":
+        if not drive.GetTargetPositionAttr():
+            drive.CreateTargetPositionAttr(target_value)
+        else:
+            drive.GetTargetPositionAttr().Set(target_value)
+    elif drive_type == "velocity":
+        if not drive.GetTargetVelocityAttr():
+            drive.CreateTargetVelocityAttr(target_value)
+        else:
+            drive.GetTargetVelocityAttr().Set(target_value)
+
+    if stiffness is not None:
+        if not drive.GetStiffnessAttr():
+            drive.CreateStiffnessAttr(stiffness)
+        else:
+            drive.GetStiffnessAttr().Set(stiffness)
+
+    if damping is not None:
+        if not drive.GetDampingAttr():
+            drive.CreateDampingAttr(damping)
+        else:
+            drive.GetDampingAttr().Set(damping)
