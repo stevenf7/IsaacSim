@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -135,13 +135,14 @@ void ContactManager::onPhysicsStep(const float& currentTime, const float& timeEl
 
     const omni::physx::ContactEventHeader* contactEventHeadersBuffer = nullptr;
     const omni::physx::ContactData* contactDataBuffer = nullptr;
+    const ::omni::physx::FrictionAnchor* frictionAnchorData = nullptr;
     uint32_t numContactData = 0;
     uint32_t numContactHeaders = 0;
-
+    uint32_t numFrictionAnchorData = 0;
     {
         CARB_PROFILE_ZONE(0, "Contact Sensor manager - Get Data");
-        numContactHeaders = carb::getCachedInterface<omni::physx::IPhysxSimulation>()->getContactReport(
-            &contactEventHeadersBuffer, &contactDataBuffer, numContactData);
+        numContactHeaders = carb::getCachedInterface<omni::physx::IPhysxSimulation>()->getFullContactReport(
+            &contactEventHeadersBuffer, &contactDataBuffer, numContactData, &frictionAnchorData, numFrictionAnchorData);
     }
     uint32_t data_idx = 0;
     {
