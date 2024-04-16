@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.2.0] - 2024-04-15
+
+### Changed
+
+- Upgraded Lula from release 0.9.1 to 0.10.0.  This new version includes a much-improved collision sphere generator and enhancements to the task-space global planner (JT-RRT), including support for full-pose targets and improved performance.
+
 ## [2.1.0] - 2023-08-22
 
 ### Changed
