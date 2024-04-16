@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.6.2] - 2024-04-16
+### Fixed
+- Working directory for wrapped gnome-terminal called using x-terminal-emulator
+
 ## [2.6.1] - 2024-04-15
 ### Changed
 - Changed ecomode checkbox to persist if user checks or unchecks

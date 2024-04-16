@@ -734,7 +734,10 @@ class SelectorWindow:
                 carb.log_warn("Could not open terminal.")
         else:
             try:
-                subprocess.Popen(["x-terminal-emulator", f"--working-directory={os.path.abspath(app_folder)}"])
+                subprocess.Popen(
+                    ["x-terminal-emulator", f"--working-directory={os.path.abspath(app_folder)}"],
+                    cwd=os.path.abspath(app_folder),
+                )
             except OSError:
                 carb.log_warn("Could not open terminal.")
 
