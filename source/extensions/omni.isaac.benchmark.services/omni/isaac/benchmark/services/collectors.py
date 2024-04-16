@@ -74,7 +74,9 @@ class IsaacUpdateFrametimeCollector:
 
         # drop the first frame since the interval approach doesn't work for
         # the render frame
-        self.render_frametimes_ms.pop(0)
-        self.gpu_frametimes_ms.pop(0)
+        if len(self.render_frametimes_ms) > 0:
+            self.render_frametimes_ms.pop(0)
+        if len(self.gpu_frametimes_ms) > 0:
+            self.gpu_frametimes_ms.pop(0)
 
         return self.render_frametimes_ms, self.gpu_frametimes_ms
