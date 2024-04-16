@@ -1,4 +1,8 @@
 # Changelog
+## [2.3.1] - 2024-04-15
+### Changed
+- Update text to say cuMotion instead of Curobo and update Information Panel docs.
+
 ## [2.3.0] - 2024-03-27
 ### Add
 - Add support for importing and exporting Curobo XRDF files
