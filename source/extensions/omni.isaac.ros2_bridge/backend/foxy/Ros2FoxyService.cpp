@@ -96,11 +96,9 @@ bool Ros2ServiceFoxy::spin(void* req_message)
         }
         rc = rcl_wait(&wait_set, 0);
         // CARB_LOG_WARN_ONCE("Subscriber created, check topic name and message type if not active");
-        if (rc != RCL_RET_OK)
+        if (rc != RCL_RET_OK && rc != RCL_RET_TIMEOUT)
         {
-            // This keeps printing an error if the service is not active.
-            // Ideally only want to notify user once, when the subscription is created
-            RCL_WARN_MSG(spin, rcl_wait); // TODO: CARB_LOG_WARN_ONCE
+            RCL_WARN_MSG(spin, rcl_wait);
             return false;
         }
         if (wait_set.services[0])
