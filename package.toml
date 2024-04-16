@@ -112,10 +112,6 @@ files_exclude = [
 
 [isaac-sim-standalone.windows-x86_64]
 files = [
-    # WAR: repo_fileutils fails to package folder starting with dot on windows unless specified explicitly. The reason is that
-    # python's std glob module doesn't support finding them. Fixing that turned out to be quite hard.
-    # Isaac Sim: This doesn't exist in non launcher versions of kit sdk package
-    ["kit/exts/omni.kit.pip_archive/pip_prebundle/numpy/.libs"],
     ["exts/omni.pip.compute/pip_prebundle/scipy/_lib"],
     # ["../../docs/isaac_sim/latest/**", "docs/py/"] # windows ext api docs
 ]
