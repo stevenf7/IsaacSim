@@ -22,9 +22,9 @@ include:
   #  file: 'modules/benchmarks.yml'
   ref: release/v2
   file: /ci/detect.yml
-# - project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
-#   file: 'modules/stage-build.yml'
 - project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
+  # - project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
+  #   file: 'modules/stage-build.yml'
   # - project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
   #   file: 'modules/etm.yml'
   file: 'modules/stage-deploy.yml'
@@ -56,7 +56,22 @@ default:
     - stuck_or_timeout_failure
     - scheduler_failure
     - unknown_failure
-  interruptible: true
+
+workflow:
+  auto_cancel:
+    on_new_commit: interruptible
+    on_job_failure: all
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    auto_cancel:
+      on_new_commit: conservative
+  - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_PROTECTED
+    auto_cancel:
+      on_new_commit: none
+  - if: $CI_PIPELINE_SOURCE == "schedule" && $CI_COMMIT_REF_PROTECTED
+    auto_cancel:
+      on_new_commit: none
+
 
 
 # ==============================================================================================================
@@ -110,6 +125,7 @@ variables:
 .check-common:
   stage: check
   timeout: 20 minutes
+  interruptible: true
   rules:
   - if: $RUN_BUMP_VERSION == "true"
     when: never
@@ -210,6 +226,7 @@ check-code-format:
 .build-common:
   stage: build
   timeout: 1 hour
+  interruptible: true
   extends:
   - .build-artifacts
   retry:
@@ -293,6 +310,7 @@ build-windows-x86_64-debug:
 .test-common:
   stage: test
   timeout: 2 hour
+  interruptible: true
   extends:
   - .test-artifacts
   allow_failure: true
@@ -888,6 +906,7 @@ pages:
 .benchmark-common:
   stage: test
   timeout: 1 hour
+  interruptible: true
   extends:
   - .benchmark-artifacts
   variables:
