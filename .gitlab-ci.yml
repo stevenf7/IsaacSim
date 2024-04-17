@@ -890,8 +890,9 @@ pages:
     paths:
     - public
   rules:
-  - if: $RUN_BUMP_VERSION == "true" || $CI_COMMIT_BRANCH != "develop"
-    when: never
+  - if: $RUN_BUMP_VERSION != "true" && $CI_COMMIT_BRANCH == "develop"
+    when: always
+  - when: never
 
 # ==============================================================================================================
 .benchmark-artifacts:
