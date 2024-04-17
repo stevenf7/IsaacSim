@@ -33,8 +33,8 @@ class PeopleSDG:
 
     def set_config(self, config_file):
         import carb
-        from omni.replicator.character.core.data_generation import DataGeneration
-        from omni.replicator.character.core.simulation import SimulationManager
+        from omni.replicator.agent.core.data_generation import DataGeneration
+        from omni.replicator.agent.core.simulation import SimulationManager
 
         self._sim_manager = SimulationManager()
         self.config_dict, is_modified = self._sim_manager.load_config_file(config_file)
@@ -68,21 +68,19 @@ class PeopleSDG:
         self._settings.set("/app/scripting/ignoreWarningDialog", True)
         self._settings.set("/persistent/exts/omni.anim.navigation.core/navMesh/viewNavMesh", False)
         self._settings.set("/exts/omni.anim.people/navigation_settings/navmesh_enabled", True)
-        self._settings.set(
-            "/exts/omni.replicator.character/default_robot_command_file_path", "default_robot_command.txt"
-        )
-        self._settings.set("/persistent/exts/omni.replicator.character/aim_camera_to_character", True)
-        self._settings.set("/persistent/exts/omni.replicator.character/min_camera_distance", 6.5)
-        self._settings.set("/persistent/exts/omni.replicator.character/max_camera_distance", 14.5)
-        self._settings.set("/persistent/exts/omni.replicator.character/max_camera_look_down_angle", 60)
-        self._settings.set("/persistent/exts/omni.replicator.character/min_camera_look_down_angle", 0)
-        self._settings.set("/persistent/exts/omni.replicator.character/min_camera_height", 2)
-        self._settings.set("/persistent/exts/omni.replicator.character/max_camera_height", 3)
-        self._settings.set("/persistent/exts/omni.replicator.character/character_focus_height", 0.7)
-        self._settings.set("/persistent/exts/omni.replicator.character/frame_write_interval", 10)
+        self._settings.set("/exts/omni.replicator.agent/default_robot_command_file_path", "default_robot_command.txt")
+        self._settings.set("/persistent/exts/omni.replicator.agent/aim_camera_to_character", True)
+        self._settings.set("/persistent/exts/omni.replicator.agent/min_camera_distance", 6.5)
+        self._settings.set("/persistent/exts/omni.replicator.agent/max_camera_distance", 14.5)
+        self._settings.set("/persistent/exts/omni.replicator.agent/max_camera_look_down_angle", 60)
+        self._settings.set("/persistent/exts/omni.replicator.agent/min_camera_look_down_angle", 0)
+        self._settings.set("/persistent/exts/omni.replicator.agent/min_camera_height", 2)
+        self._settings.set("/persistent/exts/omni.replicator.agent/max_camera_height", 3)
+        self._settings.set("/persistent/exts/omni.replicator.agent/character_focus_height", 0.7)
+        self._settings.set("/persistent/exts/omni.replicator.agent/frame_write_interval", 10)
 
     def save_commands_to_file(self, file_path, commands):
-        from omni.replicator.character.core.file_util import TextFileUtil
+        from omni.replicator.agent.core.file_util import TextFileUtil
 
         command_str = ""
         for cmd in commands:
@@ -164,7 +162,7 @@ def enable_extensions():
     enable_extension("omni.anim.retarget.ui")
     enable_extension("omni.kit.scripting")
     enable_extension("omni.anim.people")
-    enable_extension("omni.replicator.character.core")
+    enable_extension("omni.replicator.agent.core")
     enable_extension("omni.kit.mesh.raycast")
 
 
