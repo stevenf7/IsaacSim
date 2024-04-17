@@ -78,6 +78,7 @@ public:
         // check for changes in subscriber
         std::string topicName = std::string(db.inputs.topicName());
         uint64_t queueSize = db.inputs.queueSize();
+        std::string qosProfile = db.inputs.qosProfile();
         if (topicName != state.mTopicName)
         {
             state.mIsSubscriberUpdateNeeded = true;
@@ -87,6 +88,11 @@ public:
         {
             state.mIsSubscriberUpdateNeeded = true;
             state.mQueueSize = queueSize;
+        }
+        if (qosProfile != state.mQosProfile)
+        {
+            state.mIsSubscriberUpdateNeeded = true;
+            state.mQosProfile = qosProfile;
         }
         // update subscriber
         if (state.mIsSubscriberUpdateNeeded)
@@ -105,7 +111,18 @@ public:
             CARB_LOG_INFO("OgnROS2Subscriber: creating subscriber: %s (%s)", fullTopicName.c_str(), messageType.c_str());
 
             Ros2QoSProfile qos;
-            qos.depth = state.mQueueSize;
+            const std::string& qosProfile = db.inputs.qosProfile();
+            if (qosProfile == "")
+            {
+                qos.depth = state.mQueueSize;
+            }
+            else
+            {
+                if (!jsonToRos2QoSProfile(qos, state.mQosProfile))
+                {
+                    return false;
+                }
+            }
             state.mSubscriber = state.mFactory->CreateSubscriber(
                 state.mNodeHandle.get(), fullTopicName.c_str(), state.mMessage->getTypeSupportHandle(), qos);
             if (!state.mSubscriber->isValid())
@@ -137,6 +154,7 @@ public:
         mMessageSubfolder.clear();
         mMessageName.clear();
         mTopicName.clear();
+        mQosProfile.clear();
         mQueueSize = 0;
 
         mMessage.reset();
@@ -349,6 +367,7 @@ private:
     std::string mMessageName;
     std::string mTopicName;
     uint64_t mQueueSize;
+    std::string mQosProfile;
 
     // OGN utils
 

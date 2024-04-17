@@ -42,9 +42,17 @@
                     "displayGroup": "parameters"
                 }
             },
+            "qosProfile": {
+                "type": "string",
+                "description": "QoS profile config",
+                "default": "",
+                "metadata": {
+                    "displayGroup": "parameters"
+                }
+            },
             "queueSize": {
                 "type": "uint64",
-                "description": "The number of messages to queue up before throwing some away, in case messages are collected faster than they can be processed",
+                "description": "The number of messages to queue up before throwing some away, in case messages are collected faster than they can be processed. Only honored if 'history' QoS policy was set to 'keep last'. This setting can be overwritten by qosProfile input.",
                 "default": 10, 
                 "metadata": {
                     "displayGroup": "parameters"

@@ -122,6 +122,7 @@ class OgnROS2RtxLidarHelper:
                             queueSize=db.inputs.queueSize,
                             topicName=db.inputs.topicName,
                             context=db.inputs.context,
+                            qosProfile=db.inputs.qosProfile,
                         )
                         db.per_instance_state.append_writer(writer)
                         if db.inputs.showDebugView:

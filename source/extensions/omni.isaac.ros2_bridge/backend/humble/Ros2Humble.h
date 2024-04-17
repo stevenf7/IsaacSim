@@ -330,7 +330,7 @@ private:
 class Ros2ServiceHumble : public Ros2Service
 {
 public:
-    Ros2ServiceHumble(Ros2NodeBase* node, const char* service_name, const void* type);
+    Ros2ServiceHumble(Ros2NodeBase* node, const char* service_name, const void* type, const Ros2QoSProfile& qos);
     virtual ~Ros2ServiceHumble();
     virtual bool spin(void* msg);
     virtual bool sendResponse(void* msg);

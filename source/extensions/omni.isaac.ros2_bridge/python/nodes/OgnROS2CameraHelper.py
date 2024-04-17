@@ -114,6 +114,7 @@ class OgnROS2CameraHelper:
                             queueSize=db.inputs.queueSize,
                             topicName=db.inputs.topicName,
                             context=db.inputs.context,
+                            qosProfile=db.inputs.qosProfile,
                         )
 
                     elif sensor_type == "depth":
@@ -127,6 +128,7 @@ class OgnROS2CameraHelper:
                             queueSize=db.inputs.queueSize,
                             topicName=db.inputs.topicName,
                             context=db.inputs.context,
+                            qosProfile=db.inputs.qosProfile,
                         )
 
                     elif sensor_type == "depth_pcl":
@@ -142,6 +144,7 @@ class OgnROS2CameraHelper:
                             queueSize=db.inputs.queueSize,
                             topicName=db.inputs.topicName,
                             context=db.inputs.context,
+                            qosProfile=db.inputs.qosProfile,
                         )
 
                     elif sensor_type == "instance_segmentation":
@@ -153,6 +156,7 @@ class OgnROS2CameraHelper:
                             queueSize=db.inputs.queueSize,
                             topicName=db.inputs.topicName,
                             context=db.inputs.context,
+                            qosProfile=db.inputs.qosProfile,
                         )
 
                     elif sensor_type == "semantic_segmentation":
@@ -163,6 +167,7 @@ class OgnROS2CameraHelper:
                             queueSize=db.inputs.queueSize,
                             topicName=db.inputs.topicName,
                             context=db.inputs.context,
+                            qosProfile=db.inputs.qosProfile,
                         )
 
                     elif sensor_type == "bbox_2d_tight":
@@ -173,6 +178,7 @@ class OgnROS2CameraHelper:
                             queueSize=db.inputs.queueSize,
                             topicName=db.inputs.topicName,
                             context=db.inputs.context,
+                            qosProfile=db.inputs.qosProfile,
                         )
 
                     elif sensor_type == "bbox_2d_loose":
@@ -183,6 +189,7 @@ class OgnROS2CameraHelper:
                             queueSize=db.inputs.queueSize,
                             topicName=db.inputs.topicName,
                             context=db.inputs.context,
+                            qosProfile=db.inputs.qosProfile,
                         )
 
                     elif sensor_type == "bbox_3d":
@@ -193,6 +200,7 @@ class OgnROS2CameraHelper:
                             queueSize=db.inputs.queueSize,
                             topicName=db.inputs.topicName,
                             context=db.inputs.context,
+                            qosProfile=db.inputs.qosProfile,
                         )
 
                     elif sensor_type == "camera_info":
@@ -204,6 +212,7 @@ class OgnROS2CameraHelper:
                             queueSize=db.inputs.queueSize,
                             topicName=db.inputs.topicName,
                             context=db.inputs.context,
+                            qosProfile=db.inputs.qosProfile,
                             stereoOffset=db.inputs.stereoOffset,
                         )
 
@@ -230,6 +239,7 @@ class OgnROS2CameraHelper:
                                 queueSize=db.inputs.queueSize,
                                 topicName=db.inputs.semanticLabelsTopicName,
                                 context=db.inputs.context,
+                                qosProfile=db.inputs.qosProfile,
                             )
                             db.per_instance_state.append_writer(semantic_writer)
                         db.per_instance_state.rv = type_dict[sensor_type]

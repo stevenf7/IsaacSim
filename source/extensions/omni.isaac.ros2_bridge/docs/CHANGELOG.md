@@ -1,4 +1,10 @@
 # Changelog
+
+## [2.20.0] - 2024-04-16
+### Added
+- New QoSProfile node to create any preset or custom qos profile to use with ROS2 Omnigraph nodes
+- QoS Profile inputs to all ROS2 Publisher, Subscriber, Service Omnigraph nodes
+
 ## [2.19.4] - 2024-04-16
 ### Fixed
 - Prevent ROS2 Service backend from printing unnecessary errors while waiting for service request
