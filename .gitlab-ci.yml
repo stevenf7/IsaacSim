@@ -1039,6 +1039,12 @@ publish-extensions:
   - job: build-linux-x86_64-release
     artifacts: true
     optional: true
+  - job: build-windows-x86_64-debug
+    artifacts: true
+    optional: true
+  - job: build-linux-x86_64-debug
+    artifacts: true
+    optional: true
   #   - job: test-windows-x86_64-startuptests
   #     artifacts: false
   #     optional: true
