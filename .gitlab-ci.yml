@@ -276,9 +276,6 @@ build-linux-x86_64-debug:
   - !reference [.omni_s3_write_get_secrets, omni_s3_write_get_secrets]
   script:
   - ./repo.sh ci build -c debug
-  rules:
-  - if: $RUN_DOCS_BUILD == "true"
-    when: never
 
 # ==============================================================================================================
 build-windows-x86_64-release:
@@ -289,7 +286,6 @@ build-windows-x86_64-release:
   - !reference [.windows_packman_s3_creds_get_powershell, windows_packman_s3_creds_get_powershell]
   script:
   - ./repo.bat ci build -c release
-  rules:
 
 # ==============================================================================================================
 build-windows-x86_64-debug:
@@ -300,9 +296,6 @@ build-windows-x86_64-debug:
   - !reference [.windows_packman_s3_creds_get_powershell, windows_packman_s3_creds_get_powershell]
   script:
   - ./repo.bat ci build -c debug
-  rules:
-  - if: $RUN_DOCS_BUILD == "true"
-    when: never
 
 
 
