@@ -1,4 +1,10 @@
 # Changelog
+## [1.1.0] - 2024-04-16
+### Fixed
+- Fixed bug where Gains Test Settings Panel had multiple ways of accumulating or forgetting state
+  between tests when switching robots or toggling STOP/PLAY
+### Added
+- Added fields to add position and velocity impulses to the start of the robot trajectory.
 
 ## [1.0.1] - 2024-03-14
 ### Fixed

@@ -32,6 +32,9 @@ class GainTuner:
         self._joint_range_maximum = 2 * np.pi
         self._test_duration = 5.0
 
+        self._position_impulse = 0.0
+        self._velocity_impulse = 0.0
+
         self._joint_position_commands = []
         self._joint_velocity_commands = []
 
@@ -68,6 +71,12 @@ class GainTuner:
     def get_test_duration(self):
         return self._test_duration
 
+    def get_position_impulse(self):
+        return self._position_impulse
+
+    def get_velocity_impulse(self):
+        return self._velocity_impulse
+
     def is_data_ready(self):
         return self._data_ready
 
@@ -76,6 +85,12 @@ class GainTuner:
 
     def set_joint_range_maximum(self, maximum):
         self._joint_range_maximum = maximum
+
+    def set_position_impulse(self, position_impulse):
+        self._position_impulse = position_impulse
+
+    def set_velocity_impulse(self, velocity_impulse):
+        self._velocity_impulse = velocity_impulse
 
     def set_test_duration(self, duration):
         self._test_duration = duration
@@ -214,18 +229,17 @@ class GainTuner:
         v = velocity_command_fn(timestep)
         return ArticulationAction(p, v, joint_indices=joint_indices)
 
-    def initialize_gains_test(self, test_mode: GainsTestMode, v_max, T, joint_indices):
+    def initialize_gains_test(self, test_mode: GainsTestMode, v_max, T, joint_indices, fixed_joint_positions):
         self._v_max = np.array(v_max)
         self._T = np.array(T)
         self._joint_indices = np.array(joint_indices)
 
         self._test_timestep = 0
 
-        self._fixed_positions = self._articulation.get_joint_positions()
         all_ind = np.arange(self._articulation.num_dof)
         # Fixed joint indices are every joint index that is not in self._joint_indices
         self._fixed_joint_indices = all_ind[~np.isin(all_ind, self._joint_indices)]
-        self._fixed_positions = self._fixed_positions[self._fixed_joint_indices]
+        self._fixed_positions = np.array(fixed_joint_positions)
 
         self._gains_test_generator = self.gains_test_script(test_mode)
 
@@ -307,9 +321,23 @@ class GainTuner:
                 self._joint_indices, self._test_duration
             )
 
-        self._articulation.set_joint_positions(position_command_fn(0), self._joint_indices)
-        self._articulation.set_joint_positions(self._fixed_positions, self._fixed_joint_indices)
-        self._articulation.set_solver_velocity_iteration_count(10)
+        self._articulation.set_joint_positions(position_command_fn(0) + self._position_impulse, self._joint_indices)
+        self._articulation.set_joint_positions(
+            self._fixed_positions + self._position_impulse, self._fixed_joint_indices
+        )
+
+        self._articulation.set_joint_velocities(velocity_command_fn(0) + self._velocity_impulse, self._joint_indices)
+        self._articulation.set_joint_velocities(
+            np.full(self._fixed_positions.shape, self._velocity_impulse), self._fixed_joint_indices
+        )
+
+        self._joint_position_commands.append(position_command_fn(0))
+        self._joint_velocity_commands.append(velocity_command_fn(0))
+
+        self._observed_joint_positions.append(self._articulation.get_joint_positions())
+        self._observed_joint_velocities.append(self._articulation.get_joint_velocities())
+
+        self._command_times.append(0)
 
         yield ()
 
@@ -320,7 +348,11 @@ class GainTuner:
             self._articulation.apply_action(action)
             if len(self._fixed_joint_indices) > 0:
                 self._articulation.apply_action(
-                    ArticulationAction(self._fixed_positions, joint_indices=self._fixed_joint_indices)
+                    ArticulationAction(
+                        self._fixed_positions,
+                        np.zeros_like(self._fixed_positions),
+                        joint_indices=self._fixed_joint_indices,
+                    )
                 )
 
             self._joint_position_commands.append(action.joint_positions)

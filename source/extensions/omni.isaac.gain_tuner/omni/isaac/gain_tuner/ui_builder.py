@@ -121,10 +121,7 @@ class UIBuilder:
         Args:
             event (omni.usd.StageEventType): Event Type
         """
-        if event.type == int(StageEventType.OPENED):
-            # If the user opens a new stage, the extension should completely reset
-            self._reset_extension()
-        elif event.type == int(omni.usd.StageEventType.ASSETS_LOADED):  # Any asset added or removed
+        if event.type == int(omni.usd.StageEventType.ASSETS_LOADED):  # Any asset added or removed
             self._articulation_menu.repopulate()
         elif event.type == int(omni.usd.StageEventType.SIMULATION_START_PLAY):  # Timeline played
             self._articulation_menu.trigger_on_selection_fn_with_current_selection()
@@ -268,10 +265,7 @@ class UIBuilder:
             if self._articulation is None:
                 return
 
-            self._joint_max_velocity_fields = [None] * self._articulation.num_dof
-            self._joint_period_fields = [None] * self._articulation.num_dof
-            self._joint_fixed_position_fields = [None] * self._articulation.num_dof
-            self._joint_cbs = [None] * self._articulation.num_dof
+            self._reset_advanced_settings_fields()
 
             def on_set_test_duration(value):
                 self._gains_tuner.set_test_duration(value)
@@ -389,6 +383,20 @@ class UIBuilder:
                     on_value_changed_fn=on_joint_range_clipped,
                 )
 
+                self._position_impulse_float_field = FloatField(
+                    label="Initial Position Impulse",
+                    tooltip="Initial error term between the commanded trajectory position and the initial robot position.",
+                    default_value=self._gains_tuner.get_position_impulse(),
+                    on_value_changed_fn=self._gains_tuner.set_position_impulse,
+                )
+
+                self._velocity_impulse_float_field = FloatField(
+                    label="Initial Velocity Impulse",
+                    tooltip="Initial error term between the commanded trajectory velocity and the initial robot velocity.",
+                    default_value=self._gains_tuner.get_velocity_impulse(),
+                    on_value_changed_fn=self._gains_tuner.set_velocity_impulse,
+                )
+
                 for i in range(self._articulation.num_dof):
                     joint_frame = CollapsableFrame(f"Joint {i}", collapsed=False)
                     self._joint_settings_frames.append(joint_frame)
@@ -449,6 +457,12 @@ class UIBuilder:
 
                 v_float_field = self._joint_max_velocity_fields[i]
                 v_float_field.set_value(self._gains_tuner.get_v_max(period, i))
+
+    def _reset_advanced_settings_fields(self):
+        self._joint_max_velocity_fields = [None] * self._articulation.num_dof
+        self._joint_period_fields = [None] * self._articulation.num_dof
+        self._joint_fixed_position_fields = [None] * self._articulation.num_dof
+        self._joint_cbs = [None] * self._articulation.num_dof
 
     def _setup_advanced_settings_frames(self, single_index: int = None):
         """Set up advanced settings frame with reasonable default values.
@@ -680,12 +694,10 @@ class UIBuilder:
 
     def _on_articulation_selection(self, articulation_path):
         if articulation_path is None or self._timeline.is_stopped():
+            self._invalidate_articulation()
             return
 
-        # Do nothing if the articulation is already selected
-        if self._articulation is not None and self._articulation.prim_path == articulation_path:
-            return
-
+        self._gains_tuner = GainTuner()
         self._articulation = self._gains_tuner.setup(articulation_path)
 
         # UI management
@@ -697,6 +709,7 @@ class UIBuilder:
         self._sinusoidal_gains_test_btn.reset()
         self._sinusoidal_gains_test_btn.enabled = True
 
+        self._reset_advanced_settings_fields()
         self._advanced_settings_frame.rebuild()
         self._advanced_settings_frame.enabled = True
 
@@ -725,6 +738,9 @@ class UIBuilder:
         v_max = []
         T = []
         joint_indices = []
+        fixed_joint_positions = []
+
+        default_v_max, default_T = self._gains_tuner.get_default_tuning_test_parameters()
 
         if self._built_advanced_settings_frame:
             for i in range(self._articulation.num_dof):
@@ -736,16 +752,15 @@ class UIBuilder:
                     T.append(period_float_field.get_value())
 
                     joint_indices.append(i)
+                elif self._joint_fixed_position_fields[i] is None:
+                    v_max.append(default_v_max[i])
+                    T.append(default_T[i])
+                    joint_indices.append(i)
+                else:
+                    fixed_joint_positions.append(self._joint_fixed_position_fields[i].get_value())
         else:
-            v_max, T = self._gains_tuner.get_default_tuning_test_parameters()
+            v_max, T = default_v_max, default_T
             joint_indices = np.arange(self._articulation.num_dof)
 
-        self._gains_tuner.initialize_gains_test(gains_test_mode, v_max, T, joint_indices)
+        self._gains_tuner.initialize_gains_test(gains_test_mode, v_max, T, joint_indices, fixed_joint_positions)
         self._test_mode = gains_test_mode
-
-    def _reset_extension(self):
-        """This is called when the user opens a new stage from self.on_stage_event().
-        All state should be reset.
-        """
-        self._articulation = None
-        self._gains_tuner = GainTuner()
