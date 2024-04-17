@@ -408,6 +408,15 @@ public:
             state.mIsServiceSetAttributeUpdateNeeded = true;
             state.mSetAttributeServiceName = setAttributeServiceName;
         }
+        std::string qosProfile = std::string(db.inputs.qosProfile());
+        if (qosProfile != state.mQosProfile)
+        {
+            state.mIsServiceGetPrimsUpdateNeeded = true;
+            state.mIsServiceGetAttributesUpdateNeeded = true;
+            state.mIsServiceGetAttributeUpdateNeeded = true;
+            state.mIsServiceSetAttributeUpdateNeeded = true;
+            state.mQosProfile = qosProfile;
+        }
 
         // update services
         if (state.mIsServiceGetPrimsUpdateNeeded)
@@ -420,8 +429,17 @@ public:
                 return false;
             // create service
             CARB_LOG_INFO("OgnROS2ServicePrim: creating service: %s", fullServiceName.c_str());
-            state.mServiceGetPrims = state.mFactory->CreateService(
-                state.mNodeHandle.get(), fullServiceName.c_str(), state.mMessageGetPrimsRequest->getTypeSupportHandle());
+            Ros2QoSProfile qos;
+            if (qosProfile != "")
+            {
+                if (!jsonToRos2QoSProfile(qos, state.mQosProfile))
+                {
+                    return false;
+                }
+            }
+            state.mServiceGetPrims =
+                state.mFactory->CreateService(state.mNodeHandle.get(), fullServiceName.c_str(),
+                                              state.mMessageGetPrimsRequest->getTypeSupportHandle(), qos);
             CARB_LOG_INFO("OgnROS2ServicePrim: service: %s", fullServiceName.c_str());
             if (!state.mServiceGetPrims->isValid())
             {
@@ -442,9 +460,17 @@ public:
                 return false;
             // create service
             CARB_LOG_INFO("OgnROS2ServicePrim: creating service: %s", fullServiceName.c_str());
+            Ros2QoSProfile qos;
+            if (qosProfile != "")
+            {
+                if (!jsonToRos2QoSProfile(qos, state.mQosProfile))
+                {
+                    return false;
+                }
+            }
             state.mServiceGetAttributes =
                 state.mFactory->CreateService(state.mNodeHandle.get(), fullServiceName.c_str(),
-                                              state.mMessageGetAttributesRequest->getTypeSupportHandle());
+                                              state.mMessageGetAttributesRequest->getTypeSupportHandle(), qos);
             CARB_LOG_INFO("OgnROS2ServicePrim: service: %s", fullServiceName.c_str());
             if (!state.mServiceGetAttributes->isValid())
             {
@@ -465,9 +491,18 @@ public:
                 return false;
             // create service
             CARB_LOG_INFO("OgnROS2ServicePrim: creating service: %s", fullServiceName.c_str());
+
+            Ros2QoSProfile qos;
+            if (qosProfile != "")
+            {
+                if (!jsonToRos2QoSProfile(qos, state.mQosProfile))
+                {
+                    return false;
+                }
+            }
             state.mServiceGetAttribute =
                 state.mFactory->CreateService(state.mNodeHandle.get(), fullServiceName.c_str(),
-                                              state.mMessageGetAttributeRequest->getTypeSupportHandle());
+                                              state.mMessageGetAttributeRequest->getTypeSupportHandle(), qos);
             CARB_LOG_INFO("OgnROS2ServicePrim: service: %s", fullServiceName.c_str());
             if (!state.mServiceGetAttribute->isValid())
             {
@@ -488,9 +523,17 @@ public:
                 return false;
             // create service
             CARB_LOG_INFO("OgnROS2ServicePrim: creating service: %s", fullServiceName.c_str());
+            Ros2QoSProfile qos;
+            if (qosProfile != "")
+            {
+                if (!jsonToRos2QoSProfile(qos, state.mQosProfile))
+                {
+                    return false;
+                }
+            }
             state.mServiceSetAttribute =
                 state.mFactory->CreateService(state.mNodeHandle.get(), fullServiceName.c_str(),
-                                              state.mMessageSetAttributeRequest->getTypeSupportHandle());
+                                              state.mMessageSetAttributeRequest->getTypeSupportHandle(), qos);
             CARB_LOG_INFO("OgnROS2ServicePrim: service: %s", fullServiceName.c_str());
             if (!state.mServiceSetAttribute->isValid())
             {
@@ -555,6 +598,7 @@ private:
     std::string mGetAttributesServiceName;
     std::string mGetAttributeServiceName;
     std::string mSetAttributeServiceName;
+    std::string mQosProfile;
 
     // node
 

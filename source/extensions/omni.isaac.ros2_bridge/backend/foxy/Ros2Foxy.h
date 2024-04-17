@@ -330,7 +330,7 @@ private:
 class Ros2ServiceFoxy : public Ros2Service
 {
 public:
-    Ros2ServiceFoxy(Ros2NodeBase* node, const char* service_name, const void* type);
+    Ros2ServiceFoxy(Ros2NodeBase* node, const char* service_name, const void* type, const Ros2QoSProfile& qos);
     virtual ~Ros2ServiceFoxy();
     virtual bool spin(void* msg);
     virtual bool sendResponse(void* msg);

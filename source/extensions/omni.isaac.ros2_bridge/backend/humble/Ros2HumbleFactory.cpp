@@ -39,9 +39,12 @@ std::shared_ptr<Ros2Subscriber> Ros2FactoryHumble::CreateSubscriber(Ros2NodeBase
     return std::make_shared<Ros2SubscriberHumble>(node, topic_name, type, qos);
 }
 
-std::shared_ptr<Ros2Service> Ros2FactoryHumble::CreateService(Ros2NodeBase* node, const char* service_name, const void* type)
+std::shared_ptr<Ros2Service> Ros2FactoryHumble::CreateService(Ros2NodeBase* node,
+                                                              const char* service_name,
+                                                              const void* type,
+                                                              const Ros2QoSProfile& qos)
 {
-    return std::make_shared<Ros2ServiceHumble>(node, service_name, type);
+    return std::make_shared<Ros2ServiceHumble>(node, service_name, type, qos);
 }
 
 std::shared_ptr<Ros2ClockMessage> Ros2FactoryHumble::CreateClockMessage()

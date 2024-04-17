@@ -44,6 +44,11 @@
                 "type": "string",
                 "description": "Name of the ROS2 service to write a specific prim attribute",
                 "default": "set_prim_attribute"
+            },
+            "qosProfile": {
+                "type": "string",
+                "description": "QoS profile config",
+                "default": ""
             }
         },
         "outputs": {

@@ -22,7 +22,10 @@ public:
                                                              const char* topic_name,
                                                              const void* type,
                                                              const Ros2QoSProfile& qos);
-    virtual std::shared_ptr<Ros2Service> CreateService(Ros2NodeBase* node, const char* service_name, const void* type);
+    virtual std::shared_ptr<Ros2Service> CreateService(Ros2NodeBase* node,
+                                                       const char* service_name,
+                                                       const void* type,
+                                                       const Ros2QoSProfile& qos);
 
     virtual std::shared_ptr<Ros2ClockMessage> CreateClockMessage();
     virtual std::shared_ptr<Ros2ImuMessage> CreateImuMessage();

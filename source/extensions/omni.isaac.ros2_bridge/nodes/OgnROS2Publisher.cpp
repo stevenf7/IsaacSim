@@ -76,6 +76,7 @@ public:
         // check for changes in publisher
         std::string topicName = std::string(db.inputs.topicName());
         uint64_t queueSize = db.inputs.queueSize();
+        std::string qosProfile = db.inputs.qosProfile();
         if (topicName != state.mTopicName)
         {
             state.mIsPublisherUpdateNeeded = true;
@@ -85,6 +86,11 @@ public:
         {
             state.mIsPublisherUpdateNeeded = true;
             state.mQueueSize = queueSize;
+        }
+        if (qosProfile != state.mQosProfile)
+        {
+            state.mIsPublisherUpdateNeeded = true;
+            state.mQosProfile = qosProfile;
         }
         // update publisher
         if (state.mIsPublisherUpdateNeeded)
@@ -102,7 +108,18 @@ public:
             std::string messageType = messagePackage + "/" + messageSubfolder + "/" + messageName;
             CARB_LOG_INFO("OgnROS2Publisher: creating publisher: %s (%s)", fullTopicName.c_str(), messageType.c_str());
             Ros2QoSProfile qos;
-            qos.depth = state.mQueueSize;
+            const std::string& qosProfile = db.inputs.qosProfile();
+            if (qosProfile == "")
+            {
+                qos.depth = state.mQueueSize;
+            }
+            else
+            {
+                if (!jsonToRos2QoSProfile(qos, state.mQosProfile))
+                {
+                    return false;
+                }
+            }
             state.mPublisher = state.mFactory->CreatePublisher(
                 state.mNodeHandle.get(), fullTopicName.c_str(), state.mMessage->getTypeSupportHandle(), qos);
             if (!state.mPublisher->isValid())
@@ -134,6 +151,7 @@ public:
         mMessageSubfolder.clear();
         mMessageName.clear();
         mTopicName.clear();
+        mQosProfile.clear();
         mQueueSize = 0;
 
         mMessage.reset();
@@ -365,6 +383,7 @@ private:
     std::string mMessageName;
     std::string mTopicName;
     uint64_t mQueueSize;
+    std::string mQosProfile;
 
     // OGN utils
 

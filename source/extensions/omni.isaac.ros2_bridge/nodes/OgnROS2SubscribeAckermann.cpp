@@ -53,7 +53,19 @@ public:
             }
 
             Ros2QoSProfile qos;
-            qos.depth = db.inputs.queueSize();
+
+            const std::string& qosProfile = db.inputs.qosProfile();
+            if (qosProfile == "")
+            {
+                qos.depth = db.inputs.queueSize();
+            }
+            else
+            {
+                if (!jsonToRos2QoSProfile(qos, qosProfile))
+                {
+                    return false;
+                }
+            }
             state.mSubscriber = state.mFactory->CreateSubscriber(
                 state.mNodeHandle.get(), fullTopicName.c_str(), state.mMessage->getTypeSupportHandle(), qos);
 

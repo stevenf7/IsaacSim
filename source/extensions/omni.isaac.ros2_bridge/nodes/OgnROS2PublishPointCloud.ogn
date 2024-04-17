@@ -36,9 +36,14 @@
                 "description": "Name of ROS2 Topic",
                 "default" : "point_cloud"
             },
-            "queueSize":{
+             "qosProfile": {
+                "type": "string",
+                "description": "QoS profile config",
+                "default": ""
+            },
+            "queueSize": {
                 "type": "uint64",
-                "description": "The number of messages to queue up before throwing some away, in case messages are collected faster than they can be sent",
+                "description": "The number of messages to queue up before throwing some away, in case messages are collected faster than they can be sent. Only honored if 'history' QoS policy was set to 'keep last'. This setting can be overwritten by qosProfile input.",
                 "default": 10
             },
             "timeStamp": {

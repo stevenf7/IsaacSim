@@ -11,7 +11,7 @@
 #include <include/Ros2Macros.h>
 #include <rcl/rcl.h>
 
-Ros2ServiceFoxy::Ros2ServiceFoxy(Ros2NodeBase* node, const char* service_name, const void* type)
+Ros2ServiceFoxy::Ros2ServiceFoxy(Ros2NodeBase* node, const char* service_name, const void* type, const Ros2QoSProfile& qos)
     : mNode(node), wait_set_initialized(false)
 {
     mService = std::shared_ptr<rcl_service_t>(new rcl_service_t,
@@ -29,8 +29,8 @@ Ros2ServiceFoxy::Ros2ServiceFoxy(Ros2NodeBase* node, const char* service_name, c
                                               });
     (*mService) = rcl_get_zero_initialized_service();
     rcl_service_options_t srv_ops = rcl_service_get_default_options();
+    srv_ops.qos = Ros2QoSProfileFoxyConverter::convert(qos);
     // srv_ops.qos.depth = history_depth;
-
     // rcl_service_default_options srv_ops = {
     //     RMW_QOS_POLICY_HISTORY_KEEP_LAST,
     //     10,
