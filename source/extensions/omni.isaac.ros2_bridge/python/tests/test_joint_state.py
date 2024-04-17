@@ -21,14 +21,12 @@ import omni.kit.commands
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 import omni.kit.usd
-import rclpy
 import usdrt.Sdf
 from numpy import pi as PI
 from omni.isaac.core.articulations import Articulation
 from omni.isaac.core.utils.physics import simulate_async
 from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.nucleus import get_assets_root_path_async
-from sensor_msgs.msg import JointState
 
 from .common import get_qos_profile, set_joint_drive_parameters
 
@@ -144,6 +142,9 @@ class TestRos2JointStatePublisher(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_joint_state_velocity_publisher(self):
+        import rclpy
+        from sensor_msgs.msg import JointState
+
         # setup ROS listener of the joint_state topic
         self.js_ros = JointState()
 
@@ -280,6 +281,9 @@ class TestRos2JointStateSubscriber(omni.kit.test.AsyncTestCase):
         """
         test if the joint state subscriber node is able to receive the joint state commands
         """
+        import rclpy
+        from sensor_msgs.msg import JointState
+
         ros2_publisher = None
         ros2_node = rclpy.create_node("isaac_sim_test_joint_state_sub")
         ros2_publisher = ros2_node.create_publisher(JointState, "joint_command", 10)
@@ -319,6 +323,8 @@ class TestRos2JointStateSubscriber(omni.kit.test.AsyncTestCase):
         """
         test if the joint state subscriber is able to move the robot as expected
         """
+        import rclpy
+        from sensor_msgs.msg import JointState
 
         ros2_publisher = None
         ros2_node = rclpy.create_node("isaac_sim_test_joint_state_sub")
