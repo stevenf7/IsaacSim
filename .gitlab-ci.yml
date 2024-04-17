@@ -1047,8 +1047,9 @@ publish-extensions:
   rules:
   - if: $RUN_BUMP_VERSION == "true"
     when: never
-  - !reference [.rules-version-changed, rules]
-  - !reference [.rules-push-manual, rules]
+  - !reference [.rules-push, rules]
+  # - !reference [.rules-version-changed, rules]
+  # - !reference [.rules-push-manual, rules]
 
 
 # ==============================================================================================================
