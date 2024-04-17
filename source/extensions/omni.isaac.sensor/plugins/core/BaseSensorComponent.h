@@ -37,21 +37,12 @@ template <class PrimType>
 class IsaacSensorComponentBase : public utils::ComponentBase<PrimType>
 {
 public:
-    IsaacSensorComponentBase(omni::renderer::IDebugDraw* debugDrawPtr)
+    IsaacSensorComponentBase()
     {
-        mPointDrawing = std::make_shared<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper>(
-            omni::usd::UsdContext::getContext(), debugDrawPtr,
-            omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::ePoints, true);
-
-        mLineDrawing = std::make_shared<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper>(
-            omni::usd::UsdContext::getContext(), debugDrawPtr,
-            omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::eLines);
     }
 
     ~IsaacSensorComponentBase()
     {
-        mLineDrawing.reset();
-        mPointDrawing.reset();
     }
 
     virtual void initialize(const PrimType& prim, const pxr::UsdStageWeakPtr stage)
@@ -68,31 +59,6 @@ public:
     {
         // base sensor on component change
         isaac::utils::safeGetAttribute(this->mPrim.GetEnabledAttr(), this->mEnabled);
-        isaac::utils::safeGetAttribute(this->mPrim.GetVisualizeAttr(), mVisualize);
-        pxr::UsdPrim tempPrim = this->mStage->GetPrimAtPath(this->mPrim.GetPath()).GetParent();
-
-        // clearDraw function will clear the drawing, it will be redrawn in the sensor's onComponentChange based on the
-        // mVisualize flag
-
-        clearDraw();
-
-        // Find valid parent (if exist)
-        while (tempPrim.IsValid() && tempPrim.GetName().GetString() != "/")
-        {
-            // check if it's a rigid body
-            bool rigidBodyEnabled = false;
-            tempPrim.GetAttribute(pxr::TfToken("physics:rigidBodyEnabled")).Get(&rigidBodyEnabled);
-            if (rigidBodyEnabled)
-            {
-                mParentPrim = tempPrim;
-                return;
-            }
-            // go to parent
-            tempPrim = tempPrim.GetParent();
-        }
-
-        // TODO: What to do if the parent prim is invalid aside from this error message?
-        CARB_LOG_ERROR("Failed to updated contact sensor, parent prim is not found or invalid");
     }
 
     virtual void preTick()
@@ -105,34 +71,17 @@ public:
     // check
     virtual void onPhysicsStep(){};
 
-    virtual void draw()
-    {
-        mLineDrawing->draw();
-        mPointDrawing->draw();
-    }
-
     virtual void onStop()
     {
     }
 
-    virtual void clearDraw()
+    pxr::UsdPrim getParentPrim()
     {
-        mLineDrawing->clear();
-        mPointDrawing->clear();
-        mLineDrawing->draw();
-        mPointDrawing->draw();
-    }
-
-    bool getVisualize()
-    {
-        return mVisualize;
+        return mParentPrim;
     }
 
 protected:
     pxr::UsdPrim mParentPrim;
-    bool mVisualize = true;
-    std::shared_ptr<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper> mPointDrawing;
-    std::shared_ptr<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper> mLineDrawing;
 };
 typedef IsaacSensorComponentBase<pxr::IsaacSensorIsaacBaseSensor> IsaacBaseSensorComponent;
 

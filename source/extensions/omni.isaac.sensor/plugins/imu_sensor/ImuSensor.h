@@ -35,33 +35,19 @@ namespace sensor
 class ImuSensor : public IsaacBaseSensorComponent
 {
 public:
-    ImuSensor(omni::renderer::IDebugDraw* debugDraw, omni::physx::IPhysx* PhysXInterface)
-        : IsaacBaseSensorComponent(debugDraw)
+    ImuSensor() : IsaacBaseSensorComponent()
     {
-        mPhysXInterface = PhysXInterface;
         mRawBuffer.resize(mRawBufferSize, IsRawData());
-
         reset();
     }
 
+    void initialize(std::vector<float>* rigidBodyDataBuffer, size_t& mDataBufferIndex);
+
     virtual ~ImuSensor();
-
-    void drawAxis(const usdrt::GfMatrix4d& usdTransform, const float& length);
-
-    virtual void draw();
-
-    size_t getNumReadings(); //<! Gets length of accumulated readings
-
-    IsReading getSensorReadings(size_t& numReadings, const bool& readGravity = true); //<! Gets accumulated array of
-                                                                                      // readings from last
-                                                                                      // simulation step to current
-                                                                                      // step.
 
     IsReading getSensorReading(const std::function<IsReading(std::vector<IsReading>, float)>& interpolateFunction = nullptr,
                                const bool& getLatestValue = false,
                                const bool& readGravity = true);
-
-    IsReading getSimSensorReading(const bool& readGravity = true);
 
     void reset();
     // finite diff data in mRawReadingList, save in mReadingPair
@@ -75,7 +61,7 @@ public:
 
     void onComponentChange();
 
-    // the virtual onstop will clear everything on stop, the overloaded onstop will redraw the sensor after stop
+    // the virtual onstop will clear everything on stop
     virtual void onStop();
 
     // internal debug function
@@ -86,6 +72,9 @@ private:
     // sensor signal processing constant
     // size of raw data, must be larger than 2*mLinearAccelerationFilterSize
     int mRawBufferSize = 20;
+
+    size_t mDataBufferIndex = 0;
+    std::vector<float>* mRigidBodyDataBuffer = nullptr;
 
     IsRawData mInitBuffer;
     std::vector<IsRawData> mRawBuffer; // raw velocities data array
@@ -105,7 +94,6 @@ private:
     bool mPreviousEnabled{ true };
     omni::math::linalg::vec3d mGravitySensorFrame;
     omni::math::linalg::vec3d mGravity;
-    omni::physx::IPhysx* mPhysXInterface = nullptr;
 };
 
 

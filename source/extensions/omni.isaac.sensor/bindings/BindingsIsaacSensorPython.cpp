@@ -176,36 +176,6 @@ PYBIND11_MODULE(_sensor, m)
                     arg0 (:obj:`int`): body name handle
                 Returns:
                     :obj:`str`: The body name.)pbdoc")
-        .def("get_sensor_readings_size", wrapInterfaceFunction(&ContactSensorInterface::getSensorReadingsSize),
-             R"pbdoc(
-                Gets the number of readings ready on the buffer
-                Args:
-                    arg0 (:obj:`str`): USD Path to sensor as string
-                Returns:
-                    :obj:`int`: Number of readings ready on the buffer.)pbdoc")
-        .def(
-            "get_sensor_readings",
-            [](const ContactSensorInterface* li, const char* sensor_path) -> py::object
-            {
-                if (!li)
-                    return py::none();
-                size_t num_data = 0;
-                CsReading data = li->getSensorReadings(sensor_path, num_data);
-                return py::array(py::buffer_info(&data, sizeof(CsReading), py::format_descriptor<CsReading>::format(),
-                                                 1, { num_data }, { sizeof(CsReading) }));
-            },
-            R"pbdoc(   
-                Gets the list of sensor readings for the given sensor, clears the reading buffer once values are acquired
-                Args:
-                    arg0 (:obj:`str`): USD Path to sensor as string
-                Returns:
-                    :obj:`numpy.array`: The list of readings for the sensor ready on the buffer.)pbdoc")
-        .def("get_sensor_sim_reading", wrapInterfaceFunction(&ContactSensorInterface::getSensorSimReading),
-             R"pbdoc(   
-                Args:
-                    arg0 (:obj:`str`): USD Path to sensor as string
-                Returns:
-                    :obj:`numpy.array`: The reading for the current simulation time.)pbdoc")
         .def("get_sensor_reading", wrapInterfaceFunction(&ContactSensorInterface::getSensorReading),
              R"pbdoc(   
                 Args:
@@ -224,34 +194,6 @@ PYBIND11_MODULE(_sensor, m)
 
     defineInterfaceClass<ImuSensorInterface>(
         m, "ImuSensorInterface", "acquire_imu_sensor_interface", "release_imu_sensor_interface")
-
-        .def("get_sensor_readings_size", wrapInterfaceFunction(&ImuSensorInterface::getSensorReadingsSize),
-             R"pbdoc(
-                Gets the number of readings ready on the buffer
-                Args:
-                    arg0 (:obj:`char*`): the sensor path
-                Returns:
-                    :obj:`int`: Number of readings ready on the buffer.)pbdoc")
-        .def(
-            "get_sensor_readings",
-            [](const ImuSensorInterface* li, const char* sensor_path, bool read_gravity = true) -> py::object
-            {
-                if (!li)
-                {
-                    return py::none();
-                }
-                size_t num_data = 0;
-                IsReading data = li->getSensorReadings(sensor_path, num_data, read_gravity);
-                return py::array(py::buffer_info(&data, sizeof(IsReading), py::format_descriptor<IsReading>::format(),
-                                                 1, { num_data }, { sizeof(IsReading) }));
-            },
-            R"pbdoc(   
-                Gets the list of sensor readings for the given sensor. Clears the reading buffer once values are acquired.
-                Args:
-                    arg0 (:obj:`char*`): the sensor path
-                Returns:
-                    :obj:`numpy.array`: The list of readings for the sensor ready on the buffer.)pbdoc",
-            py::arg("sensor_path"), py::arg("read_gravity") = true)
         .def(
             "get_sensor_reading",
             [](const ImuSensorInterface* li, const char* sensor_path,
@@ -284,14 +226,6 @@ PYBIND11_MODULE(_sensor, m)
                     :obj:`numpy.array`: The reading for the current sensor period.)pbdoc",
             py::arg("sensor_path"), py::arg("interpolation_function") = nullptr, py::arg("use_latest_data") = false,
             py::arg("read_gravity") = true)
-        .def("get_sensor_sim_reading", wrapInterfaceFunction(&ImuSensorInterface::getSensorSimReading),
-             R"pbdoc(   
-                Args:
-                    arg0 (:obj:`char*`): the sensor path
-                    arg1 (:obj:`bool`): reading gravity, true to include gravitational acceleration in the measurement
-                Returns:
-                    :obj:`numpy.array`: The reading for the current simulation time.)pbdoc",
-             py::arg("sensor_path"), py::arg("read_gravity") = true)
         .def("is_imu_sensor", wrapInterfaceFunction(&ImuSensorInterface::isImuSensor),
              R"pbdoc(   
                 Args:

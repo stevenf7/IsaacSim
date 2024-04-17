@@ -36,28 +36,17 @@ namespace sensor
 class ContactSensor : public IsaacBaseSensorComponent
 {
 public:
-    ContactSensor(omni::renderer::IDebugDraw* debugDraw, omni::physx::IPhysx* PhysXInterface, ContactManager* contactManager)
-        : IsaacBaseSensorComponent(debugDraw)
+    ContactSensor(omni::physx::IPhysx* PhysXInterface, ContactManager* contactManager) : IsaacBaseSensorComponent()
     {
         mPhysXInterfacePtr = PhysXInterface;
         mContactManagerPtr = contactManager;
-        mDebugDrawPtr = debugDraw;
     }
 
     virtual ~ContactSensor();
 
     void reset();
 
-    // this function will draw a sphere based on the radius and location of the contact sensor
-    void drawCircle(const omni::math::linalg::vec3d& _pose, const int& nsegment);
-
-    virtual void draw();
-
     CsRawData* getRawData(size_t& size);
-
-    CsReading getSimSensorReading();
-
-    CsReading getSensorReadings(size_t& numReadings);
 
     CsReading getSensorReading(const bool& getLatestValue = false);
 
@@ -95,7 +84,6 @@ private:
     CsReading mSensorReading;
     CsRawData* mContactsRawData = nullptr;
     ContactManager* mContactManagerPtr = nullptr;
-    omni::renderer::IDebugDraw* mDebugDrawPtr = nullptr;
     omni::physx::IPhysx* mPhysXInterfacePtr = nullptr;
     bool mCurrent{ 0 };
     bool mPreviousEnabled{ true };

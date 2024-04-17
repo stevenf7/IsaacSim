@@ -33,9 +33,13 @@
 #include <omni/graph/core/ogn/Registration.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/kit/KitUtils.h>
+#include <omni/physics/tensors/IRigidBodyView.h>
+#include <omni/physics/tensors/IRigidContactView.h>
+#include <omni/physics/tensors/ISimulationView.h>
+#include <omni/physics/tensors/TensorApi.h>
+#include <omni/physics/tensors/TensorDesc.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
-#include <omni/renderer/IDebugDraw.h>
 #include <omni/sensors/lidar/ILidarProfileReaderFactory.h>
 #include <omni/usd/UsdContext.h>
 #include <omni/usd/UsdUtils.h>
@@ -51,7 +55,6 @@ CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::sensor::ContactSensorInterface, omni:
 CARB_PLUGIN_IMPL_DEPS(omni::physx::IPhysx,
                       omni::physx::IPhysxSceneQuery,
                       omni::kit::IStageUpdate,
-                      omni::renderer::IDebugDraw,
                       omni::graph::core::IGraphRegistry,
                       omni::sensors::lidar::ILidarProfileReaderFactory)
 
@@ -61,13 +64,22 @@ DECLARE_OGN_NODES()
 // private stuff
 namespace
 {
-omni::renderer::IDebugDraw* g_debugDraw = nullptr;
 omni::kit::IStageUpdate* g_stageUpdate = nullptr;
 omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
 omni::physx::IPhysx* g_physx = nullptr;
 pxr::UsdStageWeakPtr g_stage = nullptr;
-std::unique_ptr<omni::isaac::sensor::IsaacSensorManager> gIsaacSensorManager;
+omni::physics::tensors::TensorApi* g_tensorApi = nullptr;
+omni::physics::tensors::ISimulationView* g_simulationView = nullptr;
+omni::physics::tensors::IRigidBodyView* g_rigidBodyView = nullptr;
+omni::physics::tensors::TensorDesc rigidBodyData;
+std::vector<std::string> g_rigidBodyPaths;
+carb::settings::ISettings* g_settings = nullptr;
+std::unique_ptr<omni::isaac::sensor::IsaacSensorManager> g_isaacSensorManager;
 omni::physx::SubscriptionId g_stepSubscription;
+std::vector<float> g_rigidBodyDataBuffer;
+bool firstFrame = true;
+long int g_stageID;
+std::unordered_map<std::string, size_t> g_rigidBodyToDataBufferMap;
 } // end of anonymous namespace
 
 namespace contact_sensor
@@ -75,10 +87,10 @@ namespace contact_sensor
 
 bool CARB_ABI isContactSensor(const char* primPath)
 {
-    if (g_stage && gIsaacSensorManager)
+    if (g_stage && g_isaacSensorManager)
     {
         omni::isaac::sensor::ContactSensor* sensor =
-            gIsaacSensorManager->getContactSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_isaacSensorManager->getContactSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
             return true;
@@ -130,9 +142,9 @@ omni::isaac::sensor::CsRawData* CARB_ABI CsGetBodyRawData(const char* primPath, 
         // setting the minimum required force threshold to 0
         contactReportAPI.GetThresholdAttr().Set(0.0f);
         omni::isaac::sensor::CsRawData* data = nullptr;
-        if (gIsaacSensorManager != nullptr && gIsaacSensorManager->getContactManager() != nullptr)
+        if (g_isaacSensorManager != nullptr && g_isaacSensorManager->getContactManager() != nullptr)
         {
-            data = gIsaacSensorManager->getContactManager()->getCsRawData(primPath, numContacts);
+            data = g_isaacSensorManager->getContactManager()->getCsRawData(primPath, numContacts);
         }
         else
         {
@@ -151,7 +163,7 @@ omni::isaac::sensor::CsRawData* CARB_ABI CsGetBodyRawData(const char* primPath, 
 omni::isaac::sensor::CsRawData* CARB_ABI CsGetSensorRawData(const char* primPath, size_t& numContacts)
 {
     omni::isaac::sensor::ContactSensor* sensor =
-        gIsaacSensorManager->getContactSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        g_isaacSensorManager->getContactSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
     omni::isaac::sensor::CsRawData* data = nullptr;
 
     if (sensor)
@@ -161,47 +173,10 @@ omni::isaac::sensor::CsRawData* CARB_ABI CsGetSensorRawData(const char* primPath
     return data;
 }
 
-omni::isaac::sensor::CsReading CARB_ABI CsGetSensorReadings(const char* primPath, size_t& numReadings)
-{
-    omni::isaac::sensor::ContactSensor* sensor =
-        gIsaacSensorManager->getContactSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
-    omni::isaac::sensor::CsReading data = omni::isaac::sensor::CsReading();
-    if (sensor)
-    {
-        data = sensor->getSensorReadings(numReadings);
-    }
-    return data;
-}
-
-size_t CARB_ABI CsGetSensorReadingsSize(const char* primPath)
-{
-    omni::isaac::sensor::ContactSensor* sensor =
-        gIsaacSensorManager->getContactSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
-
-    size_t numReadings = 0;
-    if (sensor)
-    {
-        sensor->getSensorReadings(numReadings);
-    }
-    return numReadings;
-}
-
-omni::isaac::sensor::CsReading CARB_ABI CsGetSensorSimReading(const char* primPath)
-{
-    omni::isaac::sensor::ContactSensor* sensor =
-        gIsaacSensorManager->getContactSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
-    omni::isaac::sensor::CsReading data;
-    if (sensor)
-    {
-        data = sensor->getSimSensorReading();
-    }
-    return data;
-}
-
 omni::isaac::sensor::CsReading CARB_ABI CsGetSensorReading(const char* primPath, const bool& getLatestValue = false)
 {
     omni::isaac::sensor::ContactSensor* sensor =
-        gIsaacSensorManager->getContactSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        g_isaacSensorManager->getContactSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
     omni::isaac::sensor::CsReading data;
     if (sensor)
     {
@@ -216,10 +191,10 @@ namespace imu_sensor
 
 bool CARB_ABI isImuSensor(const char* primPath)
 {
-    if (g_stage && gIsaacSensorManager)
+    if (g_stage && g_isaacSensorManager)
     {
         omni::isaac::sensor::ImuSensor* sensor =
-            gIsaacSensorManager->getImuSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_isaacSensorManager->getImuSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
             return true;
@@ -237,20 +212,6 @@ bool CARB_ABI isImuSensor(const char* primPath)
     }
 }
 
-omni::isaac::sensor::IsReading CARB_ABI IsGetSensorReadings(const char* primPath,
-                                                            size_t& numReadings,
-                                                            const bool& readGravity)
-{
-    omni::isaac::sensor::ImuSensor* sensor =
-        gIsaacSensorManager->getImuSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
-    omni::isaac::sensor::IsReading data = omni::isaac::sensor::IsReading();
-    if (sensor)
-    {
-        data = sensor->getSensorReadings(numReadings, readGravity);
-    }
-    return data;
-}
-
 omni::isaac::sensor::IsReading CARB_ABI IsGetSensorReading(
     const char* primPath,
     const std::function<omni::isaac::sensor::IsReading(std::vector<omni::isaac::sensor::IsReading>, float)>&
@@ -259,7 +220,7 @@ omni::isaac::sensor::IsReading CARB_ABI IsGetSensorReading(
     const bool& readGravity = true)
 {
     omni::isaac::sensor::ImuSensor* sensor =
-        gIsaacSensorManager->getImuSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        g_isaacSensorManager->getImuSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
     omni::isaac::sensor::IsReading data = omni::isaac::sensor::IsReading();
     if (sensor)
     {
@@ -268,136 +229,149 @@ omni::isaac::sensor::IsReading CARB_ABI IsGetSensorReading(
     return data;
 }
 
-omni::isaac::sensor::IsReading CARB_ABI IsGetSensorSimReading(const char* primPath, const bool& readGravity = true)
-{
-    omni::isaac::sensor::ImuSensor* sensor =
-        gIsaacSensorManager->getImuSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
-    omni::isaac::sensor::IsReading data;
-    if (sensor)
-    {
-        data = sensor->getSimSensorReading(readGravity);
-    }
-    return data;
 }
 
-size_t CARB_ABI IsGetSensorReadingsSize(const char* primPath)
+void onPlay()
 {
-    omni::isaac::sensor::ImuSensor* sensor =
-        gIsaacSensorManager->getImuSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+    g_simulationView = g_tensorApi->createSimulationView(g_stageID);
 
-    size_t numReadings = 0;
-    if (sensor)
+    // First create the sensors and find the sensor parents to create physics views
+    for (const pxr::UsdPrim& prim : g_stage->Traverse())
     {
-        sensor->getSensorReadings(numReadings);
-    }
-    return numReadings;
-}
-}
-
-
-void onUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdateSettings* settings, void* userData)
-{
-    if (!settings->isPlaying)
-    {
-        return;
-    }
-
-    if (gIsaacSensorManager)
-    {
-        gIsaacSensorManager->drawSensor();
-    }
-}
-
-void onPrimAdd(const pxr::SdfPath& primPath, void* userData)
-{
-    if (g_stage && gIsaacSensorManager)
-    {
-        pxr::UsdPrim addedPrim = g_stage->GetPrimAtPath(primPath);
-        if (!addedPrim)
+        if (prim.IsA<pxr::IsaacSensorIsaacImuSensor>())
         {
-            return;
+            // Add the root prim
+            g_isaacSensorManager->onComponentAdd(prim);
+            omni::isaac::sensor::ImuSensor* imuSensor = dynamic_cast<omni::isaac::sensor::ImuSensor*>(
+                g_isaacSensorManager->getComponent(prim.GetPath().GetString()));
+
+            //  if the imu has no valid parent, return
+            if (imuSensor != nullptr)
+            {
+                std::string parentPath = imuSensor->getParentPrim().GetPath().GetString();
+
+                if (std::find(g_rigidBodyPaths.begin(), g_rigidBodyPaths.end(), parentPath) == g_rigidBodyPaths.end())
+                {
+                    g_rigidBodyPaths.push_back(parentPath);
+                }
+            }
         }
-        // Add the root prim
-        gIsaacSensorManager->onComponentAdd(addedPrim);
-
-        // Check if it has any descendants that need to be added
-        pxr::UsdPrimSubtreeRange range = addedPrim.GetDescendants();
-        for (pxr::UsdPrimSubtreeRange::iterator iter = range.begin(); iter != range.end(); ++iter)
+        else if (prim.IsA<pxr::IsaacSensorIsaacContactSensor>())
         {
-            pxr::UsdPrim prim = *iter;
-            gIsaacSensorManager->onComponentAdd(prim);
+            // Add the root prim
+            g_isaacSensorManager->onComponentAdd(prim);
         }
     }
-}
 
+    // Then create physics views
+    if (!g_rigidBodyPaths.empty())
+    {
+        g_rigidBodyView = g_simulationView->createRigidBodyView(g_rigidBodyPaths);
+    }
+    else
+    {
+        g_rigidBodyView = nullptr;
+    }
+
+    for (size_t i = 0; i < g_rigidBodyPaths.size(); i++)
+    {
+        g_rigidBodyToDataBufferMap[g_rigidBodyPaths[i]] = i * 6;
+    }
+
+    g_rigidBodyDataBuffer.resize(6 * g_rigidBodyPaths.size(), 0);
+    rigidBodyData.dtype = omni::physics::tensors::TensorDataType::eFloat32;
+    rigidBodyData.numDims = 2;
+    rigidBodyData.dims[0] = static_cast<int>(g_rigidBodyPaths.size());
+    rigidBodyData.dims[1] = 6;
+    rigidBodyData.data = g_rigidBodyDataBuffer.data();
+    rigidBodyData.ownData = true;
+
+    // pass in the view data and index to the sensor
+    for (const pxr::UsdPrim& prim : g_stage->Traverse())
+    {
+        omni::isaac::sensor::ImuSensor* imuSensor = g_isaacSensorManager->getImuSensor(prim);
+        if (imuSensor != nullptr)
+        {
+            size_t sensorDataIndex = g_rigidBodyToDataBufferMap[imuSensor->getParentPrim().GetPath().GetString()];
+            imuSensor->initialize(&g_rigidBodyDataBuffer, sensorDataIndex);
+        }
+    }
+}
 
 static void onAttach(long int stageId, double metersPerUnit, void* userData)
 {
     g_stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
+    g_stageID = stageId;
     if (!g_stage)
     {
         CARB_LOG_ERROR("PhysX could not find USD stage");
         return;
     }
 
-    if (gIsaacSensorManager)
+    if (g_isaacSensorManager)
     {
-        gIsaacSensorManager->initialize(g_stage);
-        gIsaacSensorManager->initComponents();
-    }
-}
-
-static void onDetach(void* userData)
-{
-    if (gIsaacSensorManager)
-    {
-        gIsaacSensorManager->deleteAllComponents();
+        g_isaacSensorManager->initialize(g_stage);
+        g_isaacSensorManager->initComponents();
     }
 }
 
 static void onStop(void* userData)
 {
-    if (gIsaacSensorManager)
+    if (g_isaacSensorManager)
     {
-        gIsaacSensorManager->onStop();
+        g_isaacSensorManager->onStop();
+        g_isaacSensorManager->deleteAllComponents();
     }
-}
-
-static void onPrimRemove(const pxr::SdfPath& primPath, void* userData)
-{
-    if (gIsaacSensorManager)
+    firstFrame = true;
+    if (g_simulationView != nullptr)
     {
-        gIsaacSensorManager->onComponentRemove(primPath);
+        g_simulationView->release(true);
+        g_simulationView = nullptr;
+        g_rigidBodyView = nullptr;
     }
+    g_rigidBodyPaths.clear();
+    g_rigidBodyDataBuffer.clear();
+    g_rigidBodyToDataBufferMap.clear();
 }
 
 void onComponentChange(const pxr::SdfPath& primOrPropertyPath, void* userData)
 {
-    if (g_stage && gIsaacSensorManager)
+    if (g_stage && g_isaacSensorManager)
     {
-        gIsaacSensorManager->onComponentChange(g_stage->GetPrimAtPath(primOrPropertyPath));
+        g_isaacSensorManager->onComponentChange(g_stage->GetPrimAtPath(primOrPropertyPath));
     }
 }
 
 void onPhysicsStep(float dt, void* userData)
 {
-    if (gIsaacSensorManager)
+    if (g_isaacSensorManager)
     {
-        gIsaacSensorManager->onPhysicsStep(static_cast<double>(dt));
+        if (firstFrame)
+        {
+            onPlay();
+            firstFrame = false;
+        }
+
+        if (g_rigidBodyView != nullptr)
+        {
+            g_rigidBodyView->getVelocities(&rigidBodyData);
+        }
+
+        g_isaacSensorManager->onPhysicsStep(static_cast<double>(dt));
+    }
+}
+
+
+static void onPrimRemove(const pxr::SdfPath& primPath, void* userData)
+{
+    if (g_isaacSensorManager)
+    {
+        g_isaacSensorManager->onComponentRemove(primPath);
     }
 }
 
 CARB_EXPORT void carbOnPluginStartup()
 {
-
-
-    g_debugDraw = carb::getCachedInterface<omni::renderer::IDebugDraw>();
-    if (!g_debugDraw)
-    {
-        CARB_LOG_ERROR("*** Failed to acquire debugdraw interface\n");
-        return;
-    }
-
     g_stageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>();
     if (!g_stageUpdate)
     {
@@ -412,18 +386,30 @@ CARB_EXPORT void carbOnPluginStartup()
         return;
     }
 
+    g_tensorApi = carb::getCachedInterface<omni::physics::tensors::TensorApi>();
+    if (!g_tensorApi)
+    {
+        CARB_LOG_ERROR("*** Failed to acquire Tensor Api interface\n");
+        return;
+    }
 
-    gIsaacSensorManager = std::make_unique<omni::isaac::sensor::IsaacSensorManager>(g_physx, g_debugDraw);
+    g_settings = carb::getCachedInterface<carb::settings::ISettings>();
+    if (!g_settings)
+    {
+        CARB_LOG_ERROR("*** Failed to acquire Carb Setting interface\n");
+        return;
+    }
+    static constexpr char setting[] = "/physics/suppressReadback";
+    g_settings->setBool(setting, false);
+
+    g_isaacSensorManager = std::make_unique<omni::isaac::sensor::IsaacSensorManager>(g_physx);
 
     omni::kit::StageUpdateNodeDesc desc = { 0 };
     desc.displayName = "Isaac Sensor Interface";
     desc.onAttach = onAttach;
-    desc.onDetach = onDetach;
-    desc.onUpdate = onUpdate;
-    desc.onStop = onStop;
-    desc.onPrimAdd = onPrimAdd;
-    desc.onPrimOrPropertyChange = onComponentChange;
     desc.onPrimRemove = onPrimRemove;
+    desc.onStop = onStop;
+    desc.onPrimOrPropertyChange = onComponentChange;
     desc.order = 50; // happens after physx, dc, but before robot engine bridge
 
     g_stageUpdateNode = g_stageUpdate->createStageUpdateNode(desc);
@@ -440,7 +426,7 @@ CARB_EXPORT void carbOnPluginStartup()
 CARB_EXPORT void carbOnPluginShutdown()
 {
     RELEASE_OGN_NODES()
-    gIsaacSensorManager.reset();
+    g_isaacSensorManager.reset();
     g_stageUpdate->destroyStageUpdateNode(g_stageUpdateNode);
     g_physx->unsubscribePhysicsStepEvents(g_stepSubscription);
     g_physx = nullptr;
@@ -456,9 +442,6 @@ void fillInterface(omni::isaac::sensor::ContactSensorInterface& iface)
 
     iface.getSensorRawData = contact_sensor::CsGetSensorRawData;
     iface.getBodyRawData = contact_sensor::CsGetBodyRawData;
-    iface.getSensorReadingsSize = contact_sensor::CsGetSensorReadingsSize;
-    iface.getSensorReadings = contact_sensor::CsGetSensorReadings;
-    iface.getSensorSimReading = contact_sensor::CsGetSensorSimReading;
     iface.getSensorReading = contact_sensor::CsGetSensorReading;
     iface.decodeBodyName = contact_sensor::CsDecodeBodyName;
     iface.isContactSensor = contact_sensor::isContactSensor; // Checks if the path is a contact sensor
@@ -470,10 +453,7 @@ void fillInterface(omni::isaac::sensor::ImuSensorInterface& iface)
 
     memset(&iface, 0, sizeof(iface));
 
-    iface.getSensorReadingsSize = imu_sensor::IsGetSensorReadingsSize;
-    iface.getSensorReadings = imu_sensor::IsGetSensorReadings;
     iface.getSensorReading = imu_sensor::IsGetSensorReading;
-    iface.getSensorSimReading = imu_sensor::IsGetSensorSimReading;
     iface.isImuSensor = imu_sensor::isImuSensor;
 }
 #ifdef _WIN32

@@ -47,73 +47,6 @@ void ContactSensor::reset()
     mContactsRawData = nullptr;
 }
 
-void ContactSensor::drawCircle(const omni::math::linalg::vec3d& _pose, const int& nsegment)
-{
-    // will not visualize if the visualize flag is off or if radius is <=0 (full body sensor)
-    if (!mVisualize || mProps.radius <= 0)
-    {
-        return;
-    }
-
-    float step = static_cast<float>(2 * PI / nsegment);
-    float angle = 0.0f;
-
-    const double* pose = _pose.GetArray();
-    float x = static_cast<float>(pose[0]);
-    float y = static_cast<float>(pose[1]);
-    float z = static_cast<float>(pose[2]);
-
-    const float* color = mColor.GetArray();
-    carb::scenerenderer::PrimitiveVertex data;
-
-    for (int i = 0; i < nsegment; i++, angle += step)
-    {
-        data.position.x = mProps.radius * cos(angle) + x;
-        data.position.y = mProps.radius * sin(angle) + y;
-        data.position.z = z;
-
-        data.color = carb::ColorRgba{ color[0], color[1], color[2], color[3] };
-        data.width = 1;
-        mLineDrawing->addVertex(data);
-    }
-    angle = 0.0f;
-
-    for (int i = 0; i < nsegment; i++, angle += step)
-    {
-        data.position.x = x;
-        data.position.y = mProps.radius * cos(angle) + y;
-        data.position.z = mProps.radius * sin(angle) + z;
-
-        data.color = carb::ColorRgba{ color[0], color[1], color[2], color[3] };
-        data.width = 1;
-
-        mLineDrawing->addVertex(data);
-    }
-    angle = 0.0f;
-
-    for (int i = 0; i < nsegment; i++, angle += step)
-    {
-        data.position.x = mProps.radius * cos(angle) + x;
-        data.position.y = y;
-        data.position.z = mProps.radius * sin(angle) + z;
-
-        data.color = carb::ColorRgba{ color[0], color[1], color[2], color[3] };
-        data.width = 1;
-
-        mLineDrawing->addVertex(data);
-    }
-
-    mLineDrawing->draw();
-}
-
-void ContactSensor::draw()
-{
-    usdrt::GfMatrix4d usdTransform =
-        omni::isaac::utils::pose::computeWorldXformNoCache(mStage, mUsdrtStage, mPrim.GetPath());
-    omni::math::linalg::vec3d translation = usdTransform.ExtractTranslation();
-    drawCircle(translation, 96);
-}
-
 CsRawData* ContactSensor::getRawData(size_t& size)
 {
     if (mContactsRawData == nullptr)
@@ -127,52 +60,12 @@ CsRawData* ContactSensor::getRawData(size_t& size)
     return mContactsRawData;
 }
 
-CsReading ContactSensor::getSimSensorReading()
-{
-    CARB_LOG_WARN_ONCE(
-        "*** Deprecation alert: Contact Sensor getSensorSimReading function is deprecated and will be removed in the next update");
-    CARB_LOG_WARN_ONCE("*** please use getSensorReading for sensor reading");
-    if (mProps.sensorPeriod > 0 && mProps.sensorPeriod < mTimeDelta && mTimeDelta - mProps.sensorPeriod > 0.001)
-    {
-        CARB_LOG_WARN_ONCE(
-            "*** warning: contact sensor frequency is higher than physics frequency, returning the latest physics value");
-    }
-    return mReadingPair[mCurrent];
-}
-
-CsReading ContactSensor::getSensorReadings(size_t& numReadings)
-{
-    CARB_PROFILE_ZONE(0, "ContactSensor::getSensorReadings");
-    CARB_LOG_WARN_ONCE(
-        "*** Deprecation alert: Contact Sensor getSensorReadings function is deprecated and will be removed in the next update");
-    CARB_LOG_WARN_ONCE("*** please use getSensorReading for sensor readings");
-
-    if (mProps.sensorPeriod < mTimeDelta && mProps.sensorPeriod > 0 && mTimeDelta - mProps.sensorPeriod > 0.001)
-    {
-        CARB_LOG_WARN_ONCE(
-            "*** warning: contact sensor frequency is higher than physics frequency, returning the latest physics value");
-    }
-
-    CsReading reading = getSensorReading();
-
-    if (reading.is_valid)
-    {
-        numReadings = 1;
-    }
-    else
-    {
-        numReadings = 0;
-    }
-
-    return reading;
-}
-
 CsReading ContactSensor::getSensorReading(const bool& getLatestValue)
 {
     if (mProps.sensorPeriod > 0 && mProps.sensorPeriod < mTimeDelta && mTimeDelta - mProps.sensorPeriod > 0.001)
     {
         CARB_LOG_WARN_ONCE(
-            "*** warning: IMU sensor frequency is higher than physics frequency, returning the latest physics value");
+            "*** warning: contact sensor frequency is higher than physics frequency, returning the latest physics value");
     }
 
     CsReading sensorReading = CsReading();
@@ -260,8 +153,6 @@ void ContactSensor::processRawContacts(CsRawData* rawContact, const size_t& size
 void ContactSensor::onPhysicsStep()
 {
     CARB_PROFILE_ZONE(0, "ContactSensor::physics step");
-    mLineDrawing->clear();
-    mLineDrawing->draw();
     if (mContactManagerPtr == nullptr)
     {
         CARB_LOG_ERROR("*** error: ContactManager not found");
@@ -338,7 +229,8 @@ bool ContactSensor::findValidParent()
         // go to parent
         tempPrim = tempPrim.GetParent();
     }
-    CARB_LOG_ERROR("*** error: contact sensor parent prim is not found or is invalid");
+    CARB_LOG_ERROR("*** error, No valid parent for %s with a rigid body api was found, sensor will not be created",
+                   this->mPrim.GetPath().GetString().c_str());
     return false;
 }
 
@@ -367,12 +259,6 @@ void ContactSensor::onComponentChange()
     mProps.radius = radius;
     mProps.sensorPeriod = sensorPeriod;
 
-    if (mVisualize && mEnabled)
-    {
-        CARB_LOG_WARN_ONCE("*** Deprecation Alert: visualization through USD will be removed in the next release!");
-        draw();
-    }
-
     if (mPreviousEnabled != this->mEnabled)
     {
         if (mEnabled)
@@ -392,8 +278,6 @@ void ContactSensor::onComponentChange()
 
 void ContactSensor::onStop()
 {
-    mLineDrawing->clear();
-    mLineDrawing->draw();
     mCurrentTime = 0.0f;
     mSensorTime = 0.0f;
     mTimeSeconds = 0.0f;
@@ -402,10 +286,6 @@ void ContactSensor::onStop()
 
 
     mContactsRawData = nullptr;
-    if (mVisualize)
-    {
-        draw();
-    }
 }
 
 void ContactSensor::printRawData(CsRawData* data)
