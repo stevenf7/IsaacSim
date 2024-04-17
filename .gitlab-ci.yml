@@ -90,6 +90,9 @@ variables:
   ALLOW_PUBLISH_TO_LAUNCHER:
     value: "true"
     description: "Set to true to for Kit apps that are published to the Launcher. That adds jobs for that."
+  ALLOW_PUBLISH_EXTENSIONS:
+    value: "true"
+    description: "Set to true to publish extension updates."
   ALLOW_SECURITY_SCAN:
     value: "false"
     description: "Set to true to trigger a security scan as a child pipeline (non blocking)"
@@ -273,6 +276,9 @@ build-linux-x86_64-debug:
   - !reference [.omni_s3_write_get_secrets, omni_s3_write_get_secrets]
   script:
   - ./repo.sh ci build -c debug
+  rules:
+  - if: $RUN_DOCS_BUILD == "true"
+    when: never
 
 # ==============================================================================================================
 build-windows-x86_64-release:
@@ -283,6 +289,9 @@ build-windows-x86_64-release:
   - !reference [.windows_packman_s3_creds_get_powershell, windows_packman_s3_creds_get_powershell]
   script:
   - ./repo.bat ci build -c release
+  rules:
+  - if: $RUN_DOCS_BUILD == "true"
+    when: never
 
 # ==============================================================================================================
 build-windows-x86_64-debug:
@@ -293,6 +302,9 @@ build-windows-x86_64-debug:
   - !reference [.windows_packman_s3_creds_get_powershell, windows_packman_s3_creds_get_powershell]
   script:
   - ./repo.bat ci build -c debug
+  rules:
+  - if: $RUN_DOCS_BUILD == "true"
+    when: never
 
 
 
@@ -1089,6 +1101,8 @@ publish-extensions:
   #     artifacts: false
   #     optional: true
   rules:
+  - if: $ALLOW_PUBLISH_EXTENSIONS != "true"
+    when: never
   - if: $RUN_BUMP_VERSION == "true"
     when: never
   - !reference [.rules-push, rules]
