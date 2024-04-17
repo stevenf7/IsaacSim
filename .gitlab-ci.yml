@@ -910,6 +910,7 @@ build-docs:
   extends:
   - .build-common
   - .runner-build-linux-x86_64
+  timeout: 2 hours
   before_script:
   - set -eu
   - yum install -y bsdtar
