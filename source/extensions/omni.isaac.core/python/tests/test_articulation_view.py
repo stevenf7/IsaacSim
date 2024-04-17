@@ -44,7 +44,7 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         self._my_world._physics_context.set_gravity(0)
         await omni.kit.app.get_app().next_update_async()
 
-    async def add_frankas(self, backend, enable_dof_force_sensors=False):
+    async def add_frankas(self, backend):
         assets_root_path = await get_assets_root_path_async()
         asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_1")
@@ -60,7 +60,6 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
             prim_paths_expr="/World/Franka_[1-2]",
             name="frankas_view",
             positions=positions,
-            enable_dof_force_sensors=enable_dof_force_sensors,
         )
         self._my_world.scene.add(self._frankas_view)
         await self._my_world.reset_async()

@@ -73,8 +73,6 @@ class ArticulationView(XFormPrimView):
                                                 (i.e: translate, orient and scale) ONLY and in that order.
                                                 Set this parameter to False if the object were cloned using using
                                                 the cloner api in omni.isaac.cloner. Defaults to True.
-        enable_dof_force_sensors (bool, optional): enables the solver computed dof force sensors on articulation joints.
-                                                    Defaults to False.
 
     Example:
 
@@ -114,7 +112,6 @@ class ArticulationView(XFormPrimView):
         scales: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
         visibilities: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
         reset_xform_properties: bool = True,
-        enable_dof_force_sensors: bool = False,
     ) -> None:
         self._physics_view = None
         XFormPrimView.__init__(
@@ -139,7 +136,6 @@ class ArticulationView(XFormPrimView):
         self._dof_indices = None
         self._dof_types = None
         self._metadata = None
-        self._enable_dof_force_sensors = enable_dof_force_sensors
 
         self._use_finite_difference = carb.settings.get_settings().get("/exts/omni.isaac.core/use_finite_difference")
         if not self._use_finite_difference and carb.settings.get_settings().get(
@@ -378,9 +374,7 @@ class ArticulationView(XFormPrimView):
             physics_sim_view = omni.physics.tensors.create_simulation_view(self._backend)
             physics_sim_view.set_subspace_roots("/")
         carb.log_info("initializing view for {}".format(self._name))
-        self._physics_view = physics_sim_view.create_articulation_view(
-            self._regex_prim_paths.replace(".*", "*"), self._enable_dof_force_sensors
-        )
+        self._physics_view = physics_sim_view.create_articulation_view(self._regex_prim_paths.replace(".*", "*"))
         assert self._physics_view.is_homogeneous
         self._physics_sim_view = physics_sim_view
         if not self._is_initialized:

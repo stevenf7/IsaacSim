@@ -1,5 +1,8 @@
 # Changelog
 
+## [3.9.1] - 2023-04-17
+### Fixed
+- removed the deprecated physX force sensor 
 
 ## [3.9.0] - 2023-04-16
 ### Added
