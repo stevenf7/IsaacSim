@@ -47,8 +47,6 @@ class Articulation(_SinglePrimWrapper):
         articulation_controller (Optional[ArticulationController], optional): a custom ArticulationController which
                                                                               inherits from it. Defaults to creating the
                                                                               basic ArticulationController.
-        enable_dof_force_sensors (bool, optional): enables the solver computed dof force sensors on articulation joints.
-                                                   Defaults to False.
 
     Example:
 
@@ -79,7 +77,6 @@ class Articulation(_SinglePrimWrapper):
         scale: Optional[Sequence[float]] = None,
         visible: Optional[bool] = None,
         articulation_controller: Optional[ArticulationController] = None,
-        enable_dof_force_sensors: bool = False,
     ) -> None:
         if SimulationContext.instance() is not None:
             self._backend = SimulationContext.instance().backend
@@ -113,7 +110,6 @@ class Articulation(_SinglePrimWrapper):
             orientations=orientation,
             scales=scale,
             visibilities=visible,
-            enable_dof_force_sensors=enable_dof_force_sensors,
         )
         self._articulation_controller = articulation_controller
         if self._articulation_controller is None:
