@@ -42,6 +42,7 @@ stages:
 - security
 - deploy
 - prod-test
+- pages
 
 
 # ==============================================================================================================
@@ -119,6 +120,9 @@ variables:
   RUN_NIGHTLY_TESTS:
     value: "false"
     description: "Set to true to run nightly tests. Only happens on schedule."
+  RUN_DOCS_BUILD:
+    value: "false"
+    description: "Set to true to build omni docs. Only happens on schedule."
 
 
 # ==============================================================================================================
@@ -161,6 +165,13 @@ variables:
     - VERSION.md
     - VERSION
 
+.rules-build-docs:
+  rules:
+  # allow schedule pipeline if RUN_DOCS_BUILD is set to "true" and its scheduled
+  - if: $CI_PIPELINE_SOURCE == "schedule" && $RUN_DOCS_BUILD == "true"
+    when: always
+  - when: never
+  
 
 # ==============================================================================================================
 # Rule for running publisher on push on develop and release branches
@@ -315,7 +326,7 @@ build-windows-x86_64-debug:
   - .test-artifacts
   allow_failure: true
   rules:
-  - if: $RUN_BUMP_VERSION == "true"
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
     when: never
   - !reference [.rules-workflow, rules]
 
@@ -867,21 +878,19 @@ test-windows-x86_64-nativepythontests-2:
   - set -eu
   - !reference [.omni_codesign_get_secrets, omni_codesign_get_secrets]
   - !reference [.omni_s3_write_get_secrets, omni_s3_write_get_secrets]
+  rules:
+  - if: $RUN_DOCS_BUILD == "true"
+    when: never
 
 pages:
-  tags:
-  - pages
-  stage: deploy
-  image: alpine:latest
+  stage: pages
+  extends:
+  - .build-common
+  - .runner-build-linux-x86_64
   script:
-  - apk add --no-cache p7zip wget curl
   - mkdir .public
-  - echo "10.36.168.30 teamcity.nvidia.com" >> /etc/hosts
-  - echo "24.51.7.209 swiftstack-maglev.ngc.nvidia.com" >> /etc/hosts
-  - 'curl -L --output docs.7z --header "Authorization: Bearer $TC_TOKEN" https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Develop_BuildAndPackaging_OmniDocsBuildLinuxX8664/.lastSuccessful/omniverse-robotics-docs%40%7Bbuild.number%7D.7z'
-  - 'curl -L --output pydocs.7z --header "Authorization: Bearer $TC_TOKEN" https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Develop_BuildAndValidation/.lastSuccessful/artifacts/Linux/docs%40%7Bbuild.number%7D.linux-x86_64.7z'
-  - 7z x docs.7z -o.public
-  - 7z x pydocs.7z -oisaacsim
+  - mv omni-docs/_build/docs .public
+  - 7z x _build/packages/docs@*.7z -oisaacsim
   - mkdir -p .public/py/
   - mv isaacsim .public/py/
   - ls .public/py/isaacsim
@@ -890,9 +899,36 @@ pages:
     paths:
     - public
   rules:
-  - if: $RUN_BUMP_VERSION != "true" && $CI_COMMIT_BRANCH == "develop"
+    - !reference [.rules-build-docs, rules]
+  needs:
+    - job: build-linux-x86_64-release
+      artifacts: true
+    - job: build-docs
+      artifacts: true
+
+build-docs:
+  extends:
+  - .build-common
+  - .runner-build-linux-x86_64
+  before_script:
+  - set -eu
+  - yum install -y bsdtar
+  - !reference [.omni_s3_write_get_secrets, omni_s3_write_get_secrets]
+  script:
+  - git clone --depth=1 -b isaac_sim --single-branch https://gitlab-master.nvidia.com/omniverse/omni-docs.git
+  - pushd omni-docs
+  - ./repo docs --warn-as-error=0
+  - ./repo docs --stage sphinx
+  - ./repo docs --stage post
+  - popd
+  rules:
+  - !reference [.rules-build-docs, rules]
+  artifacts:
     when: always
-  - when: never
+    expire_in: 2 weeks
+    paths:
+    - omni-docs/_build/docs
+
 
 # ==============================================================================================================
 .benchmark-artifacts:
