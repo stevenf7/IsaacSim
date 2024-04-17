@@ -32,32 +32,11 @@ struct ContactSensorInterface
      */
     CsRawData*(CARB_ABI* getSensorRawData)(const char* primPath, size_t& numContacts);
 
-    //! Gets size of readings for sensor
-    /*! Gets the size of readings for a sensor from last simulation step to current.
-     * \param primPath path of the sensor prim
-     * \return size of readings
-     */
-    size_t(CARB_ABI* getSensorReadingsSize)(const char* primPath);
-
-    //! Gets Sensor values
-    /*! Gets the sensor values from last simulation step to current simualation step
-     * \param primPath path of the sensor prim
-     * \param numReadings size of reading
-     * \return time-stamped sensor values.
-     */
-    CsReading(CARB_ABI* getSensorReadings)(const char* primPath, size_t& numReadings);
-
-    //! Gets Sensor latest simulation
-    /*! Gets the sensor latest simulation reading
-     * \param primPath path of the sensor prim
-     * \return time-stamped sensor values.
-     */
-    CsReading(CARB_ABI* getSensorSimReading)(const char* primPath);
-
     //! Gets Sensor latest simulation
     /*! Check is the prim path contact sensor
      * \param primPath path of the sensor prim
-     * \return boolean for is contact sensor
+     * \param getLatestValue boolean flag for getting the latest sim value or the last sensor measured value
+     * \return time-stamped sensor values
      */
     CsReading(CARB_ABI* getSensorReading)(const char* primPath, const bool& getLatestValue);
 
@@ -79,31 +58,12 @@ struct ImuSensorInterface
 {
     CARB_PLUGIN_INTERFACE("omni::isaac::sensor::ImuSensorInterface", 0, 1);
 
-
-    //! Gets size of readings for sensor
-    /*! Gets the size of readings for a sensor from last simulation step to current.
-     * \param usdPath sensor prim path
-
-     * \return size of readings
-     */
-    size_t(CARB_ABI* getSensorReadingsSize)(const char* usdPath);
-
-    //! Gets Sensor values
-    /*! Gets the sensor values from last simulation step to current simualation step
-
-     * \param usdPath sensor prim path
-
-     * \return time-stamped sensor values.
-     */
-    IsReading(CARB_ABI* getSensorReadings)(const char* usdPath, size_t& numReadings, const bool& readGravity);
-
     //! Gets Sensor last reading
     /*! Gets the sensor last reading on its latest sensor period
 
      * \param usdPath sensor prim path
      * \param interpolationFunction interpolation functional pointer
      * \param getLatestValue flag for getting the latest sim value or the last sensor measured value
-
 
      * \return time-stamped sensor values.
      */
@@ -113,15 +73,6 @@ struct ImuSensorInterface
             interpolateFunction,
         const bool& getLatestValue,
         const bool& readGravity);
-
-    //! Gets Sensor latest simulation
-    /*! Gets the sensor latest simulation reading
-
-     * \param usdPath sensor prim path
-
-     * \return time-stamped sensor values.
-     */
-    IsReading(CARB_ABI* getSensorSimReading)(const char* usdPath, const bool& readGravity);
 
     //! Check is Prim an ImuSensorSchema
     /*! Return True for is, False for is not an ImuSensorSchema

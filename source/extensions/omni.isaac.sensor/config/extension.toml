@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "9.15.0"
+version = "10.0.0"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Support physics based sensors, such as contact sensors and imu sensors"
@@ -27,7 +27,6 @@ writeTarget.kit = true
 "omni.isaac.range_sensor" = {}
 "omni.isaac.core_nodes" = {}
 "omni.usd.schema.isaac" = {}
-"omni.isaac.debug_draw" = {}
 "omni.graph" = {}
 "omni.graph.action" = {}
 "omni.syntheticdata" = {}

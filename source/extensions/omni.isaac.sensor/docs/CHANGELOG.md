@@ -1,5 +1,13 @@
 # Changelog
 
+## [10.0.0] - 2024-04-09
+### Changed
+- Tensor API support for IMU sensor
+- Changed physics based sensor to be created on play and destroyed on stop
+
+### Removed
+- Deprecated function: get_sensor_readings, get_sensor_num_readings, get_sensor_sim_readings
+
 ## [9.15.0] - 2024-03-13
 ### Added
 - Added Sick sensor config files for multiScan136, multiScan165, picoScan150

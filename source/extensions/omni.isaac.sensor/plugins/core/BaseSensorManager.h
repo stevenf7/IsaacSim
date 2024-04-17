@@ -50,40 +50,16 @@ namespace sensor
 class IsaacSensorManager : public utils::BridgeApplicationBase<IsaacBaseSensorComponent>
 {
 public:
-    IsaacSensorManager(omni::physx::IPhysx* physXInterface, omni::renderer::IDebugDraw* debugDrawPtr)
+    IsaacSensorManager(omni::physx::IPhysx* physXInterface)
     {
         mPhysXInterface = physXInterface;
         mContactManager = std::make_unique<ContactManager>();
-        mDebugDrawPtr = debugDrawPtr;
     }
 
     ~IsaacSensorManager()
     {
         mComponents.clear();
         mContactManager.reset();
-    }
-
-    void onStart()
-    {
-        mContactManager->resetSensors();
-        pxr::UsdPrimRange range = this->mStage->Traverse();
-        mPxScene = nullptr;
-
-        for (pxr::UsdPrimRange::iterator iter = range.begin(); iter != range.end(); ++iter)
-        {
-            pxr::UsdPrim prim = *iter;
-
-            if (prim.IsA<pxr::UsdPhysicsScene>())
-            {
-                mPxScene = static_cast<::physx::PxScene*>(
-                    mPhysXInterface->getPhysXPtr(prim.GetPrimPath(), omni::physx::PhysXType::ePTScene));
-
-                if (mPxScene)
-                {
-                    break;
-                }
-            }
-        }
     }
 
     void onStop()
@@ -106,7 +82,7 @@ public:
         std::unique_ptr<IsaacBaseSensorComponent> component;
         if (prim.IsA<pxr::IsaacSensorIsaacContactSensor>())
         {
-            component = std::make_unique<ContactSensor>(mDebugDrawPtr, mPhysXInterface, mContactManager.get());
+            component = std::make_unique<ContactSensor>(mPhysXInterface, mContactManager.get());
             component->initialize(pxr::IsaacSensorIsaacBaseSensor(prim), mStage);
 
             ContactSensor* contactSensor = dynamic_cast<ContactSensor*>(component.get());
@@ -120,7 +96,7 @@ public:
         }
         else if (prim.IsA<pxr::IsaacSensorIsaacImuSensor>())
         {
-            component = std::make_unique<ImuSensor>(mDebugDrawPtr, mPhysXInterface);
+            component = std::make_unique<ImuSensor>();
             component->initialize(pxr::IsaacSensorIsaacBaseSensor(prim), mStage);
 
             ImuSensor* imuSensor = dynamic_cast<ImuSensor*>(component.get());
@@ -149,6 +125,11 @@ public:
         {
             mComponents[prim.GetPath().GetString()]->onComponentChange();
         }
+    }
+
+    IsaacBaseSensorComponent* getComponent(std::string Path)
+    {
+        return mComponents[Path].get();
     }
 
     void onPhysicsStep(const double& dt)
@@ -207,21 +188,6 @@ public:
         }
     }
 
-    void drawSensor()
-    {
-        if (mComponents.size() == 0)
-        {
-            return;
-        }
-        for (auto& component : mComponents)
-        {
-            if (component.second->getEnabled() && component.second->getVisualize())
-            {
-                component.second.get()->draw();
-            }
-        }
-    }
-
     ContactSensor* getContactSensor(const pxr::UsdPrim& prim)
     {
         if (prim)
@@ -252,10 +218,10 @@ public:
     }
 
 private:
-    ::physx::PxScene* mPxScene = nullptr;
     omni::physx::IPhysx* mPhysXInterface = nullptr;
     std::unique_ptr<ContactManager> mContactManager = nullptr;
-    omni::renderer::IDebugDraw* mDebugDrawPtr = nullptr;
+    std::unordered_map<std::string, size_t> mRigidBodyToDataBufferMap;
+    std::vector<float> mRigidBodyDataBuffer;
 };
 }
 }
