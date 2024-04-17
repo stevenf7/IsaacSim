@@ -290,8 +290,6 @@ build-windows-x86_64-release:
   script:
   - ./repo.bat ci build -c release
   rules:
-  - if: $RUN_DOCS_BUILD == "true"
-    when: never
 
 # ==============================================================================================================
 build-windows-x86_64-debug:
