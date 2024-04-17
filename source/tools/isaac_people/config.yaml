@@ -1,4 +1,4 @@
-omni.replicator.character:
+omni.replicator.agent:
   version: 0.1.0
   global:
     seed: 123456
