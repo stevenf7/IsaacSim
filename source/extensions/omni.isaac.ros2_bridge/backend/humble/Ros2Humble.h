@@ -332,7 +332,7 @@ class Ros2ServiceHumble : public Ros2Service
 public:
     Ros2ServiceHumble(Ros2NodeBase* node, const char* service_name, const void* type, const Ros2QoSProfile& qos);
     virtual ~Ros2ServiceHumble();
-    virtual bool spin(void* msg);
+    virtual bool getRequest(void* msg);
     virtual bool sendResponse(void* msg);
     virtual bool isValid()
     {
@@ -342,6 +342,26 @@ public:
 private:
     Ros2NodeBase* mNode;
     std::shared_ptr<rcl_service_t> mService = nullptr;
+    rcl_wait_set_t wait_set;
+    rmw_request_id_t request_id;
+    bool wait_set_initialized = false;
+};
+
+class Ros2ClientHumble : public Ros2Client
+{
+public:
+    Ros2ClientHumble(Ros2NodeBase* node, const char* service_name, const void* type, const Ros2QoSProfile& qos);
+    virtual ~Ros2ClientHumble();
+    virtual bool sendRequest(void* msg);
+    virtual bool getResponse(void* msg);
+    virtual bool isValid()
+    {
+        return mClient != nullptr;
+    }
+
+private:
+    Ros2NodeBase* mNode;
+    std::shared_ptr<rcl_client_t> mClient = nullptr;
     rcl_wait_set_t wait_set;
     rmw_request_id_t request_id;
     bool wait_set_initialized = false;

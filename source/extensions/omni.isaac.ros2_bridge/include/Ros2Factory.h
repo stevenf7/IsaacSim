@@ -141,8 +141,16 @@ public:
 class Ros2Service
 {
 public:
-    virtual bool spin(void* msg) = 0;
+    virtual bool getRequest(void* msg) = 0;
     virtual bool sendResponse(void* msg) = 0;
+    virtual bool isValid() = 0;
+};
+
+class Ros2Client
+{
+public:
+    virtual bool sendRequest(void* msg) = 0;
+    virtual bool getResponse(void* msg) = 0;
     virtual bool isValid() = 0;
 };
 
@@ -175,6 +183,7 @@ public:
             std::string(mPkgName) + "__" + std::string(mMsgSubfolder) + "__" + std::string(mMsgName) +
             getMessageSpec(true));
     }
+
     void* create()
     {
         return mGeneratorLibrary->callSymbol<void*>(std::string(mPkgName) + "__" + std::string(mMsgSubfolder) + "__" +
@@ -483,6 +492,10 @@ public:
                                                        const char* service_name,
                                                        const void* type,
                                                        const Ros2QoSProfile& qos) = 0;
+    virtual std::shared_ptr<Ros2Client> CreateClient(Ros2NodeBase* node,
+                                                     const char* service_name,
+                                                     const void* type,
+                                                     const Ros2QoSProfile& qos) = 0;
 
     virtual std::shared_ptr<Ros2ClockMessage> CreateClockMessage() = 0;
 

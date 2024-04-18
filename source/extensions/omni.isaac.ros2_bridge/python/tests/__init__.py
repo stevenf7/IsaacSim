@@ -20,6 +20,7 @@ from .test_publisher import *
 from .test_rclpy import *
 from .test_rtx_sensor import *
 from .test_semantic_labels import *
+from .test_service import *
 from .test_service_prim import *
 from .test_subscriber import *
 from .test_subscribers import *
