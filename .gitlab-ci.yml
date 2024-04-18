@@ -895,7 +895,9 @@ pages:
   - yum install -y p7zip p7zip-plugins
   script:
   - mkdir .public
-  - mv omni-docs/_build/docs .public
+  - ls
+  - mv omni-docs/_build/docs/* .public/
+  - ls .public
   - 7z x _build/packages/docs@*.7z -oisaacsim
   - mkdir -p .public/py/
   - mv isaacsim .public/py/
