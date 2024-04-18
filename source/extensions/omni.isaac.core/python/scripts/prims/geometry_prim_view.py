@@ -819,7 +819,7 @@ class GeometryPrimView(XFormPrimView):
             [ True  True  True]
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        collisions = np.zeros(shape=indices.shape[0], dtype=np.bool)
+        collisions = np.zeros(shape=indices.shape[0], dtype=bool)
         write_idx = 0
         indices = self._backend_utils.to_list(indices)
         for i in indices:
