@@ -42,6 +42,8 @@ public:
             CARB_LOG_ERROR("Failed to acquire omni::isaac::dynamic_control interface");
             return;
         }
+
+        state.mFirstIteration = true;
     }
 
     static bool compute(OgnROS2PublishTransformTreeDatabase& db)
@@ -121,7 +123,12 @@ public:
             Ros2QoSProfile qos;
 
             const std::string& qosProfile = db.inputs.qosProfile();
-            if (qosProfile == "")
+            if (db.inputs.staticPublisher())
+            {
+                qos.depth = 1;
+                qos.durability = Ros2QoSDurabilityPolicyType::eTransientLocal;
+            }
+            else if (qosProfile == "")
             {
                 qos.depth = db.inputs.queueSize();
             }
@@ -151,17 +158,34 @@ public:
 
         auto& state = db.perInstanceState<OgnROS2PublishTransformTree>();
 
-        // Check if subscription count is 0
-        if (!mPublishWithoutVerification && !state.mPublisher.get()->get_subscription_count())
+        bool isStaticPublisher = db.inputs.staticPublisher();
+
+        // If we're a static publisher we only publish once on the first iteration.
+        // The message will persist as long as the simulation is playing.
+        // If we're not a static publisher, we publish every tick only if
+        // we have subscribers or mPublishWithoutVerification is true.
+        if (isStaticPublisher)
         {
-            return false;
+            if (!state.mFirstIteration)
+            {
+                return false;
+            }
+            state.mFirstIteration = false;
         }
+        else
+        {
+            // Check if subscription count is 0
+            if (!mPublishWithoutVerification && !state.mPublisher.get()->get_subscription_count())
+            {
+                return false;
+            }
+        }
+
         if (!stage)
         {
             db.logError("Could not find USD stage %ld", stageId);
             return false;
         }
-
 
         const double time = db.inputs.timeStamp();
         std::vector<tfMessageStruct> tfMsg_vec;
@@ -212,12 +236,15 @@ public:
         mPublisher.reset(); // This should be reset before we reset the handle.
         Ros2Node::reset();
         mPoseTree.reset();
+        mFirstIteration = true;
     }
 
 
 private:
     std::shared_ptr<Ros2Publisher> mPublisher = nullptr;
     std::shared_ptr<Ros2TfTreeMessage> mMessage = nullptr;
+
+    bool mFirstIteration = true;
 
     const char* mThisPrimPath = nullptr;
 
