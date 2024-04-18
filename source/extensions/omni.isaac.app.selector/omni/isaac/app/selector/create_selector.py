@@ -148,6 +148,7 @@ class CreateSelectorExtension(omni.ext.IExt):
         main_dockspace = ui.Workspace.get_window("DockSpace")
 
         selector_handle.dock_in(main_dockspace, ui.DockPosition.SAME)
+        selector_handle.dock_tab_bar_enabled = False
         selector_handle.dock_tab_bar_visible = False
 
         await omni.kit.app.get_app().next_update_async()
