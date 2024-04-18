@@ -19,13 +19,13 @@
 class OgnROS2PublishRawTransformTree : public Ros2Node
 {
 public:
-    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
-    // {
-    //     auto& state =
-    //     OgnROS2PublishRawTransformTreeDatabase::sPerInstanceState<OgnROS2PublishRawTransformTree>(nodeObj,
-    //     instanceId);
+    static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
+    {
+        auto& state = OgnROS2PublishRawTransformTreeDatabase::sPerInstanceState<OgnROS2PublishRawTransformTree>(
+            nodeObj, instanceId);
 
-    // }
+        state.mFirstIteration = true;
+    }
 
     static bool compute(OgnROS2PublishRawTransformTreeDatabase& db)
     {
@@ -59,7 +59,12 @@ public:
             Ros2QoSProfile qos;
 
             const std::string& qosProfile = db.inputs.qosProfile();
-            if (qosProfile == "")
+            if (db.inputs.staticPublisher())
+            {
+                qos.depth = 1;
+                qos.durability = Ros2QoSDurabilityPolicyType::eTransientLocal;
+            }
+            else if (qosProfile == "")
             {
                 qos.depth = db.inputs.queueSize();
             }
@@ -86,11 +91,29 @@ public:
     {
         auto& state = db.perInstanceState<OgnROS2PublishRawTransformTree>();
 
-        // Check if subscription count is 0
-        if (!mPublishWithoutVerification && !state.mPublisher.get()->get_subscription_count())
+        bool isStaticPublisher = db.inputs.staticPublisher();
+
+        // If we're a static publisher we only publish once on the first iteration.
+        // The message will persist as long as the simulation is playing.
+        // If we're not a static publisher, we publish every tick only if
+        // we have subscribers or mPublishWithoutVerification is true.
+        if (isStaticPublisher)
         {
-            return false;
+            if (!state.mFirstIteration)
+            {
+                return false;
+            }
+            state.mFirstIteration = false;
         }
+        else
+        {
+            // Check if subscription count is 0
+            if (!mPublishWithoutVerification && !state.mPublisher.get()->get_subscription_count())
+            {
+                return false;
+            }
+        }
+
         auto& translation = db.inputs.translation();
         auto& rotation = db.inputs.rotation();
 
@@ -112,12 +135,15 @@ public:
     {
         mPublisher.reset(); // Publisher should be reset before we reset the handle.
         Ros2Node::reset();
+        mFirstIteration = true;
     }
 
 
 private:
     std::shared_ptr<Ros2Publisher> mPublisher = nullptr;
     std::shared_ptr<Ros2RawTfTreeMessage> mMessage = nullptr;
+
+    bool mFirstIteration = true;
 
     std::string mParentFrameId = "odom";
     std::string mChildFrameId = "base_link";

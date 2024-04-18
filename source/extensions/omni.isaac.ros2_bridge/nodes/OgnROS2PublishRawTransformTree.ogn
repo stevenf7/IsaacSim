@@ -65,6 +65,11 @@
                 "type": "quatd[4]",
                 "description": "Rotation as a quaternion (IJKR)",
                 "default": [0.0, 0.0, 0.0, 1.0]
+            },
+            "staticPublisher": {
+                "type": "bool",
+                "description": "If enabled this will override QoS settings to publish static transform trees, similar to tf2::StaticTransformBroadcaster",
+                "default": false
             }
         }
     }

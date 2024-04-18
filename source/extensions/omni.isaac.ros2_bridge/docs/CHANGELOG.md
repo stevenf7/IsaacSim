@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.21.0] - 2024-04-17
+### Added
+- Implemented static TF publishing in OgnROS2PublishTransformTree
+
 ## [2.20.0] - 2024-04-16
 ### Added
 - New QoSProfile node to create any preset or custom qos profile to use with ROS2 Omnigraph nodes
