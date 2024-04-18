@@ -1,4 +1,10 @@
 # Changelog
+## [7.0.0] - 2024-04-17
+### Added
+- Added support for full-pose targets in Lula RRT algorithm
+### Changed
+- Changed behavior of get_acceleration_limits() and get_jerk_limits() output to track changes in Lula.
+
 ## [6.1.3] - 2024-03-06
 ### Changed
 - Updated path to UR10

@@ -86,17 +86,10 @@ class RRT(LulaInterfaceHelper, PathPlanner):
             self._taskspace_target_position = None
 
         if target_orientation is not None:
-            target_rotation = quats_to_rot_matrices(target_orientation)
+            self._taskspace_target_rotation = quats_to_rot_matrices(target_orientation)
         else:
-            target_rotation = None
-
-        self._taskspace_target_rotation = target_rotation
+            self._taskspace_target_rotation = None
         self._cspace_target = None
-
-        if self._taskspace_target_rotation is not None:
-            carb.log_warn(
-                "Lula's RRT implementation does not currently support orientation targets.  The generated plan will ignore the orientation target"
-            )
 
     def get_active_joints(self) -> List:
         __doc__ = PathPlanner.get_active_joints.__doc__
@@ -226,26 +219,91 @@ class RRT(LulaInterfaceHelper, PathPlanner):
             - A default value of 0.5 is recommended as a starting value for initial testing with a given
                 system.
 
-        `task_space_planning_params/x_target_zone_tolerance` (np.array[np.float64[3,]])
-            - A configuration has reached the task space target when task space position, x(i), is in
-                the range x_target(i) +/- x_target_zone_tolerance(i).
+        `task_space_planning_params/translation_target_zone_tolerance` (float)
+            - A configuration has reached the task space translation target when task space position has
+              an L2 Norm within `translation_target_zone_tolerance` of the target.
             - It is assumed that a valid configuration within the target tolerance can be moved directly
-                to the target configuration using Jacobian transpose control.
-            - In general, it is recommended that the target zone bounding box have dimensions close to
-                the `step_size`.
+              to the target configuration using an inverse kinematics solver and linearly stepping
+              towards the solution.
+            - In general, it is recommended that the size of the translation target zone be on the same
+              order of magnitude as the translational distance in task-space corresponding to moving the
+              robot in configuration space by one step with an L2 norm of `step_size`.
 
-        `task_space_planning_params/x_target_final_tolerance` (float)
-            - Once a path is found that terminates within `x_target_zone_tolerance`, a numeric solver is
-                used to find a configuration space solution corresponding to the task space target. This
-                solver terminates when the L2-norm of the corresponding task space position is within
-                `x_target_final_tolerance` of the target.
-            - Note: This solver assumes that if a c-space configuration within `x_target_zone_tolerance`
-                is found then this c-space configuration can be extended towards the task space target
-                using the Jacobian transpose method. If this assumption is NOT met, the returned path will
-                not reach the task space target within the `x_target_final_tolerance` and an error is
-                logged.
-            - The recommended default value is 1e-5, but in general this value should be set to a
-                positive value that is considered "good enough" precision for the specific system.
+        `task_space_planning_params/orientation_target_zone_tolerance` (float)
+            - A configuration has reached the task space pose target when task space orientation is
+              within `orientation_target_zone_tolerance` radians and an L2 norm translation
+              within `translation_target_zone_tolerance` of the target.
+            - It is assumed that a valid configuration within the target tolerances can be moved
+              directly to the target configuration using an inverse kinematics solver and linearly
+              stepping towards the solution.
+            - In general, it is recommended that the size of the orientation target zone be on the same
+              order of magnitude as the rotational distance in task-space corresponding to moving the
+              robot in configuration space by one step with an L2 norm of `step_size`.
+
+         `task_space_planning_params/translation_target_final_tolerance` (float)
+            - Once a path is found that terminates within `translation_target_zone_tolerance`, an IK
+              solver is used to find a configuration space solution corresponding to the task space
+              target. This solver terminates when the L2-norm of the corresponding task space position
+              is within `translation_target_final_tolerance` of the target.
+            - Note: This solver assumes that if a c-space configuration within
+              `translation_target_zone_tolerance` is found then this c-space configuration can be
+              moved linearly in cspace to the IK solution. If this assumption is NOT met, the returned
+              path will not reach the task space target within the `translation_target_final_tolerance`
+              and an error is logged.
+            - The recommended default value is 1e-4, but in general this value should be set to a
+              positive value that is considered "good enough" precision for the specific system.
+
+         `task_space_planning_params/orientation_target_final_tolerance` (float)
+            - For pose targets, once a path is found that terminates within
+              `orientation_target_zone_tolerance` and `translation_target_zone_tolerance` of the target,
+              an IK solver is used to find a configuration space solution corresponding to the task
+              space target. This solver terminates when the L2-norm of the corresponding task space
+              position is within `orientation_target_final_tolerance` and
+              `translation_target_final_tolerance` of the target.
+            - Note: This solver assumes that if a c-space configuration within the target zone
+              tolerances is found then this c-space configuration can be moved linearly in cspace to the
+              IK solution. If this assumption is NOT met, the returned path will not reach the task
+              space target within the the final target tolerances and an error is logged.
+            - The recommended default value is 1e-4, but in general this value should be set to a
+              positive value that is considered "good enough" precision for the specific system.
+
+         `task_space_planning_params/translation_gradient_weight` (float)
+            - For pose targets, computed translation and orientation gradients are linearly weighted by
+              `translation_gradient_weight` and `orientation_gradient_weight` to compute a combined
+              gradient step when using the Jacobian Transpose method to guide tree expansion
+              towards a task space target.
+            - A default value of 1.0 is recommended as a starting value for initial testing with a given
+              system.
+            - Must be > 0.
+
+         `task_space_planning_params/orientation_gradient_weight` (float)
+            - For pose targets, computed translation and orientation gradients are linearly weighted by
+              `translation_gradient_weight` and `orientation_gradient_weight` to compute a combined
+              gradient step when using the Jacobian Transpose method to guide tree expansion
+              towards a task space target.
+            - A default value of 0.125 is recommended as a starting value for initial testing with a
+              given system.
+            - Must be > 0.
+
+         `task_space_planning_params/nn_translation_distance_weight` (float)
+            - For pose targets, nearest neighbor distances are computed by linearly weighting
+              translation and orientation distance by `nn_translation_distance_weight` and
+              `nn_orientation_distance_weight`.
+            - Nearest neighbor search is used to select the node from which the tree of valid
+              configurations will be expanded.
+            - A default value of 1.0 is recommended as a starting value for initial testing with a given
+              system.
+            - Must be > 0.
+
+         `task_space_planning_params/nn_orientation_distance_weight` (float)
+            - For pose targets, nearest neighbor distances are computed by linearly weighting
+              translation and orientation distance by `nn_translation_distance_weight` and
+              `nn_orientation_distance_weight`.
+            - Nearest neighbor search is used to select the node from which the tree of valid
+              configurations will be expanded.
+            - A default value of 0.125 is recommended as a starting value for initial testing with a
+              given system.
+            - Must be > 0.
 
         `task_space_planning_params/task_space_exploitation_fraction` (float)
             - Fraction of iterations for which tree is extended towards target position in task space.
@@ -271,6 +329,33 @@ class RRT(LulaInterfaceHelper, PathPlanner):
             while more difficult searches will waste time if the exploitation fraction is too high
             and benefit from greater combined exploration fraction.
 
+        `task_space_planning_params/max_extension_substeps_away_from_target` (int)
+            - Maximum number of Jacobian transpose gradient descent substeps that may be taken
+              while the end effector is away from the task-space target.
+            - The threshold for nearness is determined by the
+              `extension_substep_target_region_scale_factor` parameter.
+            - A default value of 6 is recommended as a starting value for initial testing with a given
+              system.
+
+        `task_space_planning_params/max_extension_substeps_near_target` (int)
+            - Maximum number of Jacobian transpose gradient descent substeps that may be taken
+              while the end effector is near the task-space target.
+            - The threshold for nearness is determined by the
+              `extension_substep_target_region_scale_factor` parameter.
+            - A default value of 50 is recommended as a starting value for initial testing with a given
+              system.
+
+        `task_space_planning_params/extension_substep_target_region_scale_factor` : (float)
+            - A scale factor used to determine whether the end effector is close enough to the target
+              to change the amount of gradient descent substeps allowed when adding a node in RRT.
+            - The `max_extension_substeps_near_target` parameter is used when the distance
+              (i.e., L2 norm) between the end effector and target position is less than
+              `extension_substep_target_region_scale_factor` * `x_zone_target_tolerance`.
+            - Must be greater than or equal to 1.0; a value of 1.0 effectively disables the
+             `max_extension_substeps_near_target` parameter.
+            - A default value of 2.0 is recommended as a starting value for initial testing with a given
+              system.
+
         Args:
             param_name (str): Name of parameter
             value (Union[np.ndarray[np.float64],float,int,str]): value of parameter
@@ -280,7 +365,7 @@ class RRT(LulaInterfaceHelper, PathPlanner):
         """
         if param_name == "seed":
             self.set_random_seed(value)
-            return
+            return True
 
         if param_name == "task_space_limits":
             value = [self._rrt.Limit(row[0], row[1]) for row in value]
@@ -302,11 +387,16 @@ class RRT(LulaInterfaceHelper, PathPlanner):
             self._plan = None
             return
 
-        trans_rel, _ = LulaInterfaceHelper._get_pose_rel_robot_base(self, self._taskspace_target_position, None)
+        trans_rel, rot_rel = LulaInterfaceHelper._get_pose_rel_robot_base(
+            self, self._taskspace_target_position, self._taskspace_target_rotation
+        )
 
         self._rrt.set_param("seed", self._seed)
-
-        plan = self._rrt.plan_to_task_space_target(joint_positions, trans_rel, generate_interpolated_path=False)
+        if rot_rel is not None:
+            target_pose = lula.Pose3(lula.Rotation3(rot_rel), trans_rel)
+            plan = self._rrt.plan_to_pose_target(joint_positions, target_pose, generate_interpolated_path=False)
+        else:
+            plan = self._rrt.plan_to_translation_target(joint_positions, trans_rel, generate_interpolated_path=False)
 
         if plan.path_found:
             self._plan = np.array(plan.path)

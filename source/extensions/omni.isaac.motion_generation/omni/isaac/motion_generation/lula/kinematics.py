@@ -388,38 +388,38 @@ class LulaKinematicsSolver(KinematicsSolver):
     def get_cspace_acceleration_limits(self) -> np.array:
         """Get the default acceleration limits of the active joints.
         Default acceleration limits are read from the robot_description YAML file.
+        Any acceleration limits that are not specified in the robot_description YAML file will
+        be None.
 
         Returns:
-            np.array: Default acceleration limits of the active joints
+            np.array: Default acceleration limits of the active joints.
         """
         num_coords = self._kinematics.num_c_space_coords()
 
-        if self._kinematics.has_c_space_acceleration_limits():
-            c_space_acceleration_limits = np.array(
-                [self._kinematics.c_space_coord_acceleration_limit(i) for i in range(num_coords)], dtype=np.float64
-            )
-        else:
-            c_space_acceleration_limits = None
+        c_space_acceleration_limits = [None] * num_coords
+        for i in range(num_coords):
+            if self._kinematics.has_c_space_acceleration_limit(i):
+                c_space_acceleration_limits[i] = self._kinematics.c_space_coord_acceleration_limit(i)
 
-        return c_space_acceleration_limits
+        return np.array(c_space_acceleration_limits)
 
     def get_cspace_jerk_limits(self) -> np.array:
         """Get the default jerk limits of the active joints.
         Default jerk limits are read from the robot_description YAML file.
+        Any jerk limits that are not specified in the robot_description YAML file will
+        be None.
 
         Returns:
             np.array: Default jerk limits of the active joints.
         """
         num_coords = self._kinematics.num_c_space_coords()
 
-        if self._kinematics.has_c_space_jerk_limits():
-            c_space_jerk_limits = np.array(
-                [self._kinematics.c_space_coord_jerk_limit(i) for i in range(num_coords)], dtype=np.float64
-            )
-        else:
-            c_space_jerk_limits = None
+        c_space_jerk_limits = [None] * num_coords
+        for i in range(num_coords):
+            if self._kinematics.has_c_space_jerk_limit(i):
+                c_space_jerk_limits[i] = self._kinematics.c_space_coord_jerk_limit(i)
 
-        return c_space_jerk_limits
+        return np.array(c_space_jerk_limits)
 
     def _lula_orientation_tol_to_rad_tol(self, tol):
         # convert from lula IK orientation tolerance to radian magnitude tolerance
