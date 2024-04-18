@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.6.3] - 2024-04-17
+# ## Fixed
+- Made App Selector window non-detachable
+
 ## [2.6.2] - 2024-04-16
 ### Fixed
 - Working directory for wrapped gnome-terminal called using x-terminal-emulator

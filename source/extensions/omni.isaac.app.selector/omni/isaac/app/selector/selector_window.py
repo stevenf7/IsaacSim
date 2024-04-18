@@ -681,7 +681,9 @@ class SelectorWindow:
     def _build_compact_window(self):
         import omni.ui as ui
 
-        self._window = ui.Window("AppSelector", padding_x=0, padding_y=0, style={"Window": {"pading": 0}})
+        self._window = ui.Window(
+            "AppSelector", noTabBar=True, detachable=False, padding_x=0, padding_y=0, style={"Window": {"pading": 0}}
+        )
         self._window.frame.set_style(selector_style)
         with self._window.frame:
             with ui.VStack():
