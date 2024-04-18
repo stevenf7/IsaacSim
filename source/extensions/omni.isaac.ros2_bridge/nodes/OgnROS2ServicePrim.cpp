@@ -607,7 +607,7 @@ private:
         auto& state = db.perInstanceState<OgnROS2ServicePrim>();
         if (!state.mServiceGetPrims)
             return false;
-        if (!state.mServiceGetPrims->spin(state.mMessageGetPrimsRequest->ptr()))
+        if (!state.mServiceGetPrims->getRequest(state.mMessageGetPrimsRequest->ptr()))
             return false;
 
         auto requestData = std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageGetPrimsRequest)->getData(false);
@@ -662,7 +662,7 @@ private:
         auto& state = db.perInstanceState<OgnROS2ServicePrim>();
         if (!state.mServiceGetAttributes)
             return false;
-        if (!state.mServiceGetAttributes->spin(state.mMessageGetAttributesRequest->ptr()))
+        if (!state.mServiceGetAttributes->getRequest(state.mMessageGetAttributesRequest->ptr()))
             return false;
 
         auto requestData =
@@ -724,7 +724,7 @@ private:
         auto& state = db.perInstanceState<OgnROS2ServicePrim>();
         if (!state.mServiceGetAttribute)
             return false;
-        if (!state.mServiceGetAttribute->spin(state.mMessageGetAttributeRequest->ptr()))
+        if (!state.mServiceGetAttribute->getRequest(state.mMessageGetAttributeRequest->ptr()))
             return false;
 
         auto requestData =
@@ -792,7 +792,7 @@ private:
         auto& state = db.perInstanceState<OgnROS2ServicePrim>();
         if (!state.mServiceSetAttribute)
             return false;
-        if (!state.mServiceSetAttribute->spin(state.mMessageSetAttributeRequest->ptr()))
+        if (!state.mServiceSetAttribute->getRequest(state.mMessageSetAttributeRequest->ptr()))
             return false;
 
         auto requestData =

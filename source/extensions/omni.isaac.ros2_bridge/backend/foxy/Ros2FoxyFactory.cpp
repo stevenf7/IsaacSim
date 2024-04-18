@@ -47,6 +47,14 @@ std::shared_ptr<Ros2Service> Ros2FactoryFoxy::CreateService(Ros2NodeBase* node,
     return std::make_shared<Ros2ServiceFoxy>(node, service_name, type, qos);
 }
 
+std::shared_ptr<Ros2Client> Ros2FactoryFoxy::CreateClient(Ros2NodeBase* node,
+                                                          const char* service_name,
+                                                          const void* type,
+                                                          const Ros2QoSProfile& qos)
+{
+    return std::make_shared<Ros2ClientFoxy>(node, service_name, type, qos);
+}
+
 std::shared_ptr<Ros2ClockMessage> Ros2FactoryFoxy::CreateClockMessage()
 {
     return std::make_shared<Ros2ClockMessageFoxy>();

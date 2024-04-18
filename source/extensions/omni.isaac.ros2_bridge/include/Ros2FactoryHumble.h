@@ -26,7 +26,10 @@ public:
                                                        const char* service_name,
                                                        const void* type,
                                                        const Ros2QoSProfile& qos);
-
+    virtual std::shared_ptr<Ros2Client> CreateClient(Ros2NodeBase* node,
+                                                     const char* service_name,
+                                                     const void* type,
+                                                     const Ros2QoSProfile& qos);
     virtual std::shared_ptr<Ros2ClockMessage> CreateClockMessage();
     virtual std::shared_ptr<Ros2ImuMessage> CreateImuMessage();
     virtual std::shared_ptr<Ros2CameraInfoMessage> CreateCameraInfoMessage();

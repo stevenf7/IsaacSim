@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.22.0] - 2024-04-17
+### Added
+- Generic Omnigraph ROS client and server nodes
+
 ## [2.21.0] - 2024-04-17
 ### Added
 - Implemented static TF publishing in OgnROS2PublishTransformTree

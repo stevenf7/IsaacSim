@@ -68,7 +68,7 @@ Ros2ServiceFoxy::~Ros2ServiceFoxy()
     return;
 }
 
-bool Ros2ServiceFoxy::spin(void* req_message)
+bool Ros2ServiceFoxy::getRequest(void* req_message)
 {
     if (!wait_set_initialized)
     {
@@ -79,7 +79,7 @@ bool Ros2ServiceFoxy::spin(void* req_message)
 
         if (rc != RCL_RET_OK)
         {
-            RCL_ERROR_MSG(spin, rcl_wait_set_init);
+            RCL_ERROR_MSG(getRequest, rcl_wait_set_init);
             return false;
         }
         wait_set_initialized = true;
@@ -87,18 +87,17 @@ bool Ros2ServiceFoxy::spin(void* req_message)
     else
     {
         rcl_ret_t rc = rcl_wait_set_clear(&wait_set);
-
         rc = rcl_wait_set_add_service(&wait_set, mService.get(), NULL);
         if (rc != RCL_RET_OK)
         {
-            RCL_ERROR_MSG(spin, rcl_wait_set_add_service);
+            RCL_ERROR_MSG(getRequest, rcl_wait_set_add_service);
             return false;
         }
         rc = rcl_wait(&wait_set, 0);
         // CARB_LOG_WARN_ONCE("Subscriber created, check topic name and message type if not active");
         if (rc != RCL_RET_OK && rc != RCL_RET_TIMEOUT)
         {
-            RCL_WARN_MSG(spin, rcl_wait);
+            RCL_WARN_MSG(getRequest, rcl_wait);
             return false;
         }
         if (wait_set.services[0])
@@ -106,7 +105,7 @@ bool Ros2ServiceFoxy::spin(void* req_message)
             rc = rcl_take_request(mService.get(), &request_id, req_message);
             if (rc != RCL_RET_OK)
             {
-                RCL_ERROR_MSG(spin, rcl_take_request);
+                RCL_ERROR_MSG(getRequest, rcl_take_request);
                 return false;
             }
             return true;
