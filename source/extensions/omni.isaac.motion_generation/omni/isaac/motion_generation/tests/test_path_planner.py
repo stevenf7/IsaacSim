@@ -18,7 +18,7 @@ from omni.isaac.core.objects import FixedCuboid, VisualCuboid
 from omni.isaac.core.objects.ground_plane import GroundPlane
 from omni.isaac.core.prims import XFormPrim
 from omni.isaac.core.robots import Robot
-from omni.isaac.core.utils.numpy.rotations import euler_angles_to_quats
+from omni.isaac.core.utils.numpy.rotations import euler_angles_to_quats, rot_matrices_to_quats
 from omni.isaac.core.utils.stage import (
     add_reference_to_stage,
     create_new_stage_async,
@@ -64,15 +64,11 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         usd_path = await get_assets_root_path_async()
         usd_path += "/Isaac/Robots/Franka/franka.usd"
         await create_new_stage_async()
-        # TODO105 need this?
-        # omni.usd.get_context().get_stage().SetTimeCodesPerSecond(self._physics_fps)
 
         await update_stage_async()
         add_reference_to_stage(usd_path, robot_prim_path)
 
         self._timeline = omni.timeline.get_timeline_interface()
-        # TODO105 need this?
-        # self._timeline.set_target_framerate(self._physics_fps)
 
         set_camera_view(
             eye=[0.7 * 2.95, 0.7 * 3.3, 0.7 * 5.5], target=[0, 0, 0], camera_prim_path="/OmniverseKit_Persp"
@@ -89,9 +85,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
             "franka_conservative_spheres_robot_description.yaml",
         )
         rrt = RRT(**rrt_config)
-        # rrt.set_random_seed(1234569)
         rrt.set_max_iterations(10000)
-        rrt.set_param("step_size", 0.01)
         self._planner = rrt
 
         self._cspace_trajectory_planner = LulaCSpaceTrajectoryGenerator(
@@ -175,30 +169,47 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_rrt_set_params(self):
-        self._planner.set_param("seed", 5)
-        self._planner.set_param("step_size", 0.001)
-        self._planner.set_param("max_iterations", 1000)
-        self._planner.set_param("distance_metric_weights", np.ones(7, dtype=np.float64) * 0.8)
-        self._planner.set_param("task_space_frame_name", "panda_hand")
-        self._planner.set_param("task_space_limits", np.array([[-1, 1], [-1, 1], [0, 1]], dtype=np.float64))
-        self._planner.set_param("c_space_planning_params/exploration_fraction", 0.6)
-        self._planner.set_param(
-            "task_space_planning_params/x_target_zone_tolerance", np.ones(3, dtype=np.float64) * 0.02
+        self.assertTrue(self._planner.set_param("seed", 5))
+        self.assertTrue(self._planner.set_param("step_size", 0.001))
+        self.assertTrue(self._planner.set_param("max_iterations", 1000))
+        self.assertTrue(self._planner.set_param("distance_metric_weights", np.ones(7, dtype=np.float64) * 0.8))
+        self.assertTrue(self._planner.set_param("task_space_frame_name", "panda_hand"))
+        self.assertTrue(
+            self._planner.set_param("task_space_limits", np.array([[-1, 1], [-1, 1], [0, 1]], dtype=np.float64))
         )
-        self._planner.set_param("task_space_planning_params/x_target_final_tolerance", 1e-4)
-        self._planner.set_param("task_space_planning_params/task_space_exploitation_fraction", 0.5)
-        self._planner.set_param("task_space_planning_params/task_space_exploration_fraction", 0.2)
+        self.assertTrue(self._planner.set_param("c_space_planning_params/exploration_fraction", 0.6))
+        self.assertTrue(self._planner.set_param("task_space_planning_params/translation_target_zone_tolerance", 0.02))
+        self.assertTrue(self._planner.set_param("task_space_planning_params/orientation_target_zone_tolerance", 0.02))
+        self.assertTrue(self._planner.set_param("task_space_planning_params/translation_target_final_tolerance", 1e-4))
+        self.assertTrue(self._planner.set_param("task_space_planning_params/orientation_target_final_tolerance", 1e-4))
+        self.assertTrue(self._planner.set_param("task_space_planning_params/translation_gradient_weight", 1.0))
+        self.assertTrue(self._planner.set_param("task_space_planning_params/orientation_gradient_weight", 0.0125))
+        self.assertTrue(self._planner.set_param("task_space_planning_params/nn_translation_distance_weight", 1.0))
+        self.assertTrue(self._planner.set_param("task_space_planning_params/nn_orientation_distance_weight", 0.125))
+        self.assertTrue(self._planner.set_param("task_space_planning_params/task_space_exploitation_fraction", 0.5))
+        self.assertTrue(self._planner.set_param("task_space_planning_params/task_space_exploration_fraction", 0.2))
+        self.assertTrue(
+            self._planner.set_param("task_space_planning_params/max_extension_substeps_away_from_target", 8)
+        )
+        self.assertTrue(self._planner.set_param("task_space_planning_params/max_extension_substeps_near_target", 5))
+        self.assertTrue(
+            self._planner.set_param("task_space_planning_params/extension_substep_target_region_scale_factor", 2.0)
+        )
+        self.assertTrue(self._planner.set_param("task_space_planning_params/unexploited_nodes_culling_scalar", 1.0))
+        self.assertTrue(self._planner.set_param("task_space_planning_params/gradient_substep_size", 0.03))
+        self.assertFalse(self._planner.set_param("not a real parameter", 5))
 
         self._planner.reset()
 
     async def test_rrt_franka(self):
-        target_pose = np.array([-0.4, 0.3, 0.5])
+        target_translation = np.array([-0.4, 0.3, 0.5])
+        target_orientation = np.array([0.6837119, -0.5746039, 0.14875382, -0.42454764])
 
-        self._planner.set_end_effector_target(target_pose)
+        self._planner.set_end_effector_target(target_translation, target_orientation)
 
         # Check that this doesn't mess anything up
         self._planner.set_cspace_target(np.zeros(7))  # Should just be overridden
-        self._planner.set_end_effector_target(target_pose)
+        self._planner.set_end_effector_target(target_translation, target_orientation)
 
         left_barrier = FixedCuboid(
             "/obstacles/left_barrier", size=1.0, scale=np.array([0.01, 0.5, 1]), position=np.array([0, 0.45, 0.5])
@@ -215,7 +226,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         ground_plane = GroundPlane("/ground")
 
         target_prim = VisualCuboid(
-            "/target", size=1.0, scale=np.full((3,), 0.05), position=target_pose, color=np.array([1, 0, 0])
+            "/target", size=1.0, scale=np.full((3,), 0.05), position=target_translation, color=np.array([1, 0, 0])
         )
 
         self._planner.add_obstacle(left_barrier)
@@ -229,6 +240,13 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         actions = self._planner.compute_path(
             self._planner_visualizer.get_active_joints_subset().get_joint_positions(), []
         )
+        # print("FK: ",
+        #         rot_matrices_to_quats(
+        #             self._kinematics_solver.compute_forward_kinematics(
+        #                 self._articulation_kinematics_solver.get_end_effector_frame(),
+        #                 actions[-1])[1]
+        #         )
+        #     )
 
         if self.PRINT_GOLDEN_VALUES:
             print("Number of actions: ", len(actions))
@@ -263,12 +281,24 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         else:
             self.assertTrue(len(actions) > 0, f"{len(actions)}")
 
-        # await self._test_traj_gen_with_rrt(actions,.1)
+        await self.follow_plan(actions, 0.01)
+
+        await self.reset_robot(self._robot)
+
+        self._planner.set_end_effector_target(target_translation)
+
+        actions = self._planner.compute_path(
+            self._planner_visualizer.get_active_joints_subset().get_joint_positions(), []
+        )
+
+        self.assertTrue(len(actions) > 0, f"{len(actions)}")
         await self.follow_plan(actions, 0.01)
 
     async def test_rrt_franka_moving_base(self):
-        target_pose = np.array([1.4, -0.1, 0.5])
-        self._planner.set_end_effector_target(target_pose)
+        target_translation = np.array([1.4, -0.1, 0.5])
+        target_orientation = np.array([0.95, 0.05, 0, 0])
+
+        self._planner.set_end_effector_target(target_translation, target_orientation)
 
         robot_base_position = np.array([1, 0, 0.2])
         robot_base_orientation = euler_angles_to_quats(np.array([0.1, 0, 0.3]))
@@ -278,7 +308,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         )
 
         target_prim = VisualCuboid(
-            "/target", size=1.0, scale=np.full((3,), 0.05), position=target_pose, color=np.array([1, 0, 0])
+            "/target", size=1.0, scale=np.full((3,), 0.05), position=target_translation, color=np.array([1, 0, 0])
         )
 
         self._planner.add_obstacle(barrier)
@@ -326,6 +356,18 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         else:
             self.assertTrue(len(actions) > 0, f"{len(actions)}")
 
+        await self.follow_plan(actions, 0.01)
+
+        await self.reset_robot(self._robot)
+        self._robot.set_world_pose(robot_base_position, robot_base_orientation)
+
+        self._planner.set_end_effector_target(target_translation)
+
+        actions = self._planner.compute_path(
+            self._planner_visualizer.get_active_joints_subset().get_joint_positions(), []
+        )
+
+        self.assertTrue(len(actions) > 0, f"{len(actions)}")
         await self.follow_plan(actions, 0.01)
 
     async def test_rrt_franka_cspace_target(self):
@@ -438,12 +480,6 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.all(min_path_dists < path_dist_thresh))
 
     async def follow_plan(self, plan, interpolation_max_dist, path_dist_thresh=0.02):
-        # acceleration_limits =  1*np.array([15.0, 7.5, 10.0, 12.5, 15.0, 20.0, 20.0])
-        # jerk_limits = 1.*np.array([7500.0, 3750.0, 5000.0, 6250.0, 7500.0, 10000.0, 10000.0])
-
-        # self._cspace_trajectory_planner.set_c_space_acceleration_limits(acceleration_limits)
-        # self._cspace_trajectory_planner.set_c_space_jerk_limits(jerk_limits)
-
         self._robot.get_articulation_controller().set_max_efforts(1e20 * np.ones(9))
         self._robot.get_articulation_controller().set_gains(1e15 * np.ones(9), 1e14 * np.ones(9))
 

@@ -385,6 +385,47 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         lk.sampling_seed = 16
         self.assertTrue(lk.sampling_seed == 16)
 
+    async def test_getters_and_setters(self):
+        await create_new_stage_async()
+
+        robot_name = "UR10"
+
+        kinematics_config = interface_config_loader.load_supported_lula_kinematics_solver_config(robot_name)
+        lk = LulaKinematicsSolver(**kinematics_config)
+
+        lk.set_default_orientation_tolerance(0.1)
+        self.assertTrue(lk.get_default_orientation_tolerance() == 0.1)
+
+        lk.set_default_position_tolerance(0.2)
+        self.assertTrue(lk.get_default_position_tolerance() == 0.2)
+
+        lk.set_default_cspace_seeds(np.array([1, 2, 3, 4]))
+        self.assertTrue(np.all(lk.get_default_cspace_seeds() == np.array([1, 2, 3, 4])))
+
+        # Assert that getters for information loaded from Robot Description files matches expected values.
+
+        pos_lim = lk.get_cspace_position_limits()
+        self.assertTrue(np.allclose(pos_lim[0], [-6.2831, -6.2831, -3.1415, -6.2831, -6.2831, -6.2831], 0.0005))
+        self.assertTrue(np.allclose(pos_lim[1], [6.2831, 6.2831, 3.1415, 6.2831, 6.2831, 6.2831], 0.0001))
+
+        vel_lim = lk.get_cspace_velocity_limits()
+        self.assertTrue(np.allclose(vel_lim, [2.16, 2.16, 3.15, 3.2, 3.2, 3.2], 0.0001))
+
+        self.assertTrue(np.alltrue(lk.get_cspace_acceleration_limits() == [None] * 6))
+        self.assertTrue(np.alltrue(lk.get_cspace_jerk_limits() == [None] * 6))
+
+        # Test Franka because it has acceleration and jerk limits specified in Robot Description
+        robot_name = "Franka"
+
+        kinematics_config = interface_config_loader.load_supported_lula_kinematics_solver_config(robot_name)
+        lk = LulaKinematicsSolver(**kinematics_config)
+
+        accel_lim = lk.get_cspace_acceleration_limits()
+        self.assertTrue(np.allclose(accel_lim, [15, 7.5, 10, 12.5, 15, 20, 20], 0.0001))
+
+        jerk_lim = lk.get_cspace_jerk_limits()
+        self.assertTrue(np.allclose(jerk_lim, [7500, 3750, 5000, 6250, 7500, 10000, 10000], 0.0001))
+
     async def move_until_still(self, robot, timeout=500):
         h = 10
         positions = np.zeros((h, robot.num_dof))
