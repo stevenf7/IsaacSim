@@ -1,22 +1,27 @@
 # Changelog
 
-## [3.9.1] - 2023-04-17
+
+## [3.9.2] - 2024-04-17
+### Fixed
+- numpy.bool deprecation
+
+## [3.9.1] - 2024-04-17
 ### Fixed
 - removed the deprecated physX force sensor 
 
-## [3.9.0] - 2023-04-16
+## [3.9.0] - 2024-04-16
 ### Added
 - Friction reporting API
 
-## [3.8.2] - 2023-04-15
+## [3.8.2] - 2024-04-15
 ### Fixed
 - Carb plugin used for crash metadata
 
-## [3.8.1] - 2023-04-08
+## [3.8.1] - 2024-04-08
 ### Added
 - Added crash metadata 
 
-## [3.8.0] - 2023-03-24
+## [3.8.0] - 2024-03-24
 ### Added
 - Utility function to get the prim path that has the Articulation Root API
 ### Changed
