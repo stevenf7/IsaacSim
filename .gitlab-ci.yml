@@ -890,6 +890,9 @@ pages:
   extends:
   - .build-common
   - .runner-build-linux-x86_64
+  before_script:
+  - set -eu
+  - yum install -y p7zip p7zip-plugins
   script:
   - mkdir .public
   - mv omni-docs/_build/docs .public
