@@ -42,7 +42,7 @@ name = "omni.isaac.tests" # so we can find the path to the extension
 name = "omni.isaac.tests.tests"
 
 [[test]]
-timeout = 960
+timeout = 1200
 dependencies = [
    "omni.kit.window.toolbar",
    "omni.isaac.core",

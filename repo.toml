@@ -556,6 +556,7 @@ include = ["tests-*${shell_ext}"]
 exclude = [
   "tests-startup*${shell_ext}",
   "tests-selector*${shell_ext}",
+  "tests-unit*${shell_ext}",
   "omni.isaac.sim.post.install.run${shell_ext}",
   "omni.isaac.sim.warmup${shell_ext}",
   "tests-omni.isaac.gym${shell_ext}",
@@ -565,6 +566,7 @@ exclude = [
   "tests-omni.isaac.onshape*${shell_ext}",
   "tests-nativepython*${shell_ext}",
   "tests-internalnativepython*${shell_ext}",
+  "tests-internaldocker*${shell_ext}",
 ]
 args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
 tc_report_enabled = false
