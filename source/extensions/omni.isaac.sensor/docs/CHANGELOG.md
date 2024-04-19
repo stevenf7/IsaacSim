@@ -1,5 +1,9 @@
 # Changelog
 
+## [10.1.1] - 2024-04-17
+### Added
+- Telemetry for writers and annotators
+
 ## [10.1.0] - 2024-04-17
 ### Changed
 - omni.sensors backend moved to v1.0.0

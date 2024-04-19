@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.17.2] - 2024-04-18
+### Added
+- Telemetry for writers and annotators
+
 ## [1.17.1] - 2024-04-12
 ### Added
 - Unit test for jointstate publisher and subscriber

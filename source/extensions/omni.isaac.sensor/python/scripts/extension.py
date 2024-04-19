@@ -109,17 +109,24 @@ class Extension(omni.ext.IExt):
             node_type_id="omni.isaac.sensor.IsaacReadRTXLidarData",
         )
         self.registered_annotators.append(annotator_name)
+        # Register annotator for Replicator telemetry tracking
+        AnnotatorRegistry._default_annotators.append(
+            annotator_name
+        ) if annotator_name not in AnnotatorRegistry._default_annotators else None
 
         annotator_name = "RtxSensorGpu" + "IsaacReadRTXLidarData"
         AnnotatorRegistry.register_annotator_from_node(
             name=annotator_name,
             input_rendervars=[
                 "RtxSensorGpu" + "Ptr",
-                #
             ],
             node_type_id="omni.isaac.sensor.IsaacReadRTXLidarData",
         )
         self.registered_annotators.append(annotator_name)
+        # Register annotator for Replicator telemetry tracking
+        AnnotatorRegistry._default_annotators.append(
+            annotator_name
+        ) if annotator_name not in AnnotatorRegistry._default_annotators else None
 
         # NodeConnectionTemplate(
         #    "SemanticBoundingBox2DExtentTightSDhostPtr",
@@ -136,6 +143,10 @@ class Extension(omni.ext.IExt):
             output_channels=3,
         )
         self.registered_annotators.append(annotator_name)
+        # Register annotator for Replicator telemetry tracking
+        AnnotatorRegistry._default_annotators.append(
+            annotator_name
+        ) if annotator_name not in AnnotatorRegistry._default_annotators else None
 
         annotator_name = "RtxSensorCpu" + "IsaacCreateRTXLidarScanBuffer"
         AnnotatorRegistry.register_annotator_from_node(
@@ -145,6 +156,11 @@ class Extension(omni.ext.IExt):
             output_data_type=np.float32,
             output_channels=3,
         )
+        self.registered_annotators.append(annotator_name)
+        # Register annotator for Replicator telemetry tracking
+        AnnotatorRegistry._default_annotators.append(
+            annotator_name
+        ) if annotator_name not in AnnotatorRegistry._default_annotators else None
 
         annotator_name = "RtxSensorCpu" + "IsaacRTXLidarOutput"
         AnnotatorRegistry.register_annotator_from_node(
@@ -155,6 +171,10 @@ class Extension(omni.ext.IExt):
             output_channels=3,
         )
         self.registered_annotators.append(annotator_name)
+        # Register annotator for Replicator telemetry tracking
+        AnnotatorRegistry._default_annotators.append(
+            annotator_name
+        ) if annotator_name not in AnnotatorRegistry._default_annotators else None
 
         ### RtxLidar Point Cloud Print Info Writer
         rep.writers.register_node_writer(
@@ -163,6 +183,10 @@ class Extension(omni.ext.IExt):
             annotators=[omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu" + "Ptr")],
             category="omni.isaac.sensor",
         )
+        # Register writer for Replicator telemetry tracking
+        rep.WriterRegistry._default_writers.append(
+            "Writer" + "IsaacPrintRTXLidarInfo"
+        ) if "Writer" + "IsaacPrintRTXLidarInfo" not in rep.WriterRegistry._default_writers else None
 
         ### RtxRadar Point Cloud Print Info Writer
         rep.writers.register_node_writer(
@@ -171,6 +195,10 @@ class Extension(omni.ext.IExt):
             annotators=[omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu" + "Ptr")],
             category="omni.isaac.sensor",
         )
+        # Register writer for Replicator telemetry tracking
+        rep.WriterRegistry._default_writers.append(
+            "Writer" + "IsaacPrintRTXRadarInfo"
+        ) if "Writer" + "IsaacPrintRTXRadarInfo" not in rep.WriterRegistry._default_writers else None
 
         ### RtxLidar Flat Scan
         annotator_name = "RtxSensorCpu" + "IsaacComputeRTXLidarFlatScan"
@@ -182,6 +210,10 @@ class Extension(omni.ext.IExt):
             output_channels=3,
         )
         self.registered_annotators.append(annotator_name)
+        # Register annotator for Replicator telemetry tracking
+        AnnotatorRegistry._default_annotators.append(
+            annotator_name
+        ) if annotator_name not in AnnotatorRegistry._default_annotators else None
 
         # RTX lidar Debug Draw Writer
         rep.writers.register_node_writer(
@@ -194,6 +226,10 @@ class Extension(omni.ext.IExt):
             ],
             category="omni.isaac.sensor",
         )
+        # Register writer for Replicator telemetry tracking
+        rep.WriterRegistry._default_writers.append(
+            "RtxLidar" + "DebugDrawPointCloud"
+        ) if "RtxLidar" + "DebugDrawPointCloud" not in rep.WriterRegistry._default_writers else None
 
         # RTX lidar Debug Draw Writer
         rep.writers.register_node_writer(
@@ -207,6 +243,10 @@ class Extension(omni.ext.IExt):
             doTransform=True,
             category="omni.isaac.sensor",
         )
+        # Register writer for Replicator telemetry tracking
+        rep.WriterRegistry._default_writers.append(
+            "RtxLidar" + "DebugDrawPointCloud" + "Buffer"
+        ) if "RtxLidar" + "DebugDrawPointCloud" + "Buffer" not in rep.WriterRegistry._default_writers else None
 
         # RTX lidar Debug Draw Writer
         rep.writers.register_node_writer(
@@ -229,6 +269,10 @@ class Extension(omni.ext.IExt):
             output_channels=3,
         )
         self.registered_annotators.append(annotator_name)
+        # Register annotator for Replicator telemetry tracking
+        AnnotatorRegistry._default_annotators.append(
+            annotator_name
+        ) if annotator_name not in AnnotatorRegistry._default_annotators else None
 
         # RTX radar Debug Draw Writer
         rep.writers.register_node_writer(
@@ -240,6 +284,10 @@ class Extension(omni.ext.IExt):
             color=[1, 0.2, 0.3, 1],
             category="omni.isaac.sensor",
         )
+        # Register writer for Replicator telemetry tracking
+        rep.WriterRegistry._default_writers.append(
+            "RtxRadar" + "DebugDrawPointCloud"
+        ) if "RtxRadar" + "DebugDrawPointCloud" not in rep.WriterRegistry._default_writers else None
 
     def unregister_nodes(self):
         for template in self.registered_template:

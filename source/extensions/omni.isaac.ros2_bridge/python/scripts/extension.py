@@ -145,10 +145,10 @@ class ROS2BridgeExtension(omni.ext.IExt):
         for time_type in TIME_TYPES:
             ##### Publish RGB
             rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
-
+            writer_name = f"{rv}{BRIDGE_PREFIX}{time_type[1]}PublishImage"
             rep.writers.register_node_writer(
-                name=f"{rv}{BRIDGE_PREFIX}{time_type[1]}PublishImage",
-                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
+                name=writer_name,
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}{time_type[1]}PublishImage",
                 annotators=[
                     f"{rv}IsaacConvertRGBAToRGB",
                     omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
@@ -157,13 +157,19 @@ class ROS2BridgeExtension(omni.ext.IExt):
                 ],
                 category=BRIDGE_NAME,
             )
+            # Register writer for Replicator telemetry tracking
+            rep.WriterRegistry._default_writers.append(
+                writer_name
+            ) if writer_name not in rep.WriterRegistry._default_writers else None
+
             ##### Publish Depth
             rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
                 sd.SensorType.DistanceToImagePlane.name
             )
+            writer_name = f"{rv}{BRIDGE_PREFIX}{time_type[1]}PublishImage"
             rep.writers.register_node_writer(
-                name=f"{rv}{BRIDGE_PREFIX}{time_type[1]}PublishImage",
-                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
+                name=writer_name,
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}{time_type[1]}PublishImage",
                 annotators=[
                     omni.syntheticdata.SyntheticData.NodeConnectionTemplate(rv + "ExportRawArray"),
                     omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
@@ -174,11 +180,16 @@ class ROS2BridgeExtension(omni.ext.IExt):
                 encoding="32FC1",
                 category=BRIDGE_NAME,
             )
+            # Register writer for Replicator telemetry tracking
+            rep.WriterRegistry._default_writers.append(
+                writer_name
+            ) if writer_name not in rep.WriterRegistry._default_writers else None
 
             # publish depth pcl
+            writer_name = f"{rv}{BRIDGE_PREFIX}{time_type[1]}PublishPointCloud"
             rep.writers.register_node_writer(
-                name=f"{rv}{BRIDGE_PREFIX}{time_type[1]}PublishPointCloud",
-                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
+                name=writer_name,
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}{time_type[1]}PublishPointCloud",
                 annotators=[
                     f"{rv}IsaacConvertDepthToPointCloud",
                     omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
@@ -187,10 +198,16 @@ class ROS2BridgeExtension(omni.ext.IExt):
                 ],
                 category=BRIDGE_NAME,
             )
+            # Register writer for Replicator telemetry tracking
+            rep.WriterRegistry._default_writers.append(
+                writer_name
+            ) if writer_name not in rep.WriterRegistry._default_writers else None
+
             # instance
+            writer_name = f"{BRIDGE_PREFIX}{time_type[1]}PublishInstanceSegmentation"
             rep.writers.register_node_writer(
-                name=f"{BRIDGE_PREFIX}{time_type[1]}PublishInstanceSegmentation",
-                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
+                name=writer_name,
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}{time_type[1]}PublishImage",
                 annotators=[
                     "instance_segmentation",
                     f'{omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("InstanceSegmentation")}IsaacSimulationGate',
@@ -201,10 +218,16 @@ class ROS2BridgeExtension(omni.ext.IExt):
                 encoding="32SC1",
                 category=BRIDGE_NAME,
             )
+            # Register writer for Replicator telemetry tracking
+            rep.WriterRegistry._default_writers.append(
+                writer_name
+            ) if writer_name not in rep.WriterRegistry._default_writers else None
+
             # Semantic
+            writer_name = f"{BRIDGE_PREFIX}{time_type[1]}PublishSemanticSegmentation"
             rep.writers.register_node_writer(
-                name=f"{BRIDGE_PREFIX}{time_type[1]}PublishSemanticSegmentation",
-                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
+                name=writer_name,
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}{time_type[1]}PublishImage",
                 annotators=[
                     "semantic_segmentation",
                     f'{omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("SemanticSegmentation")}IsaacSimulationGate',
@@ -215,10 +238,16 @@ class ROS2BridgeExtension(omni.ext.IExt):
                 encoding="32SC1",
                 category=BRIDGE_NAME,
             )
+            # Register writer for Replicator telemetry tracking
+            rep.WriterRegistry._default_writers.append(
+                writer_name
+            ) if writer_name not in rep.WriterRegistry._default_writers else None
+
             # Bbox2d tight
+            writer_name = f"{BRIDGE_PREFIX}{time_type[1]}PublishBoundingBox2DTight"
             rep.writers.register_node_writer(
-                name=f"{BRIDGE_PREFIX}{time_type[1]}PublishBoundingBox2DTight",
-                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishBbox2D",
+                name=writer_name,
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}{time_type[1]}PublishBbox2D",
                 annotators=[
                     omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                         "bounding_box_2d_tight", attributes_mapping={"input:semanticTypes": ["class"]}
@@ -230,11 +259,16 @@ class ROS2BridgeExtension(omni.ext.IExt):
                 ],
                 category=BRIDGE_NAME,
             )
+            # Register writer for Replicator telemetry tracking
+            rep.WriterRegistry._default_writers.append(
+                writer_name
+            ) if writer_name not in rep.WriterRegistry._default_writers else None
 
             # bbox2d Loose
+            writer_name = f"{BRIDGE_PREFIX}{time_type[1]}PublishBoundingBox2DLoose"
             rep.writers.register_node_writer(
-                name=f"{BRIDGE_PREFIX}{time_type[1]}PublishBoundingBox2DLoose",
-                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishBbox2D",
+                name=writer_name,
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}{time_type[1]}PublishBbox2D",
                 annotators=[
                     omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                         "bounding_box_2d_loose",
@@ -247,10 +281,16 @@ class ROS2BridgeExtension(omni.ext.IExt):
                 ],
                 category=BRIDGE_NAME,
             )
+            # Register writer for Replicator telemetry tracking
+            rep.WriterRegistry._default_writers.append(
+                writer_name
+            ) if writer_name not in rep.WriterRegistry._default_writers else None
+
             # bbox3d Loose
+            writer_name = f"{BRIDGE_PREFIX}{time_type[1]}PublishBoundingBox3D"
             rep.writers.register_node_writer(
-                name=f"{BRIDGE_PREFIX}{time_type[1]}PublishBoundingBox3D",
-                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishBbox3D",
+                name=writer_name,
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}{time_type[1]}PublishBbox3D",
                 annotators=[
                     omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                         "bounding_box_3d",
@@ -263,10 +303,16 @@ class ROS2BridgeExtension(omni.ext.IExt):
                 ],
                 category=BRIDGE_NAME,
             )
+            # Register writer for Replicator telemetry tracking
+            rep.WriterRegistry._default_writers.append(
+                writer_name
+            ) if writer_name not in rep.WriterRegistry._default_writers else None
+
             # camera info
+            writer_name = f"{BRIDGE_PREFIX}{time_type[1]}PublishCameraInfo"
             rep.writers.register_node_writer(
-                name=f"{BRIDGE_PREFIX}{time_type[1]}PublishCameraInfo",
-                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishCameraInfo",
+                name=writer_name,
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}{time_type[1]}PublishCameraInfo",
                 annotators=[
                     "IsaacReadCameraInfo",
                     "PostProcessDispatchIsaacSimulationGate",
@@ -276,6 +322,11 @@ class ROS2BridgeExtension(omni.ext.IExt):
                 ],
                 category=BRIDGE_NAME,
             )
+            # Register writer for Replicator telemetry tracking
+            rep.WriterRegistry._default_writers.append(
+                writer_name
+            ) if writer_name not in rep.WriterRegistry._default_writers else None
+
             # outputs that we can publish labels for
             label_names = {
                 "instance_segmentation": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
@@ -293,9 +344,10 @@ class ROS2BridgeExtension(omni.ext.IExt):
                 "bounding_box_3d": omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("BoundingBox3D"),
             }
             for annotator, annotator_name in label_names.items():
+                writer_name = f"{annotator_name}{BRIDGE_PREFIX}{time_type[1]}PublishSemanticLabels"
                 rep.writers.register_node_writer(
-                    name=f"{annotator_name}{BRIDGE_PREFIX}{time_type[1]}PublishSemanticLabels",
-                    node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishSemanticLabels",
+                    name=writer_name,
+                    node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}{time_type[1]}PublishSemanticLabels",
                     annotators=[
                         annotator,
                         f"{annotator_name}IsaacSimulationGate",
@@ -306,11 +358,16 @@ class ROS2BridgeExtension(omni.ext.IExt):
                     ],
                     category=BRIDGE_NAME,
                 )
+                # Register writer for Replicator telemetry tracking
+                rep.WriterRegistry._default_writers.append(
+                    writer_name
+                ) if writer_name not in rep.WriterRegistry._default_writers else None
 
             # RTX lidar PCL publisher
+            writer_name = f"RtxLidar{BRIDGE_PREFIX}{time_type[1]}PublishPointCloud"
             rep.writers.register_node_writer(
-                name=f"RtxLidar{BRIDGE_PREFIX}{time_type[1]}PublishPointCloud",
-                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
+                name=writer_name,
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}{time_type[1]}PublishPointCloud",
                 annotators=[
                     "RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud",
                     "PostProcessDispatchIsaacSimulationGate",
@@ -320,9 +377,15 @@ class ROS2BridgeExtension(omni.ext.IExt):
                 ],
                 category=BRIDGE_NAME,
             )
+            # Register writer for Replicator telemetry tracking
+            rep.WriterRegistry._default_writers.append(
+                writer_name
+            ) if writer_name not in rep.WriterRegistry._default_writers else None
+
+            writer_name = f"RtxLidar{BRIDGE_PREFIX}{time_type[1]}PublishPointCloudBuffer"
             rep.writers.register_node_writer(
-                name=f"RtxLidar{BRIDGE_PREFIX}{time_type[1]}PublishPointCloudBuffer",
-                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
+                name=writer_name,
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}{time_type[1]}PublishPointCloud",
                 annotators=[
                     "RtxSensorCpu" + "IsaacCreateRTXLidarScanBuffer",
                     "PostProcessDispatchIsaacSimulationGate",
@@ -332,11 +395,16 @@ class ROS2BridgeExtension(omni.ext.IExt):
                 ],
                 category=BRIDGE_NAME,
             )
+            # Register writer for Replicator telemetry tracking
+            rep.WriterRegistry._default_writers.append(
+                writer_name
+            ) if writer_name not in rep.WriterRegistry._default_writers else None
 
             # RTX Radar PCL publisher
+            writer_name = f"RtxRadar{BRIDGE_PREFIX}{time_type[1]}PublishPointCloud"
             rep.writers.register_node_writer(
-                name=f"RtxRadar{BRIDGE_PREFIX}{time_type[1]}PublishPointCloud",
-                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
+                name=writer_name,
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}{time_type[1]}PublishPointCloud",
                 annotators=[
                     "RtxSensorCpu" + "IsaacComputeRTXRadarPointCloud",
                     "PostProcessDispatchIsaacSimulationGate",
@@ -346,11 +414,16 @@ class ROS2BridgeExtension(omni.ext.IExt):
                 ],
                 category=BRIDGE_NAME,
             )
+            # Register writer for Replicator telemetry tracking
+            rep.WriterRegistry._default_writers.append(
+                writer_name
+            ) if writer_name not in rep.WriterRegistry._default_writers else None
 
             # RTX lidar LaserScan publisher
+            writer_name = f"RtxLidar{BRIDGE_PREFIX}{time_type[1]}PublishLaserScan"
             rep.writers.register_node_writer(
-                name=f"RtxLidar{BRIDGE_PREFIX}{time_type[1]}PublishLaserScan",
-                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishLaserScan",
+                name=writer_name,
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}{time_type[1]}PublishLaserScan",
                 annotators=[
                     "RtxSensorCpu" + "IsaacComputeRTXLidarFlatScan",
                     "PostProcessDispatchIsaacSimulationGate",
@@ -360,6 +433,10 @@ class ROS2BridgeExtension(omni.ext.IExt):
                 ],
                 category=BRIDGE_NAME,
             )
+            # Register writer for Replicator telemetry tracking
+            rep.WriterRegistry._default_writers.append(
+                writer_name
+            ) if writer_name not in rep.WriterRegistry._default_writers else None
 
     def unregister_nodes(self):
         for writer in rep.WriterRegistry.get_writers(category=BRIDGE_NAME):

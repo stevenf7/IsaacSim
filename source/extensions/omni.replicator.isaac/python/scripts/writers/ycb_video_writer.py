@@ -151,6 +151,10 @@ class YCBVideoWriter(Writer):
             ],
             node_type_id="omni.graph.action.RationalTimeSyncGate",
         )
+        # Register annotator for Replicator telemetry tracking
+        AnnotatorRegistry._default_annotators.append(
+            "PoseSync"
+        ) if "PoseSync" not in AnnotatorRegistry._default_annotators else None
 
         AnnotatorRegistry.register_annotator_from_node(
             name="pose",
@@ -180,6 +184,10 @@ class YCBVideoWriter(Writer):
             ),
             output_is_2d=False,
         )
+        # Register annotator for Replicator telemetry tracking
+        AnnotatorRegistry._default_annotators.append(
+            "pose"
+        ) if "pose" not in AnnotatorRegistry._default_annotators else None
 
     def setup_writer(config_data: dict, writer_config: dict):
         """Initialize writer and attach render product
@@ -534,3 +542,7 @@ class YCBVideoWriter(Writer):
 
 
 WriterRegistry.register(YCBVideoWriter)
+# Adding to default writers for Replicator telemetry tracking
+WriterRegistry._default_writers.append(
+    "YCBVideoWriter"
+) if "YCBVideoWriter" not in WriterRegistry._default_writers else None

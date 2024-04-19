@@ -83,6 +83,10 @@ class Extension(omni.ext.IExt):
             node_type_id="omni.syntheticdata.SdNoOp",
         )
         self.registered_annotators.append(annotator_name)
+        # Register annotator for Replicator telemetry tracking
+        AnnotatorRegistry._default_annotators.append(
+            annotator_name
+        ) if annotator_name not in AnnotatorRegistry._default_annotators else None
 
         annotator_name = "IsaacReadCameraInfo"
         AnnotatorRegistry.register_annotator_from_node(
@@ -91,6 +95,10 @@ class Extension(omni.ext.IExt):
             node_type_id="omni.isaac.core_nodes.IsaacReadCameraInfo",
         )
         self.registered_annotators.append(annotator_name)
+        # Register annotator for Replicator telemetry tracking
+        AnnotatorRegistry._default_annotators.append(
+            annotator_name
+        ) if annotator_name not in AnnotatorRegistry._default_annotators else None
 
         ##### Time
         # TODO105 : ASYNCRENDERING VALIDATION
@@ -136,6 +144,10 @@ class Extension(omni.ext.IExt):
             node_type_id="omni.isaac.core_nodes.IsaacReadTimes",
         )
         self.registered_annotators.append(annotator_name)
+        # Register annotator for Replicator telemetry tracking
+        AnnotatorRegistry._default_annotators.append(
+            annotator_name
+        ) if annotator_name not in AnnotatorRegistry._default_annotators else None
 
         annotator_name = "IsaacReadSimulationTime"
         AnnotatorRegistry.register_annotator_from_node(
@@ -144,6 +156,10 @@ class Extension(omni.ext.IExt):
             node_type_id="omni.isaac.core_nodes.IsaacReadSimulationTime",
         )
         self.registered_annotators.append(annotator_name)
+        # Register annotator for Replicator telemetry tracking
+        AnnotatorRegistry._default_annotators.append(
+            annotator_name
+        ) if annotator_name not in AnnotatorRegistry._default_annotators else None
 
         annotator_name = "IsaacReadSystemTime"
         AnnotatorRegistry.register_annotator_from_node(
@@ -153,7 +169,10 @@ class Extension(omni.ext.IExt):
         )
 
         self.registered_annotators.append(annotator_name)
-
+        # Register annotator for Replicator telemetry tracking
+        AnnotatorRegistry._default_annotators.append(
+            annotator_name
+        ) if annotator_name not in AnnotatorRegistry._default_annotators else None
         ##### Simulation Gates
         for rv in sensors.get_synthetic_data()._ogn_rendervars:
             if sensors.get_synthetic_data().is_node_template_registered(rv + "Ptr"):
@@ -216,6 +235,10 @@ class Extension(omni.ext.IExt):
             output_channels=3,
         )
         self.registered_annotators.append(annotator_name)
+        # Register annotator for Replicator telemetry tracking
+        AnnotatorRegistry._default_annotators.append(
+            annotator_name
+        ) if annotator_name not in AnnotatorRegistry._default_annotators else None
 
         # # convert depth to pcl
         rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.DistanceToImagePlane.name)
@@ -243,6 +266,10 @@ class Extension(omni.ext.IExt):
             output_channels=3,
         )
         self.registered_annotators.append(annotator_name)
+        # Register annotator for Replicator telemetry tracking
+        AnnotatorRegistry._default_annotators.append(
+            annotator_name
+        ) if annotator_name not in AnnotatorRegistry._default_annotators else None
 
     def unregister_nodes(self):
         for annotator in self.registered_annotators:

@@ -119,6 +119,10 @@ rep.writers.register_node_writer(
     ],
     category="custom",
 )
+# Register writer for Replicator telemetry tracking
+rep.WriterRegistry._default_writers.append(
+    "CustomROS1PublishImage"
+) if "CustomROS1PublishImage" not in rep.WriterRegistry._default_writers else None
 
 # Create the new writer and attach to our render product
 writer = rep.writers.get(f"CustomROS1PublishImage")

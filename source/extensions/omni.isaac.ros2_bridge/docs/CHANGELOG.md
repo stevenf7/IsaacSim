@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.22.2] - 2024-04-18
+### Added
+- Telemetry for writers and annotators
+
 ## [2.22.1] - 2024-04-18
 ### Fixed
 - Removed unnecessary imports from a unit test

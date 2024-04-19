@@ -1,4 +1,7 @@
 # Changelog
+## [1.14.2] - 2024-04-18
+### Added
+- Telemetry for writers and annotators
 
 ## [1.14.1] - 2024-04-18
 ### Fixed
