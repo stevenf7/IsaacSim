@@ -1,5 +1,5 @@
 [package]
-version = "0.12.3"
+version = "0.13.0"
 category = "Setup"
 title = "Isaac Sim Setup"
 description = "This Extension does the setup of the Isaac Sim App"
@@ -26,7 +26,8 @@ toggleable = false
 [[python.module]]
 name = "omni.isaac.app.setup"
 
-
+[settings]
+isaac.startup.create_new_stage = true # create a new stage on startup
 [settings."filter:platform"."windows-x86_64"]
 isaac.startup.ros_bridge_extension = ""
 [settings."filter:platform"."linux-x86_64"]
