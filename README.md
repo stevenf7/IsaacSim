@@ -56,15 +56,10 @@ For information on launching once you have downloaded a build [see here](https:/
 > Note that our documentation shows the public Omniverse launcher where daily builds are not available, but the process of running Isaac Sim is identical.
 
 ## Binary Builds (Packman Manual Download)
-* [Stable RC Builds from Release branch](http://packman.ov.nvidia.com/packages/isaac-sim-standalone?search=rc)
-* [Daily Alpha Builds from Develop branch](http://packman.ov.nvidia.com/packages/isaac-sim-standalone?search=alpha)
-* [Daily Beta Builds from Develop branch](http://packman.ov.nvidia.com/packages/isaac-sim-standalone?search=beta)
-* [Internal-only Builds from Develop branch (for internal tests/benchmarking)](http://packman.ov.nvidia.com/packages/isaac-sim-internal)
-
-## Binary Builds (Teamcity Manual Download)
-
-* [Linux-x86_64 Binary From Release branch](https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Release_BuildAndValidation/.lastSuccessful/artifacts/Linux/isaac-sim-standalone%40%7Bbuild.number%7D.linux-x86_64.release.7z)
-* [Linux-x86_64 Binary From Develop branch](https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Develop_BuildAndValidation/.lastSuccessful/artifacts/Linux/isaac-sim-standalone%40%7Bbuild.number%7D.linux-x86_64.release.7z)
+* [Stable RC Builds from Release branch](https://omnipackages.nvidia.com/packages/cloudfront/isaac-sim-standalone?query=rc)
+* [Daily Alpha Builds from Develop branch](http://packman.ov.nvidia.com/packages/cloudfront/isaac-sim-standalone?search=alpha)
+* [Daily Beta Builds from Develop branch](http://packman.ov.nvidia.com/packages/cloudfront/isaac-sim-standalone?search=beta)
+* [Internal-only Builds from Develop branch (for internal tests/benchmarking)](http://packman.ov.nvidia.com/packages/cloudfront/isaac-sim-internal)
 
 ## Docker Containers (GitLab)
 
