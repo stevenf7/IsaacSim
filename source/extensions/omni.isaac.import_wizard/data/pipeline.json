@@ -217,7 +217,7 @@
         "Advanced Instructions":"",
         "Menu": "Create -> Isaac -> Sensors -> IMU Sensor",
         "Useful Links":{
-            "Documentation Link":"hhttps://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/isaac_sim_sensors_physics_based_imu.html",
+            "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/isaac_sim_sensors_physics_based_imu.html",
             "API Link":"https://docs.omniverse.nvidia.com/py/isaacsim/source/extensions/omni.isaac.sensor/docs/index.html#imu-sensor-interface",
             "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/isaac_sim_sensors_physics_based_imu.html#isaac-example"
         }
@@ -233,9 +233,9 @@
         "Advanced Instructions":"- If you need to input a custom scanning pattern, use a Generic Lidar in a standalone python script.",
         "Menu": "Create -> Isaac -> Sensors -> physX Lidar",
         "Useful Links":{
-            "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/isaac_sim_sensors_physX_based_lidar.html",
+            "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/advanced_tutorials/tutorial_advanced_range_sensor_lidar.html#isaac-sim-app-tutorial-advanced-range-sensor-lidar",
             "API Link":"https://docs.omniverse.nvidia.com/py/isaacsim/source/extensions/omni.isaac.sensor/docs/index.html#module-omni.isaac.sensor.scripts.lidar_physX",
-            "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/isaac_sim_sensors_physX_based_lidar/node_overview.html"
+            "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/ext_omni_isaac_range_sensor.html#lidar-example"
         }
     },   
 
