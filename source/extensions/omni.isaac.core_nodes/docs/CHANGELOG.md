@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.14.1] - 2024-04-18
+### Fixed
+- Fault with Articulation Controller node when it receives no joint name or indices inputs 
+
 ## [1.14.0] - 2024-04-04
 ### Added
 - New Isaac Read System Time node to allow users to incorporate latest system time or system time at specified simulation frame (swh frame number).
