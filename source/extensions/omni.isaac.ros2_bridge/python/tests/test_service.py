@@ -9,16 +9,11 @@
 
 import asyncio
 import gc
-import json
 
 import omni.graph.core as og
 import omni.graph.core.tests as ogts
 import omni.kit.test
-import rclpy
 from omni.isaac.core.utils.stage import create_new_stage_async
-from rclpy.node import Node
-
-from .common import get_qos_profile
 
 
 class TestRos2Service(ogts.OmniGraphTestCase):
@@ -115,3 +110,4 @@ class TestRos2Service(ogts.OmniGraphTestCase):
         print("server response = ", server_result)
         print("client response = ", client_result)
         self.assertEqual(client_result, 21)
+        self._timeline.stop()

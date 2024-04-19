@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.22.1] - 2024-04-18
+### Fixed
+- Removed unnecessary imports from a unit test
+
 ## [2.22.0] - 2024-04-17
 ### Added
 - Generic Omnigraph ROS client and server nodes
