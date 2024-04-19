@@ -1,2 +1,5 @@
 Package : isaac-sim
 Description : Omniverse Isaac Simulator
+Maintainers : Hammad Mazhar, Sheikh Dawood
+Repository : https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim
+License Type : NVIDIA
