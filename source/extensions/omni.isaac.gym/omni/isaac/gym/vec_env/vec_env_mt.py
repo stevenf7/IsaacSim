@@ -206,7 +206,6 @@ class VecEnvMT(VecEnvBase):
                     if actions is None:
                         continue
                     await self._task.pre_physics_step_async(actions)
-                    self._world._physics_sim_view.flush()
                     for _ in range(self._task.control_frequency_inv - 1):
                         self._world._physics_context._step(current_time=self._world.current_time)
                         self.sim_frame_count += 1
