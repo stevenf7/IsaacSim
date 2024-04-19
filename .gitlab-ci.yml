@@ -239,7 +239,7 @@ check-code-format:
 # ==============================================================================================================
 .build-common:
   stage: build
-  timeout: 1 hour
+  timeout: 1.5 hours
   interruptible: true
   extends:
   - .build-artifacts
