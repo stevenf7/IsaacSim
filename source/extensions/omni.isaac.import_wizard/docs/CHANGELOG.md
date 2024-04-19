@@ -1,5 +1,10 @@
 # Changelog
+## [0.3.3] - 2024-04-18
+### Fixed
+- Added physx supportgui dependency. Fixed broken links in pipeline.json
+
 ## [0.3.2] - 2024-04-15
+### Fixed
 - Fixed typo when pulling carb setting for loading on startup
 
 ## [0.3.1] - 2024-04-13

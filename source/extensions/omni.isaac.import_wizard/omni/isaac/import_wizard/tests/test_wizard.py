@@ -44,6 +44,7 @@ class TestImportWizard(omni.kit.test.AsyncTestCase):
                 print(f"testing link url", url)
                 return res.status == 200
             except URLError:
+                print("URL failed", url)
                 return False
 
         def extract_key(data_dict, key, value_array=[]):
