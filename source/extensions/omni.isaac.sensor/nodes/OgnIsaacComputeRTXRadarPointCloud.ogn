@@ -19,7 +19,7 @@
             "dataPtr": {
                 "type": "uint64",
                 "description": "Pointer to Radar render result.",
-                "uiName": "Data Pointer"
+                "uiName": "Radar Render Results"
             },
             "renderProductPath": {
                 "type": "token",
@@ -34,10 +34,6 @@
             "transform": {
                 "type": "matrixd[4]",
                 "description": "The input matrix transformed from Radar to World"
-            },
-            "syncData": {
-                "type": "uint64",
-                "description": "Pointer to SyncData Sync primitives for syncing with model"
             },
             "sensorID": {
                 "type": "uchar",
@@ -100,6 +96,16 @@
             "bufferSize": {
                 "type": "uint64",
                 "description": "Size (in bytes) of the buffer (0 if the input is a texture)"
+            },
+            "height":{
+                "type": "uint",
+                "description": "Height of point cloud buffer, will always return 1",
+                "default": 1
+            },
+            "width":{
+                "type": "uint",
+                "description": "3 x Width or number of points in point cloud buffer",
+                "default": 0
             },
             "radialDistance":{
                 "type": "float[]",

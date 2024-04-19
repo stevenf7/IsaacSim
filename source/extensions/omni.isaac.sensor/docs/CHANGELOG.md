@@ -1,5 +1,12 @@
 # Changelog
 
+## [10.1.0] - 2024-04-17
+### Changed
+- omni.sensors backend moved to v1.0.0
+- Includes RTX nonvisual material support
+### Removed
+- up/downElevationDeg and start/endAzimuthDeg because they are no longer used.
+
 ## [10.0.0] - 2024-04-09
 ### Changed
 - Tensor API support for IMU sensor
@@ -33,7 +40,7 @@
 
 ## [9.14.2] - 2023-03-07
 ### Changed
-- Removed the usage of the deprecated dynamic_control extension 
+- Removed the usage of the deprecated dynamic_control extension
 
 ## [9.14.1] - 2024-03-04
 ### Updated
@@ -114,7 +121,7 @@
 
 ## [9.9.0] - 2023-10-08
 ### Changed
-- get_all_camera_objects() now ensures that camera names are unique 
+- get_all_camera_objects() now ensures that camera names are unique
 
 ## [9.8.1] - 2023-10-06
 ### Fixed
@@ -132,7 +139,7 @@
 
 ## [9.7.2] - 2023-10-03
 ### Fixed
-- Fixed WriterReadRTXLidarData Synthetic Data writer so it sets the render_product_path correctly. 
+- Fixed WriterReadRTXLidarData Synthetic Data writer so it sets the render_product_path correctly.
 
 
 ## [9.7.1] - 2023-09-29
@@ -156,7 +163,7 @@
 ### Changed
 - updated data acquisition callback for Camera objects to be on the next frame event
 - Used frameTime annotator instead of the dispather node inputs for better accuracy in the data acquisition callback
-- Moved initializing render products to the initialize method in Camera to reduce overhead and decoupling the usage of pose utils and render product related methods 
+- Moved initializing render products to the initialize method in Camera to reduce overhead and decoupling the usage of pose utils and render product related methods
 ## [9.6.1] - 2023-09-26
 ### Fixed
 - Fixed bug with horizontal resolution divison
@@ -187,7 +194,7 @@
 - IMU and contact sensor read omnigraph nodes can now support parents from multiple levels up.
 
 ## [9.4.0] - 2023-09-18
-### Added 
+### Added
 - Support, samples for OpenCV calibration models
 ### Changed
 - Added Kannala Brandt and Rational Polynomial tests for the camera properties test
@@ -206,12 +213,12 @@
 - Scale issues with Orbbec RGBD sensors
 
 ## [9.1.1] - 2023-09-01
-### Fixed 
+### Fixed
 - RtxLidarDebugDrawPointCloudBuffer writer to use correct default transform
 - RTX Lidar Menu setting wrong config parameter on sensor prim
 
 ## [9.1.0] - 2023-08-30
-### Added 
+### Added
 - transformPoints setting on IsaacCreateRTXLidarScanBuffer to enable correct world transformed points.
 - Velodyne and ZVISION RTX lidar config files.
 
@@ -221,7 +228,7 @@
 - Added force threshold unit test for the contact sensor, now contact forces smaller than the min threshold will be treated as no contact
 
 ## [9.0.0] - 2023-08-29
-### Added 
+### Added
 - Sick_TiM781 lidar config file.
 ### Changed
 - on CreateRTXLidarScanBuffer returnsPerScan output to numReturnsPerScan
@@ -240,10 +247,10 @@
 
 ## [8.1.0] - 2023-08-22
 ### Fixed
-- keepOnlyPositiveDistance now works on CreateRTXLidarScanBuffer node 
+- keepOnlyPositiveDistance now works on CreateRTXLidarScanBuffer node
 
 ## [8.0.0] - 2023-08-17
-### Added 
+### Added
 - testMode to IsaacPrintRTXRadarInfo
 - Writers for radar point cloud node
 ### Changed
@@ -269,26 +276,26 @@
 - Added menu items for more RTX Lidar sensor configs
 
 ## [7.4.1] - 2023-08-15
-### Added 
-- Changed isaac sensor node prim from bundle to target type 
+### Added
+- Changed isaac sensor node prim from bundle to target type
 ### Fixed
 - Vertical Aperture used from reading the horizonal aperture usd property and multiplying it by resolution ratio to conform to the square pixels asumption in place. (Camera class)
 ## [7.4.0] - 2023-08-15
 ### Changed
 - RTX point cloud node returns width and height of buffer
 - Convert RTX templates to annotators
-### Fixed 
+### Fixed
 - RTX lidar class not returning data
 
 ## [7.3.0] - 2023-08-11
 ### Added
-- Add function to camera.py to scrap all Camera objects in the scene 
+- Add function to camera.py to scrap all Camera objects in the scene
 - Added IsaacCreateRTXLidarScanBuffer Node
-- Changed contact sensor and IMU node prim from bundle to target type 
+- Changed contact sensor and IMU node prim from bundle to target type
 
 ## [7.2.1] - 2023-08-10
-### Added 
-- docstrings to Camera class for functions adding annotators 
+### Added
+- docstrings to Camera class for functions adding annotators
 
 ## [7.2.0] - 2023-08-08
 ### Added
@@ -305,13 +312,13 @@
 
 ## [7.1.0] - 2023-08-04
 ### Added
-- Add following functions to Camera class 
-- get_point_cloud()  
-- get_depth()  
-- get_rgb()  
+- Add following functions to Camera class
+- get_point_cloud()
+- get_depth()
+- get_rgb()
 
 ### Changed
-- get_current_frame() now accepts optional argument to return deepcopy of data 
+- get_current_frame() now accepts optional argument to return deepcopy of data
 
 ## [7.0.0] - 2023-08-03
 ### Added
@@ -426,7 +433,7 @@
 - Unlabeled points can be ignored when enabling pointcloud
 ### Changed
 - removing an annotator detaches it
-- update rtx lidar on app update 
+- update rtx lidar on app update
 ### Fixed
 - occlusion could not be enabled
 - RTX lidar not returning data
@@ -565,7 +572,7 @@
 - ReadRTXLidarPointCloud code doc and ignore 0 values.
 
 ### Fixed
-- accuracy error calculation in ReadRTXLidarPointCloud 
+- accuracy error calculation in ReadRTXLidarPointCloud
 
 ## [1.6.1] - 2022-10-18
 
@@ -595,7 +602,7 @@
 - synthetic data template for DebugDrawPointCloud
 
 ### Fixed
-- positions of points in ReadRTXLidarPointCloud 
+- positions of points in ReadRTXLidarPointCloud
 
 
 ## [1.4.0] - 2022-09-28
@@ -633,7 +640,7 @@
 
 ## [1.0.2] - 2022-08-09
 
-### Changed 
+### Changed
 - Removed simple_articulation.usd, test_imu_sensor uses Nucleus asset
 
 ## [1.0.1] - 2022-07-29
@@ -657,24 +664,24 @@
 ## [0.5.1] - 2022-07-15
 
 ### Changed
-- Renamed BindingsContactSensorPython to BindingsIsaacSensorPython 
+- Renamed BindingsContactSensorPython to BindingsIsaacSensorPython
 
 ## [0.5.0] - 2022-07-11
 
 ### Added
-- Read contact sensor omnigraph node and tests 
-- Orientation reading to Imu sensor sample 
+- Read contact sensor omnigraph node and tests
+- Orientation reading to Imu sensor sample
 
 ### Changed
-- Contact sensor resets on stop/start 
+- Contact sensor resets on stop/start
 
 ## [0.4.0] - 2022-06-24
 
 ### Added
-- Absolute orientation output to Imu sensor + tests 
+- Absolute orientation output to Imu sensor + tests
 - Read Imu node
 
-### Fixed 
+### Fixed
 - Imu mRawBuffer resets upon stop/start
 
 ## [0.3.4] - 2022-05-24
@@ -702,7 +709,7 @@
 
 ## [0.3.0] - 2022-04-04
 
-### Added 
+### Added
 - Added Imu sensor
 
 ### Changed
@@ -713,7 +720,7 @@
 ## [0.2.1] - 2022-03-28
 
 ### Added
-- Add UI element to create contact sensor 
+- Add UI element to create contact sensor
 
 ### Changed
 - Converted contact sensor namespaces to isaac sensor namespaces

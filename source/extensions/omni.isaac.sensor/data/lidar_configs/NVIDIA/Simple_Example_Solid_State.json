@@ -14,12 +14,6 @@
     "effectiveApertureSize": 0.0145,
     "focusDistM": 0.16,
 
-    "startAzimuthDeg": -50.0,
-    "endAzimuthDeg": 50.0,
-
-    "upElevationDeg": 8.0,
-    "downElevationDeg": -8.0,
-
     "rangeResolutionM": 0.004,
 
     "rangeAccuracyM": 0.025,
@@ -76,9 +70,9 @@
           8,9,10,11],
         "rangeId": [
           0, 0, 0, 0,
-          0, 0, 0, 0, 
+          0, 0, 0, 0,
           0, 0, 0, 0
-        ], 
+        ],
         "bank": [
           11, 10, 9, 8,
            7,  6, 5, 4,

@@ -11,12 +11,6 @@
     "nearRangeM": 1.0,
     "farRangeM": 200.0,
 
-    "startAzimuthDeg": 0.0,
-    "endAzimuthDeg": 360.0,
-
-    "upElevationDeg": 15.0,
-    "downElevationDeg": -25.0,
-
     "rangeResolutionM": 0.004,
     "rangeAccuracyM": 0.02,
 

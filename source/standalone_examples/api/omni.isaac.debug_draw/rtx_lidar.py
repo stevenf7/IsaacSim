@@ -12,7 +12,7 @@ import sys
 from isaacsim import SimulationApp
 
 # Example for creating a RTX lidar sensor and publishing PCL data
-simulation_app = SimulationApp({"headless": False})
+simulation_app = SimulationApp({"headless": True})
 import carb
 import omni
 import omni.kit.viewport.utility
