@@ -7,13 +7,13 @@ include:
   file: 'modules/include.yml'
   ref: v1_latest
 - project: 'omniverse/sectools/vault'
-  file: 'templates/v2/omni-codesign-creds.yml'
+  file: ['templates/v2/omni-codesign-creds.yml', 'templates/v3/linux/codesign.gitlab-ci.yml']
 - project: 'omniverse/sectools/vault'
-  file: 'templates/v2/windows/repo-codesign-creds.yml'
+  file: ['templates/v2/windows/repo-codesign-creds.yml', 'templates/v3/windows/codesign.gitlab-ci.yml']
 - project: 'omniverse/sectools/vault'
-  file: 'templates/v2/omni-packman-s3-creds.yml'
+  file: ['templates/v2/omni-packman-s3-creds.yml', 'templates/v3/linux/packman_s3.gitlab-ci.yml']
 - project: 'omniverse/sectools/vault'
-  file: 'templates/v2/windows/packman-s3-creds.gitlab-ci.yml'
+  file: ['templates/v2/windows/packman-s3-creds.gitlab-ci.yml', 'templates/v3/windows/packman_s3.gitlab-ci.yml']
 - project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
   # local to devplat/gitlab/templates/runners, external to this repo:
   file: 'modules/common.yml'
