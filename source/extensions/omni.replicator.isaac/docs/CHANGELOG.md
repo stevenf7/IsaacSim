@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.14.2] - 2024-04-03
+### Added 
+- Telemetry for writers and annotators
+
 ## [1.14.1] - 2024-03-15
 ### Updated 
 - re-enable s3 writing functionality for PoseWriter 

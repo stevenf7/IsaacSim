@@ -576,3 +576,5 @@ class PoseWriter(Writer):
 
 
 WriterRegistry.register(PoseWriter)
+# Adding to default writers for Replicator telemetry tracking
+WriterRegistry._default_writers.append("PoseWriter") if "PoseWriter" not in WriterRegistry._default_writers else None

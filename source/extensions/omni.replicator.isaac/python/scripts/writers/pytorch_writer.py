@@ -114,3 +114,7 @@ class PytorchWriter(Writer):
 
 
 WriterRegistry.register(PytorchWriter)
+# Adding to default writers for Replicator telemetry tracking
+WriterRegistry._default_writers.append(
+    "PytorchWriter"
+) if "PytorchWriter" not in WriterRegistry._default_writers else None

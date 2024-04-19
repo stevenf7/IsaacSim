@@ -332,3 +332,7 @@ class DataVisualizationWriter(Writer):
 
 
 WriterRegistry.register(DataVisualizationWriter)
+# Adding to default writers for Replicator telemetry tracking
+WriterRegistry._default_writers.append(
+    "DataVisualizationWriter"
+) if "DataVisualizationWriter" not in WriterRegistry._default_writers else None

@@ -114,6 +114,10 @@ class DOPEWriter(Writer):
             ],
             node_type_id="omni.graph.action.RationalTimeSyncGate",
         )
+        # Register annotator for Replicator telemetry tracking
+        AnnotatorRegistry._default_annotators.append(
+            "DopeSync"
+        ) if "DopeSync" not in AnnotatorRegistry._default_annotators else None
 
         AnnotatorRegistry.register_annotator_from_node(
             name="dope",
@@ -140,6 +144,10 @@ class DOPEWriter(Writer):
             ),
             output_is_2d=False,
         )
+        # Register annotator for Replicator telemetry tracking
+        AnnotatorRegistry._default_annotators.append(
+            "dope"
+        ) if "dope" not in AnnotatorRegistry._default_annotators else None
 
     def setup_writer(config_data: dict, writer_config: dict):
         """Initialize writer and attach render product
@@ -253,3 +261,5 @@ class DOPEWriter(Writer):
 
 
 WriterRegistry.register(DOPEWriter)
+# Adding to default writers for Replicator telemetry tracking
+WriterRegistry._default_writers.append("DOPEWriter") if "DOPEWriter" not in WriterRegistry._default_writers else None
