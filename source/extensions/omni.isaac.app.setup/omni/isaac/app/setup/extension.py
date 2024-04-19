@@ -97,7 +97,9 @@ class CreateSetupExtension(omni.ext.IExt):
         asyncio.ensure_future(self.__enable_ros_bridge())
         self.__menu_update()
         self.__add_app_icon(ext_id)
-        self.__await_new_scene = asyncio.ensure_future(self.__new_stage())
+        self.create_new_stage = self._settings.get("/isaac/startup/create_new_stage")
+        if self.create_new_stage:
+            self.__await_new_scene = asyncio.ensure_future(self.__new_stage())
 
         # Increase hang detection timeout
         omni.client.set_hang_detection_time_ms(10000)

@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.13.0] - 2024-03-18
+
+### Added
+- isaac.startup.create_new_stage carb setting to enable/disable stage creation on app startup, enabled by default
+
+
 ## [0.12.3] - 2024-03-07
 
 ### Fixed
