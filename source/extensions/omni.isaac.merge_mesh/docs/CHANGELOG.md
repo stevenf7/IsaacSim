@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.1] - 2023-04-18
+### Added
+- Dependency for tests
+
 ## [1.0.0] - 2023-04-12
 ### Added
 - Code-Accessible Merge Mesh functionality (API)
