@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.1] - 2024-04-18
+### Fixed
+- Optionally import isaacsim as it only applies to standalone workflows
+
+### Changed
+- Deprecate omni.isaac.gym extension and related app files
+
 ## [0.11.0] - 2024-02-22
 ### Changed
 - Rename isaac_sim import statement to isaacsim
