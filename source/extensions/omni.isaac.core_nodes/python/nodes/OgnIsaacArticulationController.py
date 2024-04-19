@@ -87,7 +87,7 @@ class OgnIsaacArticulationController:
                     state.robot_prim = db.inputs.robotPath
                 else:
                     if len(db.inputs.targetPrim) == 0:
-                        db.logError("Omnigraph Error: No robot prim found for the articulation controller")
+                        db.log_error("Omnigraph Error: No robot prim found for the articulation controller")
                         return False
                     else:
                         state.robot_prim = db.inputs.targetPrim[0].GetString()
@@ -97,12 +97,12 @@ class OgnIsaacArticulationController:
 
             # pick the joints that are being commanded, this can be different at every step
             joint_names = db.inputs.jointNames
-            if np.array([joint_names != state.joint_names]).flatten().any():
+            if joint_names and np.array([joint_names != state.joint_names]).flatten().any():
                 state.joint_names = joint_names
                 state.joint_picked = False
 
             joint_indices = db.inputs.jointIndices
-            if np.array([joint_indices != state.joint_indices]).flatten().any():
+            if joint_indices and np.array([joint_indices != state.joint_indices]).flatten().any():
                 state.joint_indices = np.array(joint_indices)
                 state.joint_picked = False
 
