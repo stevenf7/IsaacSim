@@ -43,7 +43,6 @@ class LidarRtx(BaseSensor):
         valid_range: Optional[Tuple[float, float]] = None,
         scan_type: Optional[str] = None,
         elevation_range: Optional[Tuple[float, float]] = None,
-        azimuth_range: Optional[Tuple[float, float]] = None,
         range_resolution: Optional[float] = None,
         range_accuracy: Optional[float] = None,
         avg_power: float = None,
@@ -55,6 +54,11 @@ class LidarRtx(BaseSensor):
 
         if firing_dt:
             firing_frequency = int(1.0 / firing_dt)
+
+        if elevation_range:
+            carb.log_warn(
+                "elevation_range is deprecated; Lidar config no longer supports upElevationDeg, downElevationDeg."
+            )
 
         self._temp_data_file_path = None
         if is_prim_path_valid(prim_path):
@@ -89,8 +93,6 @@ class LidarRtx(BaseSensor):
                     rotation_frequency=rotation_frequency,
                     valid_range=valid_range,
                     scan_type=scan_type,
-                    elevation_range=elevation_range,
-                    azimuth_range=azimuth_range,
                     range_resolution=range_resolution,
                     range_accuracy=range_accuracy,
                     avg_power=avg_power,
@@ -332,8 +334,6 @@ class LidarRtx(BaseSensor):
         rotation_frequency: Optional[int] = None,
         valid_range: Optional[Tuple[float, float]] = None,
         scan_type: Optional[str] = None,
-        elevation_range: Optional[Tuple[float, float]] = None,
-        azimuth_range: Optional[Tuple[float, float]] = None,
         range_resolution: Optional[float] = None,
         range_accuracy: Optional[float] = None,
         avg_power: float = None,
@@ -365,18 +365,6 @@ class LidarRtx(BaseSensor):
         else:
             config["profile"]["nearRangeM"] = 1.0 / get_stage_units()
             config["profile"]["farRangeM"] = 200.0 / get_stage_units()
-        if azimuth_range:
-            config["profile"]["startAzimuthDeg"] = math.degrees(azimuth_range[0])
-            config["profile"]["endAzimuthDeg"] = math.degrees(azimuth_range[1])
-        else:
-            config["profile"]["startAzimuthDeg"] = 0.0
-            config["profile"]["endAzimuthDeg"] = 360.0
-        if elevation_range:
-            config["profile"]["upElevationDeg"] = math.degrees(elevation_range[0])
-            config["profile"]["downElevationDeg"] = math.degrees(elevation_range[1])
-        else:
-            config["profile"]["upElevationDeg"] = 10.0
-            config["profile"]["downElevationDeg"] = -15
         if range_resolution:
             config["profile"]["rangeResolutionM"] = range_resolution / get_stage_units()
         else:

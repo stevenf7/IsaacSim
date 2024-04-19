@@ -10,15 +10,13 @@
 #include <UsdPCH.h>
 // clang-format on
 
-#include "LidarNodeUtils.h"
+#include "SensorNodeUtils.h"
 #include "omni/isaac/utils/UsdUtilities.h"
 
 #include <omni/isaac/utils/Buffer.h>
 #include <omni/math/linalg/matrix.h>
-#include <omni/sensors/lidar/LidarParameterType.h>
-#include <omni/sensors/lidar/LidarPoint.h>
+#include <omni/sensors/GenericModelOutput.h>
 #include <omni/sensors/lidar/LidarProfileTypes.h>
-#include <omni/sensors/lidar/LidarReturnTypes.h>
 
 // #include <tbb/atomic.h>
 // #include <tbb/parallel_for.h>
@@ -35,17 +33,22 @@ namespace isaac
 namespace sensor
 {
 
+struct LidarPoint
+{
+    float x, y, z, azimuth, elevation, range, intensity;
+};
 inline void convertReturnToPoint(unsigned int idx,
-                                 omni::sensors::lidar::LidarPoint& point,
-                                 const LidarReturns& lidarReturns,
+                                 LidarPoint& point,
+                                 const omni::sensors::GenericModelOutput& gmo,
                                  const LidarBaseProfile* profile,
                                  const EmitterProfile* emitterProfile,
                                  float accuracyErrorAzimuthDeg,
                                  float accuracyErrorElevationDeg)
 {
     // const float azimuthDeg = (rightHanded ? (360.f - lidarReturn.azimuthDeg) : lidarReturn.azimuthDeg);
-    const float azimuthDeg = 360.f - lidarReturns.azimuths[idx] + accuracyErrorAzimuthDeg;
-    const float elevationDeg{ lidarReturns.elevations[idx] + accuracyErrorElevationDeg };
+    // const float azimuthDeg = 360.f - gmo.elements.x[idx] + accuracyErrorAzimuthDeg;
+    const float azimuthDeg = gmo.elements.x[idx] + accuracyErrorAzimuthDeg;
+    const float elevationDeg{ gmo.elements.y[idx] + accuracyErrorElevationDeg };
 
     const float azimuthRad{ Deg2Rad(azimuthDeg) };
     const float elevationRad{ Deg2Rad(elevationDeg) };
@@ -55,7 +58,7 @@ inline void convertReturnToPoint(unsigned int idx,
     const float sinElevation{ ::sinf(elevationRad) };
     const float cosElevation{ ::cosf(elevationRad) };
 
-    const float rawDistanceM = lidarReturns.distances[idx];
+    const float rawDistanceM = gmo.elements.z[idx];
 
     // Ray direction in meter
     const float rayDirectionX{ cosElevation * cosAzimuth };
@@ -87,7 +90,7 @@ inline void convertReturnToPoint(unsigned int idx,
 
     // Add beam origin distance directly? -> see differences in resim
     point.range = distanceM + beamOriginDistM;
-    point.intensity = lidarReturns.intensities[idx];
+    point.intensity = gmo.elements.scalar[idx];
     if (profile)
         point.intensity *= profile->intensityScalePercent / 100.f;
 
@@ -95,14 +98,14 @@ inline void convertReturnToPoint(unsigned int idx,
     point.azimuth = azimuthRad;
     point.elevation = elevationRad;
 
-    // if (rightHanded)
-    point.azimuth = Deg2Rad(360.f) - point.azimuth;
-    // fit azimuth into [-PI, PI] ala atan2
-    if (point.azimuth > Deg2Rad(180.f))
-        point.azimuth -= Deg2Rad(360.f);
+    // // if (rightHanded)
+    // point.azimuth = Deg2Rad(360.f) - point.azimuth;
+    // // fit azimuth into [-PI, PI] ala atan2
+    // if (point.azimuth > Deg2Rad(180.f))
+    //     point.azimuth -= Deg2Rad(360.f);
 }
 
-class OgnIsaacComputeRTXLidarPointCloud
+class OgnIsaacComputeRTXLidarPointCloud : public LidarConfigHelper
 {
 public:
     static bool compute(OgnIsaacComputeRTXLidarPointCloudDatabase& db)
@@ -130,35 +133,24 @@ public:
         }
         auto& state = db.perInstanceState<OgnIsaacComputeRTXLidarPointCloud>();
 
-        // fill the structure of arrays
-        LidarTicks lidarTicks;
-        LidarReturns lidarReturns;
-        LidarParameterType* parameter = saferFillStructsFromBuffer(input, lidarReturns, lidarTicks);
-        if (!parameter)
+        GenericModelOutputHelper helper(input);
+        if (!helper.isValid(OutputType::POINTCLOUD, CoordsType::SPHERICAL, AuxType::LIDAR))
+        {
+            CARB_LOG_WARN(
+                "Input to IsaacComputeRTXLidarPointCloud is not a valid LIDAR POINTCLOUD type. Buffer will not be parsed.");
             return true;
-        const uint32_t numTicks = parameter->sync.numTicks;
-        const uint32_t numChannels = parameter->async.numChannels;
-        const uint32_t numEchos = parameter->async.numEchos;
-
-        const size_t maxSize = numChannels * numEchos * numTicks;
-
-        if (numTicks == 0 || numChannels * numEchos == 0)
+        }
+        if (helper.m_gmo.numElements == 0)
         {
             return true;
         }
 
-        std::string curConfig = "";
-        pxr::UsdAttribute configAttr = omni::isaac::utils::getCameraAttributeFromRenderProduct(
-            "sensorModelConfig", db.tokenToString(db.inputs.renderProductPath()));
-        if (configAttr.IsValid())
-        {
-            omni::isaac::utils::safeGetAttribute(configAttr, curConfig);
-        }
-        updateLidarConfig(curConfig, state.config, state.scanType, state.rotaryProfile, state.solidStateProfile);
+        // Update lidar configuration, if necessary
+        state.updateLidarConfig(db.tokenToString(db.inputs.renderProductPath()));
 
         if (state.scanType == LidarScanType::kUnknown)
         {
-            if (curConfig == "")
+            if (state.config == "")
             {
                 CARB_LOG_WARN_ONCE("A Compute RTX Lidar PointCloud node can't get the lidar configuration file.");
             }
@@ -166,20 +158,21 @@ public:
             {
                 CARB_LOG_WARN_ONCE(
                     "A Compute RTX Lidar PointCloud node tried to read a corrupt or missing profile named %s.",
-                    curConfig.c_str());
+                    state.config.c_str());
             }
         }
 
-        getTransformFromLidarAsyncParameter(parameter->async, matrixOutput);
+        getTransformFromSensorPose(helper.m_gmo.frameEnd, matrixOutput);
 
         bool keepOnlyPositiveDistance = db.inputs.keepOnlyPositiveDistance();
-        size_t outSize = maxSize;
+        size_t outSize = helper.m_gmo.numElements;
+        const float* distances = helper.m_gmo.elements.z;
         if (keepOnlyPositiveDistance)
         {
             outSize = 0;
-            for (size_t i = 0; i < maxSize; ++i)
+            for (size_t i = 0; i < helper.m_gmo.numElements; ++i)
             {
-                if (lidarReturns.distances[i] > 0.f)
+                if (distances[i] > 0.f)
                 {
                     ++outSize;
                 }
@@ -216,46 +209,42 @@ public:
                                               reinterpret_cast<const LidarBaseProfile*>(&state.rotaryProfile) :
                                               nullptr;
         // uint32_t numTicks = state.scanType == LidarScanType::kRotary ? numTicks : 1;
-        uint32_t atomicOutIdx = 0;
-        for (uint32_t tick = 0; tick < numTicks; tick++)
+        uint32_t atomicOutIdx = 0; // not atomic, but it will need to be if you parallelize this
+        const omni::sensors::LidarAuxiliaryData* auxPoints =
+            static_cast<const omni::sensors::LidarAuxiliaryData*>(helper.m_gmo.auxiliaryData);
+        const uint8_t* states = auxPoints ? auxPoints->tickStates : nullptr;
+        const uint32_t* emitterIds = auxPoints ? auxPoints->emitterId : nullptr;
+        bool useProfile = state.scanType == LidarScanType::kRotary && states && emitterIds ? true : false;
+        for (uint32_t pointIdx = 0; pointIdx < helper.m_gmo.numElements; pointIdx++)
         {
-            for (uint32_t channelId = 0; channelId < numChannels; ++channelId)
+
+            // This is just for runtime efficiency
+            if (!keepOnlyPositiveDistance || distances[pointIdx] > 0.f)
             {
-                for (uint32_t echoId = 0; echoId < numEchos; ++echoId)
-                {
-                    const uint32_t pointIdx{ idxOfReturn(channelId, echoId, numEchos, numChannels, tick) };
-
-                    // This is just for runtime efficiency
-                    omni::sensors::lidar::LidarPoint p;
-                    if (!keepOnlyPositiveDistance || lidarReturns.distances[pointIdx] > 0.f)
-                    {
-                        const uint32_t outIdx = keepOnlyPositiveDistance ? atomicOutIdx++ : pointIdx;
-                        // NOTE: in drivesim, emitterProfile is not used for Solid State lidar.
-                        const EmitterProfile* emitterProfile =
-                            state.scanType == LidarScanType::kRotary ?
-                                &state.rotaryProfile.emitterStates[lidarTicks.states[tick]]
-                                     .emitterProfiles[lidarReturns.emitterIds[pointIdx]] :
-                                nullptr;
-
-                        convertReturnToPoint(pointIdx, p, lidarReturns, profile, emitterProfile,
-                                             accuracyErrorAzimuthDeg, accuracyErrorElevationDeg);
-                        p.x += accuracyErrorPosition.x;
-                        p.y += accuracyErrorPosition.y;
-                        p.z += accuracyErrorPosition.z;
-                        dataPtr[outIdx].x = p.x;
-                        dataPtr[outIdx].y = p.y;
-                        dataPtr[outIdx].z = p.z;
+                const uint32_t outIdx = keepOnlyPositiveDistance ? atomicOutIdx++ : pointIdx;
+                // NOTE: in drivesim, emitterProfile is not used for Solid State lidar.
+                const EmitterProfile* emitterProfile =
+                    useProfile ?
+                        &state.rotaryProfile.emitterStates[states[pointIdx]].emitterProfiles[emitterIds[pointIdx]] :
+                        nullptr;
+                LidarPoint p;
+                convertReturnToPoint(pointIdx, p, helper.m_gmo, profile, emitterProfile, accuracyErrorAzimuthDeg,
+                                     accuracyErrorElevationDeg);
+                p.x += accuracyErrorPosition.x;
+                p.y += accuracyErrorPosition.y;
+                p.z += accuracyErrorPosition.z;
+                dataPtr[outIdx].x = p.x;
+                dataPtr[outIdx].y = p.y;
+                dataPtr[outIdx].z = p.z;
 
 #define _ASSIGN_OUT(outputName, index, comp, src) db_outputs_##outputName[index] comp = p.src
 
-                        _ASSIGN_OUT(intensity, outIdx, , intensity);
-                        _ASSIGN_OUT(range, outIdx, , range);
-                        _ASSIGN_OUT(azimuth, outIdx, , azimuth);
-                        _ASSIGN_OUT(elevation, outIdx, , elevation);
+                _ASSIGN_OUT(intensity, outIdx, , intensity);
+                _ASSIGN_OUT(range, outIdx, , range);
+                _ASSIGN_OUT(azimuth, outIdx, , azimuth);
+                _ASSIGN_OUT(elevation, outIdx, , elevation);
 
 #undef _ASSIGN_OUT
-                    }
-                }
             }
         }
 
@@ -266,10 +255,6 @@ public:
 
 private:
     isaac::utils::HostBufferBase<float3> hostPcBuffer;
-    std::string config;
-    LidarScanType scanType{ LidarScanType::kUnknown };
-    LidarSolidStateProfile solidStateProfile;
-    LidarRotaryProfile rotaryProfile;
 };
 
 REGISTER_OGN_NODE()

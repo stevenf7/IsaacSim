@@ -13,39 +13,31 @@
 #define DEG2RAD(deg) ((deg) / 180.f * 3.14159265358979323846f)
 #define RAD2DEG(rad) ((rad) / 3.14159265358979323846f * 180.f)
 
-// uses the destination and a scrath area to compte and store for use computing pc
-// const float azimuthDeg = 360.f - lidarReturns.azimuths[idx] + accuracyErrorAzimuthDeg;
-// const float azimuthRad{ Deg2Rad(azimuthDeg) };
-// const float sinAzimuth{ ::sinf(azimuthRad) };
-// const float cosAzimuth{ ::cosf(azimuthRad) };
-// if (point.azimuth > Deg2Rad(180.f))
-//     point.azimuth -= Deg2Rad(360.f);
+// uses the destination and a scratch area to compte and store for use computing pc
+// omni.sensor v1.0.0+ provides azimuth in [-180, 180), +CCW
+// omni.sensor v0.4.x  provided azimuth in [0, 360), +CW
 // srcDest computes final azimuth
 // scratch.x = sinAzimuth
 // scratch.y = conAzimuth
-__global__ void azimuthRightHandedKernel(float* srcDest, float3* scratch, float accuracyError, int N)
+__global__ void azimuthDegToRadKernel(float* srcDest, float3* scratch, float accuracyError, int N)
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx >= N)
         return;
     srcDest[idx] = DEG2RAD(srcDest[idx] + accuracyError);
-    // order of next two is order in original code.
-    const float azimuthRad = 2.f * 3.14159265358979323846f - srcDest[idx];
-    if (srcDest[idx] > 3.14159265358979323846f)
-        srcDest[idx] -= 2.f * 3.14159265358979323846f;
 
-    scratch[idx].x = sinf(azimuthRad); // notice.x
-    scratch[idx].y = cosf(azimuthRad); // notice.y
+    scratch[idx].x = sinf(srcDest[idx]); // notice.x
+    scratch[idx].y = cosf(srcDest[idx]); // notice.y
 }
 
-extern "C" void azimuthRightHanded(float* srcDest, float3* scratch, float accuracyError, int N, int cdi)
+extern "C" void azimuthDegToRad(float* srcDest, float3* scratch, float accuracyError, int N, int cdi)
 {
     cudaDeviceProp prop;
     cudaGetDeviceProperties(&prop, cdi);
     const int nt = prop.maxThreadsPerBlock;
     const int nb = (N + nt - 1) / nt;
 
-    azimuthRightHandedKernel<<<nb, nt>>>(srcDest, scratch, accuracyError, N);
+    azimuthDegToRadKernel<<<nb, nt>>>(srcDest, scratch, accuracyError, N);
 }
 
 // uses destination and scrath to compute and store
@@ -128,22 +120,21 @@ extern "C" void pointCloudWithTransform(
     pointCloudWithTransformKernel<<<nb, nt>>>(srcDest, cosEle, dist, t1, t2, t3, N);
 }
 
-__global__ void timestampKernel(uint64_t* dest, const uint32_t* src, const uint64_t* tickSource, int tickSize, int N)
+__global__ void timestampKernel(int32_t* dest, int32_t* src, uint64_t tickStartTime, int N)
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx >= N)
         return;
-    int tick = idx / tickSize;
 
-    dest[idx] = src[idx] + tickSource[tick];
+    dest[idx] = src[idx] + tickStartTime;
 }
 
-extern "C" void timestamp(uint64_t* dest, const uint32_t* src, const uint64_t* tickSource, int tickSize, int N, int cdi)
+extern "C" void timestamp(int32_t* dest, int32_t* src, uint64_t tickStartTime, int N, int cdi)
 {
     cudaDeviceProp prop;
     cudaGetDeviceProperties(&prop, cdi);
     const int nt = prop.maxThreadsPerBlock;
     const int nb = (N + nt - 1) / nt;
 
-    timestampKernel<<<nb, nt>>>(dest, src, tickSource, tickSize, N);
+    timestampKernel<<<nb, nt>>>(dest, src, tickStartTime, N);
 }

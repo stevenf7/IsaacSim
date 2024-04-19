@@ -98,14 +98,6 @@ for config in configs:
             f'        "farRangeM": 120.0, {comment("OPTICAL PERFORMANCE- Range 100 m @ >90% detection probability, 100 klx sunlight 120 m @ >50% detection probability, 100 klx sunlight")},'
         )
         print("        ")
-        print(f'        "startAzimuthDeg": 0.0, {comment("x+ is 0°  y+ is 90° (and z is up, right handed)")},')
-        print(f'        "endAzimuthDeg": 360.0, {comment("OPTICAL PERFORMANCE- Field of View Horizontal: 360°")},')
-        print("        ")
-        print(
-            f'        "upElevationDeg": 22.5, {comment("OPTICAL PERFORMANCE- Field of View Vertical: 45° (+22.5° to -22.5°)")},'
-        )
-        print('        "downElevationDeg": -22.5,')
-        print("        ")
         print(f'        "rangeResolutionM": 0.001, {comment("OPTICAL PERFORMANCE- Range Resolution 0.1 cm")},')
         print("        ")
         print('        "avgPowerW": 0.002,')

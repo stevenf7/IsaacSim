@@ -12,16 +12,10 @@
         "rayType": "IDEALIZED",
         "nearRangeM": 0.05, "_comment4": "p.2 Working range 0.05-25m",
         "minDistBetweenEchos": 0.05,
-        "farRangeM": 25.0, 
-  
-        "startAzimuthDeg": 0.0, "_comment5": " BROKEN AND CAN BE ONLY 0-360 p.5 0°-180° is y-axis, -45° to 225° is scan angle ⑮  Aperture angle 270° (scanning angle)",
-        "endAzimuthDeg": 360.0,
-  
-        "upElevationDeg": 0, "_comment6": "Is 2D Lidar",
-        "downElevationDeg": 0,
-    
-        "rangeResolutionM": 0.004, 
-    
+        "farRangeM": 25.0,
+
+        "rangeResolutionM": 0.004,
+
         "rangeAccuracyM": 0.004,
 
         "avgPowerW": 0.002,
@@ -29,21 +23,21 @@
         "minReflectanceRange": 8.0,
         "wavelengthNm": 850.0, "_commentA": "(B)p.10Light source Infrared (wavelength 850 nm, max. pulse power 880 mW, max. pulse width 5 ns, pulse frequency 1,500 kHz)",
         "pulseTimeNs": 5,
-  
+
         "azimuthErrorMean": 0.0, "_commentB": "(B)p.50 Measurement error Statistical (1 σ): < 20 mm 2) Systematic: ± 60 mm 2)",
         "azimuthErrorStd": 0.02,
         "elevationErrorMean": 0.0,
         "elevationErrorStd": 0.0000,
-    
-    
+
+
         "maxReturns": 1,
-    
+
         "scanRateBaseHz": 15.0,
-    
+
         "reportRateBaseHz": 16200, "_commentC": "(Note 270 Broken, use 360 for now) p.2 15Hz * angle (270°)/ horizontal resolution (0.33°) ",
-    
+
         "numberOfEmitters": 90, "_commentD": "(B)p.15: Light spot divergence per single pulse: 0.49 deg (8.6 mrad), and (B)p.13 1,500 kHZ (1500000 Hz) pulse rate",
-    
+
         "emitters":
         {
           "_commentE": "My thinking is that one rotation has .0036 if 1,500 kHz laser 360 deg rotation, horizontal resolution is .33, so should be 90 ish per tick",
@@ -51,9 +45,8 @@
           "elevationDeg": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
           "fireTimeNs": [0, 685, 1371, 2057, 2743, 3429, 4115, 4801, 5486, 6172, 6858, 7544, 8230, 8916, 9602, 10288, 10973, 11659, 12345, 13031, 13717, 14403, 15089, 15775, 16460, 17146, 17832, 18518, 19204, 19890, 20576, 21262, 21947, 22633, 23319, 24005, 24691, 25377, 26063, 26748, 27434, 28120, 28806, 29492, 30178, 30864, 31550, 32235, 32921, 33607, 34293, 34979, 35665, 36351, 37037, 37722, 38408, 39094, 39780, 40466, 41152, 41838, 42524, 43209, 43895, 44581, 45267, 45953, 46639, 47325, 48010, 48696, 49382, 50068, 50754, 51440, 52126, 52812, 53497, 54183, 54869, 55555, 56241, 56927, 57613, 58299, 58984, 59670, 60356, 61042]
         },
-    
+
         "intensityMappingType": "LINEAR"
     }
 }
-  
-    
+

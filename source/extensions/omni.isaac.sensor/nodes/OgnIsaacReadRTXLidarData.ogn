@@ -15,10 +15,27 @@
                 "type": "execution",
                 "description": "The input execution port"
             },
+            "bufferSize": {
+                "type": "uint64",
+                "description": "number of bytes in dataPtr",
+                "uiName": "Buffer Size",
+                "default": 0
+            },
             "dataPtr": {
                 "type": "uint64",
                 "description": "Pointer to LiDAR render result.",
                 "uiName": "Data Pointer"
+            },
+            "cudaDeviceIndex": {
+                "type": "int",
+                "description": "Index of the device where the data lives (-1 for host data)",
+                "default": -1
+            },
+            "cudaStream": {
+                "type": "uint64",
+                "description": "Cuda Stream dataPtr is on if cudaDeviceIndex > -1",
+                "uiName": "Cuda Stream",
+                "default": 0
             },
             "keepOnlyPositiveDistance": {
                 "type": "bool",
@@ -36,48 +53,33 @@
                 "type": "execution",
                 "description": "Output execution triggers when lidar sensor has data"
             },
-            "numTicks":{
-                "type": "uint",
-                "description": "The number of ticks in the output",
-                "default": 0
-            },
-            "numChannels":{
-                "type": "uint",
-                "description": "The number of emitter firings per tick",
-                "default": 0
-            },
-            "numEchos":{
-                "type": "uint",
-                "description": "The number of returns per single channel firing",
-                "default": 0
-            },
             "numBeams": {
                 "type": "uint64",
                 "description": "The number of lidar beams being output",
                 "default": 0
             },
+            "frameId": {
+                "type": "uint64",
+                "description": "The frameId of the current render",
+                "default": 0
+            },
+            "timestampNs": {
+                "type": "uint64",
+                "description": "The time in nanoseconds of the start of frame",
+                "default": 0
+            },
+            "transformStart": {
+                "type": "matrixd[4]",
+                "description": "The transform matrix from lidar to world coordinates at the start of the frame"
+            },
+            "transform": {
+                "type": "matrixd[4]",
+                "description": "The transform matrix from lidar to world coordinates at the end of the frame"
+            },
             "depthRange": {
                 "type": "float[2]",
                 "description": "The min and max range for sensor to detect a hit [min, max]",
                 "default": [0, 0]
-            },
-            "tickAzimuths":{
-                "type": "float[]",
-                "description": "azimuth origin of a tick in deg [0, 360)",
-                "memoryType": "cpu",
-                "default": []
-            },
-            "tickStates":{
-                "type": "uint[]",
-                "description": "emitter state the tick belongs to",
-                "memoryType": "cpu",
-                "default": []
-            },
-            "tickTimestamps":{
-                "type": "uint64[]",
-                "description": "timestamp of the tick in Ns",
-                "memoryType": "cpu",
-                "default": []
             },
             "azimuths":{
                 "type": "float[]",
@@ -109,6 +111,12 @@
                 "memoryType": "cpu",
                 "default": []
             },
+            "flags":{
+                "type": "uchar[]",
+                "description": "flags",
+                "memoryType": "cpu",
+                "default": []
+            },
             "hitPointNormals":{
                 "type": "pointf[3][]",
                 "description": "hit point Normal",
@@ -122,12 +130,6 @@
                 "default": []
             },
             "emitterIds":{
-                "type": "uint[]",
-                "description": "beam/laser detector id",
-                "memoryType": "cpu",
-                "default": []
-            },
-            "beamIds":{
                 "type": "uint[]",
                 "description": "beam/laser detector id",
                 "memoryType": "cpu",
@@ -151,6 +153,12 @@
                 "memoryType": "cpu",
                 "default": []
             },
+            "tickStates":{
+                "type": "uchar[]",
+                "description": "emitter state the tick belongs to",
+                "memoryType": "cpu",
+                "default": []
+            },
             "channels":{
                 "type": "uint[]",
                 "description": "channel of point",
@@ -158,7 +166,7 @@
                 "default": []
             },
             "echos":{
-                "type": "uint[]",
+                "type": "uchar[]",
                 "description": "echo id in ascending order",
                 "memoryType": "cpu",
                 "default": []

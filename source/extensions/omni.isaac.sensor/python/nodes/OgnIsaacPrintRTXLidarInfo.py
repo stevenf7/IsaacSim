@@ -16,154 +16,115 @@ def object_id_to_prim_path(object_id):
     """Given an ObjectId get a Prim Path
 
     Args:
-        object_id (int): object id, like form a RTX Lidar return
+        object_id (int): object id, like from a RTX Lidar return
 
     Returns:
         prim path string
     """
-    return acquire_syntheticdata_interface().get_uri_from_instance_segmentation_id(object_id)
+    return acquire_syntheticdata_interface().get_uri_from_instance_segmentation_id(int(object_id))
 
 
-class sensorPose(ctypes.Structure):
-    _pack_ = 1
+class float3(ctypes.Structure):
     _fields_ = [
-        # world space translation. [X, Y, Z] in m (trace begin)
-        ("posM", ctypes.c_float * 3),
-        # world space rotation. [X, Y, Z, W] quaternion (trace begin)
-        ("orientation", ctypes.c_float * 4),
+        ("x", ctypes.c_float),
+        ("y", ctypes.c_float),
+        ("z", ctypes.c_float),
     ]
 
 
-class lidarAsyncParameter(ctypes.Structure):
+class float4(ctypes.Structure):
+    _fields_ = [
+        ("x", ctypes.c_float),
+        ("y", ctypes.c_float),
+        ("z", ctypes.c_float),
+        ("w", ctypes.c_float),
+    ]
+
+
+class FrameAtTime(ctypes.Structure):
     _pack_ = 1
     _fields_ = [
-        ("numTicks", ctypes.c_uint32),  # number of ticks (sensor positions) in this trace data
-        ("scanFrequency", ctypes.c_float),  # ensor frequency in hz
-        ("ticksPerScan", ctypes.c_uint32),  # number of ticks of one full scan of the sensor
+        ("timestampNs", ctypes.c_uint64),
+        ("orientation", float4),
+        ("posM", float3),
+        ("padding", ctypes.c_uint8 * 4),
+    ]
+
+
+class LidarAuxiliaryData(ctypes.Structure):
+    _pack_ = 1
+    _fields_ = [
+        ("scanComplete", ctypes.c_uint32),  # Whether the scan is complete.
+        ("azimuthOffset", ctypes.c_float),  # The offset to +x in radians for specific sensors.
+        ("filledAuxMembers", ctypes.c_uint32),  # Which auxiliary data is filled.
+        ("emitterId", ctypes.POINTER(ctypes.c_uint32)),  # The emitter ID.
+        ("channelId", ctypes.POINTER(ctypes.c_uint32)),  # The channel ID.
+        ("echoId", ctypes.POINTER(ctypes.c_uint8)),  # The echo ID.
+        ("matId", ctypes.POINTER(ctypes.c_uint32)),  # The material ID.
+        ("objId", ctypes.POINTER(ctypes.c_uint32)),  # The object ID.
+        ("tickId", ctypes.POINTER(ctypes.c_uint32)),  # The tick ID.
+        ("tickStates", ctypes.POINTER(ctypes.c_uint8)),  # The tick states.
+        ("hitNormals", ctypes.POINTER(ctypes.c_float)),  # The hit normals.
+        ("velocities", ctypes.POINTER(ctypes.c_float)),  # The velocities.
+    ]
+
+
+class BasicElements(ctypes.Structure):
+    _fields_ = [
+        ("timeOffsetNs", ctypes.POINTER(ctypes.c_int32)),  # Time offset from the start of the point cloud
+        ("x", ctypes.POINTER(ctypes.c_float)),  # azimuth in degree [-180,180] or cartesian x in m
+        ("y", ctypes.POINTER(ctypes.c_float)),  # elevation in degree or cartesian y in m
+        ("z", ctypes.POINTER(ctypes.c_float)),  # distance in m or cartesian z in m
+        ("scalar", ctypes.POINTER(ctypes.c_float)),  # sensor specific scalar
+        ("flags", ctypes.POINTER(ctypes.c_uint8)),  # sensor specific flags
+    ]
+
+
+class GenericModelOutput(ctypes.Structure):
+    _pack_ = 1
+    _fields_ = [
         (
-            "maxSizeBuffer",
-            ctypes.c_size_t,
-        ),  # maximum possible size of the lidar trace data in bytes (can be used for initialization)
-        ("currentSizeBuffer", ctypes.c_size_t),  # current size of the lidar trace data
-        ("numChannels", ctypes.c_uint32),  # current size of the lidar trace data
-        ("numEchos", ctypes.c_uint8),  # number of echos per detector/laser
-        ("padding", ctypes.c_uint8 * 7),
-        ("startTimeNs", ctypes.c_uint64),  # start time of the trace data
-        ("deltaTimeNs", ctypes.c_uint64),  # delta time of the trace data
+            "magicNumber",
+            ctypes.c_uint32,
+        ),  # A unique identifier for the output. Should reflect MAGIC_NUMBER_GMO, which is the ASCII for "NGMO".
+        ("majorVersion", ctypes.c_uint32),  # The major version number of the model output.
+        ("minorVersion", ctypes.c_uint32),  # The minor version number of the model output.
+        ("patchVersion", ctypes.c_uint32),  # The number of elements in the array members of the model output.
+        ("numElements", ctypes.c_uint32),  # The patch version number of the model output.
         (
-            "scanStartTimeNs",
-            ctypes.c_uint64,
-        ),  # start time of the corresponding scan (i.e. full rotation of a spinning lidar)
-        ("startTick", ctypes.c_uint32),  # start tick of this frame/trace
-        ("frameStart", sensorPose),  # sensor transformation at frame start
-        ("frameEnd", sensorPose),  # sensor transformation at frame end
+            "frameOfReference",
+            ctypes.c_uint32,
+        ),  # The frame of reference for the model output. The default value is ``FrameOfReference::SENSOR``.
+        ("frameId", ctypes.c_uint64),  # The model (simulation) frame ID of the model output.
+        ("timestampNs", ctypes.c_uint64),  # The timestamp of the model output in nanoseconds.
+        (
+            "coordsType",
+            ctypes.c_uint32,
+        ),  # The type of coordinates used in the model output. The default value is ``CoordsType::SPHERICAL``.
+        ("outputType", ctypes.c_uint32),  # The type of output. The default value is ``OutputType::POINTCLOUD``.
+        (
+            "modelToAppTransform",
+            ctypes.c_float * 16,
+        ),  # A transformation matrix that transforms from the model's coordinate system to the application's coordinate system.
+        (
+            "frameStart",
+            FrameAtTime,
+        ),  # The start frame of the model output. It transforms from the model's coordinate system to the global coordinate system at frame start time.
+        (
+            "frameEnd",
+            FrameAtTime,
+        ),  # The end frame of the model output. It transforms from the model's coordinate system to the global coordinate system at frame end time. See below for more information.
+        (
+            "auxType",
+            ctypes.c_uint32,
+        ),  # The modality specific type of auxiliary data. The default value is ``AuxType::NONE``. See below for more information.
+        ("padding", ctypes.c_uint8 * 4),  # Padding to align the structure to a multiple of 8 bytes.
+        ("elements", BasicElements),  # The basic elements of the model output. See below for more information.
+        (
+            "auxiliaryData",
+            ctypes.c_void_p,
+        ),  # A pointer to the auxiliary data. This may not be filled. See below for more information.
     ]
-
-
-def params2string(params):
-    print_string = f"numTicks {params.numTicks}, scanFrequency {params.scanFrequency}, ticksPerScan {params.ticksPerScan}, maxSizeBuffer {params.maxSizeBuffer}, currentSizeBuffer {params.currentSizeBuffer}, numChannels {params.numChannels}, numEchos {params.numEchos}, startTimeNs {params.startTimeNs}, deltaTimeNs {params.deltaTimeNs}, scanStartTimeNs {params.scanStartTimeNs}, startTick {params.startTick}, frameStart.posM {params.frameStart.posM[0]}, {params.frameStart.posM[1]}, {params.frameStart.posM[2]}, frameStart.orientation {params.frameStart.orientation[0]}, {params.frameStart.orientation[1]}, {params.frameStart.orientation[2]}, {params.frameStart.orientation[3]}, frameEnd.posM {params.frameEnd.posM[0]}, {params.frameEnd.posM[1]}, {params.frameEnd.posM[2]}, frameEnd.orientation {params.frameEnd.orientation[0]}, {params.frameEnd.orientation[1]}, {params.frameEnd.orientation[2]}, {params.frameEnd.orientation[3]}"
-    return print_string
-
-
-class lidarReturn(ctypes.Structure):
-    _pack_ = 1
-    _fields_ = [
-        ("azimuth", ctypes.c_float),
-        ("elevation", ctypes.c_float),
-        ("distance", ctypes.c_float),
-        ("intensity", ctypes.c_float),
-        ("velocity", ctypes.c_float * 3),
-        ("hitPointNormal", ctypes.c_float * 3),
-        ("deltaTime", ctypes.c_uint32),
-        ("emitterId", ctypes.c_uint32),
-        ("beamId", ctypes.c_uint32),
-        ("materialId", ctypes.c_uint32),
-        ("objectId", ctypes.c_uint32),
-    ]
-
-
-class lidarReturns(ctypes.Structure):
-    _pack_ = 1
-    _fields_ = [
-        ("azimuths", ctypes.POINTER(ctypes.c_float)),  # azimuth in deg [-180,180]
-        ("elevations", ctypes.POINTER(ctypes.c_float)),  # elevation in deg [-90, 90]
-        ("distances", ctypes.POINTER(ctypes.c_float)),  # distance in m
-        ("intensities", ctypes.POINTER(ctypes.c_float)),  # intensity [0,1]
-        ("velocities", ctypes.POINTER(ctypes.c_float * 3)),  # velocity at hit point in sensor coordinates [m/s]
-        ("hitPointNormals", ctypes.POINTER(ctypes.c_float * 3)),  # normal at hit point
-        ("deltaTimes", ctypes.POINTER(ctypes.c_uint32)),  # deltatime in ns from the head (relative to tick time)
-        ("emitterIds", ctypes.POINTER(ctypes.c_uint32)),  # beam emitter id
-        ("beamIds", ctypes.POINTER(ctypes.c_uint32)),  # beam/laser detector id
-        ("materialIds", ctypes.POINTER(ctypes.c_uint32)),  # hit point material id
-        ("objectIds", ctypes.POINTER(ctypes.c_uint32)),  # hit point object id
-    ]
-
-
-def fillReturns(returns_p, n):
-    returns = lidarReturns()
-    ptr = returns_p
-    returns.azimuths = ctypes.cast(ptr, ctypes.POINTER(ctypes.c_float))
-    ptr = ptr + ctypes.sizeof(ctypes.c_float) * n
-    returns.elevations = ctypes.cast(ptr, ctypes.POINTER(ctypes.c_float))
-    ptr = ptr + ctypes.sizeof(ctypes.c_float) * n
-    returns.distances = ctypes.cast(ptr, ctypes.POINTER(ctypes.c_float))
-    ptr = ptr + ctypes.sizeof(ctypes.c_float) * n
-    returns.intensities = ctypes.cast(ptr, ctypes.POINTER(ctypes.c_float))
-    ptr = ptr + ctypes.sizeof(ctypes.c_float) * n
-    returns.velocities = ctypes.cast(ptr, ctypes.POINTER(ctypes.c_float * 3))
-    ptr = ptr + ctypes.sizeof(ctypes.c_float * 3) * n
-    returns.hitPointNormals = ctypes.cast(ptr, ctypes.POINTER(ctypes.c_float * 3))
-    ptr = ptr + ctypes.sizeof(ctypes.c_float * 3) * n
-    returns.deltaTimes = ctypes.cast(ptr, ctypes.POINTER(ctypes.c_uint32))
-    ptr = ptr + ctypes.sizeof(ctypes.c_uint32) * n
-    returns.emitterIds = ctypes.cast(ptr, ctypes.POINTER(ctypes.c_uint32))
-    ptr = ptr + ctypes.sizeof(ctypes.c_uint32) * n
-    returns.beamIds = ctypes.cast(ptr, ctypes.POINTER(ctypes.c_uint32))
-    ptr = ptr + ctypes.sizeof(ctypes.c_uint32) * n
-    returns.materialIds = ctypes.cast(ptr, ctypes.POINTER(ctypes.c_uint32))
-    ptr = ptr + ctypes.sizeof(ctypes.c_uint32) * n
-    returns.objectIds = ctypes.cast(ptr, ctypes.POINTER(ctypes.c_uint32))
-
-    return returns
-
-
-def return2string(re, i, prim):
-    print_string = f"azimuth {re.azimuths[i]}, elevation {re.elevations[i]}, distance {re.distances[i]}, intensity {re.intensities[i]}, velocities ({re.velocities[i][0]}, {re.velocities[i][1]}, {re.velocities[i][2]}), hitPointNormal ({re.hitPointNormals[i][0]}, {re.hitPointNormals[i][1]}, {re.hitPointNormals[i][2]}), deltaTime {re.deltaTimes[i]}, emitterId {re.emitterIds[i]} , beamId {re.beamIds[i]}, materialId {re.materialIds[i]}, objectIds {re.objectIds[i]}, prim path {prim}"
-    return print_string
-
-
-class lidarTick(ctypes.Structure):
-    _pack_ = 1
-    _fields_ = [
-        ("azimuth", ctypes.c_float),
-        ("state", ctypes.c_uint32),
-        ("timestamp", ctypes.c_uint64),
-    ]
-
-
-class lidarTicks(ctypes.Structure):
-    _pack_ = 1
-    _fields_ = [
-        ("azimuths", ctypes.POINTER(ctypes.c_float)),  # azimuth in deg [-180,180]
-        ("states", ctypes.POINTER(ctypes.c_uint32)),  # emitter state tick belongs to.
-        ("timestamps", ctypes.POINTER(ctypes.c_uint64)),  # timestamp of tick
-    ]
-
-
-def fillTicks(ticks_p, n):
-    ticks = lidarTicks()
-    ptr = ticks_p
-    ticks.azimuths = ctypes.cast(ptr, ctypes.POINTER(ctypes.c_float))
-    ptr = ptr + ctypes.sizeof(ctypes.c_float) * n
-    ticks.states = ctypes.cast(ptr, ctypes.POINTER(ctypes.c_uint32))
-    ptr = ptr + ctypes.sizeof(ctypes.c_uint32) * n
-    ticks.timestamps = ctypes.cast(ptr, ctypes.POINTER(ctypes.c_uint64))
-    return ticks
-
-
-def tick2string(tick, i):
-    print_string = f"tickAzimuth {tick.azimuths[i]}, state {tick.states[i]}, timestamp {tick.timestamps[i]}"
-    return print_string
 
 
 class OgnIsaacPrintRTXLidarInfo:
@@ -171,78 +132,116 @@ class OgnIsaacPrintRTXLidarInfo:
     Example to read raw rtx data in python.
     """
 
+    frameCount = 0
+
     @staticmethod
     def compute(db) -> bool:
         """read a pointer and print data from it assuming it is Rtx"""
         if not db.inputs.dataPtr:
             carb.log_warn("invalid data input to OgnIsaacPrintRTXLidarInfo")
             return True
-        # raw dataPtr params start after 36 bytes
-        params_p = db.inputs.dataPtr + 36
 
-        params = ctypes.cast(params_p, ctypes.POINTER(lidarAsyncParameter))
-        nt = params.contents.numTicks
-        nc = params.contents.numChannels
-        ne = params.contents.numEchos
-        numReturns = nt * nc * ne
+        gmo = ctypes.cast(db.inputs.dataPtr, ctypes.POINTER(GenericModelOutput)).contents
+        if gmo.magicNumber != int("4E474D4F", 16):
+            # print a unique id for the node to see how many are running, and the number of returns for each
+            print(f"Print Node ID_{id(db.inputs)} has invalid input")
+            return True
+
+        numElements = gmo.numElements
         if db.inputs.testMode:
             # print a unique id for the node to see how many are running, and the number of returns for each
-            print(f"Print Node ID_{id(db.inputs)} has {numReturns} returns")
+            print(f"Print Node ID_{id(db.inputs)} has {numElements} returns")
             return True
+
+        elemPtr = db.inputs.dataPtr + ctypes.sizeof(GenericModelOutput)
+        elements = BasicElements()
+        elements.timeOffsetNs = ctypes.cast(elemPtr, ctypes.POINTER(ctypes.c_int32))
+        elemPtr = elemPtr + ctypes.sizeof(ctypes.c_int32) * numElements
+        elements.x = ctypes.cast(elemPtr, ctypes.POINTER(ctypes.c_float))
+        elemPtr = elemPtr + ctypes.sizeof(ctypes.c_float) * numElements
+        elements.y = ctypes.cast(elemPtr, ctypes.POINTER(ctypes.c_float))
+        elemPtr = elemPtr + ctypes.sizeof(ctypes.c_float) * numElements
+        elements.z = ctypes.cast(elemPtr, ctypes.POINTER(ctypes.c_float))
+        elemPtr = elemPtr + ctypes.sizeof(ctypes.c_float) * numElements
+        elements.scalar = ctypes.cast(elemPtr, ctypes.POINTER(ctypes.c_float))
+        elemPtr = elemPtr + ctypes.sizeof(ctypes.c_float) * numElements
+        elements.flags = ctypes.cast(elemPtr, ctypes.POINTER(ctypes.c_uint8))
+        elemPtr = elemPtr + ctypes.sizeof(ctypes.c_uint8) * numElements
+
+        auxDataPtr = elemPtr
+        auxData = LidarAuxiliaryData()
+        auxData.scanComplete = ctypes.cast(auxDataPtr, ctypes.POINTER(ctypes.c_uint32)).contents
+        auxDataPtr = auxDataPtr + ctypes.sizeof(ctypes.c_uint32)
+        auxData.azimuthOffset = ctypes.cast(auxDataPtr, ctypes.POINTER(ctypes.c_float)).contents
+        auxDataPtr = auxDataPtr + ctypes.sizeof(ctypes.c_float)
+        auxData.filledAuxMembers = ctypes.cast(auxDataPtr, ctypes.POINTER(ctypes.c_uint32)).contents
+        auxDataPtr = auxDataPtr + ctypes.sizeof(ctypes.c_uint32)
+        if auxData.filledAuxMembers & (1 << 0) == (1 << 0):
+            auxData.emitterId = ctypes.cast(auxDataPtr, ctypes.POINTER(ctypes.c_uint32))
+            auxDataPtr = auxDataPtr + ctypes.sizeof(ctypes.c_uint32) * numElements
+        if auxData.filledAuxMembers & (1 << 1) == (1 << 1):
+            auxData.channelId = ctypes.cast(auxDataPtr, ctypes.POINTER(ctypes.c_uint32))
+            auxDataPtr = auxDataPtr + ctypes.sizeof(ctypes.c_uint32) * numElements
+        if auxData.filledAuxMembers & (1 << 2) == (1 << 2):
+            auxData.echoId = ctypes.cast(auxDataPtr, ctypes.POINTER(ctypes.c_uint8))
+            auxDataPtr = auxDataPtr + ctypes.sizeof(ctypes.c_uint8) * numElements
+        if auxData.filledAuxMembers & (1 << 3) == (1 << 3):
+            auxData.matId = ctypes.cast(auxDataPtr, ctypes.POINTER(ctypes.c_uint32))
+            auxDataPtr = auxDataPtr + ctypes.sizeof(ctypes.c_uint32) * numElements
+        if auxData.filledAuxMembers & (1 << 4) == (1 << 4):
+            auxData.objId = ctypes.cast(auxDataPtr, ctypes.POINTER(ctypes.c_uint32))
+            auxDataPtr = auxDataPtr + ctypes.sizeof(ctypes.c_uint32) * numElements
+        if auxData.filledAuxMembers & (1 << 5) == (1 << 5):
+            auxData.tickId = ctypes.cast(auxDataPtr, ctypes.POINTER(ctypes.c_uint32))
+            auxDataPtr = auxDataPtr + ctypes.sizeof(ctypes.c_uint32) * numElements
+        if auxData.filledAuxMembers & (1 << 6) == (1 << 6):
+            auxData.tickStates = ctypes.cast(auxDataPtr, ctypes.POINTER(ctypes.c_uint8))
+            auxDataPtr = auxDataPtr + ctypes.sizeof(ctypes.c_uint8)
+        if auxData.filledAuxMembers & (1 << 7) == (1 << 7):
+            auxData.hitNormals = ctypes.cast(auxDataPtr, ctypes.POINTER(ctypes.c_float))
+            auxDataPtr = auxDataPtr + ctypes.sizeof(ctypes.c_float) * 3 * numElements
+        if auxData.filledAuxMembers & (1 << 8) == (1 << 8):
+            auxData.velocities = ctypes.cast(auxDataPtr, ctypes.POINTER(ctypes.c_float))
 
         print("-------------------- NEW FRAME ------------------------------------------")
-        print("-------------------- params:")
-        print(params2string(params[0]))
-        if nt == 0:
-            return True
-        ticks_p = params_p + ctypes.sizeof(lidarAsyncParameter)
-        ticks = fillTicks(ticks_p, params.contents.numTicks)
-        print("-------------------- first and last tick:")
-        print(tick2string(ticks, 0))
-        print(tick2string(ticks, nt - 1))
+        print("-------------------- gmo:")
+        print(f"frameId:     {gmo.frameId}")
+        print(f"timestampNs: {gmo.timestampNs}")
+        print(f"numElements: {gmo.numElements}")
+        print(f"auxType: {gmo.auxType}")
+        print(f"auxdataFilled: {auxData.filledAuxMembers}")
+        print(f"Return 0:")
+        print(f"    timeOffsetNs: {elements.timeOffsetNs[0]}")
+        print(f"    azimuth:      {elements.x[0]}")
+        print(f"    elevation:    {elements.y[0]}")
+        print(f"    range:        {elements.z[0]}")
+        print(f"    intensity:    {elements.scalar[0]}")
+        print(f"Return {gmo.numElements - 1}:")
+        print(f"    timeOffsetNs: {elements.timeOffsetNs[gmo.numElements - 1]}")
+        print(f"    azimuth:      {elements.x[gmo.numElements - 1]}")
+        print(f"    elevation:    {elements.y[gmo.numElements - 1]}")
+        print(f"    range:        {elements.z[gmo.numElements - 1]}")
+        print(f"    intensity:    {elements.scalar[gmo.numElements - 1]}")
+        print(f"Prim <-> Material mapping:")
+        # Test if element is valid AND if auxiliary data contains material IDs AND if auxiliary data contains object IDs
+        # not sure what this is fore
+        # if (
+        #    (elements.flags[i] & 1 << 6)
+        #    and auxData.filledAuxMembers & (1 << 3) == (1 << 3)
+        #    and auxData.filledAuxMembers & (1 << 4) == (1 << 4)
+        # ):
+        material_mapping = {}
+        for i in range(numElements):
+            objId = auxData.objId[i]
+            matId = auxData.matId[i]
+            if elements.z[i] > 0.0 and elements.scalar[i] > 0.0:
+                if objId not in material_mapping:
+                    material_mapping[objId] = matId
 
-        # idx =  echo + channel*numEchos + tick * numEchos * numChannels
-        returns_p = ticks_p + ctypes.sizeof(lidarTick) * params.contents.numTicks
-        returns = fillReturns(returns_p, numReturns)
-        print("-------------------- first and last return:")
-        # print(return2string(returns, 0, f"{returns.objectIds[0]}"))  # object_id_to_prim_path(returns.objectIds[0])))
-        # print(return2string(returns, numReturns - 1, f"{returns.objectIds[numReturns - 1]}"))
-        print(return2string(returns, 0, f"{returns.objectIds[0]}"))
-        print(return2string(returns, numReturns - 1, f"{returns.objectIds[numReturns - 1]}"))
-        objId2mats = {}
-        num0dist = 0
-        num0inte = 0
-        maxlen = 0.0
-        for t in range(nt):
-            for c in range(nc):
-                for e in range(ne):
-                    x = c * ne + e + t * ne * nc
-                    if not returns.distances[x]:
-                        num0dist = num0dist + 1
-                        continue
-                    if not returns.intensities[x]:
-                        num0inte = num0inte + 1
-                        continue
-
-                    vellen = (
-                        returns.velocities[x][0] * returns.velocities[x][0]
-                        + returns.velocities[x][1] * returns.velocities[x][1]
-                        + returns.velocities[x][2] * returns.velocities[x][2]
-                    )
-                    if vellen > maxlen:
-                        maxlen = vellen
-                    oid = returns.objectIds[x]
-                    mat = returns.materialIds[x]
-                    if oid in objId2mats:
-                        if not mat in objId2mats[oid]:
-                            objId2mats[oid].append(mat)
-                    else:
-                        objId2mats[oid] = [mat]
-
-        print(f"num 0 dist = {num0dist}")
-        print(f"num 0 inte = {num0inte}")
-        print(f"max vel length^2 = {maxlen}")
-        for oid in objId2mats:
-            print(f"{object_id_to_prim_path(oid)} has mats {objId2mats[oid]}")
-
+        # There is a bug that will cause an objId of 31 to be returned even when there is none in the scene,
+        # So for now, just skip objId==31
+        for obj in material_mapping:
+            print(f"objectId {obj} has material ID {material_mapping[obj]}.")
+            # prim_path = object_id_to_prim_path(obj)
+            # print(f"objectId {obj} with prim path {prim_path} has material ID {material_mapping[obj]}.")
         return True

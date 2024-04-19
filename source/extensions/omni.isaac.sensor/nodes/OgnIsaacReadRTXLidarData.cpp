@@ -11,188 +11,181 @@
 #include <UsdPCH.h>
 // clang-format on
 
-#include "LidarNodeUtils.h"
+#include "SensorNodeUtils.h"
 #include "omni/isaac/utils/UsdUtilities.h"
 
 #include <carb/InterfaceUtils.h>
 
-#include <omni/sensors/lidar/LidarParameterType.h>
-#include <omni/sensors/lidar/LidarReturn.h>
-#include <omni/sensors/lidar/LidarReturnTypes.h>
+#include <omni/sensors/GenericModelOutput.h>
 
 #include <OgnIsaacReadRTXLidarDataDatabase.h>
 
+
 namespace omni
 {
+using namespace sensors;
 namespace isaac
 {
 namespace sensor
 {
 
-class OgnIsaacReadRTXLidarData
+class OgnIsaacReadRTXLidarData : public LidarConfigHelper
 {
-private:
-    std::string config;
-    LidarScanType scanType{ LidarScanType::kUnknown };
-    LidarRotaryProfile rotaryProfile;
-    LidarSolidStateProfile solidStateProfile;
+    // buffer used to copy data from the gpu if needed.
+    std::vector<uint8_t> buffer;
 
 public:
     static bool compute(OgnIsaacReadRTXLidarDataDatabase& db)
     {
         CARB_PROFILE_ZONE(0, "Read RTX Lidar Data");
 
-        uint8_t* input = reinterpret_cast<uint8_t*>(db.inputs.dataPtr());
-        if (!input)
+        db.outputs.numBeams() = 0;
+        auto& transformStart = *reinterpret_cast<omni::math::linalg::matrix4d*>(&db.outputs.transformStart());
+        transformStart.SetIdentity();
+        auto& transform = *reinterpret_cast<omni::math::linalg::matrix4d*>(&db.outputs.transform());
+        transform.SetIdentity();
+
+        uint8_t* dataPtr = reinterpret_cast<uint8_t*>(db.inputs.dataPtr());
+        if (!dataPtr)
         {
             return true;
         }
         auto& state = db.perInstanceState<OgnIsaacReadRTXLidarData>();
 
-        // fill the structure of arrays
-        LidarTicks lidarTicks;
-        LidarReturns lidarReturns;
-        LidarParameterType* parameter = saferFillStructsFromBuffer(input, lidarReturns, lidarTicks);
-        if (!parameter)
+        if (db.inputs.cudaDeviceIndex() != -1)
+        {
+            CARB_PROFILE_ZONE(0, "Copy Read RTX Lidar Data");
+            if (state.buffer.size() < db.inputs.bufferSize())
+                state.buffer.resize(db.inputs.bufferSize());
+            // omni::sensors::cpygmoToBuffer(&state.buffer[0], (const omni::sensors::GenericPointCloud*)(dataPtr), true,
+            // false, db.inputs.cudaDeviceIndex(), (cudaStream_t)db.inputs.cudaStream());
+            cudaMemcpyAsync(&state.buffer[0], dataPtr, db.inputs.bufferSize(), cudaMemcpyDeviceToHost);
+            dataPtr = state.buffer.data();
+        }
+        GenericModelOutputHelper helper(dataPtr);
+        if (!helper.isValid(OutputType::POINTCLOUD, CoordsType::SPHERICAL, AuxType::LIDAR))
+        {
+            CARB_LOG_WARN(
+                "Input to IsaacReadRTXLidarData is not a valid LIDAR POINTCLOUD type. Buffer will not be parsed.");
             return true;
-        const uint32_t numTicks = parameter->async.numTicks;
-        const uint32_t numChannels = parameter->async.numChannels;
-        const uint32_t numEchos = parameter->async.numEchos;
-        db.outputs.numTicks() = numTicks;
-        db.outputs.numChannels() = numChannels;
-        db.outputs.numEchos() = numEchos;
-
-        if (numTicks == 0 || numChannels * numEchos == 0)
+        }
+        if (helper.m_gmo.numElements == 0)
         {
             return true;
         }
 
-        const size_t maxSize = numChannels * numEchos * numTicks;
+        const size_t maxSize = helper.m_gmo.numElements;
+        const float* azimuths = helper.m_gmo.elements.x;
+        const float* elevations = helper.m_gmo.elements.y;
+        const float* distances = helper.m_gmo.elements.z;
+        const float* intensities = helper.m_gmo.elements.scalar;
 
         bool keepOnlyPositiveDistance = db.inputs.keepOnlyPositiveDistance();
         size_t outSize = maxSize;
-        if (keepOnlyPositiveDistance)
         {
-            outSize = 0;
-            for (size_t i = 0; i < maxSize; ++i)
+            CARB_PROFILE_ZONE(0, "Read RTX Lidar Data keepOnlyPositiveDistance");
+            if (keepOnlyPositiveDistance)
             {
-                if (lidarReturns.distances[i] > 0.f)
+                outSize = 0;
+                for (size_t i = 0; i < maxSize; ++i)
                 {
-                    ++outSize;
+                    if (distances[i] > 0.f)
+                    {
+                        ++outSize;
+                    }
                 }
             }
         }
-        std::string curConfig = "";
-        pxr::UsdAttribute configAttr = omni::isaac::utils::getCameraAttributeFromRenderProduct(
-            "sensorModelConfig", db.tokenToString(db.inputs.renderProductPath()));
-        if (configAttr.IsValid())
-        {
-            omni::isaac::utils::safeGetAttribute(configAttr, curConfig);
-        }
-        updateLidarConfig(curConfig, state.config, state.scanType, state.rotaryProfile, state.solidStateProfile);
+        state.updateLidarConfig(db.tokenToString(db.inputs.renderProductPath()));
 
-        db.outputs.depthRange() = {
-            state.scanType == LidarScanType::kSolidState ? state.solidStateProfile.nearRangeM :
-                                                           state.rotaryProfile.nearRangeM,
-            state.scanType == LidarScanType::kSolidState ? state.solidStateProfile.farRangeM :
-                                                           state.rotaryProfile.farRangeM,
-        };
-        // state.rotaryProfile.reportRateBaseHz; // 3600 for a 10Hz lidar that fires one tick per degree.
-        // state.rotaryProfile.scanRateBaseHz; // 10 for a 10Hz lidar
+        db.outputs.depthRange() = { state.getNearRange(), state.getFarRange() };
         db.outputs.numBeams() = outSize;
+        db.outputs.frameId() = helper.m_gmo.frameId;
+        db.outputs.timestampNs() = helper.m_gmo.timestampNs;
+
+        getTransformFromSensorPose(helper.m_gmo.frameStart, transformStart);
+        getTransformFromSensorPose(helper.m_gmo.frameEnd, transform);
+
+        const omni::sensors::LidarAuxiliaryData* auxPoints =
+            static_cast<const omni::sensors::LidarAuxiliaryData*>(helper.m_gmo.auxiliaryData);
+        uint32_t hasAux = auxPoints ? (uint32_t)auxPoints->filledAuxMembers : 0x0000;
 
 #define _DEF_OUT_VAR(outName, outSz)                                                                                   \
-    auto& outName = db.outputs.outName();                                                                              \
-    outName.resize(outSz)
+    auto& db_outputs_##outName = db.outputs.outName();                                                                 \
+    db_outputs_##outName.resize(outSz)
 
-        _DEF_OUT_VAR(tickAzimuths, numTicks);
-        _DEF_OUT_VAR(tickStates, numTicks);
-        _DEF_OUT_VAR(tickTimestamps, numTicks);
-
+        _DEF_OUT_VAR(deltaTimes, outSize);
         _DEF_OUT_VAR(azimuths, outSize);
         _DEF_OUT_VAR(elevations, outSize);
         _DEF_OUT_VAR(distances, outSize);
         _DEF_OUT_VAR(intensities, outSize);
-        _DEF_OUT_VAR(velocities, outSize);
-        _DEF_OUT_VAR(hitPointNormals, outSize);
-        _DEF_OUT_VAR(deltaTimes, outSize);
-        _DEF_OUT_VAR(emitterIds, outSize);
-        _DEF_OUT_VAR(beamIds, outSize);
-        _DEF_OUT_VAR(materialIds, outSize);
-        _DEF_OUT_VAR(objectIds, outSize);
-        _DEF_OUT_VAR(ticks, outSize);
-        _DEF_OUT_VAR(channels, outSize);
-        _DEF_OUT_VAR(echos, outSize);
-#undef _DEFINE_OUTPUT_VARS
+        _DEF_OUT_VAR(flags, outSize);
+        _DEF_OUT_VAR(velocities, auxPoints && hasAux & (uint32_t)LidarAuxHas::VELOCITIES ? outSize : 0);
+        _DEF_OUT_VAR(hitPointNormals, auxPoints && hasAux & (uint32_t)LidarAuxHas::HIT_NORMALS ? outSize : 0);
+        _DEF_OUT_VAR(emitterIds, auxPoints && hasAux & (uint32_t)LidarAuxHas::ECHO_ID ? outSize : 0);
+        _DEF_OUT_VAR(materialIds, auxPoints && hasAux & (uint32_t)LidarAuxHas::MAT_ID ? outSize : 0);
+        _DEF_OUT_VAR(objectIds, auxPoints && hasAux & (uint32_t)LidarAuxHas::OBJ_ID ? outSize : 0);
+        _DEF_OUT_VAR(ticks, auxPoints && hasAux & (uint32_t)LidarAuxHas::TICK_ID ? outSize : 0);
+        _DEF_OUT_VAR(tickStates, auxPoints && hasAux & (uint32_t)LidarAuxHas::TICK_STATES ? outSize : 0);
+        _DEF_OUT_VAR(channels, auxPoints && hasAux & (uint32_t)LidarAuxHas::CHANNEL_ID ? outSize : 0);
+        _DEF_OUT_VAR(echos, auxPoints && hasAux & (uint32_t)LidarAuxHas::ECHO_ID ? outSize : 0);
 
-        // One tick fires every channel an echo number of times.
-        memcpy(tickAzimuths.data(), lidarTicks.azimuths, numTicks * sizeof(float));
-        memcpy(tickStates.data(), lidarTicks.states, numTicks * sizeof(uint32_t));
-        memcpy(tickTimestamps.data(), lidarTicks.timestamps, numTicks * sizeof(uint64_t));
+#undef _DEFINE_OUTPUT_VARS
 
         if (!keepOnlyPositiveDistance)
         {
-            memcpy(azimuths.data(), lidarReturns.azimuths, maxSize * sizeof(float));
-            memcpy(elevations.data(), lidarReturns.elevations, maxSize * sizeof(float));
-            memcpy(distances.data(), lidarReturns.distances, maxSize * sizeof(float));
-            memcpy(intensities.data(), lidarReturns.intensities, maxSize * sizeof(float));
-            memcpy(velocities.data(), lidarReturns.velocities, 3 * maxSize * sizeof(float));
-            memcpy(hitPointNormals.data(), lidarReturns.hitPointNormals, 3 * maxSize * sizeof(float));
-            memcpy(deltaTimes.data(), lidarReturns.deltaTimes, maxSize * sizeof(uint32_t));
-            memcpy(emitterIds.data(), lidarReturns.emitterIds, maxSize * sizeof(uint32_t));
-            memcpy(beamIds.data(), lidarReturns.beamIds, maxSize * sizeof(uint32_t));
-            memcpy(materialIds.data(), lidarReturns.materialIds, maxSize * sizeof(uint32_t));
-            memcpy(objectIds.data(), lidarReturns.objectIds, maxSize * sizeof(uint32_t));
-            unsigned int i = 0;
-
-            for (uint32_t tick = 0; tick < numTicks; tick++)
-            {
-                for (uint32_t channelId = 0; channelId < numChannels; ++channelId)
-                {
-                    for (uint32_t echoId = 0; echoId < numEchos; ++echoId)
-                    {
-                        ticks[i] = tick;
-                        channels[i] = channelId;
-                        echos[i] = echoId;
-                        i += 1;
-                    }
-                }
-            }
+            memcpy(db_outputs_deltaTimes.data(), helper.m_gmo.elements.timeOffsetNs, maxSize * sizeof(uint32_t));
+            memcpy(db_outputs_azimuths.data(), azimuths, maxSize * sizeof(float));
+            memcpy(db_outputs_elevations.data(), elevations, maxSize * sizeof(float));
+            memcpy(db_outputs_distances.data(), distances, maxSize * sizeof(float));
+            memcpy(db_outputs_intensities.data(), intensities, maxSize * sizeof(float));
+            memcpy(db_outputs_flags.data(), helper.m_gmo.elements.flags, maxSize * sizeof(uint8_t));
+            if (db_outputs_velocities.size())
+                memcpy(db_outputs_velocities.data(), auxPoints->velocities, 3 * maxSize * sizeof(float));
+            if (db_outputs_hitPointNormals.size())
+                memcpy(db_outputs_hitPointNormals.data(), auxPoints->hitNormals, 3 * maxSize * sizeof(float));
+            if (db_outputs_emitterIds.size())
+                memcpy(db_outputs_emitterIds.data(), auxPoints->emitterId, maxSize * sizeof(uint32_t));
+            if (db_outputs_materialIds.size())
+                memcpy(db_outputs_materialIds.data(), auxPoints->matId, maxSize * sizeof(uint32_t));
+            if (db_outputs_objectIds.size())
+                memcpy(db_outputs_objectIds.data(), auxPoints->objId, maxSize * sizeof(uint32_t));
+            if (db_outputs_ticks.size())
+                memcpy(db_outputs_ticks.data(), auxPoints->tickId, maxSize * sizeof(uint32_t));
+            if (db_outputs_tickStates.size())
+                memcpy(db_outputs_tickStates.data(), auxPoints->tickStates, maxSize * sizeof(uint8_t));
+            if (db_outputs_channels.size())
+                memcpy(db_outputs_channels.data(), auxPoints->channelId, maxSize * sizeof(uint32_t));
+            if (db_outputs_echos.size())
+                memcpy(db_outputs_echos.data(), auxPoints->echoId, maxSize * sizeof(uint8_t));
         }
         else
         {
             uint32_t i = 0;
-            uint32_t idx = 0;
-            for (uint32_t tick = 0; tick < numTicks; tick++)
+            for (uint32_t idx = 0; idx < helper.m_gmo.numElements; idx++)
             {
-                for (uint32_t channelId = 0; channelId < numChannels; ++channelId)
+                if (distances[idx] > 0.f)
                 {
-                    for (uint32_t echoId = 0; echoId < numEchos; ++echoId)
-                    {
-                        if (lidarReturns.distances[idx] > 0.f)
-                        {
-                            azimuths[i] = lidarReturns.azimuths[idx];
-                            elevations[i] = lidarReturns.elevations[idx];
-                            distances[i] = lidarReturns.distances[idx];
-                            intensities[i] = lidarReturns.intensities[idx];
-                            velocities[i][0] = lidarReturns.velocities[idx * 3 + 0];
-                            velocities[i][1] = lidarReturns.velocities[idx * 3 + 1];
-                            velocities[i][2] = lidarReturns.velocities[idx * 3 + 2];
-                            hitPointNormals[i][0] = lidarReturns.hitPointNormals[idx * 3 + 0];
-                            hitPointNormals[i][1] = lidarReturns.hitPointNormals[idx * 3 + 1];
-                            hitPointNormals[i][2] = lidarReturns.hitPointNormals[idx * 3 + 2];
-                            deltaTimes[i] = lidarReturns.deltaTimes[idx];
-                            emitterIds[i] = lidarReturns.emitterIds[idx];
-                            beamIds[i] = lidarReturns.beamIds[idx];
-                            materialIds[i] = lidarReturns.materialIds[idx];
-                            objectIds[i] = lidarReturns.objectIds[idx];
-                            ticks[i] = tick;
-                            channels[i] = channelId;
-                            echos[i] = echoId;
-                            i++;
-                        }
-                        idx++;
-                    }
+                    db_outputs_deltaTimes[i] = helper.m_gmo.elements.timeOffsetNs[idx];
+                    db_outputs_azimuths[i] = azimuths[idx];
+                    db_outputs_elevations[i] = elevations[idx];
+                    db_outputs_distances[i] = distances[idx];
+                    db_outputs_intensities[i] = intensities[idx];
+                    db_outputs_flags[i] = helper.m_gmo.elements.flags[idx];
+                    db_outputs_velocities[i][0] = auxPoints->velocities[idx * 3 + 0];
+                    db_outputs_velocities[i][1] = auxPoints->velocities[idx * 3 + 1];
+                    db_outputs_velocities[i][2] = auxPoints->velocities[idx * 3 + 2];
+                    db_outputs_hitPointNormals[i][0] = auxPoints->hitNormals[idx * 3 + 0];
+                    db_outputs_hitPointNormals[i][1] = auxPoints->hitNormals[idx * 3 + 1];
+                    db_outputs_hitPointNormals[i][2] = auxPoints->hitNormals[idx * 3 + 2];
+                    db_outputs_emitterIds[i] = auxPoints->emitterId[idx];
+                    db_outputs_materialIds[i] = auxPoints->matId[idx];
+                    db_outputs_objectIds[i] = auxPoints->objId[idx];
+                    db_outputs_ticks[i] = auxPoints->tickId[idx];
+                    db_outputs_tickStates[i] = auxPoints->tickStates[idx];
+                    db_outputs_channels[i] = auxPoints->channelId[idx];
+                    db_outputs_echos[i] = auxPoints->echoId[idx];
+                    i++;
                 }
             }
         }

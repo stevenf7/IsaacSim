@@ -10,12 +10,10 @@
 #include <UsdPCH.h>
 // clang-format on
 
-#include "LidarNodeUtils.h"
+#include "SensorNodeUtils.h"
 #include "omni/isaac/utils/UsdUtilities.h"
 
-#include <omni/sensors/lidar/LidarParameterType.h>
-#include <omni/sensors/lidar/LidarReturn.h>
-#include <omni/sensors/lidar/LidarReturnTypes.h>
+#include <omni/sensors/GenericModelOutput.h>
 
 #include <OgnIsaacComputeRTXLidarFlatScanDatabase.h>
 #include <math.h>
@@ -30,59 +28,51 @@ namespace sensor
 // a scan buffer that takes only one emitter, as nearest 0 elevation, and has to be from a rotary lidar.
 // because it creates laser scan data which assumes 0 elevation emitter with all the same delta for emitter rotation
 // and time.
-class OgnIsaacComputeRTXLidarFlatScan
+class OgnIsaacComputeRTXLidarFlatScan : public LidarConfigHelper
 {
 private:
-    std::string config;
-    LidarScanType scanType{ LidarScanType::kUnknown };
-    LidarRotaryProfile rotaryProfile;
-    LidarSolidStateProfile solidStateProfile;
-    int emitterToOutput{ -1 };
+    uint32_t emitterToOutput{ 0 };
     int numRaysPerLine{ -1 };
     int emitterStateToOutput{ -1 };
     float startAzimuthDeg;
     float horizontalResolution;
     EmitterProfile* emitterProfile;
     bool mRightHanded = true; // TODO make parameter?
+    uint32_t numTicksPerRotation;
 
 public:
     static bool compute(OgnIsaacComputeRTXLidarFlatScanDatabase& db)
     {
 
-        uint8_t* dataHost = reinterpret_cast<uint8_t*>(db.inputs.dataPtr());
+        db.outputs.numRows() = 1;
+        uint8_t* dataPtr = reinterpret_cast<uint8_t*>(db.inputs.dataPtr());
         // no reason to update the scan buffer if there is no dataHost
-        if (!dataHost)
+        if (!dataPtr)
         {
+            db.outputs.numCols() = 0;
             return true;
         }
         auto& state = db.perInstanceState<OgnIsaacComputeRTXLidarFlatScan>();
 
-        // fill the structure of arrays
-        LidarTicks lidarTicksHost;
-        LidarReturns lidarReturnsHost;
-        LidarParameterType* parameterHost = saferFillStructsFromBuffer(dataHost, lidarReturnsHost, lidarTicksHost);
-        if (!parameterHost)
+        GenericModelOutputHelper helper(dataPtr);
+        if (!helper.isValid(OutputType::POINTCLOUD, CoordsType::SPHERICAL, AuxType::LIDAR))
+        {
+            CARB_LOG_WARN(
+                "Input to IsaacComputeRTXLidarFlatScan is not a valid LIDAR POINTCLOUD type. Buffer will not be parsed.");
             return true;
-        const uint32_t numTicks = parameterHost->async.numTicks;
-        const uint32_t numChannels = parameterHost->async.numChannels;
-        const uint32_t numEchos = parameterHost->async.numEchos;
-        const uint32_t startTick = parameterHost->async.startTick;
-
-        if (numTicks == 0 || numChannels * numEchos == 0)
+        }
+        if (helper.m_gmo.numElements == 0)
         {
             return true;
         }
 
-        std::string curConfig = "";
-        pxr::UsdAttribute configAttr = omni::isaac::utils::getCameraAttributeFromRenderProduct(
-            "sensorModelConfig", db.tokenToString(db.inputs.renderProductPath()));
-        if (configAttr.IsValid())
-        {
-            omni::isaac::utils::safeGetAttribute(configAttr, curConfig);
-        }
-        bool configUpdated =
-            updateLidarConfig(curConfig, state.config, state.scanType, state.rotaryProfile, state.solidStateProfile);
-        if (configUpdated)
+        const omni::sensors::LidarAuxiliaryData* auxPoints =
+            static_cast<const omni::sensors::LidarAuxiliaryData*>(helper.m_gmo.auxiliaryData);
+        const uint32_t* tickIds = auxPoints ? auxPoints->tickId : nullptr;
+        const uint32_t* emitterIds = auxPoints ? auxPoints->emitterId : nullptr;
+        const uint8_t* echoIds = auxPoints ? auxPoints->echoId : nullptr;
+
+        if (state.updateLidarConfig(db.tokenToString(db.inputs.renderProductPath())))
         {
             if (state.scanType == LidarScanType::kRotary)
             {
@@ -122,17 +112,17 @@ public:
                 };
                 // state.rotaryProfile.reportRateBaseHz; // 3600 for a 10Hz lidar that fires one tick per degree.
                 // state.rotaryProfile.scanRateBaseHz; // 10 for a 10Hz lidar
-                uint32_t numTicksPerRotation = state.rotaryProfile.reportRateBaseHz / state.rotaryProfile.scanRateBaseHz;
+                state.numTicksPerRotation = state.rotaryProfile.reportRateBaseHz / state.rotaryProfile.scanRateBaseHz;
                 // state.rotaryProfile.scanRateBaseHz
                 //          << " " << numTicksPerRotation << "\n";
                 db.outputs.horizontalFov() = 360.0;
-                state.horizontalResolution = static_cast<float>(360.0 / numTicksPerRotation);
+                state.horizontalResolution = static_cast<float>(360.0 / state.numTicksPerRotation);
                 db.outputs.horizontalResolution() = state.horizontalResolution;
                 db.outputs.numRows() = 1;
-                db.outputs.numCols() = numTicksPerRotation;
+                db.outputs.numCols() = state.numTicksPerRotation;
                 db.outputs.rotationRate() = static_cast<float>(state.rotaryProfile.scanRateBaseHz);
-                db.outputs.intensitiesData().resize(numTicksPerRotation);
-                db.outputs.linearDepthData().resize(numTicksPerRotation);
+                db.outputs.intensitiesData().resize(state.numTicksPerRotation);
+                db.outputs.linearDepthData().resize(state.numTicksPerRotation);
 
                 // assert(numTicksPerRotation == parameterHost->async.ticksPerScan);
             }
@@ -221,69 +211,78 @@ public:
             else
             {
 
-                CARB_LOG_WARN_ONCE("IsaacComputeRTXLidarFlatScan %s is an unknown scanType.", curConfig.c_str());
+                CARB_LOG_WARN_ONCE("IsaacComputeRTXLidarFlatScan %s is an unknown scanType.", state.config.c_str());
+                db.outputs.numCols() = 0;
                 return true;
             }
         }
 
+        if (state.scanType == LidarScanType::kRotary && (!echoIds || !emitterIds || !tickIds))
+        {
+            return true;
+        }
+
+        if (state.scanType == LidarScanType::kSolidState && (!echoIds || !emitterIds))
+        {
+            return true;
+        }
         uint8_t* intensities = db.outputs.intensitiesData().data();
         float* distances = db.outputs.linearDepthData().data();
         if (state.scanType == LidarScanType::kRotary)
         {
-            for (uint32_t tick = 0; tick < numTicks; tick++)
+            // can we go on the assumption that the points are put in in tick*channel*echo order?
+            for (uint32_t pointIdx = 0; pointIdx < helper.m_gmo.numElements; pointIdx++)
             {
-                uint32_t channelId = state.emitterToOutput;
-
-                const uint32_t echoId = 0;
-                const uint32_t pointIdx{ idxOfReturn(channelId, echoId, numEchos, numChannels, tick) };
-                uint8_t intensity{ static_cast<uint8_t>(lidarReturnsHost.intensities[pointIdx] * 255.0f) };
-                float distance{ lidarReturnsHost.distances[pointIdx] };
-                if (state.emitterProfile->elevationDeg)
+                if (emitterIds[pointIdx] == state.emitterToOutput && echoIds[pointIdx] == 0)
                 {
-                    distance = distance * ::cosf(Deg2Rad(state.emitterProfile->elevationDeg));
+
+                    uint8_t intensity{ static_cast<uint8_t>(helper.m_gmo.elements.scalar[pointIdx] * 255.0f) };
+                    float distance{ helper.m_gmo.elements.z[pointIdx] };
+                    if (state.emitterProfile->elevationDeg)
+                    {
+                        distance = distance * ::cosf(Deg2Rad(state.emitterProfile->elevationDeg));
+                    }
+                    uint32_t outIdx = (tickIds[pointIdx]) % state.numTicksPerRotation;
+                    // reverse output indices if right handed
+                    if (state.mRightHanded)
+                        outIdx = state.numTicksPerRotation - 1 - outIdx;
+                    intensities[outIdx] = intensity;
+                    distances[outIdx] = distance;
                 }
-                uint32_t outIdx = (startTick + tick) % parameterHost->async.ticksPerScan;
-                // reverse output indices if right handed
-                if (state.mRightHanded)
-                    outIdx = parameterHost->async.ticksPerScan - 1 - outIdx;
-                intensities[outIdx] = intensity;
-                distances[outIdx] = distance;
             }
         }
         else if (state.scanType == LidarScanType::kSolidState)
         {
             uint32_t maxIndex = static_cast<uint32_t>(360.f / state.horizontalResolution);
             // Solid State is always 1 tick
-            for (int i = 0; i < (int)numChannels; i++)
+
+            for (int i = 0; i < (int)helper.m_gmo.numElements; i++)
             {
-                // returnsIdx is the index into lidarReturnsHost arrays.
-                int returnsIdx = i * numEchos;
-                int emitterId = static_cast<int>(lidarReturnsHost.emitterIds[returnsIdx]);
-                // We only use one line from the solid state emitter
-                if (emitterId >= state.emitterToOutput && emitterId < (state.emitterToOutput + state.numRaysPerLine))
+                if (echoIds[i] == 0)
                 {
-                    uint8_t intensity{ static_cast<uint8_t>(lidarReturnsHost.intensities[returnsIdx] * 255.0f) };
-                    float distance{ lidarReturnsHost.distances[returnsIdx] };
-                    if (state.emitterProfile->elevationDeg)
+                    int pointIdx = i;
+                    uint32_t emitterId = emitterIds[pointIdx];
+                    // We only use one line from the solid state emitter
+                    if (emitterId >= state.emitterToOutput && emitterId < (state.emitterToOutput + state.numRaysPerLine))
                     {
-                        distance = distance * ::cosf(Deg2Rad(state.emitterProfile->elevationDeg));
-                    }
-                    // outIdx is the index into intensities and distances arrays, and the 0 entry to that will be at
-                    // the azimuthRange()[0]
-                    float azimuth = lidarReturnsHost.azimuths[returnsIdx];
-                    if (azimuth > 180.0f)
-                    {
-                        azimuth -= 360.0f;
-                    }
-                    int outIdx = static_cast<int>(((azimuth - state.startAzimuthDeg) + 0.1 * state.horizontalResolution) /
-                                                  state.horizontalResolution);
-                    outIdx %= maxIndex;
-                    if (outIdx >= 0 && outIdx < state.numRaysPerLine)
-                    {
-                        if (state.mRightHanded)
-                            outIdx = state.numRaysPerLine - 1 - outIdx;
-                        intensities[outIdx] = intensity;
-                        distances[outIdx] = distance;
+                        uint8_t intensity{ static_cast<uint8_t>(helper.m_gmo.elements.scalar[pointIdx] * 255.0f) };
+                        float distance{ helper.m_gmo.elements.z[pointIdx] };
+                        if (state.emitterProfile->elevationDeg)
+                        {
+                            distance = distance * ::cosf(Deg2Rad(state.emitterProfile->elevationDeg));
+                        }
+                        // outIdx is the index into intensities and distances arrays, and the 0 entry to that will be at
+                        // the azimuthRange()[0]
+                        float azimuth = helper.m_gmo.elements.x[pointIdx];
+                        int outIdx =
+                            static_cast<int>(((azimuth - state.startAzimuthDeg) + 0.1 * state.horizontalResolution) /
+                                             state.horizontalResolution);
+                        outIdx %= maxIndex;
+                        if (outIdx >= 0 && outIdx < state.numRaysPerLine)
+                        {
+                            intensities[outIdx] = intensity;
+                            distances[outIdx] = distance;
+                        }
                     }
                 }
             }
