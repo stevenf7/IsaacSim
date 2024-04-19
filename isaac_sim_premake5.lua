@@ -189,6 +189,7 @@ function define_ext_test_experience(ext_name, args)
         "--/exts/omni.kit.test/testExtRetryStrategy=\"retry-on-failure-ci-only\"",
         "--/exts/omni.kit.test/testExtArgs/0=\"--no-window\"",
         "--/exts/omni.kit.test/testExtArgs/1=\"--allow-root\"",
+        "--/exts/omni.kit.test/testExtGenerateCoverageReport=1",
         "--/exts/omni.kit.test/testExtApp=\""..script_dir_token.."/../apps/omni.isaac.sim.test_ext.kit\"",
         "--/exts/omni.kit.test/runTestsAndQuit=true", -- Run tests and quit
         "--/exts/omni.kit.test/testExts/0='"..python_module.."'", -- Only include tests from the python module
@@ -262,7 +263,7 @@ $SCRIPT_DIR/../python.sh -m pip install $SCRIPT_DIR/OmniIsaacGymEnvs
 -- Write experience running .bat/.sh file, like _build\windows-x86_64\release\example.helloext.app.bat
 function create_test_experience_runner(name, config_path, config, kit_sdk_config, extra_args, executable)
     local os_target = os.target()
-    if string.find(name, "ros2_bridge") or string.find(name, "omni.isaac.benchmarks") then
+    if string.find(name, "ros2_bridge") or string.find(name, "omni.isaac.benchmarks") or string.find(name, "omni.isaac.tf_viewer") or string.find(name, "omni.isaac.app.setup") then
         extra = ROS2_EXTRA[os_target]
     elseif string.find(name, "gym") then
         extra = GYM_EXTRA[os_target]
@@ -378,7 +379,7 @@ set -e
 echo "##teamcity[testStarted name='%s']"
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 SAMPLE_DIR=$SCRIPT_DIR/../
-"$SCRIPT_DIR/../jupyter_notebook.sh" test $SAMPLE_DIR/%s %s --/exts/omni.kit.test/testExtRetryStrategy="retry-on-failure-ci-only" $@
+"$SCRIPT_DIR/../jupyter_notebook.sh" test $SAMPLE_DIR/%s %s $@
 echo "##teamcity[testFinished name='%s']"
         ]], name, sample_path, extra_args, name))
         f:close()

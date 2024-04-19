@@ -342,7 +342,7 @@ test-linux-x86_64-startuptests:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s startuptests
+  - ./repo.sh ci test -- -s startuptests --generate-report
   after_script:
   - !reference [.datadog-test-visibility-linux-x86_64, script]
   needs:
@@ -356,7 +356,7 @@ test-linux-x86_64-pythontests-1:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s pythontests -b 1
+  - ./repo.sh ci test -- -s pythontests -b 1 --generate-report
   after_script:
   - !reference [.datadog-test-visibility-linux-x86_64, script]
   needs:
@@ -370,7 +370,7 @@ test-linux-x86_64-pythontests-2:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s pythontests -b 2
+  - ./repo.sh ci test -- -s pythontests -b 2 --generate-report
   after_script:
   - !reference [.datadog-test-visibility-linux-x86_64, script]
   needs:
@@ -384,7 +384,7 @@ test-linux-x86_64-pythontests-3:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s pythontests -b 3
+  - ./repo.sh ci test -- -s pythontests -b 3 --generate-report
   after_script:
   - !reference [.datadog-test-visibility-linux-x86_64, script]
   needs:
@@ -398,7 +398,7 @@ test-linux-x86_64-pythontests-4:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s pythontests -b 4
+  - ./repo.sh ci test -- -s pythontests -b 4 --generate-report
   after_script:
   - !reference [.datadog-test-visibility-linux-x86_64, script]
   needs:
@@ -412,7 +412,7 @@ test-linux-x86_64-pythontests-5:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s pythontests -b 5
+  - ./repo.sh ci test -- -s pythontests -b 5 --generate-report
   after_script:
   - !reference [.datadog-test-visibility-linux-x86_64, script]
   needs:
@@ -426,7 +426,7 @@ test-linux-x86_64-pythontests-6:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s pythontests -b 6
+  - ./repo.sh ci test -- -s pythontests -b 6 --generate-report
   after_script:
   - !reference [.datadog-test-visibility-linux-x86_64, script]
   needs:
@@ -440,7 +440,7 @@ test-linux-x86_64-pythontests-7:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s pythontests -b 7
+  - ./repo.sh ci test -- -s pythontests -b 7 --generate-report
   after_script:
   - !reference [.datadog-test-visibility-linux-x86_64, script]
   needs:
@@ -454,7 +454,7 @@ test-linux-x86_64-pythontests-8:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s pythontests -b 8
+  - ./repo.sh ci test -- -s pythontests -b 8 --generate-report
   after_script:
   - !reference [.datadog-test-visibility-linux-x86_64, script]
   needs:
@@ -468,7 +468,7 @@ test-linux-x86_64-pythontests-9:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s pythontests -b 9
+  - ./repo.sh ci test -- -s pythontests -b 9 --generate-report
   after_script:
   - !reference [.datadog-test-visibility-linux-x86_64, script]
   needs:
@@ -482,7 +482,7 @@ test-linux-x86_64-pythontests-9:
 #     - .runner-test-linux-x86_64-gpu
 #     - .omni_nvks_gpu
 #   script:
-#     - ./repo.sh ci test -- -s gympythontests
+#     - ./repo.sh ci test -- -s gympythontests --generate-report
 #   after_script:
 #     - !reference [.datadog-test-visibility-linux-x86_64, script]
 #   needs:
@@ -496,7 +496,7 @@ test-linux-x86_64-selectortests:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s selectortests
+  - ./repo.sh ci test -- -s selectortests --generate-report
   after_script:
   - !reference [.datadog-test-visibility-linux-x86_64, script]
   needs:
@@ -510,7 +510,7 @@ test-linux-x86_64-warmuptests:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s warmuptests
+  - ./repo.sh ci test -- -s warmuptests --generate-report
   after_script:
   - !reference [.datadog-test-visibility-linux-x86_64, script]
   needs:
@@ -524,7 +524,7 @@ test-linux-x86_64-postinstalltests:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s postinstalltests
+  - ./repo.sh ci test -- -s postinstalltests --generate-report
   after_script:
   - !reference [.datadog-test-visibility-linux-x86_64, script]
   needs:
@@ -538,7 +538,7 @@ test-linux-x86_64-postinstalltests:
 #     - .runner-test-linux-x86_64-gpu
 #     - .omni_nvks_gpu
 #   script:
-#     - ./repo.sh ci test -- -s unittests
+#     - ./repo.sh ci test -- -s unittests --generate-report
 #   after_script:
 #     - !reference [.datadog-test-visibility-linux-x86_64, script]
 #   needs:
@@ -552,7 +552,7 @@ test-linux-x86_64-internalpythontests-1:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s internalpythontests -b 1
+  - ./repo.sh ci test -- -s internalpythontests -b 1 --generate-report
   after_script:
   - !reference [.datadog-test-visibility-linux-x86_64, script]
   rules:
@@ -568,7 +568,7 @@ test-linux-x86_64-internalpythontests-1:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s internalpythontests -b 2
+  - ./repo.sh ci test -- -s internalpythontests -b 2 --generate-report
   after_script:
   - !reference [.datadog-test-visibility-linux-x86_64, script]
   rules:
@@ -584,7 +584,7 @@ test-linux-x86_64-nativepythontests-1:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s nativepythontests -b 1
+  - ./repo.sh ci test -- -s nativepythontests -b 1 --generate-report
   after_script:
   - !reference [.datadog-test-visibility-linux-x86_64, script]
   rules:
@@ -600,7 +600,7 @@ test-linux-x86_64-nativepythontests-2:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s nativepythontests -b 2
+  - ./repo.sh ci test -- -s nativepythontests -b 2 --generate-report
   after_script:
   - !reference [.datadog-test-visibility-linux-x86_64, script]
   rules:

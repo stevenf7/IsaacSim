@@ -504,11 +504,12 @@ function create_tests()
         python_sample_test("tests-internalnativepython-omni.isaac.snippets.multi-camera", "standalone_examples/testing/omni.isaac.snippets/multi-camera.py")
         python_sample_test("tests-internalnativepython-omni.isaac.snippets.simulation_get_data", "standalone_examples/testing/omni.isaac.snippets/simulation_get_data.py")
 
-    group "jupyter_samples"
-
-        jupyter_sample_test("tests-jupyter-startup", "standalone_examples/testing/notebooks/basic_notebook.ipynb")
-        jupyter_sample_test("tests-jupyter-ogn", "standalone_examples/testing/notebooks/test_ogn_notebook.ipynb")
-        jupyter_sample_test("tests-jupyter-syntheticdata", "standalone_examples/testing/notebooks/test_syntheticdata_notebook.ipynb")
+    --     Disabled because fast shutdown causes a hang/crash on exit
+    -- group "jupyter_samples"
+    --     jupyter_sample_test("tests-jupyter-startup", "standalone_examples/testing/notebooks/basic_notebook.ipynb")
+    --     jupyter_sample_test("tests-jupyter-ogn", "standalone_examples/testing/notebooks/test_ogn_notebook.ipynb")
+    --     jupyter_sample_test("tests-jupyter-syntheticdata", "standalone_examples/testing/notebooks/test_syntheticdata_notebook.ipynb")
+    
 
     if os.target() == "linux" then
     group "docker_tests"
