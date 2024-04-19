@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.2"
+version = "1.0.3"
 category = "Simulation"
 title = "Wheeled Robots UI"
 description = "This extension provides the UI elements for the wheeled_robots extension"

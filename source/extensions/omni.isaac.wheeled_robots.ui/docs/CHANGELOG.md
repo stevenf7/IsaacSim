@@ -1,4 +1,8 @@
 # Changelog
+## [1.0.3] - 2024-04-19
+### Added
+- Reverted the name of "Differential Robots" menu option to "Differential Controller" 
+
 ## [1.0.2] - 2024-04-14
 ### Added
 - button to documentation for omnigraph shortcut

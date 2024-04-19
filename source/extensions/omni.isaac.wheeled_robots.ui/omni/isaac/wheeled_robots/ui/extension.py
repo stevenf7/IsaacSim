@@ -26,7 +26,7 @@ class Extension(omni.ext.IExt):
         self.__interface = acquire_interface()
 
         controller_menu = [
-            make_menu_item_description(ext_id, "Differential Robots", onclick_fun=self._open_differential_graph),
+            make_menu_item_description(ext_id, "Differential Controller", onclick_fun=self._open_differential_graph),
         ]
         self._menu_controller = [
             MenuItemDescription(
