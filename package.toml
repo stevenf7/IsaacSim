@@ -60,7 +60,7 @@ files_exclude = [
     ["tests/tests-omni.importer.onshape*"],
 ]
 
-[isaac-sim-standalone.release]
+[isaac-sim-standalone]
 files = [
     ["**"]
 ]

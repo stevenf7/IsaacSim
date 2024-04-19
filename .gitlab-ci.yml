@@ -174,7 +174,7 @@ variables:
   - if: $CI_PIPELINE_SOURCE == "schedule" && $RUN_DOCS_BUILD == "true"
     when: always
   - when: never
-  
+
 
 # ==============================================================================================================
 # Rule for running publisher on push on develop and release branches
@@ -907,12 +907,12 @@ pages:
     paths:
     - public
   rules:
-    - !reference [.rules-build-docs, rules]
+  - !reference [.rules-build-docs, rules]
   needs:
-    - job: build-linux-x86_64-release
-      artifacts: true
-    - job: build-docs
-      artifacts: true
+  - job: build-linux-x86_64-release
+    artifacts: true
+  - job: build-docs
+    artifacts: true
 
 build-docs:
   extends:
@@ -1074,22 +1074,25 @@ publish-extensions:
   - .deploy-common
   - .omni_nvks_runner_with_docker
   script:
-  - ./repo.sh ci publish_extensions
+  - ./repo.sh build --fetch-only -rd
+  - ./repo.sh publish_exts -a --from-package -c release
+  - ./repo.sh publish_exts -a --from-package -c debug
+  # - ./repo.sh ci publish_extensions
   needs:
   # We set all dependencies as optional just in case a platform is not needed,
   # then the yml file can override both build/test on one platform and deploy will still work.
   - job: build-windows-x86_64-release
     artifacts: true
-    optional: true
+    optional: false
   - job: build-linux-x86_64-release
     artifacts: true
-    optional: true
+    optional: false
   - job: build-windows-x86_64-debug
     artifacts: true
-    optional: true
+    optional: false
   - job: build-linux-x86_64-debug
     artifacts: true
-    optional: true
+    optional: false
   #   - job: test-windows-x86_64-startuptests
   #     artifacts: false
   #     optional: true
@@ -1103,7 +1106,6 @@ publish-extensions:
     when: never
   - !reference [.rules-push, rules]
   # - !reference [.rules-version-changed, rules]
-  # - !reference [.rules-push-manual, rules]
 
 
 # ==============================================================================================================
