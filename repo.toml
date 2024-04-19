@@ -864,10 +864,14 @@ exts.include = [
 ]
 exts.exclude = []
 
+# This is hardcoded in template
 # # Registries to publish to.
 # registries = [
 #     { name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default" },
 # ]
+
+# disable signing as it's not common practice for extension publishing atm
+signing.enabled = false
 
 # verify before publishing
 publish_verification = true

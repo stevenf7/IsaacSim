@@ -39,20 +39,20 @@ def main(args: argparse.Namespace):
         if omni.repo.ci.get_repo_config().get("repo_deploy_exts", {}).get("enabled", False):
             omni.repo.ci.launch(["${root}/repo${shell_ext}", "deploy_exts"])
 
-        # Use repo_docs.enabled as indicator for whether to build docs
-        repo_docs_enabled = omni.repo.ci.get_repo_config().get("repo_docs", {}).get("enabled", True)
-        # repo_docs_enabled = repo_docs_enabled and omni.repo.ci.is_windows()
+    # Use repo_docs.enabled as indicator for whether to build docs
+    repo_docs_enabled = omni.repo.ci.get_repo_config().get("repo_docs", {}).get("enabled", True)
+    # repo_docs_enabled = repo_docs_enabled and omni.repo.ci.is_windows()
 
-        # Docs
-        if repo_docs_enabled:
-            omni.repo.ci.launch(["${root}/repo${shell_ext}", "omnigraph_docs"])
-            # Temporarily ignore warnings in docs build
-            omni.repo.ci.launch(["${root}/repo${shell_ext}", "docs", "--config", build_config, "--warn-as-error=0"])
-            # omni.repo.ci.launch(["${root}/repo${shell_ext}", "docs", "--config", build_config])
-            omni.repo.ci.launch(["${root}/repo${shell_ext}", "package", "-m", "docs", "-c", build_config])
+    # Docs
+    if repo_docs_enabled:
+        omni.repo.ci.launch(["${root}/repo${shell_ext}", "omnigraph_docs"])
+        # Temporarily ignore warnings in docs build
+        omni.repo.ci.launch(["${root}/repo${shell_ext}", "docs", "--config", build_config, "--warn-as-error=0"])
+        # omni.repo.ci.launch(["${root}/repo${shell_ext}", "docs", "--config", build_config])
+        omni.repo.ci.launch(["${root}/repo${shell_ext}", "package", "-m", "docs", "-c", build_config])
 
-        # Package release
-        omni.repo.ci.launch(["${root}/repo${shell_ext}", "package", "-m", "isaac-sim-standalone", "-c", build_config])
+    # Package release
+    omni.repo.ci.launch(["${root}/repo${shell_ext}", "package", "-m", "isaac-sim-standalone", "-c", build_config])
 
     # publish artifacts to teamcity
     print("##teamcity[publishArtifacts '_build/packages']")
