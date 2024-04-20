@@ -1,7 +1,7 @@
 Occupancy Extension [omni.isaac.occupancy_map]
 ##############################################
 
-.. autoclass:: omni.isaac.occupancy_map._occupancy_map.Generator
+.. autoclass:: omni.isaac.occupancy_map.bindings._occupancy_map.Generator
     :members:
     :undoc-members:
     :show-inheritance:
