@@ -1,5 +1,8 @@
 # Changelog
 
+## [3.10.0] - 2023-04-17
+### Changed
+- Remove joint velocities computation using finite difference with TGS solver
 
 ## [3.9.2] - 2024-04-17
 ### Fixed
