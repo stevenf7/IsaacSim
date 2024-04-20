@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.7.0] - 2024-04-19
+# ## Added
+- Added button to clear caches
+
 ## [2.6.3] - 2024-04-17
 # ## Fixed
 - Made App Selector window non-detachable
@@ -15,7 +19,7 @@
 ## [2.6.0] - 2024-04-12
 ### Added
 - Dropdown to use internal ros2 libraries when applicable
-- Warning messages for when ROS2 bridge is selected and env vars are incorrectly configured. 
+- Warning messages for when ROS2 bridge is selected and env vars are incorrectly configured.
 
 ## [2.5.0] - 2024-04-10
 ### Added

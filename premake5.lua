@@ -164,6 +164,7 @@ function setup_common_folder_links()
             {"source/scripts/omni.isaac.sim.post.install.run${shell_ext}",  "_build/%{platform}/%{config}"},
             {"source/scripts/omni.isaac.sim.warmup${shell_ext}",  "_build/%{platform}/%{config}"},
             {"source/scripts/isaac-sim.docker*${shell_ext}",  "_build/%{platform}/%{config}"},
+            {"source/scripts/clear_caches*${shell_ext}",  "_build/%{platform}/%{config}"},
             {"source/apps/omni.isaac.sim.python.kit",  "_build/%{platform}/%{config}/apps"},
             {"source/scripts/vscode/%{platform}",  "_build/%{platform}/%{config}/.vscode"},
             {"source/scripts/telemetry/*",  "_build/%{platform}/%{config}/config"},
@@ -584,7 +585,7 @@ carbSDKLibs = carbSDKPath.."/_build/"..platform.."/%{config}"
     -- kit.setup_common_folder_links()
     setup_common_folder_links()
     kit.setup_kit_autopull()
-    
+
     include("isaac_sim_premake5.lua") -- Shared build scripts from isaac sim
     -- kit.autoinclude_extensions()
     include_extensions()
