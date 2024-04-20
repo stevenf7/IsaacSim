@@ -47,7 +47,7 @@ DECLARE_OGN_NODES()
 
 namespace
 {
-omni::kit::IStageUpdate* gStageUpdate = nullptr;
+omni::kit::StageUpdatePtr gStageUpdate = nullptr;
 omni::kit::StageUpdateNode* gStageUpdateNode = nullptr;
 omni::fabric::ISimStageWithHistory* gSimStageWithHistory = nullptr;
 omni::fabric::IStageReaderWriter* gStageReaderWriter = nullptr;
@@ -306,7 +306,7 @@ bool removeHandle(const uint64_t handleId)
 
 CARB_EXPORT void carbOnPluginStartup()
 {
-    gStageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>();
+    gStageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>()->getStageUpdate();
     gStageReaderWriter = carb::getCachedInterface<omni::fabric::IStageReaderWriter>();
     gPhysXInterface = carb::getCachedInterface<omni::physx::IPhysx>();
     gSimStageWithHistory = carb::getCachedInterface<omni::fabric::ISimStageWithHistory>();
