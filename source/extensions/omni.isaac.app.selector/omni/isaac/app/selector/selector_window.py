@@ -424,6 +424,15 @@ class SelectorWindow:
                             "Button:hovered": {"background_color": LIGHT_GRAY},
                         },
                     )
+                    ui.Button(
+                        "Clear Caches",
+                        clicked_fn=lambda: self._clear_caches(),
+                        width=ui.Percent(30),
+                        style={
+                            "Button": {"background_color": GRAY},
+                            "Button:hovered": {"background_color": LIGHT_GRAY},
+                        },
+                    )
 
             default_index = 0
             if self._default_app:
@@ -742,6 +751,29 @@ class SelectorWindow:
                 )
             except OSError:
                 carb.log_warn("Could not open terminal.")
+
+    def _clear_caches(self):
+        app_folder = self._settings.get_as_string("/app/folder")
+        if app_folder == "":
+            app_folder = carb.tokens.get_tokens_interface().resolve("${app}/../")
+        script_extension = "bat"
+        if not sys.platform == "win32":
+            script_extension = "sh"
+
+        script_path = f"{app_folder}/clear_caches.{script_extension}"
+        script_path = os.path.normpath(script_path)
+
+        if sys.platform == "win32":
+            try:
+                subprocess.Popen(["start", "cmd", "/k", script_path], shell=True)
+            except OSError:
+                carb.log_warn("Could not clear caches.")
+        else:
+            try:
+                run_script = f"x-terminal-emulator -e bash -i -c {script_path}"
+                subprocess.Popen(run_script, shell=True)
+            except OSError:
+                carb.log_warn("Could not clear caches.")
 
     def _copy_to_clipboard(self, to_copy):
         try:
