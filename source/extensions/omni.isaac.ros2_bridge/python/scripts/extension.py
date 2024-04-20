@@ -148,7 +148,7 @@ class ROS2BridgeExtension(omni.ext.IExt):
             writer_name = f"{rv}{BRIDGE_PREFIX}{time_type[1]}PublishImage"
             rep.writers.register_node_writer(
                 name=writer_name,
-                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}{time_type[1]}PublishImage",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
                 annotators=[
                     f"{rv}IsaacConvertRGBAToRGB",
                     omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
@@ -169,7 +169,7 @@ class ROS2BridgeExtension(omni.ext.IExt):
             writer_name = f"{rv}{BRIDGE_PREFIX}{time_type[1]}PublishImage"
             rep.writers.register_node_writer(
                 name=writer_name,
-                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}{time_type[1]}PublishImage",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
                 annotators=[
                     omni.syntheticdata.SyntheticData.NodeConnectionTemplate(rv + "ExportRawArray"),
                     omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
@@ -189,7 +189,7 @@ class ROS2BridgeExtension(omni.ext.IExt):
             writer_name = f"{rv}{BRIDGE_PREFIX}{time_type[1]}PublishPointCloud"
             rep.writers.register_node_writer(
                 name=writer_name,
-                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}{time_type[1]}PublishPointCloud",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
                 annotators=[
                     f"{rv}IsaacConvertDepthToPointCloud",
                     omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
@@ -207,7 +207,7 @@ class ROS2BridgeExtension(omni.ext.IExt):
             writer_name = f"{BRIDGE_PREFIX}{time_type[1]}PublishInstanceSegmentation"
             rep.writers.register_node_writer(
                 name=writer_name,
-                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}{time_type[1]}PublishImage",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
                 annotators=[
                     "instance_segmentation",
                     f'{omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("InstanceSegmentation")}IsaacSimulationGate',
@@ -227,7 +227,7 @@ class ROS2BridgeExtension(omni.ext.IExt):
             writer_name = f"{BRIDGE_PREFIX}{time_type[1]}PublishSemanticSegmentation"
             rep.writers.register_node_writer(
                 name=writer_name,
-                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}{time_type[1]}PublishImage",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
                 annotators=[
                     "semantic_segmentation",
                     f'{omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar("SemanticSegmentation")}IsaacSimulationGate',
@@ -247,7 +247,7 @@ class ROS2BridgeExtension(omni.ext.IExt):
             writer_name = f"{BRIDGE_PREFIX}{time_type[1]}PublishBoundingBox2DTight"
             rep.writers.register_node_writer(
                 name=writer_name,
-                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}{time_type[1]}PublishBbox2D",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishBbox2D",
                 annotators=[
                     omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                         "bounding_box_2d_tight", attributes_mapping={"input:semanticTypes": ["class"]}
@@ -268,7 +268,7 @@ class ROS2BridgeExtension(omni.ext.IExt):
             writer_name = f"{BRIDGE_PREFIX}{time_type[1]}PublishBoundingBox2DLoose"
             rep.writers.register_node_writer(
                 name=writer_name,
-                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}{time_type[1]}PublishBbox2D",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishBbox2D",
                 annotators=[
                     omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                         "bounding_box_2d_loose",
@@ -290,7 +290,7 @@ class ROS2BridgeExtension(omni.ext.IExt):
             writer_name = f"{BRIDGE_PREFIX}{time_type[1]}PublishBoundingBox3D"
             rep.writers.register_node_writer(
                 name=writer_name,
-                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}{time_type[1]}PublishBbox3D",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishBbox3D",
                 annotators=[
                     omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                         "bounding_box_3d",
@@ -312,7 +312,7 @@ class ROS2BridgeExtension(omni.ext.IExt):
             writer_name = f"{BRIDGE_PREFIX}{time_type[1]}PublishCameraInfo"
             rep.writers.register_node_writer(
                 name=writer_name,
-                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}{time_type[1]}PublishCameraInfo",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishCameraInfo",
                 annotators=[
                     "IsaacReadCameraInfo",
                     "PostProcessDispatchIsaacSimulationGate",
@@ -347,7 +347,7 @@ class ROS2BridgeExtension(omni.ext.IExt):
                 writer_name = f"{annotator_name}{BRIDGE_PREFIX}{time_type[1]}PublishSemanticLabels"
                 rep.writers.register_node_writer(
                     name=writer_name,
-                    node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}{time_type[1]}PublishSemanticLabels",
+                    node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishSemanticLabels",
                     annotators=[
                         annotator,
                         f"{annotator_name}IsaacSimulationGate",
@@ -367,7 +367,7 @@ class ROS2BridgeExtension(omni.ext.IExt):
             writer_name = f"RtxLidar{BRIDGE_PREFIX}{time_type[1]}PublishPointCloud"
             rep.writers.register_node_writer(
                 name=writer_name,
-                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}{time_type[1]}PublishPointCloud",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
                 annotators=[
                     "RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud",
                     "PostProcessDispatchIsaacSimulationGate",
@@ -385,7 +385,7 @@ class ROS2BridgeExtension(omni.ext.IExt):
             writer_name = f"RtxLidar{BRIDGE_PREFIX}{time_type[1]}PublishPointCloudBuffer"
             rep.writers.register_node_writer(
                 name=writer_name,
-                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}{time_type[1]}PublishPointCloud",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
                 annotators=[
                     "RtxSensorCpu" + "IsaacCreateRTXLidarScanBuffer",
                     "PostProcessDispatchIsaacSimulationGate",
@@ -404,7 +404,7 @@ class ROS2BridgeExtension(omni.ext.IExt):
             writer_name = f"RtxRadar{BRIDGE_PREFIX}{time_type[1]}PublishPointCloud"
             rep.writers.register_node_writer(
                 name=writer_name,
-                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}{time_type[1]}PublishPointCloud",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
                 annotators=[
                     "RtxSensorCpu" + "IsaacComputeRTXRadarPointCloud",
                     "PostProcessDispatchIsaacSimulationGate",
@@ -423,7 +423,7 @@ class ROS2BridgeExtension(omni.ext.IExt):
             writer_name = f"RtxLidar{BRIDGE_PREFIX}{time_type[1]}PublishLaserScan"
             rep.writers.register_node_writer(
                 name=writer_name,
-                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}{time_type[1]}PublishLaserScan",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishLaserScan",
                 annotators=[
                     "RtxSensorCpu" + "IsaacComputeRTXLidarFlatScan",
                     "PostProcessDispatchIsaacSimulationGate",

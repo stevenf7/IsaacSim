@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.17.3] - 2024-04-19
+### Fixed
+- Registration for system time writers with telemetry tracking
+
 ## [1.17.2] - 2024-04-18
 ### Added
 - Telemetry for writers and annotators
