@@ -44,4 +44,7 @@
   <dependency name="repo_bench" linkPath="../_repo/deps/repo_bench">
     <package name="repo_bench" version="0.3.3" />
   </dependency>
+  <dependency name="repo_python_package" linkPath="../_repo/deps/repo_python_package">
+    <package name="repo_python_package" version="0.2.0" />
+  </dependency>
 </project>
