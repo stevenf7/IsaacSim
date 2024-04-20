@@ -425,7 +425,7 @@ class TestRos2DifferentialBase(omni.kit.test.AsyncTestCase):
             self._odom_data = data.pose.pose
 
         tf_sub = node.create_subscription(TFMessage, "tf_test", tf_callback, get_qos_profile())
-        odom_sub = node.create_subscription(Odometry, "odom", odom_callback, get_qos_profile())
+        odom_sub = node.create_subscription(Odometry, "chassis/odom", odom_callback, get_qos_profile())
         cmd_vel_pub = node.create_publisher(Twist, "cmd_vel", 1)
 
         def move_cmd_msg(x, y, z, ax, ay, az):

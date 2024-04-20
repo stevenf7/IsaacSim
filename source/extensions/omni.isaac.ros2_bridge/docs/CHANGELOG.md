@@ -1,8 +1,13 @@
 # Changelog
 
-## [2.22.2] - 2024-04-16
+## [2.22.3] - 2024-04-19
+### Fixed
+- Registration for system time writers with telemetry tracking
+
+## [2.22.2] - 2024-04-18
 ### Fixed
 - Update IStageUpdate usage to fix deprecation error
+
 ### Added
 - Telemetry for writers and annotators
 
