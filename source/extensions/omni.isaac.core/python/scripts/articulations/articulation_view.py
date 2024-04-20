@@ -137,38 +137,9 @@ class ArticulationView(XFormPrimView):
         self._dof_types = None
         self._metadata = None
 
-        self._use_finite_difference = carb.settings.get_settings().get("/exts/omni.isaac.core/use_finite_difference")
-        if not self._use_finite_difference and carb.settings.get_settings().get(
-            "/exts/omni.isaac.core/autodetect_finite_difference_use_with_tgs_solver"
-        ):
-            if SimulationContext.instance() is not None:
-                solver_type = SimulationContext.instance().get_physics_context().get_solver_type()
-                self._use_finite_difference = solver_type.lower() == "tgs"
-                carb.log_info(f"PhysX's TGS solver detected")
-        carb.log_info(f"Compute joint velocities using finite difference: {self._use_finite_difference}")
-        if self._use_finite_difference:
-
-            def on_physx_event(dt):
-                if self._is_initialized and self._physics_view is not None:
-                    dof_pos = self._physics_view.get_dof_positions()
-                    if self._previous_dof_pos is None:
-                        self._previous_dof_pos = dof_pos
-                    if self._backend == "warp":
-                        self._dof_velocities = self._backend_utils.finite_diff2(dof_pos, self._previous_dof_pos, dt)
-                    else:
-                        self._dof_velocities = (dof_pos - self._previous_dof_pos) / dt
-                    self._previous_dof_pos = self._backend_utils.clone_tensor(dof_pos, device=self._device)
-
-            self._dof_velocities = None
-            self._previous_dof_pos = None
-            self._physx_sub = omni.physx.acquire_physx_interface().subscribe_physics_step_events(on_physx_event)
-
     def __del__(self):
-        if self._use_finite_difference:
-            self._physx_sub = None
         del self._physics_view
         self._invalidate_physics_handle_event = None
-        return
 
     @property
     def num_dof(self) -> int:
@@ -421,8 +392,6 @@ class ArticulationView(XFormPrimView):
         self._invalidate_physics_handle_event = timeline.get_timeline_event_stream().create_subscription_to_pop(
             self._invalidate_physics_handle_callback
         )
-        if self._use_finite_difference:
-            self._previous_dof_pos = None
 
     def _invalidate_physics_handle_callback(self, event):
         if event.type == int(omni.timeline.TimelineEventType.STOP):
@@ -1551,10 +1520,7 @@ class ArticulationView(XFormPrimView):
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
-            if self._use_finite_difference and self._dof_velocities is not None:
-                current_joint_velocities = self._dof_velocities
-            else:
-                current_joint_velocities = self._physics_view.get_dof_velocities()
+            current_joint_velocities = self._physics_view.get_dof_velocities()
             if clone:
                 current_joint_velocities = self._backend_utils.clone_tensor(
                     current_joint_velocities, device=self._device
@@ -2469,8 +2435,6 @@ class ArticulationView(XFormPrimView):
         ArticulationView.set_joint_velocities(self, self._default_joints_state.velocities)
         ArticulationView.set_joint_efforts(self, self._default_joints_state.efforts)
         ArticulationView.set_gains(self, kps=self._default_kps, kds=self._default_kds)
-        if self._use_finite_difference:
-            self._previous_dof_pos = None
 
     def get_effort_modes(
         self,
