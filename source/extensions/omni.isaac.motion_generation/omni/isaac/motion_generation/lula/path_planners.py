@@ -362,6 +362,7 @@ class RRT(LulaInterfaceHelper, PathPlanner):
 
         Returns:
             bool: True if the parameter was set successfully
+
         """
         if param_name == "seed":
             self.set_random_seed(value)
