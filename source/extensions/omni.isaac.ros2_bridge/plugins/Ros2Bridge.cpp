@@ -63,7 +63,7 @@ DECLARE_OGN_NODES()
 // private stuff
 namespace
 {
-omni::kit::IStageUpdate* g_stageUpdate = nullptr;
+omni::kit::StageUpdatePtr g_stageUpdate = nullptr;
 omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
 std::shared_ptr<Ros2HandleBase> g_defaultHandle;
 std::shared_ptr<omni::isaac::utils::LibraryLoader> g_factoryLoader;
@@ -234,7 +234,7 @@ CARB_EXPORT void carbOnPluginStartup()
     }
 
 
-    g_stageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>();
+    g_stageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>()->getStageUpdate();
 
     omni::kit::StageUpdateNodeDesc desc = { 0 };
     desc.displayName = "IsaacRos2Bridge";

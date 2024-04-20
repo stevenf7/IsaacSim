@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.1] - 2024-04-16
+### Fixed
+- Update IStageUpdate usage to fix deprecation error
+
 ## [1.0.0] - 2024-03-11
 ### Changed
 - Refactored into components

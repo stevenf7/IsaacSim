@@ -66,7 +66,7 @@ namespace
 
 
 omni::renderer::IDebugDraw* g_debugDraw = nullptr;
-omni::kit::IStageUpdate* g_stageUpdate = nullptr;
+omni::kit::StageUpdatePtr g_stageUpdate = nullptr;
 omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
 omni::physx::IPhysx* g_physx = nullptr;
 pxr::UsdStageWeakPtr g_stage = nullptr;
@@ -1184,7 +1184,7 @@ CARB_EXPORT void carbOnPluginStartup()
         return;
     }
 
-    g_stageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>();
+    g_stageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>()->getStageUpdate();
     if (!g_stageUpdate)
     {
         CARB_LOG_ERROR("*** Failed to acquire stage update interface\n");

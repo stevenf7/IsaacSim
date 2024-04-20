@@ -42,7 +42,7 @@ DECLARE_OGN_NODES()
 using namespace carb::scenerenderer;
 
 omni::renderer::IDebugDraw* gDebugDraw = nullptr;
-omni::kit::IStageUpdate* gStageUpdate = nullptr;
+omni::kit::StageUpdatePtr gStageUpdate = nullptr;
 omni::kit::StageUpdateNode* gStageUpdateNode = nullptr;
 // // Points
 // carb::scenerenderer::PrimitiveList* gDebugPointList;
@@ -279,7 +279,8 @@ CARB_EXPORT void carbOnPluginStartup()
 {
 
     INITIALIZE_OGN_NODES()
-    gStageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>();
+    gStageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>()->getStageUpdate();
+
 
     gDebugDraw = carb::getCachedInterface<omni::renderer::IDebugDraw>();
     if (!gDebugDraw)

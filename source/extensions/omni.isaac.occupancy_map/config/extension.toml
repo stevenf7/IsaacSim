@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.0"
+version = "1.0.1"
 category = "Simulation"
 title = "Block Worlds"
 description = "Generate 3D block worlds from 2D occupancy maps"

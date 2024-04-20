@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.7.1] - 2024-04-16
+### Fixed
+- Update IStageUpdate usage to fix deprecation error
+
 ## [0.7.0] - 2024-01-08
 ### Changed
 - Moved header files to extension

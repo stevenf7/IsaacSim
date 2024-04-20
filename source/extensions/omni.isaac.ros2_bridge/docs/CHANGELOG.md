@@ -1,6 +1,8 @@
 # Changelog
 
-## [2.22.2] - 2024-04-18
+## [2.22.2] - 2024-04-16
+### Fixed
+- Update IStageUpdate usage to fix deprecation error
 ### Added
 - Telemetry for writers and annotators
 

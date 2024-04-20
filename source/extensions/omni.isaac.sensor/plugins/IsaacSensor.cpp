@@ -64,7 +64,7 @@ DECLARE_OGN_NODES()
 // private stuff
 namespace
 {
-omni::kit::IStageUpdate* g_stageUpdate = nullptr;
+omni::kit::StageUpdatePtr g_stageUpdate = nullptr;
 omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
 omni::physx::IPhysx* g_physx = nullptr;
 pxr::UsdStageWeakPtr g_stage = nullptr;
@@ -372,7 +372,7 @@ static void onPrimRemove(const pxr::SdfPath& primPath, void* userData)
 
 CARB_EXPORT void carbOnPluginStartup()
 {
-    g_stageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>();
+    g_stageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>()->getStageUpdate();
     if (!g_stageUpdate)
     {
         CARB_LOG_ERROR("*** Failed to acquire stage update interface\n");

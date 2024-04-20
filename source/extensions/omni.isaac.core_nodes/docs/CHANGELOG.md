@@ -3,6 +3,10 @@
 ### Added
 - Telemetry for writers and annotators
 
+## [1.14.2] - 2024-04-18
+### Fixed
+- Update IStageUpdate usage to fix deprecation error
+
 ## [1.14.1] - 2024-04-18
 ### Fixed
 - Fault with Articulation Controller node when it receives no joint name or indices inputs 

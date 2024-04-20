@@ -41,7 +41,7 @@ CARB_PLUGIN_IMPL_DEPS(omni::physx::IPhysx, omni::kit::IStageUpdate, omni::render
 namespace
 {
 pxr::UsdStageWeakPtr gStage = nullptr;
-omni::kit::IStageUpdate* gStageUpdate = nullptr;
+omni::kit::StageUpdatePtr gStageUpdate = nullptr;
 omni::kit::StageUpdateNode* gStageUpdateNode = nullptr;
 omni::physx::IPhysx* gPhysx = nullptr;
 carb::Float3 inputOrigin = { 0, 0, 0 };
@@ -330,7 +330,7 @@ void onUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdate
 
 CARB_EXPORT void carbOnPluginStartup()
 {
-    gStageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>();
+    gStageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>()->getStageUpdate();
 
     gPhysx = carb::getCachedInterface<omni::physx::IPhysx>();
     if (!gPhysx)

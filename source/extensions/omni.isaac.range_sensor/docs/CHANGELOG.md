@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.0.1] - 2024-04-16
+### Fixed
+- Update IStageUpdate usage to fix deprecation error
+
 ## [3.0.0] - 2024-03-12
 ### Changed
 - Extension refactored into multiple components.  See omni.isaac.range_sensor.ui and omni.isaac.range_sensor.examples
