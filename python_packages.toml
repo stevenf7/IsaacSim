@@ -1,0 +1,42 @@
+[isaacsim-standalone-app]
+# pyproject.toml
+pyproject.version = "4.0.0"
+pyproject.description = "Isaac Sim setup for Standalone Python workflow"
+pyproject.readme = ""
+pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "standalone"]
+pyproject.dependencies = [
+    "isaacsim-kernel>=4.0.0,<5.0.0",
+]
+# manifest (relative to the build config)
+inventory.include = [
+    # apps
+    "apps/omni.isaac.sim.python.kit",
+    # extensions
+    "exts/omni.isaac.kit",
+    "exts/omni.isaac.version",
+    # others
+    "VERSION",
+]
+
+[isaacsim-core]
+# pyproject.toml
+pyproject.version = "4.0.0"
+pyproject.description = "Isaac Sim high-level interfaces to PhysX and USD APIs"
+pyproject.readme = ""
+pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "core"]
+pyproject.dependencies = [
+    "isaacsim-kernel>=4.0.0,<5.0.0",
+    "numpy",
+]
+# inventory (relative to the build config)
+inventory.include = [
+    # apps
+    "apps/omni.isaac.sim.python.kit",
+    # extensions
+    "exts/omni.isaac.core",
+    "exts/omni.isaac.dynamic_control",
+    "exts/omni.isaac.version",
+    "exts/omni.kit.loop-isaac",
+    # others
+    "VERSION",
+]

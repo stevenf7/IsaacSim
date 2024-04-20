@@ -1107,3 +1107,33 @@ enabled = true
 folder_input = "${root}/_unsignedpackages"
 folder_output = "${root}/_signedpackages"
 
+########################################################################################################################
+# Python packages generation
+########################################################################################################################
+[repo_python_package]
+enabled = true
+
+# package generation
+namespace = "isaacsim"
+definition_paths = [
+    "${root}/python_packages.toml",
+]
+source_folder = "${root}/_build/${platform}/release"
+packages_folder = "${root}/_build/packages/python"
+distributions_folder = "${root}/_build/packages/dist"
+
+# package metadata (common)
+# pyproject.toml
+pyproject.requires-python = "==3.10.*"
+pyproject.authors = [
+    { name = "Isaac Sim team" },
+]
+pyproject.license = { file = "LICENSE.txt" }
+pyproject.classifiers = [
+    "Programming Language :: Python :: 3",
+]
+pyproject.urls = [
+    { "Home page" = "https://developer.nvidia.com/isaac-sim" },
+    { "Documentation" = "https://docs.omniverse.nvidia.com/isaacsim/latest/index.html" },
+    { "Forum" = "https://forums.developer.nvidia.com/c/omniverse/simulation/69" },
+]
