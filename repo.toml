@@ -1008,6 +1008,7 @@ deps_for_isaac = [
   "omni.replicator.core-1.11.3",
   "omni.sensors.nv.common-1.0.0",
   "omni.sensors.nv.lidar-1.0.0",
+  "omni.sensors.nv.ids-1.0.0",
   "omni.sensors.nv.materials-1.0.0",
   "omni.sensors.nv.radar-1.0.0",
   "omni.sensors.nv.ultrasonic-1.0.0",
