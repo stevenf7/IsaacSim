@@ -28,6 +28,7 @@ writeTarget.kit = true
 "omni.isaac.version" = {}
 "omni.warp.core" = {}
 "omni.physx.stageupdate" = {}
+"omni.usd.schema.semantics" = {}
 
 
 [[python.module]]
