@@ -1,10 +1,14 @@
 # Changelog
 
+## [10.2.0] - 2024-04-19
+### Added
+- CameraView class for managing multiple cameras and rendering used tiled_sensor from replicator
+
 ## [10.1.1] - 2024-04-18
-### Fixed
-- Update IStageUpdate usage to fix deprecation error
 ### Added
 - Telemetry for writers and annotators
+### Fixed
+- Update IStageUpdate usage to fix deprecation error
 
 ## [10.1.0] - 2024-04-17
 ### Changed

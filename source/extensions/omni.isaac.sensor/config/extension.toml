@@ -3,7 +3,8 @@ reloadable = true
 order = 0
 
 [package]
-version = "10.1.1"
+version = "10.2.0"
+
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Support physics based sensors, such as contact sensors and imu sensors"

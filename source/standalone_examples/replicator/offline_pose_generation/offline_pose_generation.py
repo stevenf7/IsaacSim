@@ -243,7 +243,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
         horiztonal_aperture_mm = config_data["pixel_size"] * config_data["WIDTH"]
 
         print(
-            f"Creating camera with focal length: {focal_length_mm}mm, horizontal aperture: {horiztonal_aperture_mm}mm"
+            f"Creating camera with focal length: {round(focal_length_mm, 2)}mm, horizontal aperture: {round(horiztonal_aperture_mm, 2)}mm"
         )
         # Setup camera and render product
         # See https://docs.omniverse.nvidia.com/py/replicator/1.10.10/source/extensions/omni.replicator.core/docs/API.html#cameras
