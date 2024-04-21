@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.22.4] - 2024-04-20
+### Fixed
+- Loading Foxy internal libraries
+
 ## [2.22.3] - 2024-04-19
 ### Fixed
 - Registration for system time writers with telemetry tracking

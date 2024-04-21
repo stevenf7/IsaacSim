@@ -22,13 +22,11 @@ int main(int argc, char* argv[])
         "yaml",
         "rcl_yaml_param_parser",
         "rcpputils",
-        "ament_index_cpp",
         "rmw_implementation",
 #ifndef _WIN32
         "spdlog",
         "tracetools",
 #endif
-        "rcl_logging_interface",
         "rcl_logging_spdlog",
         "rosidl_typesupport_c",
         "builtin_interfaces__rosidl_generator_c",
@@ -37,6 +35,16 @@ int main(int argc, char* argv[])
         "rcl_interfaces__rosidl_generator_c",
         "rcl",
     };
+
+    char* rosDistro = getenv("ROS_DISTRO");
+
+    if (strcmp(rosDistro, "humble") == 0)
+    {
+        lib_list.insert(lib_list.begin() + 5, std::string("ament_index_cpp"));
+        lib_list.insert(lib_list.begin() + 8, std::string("rcl_logging_interface"));
+        lib_list.insert(lib_list.end(), std::string("rcl_lifecycle"));
+    }
+
     omni::isaac::utils::MultiLibraryLoader g_backupLibLoader;
     std::string path = "";
     if (argc == 2)
