@@ -45,7 +45,7 @@ parser.add_argument("--delete-data-when-done", action="store_true", help="Delete
 parser.add_argument("--print-results", action="store_true", help="Print results in terminal")
 parser.add_argument("--headless", action="store_true", help="Run in headless mode")
 
-args = parser.parse_args()
+args, unknown = parser.parse_known_args()
 
 num_frames = args.num_frames
 num_cameras = args.num_cameras

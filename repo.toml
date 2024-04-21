@@ -563,6 +563,7 @@ exclude = [
   "tests-omni.isaac.gym.benchmark*${shell_ext}",
   "tests-omni.isaac.internal_tools*${shell_ext}",
   "tests-omni.isaac.benchmarks*${shell_ext}",
+  "tests-standalone*${shell_ext}",
   "tests-omni.isaac.onshape*${shell_ext}",
   "tests-nativepython*${shell_ext}",
   "tests-internalnativepython*${shell_ext}",
@@ -626,6 +627,26 @@ include = [
 name = "9"
 include = ["*"]
 
+[repo_test.suites.benchmarks]
+kind = "glob_and_exec"
+path = "${test_root}/tests"
+
+[[repo_test.suites.benchmarks.group]]
+include = [
+  "tests-omni.isaac.benchmarks*${shell_ext}",
+  "tests-standalone_benchmarkss*${shell_ext}",
+]
+exclude = []
+args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
+tc_report_enabled = false
+timeout = 5000
+stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
+stdout_fail_patterns.exclude = [
+	"*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*",  # optix disk cache errors
+	"*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*", # optix disk cache errors
+]
+
+
 [repo_test.suites.internalpythontests]
 kind = "glob_and_exec"
 path = "${test_root}/tests"
@@ -633,7 +654,6 @@ path = "${test_root}/tests"
 [[repo_test.suites.internalpythontests.group]]
 include = [
   "tests-omni.isaac.internal_tools*${shell_ext}",
-  "tests-omni.isaac.benchmarks*${shell_ext}",
 ]
 exclude = []
 args = ["--portable-root ${test_root}/portable_root", "--reset-user"]

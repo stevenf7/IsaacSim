@@ -83,7 +83,9 @@ class TestBenchmarkRtxRadar(BaseIsaacBenchmarkAsync):
         await omni.kit.app.get_app().next_update_async()
 
         for texture in hydra_textures:
+            texture.destroy()
             texture = None
+        hydra_textures.clear()
         await omni.kit.app.get_app().next_update_async()
 
     async def test_benchmark_1_rtx_radar(self):

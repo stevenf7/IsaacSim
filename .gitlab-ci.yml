@@ -545,14 +545,15 @@ test-linux-x86_64-postinstalltests:
 #     - job: build-linux-x86_64-release
 #       artifacts: true
 
-test-linux-x86_64-internalpythontests-1:
+test-linux-x86_64-benchmarks:
   extends:
   - .test-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s internalpythontests -b 1 --generate-report
+  - export ISAAC_TEST_MODE=1
+  - ./repo.sh ci test -- -s benchmarks --generate-report
   after_script:
   - !reference [.datadog-test-visibility-linux-x86_64, script]
   rules:
@@ -561,14 +562,14 @@ test-linux-x86_64-internalpythontests-1:
   - job: build-linux-x86_64-release
     artifacts: true
 
-test-linux-x86_64-internalpythontests-1:
+test-linux-x86_64-internalpythontests:
   extends:
   - .test-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s internalpythontests -b 2 --generate-report
+  - ./repo.sh ci test -- -s internalpythontests --generate-report
   after_script:
   - !reference [.datadog-test-visibility-linux-x86_64, script]
   rules:

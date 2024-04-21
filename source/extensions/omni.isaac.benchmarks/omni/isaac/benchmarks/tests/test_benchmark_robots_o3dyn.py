@@ -120,29 +120,8 @@ class TestBenchmarkRobotsO3dyn(BaseIsaacBenchmarkAsync):
     async def test_benchmark_1_robot_o3dyn(self):
         await self.benchmark_robots(1)
 
-    async def test_benchmark_2_robot_o3dyn(self):
-        await self.benchmark_robots(2)
-
-    async def test_benchmark_3_robot_o3dyn(self):
-        await self.benchmark_robots(3)
-
-    async def test_benchmark_4_robot_o3dyn(self):
-        await self.benchmark_robots(4)
-
     async def test_benchmark_5_robot_o3dyn(self):
         await self.benchmark_robots(5)
-
-    async def test_benchmark_6_robot_o3dyn(self):
-        await self.benchmark_robots(6)
-
-    async def test_benchmark_7_robot_o3dyn(self):
-        await self.benchmark_robots(7)
-
-    async def test_benchmark_8_robot_o3dyn(self):
-        await self.benchmark_robots(8)
-
-    async def test_benchmark_9_robot_o3dyn(self):
-        await self.benchmark_robots(9)
 
     async def test_benchmark_10_robot_o3dyn(self):
         await self.benchmark_robots(10)

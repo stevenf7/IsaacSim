@@ -53,10 +53,8 @@ class BaseIsaacBenchmarkAsync(omni.kit.test.AsyncTestCase):
             carb.log_error("Could not find Isaac Sim assets folder")
             return
 
-        # non async version improves stability when running many benchmarks in a row
-        omni.usd.get_context().new_stage()
-        for _ in range(100):
-            await omni.kit.app.get_app().next_update_async()
+        await omni.usd.get_context().new_stage_async()
+        await omni.kit.app.get_app().next_update_async()
 
         self._execution_env = execution.TestExecutionEnvironment.get_instance()
 

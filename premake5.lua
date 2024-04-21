@@ -160,6 +160,7 @@ function setup_common_folder_links()
             {"source/scripts/python/%{platform}/*",  "_build/%{platform}/%{config}"},
             {"source/scripts/jupyter_kernel",  "_build/%{platform}/%{config}/jupyter_kernel"},
             {"source/scripts/run_all_tests${shell_ext}",  "_build/%{platform}/%{config}"},
+            {"source/scripts/run_all_benchmarks${shell_ext}",  "_build/%{platform}/%{config}"},
             {"source/scripts/omni.isaac.sim.post.install${shell_ext}",  "_build/%{platform}/%{config}"},
             {"source/scripts/omni.isaac.sim.post.install.run${shell_ext}",  "_build/%{platform}/%{config}"},
             {"source/scripts/omni.isaac.sim.warmup${shell_ext}",  "_build/%{platform}/%{config}"},
@@ -474,7 +475,8 @@ function create_tests()
         python_sample_test("tests-nativepython-replicator.annotator_augmentation_warp", "standalone_examples/replicator/augmentation/annotator_augmentation.py", "--num_frames 1 --use_warp")
         python_sample_test("tests-nativepython-replicator.amr_navigation", "standalone_examples/replicator/amr_navigation.py", "--num_frames 3 --env_interval 1")
         python_sample_test("tests-nativepython-replicator.amr_navigation_use_temp_rp", "standalone_examples/replicator/amr_navigation.py", "--num_frames 3 --env_interval 1 --use_temp_rp")
-        -- tests that are not shipped
+    
+    group "internal_python_samples"
         python_sample_test("tests-internalnativepython-omni.isaac.core.hello_world", "standalone_examples/testing/omni.isaac.core/hello_world.py", "--test")
         python_sample_test("tests-internalnativepython-omni.isaac.core.test_time_stepping", "standalone_examples/testing/omni.isaac.core/test_time_stepping.py")
         python_sample_test("tests-internalnativepython-omni.isaac.core.test_articulation_root", "standalone_examples/testing/omni.isaac.core/test_articulation_root.py")
@@ -513,6 +515,25 @@ function create_tests()
     --     jupyter_sample_test("tests-jupyter-ogn", "standalone_examples/testing/notebooks/test_ogn_notebook.ipynb")
     --     jupyter_sample_test("tests-jupyter-syntheticdata", "standalone_examples/testing/notebooks/test_syntheticdata_notebook.ipynb")
     
+    group "benchmarks"
+        
+        define_ext_test_experience("omni.isaac.benchmarks", {suite = "omni.isaac.benchmarks", name_override="benchmark_camera", include_tests="omni.isaac.benchmarks.tests.test_benchmark_camera.*"})
+        define_ext_test_experience("omni.isaac.benchmarks", {suite = "omni.isaac.benchmarks", name_override="benchmark_physx_lidar", include_tests="omni.isaac.benchmarks.tests.test_benchmark_physx_lidar.*"})
+        define_ext_test_experience("omni.isaac.benchmarks", {suite = "omni.isaac.benchmarks", name_override="benchmark_real_time_factor", include_tests="omni.isaac.benchmarks.tests.test_benchmark_real_time_factor.*"})
+        define_ext_test_experience("omni.isaac.benchmarks", {suite = "omni.isaac.benchmarks", name_override="benchmark_robots_nova_carter_ros2", include_tests="omni.isaac.benchmarks.tests.test_benchmark_robots_nova_carter_ros2.*"})
+        define_ext_test_experience("omni.isaac.benchmarks", {suite = "omni.isaac.benchmarks", name_override="benchmark_robots_nova_carter", include_tests="omni.isaac.benchmarks.tests.test_benchmark_robots_nova_carter.*"})
+        define_ext_test_experience("omni.isaac.benchmarks", {suite = "omni.isaac.benchmarks", name_override="benchmark_robots_o3dyn", include_tests="omni.isaac.benchmarks.tests.test_benchmark_robots_o3dyn.*"})
+        define_ext_test_experience("omni.isaac.benchmarks", {suite = "omni.isaac.benchmarks", name_override="benchmark_ros_camera", include_tests="omni.isaac.benchmarks.tests.test_benchmark_ros_camera.*"})
+        define_ext_test_experience("omni.isaac.benchmarks", {suite = "omni.isaac.benchmarks", name_override="benchmark_rtx_lidar", include_tests="omni.isaac.benchmarks.tests.test_benchmark_rtx_lidar.*"})
+        define_ext_test_experience("omni.isaac.benchmarks", {suite = "omni.isaac.benchmarks", name_override="benchmark_rtx_radar", include_tests="omni.isaac.benchmarks.tests.test_benchmark_rtx_radar.*"})
+        define_ext_test_experience("omni.isaac.benchmarks", {suite = "omni.isaac.benchmarks", name_override="benchmark_scene_generation", include_tests="omni.isaac.benchmarks.tests.test_benchmark_scene_generation.*"})
+        define_ext_test_experience("omni.isaac.benchmarks", {suite = "omni.isaac.benchmarks", name_override="benchmark_sdg_generation", include_tests="omni.isaac.benchmarks.tests.test_benchmark_sdg_generation.*"})
+        
+        python_sample_test("tests-standalone_benchmarks-benchmark_camera", "standalone_examples/benchmarks/benchmark_camera.py", "--test")
+        python_sample_test("tests-standalone_benchmarks-benchmark_robots_nova_carter_ros2", "standalone_examples/benchmarks/benchmark_robots_nova_carter_ros2.py", "--test")
+        python_sample_test("tests-standalone_benchmarks-benchmark_robots_nova_carter", "standalone_examples/benchmarks/benchmark_robots_nova_carter.py", "--test")
+        python_sample_test("tests-standalone_benchmarks-benchmark_rtx_lidar", "standalone_examples/benchmarks/benchmark_rtx_lidar.py", "--test")
+        python_sample_test("tests-standalone_benchmarks-benchmark_sdg", "standalone_examples/benchmarks/benchmark_sdg.py")
 
     if os.target() == "linux" then
     group "docker_tests"

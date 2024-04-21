@@ -89,6 +89,7 @@ class TestOgnWritePhysicsArticulationView(omni.kit.test.AsyncTestCase):
             self._articulation_view_node.get_attribute("inputs:values"),
         )
         await self._controller.evaluate(self._graph)
+        await omni.kit.app.get_app().next_update_async()
 
     async def test_randomize_stiffness(self):
         value = [100, 200, 300, 400, 500, 600, 700, 800, 900]
