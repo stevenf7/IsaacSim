@@ -8,6 +8,7 @@
 #
 
 from .camera import *
+from .camera_view import CameraView
 from .commands import *
 from .contact_sensor import ContactSensor
 from .extension import *
