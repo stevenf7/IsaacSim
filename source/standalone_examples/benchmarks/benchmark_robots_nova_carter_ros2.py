@@ -17,6 +17,7 @@ parser.add_argument(
     "--enable-hawks", type=int, default=0, help="Number of Hawk camera stereo pairs to enable, per robot."
 )
 parser.add_argument("--num-gpus", type=int, default=1, help="Number of GPUs on machine.")
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
 args, unknown = parser.parse_known_args()
 
 n_robot = args.n_robot
@@ -31,6 +32,9 @@ from isaacsim import SimulationApp
 simulation_app = SimulationApp({"headless": True})
 
 TEST_NUM_APP_UPDATES = 60 * 10
+
+if args.test:
+    TEST_NUM_APP_UPDATES = 1
 
 import carb
 import omni
