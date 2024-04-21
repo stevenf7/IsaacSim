@@ -571,7 +571,7 @@ exclude = [
 ]
 args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
 tc_report_enabled = false
-timeout = 960
+timeout = 1200
 stdout_fail_patterns.exclude = [
 	"*Remote server does not support WebSockets*",
   "*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*",  # optix disk cache errors

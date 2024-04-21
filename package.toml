@@ -50,12 +50,8 @@ files_exclude = [
     ["tests/tests-omni.isaac.internal_tools.*"],
     ["tests/tests-internal*"],
     ["tests/tests-docker*"],
-    ["exts/omni.isaac.benchmarks"],
     ["exts/omni.isaac.gym.benchmark"],
-    ["exts/omni.isaac.benchmark.services"],
     ["tests/tests-startup.extscache*"],
-    ["tests/tests-omni.isaac.benchmarks*"],
-    ["tests/tests-omni.isaac.benchmark.services*"],
     ["tests/tests-omni.isaac.gym.benchmark*"],
     ["tests/tests-omni.importer.onshape*"],
 ]
@@ -80,12 +76,8 @@ files_exclude = [
     ["dockertests/**"],
     ["standalone_examples/testing/**"],
     ["exts/omni.isaac.core_archive/pip_prebundle/bin/**"], # OM-84922
-    ["exts/omni.isaac.benchmarks"],
     ["exts/omni.isaac.gym.benchmark"],
-    ["exts/omni.isaac.benchmark.services"],
     ["tests/tests-startup.extscache*"],
-    ["tests/tests-omni.isaac.benchmarks*"],
-    ["tests/tests-omni.isaac.benchmark.services*"],
     ["tests/tests-omni.isaac.gym.benchmark*"],
     ["tests/tests-omni.importer.onshape*"],
 ]
@@ -149,9 +141,7 @@ files_exclude = [
     ["extscache/**"],
     ["standalone_examples/testing/**"],
     ["exts/omni.isaac.core_archive/pip_prebundle/bin/**"], # OM-84922
-    ["exts/omni.isaac.benchmarks"],
     ["exts/omni.isaac.gym.benchmark"],
-    ["exts/omni.isaac.benchmark.services"],
 ]
 
 [isaac-sim-binaryscan.linux-x86_64]

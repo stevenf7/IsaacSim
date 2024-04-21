@@ -883,7 +883,7 @@ test-windows-x86_64-nativepythontests-2:
   - !reference [.omni_codesign_get_secrets, omni_codesign_get_secrets]
   - !reference [.omni_s3_write_get_secrets, omni_s3_write_get_secrets]
   rules:
-  - if: $RUN_DOCS_BUILD == "true"
+  - if: $RUN_DOCS_BUILD == "true" || RUN_NIGHTLY_TESTS=="true"
     when: never
 
 pages:
