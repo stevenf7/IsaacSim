@@ -16,6 +16,7 @@ project_with_location("omni.isaac.ros2_bridge.check")
     filter { "system:linux" }
         links{"dl"}
     filter { "system:windows" }
+        buildoptions("-D_CRT_SECURE_NO_WARNINGS")
         includedirs {
             "%{root}/_build/target-deps/nv_ros2_humble/include/rosidl_runtime_c",
             "%{root}/_build/target-deps/nv_ros2_humble/include/builtin_interfaces",
