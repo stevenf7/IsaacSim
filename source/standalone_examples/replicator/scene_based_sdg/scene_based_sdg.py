@@ -31,7 +31,7 @@ config = {
     "env_url": "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd",
     "writer": "BasicWriter",
     "writer_config": {
-        "output_dir": "_out_offline_generation",
+        "output_dir": "_out_scene_based_sdg",
         "rgb": True,
         "bounding_box_2d_tight": True,
         "semantic_segmentation": True,
@@ -88,12 +88,12 @@ config.update(args_config)
 # Create the simulation app with the given launch_config
 simulation_app = SimulationApp(launch_config=config["launch_config"])
 
-# Custom util functions for the example
-import offline_generation_utils
-
 # Late import of runtime modules (the SimulationApp needs to be created before loading the modules)
 import omni.replicator.core as rep
 import omni.usd
+
+# Custom util functions for the example
+import scene_based_sdg_utils
 from omni.isaac.core.utils import prims
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.core.utils.stage import get_current_stage, open_stage
@@ -107,7 +107,7 @@ if assets_root_path is None:
     simulation_app.close()
 
 # Open the given environment in a new stage
-print(f"[offline_generation] Loading Stage {config['env_url']}")
+print(f"[scene_based_sdg] Loading Stage {config['env_url']}")
 if not open_stage(assets_root_path + config["env_url"]):
     carb.log_error(f"Could not open stage{config['env_url']}, closing application..")
     simulation_app.close()
@@ -118,7 +118,7 @@ rep.orchestrator.set_capture_on_play(False)
 # Clear any previous semantic data in the loaded stage
 if config["clear_previous_semantics"]:
     stage = get_current_stage()
-    offline_generation_utils.remove_previous_semantics(stage)
+    scene_based_sdg_utils.remove_previous_semantics(stage)
 
 # Spawn a new forklift at a random pose
 forklift_prim = prims.create_prim(
@@ -145,9 +145,9 @@ pallet_prim = prims.create_prim(
 )
 
 # Register randomization graphs
-offline_generation_utils.register_scatter_boxes(pallet_prim, assets_root_path, config)
-offline_generation_utils.register_cone_placement(forklift_prim, assets_root_path, config)
-offline_generation_utils.register_lights_placement(forklift_prim, pallet_prim)
+scene_based_sdg_utils.register_scatter_boxes(pallet_prim, assets_root_path, config)
+scene_based_sdg_utils.register_cone_placement(forklift_prim, assets_root_path, config)
+scene_based_sdg_utils.register_lights_placement(forklift_prim, pallet_prim)
 
 # Spawn a camera in the driver's location looking at the pallet
 foklift_pos_gf = forklift_tf.ExtractTranslation()
@@ -176,7 +176,7 @@ for rp in rps:
 # If output directory is relative, set it relative to the current working directory
 if not os.path.isabs(config["writer_config"]["output_dir"]):
     config["writer_config"]["output_dir"] = os.path.join(os.getcwd(), config["writer_config"]["output_dir"])
-print(f"[offline_generation] Output directory={config['writer_config']['output_dir']}")
+print(f"[scene_based_sdg] Output directory={config['writer_config']['output_dir']}")
 
 # Make sure the writer type is in the registry
 writer_type = config.get("writer", "BasicWriter")
@@ -187,7 +187,7 @@ if writer_type not in rep.WriterRegistry.get_writers():
 # Get the writer from the registry and initialize it with the given config parameters
 writer = rep.WriterRegistry.get(writer_type)
 writer_kwargs = config["writer_config"]
-print(f"[offline_generation] Initializing {writer_type} with: {writer_kwargs}")
+print(f"[scene_based_sdg] Initializing {writer_type} with: {writer_kwargs}")
 writer.initialize(**writer_kwargs)
 
 # Attach writer to the render products
@@ -231,7 +231,7 @@ with rep.trigger.on_custom_event("randomize_cones"):
     rep.randomizer.place_cones()
 
 # Run a simulation by dropping randomly placed boxes on a pallet next to the forklift
-offline_generation_utils.simulate_falling_objects(forklift_prim, assets_root_path, config)
+scene_based_sdg_utils.simulate_falling_objects(forklift_prim, assets_root_path, config)
 
 # Increase subframes if materials are not loaded on time, or ghosting artifacts appear on moving objects,
 # see: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/subframes_examples.html
@@ -243,7 +243,7 @@ for rp in rps:
 
 # Start the SDG
 num_frames = config.get("num_frames", 0)
-print(f"[offline_generation] Running SDG for {num_frames} frames")
+print(f"[scene_based_sdg] Running SDG for {num_frames} frames")
 for i in range(num_frames):
     # Trigger the custom event to randomize the cones at specific frames
     if i % 2 != 0:
@@ -264,10 +264,10 @@ close_app_after_run = config.get("close_app_after_run", True)
 if config["launch_config"]["headless"]:
     if not close_app_after_run:
         print(
-            "[offline_generation] 'close_app_after_run' is ignored when running headless. The application will be closed."
+            "[scene_based_sdg] 'close_app_after_run' is ignored when running headless. The application will be closed."
         )
 elif not close_app_after_run:
-    print("[offline_generation] The application will not be closed after the run. Make sure to close it manually.")
+    print("[scene_based_sdg] The application will not be closed after the run. Make sure to close it manually.")
     while simulation_app.is_running():
         simulation_app.update()
 simulation_app.close()

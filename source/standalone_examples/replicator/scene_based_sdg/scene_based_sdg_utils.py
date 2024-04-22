@@ -95,7 +95,7 @@ def simulate_falling_objects(forklift_prim, assets_root_path, config, max_sim_st
     for i in range(max_sim_steps):
         world.step(render=False)
         if last_box and np.linalg.norm(last_box.get_linear_velocity()) < 0.001:
-            print(f"[offline_generation] Simulation finished at step {i}..")
+            print(f"[scene_based_sdg] Simulation finished at step {i}..")
             break
 
 
