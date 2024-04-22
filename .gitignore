@@ -129,5 +129,6 @@ node_modules
 #container
 tools/container/report.json
 tools/container/_*
-7za
+tools/container/7za
+tools/container/VERSION.md
 report.json

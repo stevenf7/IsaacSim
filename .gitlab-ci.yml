@@ -93,6 +93,9 @@ variables:
   ALLOW_PUBLISH_EXTENSIONS:
     value: "true"
     description: "Set to true to publish extension updates."
+  ALLOW_PUBLISH_CONTAINERS:
+    value: "true"
+    description: "Set to true to publish containers to NGC."
   ALLOW_SECURITY_SCAN:
     value: "false"
     description: "Set to true to trigger a security scan as a child pipeline (non blocking)"
@@ -1070,6 +1073,50 @@ benchmark-windows-x86_64:
 # but this can be changed in repo.toml config if necessary:
 #    [repo_publish_exts]
 #    platforms = ["linux-x86_64"]
+verify-publish-extensions:
+  extends:
+  - .deploy-common
+  - .omni_nvks_runner_with_docker
+  script:
+  - ./repo.sh build --fetch-only -rd
+  - ./repo.sh publish_exts -a --from-package -c release --verify
+  - ./repo.sh publish_exts -a --from-package -c debug --verify
+  # - ./repo.sh ci publish_extensions
+  needs:
+  # We set all dependencies as optional just in case a platform is not needed,
+  # then the yml file can override both build/test on one platform and deploy will still work.
+  - job: build-windows-x86_64-release
+    artifacts: true
+    optional: false
+  - job: build-linux-x86_64-release
+    artifacts: true
+    optional: false
+  - job: build-windows-x86_64-debug
+    artifacts: true
+    optional: false
+  - job: build-linux-x86_64-debug
+    artifacts: true
+    optional: false
+  #   - job: test-windows-x86_64-startuptests
+  #     artifacts: false
+  #     optional: true
+  #   - job: test-linux-x86_64-startuptests
+  #     artifacts: false
+  #     optional: true
+  rules:
+  - if: $ALLOW_PUBLISH_EXTENSIONS != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true"
+    when: never
+  - !reference [.rules-push, rules]
+  # - !reference [.rules-version-changed, rules]
+
+
+# ==============================================================================================================
+# By default, all platforms (windows-x86_64, linux-x86_64) are published,
+# but this can be changed in repo.toml config if necessary:
+#    [repo_publish_exts]
+#    platforms = ["linux-x86_64"]
 publish-extensions:
   extends:
   - .deploy-common
@@ -1105,8 +1152,8 @@ publish-extensions:
     when: never
   - if: $RUN_BUMP_VERSION == "true"
     when: never
-  - !reference [.rules-push, rules]
-  # - !reference [.rules-version-changed, rules]
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push-manual, rules]
 
 
 # ==============================================================================================================
@@ -1254,6 +1301,129 @@ sign-windows-x86_64-release:
     artifacts: true
   rules:
   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true"
+    when: never
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push-manual, rules]
+  allow_failure: true
+
+
+# ==============================================================================================================
+internal-build-linux-x86_64-release:
+  extends:
+  - .build-common
+  - .runner-build-linux-x86_64
+  before_script:
+  - set -eu
+  - yum install -y bsdtar
+  - !reference [.omni_s3_write_get_secrets, omni_s3_write_get_secrets]
+  script:
+  - ./repo.sh build -r --no-docker
+  - ./repo.sh package -m isaac-sim-internal-standalone -c release
+  rules:
+  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true"
+    when: never
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push-manual, rules]
+  allow_failure: true
+
+
+# ==============================================================================================================
+internal-build-windows-x86_64-release:
+  extends:
+  - .build-common
+  - .runner-build-windows-x86_64
+  before_script:
+  - !reference [.windows_packman_s3_creds_get_powershell, windows_packman_s3_creds_get_powershell]
+  script:
+  - ./repo.bat build -r
+  - ./repo.bat package -m isaac-sim-internal-standalone -c release
+  rules:
+  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true"
+    when: never
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push-manual, rules]
+  allow_failure: true
+
+
+# ==============================================================================================================
+internal-publish-to-packman:
+  extends:
+  - .deploy-common
+  - .omni_nvks_runner_with_docker
+  script:
+  - ls _build/packages/
+  - ./repo.sh publish_internal_packages
+  needs:
+  - job: internal-build-linux-x86_64-release
+    artifacts: true
+  - job: internal-build-windows-x86_64-release
+    artifacts: true
+  rules:
+  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true"
+    when: never
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push-manual, rules]
+  allow_failure: true
+
+
+# ==============================================================================================================
+internal-publish-container:
+  timeout: 2 hour
+  extends:
+  - .deploy-common
+  - .omni_nvks_runner_with_docker
+  variables:
+    APP_NAME: "isaac-sim-internal"
+    FAMILY_NAME: "gl"
+  before_script:
+  - docker version
+  - docker login -u sabdulajees -p ${gitlab_registry_push} gitlab-master.nvidia.com:5005
+  - docker login -u \$oauthtoken -p $NGC_TOKEN nvcr.io
+  - docker login nvcr.io
+  script:
+  - ./tools/container/publish_container.sh
+  needs:
+  - job: internal-build-linux-x86_64-release
+    artifacts: true
+  rules:
+  - if: $ALLOW_PUBLISH_CONTAINERS != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true"
+    when: never
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push-manual, rules]
+  allow_failure: true
+
+
+# ==============================================================================================================
+publish-container:
+  timeout: 2 hour
+  extends:
+  - .deploy-common
+  - .omni_nvks_runner_with_docker
+  variables:
+    APP_NAME: "isaac-sim"
+    FAMILY_NAME: "gl"
+  before_script:
+  - docker version
+  - docker login -u sabdulajees -p ${gitlab_registry_push} gitlab-master.nvidia.com:5005
+  - docker login -u \$oauthtoken -p $NGC_TOKEN nvcr.io
+  - docker login nvcr.io
+  script:
+  - ./tools/container/publish_container.sh
+  needs:
+  - job: build-linux-x86_64-release
+    artifacts: true
+  rules:
+  - if: $ALLOW_PUBLISH_CONTAINERS != "true"
     when: never
   - if: $RUN_BUMP_VERSION == "true"
     when: never

@@ -343,7 +343,7 @@ replace_authors_in_kit_extensions = true
 strip_package_infos = true
 windows_max_path_length = 220 #TODO: changed from default of 180 to make builds pass
 
-[repo_package.packages.isaac-sim-internal]
+[repo_package.packages.isaac-sim-internal-standalone]
 root = "_build/$${platform}/$${config}"
 omniverse_flow_version_scheme = true
 package_per_config = true

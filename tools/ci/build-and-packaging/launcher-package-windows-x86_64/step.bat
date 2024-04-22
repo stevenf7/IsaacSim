@@ -20,7 +20,7 @@ call ".\repo.bat" package -m isaac-sim-standalone -c release
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: create internal package
-@REM call ".\repo.bat" package -m isaac-sim-internal -c release
+@REM call ".\repo.bat" package -m isaac-sim-internal-standalone -c release
 @REM if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: Package test runner for TC

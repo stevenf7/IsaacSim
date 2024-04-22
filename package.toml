@@ -120,7 +120,7 @@ files_exclude = [
     ["standalone_examples/api/omni.isaac.ros_bridge**"] # ROS1 not shipped on windows
 ]
 
-[isaac-sim-internal]
+[isaac-sim-internal-standalone]
 files = [
     ["**"],
 ]

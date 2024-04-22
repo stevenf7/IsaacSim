@@ -6,7 +6,7 @@ current_dir = os.path.dirname(__file__)
 sys.path.append(current_dir)
 
 # Docker image name basically
-service_name = "isaac-sim-dev"
+service_name = "isaac-sim"
 
 # Root - relative to config - for files' spec
 root = "../../"
