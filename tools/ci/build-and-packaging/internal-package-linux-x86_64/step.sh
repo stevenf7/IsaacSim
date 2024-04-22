@@ -8,7 +8,7 @@ SCRIPT_DIR="$(dirname "${BASH_SOURCE}")"
 "$SCRIPT_DIR/../../../../build.sh" --release
 
 # Generate Omnigraph Docs
-# "$SCRIPT_DIR/../../../../repo.sh" omnigraph_docs 
+# "$SCRIPT_DIR/../../../../repo.sh" omnigraph_docs
 
 # Build docs
 # "$SCRIPT_DIR/../../../../repo.sh" docs --config release --warn-as-error=0
@@ -17,7 +17,7 @@ SCRIPT_DIR="$(dirname "${BASH_SOURCE}")"
 # "$SCRIPT_DIR/../../../../repo.sh" package -m isaac-sim-standalone -c release
 
 # Package Test
-"$SCRIPT_DIR/../../../../repo.sh" package -m isaac-sim-internal -c release
+"$SCRIPT_DIR/../../../../repo.sh" package -m isaac-sim-internal-standalone -c release
 
 # Packaging test_runner
 "$SCRIPT_DIR/../../../../repo.sh" package -m test_runner

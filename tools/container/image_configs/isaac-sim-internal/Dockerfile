@@ -1,5 +1,5 @@
 # NVBug SWIPAT for packages: https://nvbugswb.nvidia.com/NvBugs5/SWBug.aspx?bugid=4081238
-FROM gitlab-master.nvidia.com:5005/omniverse/containers/apps/ov-base/ov-base-ubuntu-22:2023.8.0
+FROM gitlab-master.nvidia.com:5005/omniverse/containers/apps/ov-base/ov-base-ubuntu-22:2023.10.0
 
 # Switch to root user
 USER root
@@ -15,6 +15,9 @@ COPY data/license.sh /isaac-sim/
 COPY data/privacy.sh /isaac-sim/
 RUN mkdir -p /isaac-sim/oss/source
 COPY oss/source/isaac-sim /isaac-sim/oss/source
+
+# Reset apt sources.list
+RUN mv /etc/apt/sources.list.canonical /etc/apt/sources.list
 
 RUN chown -R ubuntu /isaac-sim
 
@@ -49,7 +52,7 @@ ENV NVIDIA_VISIBLE_DEVICES=all NVIDIA_DRIVER_CAPABILITIES=all
 # Switch back to non-root user
 USER ubuntu
 
-ENV OMNI_SERVER http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/2023.1.0
+ENV OMNI_SERVER http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0
 ENV OMNI_USER admin
 ENV OMNI_PASS admin
 ENV MIN_DRIVER_VERSION 525.60.11

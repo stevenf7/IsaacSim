@@ -17,7 +17,7 @@ if %errorlevel% neq 0 ( exit /b %errorlevel% )
 @REM if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: create internal package
-call "%~dp0..\..\..\..\repo.bat" package -m isaac-sim-internal -c release
+call "%~dp0..\..\..\..\repo.bat" package -m isaac-sim-internal-standalone -c release
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: Package test runner for TC
