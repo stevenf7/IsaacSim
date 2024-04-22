@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.7.0] - 2024-04-22
+### Changed
+- Don't terminate Isaac Sim if the 'isaacsim' module is not imported
+
 ## [1.6.3] - 2024-02-29
 ### Added
 - Benchmark metadata
