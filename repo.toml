@@ -77,8 +77,6 @@ vscode.python_env.PYTHONPATH= [
   "$root/_build/$platform/$config/exts/omni.isaac.ml_archive/pip_prebundle",
   "$root/_build/$platform/$config/exts/omni.pip.compute/pip_prebundle",
   "$root/_build/$platform/$config/exts/omni.pip.cloud/pip_prebundle",
-  "$root/_build/$platform/$config/extscache/omni.pip.torch*/torch-2-0-1/",
-
 ]
 
 vscode.python_env.PATH= [
@@ -223,7 +221,6 @@ python_paths = [
   "${root}/_build/${platform}/${config}/kit/exts/omni.appwindow**",
   "${root}/_build/${platform}/${config}/kit/exts/omni.timeline**",
   "${root}/_build/${platform}/${config}/kit/exts/omni.syntheticdata**",
-  "${root}/_build/${platform}/${config}/extscache/omni.pip.torch*/torch-2-0-1",
   "${root}/_build/${platform}/${config}/extscache/omni.warp**",
   # "${root}/_build/${platform}/${config}/extscache/omni.replicator**",
 ]
@@ -1032,9 +1029,7 @@ deps_for_isaac = [
 
 deps_for_testing = []
 
-deps_for_ml = [
-  {dep = "omni.pip.torch-2.0.2", tag = "2_0_1"}
-]
+deps_for_ml = []
 
 windows_only = [
   "omni.kit.window.modifier.titlebar",

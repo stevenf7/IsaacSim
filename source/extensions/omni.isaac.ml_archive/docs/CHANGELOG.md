@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.0.0] - 2024-04-19
+### Changed
+- removed omni.pip.torch dependency, torch is now directly part of this archive
+- added torch==2.2.2+cu118, torchvision==0.17.2+cu118, torchaudio==2.2.2+cu118, filelock==3.13.4, fsspec==2024.3.1, mpmath==1.3.0, networkx==3.3, sympy==1.12
+- added nvidia lib pip packages
+
 ## [1.1.3] - 2023-08-10
 ### Changed
 - Added version to omni.pip.torch dependency
