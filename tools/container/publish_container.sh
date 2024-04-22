@@ -50,9 +50,9 @@ echo !Publishing to gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim
 docker tag nvcr.io/nvidian/isaac-sim/$docker_image_tag gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/$APP_NAME:latest-$CI_COMMIT_BRANCH
 docker push gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/$APP_NAME:latest-$CI_COMMIT_BRANCH
 
-# echo !Publishing to nvcr.io/nvidian!
-# docker tag nvcr.io/nvidian/isaac-sim/$docker_image_tag nvcr.io/nvidian/$APP_NAME:latest-$CI_COMMIT_BRANCH
-# docker push nvcr.io/nvidian/$APP_NAME:latest-$CI_COMMIT_BRANCH
+echo !Publishing to nvcr.io/nvidian!
+docker tag nvcr.io/nvidian/isaac-sim/$docker_image_tag nvcr.io/nvidian/$APP_NAME:latest-$CI_COMMIT_BRANCH
+docker push nvcr.io/nvidian/$APP_NAME:latest-$CI_COMMIT_BRANCH
 
 docker images
 docker rmi -f $(docker images --filter=reference="$docker_image_tag" -q)
