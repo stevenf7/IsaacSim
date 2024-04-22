@@ -24,8 +24,10 @@ app.version = "4.0.0"
 "omni.kit.telemetry" = {}
 
 "omni.rtx.shadercache.vulkan" = {}
-"omni.rtx.shadercache.d3d12" = {}
 
+# Windows only extension
+[dependencies."filter:platform"."windows-x86_64"]
+"omni.rtx.shadercache.d3d12" = {}
 
 [settings]
 renderer.active = "rtx"
