@@ -28,25 +28,30 @@ except RuntimeError:
 if check_for_isaacsim_module and "isaacsim" not in sys.modules:
     import traceback
 
+    carb.log_warn("")
+    carb.log_warn("=========================== DEPRECATION WARNING ===========================")
+    carb.log_warn("")
     stack = traceback.extract_stack()
     if stack:
-        carb.log_error("Traceback (most recent call last):")
+        carb.log_warn("Traceback (most recent call last):")
         for item in traceback.extract_stack():
             if "<frozen" in item.filename:
                 continue
             elif "omni.isaac.kit/omni/isaac/kit" in item.filename:
                 break
-            carb.log_error(f"File '{item.filename}', line {item.lineno}")
+            carb.log_warn(f"File '{item.filename}', line {item.lineno}")
             if item.line is not None:
-                carb.log_error(f"  {item.line}")
-        carb.log_error("")
-    carb.log_error("Please import 'isaacsim' before importing the 'omni.isaac.kit' extension...")
-    carb.log_error("  >>> import isaacsim")
-    carb.log_error("  >>> from omni.isaac.kit import SimulationApp")
-    carb.log_error("")
-    carb.log_error("or get the 'SimulationApp' class directly from the 'isaacsim' module")
-    carb.log_error("  >>> from isaacsim import SimulationApp")
-    exit()
+                carb.log_warn(f"  {item.line}")
+        carb.log_warn("")
+    carb.log_warn("Please import 'isaacsim' before importing the 'omni.isaac.kit' extension...")
+    carb.log_warn("  >>> import isaacsim")
+    carb.log_warn("  >>> from omni.isaac.kit import SimulationApp")
+    carb.log_warn("")
+    carb.log_warn("or get the 'SimulationApp' class directly from the 'isaacsim' module")
+    carb.log_warn("  >>> from isaacsim import SimulationApp")
+    carb.log_warn("")
+    carb.log_warn("===========================================================================")
+    carb.log_warn("")
 
 builtins.ISAAC_LAUNCHED_FROM_JUPYTER = (
     os.getenv("ISAAC_JUPYTER_KERNEL") is not None or os.getenv("ISAAC_JUPYTER_PYTHON_PACKAGE") is not None
