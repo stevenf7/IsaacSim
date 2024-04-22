@@ -13,10 +13,22 @@ import omni.kit.test
 class TestPipArchive(omni.kit.test.AsyncTestCase):
     # import all packages to make sure dependencies were not missed
     async def test_import_all(self):
+        import filelock
+        import fsspec
         import gymnasium
+        import mpmath
+        import networkx
+        import sympy
         import torch
+        import torchaudio
         import torchvision
 
         self.assertIsNotNone(torch)
         self.assertIsNotNone(torchvision)
+        self.assertIsNotNone(torchaudio)
+        self.assertIsNotNone(filelock)
+        self.assertIsNotNone(fsspec)
+        self.assertIsNotNone(mpmath)
+        self.assertIsNotNone(networkx)
+        self.assertIsNotNone(sympy)
         self.assertIsNotNone(gymnasium)

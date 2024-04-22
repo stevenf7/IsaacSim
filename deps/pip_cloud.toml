@@ -10,7 +10,7 @@ packages = [
     "requests-oauthlib==1.3.1",    # SWIPAT filed under: https://nvbugs/3433849
     "isodate==0.6.1",              # SWIPAT filed under:
     "cryptography==41.0.6",        # SWIPAT filed under:                        Updates: OM-116261
-    "typing-extensions==4.7.1",    # SWIPAT filed under: https://nvbugs/3114241
+    "typing-extensions==4.10.0",   # SWIPAT filed under: https://nvbugs/3114241
     "azure-core==1.28.0",          # SWIPAT filed under:
     "msal==1.23.0",                # SWIPAT filed under:
     "msal-extensions==1.0.0",      # SWIPAT filed under:
