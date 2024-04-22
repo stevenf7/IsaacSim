@@ -57,21 +57,25 @@ For information on launching once you have downloaded a build [see here](https:/
 
 ## Binary Builds (Packman Manual Download)
 * [Stable RC Builds from Release branch](https://omnipackages.nvidia.com/packages/cloudfront/isaac-sim-standalone?query=rc)
-* [Daily Alpha Builds from Develop branch](http://packman.ov.nvidia.com/packages/cloudfront/isaac-sim-standalone?search=alpha)
-* [Daily Beta Builds from Develop branch](http://packman.ov.nvidia.com/packages/cloudfront/isaac-sim-standalone?search=beta)
-* [Internal-only Builds from Develop branch (for internal tests/benchmarking)](http://packman.ov.nvidia.com/packages/cloudfront/isaac-sim-internal)
+* [Daily Alpha Builds from Develop branch](http://packman.ov.nvidia.com/packages/cloudfront/isaac-sim-standalone?query=alpha)
+* [Daily Beta Builds from Develop branch](http://packman.ov.nvidia.com/packages/cloudfront/isaac-sim-standalone?query=beta)
+* [Internal-only Builds from Develop branch (for internal tests/benchmarking)](https://omnipackages.nvidia.com/packages/cloudfront/isaac-sim-internal-standalone)
 
 ## Docker Containers (GitLab)
 
 * Isaac Sim: [gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/isaac-sim:latest-20xx.x](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/container_registry/53857) (Release branch, rc)
 * Isaac Sim Daily: [gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/isaac-sim:latest-develop](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/container_registry/53857) (Develop branch, alpha/beta)
+* Isaac Sim Internal-only: [gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/isaac-sim:latest-develop](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/container_registry/58656) (Develop branch, internal-only)
 
 ## Docker Containers (NGC)
 
 * Isaac Sim Public: [nvcr.io/nvidia/isaac-sim:20xx.x.x](https://catalog.ngc.nvidia.com/orgs/nvidia/containers/isaac-sim) Similar to Prod-Isaac Sim from the Integ Launcher.
-* Isaac Sim: [nvcr.io/nvidian/isaac-sim:latest-20xx.x](https://registry.ngc.nvidia.com/orgs/nvidian/containers/isaac-sim/tags) Similar to RC Builds from the Integ Launcher. Built from the Release branch. For anyone in the ``nvidian`` org in NGC.
+* Isaac Sim: [nvcr.io/nvidian/isaac-sim:latest-x.x](https://registry.ngc.nvidia.com/orgs/nvidian/containers/isaac-sim/tags) Similar to RC Builds from the Integ Launcher. Built from the Release branch. For anyone in the ``nvidian`` org in NGC.
 * Isaac Sim Daily: [nvcr.io/nvidian/isaac-sim:latest-develop](https://registry.ngc.nvidia.com/orgs/nvidian/containers/isaac-sim/tags) Similar to Alpha and Beta Builds from the Integ Launcher. Built from the Develop branch.
-* Isaac Sim Internal-only: [nvcr.io/nvidian/isaac-sim:latest-develop-internal](https://registry.ngc.nvidia.com/orgs/nvidian/containers/isaac-sim/tags) Similar to Internal-only builds from the Develop branch (for internal tests/benchmarking).
+* Isaac Sim Internal-only: [nvcr.io/nvidian/isaac-sim/isaac-sim-internal:latest-develop](https://registry.ngc.nvidia.com/orgs/nvidian/containers/isaac-sim-internal/tags) Similar to Internal-only builds from the Develop branch (for internal tests/benchmarking).
+
+* Isaac Sim individual versions: [nvcr.io/nvidian/isaac-sim/isaac-sim](https://registry.ngc.nvidia.com/orgs/nvidian/teams/isaac-sim/containers/isaac-sim/tags)
+* Isaac Sim Internal-Only individual versions: [nvcr.io/nvidian/isaac-sim/isaac-sim-internal](https://registry.ngc.nvidia.com/orgs/nvidian/teams/isaac-sim/containers/isaac-sim-internal/tags)
 
 Notes:
   - Access to [``nvidian``](https://docs.google.com/forms/d/e/1FAIpQLScHfy_rMaUwpDVF7vpUuZe68fKESB7CN8twnXQnrZSUZnAfFA/viewform) org in NGC. 
