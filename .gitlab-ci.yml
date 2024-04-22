@@ -1326,6 +1326,8 @@ internal-build-linux-x86_64-release:
     when: never
   - if: $RUN_BUMP_VERSION == "true"
     when: never
+  - if: '$CI_COMMIT_BRANCH != "develop"'
+    when: never
   - !reference [.rules-version-changed, rules]
   - !reference [.rules-push-manual, rules]
   allow_failure: true
@@ -1345,6 +1347,8 @@ internal-build-windows-x86_64-release:
   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
     when: never
   - if: $RUN_BUMP_VERSION == "true"
+    when: never
+  - if: '$CI_COMMIT_BRANCH != "develop"'
     when: never
   - !reference [.rules-version-changed, rules]
   - !reference [.rules-push-manual, rules]
@@ -1368,6 +1372,8 @@ internal-publish-to-packman:
   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
     when: never
   - if: $RUN_BUMP_VERSION == "true"
+    when: never
+  - if: '$CI_COMMIT_BRANCH != "develop"'
     when: never
   - !reference [.rules-version-changed, rules]
   - !reference [.rules-push-manual, rules]
@@ -1397,6 +1403,8 @@ internal-publish-container:
   - if: $ALLOW_PUBLISH_CONTAINERS != "true"
     when: never
   - if: $RUN_BUMP_VERSION == "true"
+    when: never
+  - if: '$CI_COMMIT_BRANCH != "develop"'
     when: never
   - !reference [.rules-version-changed, rules]
   - !reference [.rules-push-manual, rules]
