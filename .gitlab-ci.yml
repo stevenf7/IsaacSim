@@ -548,6 +548,36 @@ test-linux-x86_64-postinstalltests:
 #     - job: build-linux-x86_64-release
 #       artifacts: true
 
+
+test-linux-x86_64-nativepythontests-1:
+  extends:
+  - .test-common
+  - .install-linux-test-packages
+  - .runner-test-linux-x86_64-gpu
+  - .omni_nvks_gpu
+  script:
+  - ./repo.sh ci test -- -s nativepythontests -b 1 --generate-report
+  after_script:
+  - !reference [.datadog-test-visibility-linux-x86_64, script]
+  needs:
+  - job: build-linux-x86_64-release
+    artifacts: true
+
+test-linux-x86_64-nativepythontests-2:
+  extends:
+  - .test-common
+  - .install-linux-test-packages
+  - .runner-test-linux-x86_64-gpu
+  - .omni_nvks_gpu
+  script:
+  - ./repo.sh ci test -- -s nativepythontests -b 2 --generate-report
+  after_script:
+  - !reference [.datadog-test-visibility-linux-x86_64, script]
+  needs:
+  - job: build-linux-x86_64-release
+    artifacts: true
+
+
 test-linux-x86_64-benchmarks:
   extends:
   - .test-common
@@ -573,38 +603,6 @@ test-linux-x86_64-internalpythontests:
   - .omni_nvks_gpu
   script:
   - ./repo.sh ci test -- -s internalpythontests --generate-report
-  after_script:
-  - !reference [.datadog-test-visibility-linux-x86_64, script]
-  rules:
-  - !reference [.rules-nightly-tests, rules]
-  needs:
-  - job: build-linux-x86_64-release
-    artifacts: true
-
-test-linux-x86_64-nativepythontests-1:
-  extends:
-  - .test-common
-  - .install-linux-test-packages
-  - .runner-test-linux-x86_64-gpu
-  - .omni_nvks_gpu
-  script:
-  - ./repo.sh ci test -- -s nativepythontests -b 1 --generate-report
-  after_script:
-  - !reference [.datadog-test-visibility-linux-x86_64, script]
-  rules:
-  - !reference [.rules-nightly-tests, rules]
-  needs:
-  - job: build-linux-x86_64-release
-    artifacts: true
-
-test-linux-x86_64-nativepythontests-2:
-  extends:
-  - .test-common
-  - .install-linux-test-packages
-  - .runner-test-linux-x86_64-gpu
-  - .omni_nvks_gpu
-  script:
-  - ./repo.sh ci test -- -s nativepythontests -b 2 --generate-report
   after_script:
   - !reference [.datadog-test-visibility-linux-x86_64, script]
   rules:
