@@ -119,7 +119,6 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
                 radius=0.12,
                 sensor_period=-1,
                 translation=self.sensor_offsets[i],
-                visualize=True,
             )
             self.sensorGeoms.append(sensor)
             self.assertTrue(result)
@@ -277,7 +276,6 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
     #         color=(1, 1, 1, 1),
     #         radius=-1,
     #         sensor_period=-1,
-    #         visualize=True,
     #     )
     #     self.assertTrue(result)
 
@@ -308,7 +306,6 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
                 radius=0.12,
                 sensor_period=-1,
                 translation=Gf.Vec3f(0, 0, 0),
-                visualize=True,
             )
             self.sensorGeoms.append(sensor)
             self.assertTrue(result)
@@ -338,7 +335,6 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
                 radius=0.12,
                 sensor_period=1.0 / 30.0,
                 translation=self.sensor_offsets[i],
-                visualize=True,
             )
             self.assertTrue(result)
             self.assertIsNotNone(sensor)
@@ -438,7 +434,6 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
             radius=0.12,
             sensor_period=-1,
             translation=self.sensor_offsets[0],
-            visualize=True,
         )
         self.assertTrue(result)
         self.assertIsNotNone(sensor)
@@ -584,7 +579,6 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
     #         color=(1, 1, 1, 1),
     #         radius=-1,
     #         sensor_period=-1,
-    #         visualize=False,
     #     )
     #     self.assertTrue(result)
     #     self.assertIsNotNone(sensor)
@@ -671,7 +665,6 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
     #         color=(1, 1, 1, 1),
     #         radius=-1,
     #         sensor_period=-1,
-    #         visualize=True,
     #     )
     #     self.assertTrue(result)
     #     self.assertIsNotNone(sensor)
@@ -753,7 +746,6 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
     #         color=(1, 1, 1, 1),
     #         radius=-1,
     #         sensor_period=-1,
-    #         visualize=False,
     #     )
     #     self.assertTrue(result)
     #     self.assertIsNotNone(sensor)
@@ -833,7 +825,6 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
                 radius=0.12,
                 sensor_period=1.0 / 30.0,
                 translation=self.sensor_offsets[i],
-                visualize=True,
             )
             self.assertTrue(result)
             self.assertIsNotNone(sensor)
@@ -889,7 +880,6 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
                 radius=0.12,
                 sensor_period=0,
                 translation=self.sensor_offsets[i],
-                visualize=True,
             )
             self.assertTrue(result)
             self.assertIsNotNone(sensor)
@@ -934,7 +924,6 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
                 radius=0.12,
                 sensor_period=0,
                 translation=Gf.Vec3d(20, 0, 0),
-                visualize=True,
             )
             self.assertTrue(result)
             self.assertIsNotNone(sensor)
@@ -970,7 +959,6 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
     #         color=(1, 1, 1, 1),
     #         radius=-1,
     #         sensor_period=-1,
-    #         visualize=False,
     #     )
 
     #     self.assertTrue(result)

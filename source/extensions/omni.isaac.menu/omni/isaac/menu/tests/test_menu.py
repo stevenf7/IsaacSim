@@ -324,6 +324,7 @@ class TestMenuAssets(OmniUiTest):
                 self.usd_selection.set_selected_prim_paths(["/Cube"], True)
             print("clicking ", test_path)
             await menu_click(test_path, human_delay_speed=32)
+            self._timeline.play()
             for i in range(20):
                 await omni.kit.app.get_app().next_update_async()
 
@@ -361,6 +362,8 @@ class TestMenuAssets(OmniUiTest):
                 if sensor_passed:
                     break
 
+            self._timeline.stop()
+            await omni.kit.app.get_app().next_update_async()
             # expected prims on stage
             # `/Render/Vars/LdrColor` `/Render/Vars` `/Render/RenderProduct_omni_kit_widget_viewport_ViewportTexture_0`
             # `/Render` `/OmniverseKit_Right` `/OmniverseKit_Top` `/OmniverseKit_Front` `/OmniverseKit_Persp`

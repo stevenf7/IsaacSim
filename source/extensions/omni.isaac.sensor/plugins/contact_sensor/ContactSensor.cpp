@@ -49,6 +49,8 @@ void ContactSensor::reset()
 
 CsRawData* ContactSensor::getRawData(size_t& size)
 {
+    CARB_LOG_WARN_ONCE("*** warning: get_contact_sensor_raw_data is deprecated and will replaced in the next release");
+
     if (mContactsRawData == nullptr)
     {
         size = 0;

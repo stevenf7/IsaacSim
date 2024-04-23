@@ -163,7 +163,6 @@ class Contact_sensor_demo(omni.ext.IExt):
                 radius=0.12,
                 sensor_period=-1,
                 translation=self.sensor_offsets[i],
-                visualize=True,
             )
 
         self._events = omni.usd.get_context().get_stage_event_stream()

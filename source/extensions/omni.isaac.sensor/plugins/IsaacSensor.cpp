@@ -29,7 +29,6 @@
 #include <carb/logging/Log.h>
 #include <carb/settings/ISettings.h>
 
-#include <isaacSensorSchema/isaacContactSensor.h>
 #include <omni/graph/core/ogn/Registration.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/kit/KitUtils.h>
@@ -46,7 +45,7 @@
 
 #include <IsaacSensor.h>
 
-const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.sensor.plugin", "Isaac Contact Sensor", "NVIDIA",
+const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.sensor.plugin", "Isaac Sensor", "NVIDIA",
                                                   carb::PluginHotReload::eDisabled, "dev" };
 
 

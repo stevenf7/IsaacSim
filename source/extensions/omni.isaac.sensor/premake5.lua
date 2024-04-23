@@ -9,7 +9,7 @@ project_ext (ext)
 project_ext_plugin(ext, "omni.isaac.sensor.plugin")
     cppdialect "C++17"
     
-    dependson { "prebuild", "carb.physics-usd.plugin", "omni.physx.plugin", "omni.isaac.debug_draw.primitive_drawing"}
+    dependson { "prebuild", "carb.physics-usd.plugin", "omni.physx.plugin"}
     add_files("impl", "plugins")
     add_files("iface", "%{root}/include/omni/isaac/sensor/**")
     add_files("ogn", ogn.nodes_path)
@@ -33,7 +33,6 @@ project_ext_plugin(ext, "omni.isaac.sensor.plugin")
         "%{kit_sdk_bin_dir}/dev/fabric/include/",
         "%{root}/source/extensions/omni.isaac.sensor/include",
         "%{root}/source/extensions/omni.isaac.dynamic_control/include",
-        "%{root}/source/extensions/omni.isaac.debug_draw/include",
         bin_dir.."/extsbuild/omni.sensors.nv.common/include",
     }
     libdirs {
@@ -44,7 +43,7 @@ project_ext_plugin(ext, "omni.isaac.sensor.plugin")
         "%{kit_sdk_bin_dir}/exts/omni.usd.core/bin"
     }
 
-    links {"carb", "gf", "tf", "sdf", "usd", "usdGeom","usdUtils", "physxSchema","usdPhysics", "physicsSchemaTools", "omni.usd", "isaacSensorSchema",  "omni.isaac.debug_draw.primitive_drawing", "arch"}
+    links {"carb", "gf", "tf", "sdf", "usd", "usdGeom","usdUtils", "physxSchema","usdPhysics", "physicsSchemaTools", "omni.usd", "isaacSensorSchema", "arch"}
 
     filter { "system:linux" }
         includedirs {

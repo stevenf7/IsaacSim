@@ -1,10 +1,19 @@
 # Changelog
 
+## [11.0.1] - 2024-04-22
+### Fixed
+- Fixed invalid IMU sensor crash bug
+
+## [11.0.0] - 2024-04-19
+### Changed
+- Removed visualization attributes
+- Deprecated get raw data function
+
 ## [10.2.0] - 2024-04-19
 ### Added
 - CameraView class for managing multiple cameras and rendering used tiled_sensor from replicator
 
-## [10.1.1] - 2024-04-18
+## [10.1.1] - 2024-04-17
 ### Added
 - Telemetry for writers and annotators
 ### Fixed

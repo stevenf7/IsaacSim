@@ -80,7 +80,6 @@ class ContactSensor(BaseSensor):
                 color=Gf.Vec4f(*color_rgba.tolist()),
                 radius=radius,
                 sensor_period=dt,
-                visualize=False,
             )
             if not success:
                 raise Exception("Not successful")
