@@ -364,6 +364,10 @@ class GainTuner:
             self._observed_joint_positions.append(self._articulation.get_joint_positions())
             self._observed_joint_velocities.append(self._articulation.get_joint_velocities())
 
+        self._articulation.apply_action(
+            ArticulationAction(self._observed_joint_positions[-1], np.zeros(self._articulation.num_dof))
+        )
+
         self._joint_position_commands = np.array(self._joint_position_commands)
         self._joint_velocity_commands = np.array(self._joint_velocity_commands)
         self._observed_joint_positions = np.array(self._observed_joint_positions)
