@@ -13,9 +13,7 @@
 #include "omni/isaac/utils/UsdUtilities.h"
 
 #include <isaacSensorSchema/isaacBaseSensor.h>
-#include <omni/renderer/IDebugDraw.h>
 
-#include <PrimitiveDrawingHelper.h>
 #include <string>
 #include <vector>
 

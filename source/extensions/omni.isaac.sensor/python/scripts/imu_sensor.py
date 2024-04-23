@@ -75,7 +75,6 @@ class IMUSensor(BaseSensor):
                 path="/" + self._sensor_name,
                 parent=self._body_prim_path,
                 sensor_period=dt,
-                visualize=False,
                 linear_acceleration_filter_size=linear_acceleration_filter_size,
                 angular_velocity_filter_size=angular_velocity_filter_size,
                 orientation_filter_size=orientation_filter_size,

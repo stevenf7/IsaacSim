@@ -28,6 +28,7 @@ from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.physics import simulate_async
 from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.rotations import quat_to_euler_angles
+from omni.isaac.core.utils.stage import clear_stage
 from omni.isaac.core.utils.transformations import get_relative_transform
 from omni.isaac.nucleus import get_assets_root_path_async
 
@@ -154,7 +155,6 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             sensor_period=1 / self._sensor_rate,
             translation=Gf.Vec3d(0, 0, 0),
             orientation=Gf.Quatd(1, 0, 0, 0),
-            visualize=True,
         )
         self.assertTrue(result)
         self.assertIsNotNone(sensor)
@@ -199,7 +199,6 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             sensor_period=1 / self._sensor_rate,
             translation=Gf.Vec3d(0, 0, 0),
             orientation=Gf.Quatd(1, 0, 0, 0),
-            visualize=True,
         )
         self.assertTrue(result)
         self.assertIsNotNone(sensor)
@@ -238,7 +237,6 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             sensor_period=1 / self._sensor_rate,
             translation=Gf.Vec3d(0, 0, 0),
             orientation=Gf.Quatd(1, 0, 0, 0),
-            visualize=True,
             linear_acceleration_filter_size=10,
             angular_velocity_filter_size=10,
             orientation_filter_size=10,
@@ -254,7 +252,6 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             sensor_period=1 / 60,
             translation=Gf.Vec3d(0, 0, 0),
             orientation=Gf.Quatd(1, 0, 0, 0),
-            visualize=True,
             linear_acceleration_filter_size=10,
             angular_velocity_filter_size=10,
             orientation_filter_size=10,
@@ -411,7 +408,9 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
 
         await omni.kit.app.get_app().next_update_async()
         result, sensor = omni.kit.commands.execute(
-            "IsaacSensorCreateImuSensor", path="/sensor", parent=cube_path, visualize=True
+            "IsaacSensorCreateImuSensor",
+            path="/sensor",
+            parent=cube_path,
         )
 
         await omni.kit.app.get_app().next_update_async()
@@ -439,7 +438,6 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             sensor_period=1 / self._sensor_rate,
             translation=Gf.Vec3d(0, 0, 0),
             orientation=Gf.Quatd(1, 0, 0, 0),
-            visualize=True,
             linear_acceleration_filter_size=1,
             angular_velocity_filter_size=1,
             orientation_filter_size=1,
@@ -528,7 +526,6 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             sensor_period=1 / (self._sensor_rate / 2),  # 30hz, half of physics rate
             translation=self.sensor_offsets[4],
             orientation=self.sensor_quatd[4],
-            visualize=False,
         )
         self.assertTrue(result)
         self.assertIsNotNone(sensor)
@@ -572,7 +569,6 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             sensor_period=1 / (self._sensor_rate / 2),  # 30hz, half of physics rate
             translation=self.sensor_offsets[4],
             orientation=self.sensor_quatd[4],
-            visualize=False,
         )
         self.assertTrue(result)
         self.assertIsNotNone(sensor)
@@ -604,7 +600,6 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             sensor_period=1 / (self._sensor_rate / 2),  # 30hz, half of physics rate
             translation=self.sensor_offsets[4],
             orientation=self.sensor_quatd[4],
-            visualize=False,
         )
         self.assertTrue(result)
         self.assertIsNotNone(sensor)
@@ -652,7 +647,6 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             sensor_period=1 / (self._sensor_rate / 2),  # 30hz, half of physics rate
             translation=self.sensor_offsets[4],
             orientation=self.sensor_quatd[4],
-            visualize=False,
         )
         self.assertTrue(result)
         self.assertIsNotNone(sensor)
@@ -700,7 +694,6 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             sensor_period=0,
             translation=self.sensor_offsets[4],
             orientation=self.sensor_quatd[4],
-            visualize=False,
         )
 
         await omni.kit.app.get_app().next_update_async()
@@ -736,3 +729,20 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         self.assertAlmostEquals(abs(custom_reading.orientation.y), 0.70711, delta=1e-4)
         self.assertAlmostEquals(custom_reading.orientation.z, 0.0, delta=1e-4)
         self.assertAlmostEquals(custom_reading.orientation.w, -custom_reading.orientation.y, delta=1e-4)
+
+    async def test_invalid_imu(self):
+        # goal is to make sure an invalid imu doesn't crash the sim
+        result, sensor = omni.kit.commands.execute(
+            "IsaacSensorCreateImuSensor",
+            path="/sensor",
+            parent="/World",
+            sensor_period=1 / self._sensor_rate,
+            translation=Gf.Vec3d(0, 0, 0),
+            orientation=Gf.Quatd(1, 0, 0, 0),
+        )
+        self.my_world = World(stage_units_in_meters=1.0, physics_dt=1.0 / 60, rendering_dt=1.0 / 60)
+        await self.my_world.initialize_simulation_context_async()
+        self.my_world.play()
+        await simulate_async(0.1)
+        self.my_world.stop()
+        clear_stage()

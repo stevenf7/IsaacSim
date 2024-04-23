@@ -25,7 +25,6 @@ class IsaacSensorCreatePrim(omni.kit.commands.Command):
         self,
         path: str = "",
         parent: str = "",
-        visualize: bool = False,
         translation: Gf.Vec3d = Gf.Vec3d(0, 0, 0),
         orientation: Gf.Quatd = Gf.Quatd(1, 0, 0, 0),
         schema_type=IsaacSensorSchema.IsaacBaseSensor,
@@ -42,7 +41,6 @@ class IsaacSensorCreatePrim(omni.kit.commands.Command):
         self._prim_path = get_next_free_path(self._path, self._parent)
         self._prim = self._schema_type.Define(self._stage, self._prim_path)
         IsaacSensorSchema.IsaacBaseSensor(self._prim).CreateEnabledAttr(True)
-        IsaacSensorSchema.IsaacBaseSensor(self._prim).CreateVisualizeAttr(self._visualize)
         reset_and_set_xform_ops(self._prim.GetPrim(), self._translation, self._orientation)
 
         return self._prim
@@ -57,7 +55,6 @@ class IsaacSensorCreateContactSensor(omni.kit.commands.Command):
         self,
         path: str = "/Contact_Sensor",
         parent: str = None,
-        visualize: bool = False,
         min_threshold: float = 0,
         max_threshold: float = 100000,
         color: Gf.Vec4f = Gf.Vec4f(1, 1, 1, 1),
@@ -79,7 +76,6 @@ class IsaacSensorCreateContactSensor(omni.kit.commands.Command):
             parent=self._parent,
             schema_type=IsaacSensorSchema.IsaacContactSensor,
             translation=self._translation,
-            visualize=self._visualize,
         )
 
         if success and self._prim:
@@ -103,7 +99,6 @@ class IsaacSensorCreateImuSensor(omni.kit.commands.Command):
         self,
         path: str = "/Imu_Sensor",
         parent: str = None,
-        visualize: bool = False,
         sensor_period: float = -1,
         translation: Gf.Vec3d = Gf.Vec3d(0, 0, 0),
         orientation: Gf.Quatd = Gf.Quatd(1, 0, 0, 0),
@@ -126,7 +121,6 @@ class IsaacSensorCreateImuSensor(omni.kit.commands.Command):
             schema_type=IsaacSensorSchema.IsaacImuSensor,
             translation=self._translation,
             orientation=self._orientation,
-            visualize=self._visualize,
         )
 
         if success and self._prim:

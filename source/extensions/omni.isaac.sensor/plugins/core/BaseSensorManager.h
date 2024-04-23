@@ -129,7 +129,11 @@ public:
 
     IsaacBaseSensorComponent* getComponent(std::string Path)
     {
-        return mComponents[Path].get();
+        if (mComponents.find(Path) != mComponents.end())
+        {
+            return mComponents[Path].get();
+        }
+        return nullptr;
     }
 
     void onPhysicsStep(const double& dt)

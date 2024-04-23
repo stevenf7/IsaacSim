@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.3] - 2024-04-22
+### Fixed
+- Sensor menu tests failing due to sensor extension now creates sensors on play, play timeline first before checking for values
+
 ## [0.2.2] - 2024-03-07
 ### Fixed
 - Tests failing due to short delay when clicking, increased delay from 10 to 32 (default)

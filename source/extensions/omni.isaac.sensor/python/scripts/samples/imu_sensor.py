@@ -195,7 +195,6 @@ class Imu_sensor_demo(omni.ext.IExt):
             sensor_period=-1.0,
             translation=Gf.Vec3d(0, 0, 0),
             orientation=Gf.Quatd(1, 0, 0, 0),
-            visualize=True,
         )
 
         self._events = omni.usd.get_context().get_stage_event_stream()
