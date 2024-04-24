@@ -106,7 +106,8 @@ public:
         double k_arr[] = { fx, 0, cx, 0, fy, cy, 0, 0, 1 };
         state.mMessage->fillIntrisicArray(k_arr, 9);
 
-        double p_arr[] = { fx, 0, cx, db.inputs.stereoOffset()[0], 0, fy, cy, db.inputs.stereoOffset()[1], 0, 0, 1, 0 };
+        double p_arr[] = { fx, 0, cx, db.inputs.stereoOffset()[0] * fx, 0, fy, cy, db.inputs.stereoOffset()[1] * fy, 0,
+                           0,  1, 0 };
         state.mMessage->fillProjectionArray(p_arr, 12);
         std::string physicalDistortion = db.tokenToString(db.inputs.physicalDistortionModel());
 

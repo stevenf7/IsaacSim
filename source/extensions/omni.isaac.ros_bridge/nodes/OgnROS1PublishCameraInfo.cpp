@@ -93,7 +93,8 @@ public:
 
         cam_info_msg.K = { fx, 0, cx, 0, fy, cy, 0, 0, 1 };
 
-        cam_info_msg.P = { fx, 0, cx, db.inputs.stereoOffset()[0], 0, fy, cy, db.inputs.stereoOffset()[1], 0, 0, 1, 0 };
+        cam_info_msg.P = { fx, 0, cx, db.inputs.stereoOffset()[0] * fx, 0, fy, cy, db.inputs.stereoOffset()[1] * fy, 0,
+                           0,  1, 0 };
 
         cam_info_msg.R = { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
 
