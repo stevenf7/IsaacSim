@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.11.2] - 2024-04-24
+### Fixed
+- Add missing omni.graph.bundle.action dependency to base gym app file
+
 ## [0.11.1] - 2024-04-18
 ### Fixed
 - Optionally import isaacsim as it only applies to standalone workflows
