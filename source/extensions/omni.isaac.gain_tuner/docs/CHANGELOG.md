@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.1] - 2024-04-23
+### Fixed
+- Fixed post-test behavior where an Articulation is left with a non-zero velocity command.
+
 ## [1.1.0] - 2024-04-16
 ### Fixed
 - Fixed bug where Gains Test Settings Panel had multiple ways of accumulating or forgetting state
