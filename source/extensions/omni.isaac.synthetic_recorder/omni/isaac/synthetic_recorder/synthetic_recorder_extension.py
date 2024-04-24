@@ -537,9 +537,13 @@ class SyntheticRecorderExtension(omni.ext.IExt):
             self._disable_all_buttons()
             if self._init_recorder():
                 num_frames = None if self._num_frames <= 0 else self._num_frames
-                await rep.orchestrator.run_async(num_frames=num_frames, start_timeline=self._control_timeline)
-                self._in_running_state = True
-                self._enable_buttons(case="start")
+                if num_frames == 1:
+                    await rep.orchestrator.step_async()
+                    await self._on_orchestrator_finish_async()
+                else:
+                    await rep.orchestrator.run_async(num_frames=num_frames, start_timeline=self._control_timeline)
+                    self._in_running_state = True
+                    self._enable_buttons(case="start")
             else:
                 self._clear_recorder()
                 self._enable_buttons(case="reset")
