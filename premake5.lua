@@ -434,6 +434,7 @@ function create_tests()
         python_sample_test("tests-nativepython-omni.isaac.core.simulation_callbacks", "standalone_examples/api/omni.isaac.core/simulation_callbacks.py")
         python_sample_test("tests-nativepython-omni.isaac.core.time_stepping", "standalone_examples/api/omni.isaac.core/time_stepping.py")
         python_sample_test("tests-nativepython-omni.isaac.core.visual_materials", "standalone_examples/api/omni.isaac.core/visual_materials.py", "--test")
+        python_sample_test("tests-nativepython-omni.isaac.core.omnigraph_triggers", "standalone_examples/api/omni.isaac.core/omnigraph_triggers.py")
         -- omni.isaac.franka
         python_sample_test("tests-nativepython-omni.isaac.franka.franka_gripper", "standalone_examples/api/omni.isaac.franka/franka_gripper.py", "--test")
         -- omni.isaac.sensor
