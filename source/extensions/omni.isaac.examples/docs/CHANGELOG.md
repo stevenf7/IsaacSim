@@ -1,4 +1,7 @@
 # Changelog
+## [1.7.16] - 2024-04-19
+### Fixed
+- Updated Path Planning Example for compatibility with Lula 0.10.0
 
 ## [1.7.15] - 2024-03-07
 ### Changed

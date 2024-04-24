@@ -72,12 +72,16 @@ class PathPlannerController(BaseController):
             start_pos = active_joints.get_joint_positions()
         else:
             start_pos = self._last_solution
+
+        self._path_planner.set_max_iterations(5000)
         self._rrt_plan = self._path_planner.compute_path(start_pos, np.array([]))
 
-        if self._rrt_plan is None or self._rrt_plan == []:
+        if self._rrt_plan is None or len(self._rrt_plan) <= 1:
             carb.log_warn("No plan could be generated to target pose: " + str(target_end_effector_position))
             self._action_sequence = []
             return
+
+        print(len(self._rrt_plan))
 
         self._action_sequence = self._convert_rrt_plan_to_trajectory(self._rrt_plan)
         self._last_solution = self._action_sequence[-1].joint_positions
@@ -95,7 +99,6 @@ class PathPlannerController(BaseController):
 
         if len(self._action_sequence) == 1:
             final_positions = self._action_sequence[0].joint_positions
-            # print("Steady State Error: ", np.linalg.norm(self._robot.get_joint_positions()[:7]-final_positions[:7]))
             return ArticulationAction(
                 final_positions, np.zeros_like(final_positions), joint_indices=self._action_sequence[0].joint_indices
             )
@@ -150,8 +153,9 @@ class FrankaRrtController(PathPlannerController):
 
         # It is important that the Robot Description File includes optional Jerk and Acceleration limits so that the generated trajectory
         # can be followed closely by the simulated robot Articulation
-        assert cspace_trajectory_generator._lula_kinematics.has_c_space_acceleration_limits()
-        assert cspace_trajectory_generator._lula_kinematics.has_c_space_jerk_limits()
+        for i in range(len(rrt.get_active_joints())):
+            assert cspace_trajectory_generator._lula_kinematics.has_c_space_acceleration_limit(i)
+            assert cspace_trajectory_generator._lula_kinematics.has_c_space_jerk_limit(i)
 
         visualizer = PathPlannerVisualizer(robot_articulation, rrt)
 
