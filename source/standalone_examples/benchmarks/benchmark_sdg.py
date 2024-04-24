@@ -30,6 +30,7 @@ VALID_ANNOTATORS = {
 parser = argparse.ArgumentParser()
 parser.add_argument("--num-frames", type=int, default=1, help="Number of frames to capture")
 parser.add_argument("--num-cameras", type=int, default=1, help="Number of cameras")
+parser.add_argument("--num-gpus", type=int, default=1, help="Number of GPUs on machine.")
 parser.add_argument("--resolution", nargs=2, type=int, default=[1280, 720], help="Camera resolution")
 parser.add_argument(
     "--asset-count", type=int, default=10, help="Number of assets of each type (cube, cone, cylinder, sphere, torus)"
@@ -55,6 +56,7 @@ disable_viewport_rendering = args.disable_viewport_rendering
 delete_data_when_done = args.delete_data_when_done
 print_results = args.print_results
 headless = args.headless
+n_gpu = args.num_gpus
 
 if "all" in args.annotators:
     annotators_kwargs = {annotator: True for annotator in VALID_ANNOTATORS}
@@ -102,6 +104,7 @@ benchmark = base_isaac_benchmark.BaseIsaacBenchmark(
             {"name": "height", "data": height},
             {"name": "asset_count", "data": asset_count},
             {"name": "annotators", "data": args.annotators},
+            {"name": "num_gpus", "data": n_gpu},
         ]
     },
 )
