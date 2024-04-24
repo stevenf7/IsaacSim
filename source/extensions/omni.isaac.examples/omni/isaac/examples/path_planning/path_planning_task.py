@@ -43,7 +43,7 @@ class PathPlanningTask(BaseTask):
         self._target_visual_material = None
         self._obstacle_walls = OrderedDict()
         if self._target_position is None:
-            self._target_position = np.array([0.8, 0.3, 0.4]) / get_stage_units()
+            self._target_position = np.array([0.65, 0.3, 0.4]) / get_stage_units()
         return
 
     def set_up_scene(self, scene: Scene) -> None:
@@ -204,7 +204,7 @@ class PathPlanningTask(BaseTask):
         )
         cube_name = find_unique_string_name(initial_name="wall", is_unique_fn=lambda x: not self.scene.object_exists(x))
         if position is None:
-            position = np.array([0.6, 0.1, 0.3]) / get_stage_units()
+            position = np.array([0.6, 0.1, 0.2]) / get_stage_units()
         if orientation is None:
             orientation = euler_angles_to_quat(np.array([0, 0, np.pi / 3]))
         cube = self.scene.add(
