@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.7.1] - 2024-04-23
+### Fixed
+- using step_async when num_frames=1 (ISIM-943 WAR)
+
 ## [1.7.0] - 2023-12-05
 ### Changed
 - removed overwrite/increment/timestamp options from recorder, it is now handled by the backend which is not exposed
