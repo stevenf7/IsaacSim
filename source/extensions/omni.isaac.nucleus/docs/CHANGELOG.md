@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.1] - 2024-04-24
+
+### Changed
+- Reduced timeout.
+
 ## [0.1.0] - 2023-02-02
 
 ### Added
