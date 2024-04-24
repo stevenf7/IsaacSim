@@ -1,5 +1,9 @@
 # Changelog
 
+## [11.0.2] - 2024-04-23
+### Fixed
+- Rational polynomial camera distortion coefficients will be stored as k1, k2, p1, p2, k3, k4, k5, k6 in the camera schema
+
 ## [11.0.1] - 2024-04-22
 ### Fixed
 - Fixed invalid IMU sensor crash bug
@@ -32,7 +36,8 @@
 - Changed physics based sensor to be created on play and destroyed on stop
 
 ### Removed
-- Deprecated function: get_sensor_readings, get_sensor_num_readings, get_sensor_sim_readings
+- Deprecated functions: get_sensor_readings, get_sensor_num_readings, get_sensor_sim_readings
+- Sensor visualziation. (Please use omnigraph nodes to visualize the sensors)
 
 ## [9.15.0] - 2024-03-13
 ### Added

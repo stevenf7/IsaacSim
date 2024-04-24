@@ -1305,10 +1305,10 @@ class Camera(BaseSensor):
             distort_point_rational_polynomial,
         )
 
-        # Store the original distortion model parameters, the order is: k1, k2, k3, k4, k5, p1, p2
-        K, P = list(distortion_model[:2]) + list(distortion_model[4:]), list(distortion_model[2:4])
         self.prim.CreateAttribute("physicalDistortionModel", Sdf.ValueTypeNames.String).Set("rationalPolynomial")
-        self.prim.CreateAttribute("physicalDistortionCoefficients", Sdf.ValueTypeNames.FloatArray, False).Set(K + P)
+        self.prim.CreateAttribute("physicalDistortionCoefficients", Sdf.ValueTypeNames.FloatArray, False).Set(
+            distortion_model
+        )
         return
 
     def set_kannala_brandt_properties(
