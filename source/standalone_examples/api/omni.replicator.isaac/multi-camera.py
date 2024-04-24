@@ -9,13 +9,13 @@
 
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp({"headless": False})
+simulation_app = SimulationApp(launch_config={"headless": False})
 
 import os
 
-import numpy as np
 import omni.kit
 import omni.replicator.core as rep
+import omni.usd
 from omni.replicator.core import AnnotatorRegistry, Writer
 from PIL import Image
 from pxr import Sdf, UsdGeom
@@ -43,7 +43,7 @@ class MyWriter(Writer):
         if rgb:
             self.annotators.append(AnnotatorRegistry.get_annotator("rgb"))
         # Create writer output directory
-        self.file_path = os.path.join(os.getcwd(), "_out_writer", "")
+        self.file_path = os.path.join(os.getcwd(), "_out_mc_writer", "")
         print(f"Writing writer data to {self.file_path}")
         dir = os.path.dirname(self.file_path)
         os.makedirs(dir, exist_ok=True)
@@ -60,19 +60,15 @@ class MyWriter(Writer):
 
 rep.WriterRegistry.register(MyWriter)
 
-# Create a new stage and add a dome light
+# Create a new stage with a dome light
 omni.usd.get_context().new_stage()
 stage = omni.usd.get_context().get_stage()
 dome_light = stage.DefinePrim("/World/DomeLight", "DomeLight")
-dome_light.CreateAttribute("inputs:intensity", Sdf.ValueTypeNames.Float).Set(1000.0)
+dome_light.CreateAttribute("inputs:intensity", Sdf.ValueTypeNames.Float).Set(900.0)
 
 # Create cube
 cube_prim = stage.DefinePrim("/World/Cube", "Cube")
 UsdGeom.Xformable(cube_prim).AddTranslateOp().Set((0.0, 5.0, 1.0))
-
-# Run a few frames to ensure all materials are properly loaded
-for _ in range(5):
-    simulation_app.update()
 
 # Register cube color randomizer to trigger on every frame
 rep.randomizer.register(cube_color_randomizer)
@@ -89,14 +85,14 @@ UsdGeom.Xformable(camera_prim2).AddTranslateOp().Set((-10.0, 15.0, 15.0))
 UsdGeom.Xformable(camera_prim2).AddRotateXYZOp().Set((-45.0, 0.0, 45.0))
 
 # Create render products
-rp1 = rep.create.render_product(str(camera_prim1.GetPrimPath()), resolution=(320, 320), name="rp1")
-rp2 = rep.create.render_product(str(camera_prim2.GetPrimPath()), resolution=(640, 640), name="rp2")
-rp3 = rep.create.render_product("/OmniverseKit_Persp", (1024, 1024), name="rp3")
+rp1 = rep.create.render_product(str(camera_prim1.GetPrimPath()), resolution=(320, 320))
+rp2 = rep.create.render_product(str(camera_prim2.GetPrimPath()), resolution=(640, 640))
+rp3 = rep.create.render_product("/OmniverseKit_Persp", (1024, 1024))
 
 # Acess the data through a custom writer
 writer = rep.WriterRegistry.get("MyWriter")
-writer.initialize(rgb=True)
-writer.attach([rp1, rp2, rp3])
+# writer.initialize(rgb=True)
+# writer.attach([rp1, rp2, rp3])
 
 # Acess the data through annotators
 rgb_annotators = []
@@ -106,15 +102,17 @@ for rp in [rp1, rp2, rp3]:
     rgb_annotators.append(rgb)
 
 # Create annotator output directory
-file_path = os.path.join(os.getcwd(), "_out_annot", "")
+file_path = os.path.join(os.getcwd(), "_out_mc_annot", "")
 print(f"Writing annotator data to {file_path}")
 dir = os.path.dirname(file_path)
 os.makedirs(dir, exist_ok=True)
 
+# Data will be captured manually using step
+rep.orchestrator.set_capture_on_play(False)
+
 for i in range(NUM_FRAMES):
-    # Improve the rendering quality by rendering multiple subframes per captured frame
-    rep.orchestrator.step(rt_subframes=8)
-    # Get annotator data after each replicator process step
+    # The step function provides new data to the annotators, triggers the randomizers and the writer
+    rep.orchestrator.step()
     for j, rgb_annot in enumerate(rgb_annotators):
         save_rgb(rgb_annot.get_data(), f"{dir}/rp{j}_step_{i}")
 
