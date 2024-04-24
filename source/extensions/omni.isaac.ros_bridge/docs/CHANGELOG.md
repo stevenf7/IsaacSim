@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.18.0] - 2024-04-24
+### Changed
+- Stereo offset input to accept camera baseline in meters used to compute Tx, Ty.
+
 ## [1.17.3] - 2024-04-19
 ### Fixed
 - Registration for system time writers with telemetry tracking
