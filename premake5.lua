@@ -503,6 +503,8 @@ function create_tests()
         python_sample_test("tests-internalnativepython-omni.replicator.isaac.motion_blur", "/standalone_examples/api/omni.replicator.isaac/motion_blur.py")
         python_sample_test("tests-internalnativepython-omni.replicator.isaac.subscribers_and_events", "/standalone_examples/api/omni.replicator.isaac/subscribers_and_events.py")
         python_sample_test("tests-internalnativepython-omni.replicator.isaac.custom_fps_writer_annotator", "/standalone_examples/api/omni.replicator.isaac/custom_fps_writer_annotator.py")
+        python_sample_test("tests-internalnativepython-omni.replicator.isaac.multi-camera", "standalone_examples/api/omni.replicator.isaac/multi-camera.py")
+        python_sample_test("tests-internalnativepython-omni.replicator.isaac.simulation_get_data", "standalone_examples/api/omni.replicator.isaac/simulation_get_data.py")
         python_sample_test("tests-internalnativepython-omni.isaac.sensor.contact_sensor", "standalone_examples/testing/omni.isaac.sensor/contact_sensor_test.py")
         python_sample_test("tests-internalnativepython-omni.isaac.sensor.camera_opencv_fisheye", "standalone_examples/api/omni.isaac.sensor/camera_opencv_fisheye.py")
         python_sample_test("tests-internalnativepython-omni.isaac.sensor.camera_opencv", "standalone_examples/api/omni.isaac.sensor/camera_opencv.py")
@@ -511,8 +513,6 @@ function create_tests()
         python_sample_test("tests-internalnativepython-python_sh.path_length", "standalone_examples/testing/python_sh/path_length.py")
         python_sample_test("tests-internalnativepython-python_sh.import_sys", "standalone_examples/testing/python_sh/import_sys.py")
         python_sample_test("tests-internalnativepython-omni.syntheticdata.test_basic", "standalone_examples/testing/omni.syntheticdata/test_basic.py")
-        python_sample_test("tests-internalnativepython-omni.isaac.snippets.multi-camera", "standalone_examples/testing/omni.isaac.snippets/multi-camera.py")
-        python_sample_test("tests-internalnativepython-omni.isaac.snippets.simulation_get_data", "standalone_examples/testing/omni.isaac.snippets/simulation_get_data.py")
 
     --     Disabled because fast shutdown causes a hang/crash on exit
     -- group "jupyter_samples"

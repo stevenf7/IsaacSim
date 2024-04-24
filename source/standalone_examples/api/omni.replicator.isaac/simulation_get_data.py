@@ -51,10 +51,6 @@ world.reset()
 # Setting capture on play to False will prevent the replicator from capturing data each frame
 carb.settings.get_settings().set("/omni/replicator/captureOnPlay", False)
 
-# Run a few frames to ensure all materials are properly loaded
-for _ in range(5):
-    simulation_app.update()
-
 # Create a camera and render product to collect the data from
 cam = rep.create.camera(position=(5, 5, 5), look_at=(0, 0, 0))
 rp = rep.create.render_product(cam, (512, 512))
@@ -66,10 +62,10 @@ print(f"Outputting data to {out_dir}..")
 
 # Example of using a writer to save the data
 writer = rep.WriterRegistry.get("BasicWriter")
-writer.initialize(
-    output_dir=f"{out_dir}/writer", rgb=True, semantic_segmentation=True, colorize_semantic_segmentation=True
-)
-writer.attach(rp)
+# writer.initialize(
+#     output_dir=f"{out_dir}/writer", rgb=True, semantic_segmentation=True, colorize_semantic_segmentation=True
+# )
+# writer.attach(rp)
 
 # Run a preview to ensure the replicator graph is initialized
 rep.orchestrator.preview()
@@ -91,7 +87,7 @@ for i in range(5):
         if vel < 0.1:
             print(f"Cube_{i} stopped moving after {s} simulation steps, writing data..")
             # Tigger the writer and update the annotators with new data
-            rep.orchestrator.step(rt_subframes=4, pause_timeline=False)
+            rep.orchestrator.step(rt_subframes=4, delta_time=0.0, pause_timeline=False)
             write_rgb_data(rgb_annot.get_data(), f"{out_dir}/Cube_{i}_step_{s}_rgb")
             write_sem_data(sem_annot.get_data(), f"{out_dir}/Cube_{i}_step_{s}_sem")
             break
