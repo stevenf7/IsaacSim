@@ -24,7 +24,6 @@ small_cube = rep.create.cube(scale=0.75, position=(-1, -1, 0))
 large_cube_prim = large_cube.get_output_prims()["prims"][0]
 small_cube_prim = small_cube.get_output_prims()["prims"][0]
 
-cam = rep.create.camera(position=(0, 0, 5), look_at=(0, 0, 0))
 rp = rep.create.render_product("/OmniverseKit_Persp", (512, 512))
 writer = rep.WriterRegistry.get("BasicWriter")
 out_dir = os.getcwd() + "/_out_custom_event"
