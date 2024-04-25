@@ -26,6 +26,7 @@ name = "omni.isaac.jupyter_notebook"
 [python.pipapi]
 requirements = ["jupyterlab", "notebook", "nbclassic", "chardet", "python-language-server", "jedi"]
 use_online_index = true
+ignore_import_check = true
 
 [settings]
 exts."omni.isaac.jupyter_notebook".host = "0.0.0.0"
