@@ -513,6 +513,8 @@ function create_tests()
         python_sample_test("tests-internalnativepython-python_sh.path_length", "standalone_examples/testing/python_sh/path_length.py")
         python_sample_test("tests-internalnativepython-python_sh.import_sys", "standalone_examples/testing/python_sh/import_sys.py")
         python_sample_test("tests-internalnativepython-omni.syntheticdata.test_basic", "standalone_examples/testing/omni.syntheticdata/test_basic.py")
+        python_sample_test("tests-internalnativepython-omni.replicator.agent.test_scripting", "standalone_examples/testing/omni.replicator.agent/test_scripting.py")
+        
 
     --     Disabled because fast shutdown causes a hang/crash on exit
     -- group "jupyter_samples"
