@@ -334,14 +334,12 @@ function create_python_sample_runner(name, sample_path, config, extra_args)
         f:write(string.format([[
 #!/bin/bash
 set -e
-echo "##teamcity[testStarted name='%s']"
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 SAMPLE_DIR=$SCRIPT_DIR/../
 %s
 "$SCRIPT_DIR/../python.sh" -m pip install -r $SCRIPT_DIR/../requirements.txt
 "$SCRIPT_DIR/../python.sh" $SAMPLE_DIR/%s %s --/exts/omni.kit.test/testExtRetryStrategy="retry-on-failure-ci-only" $@
-echo "##teamcity[testFinished name='%s']"
-        ]], name, extra, sample_path, extra_args, name))
+        ]], extra, sample_path, extra_args))
         f:close()
         os.chmod(sh_file_path, 755)
     else
@@ -353,12 +351,10 @@ echo "##teamcity[testFinished name='%s']"
         f:write(string.format([[
 @echo off
 setlocal
-echo "##teamcity[testStarted name='%s']"
 %s
 call "%%~dp0..\python.bat" -m pip install -r "%%~dp0..\requirements.txt"
 call "%%~dp0..\python.bat" "%%~dp0..\%s" %s --/exts/omni.kit.test/testExtRetryStrategy="retry-on-failure-ci-only" %%*
-echo "##teamcity[testFinished name='%s']"
-        ]], name, extra, sample_path, extra_args, name))
+        ]], extra, sample_path, extra_args))
         f:close()
     end
 end
@@ -378,12 +374,10 @@ function jupyter_sample_runner(name, sample_path, config, extra_args)
         f:write(string.format([[
 #!/bin/bash
 set -e
-echo "##teamcity[testStarted name='%s']"
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 SAMPLE_DIR=$SCRIPT_DIR/../
 "$SCRIPT_DIR/../jupyter_notebook.sh" test $SAMPLE_DIR/%s %s $@
-echo "##teamcity[testFinished name='%s']"
-        ]], name, sample_path, extra_args, name))
+        ]], sample_path, extra_args))
         f:close()
         os.chmod(sh_file_path, 755)
     end
@@ -450,12 +444,10 @@ function create_python_script_runner(name, script, config)
         f:write(string.format([[
 #!/bin/bash
 set -e
-echo "##teamcity[testStarted name='%s']"
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 SAMPLE_DIR=$SCRIPT_DIR/../
 "$SCRIPT_DIR/../python.sh"  %s
-echo "##teamcity[testFinished name='%s']"
-        ]], name, script, name))
+        ]], script))
         f:close()
         os.chmod(sh_file_path, 755)
     else
@@ -467,10 +459,8 @@ echo "##teamcity[testFinished name='%s']"
         f:write(string.format([[
 @echo off
 setlocal
-echo "##teamcity[testStarted name='%s']"
 "%%~dp0..\python.bat" %s
-echo "##teamcity[testFinished name='%s']"
-        ]], name, script, name))
+        ]], script))
         f:close()
     end
 end

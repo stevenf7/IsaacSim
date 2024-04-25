@@ -454,6 +454,19 @@ archive_pattern = "${root}/_build/packages/isaac-sim*.7z"
 # archive_post_unpack_cmd = ["${test_root}/pull_kit_sdk${shell_ext}", "--registry=internal"]
 archive_post_unpack_cmd = []
 
+[repo_test.suites.alltests]
+
+generate_report_cmd = [
+    "${test_root}/kit/kit${exe_ext}",
+    "--empty",
+    "--enable",
+    "omni.kit.test",
+    "--/app/enableStdoutOutput=0",
+    "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'",
+    "--/exts/omni.kit.test/testExtGenerateReport=1",
+]
+
+
 [repo_test.suites.startuptests]
 kind = "glob_and_exec"
 path = "${test_root}/tests"
@@ -554,19 +567,16 @@ exclude = [
   "tests-startup*${shell_ext}",
   "tests-selector*${shell_ext}",
   "tests-unit*${shell_ext}",
-  "omni.isaac.sim.post.install.run${shell_ext}",
-  "omni.isaac.sim.warmup${shell_ext}",
   "tests-omni.isaac.gym${shell_ext}",
   "tests-omni.isaac.gym.benchmark*${shell_ext}",
   "tests-omni.isaac.internal_tools*${shell_ext}",
   "tests-omni.isaac.benchmarks*${shell_ext}",
   "tests-standalone*${shell_ext}",
-  "tests-omni.isaac.onshape*${shell_ext}",
   "tests-nativepython*${shell_ext}",
   "tests-internalnativepython*${shell_ext}",
   "tests-internaldocker*${shell_ext}",
 ]
-args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
+args = ["--portable-root ${test_root}/portable_root", "--reset-user",  "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'"]
 tc_report_enabled = false
 timeout = 1200
 stdout_fail_patterns.exclude = [
@@ -580,6 +590,7 @@ name = "1"
 include = [
   "tests-omni.isaac.*benchmark_environments*${shell_ext}",
   "tests-omni.isaac.*motion*${shell_ext}",
+  "tests-omni.isaac.robot_benchmark*${shell_ext}",
   "tests-omni.isaac.*dynamic*${shell_ext}",
 ]
 [[repo_test.suites.pythontests.bucket]]
@@ -605,9 +616,9 @@ include = [
 [[repo_test.suites.pythontests.bucket]]
 name = "6"
 include = [
-  "tests-omni.isaac.demo*${shell_ext}",
   "tests-omni.isaac.debug_draw*${shell_ext}",
   "tests-omni.isaac.synthetic*${shell_ext}",
+  "tests-omni.replicator.isaac*${shell_ext}",
 ]
 [[repo_test.suites.pythontests.bucket]]
 name = "7"
@@ -618,7 +629,8 @@ include = [
 [[repo_test.suites.pythontests.bucket]]
 name = "8"
 include = [
-  "tests-omni.isaac*${shell_ext}",
+  "tests-omni.isaac.menu*${shell_ext}",
+  "tests-omni.isaac.asset_browser*${shell_ext}",
 ]
 [[repo_test.suites.pythontests.bucket]]
 name = "9"
@@ -634,7 +646,7 @@ include = [
   "tests-standalone_benchmarkss*${shell_ext}",
 ]
 exclude = []
-args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
+args = ["--portable-root ${test_root}/portable_root", "--reset-user",  "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'"]
 tc_report_enabled = false
 timeout = 5000
 stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
@@ -653,7 +665,7 @@ include = [
   "tests-omni.isaac.internal_tools*${shell_ext}",
 ]
 exclude = []
-args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
+args = ["--portable-root ${test_root}/portable_root", "--reset-user",  "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'"]
 tc_report_enabled = false
 timeout = 5000
 stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
@@ -680,7 +692,7 @@ include = [
   "tests-internalnativepython*${shell_ext}"
 ]
 exclude = []
-args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
+args = ["--portable-root ${test_root}/portable_root", "--reset-user",  "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'"]
 tc_report_enabled = false
 timeout = 960
 stdout_fail_patterns.exclude = [
@@ -697,7 +709,7 @@ include = [
   "tests-nativepython*${shell_ext}"
 ]
 exclude = []
-args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
+args = ["--portable-root ${test_root}/portable_root", "--reset-user",  "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'"]
 tc_report_enabled = false
 timeout = 960
 stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
@@ -752,12 +764,12 @@ include = ["*"]
 # include = ["*"]
 
 # Catch2 Unit Tests
-[repo_test.suites.unittests]
-kind = "catch2"
-# default = true
-executables = [
-	"${test_root}/tests/tests-unit-omni.isaac.range_sensor${exe_ext}",
-]
+# [repo_test.suites.unittests]
+# kind = "catch2"
+# # default = true
+# executables = [
+# 	"${test_root}/tests/tests-unit-omni.isaac.range_sensor${exe_ext}",
+# ]
 
 [repo_test.suites.gympythontests]
 kind = "glob_and_exec"
@@ -1075,6 +1087,10 @@ script = "${config_root}/tools/ci/build_isaac.py"
 
 [repo_ci.jobs.test]
 script = "${config_root}/tools/ci/test_isaac.py"
+
+[repo_ci.jobs.standalone_report]
+script = "${config_root}/tools/ci/standalone_report.py"
+
 
 ########################################################################################################################
 # Tool to pull kit kernel and extensions before running
