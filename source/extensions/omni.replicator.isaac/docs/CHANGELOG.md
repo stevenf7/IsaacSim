@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.15.0] - 2024-04-24
+### Added 
+- Custom replicator randomization nodes
+
 ## [1.14.2] - 2024-04-03
 ### Added 
 - Telemetry for writers and annotators
