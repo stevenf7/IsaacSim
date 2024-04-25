@@ -1203,7 +1203,7 @@ publish-to-launcher:
   rules:
   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
     when: never
-  - if: $RUN_BUMP_VERSION == "true"
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
     when: never
   - !reference [.rules-version-changed, rules]
   - !reference [.rules-push-manual, rules]
@@ -1300,7 +1300,7 @@ sign-windows-x86_64-release:
   rules:
   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
     when: never
-  - if: $RUN_BUMP_VERSION == "true"
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
     when: never
   - !reference [.rules-version-changed, rules]
   - !reference [.rules-push-manual, rules]
@@ -1322,7 +1322,7 @@ internal-build-linux-x86_64-release:
   rules:
   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
     when: never
-  - if: $RUN_BUMP_VERSION == "true"
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
     when: never
   - if: '$CI_COMMIT_BRANCH != "develop"'
     when: never
@@ -1344,7 +1344,7 @@ internal-build-windows-x86_64-release:
   rules:
   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
     when: never
-  - if: $RUN_BUMP_VERSION == "true"
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
     when: never
   - if: '$CI_COMMIT_BRANCH != "develop"'
     when: never
@@ -1369,7 +1369,7 @@ internal-publish-to-packman:
   rules:
   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
     when: never
-  - if: $RUN_BUMP_VERSION == "true"
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
     when: never
   - if: '$CI_COMMIT_BRANCH != "develop"'
     when: never
@@ -1400,7 +1400,7 @@ internal-publish-container:
   rules:
   - if: $ALLOW_PUBLISH_CONTAINERS != "true"
     when: never
-  - if: $RUN_BUMP_VERSION == "true"
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
     when: never
   - if: '$CI_COMMIT_BRANCH != "develop"'
     when: never
@@ -1431,7 +1431,7 @@ publish-container:
   rules:
   - if: $ALLOW_PUBLISH_CONTAINERS != "true"
     when: never
-  - if: $RUN_BUMP_VERSION == "true"
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
     when: never
   - !reference [.rules-version-changed, rules]
   - !reference [.rules-push-manual, rules]
