@@ -269,7 +269,7 @@ class NavSDGDemo:
     def _run_sdg(self):
         if self._use_temp_rp:
             self._enable_render_products()
-        rep.orchestrator.step(rt_subframes=16, delta_time=0.0)
+        rep.orchestrator.step(rt_subframes=16)
         rep.orchestrator.wait_until_complete()
         if self._use_temp_rp:
             self._disable_render_products()
@@ -277,7 +277,7 @@ class NavSDGDemo:
     async def _run_sdg_async(self):
         if self._use_temp_rp:
             self._enable_render_products()
-        await rep.orchestrator.step_async(rt_subframes=16, delta_time=0.0)
+        await rep.orchestrator.step_async(rt_subframes=16)
         await rep.orchestrator.wait_until_complete_async()
         if self._use_temp_rp:
             self._disable_render_products()
