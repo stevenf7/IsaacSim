@@ -1,4 +1,8 @@
 # Changelog
+## [0.1.9] - 2024-04-24
+### Deprecated
+- Add Deprecation Warning
+
 ## [0.1.8] - 2024-03-14
 ### Fixed
 - Fixed Articulation Selection DropDown menu due to change in behavior of Core function get_prim_object_type().
