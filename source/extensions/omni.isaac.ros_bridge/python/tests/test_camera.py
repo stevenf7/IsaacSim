@@ -507,7 +507,7 @@ class TestRosCamera(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         await simulate_async(1)
         for _ in range(10):
-            if self._bbox_3d is None:
+            if self._bbox_3d is None or self._semantic_data_3d is None:
                 await simulate_async(1)
 
         self.assertIsNotNone(self._bbox_2d_tight)

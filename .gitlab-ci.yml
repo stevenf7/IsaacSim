@@ -309,18 +309,18 @@ build-windows-x86_64-debug:
     expire_in: 2 weeks
     paths:
     - _build/**/*.log
-    - _build/*/debug/*.xml
-    - _build/*/release/*.xml
+    - _build/**/debug/*.xml
+    - _build/**/release/*.xml
     - _build/coverage.info
     - _build/coverage/**
     - _repo/repo.log
     - _repo/repolog*.txt
-    - _testoutput/
+    - _build/**/_testoutput/
     reports:
       junit:
-      - _build/*/debug/*.xml
-      - _build/*/release/*.xml
-      - _testoutput/results.xml
+      - _build/**/debug/*.xml
+      - _build/**/release/*.xml
+      - _build/**/_testoutput/results.xml
 
 
 # ==============================================================================================================
@@ -336,529 +336,339 @@ build-windows-x86_64-debug:
     when: never
   - !reference [.rules-workflow, rules]
 
+.test-linux-common:
+  after_script:
+  - !reference [.datadog-test-visibility-linux-x86_64, script]
+  - ./repo.sh ci test -- --generate-report
+  needs:
+  - job: build-linux-x86_64-release
+    artifacts: true
+
+.test-windows-common:
+  after_script:
+  - !reference [.datadog-test-visibility-windows-x86_64, script]
+  - ./repo.bat ci test -- --generate-report
+  needs:
+  - job: build-windows-x86_64-release
+    artifacts: true
 
 # ==============================================================================================================
 test-linux-x86_64-startuptests:
   extends:
   - .test-common
+  - .test-linux-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s startuptests --generate-report
-  after_script:
-  - !reference [.datadog-test-visibility-linux-x86_64, script]
-  needs:
-  - job: build-linux-x86_64-release
-    artifacts: true
+  - ./repo.sh ci test -- -s startuptests
 
 test-linux-x86_64-pythontests-1:
   extends:
   - .test-common
+  - .test-linux-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s pythontests -b 1 --generate-report
-  after_script:
-  - !reference [.datadog-test-visibility-linux-x86_64, script]
-  needs:
-  - job: build-linux-x86_64-release
-    artifacts: true
+  - ./repo.sh ci test -- -s pythontests -b 1
 
 test-linux-x86_64-pythontests-2:
   extends:
   - .test-common
+  - .test-linux-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s pythontests -b 2 --generate-report
-  after_script:
-  - !reference [.datadog-test-visibility-linux-x86_64, script]
-  needs:
-  - job: build-linux-x86_64-release
-    artifacts: true
+  - ./repo.sh ci test -- -s pythontests -b 2
 
 test-linux-x86_64-pythontests-3:
   extends:
   - .test-common
+  - .test-linux-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s pythontests -b 3 --generate-report
-  after_script:
-  - !reference [.datadog-test-visibility-linux-x86_64, script]
-  needs:
-  - job: build-linux-x86_64-release
-    artifacts: true
+  - ./repo.sh ci test -- -s pythontests -b 3
 
 test-linux-x86_64-pythontests-4:
   extends:
   - .test-common
+  - .test-linux-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s pythontests -b 4 --generate-report
-  after_script:
-  - !reference [.datadog-test-visibility-linux-x86_64, script]
-  needs:
-  - job: build-linux-x86_64-release
-    artifacts: true
+  - ./repo.sh ci test -- -s pythontests -b 4
 
 test-linux-x86_64-pythontests-5:
   extends:
   - .test-common
+  - .test-linux-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s pythontests -b 5 --generate-report
-  after_script:
-  - !reference [.datadog-test-visibility-linux-x86_64, script]
-  needs:
-  - job: build-linux-x86_64-release
-    artifacts: true
+  - ./repo.sh ci test -- -s pythontests -b 5
 
 test-linux-x86_64-pythontests-6:
   extends:
   - .test-common
+  - .test-linux-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s pythontests -b 6 --generate-report
-  after_script:
-  - !reference [.datadog-test-visibility-linux-x86_64, script]
-  needs:
-  - job: build-linux-x86_64-release
-    artifacts: true
+  - ./repo.sh ci test -- -s pythontests -b 6
 
 test-linux-x86_64-pythontests-7:
   extends:
   - .test-common
+  - .test-linux-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s pythontests -b 7 --generate-report
-  after_script:
-  - !reference [.datadog-test-visibility-linux-x86_64, script]
-  needs:
-  - job: build-linux-x86_64-release
-    artifacts: true
+  - ./repo.sh ci test -- -s pythontests -b 7
 
 test-linux-x86_64-pythontests-8:
   extends:
   - .test-common
+  - .test-linux-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s pythontests -b 8 --generate-report
-  after_script:
-  - !reference [.datadog-test-visibility-linux-x86_64, script]
-  needs:
-  - job: build-linux-x86_64-release
-    artifacts: true
+  - ./repo.sh ci test -- -s pythontests -b 8
 
 test-linux-x86_64-pythontests-9:
   extends:
   - .test-common
+  - .test-linux-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s pythontests -b 9 --generate-report
-  after_script:
-  - !reference [.datadog-test-visibility-linux-x86_64, script]
-  needs:
-  - job: build-linux-x86_64-release
-    artifacts: true
-
-# test-linux-x86_64-gympythontests:
-#   extends:
-#     - .test-common
-#     - .install-linux-test-packages
-#     - .runner-test-linux-x86_64-gpu
-#     - .omni_nvks_gpu
-#   script:
-#     - ./repo.sh ci test -- -s gympythontests --generate-report
-#   after_script:
-#     - !reference [.datadog-test-visibility-linux-x86_64, script]
-#   needs:
-#     - job: build-linux-x86_64-release
-#       artifacts: true
+  - ./repo.sh ci test -- -s pythontests -b 9
 
 test-linux-x86_64-selectortests:
   extends:
   - .test-common
+  - .test-linux-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s selectortests --generate-report
-  after_script:
-  - !reference [.datadog-test-visibility-linux-x86_64, script]
-  needs:
-  - job: build-linux-x86_64-release
-    artifacts: true
+  - ./repo.sh ci test -- -s selectortests
 
 test-linux-x86_64-warmuptests:
   extends:
   - .test-common
+  - .test-linux-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s warmuptests --generate-report
-  after_script:
-  - !reference [.datadog-test-visibility-linux-x86_64, script]
-  needs:
-  - job: build-linux-x86_64-release
-    artifacts: true
+  - ./repo.sh ci test -- -s warmuptests
 
 test-linux-x86_64-postinstalltests:
   extends:
   - .test-common
+  - .test-linux-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s postinstalltests --generate-report
-  after_script:
-  - !reference [.datadog-test-visibility-linux-x86_64, script]
-  needs:
-  - job: build-linux-x86_64-release
-    artifacts: true
-
-# test-linux-x86_64-unittests:
-#   extends:
-#     - .test-common
-#     - .install-linux-test-packages
-#     - .runner-test-linux-x86_64-gpu
-#     - .omni_nvks_gpu
-#   script:
-#     - ./repo.sh ci test -- -s unittests --generate-report
-#   after_script:
-#     - !reference [.datadog-test-visibility-linux-x86_64, script]
-#   needs:
-#     - job: build-linux-x86_64-release
-#       artifacts: true
+  - ./repo.sh ci test -- -s postinstalltests
 
 
 test-linux-x86_64-nativepythontests-1:
   extends:
   - .test-common
+  - .test-linux-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s nativepythontests -b 1 --generate-report
-  after_script:
-  - !reference [.datadog-test-visibility-linux-x86_64, script]
-  needs:
-  - job: build-linux-x86_64-release
-    artifacts: true
+  - ./repo.sh ci test -- -s nativepythontests -b 1
 
 test-linux-x86_64-nativepythontests-2:
   extends:
   - .test-common
+  - .test-linux-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s nativepythontests -b 2 --generate-report
-  after_script:
-  - !reference [.datadog-test-visibility-linux-x86_64, script]
-  needs:
-  - job: build-linux-x86_64-release
-    artifacts: true
+  - ./repo.sh ci test -- -s nativepythontests -b 2
 
 
 test-linux-x86_64-benchmarks:
   extends:
   - .test-common
+  - .test-linux-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
   - export ISAAC_TEST_MODE=1
-  - ./repo.sh ci test -- -s benchmarks --generate-report
-  after_script:
-  - !reference [.datadog-test-visibility-linux-x86_64, script]
+  - ./repo.sh ci test -- -s benchmarks
   rules:
   - !reference [.rules-nightly-tests, rules]
-  needs:
-  - job: build-linux-x86_64-release
-    artifacts: true
 
 test-linux-x86_64-internalpythontests:
   extends:
   - .test-common
+  - .test-linux-common
   - .install-linux-test-packages
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s internalpythontests --generate-report
-  after_script:
-  - !reference [.datadog-test-visibility-linux-x86_64, script]
+  - ./repo.sh ci test -- -s internalpythontests
   rules:
   - !reference [.rules-nightly-tests, rules]
-  needs:
-  - job: build-linux-x86_64-release
-    artifacts: true
-
-# ==============================================================================================================
-# test-windows-x86_64:
-#   extends:
-#     - .test-common
-#     - .runner-test-windows-x86_64-gpu
-#   script:
-#     - ./repo.bat ci test
-#   after_script:
-#     - !reference [.datadog-test-visibility-windows-x86_64, script]
-#   needs:
-#     - job: build-windows-x86_64-release
-#       artifacts: true
 
 test-windows-x86_64-startuptests:
   extends:
   - .test-common
+  - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
   - ./repo.bat ci test -- -s startuptests
-  after_script:
-  - !reference [.datadog-test-visibility-windows-x86_64, script]
-  needs:
-  - job: build-windows-x86_64-release
-    artifacts: true
 
 test-windows-x86_64-pythontests-1:
   extends:
   - .test-common
+  - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
   - ./repo.bat ci test -- -s pythontests -b 1
-  after_script:
-  - !reference [.datadog-test-visibility-windows-x86_64, script]
-  needs:
-  - job: build-windows-x86_64-release
-    artifacts: true
 
 test-windows-x86_64-pythontests-2:
   extends:
   - .test-common
+  - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
   - ./repo.bat ci test -- -s pythontests -b 2
-  after_script:
-  - !reference [.datadog-test-visibility-windows-x86_64, script]
-  needs:
-  - job: build-windows-x86_64-release
-    artifacts: true
 
 test-windows-x86_64-pythontests-3:
   extends:
   - .test-common
+  - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
   - ./repo.bat ci test -- -s pythontests -b 3
-  after_script:
-  - !reference [.datadog-test-visibility-windows-x86_64, script]
-  needs:
-  - job: build-windows-x86_64-release
-    artifacts: true
 
 test-windows-x86_64-pythontests-4:
   extends:
   - .test-common
+  - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
   - ./repo.bat ci test -- -s pythontests -b 4
-  after_script:
-  - !reference [.datadog-test-visibility-windows-x86_64, script]
-  needs:
-  - job: build-windows-x86_64-release
-    artifacts: true
 
 test-windows-x86_64-pythontests-5:
   extends:
   - .test-common
+  - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
   - ./repo.bat ci test -- -s pythontests -b 5
-  after_script:
-  - !reference [.datadog-test-visibility-windows-x86_64, script]
-  needs:
-  - job: build-windows-x86_64-release
-    artifacts: true
 
 test-windows-x86_64-pythontests-6:
   extends:
   - .test-common
+  - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
   - ./repo.bat ci test -- -s pythontests -b 6
-  after_script:
-  - !reference [.datadog-test-visibility-windows-x86_64, script]
-  needs:
-  - job: build-windows-x86_64-release
-    artifacts: true
 
 test-windows-x86_64-pythontests-7:
   extends:
   - .test-common
+  - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
   - ./repo.bat ci test -- -s pythontests -b 7
-  after_script:
-  - !reference [.datadog-test-visibility-windows-x86_64, script]
-  needs:
-  - job: build-windows-x86_64-release
-    artifacts: true
 
 test-windows-x86_64-pythontests-8:
   extends:
   - .test-common
+  - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
   - ./repo.bat ci test -- -s pythontests -b 8
-  after_script:
-  - !reference [.datadog-test-visibility-windows-x86_64, script]
-  needs:
-  - job: build-windows-x86_64-release
-    artifacts: true
 
 test-windows-x86_64-pythontests-9:
   extends:
   - .test-common
+  - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
   - ./repo.bat ci test -- -s pythontests -b 9
-  after_script:
-  - !reference [.datadog-test-visibility-windows-x86_64, script]
-  needs:
-  - job: build-windows-x86_64-release
-    artifacts: true
-
-# test-windows-x86_64-gympythontests:
-#   extends:
-#     - .test-common
-#     - .runner-test-windows-x86_64-gpu
-#   script:
-#     - ./repo.bat ci test -- -s gympythontests
-#   after_script:
-#     - !reference [.datadog-test-visibility-windows-x86_64, script]
-#   needs:
-#     - job: build-windows-x86_64-release
-#       artifacts: true
 
 test-windows-x86_64-selectortests:
   extends:
   - .test-common
+  - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
   - ./repo.bat ci test -- -s selectortests
-  after_script:
-  - !reference [.datadog-test-visibility-windows-x86_64, script]
-  needs:
-  - job: build-windows-x86_64-release
-    artifacts: true
 
 test-windows-x86_64-warmuptests:
   extends:
   - .test-common
+  - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
   - ./repo.bat ci test -- -s warmuptests
-  after_script:
-  - !reference [.datadog-test-visibility-windows-x86_64, script]
-  needs:
-  - job: build-windows-x86_64-release
-    artifacts: true
 
 test-windows-x86_64-postinstalltests:
   extends:
   - .test-common
+  - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
   - ./repo.bat ci test -- -s postinstalltests
-  after_script:
-  - !reference [.datadog-test-visibility-windows-x86_64, script]
-  needs:
-  - job: build-windows-x86_64-release
-    artifacts: true
-
-# test-windows-x86_64-unittests:
-#   extends:
-#     - .test-common
-#     - .runner-test-windows-x86_64-gpu
-#   script:
-#     - ./repo.bat ci test -- -s unittests
-#   after_script:
-#     - !reference [.datadog-test-visibility-windows-x86_64, script]
-#   needs:
-#     - job: build-windows-x86_64-release
-#       artifacts: true
 
 test-windows-x86_64-internalpythontests-1:
   extends:
   - .test-common
+  - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
   - ./repo.bat ci test -- -s internalpythontests -b 1
-  after_script:
-  - !reference [.datadog-test-visibility-windows-x86_64, script]
   rules:
   - !reference [.rules-nightly-tests, rules]
-  needs:
-  - job: build-windows-x86_64-release
-    artifacts: true
 
-test-windows-x86_64-internalpythontests-1:
+test-windows-x86_64-internalpythontests-2:
   extends:
   - .test-common
+  - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
   - ./repo.bat ci test -- -s internalpythontests -b 2
-  after_script:
-  - !reference [.datadog-test-visibility-windows-x86_64, script]
   rules:
   - !reference [.rules-nightly-tests, rules]
-  needs:
-  - job: build-windows-x86_64-release
-    artifacts: true
 
 test-windows-x86_64-nativepythontests-1:
   extends:
   - .test-common
+  - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
   - ./repo.bat ci test -- -s nativepythontests -b 1
-  after_script:
-  - !reference [.datadog-test-visibility-windows-x86_64, script]
-  rules:
-  - !reference [.rules-nightly-tests, rules]
-  needs:
-  - job: build-windows-x86_64-release
-    artifacts: true
 
 test-windows-x86_64-nativepythontests-2:
   extends:
   - .test-common
+  - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
   - ./repo.bat ci test -- -s nativepythontests -b 2
-  after_script:
-  - !reference [.datadog-test-visibility-windows-x86_64, script]
-  rules:
-  - !reference [.rules-nightly-tests, rules]
-  needs:
-  - job: build-windows-x86_64-release
-    artifacts: true
 
 # ==============================================================================================================
 .deploy-artifacts:
