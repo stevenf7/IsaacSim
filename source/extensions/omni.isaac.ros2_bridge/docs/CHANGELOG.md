@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.23.1] - 2024-04-25
+### Fixed
+- Group ROS2 Subscriber input attributes to match the ROS2 Publisher OGN style
+
 ## [2.23.0] - 2024-04-24
 ### Changed
 - Stereo offset input to accept camera baseline in meters used to compute Tx, Ty.
