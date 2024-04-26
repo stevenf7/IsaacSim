@@ -56,13 +56,13 @@ class RotatingLidarPhysX(BaseSensor):
         BaseSensor.__init__(
             self, prim_path=prim_path, name=name, translation=translation, position=position, orientation=orientation
         )
-        if rotation_frequency is None:
+        if rotation_frequency is not None:
             self.set_rotation_frequency(rotation_frequency)
-        if fov is None:
+        if fov is not None:
             self.set_fov(fov)
-        if resolution is None:
+        if resolution is not None:
             self.set_resolution(resolution)
-        if valid_range is None:
+        if valid_range is not None:
             self.set_valid_range(valid_range)
         self._pause = False
         self._current_time = 0
