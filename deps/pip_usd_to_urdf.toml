@@ -3,10 +3,10 @@
 python = "../_build/target-deps/python"
 packages = [
     "lxml==4.9.3",                   # SWIPAT filed under: https://nvbugs/4248625
-    "nvidia-srl-base==0.9.0",        # SWIPAT filed under: https://nvbugs/4235578
-    "nvidia-srl-math==0.8.0",        # SWIPAT filed under: https://nvbugs/4235574
-    "nvidia-srl-usd==0.13.0",        # SWIPAT filed under: https://nvbugs/4235568
-    "nvidia-srl-usd-to-urdf==0.5.0", # SWIPAT filed under: https://nvbugs/4235566
+    "nvidia-srl-base==0.10.0",       # SWIPAT filed under: https://nvbugs/4235578
+    "nvidia-srl-math==0.9.0",        # SWIPAT filed under: https://nvbugs/4235574
+    "nvidia-srl-usd==0.14.0",        # SWIPAT filed under: https://nvbugs/4235568
+    "nvidia-srl-usd-to-urdf==0.6.0", # SWIPAT filed under: https://nvbugs/4235566
     "setuptools_scm==8.0.4",         # SWIPAT filed under: https://nvbugs/4248640
     "tomli==2.0.1",                  # SWIPAT filed under: https://nvbugs/4411305
 ]
