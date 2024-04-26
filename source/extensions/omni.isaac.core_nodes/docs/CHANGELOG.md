@@ -1,5 +1,9 @@
 # Changelog
-## [1.14.2] - 2024-04-18
+## [1.14.4] - 2024-04-18
+### Fixed
+- Check for joint indices need to account for the possbility of an array input
+
+## [1.14.3] - 2024-04-18
 ### Added
 - Telemetry for writers and annotators
 
