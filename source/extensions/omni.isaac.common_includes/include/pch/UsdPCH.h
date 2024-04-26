@@ -7,7 +7,10 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
-#pragma once
+// PCH files require include guards instead of #pragma once directives because of an oustanding bug in g++:
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64117#c0
+#ifndef USD_PCH_H
+#define USD_PCH_H
 
 // !!! DO NOT INCLUDE THIS FILE IN A HEADER !!!
 // When you include this file in a cpp file, add the file name to premake5.lua's pchFiles list!
@@ -72,6 +75,7 @@
 #include <pxr/imaging/hd/camera.h>
 #include <pxr/imaging/hd/engine.h>
 #include <pxr/imaging/hd/extComputation.h>
+#include <pxr/imaging/hd/field.h>
 #include <pxr/imaging/hd/flatNormals.h>
 #include <pxr/imaging/hd/instancer.h>
 #include <pxr/imaging/hd/light.h>
@@ -105,6 +109,8 @@
 #include <pxr/usd/sdf/layerStateDelegate.h>
 #include <pxr/usd/sdf/layerUtils.h>
 #include <pxr/usd/sdf/relationshipSpec.h>
+#include <pxr/usd/sdr/registry.h>
+#include <pxr/usd/sdr/shaderNode.h>
 #include <pxr/usd/usd/attribute.h>
 #include <pxr/usd/usd/editContext.h>
 #include <pxr/usd/usd/modelAPI.h>
@@ -122,7 +128,6 @@
 #include <pxr/usd/usdGeom/cylinder.h>
 #include <pxr/usd/usdGeom/mesh.h>
 #include <pxr/usd/usdGeom/metrics.h>
-#include <pxr/usd/usdGeom/points.h>
 #include <pxr/usd/usdGeom/primvarsAPI.h>
 #include <pxr/usd/usdGeom/scope.h>
 #include <pxr/usd/usdGeom/sphere.h>
@@ -133,6 +138,10 @@
 #include <pxr/usd/usdLux/diskLight.h>
 #include <pxr/usd/usdLux/distantLight.h>
 #include <pxr/usd/usdLux/domeLight.h>
+// https://github.com/PixarAnimationStudios/USD/commit/7540fdf3b2aa6b6faa0fce8e7b4c72b756286f51
+#if PXR_VERSION >= 2111
+#    include <pxr/usd/usdLux/lightAPI.h>
+#endif
 #include <pxr/usd/usdLux/rectLight.h>
 #include <pxr/usd/usdLux/sphereLight.h>
 #include <pxr/usd/usdLux/tokens.h>
@@ -156,6 +165,7 @@
 #include <pxr/usdImaging/usdImaging/gprimAdapter.h>
 #include <pxr/usdImaging/usdImaging/indexProxy.h>
 #include <pxr/usdImaging/usdImaging/tokens.h>
+#include <pxr/usdImaging/usdVolImaging/tokens.h>
 
 // -- nv extensions
 // #include <audioSchema/sound.h>
@@ -173,3 +183,5 @@
 #        undef OMNI_USD_SUPPRESS_DEPRECATION_WARNINGS
 #    endif
 #endif
+
+#endif // #ifndef USD_PCH_H

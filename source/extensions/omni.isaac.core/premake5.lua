@@ -40,7 +40,7 @@ project_ext_plugin(ext, "omni.isaac.core.plugin")
 
     
     includedirs {
-        "%{root}/include/pch",
+        "%{root}/source/extensions/omni.isaac.common_includes/include",
         "%{root}/_build/generated/include/",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/source/extensions/omni.isaac.core/include",
@@ -85,7 +85,7 @@ project_ext_bindings ({
     -- Add the standard dependencies all OGN projects have, and link directories with Python nodes
     dependson {"omni.isaac.core.plugin"}
     includedirs {
-        "%{root}/include/pch",
+        "%{root}/source/extensions/omni.isaac.common_includes/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/source/extensions/omni.isaac.core/include",
     }

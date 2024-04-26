@@ -9,7 +9,7 @@
 
 
 // clang-format off
-#include <UsdPCH.h>
+#include <pch/UsdPCH.h>
 #include <pxr/base/tf/patternMatcher.h>
 // clang-format on
 

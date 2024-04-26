@@ -11,14 +11,13 @@ project_ext_plugin(ext, "omni.isaac.partition.plugin")
     dependson { "prebuild", "carb.physics-usd.plugin", "omni.physx.plugin", "omni.kit.window.file_exporter"}
 
     add_files("impl", "plugins")
-    add_files("iface", "%{root}/include/omni/isaac/partition/**")
 
     include_physx()
 
     staticruntime "Off"
 
     includedirs {
-        "%{root}/include/pch",
+        "%{root}/source/extensions/omni.isaac.common_includes/include",
         targetDepsDir.."/nv_usd/%{cfg.buildcfg}/include",
         targetDepsDir.."/usd_ext_physics/%{cfg.buildcfg}/include",
         targetDepsDir.."/omni_physics/include",

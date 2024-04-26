@@ -10,7 +10,7 @@
 #define CARB_EXPORTS
 
 // clang-format off
-#include "UsdPCH.h"
+#include <pch/UsdPCH.h>
 // clang-format on
 #include <omni/fabric/FabricUSD.h>
 #include <omni/isaac/utils/BaseResetNode.h>

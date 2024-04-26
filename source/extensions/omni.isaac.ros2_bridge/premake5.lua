@@ -11,6 +11,7 @@ project_with_location("omni.isaac.ros2_bridge.check")
 
     includedirs {
         "%{root}/_build/target-deps/nv_ros2_humble/include",
+        "%{root}/source/extensions/omni.isaac.ros2_bridge/include",
     }
     
     filter { "system:linux" }
@@ -40,13 +41,14 @@ project_with_location("omni.isaac.ros2_bridge.foxy")
     add_files("impl", "backend/foxy")
     add_files("iface", "include")
     includedirs {
-        "%{root}/include/pch",
+        "%{root}/source/extensions/omni.isaac.common_includes/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/omni_physics/include",
         "%{root}/_build/target-deps/nv_ros2/include",
         "%{root}/_build/target-deps/nlohmann-json/include",
         "%{root}/source/extensions/omni.isaac.ros2_bridge",
+        "%{root}/source/extensions/omni.isaac.ros2_bridge/include",
         "%{root}/source/extensions/omni.isaac.dynamic_control/include",
     }
     libdirs {
@@ -100,13 +102,14 @@ project_with_location("omni.isaac.ros2_bridge.humble")
     add_files("impl", "backend/humble")
     add_files("iface", "include")
     includedirs {
-        "%{root}/include/pch",
+        "%{root}/source/extensions/omni.isaac.common_includes/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/omni_physics/include",
         "%{root}/_build/target-deps/nv_ros2_humble/include",
         "%{root}/_build/target-deps/nlohmann-json/include",
         "%{root}/source/extensions/omni.isaac.ros2_bridge",
+        "%{root}/source/extensions/omni.isaac.ros2_bridge/include",
         "%{root}/source/extensions/omni.isaac.dynamic_control/include",
     }
     libdirs {
@@ -172,7 +175,7 @@ project_ext_plugin(ext, "omni.isaac.ros2_bridge.plugin")
 
 
     add_files("impl", "plugins")
-    add_files("impl", "%{root}/include/omni/isaac/utils/", "CameraKernels.cu")
+    add_files("impl", "cuda")
     add_files("iface", "include")
     add_files("ogn", ogn.nodes_path)
     link_boost_for_windows({"boost_python310"})
@@ -182,7 +185,7 @@ project_ext_plugin(ext, "omni.isaac.ros2_bridge.plugin")
 
     include_physx()
     includedirs {
-        "%{root}/include/pch",
+        "%{root}/source/extensions/omni.isaac.common_includes/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
@@ -201,6 +204,7 @@ project_ext_plugin(ext, "omni.isaac.ros2_bridge.plugin")
         "%{root}/source/extensions/omni.isaac.core_nodes/include",
         "%{kit_sdk_bin_dir}/dev/fabric/include/",
         "%{root}/source/extensions/omni.isaac.dynamic_control/include",
+        "%{root}/source/extensions/omni.isaac.ros2_bridge/include",
      }
      libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",

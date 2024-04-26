@@ -8,7 +8,7 @@
 //
 
 // clang-format off
-#include <UsdPCH.h>
+#include <pch/UsdPCH.h>
 // clang-format on
 
 // Take a point cloud as input and display it in the scene.

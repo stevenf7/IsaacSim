@@ -16,7 +16,7 @@
 #endif
 
 // clang-format off
-#include "UsdPCH.h"
+#include <pch/UsdPCH.h>
 #include <pxr/usd/usd/inherits.h>
 // clang-format on
 
@@ -33,7 +33,6 @@
 #include <include/Ros2Factory.h>
 #include <omni/graph/core/iComputeGraph.h>
 #include <omni/graph/core/ogn/Registration.h>
-#include <omni/isaac/utils/LibraryLoader.h>
 #include <omni/kit/IApp.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/kit/syntheticdata/SyntheticData.h>
@@ -42,6 +41,7 @@
 #include <omni/usd/UsdTypes.h>
 
 #include <DynamicControl.h>
+#include <LibraryLoader.h>
 #include <memory>
 #include <string>
 #include <unordered_map>

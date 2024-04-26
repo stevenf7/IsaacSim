@@ -8,7 +8,7 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
     disablewarnings {"error=narrowing", "error=unused-but-set-variable", "error=unused-variable"}
 
     add_files("impl", "plugins")
-    add_files("iface", "%{root}/include/omni/isaac/ros_bridge/**")
+    add_files("impl", "cuda")
     add_files("ogn", ogn.nodes_path)
 
     add_cuda_dependencies()
@@ -17,7 +17,7 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
 
     include_physx()
     includedirs {
-        "%{root}/include/pch",
+        "%{root}/source/extensions/omni.isaac.common_includes/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
