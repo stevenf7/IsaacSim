@@ -358,8 +358,10 @@ inline ::physx::PxTransform asPxTransform(const pxr::GfTransform& trans)
 inline ::physx::PxTransform asPxTransform(const usdrt::GfMatrix4d& mat)
 {
     ::physx::PxTransform p;
-    const usdrt::GfVec3d& pos = mat.ExtractTranslation();
-    const usdrt::GfQuatd& rot = mat.ExtractRotation();
+    const pxr::GfMatrix4d* gfMat = reinterpret_cast<const pxr::GfMatrix4d*>(&mat);
+    pxr::GfTransform trans(*gfMat);
+    const pxr::GfVec3d& pos = trans.GetTranslation();
+    const pxr::GfQuatd& rot = trans.GetRotation().GetQuat();
 
     p.p.x = static_cast<float>(pos[0]);
     p.p.y = static_cast<float>(pos[1]);
