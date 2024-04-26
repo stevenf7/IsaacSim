@@ -6,7 +6,7 @@
 
 ## [2.23.0] - 2024-04-24
 ### Changed
-- Stereo offset input to accept camera baseline in meters used to compute Tx, Ty.
+- Stereo offset input in ROS Camera Info and Helper nodes to accept camera baseline in meters used to compute Tx, Ty.
 
 ## [2.22.4] - 2024-04-20
 ### Fixed

@@ -76,7 +76,7 @@
             },
             "stereoOffset": {
                 "type": "float[2]",
-                "description": "Stereo offset is the baseline between cameras in x and y component of the image plane in meters. (Tx, Ty is calculated using x and y component of StereoOffset value). Used when publishing to the camera info topic",
+                "description": "Stereo offset is the baseline between cameras in x and y component of the image plane in meters. (Tx, Ty is calculated using x and y component of StereoOffset value. i.e., Tx=fx*stereoOffset.X, Ty=fy*stereoOffset.Y). Used when publishing to the camera info topic",
                 "default": [
                     0,
                     0
