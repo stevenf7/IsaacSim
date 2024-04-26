@@ -13,7 +13,7 @@
 #endif
 
 // clang-format off
-#include <UsdPCH.h>
+#include <pch/UsdPCH.h>
 // clang-format on
 #include "omni/isaac/utils/UsdUtilities.h"
 

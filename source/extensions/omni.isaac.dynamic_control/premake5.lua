@@ -5,12 +5,11 @@ project_ext (ext)
 project_ext_plugin(ext, "omni.isaac.dynamic_control.plugin")
 
     add_files("impl", "plugins")
-    add_files("iface", "%{root}/include/omni/isaac/dynamic_control/**")
 
     include_physx()   
 
     includedirs {
-        "%{root}/include/pch",
+        "%{root}/source/extensions/omni.isaac.common_includes/include",
         target_deps.."/nv_usd/%{cfg.buildcfg}/include",
         target_deps.."/nv_usd/%{cfg.buildcfg}/include/boost",
         target_deps.."/usd_ext_physics/%{cfg.buildcfg}/include",

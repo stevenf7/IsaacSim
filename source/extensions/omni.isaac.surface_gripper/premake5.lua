@@ -33,7 +33,7 @@ project_ext_bindings ({
     
     include_physx()
     includedirs {
-        "%{root}/include/pch",
+        "%{root}/source/extensions/omni.isaac.common_includes/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/source/extensions/omni.isaac.surface_gripper/include",

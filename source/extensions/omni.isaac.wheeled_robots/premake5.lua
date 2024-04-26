@@ -22,7 +22,7 @@ project_ext_plugin(ext, "omni.isaac.wheeled_robots.plugin")
     add_ogn_dependencies(ogn, {"nodes"})
 
     includedirs {
-        "%{root}/include/pch",
+        "%{root}/source/extensions/omni.isaac.common_includes/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",

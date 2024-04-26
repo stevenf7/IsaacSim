@@ -11,9 +11,8 @@ project_with_location("omni.isaac.debug_draw.primitive_drawing")
     pic "On"
     staticruntime "Off"
     add_files("impl", "library")
-    add_files("iface", "%{root}/include/omni/isaac/debug_draw/**")
     includedirs {
-        "%{root}/include/pch",
+        "%{root}/source/extensions/omni.isaac.common_includes/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/omni_physics/include",
@@ -50,14 +49,13 @@ project_ext_plugin(ext, "omni.isaac.debug_draw.plugin")
     removeflags { "FatalCompileWarnings", "UndefinedIdentifiers" }
 
     add_files("impl", "plugins")
-    add_files("iface", "%{root}/include/omni/isaac/debug_draw/**")
     add_files("ogn", ogn.nodes_path)
 
     include_physx()
     -- Add the standard dependencies all OGN projects have
     add_ogn_dependencies(ogn)
     includedirs {
-        "%{root}/include/pch",
+        "%{root}/source/extensions/omni.isaac.common_includes/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/omni_client_library/include",
@@ -112,7 +110,7 @@ project_ext_bindings ({
     --add_files("python/tests", "python/tests/*.py")
     include_physx()
     includedirs {
-        "%{root}/include/pch",
+        "%{root}/source/extensions/omni.isaac.common_includes/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/source/extensions/omni.isaac.debug_draw/include",

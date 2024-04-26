@@ -7,7 +7,7 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 // clang-format off
-#include <UsdPCH.h>
+#include <pch/UsdPCH.h>
 // clang-format on
 
 #include "SensorNodeUtils.h"

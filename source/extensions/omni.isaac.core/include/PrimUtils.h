@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include <UsdPCH.h>
+#include <pch/UsdPCH.h>
 
 #ifdef _MSC_VER
 #    if OMPRIMUTILSEXPORT

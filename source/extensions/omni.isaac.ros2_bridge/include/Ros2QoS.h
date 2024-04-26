@@ -9,7 +9,7 @@
 #pragma once
 
 // clang-format off
-#include <UsdPCH.h>
+#include <pch/UsdPCH.h>
 // clang-format on
 
 #include <nlohmann/json.hpp>

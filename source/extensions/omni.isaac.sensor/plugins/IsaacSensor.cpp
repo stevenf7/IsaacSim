@@ -13,7 +13,7 @@
 #define CARB_EXPORTS
 
 // clang-format off
-#include "UsdPCH.h"
+#include <pch/UsdPCH.h>
 #include <pxr/usd/usd/inherits.h>
 #include <omni/usd/UtilsIncludes.h>
 

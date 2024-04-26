@@ -13,9 +13,8 @@ project_with_location("omni.isaac.occupancy_map.generator")
     staticruntime "Off"
     include_physx()
     add_files("impl", "library")
-    add_files("iface", "%{root}/include/omni/isaac/occupancy_map/**")
     includedirs {
-        "%{root}/include/pch",
+        "%{root}/source/extensions/omni.isaac.common_includes/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/omni_physics/include",
@@ -56,11 +55,10 @@ project_ext_plugin(ext, "omni.isaac.occupancy_map.plugin")
     dependson {"omni.isaac.debug_draw.primitive_drawing"}
 
     add_files("impl", "plugins")
-    add_files("iface", "%{root}/include/omni/isaac/occupancy_map/**")
     include_physx()
 
     includedirs {
-        "%{root}/include/pch",
+        "%{root}/source/extensions/omni.isaac.common_includes/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/omni_physics/include",
@@ -115,7 +113,7 @@ project_ext_bindings ({
     include_physx()
 
     includedirs {
-        "%{root}/include/pch",
+        "%{root}/source/extensions/omni.isaac.common_includes/include",
         "%{root}/_build/target-deps/omni_physics/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/source/extensions/omni.isaac.occupancy_map/include",

@@ -11,7 +11,7 @@
 #    pragma warning(disable : 4996)
 #endif
 // clang-format off
-#include "UsdPCH.h"
+#include <pch/UsdPCH.h>
 #include <pxr/usd/usd/inherits.h>
 #include <omni/usd/UtilsIncludes.h>
 // clang-format on

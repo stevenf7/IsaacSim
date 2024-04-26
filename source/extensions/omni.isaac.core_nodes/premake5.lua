@@ -4,7 +4,7 @@ project_ext (ext)
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.core_nodes.plugin")
     add_files("impl", "plugins")
-    add_files("impl", "%{root}/include/omni/isaac/utils/", "CameraKernels.cu")
+    add_files("impl", "cuda")
     add_files("iface","%{root}/source/extensions/omni.isaac.core_nodes/include/**")
     add_files("ogn", ogn.nodes_path)
 
@@ -23,7 +23,7 @@ project_ext_plugin(ext, "omni.isaac.core_nodes.plugin")
     include_physx()
 
     includedirs {
-        "%{root}/include/pch",
+        "%{root}/source/extensions/omni.isaac.common_includes/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",

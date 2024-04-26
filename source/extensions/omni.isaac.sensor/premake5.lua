@@ -11,7 +11,6 @@ project_ext_plugin(ext, "omni.isaac.sensor.plugin")
     
     dependson { "prebuild", "carb.physics-usd.plugin", "omni.physx.plugin"}
     add_files("impl", "plugins")
-    add_files("iface", "%{root}/include/omni/isaac/sensor/**")
     add_files("ogn", ogn.nodes_path)
 
     add_ogn_dependencies(ogn, {"python/nodes"})
@@ -20,7 +19,7 @@ project_ext_plugin(ext, "omni.isaac.sensor.plugin")
     add_cuda_dependencies()
     
     includedirs {
-        "%{root}/include/pch",
+        "%{root}/source/extensions/omni.isaac.common_includes/include",
         targetDepsDir.."/nv_usd/%{cfg.buildcfg}/include",
         targetDepsDir.."/usd_ext_physics/%{cfg.buildcfg}/include",
         targetDepsDir.."/omni_physics/include",

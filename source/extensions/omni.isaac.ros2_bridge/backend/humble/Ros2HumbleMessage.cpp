@@ -8,7 +8,7 @@
 //
 
 // clang-format off
-#include "UsdPCH.h"
+#include <pch/UsdPCH.h>
 // clang-format on
 #include "Ros2Humble.h"
 #include "pxr/usd/usdPhysics/joint.h"

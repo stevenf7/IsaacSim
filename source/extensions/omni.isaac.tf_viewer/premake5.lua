@@ -100,7 +100,7 @@ project_ext_plugin(ext, "omni.isaac.transform_listener.plugin")
     includedirs {
         "include",
         "plugins",
-        "%{root}/include/pch",
+        "%{root}/source/extensions/omni.isaac.common_includes/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
         "%{root}/_build/target-deps/python/include/python3.10",

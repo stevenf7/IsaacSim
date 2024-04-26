@@ -8,9 +8,10 @@
 //
 // A simple executable to check if the users system is compatible with ROS 2
 
-#include <omni/isaac/utils/LibraryLoader.h>
 #include <rcl/error_handling.h>
 #include <rcl/rcl.h>
+
+#include <LibraryLoader.h>
 
 
 int main(int argc, char* argv[])

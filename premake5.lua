@@ -90,7 +90,6 @@ end
 function workspace_kit_settings()
     -- Setup include paths. Add kit SDK include paths too.
     includedirs {
-        "include",
         targetDepsDir,
         targetDepsDir.."/pybind11/include",
         carbSDKInclude,
@@ -189,6 +188,7 @@ function include_extensions()
     include ("source/extensions/omni.isaac.gym.benchmark")
     include ("source/extensions/omni.isaac.cloner")
     include ("source/extensions/omni.isaac.robot_description_editor")
+    include ("source/extensions/omni.isaac.common_includes")
     include ("source/extensions/omni.isaac.core")
     include ("source/extensions/omni.isaac.core_archive")
     include ("source/extensions/omni.isaac.core_nodes")

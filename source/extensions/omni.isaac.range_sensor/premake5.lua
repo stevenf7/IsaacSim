@@ -6,14 +6,13 @@ project_ext (ext)
 project_ext_plugin(ext, "omni.isaac.range_sensor.plugin")
     dependson {"omni.isaac.debug_draw.primitive_drawing"}
     add_files("impl", "plugins")
-    add_files("iface", "%{root}/include/omni/isaac/range_sensor/**")
     add_files("ogn", ogn.nodes_path)
 
     add_ogn_dependencies(ogn)
 
     include_physx()
     includedirs {
-        "%{root}/include/pch",
+        "%{root}/source/extensions/omni.isaac.common_includes/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/gsl/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
@@ -24,10 +23,10 @@ project_ext_plugin(ext, "omni.isaac.range_sensor.plugin")
         "%{root}/_build/target-deps/usd_schema_semantics/%{cfg.buildcfg}/include",
         "%{kit_sdk_bin_dir}/exts/omni.syntheticdata/include",
         "%{kit_sdk_bin_dir}/exts/usdrt.scenegraph/include",
+        "%{kit_sdk_bin_dir}/dev/fabric/include/",
         "%{root}/_build/target-deps/omni_client_library/include",
         "%{root}/_build/target-deps/python/include",
         "%{root}/source/extensions/omni.isaac.range_sensor/include",
-        "%{kit_sdk_bin_dir}/dev/fabric/include/",
         "%{root}/source/extensions/omni.isaac.dynamic_control/include",
         "%{root}/source/extensions/omni.isaac.debug_draw/include",
      }
