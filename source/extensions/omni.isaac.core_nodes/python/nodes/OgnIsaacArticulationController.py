@@ -97,12 +97,12 @@ class OgnIsaacArticulationController:
 
             # pick the joints that are being commanded, this can be different at every step
             joint_names = db.inputs.jointNames
-            if joint_names and np.array([joint_names != state.joint_names]).flatten().any():
+            if joint_names and np.asarray([joint_names != state.joint_names]).flatten().any():
                 state.joint_names = joint_names
                 state.joint_picked = False
 
             joint_indices = db.inputs.jointIndices
-            if joint_indices and np.array([joint_indices != state.joint_indices]).flatten().any():
+            if np.asarray(joint_indices).any() and np.asarray([joint_indices != state.joint_indices]).flatten().any():
                 state.joint_indices = np.array(joint_indices)
                 state.joint_picked = False
 
