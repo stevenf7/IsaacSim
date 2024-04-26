@@ -508,3 +508,42 @@ class GeometryPrim(_SinglePrimWrapper):
             Union[np.ndarray, torch.Tensor]: Net contact forces of the prims with shape (self._geometry_prim_view._contact_view.num_filters, 3).
         """
         return self._geometry_prim_view._contact_view.get_contact_force_matrix(dt=dt)[0]
+
+    def get_contact_force_data(self, dt: float = 1.0) -> Union[np.ndarray, torch.Tensor]:
+        """
+        If the object is initialized with filter_paths_expr list, this method returns the detailed contact forces between the prims
+        in the view and the filter prims including the normal contact forces, normal directions, contact points, separations.
+        The number of contacts per pair is determined from a static tensor of dimension (self._contact_view.num_filters) while
+        the starting index of the associated contact in the above tensors is determined from another static tensor of dimension (self._contact_view.num_filters).
+
+        Args:
+            dt (float): time step multiplier to convert the underlying impulses to forces. If the default value is used then the forces are in fact contact impulses
+
+        Returns:
+            Tuple[Union[np.ndarray, torch.Tensor, wp.indexedarray], Union[np.ndarray, torch.Tensor, wp.indexedarray],
+            Union[np.ndarray, torch.Tensor, wp.indexedarray], Union[np.ndarray, torch.Tensor, wp.indexedarray],
+            Union[np.ndarray, torch.Tensor, wp.indexedarray], Union[np.ndarray, torch.Tensor, wp.indexedarray]]:
+            A set of buffers for normal forces with shape (max_contact_count, 1), points with shape (max_contact_count, 3), normals with shape (max_contact_count, 3),
+            and distances with shape (max_contact_count, 1), as well as two tensors with shape (self.num_filters)
+            to indicate the starting index and the number of contact data points per pair in the aforementioned buffers.
+        """
+        return self._geometry_prim_view._contact_view.get_contact_force_data(dt=dt)[0]
+
+    def get_friction_data(self, dt: float = 1.0) -> Union[np.ndarray, torch.Tensor]:
+        """
+        If the object is initialized with filter_paths_expr list, this method returns the detailed friction forces between the prims
+        in the view and the filter prims including the tangential forces, and points.
+        The number of points per pair is determined from a static tensor of dimension (self._contact_view.num_filters) while
+        the starting index of the associated contact in the above tensors is determined from another static tensor of dimension (self._contact_view.num_filters).
+
+        Args:
+            dt (float): time step multiplier to convert the underlying impulses to forces. If the default value is used then the forces are in fact contact impulses
+
+        Returns:
+            Tuple[Union[np.ndarray, torch.Tensor, wp.indexedarray], Union[np.ndarray, torch.Tensor, wp.indexedarray],
+            Union[np.ndarray, torch.Tensor, wp.indexedarray], Union[np.ndarray, torch.Tensor, wp.indexedarray]]:
+            A set of buffers for normal forces with shape (max_contact_count, 1), points with shape (max_contact_count, 3),
+            as well as two tensors with shape (self.num_filters) to indicate the starting index and the number of
+            contact data points per pair in the aforementioned buffers.
+        """
+        return self._geometry_prim_view._contact_view.get_friction_data(dt=dt)[0]

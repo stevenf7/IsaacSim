@@ -116,7 +116,7 @@ class RigidViewExample:
 
             self.my_world.step(render=True)
 
-            if self.my_world.current_time_step_index % 100 == 1:
+            if self.my_world.current_time_step_index % 100 == 99:
                 states = self._box_view.get_current_dynamic_state()
                 top_states = self._top_box_view.get_current_dynamic_state()
                 net_forces = self._box_view.get_net_contact_forces(None, dt=1 / 60)
@@ -138,6 +138,9 @@ class RigidViewExample:
 
                 print("ground net force from GeometryPrim : \n", self._geom_prim.get_net_contact_forces(dt=1 / 60))
                 print("ground force matrix from GeometryPrim: \n", self._geom_prim.get_contact_force_matrix(dt=1 / 60))
+
+                if args.test is True:
+                    break
         simulation_app.close()
 
 

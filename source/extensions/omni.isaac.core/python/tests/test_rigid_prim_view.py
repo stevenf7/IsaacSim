@@ -252,8 +252,6 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
                 + "/defaultMaterial",
             )
 
-        self._geom_view = GeometryPrimView(prim_paths_expr="/World/Box_*")
-
         # a view to receive contacts between the bottom boxes and top boxes
         self._box_view = RigidPrimView(
             prim_paths_expr="/World/Box_*",
