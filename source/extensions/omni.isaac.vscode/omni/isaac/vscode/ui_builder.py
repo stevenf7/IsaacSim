@@ -8,6 +8,7 @@
 #
 import os
 import subprocess
+import sys
 
 import carb
 
@@ -53,14 +54,16 @@ class UIBuilder:
 
     def _launch(self, *args, **kwargs):
         """Launch a new VS Code window on the application path"""
-        command = f"code -n {self._app_folder}"
+        command = ["code", "-n", self._app_folder]
+        if sys.platform.startswith("linux"):
+            command = [" ".join(command)]
         carb.log_info(f"Launching VS Code: {command}")
-        result = subprocess.run([command], shell=True, close_fds=True)
+        result = subprocess.run(command, shell=True, close_fds=True)
         # check process execution
         notification = f"Serving at {self._host}:{self._port}"
         if result.returncode:
             notification += f"\n\nUnable to launch VS Code (error code: {result.returncode})"
-            if result.returncode == 127:
+            if result.returncode == 1 or result.returncode == 127:
                 notification += ".\nMake sure VS Code is installed and accessible on the system via the command 'code'"
             carb.log_warn(notification)
         # show notification in Kit window
