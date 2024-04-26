@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.3.3"
+version = "0.3.4"
 category = "Other"
 title = "Isaac Sim Import Wizard"
 description = "wizard to guide users through importing and configuration tools inside isaac sim"
