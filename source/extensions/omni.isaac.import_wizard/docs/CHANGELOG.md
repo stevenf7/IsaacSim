@@ -1,4 +1,8 @@
 # Changelog
+## [0.3.4] - 2024-04-19
+### Added
+- text for physics inspector and movie capture.
+
 ## [0.3.3] - 2024-04-18
 ### Fixed
 - Added physx supportgui dependency. Fixed broken links in pipeline.json
