@@ -1,5 +1,9 @@
 # Changelog
 
+## [11.0.3] - 2024-04-25
+### Fixed
+- Fixed rotating physX lidar python class initialization issue
+
 ## [11.0.2] - 2024-04-23
 ### Fixed
 - Rational polynomial camera distortion coefficients will be stored as k1, k2, p1, p2, k3, k4, k5, k6 in the camera schema
