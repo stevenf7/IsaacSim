@@ -27,9 +27,11 @@ else
     # Run command below to skip warm up
     #  echo "export ISAACSIM_SKIP_WARMUP=Y" >> ~/.profile
     if [[ -z "${ISAACSIM_SKIP_WARMUP}" ]]; then
-        x-terminal-emulator -e "${SCRIPT_DIR}/omni.isaac.sim.post.install.run.sh"
+        echo Warming up caches in pop-up terminal...
+        nohup x-terminal-emulator -e "${SCRIPT_DIR}/omni.isaac.sim.post.install.run.sh" &
     else
         echo ISAACSIM_SKIP_WARMUP was set. Warm up skipped. |& tee -a ${SCRIPT_DIR}/omni.isaac.sim.post.install.log
     fi
 
+    echo Done.
 fi
