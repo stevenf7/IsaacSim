@@ -187,7 +187,6 @@ function define_ext_test_experience(ext_name, args)
         "--enable omni.kit.test", -- We always need omni.kit.test extension as testing framework
         "--/exts/omni.kit.test/testExtEnableProfiler=0",
         "--/exts/omni.kit.test/testExtDefaultTimeout=600",
-        "--/exts/omni.kit.test/testExtRetryStrategy=\"retry-on-failure-ci-only\"",
         "--/exts/omni.kit.test/testExtArgs/0=\"--no-window\"",
         "--/exts/omni.kit.test/testExtArgs/1=\"--allow-root\"",
         "--/exts/omni.kit.test/testExtArgs/2=\"--/exts/omni.kit.test/includeTests/0='"..include_tests.."'\"",
@@ -338,7 +337,7 @@ SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 SAMPLE_DIR=$SCRIPT_DIR/../
 %s
 "$SCRIPT_DIR/../python.sh" -m pip install -r $SCRIPT_DIR/../requirements.txt
-"$SCRIPT_DIR/../python.sh" $SAMPLE_DIR/%s %s --/exts/omni.kit.test/testExtRetryStrategy="retry-on-failure-ci-only" $@
+"$SCRIPT_DIR/../python.sh" $SAMPLE_DIR/%s %s $@
         ]], extra, sample_path, extra_args))
         f:close()
         os.chmod(sh_file_path, 755)
@@ -353,7 +352,7 @@ SAMPLE_DIR=$SCRIPT_DIR/../
 setlocal
 %s
 call "%%~dp0..\python.bat" -m pip install -r "%%~dp0..\requirements.txt"
-call "%%~dp0..\python.bat" "%%~dp0..\%s" %s --/exts/omni.kit.test/testExtRetryStrategy="retry-on-failure-ci-only" %%*
+call "%%~dp0..\python.bat" "%%~dp0..\%s" %s %%*
         ]], extra, sample_path, extra_args))
         f:close()
     end
