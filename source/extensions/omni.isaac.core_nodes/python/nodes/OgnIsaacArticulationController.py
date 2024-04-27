@@ -87,7 +87,7 @@ class OgnIsaacArticulationController:
                     state.robot_prim = db.inputs.robotPath
                 else:
                     if len(db.inputs.targetPrim) == 0:
-                        db.log_error("Omnigraph Error: No robot prim found for the articulation controller")
+                        db.log_error("No robot prim found for the articulation controller")
                         return False
                     else:
                         state.robot_prim = db.inputs.targetPrim[0].GetString()

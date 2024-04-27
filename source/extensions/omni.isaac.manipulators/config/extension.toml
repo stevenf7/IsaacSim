@@ -34,5 +34,5 @@ exclude = ["Ogn*Database.py"]
 [[test]]
 
 stdoutFailPatterns.exclude = [
-    "*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_manipulators_IsaacGripperController: [/TestGraph] OmniGraph Error: Omnigraph Error: No robot prim found for the articulation controller*",
+    "*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_manipulators_IsaacGripperController: [/TestGraph] OmniGraph Error: No robot prim found for the articulation controller*",
 ]

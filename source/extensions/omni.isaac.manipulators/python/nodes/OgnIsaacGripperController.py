@@ -168,13 +168,13 @@ class OgnIsaacGripperController:
 
                 # find the robot articulation
                 if len(db.inputs.articulationRootPrim) == 0:
-                    db.log_error("Omnigraph Error: No robot prim found for the articulation controller")
+                    db.log_error("No robot prim found for the articulation controller")
                     return False
                 else:
                     state.robot_prim = db.inputs.articulationRootPrim[0].GetString()
 
                 if len(db.inputs.gripperPrim) == 0:
-                    db.log_error("Omnigraph Error: No gripper prim found")
+                    db.log_error("No gripper prim found")
                     return False
                 else:
                     state.gripper_prim = db.inputs.gripperPrim[0].GetString()
