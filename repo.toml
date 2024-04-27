@@ -640,6 +640,15 @@ include = ["*"]
 kind = "glob_and_exec"
 path = "${test_root}/tests"
 
+generate_report_cmd = [
+    "./repo${shell_ext}",
+    "ci",
+    "standalone_report",
+    "--",
+    "${test_root}/_testoutput",
+    "benchmarks"
+]
+
 [[repo_test.suites.benchmarks.group]]
 include = [
   "tests-omni.isaac.benchmarks*${shell_ext}",
@@ -687,6 +696,15 @@ include = ["tests-omni.isaac.benchmarks*${shell_ext}"]
 kind = "glob_and_exec"
 path = "${test_root}/tests"
 
+generate_report_cmd = [
+    "./repo${shell_ext}",
+    "ci",
+    "standalone_report",
+    "--",
+    "${test_root}/_testoutput",
+    "internalnativepythontests"
+]
+
 [[repo_test.suites.internalnativepythontests.group]]
 include = [
   "tests-internalnativepython*${shell_ext}"
@@ -703,6 +721,15 @@ stdout_fail_patterns.exclude = [
 [repo_test.suites.nativepythontests]
 kind = "glob_and_exec"
 path = "${test_root}/tests"
+
+generate_report_cmd = [
+    "./repo${shell_ext}",
+    "ci",
+    "standalone_report",
+    "--",
+    "${test_root}/_testoutput",
+    "nativepythontests"
+]
 
 [[repo_test.suites.nativepythontests.group]]
 include = [

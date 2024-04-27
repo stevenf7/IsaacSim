@@ -492,7 +492,9 @@ test-linux-x86_64-nativepythontests-1:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s nativepythontests -b 1
+  - ./repo.sh ci test -- -s nativepythontests -b 1 --generate-report
+  after_script:
+  - !reference [.datadog-test-visibility-linux-x86_64, script]
 
 test-linux-x86_64-nativepythontests-2:
   extends:
@@ -502,7 +504,23 @@ test-linux-x86_64-nativepythontests-2:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s nativepythontests -b 2
+  - ./repo.sh ci test -- -s nativepythontests -b 2 --generate-report
+  after_script:
+  - !reference [.datadog-test-visibility-linux-x86_64, script]
+
+test-linux-x86_64-internalnativepythontests:
+  extends:
+  - .test-common
+  - .test-linux-common
+  - .install-linux-test-packages
+  - .runner-test-linux-x86_64-gpu
+  - .omni_nvks_gpu
+  script:
+  - ./repo.sh ci test -- -s internalnativepythontests --generate-report
+  rules:
+  - !reference [.rules-nightly-tests, rules]
+  after_script:
+  - !reference [.datadog-test-visibility-linux-x86_64, script]
 
 
 test-linux-x86_64-benchmarks:
@@ -514,11 +532,14 @@ test-linux-x86_64-benchmarks:
   - .omni_nvks_gpu
   script:
   - export ISAAC_TEST_MODE=1
-  - ./repo.sh ci test -- -s benchmarks
+  - ./repo.sh ci test -- -s benchmarks --generate-report
   rules:
   - !reference [.rules-nightly-tests, rules]
+  after_script:
+  - !reference [.datadog-test-visibility-linux-x86_64, script]
 
-test-linux-x86_64-internalpythontests:
+
+test-linux-x86_64-internalpythontests-1:
   extends:
   - .test-common
   - .test-linux-common
@@ -526,7 +547,19 @@ test-linux-x86_64-internalpythontests:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s internalpythontests
+  - ./repo.sh ci test -- -s internalpythontests -b 1
+  rules:
+  - !reference [.rules-nightly-tests, rules]
+
+test-linux-x86_64-internalpythontests-2:
+  extends:
+  - .test-common
+  - .test-linux-common
+  - .install-linux-test-packages
+  - .runner-test-linux-x86_64-gpu
+  - .omni_nvks_gpu
+  script:
+  - ./repo.sh ci test -- -s internalpythontests -b 2
   rules:
   - !reference [.rules-nightly-tests, rules]
 
@@ -660,7 +693,9 @@ test-windows-x86_64-nativepythontests-1:
   - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
-  - ./repo.bat ci test -- -s nativepythontests -b 1
+  - ./repo.bat ci test -- -s nativepythontests -b 1 --generate-report
+  rules:
+  - !reference [.rules-nightly-tests, rules] #only run linux ones per MR and these nightly
 
 test-windows-x86_64-nativepythontests-2:
   extends:
@@ -668,7 +703,20 @@ test-windows-x86_64-nativepythontests-2:
   - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
-  - ./repo.bat ci test -- -s nativepythontests -b 2
+  - ./repo.bat ci test -- -s nativepythontests -b 2 --generate-report
+  rules:
+  - !reference [.rules-nightly-tests, rules] #only run linux ones per MR and these nightly
+
+test-windows-x86_64-internalnativepython:
+  extends:
+  - .test-common
+  - .test-windows-common
+  - .runner-test-windows-x86_64-gpu
+  script:
+  - ./repo.bat ci test -- -s internalnativepython --generate-report
+  rules:
+  - !reference [.rules-nightly-tests, rules]
+
 
 # ==============================================================================================================
 .deploy-artifacts:
