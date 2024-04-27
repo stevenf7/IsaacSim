@@ -76,7 +76,9 @@ function workspace_build_settings()
         defaultplatform "x86_64"
         disablewarnings {"error=unused-function"}
         buildoptions { "-fvisibility=hidden -D_FILE_OFFSET_BITS=64" }
-
+        
+        -- build options needed to build with no-docker
+        buildoptions { "-Wno-error" }
         -- Add library origin directory to dlopen() search path
         linkoptions { "-Wl,-rpath,'$$ORIGIN' -Wl,--export-dynamic" }
 

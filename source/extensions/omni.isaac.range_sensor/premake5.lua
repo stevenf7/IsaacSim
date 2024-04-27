@@ -60,56 +60,6 @@ project_ext_plugin(ext, "omni.isaac.range_sensor.plugin")
         defines { "NDEBUG" }
     filter {}
 
-project "tests-unit-omni.isaac.range_sensor"
-    kind "ConsoleApp"
-    dependson { "prebuild" }
-    targetdir ("%{root}/_build/%{platform}/%{config}/tests")
-    include_physx()
-    includedirs {
-            "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
-            "%{root}/_build/target-deps/rtx_plugins/include",
-            "%{root}/_build/target-deps/doctest",
-        }
-
-    libdirs { "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-              "%{root}/_build/target-deps/carb_sdk_plugins/_build/linux-x86_64/%{cfg.buildcfg}"}
-    links {"carb"}
-
-    runpathdirs {
-                "%{root}/_build/%{platform}/%{config}/kit/plugins",
-                "%{root}/_build/%{platform}/%{config}/kit/exts/omni.usd.libs/bin/" 
-            }
-    
-    filter { "system:windows", "platforms:x86_64" }
-        link_boost_for_windows({"boost_python310"})
-    filter {}
-    
-    filter { "system:linux" }
-            buildoptions { "-pthread" }
-            links { "pthread" }
-            includedirs { "%{target_deps}/python/include/python3.10",
-                          "%{target_deps}/nv_usd/%{config}/include/boost" }            
-            libdirs { "%{target_deps}/python/lib"}
-            links { "boost_python310", "python3.10", "sdf", "tf", "usd", "usdUtils" }
-
-    files {
-     	   "%{root}/source/extensions/omni.isaac.range_sensor/plugins/ultrasonic/TestUSS.cpp",
-           "%{root}/source/extensions/omni.isaac.range_sensor/plugins/ultrasonic/UltrasonicReceiver.h",
-           "%{root}/source/extensions/omni.isaac.range_sensor/plugins/ultrasonic/UltrasonicReceiver.cpp",
-           "%{root}/source/extensions/omni.isaac.range_sensor/plugins/ultrasonic/UltrasonicReceiverArray.cpp",
-           "%{root}/source/extensions/omni.isaac.range_sensor/plugins/ultrasonic/UltrasonicReceiverArray.h",
-           "%{root}/source/extensions/omni.isaac.range_sensor/plugins/ultrasonic/USSEnvelope.h",
-           "%{root}/source/extensions/omni.isaac.range_sensor/plugins/ultrasonic/FiringModeUtils.h",
-           "%{root}/source/extensions/omni.isaac.range_sensor/plugins/ultrasonic/UltrasonicEmitter.h",
-           "%{root}/source/extensions/omni.isaac.range_sensor/plugins/ultrasonic/BRDF.h",
-           "%{root}/source/extensions/omni.isaac.range_sensor/plugins/ultrasonic/BRDF.cpp"}
-    filter { "configurations:debug" }
-      defines { "_DEBUG" }
-      filter {}
-    filter { "configurations:release" }
-      defines { "NDEBUG" }
-      filter {}
-
 project_ext_ogn( ext, ogn )
 
 -- Python Bindings for Carobnite Plugin
