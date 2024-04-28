@@ -45,7 +45,9 @@ files_exclude = [
     ["**/*.pyc"],
     ["**/*.pdb"],
     ["**/*.exp"],
+    ["**/*.a"], # static libs
     ["kit/data/**"], # This can contain portable files we don't want to package
+    ["extsbuild"],
     ["exts/omni.isaac.internal_tools"],
     ["tests/tests-omni.isaac.internal_tools.*"],
     ["tests/tests-internal*"],
@@ -64,11 +66,13 @@ files_exclude = [
     ["**/*.pyc"],
     ["**/*.pdb"],
     ["**/*.exp"],
+    ["**/*.a"], # static libs
     ["apps/exts.deps.generated.kit"],
     ["apps/omni.isaac.sim.extscache.*"],
     ["apps/omni.isaac.sim.splash.kit"],
     ["kit/data/**"], # This can contain portable files we don't want to package
     ["kit/extsPhysics/**"], # This can contain portable files we don't want to package
+    ["extsbuild"],
     ["exts/omni.isaac.internal_tools"],
     ["tests/tests-omni.isaac.internal_tools.*"],
     ["tests/tests-internal*"],
@@ -132,6 +136,7 @@ files_exclude = [
     ["**/*.pyc"],
     ["**/*.pdb"],
     ["**/*.exp"],
+    ["**/*.a"], # static libs
     ["apps/exts.deps.generated.kit"],
     ["apps/omni.isaac.sim.extscache.*"],
     ["apps/omni.isaac.sim.splash.kit"],
@@ -142,6 +147,7 @@ files_exclude = [
     ["dockertests/**"],
     ["kit/**"],
     ["extscache/**"],
+    ["extsbuild/**"],
     ["standalone_examples/testing/**"],
     ["exts/omni.isaac.core_archive/pip_prebundle/bin/**"], # OM-84922
     ["exts/omni.isaac.gym.benchmark"],
@@ -165,6 +171,7 @@ files_strip_exclude = [
 files_exclude = [
     ["kit/**"],
     ["extscache/**"],
+    ["extsbuild/**"],
     ["isaac-sim.xr.steamvr.sh"], # Remove XR support for Linux
     ["apps/omni.isaac.sim.xr.steamvr.kit"] # Remove XR support for Linux
 ]
@@ -181,6 +188,7 @@ files = [
 files_exclude = [
     ["kit/**"],
     ["extscache/**"],
+    ["extsbuild/**"],
     ["standalone_examples/cortex/**"], # Cortex not shipped on windows
     ["standalone_examples/api/omni.isaac.ros_bridge**"] # ROS1 not shipped on windows
 ]

@@ -264,6 +264,7 @@ build-linux-x86_64-release:
   before_script:
   - set -eu
   - yum install -y bsdtar
+  - yum install -y rdfind
   - !reference [.omni_s3_write_get_secrets, omni_s3_write_get_secrets]
   script:
   - ./repo.sh ci build -c release
@@ -276,6 +277,7 @@ build-linux-x86_64-debug:
   before_script:
   - set -eu
   - yum install -y bsdtar
+  - yum install -y rdfind
   - !reference [.omni_s3_write_get_secrets, omni_s3_write_get_secrets]
   script:
   - ./repo.sh ci build -c debug

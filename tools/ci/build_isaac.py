@@ -30,6 +30,13 @@ def main(args: argparse.Namespace):
     # Full rebuild config
     omni.repo.ci.launch(build_cmd)
 
+    # Generate symlinks, currently it breaks python
+    # if sys.platform == "linux":
+    #     omni.repo.ci.launch(
+    #         ["rdfind", "-followsymlinks", "true", "-makesymlinks", "true", f"_build/linux-x86_64/{build_config}/"],
+    #         warning_only=True,
+    #     )
+
     if build_config == "release":
         # Extensions verification for publishing (if publishing enabled)
         if omni.repo.ci.get_repo_config().get("repo_publish_exts", {}).get("enabled", True):
