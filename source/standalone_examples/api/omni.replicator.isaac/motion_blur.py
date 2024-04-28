@@ -150,6 +150,10 @@ def run_motion_blur_example(num_frames=3, custom_delta_time=None, use_path_traci
         print(f"[MotionBlur] Changing physics FPS from {orig_physics_fps} to {target_physics_fps}")
         physx_scene.GetTimeStepsPerSecondAttr().Set(target_physics_fps)
 
+    # Start the timeline for physics updates in the step function
+    timeline = omni.timeline.get_timeline_interface()
+    timeline.play()
+
     # Capture frames
     for i in range(num_frames):
         print(f"[MotionBlur] \tCapturing frame {i}")

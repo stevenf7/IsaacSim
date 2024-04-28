@@ -1,3 +1,12 @@
+# Copyright (c) 2024, NVIDIA CORPORATION. All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto. Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+#
+
 import argparse
 import json
 import os
@@ -17,7 +26,7 @@ config = {
     "num_frames": 10,
     "num_cameras": 3,
     "disable_render_products_between_captures": False,
-    "simulation_duration_between_captures": 0.01,
+    "simulation_duration_between_captures": 0.05,
     "resolution": (640, 480),
     "camera_properties_kwargs": {
         "focalLength": 24.0,
@@ -84,7 +93,7 @@ else:
 # Update the default config dict with the external one
 config.update(args_config)
 
-print(f"[Demo] Using config:\n{config}")
+print(f"[SDG] Using config:\n{config}")
 
 launch_config = config.get("launch_config", {})
 simulation_app = SimulationApp(launch_config=launch_config)
@@ -257,6 +266,9 @@ for i in range(num_cameras):
             print(f"Unknown camera attribute with {key}:{value}")
     cameras.append(cam_prim)
 
+# Wait an app update to ensure the prim changes are applied
+simulation_app.update()
+
 # Create render products using the cameras
 render_products = []
 resolution = config.get("resolution", (640, 480))
@@ -277,10 +289,11 @@ if out_dir := writer_kwargs.get("output_dir"):
     if not os.path.isabs(out_dir):
         out_dir = os.path.join(os.getcwd(), out_dir)
         writer_kwargs["output_dir"] = out_dir
-    print(f"[Demo] Writing data to: {out_dir}")
-writer = rep.writers.get(writer_type)
-writer.initialize(**writer_kwargs)
-writer.attach(render_products)
+    print(f"[SDG] Writing data to: {out_dir}")
+if writer_type is not None and len(render_products) > 0:
+    writer = rep.writers.get(writer_type)
+    writer.initialize(**writer_kwargs)
+    writer.attach(render_products)
 
 # RANDOMIZERS
 # Apply a random (mostly) uppwards velocity to the objects overlapping the 'bounce' area
@@ -401,7 +414,7 @@ def capture_with_motion_blur_and_pathtracing(duration=0.05, num_samples=8, spp=6
     orig_physics_fps = physx_scene.GetTimeStepsPerSecondAttr().Get()
     target_physics_fps = 1 / duration * num_samples
     if target_physics_fps > orig_physics_fps:
-        print(f"[Demo] Changing physics FPS from {orig_physics_fps} to {target_physics_fps}")
+        print(f"[SDG] Changing physics FPS from {orig_physics_fps} to {target_physics_fps}")
         physx_scene.GetTimeStepsPerSecondAttr().Set(target_physics_fps)
 
     # Enable motion blur (if not enabled)
@@ -419,17 +432,21 @@ def capture_with_motion_blur_and_pathtracing(duration=0.05, num_samples=8, spp=6
     carb.settings.get_settings().set("/rtx/pathtracing/clampSpp", spp)
     carb.settings.get_settings().set("/rtx/pathtracing/optixDenoiser/enabled", 0)
 
+    # Make sure the timeline is playing
+    if not timeline.is_playing():
+        timeline.play()
+
     # Capture the frame by advancing the simulation for the given duration and combining the sub samples
-    rep.orchestrator.step(delta_time=duration)
+    rep.orchestrator.step(delta_time=duration, pause_timeline=False)
 
     # Restore the original physics FPS
     if target_physics_fps > orig_physics_fps:
-        print(f"[Demo] Restoring physics FPS from {target_physics_fps} to {orig_physics_fps}")
+        print(f"[SDG] Restoring physics FPS from {target_physics_fps} to {orig_physics_fps}")
         physx_scene.GetTimeStepsPerSecondAttr().Set(orig_physics_fps)
 
     # Restore the previous render and motion blur  settings
     carb.settings.get_settings().set("/omni/replicator/captureMotionBlur", is_motion_blur_enabled)
-    print(f"[Demo] Restoring render mode from 'PathTracing' to '{prev_render_mode}'")
+    print(f"[SDG] Restoring render mode from 'PathTracing' to '{prev_render_mode}'")
     carb.settings.get_settings().set("/rtx/rendermode", prev_render_mode)
 
 
@@ -438,7 +455,8 @@ def run_simulation_loop(duration):
     timeline = omni.timeline.get_timeline_interface()
     elapsed_time = 0.0
     previous_time = timeline.get_current_time()
-    timeline.play()
+    if not timeline.is_playing():
+        timeline.play()
     app_updates_counter = 0
     while elapsed_time <= duration:
         simulation_app.update()
@@ -449,7 +467,7 @@ def run_simulation_loop(duration):
             f"\t Simulation loop at {timeline.get_current_time():.2f}, current elapsed time: {elapsed_time:.2f}, counter: {app_updates_counter}"
         )
     print(
-        f"[Demo] Simulation loop finished in {elapsed_time:.2f} seconds at {timeline.get_current_time():.2f} with {app_updates_counter} app updates."
+        f"[SDG] Simulation loop finished in {elapsed_time:.2f} seconds at {timeline.get_current_time():.2f} with {app_updates_counter} app updates."
     )
 
 
@@ -458,7 +476,9 @@ timeline = omni.timeline.get_timeline_interface()
 timeline.set_start_time(0)
 timeline.set_end_time(1000000)
 timeline.set_looping(False)
+timeline.play()
 timeline.commit()
+simulation_app.update()
 
 # SDG
 num_frames = config.get("num_frames", 10)
@@ -510,9 +530,12 @@ for i in range(num_frames):
         object_based_sdg_utils.set_render_products_updates(render_products, True, include_viewport=False)
 
     # Capture the current frame
-    print(f"[Demo] Capturing frame {i}/{num_frames}, at simulation time: {timeline.get_current_time():.2f}")
-    rep.orchestrator.step(delta_time=0.0, rt_subframes=rt_subframes)
-    # capture_with_motion_blur_and_pathtracing(duration=0.025, num_samples=8, spp=128)
+    print(f"[SDG] Capturing frame {i}/{num_frames}, at simulation time: {timeline.get_current_time():.2f}")
+    if i % 2 == 0:
+        rep.orchestrator.step(delta_time=0.0, rt_subframes=rt_subframes, pause_timeline=False)
+        # capture_with_motion_blur_and_pathtracing(duration=0.025, num_samples=8, spp=128)
+    else:
+        rep.orchestrator.step(delta_time=0.0, rt_subframes=rt_subframes, pause_timeline=False)
 
     # Disable render products between captures
     if disable_render_products_between_captures:
@@ -525,7 +548,6 @@ for i in range(num_frames):
         timeline.forward_one_frame()
         simulation_app.update()
 
-
 # Wait for the data to be written to disk
 rep.orchestrator.wait_until_complete()
 
@@ -536,11 +558,16 @@ avg_frame_fps = num_frames / wall_duration
 num_captures = num_frames * num_cameras
 avg_capture_fps = num_captures / wall_duration
 print(
-    f"[Demo] Captured {num_frames} frames, {num_captures} entries (frames * cameras) in {wall_duration:.2f} seconds.\n"
+    f"[SDG] Captured {num_frames} frames, {num_captures} entries (frames * cameras) in {wall_duration:.2f} seconds.\n"
     f"\t Simulation duration: {sim_duration:.2f}\n"
     f"\t Simulation duration between captures: {sim_duration_between_captures:.2f}\n"
     f"\t Average frame FPS: {avg_frame_fps:.2f}\n"
     f"\t Average capture entries (frames * cameras) FPS: {avg_capture_fps:.2f}\n"
 )
+
+# Unsubscribe the physics overlap checks and stop the timeline
+physx_sub.unsubscribe()
+physx_sub = None
+timeline.stop()
 
 simulation_app.close()
