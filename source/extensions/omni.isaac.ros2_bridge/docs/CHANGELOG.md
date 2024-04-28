@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.23.2] - 2024-04-26
+### Fixed
+ROS2 bridge check failing on humble due to mising libraries
+
 ## [2.23.1] - 2024-04-25
 ### Fixed
 - Group ROS2 Subscriber input attributes to match the ROS2 Publisher OGN style
