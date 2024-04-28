@@ -325,6 +325,7 @@ s3_exclude_patterns = []
 windows_max_path_length=200
 ziponly = false
 archive_format = "7z"
+# store_links_zip = true # preserve symlinks
 
 [repo_package.packages.isaac-sim]
 root = "_build/$${platform}/$${config}"
