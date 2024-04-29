@@ -43,8 +43,9 @@ class BaseIsaacBenchmark:
 
     By default this class will collect hardware performance data (see recorders), broken up by "phase". Typical structure looks like:
 
-    ```
-        benchmark = base_isaac_benchmark.BaseIsaacBenchmark(benchmark_name=..., workflow_metadata=...)
+    .. code-block:: python
+
+        benchmark = BaseIsaacBenchmark(benchmark_name=..., workflow_metadata=...)
         benchmark.set_phase("loading")
         # load stage, configure sim, etc.
         benchmark.store_measurements()
@@ -52,9 +53,9 @@ class BaseIsaacBenchmark:
         # Actual code being benchmarked (running the sim for N frames, cloning an object, etc.)
         benchmark.store_measurements()
         benchmark.stop() # Shuts down benchmark, writes metrics to file
-    ```
 
     You can set any number of phases.
+
     """
 
     def __init__(
@@ -110,6 +111,7 @@ class BaseIsaacBenchmark:
             self._metrics_output_folder = tempfile.gettempdir()
 
         # Get metrics backend based on user-provided type
+        logger.info(f"Using metrics backend = {backend_type}")
         self._metrics = backend.MetricsBackend.get_instance(instance_type=backend_type)
 
         # Generate workflow-level metadata
@@ -191,26 +193,6 @@ class BaseIsaacBenchmark:
         if start_recording_time:
             self.frametime_recorder.start_collecting()
             self.runtime_recorder.start_time()
-
-    def start_collecting_frametime(self):
-        """Deprecated"""
-        logger.warning(f"{self.start_collecting_frametime.__name__} is deprecated. Invoked by set_phase.")
-        self.frametime_recorder.start_collecting()
-
-    def stop_collecting_frametime(self):
-        """Deprecated"""
-        logger.warning(f"{self.stop_collecting_frametime.__name__} is deprecated. Invoked by store_measurements.")
-        self.frametime_recorder.stop_collecting()
-
-    def start_runtime(self):
-        """Deprecated"""
-        logger.warning(f"{self.start_runtime.__name__} is deprecated. Invoked by set_phase.")
-        self.runtime_recorder.start_time()
-
-    def stop_runtime(self):
-        """Deprecated"""
-        logger.warning(f"{self.stop_runtime.__name__} is deprecated. Invoked by store_measurements.")
-        self.runtime_recorder.stop_time()
 
     def store_measurements(self, stop_recording_time: bool = True) -> None:
         """Stores measurements, metadata, and artifacts collected by all recorders during the previous phase.

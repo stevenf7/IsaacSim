@@ -13,7 +13,7 @@ import shutil
 import carb
 import omni.kit.test
 import omni.replicator.core as rep
-from omni.isaac.benchmark.services.base_isaac_benchmark_async import BaseIsaacBenchmarkAsync
+from omni.isaac.benchmark.services import BaseIsaacBenchmarkAsync
 from omni.isaac.benchmark.services.utils import wait_until_stage_is_fully_loaded_async
 from omni.isaac.core.utils.stage import create_new_stage_async, open_stage
 from omni.isaac.nucleus import get_assets_root_path_async

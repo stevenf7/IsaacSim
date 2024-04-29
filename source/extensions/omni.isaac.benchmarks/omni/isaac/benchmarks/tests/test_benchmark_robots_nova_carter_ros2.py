@@ -13,7 +13,7 @@ import omni.graph.core as og
 import omni.kit.test
 import rclpy
 from geometry_msgs.msg import Twist
-from omni.isaac.benchmark.services.base_isaac_benchmark_async import BaseIsaacBenchmarkAsync
+from omni.isaac.benchmark.services import BaseIsaacBenchmarkAsync
 from omni.isaac.core import PhysicsContext
 from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.wheeled_robots.robots import WheeledRobot

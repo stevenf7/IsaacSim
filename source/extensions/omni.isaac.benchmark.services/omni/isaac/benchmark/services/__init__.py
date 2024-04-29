@@ -6,3 +6,6 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+
+from .base_isaac_benchmark import BaseIsaacBenchmark
+from .base_isaac_benchmark_async import BaseIsaacBenchmarkAsync

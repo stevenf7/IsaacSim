@@ -249,7 +249,7 @@ sphinx_conf_py_extra = """
     html_static_path = [
         "docs/media/NVIDIA-LogoBlack.svg",
     ]
-    autodoc_mock_imports = ["omni.ui", "usdrt",  "omni.kit.window", "omni.kit.helper", "omni.kit.ui", "omni.graph", "omni.replicator.core", "omni.activity", "omni.kit.app"]
+    autodoc_mock_imports = ["omni.ui", "usdrt",  "omni.kit.window", "omni.kit.helper", "omni.kit.ui", "omni.graph", "omni.replicator.core", "omni.activity", "omni.kit.app", "omni.stats"]
     import sys
     if sys.platform == "win32":
         autodoc_mock_imports.extend(["omni.isaac.IsaacSensorSchema", "omni.isaac.RangeSensorSchema", "omni.isaac.gym", "osqp", "omni.isaac.ros_bridge"])

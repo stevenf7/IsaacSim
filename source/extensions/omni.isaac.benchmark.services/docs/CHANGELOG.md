@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.5.0] - 2023-04-29
+### Changed
+- cleaned up imports
+- updated docstrings
+- removed unused functions
+
 ## [1.4.2] - 2023-04-15
 ### Fixed
 - Error when zero frames were collected

@@ -10,7 +10,7 @@
 import carb
 import numpy as np
 import omni.kit.test
-from omni.isaac.benchmark.services.base_isaac_benchmark_async import BaseIsaacBenchmarkAsync
+from omni.isaac.benchmark.services import BaseIsaacBenchmarkAsync
 from omni.isaac.core import PhysicsContext
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.utils.viewports import set_camera_view

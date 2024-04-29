@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.8.0] - 2024-04-16
+### Added
+- max_gpu_count config argument
+### Fixed
+- benchmark services include
+
 ## [1.7.0] - 2024-04-22
 ### Changed
 - Don't terminate Isaac Sim if the 'isaacsim' module is not imported

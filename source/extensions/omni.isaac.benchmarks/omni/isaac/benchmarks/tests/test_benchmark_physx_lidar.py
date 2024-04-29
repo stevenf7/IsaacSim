@@ -8,7 +8,7 @@
 #
 
 import omni.kit.test
-from omni.isaac.benchmark.services.base_isaac_benchmark_async import BaseIsaacBenchmarkAsync
+from omni.isaac.benchmark.services import BaseIsaacBenchmarkAsync
 from omni.isaac.benchmarks.helper import add_physx_lidar
 from omni.isaac.core import PhysicsContext
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
