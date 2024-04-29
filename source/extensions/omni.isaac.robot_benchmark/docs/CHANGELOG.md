@@ -1,4 +1,8 @@
 # Changelog
+## [1.2.3] - 2024-04-29
+### Changed
+- Update Golden Values in tests due to Kit version 106.0 (Physics behavior in particular)
+
 ## [1.2.2] - 2023-07-07
 ### Changed
 - Update Golden Values in tests due to Kit version 105.1

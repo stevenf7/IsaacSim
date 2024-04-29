@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.2.2"
+version = "1.2.3"
 category = "Simulation"
 title = "Robot Benchmark"
 description = "Extension for benchmark testing combinations of environment/robot/motion policy"
