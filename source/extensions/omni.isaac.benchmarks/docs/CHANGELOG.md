@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.21.9] - 2024-04-29
+### Fixed
+- Benchmark service includes
+
+
 ## [0.21.8] - 2024-02-29
 ### Changed
 - Removes deprecated function calls from benchmarks.

@@ -147,9 +147,9 @@ class CreateSetupExtension(omni.ext.IExt):
         # Record startup time as time at which app is ready for use
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         if ext_manager.is_extension_enabled("omni.isaac.benchmark.services"):
-            from omni.isaac.benchmark.services import base_isaac_benchmark
+            from omni.isaac.benchmark.services import BaseIsaacBenchmark
 
-            benchmark = base_isaac_benchmark.BaseIsaacBenchmark(
+            benchmark = BaseIsaacBenchmark(
                 benchmark_name="app_startup",
                 workflow_metadata={
                     "metadata": [

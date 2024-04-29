@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.13.1] - 2024-03-19
+### Fixed
+- include for benchmark services
+
+
 ## [0.13.0] - 2024-03-18
 
 ### Added

@@ -16,6 +16,12 @@ parser.add_argument(
 )
 parser.add_argument("--num-gpus", type=int, default=1, help="Number of GPUs on machine.")
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
+parser.add_argument(
+    "--backend-type",
+    default="OsmoKPIFile",
+    choices=["LocalLogMetrics", "JSONFileMetrics", "OsmoKPIFile"],
+    help="Benchmarking backend, defaults",
+)
 args, unknown = parser.parse_known_args()
 
 n_camera = args.num_cameras
@@ -25,7 +31,7 @@ n_gpu = args.num_gpus
 import numpy as np
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp({"headless": True})
+simulation_app = SimulationApp({"headless": True, "max_gpu_count": n_gpu})
 
 TEST_NUM_APP_UPDATES = 60 * 10
 
@@ -40,10 +46,10 @@ from omni.isaac.sensor import Camera
 from omni.kit.viewport.utility import get_active_viewport
 
 enable_extension("omni.isaac.benchmark.services")
-from omni.isaac.benchmark.services import base_isaac_benchmark
+from omni.isaac.benchmark.services import BaseIsaacBenchmark
 
 # Create the benchmark
-benchmark = base_isaac_benchmark.BaseIsaacBenchmark(
+benchmark = BaseIsaacBenchmark(
     benchmark_name="benchmark_camera",
     workflow_metadata={
         "metadata": [
@@ -53,6 +59,7 @@ benchmark = base_isaac_benchmark.BaseIsaacBenchmark(
             {"name": "num_gpus", "data": n_gpu},
         ]
     },
+    backend_type=args.backend_type,
 )
 benchmark.set_phase("loading")
 

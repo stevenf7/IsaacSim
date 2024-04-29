@@ -45,6 +45,13 @@ parser.add_argument("--disable-viewport-rendering", action="store_true", help="D
 parser.add_argument("--delete-data-when-done", action="store_true", help="Delete local data after benchmarking")
 parser.add_argument("--print-results", action="store_true", help="Print results in terminal")
 parser.add_argument("--headless", action="store_true", help="Run in headless mode")
+parser.add_argument(
+    "--backend-type",
+    default="OsmoKPIFile",
+    choices=["LocalLogMetrics", "JSONFileMetrics", "OsmoKPIFile"],
+    help="Benchmarking backend, defaults",
+)
+
 
 args, unknown = parser.parse_known_args()
 
@@ -80,7 +87,7 @@ import time
 
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp({"headless": headless})
+simulation_app = SimulationApp({"headless": headless, "max_gpu_count": n_gpu})
 
 REPLICATOR_GLOBAL_SEED = 11
 
@@ -91,10 +98,10 @@ from omni.isaac.core.utils.extensions import enable_extension
 from omni.kit.viewport.utility import get_active_viewport
 
 enable_extension("omni.isaac.benchmark.services")
-from omni.isaac.benchmark.services import base_isaac_benchmark
+from omni.isaac.benchmark.services import BaseIsaacBenchmark
 
 # Create the benchmark
-benchmark = base_isaac_benchmark.BaseIsaacBenchmark(
+benchmark = BaseIsaacBenchmark(
     benchmark_name="benchmark_sdg",
     workflow_metadata={
         "metadata": [
@@ -107,6 +114,7 @@ benchmark = base_isaac_benchmark.BaseIsaacBenchmark(
             {"name": "num_gpus", "data": n_gpu},
         ]
     },
+    backend_type=args.backend_type,
 )
 
 benchmark.set_phase("loading")

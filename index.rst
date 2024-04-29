@@ -54,7 +54,7 @@ Isaac Sim: Extensions API
    source/extensions/omni.isaac.conveyor/docs/index
    source/extensions/omni.isaac.examples_nodes/docs/index
    source/extensions/omni.isaac.version/docs/index
-
+   source/extensions/omni.isaac.benchmark.services/docs/index
 
 
 Indices and tables

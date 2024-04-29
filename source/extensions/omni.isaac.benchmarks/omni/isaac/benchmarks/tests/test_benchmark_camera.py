@@ -9,7 +9,7 @@
 
 import numpy as np
 import omni.kit.test
-from omni.isaac.benchmark.services.base_isaac_benchmark_async import BaseIsaacBenchmarkAsync
+from omni.isaac.benchmark.services import BaseIsaacBenchmarkAsync
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.core.utils.stage import is_stage_loading
 from omni.isaac.sensor import Camera

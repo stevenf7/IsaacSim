@@ -9,7 +9,7 @@
 
 import omni.kit.test
 import omni.replicator.core as rep
-from omni.isaac.benchmark.services.base_isaac_benchmark_async import BaseIsaacBenchmarkAsync
+from omni.isaac.benchmark.services import BaseIsaacBenchmarkAsync
 from omni.isaac.core.utils.prims import delete_prim
 from pxr import Gf
 

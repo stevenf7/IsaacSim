@@ -40,7 +40,9 @@ def set_sync_mode():
 
 class BaseIsaacBenchmarkAsync(omni.kit.test.AsyncTestCase):
     async def setUp(self):
-        # Set carb settings to wait until all materials are loaded when loading a stage
+        """
+        Must be awaited by derived benchmarks to properly set up the benchmark
+        """
         set_sync_mode()
         self._test_phases = []
 
@@ -93,7 +95,9 @@ class BaseIsaacBenchmarkAsync(omni.kit.test.AsyncTestCase):
         pass
 
     async def tearDown(self):
-
+        """
+        Must be awaited by derived benchmarks to properly tear down the benchmark
+        """
         if not os.path.exists(self._metrics_output_folder):
             os.mkdir(path=self._metrics_output_folder)
         randomize_filename_prefix = self.settings.get(
@@ -165,26 +169,6 @@ class BaseIsaacBenchmarkAsync(omni.kit.test.AsyncTestCase):
             self.frametime_recorder.start_collecting()
             self.runtime_recorder.start_time()
 
-    def start_collecting_frametime(self):
-        """Deprecated"""
-        logger.warning(f"{self.start_collecting_frametime.__name__} is deprecated. Invoked by set_phase.")
-        self.frametime_recorder.start_collecting()
-
-    def stop_collecting_frametime(self):
-        """Deprecated"""
-        logger.warning(f"{self.stop_collecting_frametime.__name__} is deprecated. Invoked by store_measurements.")
-        self.frametime_recorder.stop_collecting()
-
-    def start_runtime(self):
-        """Deprecated"""
-        logger.warning(f"{self.start_runtime.__name__} is deprecated. Invoked by set_phase.")
-        self.runtime_recorder.start_time()
-
-    def stop_runtime(self):
-        """Deprecated"""
-        logger.warning(f"{self.stop_runtime.__name__} is deprecated. Invoked by store_measurements.")
-        self.runtime_recorder.stop_time()
-
     async def store_measurements(self, stop_recording_time: bool = True) -> None:
         """Stores measurements, metadata, and artifacts collected by all recorders during the previous phase.
         Optionally, ends frametime and runtime collection.
@@ -219,5 +203,10 @@ class BaseIsaacBenchmarkAsync(omni.kit.test.AsyncTestCase):
         self._metrics.add_metrics(test_phase)
 
     async def fully_load_stage(self, usd_path):
+        """Await this function to open a stage and then wait for it to fully load
+
+        Args:
+            usd_path (str): Path to USD stage.
+        """
         open_stage(usd_path)
         await wait_until_stage_is_fully_loaded_async()
