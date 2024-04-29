@@ -1408,7 +1408,9 @@ class Extension(omni.ext.IExt):
                 + "is missing. Aborting Import."
             )
         elif parsed_file["format_version"] != 1.0:
-            carb.log_error("This importer only supports XRDF files with format_version '1.0'")
+            carb.log_warn(
+                "Attempting to read an XRDF file that does not have format version 1.0.  This may not be supported."
+            )
 
         self._active_joints = np.zeros(MAX_DOF_NUM, dtype=bool)
         self._acceleration_limits = np.full(MAX_DOF_NUM, DEFAULT_ACCELERATION_LIMIT)
@@ -1531,12 +1533,11 @@ class Extension(omni.ext.IExt):
             except yaml.YAMLError as exc:
                 return False
 
-        if (
-            "format" in parsed_file
-            and parsed_file["format"] == "xrdf"
-            and "format_version" in parsed_file
-            and parsed_file["format_version"] == 1.0
-        ):
+        if "format" in parsed_file and parsed_file["format"] == "xrdf" and "format_version" in parsed_file:
+            if parsed_file["format_version"] != 1.0:
+                carb.log_warn(
+                    "Attempting to read an XRDF file that does not have format version 1.0.  This may not be supported."
+                )
             return True
         else:
             return False
