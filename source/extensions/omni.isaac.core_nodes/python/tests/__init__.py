@@ -15,3 +15,4 @@ from .test_core_nodes import *
 from .test_create_render_product import *
 from .test_create_viewport import *
 from .test_rtf import *
+from .test_time_splitter import *

@@ -1,7 +1,12 @@
 # Changelog
+
+## [1.15.0] - 2024-04-28
+### Added
+- Time Splitter node
+
 ## [1.14.4] - 2024-04-18
 ### Fixed
-- Check for joint indices need to account for the possbility of an array input
+- Check for joint indices need to account for the possibility of an array input
 
 ## [1.14.3] - 2024-04-18
 ### Added
