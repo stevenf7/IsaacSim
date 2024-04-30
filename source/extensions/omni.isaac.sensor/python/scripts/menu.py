@@ -93,7 +93,7 @@ class IsaacSensorMenu:
                                     prim_path=get_next_free_path("/SG2_OX03CC_5200_GMSL2_H100F1", None),
                                     prim_type="Xform",
                                     usd_path=get_assets_root_path()
-                                    + "/Isaac/Sensors/Sensing/Camera_SG2_OX03CC_5200_GMSL2_H100F1.usd",
+                                    + "/Isaac/Sensors/Sensing/SG2/H100F1/SG2-AR0233C-5200-G2A-H100F1A.usd",
                                 ),
                             ),
                             make_menu_item_description(
@@ -103,7 +103,7 @@ class IsaacSensorMenu:
                                     prim_path=get_next_free_path("/SG2_OX03CC_5200_GMSL2_H60YA", None),
                                     prim_type="Xform",
                                     usd_path=get_assets_root_path()
-                                    + "/Isaac/Sensors/Sensing/Camera_SG2_OX03CC_5200_GMSL2_H60YA.usd",
+                                    + "/Isaac/Sensors/Sensing/SG2/H60YA/Camera_SG2_OX03CC_5200_GMSL2_H60YA.usd",
                                 ),
                             ),
                             make_menu_item_description(
@@ -113,7 +113,7 @@ class IsaacSensorMenu:
                                     prim_path=get_next_free_path("/SG3_ISX031C_GMSL2_H190X", None),
                                     prim_type="Xform",
                                     usd_path=get_assets_root_path()
-                                    + "/Isaac/Sensors/Sensing/Camera_SG3_ISX031C_GMSL2_H190X.usd",
+                                    + "/Isaac/Sensors/Sensing/SG3/H190X/SG3S-ISX031C-GMSL2F-H190XA.usd",
                                 ),
                             ),
                             make_menu_item_description(
@@ -133,7 +133,7 @@ class IsaacSensorMenu:
                                     prim_path=get_next_free_path("/SG8_AR0820C_5300_GMSL2_H120Y1A", None),
                                     prim_type="Xform",
                                     usd_path=get_assets_root_path()
-                                    + "/Isaac/Sensors/Sensing/Camera_SG8_AR0820C_5300_GMSL2_H120Y1A.usd",
+                                    + "/Isaac/Sensors/Sensing/SG8/H120Y1A/SG8S-AR0820C-5300-G2A-H120YA.usd",
                                 ),
                             ),
                             make_menu_item_description(
@@ -143,7 +143,7 @@ class IsaacSensorMenu:
                                     prim_path=get_next_free_path("/SG8_AR0820C_5300_GMSL2_H30S1A", None),
                                     prim_type="Xform",
                                     usd_path=get_assets_root_path()
-                                    + "/Isaac/Sensors/Sensing/Camera_SG8_AR0820C_5300_GMSL2_H30S1A.usd",
+                                    + "/Isaac/Sensors/Sensing/SG8/H30S1A/SG8S-AR0820C-5300-G2A-H30YA.usd",
                                 ),
                             ),
                             make_menu_item_description(
@@ -153,7 +153,7 @@ class IsaacSensorMenu:
                                     prim_path=get_next_free_path("/SG8_AR0820C_5300_GMSL2_H60SA", None),
                                     prim_type="Xform",
                                     usd_path=get_assets_root_path()
-                                    + "/Isaac/Sensors/Sensing/Camera_SG8_AR0820C_5300_GMSL2_H60SA.usd",
+                                    + "/Isaac/Sensors/Sensing/SG8/H60SA/SG8S-AR0820C-5300-G2A-H60SA.usd",
                                 ),
                             ),
                         ],

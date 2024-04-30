@@ -38,7 +38,7 @@ dependencies = [
 ]
 
 stdoutFailPatterns.exclude = [
-    '*[Error] [omni.isaac.sensor.plugin] *** error: Parent prim is not found or is invalid*',
+    '*[Error] [omni.isaac.sensor.plugin] *** error, No valid parent*',
     '*[Error] [omni.isaac.sensor.plugin] Failed to create imu sensor, parent prim is not found or invalid*',
     '*[Error] [omni.isaac.sensor.plugin] Imu Sensor does not exist*',
     '*[Error] [omni.isaac.sensor.plugin] Contact Sensor does not exist*',
