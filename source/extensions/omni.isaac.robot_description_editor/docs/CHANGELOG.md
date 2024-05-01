@@ -1,4 +1,8 @@
 # Changelog
+## [2.4.0] - 2024-05-01
+### Fixed
+- Fixed Articulation DropDown population and corresponding extension behavior.
+
 ## [2.3.2] - 2024-04-29
 ### Changed
 - Update error handling behavior to attempt to parse XRDF files with unsupported format versions after giving a warning.
