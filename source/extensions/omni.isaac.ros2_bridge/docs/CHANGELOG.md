@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.23.4] - 2024-04-30
+### Fixed
+ROS2 bridge check failing on humble due to mising libraries
+
 ## [2.23.3] - 2024-04-26
 ### Fixed
 Error when service server and client nodes started with blank message definition
