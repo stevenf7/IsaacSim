@@ -11,10 +11,18 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-n", "--n-robot", type=int, default=1, help="Number of robots")
-parser.add_argument("--enable-3d-lidar", type=int, default=0, help="Number of 3D lidars to enable, per robot.")
-parser.add_argument("--enable-2d-lidar", type=int, default=0, help="Number of 2D lidars to enable, per robot.")
 parser.add_argument(
-    "--enable-hawks", type=int, default=0, help="Number of Hawk camera stereo pairs to enable, per robot."
+    "--enable-3d-lidar", type=int, default=0, choices=range(0, 1 + 1), help="Number of 3D lidars to enable, per robot."
+)
+parser.add_argument(
+    "--enable-2d-lidar", type=int, default=0, choices=range(0, 2 + 1), help="Number of 2D lidars to enable, per robot."
+)
+parser.add_argument(
+    "--enable-hawks",
+    type=int,
+    default=0,
+    choices=range(0, 4 + 1),
+    help="Number of Hawk camera stereo pairs to enable, per robot.",
 )
 parser.add_argument("--num-gpus", type=int, default=1, help="Number of GPUs on machine.")
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
@@ -55,16 +63,6 @@ from omni.isaac.wheeled_robots.robots import WheeledRobot
 
 enable_extension("omni.isaac.benchmark.services")
 from omni.isaac.benchmark.services import BaseIsaacBenchmark
-
-if enable_3d_lidar > 1:
-    carb.log_warn("Warning: Nova Carter only has 1 3D lidar")
-    enable_3d_lidar = 1
-if enable_2d_lidar > 2:
-    carb.log_warn("Warning: Nova Carter only has 2 2D lidar")
-    enable_2d_lidar = 2
-if enable_hawks > 4:
-    carb.log_warn("Warning: Nova Carter only has 1 3D lidar")
-    enable_hawks = 4
 
 # Create the benchmark
 benchmark = BaseIsaacBenchmark(
@@ -143,6 +141,9 @@ for i in range(n_robot):
             ).set(False)
 
     robots.append(current_robot)
+
+# Set this to true so that we always publish regardless of subscribers
+carb.settings.get_settings().set_bool("/exts/omni.isaac.ros2_bridge/publish_without_verification", True)
 
 timeline = omni.timeline.get_timeline_interface()
 timeline.play()
