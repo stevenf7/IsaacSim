@@ -12,6 +12,10 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("-n", "--n-sensor", type=int, default=1, help="Number of sensors")
 parser.add_argument("--num-gpus", type=int, default=1, help="Number of GPUs on machine.")
+parser.add_argument(
+    "--lidar-type", type=str, default="Rotary", choices=["Rotary", "Solid_State"], help="Type of lidar to create"
+)
+
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
 parser.add_argument(
     "--backend-type",
@@ -62,14 +66,13 @@ timeline = omni.timeline.get_timeline_interface()
 hydra_textures = []
 writers = []
 sensors = []
+lidar_type = args.lidar_type
 for i in range(n_sensor):
-    lidar_type = "Rotary"
-    if i % 2:
-        lidar_type = "Solid_State"
     lidar_path = "/World/Rtx" + lidar_type + "Lidar_" + str(i)
     sensor_translation = Gf.Vec3f([-8, 13 + i * 2.0, 2.0])  # these positions are used for full_warehouse.usd
     # make sure to test rotary and solid state together.
     lidar_config = "Example_" + lidar_type
+    print("Lidar Config:", lidar_config)
 
     _, sensor = omni.kit.commands.execute(
         "IsaacSensorCreateRtxLidar",

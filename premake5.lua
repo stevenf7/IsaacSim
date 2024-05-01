@@ -543,7 +543,8 @@ function create_tests()
         python_sample_test("tests-standalone_benchmarks-benchmark_camera", "standalone_examples/benchmarks/benchmark_camera.py", "--test")
         python_sample_test("tests-standalone_benchmarks-benchmark_robots_nova_carter_ros2", "standalone_examples/benchmarks/benchmark_robots_nova_carter_ros2.py", "--test")
         python_sample_test("tests-standalone_benchmarks-benchmark_robots_nova_carter", "standalone_examples/benchmarks/benchmark_robots_nova_carter.py", "--test")
-        python_sample_test("tests-standalone_benchmarks-benchmark_rtx_lidar", "standalone_examples/benchmarks/benchmark_rtx_lidar.py", "--test -n 8")
+        python_sample_test("tests-standalone_benchmarks-benchmark_rtx_lidar_rotary", "standalone_examples/benchmarks/benchmark_rtx_lidar.py", "--test -n 8 --lidar-type Rotary")
+        python_sample_test("tests-standalone_benchmarks-benchmark_rtx_lidar_solid_state", "standalone_examples/benchmarks/benchmark_rtx_lidar.py", "--test -n 8 --lidar-type Solid_State")
         python_sample_test("tests-standalone_benchmarks-benchmark_sdg", "standalone_examples/benchmarks/benchmark_sdg.py")
 
     if os.target() == "linux" then
