@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.2.4] - 2024-05-01
+### Added
+- Deprecation warning
+
 ## [1.2.3] - 2024-04-29
 ### Changed
 - Update Golden Values in tests due to Kit version 106.0 (Physics behavior in particular)

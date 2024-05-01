@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.4.0"
+version = "0.4.1"
 category = "Simulation"
 title = "Simulated Environments for use in Isaac Sim"
 description = "Extension for programming simple environments for robots"
@@ -23,3 +23,6 @@ name = "omni.isaac.benchmark_environments"
 
 [[python.module]]
 name = "omni.isaac.benchmark_environments.tests"
+
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 4.0.0"
