@@ -400,7 +400,7 @@ class CollisionSphereEditor:
 
         return spheres
 
-    def load_xrdf_spheres(self, robot, parsed_file: dict):
+    def load_xrdf_spheres(self, robot_prim_path, parsed_file: dict):
         self.clear_spheres(store_op=False)
 
         self._redo = []
@@ -434,7 +434,7 @@ class CollisionSphereEditor:
 
         added_sphere_paths = ["ADD"]
         for key, val in sphere_dict.items():
-            link_path = robot.prim_path + "/" + key
+            link_path = robot_prim_path + "/" + key
             if is_prim_path_valid(link_path):
                 for sphere in val:
                     center = np.array(sphere["center"])
@@ -447,14 +447,14 @@ class CollisionSphereEditor:
         self._operations.append(added_sphere_paths)
 
         for k, v in buffer_distances.items():
-            link_path = robot.prim_path + "/" + k
+            link_path = robot_prim_path + "/" + k
             for p in self.path_2_spheres.keys():
                 if is_prim_path_valid(p) and p[: len(link_path)] == link_path:
                     sphere = self.path_2_spheres[p]
                     rad = sphere.get_radius()
                     sphere.set_radius(rad + v)
 
-    def load_spheres(self, robot, robot_description_file_path):
+    def load_spheres(self, robot_prim_path, robot_description_file_path):
         self.clear_spheres(store_op=False)
 
         self._redo = []
@@ -471,7 +471,7 @@ class CollisionSphereEditor:
         if sphere_list is None:
             return
 
-        robot_path = robot.prim_path
+        robot_path = robot_prim_path
 
         added_sphere_paths = ["ADD"]
 
@@ -560,8 +560,8 @@ class CollisionSphereEditor:
         return sphere_names
 
     # Used for XRDF files
-    def write_spheres_to_dict(self, robot, link_to_spheres):
-        robot_path_split = robot.prim_path.split("/")
+    def write_spheres_to_dict(self, robot_prim_path, link_to_spheres):
+        robot_path_split = robot_prim_path.split("/")
         for sphere in self.path_2_spheres.values():
             prim_path = sphere.prim_path
             if is_prim_path_valid(prim_path):
@@ -580,9 +580,9 @@ class CollisionSphereEditor:
                 link_to_spheres[link_name] = link_spheres
 
     # Used for Robot Description Files
-    def save_spheres(self, robot, f):
+    def save_spheres(self, robot_prim_path, f):
         link_to_spheres = OrderedDict()
-        robot_path_split = robot.prim_path.split("/")
+        robot_path_split = robot_prim_path.split("/")
         for sphere in self.path_2_spheres.values():
             prim_path = sphere.prim_path
             if is_prim_path_valid(prim_path):

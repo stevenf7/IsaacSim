@@ -116,6 +116,7 @@ class Extension(omni.ext.IExt):
         self._prev_art_prim_path = None
 
         # Articulation
+        self._articulation_base_path = None
         self.articulation = None
         self.num_dof = 0
         self.dof_names = []
@@ -230,7 +231,9 @@ class Extension(omni.ext.IExt):
 
         if self.articulation_list and prim_path != "None" and not self._timeline.is_stopped():
             # Create and Initialize the Articulation
+            self._articulation_base_path = prim_path
             self.articulation = Articulation(prim_path)
+
             if not self.articulation.handles_initialized:
                 self.articulation.initialize()
 
@@ -251,6 +254,7 @@ class Extension(omni.ext.IExt):
                 self._show_robot_if_hidden()
                 self._reset_ui()
                 self._refresh_selection_combobox()
+            self._articulation_base_path = None
             self.articulation = None
 
     def _on_combobox_selection(self, model=None, val=None):
@@ -320,17 +324,66 @@ class Extension(omni.ext.IExt):
         Returns:
             list(str): list of prim_paths as strings
         """
-        articulations = ["None"]
-        stage = self._usd_context.get_stage()
-        if stage:
-            for prim in Usd.PrimRange(stage.GetPrimAtPath("/")):
-                path = str(prim.GetPath())
-                # Get prim type get_prim_object_type
-                type = get_prim_object_type(path)
-                if type == "articulation":
-                    articulations.append(path)
+        art_root_paths = []
+        articulation_candidates = set()
 
-        return articulations
+        stage = omni.usd.get_context().get_stage()
+        if not stage:
+            return ["None"]
+
+        # Find all articulation root paths
+        # Find all paths that are the maximal subpath of all prims connected by a fixed joint
+        # I.e. a fixed joint connecting /ur10/link1 to /ur10/link0 would result in the path
+        # /ur10.  The path /ur10 becomes a candidate Articulation.
+        for prim in Usd.PrimRange(stage.GetPrimAtPath("/")):
+            if (
+                prim.HasAPI(UsdPhysics.ArticulationRootAPI)
+                and prim.GetProperty("physxArticulation:articulationEnabled").Get()
+            ):
+                art_root_paths.append(tuple(str(prim.GetPath()).split("/")[1:]))
+            elif UsdPhysics.Joint(prim):
+                bodies = prim.GetProperty("physics:body0").GetTargets()
+                bodies.extend(prim.GetProperty("physics:body1").GetTargets())
+                if len(bodies) == 1:
+                    continue
+                base_path_split = str(bodies[0]).split("/")[1:]
+                for body in bodies[1:]:
+                    body_path_split = str(body).split("/")[1:]
+                    for i in range(len(base_path_split)):
+                        if len(body_path_split) < i or base_path_split[i] != body_path_split[i]:
+                            base_path_split = base_path_split[:i]
+                            break
+                articulation_candidates.add(tuple(base_path_split))
+
+        # Only keep candidates whose path is not a subset of another candidate's path
+        unique_candidates = []
+        for c1 in articulation_candidates:
+            is_unique = True
+            for c2 in articulation_candidates:
+                if c1 == c2:
+                    continue
+                elif c2[: len(c1)] == c1:
+                    is_unique = False
+                    break
+            if is_unique:
+                unique_candidates.append(c1)
+
+        # Only keep candidates that are a subset of exactly one articulation root
+        art_base_paths = []
+        for c in unique_candidates:
+            subset_count = 0
+            for root in art_root_paths:
+                if root[: len(c)] == c:
+                    subset_count += 1
+            if subset_count == 1:
+                art_path = ""
+                for s in c:
+                    art_path += "/" + s
+                art_base_paths.append(art_path)
+
+        art_base_paths.insert(0, "None")
+
+        return art_base_paths
 
     def _refresh_sphere_gen_link_combobox(self):
         self._models["sphere_gen_link_selection_model"] = DynamicComboBoxModel(
@@ -383,7 +436,7 @@ class Extension(omni.ext.IExt):
         stage = self._usd_context.get_stage()
         self._sphere_gen_link_2_mesh = OrderedDict()
         if stage and self.articulation is not None:
-            for prim in Usd.PrimRange(stage.GetPrimAtPath(self.articulation.prim_path)):
+            for prim in Usd.PrimRange(stage.GetPrimAtPath(self._articulation_base_path)):
                 path = str(prim.GetPath())
                 # Get prim type get_prim_object_type
                 type = get_prim_object_type(path)
@@ -391,7 +444,7 @@ class Extension(omni.ext.IExt):
                 if type == "xform":
                     geom_mesh = UsdGeom.Mesh(prim)
                     if geom_mesh.GetPointsAttr().HasValue():
-                        rel_path = path[len(self.articulation.prim_path) :]
+                        rel_path = path[len(self._articulation_base_path) :]
                         div_index = rel_path[1:].find("/") + 1
                         key = rel_path[:div_index]
                         l = self._sphere_gen_link_2_mesh.get(key, [])
@@ -1072,7 +1125,7 @@ class Extension(omni.ext.IExt):
                         self._models["scale_all_spheres_factor"] = float_builder(**kwargs)
 
                         def on_scale_all_spheres():
-                            path = self.articulation.prim_path
+                            path = self._articulation_base_path
                             factor = self._models["scale_all_spheres_factor"].get_value_as_float()
 
                             self._collision_sphere_editor.scale_spheres(path, factor)
@@ -1297,7 +1350,7 @@ class Extension(omni.ext.IExt):
 
         radius_offset = self._models["sphere_gen_radius_offset"].get_value_as_float()
 
-        link_path = self.articulation.prim_path + link
+        link_path = self._articulation_base_path + link
         mesh_path = link_path + mesh
         geom_mesh = UsdGeom.Mesh(get_prim_at_path(mesh_path))
         points = np.array(geom_mesh.GetPointsAttr().Get())
@@ -1339,7 +1392,7 @@ class Extension(omni.ext.IExt):
         link = self._get_selected_link()
         if link is None:
             return None
-        return self.articulation.prim_path + link
+        return self._articulation_base_path + link
 
     def _get_selected_link(self):
         if self.articulation is None:
@@ -1364,7 +1417,7 @@ class Extension(omni.ext.IExt):
 
     def _hide_link(self, link_name):
         meshes = self._sphere_gen_link_2_mesh[link_name]
-        link_path = self.articulation.prim_path + link_name
+        link_path = self._articulation_base_path + link_name
         mesh_paths = []
         for mesh in meshes:
             mesh_path = link_path + mesh
@@ -1458,7 +1511,7 @@ class Extension(omni.ext.IExt):
             self._joint_positions[: self.articulation.num_dof], lower_limit, upper_limit
         )
 
-        self._collision_sphere_editor.load_xrdf_spheres(self.articulation, parsed_file)
+        self._collision_sphere_editor.load_xrdf_spheres(self._articulation_base_path, parsed_file)
 
         self._update_command_ui()
 
@@ -1520,7 +1573,7 @@ class Extension(omni.ext.IExt):
                 self._active_joints[ind] = False
                 self._joint_positions[ind] = item["value"]
 
-        self._collision_sphere_editor.load_spheres(self.articulation, path)
+        self._collision_sphere_editor.load_spheres(self._articulation_base_path, path)
 
         self._update_command_ui()
 
@@ -1625,7 +1678,7 @@ class Extension(omni.ext.IExt):
         return parsed_file
 
     def get_ignore_dict(self, ordered_links):
-        articulation_path = self.articulation.prim_path
+        articulation_path = self._articulation_base_path
         ignore_dict = {}
 
         # Any links conencted by a joint should ignore each other
@@ -1667,7 +1720,7 @@ class Extension(omni.ext.IExt):
         else:
             parsed_file = {}
 
-        art_view = ArticulationView(self.articulation.prim_path)
+        art_view = ArticulationView(self._articulation_base_path)
         art_view.initialize()
         ordered_links = art_view.body_names  # Links in order from root to end effector
 
@@ -1708,7 +1761,7 @@ class Extension(omni.ext.IExt):
             parsed_file["geometry"][geometry_group_name]["spheres"] = sphere_dict
         for link in ordered_links:
             sphere_dict.pop(link, None)
-        self._collision_sphere_editor.write_spheres_to_dict(self.articulation, sphere_dict)
+        self._collision_sphere_editor.write_spheres_to_dict(self._articulation_base_path, sphere_dict)
 
         key_order = [
             "format",
@@ -1840,4 +1893,4 @@ class Extension(omni.ext.IExt):
             f.write("# collisions with external obstacles.  If no spheres are specified, Lula will\n")
             f.write("# not be able to avoid obstacles.\n\n")
 
-            self._collision_sphere_editor.save_spheres(self.articulation, f)
+            self._collision_sphere_editor.save_spheres(self._articulation_base_path, f)
