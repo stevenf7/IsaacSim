@@ -68,9 +68,9 @@ class Unitree(Articulation):
                 if assets_root_path is None:
                     carb.log_error("Could not find Isaac Sim assets server")
                 if model == "A1":
-                    asset_path = assets_root_path + "/Isaac/Robots/Unitree/a1.usd"
+                    asset_path = assets_root_path + "/Isaac/Robots/Unitree/A1/a1_sensor.usd"
                 else:
-                    asset_path = assets_root_path + "/Isaac/Robots/Unitree/go1.usd"
+                    asset_path = assets_root_path + "/Isaac/Robots/Unitree/Go1/go1_sensor.usd"
 
                 carb.log_warn("asset path is: " + asset_path)
                 prim.GetReferences().AddReference(asset_path)
@@ -104,17 +104,6 @@ class Unitree(Articulation):
             self._prim_path + "/RL_foot",
             self._prim_path + "/RR_foot",
         ]
-
-        for i in range(4):
-            omni.kit.commands.execute(
-                "IsaacSensorCreateContactSensor",
-                path="/sensor",
-                parent=self.feet_path[i],
-                min_threshold=0,
-                max_threshold=1000000,
-                radius=-1,
-                sensor_period=-1,
-            )
 
         self.foot_force = np.zeros(4)
         self.enable_foot_filter = True

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.5] - 2024-04-30
+### Changed
+- Updated unitree folder structure and opt to use unitree models with sensors attached
+
 ## [1.4.4] - 2024-03-07
 ### Changed
 - Removed the usage of the deprecated dynamic_control extension 
