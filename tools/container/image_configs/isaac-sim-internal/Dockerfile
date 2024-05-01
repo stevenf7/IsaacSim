@@ -4,8 +4,8 @@ FROM gitlab-master.nvidia.com:5005/omniverse/containers/apps/ov-base/ov-base-ubu
 # Switch to root user
 USER root
 
-# Fix permission for shadercache generation
-RUN chown -R ubuntu /opt/nvidia
+# # Fix permission for shadercache generation
+# RUN chown -R ubuntu /opt/nvidia
 
 # Copy package
 RUN mkdir -p /isaac-sim
@@ -19,17 +19,17 @@ COPY oss/source/isaac-sim /isaac-sim/oss/source
 # Reset apt sources.list
 RUN mv /etc/apt/sources.list.canonical /etc/apt/sources.list
 
-RUN chown -R ubuntu /isaac-sim
+# RUN chown -R ubuntu /isaac-sim
 
-# Switch back to non-root user
-USER ubuntu
+# # Switch back to non-root user
+# USER ubuntu
 
-WORKDIR /home/ubuntu/
-RUN mkdir -p /home/ubuntu/.nvidia-omniverse/config
-COPY data/ov_config /home/ubuntu/.nvidia-omniverse/config
+# WORKDIR /home/ubuntu/
+RUN mkdir -p /root/.nvidia-omniverse/config
+COPY data/ov_config /root/.nvidia-omniverse/config
 
-# Switch to root user
-USER root
+# # Switch to root user
+# USER root
 
 # Open ports for live streaming
 EXPOSE 47995-48012/udp \
@@ -45,14 +45,14 @@ EXPOSE 47995-48012/udp \
 
 RUN rm /root/.pip/pip.conf
 
-RUN chown -R ubuntu /home/ubuntu/
+# RUN chown -R ubuntu /home/ubuntu/
 
 ENV NVIDIA_VISIBLE_DEVICES=all NVIDIA_DRIVER_CAPABILITIES=all
 
-# Switch back to non-root user
-USER ubuntu
+# # Switch back to non-root user
+# USER ubuntu
 
-ENV OMNI_SERVER http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0
+ENV OMNI_SERVER http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0
 ENV OMNI_USER admin
 ENV OMNI_PASS admin
 ENV MIN_DRIVER_VERSION 525.60.11
