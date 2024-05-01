@@ -37,36 +37,26 @@ $OMNICLI copy omniverse://isaac-dev.ov.nvidia.com/Isaac/Sensors $TEMP_DIR/nv-sta
 
 
 echo !! Staging /Isaac... /VPN not needed from here
+
 echo run aws s3 sync $TEMP_DIR/nv-staging/Isaac s3://omniverse-content-staging/Assets/Isaac/$ISAAC_VER/Isaac --delete
 aws s3 sync $TEMP_DIR/nv-staging/Isaac s3://omniverse-content-staging/Assets/Isaac/$ISAAC_VER/Isaac --delete
 
-echo Copying latest /NVIDIA assets to local
-aws s3 sync s3://omniverse-content-production/Materials $TEMP_DIR/nv-staging/NVIDIA/Materials --delete
-aws s3 sync s3://omniverse-content-production/Assets/AnimGraph $TEMP_DIR/nv-staging/NVIDIA/Assets/AnimGraph --delete
-aws s3 sync s3://omniverse-content-production/Assets/ArchVis $TEMP_DIR/nv-staging/NVIDIA/Assets/ArchVis --delete
-aws s3 sync s3://omniverse-content-production/Assets/Audio2Face $TEMP_DIR/nv-staging/NVIDIA/Assets/Audio2Face --delete
-aws s3 sync s3://omniverse-content-production/Assets/Characters $TEMP_DIR/nv-staging/NVIDIA/Assets/Characters --delete
-aws s3 sync s3://omniverse-content-production/Assets/Particles $TEMP_DIR/nv-staging/NVIDIA/Assets/Particles --delete
-aws s3 sync s3://omniverse-content-production/Assets/Scenes $TEMP_DIR/nv-staging/NVIDIA/Assets/Scenes --delete
-aws s3 sync s3://omniverse-content-production/Assets/Skies $TEMP_DIR/nv-staging/NVIDIA/Assets/Skies --delete
-aws s3 sync s3://omniverse-content-production/Assets/Vegetation $TEMP_DIR/nv-staging/NVIDIA/Assets/Vegetation --delete
-
-echo !! Staging /NVIDIA...
-echo Copying local /NVIDIA assets to staging
-aws s3 sync $TEMP_DIR/nv-staging/NVIDIA/Materials s3://omniverse-content-staging/Assets/Isaac/$ISAAC_VER/NVIDIA/Materials --delete
-aws s3 sync $TEMP_DIR/nv-staging/NVIDIA/Assets/AnimGraph s3://omniverse-content-staging/Assets/Isaac/$ISAAC_VER/NVIDIA/Assets/AnimGraph --delete
-aws s3 sync $TEMP_DIR/nv-staging/NVIDIA/Assets/ArchVis s3://omniverse-content-staging/Assets/Isaac/$ISAAC_VER/NVIDIA/Assets/ArchVis --delete
-aws s3 sync $TEMP_DIR/nv-staging/NVIDIA/Assets/Audio2Face s3://omniverse-content-staging/Assets/Isaac/$ISAAC_VER/NVIDIA/Assets/Audio2Face --delete
-aws s3 sync $TEMP_DIR/nv-staging/NVIDIA/Assets/Characters s3://omniverse-content-staging/Assets/Isaac/$ISAAC_VER/NVIDIA/Assets/Characters --delete
-aws s3 sync $TEMP_DIR/nv-staging/NVIDIA/Assets/Particles s3://omniverse-content-staging/Assets/Isaac/$ISAAC_VER/NVIDIA/Assets/Particles --delete
-aws s3 sync $TEMP_DIR/nv-staging/NVIDIA/Assets/Scenes s3://omniverse-content-staging/Assets/Isaac/$ISAAC_VER/NVIDIA/Assets/Scenes --delete
-aws s3 sync $TEMP_DIR/nv-staging/NVIDIA/Assets/Skies s3://omniverse-content-staging/Assets/Isaac/$ISAAC_VER/NVIDIA/Assets/Skies --delete
-aws s3 sync $TEMP_DIR/nv-staging/NVIDIA/Assets/Vegetation s3://omniverse-content-staging/Assets/Isaac/$ISAAC_VER/NVIDIA/Assets/Vegetation --delete
+echo Copying latest /NVIDIA assets to Staging /NVIDIA...
+aws s3 sync s3://omniverse-content-production/Materials s3://omniverse-content-staging/Assets/Isaac/$ISAAC_VER/NVIDIA/Materials --delete
+aws s3 sync s3://omniverse-content-production/Assets/AnimGraph s3://omniverse-content-staging/Assets/Isaac/$ISAAC_VER/NVIDIA/Assets/AnimGraph --delete
+aws s3 sync s3://omniverse-content-production/Assets/ArchVis s3://omniverse-content-staging/Assets/Isaac/$ISAAC_VER/NVIDIA/Assets/ArchVis --delete
+aws s3 sync s3://omniverse-content-production/Assets/Audio2Face s3://omniverse-content-staging/Assets/Isaac/$ISAAC_VER/NVIDIA/Assets/Audio2Face --delete
+aws s3 sync s3://omniverse-content-production/Assets/Characters s3://omniverse-content-staging/Assets/Isaac/$ISAAC_VER/NVIDIA/Assets/Characters --delete
+aws s3 sync s3://omniverse-content-production/Assets/Particles s3://omniverse-content-staging/Assets/Isaac/$ISAAC_VER/NVIDIA/Assets/Particles --delete
+aws s3 sync s3://omniverse-content-production/Assets/Scenes s3://omniverse-content-staging/Assets/Isaac/$ISAAC_VER/NVIDIA/Assets/Scenes --delete
+aws s3 sync s3://omniverse-content-production/Assets/Skies s3://omniverse-content-staging/Assets/Isaac/$ISAAC_VER/NVIDIA/Assets/Skies --delete
+aws s3 sync s3://omniverse-content-production/Assets/Vegetation s3://omniverse-content-staging/Assets/Isaac/$ISAAC_VER/NVIDIA/Assets/Vegetation --delete
 
 
 echo !! Sync Staging to Production...
 
 echo run aws s3 sync s3://omniverse-content-staging/Assets/Isaac/$ISAAC_VER s3://omniverse-content-production/Assets/Isaac/$ISAAC_VER --delete
 aws s3 sync s3://omniverse-content-staging/Assets/Isaac/$ISAAC_VER s3://omniverse-content-production/Assets/Isaac/$ISAAC_VER --delete
+
 
 echo !! Completed!
