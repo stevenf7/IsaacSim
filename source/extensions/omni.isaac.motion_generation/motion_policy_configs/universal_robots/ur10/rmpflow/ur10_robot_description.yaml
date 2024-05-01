@@ -27,6 +27,9 @@ subtree_root_link: base_link
 
 default_q: [-1.57, -1.57, -1.57, -1.57, 1.57, 0]
 
+acceleration_limits: [40.0, 40.0, 40.0, 40.0, 40.0, 40.0]
+jerk_limits: [10000.0, 10000.0, 10000.0, 10000.0, 10000.0, 10000.0]
+
 # Most dimensions of the cspace have a direct corresponding element
 # in the URDF. This list of rules defines how unspecified coordinates
 # should be extracted.

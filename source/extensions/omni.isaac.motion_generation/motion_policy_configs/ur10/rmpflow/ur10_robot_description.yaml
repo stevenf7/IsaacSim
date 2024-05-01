@@ -26,6 +26,9 @@ root_link: world
 
 default_q: [-1.57, -1.57, -1.57, -1.57, 1.57, 0]
 
+acceleration_limits: [40.0, 40.0, 40.0, 40.0, 40.0, 40.0]
+jerk_limits: [10000.0, 10000.0, 10000.0, 10000.0, 10000.0, 10000.0]
+
 collision_spheres:
   - upper_arm_link:
       - center: [0.0, -0.045, 0.01]

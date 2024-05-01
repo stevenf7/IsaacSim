@@ -87,8 +87,12 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
 
         robot.initialize()
         robot.disable_gravity()
-        robot.set_solver_position_iteration_count(64)
-        robot.set_solver_velocity_iteration_count(64)
+
+        # These gains generically seem to do very well at following the trajectory generator output compared to
+        # stiff gains with P=10^15 D=10^5
+        robot.get_articulation_controller().set_gains(
+            10**15 * np.ones(robot.num_dof), 10**12 * np.ones(robot.num_dof), save_to_usd=True
+        )
 
         self._robot.post_reset()
         await update_stage_async()
@@ -229,8 +233,8 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
 
         target_dists = np.ones(len(task_space_targets))
         for action in art_traj:
-            await update_stage_async()
             self._robot.apply_action(action)
+            await update_stage_async()
 
             robot_pos = self._art_kinematics.compute_end_effector_pose()[0]
 
@@ -254,12 +258,14 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
             kinematics_config["robot_description_path"], kinematics_config["urdf_path"]
         )
 
-        lula_kinematics = LulaKinematicsSolver(**kinematics_config)
-
-        self._trajectory_generator.set_c_space_position_limits(*lula_kinematics.get_cspace_position_limits())
-        self._trajectory_generator.set_c_space_velocity_limits(lula_kinematics.get_cspace_velocity_limits())
-        self._trajectory_generator.set_c_space_acceleration_limits(lula_kinematics.get_cspace_acceleration_limits())
-        self._trajectory_generator.set_c_space_jerk_limits(lula_kinematics.get_cspace_jerk_limits())
+        self._trajectory_generator.set_c_space_position_limits(
+            *self._trajectory_generator.get_c_space_position_limits()
+        )
+        self._trajectory_generator.set_c_space_velocity_limits(self._trajectory_generator.get_c_space_velocity_limits())
+        self._trajectory_generator.set_c_space_acceleration_limits(
+            self._trajectory_generator.get_c_space_acceleration_limits()
+        )
+        self._trajectory_generator.set_c_space_jerk_limits(self._trajectory_generator.get_c_space_jerk_limits())
 
         self._trajectory_generator.set_solver_param("max_segment_iterations", 10)
         self._trajectory_generator.set_solver_param("max_aggregate_iterations", 10)
@@ -318,7 +324,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
             usd_path, robot_name, robot_prim_path, ee_frame, pos_targets, orient_targets, task_space_spec
         )
 
-    async def test_lula_task_space_traj_gen_cobotta(self):
+    async def test_lula_task_space_traj_gen_cobotta_900(self):
         usd_path = await get_assets_root_path_async()
         usd_path += "/Isaac/Robots/Denso/cobotta_pro_900.usd"
         robot_name = "Cobotta_Pro_900"
@@ -337,8 +343,105 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
             usd_path, robot_name, robot_prim_path, ee_frame, pos_targets, orient_targets, path
         )
 
-    async def _build_rect_path(self, rot_vec=np.array([np.pi, 0, 0])):
+    async def test_lula_task_space_traj_gen_cobotta_1300(self):
+        assets_root_path = await get_assets_root_path_async()
+        usd_path = assets_root_path + "/Isaac/Robots/Denso/cobotta_pro_1300.usd"
+        robot_name = "Cobotta_Pro_1300"
+        robot_prim_path = "/cobotta_pro_1300"
+        ee_frame = "gripper_center"
+
+        path, pos_targets, orient_targets = await self._build_rect_path()
+
+        await self._test_lula_task_space_trajectory_generator(
+            usd_path, robot_name, robot_prim_path, ee_frame, pos_targets, orient_targets, path
+        )
+
+    async def test_lula_task_space_traj_gen_crx10ial(self):
+        assets_root_path = await get_assets_root_path_async()
+        usd_path = assets_root_path + "/Isaac/Robots/Fanuc/CRX10IAL/crx10ial.usd"
+        robot_name = "Fanuc_CRX10IAL"
+        robot_prim_path = "/fanuc_crx10ial"
+        ee_frame = "tool0"
+
+        path, pos_targets, orient_targets = await self._build_rect_path()
+
+        await self._test_lula_task_space_trajectory_generator(
+            usd_path, robot_name, robot_prim_path, ee_frame, pos_targets, orient_targets, path
+        )
+
+        path, pos_targets, orient_targets = await self._build_circle_path_with_rotations()
+
+        await self._test_lula_task_space_trajectory_generator(
+            usd_path, robot_name, robot_prim_path, ee_frame, pos_targets, orient_targets, path
+        )
+
+    async def test_lula_task_space_traj_gen_festo_cobot(self):
+        assets_root_path = await get_assets_root_path_async()
+        usd_path = assets_root_path + "/Isaac/Robots/Festo/FestoCobot/festo_cobot.usd"
+        robot_name = "FestoCobot"
+        robot_prim_path = "/bettina"
+        ee_frame = "flange"
+
+        path, pos_targets, orient_targets = await self._build_rect_path()
+
+        await self._test_lula_task_space_trajectory_generator(
+            usd_path, robot_name, robot_prim_path, ee_frame, pos_targets, orient_targets, path
+        )
+
+        path, pos_targets, orient_targets = await self._build_circle_path_with_rotations()
+
+        await self._test_lula_task_space_trajectory_generator(
+            usd_path, robot_name, robot_prim_path, ee_frame, pos_targets, orient_targets, path
+        )
+
+    async def test_lula_task_space_traj_gen_fr3(self):
+        assets_root_path = await get_assets_root_path_async()
+        usd_path = assets_root_path + "/Isaac/Robots/Franka/FR3/fr3.usd"
+        robot_name = "FR3"
+        robot_prim_path = "/fr3"
+        ee_frame = "fr3_hand_tcp"
+
+        path, pos_targets, orient_targets = await self._build_rect_path()
+
+        await self._test_lula_task_space_trajectory_generator(
+            usd_path, robot_name, robot_prim_path, ee_frame, pos_targets, orient_targets, path
+        )
+
+        path, pos_targets, orient_targets = await self._build_circle_path_with_rotations()
+
+        await self._test_lula_task_space_trajectory_generator(
+            usd_path, robot_name, robot_prim_path, ee_frame, pos_targets, orient_targets, path
+        )
+
+    async def test_lula_task_space_traj_gen_tm12(self):
+        assets_root_path = await get_assets_root_path_async()
+        usd_path = assets_root_path + "/Isaac/Robots/Techman/TM12/tm12.usd"
+        robot_name = "Techman_TM12"
+        robot_prim_path = "/tm12"
+        ee_frame = "tool0"
+
+        path, pos_targets, orient_targets = await self._build_rect_path(offset=np.array([0.3, 0, 0]))
+
+        await self._test_lula_task_space_trajectory_generator(
+            usd_path, robot_name, robot_prim_path, ee_frame, pos_targets, orient_targets, path
+        )
+
+    async def test_lula_task_space_traj_gen_ur10(self):
+        assets_root_path = await get_assets_root_path_async()
+        usd_path = assets_root_path + "/Isaac/Robots/UniversalRobots/ur10/ur10.usd"
+        robot_name = "UR10"
+        robot_prim_path = "/ur10"
+        ee_frame = "tool0"
+
+        path, pos_targets, orient_targets = await self._build_rect_path(offset=np.array([0.0, 0, 0]))
+
+        await self._test_lula_task_space_trajectory_generator(
+            usd_path, robot_name, robot_prim_path, ee_frame, pos_targets, orient_targets, path
+        )
+
+    async def _build_rect_path(self, rot_vec=np.array([np.pi, 0, 0]), offset=np.array([0, 0, 0])):
         rect_path = np.array([[0.3, -0.3, 0.1], [0.3, 0.3, 0.1], [0.3, 0.3, 0.5], [0.3, -0.3, 0.5], [0.3, -0.3, 0.1]])
+        rect_path += offset
 
         builder = lula.create_task_space_path_spec(
             lula.Pose3(lula.Rotation3(np.linalg.norm(rot_vec), rot_vec / np.linalg.norm(rot_vec)), rect_path[0])
@@ -354,14 +457,12 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
 
         path = builder
 
-        position_targets = np.array(
-            [[0.3, -0.3, 0.1], [0.3, 0.3, 0.1], [0.3, 0.3, 0.5], [0.3, -0.3, 0.5], [0.3, -0.3, 0.1]]
-        )
+        position_targets = rect_path
         orientation_targets = rotvecs_to_quats(np.tile(rot_vec, (len(position_targets), 1)))
 
         return path, position_targets, orientation_targets
 
-    async def _build_circle_path_with_rotations(self):
+    async def _build_circle_path_with_rotations(self, offset=np.array([0, 0, 0])):
         builder = lula.create_task_space_path_spec(
             lula.Pose3(lula.Rotation3(np.pi, np.array([1, 0, 0])), np.array([0.3, 0.2, 0.3]))
         )
@@ -371,8 +472,9 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
 
         builder.add_rotation(lula.Rotation3(np.pi / 2, np.array([1, 0, 0])))
 
-        position_targets = np.array(
-            [[0.3, 0.2, 0.3], [0.3, 0, 0.6], [0.3, -0.2, 0.3], [0.3, 0, 0], [0.3, 0.2, 0.3], [0.3, 0.2, 0.3]]
+        position_targets = (
+            np.array([[0.3, 0.2, 0.3], [0.3, 0, 0.6], [0.3, -0.2, 0.3], [0.3, 0, 0], [0.3, 0.2, 0.3], [0.3, 0.2, 0.3]])
+            + offset
         )
 
         orientation_targets = rotvecs_to_quats(np.tile(np.array([np.pi, 0, 0]), (len(position_targets), 1)))
@@ -430,8 +532,8 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
 
         target_dists = np.ones(len(task_space_targets))
         for action in art_traj:
-            await update_stage_async()
             self._robot.apply_action(action)
+            await update_stage_async()
 
             robot_pos, robot_orient = self._art_kinematics.compute_end_effector_pose()
             pos_diff = np.linalg.norm(task_space_targets - robot_pos, axis=1)
@@ -454,12 +556,15 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
         self._trajectory_generator = LulaTaskSpaceTrajectoryGenerator(
             kinematics_config["robot_description_path"], kinematics_config["urdf_path"]
         )
-        lula_kinematics = LulaKinematicsSolver(**kinematics_config)
 
-        self._trajectory_generator.set_c_space_position_limits(*lula_kinematics.get_cspace_position_limits())
-        self._trajectory_generator.set_c_space_velocity_limits(lula_kinematics.get_cspace_velocity_limits())
-        self._trajectory_generator.set_c_space_acceleration_limits(lula_kinematics.get_cspace_acceleration_limits())
-        self._trajectory_generator.set_c_space_jerk_limits(lula_kinematics.get_cspace_jerk_limits())
+        self._trajectory_generator.set_c_space_position_limits(
+            *self._trajectory_generator.get_c_space_position_limits()
+        )
+        self._trajectory_generator.set_c_space_velocity_limits(self._trajectory_generator.get_c_space_velocity_limits())
+        self._trajectory_generator.set_c_space_acceleration_limits(
+            self._trajectory_generator.get_c_space_acceleration_limits()
+        )
+        self._trajectory_generator.set_c_space_jerk_limits(self._trajectory_generator.get_c_space_jerk_limits())
 
         self._trajectory_generator.set_c_space_trajectory_generator_solver_param("max_segment_iterations", 10)
         self._trajectory_generator.set_c_space_trajectory_generator_solver_param("max_aggregate_iterations", 10)
