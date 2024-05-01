@@ -1,4 +1,8 @@
 # Changelog
+## [1.2.0] - 2023-04-29
+### Fixed
+- Fixed bug where robot assembler could not list frames for assets that have Articulation roots
+  on a link in the Articulation.
 
 ## [1.1.6] - 2023-02-02
 ### Changed
