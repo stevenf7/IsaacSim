@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.2.3"
+version = "1.2.4"
 category = "Simulation"
 title = "Robot Benchmark"
 description = "Extension for benchmark testing combinations of environment/robot/motion policy"
@@ -37,6 +37,9 @@ name = "omni.isaac.robot_benchmark"
 
 [[python.module]]
 name = "omni.isaac.robot_benchmark.tests"
+
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 4.0.0"
 
 
 [[test]]

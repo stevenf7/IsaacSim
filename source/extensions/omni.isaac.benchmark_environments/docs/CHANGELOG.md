@@ -1,4 +1,10 @@
 # Changelog
+
+# Changelog
+## [0.4.1] - 2024-05-01
+### Added
+- Deprecation warning
+
 ## [0.4.0] - 2022-07-06
 
 ### Added
