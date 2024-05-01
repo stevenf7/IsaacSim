@@ -1,4 +1,8 @@
 # Changelog
+## [0.3.5] - 2024-05-01
+### Fixed
+- Not overwriting existing pipeline for the same name bug
+
 ## [0.3.4] - 2024-04-19
 ### Added
 - text for physics inspector and movie capture.

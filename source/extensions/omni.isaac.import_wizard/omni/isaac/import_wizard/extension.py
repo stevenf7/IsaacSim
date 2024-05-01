@@ -902,12 +902,9 @@ class ImportWizard(object):
                     with ui.HStack():
                         ui.Label("Select File", width=LABEL_WIDTH / 1.5)
                         # if saved file from the questionnaire exist, use it. otherwise use the default custom parameters
-                        if self.qa:
-                            if self.qa.save_pipeline_file is not None:
-                                self.custom_file = self.qa.save_pipeline_file
-                                custom_pipeline_name = self.qa.save_pipeline_name
-                            else:
-                                custom_pipeline_name = "Import Pipeline"
+                        if self.qa is not None and self.qa.save_pipeline_file is not None:
+                            self.custom_file = self.qa.save_pipeline_file
+                            custom_pipeline_name = self.qa.save_pipeline_name
                         else:
                             custom_pipeline_name = "Import Pipeline"
 
