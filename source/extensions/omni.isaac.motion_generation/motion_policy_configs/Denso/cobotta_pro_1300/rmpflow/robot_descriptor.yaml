@@ -33,6 +33,9 @@ default_q: [
     0.0,0.3,1.2,0.0,0.0,0.0
 ]
 
+acceleration_limits: [40.0, 40.0, 40.0, 40.0, 40.0, 40.0]
+jerk_limits: [10000.0, 10000.0, 10000.0, 10000.0, 10000.0, 10000.0]
+
 # RMPflow uses collision spheres to define the robot geometry in order to avoid
 # collisions with external obstacles.  If no spheres are specified, RMPflow will
 # not be able to avoid obstacles.  

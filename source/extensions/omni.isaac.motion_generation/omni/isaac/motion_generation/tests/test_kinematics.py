@@ -411,8 +411,8 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         vel_lim = lk.get_cspace_velocity_limits()
         self.assertTrue(np.allclose(vel_lim, [2.16, 2.16, 3.15, 3.2, 3.2, 3.2], 0.0001))
 
-        self.assertTrue(np.alltrue(lk.get_cspace_acceleration_limits() == [None] * 6))
-        self.assertTrue(np.alltrue(lk.get_cspace_jerk_limits() == [None] * 6))
+        self.assertTrue(np.alltrue(lk.get_cspace_acceleration_limits() == [40.0] * 6))
+        self.assertTrue(np.alltrue(lk.get_cspace_jerk_limits() == [10000.0] * 6))
 
         # Test Franka because it has acceleration and jerk limits specified in Robot Description
         robot_name = "Franka"

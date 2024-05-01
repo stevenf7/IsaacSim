@@ -166,6 +166,38 @@ class LulaCSpaceTrajectoryGenerator:
         """
         return self._kinematics_solver.get_joint_names()
 
+    def get_c_space_position_limits(self):
+        """Get the position limits of the active joints that are used when generating a trajectory
+
+        Returns:
+            position limits (np.array): Position limits of active joints.
+        """
+        return self._kinematics_solver.get_cspace_position_limits()
+
+    def get_c_space_velocity_limits(self):
+        """Get the velocity limits of the active joints that are used when generating a trajectory
+
+        Returns:
+            velocity limits (np.array): Velocity limits of active joints.
+        """
+        return self._kinematics_solver.get_cspace_velocity_limits()
+
+    def get_c_space_acceleration_limits(self):
+        """Get the acceleration limits of the active joints that are used when generating a trajectory
+
+        Returns:
+            acceleration limits (np.array): Acceleration limits of active joints.
+        """
+        return self._kinematics_solver.get_cspace_acceleration_limits()
+
+    def get_c_space_jerk_limits(self):
+        """Get the jerk limits of the active joints that are used when generating a trajectory
+
+        Returns:
+            jerk limits (np.array): Jerk limits of active joints.
+        """
+        return self._kinematics_solver.get_cspace_jerk_limits()
+
     def set_c_space_position_limits(self, lower_position_limits: np.array, upper_position_limits: np.array) -> None:
         """Set the lower and upper position limits of the active joints to be used when generating a trajectory.
 
@@ -359,6 +391,11 @@ class LulaCSpaceTrajectoryGenerator:
 class LulaTaskSpaceTrajectoryGenerator:
 
     get_active_joints = LulaCSpaceTrajectoryGenerator.get_active_joints
+
+    get_c_space_position_limits = LulaCSpaceTrajectoryGenerator.get_c_space_position_limits
+    get_c_space_velocity_limits = LulaCSpaceTrajectoryGenerator.get_c_space_velocity_limits
+    get_c_space_acceleration_limits = LulaCSpaceTrajectoryGenerator.get_c_space_acceleration_limits
+    get_c_space_jerk_limits = LulaCSpaceTrajectoryGenerator.get_c_space_jerk_limits
 
     set_c_space_position_limits = LulaCSpaceTrajectoryGenerator.set_c_space_position_limits
     set_c_space_velocity_limits = LulaCSpaceTrajectoryGenerator.set_c_space_velocity_limits

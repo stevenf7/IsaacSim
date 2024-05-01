@@ -1,4 +1,10 @@
 # Changelog
+## [7.0.1] - 2024-04-29
+### Added
+- Added acceleration and jerk limits to all robot description files.
+- Added tests for trajectory generation on more assets.
+- Added getters for acceleration and jerk limits to Trajectory Generator.
+
 ## [7.0.0] - 2024-04-17
 ### Added
 - Added support for full-pose targets in Lula RRT algorithm
