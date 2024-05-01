@@ -43,10 +43,10 @@ WINDOW_NAME = "Getting Started with Isaac Sim Questionnaire"
 class Questionnaire:
     def __init__(self, wizard_ext, available_tools):
         self.qa_file = EXTENSION_FOLDER_PATH + "/data/questionnaire.json"
-        self.data = json.load(open(self.qa_file, "r"))
         self.available_tools = available_tools
         self._wizard_ext = wizard_ext
         self.save_popup = None
+        self.reset_params()
 
         # Build Window
         self._qa_window = ui.Window(
@@ -90,6 +90,7 @@ class Questionnaire:
         self.next_qa_key = "begin"
         self.save_pipeline_file = None
         self.save_pipeline_name = None
+        self.data = json.load(open(self.qa_file, "r"))
 
     def _build_skeleton_ui(self):
         """
@@ -297,6 +298,7 @@ class Questionnaire:
                         msg = "Pipeline with that name already exists, OVERWRITING"
                         post_notification(msg, status=NotificationStatus.WARNING)
                         data[self.save_pipeline_name] = dialog.pipeline_array
+
                     else:
                         data = {
                             **save_dict,
@@ -389,7 +391,6 @@ class ButtonMagic:
             self.ext.show_next_question(self.next_qa_key)
 
 
-@Singleton
 class SavePipelinePopup(PopupDialog):
     def __init__(self, title, ok_handler, cancel_handler, save_array, save_file, save_title):
         self.pipeline_array = save_array
