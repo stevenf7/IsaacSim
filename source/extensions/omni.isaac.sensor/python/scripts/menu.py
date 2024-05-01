@@ -88,12 +88,12 @@ class IsaacSensorMenu:
                         sub_menu=[
                             make_menu_item_description(
                                 ext_id,
-                                "Sensing SG2-OX03CC-5200-GMSL2-H100F1",
+                                "Sensing SG2-OX03CC-5200-GMSL2-H100F1A",
                                 lambda a=weakref.proxy(self): create_prim(
-                                    prim_path=get_next_free_path("/SG2_OX03CC_5200_GMSL2_H100F1", None),
+                                    prim_path=get_next_free_path("/SG2_OX03CC_5200_GMSL2_H100F1A", None),
                                     prim_type="Xform",
                                     usd_path=get_assets_root_path()
-                                    + "/Isaac/Sensors/Sensing/SG2/H100F1/SG2-AR0233C-5200-G2A-H100F1A.usd",
+                                    + "/Isaac/Sensors/Sensing/SG2/H100F1A/SG2-AR0233C-5200-G2A-H100F1A.usd",
                                 ),
                             ),
                             make_menu_item_description(
@@ -108,12 +108,12 @@ class IsaacSensorMenu:
                             ),
                             make_menu_item_description(
                                 ext_id,
-                                "Sensing SG3-ISX031C-GMSL2-H190X",
+                                "Sensing SG3-ISX031C-GMSL2-H190XA",
                                 lambda a=weakref.proxy(self): create_prim(
-                                    prim_path=get_next_free_path("/SG3_ISX031C_GMSL2_H190X", None),
+                                    prim_path=get_next_free_path("/SG3_ISX031C_GMSL2_H190XA", None),
                                     prim_type="Xform",
                                     usd_path=get_assets_root_path()
-                                    + "/Isaac/Sensors/Sensing/SG3/H190X/SG3S-ISX031C-GMSL2F-H190XA.usd",
+                                    + "/Isaac/Sensors/Sensing/SG3/H190XA/SG3S-ISX031C-GMSL2F-H190XA.usd",
                                 ),
                             ),
                             make_menu_item_description(
@@ -123,27 +123,27 @@ class IsaacSensorMenu:
                                     prim_path=get_next_free_path("/SG5_IMX490C_5300_GMSL2_H110SA", None),
                                     prim_type="Xform",
                                     usd_path=get_assets_root_path()
-                                    + "/Isaac/Sensors/Sensing/Camera_SG5_IMX490C_5300_GMSL2_H110SA.usd",
+                                    + "/Isaac/Sensors/Sensing/SG5/H100SA/SG5-IMX490C-5300-GMSL2-H110SA.usd",
                                 ),
                             ),
                             make_menu_item_description(
                                 ext_id,
-                                "Sensing SG8-AR0820C-5300-GMSL2-H120Y1A",
+                                "Sensing SG8-AR0820C-5300-GMSL2-H120YA",
                                 lambda a=weakref.proxy(self): create_prim(
-                                    prim_path=get_next_free_path("/SG8_AR0820C_5300_GMSL2_H120Y1A", None),
+                                    prim_path=get_next_free_path("/SG8_AR0820C_5300_GMSL2_H120YA", None),
                                     prim_type="Xform",
                                     usd_path=get_assets_root_path()
-                                    + "/Isaac/Sensors/Sensing/SG8/H120Y1A/SG8S-AR0820C-5300-G2A-H120YA.usd",
+                                    + "/Isaac/Sensors/Sensing/SG8/H120YA/SG8S-AR0820C-5300-G2A-H120YA.usd",
                                 ),
                             ),
                             make_menu_item_description(
                                 ext_id,
-                                "Sensing SG8-AR0820C-5300-GMSL2-H30S1A",
+                                "Sensing SG8-AR0820C-5300-GMSL2-H30SA",
                                 lambda a=weakref.proxy(self): create_prim(
-                                    prim_path=get_next_free_path("/SG8_AR0820C_5300_GMSL2_H30S1A", None),
+                                    prim_path=get_next_free_path("/SG8_AR0820C_5300_GMSL2_H30SA", None),
                                     prim_type="Xform",
                                     usd_path=get_assets_root_path()
-                                    + "/Isaac/Sensors/Sensing/SG8/H30S1A/SG8S-AR0820C-5300-G2A-H30YA.usd",
+                                    + "/Isaac/Sensors/Sensing/SG8/H30SA/SG8S-AR0820C-5300-G2A-H30YA.usd",
                                 ),
                             ),
                             make_menu_item_description(

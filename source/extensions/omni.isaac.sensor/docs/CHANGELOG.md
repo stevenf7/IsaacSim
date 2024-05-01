@@ -1,5 +1,9 @@
 # Changelog
 
+## [11.0.4] - 2024-04-30
+### Updated
+- Updated Sensing camera names
+
 ## [11.0.3] - 2024-04-25
 ### Fixed
 - Fixed rotating physX lidar python class initialization issue
