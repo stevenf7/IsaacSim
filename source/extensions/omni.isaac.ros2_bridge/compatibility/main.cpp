@@ -43,9 +43,9 @@ int main(int argc, char* argv[])
     {
         lib_list.insert(lib_list.begin() + 5, std::string("ament_index_cpp"));
         lib_list.insert(lib_list.begin() + 8, std::string("rcl_logging_interface"));
-        lib_list.insert(lib_list.end(), std::string("rcl_lifecycle"));
         lib_list.insert(lib_list.end(), std::string("lifecycle_msgs__rosidl_generator_c"));
         lib_list.insert(lib_list.end(), std::string("lifecycle_msgs__rosidl_typesupport_c"));
+        lib_list.insert(lib_list.end(), std::string("rcl_lifecycle"));
     }
 
     omni::isaac::utils::MultiLibraryLoader g_backupLibLoader;
