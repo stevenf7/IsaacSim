@@ -180,6 +180,13 @@ private:
             }
         }
 
+        if (messagePackage.size() == 0 || messageSubfolder.size() == 0 || messageName.size() == 0)
+        {
+            db.logWarning("messagePackage [%s] or messageSubfolder [%s] or messageName [%s] empty, skipping compute",
+                          messagePackage.c_str(), messageSubfolder.c_str(), messageName.c_str());
+            return;
+        }
+
         // build message attributes
         state.mMessageResponse = state.mFactory->createDynamicMessage(
             messagePackage, messageSubfolder, messageName, BackendMessageType::eResponse);

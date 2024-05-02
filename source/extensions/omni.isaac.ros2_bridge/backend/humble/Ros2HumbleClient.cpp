@@ -102,6 +102,10 @@ bool Ros2ClientHumble::getResponse(void* res_message)
         }
         rc = rcl_wait(&wait_set, 0);
         // CARB_LOG_WARN_ONCE("Client created, check topic name and message type if not active");
+        if (rc == RCL_RET_TIMEOUT)
+        {
+            return false;
+        }
         if (rc != RCL_RET_OK)
         {
             // This keeps printing an error if the publisher is not active.
@@ -117,7 +121,6 @@ bool Ros2ClientHumble::getResponse(void* res_message)
                 rcl_ret_t ret_res = rcl_take_response(mClient.get(), &rmw_request_id, res_message);
                 if (ret_res == RCL_RET_OK)
                 {
-                    RCL_ERROR_MSG(respond, rcl_take_response);
                     return true;
                 }
             }
