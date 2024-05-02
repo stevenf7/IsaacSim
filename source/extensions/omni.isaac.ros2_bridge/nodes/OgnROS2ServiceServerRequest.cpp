@@ -125,7 +125,7 @@ public:
                 }
             }
 
-            CARB_LOG_WARN("Creating server for topic name %s", fullServiceName.c_str());
+            CARB_LOG_INFO("Creating server for topic name %s", fullServiceName.c_str());
             state.mServiceServer = state.mFactory->CreateService(
                 state.mNodeHandle.get(), fullServiceName.c_str(), state.mMessageRequest->getTypeSupportHandle(), qos);
 
@@ -207,6 +207,15 @@ private:
             db.logError("Unable to remove existing attributes from the node");
             return;
         }
+
+        if (messagePackage.size() == 0 || messageSubfolder.size() == 0 || messageName.size() == 0)
+        {
+            db.logWarning("messagePackage [%s] or messageSubfolder [%s] or messageName [%s] empty, skipping compute",
+                          messagePackage.c_str(), messageSubfolder.c_str(), messageName.c_str());
+            return;
+        }
+
+
         // build message attributes
         state.mMessageRequest = state.mFactory->createDynamicMessage(
             messagePackage, messageSubfolder, messageName, BackendMessageType::eRequest);

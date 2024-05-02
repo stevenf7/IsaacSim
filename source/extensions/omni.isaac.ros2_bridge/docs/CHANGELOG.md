@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.23.5] - 2024-05-01
+### Fixed
+ROS2 bridge Service printing unnecessary warnings
+
 ## [2.23.4] - 2024-04-30
 ### Fixed
 ROS2 bridge check failing on humble due to mising libraries
