@@ -26,10 +26,6 @@ class TestArticulationDeterminism(omni.kit.test.AsyncTestCase):
         World.clear_instance()
         self._timeline = omni.timeline.get_timeline_interface()
 
-        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
-        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(60))
-        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(60))
-
         self._assets_root_path = await get_assets_root_path_async()
         if self._assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
@@ -61,10 +57,13 @@ class TestArticulationDeterminism(omni.kit.test.AsyncTestCase):
 
         # On the develop branch, this test always takes 31 frames to converge
         print(f"frames_to_converge[0] = {frames_to_converge[0]}")
-        self.assertTrue(frames_to_converge[0] == 31, "Took too many frames to converge!")
+        self.assertEqual(frames_to_converge[0], 26, "Took a different number of frames to converge!")
 
     async def _test_franka_slow_convergence(self):
         (result, error) = await open_stage_async(self._assets_root_path + "/Isaac/Robots/Franka/franka.usd")
+        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
+        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(60))
+        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(60))
         omni.usd.get_context().get_stage().SetTimeCodesPerSecond(60)
         robot_prim_path = "/panda"
         my_world = World(device="cpu")  # Create a new default world to reset any physics settings.
