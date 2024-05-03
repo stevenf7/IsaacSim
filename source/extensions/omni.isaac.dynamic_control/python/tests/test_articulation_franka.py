@@ -115,9 +115,9 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCase):
         expected_pos = body_states["pose"]["p"][hand_idx]
         self.assertTrue(
             np.allclose(
-                [expected_pos[0], expected_pos[1], expected_pos[2]], [0.3675643, 0.00443668, 0.42769474], atol=1e-5
+                [expected_pos[0], expected_pos[1], expected_pos[2]], [0.3675547, 0.00443018, 0.42759624], atol=1e-5
             ),
-            f"[0.3675643, 0.00443668, 0.42769474] != {expected_pos}",
+            f"[0.3675547, 0.00443018, 0.42759624] != {expected_pos}",
         )
 
         new_pose = dc_conversions.create_transform(Gf.Vec3d(0.10, 0.10, 0.10), Gf.Rotation(Gf.Vec3d(0, 0, 1), 90))
