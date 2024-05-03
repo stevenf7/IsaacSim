@@ -181,17 +181,21 @@ class BaseIsaacBenchmark:
         )
         return utils.SyncMode.AMBIGUOUS
 
-    def set_phase(self, phase: str, start_recording_time: bool = True) -> None:
+    def set_phase(
+        self, phase: str, start_recording_frametime: bool = True, start_recording_runtime: bool = True
+    ) -> None:
         """Sets benchmarking phase. Turns on frametime and runtime collection.
 
         Args:
             phase (str): Name of phase, used in output.
-            start_recording_time (bool): False to not start recording runtime and frametime at start of phase. Default True.
+            start_recording_frametime (bool): False to not start recording frametime at start of phase. Default True.
+            start_recording_runtime (bool): False to not start recording runtime at start of phase. Default True.
         """
         logger.info(f"Starting phase: {phase}")
         self.context.phase = phase
-        if start_recording_time:
+        if start_recording_frametime:
             self.frametime_recorder.start_collecting()
+        if start_recording_runtime:
             self.runtime_recorder.start_time()
 
     def store_measurements(self, stop_recording_time: bool = True) -> None:

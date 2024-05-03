@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.22.0] - 2024-05-01
+### Changed
+- Remove redundant benchmarks that are already covered by standalone scripts
+
 ## [0.21.9] - 2024-04-29
 ### Fixed
 - Benchmark service includes

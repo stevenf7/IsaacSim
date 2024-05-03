@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.0] - 2023-05-01
+### Added
+- ability to enable/disable frametime and runtime separately when starting a phase
+
 ## [1.5.0] - 2023-04-29
 ### Changed
 - cleaned up imports

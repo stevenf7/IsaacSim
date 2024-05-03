@@ -28,7 +28,7 @@ VALID_ANNOTATORS = {
 }
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--num-frames", type=int, default=1, help="Number of frames to capture")
+parser.add_argument("--num-frames", type=int, default=600, help="Number of frames to capture")
 parser.add_argument("--num-cameras", type=int, default=1, help="Number of cameras")
 parser.add_argument("--num-gpus", type=int, default=1, help="Number of GPUs on machine.")
 parser.add_argument("--resolution", nargs=2, type=int, default=[1280, 720], help="Camera resolution")
@@ -117,7 +117,8 @@ benchmark = BaseIsaacBenchmark(
     backend_type=args.backend_type,
 )
 
-benchmark.set_phase("loading")
+benchmark.set_phase("loading", start_recording_frametime=False, start_recording_runtime=True)
+
 print(f"[SDG Benchmark] Loading stage..")
 omni.usd.get_context().new_stage()
 if disable_viewport_rendering:
