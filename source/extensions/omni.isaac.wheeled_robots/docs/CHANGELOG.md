@@ -1,4 +1,8 @@
 # Changelog
+## [2.1.1] - 2024-05-02
+### Added
+- unit test for robot reset using jetbot
+
 ## [2.1.0] - 2024-04-15
 ### Changed
 - Changed desired velocity input name from velocityCommands to inputVelocity to fix a type not match issue

@@ -61,6 +61,11 @@ class OgnIsaacArticulationControllerInternalState(BaseResetNode):
 
     def custom_reset(self):
         self.controller_handle = None
+        if self.initialized:
+            self.node.get_attribute("inputs:positionCommand").set(np.empty(shape=(0, 0), dtype=np.double))
+            self.node.get_attribute("inputs:velocityCommand").set(np.empty(shape=(0, 0), dtype=np.double))
+            self.node.get_attribute("inputs:effortCommand").set(np.empty(shape=(0, 0), dtype=np.double))
+
         pass
 
 
@@ -120,16 +125,17 @@ class OgnIsaacArticulationController:
 
         return True
 
-    # @staticmethod
-    # def release(node):
-    #     try:
-    #         state = OgnIsaacArticulationControllerDatabase.per_instance_state(node)
-    #     except Exception:
-    #         state = None
-    #         pass
+    @staticmethod
+    def release_instance(node, graph_instance_id):
+        try:
+            state = OgnIsaacArticulationControllerDatabase.get_internal_state(node, graph_instance_id)
+        except Exception:
+            state = None
+            pass
 
-    #     if state is not None:
-    #         state.reset()
+        if state is not None:
+            state.reset()
+            state.initialized = False
 
     @staticmethod
     def release_instance(node, graph_instance_id):
