@@ -241,7 +241,6 @@ class OgnIsaacPrintRTXLidarInfo:
         # There is a bug that will cause an objId of 31 to be returned even when there is none in the scene,
         # So for now, just skip objId==31
         for obj in material_mapping:
-            print(f"objectId {obj} has material ID {material_mapping[obj]}.")
-            # prim_path = object_id_to_prim_path(obj)
-            # print(f"objectId {obj} with prim path {prim_path} has material ID {material_mapping[obj]}.")
+            prim_path = object_id_to_prim_path(obj)
+            print(f"objectId {obj} with prim path {prim_path} has material ID {material_mapping[obj]}.")
         return True
