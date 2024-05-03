@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.15.1] - 2024-05-01
+### Fixed
+- Reset articulation controller inputs on stop
+
 ## [1.15.0] - 2024-04-28
 ### Added
 - Time Splitter node
