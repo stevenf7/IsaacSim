@@ -987,7 +987,7 @@ publish-extensions:
   needs:
   # We set all dependencies as optional just in case a platform is not needed,
   # then the yml file can override both build/test on one platform and deploy will still work.
-  - job: build-windows-x86_64-release
+  - job: sign-windows-x86_64-release
     artifacts: true
     optional: false
   - job: build-linux-x86_64-release
@@ -1290,6 +1290,72 @@ publish-container:
     artifacts: true
   rules:
   - if: $ALLOW_PUBLISH_CONTAINERS != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
+    when: never
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push-manual, rules]
+  allow_failure: true
+
+
+
+# ==============================================================================================================
+binaryscan-build-linux-x86_64-release:
+  extends:
+  - .build-common
+  - .runner-build-linux-x86_64
+  before_script:
+  - set -eu
+  - yum install -y bsdtar
+  - !reference [.omni_s3_write_get_secrets, omni_s3_write_get_secrets]
+  script:
+  - ./repo.sh build -r --no-docker
+  - ./repo.sh package -m isaac-sim-binaryscan -c release
+  rules:
+  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
+    when: never
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push-manual, rules]
+  allow_failure: true
+
+
+# ==============================================================================================================
+binaryscan-build-windows-x86_64-release:
+  extends:
+  - .build-common
+  - .runner-build-windows-x86_64
+  before_script:
+  - !reference [.windows_packman_s3_creds_get_powershell, windows_packman_s3_creds_get_powershell]
+  script:
+  - ./repo.bat build -r
+  - ./repo.bat package -m isaac-sim-binaryscan -c release
+  rules:
+  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
+    when: never
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push-manual, rules]
+  allow_failure: true
+
+
+# ==============================================================================================================
+binaryscan-publish-to-packman:
+  extends:
+  - .deploy-common
+  - .omni_nvks_runner_with_docker
+  script:
+  - ls _build/packages/
+  - ./repo.sh publish_binaryscan_packages
+  needs:
+  - job: binaryscan-build-linux-x86_64-release
+    artifacts: true
+  - job: binaryscan-build-windows-x86_64-release
+    artifacts: true
+  rules:
+  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
     when: never
   - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
     when: never

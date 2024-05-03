@@ -128,7 +128,7 @@ files_exclude = [
 
 ]
 
-[isaac-sim-binaryscan.release]
+[isaac-sim-binaryscan]
 files = [
     ["**"]
 ]
@@ -140,17 +140,38 @@ files_exclude = [
     ["apps/exts.deps.generated.kit"],
     ["apps/omni.isaac.sim.extscache.*"],
     ["apps/omni.isaac.sim.splash.kit"],
+    ["kit/data/**"], # This can contain portable files we don't want to package
+    ["kit/extsPhysics/**"], # This can contain portable files we don't want to package
+    ["extsbuild"],
     ["exts/omni.isaac.internal_tools"],
     ["tests/tests-omni.isaac.internal_tools.*"],
     ["tests/tests-internal*"],
     ["tests/tests-docker*"],
     ["dockertests/**"],
-    ["kit/**"],
-    ["extscache/**"],
-    ["extsbuild/**"],
     ["standalone_examples/testing/**"],
     ["exts/omni.isaac.core_archive/pip_prebundle/bin/**"], # OM-84922
     ["exts/omni.isaac.gym.benchmark"],
+    ["tests/tests-startup.extscache*"],
+    ["tests/tests-omni.isaac.gym.benchmark*"],
+    ["tests/tests-omni.importer.onshape*"],
+]
+
+[isaac-sim-binaryscan.release]
+files = [
+    ["**"]
+]
+files_exclude = [
+    ["kit/**"],
+    ["extscache/**"],
+    ["extsbuild/**"],
+    ["extsPhysics/**"],
+    ["kit/exts/omni.kit.pip_archive/pip_prebundle/**"],
+    ["exts/omni.isaac.ocs2/pip_prebundle/**"],
+    ["exts/omni.isaac.ml_archive/pip_prebundle/**"],
+    ["exts/omni.isaac.core_archive/pip_prebundle/**"],
+    ["exts/omni.isaac.repl/pip_prebundle/**"],
+    ["exts/omni.pip.cloud/pip_prebundle/**"],
+    ["exts/omni.pip.compute/pip_prebundle/**"],
 ]
 
 [isaac-sim-binaryscan.linux-x86_64]
@@ -162,16 +183,16 @@ files_strip = [
 ]
 
 files_strip_exclude = [
-    ["kit/exts/omni.kit.pip_archive/pip_prebundle/PIL/**"],
-    ["exts/omni.pip.compute/pip_prebundle/scipy/**"],
-    ["exts/omni.isaac.ocs2/pip_prebundle/lib/**"],
-    ["extscache/omni.pip.torch**"]
+    ["kit/exts/omni.kit.pip_archive/pip_prebundle/**"],
+    ["exts/omni.isaac.ocs2/pip_prebundle/**"],
+    ["exts/omni.isaac.ml_archive/pip_prebundle/**"],
+    ["exts/omni.isaac.core_archive/pip_prebundle/**"],
+    ["exts/omni.isaac.repl/pip_prebundle/**"],
+    ["exts/omni.pip.cloud/pip_prebundle/**"],
+    ["exts/omni.pip.compute/pip_prebundle/**"],
 ]
 
 files_exclude = [
-    ["kit/**"],
-    ["extscache/**"],
-    ["extsbuild/**"],
     ["isaac-sim.xr.steamvr.sh"], # Remove XR support for Linux
     ["apps/omni.isaac.sim.xr.steamvr.kit"] # Remove XR support for Linux
 ]
@@ -186,9 +207,6 @@ files = [
     # ["../../docs/isaac_sim/latest/**", "docs/py/"] # windows ext api docs
 ]
 files_exclude = [
-    ["kit/**"],
-    ["extscache/**"],
-    ["extsbuild/**"],
     ["standalone_examples/cortex/**"], # Cortex not shipped on windows
     ["standalone_examples/api/omni.isaac.ros_bridge**"] # ROS1 not shipped on windows
 ]
