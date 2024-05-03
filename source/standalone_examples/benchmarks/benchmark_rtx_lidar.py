@@ -10,13 +10,13 @@
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-n", "--n-sensor", type=int, default=1, help="Number of sensors")
+parser.add_argument("--num-sensors", type=int, default=1, help="Number of sensors")
 parser.add_argument("--num-gpus", type=int, default=1, help="Number of GPUs on machine.")
 parser.add_argument(
     "--lidar-type", type=str, default="Rotary", choices=["Rotary", "Solid_State"], help="Type of lidar to create"
 )
 
-parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
+parser.add_argument("--num-frames", type=int, default=600, help="Number of frames to run benchmark for")
 parser.add_argument(
     "--backend-type",
     default="OsmoKPIFile",
@@ -26,17 +26,14 @@ parser.add_argument(
 
 args, unknown = parser.parse_known_args()
 
-n_sensor = args.n_sensor
+n_sensor = args.num_sensors
 n_gpu = args.num_gpus
+n_frames = args.num_frames
 
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": True, "max_gpu_count": n_gpu})
 
-TEST_NUM_APP_UPDATES = 60 * 10
-
-if args.test:
-    TEST_NUM_APP_UPDATES = 1
 
 import omni
 import omni.replicator.core as rep
@@ -58,7 +55,7 @@ benchmark = BaseIsaacBenchmark(
     },
     backend_type=args.backend_type,
 )
-benchmark.set_phase("loading")
+benchmark.set_phase("loading", start_recording_frametime=False, start_recording_runtime=True)
 
 scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
 benchmark.fully_load_stage(benchmark.assets_root_path + scene_path)
@@ -98,7 +95,7 @@ benchmark.store_measurements()
 benchmark.set_phase("benchmark")
 timeline.play()
 
-for _ in range(1 if benchmark.test_mode else TEST_NUM_APP_UPDATES):
+for _ in range(1, n_frames):
     omni.kit.app.get_app().update()
 
 benchmark.store_measurements()

@@ -181,7 +181,6 @@ function define_ext_test_experience(ext_name, args)
 
     local python_module = get_value_or_default(args, "python_module", ext_name)
     local script_dir_token = (os.target() == "windows") and "%~dp0" or "$SCRIPT_DIR"
-    local include_tests = get_value_or_default(args, "include_tests", ext_name.."*")
     local test_args = {
         "--empty", -- Start empty kit
         "--enable omni.kit.test", -- We always need omni.kit.test extension as testing framework
@@ -189,7 +188,6 @@ function define_ext_test_experience(ext_name, args)
         "--/exts/omni.kit.test/testExtDefaultTimeout=600",
         "--/exts/omni.kit.test/testExtArgs/0=\"--no-window\"",
         "--/exts/omni.kit.test/testExtArgs/1=\"--allow-root\"",
-        "--/exts/omni.kit.test/testExtArgs/2=\"--/exts/omni.kit.test/includeTests/0='"..include_tests.."'\"",
         "--/exts/omni.kit.test/testExtApp=\""..script_dir_token.."/../apps/omni.isaac.sim.test_ext.kit\"",
         "--/exts/omni.kit.test/runTestsAndQuit=true", -- Run tests and quit
         "--/exts/omni.kit.test/testExts/0='"..python_module.."'", -- Only include tests from the python module
@@ -213,9 +211,8 @@ function define_ext_test_experience(ext_name, args)
         define_project = false
     }
     exp_args = merge_tables(exp_args, args)
-    local name_override = get_value_or_default(args, "name_override", ext_name)
 
-    local test_name = suite and string.format("tests-%s-%s", suite, name_override) or ("tests-"..name_override)
+    local test_name = suite and string.format("tests-%s-%s", suite, ext_name) or ("tests-"..ext_name)
     define_test_experience(test_name, exp_args)
 end
 

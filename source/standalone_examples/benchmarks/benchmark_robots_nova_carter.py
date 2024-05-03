@@ -10,9 +10,9 @@
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-n", "--n-robot", type=int, default=1, help="Number of robots")
+parser.add_argument("--num-robots", type=int, default=1, help="Number of robots")
 parser.add_argument("--num-gpus", type=int, default=1, help="Number of GPUs on machine.")
-parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
+parser.add_argument("--num-frames", type=int, default=600, help="Number of frames to run benchmark for")
 parser.add_argument(
     "--backend-type",
     default="OsmoKPIFile",
@@ -22,18 +22,14 @@ parser.add_argument(
 
 args, unknown = parser.parse_known_args()
 
-n_robot = args.n_robot
+n_robot = args.num_robots
 n_gpu = args.num_gpus
+n_frames = args.num_frames
 
 import numpy as np
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": True, "max_gpu_count": n_gpu})
-
-TEST_NUM_APP_UPDATES = 60 * 10
-
-if args.test:
-    TEST_NUM_APP_UPDATES = 1
 
 import omni
 import omni.kit.test
@@ -57,7 +53,7 @@ benchmark = BaseIsaacBenchmark(
     },
     backend_type=args.backend_type,
 )
-benchmark.set_phase("loading")
+benchmark.set_phase("loading", start_recording_frametime=False, start_recording_runtime=True)
 
 robot_path = "/Isaac/Robots/Carter/nova_carter_sensors.usd"
 scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
@@ -104,7 +100,7 @@ benchmark.store_measurements()
 # perform benchmark
 benchmark.set_phase("benchmark")
 
-for _ in range(1 if benchmark.test_mode else TEST_NUM_APP_UPDATES):
+for _ in range(1, n_frames):
     omni.kit.app.get_app().update()
 
 benchmark.store_measurements()

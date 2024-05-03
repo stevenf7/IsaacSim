@@ -257,7 +257,7 @@ class SimulationApp:
                     ]
                 },
             )
-            benchmark.set_phase("startup", start_recording_time=False)
+            benchmark.set_phase("startup", start_recording_frametime=False, start_recording_runtime=False)
             benchmark.store_measurements()
             benchmark.stop()
 

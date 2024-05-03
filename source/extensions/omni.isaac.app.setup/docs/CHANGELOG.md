@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.13.2] - 2024-05-01
+### Fixed
+- update for set_phase api change
+
 ## [0.13.1] - 2024-03-19
 ### Fixed
 - include for benchmark services

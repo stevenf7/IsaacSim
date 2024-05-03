@@ -74,6 +74,3 @@ class TestBenchmarkLidar(BaseIsaacBenchmarkAsync):
 
     async def test_benchmark_25_physx_lidar(self):
         await self.benchmark_physx_lidar(25)
-
-    async def test_benchmark_50_physx_lidar(self):
-        await self.benchmark_physx_lidar(50)

@@ -87,18 +87,3 @@ class TestBenchmarkCamera(BaseIsaacBenchmarkAsync):
 
     async def test_benchmark_8_camera_720p(self):
         await self.benchmark_camera(8, [1280, 720])
-
-    async def test_benchmark_1_camera_1080(self):
-        await self.benchmark_camera(1, [1920, 1080])
-
-    async def test_benchmark_2_camera_1080(self):
-        await self.benchmark_camera(2, [1920, 1080])
-
-    async def test_benchmark_4_camera_1080(self):
-        await self.benchmark_camera(4, [1920, 1080])
-
-    async def test_benchmark_8_camera_1080(self):
-        await self.benchmark_camera(8, [1920, 1080])
-
-    async def test_benchmark_8_camera_1200(self):
-        await self.benchmark_camera(8, [1920, 1200])

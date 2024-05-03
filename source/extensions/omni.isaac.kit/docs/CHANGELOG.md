@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.8.1] - 2024-05-01
+### Fixed
+- update for set_phase api change
+
 ## [1.8.0] - 2024-04-16
 ### Added
 - max_gpu_count config argument

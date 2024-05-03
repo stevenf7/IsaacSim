@@ -10,12 +10,12 @@
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-n", "--num-cameras", type=int, default=1, help="Number of cameras")
+parser.add_argument("--num-cameras", type=int, default=1, help="Number of cameras")
 parser.add_argument(
     "--resolution", nargs=2, type=int, default=[1280, 720], help="Camera resolution as [width, height] px"
 )
 parser.add_argument("--num-gpus", type=int, default=1, help="Number of GPUs on machine.")
-parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
+parser.add_argument("--num-frames", type=int, default=600, help="Number of frames to run benchmark for")
 parser.add_argument(
     "--backend-type",
     default="OsmoKPIFile",
@@ -27,6 +27,7 @@ args, unknown = parser.parse_known_args()
 n_camera = args.num_cameras
 resolution = args.resolution
 n_gpu = args.num_gpus
+n_frames = args.num_frames
 
 import numpy as np
 from isaacsim import SimulationApp
@@ -34,9 +35,6 @@ from isaacsim import SimulationApp
 simulation_app = SimulationApp({"headless": True, "max_gpu_count": n_gpu})
 
 TEST_NUM_APP_UPDATES = 60 * 10
-
-if args.test:
-    TEST_NUM_APP_UPDATES = 1
 
 import omni
 from omni.isaac.core.utils.extensions import enable_extension
@@ -61,7 +59,7 @@ benchmark = BaseIsaacBenchmark(
     },
     backend_type=args.backend_type,
 )
-benchmark.set_phase("loading")
+benchmark.set_phase("loading", start_recording_frametime=False, start_recording_runtime=True)
 
 
 scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
@@ -99,7 +97,7 @@ benchmark.store_measurements()
 # perform benchmark
 benchmark.set_phase("benchmark")
 
-for _ in range(1 if benchmark.test_mode else TEST_NUM_APP_UPDATES):
+for _ in range(1, n_frames):
     omni.kit.app.get_app().update()
 
 benchmark.store_measurements()
