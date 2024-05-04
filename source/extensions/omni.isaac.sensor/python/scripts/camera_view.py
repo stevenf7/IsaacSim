@@ -425,14 +425,17 @@ class CameraView(XFormPrimView):
         Returns:
             np.ndarray: containing the RGBA data for each camera. Depth channel is excluded if present.
         """
-        sensor_data = self._tiled_annotator.get_data().reshape(*self.tiled_resolution, -1) * 255
+        if "rgb" not in self.output_annotators:
+            rgb = np.zeros((*self.tiled_resolution, 3), dtype=np.uint8)
+            print("Warning: RGB data is not available. Please enable RGB annotator when creating CameraView object.")
+        elif "depth" in self.output_annotators:  # and "rgb" in self.output_annotators
+            linear_sensor_data = self._tiled_annotator.get_data()
+            rgb_idx = len(linear_sensor_data) * 3 // 4
+            rgb = linear_sensor_data[:rgb_idx].reshape(*self.tiled_resolution, 3) * 255
+        else:  # only "rgb" in self.output_annotators
+            rgb = self._tiled_annotator.get_data().reshape(*self.tiled_resolution, 3) * 255
 
-        if sensor_data.shape[-1] == 4:
-            return sensor_data[:, :, :3]  # remove the last channel which is depth
-        elif sensor_data.shape[-1] == 3:
-            return sensor_data
-        else:
-            return None
+        return rgb
 
     def get_depth(self) -> np.ndarray:
         """Fetch the depth data for all cameras.
@@ -442,9 +445,15 @@ class CameraView(XFormPrimView):
         """
         if "depth" not in self.output_annotators:
             depth = np.zeros(self.tiled_resolution, dtype=np.float32)
-        else:
-            sensor_data = self._tiled_annotator.get_data().reshape(*self.tiled_resolution, -1) * 255
-            depth = sensor_data[:, :, -1]  # depth is the last channel
+            print(
+                "Warning: Depth data is not available. Please enable depth annotator when creating CameraView object."
+            )
+        elif "rgb" in self.output_annotators:  # and "depth" in self.output_annotators
+            linear_sensor_data = self._tiled_annotator.get_data()
+            rgb_idx = len(linear_sensor_data) * 3 // 4
+            depth = linear_sensor_data[rgb_idx:].reshape(*self.tiled_resolution) * 255
+        else:  # only "depth" in self.output_annotators
+            depth = self._tiled_annotator.get_data().reshape(*self.tiled_resolution) * 255
 
         return depth
 

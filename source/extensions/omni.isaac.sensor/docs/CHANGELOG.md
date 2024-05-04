@@ -1,5 +1,10 @@
 # Changelog
 
+## [11.0.5] - 2024-05-03
+### Fixed
+- get_rgba() and get_depth() for CameraView class now works for both rgb and depth 
+- Account for linear array with depth values being at end 
+
 ## [11.0.4] - 2024-04-30
 ### Updated
 - Updated Sensing camera names
