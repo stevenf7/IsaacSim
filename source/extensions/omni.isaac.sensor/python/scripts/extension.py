@@ -165,7 +165,7 @@ class Extension(omni.ext.IExt):
         annotator_name = "RtxSensorCpu" + "IsaacRTXLidarOutput"
         AnnotatorRegistry.register_annotator_from_node(
             name=annotator_name,
-            input_rendervars=["RtxSensorGpu" + "Ptr"],
+            input_rendervars=["RtxSensorCpu" + "Ptr"],
             node_type_id="omni.isaac.sensor.IsaacRTXLidarOutput",
             output_data_type=np.float32,
             output_channels=3,

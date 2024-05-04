@@ -57,7 +57,7 @@ constexpr PxD6Axis::Enum g_dcToPxAxis[6]{
     PxD6Axis::eX, PxD6Axis::eY, PxD6Axis::eZ, PxD6Axis::eTWIST, PxD6Axis::eSWING1, PxD6Axis::eSWING2,
 };
 
-omni::kit::IStageUpdate* g_su = nullptr;
+omni::kit::StageUpdatePtr g_su = nullptr;
 omni::kit::StageUpdateNode* g_suNode = nullptr;
 omni::physx::SubscriptionId gStepSubscription;
 carb::events::ISubscriptionPtr gEventSubscription;
@@ -3760,7 +3760,8 @@ CARB_EXPORT void carbOnPluginStartup()
     using namespace omni::isaac::dynamic_control;
 
 
-    g_su = carb::getCachedInterface<omni::kit::IStageUpdate>();
+    g_su = carb::getCachedInterface<omni::kit::IStageUpdate>()->getStageUpdate();
+
     if (!g_su)
     {
         CARB_LOG_ERROR("Failed to acquire stage update interface");

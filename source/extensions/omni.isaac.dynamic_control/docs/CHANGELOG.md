@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.6] - 2024-05-03
+### Fixed
+- Update IStageUpdate usage to fix deprecation error
+- Update golden values for franka test
+
 ## [1.3.5] - 2024-04-15
 ### Changed
 - Removed the use of deprecated physX jointSolverForces
