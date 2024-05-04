@@ -1,5 +1,9 @@
 # Changelog
 
+## [11.0.6] - 2024-05-03
+### Fixed
+- incorrect rendervar in RtxSensorCpuIsaacRTXLidarOutput
+
 ## [11.0.5] - 2024-05-03
 ### Fixed
 - get_rgba() and get_depth() for CameraView class now works for both rgb and depth 

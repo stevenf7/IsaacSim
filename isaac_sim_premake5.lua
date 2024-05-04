@@ -334,7 +334,7 @@ SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 SAMPLE_DIR=$SCRIPT_DIR/../
 %s
 "$SCRIPT_DIR/../python.sh" -m pip install -r $SCRIPT_DIR/../requirements.txt
-"$SCRIPT_DIR/../python.sh" $SAMPLE_DIR/%s %s $@
+"$SCRIPT_DIR/../python.sh" $SAMPLE_DIR/%s %s $@ --no-window
         ]], extra, sample_path, extra_args))
         f:close()
         os.chmod(sh_file_path, 755)

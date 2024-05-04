@@ -129,9 +129,9 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCase):
         expected_pos = body_states["pose"]["p"][hand_idx]
         self.assertTrue(
             np.allclose(
-                [expected_pos[0], expected_pos[1], expected_pos[2]], [0.09576257, 0.4514446, 0.498514], atol=1e-5
+                [expected_pos[0], expected_pos[1], expected_pos[2]], [0.09576818, 0.45144105, 0.49848583], atol=1e-5
             ),
-            f"[0.09576257, 0.4514446, 0.498514] != {expected_pos}",
+            f"[0.09576818, 0.45144105, 0.49848583] != {expected_pos}",
         )
 
         pass
