@@ -1,3 +1,6 @@
+.. _API omni.isaac.core:
+
+
 Core [omni.isaac.core]
 ######################################################
 
@@ -667,6 +670,7 @@ Utilities for enabling and disabling extensions from the Extension Manager and k
     :members:
     :undoc-members:
     :exclude-members:
+    
 
 |
 

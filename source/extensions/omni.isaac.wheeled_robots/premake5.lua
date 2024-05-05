@@ -81,5 +81,4 @@ repo_build.prebuild_link {
     { "python/impl", ogn.python_target_path.."/impl" },
     { "python/nodes", ogn.python_target_path.."/nodes" },
     { "python/tests", ogn.python_tests_target_path },
-
 }

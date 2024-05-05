@@ -98,30 +98,32 @@ class QuinticPolynomial:
 
 
 def quintic_polynomials_planner(sx, sy, syaw, sv, sa, gx, gy, gyaw, gv, ga, max_accel, max_jerk, dt):
-    """
-    quintic polynomial planner
-    input
-        s_x: start x position [m]
-        s_y: start y position [m]
-        s_yaw: start yaw angle [rad]
-        sa: start accel [m/ss]
-        gx: goal x position [m]
-        gy: goal y position [m]
-        gyaw: goal yaw angle [rad]
-        gv: goal velocity [m/s]
-        ga: goal accel [m/ss]
-        max_accel: maximum accel [m/ss]
-        max_jerk: maximum jerk [m/sss]
-        dt: time tick [s]
-    return
+    """quintic polynomials planner
+
+    Args:
+        sx (_type_): start x position [m]
+        sy (_type_): start y position [m]
+        syaw (_type_): start yaw angle [rad]
+        sv (_type_): start velocity [m/s]
+        sa (_type_): start accel [m/ss]
+        gx (_type_): goal x position [m]
+        gy (_type_): goal y position [m]
+        gyaw (_type_): goal yaw angle [rad]
+        gv (_type_): goal velocity [m/s]
+        ga (_type_): goal accel [m/ss]
+        max_accel (_type_): maximum accel [m/ss]
+        max_jerk (_type_): maximum jerk [m/sss]
+        dt (_type_): time tick [s]
+
+    Returns:
         time: time result
         rx: x position result list
         ry: y position result list
         ryaw: yaw angle result list
         rv: velocity result list
         ra: accel result list
-    """
 
+    """
     vxs = sv * math.cos(syaw)
     vys = sv * math.sin(syaw)
     vxg = gv * math.cos(gyaw)
