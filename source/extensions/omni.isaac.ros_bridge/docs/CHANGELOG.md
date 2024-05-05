@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.18.1] - 2024-05-04
+### Fixed
+- Roscore not resetting correctly
+- Unit tests
+
 ## [1.18.0] - 2024-04-24
 ### Changed
 - Stereo offset input in ROS Camera Info and Helper nodes to accept camera baseline in meters used to compute Tx, Ty.

@@ -16,7 +16,8 @@ import omni
 import psutil
 
 
-def kill_child_processes(parent_pid, sig=signal.SIGTERM):
+def kill_child_processes(parent_pid, sig=signal.SIGKILL):
+    omni.kit.app.get_app().print_and_log("Try to kill child pids of roscore pid: " + str(parent_pid))
     try:
         parent = psutil.Process(parent_pid)
     except psutil.NoSuchProcess:
@@ -25,6 +26,7 @@ def kill_child_processes(parent_pid, sig=signal.SIGTERM):
     for process in children:
         omni.kit.app.get_app().print_and_log(f"Stopping Roscore: killing child: {process}")
         process.send_signal(sig)
+    parent.kill()
 
 
 class Roscore(object):
@@ -94,7 +96,9 @@ class Roscore(object):
             ros_env["PYTHONPATH"] += f":{ros_path}/local/lib/python3.10/dist-packages"
             # print(ros_env)
             # running roscore will output logs, rosmaster --core disables rosout
-            self.roscore_process = subprocess.Popen(["rosmaster --core"], shell=True, cwd=f"{ros_path}", env=ros_env)
+            self.roscore_process = subprocess.Popen(
+                ["exec " + "rosmaster --core"], shell=True, cwd=f"{ros_path}", env=ros_env
+            )
             self.roscore_pid = self.roscore_process.pid  # pid of the roscore process (which has child processes)
         except OSError as e:
             carb.log_error("roscore could not be run")
@@ -107,11 +111,10 @@ class Roscore(object):
             omni.kit.app.get_app().print_and_log("shutdown already called")
             return
         if self.roscore_pid is not None and self.roscore_process is not None:
-            omni.kit.app.get_app().print_and_log("Try to kill child pids of roscore pid: " + str(self.roscore_pid))
-            kill_child_processes(self.roscore_pid)
-            self.roscore_process.terminate()
-            omni.kit.app.get_app().print_and_log("waiting for process to finish: " + str(self.roscore_pid))
-            self.roscore_process.wait()  # important to prevent from zombie process
+            # kill_child_processes(self.roscore_pid)
+            self.roscore_process.kill()
+            # omni.kit.app.get_app().print_and_log("waiting for process to finish: " + str(self.roscore_pid))
+            # self.roscore_process.wait()  # important to prevent from zombie process
             self.roscore_process = None
             self.roscore_pid = None
             omni.kit.app.get_app().print_and_log("Roscore shutdown complete")

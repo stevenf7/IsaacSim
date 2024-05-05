@@ -58,7 +58,9 @@ class TestRosJointStatePublisher(omni.kit.test.AsyncTestCase):
         await wait_for_rosmaster_async()
         # You must disable signals so that the init node call does not take over the ctrl-c callback for kit
         try:
-            rospy.init_node("isaac_sim_test_joint_drive", anonymous=True, disable_signals=True, log_level=rospy.ERROR)
+            rospy.init_node(
+                "isaac_sim_test_joint_state_pub", anonymous=True, disable_signals=True, log_level=rospy.ERROR
+            )
         except rospy.exceptions.ROSException as e:
             print("Node has already been initialized, do nothing")
 
@@ -207,7 +209,9 @@ class TestRosJointStateSubscriber(omni.kit.test.AsyncTestCase):
         await wait_for_rosmaster_async()
         # You must disable signals so that the init node call does not take over the ctrl-c callback for kit
         try:
-            rospy.init_node("isaac_sim_test_joint_drive", anonymous=True, disable_signals=True, log_level=rospy.ERROR)
+            rospy.init_node(
+                "isaac_sim_test_joint_state_sub", anonymous=True, disable_signals=True, log_level=rospy.ERROR
+            )
         except rospy.exceptions.ROSException as e:
             print("Node has already been initialized, do nothing")
 
@@ -390,3 +394,4 @@ class TestRosJointStateSubscriber(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(joint_command_received[2], test_velocity[2], delta=1e-3)
 
         reset_robot()
+        js_pub.unregister()

@@ -23,7 +23,9 @@ import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd
 import omni.kit.viewport.utility
+from omni.isaac.core.objects import VisualCuboid
 from omni.isaac.core.utils.physics import simulate_async
+from omni.isaac.core.utils.semantics import add_update_semantics
 from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.nucleus import get_assets_root_path_async
@@ -86,7 +88,7 @@ class TestRosSemanticLabels(omni.kit.test.AsyncTestCase):
         from rosgraph_msgs.msg import Clock
         from std_msgs.msg import String
 
-        BACKGROUND_USD_PATH = "/Isaac/Environments/Simple_Warehouse/warehouse.usd"
+        BACKGROUND_USD_PATH = "/Isaac/Environments/Grid/default_environment.usd"
 
         self._assets_root_path = await get_assets_root_path_async()
         if self._assets_root_path is None:
@@ -96,6 +98,11 @@ class TestRosSemanticLabels(omni.kit.test.AsyncTestCase):
         # Add Small Warehouse environment to the stage
         (result, error) = await open_stage_async(self._assets_root_path + BACKGROUND_USD_PATH)
         await omni.kit.app.get_app().next_update_async()
+        cube_1 = VisualCuboid("/cube_1", position=[0, 0, 0], scale=[1.5, 1, 1])
+        add_update_semantics(cube_1.prim, "Cube0")
+
+        cube_2 = VisualCuboid("/cube_2", position=[-4, 4, 0], scale=[1.5, 1, 1])
+        add_update_semantics(cube_2.prim, "Cube1")
         viewport_api = omni.kit.viewport.utility.get_active_viewport()
         render_product_path = viewport_api.get_render_product_path()
         try:
@@ -161,11 +168,6 @@ class TestRosSemanticLabels(omni.kit.test.AsyncTestCase):
 
             return False
 
-        # Set active camera on viewport
-        viewport_api.set_active_camera("/Root/Camera")
-        await omni.kit.app.get_app().next_update_async()
-        # Point Camera towards blank wall
-        set_camera_view(eye=np.array([0, -5, 3]), target=np.array([0, -10, 3]), camera_prim_path="/Root/Camera")
         await omni.kit.app.get_app().next_update_async()
 
         self.assertIsNone(self._label_data)
@@ -180,14 +182,13 @@ class TestRosSemanticLabels(omni.kit.test.AsyncTestCase):
 
         labels_dict = json.loads(self._label_data)
         print(labels_dict)
-        self.assertTrue(find_class(labels_dict, "wall"))
-        self.assertFalse(find_class(labels_dict, "klt_bin"))
-        self.assertFalse(find_class(labels_dict, "pallet"))
+        self.assertTrue(find_class(labels_dict, "cube0"))
+        self.assertFalse(find_class(labels_dict, "cube1"))
 
         self.assertTrue(find_timestamp(labels_dict, self._clock_data))
         await omni.kit.app.get_app().next_update_async()
-        # Point Camera towards bins
-        set_camera_view(eye=np.array([0, 0, 3]), target=np.array([-9.32, 10, 3]), camera_prim_path="/Root/Camera")
+        # Point Camera towards the other box
+        set_camera_view(eye=np.array([0, 0, 3]), target=np.array([-4, 4, 0]), camera_prim_path="/OmniverseKit_Persp")
         await omni.kit.app.get_app().next_update_async()
 
         clear_data()
@@ -205,9 +206,8 @@ class TestRosSemanticLabels(omni.kit.test.AsyncTestCase):
 
         labels_dict = json.loads(self._label_data)
         print(labels_dict)
-        self.assertTrue(find_class(labels_dict, "wall"))
-        self.assertTrue(find_class(labels_dict, "klt_bin"))
-        self.assertTrue(find_class(labels_dict, "pallet"))
+        self.assertTrue(find_class(labels_dict, "cube1"))
+        self.assertFalse(find_class(labels_dict, "cube0"))
 
         self.assertTrue(find_timestamp(labels_dict, self._clock_data))
 
