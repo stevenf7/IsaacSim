@@ -1,41 +1,39 @@
 # Changelog
 
-## [1.6.0] - 2023-05-01
+## [1.6.0] - 2024-05-01
 ### Added
 - ability to enable/disable frametime and runtime separately when starting a phase
 
-## [1.5.0] - 2023-04-29
+## [1.5.0] - 2024-04-29
 ### Changed
 - cleaned up imports
 - updated docstrings
 - removed unused functions
 
-## [1.4.2] - 2023-04-15
+## [1.4.2] - 2024-04-15
 ### Fixed
 - Error when zero frames were collected
 - Test failure
 
-## [1.4.1] - 2023-03-25
+## [1.4.1] - 2024-03-25
 ### Fixed
-- Frametime collector skips frametime collection if start time is `None`
-  (i.e if `set_phase(start_recording_time=False)` is called
+- Frametime collector skips frametime collection if start time is `None` (i.e if `set_phase(start_recording_time=False)` is called
 
-## [1.4.0] - 2023-02-02
+## [1.4.0] - 2024-02-02
 ### Added
 - User can now specify per-benchmark metadata when using BaseIsaacBenchmark, which will persist across phases
 ### Changed
 - Refactors "middleware" in extension
 - OsmoKPIFile backend now prints one KPI file per phase, rather than one KPI file per workflow
-- Deprecates individual runtime/frametime APIs in BaseIsaacBenchmark, moves functionality to start_phase() and
-  stop_collecting_measurements()
+- Deprecates individual runtime/frametime APIs in BaseIsaacBenchmark, moves functionality to start_phase() and stop_collecting_measurements()
 - metrics.measurements.TestRun renamed to metrics.measurements.TestPhase
 
 
-## [1.3.2] - 2023-02-02
+## [1.3.2] - 2024-02-02
 ### Changed
 - OSMOKPIFile writer logs exact KPI keys, rather than abbreviation.
 
-## [1.3.1] - 2023-02-02
+## [1.3.1] - 2024-02-02
 ### Changed
 - Updated path to the nucleus extension
 

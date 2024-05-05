@@ -2,19 +2,19 @@
 
 ## [2.23.5] - 2024-05-01
 ### Fixed
-ROS2 bridge Service printing unnecessary warnings
+- ROS2 bridge Service printing unnecessary warnings
 
 ## [2.23.4] - 2024-04-30
 ### Fixed
-ROS2 bridge check failing on humble due to mising libraries
+- ROS2 bridge check failing on humble due to mising libraries
 
 ## [2.23.3] - 2024-04-26
 ### Fixed
-Error when service server and client nodes started with blank message definition
+- Error when service server and client nodes started with blank message definition
 
 ## [2.23.2] - 2024-04-26
 ### Fixed
-ROS2 bridge check failing on humble due to mising libraries
+- ROS2 bridge check failing on humble due to mising libraries
 
 ## [2.23.1] - 2024-04-25
 ### Fixed
@@ -175,7 +175,7 @@ ROS2 bridge check failing on humble due to mising libraries
 - RGB being published twice per frame
 
 ## [2.9.2] - 2024-03-04
-### Updated
+### Changed
 - Updated omnigraph nodes to use per instance state instead of internal state
 
 ## [2.9.1] - 2024-02-29

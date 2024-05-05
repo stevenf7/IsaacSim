@@ -1,8 +1,7 @@
 # Changelog
 ## [0.2.2] - 2024-03-15
 ### Fixed
-- Fixed logic around selecting Articulation on STOP/PLAY given new behavior in Core
-  get_prim_object_type() function.
+- Fixed logic around selecting Articulation on STOP/PLAY given new behavior in Core get_prim_object_type() function.
 
 ## [0.2.1] - 2023-11-13
 ### Fixed

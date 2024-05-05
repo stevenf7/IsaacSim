@@ -9,7 +9,7 @@
 - Telemetry for writers and annotators
 
 ## [1.14.1] - 2024-03-15
-### Updated 
+### Changed
 - re-enable s3 writing functionality for PoseWriter 
 
 ## [1.14.0] - 2024-03-14
@@ -28,8 +28,6 @@
 ## [1.13.2] - 2024-03-04
 ### Changed
 - PoseWriter restructuring
-
-### Updated
 - Updated omnigraph nodes to use per instance state instead of internal state
 
 ## [1.13.1] - 2024-02-23
@@ -47,7 +45,7 @@
 ## [1.12.1] - 2024-01-18
 ### Changed
 - Changed get_assets_root_path to get_assets_root_path_async for the unit tests
- 
+
 ## [1.12.0] - 2024-01-10
 ### Added
 - Added support for `RtxSensorGpu` and `RtxSensorCpu` aovs in`pytorch_writer` to support tiled RTX Sensor.

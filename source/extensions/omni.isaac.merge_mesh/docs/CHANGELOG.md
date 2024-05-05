@@ -1,10 +1,10 @@
 # Changelog
 
-## [1.0.1] - 2023-04-18
+## [1.0.1] - 2024-04-18
 ### Added
 - Dependency for tests
 
-## [1.0.0] - 2023-04-12
+## [1.0.0] - 2024-04-12
 ### Added
 - Code-Accessible Merge Mesh functionality (API)
 - Merge Command
@@ -13,7 +13,7 @@
 ### Changed
 - Combine Materials now Creates the materials in the provided path if they don't exist
 
-## [0.1.5] - 2023-04-10
+## [0.1.5] - 2024-04-10
 ### Fixed
 - Fix Broken empty Material binding check
 

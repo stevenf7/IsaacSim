@@ -24,14 +24,18 @@ def parse_version(line: str):
     Try parse line as a version, assuming it will look like ' [2.3.1] - 2020-09-30 '
     This is copied from /kit/source/extensions/omni.kit.registry.nucleus/omni/kit/registry/nucleus/changelog_parser.py
     """
-    line = line.lstrip(" #")
-    m = re.match(r"\[?(?P<version>[^(\]|\s)]+)\]? - (?P<release_date>\d{4}-\d{1,2}-\d{1,2})$", line)
-    if m:
-        return (m.group("version"), (datetime.datetime.strptime(m.group("release_date"), "%Y-%m-%d").date()))
+    try:
+        line = line.lstrip(" #")
+        m = re.match(r"\[?(?P<version>[^(\]|\s)]+)\]? - (?P<release_date>\d{4}-\d{1,2}-\d{1,2})$", line)
+        if m:
+            return (m.group("version"), (datetime.datetime.strptime(m.group("release_date"), "%Y-%m-%d").date()))
 
-    m = re.match(r"\[(?P<version>Unreleased)\]$", line)
-    if m:
-        return (m.group("version"), None)
+        m = re.match(r"\[(?P<version>Unreleased)\]$", line)
+        if m:
+            return (m.group("version"), None)
+    except Exception as e:
+        print(line)
+        print(e)
 
     return None
 
@@ -252,7 +256,14 @@ def generate_extension_diff_report(
 
 def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
     parser.description = "Generate changelog documentation"
-    parser.add_argument("--validate", dest="validate", required=False, default=False, help="Validate all changelogs")
+    parser.add_argument(
+        "--validate",
+        dest="validate",
+        required=False,
+        default=False,
+        action="store_true",
+        help="Validate all changelogs",
+    )
 
     def run_repo_tool(options: Dict, config: Dict):
         # tool_config = config.get("repo_build", {})

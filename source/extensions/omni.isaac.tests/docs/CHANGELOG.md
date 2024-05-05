@@ -21,7 +21,7 @@
 - Updated path to the nucleus extension
 
 ## [1.16.0] - 2024-02-01
-### Addewd
+### Added
 - Added NvBlox unit test
 
 ## [1.15.3] - 2024-01-25

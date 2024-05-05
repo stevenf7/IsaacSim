@@ -1,7 +1,7 @@
 # Changelog
 
 ## [2.0.2] - 2024-04-19
-### changed
+### Changed
 - Removed omni.usd.schema.physics dependency
 
 ## [2.0.1] - 2023-06-21

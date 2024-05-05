@@ -1,10 +1,10 @@
 # Changelog
 
-## [3.11.0] - 2023-04-25
+## [3.11.0] - 2024-04-25
 ### Added
 - Friction reporting API to GeometryPrim and GeometryPrimView
 
-## [3.10.0] - 2023-04-17
+## [3.10.0] - 2024-04-17
 ### Changed
 - Remove joint velocities computation using finite difference with TGS solver
 
