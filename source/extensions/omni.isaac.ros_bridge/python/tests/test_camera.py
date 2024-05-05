@@ -92,10 +92,14 @@ class TestRosCamera(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_camera(self):
-        scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
+        scene_path = "/Isaac/Environments/Grid/default_environment.usd"
         await open_stage_async(self._assets_root_path + scene_path)
         self._timeline = omni.timeline.get_timeline_interface()
         self._timeline.set_auto_update(True)
+
+        cube_1 = VisualCuboid("/cube_1", position=[0, 0, 0], scale=[1.5, 1, 1])
+
+        add_update_semantics(cube_1.prim, "Cube0")
 
         import rospy
 

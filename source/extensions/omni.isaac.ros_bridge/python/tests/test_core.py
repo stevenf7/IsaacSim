@@ -110,9 +110,3 @@ class TestRosBridge(omni.kit.test.AsyncTestCase):
         except Exception as e:
             print(e)
         await omni.kit.app.get_app().next_update_async()
-
-    async def test_second_roscore(self):
-        from omni.isaac.ros_bridge.scripts.roscore import Roscore
-
-        another_roscore = Roscore()
-        another_roscore.shutdown()

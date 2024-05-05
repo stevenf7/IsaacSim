@@ -85,8 +85,11 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_camera(self):
-        scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
+        scene_path = "/Isaac/Environments/Grid/default_environment.usd"
         await open_stage_async(self._assets_root_path + scene_path)
+
+        cube_1 = VisualCuboid("/cube_1", position=[0, 0, 0], scale=[1.5, 1, 1])
+        add_update_semantics(cube_1.prim, "Cube0")
 
         import rclpy
         import usdrt.Sdf
@@ -232,7 +235,7 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
         )
         bbox_3d_sub = node.create_subscription(Detection3DArray, "bbox_3d", bbox_3d_callback, get_qos_profile())
 
-        await asyncio.sleep(2.0)
+        await omni.kit.app.get_app().next_update_async()
         omni.kit.commands.execute(
             "ChangeProperty", prop_path=Sdf.Path("/OmniverseKit_Persp.horizontalAperture"), value=6.0, prev=0
         )
@@ -283,7 +286,7 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
             # make sure all previous messages are cleared
             await omni.kit.app.get_app().next_update_async()
             spin()
-            await asyncio.sleep(2.0)
+            await omni.kit.app.get_app().next_update_async()
             self._camera_info = None
             self._rgb = None
             self._depth = None
@@ -356,7 +359,7 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
         # make sure all previous messages are cleared
         await omni.kit.app.get_app().next_update_async()
         spin()
-        await asyncio.sleep(2.0)
+        await omni.kit.app.get_app().next_update_async()
         self._camera_info = None
         self._rgb = None
         self._depth = None
@@ -557,7 +560,7 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
         def spin():
             rclpy.spin_once(node, timeout_sec=0.1)
 
-        await asyncio.sleep(2.0)
+        await omni.kit.app.get_app().next_update_async()
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
