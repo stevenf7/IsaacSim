@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.23.6] - 2024-05-04
+### Fixed
+Rclpy loading on windows
+
 ## [2.23.5] - 2024-05-01
 ### Fixed
 - ROS2 bridge Service printing unnecessary warnings
