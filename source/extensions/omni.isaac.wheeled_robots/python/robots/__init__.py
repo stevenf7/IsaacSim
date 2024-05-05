@@ -7,4 +7,5 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+from .holonomic_robot_usd_setup import HolonomicRobotUsdSetup
 from .wheeled_robot import WheeledRobot

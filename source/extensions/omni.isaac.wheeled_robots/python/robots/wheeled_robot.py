@@ -17,27 +17,61 @@ from omni.isaac.core.utils.types import ArticulationAction
 
 
 class WheeledRobot(Robot):
-    """[summary]
+    """
+    This class wraps and manages the articualtion for a two wheeled differential robot base. It is designed to be managed by the `World` simulation context and provides and API for applying actions, retrieving dof parameters, etc...
+
+    Creating a wheeled robot can be done in a number of different ways, depending on the use case.
+
+    * Most commonly, the robot and stage are preloaded, in which case only the prim path to the articualtion root and the joint labels are required. Joint labels can take the form of either the joint names or the joint indices in the articulation.
+
+    .. code-block:: python
+
+        jetbot = WheeledRobot(prim_path="/path/to/jetbot",
+                            name="Joan",
+                            wheel_dof_names=["left_wheel_joint", "right_wheel_joint"]
+                            )
+
+        armbot = WheeledRobot(prim_path="path/to/armbot"
+                                name="Weird_Arm_On_Wheels_Bot",
+                                wheel_dof_indices=[7, 8]
+                            )
+
+    * Alternatively, this class can create and populate a new reference on the stage.  This is done with the `create_robot` parameter set to True.
+
+    .. code-block:: python
+
+        carter = WheeledRobot(prim_path="/desired/path/to/carter",
+                                name = "Jimmy",
+                                wheel_dof_names=["joint_wheel_left", "joint_wheel_right"],
+                                create_robot = True,
+                                usd_path = "/Isaac/Robots/Carter/nova_carter.usd",
+                                position = np.array([0,1,0])
+                            )
+
+    .. hint::
+
+        In all cases, either `wheel_dof_names` or `wheel_dof_indices` must be specified!
+
 
     Args:
-        prim_path (str): [description]
-        robot_path (str): relative path from prim path to the robot.
-        name (str): [description]
-        wheel_dof_names ([str, str]): name of the wheels, [left,right].
-        wheel_dof_indices: ([int, int]): indices of the wheels, [left, right]
-        usd_path (str, optional): [description]
-        create_robot (bool): create robot at prim_path if no robot exist at said path. Defaults to False
-        position (Optional[np.ndarray], optional): [description]. Defaults to None.
-        orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
+        prim_path (str): The stage path to the root prim of the articulation.
+        name ([str]): The name used by `World` to identify the robot. Defaults to "wheeled_robot"
+        robot_path (optional[str]): relative path from prim path to the robot.
+        wheel_dof_names (semi-optional[str]): names of the wheel joints. Either this or the wheel_dof_indicies must be specified.
+        wheel_dof_indices: (semi-optional[int]): indices of the wheel joints in the articulation. Either this or the wheel_dof_names must be specified.
+        usd_path (optional[str]): nucleus path to the robot asset. Used if create_robot is True
+        create_robot (bool): create robot at prim_path using asset from usd_path. Defaults to False
+        position (Optional[np.ndarray], optional): The location to create the robot when create_robot is True. Defaults to None.
+        orientation (Optional[np.ndarray], optional): The orientation of the robot when crate_robot is True. Defaults to None.
     """
 
     def __init__(
         self,
         prim_path: str,
+        name: str = "wheeled_robot",
         robot_path: Optional[str] = None,
         wheel_dof_names: Optional[str] = None,
         wheel_dof_indices: Optional[int] = None,
-        name: str = "wheeled_robot",
         usd_path: Optional[str] = None,
         create_robot: Optional[bool] = False,
         position: Optional[np.ndarray] = None,
@@ -81,7 +115,7 @@ class WheeledRobot(Robot):
         """[summary]
 
         Returns:
-            Tuple[float, float]: [description]
+            List[float]: [description]
         """
         full_dofs_positions = self.get_joint_positions()
         wheel_joint_positions = [full_dofs_positions[i] for i in self._wheel_dof_indices]

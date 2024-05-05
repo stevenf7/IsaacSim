@@ -34,8 +34,23 @@ from scipy import sparse
 
 
 class HolonomicController(BaseController):
-    """[summary]
-    Generic Holonomic drive controller. Model must have drive joints to mecanum wheels defined in the USD with the rollers angle and radius.
+    """
+
+    This controller computes the joint drive commands required to produce the commanded forward, lateral, and yaw speeds of the robot. The problem is framed as a quadratic program to minimize the residual "net force" acting on the center of mass.
+
+    .. hint::
+
+        The wheel joints of the robot prim must have additional attributes to definine the roller angles and radii of the mecanum wheels.
+
+        .. code-block:: python
+
+            stage = omni.usd.get_context().get_stage()
+            joint_prim = stage.GetPrimAtPath("/path/to/wheel_joint")
+            joint_prim.CreateAttribute("isaacmecanumwheel:radius",Sdf.ValueTypeNames.Float).Set(0.12)
+            joint_prim.CreateAttribute("isaacmecanumwheel:angle",Sdf.ValueTypeNames.Float).Set(10.3)
+
+        The :class:`HolonomicRobotUsdSetup` class automates this process.
+
 
     Args:
         name (str): [description]
@@ -45,6 +60,11 @@ class HolonomicController(BaseController):
         mecanum_angles (np.ndarray): mecanum wheel angles. Array of 1 can be used if all wheels have the same angle.
         wheel_axis (np.ndarray): the spinning axis of the wheels. Defaults to [1,0,0]
         up_axis (np.ndarray): Defaults to z- axis
+        max_linear_speed (float): maximum "forward" speed (default: 1.0e20)
+        max_angular_speed (float): maximum "turning" speed (default: 1.0e20)
+        max_wheel_speed (float): maximum "twisting" speed (default: 1.0e20)
+        linear_gain (float): Multiplicative factor. How much the solver should "care" about the linear components of the solution. (default: 1.0)
+        linear_gain (float): Multiplicative factor. How much the solver should "care" about the angular components of the solution. (default: 1.0)
     """
 
     def __init__(
@@ -132,10 +152,10 @@ class HolonomicController(BaseController):
         self.prob.solve()
 
     def forward(self, command: np.ndarray) -> ArticulationAction:
-        """Calculating the wheels speed given the desired vehicle speed.
+        """Calculate wheel speeds given the desired signed vehicle speeds.
 
         Args:
-            command (np.ndarray): [forward_velocity, lateral_velocity, yaw_velocity].
+            command (np.ndarray): [forward speed, lateral speed, yaw speed].
 
         Returns:
             ArticulationAction: [description]

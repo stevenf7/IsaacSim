@@ -16,11 +16,13 @@ from omni.isaac.core.utils.stage import get_current_stage
 from pxr import Gf, Usd, UsdGeom, UsdPhysics
 
 
+# TODO: Why isn't this a "HolonomicRobot" that inherits robot?
 class HolonomicRobotUsdSetup:
-    """[summary]
-    Generic Holonomic Robot Setup. Extract from USD or compile from user input the necessary information for holonomic controller.
+    """
+    Sets up the attributes on the prims of a holonomic robot. Specifically adds the `isaacmecanumwheel:radius` and `isaacmecanumwheel:angle` attributes to the wheel joints of the robot prim
+
     Args:
-        name (str): [description]
+
         prim_path (str): path of the robot articulation
         com_prim_path (str): path of the xform representing the center of mass of the vehicle
     """
