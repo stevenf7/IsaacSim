@@ -12,19 +12,17 @@
 - Update text to say cuMotion instead of Curobo and update Information Panel docs.
 
 ## [2.3.0] - 2024-03-27
-### Add
+### Added
 - Add support for importing and exporting Curobo XRDF files
 - Add maximum acceleration and jerk properties to Command Panel
 
 ## [2.2.1] - 2024-03-15
 ### Fixed
-- Fixed logic around selecting Articulation on STOP/PLAY given new behavior in Core
-  get_prim_object_type() function.
+- Fixed logic around selecting Articulation on STOP/PLAY given new behavior in Core get_prim_object_type() function.
 
 ## [2.2.0] - 2024-02-06
 ### Changed
-- Improved sphere creation time by reusing `VisualMaterial`s and
-    rewriting sphere prim path generation.
+- Improved sphere creation time by reusing `VisualMaterial`s and rewriting sphere prim path generation.
 
 ## [2.1.3] - 2023-11-13
 ### Fixed

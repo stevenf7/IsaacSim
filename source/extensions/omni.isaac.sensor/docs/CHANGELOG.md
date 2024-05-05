@@ -10,7 +10,7 @@
 - Account for linear array with depth values being at end 
 
 ## [11.0.4] - 2024-04-30
-### Updated
+### Changed
 - Updated Sensing camera names
 
 ## [11.0.3] - 2024-04-25
@@ -84,7 +84,7 @@
 - Removed the usage of the deprecated dynamic_control extension
 
 ## [9.14.1] - 2024-03-04
-### Updated
+### Changed
 - Updated omnigraph nodes to use per instance state instead of internal state
 
 ## [9.14.0] - 2024-03-01

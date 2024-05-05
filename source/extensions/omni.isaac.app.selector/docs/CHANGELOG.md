@@ -1,11 +1,11 @@
 # Changelog
 
 ## [2.7.0] - 2024-04-19
-# ## Added
+### Added
 - Added button to clear caches
 
 ## [2.6.3] - 2024-04-17
-# ## Fixed
+### Fixed
 - Made App Selector window non-detachable
 
 ## [2.6.2] - 2024-04-16

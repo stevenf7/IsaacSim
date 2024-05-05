@@ -13,7 +13,7 @@
 - Removed the usage of the deprecated dynamic_control extension 
 
 ## [0.8.1] - 2024-03-04
-### Updated
+### Changed
 - Updated omnigraph nodes to use per instance state instead of internal state
 
 ## [0.8.0] - 2024-01-08

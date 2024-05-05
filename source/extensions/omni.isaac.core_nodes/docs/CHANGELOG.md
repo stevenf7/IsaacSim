@@ -45,7 +45,7 @@
 - Isaac Get Wold Pose Node
 
 ## [1.12.3] - 2024-03-04
-### Updated
+### Changed
 - Updated omnigraph nodes to use per instance state instead of internal state
 ### Fixed
 - Render products not disabling on stop

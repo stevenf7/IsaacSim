@@ -1,13 +1,11 @@
 # Changelog
 ## [1.7.0] - 2024-03-14
 ### Fixed
-- Fixed code for handling Articulation selection in Configuration Tooling Template.
-    The issue arose from a change in behavior in Core get_prim_object_type()
+- Fixed code for handling Articulation selection in Configuration Tooling Template. The issue arose from a change in behavior in Core get_prim_object_type()
 
 ## [1.6.0] - 2024-02-28
 ### Fixed
-- Fixed code for populating drop-down menu with Articulations in Configuration Tooling Template.
-    This issue arose with Kit behavior changes on stage and timeline events.
+- Fixed code for populating drop-down menu with Articulations in Configuration Tooling Template. This issue arose with Kit behavior changes on stage and timeline events.
 
 ## [1.5.2] - 2023-12-02
 ### Changed
