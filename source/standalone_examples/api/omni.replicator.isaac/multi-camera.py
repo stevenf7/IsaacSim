@@ -91,8 +91,8 @@ rp3 = rep.create.render_product("/OmniverseKit_Persp", (1024, 1024))
 
 # Acess the data through a custom writer
 writer = rep.WriterRegistry.get("MyWriter")
-# writer.initialize(rgb=True)
-# writer.attach([rp1, rp2, rp3])
+writer.initialize(rgb=True)
+writer.attach([rp1, rp2, rp3])
 
 # Acess the data through annotators
 rgb_annotators = []
@@ -112,7 +112,7 @@ rep.orchestrator.set_capture_on_play(False)
 
 for i in range(NUM_FRAMES):
     # The step function provides new data to the annotators, triggers the randomizers and the writer
-    rep.orchestrator.step()
+    rep.orchestrator.step(rt_subframes=4)
     for j, rgb_annot in enumerate(rgb_annotators):
         save_rgb(rgb_annot.get_data(), f"{dir}/rp{j}_step_{i}")
 

@@ -62,10 +62,10 @@ print(f"Outputting data to {out_dir}..")
 
 # Example of using a writer to save the data
 writer = rep.WriterRegistry.get("BasicWriter")
-# writer.initialize(
-#     output_dir=f"{out_dir}/writer", rgb=True, semantic_segmentation=True, colorize_semantic_segmentation=True
-# )
-# writer.attach(rp)
+writer.initialize(
+    output_dir=f"{out_dir}/writer", rgb=True, semantic_segmentation=True, colorize_semantic_segmentation=True
+)
+writer.attach(rp)
 
 # Run a preview to ensure the replicator graph is initialized
 rep.orchestrator.preview()
