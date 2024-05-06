@@ -25,6 +25,7 @@ config = {
     "rt_subframes": 4,
     "num_frames": 10,
     "num_cameras": 3,
+    "camera_collider_radius": 1.25,
     "disable_render_products_between_captures": False,
     "simulation_duration_between_captures": 0.05,
     "resolution": (640, 480),
@@ -266,6 +267,20 @@ for i in range(num_cameras):
             print(f"Unknown camera attribute with {key}:{value}")
     cameras.append(cam_prim)
 
+# Add collision spheres (disabled by default) to cameras to avoid objects overlaping with the camera view
+camera_colliders = []
+camera_collider_radius = config.get("camera_collider_radius", 0)
+if camera_collider_radius > 0:
+    for cam in cameras:
+        cam_path = cam.GetPath()
+        cam_collider = stage.DefinePrim(f"{cam_path}/CollisionSphere", "Sphere")
+        cam_collider.GetAttribute("radius").Set(camera_collider_radius)
+        object_based_sdg_utils.add_colliders(cam_collider)
+        collision_api = UsdPhysics.CollisionAPI(cam_collider)
+        collision_api.GetCollisionEnabledAttr().Set(False)
+        UsdGeom.Imageable(cam_collider).MakeInvisible()
+        camera_colliders.append(cam_collider)
+
 # Wait an app update to ensure the prim changes are applied
 simulation_app.update()
 
@@ -299,8 +314,10 @@ if writer_type is not None and len(render_products) > 0:
 # Apply a random (mostly) uppwards velocity to the objects overlapping the 'bounce' area
 def on_overlap_hit(hit):
     prim = stage.GetPrimAtPath(hit.rigid_body)
-    rand_vel = (random.uniform(-2, 2), random.uniform(-2, 2), random.uniform(4, 8))
-    prim.GetAttribute("physics:velocity").Set(rand_vel)
+    # Skip the camera collision spheres
+    if prim not in camera_colliders:
+        rand_vel = (random.uniform(-2, 2), random.uniform(-2, 2), random.uniform(4, 8))
+        prim.GetAttribute("physics:velocity").Set(rand_vel)
     return True  # return True to continue the query
 
 
@@ -361,14 +378,26 @@ def randomize_camera_poses():
         object_based_sdg_utils.set_transform_attributes(cam, location=cam_loc, orientation=quat)
 
 
+# Temporarily enable camera colliders and simulate for the given number of frames to push out any overlapping objects
+def simulate_camera_collision(num_frames=1):
+    for cam_collider in camera_colliders:
+        collision_api = UsdPhysics.CollisionAPI(cam_collider)
+        collision_api.GetCollisionEnabledAttr().Set(True)
+    if not timeline.is_playing():
+        timeline.play()
+    for _ in range(num_frames):
+        simulation_app.update()
+    for cam_collider in camera_colliders:
+        collision_api = UsdPhysics.CollisionAPI(cam_collider)
+        collision_api.GetCollisionEnabledAttr().Set(False)
+
+
 # Create a randomizer for the shape distractors colors, manually triggered at custom events
 with rep.trigger.on_custom_event(event_name="randomize_shape_distractor_colors"):
     shape_distractors_paths = [prim.GetPath() for prim in chain(floating_shape_distractors, falling_shape_distractors)]
     shape_distractors_group = rep.create.group(shape_distractors_paths)
     with shape_distractors_group:
         rep.randomizer.color(colors=rep.distribution.uniform((0, 0, 0), (1, 1, 1)))
-rep.utils.send_og_event(event_name="randomize_shape_distractor_colors")
-
 
 # Create a randomizer to apply random velocities to the floating shape distractors
 with rep.trigger.on_custom_event(event_name="randomize_floating_distractor_velocities"):
@@ -407,7 +436,7 @@ with rep.trigger.on_custom_event(event_name="randomize_dome_background"):
         rep.modify.attribute("inputs:texture:file", rep.distribution.choice(dome_textures))
         rep.randomizer.rotation()
 
-# SDG
+
 # Capture motion blur by combining the number of pathtraced subframes samples simulated for the given duration
 def capture_with_motion_blur_and_pathtracing(duration=0.05, num_samples=8, spp=64):
     # For small step sizes the physics FPS needs to be temporarily increased to provide movements every syb sample
@@ -450,7 +479,7 @@ def capture_with_motion_blur_and_pathtracing(duration=0.05, num_samples=8, spp=6
     carb.settings.get_settings().set("/rtx/rendermode", prev_render_mode)
 
 
-# Run the simulation for a given duration
+# Update the app until a given simulation duration has passed (simulate the world between captures)
 def run_simulation_loop(duration):
     timeline = omni.timeline.get_timeline_interface()
     elapsed_time = 0.0
@@ -471,16 +500,8 @@ def run_simulation_loop(duration):
     )
 
 
-# Make sure the timeline can run for the duration of the simulation
-timeline = omni.timeline.get_timeline_interface()
-timeline.set_start_time(0)
-timeline.set_end_time(1000000)
-timeline.set_looping(False)
-timeline.play()
-timeline.commit()
-simulation_app.update()
-
 # SDG
+# Number of frames to capture
 num_frames = config.get("num_frames", 10)
 
 # Increase subframes if materials are not loaded on time, or ghosting artifacts appear on moving objects,
@@ -490,8 +511,24 @@ rt_subframes = config.get("rt_subframes", -1)
 # Amount of simulation time to wait between captures
 sim_duration_between_captures = config.get("simulation_duration_between_captures", 0.025)
 
+# Initial trigger for randomizers before the SDG loop with several app updates (ensures materials/textures are loaded)
+rep.utils.send_og_event(event_name="randomize_shape_distractor_colors")
+rep.utils.send_og_event(event_name="randomize_dome_background")
+for _ in range(5):
+    simulation_app.update()
+
+# Set the timeline parameters (start, end, no looping) and start the timeline
+timeline = omni.timeline.get_timeline_interface()
+timeline.set_start_time(0)
+timeline.set_end_time(1000000)
+timeline.set_looping(False)
+# If no custom physx scene is created, a default one will be created by the physics engine once the timeline starts
+timeline.play()
+timeline.commit()
+simulation_app.update()
+
 # Store the wall start time for stats
-wall_time_start = time.time()
+wall_time_start = time.perf_counter()
 
 # Run the simulation and capture data triggering randomizations and actions at custom frame intervals
 for i in range(num_frames):
@@ -499,6 +536,9 @@ for i in range(num_frames):
     if i % 3 == 0:
         print(f"\t Randomizing camera poses")
         randomize_camera_poses()
+        # Temporarily enable camera colliders and simulate for a few frames to push out any overlapping objects
+        if camera_colliders:
+            simulate_camera_collision(num_frames=4)
 
     # Apply a random velocity towards the origin to the working area to pull the assets closer to the center
     if i % 10 == 0:
@@ -545,14 +585,13 @@ for i in range(num_frames):
     if sim_duration_between_captures > 0:
         run_simulation_loop(duration=sim_duration_between_captures)
     else:
-        timeline.forward_one_frame()
         simulation_app.update()
 
-# Wait for the data to be written to disk
+# Wait for the data to be written (default writer backends are asynchronous)
 rep.orchestrator.wait_until_complete()
 
 # Get the stats
-wall_duration = time.time() - wall_time_start
+wall_duration = time.perf_counter() - wall_time_start
 sim_duration = timeline.get_current_time()
 avg_frame_fps = num_frames / wall_duration
 num_captures = num_frames * num_cameras
