@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.11.1] - 2024-05-06
+### Added
+- Warning notice for TensorFlow int32 tensor to interoperability function docstrings
+
 ## [3.11.0] - 2024-04-25
 ### Added
 - Friction reporting API to GeometryPrim and GeometryPrimView

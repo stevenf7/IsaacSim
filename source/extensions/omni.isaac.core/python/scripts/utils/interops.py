@@ -529,6 +529,11 @@ def tensorflow2warp(tensor: "tensorflow.Tensor") -> "warp.array":
     Returns:
         warp.array: Warp array
 
+    .. warning::
+
+        It is expected that the conversion of ``int32`` TensorFlow tensors to other backends will be on the CPU,
+        regardless of which context device is specified (see TensorFlow issues #34071, #41307, #46833)
+
     Example:
 
     .. code-block:: python
@@ -568,6 +573,11 @@ def tensorflow2torch(tensor: "tensorflow.Tensor") -> "torch.Tensor":
     Returns:
         torch.Tensor: PyTorch tensor
 
+    .. warning::
+
+        It is expected that the conversion of ``int32`` TensorFlow tensors to other backends will be on the CPU,
+        regardless of which context device is specified (see TensorFlow issues #34071, #41307, #46833)
+
     Example:
 
     .. code-block:: python
@@ -606,6 +616,11 @@ def tensorflow2jax(tensor: "tensorflow.Tensor") -> "jax.Array":
 
     Returns:
         jax.Array: JAX array
+
+    .. warning::
+
+        It is expected that the conversion of ``int32`` TensorFlow tensors to other backends will be on the CPU,
+        regardless of which context device is specified (see TensorFlow issues #34071, #41307, #46833)
 
     Example:
 
