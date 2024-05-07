@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.15.2] - 2024-05-02
+### Fixed
+- Physics step node update to latest kit.
+
 ## [1.15.1] - 2024-05-01
 ### Fixed
 - Reset articulation controller inputs on stop
