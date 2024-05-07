@@ -435,6 +435,7 @@ function create_tests()
         python_sample_test("tests-nativepython-omni.isaac.core.time_stepping", "standalone_examples/api/omni.isaac.core/time_stepping.py")
         python_sample_test("tests-nativepython-omni.isaac.core.visual_materials", "standalone_examples/api/omni.isaac.core/visual_materials.py", "--test")
         python_sample_test("tests-nativepython-omni.isaac.core.omnigraph_triggers", "standalone_examples/api/omni.isaac.core/omnigraph_triggers.py")
+        python_sample_test("tests-nativepython-omni.isaac.core.cloth", "standalone_examples/api/omni.isaac.core/cloth.py", "--test")
         python_sample_test("tests-nativepython-omni.isaac.core.rigid_contact_view", "standalone_examples/api/omni.isaac.core/rigid_contact_view.py", "--test")
         python_sample_test("tests-nativepython-omni.isaac.core.detailed_contact_data", "standalone_examples/api/omni.isaac.core/detailed_contact_data.py", "--test")
         -- omni.isaac.franka
