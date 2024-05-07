@@ -1,4 +1,8 @@
 # Changelog
+## [1.7.17] - 2024-05-03
+### Fixed
+- Quadruped exmaple to clear callbacks after it's complete
+
 ## [1.7.16] - 2024-04-19
 ### Fixed
 - Updated Path Planning Example for compatibility with Lula 0.10.0
