@@ -26,12 +26,24 @@ SENSOR_DT = 1.0 / SENSOR_FPS
 
 
 def run_custom_fps_example(num_frames=10):
-    # Create a new stage with a cube
+    # Create a new stage
     omni.usd.get_context().new_stage()
-    rep.create.cube(semantics=[("class", "cube")])
 
     # Disable capture on play (data will only be accessed at custom times)
     carb.settings.get_settings().set("/omni/replicator/captureOnPlay", False)
+
+    # Set the timeline parameters
+    timeline = omni.timeline.get_timeline_interface()
+    timeline.set_looping(False)
+    timeline.set_current_time(0.0)
+    timeline.set_end_time(10)
+    timeline.set_time_codes_per_second(STAGE_FPS)
+    timeline.play()
+    timeline.commit()
+
+    # Create a light and a semantically annoated cube
+    rep.create.light()
+    rep.create.cube(semantics=[("class", "cube")])
 
     # Create a render product and disable it (it will re-enabled when data is needed)
     rp = rep.create.render_product("/OmniverseKit_Persp", (512, 512), name="rp")
@@ -46,15 +58,6 @@ def run_custom_fps_example(num_frames=10):
     writer_rgb.attach(rp, trigger=None)
     annot_depth = rep.AnnotatorRegistry.get_annotator("distance_to_camera")
     annot_depth.attach(rp)
-
-    # Set the timeline parameters
-    timeline = omni.timeline.get_timeline_interface()
-    timeline.set_looping(False)
-    timeline.set_current_time(0.0)
-    timeline.set_end_time(10)
-    timeline.set_time_codes_per_second(STAGE_FPS)
-    timeline.play()
-    timeline.commit()
 
     # Run the simulation for the given number of frames and access the data at the desired framerates
     previous_time = timeline.get_current_time()
