@@ -1,5 +1,9 @@
 # Changelog
 
+## [11.1.0] - 2024-05-06
+### Added
+- Added additional Ouster lidar configs for OS0, OS1, REV6, REV7, and OS2 lidars
+
 ## [11.0.6] - 2024-05-03
 ### Fixed
 - incorrect rendervar in RtxSensorCpuIsaacRTXLidarOutput

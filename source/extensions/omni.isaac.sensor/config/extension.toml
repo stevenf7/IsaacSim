@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "11.0.6"
+version = "11.1.0"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Support physics based sensors, such as contact sensors and imu sensors"
@@ -60,7 +60,9 @@ app.sensors.nv.lidar.profileBaseFolder=[
     "${app}/../extsbuild/omni.sensors.nv.common/data/lidar/",
     "${app}/../exts/omni.isaac.sensor/data/lidar_configs/HESAI/",
     "${app}/../exts/omni.isaac.sensor/data/lidar_configs/NVIDIA/",
-    "${app}/../exts/omni.isaac.sensor/data/lidar_configs/Ouster/",
+    "${app}/../exts/omni.isaac.sensor/data/lidar_configs/Ouster/OS0/",
+    "${app}/../exts/omni.isaac.sensor/data/lidar_configs/Ouster/OS1/",
+    "${app}/../exts/omni.isaac.sensor/data/lidar_configs/Ouster/OS2/",
     "${app}/../exts/omni.isaac.sensor/data/lidar_configs/SICK/",
     "${app}/../exts/omni.isaac.sensor/data/lidar_configs/SLAMTEC/",
     "${app}/../exts/omni.isaac.sensor/data/lidar_configs/Velodyne/",

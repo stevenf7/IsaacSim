@@ -187,16 +187,21 @@ class IsaacSensorMenu:
             ),
         ]
 
+        # TODO: This currently scans for all the subfolders for json config files, in the future we want to make the menu resemble the folder structure
         config_dir_path = get_extension_path(ext_id) + "/data/lidar_configs"
-        config_dirs = [x for x in os.listdir(config_dir_path) if os.path.isdir(config_dir_path + "/" + x)]
+        config_dirs = []
         config_dirs.sort()
+
+        for root, dirs, files in os.walk(config_dir_path):
+            for name in dirs:
+                config_dirs.append(os.path.join(root, name))
 
         for d in config_dirs:
             if d is None:
                 continue
             sub_menu = []
-            n = d
-            d = config_dir_path + "/" + d
+            n = d.split("/")[-1]
+
             config_files = os.listdir(d)
             config_files.sort()
             for file in config_files:
