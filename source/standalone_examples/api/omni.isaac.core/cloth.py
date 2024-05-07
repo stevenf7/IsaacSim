@@ -71,13 +71,13 @@ class ParticleClothExample:
             particle_material_path = env.GetPrim().GetPath().AppendChild("particleMaterial")
 
             self.particle_material = ParticleMaterial(
-                prim_path=particle_material_path, drag=0.1, lift=0.3, friction=0.6
+                prim_path=str(particle_material_path), drag=0.1, lift=0.3, friction=0.6
             )
             radius = 0.5 * (0.6 / 5.0)
             restOffset = radius
             contactOffset = restOffset * 1.5
             self.particle_system = ParticleSystem(
-                prim_path=particle_system_path,
+                prim_path=str(particle_system_path),
                 simulation_owner=self.my_world.get_physics_context().prim_path,
                 rest_offset=restOffset,
                 contact_offset=contactOffset,
@@ -111,13 +111,15 @@ class ParticleClothExample:
 
             self.my_world.step(render=True)
 
-            if self.my_world.current_time_step_index % 50 == 1:
+            if self.my_world.current_time_step_index % 50 == 49:
                 for i in range(self.num_envs):
                     print(
                         "cloth {} average height = {:.2f}".format(
                             i, self.clothView.get_world_positions()[i, :, 2].mean()
                         )
                     )
+                if args.test is True:
+                    break
 
             # reset some random environments
             if self.my_world.current_time_step_index % 200 == 1:
