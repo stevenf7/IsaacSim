@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import omni.isaac.core.utils.numpy.rotations as rot_utils
 import omni.replicator.core as rep
+import torch
 from omni.isaac.core import World
 from omni.isaac.core.objects import VisualCuboid
 from omni.isaac.core.utils.prims import define_prim
@@ -62,20 +63,33 @@ camera_view = CameraView(
 )
 
 i = 0
-os.makedirs("output_camera_view", exist_ok=True)
+out_dir = "output_camera_view"
+os.makedirs(out_dir, exist_ok=True)
 while simulation_app.is_running():
     my_world.step(render=True)
 
+    # CPU
     rgba = camera_view.get_rgba().astype(np.uint8)
     print(f"rgba.shape: {rgba.shape}")
     rgba_img = Image.fromarray(rgba)
-    rgba_img.save(f"output_camera_view/{str(i).zfill(6)}_rgba.png")
+    rgba_img.save(f"{out_dir}/{str(i).zfill(6)}_rgba.png")
 
     depth = camera_view.get_depth().astype(np.uint8)
     print(f"depth.shape: {depth.shape}")
-
     depth_img = Image.fromarray(depth)
-    depth_img.save(f"output_camera_view/{str(i).zfill(6)}_depth.png")
+    depth_img.save(f"{out_dir}/{str(i).zfill(6)}_depth.png")
+
+    # CUDA
+    rgba_torch = camera_view.get_rgba(device="cuda").to(dtype=torch.uint8)
+    print(f"rgba_torch.shape: {rgba_torch.shape}")
+    rgba_torch_img = Image.fromarray(rgba_torch.cpu().numpy())
+    rgba_torch_img.save(f"{out_dir}/{str(i).zfill(6)}_rgba_torch.png")
+
+    depth_torch = camera_view.get_depth(device="cuda").to(dtype=torch.uint8)
+    print(f"depth_torch.shape: {depth_torch.shape}")
+    depth_torch_img = Image.fromarray(depth_torch.cpu().numpy())
+    depth_torch_img.save(f"{out_dir}/{str(i).zfill(6)}_depth_torch.png")
+
     simulation_app.update()
 
     print(f"camera_view.get_local_poses(camera_axes='ros'): {camera_view.get_local_poses(camera_axes='ros')}")

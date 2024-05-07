@@ -1,5 +1,10 @@
 # Changelog
 
+## [11.2.0] - 2024-05-07
+### Added
+- Added device argument with "cpu" or "cuda" for get_rgba/get_depth functions of `camera_view.py`
+- Added get_data to `camera_view.py` returning the raw annotator data
+
 ## [11.1.0] - 2024-05-06
 ### Added
 - Added additional Ouster lidar configs for OS0, OS1, REV6, REV7, and OS2 lidars

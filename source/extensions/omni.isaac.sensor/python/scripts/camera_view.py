@@ -419,43 +419,76 @@ class CameraView(XFormPrimView):
 
         return XFormPrimView.set_local_poses(self, positions, orientations, indices)
 
-    def get_rgba(self) -> np.ndarray:
+    def get_rgba(self, device="cpu") -> np.ndarray | torch.Tensor:
         """Fetch the RGBA data for all cameras.
 
+        Args:
+            device (str, optional): The device to return the data on ("cpu" or "cuda"). Defaults to "cpu".
+
         Returns:
-            np.ndarray: containing the RGBA data for each camera. Depth channel is excluded if present.
+            np.ndarray | torch.Tensor: containing the RGBA data for each camera. Depth channel is excluded if present.
         """
         if "rgb" not in self.output_annotators:
-            rgb = np.zeros((*self.tiled_resolution, 3), dtype=np.uint8)
+            if device == "cuda":
+                rgb = torch.zeros((*self.tiled_resolution, 3), dtype=torch.uint8)
+            else:  # device == "cpu"
+                rgb = np.zeros((*self.tiled_resolution, 3), dtype=np.uint8)
             print("Warning: RGB data is not available. Please enable RGB annotator when creating CameraView object.")
         elif "depth" in self.output_annotators:  # and "rgb" in self.output_annotators
-            linear_sensor_data = self._tiled_annotator.get_data()
+            linear_sensor_data = self._tiled_annotator.get_data(device=device)
+            if isinstance(linear_sensor_data, wp.types.array):
+                linear_sensor_data = wp.to_torch(linear_sensor_data)
             rgb_idx = len(linear_sensor_data) * 3 // 4
             rgb = linear_sensor_data[:rgb_idx].reshape(*self.tiled_resolution, 3) * 255
         else:  # only "rgb" in self.output_annotators
-            rgb = self._tiled_annotator.get_data().reshape(*self.tiled_resolution, 3) * 255
+            linear_sensor_data = self._tiled_annotator.get_data(device=device)
+            if isinstance(linear_sensor_data, wp.types.array):
+                linear_sensor_data = wp.to_torch(linear_sensor_data)
+            rgb = linear_sensor_data.reshape(*self.tiled_resolution, 3) * 255
 
         return rgb
 
-    def get_depth(self) -> np.ndarray:
+    def get_depth(self, device="cpu") -> np.ndarray | torch.Tensor:
         """Fetch the depth data for all cameras.
+
+        Args:
+            device (str, optional): The device to return the data on ("cpu" or "cuda"). Defaults to "cpu".
 
         Returns:
             np.ndarray: containing the depth data for each camera.
         """
         if "depth" not in self.output_annotators:
-            depth = np.zeros(self.tiled_resolution, dtype=np.float32)
+            if device == "cuda":
+                depth = torch.zeros(self.tiled_resolution, dtype=torch.float32)
+            else:  # device == "cpu"
+                depth = np.zeros(self.tiled_resolution, dtype=np.float32)
             print(
                 "Warning: Depth data is not available. Please enable depth annotator when creating CameraView object."
             )
         elif "rgb" in self.output_annotators:  # and "depth" in self.output_annotators
-            linear_sensor_data = self._tiled_annotator.get_data()
+            linear_sensor_data = self._tiled_annotator.get_data(device=device)
+            if isinstance(linear_sensor_data, wp.types.array):
+                linear_sensor_data = wp.to_torch(linear_sensor_data)
             rgb_idx = len(linear_sensor_data) * 3 // 4
             depth = linear_sensor_data[rgb_idx:].reshape(*self.tiled_resolution) * 255
         else:  # only "depth" in self.output_annotators
+            linear_sensor_data = self._tiled_annotator.get_data(device=device)
+            if isinstance(linear_sensor_data, wp.types.array):
+                linear_sensor_data = wp.to_torch(linear_sensor_data)
             depth = self._tiled_annotator.get_data().reshape(*self.tiled_resolution) * 255
 
         return depth
+
+    def get_data(self, device="cpu") -> np.ndarray | wp.types.array:
+        """Get the tiled annotator data directly.
+
+        Args:
+            device (str, optional): The device to return the data on ("cpu" or "cuda"). Defaults to "cpu".
+
+        Returns:
+            np.ndarray | wp.types.array: The data from the tiled annotator.
+        """
+        return self._tiled_annotator.get_data(device)
 
     def get_focal_lengths(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
