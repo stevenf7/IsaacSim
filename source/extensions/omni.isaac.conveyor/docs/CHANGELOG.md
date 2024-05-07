@@ -1,4 +1,9 @@
 # Changelog
+## [0.3.14] - 2024-05-06
+### Removed
+- Unused config file
+
+# Changelog
 ## [0.3.13] - 2023-11-01
 ### Fixed
 - Error when Node starts for the first time if it doesn't have a Texture translate attribute.
