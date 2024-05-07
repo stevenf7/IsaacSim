@@ -6,6 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+
 import carb
 import numpy as np
 import omni
@@ -81,15 +82,11 @@ class QuadrupedExample(BaseSample):
         await self._world.play_async()
         return
 
-    async def setup_pre_reset(self) -> None:
-        self._event_flag = False
-        return
-
     async def setup_post_reset(self) -> None:
+        self._event_flag = False
         await self._world.play_async()
         self._a1.set_state(self._a1._default_a1_state)
         self._a1.post_reset()
-        self._event_timer_callback = None
         return
 
     def on_physics_step(self, step_size) -> None:
@@ -130,5 +127,12 @@ class QuadrupedExample(BaseSample):
         return True
 
     def _timeline_timer_callback_fn(self, event) -> None:
-        self._a1.post_reset()
+        if self._a1:
+            self._a1.post_reset()
+        return
+
+    def world_cleanup(self):
+        self._event_timer_callback = None
+        if self._world.physics_callback_exists("sending_actions"):
+            self._world.remove_physics_callback("sending_actions")
         return
