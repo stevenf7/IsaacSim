@@ -43,39 +43,40 @@ struct PhysicsStepData
     std::vector<NodeHandle> nodes;
     omni::physx::SubscriptionId stepSubscription;
 };
+struct handleIDPair
+{
+    GraphHandle graphHandle;
+    GraphInstanceID instanceId;
+};
+namespace
+{
 std::map<GraphHandle, PhysicsStepData> gGraphsWithPhysxStepNode;
+}
 class OgnOnPhysicsStep
 {
 public:
     OgnOnPhysicsStep()
     {
-        // When the node is created, we create a stage event subscription
-        // The idea is that node is reset whenever stop is pressed
-        mTimeline = carb::getCachedInterface<omni::timeline::ITimeline>();
-        mTimelineEventSub = carb::events::createSubscriptionToPopByType(
-            mTimeline->getTimelineEventStream(),
-            static_cast<carb::events::EventType>(omni::timeline::TimelineEventType::ePlay),
-            [this](carb::events::IEvent* e) { start(); }, 0, "IsaacSimOGNPhysicStepsTimelineEventHandler");
     }
 
-    void start()
+    static void start(const NodeObj& nodeObj, GraphInstanceID instanceId)
     {
-        auto nodeObj = gINode->getNodeFromHandle(this->mNodeHandle);
+        auto& state = OgnOnPhysicsStepDatabase::sPerInstanceState<OgnOnPhysicsStep>(nodeObj, instanceId);
         auto graphObj = gINode->getGraph(nodeObj);
         auto pipelineStage = graphObj.iGraph->getPipelineStage(graphObj);
-        if (pipelineStage != kGraphPipelineStage_OnDemand && this->mInitialized)
+        if (pipelineStage != kGraphPipelineStage_OnDemand && state.mInitialized)
         {
             // NodeGraph changed from on-demand since last execution - unsubscribe node from step events
             unsubscribe(nodeObj);
         }
-        if (!this->mInitialized)
+        else if (!state.mInitialized)
         {
-            initialize(nodeObj);
+            initialize(nodeObj, instanceId);
         }
-        mStartTime = std::chrono::high_resolution_clock::now();
-    }
 
-    static void initialize(const NodeObj& nodeObj)
+        state.mStartTime = std::chrono::high_resolution_clock::now();
+    }
+    static void initialize(const NodeObj& nodeObj, GraphInstanceID instanceId)
     {
         // Acquire All interfaces
         if (!gPhysXInterface)
@@ -89,6 +90,16 @@ public:
         // Get information on the graph the node was inserted
         auto graphObj = gINode->getGraph(nodeObj);
         auto pipelineStage = graphObj.iGraph->getPipelineStage(graphObj);
+        auto& state = OgnOnPhysicsStepDatabase::sPerInstanceState<OgnOnPhysicsStep>(nodeObj, instanceId);
+        if (!state.mTimelineEventSub)
+        {
+            state.mTimeline = carb::getCachedInterface<omni::timeline::ITimeline>();
+            state.mTimelineEventSub = carb::events::createSubscriptionToPopByType(
+                state.mTimeline->getTimeline()->getTimelineEventStream(),
+                static_cast<carb::events::EventType>(omni::timeline::TimelineEventType::ePlay),
+                [nodeObj, instanceId](carb::events::IEvent* e) { start(nodeObj, instanceId); }, 0,
+                "IsaacSimOGNPhysicStepsTimelineEventHandler");
+        }
         if (pipelineStage != kGraphPipelineStage_OnDemand)
         {
             CARB_LOG_ERROR(
@@ -103,21 +114,19 @@ public:
             if (gGraphsWithPhysxStepNode.find(graphObj.graphHandle) == gGraphsWithPhysxStepNode.end())
             {
                 gGraphsWithPhysxStepNode[graphObj.graphHandle] = PhysicsStepData();
+                state.mGraphHandlePair = handleIDPair{ graphObj.graphHandle, instanceId };
                 gGraphsWithPhysxStepNode[graphObj.graphHandle].stepSubscription =
                     gPhysXInterface->subscribePhysicsStepEvents(
-                        onPhysicsStep, reinterpret_cast<void*>(graphObj.graphHandle));
+                        onPhysicsStep, reinterpret_cast<void*>(&state.mGraphHandlePair));
             }
             gGraphsWithPhysxStepNode[graphObj.graphHandle].nodes.push_back(nodeObj.nodeHandle);
-            // TODO105.2 check need instance id if want sPerInstanceState
-            auto& state = OgnOnPhysicsStepDatabase::sSharedState<OgnOnPhysicsStep>(nodeObj);
             state.mInitialized = true;
         }
     }
     static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
         auto& state = OgnOnPhysicsStepDatabase::sPerInstanceState<OgnOnPhysicsStep>(nodeObj, instanceId);
-        state.mNodeHandle = nodeObj.nodeHandle;
-        initialize(nodeObj);
+        initialize(nodeObj, instanceId);
     }
 
 
@@ -157,7 +166,9 @@ public:
 
     static void onPhysicsStep(float timeElapsed, void* userData)
     {
-        GraphHandle graphHandle = reinterpret_cast<GraphHandle>(userData);
+        handleIDPair* idpair = reinterpret_cast<handleIDPair*>(userData);
+        auto graphHandle = idpair->graphHandle;
+        auto instanceId = idpair->instanceId;
         auto graphData = gGraphsWithPhysxStepNode.find(graphHandle);
         // Sanity check if graph exists
         if (graphData != gGraphsWithPhysxStepNode.end())
@@ -171,7 +182,7 @@ public:
                 for (auto handle : graphData->second.nodes)
                 {
                     NodeObj node = gINode->getNodeFromHandle(handle);
-                    auto& state = OgnOnPhysicsStepDatabase::sSharedState<OgnOnPhysicsStep>(node);
+                    auto& state = OgnOnPhysicsStepDatabase::sPerInstanceState<OgnOnPhysicsStep>(node, instanceId);
                     state.mDt = timeElapsed;
                     state.mIsSet = true;
                 }
@@ -209,8 +220,8 @@ private:
     bool mInitialized = false;
     bool mIsSet = false;
     std::chrono::time_point<std::chrono::high_resolution_clock> mStartTime;
-    NodeHandle mNodeHandle;
-    carb::events::ISubscriptionPtr mTimelineEventSub;
+    handleIDPair mGraphHandlePair;
+    carb::events::ISubscriptionPtr mTimelineEventSub = nullptr;
     omni::timeline::ITimeline* mTimeline = nullptr;
 };
 
