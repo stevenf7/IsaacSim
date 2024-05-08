@@ -167,45 +167,81 @@ public:
             auxData->emitterId = reinterpret_cast<uint32_t*>(data + offset);
             offset += sizeof(uint32_t) * modelOutput->numElements;
         }
+        else
+        {
+            auxData->emitterId = nullptr;
+        }
         if ((auxData->filledAuxMembers & LidarAuxHas::CHANNEL_ID) == LidarAuxHas::CHANNEL_ID)
         {
             auxData->channelId = reinterpret_cast<uint32_t*>(data + offset);
             offset += sizeof(uint32_t) * modelOutput->numElements;
+        }
+        else
+        {
+            auxData->channelId = nullptr;
         }
         if ((auxData->filledAuxMembers & LidarAuxHas::ECHO_ID) == LidarAuxHas::ECHO_ID)
         {
             auxData->echoId = reinterpret_cast<uint8_t*>(data + offset);
             offset += sizeof(uint8_t) * modelOutput->numElements;
         }
+        else
+        {
+            auxData->echoId = nullptr;
+        }
         if ((auxData->filledAuxMembers & LidarAuxHas::MAT_ID) == LidarAuxHas::MAT_ID)
         {
             auxData->matId = reinterpret_cast<uint32_t*>(data + offset);
             offset += sizeof(uint32_t) * modelOutput->numElements;
+        }
+        else
+        {
+            auxData->matId = nullptr;
         }
         if ((auxData->filledAuxMembers & LidarAuxHas::OBJ_ID) == LidarAuxHas::OBJ_ID)
         {
             auxData->objId = reinterpret_cast<uint32_t*>(data + offset);
             offset += sizeof(uint32_t) * modelOutput->numElements;
         }
+        else
+        {
+            auxData->objId = nullptr;
+        }
         if ((auxData->filledAuxMembers & LidarAuxHas::TICK_ID) == LidarAuxHas::TICK_ID)
         {
             auxData->tickId = reinterpret_cast<uint32_t*>(data + offset);
             offset += sizeof(uint32_t) * modelOutput->numElements;
+        }
+        else
+        {
+            auxData->tickId = nullptr;
         }
         if ((auxData->filledAuxMembers & LidarAuxHas::TICK_STATES) == LidarAuxHas::TICK_STATES)
         {
             auxData->tickStates = reinterpret_cast<uint8_t*>(data + offset);
             offset += sizeof(uint8_t) * modelOutput->numElements;
         }
+        else
+        {
+            auxData->tickStates = nullptr;
+        }
         if ((auxData->filledAuxMembers & LidarAuxHas::HIT_NORMALS) == LidarAuxHas::HIT_NORMALS)
         {
             auxData->hitNormals = reinterpret_cast<float*>(data + offset);
             offset += sizeof(float) * 3 * modelOutput->numElements;
         }
+        else
+        {
+            auxData->hitNormals = nullptr;
+        }
         if ((auxData->filledAuxMembers & LidarAuxHas::VELOCITIES) == LidarAuxHas::VELOCITIES)
         {
             auxData->velocities = reinterpret_cast<float*>(data + offset);
             offset += sizeof(float) * modelOutput->numElements * 3;
+        }
+        else
+        {
+            auxData->velocities = nullptr;
         }
     }
     inline void setUSSAuxiliaryDataPtrs()
@@ -233,17 +269,29 @@ public:
             auxData->semId = reinterpret_cast<uint32_t*>(data + offset);
             offset += sizeof(uint32_t) * modelOutput->numElements;
         }
+        else
+        {
+            auxData->semId = nullptr;
+        }
 
         if ((auxData->filledAuxMembers & RadarAuxHas::MAT_ID) == RadarAuxHas::MAT_ID)
         {
             auxData->matId = reinterpret_cast<uint32_t*>(data + offset);
             offset += sizeof(uint32_t) * modelOutput->numElements;
         }
+        else
+        {
+            auxData->matId = nullptr;
+        }
 
         if ((auxData->filledAuxMembers & RadarAuxHas::OBJ_ID) == RadarAuxHas::OBJ_ID)
         {
             auxData->objId = reinterpret_cast<uint32_t*>(data + offset);
             offset += sizeof(uint32_t) * modelOutput->numElements;
+        }
+        else
+        {
+            auxData->objId = nullptr;
         }
     }
 };

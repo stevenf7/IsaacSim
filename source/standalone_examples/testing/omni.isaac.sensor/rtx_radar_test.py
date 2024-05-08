@@ -1,4 +1,4 @@
-# Copyright (c) 2023, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2023-2024, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -30,7 +30,7 @@ def printinc(i):
 
 i = 0
 
-i = printinc(i)
+i = printinc(i)  # 0
 
 
 def add_cube(stage, path, scale, offset, physics=False):
@@ -47,29 +47,18 @@ def add_cube(stage, path, scale, offset, physics=False):
     return cubePrim
 
 
-i = printinc(i)
-simulation_app.update()
-
-# Locate Isaac Sim assets folder to load environment and robot stages
-assets_root_path = nucleus.get_assets_root_path()
-if assets_root_path is None:
-    carb.log_error("Could not find Isaac Sim assets folder")
-    simulation_app.close()
-    sys.exit()
-
-i = printinc(i)
+i = printinc(i)  # 2
 simulation_app.update()
 
 
+geo_type = "cubes"
 if len(sys.argv) >= 2:
     geo_type = sys.argv[1]
-    if geo_type == "warehouse":
-        # Loading the simple_room environment
-        stage.add_reference_to_stage(
-            assets_root_path + "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd", "/background"
-        )
-    elif geo_type == "cubes":
-        add_cube(stage.get_current_stage(), "/World/cxube_x1", (1, 20, 1), (5, 0, 0), physics=False)
+
+if 1:
+    if geo_type == "cubes":
+        # add_cube(stage.get_current_stage(), "/World/cxube_x2", (1, 20, 1000), (-5, 0, 500), physics=True)
+        add_cube(stage.get_current_stage(), "/World/cxube_x1", (1, 20, 5), (5, 0, 0), physics=False)
         add_cube(stage.get_current_stage(), "/World/cxube_x2", (1, 20, 1), (-5, 0, 0), physics=False)
         add_cube(stage.get_current_stage(), "/World/cxube_x3", (20, 1, 1), (0, 5, 0), physics=False)
         add_cube(stage.get_current_stage(), "/World/cxube_x4", (20, 1, 1), (0, -5, 0), physics=False)
@@ -81,35 +70,19 @@ if len(sys.argv) >= 2:
             (-3.0258131660928367, 0, 0),
             physics=False,
         )
-        omni.kit.commands.execute(
-            "CreateMdlMaterialPrim",
-            mtl_url="omniverse://ov-isaac-dev/NVIDIA/Materials/OmniSurface/Glass/OmniSurface_Glass.mdl",
-            mtl_name="OmniSurface_Glass",
-            mtl_path="/World/Looks/OmniSurface_Glass",
-        )
-        omni.kit.commands.execute(
-            "BindMaterialCommand",
-            prim_path=["/World/cube_5"],
-            material_path=Sdf.Path("/World/Looks/OmniSurface_Glass"),
-            strength=None,
-        )
 
-    elif geo_type == "floor":
-        stage.add_reference_to_stage(
-            assets_root_path + "/Users/mcarlson@nvidia.com/Environments/Simple_Warehouse/just_floor.usd", "/background"
+    elif geo_type == "sphere":
+        omni.kit.commands.execute(
+            "CreatePrimWithDefaultXform",
+            prim_type="Sphere",
+            attributes={"radius": 5, "extent": [(-5, -5, -5), (5, 5, 5)]},
         )
-    elif geo_type == "floora":
-        stage.add_reference_to_stage("/home/mcarlson/data/just_floor/just_floor0.usda", "/background")
-
-radar_config = "Example"
-if len(sys.argv) >= 3:
-    radar_config = sys.argv[2]
 
 omni.kit.commands.execute(
     "CreatePrim", prim_type="DomeLight", attributes={"inputs:intensity": 1000, "inputs:texture:format": "latlong"}
 )
 
-i = printinc(i)
+i = printinc(i)  # 3
 simulation_app.update()
 
 # Create the lidar sensor that generates data into "RtxSensorCpu"
@@ -118,42 +91,46 @@ simulation_app.update()
 # Possible options are Example_Rotary and Example_Solid_State
 # drive sim applies 0.5,-0.5,-0.5,w(-0.5), we have to apply the reverse
 
-i = printinc(i)
+i = printinc(i)  # 4
 _, sensor = omni.kit.commands.execute(
     "IsaacSensorCreateRtxRadar",
     path="/sensor",
     parent=None,
-    config=radar_config,
-    translation=(0, 0, 1.0),
-    orientation=Gf.Quatd(0.70711, 0.70711, 0, 0),  # Gf.Quatd is w,i,j,k
+    config="Example",
+    translation=(0, 0, -0.04),
+    orientation=Gf.Quatd(1, 0, 0, 0),  # Gf.Quatd is w,i,j,k
 )
 
-i = printinc(i)
-
+i = printinc(i)  # 5
 hydra_texture = rep.create.render_product(sensor.GetPath(), [1, 1], name="Isaac")
+
 # Create the debug draw pipeline in the post process graph
 from omni.syntheticdata import sensors
 
 i = printinc(i)
 simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=1.0)
-writer = rep.writers.get("Writer" + "IsaacPrintRTXRadarInfo" + "")
 
 i = printinc(i)
-writer.attach([hydra_texture])
+writerNames = [
+    "RtxRadar" + "DebugDrawPointCloud",
+    # "Writer" + "IsaacPrintRTXRadarInfo",
+]
 
 
-# disable_extension("omni.replicator.core")
+annoNames = []
+writers = {}
+for writ in writerNames:
+    writers[writ] = rep.writers.get(writ)
+    writers[writ].attach([hydra_texture])
+
+annotators = {}
+for anno in annoNames:
+    annotators[anno] = rep.AnnotatorRegistry.get_annotator(anno)
+    annotators[anno].attach([hydra_texture])
+
+
 i = printinc(i)
 simulation_app.update()
-simulation_app.update()
-
-
-# omni.kit.commands.execute(
-#    "ChangeProperty",
-#    prop_path=Sdf.Path("/Render/PostProcess/SDGPipeline/DispatchSync.inputs:enabled"),
-#    value=True,
-#    prev=None,
-# )
 
 i = printinc(i)
 simulation_context.play()
@@ -161,7 +138,6 @@ simulation_context.play()
 i = printinc(i)
 while simulation_app.is_running():
     simulation_app.update()
-    # break
 
 # cleanup and shutdown
 
@@ -170,3 +146,47 @@ simulation_context.stop()
 
 i = printinc(i)
 simulation_app.close()
+"""
+import omni.replicator.core as rep
+from pxr import Gf
+_, sensor = omni.kit.commands.execute(
+    "IsaacSensorCreateRtxRadar",
+    path="/sensor",
+    parent=None,
+    config="Example",
+    translation=(0, 0, -0.04),
+    orientation=Gf.Quatd(1, 0, 0, 0),  # Gf.Quatd is w,i,j,k
+    #translation=(-0.937, 1.745, 0.8940),
+    #orientation=Gf.Quatd(0.70711, 0.70711, 0, 0),  # Gf.Quatd is w,i,j,k
+)
+
+hydra_texture = rep.create.render_product(sensor.GetPath(), [1, 1], name="Isaac")
+writer = rep.writers.get("RtxRadar" + "DebugDrawPointCloud")
+#writer = rep.writers.get("Writer" + "IsaacPrintRTXRadarInfo")
+writer.attach([hydra_texture])
+"""
+
+"""
+# Callstack of crash
+
+__pthread_kill_implementation (@pthread_kill@@GLIBC_2.34:81)
+__pthread_kill_internal (@pthread_kill@@GLIBC_2.34:59)
+__GI___pthread_kill (@pthread_kill@@GLIBC_2.34:59)
+__GI_raise (@raise:10)
+__GI_abort (@abort:46)
+___lldb_unnamed_symbol7245 (@___lldb_unnamed_symbol7245:27)
+___lldb_unnamed_symbol7659 (@___lldb_unnamed_symbol7659:8)
+std::terminate() (@7892c0aae277..7892c0aae2f7:3)
+__cxa_throw (@7892c0aae4d8..7892c0aae550:3)
+thrust::cuda_cub::throw_on_error(cudaError, char const*) (@thrust::cuda_cub::throw_on_error(cudaError, char const*):31)
+float* thrust::cuda_cub::gather<thrust::cuda_cub::execute_on_stream, int*, float*, float*>(thrust::cuda_cub::execution_policy<thrust::cuda_cub::execute_on_stream>&, int*, int*, float*, float*) (@float* thrust::cuda_cub::gather<thrust::cuda_cub::execute_on_stream, int*, float*, float*>(thrust::cuda_cub::execution_policy<thrust::cuda_cub::execute_on_stream>&, int*, int*, float*, float*):133)
+float* thrust::gather<thrust::cuda_cub::execute_on_stream, int*, float*, float*>(thrust::detail::execution_policy_base<thrust::cuda_cub::execute_on_stream> const&, int*, int*, float*, float*) (@float* thrust::gather<thrust::cuda_cub::execute_on_stream, int*, float*, float*>(thrust::detail::execution_policy_base<thrust::cuda_cub::execute_on_stream> const&, int*, int*, float*, float*):24)
+omni::sensors::nv::radar::sortPointsByDistance_CUDA(omni::sensors::nv::radar::ProcessingContext&, omni::sensors::nv::radar::SortBuffer*, CUstream_st*, int) (@omni::sensors::nv::radar::sortPointsByDistance_CUDA(omni::sensors::nv::radar::ProcessingContext&, omni::sensors::nv::radar::SortBuffer*, CUstream_st*, int):319)
+omni::sensors::nv::radar::processResultsCuda(omni::sensors::wpm::Config*, omni::sensors::wpm::TraceResult*, omni::sensors::nv::radar::ProcessingContext&, CUstream_st*, float*, unsigned char, bool, omni::sensors::nv::radar::SortBuffer*) (@omni::sensors::nv::radar::processResultsCuda(omni::sensors::wpm::Config*, omni::sensors::wpm::TraceResult*, omni::sensors::nv::radar::ProcessingContext&, CUstream_st*, float*, unsigned char, bool, omni::sensors::nv::radar::SortBuffer*):203)
+omni::sensors::nv::radar::WpmDmatApproxRadar::closeTrace(void*, unsigned long*, void*, unsigned long*) (@omni::sensors::nv::radar::WpmDmatApproxRadar::closeTrace(void*, unsigned long*, void*, unsigned long*):329)
+___lldb_unnamed_symbol934 (@___lldb_unnamed_symbol934:15)
+___lldb_unnamed_symbol9313 (@___lldb_unnamed_symbol9313:222)
+___lldb_unnamed_symbol9293 (@___lldb_unnamed_symbol9293:102)
+___lldb_unnamed_symbol9204 (@___lldb_unnamed_symbol9204:8)
+___lldb_unnamed_symbol1176 (@___lldb_unnamed_symbol1176:194)
+"""

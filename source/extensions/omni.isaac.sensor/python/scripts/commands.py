@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2023, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2018-2024, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -212,7 +212,7 @@ class IsaacSensorCreateRtxRadar(omni.kit.commands.Command):
         if not tokens:
             camSensorTypeAttr.SetMetadata("allowedTokens", ["camera", "radar", "lidar"])
         self._prim.CreateAttribute("sensorModelPluginName", Sdf.ValueTypeNames.String, False).Set(
-            "omni.sensors.nv.radar.dmatapprox.plugin"
+            "omni.sensors.nv.radar.wpm_dmatapprox.plugin"
         )
         self._prim.CreateAttribute("sensorModelConfig", Sdf.ValueTypeNames.String, False).Set(self._config)
         reset_and_set_xform_ops(self._prim.GetPrim(), self._translation, self._orientation)
