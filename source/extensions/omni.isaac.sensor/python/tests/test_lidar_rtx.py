@@ -60,6 +60,7 @@ class TestRotatingLidarRtx(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
+        await self.my_world.stop_async()
         self.my_world.clear_instance()
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
