@@ -1,5 +1,13 @@
 # Changelog
 
+
+## [11.2.1] - 2024-05-07
+### Fixed
+- Crash in IsaacComputeRTXRadarPointCloud node
+### Changed
+- Using wpm radar
+- Get radar transform from camera
+
 ## [11.2.0] - 2024-05-07
 ### Added
 - Added device argument with "cpu" or "cuda" for get_rgba/get_depth functions of `camera_view.py`
@@ -19,7 +27,7 @@
 - Account for linear array with depth values being at end 
 
 ## [11.0.4] - 2024-04-30
-### Changed
+### Updated
 - Updated Sensing camera names
 
 ## [11.0.3] - 2024-04-25
