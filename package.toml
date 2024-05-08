@@ -56,6 +56,8 @@ files_exclude = [
     ["tests/tests-startup.extscache*"],
     ["tests/tests-omni.isaac.gym.benchmark*"],
     ["tests/tests-omni.importer.onshape*"],
+    ["kit/exts/omni.kit.extpath.git/**"], # ISIM-1020
+    ["**/.git/**"], # ISIM-1020
 ]
 
 [isaac-sim-standalone]
@@ -84,6 +86,8 @@ files_exclude = [
     ["tests/tests-startup.extscache*"],
     ["tests/tests-omni.isaac.gym.benchmark*"],
     ["tests/tests-omni.importer.onshape*"],
+    ["kit/exts/omni.kit.extpath.git/**"], # ISIM-1020
+    ["**/.git/**"], # ISIM-1020
 ]
 
 [isaac-sim-standalone.linux-x86_64]
@@ -124,7 +128,9 @@ files = [
     ["**"],
 ]
 files_exclude = [
-    ["kit/extsPhysics/**"] # This can contain portable files we don't want to package
+    ["kit/extsPhysics/**"], # This can contain portable files we don't want to package
+    ["kit/exts/omni.kit.extpath.git/**"], # ISIM-1020
+    ["**/.git/**"], # ISIM-1020
 
 ]
 
@@ -154,6 +160,8 @@ files_exclude = [
     ["tests/tests-startup.extscache*"],
     ["tests/tests-omni.isaac.gym.benchmark*"],
     ["tests/tests-omni.importer.onshape*"],
+    ["kit/exts/omni.kit.extpath.git/**"], # ISIM-1020
+    ["**/.git/**"], # ISIM-1020
 ]
 
 [isaac-sim-binaryscan.release]
