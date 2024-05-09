@@ -895,10 +895,11 @@ void Ros2LaserScanMessageHumble::fillData(const std::string& frameId,
         return;
 
     sensor_msgs__msg__LaserScan* laser_msg = static_cast<sensor_msgs__msg__LaserScan*>(msg);
+    float DEG_TO_RAD_f = static_cast<float>(M_PI / 180.0f);
 
     Ros2BackendHumble::set_header(frameId, static_cast<int64_t>(timeStamp * 1e9), laser_msg->header);
-    laser_msg->angle_min = azimuthRange[0];
-    laser_msg->angle_max = azimuthRange[1];
+    laser_msg->angle_min = azimuthRange[0] * DEG_TO_RAD_f;
+    laser_msg->angle_max = azimuthRange[1] * DEG_TO_RAD_f;
 
     laser_msg->scan_time = rotationRate ? 1.0f / rotationRate : 0.0f;
     laser_msg->range_min = depthRange[0];
@@ -912,7 +913,7 @@ void Ros2LaserScanMessageHumble::fillData(const std::string& frameId,
     laser_msg->intensities.capacity = buffSize;
     laser_msg->intensities.data = intensitiesData;
 
-    laser_msg->angle_increment = static_cast<float>(horizontalResolution * M_PI / 180.0f);
+    laser_msg->angle_increment = horizontalResolution * DEG_TO_RAD_f;
     laser_msg->time_increment = (horizontalFov / 360.0f * laser_msg->scan_time) / laser_msg->ranges.size;
 }
 

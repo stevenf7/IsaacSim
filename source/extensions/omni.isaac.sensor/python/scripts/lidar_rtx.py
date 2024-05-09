@@ -76,7 +76,6 @@ class LidarRtx(BaseSensor):
                         "data/lidar_configs/Temp_Config_" + str(file_index) + ".json",
                     )
                 )
-                file_name = "Temp_Config_" + str(file_index)
                 while os.path.isfile(file_path):
                     file_index += 1
                     file_path = os.path.abspath(

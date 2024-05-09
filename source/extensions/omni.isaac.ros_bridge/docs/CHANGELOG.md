@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.18.2] - 2024-05-07
+### Fixed
+- OgnROS2PublishLaserScan angle inputs now provided in degrees rather than mixed degrees/radians
+
 ## [1.18.1] - 2024-05-04
 ### Fixed
 - Roscore not resetting correctly
@@ -94,7 +98,7 @@
 - Tests for JointState Publisher
 ### Fixed
 - Carter 1 Unit tests
-- JointState Publisher sign correction when a joint's parents are in reversed order 
+- JointState Publisher sign correction when a joint's parents are in reversed order
 
 
 ## [1.14.8] - 2023-09-29
@@ -118,7 +122,7 @@
 ## [1.14.4] - 2023-08-25
 ### Changed
 - Added standard out fail pattern for the expected no prim found edge cases for the ogn test
-- Changed test_camera test to expect identical fx and fy as vertical aperture is computed from horizontal aperture. 
+- Changed test_camera test to expect identical fx and fy as vertical aperture is computed from horizontal aperture.
 
 ## [1.14.3] - 2023-08-25
 ### Fixed
@@ -169,7 +173,7 @@
 ### Fixed
 - Issue where image based messages always used increasing simulation time
 ### Added
-- resetSimulationTimeOnStop to Camera Helper node. 
+- resetSimulationTimeOnStop to Camera Helper node.
 
 ## [1.10.0] - 2023-01-31
 ### Added
@@ -197,7 +201,7 @@
 ## [1.8.0] - 2022-11-21
 
 ### Added
-- rtx_lidar_helper Node 
+- rtx_lidar_helper Node
 
 ## [1.7.0] - 2022-11-17
 
@@ -252,7 +256,7 @@
 ## [1.2.3] - 2022-07-15
 
 ### Changed
-- OgnROS1PublishSemanticLabels to accept string data type  
+- OgnROS1PublishSemanticLabels to accept string data type
 - Timestamp data now appended to JSON msg output
 
 ## [1.2.2] - 2022-07-13
@@ -338,7 +342,7 @@
 ## [0.7.2] - 2022-04-25
 
 ### Changed
-- ROS laserscan publisher node to accept data from Isaac Read Lidar Beams core node 
+- ROS laserscan publisher node to accept data from Isaac Read Lidar Beams core node
 
 ### Fixed
 - ROS image publisher node name
@@ -356,7 +360,7 @@
 ## [0.6.1] - 2022-04-14
 
 ### Fixed
-- Normalized robotFront vector when calculating odometry 
+- Normalized robotFront vector when calculating odometry
 - Cross-product used to find robot's y-component of linear velocity in OG ROS Odometry publisher node
 
 ## [0.6.0] - 2022-04-12
@@ -367,21 +371,21 @@
 - OG ROS Raw Transform Tree publisher node
 
 ### Changed
-- Removed bundle input and added odometry related vector inputs to OG ROS Odometry publisher node 
+- Removed bundle input and added odometry related vector inputs to OG ROS Odometry publisher node
 - Updated UI Names for ROS OG nodes
 
 ## [0.5.0] - 2022-04-08
 
 ### Added
-- OG ROS Odometry publisher with odom->chassis frame TF publish node 
+- OG ROS Odometry publisher with odom->chassis frame TF publish node
 
 ## [0.4.0] - 2022-04-07
 
 ### Added
-- OG ROS Twist subscriber node 
+- OG ROS Twist subscriber node
 
 ### Changed
-- Updated nodeNamespace descriptions for all ROS OG nodes 
+- Updated nodeNamespace descriptions for all ROS OG nodes
 
 ## [0.3.0] - 2022-04-05
 
@@ -455,7 +459,7 @@
 ## [0.1.1] - 2021-12-08
 
 ### Fixed
-- odometry frame matches robot's starting frame, not the world frame. 
+- odometry frame matches robot's starting frame, not the world frame.
 - horizontal and vertical aperture use camera prim values instead of computing vertical aperture
 - lidar components publish point cloud data as PCL2 messages instead of PCL
 - lidar PCL2 messages only contain points that hit

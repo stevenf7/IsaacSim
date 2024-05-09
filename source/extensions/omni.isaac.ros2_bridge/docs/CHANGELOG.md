@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.23.8] - 2024-05-07
+### Fixed
+- OgnROS2PublishLaserScan angle inputs now provided in degrees rather than mixed degrees/radians
+
 ## [2.23.7] - 2024-05-08
 ### Fixed
 - Automated ROS2 bridge tests on Windows
@@ -77,7 +81,7 @@
 
 ## [2.19.2] - 2024-04-15
 ### Fixed
-- Fixed flaky ROS2 rtx lidar unit test  
+- Fixed flaky ROS2 rtx lidar unit test
 
 ## [2.19.1] - 2024-04-15
 ### Fixed
@@ -88,7 +92,7 @@
 
 ## [2.19.0] - 2024-04-11
 ### Added
-- Added OmniGraph shortcuts for sample ROS2 generic publisher node  
+- Added OmniGraph shortcuts for sample ROS2 generic publisher node
 - Add skipFrameCount option to ROS2  RTX Lidar and Camera Helper Nodes to modify the rate of lidar and point cloud publishing
 
 ## [2.18.0] - 2024-04-09
@@ -117,7 +121,7 @@
 
 ## [2.14.1] - 2024-04-02
 ### Fixed
-- Error on startup due to missing libraries is now a warning, prevents errors on startup for users that don't want to use ROS2 by default. 
+- Error on startup due to missing libraries is now a warning, prevents errors on startup for users that don't want to use ROS2 by default.
 
 ## [2.14.0] - 2024-04-02
 ### Added
@@ -213,7 +217,7 @@
 
 ## [2.8.0] - 2024-01-23
 ### Changed
-- ROS2 Bridge no longer requires the vision_msgs for activation. However, if you would like to use Isaac Sim publishers dependant on vision_msgs, simply install it on the system or use isaac sim internal libraries. 
+- ROS2 Bridge no longer requires the vision_msgs for activation. However, if you would like to use Isaac Sim publishers dependant on vision_msgs, simply install it on the system or use isaac sim internal libraries.
 
 ## [2.7.1] - 2024-01-19
 ### Fixed
@@ -222,7 +226,7 @@
 
 ## [2.7.0] - 2024-01-19
 ### Changed
-- Renamed "Isaac Examples > ROS" menu to "Isaac Examples > ROS2" 
+- Renamed "Isaac Examples > ROS" menu to "Isaac Examples > ROS2"
 ## [2.6.2] - 2024-01-18
 ### Changed
 - Changed get_assets_root_path to get_assets_root_path_async for the unit tests
@@ -250,7 +254,7 @@
 ## [2.4.0] - 2023-11-27
 ### Added
 - Option to publish a full scan from RTX lidar
-- APIs to dynamically load ROS2 libraries at runtime depending on what messages are being created. Will only be used for select non-default ROS 2 messages. 
+- APIs to dynamically load ROS2 libraries at runtime depending on what messages are being created. Will only be used for select non-default ROS 2 messages.
 
 ## [2.3.10] - 2023-11-20
 ### Fixed
@@ -291,7 +295,7 @@
 - Tests for JointState Publisher
 ### Fixed
 - Carter 1 Unit tests
-- JointState Publisher sign correction when a joint's parents are in reversed order 
+- JointState Publisher sign correction when a joint's parents are in reversed order
 
 ## [2.3.1] - 2023-10-03
 ### Fixed
@@ -304,7 +308,7 @@
 ## [2.2.3] - 2023-09-27
 
 ### Changed
-- Made several warnings into print and log statements 
+- Made several warnings into print and log statements
 
 ### Fixed
 - rclpy not working in script editor
@@ -345,7 +349,7 @@
 ## [1.13.3] - 2023-08-25
 ### Changed
 - added stdout fail pattern for the expected no prim found edge case for the ogn test
-- Changed test_camera test to expect identical fx and fy as vertical aperture is computed from horizontal aperture. 
+- Changed test_camera test to expect identical fx and fy as vertical aperture is computed from horizontal aperture.
 
 ## [1.13.3] - 2023-08-25
 ### Fixed
@@ -387,7 +391,7 @@
 ### Fixed
 - Issue where image based messages always used increasing simulation time
 ### Added
-- resetSimulationTimeOnStop to Camera Helper node. 
+- resetSimulationTimeOnStop to Camera Helper node.
 
 ## [1.11.2] - 2023-02-21
 ### Fixed
@@ -432,7 +436,7 @@
 ## [1.9.0] - 2022-11-21
 
 ### Added
-- rtx_lidar_helper Node 
+- rtx_lidar_helper Node
 
 ## [1.8.0] - 2022-11-17
 
@@ -645,7 +649,7 @@
 ## [0.1.1] - 2021-12-08
 
 ### Fixed
-- odometry frame matches robot's starting frame, not the world frame. 
+- odometry frame matches robot's starting frame, not the world frame.
 - horizontal and vertical aperture use camera prim values instead of computing vertical aperture
 - lidar components publish point cloud data as PCL2 messages instead of PCL
 - lidar PCL2 messages only contain points that hit

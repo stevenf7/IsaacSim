@@ -1,9 +1,9 @@
 {
     "IsaacComputeRTXLidarFlatScan": {
-        "version": 1,
+        "version": 2,
         "icon": "icons/isaac-sim.svg",
         "description": [
-            "This node reads from the an RTX Lidar sensor and holds flat scan buffers"
+            "Accumulates full scan from the lowest elevation emitter on an RTX Lidar"
         ],
         "metadata": {
             "uiName": "Isaac Compute RTX Lidar Flat Scan Node"
@@ -27,27 +27,27 @@
             },
             "renderProductPath": {
                 "type": "token",
-                "description": "Config is gotten from this"
+                "description": "Used to retrieve lidar configuration."
             }
         },
         "outputs": {
             "exec": {
                 "type": "execution",
-                "description": "Output execution triggers when lidar sensor has data"
+                "description": "Output execution triggers when lidar sensor has accumulated a full scan."
             },
             "horizontalFov": {
                 "type": "float",
-                "description": "Horizontal Field of View in degrees",
+                "description": "Horizontal Field of View (deg)",
                 "default": 0
             },
             "horizontalResolution": {
                 "type": "float",
-                "description": "Degrees in between rays for horizontal axis",
+                "description": "Increment between horizontal rays (deg)",
                 "default": 0
             },
             "depthRange": {
                 "type": "float[2]",
-                "description": "The min and max range for sensor to detect a hit [min, max]",
+                "description": "Range for sensor to detect a hit [min, max] (m)",
                 "default": [0, 0]
             },
             "rotationRate": {
@@ -57,13 +57,13 @@
             },
             "linearDepthData":{
                 "type": "float[]",
-                "description": "Buffer array containing linear depth data",
+                "description": "Linear depth measurements from full scan, ordered by increasing azimuth (m)",
                 "memoryType": "cpu",
                 "default": []
             },
             "intensitiesData":{
                 "type": "uchar[]",
-                "description": "Buffer array containing intensities data",
+                "description": "Intensity measurements from full scan, ordered by increasing azimuth",
                 "memoryType": "cpu",
                 "default": []
             },
@@ -79,7 +79,7 @@
             },
             "azimuthRange": {
                 "type": "float[2]",
-                "description": "The azimuth range [min, max] in radians.",
+                "description": "The azimuth range [min, max] (deg). Always [-180, 180] for rotary lidars.",
                 "default": [0.0, 0.0]
             }
         }

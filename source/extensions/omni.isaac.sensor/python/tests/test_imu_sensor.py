@@ -109,7 +109,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             self.my_world.clear_instance()
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
-            print("tearDown, assets still loading, waiting to finish...")
+            # print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
         pass
@@ -305,7 +305,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             sensor_reading_no_gravity = self._is.get_sensor_reading(
                 self.sphere_path + "/sensor", use_latest_data=True, read_gravity=False
             )
-            # print(sensor_reading.lin_acc_x, "\t", sensor_reading.lin_acc_y, "\t", sensor_reading.lin_acc_z)
+            # # print(sensor_reading.lin_acc_x, "\t", sensor_reading.lin_acc_y, "\t", sensor_reading.lin_acc_z)
         self.assertAlmostEqual(sensor_reading.lin_acc_z, 0, delta=0.1)
         self.assertAlmostEqual(sensor_reading_no_gravity.lin_acc_z, -9.81, delta=0.1)
 
@@ -315,7 +315,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             sensor_reading_no_gravity = self._is.get_sensor_reading(
                 self.sphere_path + "/sensor", use_latest_data=True, read_gravity=False
             )
-            # print(sensor_reading.lin_acc_x, "\t", sensor_reading.lin_acc_y, "\t", sensor_reading.lin_acc_z)
+            # # print(sensor_reading.lin_acc_x, "\t", sensor_reading.lin_acc_y, "\t", sensor_reading.lin_acc_z)
         self.assertAlmostEqual(sensor_reading.lin_acc_z, 9.81, delta=0.1)
         self.assertAlmostEqual(sensor_reading_no_gravity.lin_acc_z, 0, delta=0.1)
 
@@ -333,12 +333,12 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         for i in range(20):
             await omni.kit.app.get_app().next_update_async()
             sensor_reading = self._is.get_sensor_reading(self.sphere_path + "/sensor", use_latest_data=True)
-            # print(sensor_reading.lin_acc_x, "\t", sensor_reading.lin_acc_y, "\t", sensor_reading.lin_acc_z)
+            # # print(sensor_reading.lin_acc_x, "\t", sensor_reading.lin_acc_y, "\t", sensor_reading.lin_acc_z)
         self.assertAlmostEqual(sensor_reading.lin_acc_z, 0, delta=0.1)
         for i in range(200):
             await omni.kit.app.get_app().next_update_async()
             sensor_reading = self._is.get_sensor_reading(self.sphere_path + "/sensor", use_latest_data=True)
-            # print(sensor_reading.lin_acc_x, "\t", sensor_reading.lin_acc_y, "\t", sensor_reading.lin_acc_z)
+            # # print(sensor_reading.lin_acc_x, "\t", sensor_reading.lin_acc_y, "\t", sensor_reading.lin_acc_z)
         self.assertAlmostEqual(sensor_reading.lin_acc_z, 1.62, delta=0.1)
         pass
 
@@ -355,7 +355,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         for i in range(100):
             await omni.kit.app.get_app().next_update_async()
             sensor_reading = self._is.get_sensor_reading(self.sphere_path + "/sensor", use_latest_data=True)
-            # print(sensor_reading.lin_acc_x, "\t", sensor_reading.lin_acc_y, "\t", sensor_reading.lin_acc_z)
+            # # print(sensor_reading.lin_acc_x, "\t", sensor_reading.lin_acc_y, "\t", sensor_reading.lin_acc_z)
         self.assertAlmostEqual(sensor_reading.lin_acc_z, 981, delta=0.1)
 
     pass
@@ -543,10 +543,10 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             # the other reading should be identical and have the same timestamp
             if not readings or readings[-1].time != sensor_reading.time:
                 readings.append(sensor_reading)
-                print(sensor_reading.time)
+                # print(sensor_reading.time)
 
         # tolerance +-1 reading (29,30,31) will be accepted)
-        print(len(readings))
+        # print(len(readings))
         self.assertTrue(abs(len(readings) - 30) <= 1)
         pass
 
@@ -700,9 +700,9 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         self.my_world.play()
         await simulate_async(0.5)
         custom_reading = self._is.get_sensor_reading("/World/Cube/xform/custom_sensor")
-        print(custom_reading.lin_acc_x)
-        print(custom_reading.lin_acc_y)
-        print(custom_reading.lin_acc_z)
+        # print(custom_reading.lin_acc_x)
+        # print(custom_reading.lin_acc_y)
+        # print(custom_reading.lin_acc_z)
 
         self.assertAlmostEqual(custom_reading.lin_acc_z, 9.81, delta=0.1)
 
@@ -717,9 +717,9 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
 
         await simulate_async(0.5)
         custom_reading = self._is.get_sensor_reading("/World/Cube/xform/custom_sensor")
-        print(custom_reading.lin_acc_x)
-        print(custom_reading.lin_acc_y)
-        print(custom_reading.lin_acc_z)
+        # print(custom_reading.lin_acc_x)
+        # print(custom_reading.lin_acc_y)
+        # print(custom_reading.lin_acc_z)
         self.assertAlmostEqual(custom_reading.lin_acc_x, 9.81, delta=0.1)
 
         # rotated -90 degress abouty, check if this is correct

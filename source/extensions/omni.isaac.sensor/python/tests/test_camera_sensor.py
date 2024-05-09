@@ -86,7 +86,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         self.my_world.clear_instance()
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
-            print("tearDown, assets still loading, waiting to finish...")
+            # print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
         return
@@ -120,7 +120,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
             np.array([self.cube_3.get_world_pose()[0], self.cube_2.get_world_pose()[0]])
         )
         # visual inspection golden values
-        print(points_2d)
+        ## print(points_2d)
         self.assertTrue(np.isclose(points_2d[0], [103.51783101, 250.41131911]).all())
         self.assertTrue(np.isclose(points_2d[1], [54.40569416, 5.34284676]).all())
         points_3d = self.camera.get_world_points_from_image_coords(points_2d, np.array([24.94, 24.9]))

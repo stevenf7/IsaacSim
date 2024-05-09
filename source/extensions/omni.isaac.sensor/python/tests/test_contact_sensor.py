@@ -101,7 +101,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         self.my_world.stop()
         self.my_world.clear_instance()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
-            print("tearDown, assets still loading, waiting to finish...")
+            carb.log_warn("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
         pass
@@ -155,7 +155,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         if self.leg_paths[0] not in [body0, body1]:
             self.fail("Raw contact does not contain queried body {} ({},{})".format(self.leg_paths[0], body0, body1))
         self.assertAlmostEqual(1.0, c["normal"]["z"], delta=6)
-        print(c)
+        # # print(c)
 
         # move the ground to lose the contacts
         xform = UsdGeom.Xformable(self._stage.GetPrimAtPath("/World/GroundPlane"))
@@ -219,7 +219,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         if self.leg_paths[0] not in [body0, body1]:
             self.fail("Raw contact does not contain queried body {} ({},{})".format(self.leg_paths[0], body0, body1))
         self.assertAlmostEqual(1.0, c["normal"]["z"], delta=6)
-        print(c)
+        ## print(c)
 
     async def test_persistent_raw_data(self):
         await self.test_add_sensor_prim()
@@ -234,7 +234,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         if self.leg_paths[0] not in [body0, body1]:
             self.fail("Raw contact does not contain queried body {} ({},{})".format(self.leg_paths[0], body0, body1))
         self.assertAlmostEqual(1.0, c["normal"]["z"], delta=6)
-        print(c)
+        ## print(c)
 
     async def test_delayed_get_sensor_reading(self):
         await self.test_add_sensor_prim()
@@ -349,9 +349,9 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         for i in range(60):  # Simulate for one second
             await omni.kit.app.get_app().next_update_async()
             raw = self._cs.get_contact_sensor_raw_data(self.leg_paths[0] + "/sensor")
-            print(str(raw))
+            # print(str(raw))
             sensor_reading = self._cs.get_sensor_reading(self.leg_paths[0] + "/sensor")
-            print(str(sensor_reading))
+            # print(str(sensor_reading))
 
             # the sensor is running at 30hz, while the sim is 60hz, so expecting every other reading to be new,
             # old reading should be identical, and have the same timestamp
@@ -359,7 +359,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
                 readings.append(sensor_reading)
 
         # tolerance +-1 reading (29, 30, 31 will be accepted)
-        print(len(readings))
+        # print(len(readings))
         self.assertTrue(abs(len(readings) - 30) <= 1)
         pass
 
@@ -374,25 +374,25 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         for i in range(200):
             await omni.kit.app.get_app().next_update_async()
             sensor_reading = self._cs.get_sensor_reading(self.leg_paths[0] + "/sensor")
-            print(
-                "sensor_reading: "
-                + str(sensor_reading.in_contact)
-                + " "
-                + str(sensor_reading.value)
-                + " "
-                + str(sensor_reading.time)
-            )
+            # print(
+            #     "sensor_reading: "
+            #     + str(sensor_reading.in_contact)
+            #     + " "
+            #     + str(sensor_reading.value)
+            #     + " "
+            #     + str(sensor_reading.time)
+            # )
 
             if first:
                 init_reading = sensor_reading
-                print(
-                    "init_reading: "
-                    + str(init_reading.in_contact)
-                    + " "
-                    + str(init_reading.value)
-                    + " "
-                    + str(init_reading.time)
-                )
+                # print(
+                #     "init_reading: "
+                #     + str(init_reading.in_contact)
+                #     + " "
+                #     + str(init_reading.value)
+                #     + " "
+                #     + str(init_reading.time)
+                # )
                 first = False
 
         self.my_world.stop()
@@ -403,14 +403,14 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
 
         sensor_reading = self._cs.get_sensor_reading(self.leg_paths[0] + "/sensor")
 
-        print(
-            "sensor_reading: "
-            + str(sensor_reading.in_contact)
-            + " "
-            + str(sensor_reading.value)
-            + " "
-            + str(sensor_reading.time)
-        )
+        # print(
+        #     "sensor_reading: "
+        #     + str(sensor_reading.in_contact)
+        #     + " "
+        #     + str(sensor_reading.value)
+        #     + " "
+        #     + str(sensor_reading.time)
+        # )
 
         self.assertEqual(init_reading.in_contact, sensor_reading.in_contact)
         self.assertEqual(init_reading.value, sensor_reading.value)
@@ -470,8 +470,8 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
 
             await omni.kit.app.get_app().next_update_async()
 
-            print(curr_in_contact)
-            print(curr_value)
+            # print(curr_in_contact)
+            # print(curr_value)
 
             if first:
                 init_in_contact = curr_in_contact
@@ -520,8 +520,8 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
 
         for i in range(10):
             await omni.kit.app.get_app().next_update_async()
-            print(og.DataView.get(out_in_contact))
-            print(og.DataView.get(out_value))
+            # # print(og.DataView.get(out_in_contact))
+            # # print(og.DataView.get(out_value))
             self.assertNotEqual(og.DataView.get(out_in_contact), 0)
             self.assertNotEqual(og.DataView.get(out_value), 0)
 
@@ -562,12 +562,12 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
     #     # TODO: not working on windows:
     #     if sys.platform == "win32":
     #         return
-    #     print("before cube add")
+    #     # print("before cube add")
 
     #     cube_prim = await add_cube(self._stage, "/cube", 1, (2, 2, 10), physics=True, mass=10)
     #     cube_prim2 = await add_cube(self._stage, "/cube2", 1, (5, 2, 10), physics=True, mass=10)
 
-    #     print("before contact sensor create")
+    #     # print("before contact sensor create")
     #     await omni.kit.app.get_app().next_update_async()
     #     # create fully body sensor (radius -1)
     #     result, sensor = omni.kit.commands.execute(
@@ -583,35 +583,35 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
     #     self.assertTrue(result)
     #     self.assertIsNotNone(sensor)
 
-    #     print("before refresh")
+    #     # print("before refresh")
 
     #     # need this sync to add the cube into the physics engine
     #     await omni.kit.app.get_app().next_update_async()
 
-    #     print("before play")
+    #     # print("before play")
     #     self.my_world.play()
 
-    #     print("before loop")
+    #     # print("before loop")
     #     for i in range(30):  # Simulate for one second
     #         await omni.kit.app.get_app().next_update_async()
-    #         print("before reading")
+    #         # print("before reading")
     #         sensor_reading = self._cs.get_sensor_readings("/cube/sensor")
-    #         print("sensor reading: " + str(sensor_reading))
+    #         # print("sensor reading: " + str(sensor_reading))
     #         # sensor_sim = self._cs.get_sensor_sim_reading("/cube/sensor")
-    #         # print("sensor sim: " + str(sensor_sim))
+    #         # # print("sensor sim: " + str(sensor_sim))
 
     #     self.my_world.stop()
     #     await omni.kit.app.get_app().next_update_async()
     #     await omni.kit.app.get_app().next_update_async()
     #     self.my_world.play()
-    #     print("TIMELINE RESTARTED")
+    #     # print("TIMELINE RESTARTED")
 
     #     for i in range(30):  # Simulate for one second
     #         await omni.kit.app.get_app().next_update_async()
     #         sensor_reading = self._cs.get_sensor_readings("/cube/sensor")
-    #         print("sensor reading: " + str(sensor_reading))
+    #         # print("sensor reading: " + str(sensor_reading))
     #         # sensor_sim = self._cs.get_sensor_sim_reading("/cube/sensor")
-    #         # print("sensor sim: " + str(sensor_sim))
+    #         # # print("sensor sim: " + str(sensor_sim))
 
     #     pass
 
@@ -676,9 +676,9 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
     #     for i in range(30):  # Simulate for one second
     #         await omni.kit.app.get_app().next_update_async()
     #         sensor_reading = self._cs.get_sensor_readings("/cube/sensor")
-    #         print("sensor reading: " + str(sensor_reading))
+    #         # print("sensor reading: " + str(sensor_reading))
     #         # sensor_sim = self._cs.get_sensor_sim_reading("/cube/sensor")
-    #         # print("sensor sim: " + str(sensor_sim))
+    #         # # print("sensor sim: " + str(sensor_sim))
 
     #     self.my_world.stop()
     #     await omni.kit.app.get_app().next_update_async()
@@ -688,14 +688,14 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
     #     await omni.kit.app.get_app().next_update_async()
 
     #     self.my_world.play()
-    #     print("TIMELINE RESTARTED")
+    #     # print("TIMELINE RESTARTED")
     #     for i in range(30):  # Simulate for one second
 
     #         await omni.kit.app.get_app().next_update_async()
     #         sensor_reading = self._cs.get_sensor_readings("/cube/sensor")
-    #         print("sensor reading: " + str(sensor_reading))
+    #         # print("sensor reading: " + str(sensor_reading))
     #         # sensor_sim = self._cs.get_sensor_sim_reading("/cube/sensor")
-    #         # print("sensor sim: " + str(sensor_sim))
+    #         # # print("sensor sim: " + str(sensor_sim))
 
     #     pass
 
@@ -757,22 +757,22 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
     #     for i in range(30):  # Simulate for one second
     #         await omni.kit.app.get_app().next_update_async()
     #         sensor_reading = self._cs.get_sensor_readings("/cube/sensor")
-    #         print("sensor reading: " + str(sensor_reading))
+    #         # print("sensor reading: " + str(sensor_reading))
     #         # sensor_sim = self._cs.get_sensor_sim_reading("/cube/sensor")
-    #         # print("sensor sim: " + str(sensor_sim))
+    #         # # print("sensor sim: " + str(sensor_sim))
 
     #     self.my_world.stop()
     #     await omni.kit.app.get_app().next_update_async()
     #     await omni.kit.app.get_app().next_update_async()
     #     self.my_world.play()
-    #     print("TIMELINE RESTARTED")
+    #     # print("TIMELINE RESTARTED")
     #     for i in range(30):  # Simulate for one second
 
     #         await omni.kit.app.get_app().next_update_async()
     #         sensor_reading = self._cs.get_sensor_readings("/cube/sensor")
-    #         print("sensor reading: " + str(sensor_reading))
+    #         # print("sensor reading: " + str(sensor_reading))
     #         # sensor_sim = self._cs.get_sensor_sim_reading("/cube/sensor")
-    #         # print("sensor sim: " + str(sensor_sim))
+    #         # # print("sensor sim: " + str(sensor_sim))
 
     #     pass
 
@@ -894,10 +894,10 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         sensor_2 = self._cs.get_sensor_reading(self.leg_paths[2] + "/custom_sensor")  # expect proper reading
         sensor_3 = self._cs.get_sensor_reading(self.leg_paths[3] + "/custom_sensor")  # expect 0.1
 
-        print(f"sensor 0: {float(sensor_0.value)}")  # val
-        print(f"sensor 1: {float(sensor_1.value)}")  # no val
-        print(f"sensor 2: {float(sensor_2.value)}")  # val
-        print(f"sensor 3: {float(sensor_3.value)}")  # val
+        # print(f"sensor 0: {float(sensor_0.value)}")  # val
+        # print(f"sensor 1: {float(sensor_1.value)}")  # no val
+        # print(f"sensor 2: {float(sensor_2.value)}")  # val
+        # print(f"sensor 3: {float(sensor_3.value)}")  # val
         self.assertTrue(sensor_0.inContact)
         self.assertFalse(sensor_1.inContact)
         self.assertGreater(float(sensor_2.value), 0.1)
@@ -966,18 +966,18 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
 
     #     # need this sync to add the cube into the physics engine
     #     await omni.kit.app.get_app().next_update_async()
-    #     print("next update fail")
+    #     # print("next update fail")
 
     #     self.my_world.play()
-    #     print("timeline play fail")
+    #     # print("timeline play fail")
 
     #     for i in range(30):  # Simulate for one second
     #         await omni.kit.app.get_app().next_update_async()
     #         sensor_reading = self._cs.get_sensor_readings("/cube/sensor")
 
-    #         print("sensor reading: " + str(sensor_reading))
+    #         # print("sensor reading: " + str(sensor_reading))
     #         # sensor_sim = self._cs.get_sensor_sim_reading("/cube/sensor")
-    #         # print("sensor sim: " + str(sensor_sim))
+    #         # # print("sensor sim: " + str(sensor_sim))
 
     #     self.my_world.stop()
     #     await omni.kit.app.get_app().next_update_async()
@@ -987,13 +987,13 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
     #     await omni.kit.app.get_app().next_update_async()
 
     #     self.my_world.play()
-    #     print("TIMELINE RESTARTED")
+    #     # print("TIMELINE RESTARTED")
     #     for i in range(30):  # Simulate for one second
 
     #         await omni.kit.app.get_app().next_update_async()
     #         sensor_reading = self._cs.get_sensor_readings("/cube/sensor")
-    #         print("sensor reading: " + str(sensor_reading))
+    #         # print("sensor reading: " + str(sensor_reading))
     #     #           sensor_sim = self._cs.get_sensor_sim_reading("/cube/sensor")
-    #     #            print("sensor sim: " + str(sensor_sim))
+    #     #            # print("sensor sim: " + str(sensor_sim))
 
     #     pass

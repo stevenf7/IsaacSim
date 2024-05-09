@@ -92,8 +92,9 @@ public:
             db.logWarning("Timestamp is invalid. Timestamp will be neglected for all published ROS LaserScan messages");
         }
 
-        laser_msg.angle_min = db.inputs.azimuthRange()[0];
-        laser_msg.angle_max = db.inputs.azimuthRange()[1];
+        float DEG_TO_RAD_f = static_cast<float>(M_PI / 180.0f);
+        laser_msg.angle_min = db.inputs.azimuthRange()[0] * DEG_TO_RAD_f;
+        laser_msg.angle_max = db.inputs.azimuthRange()[1] * DEG_TO_RAD_f;
 
         float rotationRate = db.inputs.rotationRate();
         laser_msg.scan_time = rotationRate ? 1.0 / rotationRate : 0;
@@ -126,7 +127,7 @@ public:
         laser_msg.intensities.resize(buffSize);
         laser_msg.intensities.assign(db.inputs.intensitiesData().begin(), db.inputs.intensitiesData().end());
 
-        laser_msg.angle_increment = db.inputs.horizontalResolution() * M_PI / 180.0;
+        laser_msg.angle_increment = db.inputs.horizontalResolution() * DEG_TO_RAD_f;
         laser_msg.time_increment = (db.inputs.horizontalFov() / 360.0 * laser_msg.scan_time) / laser_msg.ranges.size();
 
         mPublisher->publish(laser_msg);

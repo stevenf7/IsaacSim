@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.2.2] - 2024-05-07
+### Fixed
+- OgnROS2PublishLaserScan publishes correct flat scan
+    - buffers are now sorted by azimuth, min -> max
+    - Accumulates then publishes full scan, rather than partial scans
+    - Updated output descriptions
+    - Output angles now all in degrees, rather than mixed degrees/radians
 
 ## [11.2.1] - 2024-05-07
 ### Fixed

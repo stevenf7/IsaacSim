@@ -258,6 +258,8 @@ class TestROS1RTXSensor(omni.kit.test.AsyncTestCase):
         self.assertGreater(len(self._scan_data.ranges), 10)
 
         for r in self._scan_data.ranges:
+            if r < 0.0:
+                continue  # invalid scan
             self.assertGreater(r, 3.49)  # this is the distance to the inset cube
             self.assertLess(r, 6.37)  # should be less than sqrt(4.5&2+4.5^2) ~ 6.3639
 
@@ -303,6 +305,8 @@ class TestROS1RTXSensor(omni.kit.test.AsyncTestCase):
         self.assertGreater(len(self._scan_data.ranges), 10)
 
         for r in self._scan_data.ranges:
+            if r < 0.0:
+                continue  # invalid scan
             self.assertGreater(r, 3.49)  # this is the distance to the inset cube
             self.assertLess(r, 6.37)  # should be less than sqrt(4.5&2+4.5^2) ~ 6.3639
 

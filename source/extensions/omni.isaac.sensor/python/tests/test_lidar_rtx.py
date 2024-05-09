@@ -64,7 +64,7 @@ class TestRotatingLidarRtx(omni.kit.test.AsyncTestCase):
         self.my_world.clear_instance()
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
-            print("tearDown, assets still loading, waiting to finish...")
+            # print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
         return
@@ -127,7 +127,7 @@ class TestRotatingLidarRtx(omni.kit.test.AsyncTestCase):
         annotator.attach([self._my_lidar.get_render_product_path()])
 
         self._timeline.play()
-        await omni.syntheticdata.sensors.next_render_simulation_async(self._my_lidar.get_render_product_path(), 1)
+        await omni.syntheticdata.sensors.next_render_simulation_async(self._my_lidar.get_render_product_path(), 2)
         data = annotator.get_data()
         # TODO: Improve Test
         self.assertGreater(len(data["data"]), 144000)  # make sure that the number of points is reasonable
