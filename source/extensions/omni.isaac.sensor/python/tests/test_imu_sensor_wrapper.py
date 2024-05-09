@@ -56,7 +56,7 @@ class TestIMU(omni.kit.test.AsyncTestCase):
         self.my_world.clear_instance()
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
-            print("tearDown, assets still loading, waiting to finish...")
+            # print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
         return
@@ -98,14 +98,14 @@ class TestIMU(omni.kit.test.AsyncTestCase):
         data = self._imu.get_current_frame()
         self.assertTrue(math.isclose(data["time"], 0.016666, abs_tol=0.0001))
 
-        print(data["physics_step"])
+        # print(data["physics_step"])
         self.assertTrue(data["physics_step"] == 2)  # data["physics_step"] is 2
         return
 
     async def test_properties(self):
         self._imu.set_frequency(20)
-        print(self._imu.get_frequency())
-        print(self._imu.get_dt())
+        # print(self._imu.get_frequency())
+        # print(self._imu.get_dt())
         self.assertTrue(math.isclose(20, self._imu.get_frequency(), abs_tol=2))
         self._imu.set_dt(0.2)
         self.assertTrue(math.isclose(0.2, self._imu.get_dt(), abs_tol=0.01))

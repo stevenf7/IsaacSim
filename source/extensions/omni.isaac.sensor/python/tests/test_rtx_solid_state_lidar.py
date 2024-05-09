@@ -48,7 +48,7 @@ class TestRTXSolildStateLidar(omni.kit.test.AsyncTestCase):
     async def tearDown(self):
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
-            print("tearDown, assets still loading, waiting to finish...")
+            # print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
 

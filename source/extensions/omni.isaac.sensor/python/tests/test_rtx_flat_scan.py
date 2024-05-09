@@ -68,13 +68,15 @@ class TestRtxFlatScan(omni.kit.test.AsyncTestCase):
         self.assertEqual(len(data["linearDepthData"]), 4)
         # should be at center of 4 m cube
         for depth in data["linearDepthData"]:
+            if depth < 0.0:
+                continue  # invalid scan
             self.assertAlmostEqual(depth, 2.0, places=2)
         self.assertEqual(len(data["intensitiesData"]), 4)
         self.assertEqual(data["numRows"], 1)
         self.assertEqual(data["numCols"], 4)
         self.assertAlmostEqual(data["horizontalResolution"], 1)
-        self.assertAlmostEqual(data["azimuthRange"][0], -1.5 * 3.14159 / 180.0, places=2)
-        self.assertAlmostEqual(data["azimuthRange"][1], 1.5 * 3.14159 / 180.0, places=2)
+        self.assertAlmostEqual(data["azimuthRange"][0], -1.5)
+        self.assertAlmostEqual(data["azimuthRange"][1], 1.5)
         annotator.detach()
 
     async def test_rotary_flat_scan(self):
@@ -106,11 +108,13 @@ class TestRtxFlatScan(omni.kit.test.AsyncTestCase):
         self.assertEqual(len(data["linearDepthData"]), 36)
         # should be at center of 4 m cube
         for depth in data["linearDepthData"]:
+            if depth < 0.0:
+                continue  # invalid scan
             self.assertLessEqual(depth, 2.83)
             self.assertGreaterEqual(depth, 1.99)
         self.assertEqual(len(data["intensitiesData"]), 36)
         self.assertEqual(data["numRows"], 1)
         self.assertEqual(data["numCols"], 36)
-        self.assertAlmostEqual(data["azimuthRange"][0], 0)
-        self.assertAlmostEqual(data["azimuthRange"][1], 6.2831855)  # 360 deg in rad
+        self.assertAlmostEqual(data["azimuthRange"][0], -180.0)
+        self.assertAlmostEqual(data["azimuthRange"][1], 180.0)
         annotator.detach()

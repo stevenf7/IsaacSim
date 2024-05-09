@@ -82,7 +82,7 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
             self.effort_sensor = None
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
-            print("tearDown, assets still loading, waiting to finish...")
+            # print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
         pass
@@ -137,7 +137,7 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
 
         self.effort_sensor = EffortSensor("/Articulation/Arm/RevoluteJoint", 1 / 10)  # 10 hz
         self.my_world.play()
-        # print(self.effort_sensor.sensor_period)
+        # # print(self.effort_sensor.sensor_period)
 
         # let physics warm up
         await omni.kit.app.get_app().next_update_async()
@@ -150,15 +150,15 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
         for i in range(60):  # Simulate for one second
             await omni.kit.app.get_app().next_update_async()
             sensor_reading = self.effort_sensor.get_sensor_reading()
-            # print(sensor_reading.time)
+            # # print(sensor_reading.time)
             # the sensor is running at 10hz, while the sim is 60hz, so expecting 1/6 readings to be new,
             # old reading should be identical, and have the same timestamp
             if not readings or readings[-1] != sensor_reading.time:
-                print(sensor_reading.time)
+                # print(sensor_reading.time)
                 readings.append(sensor_reading.time)
 
         # tolerance +-1 reading (9,10,11) will be accepted)
-        print(len(readings))
+        # print(len(readings))
         self.assertTrue(abs(len(readings) - 10) <= 1)
         pass
 
@@ -173,7 +173,7 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
 
         self.effort_sensor = EffortSensor("/Articulation/Arm/RevoluteJoint", 1 / 30)  # running at 30 Hz
         self.my_world.play()
-        # print(self.effort_sensor.sensor_period)
+        # # print(self.effort_sensor.sensor_period)
 
         # let physics warm up
         await omni.kit.app.get_app().next_update_async()
@@ -197,16 +197,16 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
 
         self.effort_sensor = EffortSensor("/Articulation/Arm/RevoluteJoint")
         self.my_world.play()
-        # print(self.effort_sensor.sensor_period)
+        # # print(self.effort_sensor.sensor_period)
 
         # let physics warm up
         for i in range(10):
             await omni.kit.app.get_app().next_update_async()
 
         # sensor enabled with the correct indices, expect non zero output
-        print(f"dof index is: {self.effort_sensor.dof}")
+        # print(f"dof index is: {self.effort_sensor.dof}")
         reading = self.effort_sensor.get_sensor_reading()
-        print(f"reading time: {reading.time}  reading value: {reading.value}")
+        # print(f"reading time: {reading.time}  reading value: {reading.value}")
         self.assertNotEqual(reading.time, 0)
         self.assertNotEqual(reading.value, 0)
         self.assertEqual(reading.is_valid, True)
@@ -221,18 +221,18 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
 
         # incorrect joint, expecting zero output (and error log message)
         reading = self.effort_sensor.get_sensor_reading()
-        print(f"reading time: {reading.time}  reading value: {reading.value}")
+        # print(f"reading time: {reading.time}  reading value: {reading.value}")
         self.assertEqual(reading.time, 0)
         self.assertEqual(reading.value, 0)
         self.assertEqual(reading.is_valid, False)
 
         # update it with the correct joint again, expecting non zero output
         self.effort_sensor.update_dof_name("RevoluteJoint")
-        print(f"dof index is: {self.effort_sensor.dof}")
+        # print(f"dof index is: {self.effort_sensor.dof}")
         for i in range(10):
             await omni.kit.app.get_app().next_update_async()
         reading = self.effort_sensor.get_sensor_reading()
-        print(f"reading time: {reading.time}  reading value: {reading.value}")
+        # print(f"reading time: {reading.time}  reading value: {reading.value}")
         self.assertNotEqual(reading.time, 0)
         self.assertNotEqual(reading.value, 0)
         self.assertEqual(reading.is_valid, True)
@@ -242,7 +242,7 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
 
         self.effort_sensor = EffortSensor("/Articulation/Arm/RevoluteJoint", sensor_period=1)
         self.my_world.play()
-        # print(self.effort_sensor.sensor_period)
+        # # print(self.effort_sensor.sensor_period)
 
         # let physics warm up
         for i in range(10):
