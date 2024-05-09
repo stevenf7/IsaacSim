@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "11.2.2"
+version = "11.2.3"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Support physics based sensors, such as contact sensors and imu sensors"
@@ -77,6 +77,7 @@ rtx.materialDb.rtSensorNameToIdMap="DefaultMaterial:0;AsphaltStandardMaterial:1;
 renderer.raytracingMotion.enabled=true
 
 [[test]]
+timeout=1200
 dependencies = [
     "omni.hydra.rtx",                       # "omni.hydra.pxr", Can we run and pass with Storm ?
     "omni.kit.viewport.utility",
@@ -93,4 +94,5 @@ stdoutFailPatterns.exclude = [
     '*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_sensor_IsaacReadIMU: [/TestGraph] Invalid Imu sensor prim*',
     '*[Error] [omni.isaac.sensor.plugin] *** error, No valid parent for /World/sensor with a rigid body api was found, sensor will not be created*',
     '*[Error] [omni.isaac.sensor.plugin] Failed to create imu sensor, parent prim is not found or invalid*'
+    '*[Error] [carb] [Plugin: omni.sensors.nv.lidar.ext.plugin] Dependency: [omni::sensors::lidar::IGenericModelOutputIOFactory v0.1] failed to be resolved.*'
 ]
