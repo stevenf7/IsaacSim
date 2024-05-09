@@ -1,4 +1,8 @@
 # Changelog
+## [0.4.1] - 2024-05-09
+### Changed
+- use omni.kit.stagerecorder.bundle instead of omni.kit.stagerecorder
+
 ## [0.4.0] - 2024-05-08
 ### Changed
 - No more open_on_startup option

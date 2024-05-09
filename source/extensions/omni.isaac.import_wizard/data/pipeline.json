@@ -340,7 +340,7 @@
     "Stage Recorder":
     {
         "App Name": "Stage Recorder",
-        "Extension":"omni.kit.stagerecorder",
+        "Extension":"omni.kit.stagerecorder.bundle",
         "Window": 1,
         "Summary":"Capture the motion and USD property changes within a USD stage, then write to a USD layer or to disk as a timeSampled USD file",
         "Basic Instructions":"Doesn't work in Fabric mode.\n\n Select the prim (or parent prim) you want to record, and click on \"Add Selection\". Choose a take name and a path to save the recording. To record indefinitely, check \"Live mode\". to begin Recording, click on Rec. Unless on Live mode It will automatically stop when the end timecode of the stage is reached (default to 100).\n\nTo view the recording, Create a new stage and drag both the animation and the original stage as sublayers.\n\nThe precedence of the layer matters, and animation will only play if the recording is the top-most sublayer in the list. ",
