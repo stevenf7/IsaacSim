@@ -40,7 +40,7 @@ class TestImportWizard(omni.kit.test.AsyncTestCase):
 
         def is_website_online(url):
             try:
-                res = urlopen(url, timeout=0.5)
+                res = urlopen(url, timeout=1.0)
                 print(f"testing link url", url)
                 return res.status == 200
             except URLError:
@@ -51,7 +51,8 @@ class TestImportWizard(omni.kit.test.AsyncTestCase):
             if isinstance(data_dict, dict):
                 for k, v in data_dict.items():
                     if k == key:
-                        value_array.append(v)
+                        if v != "":
+                            value_array.append(v)
                     extract_key(v, key, value_array)
             return value_array
 
@@ -94,10 +95,8 @@ class TestImportWizard(omni.kit.test.AsyncTestCase):
             self.assertTrue("Basic Instructions" in pipeline_data[tool])
             self.assertTrue("Advanced Instructions" in pipeline_data[tool])
             self.assertTrue("Menu" in pipeline_data[tool])
-            self.assertTrue("Useful Links" in pipeline_data[tool])
-            self.assertTrue("Documentation Link" in pipeline_data[tool]["Useful Links"])
-            self.assertTrue("API Link" in pipeline_data[tool]["Useful Links"])
-            self.assertTrue("Examples Link" in pipeline_data[tool]["Useful Links"])
+            self.assertTrue("Resources" in pipeline_data[tool])
+            self.assertTrue("Documentation Link" in pipeline_data[tool]["Resources"])
 
         # TODO: if there's a list of extensions names and extension folder names, then check that App NAme and Extension are all valid as well
 
