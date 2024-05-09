@@ -93,6 +93,6 @@ stdoutFailPatterns.exclude = [
     '*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_sensor_IsaacReadEffortSensor: [/TestGraph] OmniGraph Error: Failed to create effort sensor, unable to find prim path*',
     '*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_sensor_IsaacReadIMU: [/TestGraph] Invalid Imu sensor prim*',
     '*[Error] [omni.isaac.sensor.plugin] *** error, No valid parent for /World/sensor with a rigid body api was found, sensor will not be created*',
-    '*[Error] [omni.isaac.sensor.plugin] Failed to create imu sensor, parent prim is not found or invalid*'
+    '*[Error] [omni.isaac.sensor.plugin] Failed to create imu sensor, parent prim is not found or invalid*',
     '*[Error] [carb] [Plugin: omni.sensors.nv.lidar.ext.plugin] Dependency: [omni::sensors::lidar::IGenericModelOutputIOFactory v0.1] failed to be resolved.*'
 ]
