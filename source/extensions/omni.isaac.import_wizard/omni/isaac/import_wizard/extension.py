@@ -116,13 +116,6 @@ class ImportWizard(object):
         )
         self._window.set_visibility_changed_fn(self._on_window)
 
-        # get the carb setting variable on whether to open the window on startup
-        self._not_show_on_startup = self._settings.get("persistent/exts/omni.isaac.import_wizard/not_show_on_startup")
-        if self._not_show_on_startup:
-            self._window.visible = False
-        else:
-            self._window.visible = True
-
     def on_shutdown(self):
         # close the wizard and shutdown the questionnaire popup if exist
         if self._window:
@@ -158,7 +151,6 @@ class ImportWizard(object):
         self.pipeline_file = EXTENSION_FOLDER_PATH + "/data/pipeline.json"
         self.custom_file = EXTENSION_FOLDER_PATH + "/data/custom_pipeline.json"
         self.tools_file = EXTENSION_FOLDER_PATH + "/data/available_tools.json"
-        self._not_show_on_startup = self._settings.get("persistent/ext/omni.isaac.import_wizard/not_show_on_startup")
 
         # shutdown questionnaire if it's active
         if self.qa is not None:
@@ -194,17 +186,6 @@ class ImportWizard(object):
                             alignment=ui.Alignment.LEFT_TOP,
                             style={"font_size": 20, "color": 0xFFC7C7C7},
                         )
-                        ui.Spacer(height=10)
-                        self.check_frame = ui.Frame()
-                        with self.check_frame:
-                            with ui.HStack():
-                                test_label = ui.Label("Don't Show This Again", width=0, alignment=ui.Alignment.RIGHT)
-                                ui.Spacer(width=10)
-                                cb_show = ui.SimpleBoolModel(default_value=self._not_show_on_startup)
-                                # make the label clickable
-                                test_label.set_mouse_released_fn(lambda x, y, b, c: self._trigger_checkbox(cb_show))
-                                ui.CheckBox(model=cb_show)
-                                cb_show.add_value_changed_fn(self._on_open_on_startup)
                     with ui.HStack():
                         ui.Spacer()
                         ui.Button(
@@ -383,15 +364,6 @@ class ImportWizard(object):
                         **large_btn_kwargs,
                     )
                     ui.Spacer(height=10)
-
-    def _trigger_checkbox(self, model):
-        toggled_value = not model.get_value_as_bool()
-        model.set_value(toggled_value)
-
-    def _on_open_on_startup(self, checked_state):
-        self._settings.set(
-            "persistent/ext/omni.isaac.import_wizard/not_show_on_startup", checked_state.get_value_as_bool()
-        )
 
     def _build_pipeline_page(self):
         """
@@ -608,7 +580,7 @@ class ImportWizard(object):
         self._ext_window = self._app_data[
             "Window"
         ]  # the parameter inside the json file that indicates if this tool has its own window
-        self._links = self._app_data["Useful Links"]
+        self._links = self._app_data["Resources"]
         self._sim_folder = (
             omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module(self._ext_folder_name)
         )
@@ -703,59 +675,62 @@ class ImportWizard(object):
                                     style=get_style()["IconButton.Image::OpenLink"],
                                     alignment=ui.Alignment.LEFT_TOP,
                                 )
-                        with ui.HStack():
-                            ui.Label(
-                                "Python API:",
-                                style_type_name_override="Label::label",
-                                word_wrap=True,
-                                alignment=ui.Alignment.LEFT_TOP,
-                                width=LABEL_WIDTH,
-                            )
-                            with ui.Frame(tooltip="Link to API Doc"):
-                                ui.Button(
-                                    name="ApiDocLink",
-                                    width=18,
-                                    height=18,
-                                    clicked_fn=lambda: on_docs_link_clicked(self._links["API Link"]),
-                                    style=get_style()["IconButton.Image::OpenLink"],
+                        if "API Link" in self._links.keys():
+                            with ui.HStack():
+                                ui.Label(
+                                    "Python API:",
+                                    style_type_name_override="Label::label",
+                                    word_wrap=True,
                                     alignment=ui.Alignment.LEFT_TOP,
+                                    width=LABEL_WIDTH,
                                 )
-                        with ui.HStack():
-                            ui.Label(
-                                "Examples:",
-                                style_type_name_override="Label::label",
-                                word_wrap=True,
-                                alignment=ui.Alignment.LEFT_TOP,
-                                width=LABEL_WIDTH,
-                            )
-                            with ui.Frame(tooltip="Link to Examples"):
-                                ui.Button(
-                                    name="ExamplesLink",
-                                    width=18,
-                                    height=18,
-                                    clicked_fn=lambda: on_docs_link_clicked(self._links["Examples Link"]),
-                                    style=get_style()["IconButton.Image::OpenLink"],
+                                with ui.Frame(tooltip="Link to API Doc"):
+                                    ui.Button(
+                                        name="ApiDocLink",
+                                        width=18,
+                                        height=18,
+                                        clicked_fn=lambda: on_docs_link_clicked(self._links["API Link"]),
+                                        style=get_style()["IconButton.Image::OpenLink"],
+                                        alignment=ui.Alignment.LEFT_TOP,
+                                    )
+                        if "Examples Link" in self._links.keys():
+                            with ui.HStack():
+                                ui.Label(
+                                    "Examples:",
+                                    style_type_name_override="Label::label",
+                                    word_wrap=True,
                                     alignment=ui.Alignment.LEFT_TOP,
+                                    width=LABEL_WIDTH,
                                 )
-                        with ui.HStack():
-                            ui.Label(
-                                "Extension Folder:",
-                                style_type_name_override="Label::label",
-                                word_wrap=True,
-                                alignment=ui.Alignment.LEFT_TOP,
-                                width=LABEL_WIDTH,
-                            )
-                            with ui.Frame(tooltip="Open Containing Folder"):
-                                ui.Button(
-                                    name="IconButton",
-                                    width=24,
-                                    height=24,
-                                    clicked_fn=lambda: on_open_folder_clicked(
-                                        self._sim_folder + "/" + self._ext_folder_name
-                                    ),
-                                    style=get_style()["IconButton.Image::OpenFolder"],
-                                    alignment=ui.Alignment.LEFT_CENTER,
+                                with ui.Frame(tooltip="Link to Examples"):
+                                    ui.Button(
+                                        name="ExamplesLink",
+                                        width=18,
+                                        height=18,
+                                        clicked_fn=lambda: on_docs_link_clicked(self._links["Examples Link"]),
+                                        style=get_style()["IconButton.Image::OpenLink"],
+                                        alignment=ui.Alignment.LEFT_TOP,
+                                    )
+                        if "Script Folder" in self._links.keys():
+                            with ui.HStack():
+                                ui.Label(
+                                    "Extension Folder:",
+                                    style_type_name_override="Label::label",
+                                    word_wrap=True,
+                                    alignment=ui.Alignment.LEFT_TOP,
+                                    width=LABEL_WIDTH,
                                 )
+                                with ui.Frame(tooltip="Open Containing Folder"):
+                                    ui.Button(
+                                        name="IconButton",
+                                        width=24,
+                                        height=24,
+                                        clicked_fn=lambda: on_open_folder_clicked(
+                                            self._sim_folder + "/" + self._ext_folder_name
+                                        ),
+                                        style=get_style()["IconButton.Image::OpenFolder"],
+                                        alignment=ui.Alignment.LEFT_CENTER,
+                                    )
 
     def _build_wizard_footer(self):
         with ui.Frame():

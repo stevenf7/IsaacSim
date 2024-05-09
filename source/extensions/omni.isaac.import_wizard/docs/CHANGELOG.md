@@ -1,4 +1,10 @@
 # Changelog
+## [0.4.0] - 2024-05-08
+### Changed
+- No more open_on_startup option
+- having example and api links are now optional, and the ui will only display what is available
+- added an script folder item in the app dictionary, and the ui will only have the option to open the script folder when the key exist.
+
 ## [0.3.5] - 2024-05-01
 ### Fixed
 - Not overwriting existing pipeline for the same name bug
