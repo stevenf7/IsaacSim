@@ -1,8 +1,12 @@
 # Changelog
 
+## [2.23.7] - 2024-05-08
+### Fixed
+- Automated ROS2 bridge tests on Windows
+
 ## [2.23.6] - 2024-05-04
 ### Fixed
-Rclpy loading on windows
+- Rclpy loading on Windows
 
 ## [2.23.5] - 2024-05-01
 ### Fixed

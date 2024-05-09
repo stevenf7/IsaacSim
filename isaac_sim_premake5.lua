@@ -238,7 +238,7 @@ set RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 pushd %~dp0\..\exts
 set basedir=%cd%\omni.isaac.ros2_bridge\humble\lib
 popd
-set PATH=%PATH%%basedir%
+set PATH=%PATH%;%basedir%
 ]],
 ["linux"] =[[
 export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
