@@ -125,7 +125,6 @@ public:
     }
     static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnOnPhysicsStepDatabase::sPerInstanceState<OgnOnPhysicsStep>(nodeObj, instanceId);
         initialize(nodeObj, instanceId);
     }
 

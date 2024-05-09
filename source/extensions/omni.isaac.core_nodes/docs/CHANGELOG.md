@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.15.3] - 2024-05-09
+### Changed
+- Update source code to run a build clean of warnings
+
 ## [1.15.2] - 2024-05-02
 ### Fixed
 - Physics step node update to latest kit.
