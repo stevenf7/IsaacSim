@@ -1257,6 +1257,10 @@ internal-publish-container:
   needs:
   - job: internal-build-linux-x86_64-release
     artifacts: true
+  retry:
+    max: 2
+    when:
+    - always
   rules:
   - if: $ALLOW_PUBLISH_CONTAINERS != "true"
     when: never
@@ -1288,6 +1292,10 @@ publish-container:
   needs:
   - job: build-linux-x86_64-release
     artifacts: true
+  retry:
+    max: 2
+    when:
+    - always
   rules:
   - if: $ALLOW_PUBLISH_CONTAINERS != "true"
     when: never
