@@ -12,6 +12,7 @@ from .camera_view import CameraView
 from .commands import *
 from .contact_sensor import ContactSensor
 from .extension import *
+from .gmo_types import *
 from .imu_sensor import IMUSensor
 from .lidar_rtx import LidarRtx
 from .rotating_lidar_physX import RotatingLidarPhysX

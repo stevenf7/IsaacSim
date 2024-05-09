@@ -1,5 +1,13 @@
 # Changelog
 
+## [11.2.3] - 2024-05-08
+### Added
+- omni.isaac.sensor.gmo_types module, containing `ctypes` structures for `omni.sensors` extension types
+### Changed
+- SICK lidar configs now include rangeOffset parameter
+### Fixed
+- OgnIsaacPrintRTXRadarInfo prints radar info correctly
+
 ## [11.2.2] - 2024-05-07
 ### Fixed
 - OgnROS2PublishLaserScan publishes correct flat scan
@@ -30,8 +38,8 @@
 
 ## [11.0.5] - 2024-05-03
 ### Fixed
-- get_rgba() and get_depth() for CameraView class now works for both rgb and depth 
-- Account for linear array with depth values being at end 
+- get_rgba() and get_depth() for CameraView class now works for both rgb and depth
+- Account for linear array with depth values being at end
 
 ## [11.0.4] - 2024-04-30
 ### Updated

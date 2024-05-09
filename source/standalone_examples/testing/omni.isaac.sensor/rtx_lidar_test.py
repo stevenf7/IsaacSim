@@ -92,14 +92,14 @@ omni.kit.commands.execute(
     "CreatePrim", prim_type="DomeLight", attributes={"inputs:intensity": 1000, "inputs:texture:format": "latlong"}
 )
 
-configNames = [
-    "SICK_tim781",  # ok, ros2 scan looks like curve
-    "SICK_tim781_legacy",  # ok
-    "SICK_picoScan150",  # ok
-    "SICK_multiScan136",  # crash on "Writer" + "IsaacPrintRTXLidarInfo", flat scan strange (OK, not evenly spaced or single elevation in the line)
-    "SICK_multiScan165",  # crash on "Writer" + "IsaacPrintRTXLidarInfo", flat scan strange (OK, not evenly spaced or single elevation in the line)
-]
-lidar_config = "SICK_multiScan165"
+# configNames = [
+#     "SICK_tim781",  # ok, ros2 scan looks like curve
+#     "SICK_tim781_legacy",  # ok
+#     "SICK_picoScan150",  # ok
+#     "SICK_multiScan136",  # crash on "Writer" + "IsaacPrintRTXLidarInfo", flat scan strange (OK, not evenly spaced or single elevation in the line)
+#     "SICK_multiScan165",  # crash on "Writer" + "IsaacPrintRTXLidarInfo", flat scan strange (OK, not evenly spaced or single elevation in the line)
+# ]
+# lidar_config = "SICK_multiScan165"
 
 
 i = printinc(i)  # 3
@@ -132,11 +132,11 @@ simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 /
 
 i = printinc(i)
 writerNames = [
-    # "Writer" + "IsaacPrintRTXLidarInfo",
+    "Writer" + "IsaacPrintRTXLidarInfo",
     # "Writer" + "IsaacReadRTXLidarData",
     # "RtxLidar" + "DebugDrawPointCloud",
-    "RtxLidar" + "DebugDrawPointCloud" + "Buffer",
-    "RtxLidar" + "ROS2PublishLaserScan",
+    # "RtxLidar" + "DebugDrawPointCloud" + "Buffer",
+    # "RtxLidar" + "ROS2PublishLaserScan",
 ]
 
 annoNames = [
