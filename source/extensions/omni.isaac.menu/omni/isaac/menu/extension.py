@@ -61,6 +61,16 @@ class Extension(omni.ext.IExt):
                 "UR16e",
                 lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/UniversalRobots/ur16e/ur16e.usd", "/UR16e"),
             ),
+            make_menu_item_description(
+                ext_id,
+                "UR20",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/UniversalRobots/ur20/ur20.usd", "/UR20"),
+            ),
+            make_menu_item_description(
+                ext_id,
+                "UR30",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/UniversalRobots/ur30/ur30.usd", "/UR30"),
+            ),
         ]
 
         menu_denso = [
@@ -216,10 +226,24 @@ class Extension(omni.ext.IExt):
 
         menu_unitree = [
             make_menu_item_description(
-                ext_id, "A1", lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Unitree/a1.usd", "/A1")
+                ext_id, "A1", lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Unitree/A1/a1.usd", "/A1")
             ),
             make_menu_item_description(
-                ext_id, "Go1", lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Unitree/go1.usd", "/Go1")
+                ext_id, "Go1", lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Unitree/Go1/go1.usd", "/Go1")
+            ),
+            make_menu_item_description(
+                ext_id, "B2", lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Unitree/B2/b2.usd", "/B2")
+            ),
+            make_menu_item_description(
+                ext_id, "Go2", lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Unitree/Go2/go2.usd", "/Go2")
+            ),
+        ]
+
+        menu_boston_dynamics = [
+            make_menu_item_description(
+                ext_id,
+                "Spot",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/BostonDynamics/spot/spot.usd", "/spot"),
             ),
         ]
 
@@ -231,6 +255,7 @@ class Extension(omni.ext.IExt):
                 lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/ANYbotics/anymal_c.usd", "/ANYmal_C"),
             ),
             MenuItemDescription(name="Unitree", sub_menu=menu_unitree),
+            MenuItemDescription(name="BostonDynamics", sub_menu=menu_boston_dynamics)
             # MenuItemDescription(name="ANYbotics", sub_menu=menu_anybotics), # for some reason, the header needed to be above a item, not submenu, to show up
         ]
 
@@ -334,11 +359,20 @@ class Extension(omni.ext.IExt):
             ),
         ]
 
+        menu_agilexRobotics = [
+            make_menu_item_description(
+                ext_id,
+                "limo",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/AgilexRobotics/limo/limo.usd", "/limo"),
+            ),
+        ]
+
         menu_mobile = [
             MenuItemDescription(header="Wheeled Robots"),
             MenuItemDescription(name="Clearpath", sub_menu=menu_clearpath),
             MenuItemDescription(name="Fraunhofer", sub_menu=menu_fraunhofer),
             MenuItemDescription(name="Forklift", sub_menu=menu_forklift),
+            MenuItemDescription(name="AgilexRobotics", sub_menu=menu_agilexRobotics),
             make_menu_item_description(
                 ext_id,
                 "Idealworks iw.hub",
@@ -349,8 +383,63 @@ class Extension(omni.ext.IExt):
             MenuItemDescription(name="NVIDIA", sub_menu=menu_nvidia),
         ]
 
-        menu_other = [
-            MenuItemDescription(header="Other"),
+        menu_unitree_humanoid = [
+            make_menu_item_description(
+                ext_id, "H1", lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Unitree/H1/h1.usd", "/H1")
+            ),
+        ]
+
+        menu_1x_humanoid = [
+            make_menu_item_description(
+                ext_id, "Neo", lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/1X/Neo/neo.usd", "/Neo")
+            ),
+        ]
+
+        menu_agility_humanoid = [
+            make_menu_item_description(
+                ext_id,
+                "DigitV4",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Agility/Digit/digit_v4.usd", "/Digit"),
+            ),
+        ]
+
+        menu_fourier_intelligence_humanoid = [
+            make_menu_item_description(
+                ext_id,
+                "GR1_T1",
+                lambda a=weakref.proxy(self): a.create_asset(
+                    "/Isaac/Robots/FourierIntelligence/GR-1/GR1_T1.usd", "/GR1_T1"
+                ),
+            ),
+            make_menu_item_description(
+                ext_id,
+                "GR1_T2",
+                lambda a=weakref.proxy(self): a.create_asset(
+                    "/Isaac/Robots/FourierIntelligence/GR-1/GR1_T2.usd", "/GR1_T2"
+                ),
+            ),
+        ]
+
+        menu_sanctuary_humanoid = [
+            make_menu_item_description(
+                ext_id,
+                "Phoenix",
+                lambda a=weakref.proxy(self): a.create_asset(
+                    "/Isaac/Robots/SanctuaryAI/Phoenix/phoenix.usd", "/Phoenix"
+                ),
+            ),
+        ]
+
+        menu_xiaopeng_humanoid = [
+            make_menu_item_description(
+                ext_id,
+                "PX5",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/XiaoPeng/PX5/px5.usd", "/PX5"),
+            ),
+        ]
+
+        menu_humanoid = [
+            MenuItemDescription(header="Humanoid"),
             make_menu_item_description(
                 ext_id,
                 "Humanoid",
@@ -358,12 +447,28 @@ class Extension(omni.ext.IExt):
                     "/Isaac/Robots/Humanoid/humanoid_instanceable.usd", "/Humanoid"
                 ),
             ),
+            MenuItemDescription(name="1X", sub_menu=menu_1x_humanoid),
+            MenuItemDescription(name="Agility", sub_menu=menu_agility_humanoid),
+            MenuItemDescription(name="Fourier Intelligence", sub_menu=menu_fourier_intelligence_humanoid),
+            MenuItemDescription(name="Sanctuary AI", sub_menu=menu_sanctuary_humanoid),
+            MenuItemDescription(name="Unitree", sub_menu=menu_unitree_humanoid),
+            MenuItemDescription(name="Xiao Peng", sub_menu=menu_xiaopeng_humanoid),
+        ]
+
+        menu_other = [
+            MenuItemDescription(header="Other"),
+            make_menu_item_description(
+                ext_id,
+                "Ant",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Ant/ant_instanceable.usd", "/Ant"),
+            ),
         ]
 
         robot_menu += menu_manipulators
         robot_menu += menu_quadrupeds
         robot_menu += menu_aerial
         robot_menu += menu_mobile
+        robot_menu += menu_humanoid
         robot_menu += menu_other
 
         env_menu = [
@@ -425,6 +530,30 @@ class Extension(omni.ext.IExt):
                 "Office",
                 lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Environments/Office/office.usd", "/Office", [3.15, 3.15, 2.0], [0, 0, 0]
+                ),
+            ),
+            MenuItemDescription(header="Digital Twin"),
+            make_menu_item_description(
+                ext_id,
+                "Empty Warehouse Digital Twin",
+                lambda a=weakref.proxy(self): a.create_asset(
+                    "/Isaac/Environments/Digital_Twin_Warehouse/large_empty_warehouse.usd", "/warehouse_digital_twin"
+                ),
+            ),
+            make_menu_item_description(
+                ext_id,
+                "Nova Warehouse Digital Twin",
+                lambda a=weakref.proxy(self): a.create_asset(
+                    "/Isaac/Environments/Digital_Twin_Warehouse/large_warehouse_digital_twin.usd",
+                    "/nova_warehouse_digital_twin",
+                ),
+            ),
+            make_menu_item_description(
+                ext_id,
+                "Small Warehouse Digital Twin",
+                lambda a=weakref.proxy(self): a.create_asset(
+                    "/Isaac/Environments/Digital_Twin_Warehouse/small_warehouse_digital_twin.usd",
+                    "/small_warehouse_digital_twin",
                 ),
             ),
         ]
