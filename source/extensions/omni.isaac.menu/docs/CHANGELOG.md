@@ -1,4 +1,8 @@
 # Changelog
+## [0.3.0] - 2024-05-07
+### Added
+- Added menu options for the new robots
+- Added humanoid robot section
 
 ## [0.2.3] - 2024-04-22
 ### Fixed
