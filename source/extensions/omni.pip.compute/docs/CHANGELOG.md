@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.0] - 2024-05-06
+### Added
+- opencv-python-headless==4.9.0.80
+
 ## [1.2.0] - 2023-08-03
 
 ### Changed
