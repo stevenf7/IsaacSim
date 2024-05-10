@@ -37,6 +37,5 @@ dependencies = [
     "omni.isaac.ui",
     "omni.isaac.cloner",
     "omni.isaac.app.setup",
-    "OmniIsaacGymEnvs",
     "omni.isaac.nucleus" # test only
 ]

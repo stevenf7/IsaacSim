@@ -246,30 +246,11 @@ INTERNAL_LIBS=$(readlink -f $SCRIPT_DIR/../exts/omni.isaac.ros2_bridge/humble/li
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$INTERNAL_LIBS
 ]]
 }
-GYM_EXTRA = {
-["windows"] =[[
-call rmdir /q /s  "%~dp0\OmniIsaacGymEnvs"
-call git clone https://gitlab-master.nvidia.com/carbon-gym/OmniIsaacGymEnvs.git  "%~dp0\OmniIsaacGymEnvs"
-call "%~dp0\..\python.bat" -m pip install  "%~dp0\OmniIsaacGymEnvs"
-]],
-["linux"] =[[
-rm -rf $SCRIPT_DIR/OmniIsaacGymEnvs
-git clone https://gitlab-master.nvidia.com/carbon-gym/OmniIsaacGymEnvs.git $SCRIPT_DIR/OmniIsaacGymEnvs
-$SCRIPT_DIR/../python.sh -m pip install $SCRIPT_DIR/OmniIsaacGymEnvs
-]]
-}
 -- Write experience running .bat/.sh file, like _build\windows-x86_64\release\example.helloext.app.bat
 function create_test_experience_runner(name, config_path, config, kit_sdk_config, extra_args, executable)
     local os_target = os.target()
     if string.find(name, "ros2_bridge") or string.find(name, "omni.isaac.benchmarks") or string.find(name, "omni.isaac.tf_viewer") or string.find(name, "omni.isaac.app.setup") then
         extra = ROS2_EXTRA[os_target]
-    elseif string.find(name, "gym") then
-        extra = GYM_EXTRA[os_target]
-        if os_target == "windows" then
-            extra_args = extra_args .. " --ext-folder  %~dp0"
-        else
-            extra_args = extra_args .. " --ext-folder $SCRIPT_DIR/"
-        end
     else
         extra = ""
     end

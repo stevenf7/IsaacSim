@@ -9,7 +9,7 @@
 
 import os
 
-mode = os.environ.get("ISAACSIM_OIGE_TEST_MODE", "ONCOMMIT")
+mode = os.environ.get("ISAACSIM_OIGE_TEST_MODE", "")
 
 if mode == "ONCOMMIT":
     from omni.isaac.gym.tests.test_omni_isaac_gym_envs_launch import TestOmniIsaacGymEnvsLaunchGG
