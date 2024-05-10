@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.0] - 2024-05-09
+### Changed
+- only ask for robot parent prim, automatically search for Articulation Root API under the hood
+
 ## [1.0.3] - 2024-04-19
 ### Added
 - Reverted the name of "Differential Robots" menu option to "Differential Controller" 

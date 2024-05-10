@@ -12,7 +12,7 @@ import omni.graph.core as og
 import omni.ui as ui
 import omni.usd
 from numpy import pi as PI
-from omni.isaac.core.articulations.articulation import Articulation
+from omni.isaac.core.utils.prims import get_all_matching_child_prims, get_prim_at_path
 from omni.isaac.core.utils.stage import get_next_free_path
 from omni.isaac.ui.callbacks import on_docs_link_clicked, on_open_IDE_clicked
 from omni.isaac.ui.style import get_style
@@ -20,6 +20,8 @@ from omni.isaac.ui.widgets import ParamWidget, SelectPrimWidget
 from omni.kit.notification_manager import NotificationStatus, post_notification
 from omni.kit.window.extensions import SimpleCheckBox
 from pxr import OmniGraphSchema, Usd, UsdPhysics
+
+OG_DOCS_LINK = "https://omniverse.gitlab-master-pages.nvidia.com/isaac/omni_isaac_sim/isaacsim/latest/advanced_tutorials/tutorial_advanced_omnigraph_shortcuts.html"
 
 
 class ArticulationPositionGraph:
@@ -129,7 +131,7 @@ class ArticulationPositionGraph:
             default=self._og_path,
         )
 
-        instructions = "Add Articulation root, add the Robot Prim if the articulation root is not the same prim as the robot.Press 'OK' to create graph. \n\n To move the joints, on the stage tree, highlight /World/Graphs/articulation_position_controller{_n}/JointCommandArray. \n\n Start simulation by pressing 'play', then change the joint angles in the Property Manager Tab -> Raw USD Properties\n\n NOTE: the articulation controller uses RADIANS, the usd properties (under the propert tabs) are in DEGREES"
+        instructions = "Add Robot Prim. Press 'OK' to create graph. \n\n To move the joints, on the stage tree, highlight /World/Graphs/articulation_position_controller{_n}/JointCommandArray. \n\n Start simulation by pressing 'play', then change the joint angles in the Property Manager Tab -> Raw USD Properties\n\n NOTE: the articulation controller uses RADIANS, the usd properties (under the propert tabs) are in DEGREES"
         ## populate the popup window
         self._window = ui.Window("Articulation Position Controller Inputs", width=500, height=470)
         with self._window.frame:
@@ -139,15 +141,10 @@ class ArticulationPositionGraph:
                     cb = ui.SimpleBoolModel(default_value=self._add_to_existing_graph)
                     SimpleCheckBox(self._add_to_existing_graph, self._on_use_existing_graph, model=cb)
 
-                self.art_root_input = SelectPrimWidget(
-                    label="Articulation Root",
-                    default=self._art_root_path,
-                    tooltip="the prim that contains the Articulation Root",
-                )
                 self.robot_prim_input = SelectPrimWidget(
-                    label="Robot Root (if different from Articulation Root)",
+                    label="Robot Prim",
                     default=self._robot_prim_path,
-                    tooltip="the outer most prim of the robot",
+                    tooltip="the parent prim of the robot",
                 )
 
                 self.og_path_input = ParamWidget(field_def=og_path_def)
@@ -202,16 +199,13 @@ class ArticulationPositionGraph:
                                 name="IconButton",
                                 width=24,
                                 height=24,
-                                clicked_fn=lambda: on_docs_link_clicked(
-                                    "https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html"
-                                ),
+                                clicked_fn=lambda: on_docs_link_clicked(OG_DOCS_LINK),
                                 style=get_style()["IconButton.Image::OpenLink"],
                             )
         return self._window
 
     def _on_ok(self):
         self._og_path = self.og_path_input.get_value()
-        self._art_root_path = self.art_root_input.get_value()
         self._robot_prim_path = self.robot_prim_input.get_value()
 
         param_check = self._check_params()
@@ -234,28 +228,27 @@ class ArticulationPositionGraph:
                 post_notification(msg, status=NotificationStatus.WARNING)
                 return False
 
-        # check if the art_root_path is an articulation root
-        art_root_prim = stage.GetPrimAtPath(self._art_root_path)
-        if art_root_prim.HasAPI(UsdPhysics.ArticulationRootAPI):
-            pass
-        else:
-            msg = "given articulation root path does not have ArticulationRootAPI, check the path"
+        # from the robot parent prim, find the prim that contains the articulation root API
+        art_root_prim = get_all_matching_child_prims(
+            self._robot_prim_path, predicate=lambda path: get_prim_at_path(path).HasAPI(UsdPhysics.ArticulationRootAPI)
+        )
+        if len(art_root_prim) == 0:
+            msg = "No articulation root prim found under robot parent prim, check if you need to give a different prim for robot"
             post_notification(msg, status=NotificationStatus.WARNING)
             return False
+        if len(art_root_prim) > 1:
+            msg = "More than one articulation root prim found under robot parent prim, check if you need to give a different prim for robot"
+            post_notification(msg, status=NotificationStatus.WARNING)
+            return False
+        self._art_root_path = art_root_prim[0].GetPath().pathString
 
-        ## if robot prim is given and different from articulation root, get the joints from that, otherwise, get the joints from the articulation root prim
-        if self._robot_prim_path and self._robot_prim_path != self._art_root_path:
-            current_prim = stage.GetPrimAtPath(self._robot_prim_path)
-        else:
-            current_prim = stage.GetPrimAtPath(self._art_root_path)
-
-        ## get the joints by traversing through the robot/articulation prim
-        ## TODO: should we check possibilities that the subsequent joints are not under the root prim on stage (but should be discoverable under the articulation chain)
+        ## get the joints by traversing through the robot prim
 
         self._joint_names = []
         self._default_vel = []
 
-        for prim in Usd.PrimRange(current_prim, Usd.TraverseInstanceProxies()):
+        robot_prim = stage.GetPrimAtPath(self._robot_prim_path)
+        for prim in Usd.PrimRange(robot_prim, Usd.TraverseInstanceProxies()):
             if prim.IsA(UsdPhysics.RevoluteJoint) and prim.HasAPI(UsdPhysics.DriveAPI):
                 self._joint_names.append(os.path.basename(prim.GetPath().pathString))
                 joint_drive = UsdPhysics.DriveAPI.Get(prim, "angular")
@@ -399,7 +392,7 @@ class ArticulationVelocityGraph:
             tooltip="Path to the graph on stage",
         )
 
-        instructions = "Add Articulation root, add the Robot Prim if the articulation root is not the same prim as the robot.Press 'OK' to create graph. \n\n To move the joints, on the stage tree, highlight /World/Graphs/articulation_velocity_controller{_n}/JointCommandArray, \n\n Start simulation by pressing 'play', then change the joint angles in the Property Manager Tab -> Raw USD Properties. \n\n NOTE: the articulation controller uses RADIANS, the usd properties (under the propert tabs) are in DEGREES"
+        instructions = "Add Robot Prim.Press 'OK' to create graph. \n\n To move the joints, on the stage tree, highlight /World/Graphs/articulation_velocity_controller{_n}/JointCommandArray, \n\n Start simulation by pressing 'play', then change the joint angles in the Property Manager Tab -> Raw USD Properties. \n\n NOTE: the articulation controller uses RADIANS, the usd properties (under the propert tabs) are in DEGREES"
         ## populate the popup window
         self._window = ui.Window("Articulation Velocity Controller Input", width=500, height=470)
         with self._window.frame:
@@ -409,13 +402,8 @@ class ArticulationVelocityGraph:
                     cb = ui.SimpleBoolModel(default_value=self._add_to_existing_graph)
                     SimpleCheckBox(self._add_to_existing_graph, self._on_use_existing_graph, model=cb)
 
-                self.art_root_input = SelectPrimWidget(
-                    label="Articulation Root",
-                    default=self._art_root_path,
-                    tooltip="the prim that contains the Articulation Root",
-                )
                 self.robot_prim_input = SelectPrimWidget(
-                    label="Robot Root (if different from Articulation Root)",
+                    label="Robot Prim",
                     default=self._robot_prim_path,
                     tooltip="the outer most prim of the robot",
                 )
@@ -471,9 +459,7 @@ class ArticulationVelocityGraph:
                                 name="IconButton",
                                 width=24,
                                 height=24,
-                                clicked_fn=lambda: on_docs_link_clicked(
-                                    "https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html"
-                                ),
+                                clicked_fn=lambda: on_docs_link_clicked(OG_DOCS_LINK),
                                 style=get_style()["IconButton.Image::OpenLink"],
                             )
 
@@ -481,7 +467,6 @@ class ArticulationVelocityGraph:
 
     def _on_ok(self):
         self._og_path = self.og_path_input.get_value()
-        self._art_root_path = self.art_root_input.get_value()
         self._robot_prim_path = self.robot_prim_input.get_value()
 
         param_check = self._check_params()
@@ -504,27 +489,26 @@ class ArticulationVelocityGraph:
                 post_notification(msg, status=NotificationStatus.WARNING)
                 return False
 
-        # check if the art_root_path is an articulation root
-        art_root_prim = stage.GetPrimAtPath(self._art_root_path)
-        if art_root_prim.HasAPI(UsdPhysics.ArticulationRootAPI):
-            pass
-        else:
-            msg = "given articulation root path does not have ArticulationRootAPI, check the path"
+        # from the robot parent prim, find the prim that contains the articulation root API
+        art_root_prim = get_all_matching_child_prims(
+            self._robot_prim_path, predicate=lambda path: get_prim_at_path(path).HasAPI(UsdPhysics.ArticulationRootAPI)
+        )
+        if len(art_root_prim) == 0:
+            msg = "No articulation root prim found under robot parent prim, check if you need to give a different prim for robot"
             post_notification(msg, status=NotificationStatus.WARNING)
             return False
-
-        ## if robot prim is given and different from articulation root, get the joints from that, otherwise, get the joints from the articulation root prim
-        if self._robot_prim_path and self._robot_prim_path != self._art_root_path:
-            current_prim = stage.GetPrimAtPath(self._robot_prim_path)
-        else:
-            current_prim = stage.GetPrimAtPath(self._art_root_path)
+        if len(art_root_prim) > 1:
+            msg = "More than one articulation root prim found under robot parent prim, check if you need to give a different prim for robot"
+            post_notification(msg, status=NotificationStatus.WARNING)
+            return False
+        self._art_root_path = art_root_prim[0].GetPath().pathString
 
         ## get the joints by traversing through the robot/articulation prim
         ## TODO: should we check possibilities that the subsequent joints are not under the root prim on stage (but should be discoverable under the articulation chain)
-
+        robot_prim = stage.GetPrimAtPath(self._robot_prim_path)
         self._joint_names = []
         self._default_vel = []
-        for prim in Usd.PrimRange(current_prim, Usd.TraverseInstanceProxies()):
+        for prim in Usd.PrimRange(robot_prim, Usd.TraverseInstanceProxies()):
             if prim.IsA(UsdPhysics.RevoluteJoint) and prim.HasAPI(UsdPhysics.DriveAPI):
                 self._joint_names.append(os.path.basename(prim.GetPath().pathString))
                 joint_drive = UsdPhysics.DriveAPI.Get(prim, "angular")
@@ -557,6 +541,7 @@ class GripperGraph:
 
         self._og_path = "/Graphs/Gripper_Controller"
         self._art_root_path = ""
+        self._parent_robot_path = ""
         self._gripper_root_path = ""
         self._add_to_existing_graph = False
         self._use_keyboard = False
@@ -746,10 +731,10 @@ class GripperGraph:
                     cb = ui.SimpleBoolModel(default_value=self._add_to_existing_graph)
                     SimpleCheckBox(self._add_to_existing_graph, self._on_use_existing_graph, model=cb)
 
-                self.art_root_input = SelectPrimWidget(
-                    label="Articulation Root",
+                self.parent_robot_input = SelectPrimWidget(
+                    label="Parent Robot",
                     default=self._art_root_path,
-                    tooltip="the prim that contains the Articulation Root",
+                    tooltip="the parent robot prim. one and only one articulation root prim should be on this prim, or is a child of this prim",
                 )
                 self.gripper_root_input = SelectPrimWidget(
                     label="Gripper Root Prim",
@@ -818,9 +803,7 @@ class GripperGraph:
                                 name="IconButton",
                                 width=24,
                                 height=24,
-                                clicked_fn=lambda: on_docs_link_clicked(
-                                    "https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html"
-                                ),
+                                clicked_fn=lambda: on_docs_link_clicked(OG_DOCS_LINK),
                                 style=get_style()["IconButton.Image::OpenLink"],
                             )
 
@@ -828,7 +811,7 @@ class GripperGraph:
 
     def _on_ok(self):
         self._og_path = self.og_path_input.get_value()
-        self._art_root_path = self.art_root_input.get_value()
+        self._parent_robot_path = self.parent_robot_input.get_value()
         self._gripper_root_path = self.gripper_root_input.get_value()
 
         self._speed = self.speed_input.get_value()
@@ -865,6 +848,22 @@ class GripperGraph:
                 msg = self._og_path + " is not an existing graph, check the og path"
                 post_notification(msg, status=NotificationStatus.WARNING)
                 return False
+
+        # from the robot parent prim, find the prim that contains the articulation root API
+        art_root_prim = get_all_matching_child_prims(
+            self._parent_robot_path,
+            predicate=lambda path: get_prim_at_path(path).HasAPI(UsdPhysics.ArticulationRootAPI),
+        )
+        if len(art_root_prim) == 0:
+            msg = "No articulation root prim found under robot parent prim, check if you need to give a different prim for robot"
+            post_notification(msg, status=NotificationStatus.WARNING)
+            return False
+        if len(art_root_prim) > 1:
+            msg = "More than one articulation root prim found under robot parent prim, check if you need to give a different prim for robot"
+            post_notification(msg, status=NotificationStatus.WARNING)
+            return False
+        self._art_root_path = art_root_prim[0].GetPath().pathString
+
         return True
 
     def _on_cancel(self):
