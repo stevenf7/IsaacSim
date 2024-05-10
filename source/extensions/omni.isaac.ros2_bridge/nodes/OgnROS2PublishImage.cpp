@@ -134,57 +134,94 @@ public:
                             totalBytes, db.inputs.data.size());
                 return false;
             }
+            tasking->addTask(carb::tasking::Priority::eHigh, state.mTasks,
+                             [&state]
+                             {
+                                 CARB_PROFILE_ZONE(1, "image publisher publish");
+                                 state.mPublisher.get()->publish(state.mMessage->ptr());
+                             });
         }
         else
         {
 
-            omni::isaac::utils::ScopedDevice scopedDev(db.inputs.cudaDeviceIndex());
-
-            if (db.inputs.bufferSize() == 0)
-            {
-                CARB_PROFILE_ZONE(1, "data in gpu texture");
-
-
-                cudaArray_t levelArray = 0;
-                CUDA_CHECK(cudaGetMipmappedArrayLevel(
-                    &levelArray, reinterpret_cast<cudaMipmappedArray_t>(db.inputs.dataPtr()), 0));
-                switch (static_cast<carb::graphics::Format>(db.inputs.format()))
+            // In order to get the benefits of using a separate stream, doo all of the work in a new thread
+            tasking->addTask(
+                carb::tasking::Priority::eHigh, state.mTasks,
+                [&state, &db, totalBytes, dataPtr]
                 {
-                case carb::graphics::Format::eR32_SFLOAT:
-                    if (db.inputs.width() * db.inputs.height() * sizeof(float) != totalBytes)
+                    CARB_PROFILE_ZONE(1, "Publish Image Thread");
+                    omni::isaac::utils::ScopedDevice scopedDev(db.inputs.cudaDeviceIndex());
+
+
+                    // if the device doesn't match and we have created a stream, destroy it
+                    if (state.mStreamDevice != db.inputs.cudaDeviceIndex() && state.mStreamNotCreated == false)
                     {
-                        CARB_LOG_ERROR("totalBytes doesn't match eR32_SFLOAT %zu %zu",
-                                       db.inputs.width() * db.inputs.height() * sizeof(float), totalBytes);
+                        CARB_PROFILE_ZONE(1, "Destroy stream");
+                        cudaEventDestroy(state.mStop);
+                        cudaStreamDestroy(state.mStream);
+                        state.mStreamNotCreated = true;
+                        state.mStreamDevice = -1;
+                    }
+                    // create a stream if it does not exist
+                    if (state.mStreamNotCreated)
+                    {
+                        CARB_PROFILE_ZONE(1, "Create stream");
+                        cudaStreamCreate(&state.mStream);
+                        cudaEventCreate(&state.mStop);
+                        state.mStreamNotCreated = false;
+                        state.mStreamDevice = db.inputs.cudaDeviceIndex();
+                    }
+
+
+                    if (db.inputs.bufferSize() == 0)
+                    {
+                        CARB_PROFILE_ZONE(1, "data in gpu texture");
+
+
+                        cudaArray_t levelArray = 0;
+                        CUDA_CHECK(cudaGetMipmappedArrayLevel(
+                            &levelArray, reinterpret_cast<cudaMipmappedArray_t>(db.inputs.dataPtr()), 0));
+                        switch (static_cast<carb::graphics::Format>(db.inputs.format()))
+                        {
+                        case carb::graphics::Format::eR32_SFLOAT:
+                            if (db.inputs.width() * db.inputs.height() * sizeof(float) != totalBytes)
+                            {
+                                CARB_LOG_ERROR("totalBytes doesn't match eR32_SFLOAT %zu %zu",
+                                               db.inputs.width() * db.inputs.height() * sizeof(float), totalBytes);
+                            }
+                            else
+                            {
+                                CUDA_CHECK(cudaMemcpy2DFromArrayAsync(
+                                    dataPtr, db.inputs.width() * sizeof(float), levelArray, 0, 0,
+                                    db.inputs.width() * sizeof(float), db.inputs.height(), cudaMemcpyDeviceToHost,
+                                    state.mStream));
+                                CUDA_CHECK(cudaGetLastError());
+                            }
+                            break;
+
+                        default:
+                            CARB_LOG_ERROR("SdRenderVarToRawArray : input texture format (%d) is not supported.",
+                                           static_cast<int>(db.inputs.format()));
+                            return;
+                        }
                     }
                     else
                     {
-                        CUDA_CHECK(cudaMemcpy2DFromArray(dataPtr, db.inputs.width() * sizeof(float), levelArray, 0, 0,
-                                                         db.inputs.width() * sizeof(float), db.inputs.height(),
-                                                         cudaMemcpyDeviceToHost));
-                        CUDA_CHECK(cudaGetLastError());
+                        CARB_PROFILE_ZONE(1, "data in cuda memory");
+                        CUDA_CHECK(cudaMemcpyAsync(dataPtr, reinterpret_cast<void*>(db.inputs.dataPtr()),
+                                                   db.inputs.bufferSize(), cudaMemcpyDeviceToHost, state.mStream));
+                        cudaEventRecord(state.mStop, state.mStream);
+                        cudaEventSynchronize(state.mStop);
                     }
-                    break;
 
-                default:
-                    CARB_LOG_ERROR("SdRenderVarToRawArray : input texture format (%d) is not supported.",
-                                   static_cast<int>(db.inputs.format()));
-                    return false;
-                }
-            }
-            else
-            {
-                CARB_PROFILE_ZONE(1, "data in cuda memory");
-                CUDA_CHECK(cudaMemcpy(dataPtr, reinterpret_cast<void*>(db.inputs.dataPtr()), db.inputs.bufferSize(),
-                                      cudaMemcpyDeviceToHost));
-            }
+
+                    {
+                        CARB_PROFILE_ZONE(1, "image publisher publish");
+                        state.mPublisher.get()->publish(state.mMessage->ptr());
+                    }
+                });
+            return true;
         }
-
-        tasking->addTask(carb::tasking::Priority::eHigh, state.mTasks,
-                         [&state]
-                         {
-                             CARB_PROFILE_ZONE(1, "image publisher publish");
-                             state.mPublisher.get()->publish(state.mMessage->ptr());
-                         });
 
 
         return true;
@@ -198,6 +235,20 @@ public:
 
     virtual void reset()
     {
+        {
+            CARB_PROFILE_ZONE(1, "wait for previous publish");
+            // wait for last message to publish before starting next
+            mTasks.wait();
+        }
+        if (mStreamNotCreated == false)
+        {
+            omni::isaac::utils::ScopedDevice scopedDev(mStreamDevice);
+            cudaEventDestroy(mStop);
+            cudaStreamDestroy(mStream);
+            mStreamDevice = -1;
+            mStreamNotCreated = true;
+        }
+
         mPublisher.reset(); // This should be reset before we reset the handle.
         Ros2Node::reset();
     }
@@ -208,6 +259,10 @@ private:
 
     std::string mFrameId = "sim_camera";
     carb::tasking::TaskGroup mTasks;
+    cudaStream_t mStream;
+    cudaEvent_t mStop;
+    int mStreamDevice = -1;
+    bool mStreamNotCreated = true;
 };
 
 REGISTER_OGN_NODE()

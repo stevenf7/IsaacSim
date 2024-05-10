@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.24.0] - 2024-05-09
+### Changed
+- OgnROS2PublishImage does gpu->cpu copy on a separate cuda stream to improve performance
+
+
 ## [2.23.8] - 2024-05-07
 ### Fixed
 - OgnROS2PublishLaserScan angle inputs now provided in degrees rather than mixed degrees/radians
