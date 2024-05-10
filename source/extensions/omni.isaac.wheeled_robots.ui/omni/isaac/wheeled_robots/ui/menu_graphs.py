@@ -12,13 +12,16 @@ from pathlib import Path
 import omni.graph.core as og
 import omni.ui as ui
 import omni.usd
+from omni.isaac.core.utils.prims import get_all_matching_child_prims, get_prim_at_path
 from omni.isaac.core.utils.stage import get_next_free_path
 from omni.isaac.ui.callbacks import on_docs_link_clicked, on_open_IDE_clicked
 from omni.isaac.ui.style import get_style
 from omni.isaac.ui.widgets import ParamWidget, SelectPrimWidget
 from omni.kit.notification_manager import NotificationStatus, post_notification
 from omni.kit.window.extensions import SimpleCheckBox
-from pxr import OmniGraphSchema, Sdf
+from pxr import OmniGraphSchema, UsdPhysics
+
+OG_DOCS_LINK = "https://omniverse.gitlab-master-pages.nvidia.com/isaac/omni_isaac_sim/isaacsim/latest/advanced_tutorials/tutorial_advanced_omnigraph_shortcuts.html"
 
 
 class DifferentialRobotGraph:
@@ -26,6 +29,7 @@ class DifferentialRobotGraph:
         # have a place to save variables so there's default when creating new graphs in the same session
         self._og_path = "/Graphs/differential_controller"
         self._art_root_path = ""
+        self._robot_prim_path = ""
         self._add_to_existing_graph = False
         self._wheel_radius = 0.0
         self._wheel_distance = 0.0
@@ -243,7 +247,7 @@ class DifferentialRobotGraph:
                     cb = ui.SimpleBoolModel(default_value=self._add_to_existing_graph)
                     SimpleCheckBox(self._add_to_existing_graph, self._on_use_existing_graph, model=cb)
                 self.og_path_input = ParamWidget(field_def=og_path_def)
-                self.art_root_input = SelectPrimWidget(label="Articulation Root", default=self._art_root_path)
+                self.robot_prim_input = SelectPrimWidget(label="Robot Prim", default=self._art_root_path)
                 self.wheel_radius_input = ParamWidget(field_def=wheel_radius_def)
                 self.wheel_distance_input = ParamWidget(field_def=wheel_distance_def)
                 ui.Spacer(height=2)
@@ -290,9 +294,7 @@ class DifferentialRobotGraph:
                                 name="IconButton",
                                 width=24,
                                 height=24,
-                                clicked_fn=lambda: on_docs_link_clicked(
-                                    "https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html"
-                                ),
+                                clicked_fn=lambda: on_docs_link_clicked(OG_DOCS_LINK),
                                 style=get_style()["IconButton.Image::OpenLink"],
                             )
 
@@ -300,7 +302,7 @@ class DifferentialRobotGraph:
 
     def _on_ok(self):
         self._og_path = self.og_path_input.get_value()
-        self._art_root_path = self.art_root_input.get_value()
+        self._robot_prim_path = self.robot_prim_input.get_value()
         self._wheel_radius = self.wheel_radius_input.get_value()
         self._wheel_distance = self.wheel_distance_input.get_value()
         self._right_joint_name = self.right_joint_name_input.get_value()
@@ -330,6 +332,20 @@ class DifferentialRobotGraph:
                 msg = self._og_path + " is not an existing graph, check the og path"
                 post_notification(msg, status=NotificationStatus.WARNING)
                 return False
+
+        # from the robot parent prim, find the prim that contains the articulation root API
+        art_root_prim = get_all_matching_child_prims(
+            self._robot_prim_path, predicate=lambda path: get_prim_at_path(path).HasAPI(UsdPhysics.ArticulationRootAPI)
+        )
+        if len(art_root_prim) == 0:
+            msg = "No articulation root prim found under robot parent prim, check if you need to give a different prim for robot"
+            post_notification(msg, status=NotificationStatus.WARNING)
+            return False
+        if len(art_root_prim) > 1:
+            msg = "More than one articulation root prim found under robot parent prim, check if you need to give a different prim for robot"
+            post_notification(msg, status=NotificationStatus.WARNING)
+            return False
+        self._art_root_path = art_root_prim[0].GetPath().pathString
 
         return True
 
