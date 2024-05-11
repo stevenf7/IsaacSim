@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.7] - 2024-05-11
+### Changed
+- Renamed Transporter to iw.hub
+
 ## [1.3.6] - 2024-05-03
 ### Fixed
 - Update IStageUpdate usage to fix deprecation error

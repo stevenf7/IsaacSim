@@ -31,7 +31,7 @@ from .robot_helpers import init_robot_sim, set_physics_frequency, setup_robot_og
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestTransporter(omni.kit.test.AsyncTestCase):
+class TestIw_hub(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
 
@@ -42,12 +42,12 @@ class TestTransporter(omni.kit.test.AsyncTestCase):
 
         self._extension_path = get_extension_path_from_name("omni.isaac.tests")
 
-        ## setup transporter:
-        # open local transporter
-        # (result, error) = await omni.usd.get_context().open_stage_async(self._extension_path + "/data/tests/transporter.usd")
+        ## setup iw_hub:
+        # open local iw_hub
+        # (result, error) = await omni.usd.get_context().open_stage_async(self._extension_path + "/data/tests/iw_hub.usd")
 
         # add in carter (from nucleus)
-        self.usd_path = self._assets_root_path + "/Isaac/Robots/Transporter/transporter.usd"
+        self.usd_path = self._assets_root_path + "/Isaac/Robots/Idealworks/iw_hub.usd"
         (result, error) = await open_stage_async(self.usd_path)
 
         # Make sure the stage loaded
@@ -59,7 +59,7 @@ class TestTransporter(omni.kit.test.AsyncTestCase):
         # setup omnigraph
         self.graph_path = "/ActionGraph"
         graph, self.odom_node = setup_robot_og(
-            self.graph_path, "left_wheel_joint", "right_wheel_joint", "/Transporter", 0.08, 0.58
+            self.graph_path, "left_wheel_joint", "right_wheel_joint", "/iw_hub", 0.08, 0.58
         )
 
         pass
@@ -82,7 +82,7 @@ class TestTransporter(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         # get the dofbot
-        self.ar = Articulation("/Transporter")
+        self.ar = Articulation("/iw_hub")
         self.ar._articulation_view.initialize()
         self.starting_pos, _ = self.ar.get_world_pose()
         left_wheel_joint_idx = self.ar._articulation_view.get_dof_index("left_wheel_joint")
@@ -112,7 +112,7 @@ class TestTransporter(omni.kit.test.AsyncTestCase):
         self.my_world.play()
         await omni.kit.app.get_app().next_update_async()
 
-        await init_robot_sim("/Transporter")
+        await init_robot_sim("/iw_hub")
 
         for x in range(1, 5):
             forward_velocity = x * 0.15
@@ -143,7 +143,7 @@ class TestTransporter(omni.kit.test.AsyncTestCase):
         self.my_world.play()
         await omni.kit.app.get_app().next_update_async()
 
-        await init_robot_sim("/Transporter")
+        await init_robot_sim("/iw_hub")
         for x in range(1, 5):
             self.my_world.play()
             await omni.kit.app.get_app().next_update_async()
@@ -173,7 +173,7 @@ class TestTransporter(omni.kit.test.AsyncTestCase):
         # Start Simulation and wait
         self.my_world.play()
         await omni.kit.app.get_app().next_update_async()
-        await init_robot_sim("/Transporter")
+        await init_robot_sim("/iw_hub")
 
         for x in range(1, 4):
             angular_velocity = 0.6 * x
@@ -202,7 +202,7 @@ class TestTransporter(omni.kit.test.AsyncTestCase):
         self.my_world.play()
         await omni.kit.app.get_app().next_update_async()
 
-        await init_robot_sim("/Transporter")
+        await init_robot_sim("/iw_hub")
         forward_velocity = -0.1
         angular_velocity = -0.5
         og.Controller.attribute(self.graph_path + "/DifferentialController.inputs:linearVelocity").set(forward_velocity)

@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.3.1] - 2024-05-11
+### Changed
+- Renamed Transporter to iw.hub
+
 ## [0.3.0] - 2024-05-07
 ### Added
 - Added menu options for the new robots

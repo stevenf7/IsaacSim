@@ -13,9 +13,9 @@ generated:
       base: [0, 0, 0]
     semantic: "robot"
     usd_config:
-      root: /Isaac/Robots/Transporter/
+      root: /Isaac/Robots/Idealworks/
       search_depth: 0
-      filter: "transporter.usd"
+      filter: "iw_hub.usd"
     spawn_proba: 0.5
   - name: transporter_b
     path: transporter_b
@@ -30,7 +30,7 @@ generated:
       base: [0, 0, 180]
     semantic: "robot"
     usd_config:
-      root: /Isaac/Robots/Transporter/
+      root: /Isaac/Robots/Idealworks/
       search_depth: 0
-      filter: "transporter.usd"
+      filter: "iw_hub.usd"
     spawn_proba: 0.5
