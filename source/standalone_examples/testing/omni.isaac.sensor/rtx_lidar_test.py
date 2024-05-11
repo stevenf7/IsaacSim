@@ -85,6 +85,7 @@ lidar_config = "RPLIDAR_S2E"
 lidar_config = "SICK_microscan3_ABAZ90ZA1P01"
 lidar_config = "Sick_MISC3"
 lidar_config = "Example_Rotary"
+lidar_config = "Example_Solid_State"
 if len(sys.argv) >= 3:
     lidar_config = sys.argv[2]
 
@@ -112,9 +113,19 @@ simulation_app.update()
 # drive sim applies 0.5,-0.5,-0.5,w(-0.5), we have to apply the reverse
 
 i = printinc(i)  # 4
-_, sensor = omni.kit.commands.execute(
+_, sensor1 = omni.kit.commands.execute(
     "IsaacSensorCreateRtxLidar",
-    path="/sensor",
+    path="/sensor_solid_state",
+    parent=None,
+    config=lidar_config,
+    translation=(0, 0, -0.04),
+    orientation=Gf.Quatd(1, 0, 0, 0),  # Gf.Quatd is w,i,j,k
+)
+
+i = printinc(i)  # 4
+_, sensor2 = omni.kit.commands.execute(
+    "IsaacSensorCreateRtxLidar",
+    path="/sensor_solid_state_2",
     parent=None,
     config=lidar_config,
     translation=(0, 0, -0.04),
@@ -122,7 +133,8 @@ _, sensor = omni.kit.commands.execute(
 )
 
 i = printinc(i)  # 5
-hydra_texture = rep.create.render_product(sensor.GetPath(), [1, 1], name="Isaac")
+hydra_texture_1 = rep.create.render_product(sensor1.GetPath(), [1, 1], name="Isaac").path
+hydra_texture_2 = rep.create.render_product(sensor2.GetPath(), [1, 1], name="Isaac").path
 
 # Create the debug draw pipeline in the post process graph
 from omni.syntheticdata import sensors
@@ -132,11 +144,12 @@ simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 /
 
 i = printinc(i)
 writerNames = [
-    "Writer" + "IsaacPrintRTXLidarInfo",
+    # "Writer" + "IsaacPrintRTXLidarInfo",
     # "Writer" + "IsaacReadRTXLidarData",
     # "RtxLidar" + "DebugDrawPointCloud",
     # "RtxLidar" + "DebugDrawPointCloud" + "Buffer",
-    # "RtxLidar" + "ROS2PublishLaserScan",
+    "RtxLidar"
+    + "ROS2PublishLaserScan",
 ]
 
 annoNames = [
@@ -148,13 +161,15 @@ annoNames = [
 writers = {}
 for writ in writerNames:
     writers[writ] = rep.writers.get(writ)
-    writers[writ].attach([hydra_texture])  # , render_product_path2])
+    writers[writ].attach([hydra_texture_1])  # , render_product_path2])
+    writers[writ].attach([hydra_texture_2])  # , render_product_path2])
 # writer.initialize(testMode=True)
 annotators = {}
 for anno in annoNames:
     annotators[anno] = rep.AnnotatorRegistry.get_annotator(anno)
     # annotators[anno].initialize(keepOnlyPositiveDistance=True)
-    annotators[anno].attach([hydra_texture])
+    annotators[anno].attach([hydra_texture_1])
+    annotators[anno].attach([hydra_texture_2])
 
 # disable_extension("omni.replicator.core")
 i = printinc(i)
