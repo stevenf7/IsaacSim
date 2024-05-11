@@ -1,6 +1,6 @@
 <project toolsVersion="5.6">
     <dependency name="nv_ros" linkPath="../_build/target-deps/nv_ros">
-        <package name="nv_ros" version="noetic_20231114_0ce33ed-linux64_release" platforms="linux-x86_64"/>
+        <package name="nv_ros" version="noetic_20240510_4ab4599-linux64_release" platforms="linux-x86_64"/>
     </dependency>
     <dependency name="nv_ros2" linkPath="../_build/target-deps/nv_ros2">
         <package name="nv_ros2" version="foxy_20240502_00c80c5-linux64_release" platforms="linux-x86_64"/>

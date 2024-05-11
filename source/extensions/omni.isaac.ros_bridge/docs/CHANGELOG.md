@@ -1,8 +1,12 @@
 # Changelog
 
+## [1.19.0] - 2024-05-10
+### Changed
+- Updated all ros_comm packages to v1.16.0
+
 ## [1.18.2] - 2024-05-07
 ### Fixed
-- OgnROS2PublishLaserScan angle inputs now provided in degrees rather than mixed degrees/radians
+- OgnROS1PublishLaserScan angle inputs now provided in degrees rather than mixed degrees/radians
 
 ## [1.18.1] - 2024-05-04
 ### Fixed
