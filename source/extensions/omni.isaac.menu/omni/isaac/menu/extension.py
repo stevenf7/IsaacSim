@@ -376,9 +376,7 @@ class Extension(omni.ext.IExt):
             make_menu_item_description(
                 ext_id,
                 "Idealworks iw.hub",
-                lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/Transporter/transporter_sensors.usd", "/iw_hub"
-                ),
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/IdealWorks/iw_hub_sensors.usd", "/iw_hub"),
             ),
             MenuItemDescription(name="NVIDIA", sub_menu=menu_nvidia),
         ]

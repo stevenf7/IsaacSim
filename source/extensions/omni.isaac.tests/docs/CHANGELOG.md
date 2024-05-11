@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.16.6] - 2024-05-11
+### Changed
+- Renamed Transporter to iw.hub
+
 ## [1.16.5] - 2024-04-10
 ### Added
 - Tests for the Create 3 robot.

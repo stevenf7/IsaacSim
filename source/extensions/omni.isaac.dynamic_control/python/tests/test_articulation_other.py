@@ -198,7 +198,7 @@ class TestArticulationOther(omni.kit.test.AsyncTestCase):
 
     async def test_articulation_position_str(self, gpu=False):
 
-        (result, error) = await open_stage_async(self._assets_root_path + "/Isaac/Robots/Transporter/transporter.usd")
+        (result, error) = await open_stage_async(self._assets_root_path + "/Isaac/Robots/Idealworks/iw_hub.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
         dc_utils.set_scene_physics_type(gpu)
@@ -206,7 +206,7 @@ class TestArticulationOther(omni.kit.test.AsyncTestCase):
         # await asyncio.sleep(1.0)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        art = self._dc.get_articulation("/Transporter")
+        art = self._dc.get_articulation("/iw_hub")
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
         dof_ptr = self._dc.find_articulation_dof(art, "lift_joint")
         # set new dof pos target
