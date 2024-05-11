@@ -1,5 +1,10 @@
 # Changelog
 
+## [11.2.4] - 2024-05-08
+### Fixed
+- OgnROS2PublishLaserScan switches buffer index calculation to use monotonically-increasing integer, fixing
+  bug where floating-point math would occasionally result in buffer never being filled
+
 ## [11.2.3] - 2024-05-08
 ### Added
 - omni.isaac.sensor.gmo_types module, containing `ctypes` structures for `omni.sensors` extension types

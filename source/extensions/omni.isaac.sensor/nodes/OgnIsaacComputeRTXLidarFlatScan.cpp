@@ -40,6 +40,8 @@ private:
     uint32_t numTicksPerRotation;
     std::vector<uint8_t> intensityBuffer;
     std::vector<float> distanceBuffer;
+    uint64_t idxOffset{ UINT64_MAX };
+    size_t bufferSize{ 0 };
 
 public:
     static bool compute(OgnIsaacComputeRTXLidarFlatScanDatabase& db)
@@ -103,17 +105,18 @@ public:
                 }
                 // Set useful state variables
                 state.numTicksPerRotation = state.rotaryProfile.reportRateBaseHz / state.rotaryProfile.scanRateBaseHz;
+                state.bufferSize = state.numTicksPerRotation;
                 state.horizontalResolution = static_cast<float>(360.0 / state.numTicksPerRotation);
-                state.intensityBuffer.resize(state.numTicksPerRotation);
-                state.distanceBuffer.resize(state.numTicksPerRotation);
+                state.intensityBuffer.resize(state.bufferSize);
+                state.distanceBuffer.resize(state.bufferSize);
+                std::fill(state.intensityBuffer.begin(), state.intensityBuffer.end(), 0);
+                std::fill(state.distanceBuffer.begin(), state.distanceBuffer.end(), -1.0f);
                 // Populate config-based outputs
                 db.outputs.azimuthRange() = { -180.0f, 180.0f };
                 db.outputs.depthRange() = {
                     state.rotaryProfile.nearRangeM,
                     state.rotaryProfile.farRangeM,
                 };
-                // db.outputs.intensitiesData().resize(state.numTicksPerRotation);
-                // db.outputs.linearDepthData().resize(state.numTicksPerRotation);
                 db.outputs.horizontalFov() = 360.0;
                 db.outputs.horizontalResolution() = state.horizontalResolution;
                 db.outputs.rotationRate() = static_cast<float>(state.rotaryProfile.scanRateBaseHz);
@@ -178,13 +181,17 @@ public:
                 };
                 float horizontalFov = endAzimuthDeg - state.startAzimuthDeg;
                 state.horizontalResolution = horizontalFov / (state.numRaysPerLine - 1);
-                state.intensityBuffer.resize(state.numRaysPerLine);
-                state.distanceBuffer.resize(state.numRaysPerLine);
+                state.bufferSize = state.numRaysPerLine;
+                state.intensityBuffer.resize(state.bufferSize);
+                state.distanceBuffer.resize(state.bufferSize);
+                std::fill(state.intensityBuffer.begin(), state.intensityBuffer.end(), 0);
+                std::fill(state.distanceBuffer.begin(), state.distanceBuffer.end(), -1.0f);
+                // Populate config-based outputs
                 db.outputs.horizontalFov() = horizontalFov;
                 db.outputs.horizontalResolution() = state.horizontalResolution;
                 db.outputs.rotationRate() = static_cast<float>(state.solidStateProfile.scanRateBaseHz);
-                db.outputs.intensitiesData().resize(state.numRaysPerLine);
-                db.outputs.linearDepthData().resize(state.numRaysPerLine);
+                db.outputs.intensitiesData().resize(state.bufferSize);
+                db.outputs.linearDepthData().resize(state.bufferSize);
             }
             else
             {
@@ -206,58 +213,68 @@ public:
             if (echoIds[pointIdx])
                 continue;
             uint32_t emitterId = emitterIds[pointIdx];
-            if ((state.scanType == LidarScanType::kRotary && emitterId == state.emitterToOutput) ||
-                (state.scanType == LidarScanType::kSolidState && state.emitterToOutput <= emitterId &&
-                 emitterId < (state.emitterToOutput + state.numRaysPerLine)))
+            size_t outIdx{ 0 }; // buffer index into which point will be written
+            float azimuth = helper.m_gmo.elements.x[pointIdx];
+            if (state.scanType == LidarScanType::kRotary && emitterId == state.emitterToOutput)
             {
-                float azimuth = helper.m_gmo.elements.x[pointIdx];
-                float distance = helper.m_gmo.elements.z[pointIdx];
-                uint8_t intensity = static_cast<uint8_t>(helper.m_gmo.elements.scalar[pointIdx] * 255.0f);
-                if (state.emitterProfile->elevationDeg)
+                if (state.idxOffset == UINT64_MAX)
                 {
-                    distance = distance * ::cosf(Deg2Rad(state.emitterProfile->elevationDeg));
+                    // Compute where in the buffer the 0th tick will land
+                    // We do this once to handle floating-point errors with the azimuth calculation once. We assume
+                    // errors are more likely at the bounds of the azimuth for small horizontal resolution
+                    state.idxOffset =
+                        state.bufferSize -
+                        static_cast<size_t>(((azimuth - db.outputs.azimuthRange()[0]) /
+                                             (db.outputs.azimuthRange()[1] - db.outputs.azimuthRange()[0])) *
+                                            state.bufferSize);
                 }
+                // tickId increases monotonically as lidar returns are rendered; each tickId corresponds to a shift in
+                // azimuth. The lidar spins CCW, meaning azimuth shifts from 0 -> -180 -> 180 -> 0. We therefore fill
+                // the buffer in reverse order, such that it's ordered [-180, 180]
+                outIdx = (tickIds[pointIdx] + state.idxOffset) % state.bufferSize;
+                outIdx = state.bufferSize - outIdx - 1;
+            }
+            else if (state.scanType == LidarScanType::kSolidState && state.emitterToOutput <= emitterId &&
+                     emitterId < (state.emitterToOutput + state.numRaysPerLine))
+            {
+                // tickId is always 1 for solid state lidars, so we're forced to use azimuth
+                outIdx = static_cast<size_t>(((azimuth - state.startAzimuthDeg) + 0.1 * state.horizontalResolution) /
+                                             state.horizontalResolution);
+                outIdx %= state.bufferSize;
+            }
+            else
+            {
+                continue;
+            }
+            float distance = helper.m_gmo.elements.z[pointIdx];
+            uint8_t intensity = static_cast<uint8_t>(helper.m_gmo.elements.scalar[pointIdx] * 255.0f);
+            if (state.emitterProfile->elevationDeg)
+            {
+                distance = distance * ::cosf(Deg2Rad(state.emitterProfile->elevationDeg));
+            }
 
-                // Azimuth angle of lidar ticks moves CCW from 0 -> -180 -> 180 -> 0
-                // Fill buffers by mapping azimuth angle of flat scan between min/max azimuth of lidar.
-                size_t outIdx = static_cast<size_t>((azimuth - db.outputs.azimuthRange()[0]) /
-                                                    (db.outputs.azimuthRange()[1] - db.outputs.azimuthRange()[0])) *
-                                state.intensityBuffer.size();
-                if (outIdx < 0)
-                {
-                    CARB_LOG_WARN("Unexpected azimuth %f < minAzimuth %f; setting azimuth to minAzimuth.", azimuth,
-                                  db.outputs.azimuthRange()[0]);
-                    outIdx = 0;
-                }
-                else if (outIdx >= state.intensityBuffer.size())
-                {
-                    CARB_LOG_WARN("Unexpected azimuth %f > maxAzimuth %f; setting azimuth to maxAzimuth.", azimuth,
-                                  db.outputs.azimuthRange()[1]);
-                    outIdx = state.intensityBuffer.size() - 1;
-                }
-                state.intensityBuffer.at(outIdx) = intensity;
-                state.distanceBuffer.at(outIdx) = distance;
+            state.intensityBuffer.at(outIdx) = intensity;
+            state.distanceBuffer.at(outIdx) = distance;
 
-                // Buffers are considered full when we reach min azimuth, meaning we first issue a partial scan,
-                // then subsequently issue full scans.
-                if (outIdx == 0)
+            // Buffers are considered full when we reach min azimuth, meaning we first issue a partial scan,
+            // then subsequently issue full scans.
+            if (outIdx == 0)
+            {
+                db.outputs.intensitiesData().resize(state.bufferSize);
+                db.outputs.linearDepthData().resize(state.bufferSize);
+                db.outputs.numCols() = static_cast<int>(state.bufferSize);
+                db.outputs.numRows() = 1;
+                for (size_t i = 0; i < state.bufferSize; i++)
                 {
-                    db.outputs.intensitiesData().resize(state.intensityBuffer.size());
-                    db.outputs.linearDepthData().resize(state.distanceBuffer.size());
-                    db.outputs.numCols() = static_cast<int>(state.intensityBuffer.size());
-                    db.outputs.numRows() = 1;
-                    // Copy local buffers into output buffers, then reset local buffers
-                    for (size_t i = 0; i < state.intensityBuffer.size(); i++)
-                    {
-                        db.outputs.intensitiesData().at(i) = state.intensityBuffer[i];
-                        db.outputs.linearDepthData().at(i) = state.distanceBuffer[i];
-                    }
-                    std::fill(state.intensityBuffer.begin(), state.intensityBuffer.end(), 0);
-                    std::fill(state.distanceBuffer.begin(), state.distanceBuffer.end(), -1.0f);
-
-                    // Enable downstream nodes to execute
-                    db.outputs.exec() = kExecutionAttributeStateEnabled;
+                    db.outputs.intensitiesData().at(i) = state.intensityBuffer[i];
+                    db.outputs.linearDepthData().at(i) = state.distanceBuffer[i];
                 }
+                // Reset local buffers
+                std::fill(state.intensityBuffer.begin(), state.intensityBuffer.end(), 0);
+                std::fill(state.distanceBuffer.begin(), state.distanceBuffer.end(), -1.0f);
+
+                // Enable downstream nodes to execute
+                db.outputs.exec() = kExecutionAttributeStateEnabled;
             }
         }
         return true;
