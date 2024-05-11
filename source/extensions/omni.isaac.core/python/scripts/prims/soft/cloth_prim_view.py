@@ -88,6 +88,9 @@ class ClothPrimView(XFormPrimView):
                                                                         parameterized by stiffness attributes, range: [0, inf),  shape is (N,).
                                                                         units: force * second / distance = mass / second
         """
+        carb.log_warn(
+            "Please note that support for particle cloth and related APIs is now deprecated. These features will be removed in future releases."
+        )
 
         self._physics_view = None
         self._device = None

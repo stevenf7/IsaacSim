@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.11.2] - 2024-05-10
+### Fixed
+- Added deprecation warning for particle cloth
+
 ## [3.11.1] - 2024-05-06
 ### Added
 - Warning notice for TensorFlow int32 tensor to interoperability function docstrings
