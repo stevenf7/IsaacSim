@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.0] - 2024-05-13
+### Added
+- Get the version file path from the ISAAC_PATH environment variable first
+- Validate if the version file exists and returns empty version values if not
+
 ## [1.0.3] - 2023-09-11
 
 ### Fixed

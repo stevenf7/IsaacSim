@@ -8,7 +8,7 @@
 #
 
 
-import os.path
+import os
 import typing
 
 import carb.settings
@@ -60,7 +60,12 @@ def get_version() -> typing.Tuple[str, str, str, str, str, str, str, str]:
     if not app_folder:
         app_folder = carb.tokens.get_tokens_interface().resolve("${app}")
     app_start_folder = os.path.normpath(os.path.join(app_folder, os.pardir))
-    with open(f"{app_start_folder}/VERSION", encoding="UTF-8") as f:
+
+    version_file = os.path.join(os.environ.get("ISAAC_PATH", app_start_folder), "VERSION")
+    if not os.path.isfile(version_file):
+        return ("",) * 8
+
+    with open(version_file, encoding="UTF-8") as f:
         app_version = f.readline().strip()
         parsed_version = parse_version(app_version)
     return (
