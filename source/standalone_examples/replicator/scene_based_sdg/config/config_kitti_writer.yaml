@@ -8,3 +8,6 @@ writer: KittiWriter
 writer_config:
   output_dir: _out_kitti
   colorize_instance_segmentation: true
+  mapping_dict:
+    forklift: [11, 110, 223, 255]
+    pallet: [211, 210, 223, 255]
