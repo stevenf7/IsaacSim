@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.3"
+version = "1.1.0"
 category = "Other"
 title = "Isaac Sim Version"
 description = "Isaac Sim Version"
