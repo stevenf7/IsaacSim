@@ -3,9 +3,9 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.4.1"
+version = "0.5.0"
 category = "Other"
-title = "Isaac Sim Import Wizard"
+title = "Isaac Sim Import Wizard [alpha]"
 description = "wizard to guide users through importing and configuration tools inside isaac sim"
 authors = ["Isaac Sim Team"]
 repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.import_wizard"

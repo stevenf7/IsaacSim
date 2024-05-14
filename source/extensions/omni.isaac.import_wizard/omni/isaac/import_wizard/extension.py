@@ -44,7 +44,7 @@ from omni.kit.window.filepicker.dialog import FilePickerDialog
 from omni.kit.window.popup_dialog import MessageDialog
 from omni.kit.window.property.templates import LABEL_HEIGHT, LABEL_WIDTH
 
-EXTENSION_TITLE = "Isaac Sim Import Wizard"
+EXTENSION_TITLE = "Isaac Sim Import Wizard [alpha]"
 EXTENSION_FOLDER_PATH = omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module(__name__)
 
 
@@ -204,7 +204,7 @@ class ImportWizard(object):
                         ui.Line(style={"color": 0x338A8777}, width=ui.Fraction(1), alignment=ui.Alignment.CENTER)
                         ui.Spacer(height=10)
                         ui.Label(
-                            self._current_app_name,
+                            "Isaac Sim Import Wizard [alpha]",
                             width=0,
                             alignment=ui.Alignment.LEFT_TOP,
                             style={"font_size": 20, "color": 0xFFC7C7C7},
@@ -861,7 +861,6 @@ class ImportWizard(object):
             self.qa.start()
 
     def _on_use_custom_pipeline(self, check_state):
-
         if check_state:
             # build the custom pipeline ui every time, so that it can catch saved pipelines from questionnaires
             self.folder_picker = weakref.proxy(

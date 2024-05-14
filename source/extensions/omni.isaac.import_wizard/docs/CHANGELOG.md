@@ -1,4 +1,11 @@
 # Changelog
+## [0.5.0] - 2024-05-13
+### Added
+- added "alpha" tags to titles
+
+### Fixed
+- not saving custom picked file
+
 ## [0.4.1] - 2024-05-09
 ### Changed
 - use omni.kit.stagerecorder.bundle instead of omni.kit.stagerecorder
