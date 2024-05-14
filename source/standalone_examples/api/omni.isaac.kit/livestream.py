@@ -16,6 +16,7 @@ CONFIG = {
     "window_width": 1920,
     "window_height": 1080,
     "headless": True,
+    "hide_ui": False,  # Show the GUI
     "renderer": "RayTracedLighting",
     "display_options": 3286,  # Set display options to show default grid
 }

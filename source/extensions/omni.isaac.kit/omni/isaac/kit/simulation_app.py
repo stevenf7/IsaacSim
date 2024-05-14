@@ -54,6 +54,7 @@ class SimulationApp:
 
     DEFAULT_LAUNCHER_CONFIG = {
         "headless": True,
+        "hide_ui": None,
         "active_gpu": None,
         "physics_gpu": 0,
         "multi_gpu": True,
@@ -80,7 +81,8 @@ class SimulationApp:
     The config variable is a dictionary containing the following entries
 
     Args:
-        headless (bool): Disable UI when running. Defaults to True
+        headless (bool): Disable window creation and UI when running. Defaults to True
+        hide_ui (bool): Hide UI when running to improve performance, when headless is set to true, the UI is hidden, set to false to override this behavior when live streaming. Defaults to None
         active_gpu (int): Specify the GPU to use when running, set to None to use default value which is usually the first gpu, default is None
         physics_gpu (int): Specify the GPU to use when running physics simulation. Defaults to 0 (first GPU).
         multi_gpu (bool): Set to true to enable Multi GPU support, Defaults to true
@@ -312,6 +314,17 @@ class SimulationApp:
             args.append("--portable")
         if self.config.get("headless") and "--no-window" not in unknown_args:
             args.append("--no-window")
+
+        # if the user forces hideUi via commandline, use that setting
+        if "--/app/window/hideUi" not in unknown_args:
+            # Hide the ui by default if headless
+            # Else: If the user specified a value for hide_ui, override with that value
+            hide_ui = self.config.get("hide_ui")
+            if hide_ui is None:
+                if "--no-window" in args or "--no-window" in unknown_args:
+                    args.append("--/app/window/hideUi=1")
+            else:
+                args.append(f"--/app/window/hideUi={hide_ui}")
 
         # get the effective uid of this process, if its root, then we automatically add the allow root flag
         # if the flag is already in unknown_args, we don't need to add it again.
