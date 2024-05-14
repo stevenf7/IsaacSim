@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.9.0] - 2024-05-13
+### Added
+- hide_ui to Simulation App to force ui visibility
+### Changed
+- when headless is set to true, the UI is hidden for performance, hide_ui can be set to false to re-enable the gui
+
 ## [1.8.1] - 2024-05-01
 ### Fixed
 - update for set_phase api change
