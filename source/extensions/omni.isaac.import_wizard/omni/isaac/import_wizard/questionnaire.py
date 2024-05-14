@@ -314,11 +314,11 @@ class Questionnaire:
 
         # if user saved the pipeline, automatically check the custom file checkbox in the main wizard window
         self._wizard_ext.custom_file_cb.set_value(True)
+        self._wizard_ext._on_use_custom_pipeline(True)
 
-        self.save_popup.on_shutdown()
-        self._qa_window.visible = False
+        self.on_shutdown()
 
-    def _on_cancel_save(self, dialog):
+    def _on_cancel_save(self):
         self.save_pipeline_file = None
         self.save_pipeline_name = None
         self.ovewrite = False
@@ -459,6 +459,7 @@ class SavePipelinePopup(PopupDialog):
         self.custom_file = path + file
         self.user_file_field.set_value(self.custom_file)
         self.folder_picker.hide()
+        self.show()
 
     def _on_overwrite(self, check_state):
         self.overwrite = check_state
