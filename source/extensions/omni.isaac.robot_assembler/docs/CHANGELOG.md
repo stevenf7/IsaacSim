@@ -1,4 +1,11 @@
 # Changelog
+## [1.3.0] - 2024-05-14
+### Fixed
+- Fixed bug where attach frames for a robot can include its fixed joint (which causes a failed assembly)
+    when the Articulation Root is on the fixed joint.
+- Fixed bug where Articulation selection function can be called with an invalid prim path and cause
+    a harmless (but visible) error.
+
 ## [1.2.0] - 2024-04-29
 ### Fixed
 - Fixed bug where robot assembler could not list frames for assets that have Articulation roots on a link in the Articulation.

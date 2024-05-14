@@ -693,6 +693,7 @@ class UIBuilder:
                     sub_path.count("/") == 1
                     and (obj_type == "rigid_body" or obj_type == "xform" or obj_type == "articulation")
                     and not (prim.IsA(UsdGeom.Mesh))
+                    and not (self._robot_assembler.is_root_joint(prim))
                 ):
                     paths.append(sub_path)
         return paths
@@ -718,10 +719,13 @@ class UIBuilder:
             self._articulations[art_ind] = None
 
         else:
-            articulation = Articulation(selection)
-            articulation.initialize()
+            try:
+                articulation = Articulation(selection)
+                articulation.initialize()
 
-            self._articulations[art_ind] = articulation
+                self._articulations[art_ind] = articulation
+            except:
+                self._articulations[art_ind] = None
 
         self._robot_control_frames[art_ind].rebuild()
 
