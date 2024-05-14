@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.12.0] - 2024-05-14
+### Added
+- added getting world poses through fabric selections in XFormPrimView through usd=False argument
+### Changed
+- reset_xform_properties arguments defaults to False instead of True in the prim classes initialization.
+
 ## [3.11.2] - 2024-05-10
 ### Fixed
 - Added deprecation warning for particle cloth

@@ -283,6 +283,7 @@ class CameraView(XFormPrimView):
         self,
         indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
         camera_axes: str = "world",
+        usd: bool = True,
     ) -> Union[
         Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor], Tuple[wp.indexedarray, wp.indexedarray]
     ]:
@@ -293,6 +294,7 @@ class CameraView(XFormPrimView):
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
+            usd (bool, optional): True to query from usd. Otherwise False to query from Fabric data. Defaults to True.
 
         Returns:
             Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor], Tuple[wp.indexedarray, wp.indexedarray]]: first index is positions in the world frame of the prims. shape is (M, 3).
@@ -313,7 +315,7 @@ class CameraView(XFormPrimView):
                 "] only".format(camera_axes)
             )
 
-        translations, orientations = XFormPrimView.get_world_poses(self, indices)
+        translations, orientations = XFormPrimView.get_world_poses(self, indices, usd=usd)
 
         if orientations is not None:
             if camera_axes == "world":
@@ -329,6 +331,7 @@ class CameraView(XFormPrimView):
         orientations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
         indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
         camera_axes: str = "world",
+        usd: bool = True,
     ) -> None:
         """Set the world poses for all cameras, adjusting their positions and orientations based on specified indices and coordinate system.
 
@@ -337,6 +340,7 @@ class CameraView(XFormPrimView):
             orientations (Optional[Union[np.ndarray, torch.Tensor, wp.array]]): New orientations for the cameras.
             indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]]): Specific cameras to update.
             camera_axes (str): The coordinate system to use ('world', 'ros', 'usd').
+            usd (bool, optional): True to query from usd. Otherwise False to query from Fabric data. Defaults to True.
 
         Raises:
             Exception: If the provided camera_axes is not supported.
@@ -358,7 +362,7 @@ class CameraView(XFormPrimView):
             elif camera_axes == "ros":
                 orientations = self._convert_camera_axes(orientations, R_U_TRANSFORM)
 
-        return XFormPrimView.set_world_poses(self, positions, orientations, indices)
+        return XFormPrimView.set_world_poses(self, positions, orientations, indices, usd=usd)
 
     def get_local_poses(
         self,

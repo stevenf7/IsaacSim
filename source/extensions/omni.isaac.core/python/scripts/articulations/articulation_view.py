@@ -1697,6 +1697,7 @@ class ArticulationView(XFormPrimView):
         positions: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
         orientations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
         indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        usd: bool = True,
     ) -> None:
         """Set poses of prims in the view with respect to the world's frame.
 
@@ -1714,6 +1715,7 @@ class ArticulationView(XFormPrimView):
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
+            usd (bool, optional): True to query from usd. Otherwise False to query from Fabric data. Defaults to True.
 
         .. hint::
 
@@ -1752,11 +1754,16 @@ class ArticulationView(XFormPrimView):
             self._physics_view.set_root_transforms(pose, indices)
             return
         else:
-            XFormPrimView.set_world_poses(self, positions=positions, orientations=orientations, indices=indices)
+            XFormPrimView.set_world_poses(
+                self, positions=positions, orientations=orientations, indices=indices, usd=usd
+            )
         return
 
     def get_world_poses(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None, clone: bool = True
+        self,
+        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        clone: bool = True,
+        usd: bool = True,
     ) -> Union[
         Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor], Tuple[wp.indexedarray, wp.indexedarray]
     ]:
@@ -1768,6 +1775,7 @@ class ArticulationView(XFormPrimView):
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            usd (bool, optional): True to query from usd. Otherwise False to query from Fabric data. Defaults to True.
 
         Returns:
             Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor], Tuple[wp.indexedarray, wp.indexedarray]]:
@@ -1815,7 +1823,7 @@ class ArticulationView(XFormPrimView):
             rot = self._backend_utils.xyzw2wxyz(pose[indices, 3:7])
             return pos, rot
         else:
-            pos, rot = XFormPrimView.get_world_poses(self, indices=indices)
+            pos, rot = XFormPrimView.get_world_poses(self, indices=indices, usd=usd)
             ret_pos = self._backend_utils.convert(pos, dtype="float32", device=self._device, indexed=True)
             ret_rot = self._backend_utils.convert(rot, dtype="float32", device=self._device, indexed=True)
             return ret_pos, ret_rot
