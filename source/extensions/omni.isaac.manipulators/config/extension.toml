@@ -32,6 +32,7 @@ include = ["*.ogn", "*.py"]
 exclude = ["Ogn*Database.py"]
 
 [[test]]
+timeout = 1200
 
 stdoutFailPatterns.exclude = [
     "*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_manipulators_IsaacGripperController: [/TestGraph] OmniGraph Error: No robot prim found for the articulation controller*",

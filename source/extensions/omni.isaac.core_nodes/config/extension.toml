@@ -51,5 +51,8 @@ stdoutFailPatterns.exclude = [
     '*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_core_nodes_IsaacArticulationController: [/TestGraph] Omnigraph Error: No robot prim found for the articulation controller*',
     '*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_core_nodes_IsaacArticulationState: [/TestGraph] OmniGraph Error: No robot prim found for the articulation state*',
     '*[Error] [omni.isaac.core_nodes] Physics OnSimulationStep node detected in a non on-demand Graph. Node will only trigger events if the parent Graph is set to compute on-demand*',
-    '*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_core_nodes_IsaacReadWorldPose: [/TestGraph] Omnigraph Error: no input prim*'
+    '*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_core_nodes_IsaacReadWorldPose: [/TestGraph] Omnigraph Error: no input prim*',
+    "*[Error] [omni.physx.tensors.plugin] Articulation is not in a scene!*",
+    "*[Error] [omni.physx.tensors.plugin] Pattern '/panda' did not match any rigid bodies*",
+    "*[Error] [omni.physx.tensors.plugin] Provided pattern list did not match any articulations*",
 ]

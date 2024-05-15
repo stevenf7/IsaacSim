@@ -28,3 +28,8 @@ writeTarget.kit = true
 [[python.module]]
 name = "omni.isaac.ros2_bridge.robot_description"
 
+[[test]]
+stdoutFailPatterns.exclude = [
+    '*[Error] [carb] [Plugin: omni.sensors.nv.lidar.ext.plugin] Dependency: [omni::sensors::lidar::IGenericModelOutputIOFactory v0.1] failed to be resolved.*', # feature not included in Windows
+]
+

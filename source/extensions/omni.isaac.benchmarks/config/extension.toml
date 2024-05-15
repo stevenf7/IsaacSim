@@ -52,4 +52,5 @@ args = ["--no-window", "--allow-root", "--/app/fastShutdown=1", "--vulkan"] # we
 stdoutFailPatterns.exclude = [
     "*NGX EvaluateFeature failed*", # Ada multi gpu doesn't support this yet
     "*Failed to evaluate DLSS feature*", # Ada multi gpu doesn't support this yet
+    '*[Error] [carb] [Plugin: omni.sensors.nv.lidar.ext.plugin] Dependency: [omni::sensors::lidar::IGenericModelOutputIOFactory v0.1] failed to be resolved.*', # feature not included in Windows
 ]

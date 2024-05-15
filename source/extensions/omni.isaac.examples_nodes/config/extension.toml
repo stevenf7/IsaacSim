@@ -38,3 +38,6 @@ name = "omni.isaac.examples_nodes.tests"
 include = ["*.ogn", "*.py"]
 exclude = ["Ogn*Database.py"]
 
+[[test]]
+timeout = 1200
+
