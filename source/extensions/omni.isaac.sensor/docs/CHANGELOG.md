@@ -1,5 +1,9 @@
 # Changelog
 
+## [11.2.5] - 2024-05-14
+### Changed
+- Downgraded IMU and Contact Sensor rigid body errors to warnings.
+
 ## [11.2.4] - 2024-05-08
 ### Fixed
 - OgnROS2PublishLaserScan switches buffer index calculation to use monotonically-increasing integer, fixing
