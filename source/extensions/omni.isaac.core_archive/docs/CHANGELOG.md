@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.2] - 2024-05-14
+### Changed
+- Update gunicorn to 22.0.0
+
 ## [2.2.1] - 2023-07-05
 ### Changed
 - Removed unused omni.kit.pipapi dependency
