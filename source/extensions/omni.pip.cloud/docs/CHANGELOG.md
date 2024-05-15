@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.1] - 2024-05-14
+### Changed
+Update cryptography to 42.0.7
+
 ## [1.1.0] - 2024-04-19
 ### Changed
 - update typing extensions to typing_extensions==4.10.0
