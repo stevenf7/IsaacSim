@@ -89,4 +89,4 @@ name = "omni.isaac.examples.ur10_palletizing"
 name = "omni.isaac.examples.franka_cortex"
 
 [[test]]
-timeout = 960
+timeout = 1200

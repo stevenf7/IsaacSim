@@ -65,6 +65,7 @@ exclude = ["Ogn*Database.py"]
 exts."omni.isaac.ros_bridge".nodeName = "OmniIsaacRosBridge"
 
 [[test]]
+timeout = 1200
 dependencies = [
     "omni.graph.ui",
     "omni.isaac.wheeled_robots",

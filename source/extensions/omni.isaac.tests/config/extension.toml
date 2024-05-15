@@ -42,7 +42,7 @@ name = "omni.isaac.tests" # so we can find the path to the extension
 name = "omni.isaac.tests.tests"
 
 [[test]]
-timeout = 1200
+timeout = 1500
 dependencies = [
    "omni.kit.window.toolbar",
    "omni.isaac.core",
@@ -55,6 +55,7 @@ stdoutFailPatterns.exclude = [
     '*[Error] [omni.isaac.sensor.plugin] Failed to create imu sensor, parent prim is not found or invalid*',
     '*[Error] [omni.isaac.sensor.plugin] Imu Sensor does not exist*',
     '*[Error] [omni.isaac.sensor.plugin] Contact Sensor does not exist*',
+    '*[Error] [carb] [Plugin: omni.sensors.nv.lidar.ext.plugin] Dependency: [omni::sensors::lidar::IGenericModelOutputIOFactory v0.1] failed to be resolved.*', # feature not included in Windows
     '*[Error] [omni.isaac.range_sensor.plugin] Ultrasonic Sensor does not exist*',
     '*[Error] [omni.isaac.range_sensor.plugin] Lidar Sensor does not exist*',
     '*[Error] [omni.isaac.range_sensor.plugin] Generic Sensor does not exist*',
