@@ -268,6 +268,12 @@ class RobotAssembler:
     def __init__(self):
         self._timeline = omni.timeline.get_timeline_interface()
 
+    def is_root_joint(self, prim):
+        return UsdPhysics.Joint(prim) and (
+            len(prim.GetProperty("physics:body0").GetTargets()) == 0
+            or len(prim.GetProperty("physics:body1").GetTargets()) == 0
+        )
+
     def mask_collisions(self, prim_path_a: str, prim_path_b: str) -> Usd.Relationship:
         """Mask collisions between two prims.  All nested prims will also be included.
 
@@ -326,15 +332,7 @@ class RobotAssembler:
         self._move_obj_b_to_local_pos(base_mount_path, attach_path, fixed_joint_offset, fixed_joint_orient)
 
         # Find and Disable Fixed Joints that Tie Object B to the Stage
-        root_joints = [
-            p
-            for p in Usd.PrimRange(get_prim_at_path(attach_path))
-            if UsdPhysics.Joint(p)
-            and (
-                len(p.GetProperty("physics:body0").GetTargets()) == 0
-                or len(p.GetProperty("physics:body1").GetTargets()) == 0
-            )
-        ]
+        root_joints = [p for p in Usd.PrimRange(get_prim_at_path(attach_path)) if self.is_root_joint(p)]
 
         for root_joint in root_joints:
             root_joint.GetProperty("physics:jointEnabled").Set(False)
