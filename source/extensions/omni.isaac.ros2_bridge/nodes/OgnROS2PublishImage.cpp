@@ -195,6 +195,8 @@ public:
                                     dataPtr, db.inputs.width() * sizeof(float), levelArray, 0, 0,
                                     db.inputs.width() * sizeof(float), db.inputs.height(), cudaMemcpyDeviceToHost,
                                     state.mStream));
+                                cudaEventRecord(state.mStop, state.mStream);
+                                cudaEventSynchronize(state.mStop);
                                 CUDA_CHECK(cudaGetLastError());
                             }
                             break;
