@@ -231,8 +231,8 @@ bool ContactSensor::findValidParent()
         // go to parent
         tempPrim = tempPrim.GetParent();
     }
-    CARB_LOG_ERROR("*** error, No valid parent for %s with a rigid body api was found, sensor will not be created",
-                   this->mPrim.GetPath().GetString().c_str());
+    CARB_LOG_WARN("No valid parent for %s with a rigid body api was found, sensor will not be created",
+                  this->mPrim.GetPath().GetString().c_str());
     return false;
 }
 

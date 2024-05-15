@@ -90,7 +90,7 @@ public:
 
             if (!validParentFound)
             {
-                CARB_LOG_ERROR("Failed to create contact sensor, parent prim is not found or invalid");
+                CARB_LOG_WARN("Failed to create contact sensor, parent prim is not found or invalid");
                 return;
             }
         }
@@ -104,7 +104,7 @@ public:
 
             if (!validParentFound)
             {
-                CARB_LOG_ERROR("Failed to create imu sensor, parent prim is not found or invalid");
+                CARB_LOG_WARN("Failed to create imu sensor, parent prim is not found or invalid");
                 return;
             }
         }
