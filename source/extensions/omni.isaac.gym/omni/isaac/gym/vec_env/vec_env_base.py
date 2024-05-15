@@ -52,28 +52,20 @@ class VecEnvBase(gym.Env):
         if launch_simulation_app:
             if experience is None:
                 experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.gym.kit'
-                if headless:
-                    if enable_livestream:
-                        experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.gym.kit'
-                    elif enable_viewport:
-                        experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.gym.kit'
-                    else:
+                if enable_livestream:
+                    experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.gym.livestream.kit'
+                else:
+                    if headless:
                         experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.gym.headless.kit'
+                        if enable_viewport:
+                            experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.gym.kit'
 
+            hide_ui = False
+            if headless and not enable_livestream:
+                hide_ui = True
             self._simulation_app = SimulationApp(
-                {"headless": headless, "physics_gpu": sim_device}, experience=experience
+                {"headless": headless, "physics_gpu": sim_device, "hide_ui": hide_ui}, experience=experience
             )
-
-            if enable_livestream:
-                from omni.isaac.core.utils.extensions import enable_extension
-
-                self._simulation_app.set_setting("/app/livestream/enabled", True)
-                self._simulation_app.set_setting("/app/window/drawMouse", True)
-                self._simulation_app.set_setting("/app/livestream/proto", "ws")
-                self._simulation_app.set_setting("/app/livestream/websocket/framerate_limit", 120)
-                self._simulation_app.set_setting("/ngx/enabled", False)
-                enable_extension("omni.kit.livestream.native")
-                enable_extension("omni.services.streaming.manager")
 
             # handle ctrl+c event
             signal.signal(signal.SIGINT, self.signal_handler)

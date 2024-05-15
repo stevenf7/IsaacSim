@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.11.3] - 2024-05-14
+### Fixed
+- Fix livestream for gym with new app for running with livestream
+
 ## [0.11.2] - 2024-04-24
 ### Fixed
 - Add missing omni.graph.bundle.action dependency to base gym app file
