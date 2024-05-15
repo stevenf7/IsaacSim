@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.24.1] - 2024-05-15
+### Fixed
+- Bug with memcpy when using texture memory
+
 ## [2.24.0] - 2024-05-09
 ### Changed
 - OgnROS2PublishImage does gpu->cpu copy on a separate cuda stream to improve performance
