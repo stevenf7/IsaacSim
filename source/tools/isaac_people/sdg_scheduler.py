@@ -23,7 +23,7 @@ Standalone script to schedule people sdg jobs in a local env.
 
 
 class PeopleSDG:
-    def __init__(self, num_runs, sim_app):
+    def __init__(self, sim_app, num_runs=1):
         self.num_runs = num_runs
         self.config_dict = None
         self._sim_manager = None
@@ -56,6 +56,10 @@ class PeopleSDG:
         data_generation_config["num_lidars"] = self.config_dict["global"]["lidar_num"]
         data_generation_config["num_frames"] = self.config_dict["global"]["simulation_length"] * 30
         data_generation_config["writer_params"] = self.config_dict["replicator"]["parameters"]
+        if "camera_start_index" in self.config_dict["global"]:
+            data_generation_config["camera_start_index"] = self.config_dict["global"]["camera_start_index"]
+        if "lidar_start_index" in self.config_dict["global"]:
+            data_generation_config["lidar_start_index"] = self.config_dict["global"]["lidar_start_index"]
         self._data_generator = DataGeneration(data_generation_config)
 
     def set_simulation_settings(self):
@@ -77,17 +81,7 @@ class PeopleSDG:
         self._settings.set("/persistent/exts/omni.replicator.agent/min_camera_height", 2)
         self._settings.set("/persistent/exts/omni.replicator.agent/max_camera_height", 3)
         self._settings.set("/persistent/exts/omni.replicator.agent/character_focus_height", 0.7)
-        self._settings.set("/persistent/exts/omni.replicator.agent/frame_write_interval", 10)
-
-    def save_commands_to_file(self, file_path, commands):
-        from omni.replicator.agent.core.file_util import TextFileUtil
-
-        command_str = ""
-        for cmd in commands:
-            command_str += cmd
-            command_str += "\n"
-        result = TextFileUtil.write_text_file(file_path, command_str)
-        return result
+        self._settings.set("/persistent/exts/omni.replicator.agent/frame_write_interval", 1)
 
     def generate_data(self, config_file):
         import carb
@@ -114,9 +108,8 @@ class PeopleSDG:
 
         # Create random character actions (when character section exists)
         if "character" in self.config_dict:
-            commands = self._sim_manager.generate_random_commands()
-            # Write commands to file
-            self.save_commands_to_file(self.config_dict["character"]["command_file"], commands)
+            commands_list = self._sim_manager.generate_random_commands()
+            self._sim_manager.save_commands(commands_list)  # Write commands to file
             self._sim_app.update()
 
         # Run data generation
@@ -161,12 +154,13 @@ def enable_extensions():
     enable_extension("omni.anim.retarget.core")
     enable_extension("omni.anim.retarget.ui")
     enable_extension("omni.kit.scripting")
+    enable_extension("omni.extended.materials")
     enable_extension("omni.anim.people")
     enable_extension("omni.replicator.agent.core")
     enable_extension("omni.kit.mesh.raycast")
 
 
-def launch_data_generation(num_runs, config_file):
+def launch_data_generation(config_file, num_runs=1):
 
     # Initalize kit app
     kit = SimulationApp(launch_config=CONFIG)
@@ -185,7 +179,7 @@ def launch_data_generation(num_runs, config_file):
     carb.settings.get_settings().set("/app/player/useFixedTimeStepping", False)
 
     # set config app
-    sdg = PeopleSDG(num_runs, kit)
+    sdg = PeopleSDG(kit, num_runs)
     sdg.generate_data(config_file)
 
 
@@ -202,6 +196,7 @@ def get_args():
         const=1,
         help="Number or run. After each run, the output path index will increase. If not provided, the default run is 1.",
     )
+    parser.add_argument("-o", "--osmo", action="store_true")
     args, _ = parser.parse_known_args()
     return args
 
@@ -210,6 +205,7 @@ def main():
     args = get_args()
     config_path = args.config_file
     num_runs = args.num_runs
+    osmo = args.osmo
     files = []
 
     # Check for config file or folder
@@ -221,19 +217,23 @@ def main():
         print("Invalid config path passed. Path must be a file or a folder containing config files.")
     print("Total SDG jobs - {}".format(len(files)))
 
-    # Launch jobs
-    for run in range(num_runs):
-        for idx, config_file in enumerate(files):
-            print("{} round: Starting SDG job number - {} with config file {}".format(run, idx, config_file))
-            p = Process(
-                target=launch_data_generation,
-                args=(
-                    run,
-                    config_file,
-                ),
-            )
-            p.start()
-            p.join()
+    # In OSMO env, start single sdg task
+    if osmo:
+        launch_data_generation(files[0])
+    # In local env, start sdg tasks as processes.
+    else:
+        for run in range(num_runs):
+            for idx, config_file in enumerate(files):
+                print("{} round: Starting SDG job number - {} with config file {}".format(run, idx, config_file))
+                p = Process(
+                    target=launch_data_generation,
+                    args=(
+                        config_file,
+                        run,
+                    ),
+                )
+                p.start()
+                p.join()
 
 
 if __name__ == "__main__":
