@@ -80,19 +80,19 @@ RUN ln -s exts/omni.isaac.examples/omni/isaac/examples extension_examples
 RUN echo '#! /bin/sh' > runapp.sh && \
     echo '/isaac-sim/license.sh && /isaac-sim/privacy.sh && /isaac-sim/isaac-sim.sh \\' >> runapp.sh && \
     echo '  --/persistent/isaac/asset_root/default="$OMNI_SERVER" \\' >> runapp.sh && \
-    echo '  --merge-config="/isaac-sim/config/open_endpoint.toml" "$@" ' >> runapp.sh && \
+    echo '  --merge-config="/isaac-sim/config/open_endpoint.toml" --allow-root "$@" ' >> runapp.sh && \
     chmod u+x runapp.sh
 
 RUN echo '#! /bin/sh' > runheadless.native.sh && \
     echo '/isaac-sim/license.sh && /isaac-sim/privacy.sh && /isaac-sim/isaac-sim.headless.native.sh \\' >> runheadless.native.sh && \
     echo '  --/persistent/isaac/asset_root/default="$OMNI_SERVER" \\' >> runheadless.native.sh && \
-    echo '  --merge-config="/isaac-sim/config/open_endpoint.toml" "$@" ' >> runheadless.native.sh && \
+    echo '  --merge-config="/isaac-sim/config/open_endpoint.toml" --allow-root "$@" ' >> runheadless.native.sh && \
     chmod u+x runheadless.native.sh
 
 RUN echo '#! /bin/sh' > runheadless.webrtc.sh && \
     echo '/isaac-sim/license.sh && /isaac-sim/privacy.sh && /isaac-sim/isaac-sim.headless.webrtc.sh \\' >> runheadless.webrtc.sh && \
     echo '  --/persistent/isaac/asset_root/default="$OMNI_SERVER" \\' >> runheadless.webrtc.sh && \
-    echo '  --merge-config="/isaac-sim/config/open_endpoint.toml" "$@" ' >> runheadless.webrtc.sh && \
+    echo '  --merge-config="/isaac-sim/config/open_endpoint.toml" --allow-root "$@" ' >> runheadless.webrtc.sh && \
     chmod u+x runheadless.webrtc.sh
 
 # Update .bashrc
