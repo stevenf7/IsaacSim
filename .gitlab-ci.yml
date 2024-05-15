@@ -242,7 +242,7 @@ check-code-format:
 # ==============================================================================================================
 .build-common:
   stage: build
-  timeout: 1.5 hours
+  timeout: 3 hours
   interruptible: true
   extends:
   - .build-artifacts
@@ -328,7 +328,7 @@ build-windows-x86_64-debug:
 # ==============================================================================================================
 .test-common:
   stage: test
-  timeout: 2 hour
+  timeout: 3 hour
   interruptible: true
   extends:
   - .test-artifacts
@@ -737,7 +737,7 @@ test-windows-x86_64-internalnativepython:
   stage: deploy
   extends:
   - .deploy-artifacts
-  timeout: 1 hour
+  timeout: 3 hour
   interruptible: false
   before_script:
   - set -eu
@@ -780,7 +780,7 @@ build-docs:
   extends:
   - .build-common
   - .runner-build-linux-x86_64
-  timeout: 2 hours
+  timeout: 3 hours
   before_script:
   - set -eu
   - yum install -y bsdtar
@@ -1139,7 +1139,7 @@ bump-version:
 
 # ==============================================================================================================
 sign-windows-x86_64-release:
-  timeout: 2 hour
+  timeout: 3 hour
   extends:
   - .build-common
   - .runner-build-windows-x86_64
@@ -1240,7 +1240,6 @@ internal-publish-to-packman:
 
 # ==============================================================================================================
 internal-publish-container:
-  timeout: 2 hour
   extends:
   - .deploy-common
   - .omni_nvks_runner_with_docker
@@ -1275,7 +1274,6 @@ internal-publish-container:
 
 # ==============================================================================================================
 publish-container:
-  timeout: 2 hour
   extends:
   - .deploy-common
   - .omni_nvks_runner_with_docker
