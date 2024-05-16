@@ -1190,12 +1190,20 @@ pyproject.requires-python = "==3.10.*"
 pyproject.authors = [
     { name = "Isaac Sim team" },
 ]
-pyproject.license = { file = "LICENSE.txt" }
+pyproject.license = { text = "NVIDIA Proprietary Software" }
 pyproject.classifiers = [
     "Programming Language :: Python :: 3",
+    "License :: Other/Proprietary License",
 ]
 pyproject.urls = [
     { "Home page" = "https://developer.nvidia.com/isaac-sim" },
     { "Documentation" = "https://docs.omniverse.nvidia.com/isaacsim/latest/index.html" },
     { "Forum" = "https://forums.developer.nvidia.com/c/omniverse/simulation/69" },
 ]
+
+# whl publishing (pypi)
+[[repo_python_package.publish.task]]
+packages_wildcard_path = "${root}/_build/packages/dist/*.whl"
+pypi.repository_url = "https://urm.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi-local"
+pypi.user = "${env:ISAACSIM_ARTIFACTORY_USERNAME}"
+pypi.password = "${env:ISAACSIM_ARTIFACTORY_PASSWORD}"

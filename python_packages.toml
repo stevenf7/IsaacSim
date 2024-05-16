@@ -1,42 +1,457 @@
-[isaacsim-standalone-app]
+[isaacsim]
 # pyproject.toml
-pyproject.version = "4.0.0"
-pyproject.description = "Isaac Sim setup for Standalone Python workflow"
+pyproject.description = "A metapackage that installs the complete version of Isaac Sim"
 pyproject.readme = ""
-pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "standalone"]
+pyproject.keywords = ["nvidia", "omniverse", "isaacsim"]
 pyproject.dependencies = [
-    "isaacsim-kernel>=4.0.0,<5.0.0",
+    # isaacsim packages
+    "isaacsim-app==4.0.0.*",
+    "isaacsim-asset==4.0.0.*",
+    "isaacsim-benchmark==4.0.0.*",
+    "isaacsim-code-editor==4.0.0.*",
+    "isaacsim-core==4.0.0.*",
+    "isaacsim-cortex==4.0.0.*",
+    "isaacsim-example==4.0.0.*",
+    "isaacsim-gui==4.0.0.*",
+    "isaacsim-replicator==4.0.0.*",
+    "isaacsim-rl==4.0.0.*",
+    "isaacsim-robot==4.0.0.*",
+    "isaacsim-robot-motion==4.0.0.*",
+    "isaacsim-robot-setup==4.0.0.*",
+    "isaacsim-ros1==4.0.0.*",
+    "isaacsim-ros2==4.0.0.*",
+    "isaacsim-sensor==4.0.0.*",
+    "isaacsim-storage==4.0.0.*",
+    "isaacsim-template==4.0.0.*",
+    "isaacsim-test==4.0.0.*",
+    "isaacsim-utils==4.0.0.*",
 ]
-# manifest (relative to the build config)
+# inventory (relative to the build config)
 inventory.include = [
+    # license
+    "LICENSE.txt",
+    # apps
+    "apps",
+]
+
+[isaacsim-app]
+# pyproject.toml
+pyproject.description = "Isaac Sim components for application setup"
+pyproject.readme = ""
+pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "app"]
+pyproject.dependencies = [
+    # isaacsim packages
+    "isaacsim-kernel==4.0.0.*",
+    # python packages
+    "pyperclip",
+]
+# inventory (relative to the build config)
+inventory.include = [
+    # license
+    "LICENSE.txt",
+    # extensions
+    "exts/omni.isaac.app.selector",
+    "exts/omni.isaac.app.setup",
+    "exts/omni.isaac.version",
+    "exts/omni.isaac.window.about",
+    # others
+    "VERSION",
+]
+
+[isaacsim-asset]
+# pyproject.toml
+pyproject.description = "Isaac Sim components for asset import, creation and management"
+pyproject.readme = ""
+pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "asset"]
+pyproject.dependencies = [
+    # isaacsim packages
+    "isaacsim-utils==4.0.0.*",
+    "isaacsim-storage==4.0.0.*",
+    # python packages
+    "pillow",
+]
+# inventory (relative to the build config)
+inventory.include = [
+    # license
+    "LICENSE.txt",
+    # extensions
+    "exts/omni.exporter.urdf",
+    "exts/omni.isaac.asset_browser",
+    "exts/omni.isaac.assets_check",
+    "exts/omni.isaac.block_world",
+    "exts/omni.isaac.conveyor.ui",
+    "exts/omni.isaac.conveyor",
+    "exts/omni.isaac.occupancy_map.ui",
+    "exts/omni.isaac.occupancy_map",
+]
+
+[isaacsim-benchmark]
+# pyproject.toml
+pyproject.description = "Isaac Sim components for benchmarking"
+pyproject.readme = ""
+pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "benchmark"]
+pyproject.dependencies = [
+    "isaacsim-robot==4.0.0.*",
+]
+# inventory (relative to the build config)
+inventory.include = [
+    # license
+    "LICENSE.txt",
+    # extensions
+    "exts/omni.isaac.benchmark.services",
+    "exts/omni.isaac.benchmarks",
+]
+
+[isaacsim-code-editor]
+# pyproject.toml
+pyproject.description = "Isaac Sim components for scripting and code edition"
+pyproject.readme = ""
+pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "editor"]
+pyproject.dependencies = [
+    "isaacsim-kernel==4.0.0.*",
+]
+# inventory (relative to the build config)
+inventory.include = [
+    # license
+    "LICENSE.txt",
+    # extensions
+    "exts/omni.isaac.jupyter_notebook",
+    "exts/omni.isaac.repl",
+    "exts/omni.isaac.vscode",
+]
+
+[isaacsim-core]
+# pyproject.toml
+pyproject.description = "Isaac Sim core extensions and APIs"
+pyproject.readme = ""
+pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "core"]
+pyproject.dependencies = [
+    # isaacsim packages
+    "isaacsim-kernel==4.0.0.*",
+    # python packages
+    "numpy",
+    "scipy",
+    "torch>=2.2.0",
+    "psutil",
+]
+# inventory (relative to the build config)
+inventory.include = [
+    # license
+    "LICENSE.txt",
     # apps
     "apps/omni.isaac.sim.python.kit",
     # extensions
+    "exts/omni.isaac.core",
+    "exts/omni.isaac.core_nodes",
+    "exts/omni.isaac.dynamic_control",
     "exts/omni.isaac.kit",
+    "exts/omni.isaac.throttling",
+    "exts/omni.isaac.utils",
+    "exts/omni.isaac.version",
+    "exts/omni.kit.loop-isaac",
+    # others
+    "VERSION",
+]
+
+[isaacsim-cortex]
+# pyproject.toml
+pyproject.description = "Isaac Sim components to enable the Cortex decision framework for intelligent robot behavior"
+pyproject.readme = ""
+pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "cortex"]
+pyproject.dependencies = [
+    "isaacsim-robot==4.0.0.*",
+    "isaacsim-ros1==4.0.0.*",
+]
+# inventory (relative to the build config)
+inventory.include = [
+    # license
+    "LICENSE.txt",
+    # extensions
+    "exts/omni.isaac.cortex.sample_behaviors",
+    "exts/omni.isaac.cortex",
+    "exts/omni.isaac.cortex_sync",
+]
+
+[isaacsim-example]
+# pyproject.toml
+pyproject.description = "Isaac Sim examples"
+pyproject.readme = ""
+pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "example"]
+pyproject.dependencies = [
+    "isaacsim-cortex==4.0.0.*",
+]
+# inventory (relative to the build config)
+inventory.include = [
+    # license
+    "LICENSE.txt",
+    # extensions
+    "exts/omni.isaac.examples",
+    "exts/omni.isaac.examples_nodes",
+    "exts/omni.isaac.ui_template",
+]
+
+[isaacsim-gui]
+# pyproject.toml
+pyproject.description = "Isaac Sim components for the graphical user interface (GUI)"
+pyproject.readme = ""
+pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "gui"]
+pyproject.dependencies = [
+    "isaacsim-core==4.0.0.*",
+]
+# inventory (relative to the build config)
+inventory.include = [
+    # license
+    "LICENSE.txt",
+    # extensions
+    "exts/omni.isaac.menu",
+    "exts/omni.isaac.ui",
+    "exts/omni.kit.property.isaac",
+    "exts/omni.usd.schema.isaac",
+]
+
+[isaacsim-replicator]
+# pyproject.toml
+pyproject.description = "Isaac Sim components to enable the Replicator framework for synthetic data generation pipelines and services"
+pyproject.readme = ""
+pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "replicator"]
+pyproject.dependencies = [
+    # isaacsim packages
+    "isaacsim-core==4.0.0.*",
+    "isaacsim-storage==4.0.0.*",
+    # python packages
+    "pillow",
+]
+# inventory (relative to the build config)
+inventory.include = [
+    # license
+    "LICENSE.txt",
+    # extensions
+    "exts/omni.isaac.scene_blox",
+    "exts/omni.isaac.synthetic_recorder",
+    "exts/omni.replicator.isaac",
+]
+
+[isaacsim-rl]
+# pyproject.toml
+pyproject.description = "Isaac Sim components for reinforcement learning"
+pyproject.readme = ""
+pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "rl"]
+pyproject.dependencies = [
+    # isaacsim packages
+    "isaacsim-robot==4.0.0.*",
+    "isaacsim-benchmark==4.0.0.*",
+    # python packages
+    "gymnasium",
+]
+# inventory (relative to the build config)
+inventory.include = [
+    # license
+    "LICENSE.txt",
+    # extensions
+    "exts/omni.isaac.cloner",
+    "exts/omni.isaac.gym.benchmark",
+    "exts/omni.isaac.gym",
+]
+
+[isaacsim-robot]
+# pyproject.toml
+pyproject.description = "Isaac Sim's robot models and APIs"
+pyproject.readme = ""
+pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "robot"]
+pyproject.dependencies = [
+    # isaacsim packages
+    "isaacsim-sensor==4.0.0.*",
+    "isaacsim-robot-motion==4.0.0.*",
+    # python packages
+    "osqp",
+]
+# inventory (relative to the build config)
+inventory.include = [
+    # license
+    "LICENSE.txt",
+    # extensions
+    "exts/omni.isaac.surface_gripper.ui",
+    "exts/omni.isaac.surface_gripper",
+    "exts/omni.isaac.dofbot",
+    "exts/omni.isaac.franka",
+    "exts/omni.isaac.manipulators.ui",
+    "exts/omni.isaac.manipulators",
+    "exts/omni.isaac.quadruped",
+    "exts/omni.isaac.universal_robots",
+    "exts/omni.isaac.wheeled_robots.ui",
+    "exts/omni.isaac.wheeled_robots",
+]
+
+[isaacsim-robot-motion]
+# pyproject.toml
+pyproject.description = "Isaac Sim components for motion generation pipelines and algorithms"
+pyproject.readme = ""
+pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "robot", "motion"]
+pyproject.dependencies = [
+    "isaacsim-gui==4.0.0.*",
+]
+# inventory (relative to the build config)
+inventory.include = [
+    # license
+    "LICENSE.txt",
+    # extensions
+    "exts/omni.isaac.motion_generation",
+    "exts/omni.isaac.ocs2",
+    "exts/omni.isaac.robot_benchmark",
+    "exts/omni.isaac.benchmark_environments",
+    "exts/omni.isaac.lula",
+    "exts/omni.isaac.lula_test_widget",
+]
+
+[isaacsim-robot-setup]
+# pyproject.toml
+pyproject.description = "Isaac Sim components for robot setup"
+pyproject.readme = ""
+pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "robot", "setup"]
+pyproject.dependencies = [
+    "isaacsim-robot-motion==4.0.0.*",
+]
+# inventory (relative to the build config)
+inventory.include = [
+    # license
+    "LICENSE.txt",
+    # extensions
+    "exts/omni.isaac.articulation_inspector",
+    "exts/omni.isaac.gain_tuner",
+    "exts/omni.isaac.import_wizard",
+    "exts/omni.isaac.physics_inspector",
+    "exts/omni.isaac.robot_assembler",
+    "exts/omni.isaac.robot_description_editor",
+]
+
+[isaacsim-ros1]
+# pyproject.toml
+pyproject.description = "Isaac Sim components for ROS 1 system integration"
+pyproject.readme = ""
+pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "ros", "ros1"]
+pyproject.dependencies = [
+    "isaacsim-sensor==4.0.0.*",
+]
+# inventory (relative to the build config)
+inventory.include = [
+    # license
+    "LICENSE.txt",
+    # extensions
+    "exts/omni.isaac.ros_bridge",
+]
+
+[isaacsim-ros2]
+# pyproject.toml
+pyproject.description = "Isaac Sim components for ROS 2 system integration"
+pyproject.readme = ""
+pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "ros", "ros2"]
+pyproject.dependencies = [
+    "isaacsim-sensor==4.0.0.*",
+]
+# inventory (relative to the build config)
+inventory.include = [
+    # license
+    "LICENSE.txt",
+    # extensions
+    "exts/omni.isaac.ros2_bridge.robot_description",
+    "exts/omni.isaac.ros2_bridge",
+    "exts/omni.isaac.tf_viewer",
+]
+
+[isaacsim-sensor]
+# pyproject.toml
+pyproject.description = "Isaac Sim components to simulate sensors"
+pyproject.readme = ""
+pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "sensor"]
+pyproject.dependencies = [
+    # isaacsim packages
+    "isaacsim-utils==4.0.0.*",
+    "isaacsim-gui==4.0.0.*",
+    "isaacsim-storage==4.0.0.*",
+    # python packages
+    "pillow",
+]
+# inventory (relative to the build config)
+inventory.include = [
+    # license
+    "LICENSE.txt",
+    # extensions
+    "exts/omni.isaac.camera_inspector",
+    "exts/omni.isaac.proximity_sensor",
+    "exts/omni.isaac.range_sensor.examples",
+    "exts/omni.isaac.range_sensor.ui",
+    "exts/omni.isaac.range_sensor",
+    "exts/omni.isaac.sensor",
+    "exts/omni.usd.schema.isaac",
+]
+
+[isaacsim-storage]
+# pyproject.toml
+pyproject.description = "Isaac Sim components for storage system"
+pyproject.readme = ""
+pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "storage"]
+pyproject.dependencies = [
+    "isaacsim-kernel==4.0.0.*",
+]
+# inventory (relative to the build config)
+inventory.include = [
+    # license
+    "LICENSE.txt",
+    # extensions
+    "exts/omni.isaac.nucleus",
     "exts/omni.isaac.version",
     # others
     "VERSION",
 ]
 
-[isaacsim-core]
+[isaacsim-template]
 # pyproject.toml
-pyproject.version = "4.0.0"
-pyproject.description = "Isaac Sim high-level interfaces to PhysX and USD APIs"
+pyproject.description = "Isaac Sim templates"
 pyproject.readme = ""
-pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "core"]
+pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "template"]
 pyproject.dependencies = [
-    "isaacsim-kernel>=4.0.0,<5.0.0",
-    "numpy",
+    "isaacsim-storage==4.0.0.*",
+    "isaacsim-gui==4.0.0.*",
 ]
 # inventory (relative to the build config)
 inventory.include = [
-    # apps
-    "apps/omni.isaac.sim.python.kit",
+    # license
+    "LICENSE.txt",
     # extensions
-    "exts/omni.isaac.core",
-    "exts/omni.isaac.dynamic_control",
-    "exts/omni.isaac.version",
-    "exts/omni.kit.loop-isaac",
-    # others
-    "VERSION",
+    "exts/omni.isaac.extension_templates",
+]
+
+[isaacsim-test]
+# pyproject.toml
+pyproject.description = "Isaac Sim components for testings"
+pyproject.readme = ""
+pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "test"]
+pyproject.dependencies = [
+    "isaacsim-robot==4.0.0.*",
+]
+# inventory (relative to the build config)
+inventory.include = [
+    # license
+    "LICENSE.txt",
+    # extensions
+    "exts/omni.isaac.doctest",
+    "exts/omni.isaac.tests",
+]
+
+[isaacsim-utils]
+# pyproject.toml
+pyproject.description = "Isaac Sim utilities"
+pyproject.readme = ""
+pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "utils"]
+pyproject.dependencies = [
+    "isaacsim-gui==4.0.0.*",
+]
+# inventory (relative to the build config)
+inventory.include = [
+    # license
+    "LICENSE.txt",
+    # extensions
+    "exts/omni.isaac.debug_draw",
+    "exts/omni.isaac.merge_mesh",
+    "exts/omni.isaac.physics_utilities",
 ]
