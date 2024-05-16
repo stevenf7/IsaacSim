@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.6.0"
+version = "1.7.0"
 category = "Simulation"
 title = "Benchmark Services"
 description = "This extension provides benchmarking utilities"
@@ -19,8 +19,10 @@ writeTarget.kit = true
 [dependencies]
 "omni.isaac.core" = {}
 "omni.kit.profiler.window" = {}
-"omni.isaac.core_nodes" = {}
 "omni.isaac.nucleus" = {}
+"omni.hydra.rtx" = {}
+"omni.physx.bundle" = {}
+"omni.graph.action" = {} # prevents import error in omni.physx.bundle
 
 [[python.module]]
 name = "omni.isaac.benchmark.services"
