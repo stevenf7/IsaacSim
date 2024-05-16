@@ -8,6 +8,10 @@
 //
 #pragma once
 
+#ifndef _WIN32
+#    include "isaac_ros_nitros_bridge_interfaces/msg/nitros_bridge_image.h"
+#endif
+
 #include "ackermann_msgs/msg/ackermann_drive_stamped.h"
 #include "builtin_interfaces/msg/time.h"
 #include "geometry_msgs/msg/transform_stamped.h"
@@ -96,6 +100,17 @@ public:
     virtual const void* getTypeSupportHandle();
     virtual void fillHeader(const double timestamp, const std::string& frame_id);
     virtual void generateBuffer(const uint32_t height, const uint32_t width, const std::string& encoding);
+};
+
+class Ros2NitrosBridgeImageMessageHumble : public Ros2NitrosBridgeImageMessage, Ros2BackendHumble
+{
+public:
+    Ros2NitrosBridgeImageMessageHumble();
+    virtual ~Ros2NitrosBridgeImageMessageHumble();
+    virtual const void* getTypeSupportHandle();
+    virtual void fillHeader(const double timestamp, const std::string& frame_id);
+    virtual void generateBuffer(const uint32_t height, const uint32_t width, const std::string& encoding);
+    virtual void setData(const std::vector<int32_t>& imageData);
 };
 
 class Ros2BoundingBox2DMessageHumble : public Ros2BoundingBox2DMessage, Ros2BackendHumble

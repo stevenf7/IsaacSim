@@ -75,6 +75,11 @@ std::shared_ptr<Ros2ImageMessage> Ros2FactoryFoxy::CreateImageMessage()
     return std::make_shared<Ros2ImageMessageFoxy>();
 }
 
+std::shared_ptr<Ros2NitrosBridgeImageMessage> Ros2FactoryFoxy::CreateNitrosBridgeImageMessage()
+{
+    return nullptr;
+}
+
 std::shared_ptr<Ros2BoundingBox2DMessage> Ros2FactoryFoxy::CreateBoundingBox2DMessage()
 {
     return std::make_shared<Ros2BoundingBox2DMessageFoxy>();
