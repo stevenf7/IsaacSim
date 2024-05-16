@@ -110,3 +110,11 @@ entry_point = "${config_root}/tools/isaac/update_extscache.py:setup_repo_tool"
 [find_duplicate_files]
 command = "find_duplicate_files"
 entry_point = "${config_root}/tools/isaac/find_duplicate_files.py:setup_repo_tool"
+
+########################################################################################################################
+# Comment archives extension dependencies in *.kit and config/extension.toml files
+########################################################################################################################
+
+[comment_archive_deps]
+command = "comment_archive_deps"
+entry_point = "${config_root}/tools/isaac/comment_archive_deps.py:setup_repo_tool"
