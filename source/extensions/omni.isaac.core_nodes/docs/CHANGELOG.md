@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.15.4] - 2024-05-16
+### Fixed
+- Fix Isaac Run One Simulation Frame node name
+
 ## [1.15.3] - 2024-05-09
 ### Changed
 - Update source code to run a build clean of warnings
