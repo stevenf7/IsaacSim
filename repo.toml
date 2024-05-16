@@ -1207,3 +1207,14 @@ packages_wildcard_path = "${root}/_build/packages/dist/*.whl"
 pypi.repository_url = "https://urm.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi-local"
 pypi.user = "${env:ISAACSIM_ARTIFACTORY_USERNAME}"
 pypi.password = "${env:ISAACSIM_ARTIFACTORY_PASSWORD}"
+
+# comment archive extension dependencies
+[repo_comment_archive_deps]
+search_folder = "${root}/_build/packages/python"
+archives = [
+    "omni.isaac.core_archive",
+    "omni.isaac.ml_archive",
+    "omni.pip.compute",
+    "omni.pip.cloud",
+    "omni.kit.pip_archive",
+]
