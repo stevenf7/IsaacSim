@@ -21,6 +21,9 @@ def get_last_gpu_time_ms(
     """
     Return the RTX Renderer duration (in milliseconds) as seen in the profiler window.
     """
+    if hydra_engine_stats is None:
+        return 0.0
+
     device_nodes = hydra_engine_stats.get_gpu_profiler_result()
 
     total_time = 0.0
@@ -43,12 +46,17 @@ class IsaacUpdateFrametimeCollector:
     """
 
     def __init__(self, usd_context_name="", hydra_engine="rtx") -> None:
-        self.hydra_engine_stats = HydraEngineStats(usd_context_name, hydra_engine)
+        try:
+            self.hydra_engine_stats = HydraEngineStats(usd_context_name, hydra_engine)
+        except:
+            self.hydra_engine_stats = None
         self.render_frametimes_ms: List[float] = []
         self.gpu_frametimes_ms: List[float] = []
 
         self.__last_frametime_timestamp_ns = 0
         self.__subscription: Optional[carb.events.ISubscription] = None
+
+        self.elapsed_sim_time = 0.0
 
     def __update_event_callback(self, event: carb.events.IEvent):
         timestamp_ns = time.perf_counter_ns()
@@ -59,6 +67,8 @@ class IsaacUpdateFrametimeCollector:
         self.render_frametimes_ms.append(app_update_time_ms)
         self.gpu_frametimes_ms.append(gpu_frametime_ms)
 
+        self.elapsed_sim_time += event.payload["dt"]
+
     def start_collecting(self):
         # reset our tracking variables
         self.render_frametimes_ms: List[float] = []
@@ -68,6 +78,7 @@ class IsaacUpdateFrametimeCollector:
         self.__subscription = (
             omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self.__update_event_callback)
         )
+        self.elapsed_sim_time = 0.0
 
     def stop_collecting(self) -> Tuple[List[float], List[float]]:
         self.__subscription = None

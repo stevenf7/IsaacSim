@@ -1,4 +1,7 @@
 # Changelog
+## [1.7.0] - 2024-05-01
+### Changed
+- Removes dependency on omni.isaac.core_nodes
 
 ## [1.6.0] - 2024-05-01
 ### Added
