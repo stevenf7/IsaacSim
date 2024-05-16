@@ -35,6 +35,7 @@ public:
     virtual std::shared_ptr<Ros2ImuMessage> CreateImuMessage();
     virtual std::shared_ptr<Ros2CameraInfoMessage> CreateCameraInfoMessage();
     virtual std::shared_ptr<Ros2ImageMessage> CreateImageMessage();
+    virtual std::shared_ptr<Ros2NitrosBridgeImageMessage> CreateNitrosBridgeImageMessage();
     virtual std::shared_ptr<Ros2BoundingBox2DMessage> CreateBoundingBox2DMessage();
     virtual std::shared_ptr<Ros2BoundingBox3DMessage> CreateBoundingBox3DMessage();
     virtual std::shared_ptr<Ros2OdomMessage> CreateOdomMessage();

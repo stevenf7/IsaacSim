@@ -18,6 +18,8 @@
 
 #include <rcl/rcl.h>
 #include <sensor_msgs/msg/camera_info.h>
+
+
 // Clock message
 Ros2ClockMessageHumble::Ros2ClockMessageHumble() : Ros2BackendHumble("rosgraph_msgs", "msg", "Clock")
 {
@@ -316,6 +318,99 @@ Ros2ImageMessageHumble::~Ros2ImageMessageHumble()
     img_msg->data.capacity = 0;
     img_msg->data.data = nullptr;
     sensor_msgs__msg__Image__destroy(img_msg);
+}
+
+
+// NitrosBridgeImage message
+Ros2NitrosBridgeImageMessageHumble::Ros2NitrosBridgeImageMessageHumble()
+    : Ros2BackendHumble("isaac_ros_nitros_bridge_interfaces", "msg", "NitrosBridgeImage")
+{
+#ifndef _WIN32
+    msg = create();
+#endif
+}
+
+const void* Ros2NitrosBridgeImageMessageHumble::getTypeSupportHandle()
+{
+    return getTypeSupportHandleDynamic();
+}
+
+void Ros2NitrosBridgeImageMessageHumble::fillHeader(const double timestamp, const std::string& frame_id)
+{
+    if (!msg)
+        return;
+#ifndef _WIN32
+    isaac_ros_nitros_bridge_interfaces__msg__NitrosBridgeImage* img_msg =
+        static_cast<isaac_ros_nitros_bridge_interfaces__msg__NitrosBridgeImage*>(msg);
+    Ros2BackendHumble::set_header(frame_id, static_cast<int64_t>(timestamp * 1e9), img_msg->header);
+#endif
+}
+
+void Ros2NitrosBridgeImageMessageHumble::generateBuffer(const uint32_t height,
+                                                        const uint32_t width,
+                                                        const std::string& encoding)
+{
+    if (!msg)
+        return;
+#ifndef _WIN32
+    isaac_ros_nitros_bridge_interfaces__msg__NitrosBridgeImage* img_msg =
+        static_cast<isaac_ros_nitros_bridge_interfaces__msg__NitrosBridgeImage*>(msg);
+    img_msg->height = height;
+    img_msg->width = width;
+    Ros2BackendHumble::set_string(encoding, img_msg->encoding);
+
+    int channels = 0;
+    int bitDepth = 0;
+    try
+    {
+        channels = sensor_msgs::image_encodings::numChannels(encoding);
+        bitDepth = sensor_msgs::image_encodings::bitDepth(encoding);
+    }
+    catch (std::exception& e)
+    {
+        fprintf(stderr, "[Error] %s\n", e.what());
+        return;
+    }
+    int byteDepth = bitDepth / 8;
+
+    uint32_t step = width * channels * byteDepth;
+    img_msg->step = step;
+    totalBytes = step * height;
+#endif
+}
+
+void Ros2NitrosBridgeImageMessageHumble::setData(const std::vector<int32_t>& data)
+{
+    if (!msg || !data.size())
+        return;
+#ifndef _WIN32
+    mImageData.resize(data.size());
+    std::memcpy(mImageData.data(), data.data(), data.size() * sizeof(int32_t));
+
+    isaac_ros_nitros_bridge_interfaces__msg__NitrosBridgeImage* img_msg =
+        static_cast<isaac_ros_nitros_bridge_interfaces__msg__NitrosBridgeImage*>(msg);
+
+    img_msg->data.size = mImageData.size();
+    img_msg->data.capacity = mImageData.size();
+    img_msg->data.data = &mImageData[0];
+#endif
+}
+
+Ros2NitrosBridgeImageMessageHumble::~Ros2NitrosBridgeImageMessageHumble()
+{
+    if (!msg)
+        return;
+
+#ifndef _WIN32
+    isaac_ros_nitros_bridge_interfaces__msg__NitrosBridgeImage* img_msg =
+        static_cast<isaac_ros_nitros_bridge_interfaces__msg__NitrosBridgeImage*>(msg);
+
+    // Lifetime of memory is not managed by the message as we use a std vector
+    img_msg->data.size = 0;
+    img_msg->data.capacity = 0;
+    img_msg->data.data = nullptr;
+    destroy(static_cast<isaac_ros_nitros_bridge_interfaces__msg__NitrosBridgeImage*>(msg));
+#endif
 }
 
 

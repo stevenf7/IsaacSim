@@ -75,6 +75,15 @@ std::shared_ptr<Ros2ImageMessage> Ros2FactoryHumble::CreateImageMessage()
     return std::make_shared<Ros2ImageMessageHumble>();
 }
 
+std::shared_ptr<Ros2NitrosBridgeImageMessage> Ros2FactoryHumble::CreateNitrosBridgeImageMessage()
+{
+#ifdef _WIN32
+    return nullptr;
+#else
+    return std::make_shared<Ros2NitrosBridgeImageMessageHumble>();
+#endif
+}
+
 std::shared_ptr<Ros2BoundingBox2DMessage> Ros2FactoryHumble::CreateBoundingBox2DMessage()
 {
     return std::make_shared<Ros2BoundingBox2DMessageHumble>();

@@ -316,6 +316,27 @@ protected:
     size_t totalBytes = 0;
 };
 
+class Ros2NitrosBridgeImageMessage : public Ros2Message
+{
+public:
+    virtual void fillHeader(const double timestamp, const std::string& frame_id) = 0;
+    virtual void generateBuffer(const uint32_t height, const uint32_t width, const std::string& encoding) = 0;
+    virtual void setData(const std::vector<int32_t>& data) = 0;
+
+    void* getDataPtr()
+    {
+        return nullptr;
+    }
+    size_t getTotalBytes()
+    {
+        return totalBytes;
+    }
+
+protected:
+    size_t totalBytes = 0;
+    std::vector<int32_t> mImageData;
+};
+
 class Ros2BoundingBox2DMessage : public Ros2Message
 {
 public:
@@ -504,6 +525,8 @@ public:
     virtual std::shared_ptr<Ros2CameraInfoMessage> CreateCameraInfoMessage() = 0;
 
     virtual std::shared_ptr<Ros2ImageMessage> CreateImageMessage() = 0;
+
+    virtual std::shared_ptr<Ros2NitrosBridgeImageMessage> CreateNitrosBridgeImageMessage() = 0;
 
     virtual std::shared_ptr<Ros2BoundingBox2DMessage> CreateBoundingBox2DMessage() = 0;
 

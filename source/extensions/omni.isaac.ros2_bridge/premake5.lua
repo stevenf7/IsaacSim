@@ -103,6 +103,7 @@ project_with_location("omni.isaac.ros2_bridge.humble")
     add_files("iface", "include")
     includedirs {
         "%{root}/source/extensions/omni.isaac.common_includes/include",
+        "%{root}/_build/target-deps/cuda/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/omni_physics/include",
