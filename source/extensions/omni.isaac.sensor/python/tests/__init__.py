@@ -9,6 +9,7 @@
 
 
 from .test_camera_sensor import *
+from .test_camera_view_sensor import *
 from .test_contact_sensor import *
 from .test_contact_sensor_wrapper import *
 from .test_effort_sensor import *

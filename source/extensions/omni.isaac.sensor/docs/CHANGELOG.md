@@ -1,5 +1,15 @@
 # Changelog
 
+## [11.3.0] - 2024-05-15
+### Added
+- Added `get_rgb` and `get_depth` methods to `CameraView` class returning the data reshaped into camera batches
+- Added `get_rgb_tiled` and `get_depth_tiled` methods to `CameraView` class returning the tiled data
+- Added `test_camera_view_sensor.py` with golden images for testing `get_rgb`, `get_depth`, `get_rgb_tiled`, and `get_depth_tiled` methods
+
+### Changed
+- removed replicator step function call inside `camera_view.py`
+- removed deleting stage camera prims in `camera_view.py`
+
 ## [11.2.5] - 2024-05-14
 ### Changed
 - Downgraded IMU and Contact Sensor rigid body errors to warnings.
