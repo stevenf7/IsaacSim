@@ -195,7 +195,12 @@ class Extension(omni.ext.IExt):
         ):
             return True
         elif prim.IsA(UsdGeom.Mesh):
-            return True
+            usdMesh = UsdGeom.Mesh(prim)
+            attr = usdMesh.GetPointsAttr().Get()
+            if attr is None or len(attr) == 0:
+                return False
+            else:
+                return True
         elif include_xform and prim.IsA(UsdGeom.Xformable):
             return True
         return False
