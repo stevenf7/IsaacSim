@@ -3,7 +3,7 @@
         "version": 1,
         "icon": "icons/isaac-sim.svg",
         "description": "Executes an output execution pulse the first time this node is ran",
-        "uiName": "Isaac Run One Simualtion Frame",        
+        "uiName": "Isaac Run One Simulation Frame",
         "categoryDefinitions": "config/CategoryDefinition.json",
         "categories": "isaacCore",        
         "inputs": {
