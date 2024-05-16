@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.2] - 2024-05-15
+### Changed
+Replace pypiwin32==223 with pywin32==306
+
 ## [1.1.1] - 2024-05-14
 ### Changed
 Update cryptography to 42.0.7

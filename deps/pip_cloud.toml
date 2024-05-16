@@ -15,11 +15,25 @@ packages = [
     "msal==1.23.0",                # SWIPAT filed under:
     "msal-extensions==1.0.0",      # SWIPAT filed under:
     "portalocker==2.7.0",          # SWIPAT filed under:
-    "pypiwin32==223"               # SWIPAT filed under:
 ]
 
 target = "../_build/target-deps/pip_cloud_prebundle"
 platforms = ["*-x86_64"]
+download_only = false
+install_dependencies = false
+append_to_install_folder = true
+gather_licenses_path = "../_build/PACKAGE-LICENSES/PIP-prebundled-LICENSES.txt"
+# extra_args = []
+
+
+[[dependency]]
+python = "../_build/target-deps/python"
+packages = [
+    "pywin32==306"               # SWIPAT filed under:
+]
+
+target = "../_build/target-deps/pip_cloud_prebundle"
+platforms = ["windows-x86_64"]
 download_only = false
 install_dependencies = false
 append_to_install_folder = true

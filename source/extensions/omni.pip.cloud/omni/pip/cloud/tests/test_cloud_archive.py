@@ -7,6 +7,8 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import sys
+
 import omni.kit.test
 
 
@@ -16,6 +18,9 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
         # isort: off
         # Must be at the top so that dependencies later on work
         import typing_extensions
+
+        if sys.platform == "win32":
+            import pywintypes
 
         # isort: on
         import azure.core
