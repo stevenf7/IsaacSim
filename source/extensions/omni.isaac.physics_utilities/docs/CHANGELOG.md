@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.4] - 2024-05-15
+### Fixed
+- Issue when applying collisions to prims that have no points
+
 ## [0.1.3] - 2024-02-07
 ### Fixed
 - Slow performance when clearning physics apis on large scenes

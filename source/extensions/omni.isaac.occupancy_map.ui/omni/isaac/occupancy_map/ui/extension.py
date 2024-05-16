@@ -300,6 +300,12 @@ class Extension(omni.ext.IExt):
                     await omni.kit.app.get_app().next_update_async()
                     with Sdf.ChangeBlock():
                         for prim in stage.Traverse():
+                            # Skip meshes with no points
+                            if prim.IsA(UsdGeom.Mesh):
+                                usdMesh = UsdGeom.Mesh(prim)
+                                attr = usdMesh.GetPointsAttr().Get()
+                                if attr is None or len(attr) == 0:
+                                    continue
                             if prim.HasAPI(UsdPhysics.CollisionAPI):
                                 if prim.HasAPI(UsdPhysics.MeshCollisionAPI):
                                     collision_api = UsdPhysics.MeshCollisionAPI(prim)
@@ -311,7 +317,11 @@ class Extension(omni.ext.IExt):
                                         UsdPhysics.CollisionAPI.Apply(prim)
                                         UsdPhysics.MeshCollisionAPI.Apply(prim)
                                     else:
-                                        utils.setCollider(prim, "none")
+                                        # Skip if we have errors here
+                                        try:
+                                            utils.setCollider(prim, "none")
+                                        except Exception as e:
+                                            continue
                             elif prim.IsA(UsdGeom.Xformable) and prim.IsInstanceable():
                                 UsdPhysics.CollisionAPI.Apply(prim)
                                 UsdPhysics.MeshCollisionAPI.Apply(prim)
