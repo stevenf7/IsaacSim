@@ -976,6 +976,13 @@ verify-publish-extensions:
 #    [repo_publish_exts]
 #    platforms = ["linux-x86_64"]
 
+publish-extensions:
+  extends:
+  - .deploy-common
+  - .omni_nvks_runner_with_docker
+  script:
+    ./repo.sh -h
+
 # we split up extension publishing to make sure we don't publish incorrect OS (dll instead of so)
 publish-extensions-linux:
   extends:
