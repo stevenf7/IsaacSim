@@ -997,7 +997,7 @@ publish-extensions:
 publish-extensions-linux:
   extends:
   - .deploy-common
-  - .runner-build-linux-x86_64
+  - .omni_nvks_runner_with_docker
   script:
   - ./repo.sh build --fetch-only -rd
   - ./repo.sh publish_exts -a --from-package -c release
