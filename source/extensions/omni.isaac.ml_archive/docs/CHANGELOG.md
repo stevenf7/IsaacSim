@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.1] - 2024-05-16
+### Fixed
+- Make platform specific
+
 ## [2.0.0] - 2024-04-19
 ### Changed
 - removed omni.pip.torch dependency, torch is now directly part of this archive
