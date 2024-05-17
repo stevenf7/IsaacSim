@@ -118,3 +118,11 @@ entry_point = "${config_root}/tools/isaac/find_duplicate_files.py:setup_repo_too
 [comment_archive_deps]
 command = "comment_archive_deps"
 entry_point = "${config_root}/tools/isaac/comment_archive_deps.py:setup_repo_tool"
+
+########################################################################################################################
+# Unzip (.7z|.zip|.tar) files
+########################################################################################################################
+
+[unzip_file]
+command = "unzip_file"
+entry_point = "${config_root}/tools/isaac/unzip_file.py:setup_repo_tool"

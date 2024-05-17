@@ -93,6 +93,9 @@ variables:
   ALLOW_PUBLISH_TO_LAUNCHER:
     value: "true"
     description: "Set to true to for Kit apps that are published to the Launcher. That adds jobs for that."
+  ALLOW_PUBLISH_PYTHON_PACKAGES:
+    value: "true"
+    description: "Set to true to create and publish python packages."
   ALLOW_PUBLISH_EXTENSIONS:
     value: "true"
     description: "Set to true to publish extension updates."
@@ -1040,6 +1043,54 @@ publish-extensions-windows:
     optional: false
   rules:
   - if: $ALLOW_PUBLISH_EXTENSIONS != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true"
+    when: never
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push-manual, rules]
+
+
+# ==============================================================================================================
+publish-python-packages-linux:
+  extends:
+  - .deploy-common
+  - .runner-build-linux-x86_64
+  script:
+  - ./repo.sh unzip_file --file _build/packages/isaac-sim-standalone*.linux-x86_64.release.7z --dst _build/linux-x86_64/release
+  - ls _build/linux-x86_64/release
+  - ./repo.sh python_package --create
+  - ./repo.sh comment_archive_deps
+  - ./repo.sh python_package --wheel
+  - ls _build/packages/dist
+  - ./repo.sh python_package --publish
+  needs:
+  - job: build-linux-x86_64-release
+    artifacts: true
+  rules:
+  - if: $ALLOW_PUBLISH_PYTHON_PACKAGES != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true"
+    when: never
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push-manual, rules]
+
+publish-python-packages-windows:
+  extends:
+  - .deploy-common
+  - .runner-build-windows-x86_64
+  script:
+  - ./repo.bat unzip_file --file _build/packages/isaac-sim-standalone*.windows-x86_64.release.7z --dst _build/windows-x86_64/release
+  - ls _build/windows-x86_64/release
+  - ./repo.bat python_package --create
+  - ./repo.bat comment_archive_deps
+  - ./repo.bat python_package --wheel
+  - ls _build/packages/dist
+  - ./repo.bat python_package --publish
+  needs:
+  - job: sign-windows-x86_64-release
+    artifacts: true
+  rules:
+  - if: $ALLOW_PUBLISH_PYTHON_PACKAGES != "true"
     when: never
   - if: $RUN_BUMP_VERSION == "true"
     when: never
