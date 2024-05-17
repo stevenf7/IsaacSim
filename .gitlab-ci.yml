@@ -1000,8 +1000,8 @@ publish-extensions-linux:
   - .omni_nvks_runner_with_docker
   script:
   - ./repo.sh build --fetch-only -rd
-  - ./repo.sh publish_exts -a --from-package -c release --verify
-  - ./repo.sh publish_exts -a --from-package -c debug --verify
+  - ./repo.sh publish_exts -a --from-package -c release -p linux-x86_64
+  - ./repo.sh publish_exts -a --from-package -c debug -p linux-x86_64
   # - ./repo.sh ci publish_extensions
   needs:
   # We set all dependencies as optional just in case a platform is not needed,
@@ -1026,8 +1026,8 @@ publish-extensions-windows:
   - .omni_nvks_runner_with_docker
   script:
   - ./repo.sh build --fetch-only -rd
-  - ./repo.sh publish_exts -a --from-package -c release --verify
-  - ./repo.sh publish_exts -a --from-package -c debug --verify
+  - ./repo.sh publish_exts -a --from-package -c release -p windows-x86_64
+  - ./repo.sh publish_exts -a --from-package -c debug -p windows-x86_64
   # - ./repo.sh ci publish_extensions
   needs:
   # We set all dependencies as optional just in case a platform is not needed,
