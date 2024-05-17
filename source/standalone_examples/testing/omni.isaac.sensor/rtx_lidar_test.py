@@ -25,6 +25,8 @@ from pxr import Gf, Sdf, UsdGeom, UsdPhysics
 
 enable_extension("omni.isaac.ros2_bridge")
 
+simulation_app.update()
+
 
 def printinc(i):
     print(f"{i}")

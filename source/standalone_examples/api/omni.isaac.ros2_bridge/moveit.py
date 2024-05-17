@@ -32,6 +32,8 @@ from pxr import Gf
 # enable ROS2 bridge extension
 extensions.enable_extension("omni.isaac.ros2_bridge")
 
+simulation_app.update()
+
 simulation_context = SimulationContext(stage_units_in_meters=1.0)
 
 # Locate Isaac Sim assets folder to load environment and robot stages

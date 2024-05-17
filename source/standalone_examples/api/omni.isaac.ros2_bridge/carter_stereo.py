@@ -28,6 +28,8 @@ from pxr import Sdf
 # enable ROS2 bridge extension
 enable_extension("omni.isaac.ros2_bridge")
 
+simulation_app.update()
+
 # Locate assets root folder to load sample
 assets_root_path = get_assets_root_path()
 if assets_root_path is None:

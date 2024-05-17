@@ -35,6 +35,8 @@ from pxr import Gf
 
 extensions.enable_extension("omni.isaac.ros_bridge")
 
+simulation_app.update()
+
 if args.test:
     from omni.isaac.ros_bridge.scripts.roscore import Roscore
     from omni.isaac.ros_bridge.tests.common import wait_for_rosmaster

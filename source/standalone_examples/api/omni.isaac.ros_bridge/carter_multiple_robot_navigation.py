@@ -42,6 +42,8 @@ from pxr import Sdf
 # enable ROS bridge extension
 enable_extension("omni.isaac.ros_bridge")
 
+simulation_app.update()
+
 # check if rosmaster node is running
 # this is to prevent this sample from waiting indefinetly if roscore is not running
 # can be removed in regular usage

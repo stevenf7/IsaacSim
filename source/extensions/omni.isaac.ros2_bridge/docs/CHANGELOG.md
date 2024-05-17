@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.25.1] - 2024-05-16
+### Changed
+- Fixed Nova Carter multiple robot navigation and Carter Stereo standalone examples from crashing
+
 ## [2.25.0] - 2024-05-16
 ### Added
 - Isaac ROS NITROS Bridge integration for publishing images on Linux
