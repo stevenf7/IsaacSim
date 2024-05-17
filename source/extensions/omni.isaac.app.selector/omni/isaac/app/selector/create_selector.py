@@ -24,6 +24,7 @@ from .settings import (
     ECO_MODE_SETTING,
     EXTRA_ARGS_SETTING,
     PERSISTENT_ROS_BRIDGE_SETTING,
+    PERSISTENT_ROS_INTERNAL_LIBS_SETTING,
     PERSISTENT_SELECTOR_SETTING,
     ROS_BRIDGE_EXTENSIONS,
     SHOW_CONSOLE_SETTING,
@@ -46,6 +47,7 @@ class CreateSelectorExtension(omni.ext.IExt):
         user_show_console = self._settings.get(SHOW_CONSOLE_SETTING)
         user_extra_args = self._settings.get(EXTRA_ARGS_SETTING)
         user_ros_bridge_extension = self._settings.get(PERSISTENT_ROS_BRIDGE_SETTING)
+        user_ros_internal_libs = self._settings.get(PERSISTENT_ROS_INTERNAL_LIBS_SETTING)
         user_eco_mode = self._settings.get(ECO_MODE_SETTING)
 
         app_extra_args = []
@@ -90,6 +92,12 @@ class CreateSelectorExtension(omni.ext.IExt):
             app_extra_args.append(
                 "--/isaac/startup/ros_bridge_extension=" + ROS_BRIDGE_EXTENSIONS[ros_bridge_extension]
             )
+
+        if user_ros_internal_libs is None:
+            user_ros_internal_libs = self._settings.get("ext/omni.isaac.selector/ros_internal_libs")
+            self._settings.set(PERSISTENT_ROS_INTERNAL_LIBS_SETTING, user_ros_internal_libs)
+        if user_ros_internal_libs:
+            self._settings.set(PERSISTENT_ROS_INTERNAL_LIBS_SETTING, user_ros_internal_libs)
 
         if user_eco_mode is None:
             user_eco_mode = self._settings.get("/rtx/ecoMode/enabled")

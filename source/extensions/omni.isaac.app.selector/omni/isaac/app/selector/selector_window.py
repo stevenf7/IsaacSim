@@ -26,6 +26,7 @@ from .settings import (
     EXPERIMENTAL_APPS_SETTING,
     EXTRA_ARGS_SETTING,
     PERSISTENT_ROS_BRIDGE_SETTING,
+    PERSISTENT_ROS_INTERNAL_LIBS_SETTING,
     PERSISTENT_SELECTOR_SETTING,
     ROS_BRIDGE_EXTENSIONS,
     SHOW_CONSOLE_SETTING,
@@ -148,7 +149,6 @@ class SelectorWindow:
                     if os.getenv("ROS_DISTRO") is None:
 
                         self.ros2_error_field.text = "ROS_DISTRO not set. Is ROS2 sourced?"
-                        return
 
                 # Use Internal libs for Humble
                 elif internal_libs_selection == 1:
@@ -178,7 +178,6 @@ class SelectorWindow:
                         self.ros2_error_field.text = (
                             "ROS_DISTRO not set. Is ROS2 sourced or included in your .bashrc file?"
                         )
-                        return
 
                 # Use Internal libs for Humble
                 elif internal_libs_selection == 1:
@@ -212,6 +211,7 @@ class SelectorWindow:
                     ] = f"{'' if os.getenv('LD_LIBRARY_PATH') is None else os.getenv('LD_LIBRARY_PATH')}:{self.package_path}/exts/omni.isaac.ros2_bridge/foxy/lib"
 
         self._settings.set(PERSISTENT_ROS_BRIDGE_SETTING, ros_bridge_selection)
+        self._settings.set(PERSISTENT_ROS_INTERNAL_LIBS_SETTING, internal_libs_selection)
 
     def _start_selected_app(self):
         app_id = self._get_selected_app_id()
@@ -538,7 +538,7 @@ class SelectorWindow:
 
                 if sys.platform == "win32":
                     self._use_internal_libs = ui.ComboBox(
-                        0,
+                        self._settings.get_as_int(PERSISTENT_ROS_INTERNAL_LIBS_SETTING),
                         "",
                         "humble",
                         tooltip=textwrap.fill(
@@ -550,7 +550,7 @@ class SelectorWindow:
                 # Linux
                 else:
                     self._use_internal_libs = ui.ComboBox(
-                        0,
+                        self._settings.get_as_int(PERSISTENT_ROS_INTERNAL_LIBS_SETTING),
                         "",
                         "humble",
                         "foxy",
