@@ -176,15 +176,15 @@ def run_motion_blur_examples():
         # RayTracing examples
         run_motion_blur_example(custom_delta_time=custom_delta_time, use_path_tracing=False)
         # PathTracing examples
-        rt_spps = [32, 128]
+        spps = [32, 128]
         motion_blur_sub_samples = [4, 16]
         for motion_blur_sub_sample in motion_blur_sub_samples:
-            for rt_spp in rt_spps:
+            for spp in spps:
                 run_motion_blur_example(
                     custom_delta_time=custom_delta_time,
                     use_path_tracing=True,
                     pt_subsamples=motion_blur_sub_sample,
-                    pt_spp=rt_spp,
+                    pt_spp=spp,
                 )
 
 
