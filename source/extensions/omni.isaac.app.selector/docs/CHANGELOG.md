@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.7.1] - 2024-05-16
+### Changed
+- Changed ROS2 Internal Libraries app selector setting to be persistent.
+
 ## [2.7.0] - 2024-04-19
 ### Added
 - Added button to clear caches

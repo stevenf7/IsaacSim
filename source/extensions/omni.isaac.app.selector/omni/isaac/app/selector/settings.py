@@ -25,3 +25,5 @@ if platform.system().lower() == "windows":
     ROS_BRIDGE_EXTENSIONS = ["", "omni.isaac.ros2_bridge"]
 else:
     ROS_BRIDGE_EXTENSIONS = ["", "omni.isaac.ros_bridge", "omni.isaac.ros2_bridge"]
+
+PERSISTENT_ROS_INTERNAL_LIBS_SETTING = "/persistent/ext/omni.isaac.selector/ros_internal_libs"
