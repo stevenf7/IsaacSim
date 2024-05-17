@@ -1051,9 +1051,19 @@ publish-extensions-windows:
 
 
 # ==============================================================================================================
+.publish-python-packages-deploy-common:
+  stage: deploy
+  extends:
+  - .deploy-artifacts
+  timeout: 3 hour
+  interruptible: false
+  rules:
+  - if: $RUN_DOCS_BUILD == "true" || RUN_NIGHTLY_TESTS=="true"
+    when: never
+
 publish-python-packages-linux:
   extends:
-  - .deploy-common
+  - .publish-python-packages-deploy-common
   - .runner-build-linux-x86_64
   script:
   - ./repo.sh unzip_file --file _build/packages/isaac-sim-standalone*.linux-x86_64.release.7z --dst _build/linux-x86_64/release
@@ -1076,7 +1086,7 @@ publish-python-packages-linux:
 
 publish-python-packages-windows:
   extends:
-  - .deploy-common
+  - .publish-python-packages-deploy-common
   - .runner-build-windows-x86_64
   script:
   - ./repo.bat unzip_file --file _build/packages/isaac-sim-standalone*.windows-x86_64.release.7z --dst _build/windows-x86_64/release
