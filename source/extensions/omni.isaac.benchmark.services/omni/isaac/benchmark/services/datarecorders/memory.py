@@ -129,8 +129,13 @@ class MemoryRecorder(MeasurementDataRecorder):
             if node["category"] == "Total Physical GPU Memory":
                 tracked_gpu_memory = round(node["size"] / 1024, 3)  # MB to GB
 
-        devices = get_device_info()
-        device = devices[0]
-        dedicated_gpu_memory = round(device["usage"] / 1073741824, 3)  # bytes to GB
+        dedicated_gpu_memory = 0
+        try:
+            devices = get_device_info()
+            if len(devices) > 0:
+                device = devices[0]
+                dedicated_gpu_memory = round(device["usage"] / 1073741824, 3)  # bytes to GB
+        except:
+            pass
 
         return cpu_load, rss, vms, uss, pb, tracked_gpu_memory, dedicated_gpu_memory

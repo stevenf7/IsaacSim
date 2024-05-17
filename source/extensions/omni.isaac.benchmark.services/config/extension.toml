@@ -20,9 +20,6 @@ writeTarget.kit = true
 "omni.isaac.core" = {}
 "omni.kit.profiler.window" = {}
 "omni.isaac.nucleus" = {}
-"omni.hydra.rtx" = {}
-"omni.physx.bundle" = {}
-"omni.graph.action" = {} # prevents import error in omni.physx.bundle
 
 [[python.module]]
 name = "omni.isaac.benchmark.services"
