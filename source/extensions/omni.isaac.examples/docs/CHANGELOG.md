@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.0.0] - 2024-05-16
+### Removed
+- Franka Nut & Bolt Example
+
 ## [1.7.17] - 2024-05-03
 ### Fixed
 - Quadruped exmaple to clear callbacks after it's complete
