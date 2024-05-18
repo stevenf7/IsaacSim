@@ -877,7 +877,7 @@ publish_verification = true
 use_packman_to_upload_archive = true
 
 # When running from package, look for package using that path/pattern:
-archive_pattern = "${root}/_build/packages/isaac-sim*@*${platform_target}.${config}.*"
+archive_pattern = "${root}/_build/packages/isaac-sim-standalone@*${platform_target}.${config}.*"
 
 # ETM (extension test matrix) settings
 enroll_in_etm = false
