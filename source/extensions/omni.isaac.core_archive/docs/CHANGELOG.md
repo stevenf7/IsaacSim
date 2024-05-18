@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.3.0] - 2024-05-16
+### Added
+- pyperclip==1.8.0
+
 ## [2.2.2] - 2024-05-14
 ### Changed
 - Update gunicorn to 22.0.0
