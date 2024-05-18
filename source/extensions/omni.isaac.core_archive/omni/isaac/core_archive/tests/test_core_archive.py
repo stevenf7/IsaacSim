@@ -29,6 +29,7 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
         import pint
         import plotly
         import pyparsing
+        import pyperclip
         import qdldl
         import quaternion
         import selenium
@@ -56,3 +57,4 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(nvsmi)
         self.assertIsNotNone(tornado)
         self.assertIsNotNone(plotly)
+        self.assertIsNotNone(pyperclip)
