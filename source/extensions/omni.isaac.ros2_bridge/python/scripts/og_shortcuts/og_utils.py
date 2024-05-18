@@ -340,7 +340,7 @@ class Ros2JointStatesGraph:
         self._node_namespace = ""
         self._art_root_path = ""
         self._pub_topic = "/joint_states"
-        self._sub_topic = "/cmd"
+        self._sub_topic = "/joint_command"
         self._add_to_existing_graph = False
         self._publisher = False
         self._subscriber = False

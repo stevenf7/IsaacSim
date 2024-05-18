@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.25.2] - 2024-05-17
+### Changed
+- default subscriber topic in ROS2 jointstate omnigraph shortcut uses /joint_command and not /cmd
+
 ## [2.25.1] - 2024-05-16
 ### Changed
 - Fixed Nova Carter multiple robot navigation and Carter Stereo standalone examples from crashing
