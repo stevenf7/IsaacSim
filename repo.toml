@@ -874,10 +874,10 @@ signing.enabled = false
 publish_verification = true
 
 # upload archives using packman (switch to using packman by default to reduce load on nucleus registry)
-use_packman_to_upload_archive = false
+use_packman_to_upload_archive = true
 
 # When running from package, look for package using that path/pattern:
-archive_pattern = "${root}/_build/packages/isaac-sim-*.7z"
+archive_pattern = "${root}/_build/packages/isaac-sim*@*${platform_target}.${config}.*"
 
 # ETM (extension test matrix) settings
 enroll_in_etm = false

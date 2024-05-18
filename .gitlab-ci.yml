@@ -981,64 +981,27 @@ verify-publish-extensions:
 # but this can be changed in repo.toml config if necessary:
 #    [repo_publish_exts]
 #    platforms = ["linux-x86_64"]
-
 publish-extensions:
   extends:
   - .deploy-common
   - .omni_nvks_runner_with_docker
   script:
-    ./repo.sh -h
-  rules:
-  - if: $ALLOW_PUBLISH_EXTENSIONS != "true"
-    when: never
-  - if: $RUN_BUMP_VERSION == "true"
-    when: never
-  - !reference [.rules-version-changed, rules]
-  - !reference [.rules-push-manual, rules]
-
-# we split up extension publishing to make sure we don't publish incorrect OS (dll instead of so)
-publish-extensions-linux:
-  extends:
-  - .deploy-common
-  - .omni_nvks_runner_with_docker
-  script:
   - ./repo.sh build --fetch-only -rd
-  - ./repo.sh publish_exts --from-package -c release -p linux-x86_64
-  - ./repo.sh publish_exts --from-package -c debug -p linux-x86_64
-  # - ./repo.sh ci publish_extensions
-  needs:
-  # We set all dependencies as optional just in case a platform is not needed,
-  # then the yml file can override both build/test on one platform and deploy will still work.
-  - job: build-linux-x86_64-release
-    artifacts: true
-    optional: false
-  - job: build-linux-x86_64-debug
-    artifacts: true
-    optional: false
-  rules:
-  - if: $ALLOW_PUBLISH_EXTENSIONS != "true"
-    when: never
-  - if: $RUN_BUMP_VERSION == "true"
-    when: never
-  - !reference [.rules-version-changed, rules]
-  - !reference [.rules-push-manual, rules]
-
-publish-extensions-windows:
-  extends:
-  - .deploy-common
-  - .omni_nvks_runner_with_docker
-  script:
-  - ./repo.sh build --fetch-only -rd
-  - ./repo.sh publish_exts --from-package -c release -p windows-x86_64
-  - ./repo.sh publish_exts --from-package -c debug -p windows-x86_64
-  # - ./repo.sh ci publish_extensions
+  - ./repo.sh publish_exts -a --from-package -c release
+  - ./repo.sh publish_exts -a --from-package -c debug
   needs:
   # We set all dependencies as optional just in case a platform is not needed,
   # then the yml file can override both build/test on one platform and deploy will still work.
   - job: sign-windows-x86_64-release
     artifacts: true
     optional: false
+  - job: build-linux-x86_64-release
+    artifacts: true
+    optional: false
   - job: build-windows-x86_64-debug
+    artifacts: true
+    optional: false
+  - job: build-linux-x86_64-debug
     artifacts: true
     optional: false
   rules:
