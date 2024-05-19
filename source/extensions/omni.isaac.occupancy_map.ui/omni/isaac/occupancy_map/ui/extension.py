@@ -99,7 +99,7 @@ class Extension(omni.ext.IExt):
 
                     self._models["physx_geom"] = cb_builder(
                         "Use PhysX Collision Geometry",
-                        tooltip="If True, the current collision approximations are used, if False the original USD meshes are used. for PhysX based lidar use True for RTX lidar use False",
+                        tooltip="If True, the current collision approximations are used, if False the original USD meshes are used. for PhysX based lidar use True for RTX lidar use False. Only visible meshes are used",
                         on_clicked_fn=None,
                         default_val=True,
                     )
@@ -300,6 +300,12 @@ class Extension(omni.ext.IExt):
                     await omni.kit.app.get_app().next_update_async()
                     with Sdf.ChangeBlock():
                         for prim in stage.Traverse():
+                            # Skip invisible
+                            imageable = UsdGeom.Imageable(prim)
+                            if imageable:
+                                visibility = imageable.ComputeVisibility(Usd.TimeCode.Default())
+                                if visibility == UsdGeom.Tokens.invisible:
+                                    continue
                             # Skip meshes with no points
                             if prim.IsA(UsdGeom.Mesh):
                                 usdMesh = UsdGeom.Mesh(prim)
