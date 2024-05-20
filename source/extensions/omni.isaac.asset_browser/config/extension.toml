@@ -34,13 +34,13 @@ name = "omni.isaac.asset_browser"
 
 [settings]
 exts."omni.isaac.asset_browser".folders = [
-    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0/Isaac/Robots",
-    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0/Isaac/People",
-    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0/Isaac/Props",
-    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0/Isaac/Environments",
-    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0/Isaac/Materials",
-    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0/Isaac/Samples",
-    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0/Isaac/Sensors",
+    "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0/Isaac/Robots",
+    "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0/Isaac/People",
+    "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0/Isaac/Props",
+    "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0/Isaac/Environments",
+    "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0/Isaac/Materials",
+    "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0/Isaac/Samples",
+    "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0/Isaac/Sensors",
 ]
 exts."omni.isaac.asset_browser".instanceable = []
 exts."omni.isaac.asset_browser".data.timeout = 10
@@ -67,7 +67,7 @@ args = [
     "--/app/window/dpiScaleOverride=1.0",
     "--/app/window/scaleToMonitor=false",
     "--/app/menu/legacy_mode=false",
-    "--/exts/omni.kit.browser.asset/folders/0='http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0/Isaac/Robots'",
+    "--/exts/omni.kit.browser.asset/folders/0='http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0/Isaac/Robots'",
     "--/exts/omni.kit.browser.asset/folders/1=''",
     "--/exts/omni.kit.browser.asset/folders/2=''",
     "--/exts/omni.kit.browser.asset/visible_after_startup=true",
