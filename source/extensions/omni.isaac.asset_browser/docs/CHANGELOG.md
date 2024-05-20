@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.6] - 2024-05-20
+
+### Added
+
+- Add IsaacLab folder
+
 ## [0.4.5] - 2024-04-15
 
 ### Fixed

@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.4.5"
+version = "0.4.6"
 category = "Rendering"
 title = "Isaac Sim Asset Browser"
 description = "A browser for Isaac Sim assets"
@@ -36,6 +36,7 @@ name = "omni.isaac.asset_browser"
 exts."omni.isaac.asset_browser".folders = [
     "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0/Isaac/Robots",
     "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0/Isaac/People",
+    "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0/Isaac/IsaacLab",
     "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0/Isaac/Props",
     "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0/Isaac/Environments",
     "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0/Isaac/Materials",
