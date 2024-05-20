@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.1"
+version = "0.1.2"
 category = "Simulation"
 title = "Isaac Sim Nucleus"
 description = "Nucleus"
@@ -24,8 +24,8 @@ writeTarget.kit = true
 name = "omni.isaac.nucleus"
 
 [settings]
-persistent.isaac.asset_root.default = "omniverse://localhost/NVIDIA/Assets/Isaac/2023.1.1"
+persistent.isaac.asset_root.default = "omniverse://localhost/NVIDIA/Assets/Isaac/4.0"
 persistent.isaac.asset_root.nvidia = "omniverse://localhost/NVIDIA"
-persistent.isaac.asset_root.isaac = "omniverse://localhost/NVIDIA/Assets/Isaac/2023.1.1/Isaac"
-persistent.isaac.asset_root.cloud = "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0"
+persistent.isaac.asset_root.isaac = "omniverse://localhost/NVIDIA/Assets/Isaac/4.0/Isaac"
+persistent.isaac.asset_root.cloud = "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0"
 persistent.isaac.asset_root.timeout = 5.0
