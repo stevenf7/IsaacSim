@@ -42,7 +42,7 @@ echo "Logging in to nvcr.io..."
 docker login nvcr.io
 
 echo "Pulling docker image..."
-docker pull nvcr.io/nvidia/isaac-sim:2023.1.1
+docker pull nvcr.io/nvidia/isaac-sim:4.0.0
 
 echo "Running Isaac Sim container with X11 forwarding..."
 xhost +
@@ -61,7 +61,7 @@ docker run --name isaac-sim --entrypoint bash --gpus all -e "ACCEPT_EULA=${accep
 	-v ~/docker/isaac-sim/config:/root/.nvidia-omniverse/config:rw \
 	-v ~/docker/isaac-sim/data:/root/.local/share/ov/data:rw \
 	-v ~/docker/isaac-sim/documents:/root/Documents:rw \
-	nvcr.io/nvidia/isaac-sim:2023.1.1 \
+	nvcr.io/nvidia/isaac-sim:4.0.0 \
 	-c "${command}"
 
 echo "Isaac Sim container run completed!"
