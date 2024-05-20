@@ -26,10 +26,8 @@ RUN mv /etc/apt/sources.list.canonical /etc/apt/sources.list
 # USER ubuntu
 
 # ISIM-968 - libglib2.0-0
-# ISIM-1059 - rdfind
 RUN apt-get update && \
 	apt-get install -y --no-install-recommends \
-        rdfind \
         libglib2.0-0 \
         && rm -rf /var/lib/apt/lists/*
 
@@ -68,8 +66,8 @@ ENV MIN_DRIVER_VERSION 525.60.11
 # OMNI_ENV_PRIVACY_CONSENT
 # OMNI_ENV_PRIVACY_USERID
 
-# Remove duplicate files and make them symlinks
-RUN rdfind -makesymlinks true /isaac-sim
+# # Remove duplicate files and make them symlinks - ISIM-1059 - rdfind
+# RUN rdfind -makesymlinks true /isaac-sim
 
 WORKDIR /isaac-sim
 
