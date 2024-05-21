@@ -6,28 +6,29 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+import argparse
 import sys
 
-from isaacsim import SimulationApp
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--environment",
+    type=str,
+    choices=["hospital", "office"],
+    default="hospital",
+    help="Choice of navigation environment.",
+)
+args, _ = parser.parse_known_args()
 
 HOSPITAL_USD_PATH = "/Isaac/Samples/ROS/Scenario/multiple_robot_carter_hospital_navigation.usd"
 OFFICE_USD_PATH = "/Isaac/Samples/ROS/Scenario/multiple_robot_carter_office_navigation.usd"
 
-# Default environment: Hospital
-ENV_USD_PATH = HOSPITAL_USD_PATH
+if args.environment == "hospital":
+    ENV_USD_PATH = HOSPITAL_USD_PATH
+elif args.environment == "office":
+    ENV_USD_PATH = OFFICE_USD_PATH
+
 import carb
-
-if len(sys.argv) > 1:
-
-    if sys.argv[1] == "office":
-        # Choosing Office environment
-        ENV_USD_PATH = OFFICE_USD_PATH
-
-    elif sys.argv[1] != "hospital":
-        carb.log_warn("Environment name is invalid. Choosing default Hospital environment.")
-else:
-    carb.log_warn("Environment name not specified. Choosing default Hospital environment.")
-
+from isaacsim import SimulationApp
 
 CONFIG = {"renderer": "RayTracedLighting", "headless": False}
 

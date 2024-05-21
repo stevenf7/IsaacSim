@@ -9,7 +9,16 @@
 
 # This file is meant as a tool for the isaac sim developers to test and debug.
 # It is not meant for users, so use at your own risk.
-import sys
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--geo-type", type=str, choices=["cubes", "sphere"], default="cubes", help="Shape to spawn in scene"
+)
+parser.add_argument("--config", type=str, default="Example", help="Radar config name")
+args, _ = parser.parse_known_args()
+geo_type = args.geo_type
+config = args.config
 
 from isaacsim import SimulationApp
 
@@ -50,33 +59,27 @@ def add_cube(stage, path, scale, offset, physics=False):
 i = printinc(i)  # 2
 simulation_app.update()
 
+if geo_type == "cubes":
+    # add_cube(stage.get_current_stage(), "/World/cxube_x2", (1, 20, 1000), (-5, 0, 500), physics=True)
+    add_cube(stage.get_current_stage(), "/World/cxube_x1", (1, 20, 5), (5, 0, 0), physics=False)
+    add_cube(stage.get_current_stage(), "/World/cxube_x2", (1, 20, 1), (-5, 0, 0), physics=False)
+    add_cube(stage.get_current_stage(), "/World/cxube_x3", (20, 1, 1), (0, 5, 0), physics=False)
+    add_cube(stage.get_current_stage(), "/World/cxube_x4", (20, 1, 1), (0, -5, 0), physics=False)
+    add_cube(stage.get_current_stage(), "/World/cxube_x5", (20, 1, 1), (-5, -5, 0), physics=False)
+    add_cube(
+        stage.get_current_stage(),
+        "/World/cube_5",
+        (0.1764972, 2.0025313, 1.5832705),
+        (-3.0258131660928367, 0, 0),
+        physics=False,
+    )
 
-geo_type = "cubes"
-if len(sys.argv) >= 2:
-    geo_type = sys.argv[1]
-
-if 1:
-    if geo_type == "cubes":
-        # add_cube(stage.get_current_stage(), "/World/cxube_x2", (1, 20, 1000), (-5, 0, 500), physics=True)
-        add_cube(stage.get_current_stage(), "/World/cxube_x1", (1, 20, 5), (5, 0, 0), physics=False)
-        add_cube(stage.get_current_stage(), "/World/cxube_x2", (1, 20, 1), (-5, 0, 0), physics=False)
-        add_cube(stage.get_current_stage(), "/World/cxube_x3", (20, 1, 1), (0, 5, 0), physics=False)
-        add_cube(stage.get_current_stage(), "/World/cxube_x4", (20, 1, 1), (0, -5, 0), physics=False)
-        add_cube(stage.get_current_stage(), "/World/cxube_x5", (20, 1, 1), (-5, -5, 0), physics=False)
-        add_cube(
-            stage.get_current_stage(),
-            "/World/cube_5",
-            (0.1764972, 2.0025313, 1.5832705),
-            (-3.0258131660928367, 0, 0),
-            physics=False,
-        )
-
-    elif geo_type == "sphere":
-        omni.kit.commands.execute(
-            "CreatePrimWithDefaultXform",
-            prim_type="Sphere",
-            attributes={"radius": 5, "extent": [(-5, -5, -5), (5, 5, 5)]},
-        )
+elif geo_type == "sphere":
+    omni.kit.commands.execute(
+        "CreatePrimWithDefaultXform",
+        prim_type="Sphere",
+        attributes={"radius": 5, "extent": [(-5, -5, -5), (5, 5, 5)]},
+    )
 
 omni.kit.commands.execute(
     "CreatePrim", prim_type="DomeLight", attributes={"inputs:intensity": 1000, "inputs:texture:format": "latlong"}
@@ -96,7 +99,7 @@ _, sensor = omni.kit.commands.execute(
     "IsaacSensorCreateRtxRadar",
     path="/sensor",
     parent=None,
-    config="Example",
+    config=config,
     translation=(0, 0, -0.04),
     orientation=Gf.Quatd(1, 0, 0, 0),  # Gf.Quatd is w,i,j,k
 )

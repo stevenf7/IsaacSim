@@ -558,20 +558,16 @@ function group_apps()
         write_version_file(config)
     end
 
-    local extra_args = ""
+    define_local_experience("isaac-sim", "omni.isaac.sim")
+    define_local_experience("isaac-sim.gym", "omni.isaac.sim.gym")
+    define_local_experience("isaac-sim.fabric", "omni.isaac.sim.fabric")
+    define_local_experience("isaac-sim.selector", "omni.isaac.sim.selector")
+    define_local_experience("isaac-sim.headless.native", "omni.isaac.sim.headless.native", "--no-window ")
+    define_local_experience("isaac-sim.headless.webrtc", "omni.isaac.sim.headless.webrtc", "--no-window ")
+    -- Windows Only
     if os.target() == "windows" then
-        -- explicitly enable Vulkan for Windows apps
-        extra_args = "--vulkan"
-        -- Windows-only app
-        define_local_experience("isaac-sim.xr.steamvr", "omni.isaac.sim.xr.steamvr", extra_args)
+        define_local_experience("isaac-sim.xr.steamvr", "omni.isaac.sim.xr.steamvr")
     end
-    define_local_experience("isaac-sim", "omni.isaac.sim", extra_args)
-    define_local_experience("isaac-sim.gym", "omni.isaac.sim.gym", extra_args)
-    define_local_experience("isaac-sim.fabric", "omni.isaac.sim.fabric", extra_args)
-    define_local_experience("isaac-sim.selector", "omni.isaac.sim.selector", extra_args)
-    extra_args = extra_args .. " --no-window"
-    define_local_experience("isaac-sim.headless.native", "omni.isaac.sim.headless.native", extra_args)
-    define_local_experience("isaac-sim.headless.webrtc", "omni.isaac.sim.headless.webrtc", extra_args)
 end
 
 nvccPath = path.getabsolute("_build/target-deps/cuda/bin/nvcc");

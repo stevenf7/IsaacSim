@@ -301,6 +301,6 @@ if __name__ == "__main__":
         help="Index of trial on which to start.  Starting on trial 3 with --num_trials = 5 would result in trials 3 and 4 being run.",
     )
 
-    args = parser.parse_args()
+    args = parser.parse_known_args()
 
     main(args)
