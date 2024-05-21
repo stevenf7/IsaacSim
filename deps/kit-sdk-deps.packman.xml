@@ -24,13 +24,13 @@
   </import>
 
   <!-- Import Physics plugins deps -->
-  <import path="../_build/target-deps/omni_physics/deps/target-deps.packman.xml">
+  <import path="../_build/target-deps/omni_physics/${config}/deps/target-deps.packman.xml">
     <filter include="pxshared" />
     <filter include="physx" />
     <filter include="vhacd" />
   </import>
 
-  <import path="../_build/target-deps/omni_physics/deps/schema-deps.packman.xml">
+  <import path="../_build/target-deps/omni_physics/${config}/deps/schema-deps.packman.xml">
     <filter include="usd_ext_physics_${config}" />
   </import>
 

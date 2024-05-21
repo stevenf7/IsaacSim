@@ -28,7 +28,7 @@ project_ext_plugin(ext, "omni.isaac.wheeled_robots.plugin")
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/python/include/python3.10",
         "%{root}/_build/target-deps/rtx_plugins/include",
-        "%{root}/_build/target-deps/omni_physics/include",
+        "%{root}/_build/target-deps/omni_physics/%{config}/include",
         "%{root}/source/extensions/omni.isaac.wheeled_robots/include",
     }
 

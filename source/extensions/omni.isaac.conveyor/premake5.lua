@@ -19,7 +19,7 @@ project_ext_plugin(ext, "omni.isaac.conveyor.plugin")
         target_deps.."/nv_usd/%{cfg.buildcfg}/include",
         target_deps.."/nv_usd/%{cfg.buildcfg}/include/boost",
         target_deps.."/usd_ext_physics/%{cfg.buildcfg}/include",
-        target_deps.."/omni_physics/include",
+        target_deps.."/omni_physics/%{config}/include",
         target_deps.."/omni_client_library/include"
     }
     libdirs {

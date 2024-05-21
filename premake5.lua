@@ -137,7 +137,7 @@ function setup_common_folder_links()
             { "source/python_packages", "_build/%{platform}/%{config}/python_packages" },
             { "source/standalone_examples", "_build/%{platform}/%{config}/standalone_examples" },
             { "source/tools", "_build/%{platform}/%{config}/tools"},
-            { "_build/target-deps/omni_physics/_build/%{platform}/%{config}/extsPhysics", "_build/%{platform}/%{config}/extsPhysics"},
+            { "_build/target-deps/omni_physics/%{config}/_build/%{platform}/%{config}/extsPhysics", "_build/%{platform}/%{config}/extsPhysics"},
         }
 
         if os.target() == "linux" then

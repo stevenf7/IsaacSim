@@ -15,7 +15,7 @@ project_with_location("omni.isaac.debug_draw.primitive_drawing")
         "%{root}/source/extensions/omni.isaac.common_includes/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
-        "%{root}/_build/target-deps/omni_physics/include",
+        "%{root}/_build/target-deps/omni_physics/%{config}/include",
         "%{root}/source/extensions/omni.isaac.debug_draw/include",
     }
     libdirs {
