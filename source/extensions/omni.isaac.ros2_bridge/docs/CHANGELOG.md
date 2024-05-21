@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.26.0] - 2024-05-20
+### Changed
+- Foxy support is deprecated
+
 ## [2.25.3] - 2024-05-20
 ### Added
 - RTX camera and lidar omnigraph shortcuts uses RunOneSimulationFrame

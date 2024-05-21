@@ -187,7 +187,10 @@ CARB_EXPORT void carbOnPluginStartup()
         lib_list.insert(lib_list.begin() + 8, std::string("rcl_logging_interface"));
         lib_list.insert(lib_list.end(), std::string("rcl_lifecycle"));
     }
-
+    if (strcmp(rosDistro, "foxy") == 0)
+    {
+        CARB_LOG_WARN("Support for ROS 2 Foxy is deprecated and will be removed in a future release");
+    }
     // attempt to load a ros library
     // if it fails, force load internal distro
     if (rosDistro && strcmp(rosDistro, "foxy") != 0 && strcmp(rosDistro, "humble") != 0)
