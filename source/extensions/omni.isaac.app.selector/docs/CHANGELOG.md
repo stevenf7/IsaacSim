@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.8.0] - 2024-05-20
+### Changed
+- ROS1 bridge and ROS2 foxy are marked as deprecated
+
 ## [2.7.1] - 2024-05-16
 ### Changed
 - Changed ROS2 Internal Libraries app selector setting to be persistent.
