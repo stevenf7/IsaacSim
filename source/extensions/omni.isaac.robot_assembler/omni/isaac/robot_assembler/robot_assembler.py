@@ -14,10 +14,16 @@ import omni.kit.commands
 import omni.timeline
 from omni.isaac.core.prims import XFormPrim
 from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
-from omni.isaac.core.utils.prims import delete_prim, get_prim_at_path, get_prim_object_type, is_prim_path_valid
+from omni.isaac.core.utils.prims import (
+    delete_prim,
+    get_articulation_root_api_prim_path,
+    get_prim_at_path,
+    get_prim_object_type,
+    is_prim_path_valid,
+)
 from omni.isaac.core.utils.stage import get_current_stage
 from omni.isaac.core.utils.string import find_unique_string_name
-from pxr import Gf, Sdf, Usd, UsdPhysics
+from pxr import Gf, PhysxSchema, Sdf, Usd, UsdPhysics
 
 
 class AssembledBodies:
@@ -27,6 +33,7 @@ class AssembledBodies:
         attach_path: str,
         fixed_joint: UsdPhysics.FixedJoint,
         root_joints: List[UsdPhysics.Joint],
+        attach_body_articulation_root: Usd.Prim,
         collision_mask=None,
     ):
         self._base_path = base_path
@@ -37,6 +44,7 @@ class AssembledBodies:
 
         self._is_assembled = True
         self._collision_mask = collision_mask
+        self._articulation_root = attach_body_articulation_root
 
     @property
     def base_path(self) -> str:
@@ -98,6 +106,8 @@ class AssembledBodies:
             carb.log_warn("Cannot disassemble a robot that has already been disassembled")
             return
 
+        RobotAssembler.move_articulation_root(get_prim_at_path(self._attach_path), self._articulation_root)
+
         # Reactivate the root joints tying attach robot to stage
         for root_joint in self.root_joints:
             root_joint.GetProperty("physics:jointEnabled").Set(True)
@@ -144,6 +154,15 @@ class AssembledBodies:
         fixed_joint = self.fixed_joint
         fixed_joint.GetLocalPos0Attr().Set(Gf.Vec3f(*translation.astype(float)))
         fixed_joint.GetLocalRot0Attr().Set(Gf.Quatf(*orientation.astype(float)))
+
+        # Do the physics solvers work for it so it can't mess up and
+        # explode.
+
+        fixed_joint_prim = fixed_joint.GetPrim()
+        body0 = str(fixed_joint_prim.GetProperty("physics:body0").GetTargets()[0])
+        body1 = str(fixed_joint_prim.GetProperty("physics:body1").GetTargets()[0])
+
+        RobotAssembler._move_obj_b_to_local_pos(body0, self.attach_path, body1, translation, orientation)
 
         self._refresh_asset(self._attach_path)
         self._refresh_asset(self._base_path)
@@ -268,11 +287,34 @@ class RobotAssembler:
     def __init__(self):
         self._timeline = omni.timeline.get_timeline_interface()
 
+    @staticmethod
+    def move_articulation_root(src_prim, tgt_prim):
+        """
+        Move the articulation root from src to tgt
+        """
+        if src_prim.HasAPI(UsdPhysics.ArticulationRootAPI):
+            src_prim.RemoveAPI(UsdPhysics.ArticulationRootAPI)
+            if src_prim.HasAPI(PhysxSchema.PhysxArticulationAPI):
+                src_prim.RemoveAPI(PhysxSchema.PhysxArticulationAPI)
+
+            tgt_prim.ApplyAPI(UsdPhysics.ArticulationRootAPI)
+            tgt_prim.ApplyAPI(PhysxSchema.PhysxArticulationAPI)
+
     def is_root_joint(self, prim):
         return UsdPhysics.Joint(prim) and (
             len(prim.GetProperty("physics:body0").GetTargets()) == 0
             or len(prim.GetProperty("physics:body1").GetTargets()) == 0
         )
+
+    def _set_joint_states_to_zero(self, prim_path):
+        p = get_prim_at_path(prim_path)
+        for prim in Usd.PrimRange(p):
+            if not UsdPhysics.Joint(prim):
+                continue
+            if prim.HasProperty("state:angular:physics:position"):
+                prim.GetProperty("state:angular:physics:position").Set(0.0)
+            if prim.HasProperty("state:angular:physics:velocity"):
+                prim.GetProperty("state:angular:physics:velocity").Set(0.0)
 
     def mask_collisions(self, prim_path_a: str, prim_path_b: str) -> Usd.Relationship:
         """Mask collisions between two prims.  All nested prims will also be included.
@@ -317,27 +359,35 @@ class RobotAssembler:
         # Make mount_frames if they are not specified
         if base_mount_frame == "":
             base_mount_path = base_path + "/assembler_mount_frame"
-            find_unique_string_name(base_mount_path, lambda x: not is_prim_path_valid(x))
+            base_mount_path = find_unique_string_name(base_mount_path, lambda x: not is_prim_path_valid(x))
             XFormPrim(base_mount_path, translation=np.array([0, 0, 0]))
         else:
             base_mount_path = base_path + base_mount_frame
 
         if attach_mount_frame == "":
             attach_mount_path = attach_path + "/assembler_mount_frame"
-            find_unique_string_name(attach_mount_path, lambda x: not is_prim_path_valid(x))
+            attach_mount_path = find_unique_string_name(attach_mount_path, lambda x: not is_prim_path_valid(x))
             XFormPrim(attach_mount_path, translation=np.array([0, 0, 0]))
         else:
             attach_mount_path = attach_path + attach_mount_frame
 
-        self._move_obj_b_to_local_pos(base_mount_path, attach_path, fixed_joint_offset, fixed_joint_orient)
+        articulation_root = get_prim_at_path(get_articulation_root_api_prim_path(attach_path))
+
+        attach_prim = get_prim_at_path(attach_path)
+        self._move_obj_b_to_local_pos(
+            base_mount_path, attach_path, attach_mount_path, fixed_joint_offset, fixed_joint_orient
+        )
+
+        # Move the Articulation root to the attach path to avoid edge cases with physics parsing.
+        if articulation_root.HasAPI(UsdPhysics.ArticulationRootAPI):
+            self.move_articulation_root(articulation_root, attach_prim)
 
         # Find and Disable Fixed Joints that Tie Object B to the Stage
-        root_joints = [p for p in Usd.PrimRange(get_prim_at_path(attach_path)) if self.is_root_joint(p)]
+        root_joints = [p for p in Usd.PrimRange(attach_prim) if self.is_root_joint(p)]
 
         for root_joint in root_joints:
             root_joint.GetProperty("physics:jointEnabled").Set(False)
 
-        attach_prim = get_prim_at_path(attach_path)
         if attach_prim.HasAttribute("physics:kinematicEnabled"):
             attach_prim.GetAttribute("physics:kinematicEnabled").Set(False)
 
@@ -346,17 +396,24 @@ class RobotAssembler:
             attach_mount_path, base_mount_path, attach_mount_path, fixed_joint_offset, fixed_joint_orient
         )
 
-        # Disable Articulation Root on Articulation B so that A is always the prim path for the composed robot
+        # Make sure that Articulation B is not parsed as a part of Articulation A.
         fixed_joint.GetExcludeFromArticulationAttr().Set(True)
 
         collision_mask = None
         if mask_all_collisions:
-            collision_mask = self.mask_collisions(base_path, attach_path)
+            base_path_art_root = get_articulation_root_api_prim_path(base_path)
+            collision_mask = self.mask_collisions(base_path_art_root, attach_path)
+
+        # Strange values can be written into the JointStateAPIs when nesting robots through the UI
+        # in the assemble phase.  These values are supposed to be zero.
+        # This can cause physics constraint violations and explosions.
+        self._set_joint_states_to_zero(base_path)
+        self._set_joint_states_to_zero(attach_path)
 
         self._refresh_asset(base_path)
         self._refresh_asset(attach_path)
 
-        return AssembledBodies(base_path, attach_path, fixed_joint, root_joints, collision_mask)
+        return AssembledBodies(base_path, attach_path, fixed_joint, root_joints, articulation_root, collision_mask)
 
     def assemble_articulations(
         self,
@@ -490,14 +547,36 @@ class RobotAssembler:
             )
             omni.kit.commands.execute("AddReference", stage=stage, prim_path=Sdf.Path(prim_path), reference=reference)
 
-    def _move_obj_b_to_local_pos(self, base_mount_path, attach_path, rel_offset, rel_orient):
+    @staticmethod
+    def _move_obj_b_to_local_pos(base_mount_path, attach_path, attach_mount_path, rel_offset, rel_orient):
+        # Get the position of base_mount_path as `a`
         a_trans, a_orient = XFormPrim(base_mount_path).get_world_pose()
 
         a_rot = quats_to_rot_matrices(a_orient)
         rel_rot = quats_to_rot_matrices(rel_orient)
 
-        b_translation = a_rot @ rel_offset + a_trans
-        b_rot = a_rot @ rel_rot
+        # Get the desired position of attach_mount_path as `c`
+        c_trans = a_rot @ rel_offset + a_trans
+        c_rot = a_rot @ rel_rot
+        c_quat = rot_matrices_to_quats(c_rot)
+
+        # The attach_mount_path local xform is a free variable, and setting its world pose doesn't
+        # change the world pose of every part of the Articulation.
+
+        # We need to set the position of attach_path such that attach_mount_path ends up in the
+        # desired location.  Let the attach path location be `b`.
+
+        # t_bc denotes the translation that brings b to c
+        # r_bc rotates from b to c
+
+        t_bc, q_bc = XFormPrim(attach_mount_path).get_local_pose()
+        r_bc = quats_to_rot_matrices(q_bc)
+
+        b_rot = c_rot @ r_bc.T
+        b_trans = c_trans - b_rot @ t_bc
         b_orient = rot_matrices_to_quats(b_rot)
 
-        XFormPrim(attach_path).set_world_pose(b_translation, b_orient)
+        XFormPrim(attach_path).set_world_pose(b_trans, b_orient)
+
+        # These should be roughly equal
+        # print(c_trans,c_quat, XFormPrim(attach_mount_path).get_world_pose())

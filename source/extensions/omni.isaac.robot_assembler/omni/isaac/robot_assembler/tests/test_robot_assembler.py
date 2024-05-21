@@ -16,6 +16,7 @@ import numpy as np
 import omni.kit.test
 from omni.isaac.core.articulations import Articulation
 from omni.isaac.core.prims.xform_prim import XFormPrim
+from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.stage import (
     add_reference_to_stage,
     create_new_stage_async,
@@ -26,7 +27,7 @@ from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.world import World
 from omni.isaac.nucleus import get_assets_root_path_async
 from omni.isaac.robot_assembler import AssembledRobot, RobotAssembler
-from pxr import Sdf, UsdLux
+from pxr import PhysxSchema, Sdf, UsdLux, UsdPhysics
 
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will
@@ -142,9 +143,13 @@ class TestRobotAssembler(omni.kit.test.AsyncTestCase):
 
         offset = np.array([1, -0.5, 1])
         base_prim_xform.set_world_pose(base_position + offset)
-        await update_stage_async()
+        for i in range(10):
+            await update_stage_async()
 
-        self.assertTrue(np.allclose(attach_prim_xform.get_world_pose()[0], attach_position, atol=0.001))
+        self.assertTrue(
+            np.allclose(attach_prim_xform.get_world_pose()[0], attach_position, atol=0.001),
+            f"{attach_prim_xform.get_world_pose()[0]} {attach_position}",
+        )
 
         base_prim_xform.set_world_pose(base_position)
         await update_stage_async()
@@ -153,7 +158,31 @@ class TestRobotAssembler(omni.kit.test.AsyncTestCase):
         for i in range(n):
             await update_stage_async()
 
-    async def testRobotToRobotAssemble(self):
+    async def testRobotToRobotAssembleTopLevelRoots(self):
+        await self._testRobotToRobotAssemble("/World/ur10e", "/World/allegro_hand")
+
+    async def testRobotToRobotAssembleTopLevelToRootJoint(self):
+        await self._testRobotToRobotAssemble("/World/ur10e", "/World/allegro_hand/root_joint")
+
+    async def testRobotToRobotAssembleRootJointToTopLevel(self):
+        await self._testRobotToRobotAssemble("/World/ur10e/root_joint", "/World/allegro_hand")
+
+    async def testRobotToRobotAssembleRootJointToRootJoint(self):
+        await self._testRobotToRobotAssemble("/World/ur10e/root_joint", "/World/allegro_hand/root_joint")
+
+    async def testRobotToRobotAssembleTopLevelToBaseLink(self):
+        # This will fail disassemble because the allegro root joint disagrees with its
+        # final position and there is a resulting physics constraint violation.  The test is hard-coded
+        # to skip the disassembly.
+        await self._testRobotToRobotAssemble("/World/ur10e", "/World/allegro_hand/allegro_mount")
+
+    async def testRobotToRobotAssembleRootJointToBaseLink(self):
+        # This will fail disassemble because the allegro root joint disagrees with its
+        # final position and there is a resulting physics constraint violation.  The test is hard-coded
+        # to skip the disassembly.
+        await self._testRobotToRobotAssemble("/World/ur10e/root_joint", "/World/allegro_hand/allegro_mount")
+
+    async def _testRobotToRobotAssemble(self, base_art_root, attach_art_root):
         assets_root_path = await get_assets_root_path_async()
 
         add_reference_to_stage(assets_root_path + "/Isaac/Robots/AllegroHand/allegro_hand.usd", "/World/allegro_hand")
@@ -162,9 +191,16 @@ class TestRobotAssembler(omni.kit.test.AsyncTestCase):
         add_reference_to_stage(assets_root_path + "/Isaac/Robots/UniversalRobots/ur10e/ur10e.usd", "/World/ur10e")
         XFormPrim("/World/ur10e").set_world_pose(np.array([-1.0, 0.0, 0.0]))
 
+        # Move the Articulation root to different places in order to test that each location is handled correctly
+        RobotAssembler.move_articulation_root(get_prim_at_path("/World/ur10e"), get_prim_at_path(base_art_root))
+        RobotAssembler.move_articulation_root(
+            get_prim_at_path("/World/allegro_hand"), get_prim_at_path(attach_art_root)
+        )
+
+        await update_stage_async()
         await update_stage_async()
 
-        for single_robot in [True, False]:
+        for single_robot in [False, True]:
             base_robot_path = "/World/ur10e"
             attach_robot_path = "/World/allegro_hand"
             base_robot_mount_frame = "/tool0"
@@ -223,8 +259,27 @@ class TestRobotAssembler(omni.kit.test.AsyncTestCase):
             attach_robot_mount_path = attach_robot_path + attach_robot_mount_frame
 
             await self._assert_assembled(base_robot_path, attach_robot_mount_path)
+
+            if attach_art_root == "/World/allegro_hand/allegro_mount":
+                # The allegro will explode after disassembling because of a fixed joint constraint violation.
+                # There is nothing within the scope of the robot assembler to fix.
+                continue
+
             assembled_robot.disassemble()
             await self._assert_not_assembled(base_robot_path, attach_robot_mount_path)
+
+            await update_stage_async()
+
+            # Make sure that the Articulation Root APIs were put back on disassemble()
+            base_art_prim = get_prim_at_path(base_art_root)
+            self.assertTrue(base_art_prim.HasAPI(UsdPhysics.ArticulationRootAPI))
+            self.assertTrue(base_art_prim.HasAPI(PhysxSchema.PhysxArticulationAPI))
+            self.assertTrue(base_art_prim.GetProperty("physxArticulation:articulationEnabled").IsValid())
+
+            attach_art_prim = get_prim_at_path(attach_art_root)
+            self.assertTrue(attach_art_prim.HasAPI(UsdPhysics.ArticulationRootAPI))
+            self.assertTrue(attach_art_prim.HasAPI(PhysxSchema.PhysxArticulationAPI))
+            self.assertTrue(attach_art_prim.GetProperty("physxArticulation:articulationEnabled").IsValid())
 
     async def testRobotToRigidBodyAssemble(self):
         assets_root_path = await get_assets_root_path_async()
