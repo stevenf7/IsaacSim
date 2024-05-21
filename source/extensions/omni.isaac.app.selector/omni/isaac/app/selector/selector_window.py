@@ -517,11 +517,23 @@ class SelectorWindow:
                 ui.Label("ROS Bridge Extension", width=100, style={"font_size": 18, "color": 0xFFBBBBBB})
 
                 ui.Spacer(width=10)
-                self._ros_bridge_selection = ui.ComboBox(
-                    self._settings.get_as_int(PERSISTENT_ROS_BRIDGE_SETTING),
-                    *ROS_BRIDGE_EXTENSIONS,
-                    tooltip=textwrap.fill("ROS Bridge to enable on startup", 80),
-                ).model
+
+                if sys.platform == "win32":
+                    self._ros_bridge_selection = ui.ComboBox(
+                        self._settings.get_as_int(PERSISTENT_ROS_BRIDGE_SETTING),
+                        "",
+                        "omni.isaac.ros2_bridge",
+                        tooltip=textwrap.fill("ROS Bridge to enable on startup", 80),
+                    ).model
+                # Linux
+                else:
+                    self._ros_bridge_selection = ui.ComboBox(
+                        self._settings.get_as_int(PERSISTENT_ROS_BRIDGE_SETTING),
+                        "",
+                        "omni.isaac.ros_bridge (deprecated)",
+                        "omni.isaac.ros2_bridge",
+                        tooltip=textwrap.fill("ROS Bridge to enable on startup", 80),
+                    ).model
 
                 def on_clicked_wrapper(model, val):
                     self._check_ros2_settings()
@@ -553,7 +565,7 @@ class SelectorWindow:
                         self._settings.get_as_int(PERSISTENT_ROS_INTERNAL_LIBS_SETTING),
                         "",
                         "humble",
-                        "foxy",
+                        "foxy (deprecated)",
                         tooltip=textwrap.fill(
                             "Select the distro for the internal ROS2 library. Leave blank to use source installed ROS. (Only applicable for ROS2 Bridge)",
                             80,
