@@ -63,6 +63,7 @@ class Ros2CameraGraph:
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                         ("CameraInfoPublish", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
                         ("RenderProduct", "omni.isaac.core_nodes.IsaacCreateRenderProduct"),
+                        ("RunOnce", "omni.isaac.core_nodes.OgnIsaacRunOneSimulationFrame"),
                         ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
                     ],
                     keys.SET_VALUES: [
@@ -74,7 +75,8 @@ class Ros2CameraGraph:
                         ("CameraInfoPublish.inputs:resetSimulationTimeOnStop", True),
                     ],
                     keys.CONNECT: [
-                        ("OnPlaybackTick.outputs:tick", "RenderProduct.inputs:execIn"),
+                        ("OnPlaybackTick.outputs:tick", "RunOnce.inputs:execIn"),
+                        ("RunOnce.outputs:step", "RenderProduct.inputs:execIn"),
                         ("RenderProduct.outputs:execOut", "CameraInfoPublish.inputs:execIn"),
                         ("RenderProduct.outputs:renderProductPath", "CameraInfoPublish.inputs:renderProductPath"),
                         ("Context.outputs:context", "CameraInfoPublish.inputs:context"),
@@ -588,12 +590,14 @@ class Ros2RtxLidarGraph:
                 {
                     keys.CREATE_NODES: [
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                        ("RunOnce", "omni.isaac.core_nodes.OgnIsaacRunOneSimulationFrame"),
                         ("RenderProduct", "omni.isaac.core_nodes.IsaacCreateRenderProduct"),
                         ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
                     ],
                     keys.SET_VALUES: [("RenderProduct.inputs:cameraPrim", self._lidar_prim)],
                     keys.CONNECT: [
-                        ("OnPlaybackTick.outputs:tick", "RenderProduct.inputs:execIn"),
+                        ("OnPlaybackTick.outputs:tick", "RunOnce.inputs:execIn"),
+                        ("RunOnce.outputs:step", "RenderProduct.inputs:execIn"),
                     ],
                 },
             )
