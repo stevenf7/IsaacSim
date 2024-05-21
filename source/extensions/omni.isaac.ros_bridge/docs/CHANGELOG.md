@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.19.1] - 2024-05-19
+### Changed
+- Extension is deprecated
+
 ## [1.19.0] - 2024-05-10
 ### Changed
 - Updated all ros_comm packages to v1.16.0
