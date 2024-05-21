@@ -98,12 +98,12 @@ class UIBuilder:
             self._repopulate_all_dropdowns()
         elif event.type == int(omni.usd.StageEventType.SIMULATION_START_PLAY):  # Timeline played
             self.assembly_frame.enabled = True
-            self._handle_articulations_on_play()
+            self._wait_and_reselect_articulations()
         elif event.type == int(omni.usd.StageEventType.SIMULATION_STOP_PLAY):  # Timeline played
             if self._timeline.is_stopped():
                 self.assembly_frame.enabled = False
                 self.assembly_frame.collapsed = True
-                self._handle_articulations_on_stop()
+                self._reselect_articulations()
                 self._articulation_options = []
 
     def cleanup(self):
@@ -292,7 +292,10 @@ class UIBuilder:
                     )
 
                 def on_begin_assemble_btn_clicked():
-                    if self._articulations[0] is not None and self._articulations[1] is not None:
+                    if (
+                        self._robot_dropdowns[0].get_selection() in self._articulation_options
+                        and self._robot_dropdowns[0].get_selection() in self._articulation_options
+                    ):
                         self.single_robot_cb.visible = True
                     else:
                         self.single_robot_cb.visible = False
@@ -344,8 +347,8 @@ class UIBuilder:
                     async def async_assemble():
                         await self._undo_nest_prims()
                         if (
-                            get_prim_object_type(self._art_1_path) == "articulation"
-                            and get_prim_object_type(self._art_2_path) == "articulation"
+                            self._art_1_path in self._articulation_options
+                            and self._art_2_path in self._articulation_options
                         ):
                             self._assemble_robots(trans, rot, make_single_robot)
                         else:
@@ -533,6 +536,9 @@ class UIBuilder:
 
             self._repopulate_all_dropdowns()
 
+            # Reinitialize robots after messing with their physics parsing.
+            self._wait_and_reselect_articulations()
+
     ##########################################################################################
     #                              Robot Assembler Frame Functions
     ##########################################################################################
@@ -584,11 +590,17 @@ class UIBuilder:
 
     def _get_relative_attach_transform(self):
         sel_1 = self._base_attach_frame
+        sel_2 = self._attached_art_attach_frame
+        if sel_1 == self.AUTO_CREATE:
+            sel_1 = ""
+        if sel_2 == self.AUTO_CREATE:
+            sel_2 = ""
+
         art_1_path = self._art_1_path
 
         base_attach_point_xform = XFormPrim(art_1_path + sel_1)
 
-        attach_frame = self._get_attach_point(1)
+        attach_frame = sel_2
         nested_attach_frame_xform = XFormPrim(self._nested_articulation_path_to + attach_frame)
 
         nested_art_trans, nested_art_rot = nested_attach_frame_xform.get_world_pose()
@@ -677,7 +689,10 @@ class UIBuilder:
         attach_points = self._get_attach_points(selection)
         if art_ind == 0:
             attach_points.reverse()
-        attach_points.append(self.AUTO_CREATE)
+
+        # Offer to auto-create a frame only if the object is NOT an Articulation
+        if self._robot_dropdowns[art_ind].get_selection() not in self._articulation_options:
+            attach_points.append(self.AUTO_CREATE)
         return attach_points
 
     def _get_attach_points(self, selection):
@@ -702,15 +717,17 @@ class UIBuilder:
     #                            Robot Selection Frame Functions
     ##########################################################################################
 
-    def _handle_articulations_on_play(self):
+    def _wait_and_reselect_articulations(self):
+        # Certain physics things will occasionally take two frames to start working.
         async def wait_and_reselect():
+            await update_stage_async()
             await update_stage_async()
             for dropdown in self._robot_dropdowns:
                 dropdown.trigger_on_selection_fn_with_current_selection()
 
         asyncio.ensure_future(wait_and_reselect())
 
-    def _handle_articulations_on_stop(self):
+    def _reselect_articulations(self):
         for dropdown in self._robot_dropdowns:
             dropdown.trigger_on_selection_fn_with_current_selection()
 
@@ -786,6 +803,7 @@ class UIBuilder:
         for prim in Usd.PrimRange(stage.GetPrimAtPath("/")):
             if (
                 prim.HasAPI(UsdPhysics.ArticulationRootAPI)
+                and prim.GetProperty("physxArticulation:articulationEnabled").IsValid()
                 and prim.GetProperty("physxArticulation:articulationEnabled").Get()
             ):
                 art_root_paths.append(tuple(str(prim.GetPath()).split("/")[1:]))
