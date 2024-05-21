@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.25.3] - 2024-05-20
+### Added
+- RTX camera and lidar omnigraph shortcuts uses RunOneSimulationFrame
+
 ## [2.25.2] - 2024-05-17
 ### Changed
 - default subscriber topic in ROS2 jointstate omnigraph shortcut uses /joint_command and not /cmd
