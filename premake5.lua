@@ -127,7 +127,7 @@ function setup_common_folder_links()
             { "launcher.toml", bin_dir },
             -- Copy licenses
             { "tools/internal-licenses/*",  bin_dir.."/PACKAGE-LICENSES" },
-            { "tools/internal-licenses/isaac-sim-LICENSE.txt",  bin_dir.."/LICENSE.txt" },
+            { "tools/internal-licenses/omniverse-LICENSE.txt",  bin_dir.."/LICENSE.txt" },
 
         --     -- Copy python app running scripts in target dir
         --     {"source/pythonapps/runscripts/$config/*$shell_ext", bin_dir}
