@@ -69,7 +69,7 @@ app.sensors.nv.lidar.profileBaseFolder=[
     "${app}/../exts/omni.isaac.sensor/data/lidar_configs/ZVISION/",
     "${app}/../exts/omni.isaac.sensor/data/lidar_configs/"]
 # app.sensors.nv.lidar.outputBufferOnGPU = true
-app.sensors.nv.radar.runWithoutMBVH = true
+app.sensors.nv.radar.runWithoutMBVH = false
 app.sensors.nv.lidar.enableVelocity=true
 rtx.rtxsensor.coordinateFrameQuaternion = "0.0,0.0,0.0,1.0"
 # sensor material mapping is hard coded for now, and this is needed to enable sensor materials.

@@ -7,8 +7,12 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import argparse
 import sys
 
+parser = argparse.ArgumentParser()
+parser.add_argument("-c", "--config", type=str, default="Example", help="Name of radar config.")
+args, _ = parser.parse_known_args()
 from isaacsim import SimulationApp
 
 # Example for creating a RTX lidar sensor and publishing PCL data
@@ -41,9 +45,7 @@ stage.add_reference_to_stage(
 )
 simulation_app.update()
 
-radar_config = "Example"
-if len(sys.argv) == 2:
-    radar_config = sys.argv[1]
+radar_config = args.config
 
 # Create the lidar sensor that generates data into "RtxSensorCpu"
 # Sensor needs to be rotated 90 degrees about X so that its Z up
