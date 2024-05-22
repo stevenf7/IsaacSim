@@ -1111,6 +1111,19 @@ folder_output = "${root}/_signedpackages"
 [repo_python_package]
 enabled = true
 
+templates.pyproject = """
+[build-system]
+requires = [ "setuptools >= 68.0" ]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = true
+package-dir = { "" = "src" }
+
+[project.scripts]
+isaacsim = "isaacsim:main"
+"""
+
 # package generation
 namespace = "isaacsim"
 definition_paths = [
@@ -1152,5 +1165,5 @@ archives = [
     "omni.isaac.ml_archive",
     "omni.pip.compute",
     "omni.pip.cloud",
-    "omni.kit.pip_archive",
+    # "omni.kit.pip_archive",
 ]
