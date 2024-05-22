@@ -11,16 +11,16 @@ import asyncio
 import gc
 import json
 import os
-import time
-from enum import Enum
 from functools import lru_cache
 
-import carb
 import carb.events
+import carb.settings
+import omni.kit.app
 import omni.kit.ui
 import omni.replicator.core as rep
 import omni.timeline
 import omni.ui as ui
+import omni.usd
 from omni.kit.viewport.utility import get_active_viewport
 from omni.kit.window.extensions.utils import open_file_using_os_default
 from omni.replicator.core import orchestrator
@@ -443,7 +443,12 @@ class SyntheticRecorderExtension(omni.ext.IExt):
         # Set the number of subframes
         if self._rt_subframes != carb.settings.get_settings().get("/omni/replicator/RTSubframes"):
             rep.settings.carb_settings("/omni/replicator/RTSubframes", self._rt_subframes)
-            carb.log_info(f"Setting 'RTSubframes' to {self._rt_subframes}.")
+            carb.log_warn(f"Setting 'RTSubframes' to {self._rt_subframes}.")
+
+        # Disable capture on play
+        if carb.settings.get_settings().get("/omni/replicator/captureOnPlay"):
+            carb.settings.get_settings().set_bool("/omni/replicator/captureOnPlay", False)
+            carb.log_warn("Disabling replicator capture on play flag when using the synthetic data recorder.")
 
         # Init the default or custom writer with its parameters
         writer_params = {}
@@ -477,7 +482,11 @@ class SyntheticRecorderExtension(omni.ext.IExt):
             custom_params = self._get_custom_params(self._custom_params_path)
             writer_params = {**custom_params}
 
-        output_dir = os.path.join(self._out_working_dir, self._out_dir)
+        # Use only folder name if S3 is selected
+        if self._use_s3:
+            output_dir = self._out_dir
+        else:
+            output_dir = os.path.join(self._out_working_dir, self._out_dir)
         try:
             self._writer.initialize(output_dir=output_dir, **writer_params)
         except Exception as e:
@@ -537,13 +546,9 @@ class SyntheticRecorderExtension(omni.ext.IExt):
             self._disable_all_buttons()
             if self._init_recorder():
                 num_frames = None if self._num_frames <= 0 else self._num_frames
-                if num_frames == 1:
-                    await rep.orchestrator.step_async()
-                    await self._on_orchestrator_finish_async()
-                else:
-                    await rep.orchestrator.run_async(num_frames=num_frames, start_timeline=self._control_timeline)
-                    self._in_running_state = True
-                    self._enable_buttons(case="start")
+                await rep.orchestrator.run_async(num_frames=num_frames, start_timeline=self._control_timeline)
+                self._in_running_state = True
+                self._enable_buttons(case="start")
             else:
                 self._clear_recorder()
                 self._enable_buttons(case="reset")
