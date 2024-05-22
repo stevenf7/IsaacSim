@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.10.0] - 2024-05-22
+### Added
+- SIGINT handler to SimulationApp to force exit when ctrl-c is pressed
+
 ## [1.9.0] - 2024-05-13
 ### Added
 - hide_ui to Simulation App to force ui visibility

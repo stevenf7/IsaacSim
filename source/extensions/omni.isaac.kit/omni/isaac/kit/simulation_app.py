@@ -14,6 +14,7 @@ import builtins
 import faulthandler
 import os
 import re
+import signal
 import sys
 
 import carb
@@ -194,6 +195,17 @@ class SimulationApp:
         # Get Omniverse application
         self._app = omni.kit.app.get_app()
         self._start_app()
+
+        # Register signal handler to exit when ctrl-c happens
+        # This needs to happen after the app starts so that we can overide the default handler
+        def signal_handler(signal, frame):
+            # disable logging warnings as we are going to terminate the process
+            _logging = carb.logging.acquire_logging()
+            _logging.set_level_threshold(carb.logging.LEVEL_FATAL)
+            self._framework.unload_all_plugins()
+            sys.exit(0)
+
+        signal.signal(signal.SIGINT, signal_handler)
 
         # once app starts, we can set settings
         from .utils import create_new_stage, open_stage, set_livesync_stage
