@@ -143,7 +143,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
             self.result = False
             return
         else:
-            print(f"Using Isaac Sim assets from: {assets_root_path}")
+            print(f"[SDG] Using Isaac Sim assets from: {assets_root_path}")
         self.dome_texture_path = assets_root_path + config_data["DOME_TEXTURE_PATH"]
         self.distractor_asset_path = assets_root_path + config_data["DISTRACTOR_ASSET_PATH"]
         self.train_asset_path = assets_root_path + config_data["TRAIN_ASSET_PATH"]
@@ -184,7 +184,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
         signal.signal(signal.SIGINT, self._handle_exit)
 
     def _handle_exit(self, *args, **kwargs):
-        print("Exiting dataset generation..")
+        print("[SDG] Exiting dataset generation..")
         self.exiting = True
 
     def _setup_world(self):
@@ -217,6 +217,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
                 output_dir=self._output_folder,
                 write_debug_images=self.debug,
                 format=self.writer_format,
+                skip_empty_frames=False,
                 use_s3=self.use_s3,
                 s3_bucket=self.bucket,
                 s3_endpoint_url=self.endpoint,
@@ -243,7 +244,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
         horiztonal_aperture_mm = config_data["pixel_size"] * config_data["WIDTH"]
 
         print(
-            f"Creating camera with focal length: {round(focal_length_mm, 2)}mm, horizontal aperture: {round(horiztonal_aperture_mm, 2)}mm"
+            f"[SDG] Creating camera with focal length: {round(focal_length_mm, 2)}mm, horizontal aperture: {round(horiztonal_aperture_mm, 2)}mm"
         )
         # Setup camera and render product
         # See https://docs.omniverse.nvidia.com/py/replicator/1.10.10/source/extensions/omni.replicator.core/docs/API.html#cameras
@@ -518,7 +519,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
     def __next__(self):
         # First frame of DOME dataset
         if self.cur_idx == self.num_mesh:  # MESH datset generation complete, switch to DOME dataset
-            print(f"Starting DOME dataset generation of {self.num_dome} frames..")
+            print(f"[SDG] Starting DOME dataset generation of {self.num_dome} frames..")
 
             # Hide the FlyingDistractors used for the MESH dataset
             self.mesh_distractors.set_visible(False)
@@ -547,15 +548,15 @@ class RandomScenario(torch.utils.data.IterableDataset):
         for _ in range(50):
             world.step(render=False)
 
-        print(f"ID: {self.cur_idx}/{self.train_size - 1}")
+        print(f"[SDG] ID: {self.cur_idx}/{self.train_size - 1}")
         rep.orchestrator.step(rt_subframes=4)
 
         self.cur_idx += 1
 
         # Check if last frame has been reached
         if self.cur_idx >= self.train_size:
-            print(f"Dataset of size {self.train_size} has been reached, generation loop will be stopped..")
-            print(f"Data outputted to: {self._output_folder}")
+            print(f"[SDG] Dataset of size {self.train_size} has been reached, generation loop will be stopped..")
+            print(f"[SDG] Data outputted to: {self._output_folder}")
             self.last_frame_reached = True
 
 
@@ -575,29 +576,31 @@ dataset = RandomScenario(
 
 if dataset.result:
     # Iterate through dataset and visualize the output
-    print("Loading materials. Will generate data soon...")
+    print("[SDG] Loading materials. Will generate data soon...")
 
     start_time = datetime.datetime.now()
-    print("Start timestamp:", start_time.strftime("%m/%d/%Y, %H:%M:%S"))
+    print("[SDG] Start timestamp:", start_time.strftime("%m/%d/%Y, %H:%M:%S"))
 
     if dataset.train_size > 0:
-        print(f"Starting dataset generation of {dataset.train_size} frames..")
+        print(f"[SDG] Starting dataset generation of {dataset.train_size} frames..")
 
         if dataset.num_mesh > 0:
-            print(f"Starting MESH dataset generation of {dataset.num_mesh} frames..")
+            print(f"[SDG] Starting MESH dataset generation of {dataset.num_mesh} frames..")
 
         # Dataset generation loop
         for _ in dataset:
             if dataset.last_frame_reached:
-                print(f"Stopping generation loop at index {dataset.cur_idx}..")
+                print(f"[SDG] Stopping generation loop at index {dataset.cur_idx}..")
                 break
             if dataset.exiting:
                 break
     else:
-        print(f"Dataset size is set to 0 (num_mesh={dataset.num_mesh} num_dope={dataset.num_dome}), nothing to write..")
+        print(
+            f"[SDG] Dataset size is set to 0 (num_mesh={dataset.num_mesh} num_dope={dataset.num_dome}), nothing to write.."
+        )
 
-    print("End timestamp:", datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S"))
-    print("Total time taken:", str(datetime.datetime.now() - start_time).split(".")[0])
+    print("[SDG] End timestamp:", datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S"))
+    print("[SDG] Total time taken:", str(datetime.datetime.now() - start_time).split(".")[0])
 
 if args.test:
     run_pose_generation_test(
