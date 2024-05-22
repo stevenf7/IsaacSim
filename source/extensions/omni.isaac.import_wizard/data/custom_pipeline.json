@@ -1,6 +1,6 @@
 {
     "Saved Pipeline": [
-        "Robot Assembler"
+        "Common Tools"
     ],
     "Import Pipeline": [
         "Import URDF from File",

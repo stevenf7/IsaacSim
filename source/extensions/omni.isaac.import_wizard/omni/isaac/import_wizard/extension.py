@@ -10,6 +10,7 @@
 import asyncio
 import gc
 import json
+import os
 import weakref
 
 import carb.settings
@@ -148,9 +149,9 @@ class ImportWizard(object):
         self._current_tool_name = ""
         self._use_custom_file = False
         self._app_data = None
-        self.pipeline_file = EXTENSION_FOLDER_PATH + "/data/pipeline.json"
-        self.custom_file = EXTENSION_FOLDER_PATH + "/data/custom_pipeline.json"
-        self.tools_file = EXTENSION_FOLDER_PATH + "/data/available_tools.json"
+        self.pipeline_file = os.path.join(EXTENSION_FOLDER_PATH, "data", "pipeline.json")
+        self.custom_file = os.path.join(EXTENSION_FOLDER_PATH, "data", "custom_pipeline.json")
+        self.tools_file = os.path.join(EXTENSION_FOLDER_PATH, "data", "available_tools.json")
 
         # shutdown questionnaire if it's active
         if self.qa is not None:
@@ -314,7 +315,9 @@ class ImportWizard(object):
                                             name="IconButton",
                                             width=24,
                                             height=24,
-                                            clicked_fn=lambda: on_open_folder_clicked(EXTENSION_FOLDER_PATH + "/data/"),
+                                            clicked_fn=lambda: on_open_folder_clicked(
+                                                os.path.join(EXTENSION_FOLDER_PATH, "data")
+                                            ),
                                             style=get_style()["IconButton.Image::OpenFolder"],
                                             alignment=ui.Alignment.LEFT_CENTER,
                                         )
@@ -564,7 +567,7 @@ class ImportWizard(object):
         self._window.visible = False
 
     def _on_file_select_callback(self, file, path):
-        self.custom_file = path + file
+        self.custom_file = os.path.join(path, file)
         self.user_file_field.set_value(self.custom_file)
         self.folder_picker.hide()
 
@@ -726,7 +729,7 @@ class ImportWizard(object):
                                         width=24,
                                         height=24,
                                         clicked_fn=lambda: on_open_folder_clicked(
-                                            self._sim_folder + "/" + self._ext_folder_name
+                                            os.path.join(self._sim_folder, self._ext_folder_name)
                                         ),
                                         style=get_style()["IconButton.Image::OpenFolder"],
                                         alignment=ui.Alignment.LEFT_CENTER,

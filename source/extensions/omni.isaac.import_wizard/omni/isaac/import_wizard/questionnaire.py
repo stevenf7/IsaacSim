@@ -9,6 +9,7 @@
 
 
 import json
+import os
 import weakref
 
 import omni.kit.app
@@ -42,7 +43,7 @@ WINDOW_NAME = "Getting Started with Isaac Sim Questionnaire"
 @Singleton
 class Questionnaire:
     def __init__(self, wizard_ext, available_tools):
-        self.qa_file = EXTENSION_FOLDER_PATH + "/data/questionnaire.json"
+        self.qa_file = os.path.join(EXTENSION_FOLDER_PATH, "data", "questionnaire.json")
         self.available_tools = available_tools
         self._wizard_ext = wizard_ext
         self.save_popup = None
@@ -259,7 +260,7 @@ class Questionnaire:
 
     def _on_save_pipeline(self):
         # setup for save pipeline with defaults
-        self.save_pipeline_file = EXTENSION_FOLDER_PATH + "/data/custom_pipeline.json"
+        self.save_pipeline_file = os.path.join(EXTENSION_FOLDER_PATH, "data", "custom_pipeline.json")
         self.save_pipeline_name = "Saved Pipeline"
 
         # go through the tool stack and get the visible tools
@@ -318,7 +319,7 @@ class Questionnaire:
 
         self.on_shutdown()
 
-    def _on_cancel_save(self):
+    def _on_cancel_save(self, dialog):
         self.save_pipeline_file = None
         self.save_pipeline_name = None
         self.ovewrite = False
@@ -456,7 +457,7 @@ class SavePipelinePopup(PopupDialog):
                 self._build_ok_cancel_buttons()
 
     def _on_file_select_callback(self, file, path):
-        self.custom_file = path + file
+        self.custom_file = os.path.join(path, file)
         self.user_file_field.set_value(self.custom_file)
         self.folder_picker.hide()
         self.show()

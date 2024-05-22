@@ -1,4 +1,8 @@
 # Changelog
+## [0.5.1] - 2024-05-21
+### Fixed
+- filenames to be cross platform
+
 ## [0.5.0] - 2024-05-13
 ### Added
 - added "alpha" tags to titles
