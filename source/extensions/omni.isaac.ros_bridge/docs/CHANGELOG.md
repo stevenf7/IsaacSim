@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.19.2] - 2024-05-21
+### Added
+- Resetting output of the Twist Subscriber to zeros upon stopping simulation. 
+
 ## [1.19.1] - 2024-05-19
 ### Changed
 - Extension is deprecated
