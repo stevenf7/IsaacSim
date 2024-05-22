@@ -34,6 +34,64 @@ inventory.include = [
     "apps",
 ]
 
+[isaacsim-kernel]
+# pyproject.toml
+pyproject.description = "Isaac Sim kernel"
+pyproject.readme = ""
+pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "kernel"]
+pyproject.dependencies = [
+    "omniverse-kit==106.0.0+release.115910.24e2a769.gl",
+]
+# inventory (relative to the build config)
+inventory.include = [
+    # license
+    "LICENSE.txt",
+    # python package/module
+    [ "python_packages/isaacsim/__init__.py", "." ],
+    [ "python_packages/isaacsim/__main__.py", "." ],
+]
+
+[isaacsim-extscache-kit]
+# pyproject.toml
+pyproject.description = "Kit extensions cache for Isaac Sim"
+pyproject.readme = ""
+pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "kit", "cache"]
+# inventory (relative to the build config)
+inventory.include = [
+    # license
+    "LICENSE.txt",
+    # cache
+    "extscache/*",
+]
+
+[isaacsim-extscache-kit-sdk]
+# pyproject.toml
+pyproject.description = "Kit-SDK extensions cache for Isaac Sim"
+pyproject.readme = ""
+pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "kit-sdk", "cache"]
+# inventory (relative to the build config)
+inventory.include = [
+    # license
+    "LICENSE.txt",
+    # cache
+    [ "kit/exts/*", "extscache" ],
+]
+
+[isaacsim-extscache-physics]
+# pyproject.toml
+pyproject.description = "Physics extensions cache for Isaac Sim"
+pyproject.readme = ""
+pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "physics", "cache"]
+# inventory (relative to the build config)
+inventory.include = [
+    # license
+    "LICENSE.txt",
+    # cache
+    "extsPhysics",
+]
+
+#=================================================================
+
 [isaacsim-app]
 # pyproject.toml
 pyproject.description = "Isaac Sim components for application setup"
@@ -41,7 +99,7 @@ pyproject.readme = ""
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "app"]
 pyproject.dependencies = [
     # isaacsim packages
-    "isaacsim-kernel==4.0.0.*",
+    "isaacsim-kernel==${version}",
     # python packages
     "pyperclip",
 ]
@@ -108,7 +166,7 @@ pyproject.description = "Isaac Sim components for scripting and code edition"
 pyproject.readme = ""
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "editor"]
 pyproject.dependencies = [
-    "isaacsim-kernel==4.0.0.*",
+    "isaacsim-kernel==${version}",
 ]
 # inventory (relative to the build config)
 inventory.include = [
@@ -127,12 +185,14 @@ pyproject.readme = ""
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "core"]
 pyproject.dependencies = [
     # isaacsim packages
-    "isaacsim-kernel==4.0.0.*",
+    "isaacsim-kernel==${version}",
     # python packages
-    "numpy",
+    "numpy<2.0.0",
     "scipy",
     "torch>=2.2.0",
     "psutil",
+    "boto3",
+    "pyyaml",
 ]
 # inventory (relative to the build config)
 inventory.include = [
@@ -391,7 +451,7 @@ pyproject.description = "Isaac Sim components for storage system"
 pyproject.readme = ""
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "storage"]
 pyproject.dependencies = [
-    "isaacsim-kernel==4.0.0.*",
+    "isaacsim-kernel==${version}",
 ]
 # inventory (relative to the build config)
 inventory.include = [
