@@ -23,6 +23,8 @@ public:
     static bool compute(OgnROS1SubscribeTwistDatabase& db)
     {
         auto& state = db.perInstanceState<OgnROS1SubscribeTwist>();
+        state.nodeObj = db.abi_node();
+
         // spin once calls reset automatically if it was not successful
         if (!state.spinOnce(db.inputs.nodeNamespace()))
         {
@@ -60,6 +62,23 @@ public:
      */
     virtual void reset()
     {
+        GraphObj graphObj{ nodeObj.iNode->getGraph(nodeObj) };
+        GraphContextObj context{ graphObj.iGraph->getDefaultGraphContext(graphObj) };
+
+        AttributeObj linearAttr = nodeObj.iNode->getAttribute(nodeObj, "outputs:linearVelocity");
+        auto linearHandle = linearAttr.iAttribute->getAttributeDataHandle(linearAttr, kAccordingToContextIndex);
+        double* linearCommand = getDataW<double>(context, linearHandle);
+        linearCommand[0] = 0.0;
+        linearCommand[1] = 0.0;
+        linearCommand[2] = 0.0;
+
+        AttributeObj angularAttr = nodeObj.iNode->getAttribute(nodeObj, "outputs:angularVelocity");
+        auto angularHandle = angularAttr.iAttribute->getAttributeDataHandle(angularAttr, kAccordingToContextIndex);
+        double* angularCommand = getDataW<double>(context, angularHandle);
+        angularCommand[0] = 0.0;
+        angularCommand[1] = 0.0;
+        angularCommand[2] = 0.0;
+
         mSubscriber.reset(); // This should be reset before we reset the handle.
         mCallback = nullptr;
         RosNode::reset();
@@ -86,6 +105,7 @@ public:
 private:
     std::unique_ptr<ros::Subscriber> mSubscriber;
     std::function<void(const geometry_msgs::Twist::ConstPtr&)> mCallback;
+    NodeObj nodeObj;
 };
 
 REGISTER_OGN_NODE()

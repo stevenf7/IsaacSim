@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.26.1] - 2024-05-21
+### Added
+- Resetting output of the Twist Subscriber to zeros upon stopping simulation. 
+
 ## [2.26.0] - 2024-05-20
 ### Changed
 - Foxy support is deprecated
