@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.3] - 2024-05-22
+### Added
+- Deprecation tag
+
 ## [0.2.2] - 2023-09-30
 
 ### Fixed

@@ -3,7 +3,7 @@ reloadable = false
 order = 0
 
 [package]
-version = "0.2.2"
+version = "0.2.3"
 category = "Robotics"
 title = "Omni Isaac Cortex Sync"
 description = "Synchronization tools for connecting Isaac Cortex tools to the physical world."
@@ -15,6 +15,9 @@ readme = "docs/README.md"
 icon = "data/icon.png"
 preview_image = "data/preview.png"
 writeTarget.kit = true
+
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 4.0.0. Future versions will be indepedent from Isaac Sim"
 
 [dependencies]
 "omni.isaac.cortex" = {}

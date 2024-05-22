@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.0.5] - 2024-05-22
+### Added
+- Deprecation tag
 
 ## [1.0.4] - 2023-10-12
 ### Fixed
