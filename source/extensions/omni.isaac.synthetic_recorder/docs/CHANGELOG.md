@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.7.2] - 2024-05-21
+### Fixed
+- writing to s3 by using only folder name instead of full path (ISIM-1133)
+- disabled capture on play to fix timeline control issues
+- removed step_async WAR (ISIM-943)
+
 ## [1.7.1] - 2024-04-23
 ### Fixed
 - using step_async when num_frames=1 (ISIM-943 WAR)
