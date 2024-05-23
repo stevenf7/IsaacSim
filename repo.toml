@@ -991,7 +991,7 @@ deps_for_isaac = [
   "semantics.schema.editor-0.3.4",
   "semantics.schema.property-1.0.2",
   "omni.importer.mjcf-1.1.0",
-  "omni.importer.urdf-1.14.0",
+  "omni.importer.urdf-1.14.1",
   "omni.importer.onshape-0.7.1",
   "omni.anim.people-0.3.3",
   "omni.replicator.object-0.2.16",
