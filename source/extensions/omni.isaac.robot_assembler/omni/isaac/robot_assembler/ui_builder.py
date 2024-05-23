@@ -133,6 +133,7 @@ class UIBuilder:
         self._articulation_attach_point_dropdowns = []
         self._articulations = [None] * len(names)
         self._articulation_options = []
+        self._articulation_options_pre_nest = []
         self._collapsable_robot_control_frames = [None] * len(names)
         self._show_art_cbs = []
         self._show_rigid_body_cbs = []
@@ -347,8 +348,8 @@ class UIBuilder:
                     async def async_assemble():
                         await self._undo_nest_prims()
                         if (
-                            self._art_1_path in self._articulation_options
-                            and self._art_2_path in self._articulation_options
+                            self._art_1_path in self._articulation_options_pre_nest
+                            and self._art_2_path in self._articulation_options_pre_nest
                         ):
                             self._assemble_robots(trans, rot, make_single_robot)
                         else:
@@ -564,6 +565,8 @@ class UIBuilder:
             carb.log_error("Begin Assemble Button was Clicked before valid articulations were selected")
 
         self._articulations_nested = True
+
+        self._articulation_options_pre_nest = self._articulation_options
 
         self._attached_art_default_pose = XFormPrim(self._art_2_path).get_world_pose()
 
