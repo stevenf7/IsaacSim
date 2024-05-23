@@ -362,7 +362,7 @@ class DeformablePrimView(XFormPrimView):
         """Sets the kinematic targets of the simulation mesh for the deformable bodies indicated by the indices.
 
         Args:
-            positions (Union[np.ndarray, torch.Tensor]): kinematic targets with the shape (M, max_simulation_mesh_vertices_per_body, 3).
+            positions (Union[np.ndarray, torch.Tensor]): kinematic targets with the shape (M, max_simulation_mesh_vertices_per_body, 4).
             indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
