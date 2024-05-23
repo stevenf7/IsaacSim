@@ -270,7 +270,8 @@ class SyntheticRecorderExtension(omni.ext.IExt):
 
     def _load_config_and_refresh_ui(self, directory, filename):
         self.load_config(os.path.join(directory, filename))
-        self._build_window_ui()
+        asyncio.ensure_future(self._delayed_build(self._build_window_ui))
+        # self._build_window_ui()
 
     def save_config(self, path):
         os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -324,11 +325,13 @@ class SyntheticRecorderExtension(omni.ext.IExt):
         self._config_dir = os.path.abspath(
             os.path.join(omni.kit.app.get_app().get_extension_manager().get_extension_path(self._ext_id), "data", "")
         )
-        self._build_window_ui()
+        asyncio.ensure_future(self._delayed_build(self._build_window_ui))
+        # self._build_window_ui()
 
     def _reset_out_working_dir(self):
         self._out_working_dir = os.getcwd() + "/"
-        self._build_window_ui()
+        asyncio.ensure_future(self._delayed_build(self._build_window_ui))
+        # self._build_window_ui()
 
     def _check_if_valid_camera(self, path):
         context = omni.usd.get_context()
@@ -404,7 +407,8 @@ class SyntheticRecorderExtension(omni.ext.IExt):
 
     def _remove_rp_entry(self, idx):
         del self._rp_data[idx]
-        self._build_window_ui()
+        asyncio.ensure_future(self._delayed_build(self._build_window_ui))
+        # self._build_window_ui()
 
     def _add_new_rp_field(self):
         # If cameras are selected in the stage viewer use them default values
@@ -422,7 +426,8 @@ class SyntheticRecorderExtension(omni.ext.IExt):
             active_cam = active_vp.get_active_camera()
             self._rp_data.append([str(active_cam), 512, 512, ""])
 
-        self._build_window_ui()
+        asyncio.ensure_future(self._delayed_build(self._build_window_ui))
+        # self._build_window_ui()
 
     def _clear_recorder(self):
         if self._writer:
@@ -788,7 +793,8 @@ class SyntheticRecorderExtension(omni.ext.IExt):
                         self._writer_name = "BasicWriter"
                     else:
                         self._writer_name = self._custom_writer_name
-                    self._build_window_ui()
+                    asyncio.ensure_future(self._delayed_build(self._build_window_ui))
+                    # self._build_window_ui()
 
                 writer_type_collection.model.add_value_changed_fn(writer_type_collection_changed)
 
@@ -822,12 +828,14 @@ class SyntheticRecorderExtension(omni.ext.IExt):
             def select_all():
                 for k in self._basic_writer_params:
                     self._basic_writer_params[k] = True
-                self._build_window_ui()
+                asyncio.ensure_future(self._delayed_build(self._build_window_ui))
+                # self._build_window_ui()
 
             def toggle_all():
                 for k in self._basic_writer_params:
                     self._basic_writer_params[k] = not self._basic_writer_params[k]
-                self._build_window_ui()
+                asyncio.ensure_future(self._delayed_build(self._build_window_ui))
+                # self._build_window_ui()
 
             ui.Button(text="Select All", clicked_fn=select_all, tooltip="Select all parameters")
             ui.Button(text="Toggle All", clicked_fn=toggle_all, tooltip="Toggle all parameters")
@@ -976,3 +984,7 @@ class SyntheticRecorderExtension(omni.ext.IExt):
 
                         control_frame.set_collapsed_changed_fn(on_collapsed_changed)
                         self._build_control_ui()
+
+    async def _delayed_build(self, build_function):
+        await omni.kit.app.get_app().next_update_async()
+        build_function()
