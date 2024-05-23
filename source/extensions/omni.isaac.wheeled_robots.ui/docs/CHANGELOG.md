@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.1] - 2024-05-22
+### Changed
+- docs link changed from internal to external
+
 ## [1.1.0] - 2024-05-09
 ### Changed
 - only ask for robot parent prim, automatically search for Articulation Root API under the hood
