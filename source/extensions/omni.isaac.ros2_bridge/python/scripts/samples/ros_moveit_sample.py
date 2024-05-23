@@ -85,7 +85,6 @@ class Extension(omni.ext.IExt):
                         ("PublishJointState.inputs:topicName", "isaac_joint_states"),
                         ("SubscribeJointState.inputs:topicName", "isaac_joint_commands"),
                         ("PublishJointState.inputs:targetPrim", [usdrt.Sdf.Path(franka_stage_path)]),
-                        ("PublishTF.inputs:targetPrims", [usdrt.Sdf.Path(franka_stage_path)]),
                     ],
                 },
             )
