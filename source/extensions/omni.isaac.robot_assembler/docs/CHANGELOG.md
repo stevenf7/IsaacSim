@@ -1,4 +1,8 @@
 # Changelog
+## [1.5.0] - 2024-05-23
+### Fixed
+- Fixed bug where single robot checkbox in UI workflow had no effect when True.
+
 ## [1.4.0] - 2024-05-17
 ### Fixed
 - Fixed bug with AUTO_CREATE_FRAME miscomputing local poses for rigid bodies.
