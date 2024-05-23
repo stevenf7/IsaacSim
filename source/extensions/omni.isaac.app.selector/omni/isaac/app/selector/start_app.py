@@ -24,6 +24,7 @@ def start_app(
     app_become_new_default=False,
     persistent_selector=False,
     extra_args=[],
+    env=None,
 ):
     """show the omniverse ui documentation as an external Application"""
     _settings = carb.settings.get_settings()
@@ -59,9 +60,12 @@ def start_app(
         if _settings.get(SHOW_CONSOLE_SETTING):
             kwargs["creationflags"] |= subprocess.CREATE_NEW_CONSOLE
     else:
+        if env:
+            run_args = [f'export {k}="{v}";' for k, v in env.items()] + run_args
         if _settings.get(SHOW_CONSOLE_SETTING):
             kwargs["shell"] = True
-            run_args = f"x-terminal-emulator -e bash -i -c \"{str(' '.join(run_args))}\""
+            run_args = " ".join(run_args)
+            run_args = f"x-terminal-emulator -e bash -i -c 'pwd; {run_args}'"
     omni.kit.app.get_app().print_and_log(f"Starting: {run_args}")
     subprocess.Popen(run_args, **kwargs)
 

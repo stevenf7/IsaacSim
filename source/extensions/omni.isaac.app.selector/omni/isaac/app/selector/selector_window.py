@@ -106,7 +106,7 @@ class SelectorWindow:
         all_apps.extend(self._settings.get(EXPERIMENTAL_APPS_SETTING))
         return all_apps
 
-    def _start_app(self, app_id: str, app_version: str):
+    def _start_app(self, app_id: str, app_version: str, env=None):
         """wrapper function to help collecting the right settings to be used in the class"""
         all_additional_args = str.split(self._extra_args.get_value_as_string())
         all_additional_args.extend(
@@ -124,6 +124,7 @@ class SelectorWindow:
             app_become_new_default=self._app_as_default.get_value_as_bool(),
             persistent_selector=self._persistent_selector.get_value_as_bool(),
             extra_args=all_additional_args,
+            env=env,
         )
 
     def _get_selected_app_id(self):
@@ -221,7 +222,9 @@ class SelectorWindow:
 
                 os.environ[key] = env_var
 
-        self._start_app(app_id=app_id, app_version=self._app_version)
+        self._start_app(
+            app_id=app_id, app_version=self._app_version, env={k: v for k, v in self.env_vars.items() if v is not None}
+        )
         if self._persistent_selector.get_value_as_bool():
             # update the default app display if needed
             self._default_app = self._settings.get(DEFAULT_APP_SETTING)
