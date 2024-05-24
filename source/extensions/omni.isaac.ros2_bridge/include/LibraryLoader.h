@@ -99,6 +99,11 @@ public:
 
         return calledSymbol(args...);
     }
+    bool isValid()
+    {
+        // Return true if the library handle is not invalid
+        return loadedLibrary != carb::extras::kInvalidLibraryHandle;
+    }
 
 
 private:

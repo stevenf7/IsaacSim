@@ -87,7 +87,8 @@ public:
             }
             else
             {
-                CARB_LOG_INFO("NitrosBridgeImage message type not found. The NITROS bridge publisher was not created");
+                CARB_LOG_INFO(
+                    "isaac_ros_nitros_bridge_interfaces NitrosBridgeImage message type not found. The NITROS bridge publisher was not created");
             }
 
             state.mFrameId = db.inputs.frameId();
