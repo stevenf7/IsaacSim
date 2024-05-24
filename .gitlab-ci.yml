@@ -769,7 +769,7 @@ pages:
   stage: pages
   extends:
   - .build-common
-  - .runner-build-linux-x86_64
+  - .omni_nvks_runner_with_docker
   before_script:
   - set -eu
   - yum install -y p7zip p7zip-plugins
@@ -800,7 +800,7 @@ pages:
 build-docs:
   extends:
   - .build-common
-  - .runner-build-linux-x86_64
+  - .omni_nvks_runner_with_docker
   timeout: 3 hours
   before_script:
   - set -eu
