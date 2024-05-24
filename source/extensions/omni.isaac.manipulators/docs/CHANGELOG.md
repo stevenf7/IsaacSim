@@ -1,4 +1,8 @@
 # Changelog
+## [2.1.0] - 2024-05-24
+### Added
+- end_effector_prim_path argument added to the SingleManipulator alongside the end_effector_prim_name
+
 ## [2.0.0] - 2024-03-26
 ### Changed
 - Extension factored into multiple components.  See omni.isaac.manipulators.ui

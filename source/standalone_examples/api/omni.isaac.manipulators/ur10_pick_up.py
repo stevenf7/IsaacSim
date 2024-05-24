@@ -43,7 +43,9 @@ gripper_usd = assets_root_path + "/Isaac/Robots/UR10/Props/short_gripper.usd"
 add_reference_to_stage(usd_path=gripper_usd, prim_path="/World/UR10/ee_link")
 gripper = SurfaceGripper(end_effector_prim_path="/World/UR10/ee_link", translate=0.1611, direction="x")
 ur10 = my_world.scene.add(
-    SingleManipulator(prim_path="/World/UR10", name="my_ur10", end_effector_prim_name="ee_link", gripper=gripper)
+    SingleManipulator(
+        prim_path="/World/UR10", name="my_ur10", end_effector_prim_path="/World/UR10/ee_link", gripper=gripper
+    )
 )
 ur10.set_joints_default_state(positions=np.array([-np.pi / 2, -np.pi / 2, -np.pi / 2, -np.pi / 2, np.pi / 2, 0]))
 cube = my_world.scene.add(

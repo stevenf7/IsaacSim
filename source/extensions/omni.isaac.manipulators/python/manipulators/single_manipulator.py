@@ -24,7 +24,11 @@ class SingleManipulator(Articulation):
 
         prim_path (str): prim path of the Prim to encapsulate or create.
         end_effector_prim_name (str): end effector prim name to be used to track the rigid body that corresponds
-                                        to the end effector.
+                                        to the end effector. One of the following args can be specified only:
+                                        end_effector_prim_name or end_effector_prim_path.
+        end_effector_prim_path (str): end effector prim path to be used to track the rigid body that corresponds
+                                        to the end effector. One of the following args can be specified only:
+                                        end_effector_prim_name or end_effector_prim_path.
         name (str, optional): shortname to be used as a key by Scene class. Note: needs to be unique if the
                                 object is added to the Scene. Defaults to "single_manipulator".
         position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
@@ -45,7 +49,8 @@ class SingleManipulator(Articulation):
     def __init__(
         self,
         prim_path: str,
-        end_effector_prim_name: str,
+        end_effector_prim_name: str = None,
+        end_effector_prim_path: str = None,
         name: str = "single_manipulator",
         position: Optional[Sequence[float]] = None,
         translation: Optional[Sequence[float]] = None,
@@ -54,7 +59,12 @@ class SingleManipulator(Articulation):
         visible: Optional[bool] = None,
         gripper: Gripper = None,
     ) -> None:
+        if end_effector_prim_name is None == end_effector_prim_path is None:
+            raise Exception(
+                "Only one of the following args must be specified: end_effector_prim_name or end_effector_prim_path."
+            )
         self._end_effector_prim_name = end_effector_prim_name
+        self._end_effector_prim_path = end_effector_prim_path
         self._gripper = gripper
         self._end_effector = None
         Articulation.__init__(
@@ -95,8 +105,9 @@ class SingleManipulator(Articulation):
             physics_sim_view (omni.physics.tensors.SimulationView, optional): current physics simulation view. Defaults to None.
         """
         Articulation.initialize(self, physics_sim_view=physics_sim_view)
-        end_effector_prim_path = self.prim_path + "/" + self._end_effector_prim_name
-        self._end_effector = RigidPrim(prim_path=end_effector_prim_path, name=self.name + "_end_effector")
+        if self._end_effector_prim_name:
+            self._end_effector_prim_path = self.prim_path + "/" + self._end_effector_prim_name
+        self._end_effector = RigidPrim(prim_path=self._end_effector_prim_path, name=self.name + "_end_effector")
         self._end_effector.initialize(physics_sim_view)
         if isinstance(self._gripper, ParallelGripper):
             self._gripper.initialize(
