@@ -1502,3 +1502,24 @@ isaac-sim-assets-3:
   - !reference [.rules-version-changed, rules]
   - !reference [.rules-push-manual, rules]
   allow_failure: true
+
+
+# ==============================================================================================================
+isaac-sim-assets-4:
+  extends:
+  - .deploy-common
+  - .omni_nvks_runner_with_docker
+  script:
+  - ./tools/ci/build-and-packaging/isaac-sim-assets-4/step.sh
+  - ./repo.sh publish_assets_launcher_4
+  needs: []
+  rules:
+  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+    when: never
+  - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "gitlab-ci")
+    when: manual
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push-manual, rules]
+  allow_failure: true

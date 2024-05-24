@@ -1,12 +1,12 @@
 #displayed application name
-name = "Isaac Sim Assets Pack 3"
+name = "Isaac Sim Assets Pack 4"
 #displayed application name in smaller card and library view
-shortName = "Isaac Sim Assets Pack 3"
+shortName = "Isaac Sim Assets Pack 4"
 version = "${version}"
 #boolean for if this version is the latest version
 latest = true
 #unique identifier for component, all lower case, persists between versions
-slug = "isaac-sim-assets-3"
+slug = "isaac-sim-assets-4"
 
 #displayed before application name in launcher
 productArea = ""
@@ -15,7 +15,7 @@ productArea = ""
 category = "Content"
 
 # A filter of release types
-# 3 filter types [ "alpha", "beta", "release "]
+# 4 filter types [ "alpha", "beta", "release "]
 channel = "beta"
 
 # Set true if you want this package to show in enterprise launcher
@@ -37,7 +37,7 @@ kind = "content-pack"
 #string array, each line is a new line, keep lines under 256 char and keep lines under 4
 description = [
     "This content pack replicates the Isaac Sim assets found in the following publicly available Omniverse Nucleus folder; **NVIDIA -> Assets -> Isaac**. This content pack is designed for storage on a local system.",
-    "This is pack 3 of 4.",
+    "This is pack 4 of 4.",
     "Total content pack size: ~28.4GB (uncompressed)"
 ]
 
@@ -45,7 +45,7 @@ extensionDependencies = [ "n/a" ]
 
 # required for `content-pack` `kind`
 gallery = [
-    "https://launcher-prod.s3.us-east-2.amazonaws.com/isaac_sim/2022.1.1/image.png",
+    "https://launcher-prod.s4.us-east-2.amazonaws.com/isaac_sim/2022.1.1/image.png",
 ]
 
 
@@ -57,11 +57,11 @@ url = "https://docs.omniverse.nvidia.com/app_isaacsim/common/NVIDIA_Omniverse_Li
 
 [assetSpecs]
 # represents the number of meshes for this content
-meshes = 3207
+meshes = 4207
 # defines the short description for meshes
 meshDetail = "USD files"
 # represents the number of textures for this content
-textures = 1325
+textures = 1425
 # defines the short description for textures
 textureDetail = "Bitmap textures"
 # represents the number of materials for this content
@@ -103,4 +103,4 @@ url = "https://forums.developer.nvidia.com/c/omniverse/simulation/69"
 # url = "https://www.nvidia.com/en-us/on-demand/"
 # [[links]]
 # title = "Forums"
-# url = "https://forums.developer.nvidia.com/c/omniverse/300"
+# url = "https://forums.developer.nvidia.com/c/omniverse/400"

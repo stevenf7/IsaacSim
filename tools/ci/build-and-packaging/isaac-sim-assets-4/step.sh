@@ -4,10 +4,10 @@ SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 ROOT_DIR="$(dirname "$(realpath $SCRIPT_DIR/../../../)")"
 "$ROOT_DIR/tools/packman/packman" install connect-samples-launcher 1112-linux-x86_64 -l $ROOT_DIR/_build/_omnicli
 OMNICLI="$ROOT_DIR/_build/_omnicli/omnicli.sh"
-SOURCE_PATH="https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac"
-OUTPUT_PATH="$ROOT_DIR/_assets-3_temp"
+SOURCE_PATH="https://omniverse-content-staging.s4-us-west-2.amazonaws.com/Assets/Isaac"
+OUTPUT_PATH="$ROOT_DIR/_assets-4_temp"
 VERSION="4.0"
-NAME="isaac-sim-assets-3"
+NAME="isaac-sim-assets-4"
 
 
 echo Removing $OUTPUT_PATH/...
@@ -43,31 +43,31 @@ rm -rf $OUTPUT_PATH
 # $OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Assets/ArchVis/Industrial $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Industrial
 
 
-# Pack 3 (26.5GB)
-echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Residential/...']"
-$OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Assets/ArchVis/Residential $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Residential
+# # Pack 3 (26.5GB)
+# echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Residential/...']"
+# $OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Assets/ArchVis/Residential $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Residential
 
 
-# # Pack 4 (22.3GB)
-# echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Materials/Base/...']"
-# $OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Materials/Base $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Materials/Base
-# echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/vMaterials_2/...']"
-# $OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Materials/vMaterials_2 $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Materials/vMaterials_2
+# Pack 4 (22.3GB)
+echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Materials/Base/...']"
+$OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Materials/Base $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Materials/Base
+echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/vMaterials_2/...']"
+$OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Materials/vMaterials_2 $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Materials/vMaterials_2
 
-# echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/AnimGraph/...']"
-# $OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Assets/AnimGraph $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Assets/AnimGraph
-# echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/Audio2Face/...']"
-# $OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Assets/Audio2Face $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Assets/Audio2Face
-# echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/Characters/...']"
-# $OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Assets/Characters $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Assets/Characters
-# echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/Particles/...']"
-# $OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Assets/Particles $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Assets/Particles
-# echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/Scenes/...']"
-# $OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Assets/Particles $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Assets/Scenes
-# echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/Skies/...']"
-# $OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Assets/Skies $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Assets/Skies
-# echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/Vegetation/...']"
-# $OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Assets/Vegetation $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Assets/Vegetation
+echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/AnimGraph/...']"
+$OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Assets/AnimGraph $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Assets/AnimGraph
+echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/Audio2Face/...']"
+$OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Assets/Audio2Face $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Assets/Audio2Face
+echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/Characters/...']"
+$OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Assets/Characters $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Assets/Characters
+echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/Particles/...']"
+$OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Assets/Particles $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Assets/Particles
+echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/Scenes/...']"
+$OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Assets/Particles $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Assets/Scenes
+echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/Skies/...']"
+$OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Assets/Skies $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Assets/Skies
+echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/Vegetation/...']"
+$OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Assets/Vegetation $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Assets/Vegetation
 
 
 # Packaging assets
