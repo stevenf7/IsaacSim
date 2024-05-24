@@ -249,7 +249,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$INTERNAL_LIBS
 -- Write experience running .bat/.sh file, like _build\windows-x86_64\release\example.helloext.app.bat
 function create_test_experience_runner(name, config_path, config, kit_sdk_config, extra_args, executable)
     local os_target = os.target()
-    if string.find(name, "ros2_bridge") or string.find(name, "omni.isaac.benchmarks") or string.find(name, "omni.isaac.tf_viewer") or string.find(name, "omni.isaac.app.setup") then
+    if string.find(name, "ros2_bridge") or string.find(name, "omni.isaac.benchmarks") or string.find(name, "omni.isaac.tf_viewer") or string.find(name, "omni.isaac.app.setup") or string.find(name, "omni.isaac.tests") then
         extra = ROS2_EXTRA[os_target]
     else
         extra = ""
