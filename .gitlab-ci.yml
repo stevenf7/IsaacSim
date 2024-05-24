@@ -132,10 +132,12 @@ variables:
   RUN_NIGHTLY_TESTS:
     value: "false"
     description: "Set to true to run nightly tests. Only happens on schedule."
+  RUN_DOCS_PUBLISH:
+    value: "false"
+    description: "Set to true to publish omni docs. Only happens on schedule."
   RUN_DOCS_BUILD:
     value: "false"
     description: "Set to true to build omni docs. Only happens on schedule."
-
 
 # ==============================================================================================================
 .check-common:
@@ -145,7 +147,7 @@ variables:
   rules:
   - if: $RUN_BUMP_VERSION == "true"
     when: never
-  - if: $RUN_DOCS_BUILD == "true"
+  - if: $RUN_DOCS_PUBLISH == "true"
     when: never
   - !reference [.rules-workflow, rules]
 
@@ -179,13 +181,19 @@ variables:
     - VERSION.md
     - VERSION
 
+.rules-publish-docs:
+  rules:
+  # allow schedule pipeline if RUN_DOCS_PUBLISH is set to "true" and its scheduled
+  - if: $CI_PIPELINE_SOURCE == "schedule" && $RUN_DOCS_PUBLISH == "true"
+    when: always
+  - when: never
+
 .rules-build-docs:
   rules:
   # allow schedule pipeline if RUN_DOCS_BUILD is set to "true" and its scheduled
   - if: $CI_PIPELINE_SOURCE == "schedule" && $RUN_DOCS_BUILD == "true"
     when: always
   - when: never
-
 
 # ==============================================================================================================
 # Rule for running publisher on push on develop and release branches
@@ -261,7 +269,7 @@ check-code-format:
   rules:
   - if: $RUN_BUMP_VERSION == "true"
     when: never
-  - if: $RUN_DOCS_BUILD == "true"
+  - if: $RUN_DOCS_PUBLISH == "true"
     when: never
   - !reference [.rules-workflow, rules]
 
@@ -344,7 +352,7 @@ build-windows-x86_64-debug:
   - .test-artifacts
   allow_failure: true
   rules:
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
     when: never
   - !reference [.rules-workflow, rules]
 
@@ -754,7 +762,7 @@ test-windows-x86_64-internalnativepython:
   - !reference [.omni_codesign_get_secrets, omni_codesign_get_secrets]
   - !reference [.omni_s3_write_get_secrets, omni_s3_write_get_secrets]
   rules:
-  - if: $RUN_DOCS_BUILD == "true" || RUN_NIGHTLY_TESTS=="true"
+  - if: $RUN_DOCS_PUBLISH == "true" || RUN_NIGHTLY_TESTS=="true"
     when: never
 
 pages:
@@ -784,7 +792,7 @@ pages:
     paths:
     - public
   rules:
-  - !reference [.rules-build-docs, rules]
+  - !reference [.rules-publish-docs, rules]
   # needs:
   # - job: build-docs
   #   artifacts: true
@@ -1032,7 +1040,7 @@ publish-extensions:
   timeout: 3 hour
   interruptible: false
   rules:
-  - if: $RUN_DOCS_BUILD == "true" || RUN_NIGHTLY_TESTS=="true"
+  - if: $RUN_DOCS_PUBLISH == "true" || RUN_NIGHTLY_TESTS=="true"
     when: never
 
 publish-python-packages-linux:
@@ -1131,7 +1139,7 @@ publish-to-launcher:
   rules:
   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
     when: never
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
     when: never
   - !reference [.rules-version-changed, rules]
   - !reference [.rules-push-manual, rules]
@@ -1228,7 +1236,7 @@ sign-windows-x86_64-release:
   rules:
   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
     when: never
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
     when: never
   - !reference [.rules-version-changed, rules]
   - !reference [.rules-push-manual, rules]
@@ -1250,7 +1258,7 @@ internal-build-linux-x86_64-release:
   rules:
   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
     when: never
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
     when: never
   - if: '$CI_COMMIT_BRANCH != "develop"'
     when: never
@@ -1272,7 +1280,7 @@ internal-build-windows-x86_64-release:
   rules:
   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
     when: never
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
     when: never
   - if: '$CI_COMMIT_BRANCH != "develop"'
     when: never
@@ -1297,7 +1305,7 @@ internal-publish-to-packman:
   rules:
   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
     when: never
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
     when: never
   - if: '$CI_COMMIT_BRANCH != "develop"'
     when: never
@@ -1331,7 +1339,7 @@ internal-publish-container:
   rules:
   - if: $ALLOW_PUBLISH_CONTAINERS != "true"
     when: never
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
     when: never
   - if: '$CI_COMMIT_BRANCH != "develop"'
     when: never
@@ -1365,7 +1373,7 @@ publish-container:
   rules:
   - if: $ALLOW_PUBLISH_CONTAINERS != "true"
     when: never
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
     when: never
   - !reference [.rules-version-changed, rules]
   - !reference [.rules-push-manual, rules]
@@ -1388,7 +1396,7 @@ binaryscan-build-linux-x86_64-release:
   rules:
   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
     when: never
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
     when: never
   - !reference [.rules-version-changed, rules]
   - !reference [.rules-push-manual, rules]
@@ -1408,7 +1416,7 @@ binaryscan-build-windows-x86_64-release:
   rules:
   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
     when: never
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
     when: never
   - !reference [.rules-version-changed, rules]
   - !reference [.rules-push-manual, rules]
@@ -1431,7 +1439,7 @@ binaryscan-publish-to-packman:
   rules:
   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
     when: never
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
     when: never
   - !reference [.rules-version-changed, rules]
   - !reference [.rules-push-manual, rules]
@@ -1450,7 +1458,7 @@ isaac-sim-assets-1:
   rules:
   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
     when: never
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
     when: never
   - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "gitlab-ci")
     when: manual
@@ -1471,7 +1479,7 @@ isaac-sim-assets-2:
   rules:
   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
     when: never
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
     when: never
   - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "gitlab-ci")
     when: manual
@@ -1492,7 +1500,7 @@ isaac-sim-assets-3:
   rules:
   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
     when: never
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
     when: never
   - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "gitlab-ci")
     when: manual
