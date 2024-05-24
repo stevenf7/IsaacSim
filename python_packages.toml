@@ -323,7 +323,7 @@ pyproject.dependencies = [
     "isaacsim-sensor==${version}",
     "isaacsim-robot-motion==${version}",
     # python packages
-    "osqp",
+    "osqp<1.0.0",
 ]
 # inventory (relative to the build config)
 inventory.include = [
