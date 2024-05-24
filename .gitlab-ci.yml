@@ -774,8 +774,8 @@ pages:
   - mkdir .public
   - ls
   - export UNZIP_DISABLE_ZIPBOMB_DETECTION=TRUE
-  - curl -o ./docs.zip  https://gitlab-master.nvidia.com/api/v4/projects/25020/jobs/artifacts/develop/download?job=build-docs
-  - unzip docs.zip
+  # - curl -o ./docs.zip  https://gitlab-master.nvidia.com/api/v4/projects/25020/jobs/artifacts/develop/download?job=build-docs
+  # - unzip docs.zip
   - mv omni-docs/_build/docs/* .public/
   - ls .public
   - curl -o ./artifact.zip  https://gitlab-master.nvidia.com/api/v4/projects/25020/jobs/artifacts/develop/download?job=build-linux-x86_64-release
@@ -790,9 +790,9 @@ pages:
     - public
   rules:
   - !reference [.rules-publish-docs, rules]
-  # needs:
-  # - job: build-docs
-  #   artifacts: true
+  needs:
+  - job: build-docs
+    artifacts: true
 
 build-docs:
   extends:
