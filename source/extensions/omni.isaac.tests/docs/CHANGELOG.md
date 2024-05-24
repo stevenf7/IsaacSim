@@ -1,6 +1,8 @@
 # Changelog
 
-## [1.16.7] - 2024-05-22
+## [1.17.0] - 2024-05-23
+### Added
+- Tests for the Leatherback robot.
 ### Fixed
 - O3dyn Tests
 
