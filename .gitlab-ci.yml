@@ -771,8 +771,8 @@ pages:
   - .build-common
   - .omni_nvks_runner_with_docker
   before_script:
-  - set -eu
-  - yum install -y p7zip p7zip-plugins
+  - apt-get update 
+  - apt-get install -y p7zip-full
   script:
   - mkdir .public
   - ls
