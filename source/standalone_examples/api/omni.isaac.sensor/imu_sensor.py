@@ -53,13 +53,17 @@ imu_sensor = my_world.scene.add(
 )
 my_world.reset()
 i = 0
+reset_needed = False
 while simulation_app.is_running():
     my_world.step(render=True)
+    if my_world.is_stopped() and not reset_needed:
+        reset_needed = True
     if my_world.is_playing():
         wheel_dof_indices = [my_carter.get_dof_index(wheel_dof_names[i]) for i in range(len(wheel_dof_names))]
-        if my_world.current_time_step_index == 0:
+        if reset_needed:
             my_world.reset()
             my_controller.reset()
+            reset_needed = False
         print(imu_sensor.get_current_frame())
         actions = ArticulationAction()
         if i >= 0 and i < 1000:

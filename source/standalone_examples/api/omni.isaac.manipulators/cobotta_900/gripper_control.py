@@ -59,11 +59,15 @@ my_world.scene.add_default_ground_plane()
 my_world.reset()
 
 i = 0
+reset_needed = False
 while simulation_app.is_running():
     my_world.step(render=True)
+    if my_world.is_stopped() and not reset_needed:
+        reset_needed = True
     if my_world.is_playing():
-        if my_world.current_time_step_index == 0:
+        if reset_needed:
             my_world.reset()
+            reset_needed = False
         i += 1
         gripper_positions = my_denso.gripper.get_joint_positions()
         if i < 500:

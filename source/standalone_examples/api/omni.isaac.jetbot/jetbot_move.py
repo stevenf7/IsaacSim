@@ -44,12 +44,16 @@ my_controller = DifferentialController(name="simple_control", wheel_radius=0.03,
 my_world.reset()
 
 i = 0
+reset_needed = False
 while simulation_app.is_running():
     my_world.step(render=True)
+    if my_world.is_stopped() and not reset_needed:
+        reset_needed = True
     if my_world.is_playing():
-        if my_world.current_time_step_index == 0:
+        if reset_needed:
             my_world.reset()
             my_controller.reset()
+            reset_needed = False
         if i >= 0 and i < 1000:
             # forward
             my_jetbot.apply_wheel_actions(my_controller.forward(command=[0.05, 0]))

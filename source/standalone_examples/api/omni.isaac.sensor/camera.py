@@ -57,7 +57,7 @@ camera.initialize()
 
 i = 0
 camera.add_motion_vectors_to_frame()
-
+reset_needed = False
 while simulation_app.is_running():
     my_world.step(render=True)
     print(camera.get_current_frame())
@@ -71,9 +71,12 @@ while simulation_app.is_running():
         imgplot = plt.imshow(camera.get_rgba()[:, :, :3])
         plt.show()
         print(camera.get_current_frame()["motion_vectors"])
+    if my_world.is_stopped() and not reset_needed:
+        reset_needed = True
     if my_world.is_playing():
-        if my_world.current_time_step_index == 0:
+        if reset_needed:
             my_world.reset()
+            reset_needed = False
     i += 1
 
 

@@ -63,12 +63,15 @@ for i in range(4):
 
 ant_sensors[0].add_raw_contact_data_to_frame()
 my_world.reset()
-
+reset_needed = False
 while simulation_app.is_running():
     my_world.step(render=True)
+    if my_world.is_stopped() and not reset_needed:
+        reset_needed = True
     if my_world.is_playing():
         print(ant_sensors[0].get_current_frame())
-        if my_world.current_time_step_index == 0:
+        if reset_needed:
             my_world.reset()
+            reset_needed = False
 
 simulation_app.close()

@@ -32,12 +32,16 @@ my_controller = StackingController(
 articulation_controller = my_ur10.get_articulation_controller()
 
 i = 0
+reset_needed = False
 while simulation_app.is_running():
     my_world.step(render=True)
+    if my_world.is_stopped() and not reset_needed:
+        reset_needed = True
     if my_world.is_playing():
-        if my_world.current_time_step_index == 0:
+        if reset_needed:
             my_world.reset()
             my_controller.reset()
+            reset_needed = False
         observations = my_world.get_observations()
         actions = my_controller.forward(observations=observations, end_effector_offset=np.array([0.0, 0.0, 0.02]))
         articulation_controller.apply_action(actions)
