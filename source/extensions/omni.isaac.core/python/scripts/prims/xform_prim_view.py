@@ -6,12 +6,16 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+import weakref
 from typing import List, Optional, Tuple, Union
 
 import carb
 import numpy as np
+import omni.isaac.core.utils.fabric as fabric_utils
+import omni.isaac.core.utils.interops as interops_utils
 import omni.kit.app
 import torch
+import usdrt
 import warp as wp
 from omni.isaac.core.materials.omni_glass import OmniGlass
 from omni.isaac.core.materials.omni_pbr import OmniPBR
@@ -73,6 +77,7 @@ class XFormPrimView(object):
                                                 (i.e: translate, orient and scale) ONLY and in that order.
                                                 Set this parameter to False if the object were cloned using using
                                                 the cloner api in omni.isaac.cloner. Defaults to True.
+        usd (bool, optional): True to strictly read/ write from usd. Otherwise False to allow read/ write from Fabric during initialization. Defaults to True.
 
     Raises:
         Exception: if translations and positions defined at the same time.
@@ -119,6 +124,7 @@ class XFormPrimView(object):
         scales: Optional[Union[np.ndarray, torch.Tensor]] = None,
         visibilities: Optional[Union[np.ndarray, torch.Tensor]] = None,
         reset_xform_properties: bool = True,
+        usd: bool = True,
     ) -> None:
         self._non_root_link = False
         self._prim_paths = find_matching_prim_paths(prim_paths_expr)
@@ -143,16 +149,25 @@ class XFormPrimView(object):
             import omni.isaac.core.utils.numpy as np_utils
 
             self._backend = "numpy"
-            self._device = None
+            self._device = "cpu"
             self._backend_utils = np_utils
 
         self._default_state = None
         self._applied_visual_materials = [None] * self._count
         self._binding_apis = [None] * self._count
         self._non_root_link = is_prim_non_root_articulation_link(prim_path=self._prim_paths[0])
+        self._usdrt_stage = get_current_stage(fabric=True)
+        self._view_index_attr = "isaac_sim:view_index:" + str(hash(self))
+        self._view_in_fabric_prepared = False
+        self._selection = None
+        self._fabric_to_view = None
+        self._view_to_fabric = None
+        self._default_view_indices = None
+        self._fabric_data_dicts = dict()
+        self._fabric_data_valid = dict()
+        self._reset_fabric_selection_callback = None
         if not self._non_root_link and reset_xform_properties:
             self._set_xform_properties()
-
         if not self._non_root_link:
             if translations is not None and positions is not None:
                 raise Exception("You can not define translation and position at the same time")
@@ -166,7 +181,7 @@ class XFormPrimView(object):
         if visibilities is not None:
             XFormPrimView.set_visibilities(self, visibilities=visibilities)
         if not self._non_root_link:
-            default_positions, default_orientations = self.get_world_poses()
+            default_positions, default_orientations = self.get_world_poses(usd=usd)
             if self._backend == "warp":
                 self._default_state = XFormPrimViewState(
                     positions=default_positions.data, orientations=default_orientations.data
@@ -176,6 +191,7 @@ class XFormPrimView(object):
         return
 
     def __del__(self):
+        self._reset_fabric_selection_callback = None
         return
 
     @property
@@ -708,7 +724,7 @@ class XFormPrimView(object):
         return result
 
     def get_world_poses(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
+        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None, usd: bool = True
     ) -> Union[
         Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor], Tuple[wp.indexedarray, wp.indexedarray]
     ]:
@@ -719,6 +735,7 @@ class XFormPrimView(object):
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
+            usd (bool, optional): True to query from usd. Otherwise False to query from Fabric data. Defaults to True.
 
         Returns:
             Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor], Tuple[wp.indexedarray, wp.indexedarray]]: first index is positions in the world frame of the prims. shape is (M, 3).
@@ -757,23 +774,67 @@ class XFormPrimView(object):
              [1. 0. 0. 0.]
              [1. 0. 0. 0.]]
         """
-        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        positions = np.zeros((indices.shape[0], 3), dtype=np.float32)
-        orientations = np.zeros((indices.shape[0], 4), dtype=np.float32)
-        indices = self._backend_utils.to_list(indices)
-        write_idx = 0
-        for i in indices:
-            positions[write_idx], orientations[write_idx] = get_world_pose(self._prim_paths[i])
-            write_idx += 1
-        positions = self._backend_utils.convert(positions, device=self._device, dtype="float32", indexed=True)
-        orientations = self._backend_utils.convert(orientations, device=self._device, dtype="float32", indexed=True)
-        return positions, orientations
+        if not usd:
+            if not self._view_in_fabric_prepared:
+                self._prepare_view_in_fabric()
+            if self._selection is None:
+                self._get_fabric_selection()
+            positions = wp.fabricarray(self._selection, "_worldPosition")
+            orientations = wp.fabricarray(self._selection, "_worldOrientation")
+            if indices is None:
+                indices = self._default_view_indices
+            else:
+                indices = self._backend2warp(indices, dtype=wp.uint32)
+            wp.launch(
+                fabric_utils.get_vec3d_array,
+                dim=(indices.shape[0]),
+                inputs=[
+                    positions,
+                    self._fabric_to_view,
+                    self._view_to_fabric,
+                    self._fabric_data_dicts["world_position"],
+                    indices,
+                ],
+                device=self._device,
+            )
+            wp.launch(
+                fabric_utils.get_quatf_array,
+                dim=(indices.shape[0]),
+                inputs=[
+                    orientations,
+                    self._fabric_to_view,
+                    self._view_to_fabric,
+                    self._fabric_data_dicts["world_orientation"],
+                    indices,
+                ],
+                device=self._device,
+            )
+            self._fabric_data_valid["world_position"] = True
+            self._fabric_data_valid["world_orientation"] = True
+            return self._warp2backend(
+                wp.indexedarray(self._fabric_data_dicts["world_position"], indices=indices.view(wp.int32))
+            ), self._warp2backend(
+                wp.indexedarray(self._fabric_data_dicts["world_orientation"], indices=indices.view(wp.int32))
+            )
+        else:
+            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+            positions = np.zeros((indices.shape[0], 3), dtype=np.float32)
+            orientations = np.zeros((indices.shape[0], 4), dtype=np.float32)
+            indices = self._backend_utils.to_list(indices)
+            write_idx = 0
+            for i in indices:
+                positions[write_idx], orientations[write_idx] = get_world_pose(self._prim_paths[i])
+                write_idx += 1
+            positions = self._backend_utils.convert(positions, device=self._device, dtype="float32", indexed=True)
+            orientations = self._backend_utils.convert(orientations, device=self._device, dtype="float32", indexed=True)
+            return positions, orientations
 
     def set_world_poses(
         self,
         positions: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
         orientations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
         indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        usd: bool = True,
     ) -> None:
         """Set prim poses in the view with respect to the world's frame
 
@@ -791,6 +852,7 @@ class XFormPrimView(object):
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
+            usd (bool, optional): True to query from usd. Otherwise False to query from Fabric data. Defaults to True.
 
         .. hint::
 
@@ -812,29 +874,69 @@ class XFormPrimView(object):
             >>> orientations = np.tile(np.array([1.0, 0.0, 0.0, 0.0]), (3, 1))
             >>> prims.set_world_poses(positions, orientations, indices=np.array([0, 2, 4]))
         """
-        if positions is None or orientations is None:
-            current_positions, current_orientations = self.get_world_poses(indices=indices)
-            if positions is None:
-                positions = current_positions
-            if orientations is None:
-                orientations = current_orientations
-        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        parent_transforms = np.zeros(shape=(indices.shape[0], 4, 4), dtype="float32")
-        indices = self._backend_utils.to_list(indices)
-        write_idx = 0
-        for i in indices:
-            parent_transforms[write_idx] = np.array(
-                UsdGeom.Xformable(get_prim_parent(self._prims[i])).ComputeLocalToWorldTransform(Usd.TimeCode.Default()),
-                dtype="float32",
+        if not usd:
+            if not self._view_in_fabric_prepared:
+                self._prepare_view_in_fabric()
+            if self._selection is None:
+                self._get_fabric_selection()
+            if indices is None:
+                indices = self._default_view_indices
+            else:
+                indices = self._backend2warp(indices, dtype=wp.uint32)
+            if positions is not None:
+                current_positions = wp.fabricarray(self._selection, "_worldPosition")
+                wp.launch(
+                    fabric_utils.set_vec3d_array,
+                    dim=(indices.shape[0]),
+                    inputs=[
+                        current_positions,
+                        self._fabric_to_view,
+                        self._view_to_fabric,
+                        self._backend2warp(positions),
+                        indices,
+                    ],
+                    device=self._device,
+                )
+            if orientations is not None:
+                current_orientations = wp.fabricarray(self._selection, "_worldOrientation")
+                wp.launch(
+                    fabric_utils.set_quatf_array,
+                    dim=(indices.shape[0]),
+                    inputs=[
+                        current_orientations,
+                        self._fabric_to_view,
+                        self._view_to_fabric,
+                        self._backend2warp(orientations),
+                        indices,
+                    ],
+                    device=self._device,
+                )
+        else:
+            if positions is None or orientations is None:
+                current_positions, current_orientations = self.get_world_poses(indices=indices)
+                if positions is None:
+                    positions = current_positions
+                if orientations is None:
+                    orientations = current_orientations
+            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+            parent_transforms = np.zeros(shape=(indices.shape[0], 4, 4), dtype="float32")
+            indices = self._backend_utils.to_list(indices)
+            write_idx = 0
+            for i in indices:
+                parent_transforms[write_idx] = np.array(
+                    UsdGeom.Xformable(get_prim_parent(self._prims[i])).ComputeLocalToWorldTransform(
+                        Usd.TimeCode.Default()
+                    ),
+                    dtype="float32",
+                )
+                write_idx += 1
+            parent_transforms = self._backend_utils.convert(parent_transforms, dtype="float32", device=self._device)
+            calculated_translations, calculated_orientations = self._backend_utils.get_local_from_world(
+                parent_transforms, positions, orientations, self._device
             )
-            write_idx += 1
-        parent_transforms = self._backend_utils.convert(parent_transforms, dtype="float32", device=self._device)
-        calculated_translations, calculated_orientations = self._backend_utils.get_local_from_world(
-            parent_transforms, positions, orientations, self._device
-        )
-        XFormPrimView.set_local_poses(
-            self, translations=calculated_translations, orientations=calculated_orientations, indices=indices
-        )
+            XFormPrimView.set_local_poses(
+                self, translations=calculated_translations, orientations=calculated_orientations, indices=indices
+            )
         return
 
     def get_local_poses(
@@ -1134,3 +1236,84 @@ class XFormPrimView(object):
         for index in indices:
             result = result and is_prim_path_valid(self._prim_paths[index])
         return result
+
+    def _get_fabric_selection(self) -> None:
+        self._selection = self._usdrt_stage.SelectPrims(
+            require_attrs=[
+                (usdrt.Sdf.ValueTypeNames.Double3, "_worldPosition", usdrt.Usd.Access.ReadWrite),
+                (usdrt.Sdf.ValueTypeNames.UInt, self._view_index_attr, usdrt.Usd.Access.Read),
+                (usdrt.Sdf.ValueTypeNames.Quatf, "_worldOrientation", usdrt.Usd.Access.ReadWrite),
+            ],
+            device=self._device,
+        )
+        self._fabric_to_view = wp.fabricarray(self._selection, self._view_index_attr)
+        wp.launch(
+            fabric_utils.set_view_to_fabric_array,
+            dim=(self._fabric_to_view.shape[0]),
+            inputs=[self._fabric_to_view, self._view_to_fabric],
+            device=self._device,
+        )
+
+    def _create_fabric_view_indices(self) -> None:
+        for i in range(self.count):
+            prim = self._usdrt_stage.GetPrimAtPath(self._prim_paths[i])
+            prim.CreateAttribute(self._view_index_attr, usdrt.Sdf.ValueTypeNames.UInt, True)
+            prim.GetAttribute(self._view_index_attr).Set(i)
+            xformable_prim = usdrt.Rt.Xformable(prim)
+            if not xformable_prim.HasWorldXform():
+                xformable_prim.SetWorldXformFromUsd()
+
+    def _reset_fabric_selection(self, dt) -> None:
+        self._selection = None
+        for data_tensor_name in self._fabric_data_valid.keys():
+            self._fabric_data_valid[data_tensor_name] = False
+
+    def _warp2backend(self, data) -> Union[wp.indexedarray, torch.Tensor, np.ndarray]:
+        if self._backend == "warp":
+            return data
+        elif self._backend == "torch":
+            return interops_utils.warp2torch(data.data)[interops_utils.warp2torch(data.indices[0])]
+        elif self._backend == "numpy":
+            return interops_utils.warp2numpy(data.data)[interops_utils.warp2numpy(data.indices[0])]
+        else:
+            raise Exception(
+                "utils to convert warp arrays to the specified backend doesn't exist or the data passed is not using the backend specified"
+            )
+
+    def _backend2warp(self, data, dtype=None) -> Union[wp.array, torch.Tensor, np.ndarray]:
+        if isinstance(data, list):
+            result = wp.array(data, dtype=wp.uint32, device=self._device).to(self._device)
+        elif self._backend == "warp":
+            result = data.to(self._device)
+        elif self._backend == "torch":
+            result = interops_utils.torch2warp(data).to(self._device)
+        elif self._backend == "numpy":
+            result = interops_utils.numpy2warp(data).to(self._device)
+        elif self._backend == "numpy":
+            result = interops_utils.numpy2torch(data).to(self._device)
+        else:
+            raise Exception("utils to convert the specified backend arrays to warp doesn't exist")
+        if dtype is not None:
+            return result.view(dtype)
+        else:
+            return result
+
+    def _prepare_view_in_fabric(self):
+        self._create_fabric_view_indices()
+        self._view_to_fabric = wp.zeros([self.count], dtype=wp.uint32, device=self._device)
+        self._default_view_indices = wp.zeros([self.count], dtype=wp.uint32, device=self._device)
+        wp.launch(
+            kernel=fabric_utils.arange_k,
+            dim=self.count,
+            inputs=[self._default_view_indices],
+            device=self._device,
+        )
+        self._get_fabric_selection()
+        self._fabric_data_dicts["world_position"] = wp.zeros([self.count, 3], dtype=wp.float32, device=self._device)
+        self._fabric_data_valid["world_position"] = False
+        self._fabric_data_dicts["world_orientation"] = wp.zeros([self.count, 4], dtype=wp.float32, device=self._device)
+        self._fabric_data_valid["world_orientation"] = False
+        self._reset_fabric_selection_callback = omni.physx.acquire_physx_interface().subscribe_physics_step_events(
+            lambda step_dt, obj=weakref.proxy(self): obj._reset_fabric_selection(step_dt)
+        )
+        self._view_in_fabric_prepared = True

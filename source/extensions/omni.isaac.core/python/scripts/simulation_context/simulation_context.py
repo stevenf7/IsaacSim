@@ -1322,6 +1322,7 @@ class SimulationContext:
             backend=backend,
             device=device,
         )
+        self._device = self._physics_context.device
         self.set_simulation_dt(physics_dt=physics_dt, rendering_dt=rendering_dt)
         self.render()
         return self.stage
@@ -1351,6 +1352,7 @@ class SimulationContext:
             backend=backend,
             device=device,
         )
+        self._device = self._physics_context.device
         self.set_simulation_dt(physics_dt=physics_dt, rendering_dt=rendering_dt)
         await omni.kit.app.get_app().next_update_async()
         return self.stage
