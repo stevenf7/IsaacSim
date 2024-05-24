@@ -1,0 +1,21 @@
+# send email to dl shared-pipeline-myapp@nvidia.com
+email = false
+# list forum id
+forums = [
+]
+# list jira issue ID
+jira = [
+
+]
+# list of phone numbers to text update of changelog
+# phone number needs country code. EX: US = 1
+text = [
+
+]
+# list of slack channels to update with changelog
+slack = [
+
+]
+# OPTIONAL
+# override the CHANGELOG.MD with a new message
+#override_message = ""

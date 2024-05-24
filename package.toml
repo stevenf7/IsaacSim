@@ -285,3 +285,9 @@ files = [
     ["_assets-3_temp/**",""],
     ["tools/internal-licenses/isaac-sim-assets-LICENSE.txt","PACKAGE-LICENSES/isaac-sim-assets-LICENSE.txt"],
 ]
+
+[isaac-sim-assets-4]
+files = [
+    ["_assets-4_temp/**",""],
+    ["tools/internal-licenses/isaac-sim-assets-LICENSE.txt","PACKAGE-LICENSES/isaac-sim-assets-LICENSE.txt"],
+]
