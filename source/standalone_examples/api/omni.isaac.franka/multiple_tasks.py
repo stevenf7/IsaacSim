@@ -42,13 +42,17 @@ for i in range(num_of_tasks):
     articulation_controllers.append(frankas[i].get_articulation_controller())
 
 my_world.pause()
+reset_needed = False
 while simulation_app.is_running():
     my_world.step(render=True)
+    if my_world.is_stopped() and not reset_needed:
+        reset_needed = True
     if my_world.is_playing():
-        if my_world.current_time_step_index == 0:
+        if reset_needed:
             my_world.reset()
             for i in range(num_of_tasks):
                 controllers[i].reset()
+            reset_needed = False
         observations = my_world.get_observations()
         for i in range(num_of_tasks):
             articulation_controllers.append(frankas[i].get_articulation_controller())

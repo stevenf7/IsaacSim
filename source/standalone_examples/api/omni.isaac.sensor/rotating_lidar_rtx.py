@@ -70,12 +70,16 @@ my_lidar.add_range_data_to_frame()
 my_lidar.add_point_cloud_data_to_frame()
 my_lidar.enable_visualization()
 i = 0
+reset_needed = False
 while simulation_app.is_running():
     my_world.step(render=True)
+    if my_world.is_stopped() and not reset_needed:
+        reset_needed = True
     if my_world.is_playing():
-        if my_world.current_time_step_index == 0:
+        if reset_needed:
             my_world.reset()
             my_controller.reset()
+            reset_needed = False
         if i >= 0 and i < 1000:
             print(my_lidar.get_current_frame())
             # forward

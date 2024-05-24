@@ -56,13 +56,16 @@ class Subscriber(Node):
 
     def run_simulation(self):
         self.timeline.play()
+        reset_needed = False
         while simulation_app.is_running():
             self.ros_world.step(render=True)
             rclpy.spin_once(self, timeout_sec=0.0)
+            if self.ros_world.is_stopped() and not reset_needed:
+                reset_needed = True
             if self.ros_world.is_playing():
-                if self.ros_world.current_time_step_index == 0:
+                if reset_needed:
                     self.ros_world.reset()
-
+                    reset_needed = False
                 # the actual setting the cube pose is done here
                 self.ros_world.scene.get_object("cube_1").set_world_pose(self._cube_position)
 

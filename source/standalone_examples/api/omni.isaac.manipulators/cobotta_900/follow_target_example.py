@@ -40,11 +40,15 @@ ground_plane = my_world.scene.get_object(name="default_ground_plane")
 my_controller.add_obstacle(ground_plane)
 
 articulation_controller = my_denso.get_articulation_controller()
+reset_needed = False
 while simulation_app.is_running():
     my_world.step(render=True)
+    if my_world.is_stopped() and not reset_needed:
+        reset_needed = True
     if my_world.is_playing():
-        if my_world.current_time_step_index == 0:
+        if reset_needed:
             my_world.reset()
+            reset_needed = False
         observations = my_world.get_observations()
         actions = my_controller.forward(
             target_end_effector_position=observations[target_name]["position"],

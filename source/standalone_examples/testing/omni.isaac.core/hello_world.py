@@ -120,13 +120,16 @@ my_task = HelloWorldSphere(name="hello_world", num_envs=num_envs, env_spacing=en
 my_world.add_task(my_task)
 my_world.reset()
 
+reset_needed = False
 while simulation_app.is_running():
+    if my_world.is_stopped() and not reset_needed:
+        reset_needed = True
     if my_world.is_playing():
         # deal with sim re-initialization after restarting sim
-        if my_world.current_time_step_index == 0:
+        if reset_needed:
             # initialize simulation views
             my_world.reset(soft=True)
-
+            reset_needed = False
         observations = my_world.get_observations()
 
     my_world.step(render=True)

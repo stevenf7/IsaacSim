@@ -28,11 +28,15 @@ target_name = task_params["target_name"]["value"]
 my_dofbot = my_world.scene.get_object(dofbot_name)
 my_controller = KinematicsSolver(my_dofbot)
 articulation_controller = my_dofbot.get_articulation_controller()
+reset_needed = False
 while simulation_app.is_running():
     my_world.step(render=True)
+    if my_world.is_stopped() and not reset_needed:
+        reset_needed = True
     if my_world.is_playing():
-        if my_world.current_time_step_index == 0:
+        if reset_needed:
             my_world.reset()
+            reset_needed = False
         observations = my_world.get_observations()
 
         # IK does not work well on dofbot with orientation targets
