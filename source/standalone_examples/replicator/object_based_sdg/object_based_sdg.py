@@ -458,7 +458,6 @@ def capture_with_motion_blur_and_pathtracing(duration=0.05, num_samples=8, spp=6
     carb.settings.get_settings().set("/rtx/rendermode", "PathTracing")
     carb.settings.get_settings().set("/rtx/pathtracing/spp", spp)
     carb.settings.get_settings().set("/rtx/pathtracing/totalSpp", spp)
-    carb.settings.get_settings().set("/rtx/pathtracing/clampSpp", spp)
     carb.settings.get_settings().set("/rtx/pathtracing/optixDenoiser/enabled", 0)
 
     # Make sure the timeline is playing
