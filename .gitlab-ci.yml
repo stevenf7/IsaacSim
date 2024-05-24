@@ -770,9 +770,6 @@ pages:
   extends:
   - .build-common
   - .omni_nvks_runner_with_docker
-  before_script:
-  - apt-get update 
-  - apt-get install -y p7zip-full
   script:
   - mkdir .public
   - ls
@@ -802,9 +799,6 @@ build-docs:
   - .build-common
   - .omni_nvks_runner_with_docker
   timeout: 3 hours
-  before_script:
-  - set -eu
-  - yum install -y bsdtar
   - !reference [.omni_s3_write_get_secrets, omni_s3_write_get_secrets]
   script:
   - git clone -q --depth=1 -b isaac_sim --single-branch https://gitlab-master.nvidia.com/omniverse/omni-docs.git
