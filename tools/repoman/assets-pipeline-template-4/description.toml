@@ -38,14 +38,14 @@ kind = "content-pack"
 description = [
     "This content pack replicates the Isaac Sim assets found in the following publicly available Omniverse Nucleus folder; **NVIDIA -> Assets -> Isaac**. This content pack is designed for storage on a local system.",
     "This is pack 4 of 4.",
-    "Total content pack size: ~28.4GB (uncompressed)"
+    "Total content pack size: ~22.3GB (uncompressed)"
 ]
 
 extensionDependencies = [ "n/a" ]
 
 # required for `content-pack` `kind`
 gallery = [
-    "https://launcher-prod.s4.us-east-2.amazonaws.com/isaac_sim/2022.1.1/image.png",
+    "https://launcher-prod.s3.us-east-2.amazonaws.com/isaac_sim/2022.1.1/image.png",
 ]
 
 
@@ -53,22 +53,22 @@ format = "usd"
 
 [contractLicenseAgreement]
 title = "NVIDIA Omniverse Content Pack"
-url = "https://docs.omniverse.nvidia.com/app_isaacsim/common/NVIDIA_Omniverse_License_Agreement.html"
+url = "https://docs.omniverse.nvidia.com/platform/latest/common/NVIDIA_Omniverse_License_Agreement.html"
 
-[assetSpecs]
-# represents the number of meshes for this content
-meshes = 4207
-# defines the short description for meshes
-meshDetail = "USD files"
-# represents the number of textures for this content
-textures = 1425
-# defines the short description for textures
-textureDetail = "Bitmap textures"
-# represents the number of materials for this content
-materials = 158
+# [assetSpecs]
+# # represents the number of meshes for this content
+# meshes = 3207
+# # defines the short description for meshes
+# meshDetail = "USD files"
+# # represents the number of textures for this content
+# textures = 1325
+# # defines the short description for textures
+# textureDetail = "Bitmap textures"
+# # represents the number of materials for this content
+# materials = 158
 
-animations = 0
-rigged = false
+# animations = 0
+# rigged = false
 
 [developer]
 #name of developer
@@ -85,7 +85,7 @@ url = 'https://www.nvidia.com'
 # #array of links for more info on product
 [[links]]
 title = "Documentation"
-url = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html"
+url = "https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html"
 [[links]]
 title = "Forums"
 url = "https://forums.developer.nvidia.com/c/omniverse/simulation/69"
@@ -103,4 +103,4 @@ url = "https://forums.developer.nvidia.com/c/omniverse/simulation/69"
 # url = "https://www.nvidia.com/en-us/on-demand/"
 # [[links]]
 # title = "Forums"
-# url = "https://forums.developer.nvidia.com/c/omniverse/400"
+# url = "https://forums.developer.nvidia.com/c/omniverse/300"
