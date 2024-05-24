@@ -97,7 +97,6 @@ def run_motion_blur_example(num_frames=3, custom_delta_time=None, use_path_traci
         carb.settings.get_settings().set("/rtx/pathtracing/spp", pt_spp)
         # (int): Maximum number of samples to accumulate per pixel. When this count is reached the rendering stops until a scene or setting change is detected, restarting the rendering process. Set to 0 to remove this limit.
         carb.settings.get_settings().set("/rtx/pathtracing/totalSpp", pt_spp)
-        carb.settings.get_settings().set("/rtx/pathtracing/clampSpp", pt_spp)
         carb.settings.get_settings().set("/rtx/pathtracing/optixDenoiser/enabled", 0)
         # Number of sub samples to render if in PathTracing render mode and motion blur is enabled.
         carb.settings.get_settings().set("/omni/replicator/pathTracedMotionBlurSubSamples", pt_subsamples)
