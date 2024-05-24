@@ -14,11 +14,9 @@
 
 #include <inttypes.h>
 
-Ros2BackendHumble::Ros2BackendHumble(std::string pkgName,
-                                     std::string msgSubfolder,
-                                     std::string msgName,
-                                     BackendMessageType messageType)
-    : Ros2Backend(pkgName, msgSubfolder, msgName, messageType)
+Ros2BackendHumble::Ros2BackendHumble(
+    std::string pkgName, std::string msgSubfolder, std::string msgName, BackendMessageType messageType, bool testLibrary)
+    : Ros2Backend(pkgName, msgSubfolder, msgName, messageType, testLibrary)
 {
 }
 

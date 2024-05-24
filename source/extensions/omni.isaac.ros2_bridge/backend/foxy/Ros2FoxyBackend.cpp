@@ -14,11 +14,9 @@
 
 #include <inttypes.h>
 
-Ros2BackendFoxy::Ros2BackendFoxy(std::string pkgName,
-                                 std::string msgSubfolder,
-                                 std::string msgName,
-                                 BackendMessageType messageType)
-    : Ros2Backend(pkgName, msgSubfolder, msgName, messageType)
+Ros2BackendFoxy::Ros2BackendFoxy(
+    std::string pkgName, std::string msgSubfolder, std::string msgName, BackendMessageType messageType, bool testLibrary)
+    : Ros2Backend(pkgName, msgSubfolder, msgName, messageType, testLibrary)
 {
 }
 

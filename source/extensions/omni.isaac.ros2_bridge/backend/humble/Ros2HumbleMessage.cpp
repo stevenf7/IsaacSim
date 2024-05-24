@@ -322,11 +322,16 @@ Ros2ImageMessageHumble::~Ros2ImageMessageHumble()
 
 
 // NitrosBridgeImage message
+// For this specific message we disable logging when loading the message library to prevent spam
 Ros2NitrosBridgeImageMessageHumble::Ros2NitrosBridgeImageMessageHumble()
-    : Ros2BackendHumble("isaac_ros_nitros_bridge_interfaces", "msg", "NitrosBridgeImage")
+    : Ros2BackendHumble(
+          "isaac_ros_nitros_bridge_interfaces", "msg", "NitrosBridgeImage", BackendMessageType::eMessage, true)
 {
 #ifndef _WIN32
-    msg = create();
+    if (mTypesupportLibrary->isValid())
+    {
+        msg = create();
+    }
 #endif
 }
 

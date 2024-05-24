@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.26.3] - 2024-05-23
+### Fixed
+- Extra warnings when nitros bridge message type was not found
+
 ## [2.26.2] - 2024-05-23
 ### Fixed
 - Fix references to non-existing node in the MoveIt example

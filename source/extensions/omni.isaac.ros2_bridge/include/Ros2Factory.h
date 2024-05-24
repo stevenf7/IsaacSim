@@ -160,15 +160,16 @@ public:
     Ros2Backend(std::string pkgName,
                 std::string msgSubfolder,
                 std::string msgName,
-                BackendMessageType messageType = BackendMessageType::eMessage)
+                BackendMessageType messageType = BackendMessageType::eMessage,
+                bool testLibrary = false)
         : mPkgName(pkgName), mMsgSubfolder(msgSubfolder), mMsgName(msgName), mMessageType(messageType)
     {
-        mGeneratorLibrary =
-            std::make_shared<omni::isaac::utils::LibraryLoader>(std::string(mPkgName) + "__rosidl_generator_c");
-        mTypesupportLibrary =
-            std::make_shared<omni::isaac::utils::LibraryLoader>(std::string(mPkgName) + "__rosidl_typesupport_c");
+        mGeneratorLibrary = std::make_shared<omni::isaac::utils::LibraryLoader>(
+            std::string(mPkgName) + "__rosidl_generator_c", "", testLibrary);
+        mTypesupportLibrary = std::make_shared<omni::isaac::utils::LibraryLoader>(
+            std::string(mPkgName) + "__rosidl_typesupport_c", "", testLibrary);
         mTypesupportIntrospectionLibrary = std::make_shared<omni::isaac::utils::LibraryLoader>(
-            std::string(mPkgName) + "__rosidl_typesupport_introspection_c");
+            std::string(mPkgName) + "__rosidl_typesupport_introspection_c", "", testLibrary);
     }
     void* getTypeSupportHandleDynamic()
     {
