@@ -259,6 +259,8 @@ check-code-format:
   rules:
   - if: $RUN_BUMP_VERSION == "true"
     when: never
+  - if: $RUN_DOCS_BUILD == "true"
+    when: never
   - !reference [.rules-workflow, rules]
 
 
@@ -766,6 +768,8 @@ pages:
   - ls
   - mv omni-docs/_build/docs/* .public/
   - ls .public
+  - curl -o ./artifact.zip  https://gitlab-master.nvidia.com/api/v4/projects/25020/jobs/artifacts/develop/download?job=build-linux-x86_64-release
+  - unzip artifact.zip
   - 7z x _build/packages/docs@*.7z -oisaacsim
   - mkdir -p .public/py/
   - mv isaacsim .public/py/
@@ -777,8 +781,6 @@ pages:
   rules:
   - !reference [.rules-build-docs, rules]
   needs:
-  - job: build-linux-x86_64-release
-    artifacts: true
   - job: build-docs
     artifacts: true
 
@@ -792,11 +794,12 @@ build-docs:
   - yum install -y bsdtar
   - !reference [.omni_s3_write_get_secrets, omni_s3_write_get_secrets]
   script:
-  - git clone --depth=1 -b isaac_sim --single-branch https://gitlab-master.nvidia.com/omniverse/omni-docs.git
+  - echo "Build log is captured in the build logs. Running build..."
+  - git clone --depth=1 -b isaac_sim --single-branch https://gitlab-master.nvidia.com/omniverse/omni-docs.git > git_log_full.txt
   - pushd omni-docs
-  - ./repo docs --warn-as-error=0
-  - ./repo docs --stage sphinx
-  - ./repo docs --stage post
+  - ./repo docs --warn-as-error=0 > ../build_log_full.txt
+  - ./repo docs --stage sphinx > ../build_log_sphinx.txt
+  - ./repo docs --stage post > ../build_log_post.txt
   - popd
   rules:
   - !reference [.rules-build-docs, rules]
@@ -805,6 +808,10 @@ build-docs:
     expire_in: 2 weeks
     paths:
     - omni-docs/_build/docs
+    - git_log_full.txt
+    - build_log_full.txt
+    - build_log_sphinx.txt
+    - build_log_post.txt
 
 
 # ==============================================================================================================
