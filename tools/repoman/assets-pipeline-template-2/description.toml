@@ -55,20 +55,20 @@ format = "usd"
 title = "NVIDIA Omniverse Content Pack"
 url = "https://docs.omniverse.nvidia.com/platform/latest/common/NVIDIA_Omniverse_License_Agreement.html"
 
-# [assetSpecs]
-# # represents the number of meshes for this content
-# meshes = 3207
-# # defines the short description for meshes
-# meshDetail = "USD files"
-# # represents the number of textures for this content
-# textures = 1325
-# # defines the short description for textures
-# textureDetail = "Bitmap textures"
-# # represents the number of materials for this content
-# materials = 158
+[assetSpecs]
+# represents the number of meshes for this content
+meshes = 0
+# defines the short description for meshes
+meshDetail = "USD files"
+# represents the number of textures for this content
+textures = 0
+# defines the short description for textures
+textureDetail = "Bitmap textures"
+# represents the number of materials for this content
+materials = 0
 
-# animations = 0
-# rigged = false
+animations = 0
+rigged = false
 
 [developer]
 #name of developer
