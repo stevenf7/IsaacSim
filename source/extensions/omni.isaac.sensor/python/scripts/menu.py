@@ -167,7 +167,7 @@ class IsaacSensorMenu:
                                 lambda a=weakref.proxy(self): create_prim(
                                     prim_path=get_next_free_path("/ZED_X", None),
                                     prim_type="Xform",
-                                    usd_path=get_assets_root_path() + "/Isaac/Sensors/Stereolabs/ZED_X.usd",
+                                    usd_path=get_assets_root_path() + "/Isaac/Sensors/Stereolabs/ZED_X/ZED_X.usd",
                                 ),
                             ),
                         ],
