@@ -129,7 +129,16 @@ class A1_runner(object):
 
         """
         # change to sim running
+        reset_needed = False
         while simulation_app.is_running():
+            if self._world.is_stopped() and not reset_needed:
+                self._world.remove_physics_callback("a1_advance")
+                reset_needed = True
+            if self._world.is_playing():
+                if reset_needed:
+                    self._world.reset(soft=False)
+                    reset_needed = False
+                    self._world.add_physics_callback("a1_advance", callback_fn=self.on_physics_step)
             self._world.step(render=True)
         return
 
