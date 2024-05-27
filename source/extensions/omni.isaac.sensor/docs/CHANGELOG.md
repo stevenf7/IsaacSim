@@ -16,8 +16,7 @@
 
 ## [11.2.4] - 2024-05-08
 ### Fixed
-- OgnROS2PublishLaserScan switches buffer index calculation to use monotonically-increasing integer, fixing
-  bug where floating-point math would occasionally result in buffer never being filled
+- OgnROS2PublishLaserScan switches buffer index calculation to use monotonically-increasing integer, fixing bug where floating-point math would occasionally result in buffer never being filled
 
 ## [11.2.3] - 2024-05-08
 ### Added
@@ -61,7 +60,7 @@
 - Account for linear array with depth values being at end
 
 ## [11.0.4] - 2024-04-30
-### Updated
+### Changed
 - Updated Sensing camera names
 
 ## [11.0.3] - 2024-04-25

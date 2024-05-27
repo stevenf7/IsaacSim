@@ -9,23 +9,17 @@
 - Removed option to AUTO_CREATE_FRAME for Articulations as it causes the attachment to fail.
 - Fixed bug with computing fixed joint transforms to non-root robot links.
 - Fixed bug where collision masking fails when base Articulation has an Articulation root nested under the top-level path.
-- Fixed bug where JointStateAPIs were being overwritten when nesting prims on STOP and then assembling on the first frame.
-    of PLAY.  The fix is to simply set the values back to zero at the right moment.
+- Fixed bug where JointStateAPIs were being overwritten when nesting prims on STOP and then assembling on the first frame of PLAY.  The fix is to simply set the values back to zero at the right moment.
 ### Added
-- Added test cases for different placements of Articulation Roots.  This creates a matrix of possible configurations
-    to support between two robots being attached.
+- Added test cases for different placements of Articulation Roots.  This creates a matrix of possible configurations to support between two robots being attached.
 ### Changed
-- Robot Assembler moves the Articulation Root of the attach robot to the top-level prim in the
-    hierarchy while it is attached, and reverses this on detach.
-- Stabilized result of set_fixed_joint_transform() by teleporting the robot to where physics will
-    think it should go.
+- Robot Assembler moves the Articulation Root of the attach robot to the top-level prim in the hierarchy while it is attached, and reverses this on detach.
+- Stabilized result of set_fixed_joint_transform() by teleporting the robot to where physics will think it should go.
 
 ## [1.3.0] - 2024-05-14
 ### Fixed
-- Fixed bug where attach frames for a robot can include its fixed joint (which causes a failed assembly)
-    when the Articulation Root is on the fixed joint.
-- Fixed bug where Articulation selection function can be called with an invalid prim path and cause
-    a harmless (but visible) error.
+- Fixed bug where attach frames for a robot can include its fixed joint (which causes a failed assembly) when the Articulation Root is on the fixed joint.
+- Fixed bug where Articulation selection function can be called with an invalid prim path and cause a harmless (but visible) error.
 
 ## [1.2.0] - 2024-04-29
 ### Fixed

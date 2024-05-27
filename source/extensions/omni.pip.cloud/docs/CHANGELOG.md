@@ -2,15 +2,15 @@
 
 ## [1.1.3] - 2024-05-24
 ### Fixed
-manually add paths for pywintypes import
+- Manually add paths for pywintypes import
 
 ## [1.1.2] - 2024-05-15
 ### Changed
-Replace pypiwin32==223 with pywin32==306
+- Replace pypiwin32==223 with pywin32==306
 
 ## [1.1.1] - 2024-05-14
 ### Changed
-Update cryptography to 42.0.7
+- Update cryptography to 42.0.7
 
 ## [1.1.0] - 2024-04-19
 ### Changed
