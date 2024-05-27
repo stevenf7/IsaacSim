@@ -189,7 +189,9 @@ pyproject.dependencies = [
     # python packages
     "numpy<2.0.0",
     "scipy",
+    "matplotlib",
     "torch>=2.2.0",
+    "opencv-python",
     "psutil",
     "boto3",
     "pyyaml",
