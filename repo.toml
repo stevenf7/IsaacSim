@@ -1012,7 +1012,8 @@ deps_for_isaac = [
   "omni.cuopt.service-1.0.0",
   "omni.cuopt.visualization-1.0.0",
   "omni.cuopt.examples-1.0.0",
-  "omni.usd.metrics.assembler.physics-106.0.2"
+  "omni.usd.metrics.assembler.physics-106.0.2",
+  "omni.kit.gfn-106.0.4"
 ]
 
 deps_for_testing = []
