@@ -48,17 +48,18 @@ fi
 for artifactory_package in $ARTIFACTORY_PYTHON_PACKAGES; do
     echo $ARTIFACTORY_URL/$artifactory_package/$1
 
-    component_name=$(echo "$artifactory_package" | sed 's/-/_/g')
+    component_name="$artifactory_package"
     component_arch="x86_64"
     component_version=$(echo "$1" | sed 's/+/%2B/g')
     component_branch="develop"
-    component_release_approver="isaacsim"
-    component_release_status="ready"
+    component_release_approver="aserranomuno"
+    component_release_status="not_ready"
 
+    wheel_name=$(echo "$artifactory_package" | sed 's/-/_/g')
     common_properties="component_name=$component_name;arch=$component_arch;version=$component_version;branch=$component_branch;release_approver=$component_release_approver;release_status=$component_release_status"
 
     # linux
-    curl -u $ISAACSIM_ARTIFACTORY_USERNAME:$ISAACSIM_ARTIFACTORY_PASSWORD -X PUT "$ARTIFACTORY_URL/$artifactory_package/$1/$component_name-$1-cp310-none-linux_x86_64.whl?properties=os=linux;$common_properties&recursive=0"
+    curl -u $ISAACSIM_ARTIFACTORY_USERNAME:$ISAACSIM_ARTIFACTORY_PASSWORD -X PUT "$ARTIFACTORY_URL/$artifactory_package/$1/$wheel_name-$1-cp310-none-linux_x86_64.whl?properties=os=linux;$common_properties&recursive=0"
     # windows
-    curl -u $ISAACSIM_ARTIFACTORY_USERNAME:$ISAACSIM_ARTIFACTORY_PASSWORD -X PUT "$ARTIFACTORY_URL/$artifactory_package/$1/$component_name-$1-cp310-none-win_amd64.whl?properties=os=windows;$common_properties&recursive=0"
+    curl -u $ISAACSIM_ARTIFACTORY_USERNAME:$ISAACSIM_ARTIFACTORY_PASSWORD -X PUT "$ARTIFACTORY_URL/$artifactory_package/$1/$wheel_name-$1-cp310-none-win_amd64.whl?properties=os=windows;$common_properties&recursive=0"
 done
