@@ -17,7 +17,7 @@ from omni.isaac.universal_robots import KinematicsSolver
 from omni.isaac.universal_robots.tasks import FollowTarget
 
 my_world = World(stage_units_in_meters=1.0)
-my_task = FollowTarget(name="follow_target_task", attach_gripper=True)
+my_task = FollowTarget(name="follow_target_task", attach_gripper=True, target_position=[0.2, 0.4, 0.4])
 my_world.add_task(my_task)
 my_world.reset()
 task_params = my_world.get_task("follow_target_task").get_params()
