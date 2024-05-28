@@ -104,7 +104,7 @@ class ParticleClothExample:
     def play(self):
         reset_needed = False
         while simulation_app.is_running():
-            if my_world.is_stopped() and not reset_needed:
+            if self.my_world.is_stopped() and not reset_needed:
                 reset_needed = True
             if self.my_world.is_playing():
                 # deal with sim re-initialization after restarting sim
