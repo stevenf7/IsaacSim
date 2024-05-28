@@ -1,5 +1,11 @@
 # Changelog
 
+
+## [1.11.0] - 2024-05-28
+### Added
+- profiler_backend setting for tracy and nvtx
+
+
 ## [1.10.0] - 2024-05-22
 ### Added
 - SIGINT handler to SimulationApp to force exit when ctrl-c is pressed
