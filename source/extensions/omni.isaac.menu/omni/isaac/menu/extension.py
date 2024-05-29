@@ -567,14 +567,7 @@ class Extension(omni.ext.IExt):
                 ext_id,
                 "2F-85",
                 lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/Robotiq/2F-85/2f85_instanceable.usd", "/Robotiq_2F_85"
-                ),
-            ),
-            make_menu_item_description(
-                ext_id,
-                "2F-C2",
-                lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/Robotiq/2F-C2/2fc2_instanceable.usd", "/Robotiq_2F_C2"
+                    "/Isaac/Robots/Robotiq/2F-85/Robotiq_2F_85_edit.usd", "/Robotiq_2F_85"
                 ),
             ),
         ]

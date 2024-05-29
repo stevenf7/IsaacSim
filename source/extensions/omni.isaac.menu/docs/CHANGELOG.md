@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.1] - 2024-05-28
+### Fixed
+- Robotiq asset links
+
 ## [0.4.0] - 2024-05-24
 ### Changed
 - Added leatherback
