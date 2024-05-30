@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.26.4] - 2024-05-29
+### Fixed
+- Crash on stage close if twistsubscriber was not run for a single frame
+
 ## [2.26.3] - 2024-05-23
 ### Fixed
 - Extra warnings when nitros bridge message type was not found
