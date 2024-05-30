@@ -1094,6 +1094,7 @@ publish-docs:
     # Required access tokens for publishing to S3
     AWS_ACCESS_KEY_ID: $AWS_OMNIVERSEDOCS_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY: $AWS_OMNIVERSEDOCS_SECRET_ACCESS_KEY
+  needs: []
   script:
   - curl -o ./artifact.zip  https://gitlab-master.nvidia.com/api/v4/projects/25020/jobs/artifacts/develop/download?job=build-linux-x86_64-release
   - unzip artifact.zip
