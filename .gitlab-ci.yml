@@ -1095,7 +1095,7 @@ publish-docs:
     AWS_ACCESS_KEY_ID: $AWS_OMNIVERSEDOCS_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY: $AWS_OMNIVERSEDOCS_SECRET_ACCESS_KEY
   needs:
-  - job: build-windows-x86_64-release
+  - job: build-linux-x86_64-release
     artifacts: true
   script:
   - ./repo.sh ci publish_docs
