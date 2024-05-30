@@ -286,11 +286,6 @@ build-linux-x86_64-release:
   - !reference [.omni_s3_write_get_secrets, omni_s3_write_get_secrets]
   script:
   - ./repo.sh ci build -c release
-  # We use a different set of rules here so we can build linux specifically
-  rules:
-  - if: $RUN_BUMP_VERSION == "true"
-    when: never
-  - !reference [.rules-workflow, rules]
 
 # ==============================================================================================================
 build-linux-x86_64-debug:
@@ -1099,10 +1094,9 @@ publish-docs:
     # Required access tokens for publishing to S3
     AWS_ACCESS_KEY_ID: $AWS_OMNIVERSEDOCS_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY: $AWS_OMNIVERSEDOCS_SECRET_ACCESS_KEY
-  needs:
-  - job: build-linux-x86_64-release
-    artifacts: true
   script:
+  - curl -o ./artifact.zip  https://gitlab-master.nvidia.com/api/v4/projects/25020/jobs/artifacts/develop/download?job=build-linux-x86_64-release
+  - unzip artifact.zip
   - ./repo.sh ci publish_docs
   rules:
   - if: $ALLOW_PUBLISH_DOCS != "true"
