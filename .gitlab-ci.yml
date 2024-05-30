@@ -147,7 +147,7 @@ variables:
   rules:
   - if: $RUN_BUMP_VERSION == "true"
     when: never
-  - if: $RUN_DOCS_PUBLISH == "true"
+  - if: $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true"
     when: never
   - !reference [.rules-workflow, rules]
 
