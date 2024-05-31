@@ -1098,6 +1098,8 @@ publish-docs:
   script:
   - curl -o ./artifact.zip  https://gitlab-master.nvidia.com/api/v4/projects/25020/jobs/artifacts/develop/download?job=build-linux-x86_64-release
   - unzip artifact.zip
+  - mkdir -p /builds/omniverse/isaac/omni_isaac_sim/_build/docs/isaac_sim/latest
+  - 7z x _build/packages/docs@*.7z -o/builds/omniverse/isaac/omni_isaac_sim/_build/docs/isaac_sim/latest
   - ./repo.sh docs --config release --stage publish --edition production
   rules:
   - if: $ALLOW_PUBLISH_DOCS != "true"
