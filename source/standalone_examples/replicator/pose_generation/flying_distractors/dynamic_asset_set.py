@@ -66,6 +66,7 @@ class DynamicAssetSet(ABC):
         self.glass_assets = []
         self.nonglass_assets = []
         self.glass_mats = []
+        self._rigid_prims = None
 
     def _create_random_dynamic_asset_set(self):
         """Create self.num_assets assets and add them to the dynamic asset set."""
@@ -91,15 +92,16 @@ class DynamicAssetSet(ABC):
         Args:
             force_limit (float): maximum force component to apply.
         """
+        if self._rigid_prims is None:
+            self._rigid_prims = []
+            for path in itertools.chain(self.glass_asset_paths, self.nonglass_asset_paths):
+                rigid_prim = RigidPrim(path)
+                rigid_prim.initialize()
+                self._rigid_prims.append(rigid_prim)
 
-        for path in itertools.chain(self.glass_asset_paths, self.nonglass_asset_paths):
-
-            # X, Y, and Z components of the force are constrained to be within [-force_limit, force_limit]
+        for rigid_prim in self._rigid_prims:
             random_force = np.random.uniform(-force_limit, force_limit, 3).tolist()
-
-            rigid_body = RigidPrim(path)
-            rigid_body.initialize()
-            rigid_body._rigid_prim_view.apply_forces_and_torques_at_pos(random_force, is_global=False)
+            rigid_prim._rigid_prim_view.apply_forces_and_torques_at_pos(random_force, is_global=False)
 
     def randomize_glass_color(self):
         """Randomize the color of the assets in the dynamic asset set with a glass material applied."""
