@@ -1098,7 +1098,7 @@ publish-docs:
   script:
   - curl -o ./artifact.zip  https://gitlab-master.nvidia.com/api/v4/projects/25020/jobs/artifacts/develop/download?job=build-linux-x86_64-release
   - unzip artifact.zip
-  - ./repo.sh ci publish_docs
+  - ./repo.sh docs --config release --stage publish --edition production
   rules:
   - if: $ALLOW_PUBLISH_DOCS != "true"
     when: never
