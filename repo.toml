@@ -1162,6 +1162,8 @@ pyproject.urls = [
     { "Forum" = "https://forums.developer.nvidia.com/c/omniverse/simulation/69" },
 ]
 
+wheel.platforms = { "linux-x86_64" = "manylinux_2_34_x86_64", "windows-x86_64" = "win_amd64" }
+
 # whl publishing (pypi)
 [[repo_python_package.publish.task]]
 packages_wildcard_path = "${root}/_build/packages/dist/*.whl"
