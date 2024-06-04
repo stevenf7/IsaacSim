@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.19.3] - 2024-06-03
+### Fixed
+- Crash on twist subscriber node release if it wasn't run at least one frame
+
 ## [1.19.2] - 2024-05-21
 ### Added
 - Resetting output of the Twist Subscriber to zeros upon stopping simulation. 

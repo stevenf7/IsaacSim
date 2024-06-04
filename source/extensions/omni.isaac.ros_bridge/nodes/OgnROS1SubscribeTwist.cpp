@@ -62,22 +62,32 @@ public:
      */
     virtual void reset()
     {
+        if (!nodeObj.iNode)
+        {
+            return;
+        }
         GraphObj graphObj{ nodeObj.iNode->getGraph(nodeObj) };
         GraphContextObj context{ graphObj.iGraph->getDefaultGraphContext(graphObj) };
 
         AttributeObj linearAttr = nodeObj.iNode->getAttribute(nodeObj, "outputs:linearVelocity");
         auto linearHandle = linearAttr.iAttribute->getAttributeDataHandle(linearAttr, kAccordingToContextIndex);
         double* linearCommand = getDataW<double>(context, linearHandle);
-        linearCommand[0] = 0.0;
-        linearCommand[1] = 0.0;
-        linearCommand[2] = 0.0;
+        if (linearCommand)
+        {
+            linearCommand[0] = 0.0;
+            linearCommand[1] = 0.0;
+            linearCommand[2] = 0.0;
+        }
 
         AttributeObj angularAttr = nodeObj.iNode->getAttribute(nodeObj, "outputs:angularVelocity");
         auto angularHandle = angularAttr.iAttribute->getAttributeDataHandle(angularAttr, kAccordingToContextIndex);
         double* angularCommand = getDataW<double>(context, angularHandle);
-        angularCommand[0] = 0.0;
-        angularCommand[1] = 0.0;
-        angularCommand[2] = 0.0;
+        if (angularCommand)
+        {
+            angularCommand[0] = 0.0;
+            angularCommand[1] = 0.0;
+            angularCommand[2] = 0.0;
+        }
 
         mSubscriber.reset(); // This should be reset before we reset the handle.
         mCallback = nullptr;
