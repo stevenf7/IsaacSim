@@ -39,6 +39,7 @@ parser.add_argument(
     "--annotators",
     nargs="+",
     default=["rgb"],
+    choices=VALID_ANNOTATORS,
     help="List of annotators to enable, separated by space. Use 'all' to select all available.",
 )
 parser.add_argument("--disable-viewport-rendering", action="store_true", help="Disable viewport rendering")
@@ -80,7 +81,7 @@ print(f"\tasset_count: {asset_count}")
 print(f"\tannotators: {annotators_kwargs.keys()}")
 print(f"\tdisable_viewport_rendering: {disable_viewport_rendering}")
 print(f"\tdelete_data_when_done: {delete_data_when_done}")
-print(f"\print_results: {print_results}")
+print(f"\tprint_results: {print_results}")
 print(f"\theadless: {headless}")
 print(f"\tskip_write: {skip_write}")
 

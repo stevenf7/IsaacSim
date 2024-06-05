@@ -6,6 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+import os
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
@@ -13,6 +14,7 @@ from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from omni.isaac.benchmark.services.settings import BenchmarkSettings
 
+import carb
 import omni.kit.app as omni_kit_app
 from omni.isaac.benchmark.services.datarecorders import cpu, frametime, interface, memory
 from omni.isaac.benchmark.services.metrics import measurements
@@ -197,3 +199,26 @@ class IsaacRuntimeRecorder(interface.MeasurementDataRecorder):
 
         m1 = measurements.SingleMeasurement(name=f"Runtime", value=self.elapsed_time, unit="ms")
         return interface.MeasurementData(measurements=[m1])
+
+
+class IsaacHardwareSpecRecorder(interface.MeasurementDataRecorder):
+    def __init__(self, context: Optional[interface.InputContext] = None):
+        self.context = context
+
+    def get_data(self):
+        import torch
+
+        device_names = [torch.cuda.get_device_name(d) for d in range(torch.cuda.device_count())]
+
+        if len(set(device_names)) > 1:
+            carb.log_warn(f"Detected multiple GPU types: {device_names}.")
+            carb.log_warn(f"Only recording GPU 0 type: {device_names[0]}")
+
+        measurements_out = []
+
+        measurements_out.append(
+            measurements.SingleMeasurement(name=f"num_cpus", value=len(os.sched_getaffinity(0)), unit="")
+        )
+        measurements_out.append(measurements.SingleMeasurement(name=f"gpu_device_name", value=device_names[0], unit=""))
+
+        return interface.MeasurementData(measurements_out)
