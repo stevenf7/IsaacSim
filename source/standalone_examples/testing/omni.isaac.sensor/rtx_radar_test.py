@@ -28,7 +28,8 @@ import omni
 import omni.kit.viewport.utility
 import omni.replicator.core as rep
 from omni.isaac.core import SimulationContext
-from omni.isaac.core.utils import nucleus, stage
+from omni.isaac.core.utils import stage
+from omni.isaac.nucleus import get_assets_root_path
 from pxr import Gf, Sdf, UsdGeom, UsdPhysics
 
 
