@@ -53,7 +53,7 @@ parser.add_argument(
     help="Benchmarking backend, defaults",
 )
 parser.add_argument("--skip-write", action="store_true", help="Skip writing annotator data to disk")
-
+parser.add_argument("--env-url", default=None, help="Path to the environment url, default None")
 
 args, unknown = parser.parse_known_args()
 
@@ -67,6 +67,7 @@ print_results = args.print_results
 headless = args.headless
 n_gpu = args.num_gpus
 skip_write = args.skip_write
+env_url = args.env_url
 
 if "all" in args.annotators:
     annotators_kwargs = {annotator: True for annotator in VALID_ANNOTATORS}
@@ -84,6 +85,7 @@ print(f"\tdelete_data_when_done: {delete_data_when_done}")
 print(f"\tprint_results: {print_results}")
 print(f"\theadless: {headless}")
 print(f"\tskip_write: {skip_write}")
+print(f"\tenv_url: {env_url}")
 
 import os
 import shutil
@@ -99,6 +101,7 @@ import omni.kit.app
 import omni.replicator.core as rep
 import omni.usd
 from omni.isaac.core.utils.extensions import enable_extension
+from omni.isaac.nucleus import get_assets_root_path
 from omni.kit.viewport.utility import get_active_viewport
 
 enable_extension("omni.isaac.benchmark.services")
@@ -123,8 +126,14 @@ benchmark = BaseIsaacBenchmark(
 
 benchmark.set_phase("loading", start_recording_frametime=False, start_recording_runtime=True)
 
-print(f"[SDG Benchmark] Loading stage..")
-omni.usd.get_context().new_stage()
+if env_url is not None:
+    env_path = env_url if env_url.startswith("omniverse://") else get_assets_root_path() + env_url
+    print(f"[SDG Benchmark] Loading stage from path: {env_path}")
+    omni.usd.get_context().open_stage(env_path)
+else:
+    print(f"[SDG Benchmark] Loading a new empty stage..")
+    omni.usd.get_context().new_stage()
+
 if disable_viewport_rendering:
     print(f"[SDG Benchmark] Disabling viewport rendering..")
     get_active_viewport().updates_enabled = False
