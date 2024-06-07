@@ -12,6 +12,7 @@ from abc import abstractmethod
 from omni.isaac.core import World
 from omni.isaac.core.scenes.scene import Scene
 from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
+from omni.isaac.core.utils.viewports import set_camera_view
 
 
 class BaseSample(object):
@@ -43,6 +44,7 @@ class BaseSample(object):
             self.setup_scene()
         else:
             self._world = World.instance()
+        set_camera_view(eye=[1.5, 1.5, 1.5], target=[0.01, 0.01, 0.01], camera_prim_path="/OmniverseKit_Persp")
         self._current_tasks = self._world.get_current_tasks()
         await self._world.reset_async()
         await self._world.pause_async()

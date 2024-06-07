@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.1.0] - 2024-06-07
+### Changed
+- Base sample calls set_camera_view as it was removed from World/SimulationContext
+
 ## [2.0.0] - 2024-05-16
 ### Removed
 - Franka Nut & Bolt Example
