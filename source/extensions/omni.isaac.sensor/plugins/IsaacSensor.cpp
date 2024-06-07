@@ -406,6 +406,7 @@ CARB_EXPORT void carbOnPluginStartup()
     omni::kit::StageUpdateNodeDesc desc = { 0 };
     desc.displayName = "Isaac Sensor Interface";
     desc.onAttach = onAttach;
+    desc.onDetach = onStop;
     desc.onPrimRemove = onPrimRemove;
     desc.onStop = onStop;
     desc.onPrimOrPropertyChange = onComponentChange;
