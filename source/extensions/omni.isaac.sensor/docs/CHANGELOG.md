@@ -1,5 +1,9 @@
 # Changelog
 
+## [11.3.1] - 2024-06-06
+### Fixed
+- Crash when new stage was removed and sensors were not cleaned up properly
+
 ## [11.3.0] - 2024-05-15
 ### Added
 - Added `get_rgb` and `get_depth` methods to `CameraView` class returning the data reshaped into camera batches
