@@ -55,51 +55,115 @@ class IsaacFrameTimeRecorder(interface.MeasurementDataRecorder):
             return interface.MeasurementData(measurements=[])
 
         frametime_stats = frametime.FrametimeStats()
-        frametime_stats.render_thread_frametime_samples = self.frametime_collector.render_frametimes_ms
+        frametime_stats.app_frametime_samples = self.frametime_collector.app_frametimes_ms
+        frametime_stats.physics_frametime_samples = self.frametime_collector.physics_frametimes_ms
         frametime_stats.gpu_frametime_samples = self.frametime_collector.gpu_frametimes_ms
         frametime_stats.calc_stats()
 
-        m1 = measurements.SingleMeasurement(
-            name=f"Mean Render Thread Frametime",
-            value=frametime_stats.mean_render_thread_frametime,
-            unit="ms",
+        measurements_out = []
+        print(frametime_stats.app_stats)
+
+        measurements_out.append(
+            measurements.SingleMeasurement(
+                name=f"Mean Render Thread Frametime",
+                value=frametime_stats.app_stats["mean"],
+                unit="ms",
+            )
         )
-        m2 = measurements.SingleMeasurement(
-            name=f"Mean GPU Frametime", value=frametime_stats.mean_gpu_frametime, unit="ms"
+        measurements_out.append(
+            measurements.SingleMeasurement(
+                name=f"Stdev Render Thread Frametime",
+                value=frametime_stats.app_stats["stdev"],
+                unit="ms",
+            )
         )
-        m3 = measurements.SingleMeasurement(
-            name=f"Stdev Render Thread Frametime",
-            value=frametime_stats.stdev_render_thread_frametime,
-            unit="ms",
+        measurements_out.append(
+            measurements.SingleMeasurement(
+                name=f"Min Render Thread Frametime",
+                value=frametime_stats.app_stats["min"],
+                unit="ms",
+            )
         )
-        m4 = measurements.SingleMeasurement(
-            name=f"Stdev GPU Frametime", value=frametime_stats.stdev_gpu_frametime, unit="ms"
+        measurements_out.append(
+            measurements.SingleMeasurement(
+                name=f"Max Render Thread Frametime",
+                value=frametime_stats.app_stats["max"],
+                unit="ms",
+            )
         )
-        m5 = measurements.SingleMeasurement(
-            name=f"Min Render Thread Frametime",
-            value=frametime_stats.min_render_thread_frametime,
-            unit="ms",
+        measurements_out.append(
+            measurements.ListMeasurement(
+                name=f"Render Thread Frametime Samples",
+                value=frametime_stats.app_frametime_samples,
+            )
         )
-        m6 = measurements.SingleMeasurement(
-            name=f"Min GPU Frametime", value=frametime_stats.min_gpu_frametime, unit="ms"
+
+        measurements_out.append(
+            measurements.SingleMeasurement(
+                name=f"Mean Physics Frametime",
+                value=frametime_stats.physics_stats["mean"],
+                unit="ms",
+            )
         )
-        m7 = measurements.SingleMeasurement(
-            name=f"Max Render Thread Frametime",
-            value=frametime_stats.max_render_thread_frametime,
-            unit="ms",
+        measurements_out.append(
+            measurements.SingleMeasurement(
+                name=f"Stdev Physics Frametime",
+                value=frametime_stats.physics_stats["stdev"],
+                unit="ms",
+            )
         )
-        m8 = measurements.SingleMeasurement(
-            name=f"Max GPU Frametime", value=frametime_stats.max_gpu_frametime, unit="ms"
+        measurements_out.append(
+            measurements.SingleMeasurement(
+                name=f"Min Physics Frametime",
+                value=frametime_stats.physics_stats["min"],
+                unit="ms",
+            )
         )
-        m9 = measurements.ListMeasurement(
-            name=f"Render Thread Frametime Samples",
-            value=frametime_stats.render_thread_frametime_samples,
+        measurements_out.append(
+            measurements.SingleMeasurement(
+                name=f"Max Physics Frametime",
+                value=frametime_stats.physics_stats["max"],
+                unit="ms",
+            )
         )
-        m10 = measurements.ListMeasurement(name=f"GPU Frametime Samples", value=frametime_stats.gpu_frametime_samples)
-        m11 = measurements.SingleMeasurement(
-            name=f"Real Time Factor", value=self.frametime_collector.elapsed_sim_time / self.elapsed_real_time, unit=""
+        measurements_out.append(
+            measurements.ListMeasurement(
+                name=f"Physics Frametime Samples",
+                value=frametime_stats.physics_frametime_samples,
+            )
         )
-        measurements_out = [m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11]
+
+        measurements_out.append(
+            measurements.SingleMeasurement(
+                name=f"Mean GPU Frametime", value=frametime_stats.gpu_stats["mean"], unit="ms"
+            )
+        )
+
+        measurements_out.append(
+            measurements.SingleMeasurement(
+                name=f"Stdev GPU Frametime", value=frametime_stats.gpu_stats["stdev"], unit="ms"
+            )
+        )
+
+        measurements_out.append(
+            measurements.SingleMeasurement(name=f"Min GPU Frametime", value=frametime_stats.gpu_stats["min"], unit="ms")
+        )
+
+        measurements_out.append(
+            measurements.SingleMeasurement(name=f"Max GPU Frametime", value=frametime_stats.gpu_stats["max"], unit="ms")
+        )
+
+        measurements_out.append(
+            measurements.ListMeasurement(name=f"GPU Frametime Samples", value=frametime_stats.gpu_frametime_samples)
+        )
+
+        measurements_out.append(
+            measurements.SingleMeasurement(
+                name=f"Real Time Factor",
+                value=self.frametime_collector.elapsed_sim_time / self.elapsed_real_time,
+                unit="",
+            )
+        )
         return interface.MeasurementData(measurements=measurements_out)
 
 
