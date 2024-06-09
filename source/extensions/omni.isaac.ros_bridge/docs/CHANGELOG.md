@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.19.4] - 2024-06-10
+### Fixed
+- Unit tests
+
+
 ## [1.19.3] - 2024-06-03
 ### Fixed
 - Crash on twist subscriber node release if it wasn't run at least one frame

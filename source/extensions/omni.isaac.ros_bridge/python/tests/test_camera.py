@@ -249,7 +249,7 @@ class TestRosCamera(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         await simulate_async(1)
         for _ in range(10):
-            if self._camera_info is None:
+            if self._camera_info is None or self._bbox_2d_tight is None or self._bbox_3d is None:
                 await simulate_async(1)
 
         self.assertEqual(self._camera_info.width, 800)
@@ -271,6 +271,7 @@ class TestRosCamera(omni.kit.test.AsyncTestCase):
         self._timeline.stop()
         # make sure all previous messages are cleared
         await asyncio.sleep(2.0)
+        await simulate_async(1)
         self._camera_info = None
         self._rgb = None
         self._depth = None
@@ -318,6 +319,7 @@ class TestRosCamera(omni.kit.test.AsyncTestCase):
         self._timeline.stop()
         # make sure all previous messages are cleared
         await asyncio.sleep(2.0)
+        await simulate_async(1)
         self._camera_info = None
         self._rgb = None
         self._depth = None
