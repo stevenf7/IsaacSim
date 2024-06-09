@@ -39,7 +39,7 @@ def set_sync_mode():
 
 
 class BaseIsaacBenchmarkAsync(omni.kit.test.AsyncTestCase):
-    async def setUp(self):
+    async def setUp(self, backend_type: str = "JSONFileMetrics"):
         """
         Must be awaited by derived benchmarks to properly set up the benchmark
         """
@@ -83,7 +83,9 @@ class BaseIsaacBenchmarkAsync(omni.kit.test.AsyncTestCase):
             self._metrics_output_folder = tempfile.gettempdir()
 
         # Get metrics backend based on user-provided type
-        self._metrics = backend.MetricsBackend.get_instance(execution_environment=self._execution_env)
+        self._metrics = backend.MetricsBackend.get_instance(
+            execution_environment=self._execution_env, instance_type=backend_type
+        )
 
         # Generate workflow-level metadata
         self._metadata = []
