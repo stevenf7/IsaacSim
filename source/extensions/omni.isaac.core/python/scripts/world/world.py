@@ -18,7 +18,6 @@ from omni.isaac.core.scenes.scene import Scene
 # isaac-core
 from omni.isaac.core.simulation_context import SimulationContext
 from omni.isaac.core.tasks import BaseTask
-from omni.isaac.core.utils.viewports import set_camera_view
 
 # omniverse
 from pxr import Usd
@@ -114,7 +113,6 @@ class World(SimulationContext):
         self._scene = Scene()
         # if not builtins.ISAAC_LAUNCHED_FROM_TERMINAL:
         #     self.start_simulation()
-        set_camera_view(eye=[1.5, 1.5, 1.5], target=[0.01, 0.01, 0.01], camera_prim_path="/OmniverseKit_Persp")
         self._data_logger = DataLogger()
         return
 

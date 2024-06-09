@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.13.0] - 2024-06-07
+### Changed
+- SimulationContext and World classes do not change camera on initialization, set_camera_view must be called separately
+
 ## [3.12.0] - 2024-05-14
 ### Added
 - added getting world poses through fabric selections in XFormPrimView through usd=False argument
