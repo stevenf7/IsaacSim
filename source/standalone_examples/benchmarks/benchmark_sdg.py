@@ -39,7 +39,7 @@ parser.add_argument(
     "--annotators",
     nargs="+",
     default=["rgb"],
-    choices=VALID_ANNOTATORS,
+    choices=list(VALID_ANNOTATORS) + ["all"],
     help="List of annotators to enable, separated by space. Use 'all' to select all available.",
 )
 parser.add_argument("--disable-viewport-rendering", action="store_true", help="Disable viewport rendering")
