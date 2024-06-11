@@ -22,7 +22,7 @@ project_ext_plugin(ext, "omni.isaac.sensor.plugin")
         "%{root}/source/extensions/omni.isaac.common_includes/include",
         targetDepsDir.."/nv_usd/%{cfg.buildcfg}/include",
         targetDepsDir.."/usd_ext_physics/%{cfg.buildcfg}/include",
-        targetDepsDir.."/omni_physics/include",
+        targetDepsDir.."/omni_physics/%{config}/include",
         targetDepsDir.."/rtx_plugins/include",
         "%{kit_sdk_bin_dir}/exts/usdrt.scenegraph/include",
         "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/include",

@@ -13,7 +13,7 @@ project_ext_plugin(ext, "omni.isaac.dynamic_control.plugin")
         target_deps.."/nv_usd/%{cfg.buildcfg}/include",
         target_deps.."/nv_usd/%{cfg.buildcfg}/include/boost",
         target_deps.."/usd_ext_physics/%{cfg.buildcfg}/include",
-        target_deps.."/omni_physics/include",
+        target_deps.."/omni_physics/%{config}/include",
         target_deps.."/rtx_plugins/include",
         target_deps.."/omni_client_library/include",
         "%{root}/source/extensions/omni.isaac.dynamic_control/include",

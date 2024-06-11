@@ -17,7 +17,7 @@ project_ext_plugin(ext, "omni.isaac.range_sensor.plugin")
         "%{root}/_build/target-deps/gsl/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
-        "%{root}/_build/target-deps/omni_physics/include",
+        "%{root}/_build/target-deps/omni_physics/%{config}/include",
         "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/include",
         "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/RangeSensorSchema/include",
         "%{root}/_build/target-deps/usd_schema_semantics/%{cfg.buildcfg}/include",
