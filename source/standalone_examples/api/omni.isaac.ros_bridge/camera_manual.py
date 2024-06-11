@@ -26,7 +26,8 @@ import omni.graph.core as og
 import omni.replicator.core as rep
 import usdrt.Sdf
 from omni.isaac.core import SimulationContext
-from omni.isaac.core.utils import extensions, nucleus, stage
+from omni.isaac.core.utils import extensions, stage
+from omni.isaac.nucleus import get_assets_root_path
 from omni.kit.viewport.utility import get_active_viewport
 from pxr import Gf, Usd, UsdGeom
 
@@ -48,7 +49,7 @@ if not rosgraph.is_master_online():
 simulation_context = SimulationContext(stage_units_in_meters=1.0)
 
 # Locate Isaac Sim assets folder to load environment and robot stages
-assets_root_path = nucleus.get_assets_root_path()
+assets_root_path = get_assets_root_path()
 if assets_root_path is None:
     carb.log_error("Could not find Isaac Sim assets folder")
     simulation_app.close()
