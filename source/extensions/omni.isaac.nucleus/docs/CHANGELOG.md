@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.0] - 2024-06-06
+
+### Changed
+- Updated get root path functions to throw a runtime error if the root path is not found
+
 ## [0.1.2] - 2024-05-20
 
 ### Changed
