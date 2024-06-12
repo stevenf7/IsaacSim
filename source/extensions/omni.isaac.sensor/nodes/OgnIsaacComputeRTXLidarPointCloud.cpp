@@ -89,7 +89,7 @@ inline void convertReturnToPoint(unsigned int idx,
     point.z = rayOrigin.z + rayDirectionZ * distanceM;
 
     // Add beam origin distance directly? -> see differences in resim
-    point.range = distanceM + beamOriginDistM;
+    point.range = rawDistanceM;
     point.intensity = gmo.elements.scalar[idx];
     if (profile)
         point.intensity *= profile->intensityScalePercent / 100.f;
@@ -97,12 +97,6 @@ inline void convertReturnToPoint(unsigned int idx,
 
     point.azimuth = azimuthRad;
     point.elevation = elevationRad;
-
-    // // if (rightHanded)
-    // point.azimuth = Deg2Rad(360.f) - point.azimuth;
-    // // fit azimuth into [-PI, PI] ala atan2
-    // if (point.azimuth > Deg2Rad(180.f))
-    //     point.azimuth -= Deg2Rad(360.f);
 }
 
 class OgnIsaacComputeRTXLidarPointCloud : public LidarConfigHelper

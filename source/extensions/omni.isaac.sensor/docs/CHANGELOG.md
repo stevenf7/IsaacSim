@@ -1,5 +1,13 @@
 # Changelog
 
+## [11.3.2] - 2024-06-11
+### Added
+- Unit tests for rotary and solid state lidars evaluating `RtxSensorCpuIsaacComputeRTXLidarPointCloud` and
+  `RtxSensorCpuIsaacComputeRTXLidarFlatScan` annotators
+### Fixed
+- `LidarRTX` no longer causes error when `position` is set in constructor
+- Corrects `OgnIsaacComputeRTXLidarFlatScan` `azimuthRange` output to span true min/max azimuth of scan
+
 ## [11.3.1] - 2024-06-06
 ### Fixed
 - Crash when new stage was removed and sensors were not cleaned up properly
