@@ -98,10 +98,6 @@ class LidarRtx(BaseSensor):
                     wave_length=wave_length,
                     pulse_time=pulse_time,
                 )
-            if orientation is None:
-                orientation = [1, 0, 0, 0]
-            if translation is None:
-                translation = [0, 0, 1]
             _, sensor = omni.kit.commands.execute(
                 "IsaacSensorCreateRtxLidar", path=prim_path, parent=None, config=config_file_name
             )
@@ -134,6 +130,8 @@ class LidarRtx(BaseSensor):
             "elevation": "elevation",
             "linear_depth_data": "linearDepthData",
             "intensities_data": "intensitiesData",
+            "azimuth_range": "azimuthRange",
+            "horizontal_resolution": "horizontalResolution",
         }
         return
 
@@ -237,7 +235,7 @@ class LidarRtx(BaseSensor):
                         self._current_frame[key] = data[self._attribute_map[key]]
                     else:
                         self._current_frame[key] = data["info"][self._attribute_map[key]]
-                elif key in ["linear_depth_data", "intensities_data"]:
+                elif key in ["linear_depth_data", "intensities_data", "azimuth_range", "horizontal_resolution"]:
                     data = self._flat_scan_annotator.get_data()
                     self._current_frame[key] = data[self._attribute_map[key]]
         return
@@ -264,6 +262,22 @@ class LidarRtx(BaseSensor):
 
     def remove_intensities_data_from_frame(self):
         del self._current_frame["intensities_data"]
+        return
+
+    def add_azimuth_range_to_frame(self):
+        self._current_frame["azimuth_range"] = []
+        return
+
+    def remove_azimuth_range_from_frame(self):
+        del self._current_frame["azimuth_range"]
+        return
+
+    def add_horizontal_resolution_to_frame(self):
+        self._current_frame["horizontal_resolution"] = []
+        return
+
+    def remove_horizontal_resolution_from_frame(self):
+        del self._current_frame["horizontal_resolution"]
         return
 
     def add_range_data_to_frame(self):

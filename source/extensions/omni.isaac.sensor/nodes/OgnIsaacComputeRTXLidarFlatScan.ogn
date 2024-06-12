@@ -79,7 +79,7 @@
             },
             "azimuthRange": {
                 "type": "float[2]",
-                "description": "The azimuth range [min, max] (deg). Always [-180, 180] for rotary lidars.",
+                "description": "The azimuth range [min, max] (deg).",
                 "default": [0.0, 0.0]
             }
         }
