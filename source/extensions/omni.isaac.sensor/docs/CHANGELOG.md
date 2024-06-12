@@ -1,5 +1,9 @@
 # Changelog
 
+## [11.4.0] - 2024-06-11
+### Added
+- Added unit tests for IMU, Contact, and Effort sensor omnigraph nodes.
+
 ## [11.3.2] - 2024-06-11
 ### Added
 - Unit tests for rotary and solid state lidars evaluating `RtxSensorCpuIsaacComputeRTXLidarPointCloud` and
