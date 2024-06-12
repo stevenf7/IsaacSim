@@ -99,9 +99,6 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         self._robot = Robot(robot_prim_path)
         self._robot.initialize()
 
-        p, d = self._robot.get_articulation_controller().get_gains()
-        self._robot.get_articulation_controller().set_gains(np.ones_like(p) * 1e20, np.ones_like(d) * 1)
-
         await self.reset_robot(self._robot)
 
         kinematics_config = interface_config_loader.load_supported_lula_kinematics_solver_config("Franka")
@@ -150,8 +147,6 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
 
         robot.initialize()
         robot.disable_gravity()
-        robot.set_solver_position_iteration_count(64)
-        robot.set_solver_velocity_iteration_count(64)
 
         self._robot.post_reset()
         await update_stage_async()
@@ -480,9 +475,6 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.all(min_path_dists < path_dist_thresh))
 
     async def follow_plan(self, plan, interpolation_max_dist, path_dist_thresh=0.02):
-        self._robot.get_articulation_controller().set_max_efforts(1e20 * np.ones(9))
-        self._robot.get_articulation_controller().set_gains(1e15 * np.ones(9), 1e14 * np.ones(9))
-
         interpolated_plan = self._planner_visualizer.interpolate_path(plan, interpolation_max_dist)
         trajectory = self._cspace_trajectory_planner.compute_c_space_trajectory(interpolated_plan)
         self.assertTrue(trajectory is not None, "Failed to Generate Trajectory connecting RRT waypoints!")
