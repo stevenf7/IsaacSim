@@ -22,6 +22,7 @@
 #include "imu_sensor/ImuSensor.h"
 #include "contact_sensor/ContactManager.h"
 #include "contact_sensor/ContactSensor.h"
+#include "lightbeam_sensor/LightBeamSensor.h"
 // clang-format on
 
 #include <carb/Framework.h>
@@ -49,7 +50,10 @@ const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.sensor.plugin", "I
                                                   carb::PluginHotReload::eDisabled, "dev" };
 
 
-CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::sensor::ContactSensorInterface, omni::isaac::sensor::ImuSensorInterface)
+CARB_PLUGIN_IMPL(kPluginImpl,
+                 omni::isaac::sensor::ContactSensorInterface,
+                 omni::isaac::sensor::ImuSensorInterface,
+                 omni::isaac::sensor::LightBeamSensorInterface)
 
 CARB_PLUGIN_IMPL_DEPS(omni::physx::IPhysx,
                       omni::physx::IPhysxSceneQuery,
@@ -230,6 +234,129 @@ omni::isaac::sensor::IsReading CARB_ABI IsGetSensorReading(
 
 }
 
+namespace lightbeam_sensor
+{
+bool CARB_ABI isLightBeamSensor(const char* primPath)
+{
+    if (g_stage && g_isaacSensorManager)
+    {
+        omni::isaac::sensor::LightBeamSensor* sensor =
+            g_isaacSensorManager->getLightBeamSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+            return true;
+        }
+        else
+        {
+            CARB_LOG_ERROR("Light Beam Sensor does not exist");
+            return false;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Isaac Sensor Manager does not exist");
+        return false;
+    }
+}
+
+float* CARB_ABI getLinearDepthData(const char* primPath)
+{
+    if (g_stage && g_isaacSensorManager)
+    {
+        omni::isaac::sensor::LightBeamSensor* sensor =
+            g_isaacSensorManager->getLightBeamSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+
+        if (sensor)
+        {
+            return sensor->getLinearDepthData().data();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Light Beam Sensor does not exist");
+            return nullptr;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Isaac Sensor Manager does not exist");
+        return nullptr;
+    }
+}
+
+int CARB_ABI getNumRays(const char* primPath)
+{
+    if (g_stage && g_isaacSensorManager)
+    {
+        omni::isaac::sensor::LightBeamSensor* sensor =
+            g_isaacSensorManager->getLightBeamSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+
+        if (sensor)
+        {
+            return sensor->getNumRays();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Light Beam Sensor does not exist");
+            return 0;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Isaac Sensor Manager does not exist");
+        return 0;
+    }
+}
+
+carb::Float3* CARB_ABI getHitPosData(const char* primPath)
+{
+    if (g_stage && g_isaacSensorManager)
+    {
+        omni::isaac::sensor::LightBeamSensor* sensor =
+            g_isaacSensorManager->getLightBeamSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+
+        if (sensor)
+        {
+            return sensor->getHitPosData().data();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Light Beam Sensor does not exist");
+            return 0;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Isaac Sensor Manager does not exist");
+        return 0;
+    }
+}
+
+uint8_t* CARB_ABI getBeamHitData(const char* primPath)
+{
+    if (g_stage && g_isaacSensorManager)
+    {
+        omni::isaac::sensor::LightBeamSensor* sensor =
+            g_isaacSensorManager->getLightBeamSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+
+        if (sensor)
+        {
+            return sensor->getBeamHitData().data();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Light Beam Sensor does not exist");
+            return 0;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Isaac Sensor Manager does not exist");
+        return 0;
+    }
+}
+
+} // lightbeam_sensor
+
 void onPlay()
 {
     g_simulationView = g_tensorApi->createSimulationView(g_stageID);
@@ -256,6 +383,11 @@ void onPlay()
             }
         }
         else if (prim.IsA<pxr::IsaacSensorIsaacContactSensor>())
+        {
+            // Add the root prim
+            g_isaacSensorManager->onComponentAdd(prim);
+        }
+        else if (prim.IsA<pxr::IsaacSensorIsaacLightBeamSensor>())
         {
             // Add the root prim
             g_isaacSensorManager->onComponentAdd(prim);
@@ -456,6 +588,20 @@ void fillInterface(omni::isaac::sensor::ImuSensorInterface& iface)
     iface.getSensorReading = imu_sensor::IsGetSensorReading;
     iface.isImuSensor = imu_sensor::isImuSensor;
 }
+
+void fillInterface(omni::isaac::sensor::LightBeamSensorInterface& iface)
+{
+    using namespace omni::isaac::sensor;
+
+    memset(&iface, 0, sizeof(iface));
+
+    iface.isLightBeamSensor = lightbeam_sensor::isLightBeamSensor;
+    iface.getBeamHitData = lightbeam_sensor::getBeamHitData;
+    iface.getNumRays = lightbeam_sensor::getNumRays;
+    iface.getLinearDepthData = lightbeam_sensor::getLinearDepthData;
+    iface.getHitPosData = lightbeam_sensor::getHitPosData;
+}
+
 #ifdef _WIN32
 #    pragma warning(pop)
 #endif

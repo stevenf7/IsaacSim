@@ -19,6 +19,7 @@ from .test_imu_sensor import *
 from .test_imu_sensor_ogn import *
 from .test_imu_sensor_wrapper import *
 from .test_lidar_rtx import *
+from .test_lightbeam_sensor import *
 from .test_rotating_lidar_physX import *
 from .test_rtx_rotary_lidar import *
 from .test_rtx_solid_state_lidar import *

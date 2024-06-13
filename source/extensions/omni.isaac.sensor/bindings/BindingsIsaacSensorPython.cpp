@@ -232,5 +232,74 @@ PYBIND11_MODULE(_sensor, m)
                     arg0 (:obj:`str`): USD Path to sensor as string
                 Returns:
                     :obj:`bool`: True for is imu sensor, False for not imu sensor.)pbdoc");
+
+
+    defineInterfaceClass<LightBeamSensorInterface>(
+        m, "LightBeamSensorInterface", "acquire_lightbeam_sensor_interface", "release_lightbeam_sensor_interface")
+        .def("get_num_rays", wrapInterfaceFunction(&LightBeamSensorInterface::getNumRays),
+             R"pbdoc(   
+                Args:
+                    arg0 (:obj:`str`): USD Path to sensor as string
+                Returns:
+                    :obj:`int`: The number of rays in the light curtain.)pbdoc")
+        .def(
+            "get_linear_depth_data",
+            [](const LightBeamSensorInterface* li, const char* sensorPath) -> py::object
+            {
+                if (!li)
+                    return py::none();
+                float* data = li->getLinearDepthData(sensorPath);
+                int numRays = li->getNumRays(sensorPath);
+                return py::array(py::buffer_info(
+                    data, sizeof(float), py::format_descriptor<float>::value, 1, { numRays }, { sizeof(float) }));
+            },
+            R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to sensor as a string
+                
+                Returns:
+                    :obj:`numpy.ndarray`: The distance from the sensor to the hit for each light beam in meters)pbdoc")
+        .def(
+            "get_beam_hit_data",
+            [](const LightBeamSensorInterface* li, const char* sensorPath) -> py::object
+            {
+                if (!li)
+                    return py::none();
+                uint8_t* data = li->getBeamHitData(sensorPath);
+                int numRays = li->getNumRays(sensorPath);
+                return py::array(py::buffer_info(
+                    data, sizeof(uint8_t), py::format_descriptor<uint8_t>::value, 1, { numRays }, { sizeof(uint8_t) }));
+            },
+            R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to sensor as a string
+                
+                Returns:
+                    :obj:`numpy.ndarray`: True for light beam sensor detecting a raycast hit, False for not no hit)pbdoc")
+
+        .def(
+            "get_hit_pos_data",
+            [](const LightBeamSensorInterface* li, const char* sensorPath) -> py::object
+            {
+                if (!li)
+                    return py::none();
+                carb::Float3* data = li->getHitPosData(sensorPath);
+                int numRays = li->getNumRays(sensorPath);
+                return py::array(py::buffer_info(data, sizeof(float), py::format_descriptor<float>::value, 2,
+                                                 { numRays, 3 }, { sizeof(float) * 3, sizeof(float) }));
+            },
+            R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to sensor as a string
+                
+                Returns:
+                    :obj:`numpy.ndarray`: Hit positions in xyz for each light beam relative to sensor origin)pbdoc")
+
+        .def("is_lightbeam_sensor", wrapInterfaceFunction(&LightBeamSensorInterface::isLightBeamSensor),
+             R"pbdoc(   
+                Args:
+                    arg0 (:obj:`str`): USD Path to sensor as string
+                Returns:
+                    :obj:`bool`: True for is light beam sensor, False for not light beam sensor.)pbdoc");
 }
 }
