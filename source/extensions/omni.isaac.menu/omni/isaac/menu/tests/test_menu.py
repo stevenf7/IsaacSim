@@ -56,6 +56,7 @@ class TestMenuAssets(OmniUiTest):
         self.generic_sensor_interface = _range_sensor.acquire_generic_sensor_interface()
         self.contact_sensor_interface = _sensor.acquire_contact_sensor_interface()
         self.imu_sensor_interface = _sensor.acquire_imu_sensor_interface()
+        self.lightbeam_sensor_interface = _sensor.acquire_lightbeam_sensor_interface()
         self.carb_settings = carb.settings.get_settings()
         self.carb_settings.set("/persistent/app/viewport/displayOptions", 0)
         self.carb_settings.set("/rtx/rendermode", "RayTracedLighting")
@@ -306,7 +307,7 @@ class TestMenuAssets(OmniUiTest):
         failed_sensors = []
 
         # each type of sensor will get a different prim type test, RGBD and RTX will check for camera prim
-        sensor_test_types = ["Rotating", "Generic", "Ultrasonic", "Contact", "Imu", "RGBD", "RTX"]
+        sensor_test_types = ["Rotating", "Generic", "Ultrasonic", "Contact", "Imu", "RGBD", "RTX", "LightBeam"]
 
         empty_path = ""
         sensor_menu_list = get_menu_path(self.sensor_menu_dict, empty_path, empty_list, sensor_root_path)
@@ -363,6 +364,11 @@ class TestMenuAssets(OmniUiTest):
                     sensor_passed = True
 
                 elif (sensor_test == "RGBD" or sensor_test == "RTX") and prim.IsA(UsdGeom.Camera):
+                    sensor_passed = True
+
+                elif sensor_test == "LightBeam" and self.lightbeam_sensor_interface.is_lightbeam_sensor(
+                    get_prim_path(prim)
+                ):
                     sensor_passed = True
 
                 if sensor_passed:

@@ -36,7 +36,7 @@
         <package name="openssl" version="1.1.1t+nv1-${platform}" />
     </dependency>
     <dependency name="omni-isaacsim-schema" linkPath="../_build/target-deps/omni-isaacsim-schema/${platform}/${config}">
-        <package name="omni-isaacsim-schema" version="2.1.0+isaacsim.0.3b508c10.local.${platform}.${config}"/>
+        <package name="omni-isaacsim-schema" version="2.1.1+isaacsim.0.f4a8e4fc.local.${platform}.${config}"/>
     </dependency>
     <dependency name="nlohmann-json" linkPath="../_build/target-deps/nlohmann-json">
         <package name="nlohmann-json" version="3.7.3-3fff8cd2-repackaged"/>

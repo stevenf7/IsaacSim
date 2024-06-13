@@ -29,6 +29,7 @@ class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         self._cs = _sensor.acquire_contact_sensor_interface()
         self._is = _sensor.acquire_imu_sensor_interface()
+        self._ls = _sensor.acquire_lightbeam_sensor_interface()
         self._menu = IsaacSensorMenu(ext_id)
 
         self.registered_template = []
@@ -60,6 +61,7 @@ class Extension(omni.ext.IExt):
     def on_shutdown(self):
         _sensor.release_contact_sensor_interface(self._cs)
         _sensor.release_imu_sensor_interface(self._is)
+        _sensor.release_lightbeam_sensor_interface(self._ls)
 
         try:
             self.unregister_nodes()

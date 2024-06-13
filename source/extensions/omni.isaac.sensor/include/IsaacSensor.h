@@ -82,6 +82,22 @@ struct ImuSensorInterface
     bool(CARB_ABI* isImuSensor)(const char* usdPath);
 };
 
+struct LightBeamSensorInterface
+{
+    CARB_PLUGIN_INTERFACE("omni::isaac::sensor::LightBeamSensorInterface", 0, 1);
+
+    //! Check is Prim a LightBeamSensorSchema
+    /*! Return True for is, False for is not an LightBeamSensorSchema
+     * \param usdPath sensor prim path
+     * \return true for is, false for is not an LightBeamSensorSchema
+     */
+    bool(CARB_ABI* isLightBeamSensor)(const char* usdPath);
+    float*(CARB_ABI* getLinearDepthData)(const char* usdPath);
+    int(CARB_ABI* getNumRays)(const char* usdPath);
+    uint8_t*(CARB_ABI* getBeamHitData)(const char* usdPath);
+    carb::Float3*(CARB_ABI* getHitPosData)(const char* usdPath);
+};
+
 }
 }
 }

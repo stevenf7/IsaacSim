@@ -139,6 +139,57 @@ class IsaacSensorCreateImuSensor(omni.kit.commands.Command):
         pass
 
 
+class IsaacSensorCreateLightBeamSensor(omni.kit.commands.Command):
+    def __init__(
+        self,
+        path: str = "/LightBeam_Sensor",
+        parent: str = None,
+        translation: Gf.Vec3d = Gf.Vec3d(0, 0, 0),
+        orientation: Gf.Quatd = Gf.Quatd(1, 0, 0, 0),
+        num_rays: int = 1,
+        curtain_length: float = 0.0,
+        forward_axis: Gf.Vec3d = Gf.Vec3d(1, 0, 0),  # default to x axis
+        curtain_axis: Gf.Vec3d = Gf.Vec3d(0, 0, 1),  # default to z axis
+        min_range: float = 0.4,
+        max_range: float = 100.0,
+    ):
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
+        self._prim = None
+        pass
+
+    def do(self):
+        if self._num_rays > 1 and self._curtain_length == 0:
+            carb.log_error("Must specify curtain length if num rays > 1")
+        success, self._prim = omni.kit.commands.execute(
+            "IsaacSensorCreatePrim",
+            path=self._path,
+            parent=self._parent,
+            schema_type=IsaacSensorSchema.IsaacLightBeamSensor,
+            translation=self._translation,
+            orientation=self._orientation,
+        )
+
+        if success and self._prim:
+            self._prim.CreateNumRaysAttr().Set(self._num_rays)
+            self._prim.CreateCurtainLengthAttr().Set(self._curtain_length)
+            self._prim.CreateForwardAxisAttr().Set(self._forward_axis)
+            self._prim.CreateCurtainAxisAttr().Set(self._curtain_axis)
+            self._prim.CreateMinRangeAttr().Set(self._min_range)
+            self._prim.CreateMaxRangeAttr().Set(self._max_range)
+
+            return self._prim
+        else:
+            carb.log_error("Could not create light beam sensor prim")
+            return None
+
+    def undo(self):
+        # undo must be defined even if empty
+        pass
+
+
 class IsaacSensorCreateRtxLidar(omni.kit.commands.Command):
     def __init__(
         self,

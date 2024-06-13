@@ -26,6 +26,9 @@ class IsaacSensorMenu:
         menu_items = [
             make_menu_item_description(ext_id, "Contact Sensor", lambda a=weakref.proxy(self): a._add_contact_sensor()),
             make_menu_item_description(ext_id, "Imu Sensor", lambda a=weakref.proxy(self): a._add_imu_sensor()),
+            make_menu_item_description(
+                ext_id, "LightBeam Sensor", lambda a=weakref.proxy(self): a._add_lightbeam_sensor()
+            ),
             MenuItemDescription(
                 name="RGBD Sensor",
                 sub_menu=[
@@ -267,6 +270,17 @@ class IsaacSensorMenu:
         )
         # Make lidar invisible on stage as camera
         set_prim_visibility(prim=prim, visible=False)
+
+    # create light beam sensor
+    def _add_lightbeam_sensor(self, *args, **kargs):
+        result, prim = omni.kit.commands.execute(
+            "IsaacSensorCreateLightBeamSensor",
+            path="/LightBeam_Sensor",
+            parent=self._get_stage_and_path(),
+            translation=Gf.Vec3d(0, 0, 0),
+            orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),
+            forward_axis=Gf.Vec3d(1, 0, 0),
+        )
 
     def _add_rtx_rotating_lidar(self, *args, **kwargs):
         _, prim = omni.kit.commands.execute(

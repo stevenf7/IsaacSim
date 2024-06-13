@@ -3,7 +3,8 @@ reloadable = true
 order = 0
 
 [package]
-version = "11.4.0"
+version = "12.0.0"
+
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Support physics based sensors, such as contact sensors and imu sensors"
@@ -51,6 +52,9 @@ name = "omni.isaac.sensor.scripts.samples.contact_sensor"
 [[python.module]]
 name = "omni.isaac.sensor.scripts.samples.imu_sensor"
 
+[[python.module]]
+name = "omni.isaac.sensor.scripts.samples.lightbeam_sensor"
+
 [[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
@@ -92,6 +96,7 @@ stdoutFailPatterns.exclude = [
     '*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_sensor_IsaacReadContactSensor: [/TestGraph] Invalid contact sensor prim*',
     '*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_sensor_IsaacReadEffortSensor: [/TestGraph] OmniGraph Error: Failed to create effort sensor, unable to find prim path*',
     '*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_sensor_IsaacReadIMU: [/TestGraph] Invalid Imu sensor prim*',
+    '*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_sensor_IsaacReadLightBeam: [/TestGraph] Invalid Light Beam Sensor prim*',
     '*[Error] [carb] [Plugin: omni.sensors.nv.lidar.ext.plugin] Dependency: [omni::sensors::lidar::IGenericModelOutputIOFactory v0.1] failed to be resolved.*',
     '*[Error] [omni.graph.core.plugin] /TestGraph/ReadEffortNode: [/TestGraph] OmniGraph Error: Failed to create effort sensor, unable to find prim path*',
     '*[Error] [omni.graph.core.plugin] /TestGraph/ReadIMUNode: [/TestGraph] Invalid Imu sensor prim*'

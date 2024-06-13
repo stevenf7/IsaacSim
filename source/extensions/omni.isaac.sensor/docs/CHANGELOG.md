@@ -1,5 +1,10 @@
 # Changelog
 
+## [12.0.0] - 2024-04-25
+### Added
+- LightBeam Sensor class that uses raycasts to detect if a beam is broken
+- Omnigraph nodes to read data from this light beam sensor
+
 ## [11.4.0] - 2024-06-11
 ### Added
 - Added unit tests for IMU, Contact, and Effort sensor omnigraph nodes.
