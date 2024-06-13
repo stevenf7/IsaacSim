@@ -524,9 +524,9 @@ class UIBuilder:
             return
         p, d = self._articulation.get_articulation_controller().get_gains()
         for i, p_field in enumerate(self._proportional_gains_fields):
-            p_field.set_value(math.log10(p[i]))
+            p_field.set_value(math.log10(p[i]) if p[i] != 0 else -25)
         for i, d_field in enumerate(self._damping_gains_fields):
-            d_field.set_value(math.log10(d[i]))
+            d_field.set_value(math.log10(d[i]) if d[i] != 0 else -25)
 
     def _build_hand_tuning_frame(self):
         self._proportional_gains_fields = []
@@ -604,7 +604,7 @@ class UIBuilder:
                 p_float_field = LogFloatField(
                     f"{joint_name} Stiffness log(kp) ",
                     tooltip=f"Log base 10 of the value of {joint_name} proportional gain.",
-                    default_value=math.log10(p[i]),
+                    default_value=math.log10(p[i]) if p[i] != 0 else -25,
                     lower_limit=-25,
                     upper_limit=25,
                     on_value_changed_fn=partial(on_p_changed, i),
@@ -612,7 +612,7 @@ class UIBuilder:
                 d_float_field = LogFloatField(
                     f"{joint_name} Damping log(kd) ",
                     tooltip=f"Log base 10 of the value of {joint_name} damping gain.",
-                    default_value=math.log10(d[i]),
+                    default_value=math.log10(d[i]) if d[i] != 0 else -25,
                     lower_limit=-25,
                     upper_limit=25,
                     on_value_changed_fn=partial(on_d_changed, i),
