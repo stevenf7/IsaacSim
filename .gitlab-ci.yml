@@ -769,7 +769,7 @@ pages:
   stage: pages
   extends:
   - .build-common
-  - .omni_nvks_runner_with_docker
+  - .runner-utility-linux-x86_64
   script:
   - mkdir .public
   - ls
@@ -797,7 +797,7 @@ pages:
 build-docs:
   extends:
   - .build-common
-  - .omni_nvks_runner_with_docker
+  - .runner-utility-linux-x86_64
   timeout: 3 hours
   before_script:
   - !reference [.omni_s3_write_get_secrets, omni_s3_write_get_secrets]
@@ -954,7 +954,7 @@ benchmark-windows-x86_64:
 verify-publish-extensions:
   extends:
   - .deploy-common
-  - .omni_nvks_runner_with_docker
+  - .runner-utility-linux-x86_64
   script:
   - ./repo.sh build --fetch-only -rd
   - ./repo.sh publish_exts -a --from-package -c release --verify
@@ -998,7 +998,7 @@ verify-publish-extensions:
 publish-extensions:
   extends:
   - .deploy-common
-  - .omni_nvks_runner_with_docker
+  - .runner-build-linux-x86_64
   script:
   - ./repo.sh build --fetch-only -rd
   - ./repo.sh publish_exts -a --from-package -c release
@@ -1089,7 +1089,7 @@ publish-python-packages-windows:
 publish-docs:
   extends:
   - .deploy-common
-  - .omni_nvks_runner_with_docker
+  - .runner-utility-linux-x86_64
   variables:
     # Required access tokens for publishing to S3
     AWS_ACCESS_KEY_ID: $AWS_OMNIVERSEDOCS_ACCESS_KEY_ID
@@ -1114,7 +1114,7 @@ publish-docs:
 publish-to-launcher:
   extends:
   - .deploy-common
-  - .omni_nvks_runner_with_docker
+  - .runner-utility-linux-x86_64
   script:
   - ls _build/packages/
   - ./repo.sh publish_launcher
@@ -1144,7 +1144,7 @@ publish-to-launcher:
 
 #   extends:
 #   - .deploy-common
-#   - .omni_nvks_runner_with_docker
+#   - .runner-utility-linux-x86_64
 #   script:
 #   - ./repo.sh ci publish_to_launcher
 #   needs:
@@ -1166,7 +1166,7 @@ release-new-version:
 
 #   extends:
 #   - .deploy-common
-#   - .omni_nvks_runner_with_docker
+#   - .runner-utility-linux-x86_64
 #   needs: []
 #   script:
 #   - ./repo.sh ci release_new_version
@@ -1185,7 +1185,7 @@ autoupdate-kit:
   - when: never
 #   extends:
 #   - .deploy-common
-#   - .omni_nvks_runner_with_docker
+#   - .runner-utility-linux-x86_64
 #   needs: []
 #   script:
 #   - ./repo.sh ci autoupdate_kit
@@ -1200,7 +1200,7 @@ autoupdate-kit:
 bump-version:
   extends:
   - .deploy-common
-  - .omni_nvks_runner_with_docker
+  - .runner-utility-linux-x86_64
   script:
   - ./repo.sh bump_version
   needs: []
@@ -1290,7 +1290,7 @@ internal-build-windows-x86_64-release:
 internal-publish-to-packman:
   extends:
   - .deploy-common
-  - .omni_nvks_runner_with_docker
+  - .runner-utility-linux-x86_64
   script:
   - ls _build/packages/
   - ./repo.sh publish_internal_packages
@@ -1315,7 +1315,7 @@ internal-publish-to-packman:
 internal-publish-container:
   extends:
   - .deploy-common
-  - .omni_nvks_runner_with_docker
+  - .runner-utility-linux-x86_64
   variables:
     APP_NAME: "isaac-sim-internal"
     FAMILY_NAME: "gl"
@@ -1349,7 +1349,7 @@ internal-publish-container:
 publish-container:
   extends:
   - .deploy-common
-  - .omni_nvks_runner_with_docker
+  - .runner-utility-linux-x86_64
   variables:
     APP_NAME: "isaac-sim"
     FAMILY_NAME: "gl"
@@ -1424,7 +1424,7 @@ binaryscan-build-windows-x86_64-release:
 binaryscan-publish-to-packman:
   extends:
   - .deploy-common
-  - .omni_nvks_runner_with_docker
+  - .runner-utility-linux-x86_64
   script:
   - ls _build/packages/
   - ./repo.sh publish_binaryscan_packages
@@ -1447,7 +1447,7 @@ binaryscan-publish-to-packman:
 isaac-sim-assets-1:
   extends:
   - .deploy-common
-  - .omni_nvks_runner_with_docker
+  - .runner-utility-linux-x86_64
   script:
   - ./tools/ci/build-and-packaging/isaac-sim-assets-1/step.sh
   - ./repo.sh publish_assets_launcher_1
@@ -1468,7 +1468,7 @@ isaac-sim-assets-1:
 isaac-sim-assets-2:
   extends:
   - .deploy-common
-  - .omni_nvks_runner_with_docker
+  - .runner-utility-linux-x86_64
   script:
   - ./tools/ci/build-and-packaging/isaac-sim-assets-2/step.sh
   - ./repo.sh publish_assets_launcher_2
@@ -1489,7 +1489,7 @@ isaac-sim-assets-2:
 isaac-sim-assets-3:
   extends:
   - .deploy-common
-  - .omni_nvks_runner_with_docker
+  - .runner-utility-linux-x86_64
   script:
   - ./tools/ci/build-and-packaging/isaac-sim-assets-3/step.sh
   - ./repo.sh publish_assets_launcher_3
@@ -1510,7 +1510,7 @@ isaac-sim-assets-3:
 isaac-sim-assets-4:
   extends:
   - .deploy-common
-  - .omni_nvks_runner_with_docker
+  - .runner-utility-linux-x86_64
   script:
   - ./tools/ci/build-and-packaging/isaac-sim-assets-4/step.sh
   - ./repo.sh publish_assets_launcher_4
