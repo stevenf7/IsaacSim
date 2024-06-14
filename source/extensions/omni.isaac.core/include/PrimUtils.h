@@ -9,8 +9,6 @@
 
 #pragma once
 
-#include <pch/UsdPCH.h>
-
 #ifdef _MSC_VER
 #    if OMPRIMUTILSEXPORT
 #        define DllExport __declspec(dllexport)

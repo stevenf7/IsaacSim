@@ -6,7 +6,9 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
-
+// clang-format off
+#include <pch/UsdPCH.h>
+// clang-format on
 
 #include <include/Ros2Node.h>
 
