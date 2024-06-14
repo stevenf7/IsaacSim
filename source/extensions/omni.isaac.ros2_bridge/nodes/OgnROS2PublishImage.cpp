@@ -7,6 +7,10 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
+// clang-format off
+#include <pch/UsdPCH.h>
+// clang-format on
+
 #ifndef _WIN32
 #    include <include/ipc_buffer_manager.hpp>
 #endif

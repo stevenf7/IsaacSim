@@ -6,6 +6,11 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
+
+// clang-format off
+#include <pch/UsdPCH.h>
+// clang-format on
+
 #include "Ros2Humble.h"
 #include "rmw/validate_full_topic_name.h"
 #include "rmw/validate_namespace.h"

@@ -8,10 +8,6 @@
 //
 #pragma once
 
-// clang-format off
-#include <pch/UsdPCH.h>
-// clang-format on
-
 #include <include/Ros2QoS.h>
 #include <nlohmann/json.hpp>
 #include <omni/fabric/Type.h>
@@ -22,11 +18,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-
-// #include <omni/isaac/ros/Conversions.h>
-// #include <omni/isaac/utils/PoseTree.h>
-// #include <omni/fabric/FabricUSD.h>
-// #include <omni/usd/UsdUtils.h>
 
 
 enum class BackendMessageType : uint8_t

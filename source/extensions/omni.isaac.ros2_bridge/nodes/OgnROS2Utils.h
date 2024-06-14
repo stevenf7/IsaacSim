@@ -8,9 +8,7 @@
 //
 
 #pragma once
-// clang-format off
-#include <pch/UsdPCH.h>
-// clang-format on
+
 #include "omni/isaac/utils/UsdUtilities.h"
 
 #include <carb/Framework.h>

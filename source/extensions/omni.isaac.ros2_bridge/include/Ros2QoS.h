@@ -8,10 +8,6 @@
 //
 #pragma once
 
-// clang-format off
-#include <pch/UsdPCH.h>
-// clang-format on
-
 #include <nlohmann/json.hpp>
 
 #include <iostream>
