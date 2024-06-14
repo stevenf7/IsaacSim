@@ -40,7 +40,7 @@
 #include <omni/physics/tensors/TensorDesc.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
-#include <omni/sensors/lidar/ILidarProfileReaderFactory.h>
+#include <omni/sensors/IProfileReader.h>
 #include <omni/usd/UsdContext.h>
 #include <omni/usd/UsdUtils.h>
 
@@ -59,7 +59,7 @@ CARB_PLUGIN_IMPL_DEPS(omni::physx::IPhysx,
                       omni::physx::IPhysxSceneQuery,
                       omni::kit::IStageUpdate,
                       omni::graph::core::IGraphRegistry,
-                      omni::sensors::lidar::ILidarProfileReaderFactory)
+                      omni::sensors::IProfileReaderFactory)
 
 DECLARE_OGN_NODES()
 

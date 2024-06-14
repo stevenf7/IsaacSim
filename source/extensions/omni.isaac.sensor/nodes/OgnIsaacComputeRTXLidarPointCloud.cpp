@@ -35,18 +35,16 @@ namespace sensor
 
 struct LidarPoint
 {
-    float x, y, z, azimuth, elevation, range, intensity;
+    float x{ 0.0 }, y{ 0.0 }, z{ 0.0 }, azimuth{ 0.0 }, elevation{ 0.0 }, range{ 0.0 }, intensity{ 0.0 };
 };
-inline void convertReturnToPoint(unsigned int idx,
-                                 LidarPoint& point,
+inline void convertReturnToPoint(const unsigned int idx,
                                  const omni::sensors::GenericModelOutput& gmo,
-                                 const LidarBaseProfile* profile,
-                                 const EmitterProfile* emitterProfile,
-                                 float accuracyErrorAzimuthDeg,
-                                 float accuracyErrorElevationDeg)
+                                 const LidarProfile* profile,
+                                 const uint32_t emitterId,
+                                 const float accuracyErrorAzimuthDeg,
+                                 const float accuracyErrorElevationDeg,
+                                 LidarPoint& point)
 {
-    // const float azimuthDeg = (rightHanded ? (360.f - lidarReturn.azimuthDeg) : lidarReturn.azimuthDeg);
-    // const float azimuthDeg = 360.f - gmo.elements.x[idx] + accuracyErrorAzimuthDeg;
     const float azimuthDeg = gmo.elements.x[idx] + accuracyErrorAzimuthDeg;
     const float elevationDeg{ gmo.elements.y[idx] + accuracyErrorElevationDeg };
 
@@ -72,11 +70,11 @@ inline void convertReturnToPoint(unsigned int idx,
     float beamOriginMY = 0.0f;
     float beamOriginMZ = 0.0f;
     float beamOriginDistM = 0.0f;
-    if (emitterProfile)
+    if (0 <= emitterId && emitterId < profile->emitterStateCount * profile->numberOfEmitters)
     {
-        distanceCorrectionM = emitterProfile->distanceCorrectionM;
-        beamOriginMY = emitterProfile->horOffsetM;
-        beamOriginMZ = emitterProfile->vertOffsetM;
+        distanceCorrectionM = profile->emitterProfileSoA.distanceCorrectionM[emitterId];
+        beamOriginMY = profile->emitterProfileSoA.horOffsetM[emitterId];
+        beamOriginMZ = profile->emitterProfileSoA.vertOffsetM[emitterId];
         rayOrigin = { -sinAzimuth * beamOriginMY, cosAzimuth * beamOriginMY, beamOriginMZ };
         beamOriginDistM = beamOriginMY * beamOriginMY + beamOriginMZ * beamOriginMZ;
         beamOriginDistM = beamOriginDistM > FLT_EPSILON ? ::sqrtf(beamOriginDistM) : 0.f;
@@ -90,10 +88,7 @@ inline void convertReturnToPoint(unsigned int idx,
 
     // Add beam origin distance directly? -> see differences in resim
     point.range = rawDistanceM;
-    point.intensity = gmo.elements.scalar[idx];
-    if (profile)
-        point.intensity *= profile->intensityScalePercent / 100.f;
-
+    point.intensity = gmo.elements.scalar[idx] * profile->intensityMapping.intensityScalePercent / 100.f;
 
     point.azimuth = azimuthRad;
     point.elevation = elevationRad;
@@ -195,20 +190,9 @@ public:
         float accuracyErrorAzimuthDeg = db.inputs.accuracyErrorAzimuthDeg();
         float accuracyErrorElevationDeg = db.inputs.accuracyErrorElevationDeg();
 
-        // const bool rightHanded = true; // TODO How should we decide this?
-        // Solid state lidar only give out points for one tick at a time. see:
-        //     drivesim code base LidarPCConverterHelper.h
-        // NOTE: in Drivesim code, Solid State lidar does not use profile or emitterProfile ATM.
-        const LidarBaseProfile* profile = state.scanType == LidarScanType::kRotary ?
-                                              reinterpret_cast<const LidarBaseProfile*>(&state.rotaryProfile) :
-                                              nullptr;
-        // uint32_t numTicks = state.scanType == LidarScanType::kRotary ? numTicks : 1;
         uint32_t atomicOutIdx = 0; // not atomic, but it will need to be if you parallelize this
         const omni::sensors::LidarAuxiliaryData* auxPoints =
             static_cast<const omni::sensors::LidarAuxiliaryData*>(helper.m_gmo.auxiliaryData);
-        const uint8_t* states = auxPoints ? auxPoints->tickStates : nullptr;
-        const uint32_t* emitterIds = auxPoints ? auxPoints->emitterId : nullptr;
-        bool useProfile = state.scanType == LidarScanType::kRotary && states && emitterIds ? true : false;
         for (uint32_t pointIdx = 0; pointIdx < helper.m_gmo.numElements; pointIdx++)
         {
 
@@ -216,14 +200,9 @@ public:
             if (!keepOnlyPositiveDistance || distances[pointIdx] > 0.f)
             {
                 const uint32_t outIdx = keepOnlyPositiveDistance ? atomicOutIdx++ : pointIdx;
-                // NOTE: in drivesim, emitterProfile is not used for Solid State lidar.
-                const EmitterProfile* emitterProfile =
-                    useProfile ?
-                        &state.rotaryProfile.emitterStates[states[pointIdx]].emitterProfiles[emitterIds[pointIdx]] :
-                        nullptr;
                 LidarPoint p;
-                convertReturnToPoint(pointIdx, p, helper.m_gmo, profile, emitterProfile, accuracyErrorAzimuthDeg,
-                                     accuracyErrorElevationDeg);
+                convertReturnToPoint(pointIdx, helper.m_gmo, state.profile, auxPoints->emitterId[pointIdx],
+                                     accuracyErrorAzimuthDeg, accuracyErrorElevationDeg, p);
                 p.x += accuracyErrorPosition.x;
                 p.y += accuracyErrorPosition.y;
                 p.z += accuracyErrorPosition.z;

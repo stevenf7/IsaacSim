@@ -1,5 +1,10 @@
 # Changelog
 
+## [12.1.0] - 2024-06-14
+### Changed
+- Upgraded to omni.sensors.nv.* v1.1.0
+- Uses new common sensor profile reader
+
 ## [12.0.0] - 2024-04-25
 ### Added
 - LightBeam Sensor class that uses raycasts to detect if a beam is broken
