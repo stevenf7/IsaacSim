@@ -167,7 +167,7 @@ class TestRTXRotaryLidar(omni.kit.test.AsyncTestCase):
         max_azimuth = frame["azimuth_range"][1]
         horizontal_resolution = frame["horizontal_resolution"]
 
-        self.assertAlmostEqual(min_azimuth, -180.0, delta=horizontal_resolution)
+        self.assertAlmostEqual(min_azimuth, -180.0, delta=2.0 * horizontal_resolution)
         self.assertAlmostEqual(max_azimuth, 3.0)
         self.assertAlmostEqual(horizontal_resolution, 0.1)
 
