@@ -1,4 +1,7 @@
 # Changelog
+## [2.27.0] - 2024-06-14
+### Changed
+- Moved and renamed Navigation example in the menu to under Isaac Examples -> ROS2 -> Navigation -> Carter Navigation
 
 ## [2.26.5] - 2024-06-11
 ### Fixed

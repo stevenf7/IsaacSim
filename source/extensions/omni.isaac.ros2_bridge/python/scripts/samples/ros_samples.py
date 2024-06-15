@@ -26,12 +26,17 @@ class Extension(omni.ext.IExt):
             MenuItemDescription(
                 name="ROS2",
                 sub_menu=[
-                    make_menu_item_description(
-                        ext_id,
-                        "Navigation",
-                        lambda a=weakref.proxy(self): a._on_environment_setup(
-                            "/Isaac/Samples/ROS2/Scenario/carter_warehouse_navigation.usd"
-                        ),
+                    MenuItemDescription(
+                        name="Navigation",
+                        sub_menu=[
+                            make_menu_item_description(
+                                ext_id,
+                                "Carter Navigation",
+                                lambda a=weakref.proxy(self): a._on_environment_setup(
+                                    "/Isaac/Samples/ROS2/Scenario/carter_warehouse_navigation.usd"
+                                ),
+                            )
+                        ],
                     )
                 ],
             ),
