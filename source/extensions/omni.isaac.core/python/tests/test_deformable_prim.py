@@ -13,7 +13,7 @@ import torch
 from omni.isaac.core import World
 from omni.isaac.core.materials.particle_material import ParticleMaterial
 from omni.isaac.core.prims.soft.deformable_prim import DeformablePrim
-from omni.isaac.core.tests.test_semantics import TestProperties
+from omni.isaac.core.tests.common import TestProperties
 
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add support for async/await tests
@@ -57,7 +57,6 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase, TestProperties):
         self.deformable = DeformablePrim(prim_path=str(deformable_path))
         self.my_world.scene.add(self.deformable)
         await self.my_world.reset_async(soft=False)
-        await update_stage_async()
         await self.my_world.stop_async()
 
         for timeline in [True, False]:

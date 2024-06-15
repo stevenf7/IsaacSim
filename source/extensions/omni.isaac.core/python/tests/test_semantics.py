@@ -7,7 +7,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import numpy as np
 
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add support for async/await tests
@@ -112,74 +111,3 @@ class TestSemantics(omni.kit.test.AsyncTestCase):
         for nested_prim in prim.GetProperties():
             is_semantic = Semantics.SemanticsAPI.IsSemanticsAPIPath(prop.GetPath())
             self.assertFalse(is_semantic)
-
-
-class TestProperties:
-    async def scalar_prop_test(self, getFunc, setFunc, set_value=0.2, is_stopped=False):
-        print("testing \n", getFunc, "\n", setFunc)
-        await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
-        if is_stopped:
-            await self.my_world.stop_async()
-        setFunc(set_value)
-        cur_value = getFunc()
-        self.assertTrue(torch.isclose(cur_value, torch.tensor(set_value), atol=1e-5))
-        self.my_world.step_async(0)
-        await omni.kit.app.get_app().next_update_async()
-        cur_value = getFunc()
-        self.assertTrue(torch.isclose(cur_value, torch.tensor(set_value)))
-
-    async def bool_prop_test(self, getFunc, setFunc, set_value_1=False, set_value_2=True, is_stopped=False):
-        print("testing \n", getFunc, "\n", setFunc)
-        await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
-        if is_stopped:
-            await self.my_world.stop_async()
-        setFunc(set_value_1)
-        cur_value = getFunc()
-        self.assertTrue(cur_value == set_value_1)
-        setFunc(set_value_2)
-        cur_value = getFunc()
-        self.my_world.step_async(0)
-        await omni.kit.app.get_app().next_update_async()
-        cur_value = getFunc()
-        self.assertTrue(cur_value == set_value_2)
-
-    async def int_prop_test(self, getFunc, setFunc, set_value=27, set_value_2=28, is_stopped=False):
-        print("testing \n", getFunc, "\n", setFunc)
-        await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
-        if is_stopped:
-            await self.my_world.stop_async()
-        setFunc(set_value)
-        cur_value = getFunc()
-        self.assertTrue(cur_value == set_value)
-        setFunc(set_value_2)
-        cur_value = getFunc()
-        self.my_world.step_async(0)
-        await omni.kit.app.get_app().next_update_async()
-        cur_value = getFunc()
-        self.assertTrue(cur_value == set_value_2)
-
-    async def vector_prop_test(
-        self,
-        getFunc,
-        setFunc,
-        set_value_1=torch.Tensor([10, 12, 18]),
-        set_value_2=torch.Tensor([100, 102, 120]),
-        is_stopped=False,
-    ):
-        print("testing \n", getFunc, "\n", setFunc)
-        await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
-        if is_stopped:
-            await self.my_world.stop_async()
-        setFunc(set_value_1)
-        cur_value = getFunc()
-        self.assertTrue(torch.isclose(set_value_1, torch.Tensor(cur_value)).all())
-        setFunc(set_value_2)
-        cur_value = getFunc()
-        self.my_world.step_async()
-        await omni.kit.app.get_app().next_update_async()
-        cur_value = getFunc()
-        self.assertTrue(torch.isclose(set_value_2, torch.Tensor(cur_value)).all())

@@ -42,7 +42,7 @@ class TestClothPrimView(omni.kit.test.AsyncTestCase):
 
     async def test_cloth_prim_view_gpu_pipeline(self):
         self.isclose = torch.isclose
-        self._array_container = torch.cuda.FloatTensor
+        self._array_container = lambda x: torch.tensor(x, device=self._device, dtype=torch.float32)
         await update_stage_async()
         self.stage = omni.usd.get_context().get_stage()
         await self._runner()
@@ -106,7 +106,6 @@ class TestClothPrimView(omni.kit.test.AsyncTestCase):
 
     async def position_test(self):
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.cloth_view.get_world_positions()
         new_values = prev_values[indices]
@@ -122,7 +121,6 @@ class TestClothPrimView(omni.kit.test.AsyncTestCase):
 
     async def velocity_test(self):
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.cloth_view.get_velocities()
         new_values = prev_values[indices]
@@ -140,7 +138,6 @@ class TestClothPrimView(omni.kit.test.AsyncTestCase):
 
     async def paticle_masses_test(self):
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.cloth_view.get_particle_masses()
         new_values = prev_values[indices]
@@ -158,7 +155,6 @@ class TestClothPrimView(omni.kit.test.AsyncTestCase):
 
     async def spring_stiffness_test(self):
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.cloth_view.get_stretch_stiffnesses()
         new_values = prev_values[indices]
@@ -176,7 +172,6 @@ class TestClothPrimView(omni.kit.test.AsyncTestCase):
 
     async def spring_damping_test(self):
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.cloth_view.get_spring_dampings()
         new_values = prev_values[indices]
