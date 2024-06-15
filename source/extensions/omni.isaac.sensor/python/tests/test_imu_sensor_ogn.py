@@ -16,7 +16,7 @@ from omni.isaac.sensor import _sensor
 from pxr import Gf
 
 
-class TestIMUSensor(omni.kit.test.AsyncTestCase):
+class TestIMUSensorOgn(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         await create_new_stage_async()
         await self.setup_environment()

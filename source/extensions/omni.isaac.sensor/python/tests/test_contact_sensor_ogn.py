@@ -16,7 +16,7 @@ from omni.physx.scripts import physicsUtils
 from pxr import Gf
 
 
-class TestContactSensor(omni.kit.test.AsyncTestCase):
+class TestContactSensorOgn(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         await create_new_stage_async()
         await self.setup_environment()
