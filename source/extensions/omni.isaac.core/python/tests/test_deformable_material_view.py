@@ -40,7 +40,7 @@ class TestDeformableMaterialView(omni.kit.test.AsyncTestCase):
 
     async def test_deformable_material_view(self):
         self.isclose = torch.isclose
-        self._array_container = torch.cuda.FloatTensor
+        self._array_container = lambda x: torch.tensor(x, device=self._device, dtype=torch.float32)
         self.stage = get_current_stage()
         await update_stage_async()
         await self._runner()
@@ -76,7 +76,6 @@ class TestDeformableMaterialView(omni.kit.test.AsyncTestCase):
 
     async def dynamic_friction_test(self):
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.deformable_material_view.get_dynamic_frictions(indices)
         new_values = prev_values + np.random.uniform(low=0.0, high=1.0, size=(prev_values.shape[0], 1)).astype(
@@ -93,7 +92,6 @@ class TestDeformableMaterialView(omni.kit.test.AsyncTestCase):
 
     async def poissons_ratio_test(self):
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.deformable_material_view.get_poissons_ratios(indices) / 2
         new_values = prev_values + np.random.uniform(low=0.0, high=0.1, size=(prev_values.shape[0], 1)).astype(
@@ -110,7 +108,6 @@ class TestDeformableMaterialView(omni.kit.test.AsyncTestCase):
 
     async def youngs_modululs_test(self):
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.deformable_material_view.get_youngs_moduli(indices)
         new_values = prev_values + np.random.uniform(low=0.0, high=1.0, size=(prev_values.shape[0], 1)).astype(
@@ -127,7 +124,6 @@ class TestDeformableMaterialView(omni.kit.test.AsyncTestCase):
 
     async def damping_scale_test(self):
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.deformable_material_view.get_damping_scales(indices) / 2
         new_values = prev_values + np.random.uniform(low=0.0, high=0.3, size=(prev_values.shape[0], 1)).astype(
@@ -144,7 +140,6 @@ class TestDeformableMaterialView(omni.kit.test.AsyncTestCase):
 
     async def elasticity_damping_test(self):
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.deformable_material_view.get_elasticity_dampings(indices)
         new_values = prev_values + np.random.uniform(low=0.0, high=1.0, size=(prev_values.shape[0], 1)).astype(

@@ -111,7 +111,6 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
         self._my_world = World(sim_params=self._sim_params, backend=self._test_cfg["backend"], device="cuda")
         await self._my_world.initialize_simulation_context_async()
         await update_stage_async()
-        await omni.kit.app.get_app().next_update_async()
         self.stage = omni.usd.get_context().get_stage()
         self.length = 0.5
         self.num_points = num_query_points
@@ -140,12 +139,10 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
         self._my_world.clear_instance()
 
     async def signed_distance_test(self):
-        print("signed distance test")
         await self._my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else [0, 1, 2]
         self._my_world.step_async()
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
 
         sdf_view = self._cubes_view
         margins = sdf_view.get_sdf_margins()

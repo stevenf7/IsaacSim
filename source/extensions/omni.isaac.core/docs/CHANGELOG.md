@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.13.1] - 2024-06-14
+### Changed
+- Moved common test code into common.py
+### Fixed
+- Unit tests taking longer than expected due to extra app updates
+- Reduce print verbosity when running tests
+
+
 ## [3.13.0] - 2024-06-07
 ### Changed
 - SimulationContext and World classes do not change camera on initialization, set_camera_view must be called separately

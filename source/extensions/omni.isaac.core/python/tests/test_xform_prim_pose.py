@@ -48,7 +48,7 @@ class TestXformPrimPose(omni.kit.test.AsyncTestCase):
         real_position, real_orientation = xform_prim.get_local_pose()
         real_scale = xform_prim.get_world_scale()
         for i in range(3):
-            print(scale[i])
+            # print(scale[i])
             self.assertAlmostEqual(scale[i], real_scale[i])
 
         xform_prim = XFormPrim("/test_3", "test")
@@ -57,5 +57,5 @@ class TestXformPrimPose(omni.kit.test.AsyncTestCase):
         real_position, real_orientation = xform_prim.get_local_pose()
         real_scale = xform_prim.get_world_scale()
         for i in range(3):
-            print(scale[i])
+            # print(scale[i])
             self.assertAlmostEqual(scale[i], real_scale[i])

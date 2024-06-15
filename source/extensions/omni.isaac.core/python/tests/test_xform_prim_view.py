@@ -90,7 +90,7 @@ class TestXFormPrimView(omni.kit.test.AsyncTestCase):
         return
 
     async def test_local_pose(self):
-        print(euler_angles_to_quats(np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])))
+        # print(euler_angles_to_quats(np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])))
         self._frames_view.set_local_poses(
             translations=np.array([[0, 0, 0], [0, 10, 5], [0, 3, 5]]),
             orientations=euler_angles_to_quats(np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])),

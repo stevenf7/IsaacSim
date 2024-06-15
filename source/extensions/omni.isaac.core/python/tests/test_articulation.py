@@ -37,7 +37,6 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
         await create_new_stage_async()
         self._my_world = World(stage_units_in_meters=1.0, backend="torch", device=device)
         await self._my_world.initialize_simulation_context_async()
-        await omni.kit.app.get_app().next_update_async()
         self._my_world.scene.add_default_ground_plane()
         pass
 
@@ -64,7 +63,6 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
         await create_new_stage_async()
         self._my_world = World(stage_units_in_meters=1.0, backend="numpy", device="cpu")
         await self._my_world.initialize_simulation_context_async()
-        await omni.kit.app.get_app().next_update_async()
         self._my_world.scene.add_default_ground_plane()
         assets_root_path = await get_assets_root_path_async()
         asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
@@ -94,10 +92,10 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
         efforts = torch.ones((robot.num_dof), device="cpu") * 1000
         robot.set_joint_efforts(efforts)
         self._my_world.step_async()
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
         current_efforts = robot.get_measured_joint_efforts()
         await self._my_world.stop_async()
-        print(efforts, current_efforts)
+        # print(efforts, current_efforts)
         self.assertTrue(torch.isclose(current_efforts, efforts, atol=1e-1).all())
 
     async def test_joint_forces(self, add_view_to_scene=True):
@@ -109,7 +107,7 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
         efforts = torch.ones((franka.num_dof), device="cuda") * 100
         franka.set_joint_efforts(efforts)
         self._my_world.step_async()
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
         forces = franka.get_measured_joint_forces()
         await self._my_world.stop_async()
         self.assertEqual(forces.shape, torch.Size([franka._articulation_view.num_bodies, 6]))
@@ -123,7 +121,7 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
         # test_position = torch.Tensor([0.14, 0.5, -0.14])
         test_position = test_art.get_joint_positions()
         self._my_world.step_async()
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
 
         center_rev_drive = UsdPhysics.DriveAPI.Get(
             get_prim_at_path("/World/Articulation/Arm/CenterRevoluteJoint"), "angular"

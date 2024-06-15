@@ -37,7 +37,7 @@ class TestParticleSystemView(omni.kit.test.AsyncTestCase):
 
     async def test_cloth_prim_vie(self):
         self.isclose = torch.isclose
-        self._array_container = torch.cuda.FloatTensor
+        self._array_container = lambda x: torch.tensor(x, device=self._device, dtype=torch.float32)
         await update_stage_async()
         self.stage = omni.usd.get_context().get_stage()
         await self._runner()
@@ -79,7 +79,6 @@ class TestParticleSystemView(omni.kit.test.AsyncTestCase):
 
     async def particle_contact_offsets_test(self):
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.particle_system_view.get_particle_contact_offsets(indices)
         new_values = prev_values + np.random.uniform(low=0.0, high=1.0, size=(prev_values.shape[0], 1)).astype(
@@ -93,7 +92,6 @@ class TestParticleSystemView(omni.kit.test.AsyncTestCase):
 
     async def solid_rest_offsets_test(self):
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.particle_system_view.get_solid_rest_offsets(indices)
         new_values = prev_values + np.random.uniform(low=0.0, high=1.0, size=(prev_values.shape[0], 1)).astype(
@@ -107,7 +105,6 @@ class TestParticleSystemView(omni.kit.test.AsyncTestCase):
 
     async def fluid_rest_offsets_test(self):
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.particle_system_view.get_fluid_rest_offsets(indices)
         new_values = prev_values + np.random.uniform(low=0.0, high=1.0, size=(prev_values.shape[0], 1)).astype(
@@ -121,7 +118,6 @@ class TestParticleSystemView(omni.kit.test.AsyncTestCase):
 
     async def wind_test(self):
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.particle_system_view.get_winds(indices)
         new_values = prev_values + np.random.uniform(low=0.0, high=1.0, size=(prev_values.shape[0], 3)).astype(

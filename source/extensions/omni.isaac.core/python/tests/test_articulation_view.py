@@ -7,6 +7,8 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import asyncio
+
 import carb
 import numpy as np
 
@@ -33,16 +35,29 @@ BACKEND = ["torch", "numpy", "warp"]
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestArticulationView(omni.kit.test.AsyncTestCase):
+    async def setUp(self):
+        World.clear_instance()
+        await create_new_stage_async()
+        pass
+
+    # After running each test
+    async def tearDown(self):
+        self._my_world.clear_instance()
+        carb.settings.get_settings().set_bool("/physics/suppressReadback", False)
+        await update_stage_async()
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            print("tearDown, assets still loading, waiting to finish...")
+            await asyncio.sleep(1.0)
+        await update_stage_async()
+
     async def setUpWorld(self, backend="torch", device="cpu"):
         World.clear_instance()
         await create_new_stage_async()
         self._my_world = World(stage_units_in_meters=1.0, backend=backend, device=device)
         await self._my_world.initialize_simulation_context_async()
-        await update_stage_async()
-        await omni.kit.app.get_app().next_update_async()
         self._my_world.scene.add_default_ground_plane()
         self._my_world._physics_context.set_gravity(0)
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
 
     async def add_frankas(self, backend):
         assets_root_path = await get_assets_root_path_async()
@@ -119,14 +134,9 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         self._my_world.scene.add(self._hands_view)
         await self._my_world.reset_async()
 
-    async def tearDown(self):
-        self._my_world.clear_instance()
-        carb.settings.get_settings().set_bool("/physics/suppressReadback", False)
-        await create_new_stage_async()
-
     async def _step(self):
         self._my_world.step_async()
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
 
     async def test_world_poses_torch(self):
         for indexed in INDEXED:
@@ -246,10 +256,10 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 if indexed:
                     gt_v1 = torch.tensor([[0.0, 0.0, 0.1, 0.0, 0.0, 0.0]], device=device)
                     self._humanoids_view.set_velocities(gt_v1, indices=[1])
-                    print(gt_v1)
+                    # print(gt_v1)
                     await self._step()
                     new_v1 = self._humanoids_view.get_velocities(indices=[1])
-                    print(new_v1)
+                    # print(new_v1)
                 else:
                     gt_v1 = torch.tensor([[0.0, 0.0, 0.1, 0, 0, 0], [0.0, 0.0, 0.2, 0, 0, 0]], device=device)
                     self._humanoids_view.set_velocities(gt_v1)
@@ -291,7 +301,7 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                     self._humanoids_view.set_velocities(gt_v1)
                     await self._step()
                     new_v1 = self._humanoids_view.get_velocities()
-                self.assertTrue(np.isclose(new_v1.numpy(), gt_v1.numpy(), atol=1e-05).all())
+                self.assertTrue(np.isclose(new_v1.numpy(), gt_v1.numpy(), atol=1e-05).all(), f"{new_v1}, {gt_v1}")
                 self._my_world.clear_instance()
 
     async def test_velocities_torch(self):
@@ -1247,7 +1257,7 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 else:
                     new_value = cur_value + 0.5
                     self._frankas_view.set_joint_efforts(new_value)
-                await omni.kit.app.get_app().next_update_async()
+                await update_stage_async()
                 self._my_world.clear_instance()
 
     async def test_joint_efforts_numpy(self):
@@ -1282,7 +1292,7 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                     new_np += 0.5
                     new_value = wp.from_numpy(new_np, dtype=wp.float32, device=device)
                     self._frankas_view.set_joint_efforts(new_value)
-                await omni.kit.app.get_app().next_update_async()
+                await update_stage_async()
                 self._my_world.clear_instance()
 
     async def test_body_indices(self):
