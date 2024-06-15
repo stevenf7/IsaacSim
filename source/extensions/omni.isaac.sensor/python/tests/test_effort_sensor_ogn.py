@@ -16,7 +16,7 @@ from omni.isaac.nucleus import get_assets_root_path
 from pxr import Gf, UsdPhysics
 
 
-class TestEffortSensor(omni.kit.test.AsyncTestCase):
+class TestEffortSensorOgn(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         await create_new_stage_async()
         await self.setUp_environment()
