@@ -1,5 +1,9 @@
 # Changelog
 
+## [12.2.0] - 2024-06-14
+### Added
+- Unit test for IsaacComputeRTXRadarPointCloud
+
 ## [12.1.0] - 2024-06-14
 ### Changed
 - Upgraded to omni.sensors.nv.* v1.1.0

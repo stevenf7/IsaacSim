@@ -235,6 +235,7 @@ end
 ROS2_EXTRA = {
     ["windows"] =[[
 set RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+set ROS_DOMAIN_ID=93
 pushd %~dp0\..\exts
 set basedir=%cd%\omni.isaac.ros2_bridge\humble\lib
 popd
@@ -242,6 +243,7 @@ set PATH=%PATH%;%basedir%
 ]],
 ["linux"] =[[
 export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+export ROS_DOMAIN_ID=93
 INTERNAL_LIBS=$(readlink -f $SCRIPT_DIR/../exts/omni.isaac.ros2_bridge/humble/lib)
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$INTERNAL_LIBS
 ]]
