@@ -18,6 +18,7 @@ import omni.timeline
 import omni.ui as ui
 import omni.usd
 from omni.isaac.core.utils.prims import is_prim_path_valid
+from omni.isaac.core.utils.stage import get_current_stage
 from omni.isaac.core.utils.viewports import create_viewport_for_camera
 from omni.isaac.sensor import get_all_camera_objects
 from omni.isaac.ui.element_wrappers import TextBlock
@@ -378,6 +379,9 @@ class Extension(omni.ext.IExt):
 
     def _update_camera_stats_ui(self, e: carb.events.IEvent = None):
         # if camera prim path has been updated, set self._selected_camera to None
+        if get_current_stage() is None:
+            return
+
         if self._selected_camera and not is_prim_path_valid(self._selected_camera.prim_path):
             self._selected_camera = None
             self._on_refresh()
