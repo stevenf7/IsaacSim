@@ -57,6 +57,9 @@ persistent.physics.useFastCache = false
 persistent.physics.visualizationDisplayJoints = false
 persistent.omni.replicator.captureOnPlay = true
 
+# Explicitly enable Vulkan (on by default on Linux, off by default on Windows)
+app.vulkan = true
+
 ### async rendering settings
 omni.replicator.asyncRendering = false
 app.asyncRendering = false
@@ -113,7 +116,6 @@ testExtDefaultTimeout = 600
 # This forces extensions to be local when testing
 [settings.exts."omni.kit.registry.nucleus"]
 registries = []
-
 
 # FOR DEVELOPMENT - START #
 [settings]
