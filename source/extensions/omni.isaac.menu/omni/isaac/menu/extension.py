@@ -325,8 +325,10 @@ class Extension(omni.ext.IExt):
             ),
             make_menu_item_description(
                 ext_id,
-                "Jetracer",
-                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Jetracer/jetracer.usd", "/Jetracer"),
+                "Leatherback",
+                lambda a=weakref.proxy(self): a.create_asset(
+                    "/Isaac/Robots/Leatherback/leatherback.usd", "/Leatherback"
+                ),
             ),
             make_menu_item_description(
                 ext_id, "Kaya", lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Kaya/kaya.usd", "/Kaya")
@@ -376,7 +378,7 @@ class Extension(omni.ext.IExt):
             make_menu_item_description(
                 ext_id,
                 "Idealworks iw.hub",
-                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/IdealWorks/iw_hub_sensors.usd", "/iw_hub"),
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Idealworks/iw_hub_sensors.usd", "/iw_hub"),
             ),
             MenuItemDescription(name="NVIDIA", sub_menu=menu_nvidia),
         ]
@@ -533,21 +535,6 @@ class Extension(omni.ext.IExt):
             MenuItemDescription(header="Digital Twin"),
             make_menu_item_description(
                 ext_id,
-                "Empty Warehouse Digital Twin",
-                lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Environments/Digital_Twin_Warehouse/large_empty_warehouse.usd", "/warehouse_digital_twin"
-                ),
-            ),
-            make_menu_item_description(
-                ext_id,
-                "Nova Warehouse Digital Twin",
-                lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Environments/Digital_Twin_Warehouse/large_warehouse_digital_twin.usd",
-                    "/nova_warehouse_digital_twin",
-                ),
-            ),
-            make_menu_item_description(
-                ext_id,
                 "Small Warehouse Digital Twin",
                 lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Environments/Digital_Twin_Warehouse/small_warehouse_digital_twin.usd",
@@ -580,14 +567,7 @@ class Extension(omni.ext.IExt):
                 ext_id,
                 "2F-85",
                 lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/Robotiq/2F-85/2f85_instanceable.usd", "/Robotiq_2F_85"
-                ),
-            ),
-            make_menu_item_description(
-                ext_id,
-                "2F-C2",
-                lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/Robotiq/2F-C2/2fc2_instanceable.usd", "/Robotiq_2F_C2"
+                    "/Isaac/Robots/Robotiq/2F-85/Robotiq_2F_85_edit.usd", "/Robotiq_2F_85"
                 ),
             ),
         ]

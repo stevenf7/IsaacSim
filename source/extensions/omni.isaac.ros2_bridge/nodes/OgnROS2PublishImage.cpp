@@ -7,6 +7,10 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
+// clang-format off
+#include <pch/UsdPCH.h>
+// clang-format on
+
 #ifndef _WIN32
 #    include <include/ipc_buffer_manager.hpp>
 #endif
@@ -87,7 +91,8 @@ public:
             }
             else
             {
-                CARB_LOG_INFO("NitrosBridgeImage message type not found. The NITROS bridge publisher was not created");
+                CARB_LOG_INFO(
+                    "isaac_ros_nitros_bridge_interfaces NitrosBridgeImage message type not found. The NITROS bridge publisher was not created");
             }
 
             state.mFrameId = db.inputs.frameId();

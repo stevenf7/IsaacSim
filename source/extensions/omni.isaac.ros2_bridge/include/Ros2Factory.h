@@ -8,10 +8,6 @@
 //
 #pragma once
 
-// clang-format off
-#include <pch/UsdPCH.h>
-// clang-format on
-
 #include <include/Ros2QoS.h>
 #include <nlohmann/json.hpp>
 #include <omni/fabric/Type.h>
@@ -22,11 +18,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-
-// #include <omni/isaac/ros/Conversions.h>
-// #include <omni/isaac/utils/PoseTree.h>
-// #include <omni/fabric/FabricUSD.h>
-// #include <omni/usd/UsdUtils.h>
 
 
 enum class BackendMessageType : uint8_t
@@ -160,15 +151,16 @@ public:
     Ros2Backend(std::string pkgName,
                 std::string msgSubfolder,
                 std::string msgName,
-                BackendMessageType messageType = BackendMessageType::eMessage)
+                BackendMessageType messageType = BackendMessageType::eMessage,
+                bool testLibrary = false)
         : mPkgName(pkgName), mMsgSubfolder(msgSubfolder), mMsgName(msgName), mMessageType(messageType)
     {
-        mGeneratorLibrary =
-            std::make_shared<omni::isaac::utils::LibraryLoader>(std::string(mPkgName) + "__rosidl_generator_c");
-        mTypesupportLibrary =
-            std::make_shared<omni::isaac::utils::LibraryLoader>(std::string(mPkgName) + "__rosidl_typesupport_c");
+        mGeneratorLibrary = std::make_shared<omni::isaac::utils::LibraryLoader>(
+            std::string(mPkgName) + "__rosidl_generator_c", "", testLibrary);
+        mTypesupportLibrary = std::make_shared<omni::isaac::utils::LibraryLoader>(
+            std::string(mPkgName) + "__rosidl_typesupport_c", "", testLibrary);
         mTypesupportIntrospectionLibrary = std::make_shared<omni::isaac::utils::LibraryLoader>(
-            std::string(mPkgName) + "__rosidl_typesupport_introspection_c");
+            std::string(mPkgName) + "__rosidl_typesupport_introspection_c", "", testLibrary);
     }
     void* getTypeSupportHandleDynamic()
     {

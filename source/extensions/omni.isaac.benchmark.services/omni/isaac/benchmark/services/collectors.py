@@ -6,13 +6,13 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+from __future__ import annotations
 
 import time
 from typing import List, Optional, Tuple
 
 import carb
 import omni.kit.test
-from omni.hydra.engine.stats import HydraEngineStats
 
 
 def get_last_gpu_time_ms(
@@ -40,21 +40,40 @@ def get_last_gpu_time_ms(
 
 class IsaacUpdateFrametimeCollector:
     """
-    Utility to collect app update + GPU frame times (in milliseconds)
+    Utility to collect
+        app update time (in milliseconds)
+        physics update time (in milliseconds)
+        gpu frame time (in milliseconds)
 
-    The GPU frame time represents the time spent on the GPU itself.
     """
 
     def __init__(self, usd_context_name="", hydra_engine="rtx") -> None:
         try:
+            from omni.hydra.engine.stats import HydraEngineStats
+
             self.hydra_engine_stats = HydraEngineStats(usd_context_name, hydra_engine)
         except:
             self.hydra_engine_stats = None
-        self.render_frametimes_ms: List[float] = []
+
+        try:
+            import omni.physx
+
+            self.__physx_iface = omni.physx.acquire_physx_interface()
+        except:
+            self.__physx_iface = None
+            carb.log_warn("physx interface not loaded, physics frametimes will not be measured")
+
+        self.app_frametimes_ms: List[float] = []
         self.gpu_frametimes_ms: List[float] = []
+        self.physics_frametimes_ms: List[float] = []
 
         self.__last_frametime_timestamp_ns = 0
+        self.__pre_physics_timestamp_ns = 0
+        self.__post_physics_timestamp_ns = 0
+
         self.__subscription: Optional[carb.events.ISubscription] = None
+        self.__pre_physics = None
+        self.__post_physics = None
 
         self.elapsed_sim_time = 0.0
 
@@ -64,30 +83,49 @@ class IsaacUpdateFrametimeCollector:
         self.__last_frametime_timestamp_ns = timestamp_ns
         gpu_frametime_ms = get_last_gpu_time_ms(self.hydra_engine_stats)
         # print(app_update_time_ms, gpu_frametime_ms)
-        self.render_frametimes_ms.append(app_update_time_ms)
+        self.app_frametimes_ms.append(app_update_time_ms)
         self.gpu_frametimes_ms.append(gpu_frametime_ms)
-
         self.elapsed_sim_time += event.payload["dt"]
+
+    def __pre_physics_callback(self, step):
+        self.__pre_physics_timestamp_ns = time.perf_counter_ns()
+
+    def __post_physics_callback(self, step):
+        self.__post_physics_timestamp_ns = time.perf_counter_ns()
+        physics_time_ms = round((self.__post_physics_timestamp_ns - self.__pre_physics_timestamp_ns) / 1000 / 1000, 6)
+        self.physics_frametimes_ms.append(physics_time_ms)
 
     def start_collecting(self):
         # reset our tracking variables
-        self.render_frametimes_ms: List[float] = []
+        self.app_frametimes_ms: List[float] = []
         self.gpu_frametimes_ms: List[float] = []
+        self.physics_frametimes_ms: List[float] = []
         self.__last_frametime_timestamp_ns = time.perf_counter_ns()
 
         self.__subscription = (
             omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self.__update_event_callback)
         )
+        if self.__physx_iface:
+            self.__pre_physics = self.__physx_iface.subscribe_physics_on_step_events(
+                self.__pre_physics_callback, True, 0
+            )
+            self.__post_physics = self.__physx_iface.subscribe_physics_on_step_events(
+                self.__post_physics_callback, False, 100000
+            )
+
         self.elapsed_sim_time = 0.0
 
-    def stop_collecting(self) -> Tuple[List[float], List[float]]:
+    def stop_collecting(self) -> Tuple[List[float], List[float], List[float]]:
         self.__subscription = None
-
+        self.__pre_physics = None
+        self.__post_physics = None
         # drop the first frame since the interval approach doesn't work for
         # the render frame
-        if len(self.render_frametimes_ms) > 0:
-            self.render_frametimes_ms.pop(0)
+        if len(self.app_frametimes_ms) > 0:
+            self.app_frametimes_ms.pop(0)
         if len(self.gpu_frametimes_ms) > 0:
             self.gpu_frametimes_ms.pop(0)
+        if len(self.physics_frametimes_ms) > 0:
+            self.physics_frametimes_ms.pop(0)
 
-        return self.render_frametimes_ms, self.gpu_frametimes_ms
+        return self.app_frametimes_ms, self.gpu_frametimes_ms, self.physics_frametimes_ms

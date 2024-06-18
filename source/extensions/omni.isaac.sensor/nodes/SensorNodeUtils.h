@@ -52,8 +52,8 @@ class LidarConfigHelper
 public:
     std::string config;
     LidarScanType scanType{ LidarScanType::kUnknown };
-    LidarRotaryProfile rotaryProfile;
-    LidarSolidStateProfile solidStateProfile;
+    LidarProfile* profile; // convenient pointer to lidar profile stored in profileBuffer
+    std::vector<uint8_t> profileBuffer; // data buffer containing lidar profile
 
     float getNearRange() const;
     float getFarRange() const;

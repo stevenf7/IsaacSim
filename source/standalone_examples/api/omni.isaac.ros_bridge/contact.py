@@ -71,9 +71,9 @@ simulation_app.update()
 
 # putting contact sensor in the ContactSensor Message format
 def format_contact(c_out, contact):
-    c_out.time = float(contact["time"])
-    c_out.value = float(contact["value"] * meters_per_unit)
-    c_out.in_contact = bool(contact["inContact"])
+    c_out.time = float(contact.time)
+    c_out.value = float(contact.value * meters_per_unit)
+    c_out.in_contact = bool(contact.inContact)
     return c_out
 
 
@@ -99,16 +99,15 @@ timeline.play()
 
 
 for frame in range(10000):
-    ros_world.step(render=False)
+    ros_world.step(render=True)
 
     # Get processed contact data
-    reading = cs.get_sensor_readings(cube_path + "/Contact_Sensor")
-    if reading.shape[0]:
-        for r in reading:
-            print(r)
-            # pack the raw data into ContactSensor format and publish it
-            c = format_contact(c_out, r)
-            contact_pub.publish(c)
+    reading = cs.get_sensor_reading(cube_path + "/Contact_Sensor")
+    if reading.is_valid:
+        print(f"Valid contact : inContact = {reading.inContact}, value = {reading.value}, time = {reading.time}")
+        # pack the raw data into ContactSensor format and publish it
+        c = format_contact(c_out, reading)
+        contact_pub.publish(c)
 
 
 # Cleanup

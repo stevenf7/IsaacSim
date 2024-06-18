@@ -16,6 +16,7 @@ from omni.isaac.sensor.scripts.effort_sensor import EffortSensor
 class OgnIsaacReadEffortSensorInternalState(BaseResetNode):
     def __init__(self):
         super().__init__(initialize=False)
+        self.effort_sensor = None
 
     def custom_reset(self):
         if self.effort_sensor is not None:

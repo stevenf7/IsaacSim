@@ -37,7 +37,6 @@ from omni.isaac.core.utils.stage import (
     set_stage_up_axis,
     update_stage_async,
 )
-from omni.isaac.core.utils.viewports import set_camera_view
 from pxr import Usd
 
 
@@ -570,8 +569,6 @@ class SimulationContext:
         await omni.kit.app.get_app().next_update_async()
         self._setup_default_callback_fns()
         await omni.kit.app.get_app().next_update_async()
-        # TODO: Move set_camera_view to omni.isaac.examples: base_sample.py
-        set_camera_view(eye=[1.5, 1.5, 1.5], target=[0.01, 0.01, 0.01], camera_prim_path="/OmniverseKit_Persp")
         return
 
     def initialize_physics(self) -> None:
@@ -1322,6 +1319,7 @@ class SimulationContext:
             backend=backend,
             device=device,
         )
+        self._device = self._physics_context.device
         self.set_simulation_dt(physics_dt=physics_dt, rendering_dt=rendering_dt)
         self.render()
         return self.stage
@@ -1351,6 +1349,7 @@ class SimulationContext:
             backend=backend,
             device=device,
         )
+        self._device = self._physics_context.device
         self.set_simulation_dt(physics_dt=physics_dt, rendering_dt=rendering_dt)
         await omni.kit.app.get_app().next_update_async()
         return self.stage

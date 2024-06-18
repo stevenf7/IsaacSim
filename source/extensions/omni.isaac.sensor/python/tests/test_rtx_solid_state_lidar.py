@@ -18,6 +18,7 @@ import carb.tokens
 import numpy as np
 import omni
 import omni.hydratexture
+import omni.isaac.core.utils.numpy.rotations as rot_utils
 import omni.kit
 import omni.kit.commands
 import omni.kit.test
@@ -26,10 +27,11 @@ import omni.usd
 from omni.isaac.core.objects import VisualCuboid
 from omni.isaac.core.utils.prims import delete_prim
 from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
+from omni.isaac.sensor import LidarRtx
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestRTXSolildStateLidar(omni.kit.test.AsyncTestCase):
+class TestRTXSolidStateLidar(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         self._settings = carb.settings.acquire_settings_interface()
@@ -79,5 +81,102 @@ class TestRTXSolildStateLidar(omni.kit.test.AsyncTestCase):
         delete_prim(sensor.GetPath())
         await update_stage_async()
         texture.destroy()
+
+    async def test_rtx_solid_state_lidar_point_cloud_in_cube(self):
+        """
+        Tests RTX lidar point cloud returns correct range for all azimuth/elevation pairs across multiple frames.
+        """
+        from math import floor
+
+        # Create a cube of specified edge length
+        edge_length = 10.0
+        VisualCuboid(prim_path="/World/cube", position=np.array([0, 0, 0]), scale=edge_length * np.ones(3))
+        await update_stage_async()
+
+        # Place RTX lidar in the cube, automatically creating point cloud and flat scan annotators
+        sensor = LidarRtx(
+            prim_path="/sensor",
+            position=np.array([0.0, 0.0, 0.0]),
+            orientation=rot_utils.euler_angles_to_quats(np.array([0, 0, 0]), degrees=True),
+            config_file_name="Example_Solid_State",
+        )
+        sensor.initialize()
+        sensor.add_range_data_to_frame()
+        sensor.add_elevation_data_to_frame()
+        sensor.add_azimuth_data_to_frame()
+        await update_stage_async()
+
+        omni.timeline.get_timeline_interface().play()
+        for _ in range(6):
+            await omni.kit.app.get_app().next_update_async()
+
+            frame = sensor.get_current_frame()
+            num_points = len(frame["range"])
+            self.assertEqual(num_points, len(frame["elevation"]))
+            self.assertEqual(num_points, len(frame["azimuth"]))
+
+            for p in range(num_points):
+                az = frame["azimuth"][p]
+                el = frame["elevation"][p]
+                r = frame["range"][p]
+
+                # Adjust azimuth to appropriate angle in [-45, 45], then compute expected range to face, edge, or corner of cube
+                az_adj = az + (1 - floor((3 * np.pi / 4.0 + az) / (np.pi / 2.0))) * np.pi / 2.0
+                range_expected = edge_length / (2.0 * np.cos(az_adj) * np.cos(el))
+
+                self.assertAlmostEqual(r, range_expected, delta=range_expected * 1e-2)
+
+        omni.timeline.get_timeline_interface().stop()
+
+    async def test_rtx_solid_state_lidar_flat_scan_in_cube(self):
+        """
+        Tests RTX lidar flat scan returns correct range for all azimuth/elevation pairs across multiple frames.
+        """
+        from math import floor
+
+        # Create a cube of specified edge length
+        edge_length = 10.0
+        VisualCuboid(prim_path="/World/cube", position=np.array([0, 0, 0]), scale=edge_length * np.ones(3))
+
+        # Place RTX lidar in the cube, automatically creating point cloud and flat scan annotators
+        # For the flat scan test, we're using a solid state lidar config that has a row of evenly-spaced emitters
+        sensor = LidarRtx(
+            prim_path="/sensor",
+            position=np.array([0.0, 0.0, 0.0]),
+            orientation=rot_utils.euler_angles_to_quats(np.array([0, 0, 0]), degrees=True),
+            config_file_name="Simple_Example_Solid_State",
+        )
+        sensor.initialize()
+        sensor.add_linear_depth_data_to_frame()
+        sensor.add_azimuth_range_to_frame()
+        sensor.add_horizontal_resolution_to_frame()
+
+        omni.timeline.get_timeline_interface().play()
+        for i in range(7):
+            await omni.kit.app.get_app().next_update_async()
+
+        frame = sensor.get_current_frame()
+        linear_depth_data = frame["linear_depth_data"]
+        min_azimuth = frame["azimuth_range"][0]
+        max_azimuth = frame["azimuth_range"][1]
+        horizontal_resolution = frame["horizontal_resolution"]
+
+        self.assertAlmostEqual(min_azimuth, -1.5, delta=horizontal_resolution)
+        self.assertAlmostEqual(max_azimuth, 1.5, delta=horizontal_resolution)
+        self.assertAlmostEqual(horizontal_resolution, 1.0)
+
+        for p in range(len(linear_depth_data)):
+            depth = linear_depth_data[p]
+            az = np.deg2rad(min_azimuth + horizontal_resolution * p)
+
+            # Adjust azimuth to appropriate angle in [-45, 45], then compute expected range to face, edge, or corner of cube
+            # Note flat scan projects scan at minimum elevation angle (in this case, -0.32 deg) vertically up along
+            # cube face, so we don't need to account for elevation angle when computing expected range.
+            az_adj = az + (1 - floor((3 * np.pi / 4.0 + az) / (np.pi / 2.0))) * np.pi / 2.0
+            range_expected = edge_length / (2.0 * np.cos(az_adj))
+
+            self.assertAlmostEqual(depth, range_expected, delta=range_expected * 1e-2)
+
+        omni.timeline.get_timeline_interface().stop()
 
     pass

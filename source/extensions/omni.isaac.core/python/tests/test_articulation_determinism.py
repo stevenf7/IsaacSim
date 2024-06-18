@@ -60,6 +60,7 @@ class TestArticulationDeterminism(omni.kit.test.AsyncTestCase):
         self.assertEqual(frames_to_converge[0], 26, "Took a different number of frames to converge!")
 
     async def _test_franka_slow_convergence(self):
+        World.clear_instance()
         (result, error) = await open_stage_async(self._assets_root_path + "/Isaac/Robots/Franka/franka.usd")
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(60))
@@ -68,7 +69,6 @@ class TestArticulationDeterminism(omni.kit.test.AsyncTestCase):
         robot_prim_path = "/panda"
         my_world = World(device="cpu")  # Create a new default world to reset any physics settings.
         await my_world.initialize_simulation_context_async()
-        await update_stage_async()
         # Start Simulation and wait
         self._timeline.play()
         await update_stage_async()
@@ -102,7 +102,7 @@ class TestArticulationDeterminism(omni.kit.test.AsyncTestCase):
         self._robot.get_articulation_controller().apply_action(action)
 
         for i in range(timeout):
-            await omni.kit.app.get_app().next_update_async()
+            await update_stage_async()
             diff = self._robot.get_joint_positions() - action.joint_positions
             if np.linalg.norm(diff) < 0.01:
                 return i

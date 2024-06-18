@@ -1,5 +1,35 @@
 # Changelog
 
+## [12.2.0] - 2024-06-14
+### Added
+- Unit test for IsaacComputeRTXRadarPointCloud
+
+## [12.1.0] - 2024-06-14
+### Changed
+- Upgraded to omni.sensors.nv.* v1.1.0
+- Uses new common sensor profile reader
+
+## [12.0.0] - 2024-04-25
+### Added
+- LightBeam Sensor class that uses raycasts to detect if a beam is broken
+- Omnigraph nodes to read data from this light beam sensor
+
+## [11.4.0] - 2024-06-11
+### Added
+- Added unit tests for IMU, Contact, and Effort sensor omnigraph nodes.
+
+## [11.3.2] - 2024-06-11
+### Added
+- Unit tests for rotary and solid state lidars evaluating `RtxSensorCpuIsaacComputeRTXLidarPointCloud` and
+  `RtxSensorCpuIsaacComputeRTXLidarFlatScan` annotators
+### Fixed
+- `LidarRTX` no longer causes error when `position` is set in constructor
+- Corrects `OgnIsaacComputeRTXLidarFlatScan` `azimuthRange` output to span true min/max azimuth of scan
+
+## [11.3.1] - 2024-06-06
+### Fixed
+- Crash when new stage was removed and sensors were not cleaned up properly
+
 ## [11.3.0] - 2024-05-15
 ### Added
 - Added `get_rgb` and `get_depth` methods to `CameraView` class returning the data reshaped into camera batches
@@ -16,8 +46,7 @@
 
 ## [11.2.4] - 2024-05-08
 ### Fixed
-- OgnROS2PublishLaserScan switches buffer index calculation to use monotonically-increasing integer, fixing
-  bug where floating-point math would occasionally result in buffer never being filled
+- OgnROS2PublishLaserScan switches buffer index calculation to use monotonically-increasing integer, fixing bug where floating-point math would occasionally result in buffer never being filled
 
 ## [11.2.3] - 2024-05-08
 ### Added
@@ -61,7 +90,7 @@
 - Account for linear array with depth values being at end
 
 ## [11.0.4] - 2024-04-30
-### Updated
+### Changed
 - Updated Sensing camera names
 
 ## [11.0.3] - 2024-04-25

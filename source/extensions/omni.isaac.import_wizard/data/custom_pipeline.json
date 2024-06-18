@@ -1,7 +1,4 @@
 {
-    "Saved Pipeline": [
-        "Common Tools"
-    ],
     "Import Pipeline": [
         "Import URDF from File",
         "Articulation and Physics Inspector",

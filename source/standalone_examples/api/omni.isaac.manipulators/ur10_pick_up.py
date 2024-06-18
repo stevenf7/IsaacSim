@@ -43,7 +43,9 @@ gripper_usd = assets_root_path + "/Isaac/Robots/UR10/Props/short_gripper.usd"
 add_reference_to_stage(usd_path=gripper_usd, prim_path="/World/UR10/ee_link")
 gripper = SurfaceGripper(end_effector_prim_path="/World/UR10/ee_link", translate=0.1611, direction="x")
 ur10 = my_world.scene.add(
-    SingleManipulator(prim_path="/World/UR10", name="my_ur10", end_effector_prim_name="ee_link", gripper=gripper)
+    SingleManipulator(
+        prim_path="/World/UR10", name="my_ur10", end_effector_prim_path="/World/UR10/ee_link", gripper=gripper
+    )
 )
 ur10.set_joints_default_state(positions=np.array([-np.pi / 2, -np.pi / 2, -np.pi / 2, -np.pi / 2, np.pi / 2, 0]))
 cube = my_world.scene.add(
@@ -64,12 +66,16 @@ my_controller = PickPlaceController(name="pick_place_controller", gripper=ur10.g
 articulation_controller = ur10.get_articulation_controller()
 
 i = 0
+reset_needed = False
 while simulation_app.is_running():
     my_world.step(render=True)
+    if my_world.is_stopped() and not reset_needed:
+        reset_needed = True
     if my_world.is_playing():
-        if my_world.current_time_step_index == 0:
+        if reset_needed:
             my_world.reset()
             my_controller.reset()
+            reset_needed = False
         observations = my_world.get_observations()
         actions = my_controller.forward(
             picking_position=cube.get_local_pose()[0],

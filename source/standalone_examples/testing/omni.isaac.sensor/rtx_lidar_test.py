@@ -28,8 +28,9 @@ import omni
 import omni.kit.viewport.utility
 import omni.replicator.core as rep
 from omni.isaac.core import SimulationContext
-from omni.isaac.core.utils import nucleus, stage
+from omni.isaac.core.utils import stage
 from omni.isaac.core.utils.extensions import enable_extension
+from omni.isaac.nucleus import get_assets_root_path
 from pxr import Gf, Sdf, UsdGeom, UsdPhysics
 
 enable_extension("omni.isaac.ros2_bridge")
@@ -215,6 +216,7 @@ simulation_app.close()
 """
 # Snippet of similar code to use in script editor.
 from omni.isaac.core.utils import stage
+from omni.isaac.nucleus import get_assets_root_path
 from pxr import UsdGeom, Gf
 
 #omni.kit.commands.execute('ToolbarPlayButtonClicked')
@@ -227,7 +229,7 @@ _, sensorR = omni.kit.commands.execute(
     parent=None,
     config="Example_Solid_State",
     translation=(0, 0, 1.0),
-    orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0), 
+    orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),
 )
 
 hydra_textureR = rep.create.render_product(sensorR.GetPath(), [1, 1], name="Isaac")

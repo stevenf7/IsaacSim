@@ -18,8 +18,9 @@ import omni
 import omni.kit.viewport.utility
 import omni.replicator.core as rep
 from omni.isaac.core import SimulationContext
-from omni.isaac.core.utils import nucleus, stage
+from omni.isaac.core.utils import stage
 from omni.isaac.core.utils.extensions import enable_extension
+from omni.isaac.nucleus import get_assets_root_path
 from pxr import Gf
 
 # enable ROS2 bridge extension
@@ -29,7 +30,7 @@ simulation_app.update()
 
 
 # Locate Isaac Sim assets folder to load environment and robot stages
-assets_root_path = nucleus.get_assets_root_path()
+assets_root_path = get_assets_root_path()
 if assets_root_path is None:
     carb.log_error("Could not find Isaac Sim assets folder")
     simulation_app.close()
@@ -74,7 +75,7 @@ writer.attach([hydra_texture])
 
 # Create LaserScan publisher pipeline in the post process graph
 writer = rep.writers.get("RtxLidar" + "ROS2PublishLaserScan")
-writer.initialize(topicName="laser_scan", frameId="sim_lidar")
+writer.initialize(topicName="scan", frameId="sim_lidar")
 writer.attach([hydra_texture])
 
 simulation_app.update()

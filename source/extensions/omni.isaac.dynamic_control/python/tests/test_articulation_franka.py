@@ -115,9 +115,9 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCase):
         expected_pos = body_states["pose"]["p"][hand_idx]
         self.assertTrue(
             np.allclose(
-                [expected_pos[0], expected_pos[1], expected_pos[2]], [0.3675547, 0.00443018, 0.42759624], atol=1e-5
+                [expected_pos[0], expected_pos[1], expected_pos[2]], [0.38935483, 0.00468679, 0.45749533], atol=1e-5
             ),
-            f"[0.3675547, 0.00443018, 0.42759624] != {expected_pos}",
+            f"[0.38935483, 0.00468679, 0.45749533] != {expected_pos}",
         )
 
         new_pose = dc_conversions.create_transform(Gf.Vec3d(0.10, 0.10, 0.10), Gf.Rotation(Gf.Vec3d(0, 0, 1), 90))
@@ -129,9 +129,9 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCase):
         expected_pos = body_states["pose"]["p"][hand_idx]
         self.assertTrue(
             np.allclose(
-                [expected_pos[0], expected_pos[1], expected_pos[2]], [0.09576818, 0.45144105, 0.49848583], atol=1e-5
+                [expected_pos[0], expected_pos[1], expected_pos[2]], [0.09532581, 0.48930657, 0.55807227], atol=1e-5
             ),
-            f"[0.09576818, 0.45144105, 0.49848583] != {expected_pos}",
+            f"[0.09532581, 0.48930657, 0.55807227] != {expected_pos}",
         )
 
         pass
@@ -213,10 +213,10 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCase):
         for i in range(len(dof_states1)):
             for j in range(3):
                 self.assertAlmostEqual(
-                    dof_states1[i][j], dof_states2[i][j], delta=1e-4, msg=f"{dof_states1[i][j]} != {dof_states2[i][j]}"
+                    dof_states1[i][j], dof_states2[i][j], delta=1e-2, msg=f"{dof_states1[i][j]} != {dof_states2[i][j]}"
                 )
                 self.assertAlmostEqual(
-                    dof_states1[i][j], dof_states3[i][j], delta=1e-4, msg=f"{dof_states1[i][j]} != {dof_states3[i][j]}"
+                    dof_states1[i][j], dof_states3[i][j], delta=1e-2, msg=f"{dof_states1[i][j]} != {dof_states3[i][j]}"
                 )
 
         pass

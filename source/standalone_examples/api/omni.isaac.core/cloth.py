@@ -102,12 +102,16 @@ class ParticleClothExample:
         self.my_world.reset(soft=False)
 
     def play(self):
+        reset_needed = False
         while simulation_app.is_running():
+            if self.my_world.is_stopped() and not reset_needed:
+                reset_needed = True
             if self.my_world.is_playing():
                 # deal with sim re-initialization after restarting sim
-                if self.my_world.current_time_step_index == 0:
+                if reset_needed:
                     # initialize simulation views
                     self.my_world.reset(soft=False)
+                    reset_needed = False
 
             self.my_world.step(render=True)
 

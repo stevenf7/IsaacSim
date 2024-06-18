@@ -1,4 +1,8 @@
 # Changelog
+## [0.5.2] - 2024-05-22
+### Changed
+- links to omnigraph shortcut from internal docs to external docs
+
 ## [0.5.1] - 2024-05-21
 ### Fixed
 - filenames to be cross platform

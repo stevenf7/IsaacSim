@@ -1,4 +1,27 @@
 # Changelog
+## [2.27.0] - 2024-06-14
+### Changed
+- Moved and renamed Navigation example in the menu to under Isaac Examples -> ROS2 -> Navigation -> Carter Navigation
+
+## [2.26.5] - 2024-06-11
+### Fixed
+- RTX laser_scan topic name in rtx_lidar standalone example
+
+## [2.26.4] - 2024-05-29
+### Fixed
+- Crash on stage close if twistsubscriber was not run for a single frame
+
+## [2.26.3] - 2024-05-23
+### Fixed
+- Extra warnings when nitros bridge message type was not found
+
+## [2.26.2] - 2024-05-23
+### Fixed
+- Fix references to non-existing node in the MoveIt example
+
+## [2.26.1] - 2024-05-21
+### Added
+- Resetting output of the Twist Subscriber to zeros upon stopping simulation. 
 
 ## [2.26.0] - 2024-05-20
 ### Changed
@@ -46,7 +69,7 @@
 
 ## [2.23.4] - 2024-04-30
 ### Fixed
-- ROS2 bridge check failing on humble due to mising libraries
+- ROS2 bridge check failing on humble due to missing libraries
 
 ## [2.23.3] - 2024-04-26
 ### Fixed
@@ -54,7 +77,7 @@
 
 ## [2.23.2] - 2024-04-26
 ### Fixed
-- ROS2 bridge check failing on humble due to mising libraries
+- ROS2 bridge check failing on humble due to missing libraries
 
 ## [2.23.1] - 2024-04-25
 ### Fixed
@@ -121,7 +144,7 @@
 ## [2.19.0] - 2024-04-11
 ### Added
 - Added OmniGraph shortcuts for sample ROS2 generic publisher node
-- Add skipFrameCount option to ROS2  RTX Lidar and Camera Helper Nodes to modify the rate of lidar and point cloud publishing
+- Add frameSkipCount option to ROS2  RTX Lidar and Camera Helper Nodes to modify the rate of lidar and point cloud publishing
 
 ## [2.18.0] - 2024-04-09
 ### Added

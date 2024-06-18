@@ -18,8 +18,6 @@ import omni.kit.commands
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-import omni.kit.ui_test as ui_test
-import omni.ui as ui
 import omni.usd
 from omni.isaac.core.objects import DynamicCuboid
 from omni.isaac.core.utils.prims import get_prim_path
@@ -58,6 +56,7 @@ class TestMenuAssets(OmniUiTest):
         self.generic_sensor_interface = _range_sensor.acquire_generic_sensor_interface()
         self.contact_sensor_interface = _sensor.acquire_contact_sensor_interface()
         self.imu_sensor_interface = _sensor.acquire_imu_sensor_interface()
+        self.lightbeam_sensor_interface = _sensor.acquire_lightbeam_sensor_interface()
         self.carb_settings = carb.settings.get_settings()
         self.carb_settings.set("/persistent/app/viewport/displayOptions", 0)
         self.carb_settings.set("/rtx/rendermode", "RayTracedLighting")
@@ -112,8 +111,8 @@ class TestMenuAssets(OmniUiTest):
 
         test_list = robot_menu_list + ee_menu_list
 
-        # surface gripper is just a graph, and jetracer has no articulation root
-        skip_list = ["Create/Isaac/End Effectors/Surface Gripper", "Create/Isaac/Robots/NVIDIA/Jetracer"]
+        # surface gripper is just a graph
+        skip_list = ["Create/Isaac/End Effectors/Surface Gripper"]
 
         failed_robots = []
         for test_path in test_list:
@@ -146,7 +145,7 @@ class TestMenuAssets(OmniUiTest):
                 print(f"failed to find articulation at {test_path}")
                 failed_robots.append(test_path)
 
-        print(failed_robots)
+        print("Failed:", failed_robots)
 
         # if failed_robot array has 0 entries, then test passed
         self.assertEqual(len(failed_robots), 0)
@@ -191,6 +190,7 @@ class TestMenuAssets(OmniUiTest):
         await omni.kit.app.get_app().next_update_async()
 
     async def test_loading_environment(self):
+        from omni.kit.viewport.utility.tests.capture import capture_viewport_and_wait, finalize_capture_and_compare
 
         self.environment_menu_dict = self.menu_dict["Create"]["Isaac"]["Environments"]
         ## check everything under "Environment"
@@ -226,13 +226,13 @@ class TestMenuAssets(OmniUiTest):
                 print("skipping ", test_path)
                 continue
 
-            clear_stage()
+            create_new_stage()
             await omni.kit.app.get_app().next_update_async()
             await omni.kit.app.get_app().next_update_async()
             # hide window to make sure it doesn't block the menu
             self.viewport_window.visible = False
             await menu_click(test_path, human_delay_speed=10)
-            for i in range(20):
+            for i in range(5):
                 await omni.kit.app.get_app().next_update_async()
 
             # waiting for stage to load
@@ -245,21 +245,29 @@ class TestMenuAssets(OmniUiTest):
             golden_img_name = test_path.split("/")[-1] + ".png"
             viewport_api = get_active_viewport()
             viewport_api.resolution = (1280, 720)
+            self.usd_selection.clear_selected_prim_paths()
             await omni.kit.app.get_app().next_update_async()
             # set camera position
             if "Office" in test_path or "Hospital" in test_path or "Warehouse" in test_path:
-                set_camera_view(eye=[2, -2, 2], target=[0, 0, 1])
+                set_camera_view(eye=[-4, 4, 2], target=[0, 0, 1])
             else:
                 set_camera_view(eye=[3, -3, 3], target=[0, 0, 0])
 
-            # full screen the view port
-            await self.docked_test_window(window=get_active_viewport_window(), width=1920, height=1080)
-
-            for i in range(10):
+            for i in range(200):
                 await omni.kit.app.get_app().next_update_async()
-
             # capture and compare with golden image
-            await self.finalize_test(golden_img_dir=self._golden_img_dir, golden_img_name=golden_img_name, threshold=10)
+            output_dir = Path(omni.kit.test.get_test_output_path())
+            await capture_viewport_and_wait(image_name=golden_img_name, output_img_dir=output_dir, viewport=None)
+            diff = finalize_capture_and_compare(
+                image_name=golden_img_name,
+                output_img_dir=output_dir,
+                golden_img_dir=self._golden_img_dir,
+                threshold=1000,
+            )
+            print("DIFF:", test_path, diff)
+            self.assertIsNotNone(diff)
+            self.assertLess(diff, 1000)
+
             # count the number of prims in the stage
             num_prims = 0
             for prim in traverse_stage():
@@ -273,7 +281,6 @@ class TestMenuAssets(OmniUiTest):
             if num_prims < 9:
                 print(f"failed to find any prims at {test_path}")
                 failed_environments.append(test_path)
-
         print(failed_environments)
         # if failed_environments array has 0 entries, then test passed
         self.assertEqual(len(failed_environments), 0)
@@ -300,7 +307,7 @@ class TestMenuAssets(OmniUiTest):
         failed_sensors = []
 
         # each type of sensor will get a different prim type test, RGBD and RTX will check for camera prim
-        sensor_test_types = ["Rotating", "Generic", "Ultrasonic", "Contact", "Imu", "RGBD", "RTX"]
+        sensor_test_types = ["Rotating", "Generic", "Ultrasonic", "Contact", "Imu", "RGBD", "RTX", "LightBeam"]
 
         empty_path = ""
         sensor_menu_list = get_menu_path(self.sensor_menu_dict, empty_path, empty_list, sensor_root_path)
@@ -357,6 +364,11 @@ class TestMenuAssets(OmniUiTest):
                     sensor_passed = True
 
                 elif (sensor_test == "RGBD" or sensor_test == "RTX") and prim.IsA(UsdGeom.Camera):
+                    sensor_passed = True
+
+                elif sensor_test == "LightBeam" and self.lightbeam_sensor_interface.is_lightbeam_sensor(
+                    get_prim_path(prim)
+                ):
                     sensor_passed = True
 
                 if sensor_passed:

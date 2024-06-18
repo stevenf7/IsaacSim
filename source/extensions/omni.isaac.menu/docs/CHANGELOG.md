@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.4.1] - 2024-05-28
+### Fixed
+- Robotiq asset links
+
+## [0.4.0] - 2024-05-24
+### Changed
+- Added leatherback
+### Fixed
+- broken USD paths
+
 ## [0.3.1] - 2024-05-11
 ### Changed
 - Renamed Transporter to iw.hub

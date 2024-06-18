@@ -9,3 +9,7 @@ repo_build.prebuild_link {
     { "$root/_build/target-deps/pip_cloud_prebundle", ext.target_dir.."/pip_prebundle" },
     -- { "$root/_build/target-deps/pip_archive", ext.target_dir.."/pip_archive" },
 }
+if os.target() == "windows" then
+    local currentAbsPath = repo_build.get_abs_path(".");
+    repo_build.copy_to_dir (currentAbsPath.."/pywin32/*.py", ext.target_dir.."/pip_prebundle/pywin32_system32")
+end

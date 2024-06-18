@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.2] - 2024-06-13
+### Fixed
+- Fixed bug where robot with zero-gains causes a math error in trying to take log(0).
+
 ## [1.1.1] - 2024-04-23
 ### Fixed
 - Fixed post-test behavior where an Articulation is left with a non-zero velocity command.

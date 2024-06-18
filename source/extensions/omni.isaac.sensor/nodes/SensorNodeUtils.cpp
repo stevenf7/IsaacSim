@@ -19,7 +19,7 @@
 #include <omni/math/linalg/matrix.h>
 #include <omni/math/linalg/quat.h>
 #include <omni/math/linalg/vec.h>
-#include <omni/sensors/lidar/ILidarProfileReaderFactory.h>
+#include <omni/sensors/IProfileReader.h>
 
 namespace omni
 {
@@ -42,43 +42,34 @@ void getTransformFromSensorPose(const omni::sensors::FrameAtTime& inPose, omni::
 float LidarConfigHelper::getFarRange() const
 {
 
-    return this->scanType == LidarScanType::kSolidState ? this->solidStateProfile.farRangeM :
-                                                          this->rotaryProfile.farRangeM;
+    return this->profile->farRangeM;
 }
 
 float LidarConfigHelper::getNearRange() const
 {
-
-    return this->scanType == LidarScanType::kSolidState ? this->solidStateProfile.nearRangeM :
-                                                          this->rotaryProfile.nearRangeM;
+    return this->profile->nearRangeM;
 }
 
 uint32_t LidarConfigHelper::getNumChannels() const
 {
-
-    return this->scanType == LidarScanType::kSolidState ? this->solidStateProfile.numberOfChannels :
-                                                          this->rotaryProfile.numberOfChannels;
+    return this->profile->numberOfChannels;
 }
+
 uint32_t LidarConfigHelper::getNumEchos() const
 {
-
-    return this->scanType == LidarScanType::kSolidState ? this->solidStateProfile.maxReturns :
-                                                          this->rotaryProfile.maxReturns;
+    return this->profile->maxReturns;
 }
-
 
 uint32_t LidarConfigHelper::getReturnsPerScan() const
 {
     return this->getNumEchos() * this->getNumChannels() * this->getTicksPerScan();
 }
 
-
 uint32_t LidarConfigHelper::getTicksPerScan() const
 {
     return this->scanType == LidarScanType::kSolidState ?
                1 :
-
-               this->rotaryProfile.reportRateBaseHz / this->rotaryProfile.scanRateBaseHz;
+               this->profile->reportRateBaseHz / this->profile->scanRateBaseHz;
 }
 // if inConfig and config are different, then the profile needs to be updated, and if there is an error, then
 // return true only if config was updated.
@@ -87,11 +78,13 @@ bool LidarConfigHelper::updateLidarConfig(const char* renderProductPath)
     std::string curConfig = "";
     pxr::UsdAttribute configAttr =
         omni::isaac::utils::getCameraAttributeFromRenderProduct("sensorModelConfig", renderProductPath);
-    if (configAttr.IsValid())
+    if (!configAttr.IsValid())
     {
-        omni::isaac::utils::safeGetAttribute(configAttr, curConfig);
+        return false;
     }
-    if (curConfig == this->config)
+    omni::isaac::utils::safeGetAttribute(configAttr, curConfig);
+
+    if (this->config == curConfig)
     {
         return false;
     }
@@ -104,32 +97,24 @@ bool LidarConfigHelper::updateLidarConfig(const char* renderProductPath)
         return false;
     }
 
-    omni::sensors::lidar::ILidarProfileReaderPtr profileReader =
-        carb::getCachedInterface<omni::sensors::lidar::ILidarProfileReaderFactory>()->createInstance();
-    const auto json = profileReader->getProfileJsonAtPaths(curConfig.c_str());
-
-    bool updated{ false };
-    if (profileReader)
+    omni::sensors::IProfileReaderPtr profileReader =
+        carb::getFramework()->acquireInterface<omni::sensors::IProfileReaderFactory>()->createInstance();
+    const auto json = profileReader->getProfileJsonAtPaths(curConfig.c_str(), ProfileType::LIDAR);
+    profileReader->init(json.c_str(), ProfileType::LIDAR);
+    const auto dataSize = profileReader->dataSizeProfile();
+    this->profileBuffer.resize(dataSize);
+    bool updated = profileReader->update((void*)this->profileBuffer.data());
+    profileReader->release();
+    if (updated)
     {
-        profileReader->init(json.c_str());
-        this->scanType = profileReader->lidarScanType();
-        if (this->scanType == LidarScanType::kSolidState)
-        {
-            updated = profileReader->update((void*)&this->solidStateProfile);
-        }
-        else if (this->scanType == LidarScanType::kRotary)
-        {
-            updated = profileReader->update((void*)&this->rotaryProfile);
-        }
-        if (!updated)
-        {
-            this->scanType = LidarScanType::kUnknown;
-        }
+        this->profile = reinterpret_cast<LidarProfile*>(profileBuffer.data());
+        this->scanType = this->profile->scanType;
     }
     else
     {
         this->scanType = LidarScanType::kUnknown;
     }
+
     return updated;
 }
 }

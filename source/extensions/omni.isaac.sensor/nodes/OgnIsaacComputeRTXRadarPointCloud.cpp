@@ -122,7 +122,6 @@ public:
         // aux->rv_ms = rv_ms
         db.outputs.sensorID() = aux->sensorID; /**< Sensor Id for sensor that generated the aux */
         db.outputs.scanIdx() = aux->scanIdx; /**< Scan index for sensors with multi aux support */
-        db.outputs.timeStampNS() = aux->timeStampNS; /**< Scan timestamp in nanoseconds */
         db.outputs.cycleCnt() = aux->cycleCnt; /**< Scan cycle count */
         db.outputs.maxRangeM() = aux->maxRangeM; /**< The max unambiguous range for the aux */
         db.outputs.minVelMps() = aux->minVelMps; /**< The min unambiguous velocity for the aux */

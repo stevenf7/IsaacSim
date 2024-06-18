@@ -78,7 +78,7 @@ class TestRigidPrimPose(omni.kit.test.AsyncTestCase):
         orientation = np.array(euler_angles_to_quat([45, -60, 180], degrees=True))
         define_prim("/test_5", prim_type="Cube")
         await update_stage_async()
-        rigid_prim = RigidPrim("/test_5", "test_5", position=np.array(position), orientation=orientation)
+        rigid_prim = RigidPrim("/test_5", "test_5", position=np.array(position), orientation=orientation, mass=1.0)
         self._my_world.scene.add(rigid_prim)
         await self._my_world.reset_async()
         rigid_prim.set_local_pose(translation=np.array([0, 2.0, 0]))

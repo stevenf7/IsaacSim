@@ -33,9 +33,12 @@ class Version(namedtuple("Version", "major minor patch")):
 
 
 def get_url_root(url: str) -> str:
-    """Get root from URL or path
+    """Get root from URL or path.
     Args:
         url (str): full http or omniverse path
+
+    Raises:
+        RuntimeError: if the root path is not found.
 
     Returns:
         str: Root path or URL or Nucleus server
@@ -43,7 +46,7 @@ def get_url_root(url: str) -> str:
     supported_list = ["omniverse", "http", "https"]
     protocol = urlparse(url).scheme
     if protocol not in supported_list:
-        carb.log_warn("Unable to find root for {}".format(url))
+        raise RuntimeError("Unable to find root for {}".format(url))
         return ""
     server = f"{protocol}://{urlparse(url).netloc}"
     return server
@@ -261,10 +264,13 @@ def find_nucleus_server(suffix: str) -> typing.Tuple[bool, str]:
 
 
 def get_server_path(suffix: str = "") -> typing.Union[str, None]:
-    """Tries to find a Nucleus server with specific path
+    """Tries to find a Nucleus server with specific path.
 
     Args:
         suffix (str): Path to folder to search for.
+
+    Raises:
+        RuntimeError: if the root path is not found.
 
     Returns:
         url (str): URL of Nucleus server with path to folder.
@@ -277,8 +283,7 @@ def get_server_path(suffix: str = "") -> typing.Union[str, None]:
         result = check_server(server_root, suffix)
         if result:
             return server_root
-    carb.log_warn("Could not find Nucleus server with {} folder".format(suffix))
-    return None
+    raise RuntimeError("Could not find Nucleus server with {} folder".format(suffix))
 
 
 async def get_server_path_async(suffix: str = "") -> typing.Union[str, None]:
@@ -286,6 +291,9 @@ async def get_server_path_async(suffix: str = "") -> typing.Union[str, None]:
 
     Args:
         suffix (str): Path to folder to search for.
+
+    Raises:
+        RuntimeError: if the root path is not found.
 
     Returns:
         url (str): URL of Nucleus server with path to folder.
@@ -298,8 +306,7 @@ async def get_server_path_async(suffix: str = "") -> typing.Union[str, None]:
         result = await check_server_async(server_root, suffix)
         if result:
             return server_root
-    carb.log_warn("Could not find Nucleus server with {} folder".format(suffix))
-    return None
+    raise RuntimeError("Could not find Nucleus server with {} folder".format(suffix))
 
 
 def verify_asset_root_path(path: str) -> typing.Tuple[omni.client.Result, str]:
@@ -365,6 +372,9 @@ def get_full_asset_path(path: str) -> typing.Union[str, None]:
     Args:
         path (str): Path of asset from root to verify
 
+    Raises:
+        RuntimeError: if the root path is not found.
+
     Returns:
         url (str): URL or full path to assets.
         Returns None if assets not found.
@@ -387,8 +397,7 @@ def get_full_asset_path(path: str) -> typing.Union[str, None]:
                 carb.log_info("Asset path found at {}{}".format(server_name, path))
                 return server_name + path
 
-    carb.log_warn("Could not find assets path: {}".format(path))
-    return None
+    raise RuntimeError("Could not find assets path: {}".format(path))
 
 
 async def get_full_asset_path_async(path: str) -> typing.Union[str, None]:
@@ -396,6 +405,9 @@ async def get_full_asset_path_async(path: str) -> typing.Union[str, None]:
 
     Args:
         path (str): Path of asset from root to verify
+
+    Raises:
+        RuntimeError: if the root path is not found.
 
     Returns:
         url (str): URL or full path to assets.
@@ -419,12 +431,14 @@ async def get_full_asset_path_async(path: str) -> typing.Union[str, None]:
                 carb.log_info("Asset path found at {}{}".format(server_name, path))
                 return server_name + path
 
-    carb.log_warn("Could not find assets path: {}".format(path))
-    return None
+    raise RuntimeError("Could not find assets path: {}".format(path))
 
 
 def get_nvidia_asset_root_path() -> typing.Union[str, None]:
     """Tries to find the root path to the NVIDIA assets
+
+    Raises:
+        RuntimeError: if the root path is not found.
 
     Returns:
         url (str): URL or root path to NVIDIA assets folder.
@@ -466,12 +480,14 @@ def get_nvidia_asset_root_path() -> typing.Union[str, None]:
             carb.log_info("NVIDIA assets found at {}".format(nvidia_assets_url))
             return nvidia_assets_url
 
-    carb.log_warn("Could not find NVIDIA assets folder")
-    return None
+    raise RuntimeError("Could not find NVIDIA assets folder")
 
 
 def get_isaac_asset_root_path() -> typing.Union[str, None]:
-    """Tries to find the root path to the Isaac Sim assets
+    """Tries to find the root path to the Isaac Sim assets.
+
+    Raises:
+        RuntimeError: if the root path is not found.
 
     Returns:
         url (str): URL or root path to Isaac Sim assets folder.
@@ -548,16 +564,19 @@ def get_isaac_asset_root_path() -> typing.Union[str, None]:
                 carb.log_info("Isaac Sim assets version {} found at {}".format(ver_asset, cloud_assetsURL))
                 return cloud_assetsURL
 
-    carb.log_warn("Could not find Isaac Sim assets folder")
-    return None
+    raise RuntimeError("Could not find Isaac Sim assets folder")
 
 
 def get_assets_root_path() -> typing.Union[str, None]:
     """Tries to find the root path to the Isaac Sim assets on a Nucleus server
 
+    Raises:
+        RuntimeError: if the root path is not found.
+
     Returns:
-        url (str): URL of Nucleus server with root path to assets folder.
-        Returns None if Nucleus server not found.
+        typing.Union[str, None]:
+            url (str): URL of Nucleus server with root path to assets folder.
+            Returns None if Nucleus server not found.
     """
 
     # get timeout
@@ -599,12 +618,14 @@ def get_assets_root_path() -> typing.Union[str, None]:
                 carb.log_info("Assets root found at {}".format(cloud_assets_url))
                 return cloud_assets_url
 
-    carb.log_warn("Could not find assets root folder")
-    return None
+    raise RuntimeError("Could not find assets root folder")
 
 
 async def get_assets_root_path_async() -> typing.Union[str, None]:
     """Tries to find the root path to the Isaac Sim assets on a Nucleus server (asynchronous version).
+
+    Raises:
+        RuntimeError: if the root path is not found.
 
     Returns:
         url (str): URL of Nucleus server with root path to assets folder.
@@ -650,8 +671,7 @@ async def get_assets_root_path_async() -> typing.Union[str, None]:
                 carb.log_info("Assets root found at {}".format(cloud_assets_url))
                 return cloud_assets_url
 
-    carb.log_warn("Could not find assets root folder")
-    return None
+    raise RuntimeError("Could not find assets root folder")
 
 
 def get_assets_server() -> typing.Union[str, None]:

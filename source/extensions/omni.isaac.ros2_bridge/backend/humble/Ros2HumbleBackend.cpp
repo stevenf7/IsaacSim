@@ -6,6 +6,10 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
+// clang-format off
+#include <pch/UsdPCH.h>
+// clang-format on
+
 #include "Ros2Humble.h"
 #include "rosidl_runtime_c/string_functions.h"
 
@@ -14,11 +18,9 @@
 
 #include <inttypes.h>
 
-Ros2BackendHumble::Ros2BackendHumble(std::string pkgName,
-                                     std::string msgSubfolder,
-                                     std::string msgName,
-                                     BackendMessageType messageType)
-    : Ros2Backend(pkgName, msgSubfolder, msgName, messageType)
+Ros2BackendHumble::Ros2BackendHumble(
+    std::string pkgName, std::string msgSubfolder, std::string msgName, BackendMessageType messageType, bool testLibrary)
+    : Ros2Backend(pkgName, msgSubfolder, msgName, messageType, testLibrary)
 {
 }
 

@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.2.1"
+version = "0.2.2"
 category = "Simulation"
 title = "Camera Inspector"
 description = "This extension can inspect and modify the properties of cameras in the scene."

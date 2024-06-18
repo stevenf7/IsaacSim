@@ -347,7 +347,7 @@ nav_demo.start(
     env_urls=ENV_URLS,
     env_interval=args.env_interval,
     use_temp_rp=args.use_temp_rp,
-    seed=124,
+    seed=22,
 )
 
 while simulation_app.is_running() and nav_demo.is_running():

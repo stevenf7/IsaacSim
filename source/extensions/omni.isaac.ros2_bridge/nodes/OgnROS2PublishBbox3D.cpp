@@ -7,6 +7,10 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
+// clang-format off
+#include <pch/UsdPCH.h>
+// clang-format on
+
 #include <carb/graphics/GraphicsTypes.h>
 
 #include <include/Ros2Node.h>

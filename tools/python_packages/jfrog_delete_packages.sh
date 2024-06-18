@@ -10,9 +10,11 @@ isaacsim-code-editor
 isaacsim-core
 isaacsim-cortex
 isaacsim-example
+isaacsim-extscache-kit
+isaacsim-extscache-kit-sdk
+isaacsim-extscache-physics
 isaacsim-gui
 isaacsim-kernel
-isaacsim-kernel-kit-edition
 isaacsim-replicator
 isaacsim-rl
 isaacsim-robot

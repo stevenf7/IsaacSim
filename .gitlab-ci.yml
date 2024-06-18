@@ -132,10 +132,12 @@ variables:
   RUN_NIGHTLY_TESTS:
     value: "false"
     description: "Set to true to run nightly tests. Only happens on schedule."
+  RUN_DOCS_PUBLISH:
+    value: "false"
+    description: "Set to true to publish omni docs. Only happens on schedule."
   RUN_DOCS_BUILD:
     value: "false"
     description: "Set to true to build omni docs. Only happens on schedule."
-
 
 # ==============================================================================================================
 .check-common:
@@ -143,9 +145,11 @@ variables:
   timeout: 20 minutes
   interruptible: true
   rules:
-    - if: $RUN_BUMP_VERSION == "true"
-      when: never
-    - !reference [.rules-workflow, rules]
+  - if: $RUN_BUMP_VERSION == "true"
+    when: never
+  - if: $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true"
+    when: never
+  - !reference [.rules-workflow, rules]
 
 .repo-artifacts:
   artifacts:
@@ -177,13 +181,19 @@ variables:
         - VERSION.md
         - VERSION
 
+.rules-publish-docs:
+  rules:
+  # allow schedule pipeline if RUN_DOCS_PUBLISH is set to "true" and its scheduled
+  - if: $CI_PIPELINE_SOURCE == "schedule" && $RUN_DOCS_PUBLISH == "true"
+    when: always
+  - when: never
+
 .rules-build-docs:
   rules:
   # allow schedule pipeline if RUN_DOCS_BUILD is set to "true" and its scheduled
     - if: $CI_PIPELINE_SOURCE == "schedule" && $RUN_DOCS_BUILD == "true"
       when: always
     - when: never
-
 
 # ==============================================================================================================
 # Rule for running publisher on push on develop and release branches
@@ -257,9 +267,11 @@ check-code-format:
     when:
       - always
   rules:
-    - if: $RUN_BUMP_VERSION == "true"
-      when: never
-    - !reference [.rules-workflow, rules]
+  - if: $RUN_BUMP_VERSION == "true"
+    when: never
+  - if: $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true"
+    when: never
+  - !reference [.rules-workflow, rules]
 
 
 # ==============================================================================================================
@@ -344,9 +356,9 @@ build-windows-x86_64-debug:
     - .test-artifacts
   allow_failure: true
   rules:
-    - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
-      when: never
-    - !reference [.rules-workflow, rules]
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true"
+    when: never
+  - !reference [.rules-workflow, rules]
 
 .test-linux-common:
   after_script:
@@ -761,56 +773,57 @@ test-windows-x86_64-internalnativepython:
 pages:
   stage: pages
   extends:
-    - .build-common
-    - .runner-build-linux-x86_64
-  before_script:
-    - set -eu
-    - yum install -y p7zip p7zip-plugins
+  - .build-common
+  - .runner-utility-linux-x86_64
   script:
-    - mkdir .public
-    - ls
-    - mv omni-docs/_build/docs/* .public/
-    - ls .public
-    - 7z x _build/packages/docs@*.7z -oisaacsim
-    - mkdir -p .public/py/
-    - mv isaacsim .public/py/
-    - ls .public/py/isaacsim
-    - mv .public public
+  - mkdir .public
+  - ls
+  - export UNZIP_DISABLE_ZIPBOMB_DETECTION=TRUE
+  # - curl -o ./docs.zip  https://gitlab-master.nvidia.com/api/v4/projects/25020/jobs/artifacts/develop/download?job=build-docs
+  # - unzip docs.zip
+  - mv omni-docs/_build/docs/* .public/
+  - ls .public
+  - curl -o ./artifact.zip  https://gitlab-master.nvidia.com/api/v4/projects/25020/jobs/artifacts/develop/download?job=build-linux-x86_64-release
+  - unzip artifact.zip
+  - 7z x _build/packages/docs@*.7z -oisaacsim
+  - mkdir -p .public/py/
+  - mv isaacsim .public/py/
+  - ls .public/py/isaacsim
+  - mv .public public
   artifacts:
     paths:
       - public
   rules:
-    - !reference [.rules-build-docs, rules]
+  - !reference [.rules-publish-docs, rules]
   needs:
-    - job: build-linux-x86_64-release
-      artifacts: true
-    - job: build-docs
-      artifacts: true
+  - job: build-docs
+    artifacts: true
 
 build-docs:
   extends:
-    - .build-common
-    - .runner-build-linux-x86_64
-    - .osec:vault:v3:prod_token_job
+  - .build-common
+  - .runner-utility-linux-x86_64
   timeout: 3 hours
   before_script:
-    - set -eu
-    - yum install -y bsdtar
-    - !reference [.osec:vault:v3:linux, packman_s3:perform_vault_requests]
+  - !reference [.omni_s3_write_get_secrets, omni_s3_write_get_secrets]
   script:
-    - git clone --depth=1 -b isaac_sim --single-branch https://gitlab-master.nvidia.com/omniverse/omni-docs.git
-    - pushd omni-docs
-    - ./repo docs --warn-as-error=0
-    - ./repo docs --stage sphinx
-    - ./repo docs --stage post
-    - popd
+  - git clone -q --depth=1 -b isaac_sim --single-branch https://gitlab-master.nvidia.com/omniverse/omni-docs.git
+  - echo "Build log is captured in the build logs. Running build..."
+  - pushd omni-docs
+  - ./repo docs --warn-as-error=0 > ../build_log_full.txt
+  - ./repo docs --stage sphinx > ../build_log_sphinx.txt
+  - ./repo docs --stage post > ../build_log_post.txt
+  - popd
   rules:
     - !reference [.rules-build-docs, rules]
   artifacts:
     when: always
     expire_in: 2 weeks
     paths:
-      - omni-docs/_build/docs
+    - omni-docs/_build/docs
+    - build_log_full.txt
+    - build_log_sphinx.txt
+    - build_log_post.txt
 
 
 # ==============================================================================================================
@@ -945,8 +958,8 @@ benchmark-windows-x86_64:
 #    platforms = ["linux-x86_64"]
 verify-publish-extensions:
   extends:
-    - .deploy-common
-    - .omni_nvks_runner_with_docker
+  - .deploy-common
+  - .runner-utility-linux-x86_64
   script:
     - ./repo.sh build --fetch-only -rd
     - ./repo.sh publish_exts -a --from-package -c release --verify
@@ -989,8 +1002,8 @@ verify-publish-extensions:
 #    platforms = ["linux-x86_64"]
 publish-extensions:
   extends:
-    - .deploy-common
-    - .omni_nvks_runner_with_docker
+  - .deploy-common
+  - .runner-build-linux-x86_64
   script:
     - ./repo.sh build --fetch-only -rd
     - ./repo.sh publish_exts -a --from-package -c release
@@ -1027,8 +1040,8 @@ publish-extensions:
   timeout: 3 hour
   interruptible: false
   rules:
-    - if: $RUN_DOCS_BUILD == "true" || RUN_NIGHTLY_TESTS=="true"
-      when: never
+  - if: $RUN_DOCS_PUBLISH == "true" || RUN_NIGHTLY_TESTS=="true"
+    when: never
 
 publish-python-packages-linux:
   extends:
@@ -1080,17 +1093,19 @@ publish-python-packages-windows:
 # ==============================================================================================================
 publish-docs:
   extends:
-    - .deploy-common
-    - .omni_nvks_runner_with_docker
+  - .deploy-common
+  - .runner-utility-linux-x86_64
   variables:
     # Required access tokens for publishing to S3
     AWS_ACCESS_KEY_ID: $AWS_OMNIVERSEDOCS_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY: $AWS_OMNIVERSEDOCS_SECRET_ACCESS_KEY
-  needs:
-    - job: build-windows-x86_64-release
-      artifacts: true
+  needs: []
   script:
-    - ./repo.sh ci publish_docs
+  - curl -o ./artifact.zip  https://gitlab-master.nvidia.com/api/v4/projects/25020/jobs/artifacts/develop/download?job=build-linux-x86_64-release
+  - unzip artifact.zip
+  - mkdir -p /builds/omniverse/isaac/omni_isaac_sim/_build/docs/isaac_sim/latest
+  - 7z x _build/packages/docs@*.7z -o/builds/omniverse/isaac/omni_isaac_sim/_build/docs/isaac_sim/latest
+  - ./repo.sh docs --config release --stage publish --edition production
   rules:
     - if: $ALLOW_PUBLISH_DOCS != "true"
       when: never
@@ -1103,8 +1118,8 @@ publish-docs:
 # ==============================================================================================================
 publish-to-launcher:
   extends:
-    - .deploy-common
-    - .omni_nvks_runner_with_docker
+  - .deploy-common
+  - .runner-utility-linux-x86_64
   script:
     - ls _build/packages/
     - ./repo.sh publish_launcher
@@ -1124,17 +1139,17 @@ publish-to-launcher:
     when:
       - always
   rules:
-    - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
-      when: never
-    - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
-      when: never
-    - !reference [.rules-version-changed, rules]
-    - !reference [.rules-push-manual, rules]
+  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+    when: never
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push-manual, rules]
   allow_failure: true
 
 #   extends:
 #   - .deploy-common
-#   - .omni_nvks_runner_with_docker
+#   - .runner-utility-linux-x86_64
 #   script:
 #   - ./repo.sh ci publish_to_launcher
 #   needs:
@@ -1156,7 +1171,7 @@ release-new-version:
 
 #   extends:
 #   - .deploy-common
-#   - .omni_nvks_runner_with_docker
+#   - .runner-utility-linux-x86_64
 #   needs: []
 #   script:
 #   - ./repo.sh ci release_new_version
@@ -1175,7 +1190,7 @@ autoupdate-kit:
     - when: never
 #   extends:
 #   - .deploy-common
-#   - .omni_nvks_runner_with_docker
+#   - .runner-utility-linux-x86_64
 #   needs: []
 #   script:
 #   - ./repo.sh ci autoupdate_kit
@@ -1189,8 +1204,8 @@ autoupdate-kit:
 # ==============================================================================================================
 bump-version:
   extends:
-    - .deploy-common
-    - .omni_nvks_runner_with_docker
+  - .deploy-common
+  - .runner-utility-linux-x86_64
   script:
     - ./repo.sh bump_version
   needs: []
@@ -1222,12 +1237,12 @@ sign-windows-x86_64-release:
     - job: build-windows-x86_64-release
       artifacts: true
   rules:
-    - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
-      when: never
-    - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
-      when: never
-    - !reference [.rules-version-changed, rules]
-    - !reference [.rules-push-manual, rules]
+  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+    when: never
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push-manual, rules]
   allow_failure: true
 
 
@@ -1245,14 +1260,14 @@ internal-build-linux-x86_64-release:
     - ./repo.sh build -r --no-docker
     - ./repo.sh package -m isaac-sim-internal-standalone -c release
   rules:
-    - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
-      when: never
-    - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
-      when: never
-    - if: '$CI_COMMIT_BRANCH != "develop"'
-      when: never
-    - !reference [.rules-version-changed, rules]
-    - !reference [.rules-push-manual, rules]
+  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+    when: never
+  - if: '$CI_COMMIT_BRANCH != "develop"'
+    when: never
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push-manual, rules]
   allow_failure: true
 
 
@@ -1268,22 +1283,22 @@ internal-build-windows-x86_64-release:
     - ./repo.bat build -r
     - ./repo.bat package -m isaac-sim-internal-standalone -c release
   rules:
-    - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
-      when: never
-    - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
-      when: never
-    - if: '$CI_COMMIT_BRANCH != "develop"'
-      when: never
-    - !reference [.rules-version-changed, rules]
-    - !reference [.rules-push-manual, rules]
+  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+    when: never
+  - if: '$CI_COMMIT_BRANCH != "develop"'
+    when: never
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push-manual, rules]
   allow_failure: true
 
 
 # ==============================================================================================================
 internal-publish-to-packman:
   extends:
-    - .deploy-common
-    - .omni_nvks_runner_with_docker
+  - .deploy-common
+  - .runner-utility-linux-x86_64
   script:
     - ls _build/packages/
     - ./repo.sh publish_internal_packages
@@ -1293,22 +1308,22 @@ internal-publish-to-packman:
     - job: internal-build-windows-x86_64-release
       artifacts: true
   rules:
-    - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
-      when: never
-    - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
-      when: never
-    - if: '$CI_COMMIT_BRANCH != "develop"'
-      when: never
-    - !reference [.rules-version-changed, rules]
-    - !reference [.rules-push-manual, rules]
+  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+    when: never
+  - if: '$CI_COMMIT_BRANCH != "develop"'
+    when: never
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push-manual, rules]
   allow_failure: true
 
 
 # ==============================================================================================================
 internal-publish-container:
   extends:
-    - .deploy-common
-    - .omni_nvks_runner_with_docker
+  - .deploy-common
+  - .runner-utility-linux-x86_64
   variables:
     APP_NAME: "isaac-sim-internal"
     FAMILY_NAME: "gl"
@@ -1327,22 +1342,22 @@ internal-publish-container:
     when:
       - always
   rules:
-    - if: $ALLOW_PUBLISH_CONTAINERS != "true"
-      when: never
-    - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
-      when: never
-    - if: '$CI_COMMIT_BRANCH != "develop"'
-      when: never
-    - !reference [.rules-version-changed, rules]
-    - !reference [.rules-push-manual, rules]
+  - if: $ALLOW_PUBLISH_CONTAINERS != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+    when: never
+  - if: '$CI_COMMIT_BRANCH != "develop"'
+    when: never
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push-manual, rules]
   allow_failure: true
 
 
 # ==============================================================================================================
 publish-container:
   extends:
-    - .deploy-common
-    - .omni_nvks_runner_with_docker
+  - .deploy-common
+  - .runner-utility-linux-x86_64
   variables:
     APP_NAME: "isaac-sim"
     FAMILY_NAME: "gl"
@@ -1361,12 +1376,12 @@ publish-container:
     when:
       - always
   rules:
-    - if: $ALLOW_PUBLISH_CONTAINERS != "true"
-      when: never
-    - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
-      when: never
-    - !reference [.rules-version-changed, rules]
-    - !reference [.rules-push-manual, rules]
+  - if: $ALLOW_PUBLISH_CONTAINERS != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+    when: never
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push-manual, rules]
   allow_failure: true
 
 
@@ -1385,12 +1400,12 @@ binaryscan-build-linux-x86_64-release:
     - ./repo.sh build -r --no-docker
     - ./repo.sh package -m isaac-sim-binaryscan -c release
   rules:
-    - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
-      when: never
-    - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
-      when: never
-    - !reference [.rules-version-changed, rules]
-    - !reference [.rules-push-manual, rules]
+  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+    when: never
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push-manual, rules]
   allow_failure: true
 
 
@@ -1406,20 +1421,20 @@ binaryscan-build-windows-x86_64-release:
     - ./repo.bat build -r
     - ./repo.bat package -m isaac-sim-binaryscan -c release
   rules:
-    - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
-      when: never
-    - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
-      when: never
-    - !reference [.rules-version-changed, rules]
-    - !reference [.rules-push-manual, rules]
+  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+    when: never
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push-manual, rules]
   allow_failure: true
 
 
 # ==============================================================================================================
 binaryscan-publish-to-packman:
   extends:
-    - .deploy-common
-    - .omni_nvks_runner_with_docker
+  - .deploy-common
+  - .runner-utility-linux-x86_64
   script:
     - ls _build/packages/
     - ./repo.sh publish_binaryscan_packages
@@ -1429,73 +1444,94 @@ binaryscan-publish-to-packman:
     - job: binaryscan-build-windows-x86_64-release
       artifacts: true
   rules:
-    - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
-      when: never
-    - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
-      when: never
-    - !reference [.rules-version-changed, rules]
-    - !reference [.rules-push-manual, rules]
+  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+    when: never
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push-manual, rules]
   allow_failure: true
 
 
 # ==============================================================================================================
 isaac-sim-assets-1:
   extends:
-    - .deploy-common
-    - .omni_nvks_runner_with_docker
+  - .deploy-common
+  - .runner-utility-linux-x86_64
   script:
     - ./tools/ci/build-and-packaging/isaac-sim-assets-1/step.sh
     - ./repo.sh publish_assets_launcher_1
   needs: []
   rules:
-    - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
-      when: never
-    - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
-      when: never
-    - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "gitlab-ci")
-      when: manual
-    - !reference [.rules-version-changed, rules]
-    - !reference [.rules-push-manual, rules]
+  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+    when: never
+  - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "gitlab-ci")
+    when: manual
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push-manual, rules]
   allow_failure: true
 
 
 # ==============================================================================================================
 isaac-sim-assets-2:
   extends:
-    - .deploy-common
-    - .omni_nvks_runner_with_docker
+  - .deploy-common
+  - .runner-utility-linux-x86_64
   script:
     - ./tools/ci/build-and-packaging/isaac-sim-assets-2/step.sh
     - ./repo.sh publish_assets_launcher_2
   needs: []
   rules:
-    - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
-      when: never
-    - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
-      when: never
-    - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "gitlab-ci")
-      when: manual
-    - !reference [.rules-version-changed, rules]
-    - !reference [.rules-push-manual, rules]
+  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+    when: never
+  - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "gitlab-ci")
+    when: manual
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push-manual, rules]
   allow_failure: true
 
 
 # ==============================================================================================================
 isaac-sim-assets-3:
   extends:
-    - .deploy-common
-    - .omni_nvks_runner_with_docker
+  - .deploy-common
+  - .runner-utility-linux-x86_64
   script:
     - ./tools/ci/build-and-packaging/isaac-sim-assets-3/step.sh
     - ./repo.sh publish_assets_launcher_3
   needs: []
   rules:
-    - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
-      when: never
-    - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_BUILD == "true"
-      when: never
-    - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "gitlab-ci")
-      when: manual
-    - !reference [.rules-version-changed, rules]
-    - !reference [.rules-push-manual, rules]
+  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+    when: never
+  - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "gitlab-ci")
+    when: manual
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push-manual, rules]
+  allow_failure: true
+
+
+# ==============================================================================================================
+isaac-sim-assets-4:
+  extends:
+  - .deploy-common
+  - .runner-utility-linux-x86_64
+  script:
+  - ./tools/ci/build-and-packaging/isaac-sim-assets-4/step.sh
+  - ./repo.sh publish_assets_launcher_4
+  needs: []
+  rules:
+  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+    when: never
+  - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "gitlab-ci")
+    when: manual
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push-manual, rules]
   allow_failure: true

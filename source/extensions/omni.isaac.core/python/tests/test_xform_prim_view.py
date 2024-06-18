@@ -30,6 +30,7 @@ class TestXFormPrimView(omni.kit.test.AsyncTestCase):
         World.clear_instance()
         await create_new_stage_async()
         self._my_world = World()
+        await self._my_world.initialize_simulation_context_async()
         assets_root_path = await get_assets_root_path_async()
         asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_1")
@@ -68,8 +69,28 @@ class TestXFormPrimView(omni.kit.test.AsyncTestCase):
         )
         return
 
+    async def test_world_poses_fabric(self):
+        current_positions, current_orientations = self._frankas_view.get_world_poses(usd=False)
+        self.assertTrue(np.isclose(current_positions, np.zeros([2, 3], dtype=np.float32)).all())
+        expected_orientations = np.zeros([2, 4], dtype=np.float32)
+        expected_orientations[:, 0] = 1
+        self.assertTrue(np.isclose(current_orientations, expected_orientations).all())
+
+        new_positions = np.array([[10.0, 10.0, 0], [-40, -40, 0]])
+        new_orientations = euler_angles_to_quats(np.array([[0, 0, np.pi / 2.0], [0, 0, -np.pi / 2.0]]))
+        self._frankas_view.set_world_poses(positions=new_positions, orientations=new_orientations, usd=False)
+        current_positions, current_orientations = self._frankas_view.get_world_poses(usd=False)
+        self.assertTrue(np.isclose(current_positions, new_positions).all())
+        self.assertTrue(
+            np.logical_or(
+                np.isclose(current_orientations, new_orientations, atol=1e-05).all(axis=1),
+                np.isclose(current_orientations, -new_orientations, atol=1e-05).all(axis=1),
+            ).all()
+        )
+        return
+
     async def test_local_pose(self):
-        print(euler_angles_to_quats(np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])))
+        # print(euler_angles_to_quats(np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])))
         self._frames_view.set_local_poses(
             translations=np.array([[0, 0, 0], [0, 10, 5], [0, 3, 5]]),
             orientations=euler_angles_to_quats(np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])),

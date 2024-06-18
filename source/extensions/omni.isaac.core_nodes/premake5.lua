@@ -31,7 +31,7 @@ project_ext_plugin(ext, "omni.isaac.core_nodes.plugin")
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/source/extensions/omni.isaac.dynamic_control/include",
         "%{root}/_build/target-deps/omni_client_library/include",
-        "%{root}/_build/target-deps/omni_physics/include",
+        "%{root}/_build/target-deps/omni_physics/%{config}/include",
         "%{kit_sdk_bin_dir}/exts/omni.syntheticdata/include",
         "%{kit_sdk_bin_dir}/exts/usdrt.scenegraph/include",
         "%{root}/source/extensions/omni.isaac.core_nodes/include",

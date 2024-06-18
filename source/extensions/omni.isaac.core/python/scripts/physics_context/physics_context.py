@@ -93,6 +93,8 @@ class PhysicsContext(object):
                     self._carb_settings.set_int("/physics/cudaDevice", 0)
                     device_id = 0
                 self._device = f"cuda:{device_id}"
+            else:
+                self._device = "cpu"
         elif "cuda" in self._device.lower():
             self._use_gpu_pipeline = True
             self._use_gpu = True

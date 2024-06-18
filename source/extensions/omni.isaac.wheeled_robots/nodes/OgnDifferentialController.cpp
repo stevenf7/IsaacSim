@@ -137,6 +137,11 @@ public:
 
     virtual void reset()
     {
+
+        if (!nodeObj.iNode)
+        {
+            return;
+        }
         GraphObj graphObj{ nodeObj.iNode->getGraph(nodeObj) };
         GraphContextObj context{ graphObj.iGraph->getDefaultGraphContext(graphObj) };
 
@@ -144,13 +149,19 @@ public:
         AttributeObj linearAttr = nodeObj.iNode->getAttribute(nodeObj, "inputs:linearVelocity");
         auto linearHandle = linearAttr.iAttribute->getAttributeDataHandle(linearAttr, kAccordingToContextIndex);
         double* linearVelocity = getDataW<double>(context, linearHandle);
-        *linearVelocity = 0;
+        if (linearVelocity)
+        {
+            *linearVelocity = 0;
+        }
 
         // set the node's input and output
         AttributeObj angularAttr = nodeObj.iNode->getAttribute(nodeObj, "inputs:angularVelocity");
         auto angularHandle = angularAttr.iAttribute->getAttributeDataHandle(angularAttr, kAccordingToContextIndex);
         double* angularVelocity = getDataW<double>(context, angularHandle);
-        *angularVelocity = 0;
+        if (angularVelocity)
+        {
+            *angularVelocity = 0;
+        }
 
         mPreviousLinearSpeed = 0.0;
         mPreviousAngularSpeed = 0.0;

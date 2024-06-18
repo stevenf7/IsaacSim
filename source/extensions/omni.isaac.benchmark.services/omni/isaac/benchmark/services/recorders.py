@@ -6,6 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+import os
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
@@ -13,6 +14,7 @@ from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from omni.isaac.benchmark.services.settings import BenchmarkSettings
 
+import carb
 import omni.kit.app as omni_kit_app
 from omni.isaac.benchmark.services.datarecorders import cpu, frametime, interface, memory
 from omni.isaac.benchmark.services.metrics import measurements
@@ -53,51 +55,115 @@ class IsaacFrameTimeRecorder(interface.MeasurementDataRecorder):
             return interface.MeasurementData(measurements=[])
 
         frametime_stats = frametime.FrametimeStats()
-        frametime_stats.render_thread_frametime_samples = self.frametime_collector.render_frametimes_ms
+        frametime_stats.app_frametime_samples = self.frametime_collector.app_frametimes_ms
+        frametime_stats.physics_frametime_samples = self.frametime_collector.physics_frametimes_ms
         frametime_stats.gpu_frametime_samples = self.frametime_collector.gpu_frametimes_ms
         frametime_stats.calc_stats()
 
-        m1 = measurements.SingleMeasurement(
-            name=f"Mean Render Thread Frametime",
-            value=frametime_stats.mean_render_thread_frametime,
-            unit="ms",
+        measurements_out = []
+        print(frametime_stats.app_stats)
+
+        measurements_out.append(
+            measurements.SingleMeasurement(
+                name=f"Mean Render Thread Frametime",
+                value=frametime_stats.app_stats["mean"],
+                unit="ms",
+            )
         )
-        m2 = measurements.SingleMeasurement(
-            name=f"Mean GPU Frametime", value=frametime_stats.mean_gpu_frametime, unit="ms"
+        measurements_out.append(
+            measurements.SingleMeasurement(
+                name=f"Stdev Render Thread Frametime",
+                value=frametime_stats.app_stats["stdev"],
+                unit="ms",
+            )
         )
-        m3 = measurements.SingleMeasurement(
-            name=f"Stdev Render Thread Frametime",
-            value=frametime_stats.stdev_render_thread_frametime,
-            unit="ms",
+        measurements_out.append(
+            measurements.SingleMeasurement(
+                name=f"Min Render Thread Frametime",
+                value=frametime_stats.app_stats["min"],
+                unit="ms",
+            )
         )
-        m4 = measurements.SingleMeasurement(
-            name=f"Stdev GPU Frametime", value=frametime_stats.stdev_gpu_frametime, unit="ms"
+        measurements_out.append(
+            measurements.SingleMeasurement(
+                name=f"Max Render Thread Frametime",
+                value=frametime_stats.app_stats["max"],
+                unit="ms",
+            )
         )
-        m5 = measurements.SingleMeasurement(
-            name=f"Min Render Thread Frametime",
-            value=frametime_stats.min_render_thread_frametime,
-            unit="ms",
+        measurements_out.append(
+            measurements.ListMeasurement(
+                name=f"Render Thread Frametime Samples",
+                value=frametime_stats.app_frametime_samples,
+            )
         )
-        m6 = measurements.SingleMeasurement(
-            name=f"Min GPU Frametime", value=frametime_stats.min_gpu_frametime, unit="ms"
+
+        measurements_out.append(
+            measurements.SingleMeasurement(
+                name=f"Mean Physics Frametime",
+                value=frametime_stats.physics_stats["mean"],
+                unit="ms",
+            )
         )
-        m7 = measurements.SingleMeasurement(
-            name=f"Max Render Thread Frametime",
-            value=frametime_stats.max_render_thread_frametime,
-            unit="ms",
+        measurements_out.append(
+            measurements.SingleMeasurement(
+                name=f"Stdev Physics Frametime",
+                value=frametime_stats.physics_stats["stdev"],
+                unit="ms",
+            )
         )
-        m8 = measurements.SingleMeasurement(
-            name=f"Max GPU Frametime", value=frametime_stats.max_gpu_frametime, unit="ms"
+        measurements_out.append(
+            measurements.SingleMeasurement(
+                name=f"Min Physics Frametime",
+                value=frametime_stats.physics_stats["min"],
+                unit="ms",
+            )
         )
-        m9 = measurements.ListMeasurement(
-            name=f"Render Thread Frametime Samples",
-            value=frametime_stats.render_thread_frametime_samples,
+        measurements_out.append(
+            measurements.SingleMeasurement(
+                name=f"Max Physics Frametime",
+                value=frametime_stats.physics_stats["max"],
+                unit="ms",
+            )
         )
-        m10 = measurements.ListMeasurement(name=f"GPU Frametime Samples", value=frametime_stats.gpu_frametime_samples)
-        m11 = measurements.SingleMeasurement(
-            name=f"Real Time Factor", value=self.frametime_collector.elapsed_sim_time / self.elapsed_real_time, unit=""
+        measurements_out.append(
+            measurements.ListMeasurement(
+                name=f"Physics Frametime Samples",
+                value=frametime_stats.physics_frametime_samples,
+            )
         )
-        measurements_out = [m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11]
+
+        measurements_out.append(
+            measurements.SingleMeasurement(
+                name=f"Mean GPU Frametime", value=frametime_stats.gpu_stats["mean"], unit="ms"
+            )
+        )
+
+        measurements_out.append(
+            measurements.SingleMeasurement(
+                name=f"Stdev GPU Frametime", value=frametime_stats.gpu_stats["stdev"], unit="ms"
+            )
+        )
+
+        measurements_out.append(
+            measurements.SingleMeasurement(name=f"Min GPU Frametime", value=frametime_stats.gpu_stats["min"], unit="ms")
+        )
+
+        measurements_out.append(
+            measurements.SingleMeasurement(name=f"Max GPU Frametime", value=frametime_stats.gpu_stats["max"], unit="ms")
+        )
+
+        measurements_out.append(
+            measurements.ListMeasurement(name=f"GPU Frametime Samples", value=frametime_stats.gpu_frametime_samples)
+        )
+
+        measurements_out.append(
+            measurements.SingleMeasurement(
+                name=f"Real Time Factor",
+                value=self.frametime_collector.elapsed_sim_time / self.elapsed_real_time,
+                unit="",
+            )
+        )
         return interface.MeasurementData(measurements=measurements_out)
 
 
@@ -197,3 +263,26 @@ class IsaacRuntimeRecorder(interface.MeasurementDataRecorder):
 
         m1 = measurements.SingleMeasurement(name=f"Runtime", value=self.elapsed_time, unit="ms")
         return interface.MeasurementData(measurements=[m1])
+
+
+class IsaacHardwareSpecRecorder(interface.MeasurementDataRecorder):
+    def __init__(self, context: Optional[interface.InputContext] = None):
+        self.context = context
+
+    def get_data(self):
+        import torch
+
+        device_names = [torch.cuda.get_device_name(d) for d in range(torch.cuda.device_count())]
+
+        if len(set(device_names)) > 1:
+            carb.log_warn(f"Detected multiple GPU types: {device_names}.")
+            carb.log_warn(f"Only recording GPU 0 type: {device_names[0]}")
+
+        measurements_out = []
+
+        measurements_out.append(
+            measurements.SingleMeasurement(name=f"num_cpus", value=len(os.sched_getaffinity(0)), unit="")
+        )
+        measurements_out.append(measurements.SingleMeasurement(name=f"gpu_device_name", value=device_names[0], unit=""))
+
+        return interface.MeasurementData(measurements_out)

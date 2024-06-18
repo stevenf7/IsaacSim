@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.8.0] - 2024-06-07
+### Changed
+- Always capture physics metrics even if stepping without rendering
+
 ## [1.7.0] - 2024-05-01
 ### Changed
 - Removes dependency on omni.isaac.core_nodes

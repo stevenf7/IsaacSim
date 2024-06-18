@@ -13,7 +13,7 @@ from omni.isaac.core import World
 from omni.isaac.core.materials.particle_material import ParticleMaterial
 from omni.isaac.core.prims.soft.cloth_prim import ClothPrim
 from omni.isaac.core.prims.soft.particle_system import ParticleSystem
-from omni.isaac.core.tests.test_semantics import TestProperties
+from omni.isaac.core.tests.common import TestProperties
 
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add support for async/await tests
@@ -76,7 +76,6 @@ class TestClothPrim(omni.kit.test.AsyncTestCase, TestProperties):
         )
         self.my_world.scene.add(self.cloth)
         await self.my_world.reset_async(soft=False)
-        await update_stage_async()
 
         input_1 = torch.rand(self.cloth._cloth_prim_view.max_springs_per_cloth).cuda()
         input_2 = torch.rand(self.cloth._cloth_prim_view.max_springs_per_cloth).cuda()

@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.19.4] - 2024-06-10
+### Fixed
+- Unit tests
+
+
+## [1.19.3] - 2024-06-03
+### Fixed
+- Crash on twist subscriber node release if it wasn't run at least one frame
+
+## [1.19.2] - 2024-05-21
+### Added
+- Resetting output of the Twist Subscriber to zeros upon stopping simulation. 
+
 ## [1.19.1] - 2024-05-19
 ### Changed
 - Extension is deprecated
@@ -35,7 +48,7 @@
 
 ## [1.17.0] - 2024-04-11
 ### Added
-- Add skipFrameCount option to RTX Lidar and Camera Helper Nodes to modify the rate of lidar and point cloud publishing
+- Add frameSkipCount option to RTX Lidar and Camera Helper Nodes to modify the rate of lidar and point cloud publishing
 
 ## [1.16.0] - 2024-04-04
 ### Added

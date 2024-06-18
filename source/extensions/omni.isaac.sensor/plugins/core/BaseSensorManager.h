@@ -12,6 +12,7 @@
 #include "../contact_sensor/ContactManager.h"
 #include "../contact_sensor/ContactSensor.h"
 #include "../imu_sensor/ImuSensor.h"
+#include "../lightbeam_sensor/LightBeamSensor.h"
 #include "BaseSensorComponent.h"
 #include "omni/isaac/bridge/BridgeApplication.h"
 
@@ -107,6 +108,11 @@ public:
                 CARB_LOG_WARN("Failed to create imu sensor, parent prim is not found or invalid");
                 return;
             }
+        }
+        else if (prim.IsA<pxr::IsaacSensorIsaacLightBeamSensor>())
+        {
+            component = std::make_unique<LightBeamSensor>(mPhysXInterface);
+            component->initialize(pxr::IsaacSensorIsaacBaseSensor(prim), mStage);
         }
 
         if (component)
@@ -216,6 +222,18 @@ public:
             if (mComponents.find(prim.GetPath().GetString()) != mComponents.end())
             {
                 return dynamic_cast<ImuSensor*>(mComponents[prim.GetPath().GetString()].get());
+            }
+        }
+        return nullptr;
+    }
+
+    LightBeamSensor* getLightBeamSensor(const pxr::UsdPrim& prim)
+    {
+        if (prim)
+        {
+            if (mComponents.find(prim.GetPath().GetString()) != mComponents.end())
+            {
+                return dynamic_cast<LightBeamSensor*>(mComponents[prim.GetPath().GetString()].get());
             }
         }
         return nullptr;

@@ -7,6 +7,13 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+# python
+import sys
+
+if sys.platform == "win32":
+    print("This example is not supported on windows, exiting")
+    exit()
+
 """Launch Omniverse Toolkit first."""
 
 # kit
@@ -17,8 +24,6 @@ simulation_app = SimulationApp({"headless": False})
 
 """Rest everything follows."""
 
-# python
-import os
 
 import numpy as np
 from omni.isaac.core.objects.sphere import VisualSphere

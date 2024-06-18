@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.8.1] - 2024-05-23
+### Fixed
+- Forward the internal environment variables to support configuring the ROS bridge for x-terminal-emulator
+
 ## [2.8.0] - 2024-05-20
 ### Changed
 - ROS1 bridge and ROS2 foxy are marked as deprecated

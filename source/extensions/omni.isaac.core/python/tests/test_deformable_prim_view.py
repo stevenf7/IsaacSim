@@ -43,7 +43,7 @@ class TestDeformablePrimView(omni.kit.test.AsyncTestCase):
 
     async def test_deformable_prim_view_gpu_pipeline(self):
         self.isclose = torch.isclose
-        self._array_container = torch.cuda.FloatTensor
+        self._array_container = lambda x: torch.tensor(x, device=self._device, dtype=torch.float32)
         await update_stage_async()
         await self._runner()
 
@@ -93,7 +93,7 @@ class TestDeformablePrimView(omni.kit.test.AsyncTestCase):
 
     async def _step(self):
         self.my_world.step_async()
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
 
     async def _runner(self):
         for indexed in [False, True]:
@@ -131,9 +131,7 @@ class TestDeformablePrimView(omni.kit.test.AsyncTestCase):
         self.my_world.clear_instance()
 
     async def sim_position_test(self):
-        print("sim_position_test")
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.deformable_view.get_simulation_mesh_nodal_positions(indices)
         new_values = prev_values + 1
@@ -149,9 +147,7 @@ class TestDeformablePrimView(omni.kit.test.AsyncTestCase):
         self.assertTrue(curr_values.shape == expected_shape)
 
     async def sim_velocity_test(self):
-        print("sim_velocity_test")
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.deformable_view.get_simulation_mesh_nodal_velocities(indices)
         new_values = prev_values + 1
@@ -169,7 +165,6 @@ class TestDeformablePrimView(omni.kit.test.AsyncTestCase):
 
     async def sim_position_target_test(self):
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         curr_positions = self.deformable_view.get_simulation_mesh_nodal_positions(indices)
         new_values = curr_positions + torch.tensor([0, 0, 2], device="cuda:0")
@@ -199,9 +194,7 @@ class TestDeformablePrimView(omni.kit.test.AsyncTestCase):
         self.assertTrue(curr_values.shape == expected_shape)
 
     async def sim_mesh_indices(self):
-        print("sim_mesh_indices")
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         sim_mesh_indices = self.deformable_view.get_simulation_mesh_indices(indices)
         sim_indices = self.mesh_prim.GetAttribute("physxDeformable:simulationIndices").Get()
@@ -217,9 +210,7 @@ class TestDeformablePrimView(omni.kit.test.AsyncTestCase):
         )
 
     async def sim_rest_position_test(self):
-        print("sim_rest_position_test")
         await self.my_world.reset_async()
-        # await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         stress_vals = self.deformable_view.get_simulation_mesh_element_stresses(indices)
         nodal_positions = self.deformable_view.get_simulation_mesh_nodal_positions(indices)
@@ -242,9 +233,7 @@ class TestDeformablePrimView(omni.kit.test.AsyncTestCase):
         self.assertTrue(rest_point.shape == expected_shape)
 
     async def sim_deformation_gradient_test(self):
-        print("sim_deformation_gradient_test")
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         num_indices = 2 if self._test_cfg["indexed"] else self.deformable_view.count
         values = self.deformable_view.get_simulation_mesh_element_deformation_gradients(indices)
@@ -263,9 +252,7 @@ class TestDeformablePrimView(omni.kit.test.AsyncTestCase):
         )
 
     async def collision_deformation_gradient_test(self):
-        print("collision_deformation_gradient_test")
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         num_indices = 2 if self._test_cfg["indexed"] else self.deformable_view.count
         values = self.deformable_view.get_collision_mesh_element_deformation_gradients(indices)
@@ -284,9 +271,8 @@ class TestDeformablePrimView(omni.kit.test.AsyncTestCase):
         )
 
     async def sim_stress_test(self):
-        print("sim_stress_test")
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         num_indices = 2 if self._test_cfg["indexed"] else self.deformable_view.count
         values = self.deformable_view.get_simulation_mesh_element_stresses(indices)
@@ -303,9 +289,8 @@ class TestDeformablePrimView(omni.kit.test.AsyncTestCase):
         )
 
     async def collision_stress_test(self):
-        print("collision_stress_test")
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         num_indices = 2 if self._test_cfg["indexed"] else self.deformable_view.count
         values = self.deformable_view.get_collision_mesh_element_stresses(indices)
@@ -322,9 +307,7 @@ class TestDeformablePrimView(omni.kit.test.AsyncTestCase):
         )
 
     async def sim_rotation_test(self):
-        print("sim_rotation_test")
         await self.my_world.reset_async()
-        # await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         num_indices = 2 if self._test_cfg["indexed"] else self.deformable_view.count
         values = self.deformable_view.get_simulation_mesh_element_rotations(indices)
@@ -341,9 +324,7 @@ class TestDeformablePrimView(omni.kit.test.AsyncTestCase):
         )
 
     async def collision_rotation_test(self):
-        print("collision_rotation_test")
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         num_indices = 2 if self._test_cfg["indexed"] else self.deformable_view.count
         values = self.deformable_view.get_collision_mesh_element_rotations(indices)
@@ -360,9 +341,7 @@ class TestDeformablePrimView(omni.kit.test.AsyncTestCase):
         )
 
     async def sim_element_pose_test(self):
-        print("sim_deformation_gradient_test")
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         num_indices = 2 if self._test_cfg["indexed"] else self.deformable_view.count
         sim_mesh_indices = self.deformable_view.get_simulation_mesh_indices(indices)
@@ -398,9 +377,7 @@ class TestDeformablePrimView(omni.kit.test.AsyncTestCase):
         )
 
     async def collision_element_pose_test(self):
-        print("collision_element_pose_test")
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         num_indices = 2 if self._test_cfg["indexed"] else self.deformable_view.count
         sim_mesh_indices = self.deformable_view.get_collision_mesh_indices(indices)

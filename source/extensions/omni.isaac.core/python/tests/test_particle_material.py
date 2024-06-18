@@ -10,7 +10,7 @@
 import omni.kit.test
 from omni.isaac.core import World
 from omni.isaac.core.materials.particle_material import ParticleMaterial
-from omni.isaac.core.tests.test_semantics import TestProperties
+from omni.isaac.core.tests.common import TestProperties
 
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add support for async/await tests
@@ -43,7 +43,6 @@ class TestParticleMaterial(omni.kit.test.AsyncTestCase, TestProperties):
         self.particle_material = ParticleMaterial(prim_path="/particleMaterial", drag=0.1, lift=0.3, friction=0.6)
         self.my_world.scene.add(self.particle_material)
         await self.my_world.reset_async(soft=False)
-        await update_stage_async()
         await self.my_world.stop_async()
 
         await self.scalar_prop_test(self.particle_material.get_lift, self.particle_material.set_lift, is_stopped=True)

@@ -99,6 +99,7 @@ class BaseIsaacBenchmark:
         self.recorders = [
             IsaacMemoryRecorder(self.context),
             IsaacCPUStatsRecorder(self.context),
+            IsaacHardwareSpecRecorder(self.context),
             self.frametime_recorder,
             self.runtime_recorder,
         ]

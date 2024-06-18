@@ -95,7 +95,6 @@ class RadarAuxiliaryData(ctypes.Structure):
     _fields_ = [
         ("sensorID", ctypes.c_uint8),  # The ID of the sensor that generated the scan.
         ("scanIdx", ctypes.c_uint8),  # The scan index for sensors with multi-scan support.
-        ("timeStampNS", ctypes.c_uint64),  # The scan timestamp in nanoseconds.
         ("cycleCnt", ctypes.c_uint64),  # The scan cycle count (unique per scan index).
         ("maxRangeM", ctypes.c_float),  # The maximum unambiguous range for the scan.
         ("minVelMps", ctypes.c_float),  # The minimum unambiguous velocity for the scan.

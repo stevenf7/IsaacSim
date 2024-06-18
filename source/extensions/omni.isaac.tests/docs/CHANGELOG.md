@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.17.0] - 2024-05-23
+### Added
+- Tests for the Leatherback robot.
+### Fixed
+- O3dyn Tests
+
 ## [1.16.6] - 2024-05-11
 ### Changed
 - Renamed Transporter to iw.hub

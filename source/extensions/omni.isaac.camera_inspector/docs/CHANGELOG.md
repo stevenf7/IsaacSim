@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.2] - 2024-06-17
+### Fixed
+- Camera Inspector erroring out on creating a new stage
+
 ## [0.2.1] - 2023-11-13
 ### Fixed
 - Updated documentation link

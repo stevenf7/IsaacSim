@@ -1,5 +1,23 @@
 # Changelog
 
+## [3.13.1] - 2024-06-14
+### Changed
+- Moved common test code into common.py
+### Fixed
+- Unit tests taking longer than expected due to extra app updates
+- Reduce print verbosity when running tests
+
+
+## [3.13.0] - 2024-06-07
+### Changed
+- SimulationContext and World classes do not change camera on initialization, set_camera_view must be called separately
+
+## [3.12.0] - 2024-05-14
+### Added
+- added getting world poses through fabric selections in XFormPrimView through usd=False argument
+### Changed
+- reset_xform_properties arguments defaults to False instead of True in the prim classes initialization.
+
 ## [3.11.2] - 2024-05-10
 ### Fixed
 - Added deprecation warning for particle cloth

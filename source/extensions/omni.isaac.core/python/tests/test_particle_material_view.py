@@ -40,7 +40,7 @@ class TestParticleMaterialView(omni.kit.test.AsyncTestCase):
 
     async def test_particle_material_view(self):
         self.isclose = torch.isclose
-        self._array_container = torch.cuda.FloatTensor
+        self._array_container = lambda x: torch.tensor(x, device=self._device, dtype=torch.float32)
         self.stage = get_current_stage()
         await update_stage_async()
         await self._runner()
@@ -71,7 +71,6 @@ class TestParticleMaterialView(omni.kit.test.AsyncTestCase):
 
     async def friction_test(self):
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.particle_material_view.get_frictions(indices)
         new_values = prev_values + np.random.uniform(low=0.0, high=1.0, size=(prev_values.shape[0], 1)).astype(
@@ -88,7 +87,6 @@ class TestParticleMaterialView(omni.kit.test.AsyncTestCase):
 
     async def damping_test(self):
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.particle_material_view.get_dampings(indices)
         new_values = prev_values + np.random.uniform(low=0.0, high=1.0, size=(prev_values.shape[0], 1)).astype(
@@ -105,7 +103,6 @@ class TestParticleMaterialView(omni.kit.test.AsyncTestCase):
 
     async def damping_test(self):
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.particle_material_view.get_dampings(indices)
         new_values = prev_values + np.random.uniform(low=0.0, high=1.0, size=(prev_values.shape[0], 1)).astype(
@@ -122,7 +119,6 @@ class TestParticleMaterialView(omni.kit.test.AsyncTestCase):
 
     async def lift_test(self):
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.particle_material_view.get_lifts(indices)
         new_values = prev_values + np.random.uniform(low=0.0, high=1.0, size=(prev_values.shape[0], 1)).astype(
@@ -139,7 +135,6 @@ class TestParticleMaterialView(omni.kit.test.AsyncTestCase):
 
     async def drag_test(self):
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.particle_material_view.get_drags(indices)
         new_values = prev_values + np.random.uniform(low=0.0, high=1.0, size=(prev_values.shape[0], 1)).astype(
@@ -156,7 +151,6 @@ class TestParticleMaterialView(omni.kit.test.AsyncTestCase):
 
     async def gravity_scale_test(self):
         await self.my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.particle_material_view.get_gravity_scales(indices)
         new_values = prev_values + np.random.uniform(low=0.0, high=1.0, size=(prev_values.shape[0], 1)).astype(

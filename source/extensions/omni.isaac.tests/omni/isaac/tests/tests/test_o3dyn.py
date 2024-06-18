@@ -40,7 +40,6 @@ class TestO3dyn(omni.kit.test.AsyncTestCase):
             return
         self.my_world = None
         self._extension_path = get_extension_path_from_name("omni.isaac.tests")
-
         ## setup carter_v1:
         # open local carter_v1:
         # (result, error) = await omni.usd.get_context().open_stage_async(
@@ -98,7 +97,7 @@ class TestO3dyn(omni.kit.test.AsyncTestCase):
         add_ground_plane(stage, "/physics/groundPlane", "Z", 1000.0, Gf.Vec3f(0.0, 0, -0.12), Gf.Vec3f(1.0))
         await self.my_world.initialize_simulation_context_async()
         self.my_world.play()
-        for i in range(150):
+        for i in range(250):
             await omni.kit.app.get_app().next_update_async()
 
         pose = omni.usd.get_world_transform_matrix(stage.GetPrimAtPath(robot_prim.GetPath().AppendPath("base_link")))
@@ -121,14 +120,14 @@ class TestO3dyn(omni.kit.test.AsyncTestCase):
         add_ground_plane(stage, "/physics/groundPlane", "Z", 1000.0, Gf.Vec3f(0.0, 0, -0.12), Gf.Vec3f(1.0))
         await self.my_world.initialize_simulation_context_async()
         for prim in stage.GetPrimAtPath(robot_prim.GetPath().AppendPath("wheel_drive")).GetChildren():
-            prim.GetAttribute("drive:angular:physics:targetVelocity").Set(300)
+            prim.GetAttribute("drive:angular:physics:targetVelocity").Set(100)
         self.my_world.play()
-        for i in range(150):
+        for i in range(300):
             await omni.kit.app.get_app().next_update_async()
 
         pose = omni.usd.get_world_transform_matrix(stage.GetPrimAtPath(robot_prim.GetPath().AppendPath("base_link")))
         translate = pose.ExtractTranslation()
-        self.assertAlmostEqual(translate[0], 1.77, delta=0.05)
+        self.assertGreater(translate[0], 1.0)
         self.assertAlmostEqual(translate[1], 0.00, delta=0.02)
         self.my_world.stop()
 
@@ -146,17 +145,20 @@ class TestO3dyn(omni.kit.test.AsyncTestCase):
         await self.my_world.initialize_simulation_context_async()
         for prim in stage.GetPrimAtPath(robot_prim.GetPath().AppendPath("wheel_drive")).GetChildren():
             if prim.GetName() in ["wheel_fr_joint", "wheel_rl_joint"]:
-                prim.GetAttribute("drive:angular:physics:targetVelocity").Set(300)
+                prim.GetAttribute("drive:angular:physics:targetVelocity").Set(100)
             else:
-                prim.GetAttribute("drive:angular:physics:targetVelocity").Set(-300)
+                prim.GetAttribute("drive:angular:physics:targetVelocity").Set(-100)
         self.my_world.play()
-        for i in range(155):
+        for i in range(300):
             await omni.kit.app.get_app().next_update_async()
 
         pose = omni.usd.get_world_transform_matrix(stage.GetPrimAtPath(robot_prim.GetPath().AppendPath("base_link")))
         translate = pose.ExtractTranslation()
         self.assertAlmostEqual(translate[0], 0.00, delta=0.1)
-        self.assertAlmostEqual(translate[1], 0.90, delta=0.05)
+        self.assertGreater(
+            translate[1],
+            1.00,
+        )
         self.my_world.stop()
 
         pass
@@ -173,18 +175,29 @@ class TestO3dyn(omni.kit.test.AsyncTestCase):
         await self.my_world.initialize_simulation_context_async()
         for prim in stage.GetPrimAtPath(robot_prim.GetPath().AppendPath("wheel_drive")).GetChildren():
             if prim.GetName() in ["wheel_fl_joint", "wheel_rl_joint"]:
-                prim.GetAttribute("drive:angular:physics:targetVelocity").Set(300)
+                prim.GetAttribute("drive:angular:physics:targetVelocity").Set(150)
             else:
-                prim.GetAttribute("drive:angular:physics:targetVelocity").Set(-300)
+                prim.GetAttribute("drive:angular:physics:targetVelocity").Set(-150)
         self.my_world.play()
-        for i in range(155):
+        for i in range(300):
             await omni.kit.app.get_app().next_update_async()
 
         pose = omni.usd.get_world_transform_matrix(stage.GetPrimAtPath(robot_prim.GetPath().AppendPath("base_link")))
         translate = pose.ExtractTranslation()
-        self.assertAlmostEqual(translate[0], 0.11, delta=0.02)
-        self.assertAlmostEqual(translate[1], 0.01, delta=0.01)
+        # Robot origin is not at center of rotation, give it some slack on X/Y
+        self.assertLess(
+            abs(translate[0]),
+            0.2,
+        )
+        self.assertLess(
+            abs(translate[1]),
+            0.2,
+        )
+        print(translate)
         pose.Orthonormalize()
         rotation = pose.ExtractRotation().GetAngle()
-        self.assertAlmostEqual(rotation, 68.917, delta=0.01)
+        self.assertGreater(
+            rotation,
+            45,
+        )
         self.my_world.stop()

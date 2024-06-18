@@ -14,6 +14,7 @@ import builtins
 import faulthandler
 import os
 import re
+import signal
 import sys
 
 import carb
@@ -76,6 +77,7 @@ class SimulationApp:
         "open_usd": None,
         "livesync_usd": None,
         "fast_shutdown": True,
+        "profiler_backend": [],
     }
     """
     The config variable is a dictionary containing the following entries
@@ -104,6 +106,7 @@ class SimulationApp:
         open_usd (str): This is the name of the usd to open when the app starts. It will not be saved over. Default is None and an empty stage is created on startup.
         livesync_usd (str): This is the location of the usd that you want to do your interactive work in.  The existing file is overwritten. Default is None
         fast_shutdown (bool): True to exit process immediately, false to shutdown each extension. If running in a jupyter notebook this is forced to false.
+        profiler_backend (list): List of profiler backends to enable currently only supports the following backends: ["tracy", "nvtx"]
     """
 
     def __init__(self, launch_config: dict = None, experience: str = "") -> None:
@@ -194,6 +197,17 @@ class SimulationApp:
         # Get Omniverse application
         self._app = omni.kit.app.get_app()
         self._start_app()
+
+        # Register signal handler to exit when ctrl-c happens
+        # This needs to happen after the app starts so that we can overide the default handler
+        def signal_handler(signal, frame):
+            # disable logging warnings as we are going to terminate the process
+            _logging = carb.logging.acquire_logging()
+            _logging.set_level_threshold(carb.logging.LEVEL_FATAL)
+            self._framework.unload_all_plugins()
+            sys.exit(0)
+
+        signal.signal(signal.SIGINT, signal_handler)
 
         # once app starts, we can set settings
         from .utils import create_new_stage, open_stage, set_livesync_stage
@@ -330,6 +344,35 @@ class SimulationApp:
         # if the flag is already in unknown_args, we don't need to add it again.
         if sys.platform.startswith("linux") and os.geteuid() == 0 and "--allow-root" not in unknown_args:
             args.append("--allow-root")
+
+        # Add args to enable profiling
+        profiler_backends = self.config.get("profiler_backend")
+        # Common args
+        if "tracy" in profiler_backends or "nvtx" in profiler_backends:
+            args += [
+                "--/app/profileFromStart=true",
+                "--/profiler/enabled=true",
+            ]
+        # Args needed if tracy is enabled
+        if "tracy" in profiler_backends:
+            args += [
+                "--/rtx/addTileGpuAnnotations=true",
+                "--/profiler/gpu/tracyInject/enabled=true",
+                "--/profiler/gpu/tracyInject/msBetweenClockCalibration=0",
+            ]
+        # Enable the supported backend
+        if "tracy" in profiler_backends and "nvtx" not in profiler_backends:
+            args += [
+                "--/app/profilerBackend=tracy",
+            ]
+        elif "tracy" not in profiler_backends and "nvtx" in profiler_backends:
+            args += [
+                "--/app/profilerBackend=nvtx",
+            ]
+        elif "tracy" in profiler_backends and "nvtx" in profiler_backends:
+            args += [
+                "--/app/profilerBackend=[tracy,nvtx]",
+            ]
 
         # pass all extra arguments onto the main kit app
         print("Starting kit application with the following args: ", args)

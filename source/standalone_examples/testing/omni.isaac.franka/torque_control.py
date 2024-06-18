@@ -79,13 +79,16 @@ my_franka = my_world.scene.get_object("my_franka")
 my_controller = PDController(name="generic_pd_controller", kp=my_task._pd_gains[0], kd=my_task._pd_gains[1])
 articulation_controller = my_franka.get_articulation_controller()
 
-
+reset_needed = False
 while simulation_app.is_running():
     my_world.step(render=True)
+    if my_world.is_stopped() and not reset_needed:
+        reset_needed = True
     if my_world.is_playing():
-        if my_world.current_time_step_index == 0:
+        if reset_needed:
             my_world.reset()
             my_controller.reset()
+            reset_needed = False
         observations = my_world.get_observations()
         target_joint_positions = np.array([1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5])
         observations["franka"]["target_joint_positions"] = target_joint_positions

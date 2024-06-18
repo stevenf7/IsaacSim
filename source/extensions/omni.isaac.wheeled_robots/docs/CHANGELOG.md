@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.1.3] - 2024-05-29
+### Fixed
+- Crash on stage close if twistsubscriber was not run for a single frame
+
 ## [2.1.2] - 2024-05-04
 ### Added
 - unit test for robot reset using jetbot

@@ -52,14 +52,17 @@ DynamicCuboid(
 
 my_world.reset()
 effort_sensor = EffortSensor(prim_path=arm_joint)
-
+reset_needed = False
 while simulation_app.is_running():
     my_world.step(render=True)
+    if my_world.is_stopped() and not reset_needed:
+        reset_needed = True
     if my_world.is_playing():
         reading = effort_sensor.get_sensor_reading()
         print(f"Sensor Time: {reading.time}   Value: {reading.value}   Validity: {reading.is_valid}")
 
-        if my_world.current_time_step_index == 0:
+        if reset_needed:
             my_world.reset()
+            reset_needed = False
 
 simulation_app.close()

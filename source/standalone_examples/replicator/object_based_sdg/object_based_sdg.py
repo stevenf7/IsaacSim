@@ -25,7 +25,7 @@ config = {
     "rt_subframes": 4,
     "num_frames": 10,
     "num_cameras": 3,
-    "camera_collider_radius": 1.25,
+    "camera_collider_radius": 0.5,
     "disable_render_products_between_captures": False,
     "simulation_duration_between_captures": 0.05,
     "resolution": (640, 480),
@@ -458,7 +458,6 @@ def capture_with_motion_blur_and_pathtracing(duration=0.05, num_samples=8, spp=6
     carb.settings.get_settings().set("/rtx/rendermode", "PathTracing")
     carb.settings.get_settings().set("/rtx/pathtracing/spp", spp)
     carb.settings.get_settings().set("/rtx/pathtracing/totalSpp", spp)
-    carb.settings.get_settings().set("/rtx/pathtracing/clampSpp", spp)
     carb.settings.get_settings().set("/rtx/pathtracing/optixDenoiser/enabled", 0)
 
     # Make sure the timeline is playing
@@ -571,9 +570,8 @@ for i in range(num_frames):
 
     # Capture the current frame
     print(f"[SDG] Capturing frame {i}/{num_frames}, at simulation time: {timeline.get_current_time():.2f}")
-    if i % 2 == 0:
-        rep.orchestrator.step(delta_time=0.0, rt_subframes=rt_subframes, pause_timeline=False)
-        # capture_with_motion_blur_and_pathtracing(duration=0.025, num_samples=8, spp=128)
+    if i % 5 == 0:
+        capture_with_motion_blur_and_pathtracing(duration=0.025, num_samples=8, spp=128)
     else:
         rep.orchestrator.step(delta_time=0.0, rt_subframes=rt_subframes, pause_timeline=False)
 

@@ -39,6 +39,7 @@ parser.add_argument(
     "--annotators",
     nargs="+",
     default=["rgb"],
+    choices=list(VALID_ANNOTATORS) + ["all"],
     help="List of annotators to enable, separated by space. Use 'all' to select all available.",
 )
 parser.add_argument("--disable-viewport-rendering", action="store_true", help="Disable viewport rendering")
@@ -51,7 +52,8 @@ parser.add_argument(
     choices=["LocalLogMetrics", "JSONFileMetrics", "OsmoKPIFile"],
     help="Benchmarking backend, defaults",
 )
-
+parser.add_argument("--skip-write", action="store_true", help="Skip writing annotator data to disk")
+parser.add_argument("--env-url", default=None, help="Path to the environment url, default None")
 
 args, unknown = parser.parse_known_args()
 
@@ -64,6 +66,8 @@ delete_data_when_done = args.delete_data_when_done
 print_results = args.print_results
 headless = args.headless
 n_gpu = args.num_gpus
+skip_write = args.skip_write
+env_url = args.env_url
 
 if "all" in args.annotators:
     annotators_kwargs = {annotator: True for annotator in VALID_ANNOTATORS}
@@ -78,8 +82,10 @@ print(f"\tasset_count: {asset_count}")
 print(f"\tannotators: {annotators_kwargs.keys()}")
 print(f"\tdisable_viewport_rendering: {disable_viewport_rendering}")
 print(f"\tdelete_data_when_done: {delete_data_when_done}")
-print(f"\print_results: {print_results}")
+print(f"\tprint_results: {print_results}")
 print(f"\theadless: {headless}")
+print(f"\tskip_write: {skip_write}")
+print(f"\tenv_url: {env_url}")
 
 import os
 import shutil
@@ -95,6 +101,7 @@ import omni.kit.app
 import omni.replicator.core as rep
 import omni.usd
 from omni.isaac.core.utils.extensions import enable_extension
+from omni.isaac.nucleus import get_assets_root_path
 from omni.kit.viewport.utility import get_active_viewport
 
 enable_extension("omni.isaac.benchmark.services")
@@ -119,8 +126,14 @@ benchmark = BaseIsaacBenchmark(
 
 benchmark.set_phase("loading", start_recording_frametime=False, start_recording_runtime=True)
 
-print(f"[SDG Benchmark] Loading stage..")
-omni.usd.get_context().new_stage()
+if env_url is not None:
+    env_path = env_url if env_url.startswith("omniverse://") else get_assets_root_path() + env_url
+    print(f"[SDG Benchmark] Loading stage from path: {env_path}")
+    omni.usd.get_context().open_stage(env_path)
+else:
+    print(f"[SDG Benchmark] Loading a new empty stage..")
+    omni.usd.get_context().new_stage()
+
 if disable_viewport_rendering:
     print(f"[SDG Benchmark] Disabling viewport rendering..")
     get_active_viewport().updates_enabled = False
@@ -140,14 +153,22 @@ for i in range(num_cameras):
 render_products = []
 for i, cam in enumerate(cameras):
     render_products.append(rep.create.render_product(cam, (width, height), name=f"rp_{i}"))
-writer = rep.writers.get("BasicWriter")
-output_directory = (
-    os.getcwd()
-    + f"/_out_sdg_benchmark_{num_frames}_frames_{num_cameras}_cameras_{asset_count}_asset_count_{len(annotators_kwargs)}_annotators"
-)
-print(f"[SDG Benchmark] Output directory: {output_directory}")
-writer.initialize(output_dir=output_directory, **annotators_kwargs)
-writer.attach(render_products)
+if skip_write:
+    print("[SDG Benchmark] Skipping writing to disk, attaching annotators to render products..")
+    for annot_type, enabled in annotators_kwargs.items():
+        if enabled:
+            annot = rep.AnnotatorRegistry.get_annotator(annot_type)
+            for rp in render_products:
+                annot.attach(rp)
+else:
+    writer = rep.writers.get("BasicWriter")
+    output_directory = (
+        os.getcwd()
+        + f"/_out_sdg_benchmark_{num_frames}_frames_{num_cameras}_cameras_{asset_count}_asset_count_{len(annotators_kwargs)}_annotators"
+    )
+    print(f"[SDG Benchmark] Output directory: {output_directory}")
+    writer.initialize(output_dir=output_directory, **annotators_kwargs)
+    writer.attach(render_products)
 assets = rep.create.group([cubes, cones, cylinders, spheres, tori])
 cameras = rep.create.group(cameras)
 
@@ -171,14 +192,17 @@ for _ in range(10):
     omni.kit.app.get_app().update()
 benchmark.store_measurements()
 
-benchmark.set_phase("benchmark")
 print("[SDG Benchmark] Starting SDG..")
+benchmark.set_phase("benchmark")
 start_time = time.time()
 rep.orchestrator.run_until_complete(num_frames=num_frames)
 end_time = time.time()
+benchmark.store_measurements()
+omni.kit.app.get_app().update()
+
 duration = end_time - start_time
 avg_frametime = duration / num_frames
-if delete_data_when_done:
+if delete_data_when_done and not skip_write:
     print(f"[SDG Benchmark] Deleting data: {output_directory}")
     shutil.rmtree(output_directory)
 if print_results:
@@ -187,8 +211,6 @@ if print_results:
     print(f"[SDG Benchmark] avg FPS: {1 / avg_frametime:.2f}")
     results_csv = f"{num_frames}, {num_cameras}, {width}, {height}, {asset_count}, {duration:.4f}, {avg_frametime:.4f}, {1 / avg_frametime:.2f}"
     print(f"num_frames, num_cameras, width, height, asset_count, duration, avg_frametime, avg_fps\n{results_csv}\n")
-omni.kit.app.get_app().update()
-benchmark.store_measurements()
 
 benchmark.stop()
 

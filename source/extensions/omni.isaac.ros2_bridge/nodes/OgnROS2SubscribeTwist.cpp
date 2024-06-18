@@ -23,6 +23,8 @@ public:
     static bool compute(OgnROS2SubscribeTwistDatabase& db)
     {
         auto& state = db.perInstanceState<OgnROS2SubscribeTwist>();
+        state.nodeObj = db.abi_node();
+
         // spin once calls reset automatically if it was not successful
         const auto& nodeObj = db.abi_node();
         if (!state.spinOnce(
@@ -83,6 +85,34 @@ public:
      */
     virtual void reset()
     {
+        if (!nodeObj.iNode)
+        {
+            return;
+        }
+        GraphObj graphObj{ nodeObj.iNode->getGraph(nodeObj) };
+        GraphContextObj context{ graphObj.iGraph->getDefaultGraphContext(graphObj) };
+
+        AttributeObj linearAttr = nodeObj.iNode->getAttribute(nodeObj, "outputs:linearVelocity");
+        auto linearHandle = linearAttr.iAttribute->getAttributeDataHandle(linearAttr, kAccordingToContextIndex);
+        double* linearCommand = getDataW<double>(context, linearHandle);
+        if (linearCommand)
+        {
+            linearCommand[0] = 0.0;
+            linearCommand[1] = 0.0;
+            linearCommand[2] = 0.0;
+        }
+
+        AttributeObj angularAttr = nodeObj.iNode->getAttribute(nodeObj, "outputs:angularVelocity");
+        auto angularHandle = angularAttr.iAttribute->getAttributeDataHandle(angularAttr, kAccordingToContextIndex);
+        double* angularCommand = getDataW<double>(context, angularHandle);
+        if (angularCommand)
+        {
+            angularCommand[0] = 0.0;
+            angularCommand[1] = 0.0;
+            angularCommand[2] = 0.0;
+        }
+
+
         mSubscriber.reset(); // This should be reset before we reset the handle.
         Ros2Node::reset();
     }
@@ -109,6 +139,7 @@ public:
 private:
     std::shared_ptr<Ros2Subscriber> mSubscriber = nullptr;
     std::shared_ptr<Ros2TwistMessage> mMessage = nullptr;
+    NodeObj nodeObj;
 };
 
 REGISTER_OGN_NODE()

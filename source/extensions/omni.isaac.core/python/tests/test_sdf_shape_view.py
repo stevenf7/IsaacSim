@@ -93,7 +93,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
                 self.euler_angles_to_quats = euler_angles_to_quats_torch
                 self.isclose = torch.isclose
                 if self._test_cfg["device"] == "gpu":
-                    self._array_container = torch.cuda.FloatTensor
+                    self._array_container = lambda x: torch.tensor(x, dtype=torch.float32, device=self._device)
                     self._device = "cuda:0"
 
             elif backend == "warp":
@@ -111,7 +111,6 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
         self._my_world = World(sim_params=self._sim_params, backend=self._test_cfg["backend"], device="cuda")
         await self._my_world.initialize_simulation_context_async()
         await update_stage_async()
-        await omni.kit.app.get_app().next_update_async()
         self.stage = omni.usd.get_context().get_stage()
         self.length = 0.5
         self.num_points = num_query_points
@@ -140,12 +139,10 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
         self._my_world.clear_instance()
 
     async def signed_distance_test(self):
-        print("signed distance test")
         await self._my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else [0, 1, 2]
         self._my_world.step_async()
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
 
         sdf_view = self._cubes_view
         margins = sdf_view.get_sdf_margins()
@@ -158,7 +155,6 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             thickness = thickness.numpy()
             subgrid_resolution = subgrid_resolution.numpy()
             sdf_resolution = sdf_resolution.numpy()
-
         sdf_view.set_sdf_margins(2 * margins)
         sdf_view.set_sdf_narrow_band_thickness(2 * thickness)
         sdf_view.set_sdf_subgrid_resolution(2 * subgrid_resolution)
@@ -187,7 +183,6 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
         self.assertTrue(
             np.isclose(new_sdf_resolution.numpy(), 2 * sdf_resolution, rtol=1e-3).all(), "expected resolution"
         )
-
         sdf_api_margin = new_margins.numpy().mean().tolist()
         points = np.zeros((self.num_envs, 2 * self.num_points, 3))
         points[:, : self.num_points, 0] = self.length - sdf_api_margin / 2

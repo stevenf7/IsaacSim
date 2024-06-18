@@ -44,7 +44,7 @@ project_with_location("omni.isaac.ros2_bridge.foxy")
         "%{root}/source/extensions/omni.isaac.common_includes/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
-        "%{root}/_build/target-deps/omni_physics/include",
+        "%{root}/_build/target-deps/omni_physics/%{config}/include",
         "%{root}/_build/target-deps/nv_ros2/include",
         "%{root}/_build/target-deps/nlohmann-json/include",
         "%{root}/source/extensions/omni.isaac.ros2_bridge",
@@ -57,10 +57,7 @@ project_with_location("omni.isaac.ros2_bridge.foxy")
         "%{root}/_build/target-deps/nv_ros2/lib",
     }
     links{
-        "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace",
-        "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
-        "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "omni.usd", "usdPhysics",
-        "sdf", "usdGeom", "carb",
+        "gf",  "sdf", "tf", "usd", "usdPhysics",
         "rosidl_runtime_c", "rcutils", "rcl", "rmw",
         "tf2_msgs__rosidl_typesupport_c", "tf2_msgs__rosidl_generator_c",
         "geometry_msgs__rosidl_typesupport_c", "geometry_msgs__rosidl_generator_c",
@@ -106,7 +103,7 @@ project_with_location("omni.isaac.ros2_bridge.humble")
         "%{root}/_build/target-deps/cuda/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
-        "%{root}/_build/target-deps/omni_physics/include",
+        "%{root}/_build/target-deps/omni_physics/%{config}/include",
         "%{root}/_build/target-deps/nv_ros2_humble/include",
         "%{root}/_build/target-deps/nlohmann-json/include",
         "%{root}/source/extensions/omni.isaac.ros2_bridge",
@@ -119,10 +116,7 @@ project_with_location("omni.isaac.ros2_bridge.humble")
         "%{root}/_build/target-deps/nv_ros2_humble/lib",
     }
     links{
-        "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace",
-        "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
-        "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "omni.usd", "usdPhysics",
-        "sdf", "usdGeom", "carb",
+        "gf",  "sdf", "tf", "usd", "usdPhysics",
         "rosidl_runtime_c", "rcutils", "rcl", "rmw",
         "tf2_msgs__rosidl_typesupport_c", "tf2_msgs__rosidl_generator_c",
         "geometry_msgs__rosidl_typesupport_c", "geometry_msgs__rosidl_generator_c",
@@ -194,7 +188,7 @@ project_ext_plugin(ext, "omni.isaac.ros2_bridge.plugin")
         "%{root}/_build/target-deps/python/include/python3.10",
         "%{root}/_build/target-deps/python/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
-        "%{root}/_build/target-deps/omni_physics/include",
+        "%{root}/_build/target-deps/omni_physics/%{config}/include",
         "%{kit_sdk_bin_dir}/exts/omni.syntheticdata/include",
         "%{kit_sdk_bin_dir}/exts/usdrt.scenegraph/include",
         "%{root}/_build/target-deps/omni_client_library/include",
@@ -213,13 +207,10 @@ project_ext_plugin(ext, "omni.isaac.ros2_bridge.plugin")
         "%{root}/_build/target-deps/usd_audio_schema/%{cfg.buildcfg}/lib",
         "%{kit_sdk_bin_dir}/exts/omni.usd.core/bin",
         "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/lib",
-        "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/RangeSensorSchema/lib",
     }
     links {
-        "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace",
-        "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
-        "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "omni.usd", "usdPhysics",
-        "physxSchema", "sdf", "usdGeom", "rangeSensorSchema", "isaacSensorSchema", "carb",
+        "gf",  "sdf", "tf",  "usd", "usdGeom", "vt", "usdUtils", "omni.usd", "usdPhysics", "physxSchema", "sdf", "usdGeom", "carb",
+        "isaacSensorSchema",
     }
 
     filter { "system:linux" }
