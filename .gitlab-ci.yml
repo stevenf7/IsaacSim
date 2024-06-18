@@ -803,9 +803,10 @@ build-docs:
   extends:
   - .build-common
   - .runner-utility-linux-x86_64
+  - .osec:vault:v3:prod_token_job
   timeout: 3 hours
   before_script:
-  - !reference [.omni_s3_write_get_secrets, omni_s3_write_get_secrets]
+  - !reference [.osec:vault:v3:linux, packman_s3:perform_vault_requests]
   script:
   - git clone -q --depth=1 -b isaac_sim --single-branch https://gitlab-master.nvidia.com/omniverse/omni-docs.git
   - echo "Build log is captured in the build logs. Running build..."
