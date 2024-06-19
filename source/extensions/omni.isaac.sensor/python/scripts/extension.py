@@ -178,29 +178,17 @@ class Extension(omni.ext.IExt):
             annotator_name
         ) if annotator_name not in AnnotatorRegistry._default_annotators else None
 
-        ### RtxLidar Point Cloud Print Info Writer
+        ### Rtx Sensor Print Info Writer
         rep.writers.register_node_writer(
-            name="Writer" + "IsaacPrintRTXLidarInfo",
-            node_type_id="omni.isaac.sensor.IsaacPrintRTXLidarInfo",
+            name="Writer" + "IsaacPrintRTXSensorInfo",
+            node_type_id="omni.isaac.sensor.IsaacPrintRTXSensorInfo",
             annotators=[omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu" + "Ptr")],
             category="omni.isaac.sensor",
         )
         # Register writer for Replicator telemetry tracking
         rep.WriterRegistry._default_writers.append(
-            "Writer" + "IsaacPrintRTXLidarInfo"
-        ) if "Writer" + "IsaacPrintRTXLidarInfo" not in rep.WriterRegistry._default_writers else None
-
-        ### RtxRadar Point Cloud Print Info Writer
-        rep.writers.register_node_writer(
-            name="Writer" + "IsaacPrintRTXRadarInfo",
-            node_type_id="omni.isaac.sensor.IsaacPrintRTXRadarInfo",
-            annotators=[omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu" + "Ptr")],
-            category="omni.isaac.sensor",
-        )
-        # Register writer for Replicator telemetry tracking
-        rep.WriterRegistry._default_writers.append(
-            "Writer" + "IsaacPrintRTXRadarInfo"
-        ) if "Writer" + "IsaacPrintRTXRadarInfo" not in rep.WriterRegistry._default_writers else None
+            "Writer" + "IsaacPrintRTXSensorInfo"
+        ) if "Writer" + "IsaacPrintRTXSensorInfo" not in rep.WriterRegistry._default_writers else None
 
         ### RtxLidar Flat Scan
         annotator_name = "RtxSensorCpu" + "IsaacComputeRTXLidarFlatScan"

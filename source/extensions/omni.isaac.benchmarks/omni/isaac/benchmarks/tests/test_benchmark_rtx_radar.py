@@ -56,7 +56,7 @@ class TestBenchmarkRtxRadar(BaseIsaacBenchmarkAsync):
 
             hydra_textures.append(hydra_texture)
             # Create the post process graph that publishes the render var
-            writer = rep.writers.get("Writer" + "IsaacPrintRTXRadarInfo")
+            writer = rep.writers.get("Writer" + "IsaacPrintRTXSensorInfo")
             writer.initialize(testMode=True)
             writer.attach([hydra_texture])
             writers.append(writer)

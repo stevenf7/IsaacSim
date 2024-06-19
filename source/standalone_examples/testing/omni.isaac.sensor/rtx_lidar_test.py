@@ -101,8 +101,8 @@ omni.kit.commands.execute(
 #     "SICK_tim781",  # ok, ros2 scan looks like curve
 #     "SICK_tim781_legacy",  # ok
 #     "SICK_picoScan150",  # ok
-#     "SICK_multiScan136",  # crash on "Writer" + "IsaacPrintRTXLidarInfo", flat scan strange (OK, not evenly spaced or single elevation in the line)
-#     "SICK_multiScan165",  # crash on "Writer" + "IsaacPrintRTXLidarInfo", flat scan strange (OK, not evenly spaced or single elevation in the line)
+#     "SICK_multiScan136",  # flat scan strange (OK, not evenly spaced or single elevation in the line)
+#     "SICK_multiScan165",  # flat scan strange (OK, not evenly spaced or single elevation in the line)
 # ]
 # lidar_config = "SICK_multiScan165"
 
