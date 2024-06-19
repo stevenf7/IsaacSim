@@ -1,13 +1,13 @@
 {
-    "IsaacPrintRTXLidarInfo": {
+    "IsaacPrintRTXSensorInfo": {
         "version": 1,
         "icon": "icons/isaac-sim.svg",
         "language": "Python",
         "description": [
-            "process and print the raw RTX lidar data"
+            "Print raw RTX sensor data to console. Example of using omni.sensors Python bindings in OmniGraph node."
         ],
         "metadata": {
-            "uiName": "Isaac Print RTX Lidar Info"
+            "uiName": "Isaac Print RTX Sensor Info"
         },
         "categoryDefinitions": "config/CategoryDefinition.json",
         "categories": "isaacSensor",
@@ -18,13 +18,8 @@
             },
             "dataPtr":{
                 "type": "uint64",
-                "description": "Pointer to LiDAR render result",
-                "uiName": "LiDAR render result"
-            },
-            "testMode":{
-                "type": "bool",
-                "description": "Print less for benchmark tests",
-                "uiName": "Test Mode prints less"
+                "description": "Pointer to RTX sensor render result",
+                "uiName": "RTX sensor render result"
             }
         }
     }

@@ -117,7 +117,7 @@ simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 /
 i = printinc(i)
 writerNames = [
     "RtxRadar" + "DebugDrawPointCloud",
-    # "Writer" + "IsaacPrintRTXRadarInfo",
+    # "Writer" + "IsaacPrintRTXSensorInfo",
 ]
 
 
@@ -166,7 +166,6 @@ _, sensor = omni.kit.commands.execute(
 
 hydra_texture = rep.create.render_product(sensor.GetPath(), [1, 1], name="Isaac")
 writer = rep.writers.get("RtxRadar" + "DebugDrawPointCloud")
-#writer = rep.writers.get("Writer" + "IsaacPrintRTXRadarInfo")
 writer.attach([hydra_texture])
 """
 

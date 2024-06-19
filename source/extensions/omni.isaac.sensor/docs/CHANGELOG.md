@@ -1,5 +1,11 @@
 # Changelog
 
+## [12.3.0] - 2024-06-14
+### Added
+- OgnIsaacPrintRTXSensorInfo - uses Python bindings to decompose and print GMO struct
+### Removed
+- OgnIsaacPrintLidarInfo and OgnIsaacPrintRadarInfo - deprecated by OgnIsaacPrintRTXSensorInfo
+
 ## [12.2.0] - 2024-06-14
 ### Added
 - Unit test for IsaacComputeRTXRadarPointCloud
