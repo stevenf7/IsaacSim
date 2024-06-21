@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0] - 2024-06-18
+### Changed
+- Capture loop is now using orhcestrator.step in a loop instead of orchestrator.run gueranteeing that the recorder is always in sync with the simulation (useful if custom or exernal randomizations are changing the stage)
+
+### Added
+- Verbose checkbox to print the recorder status (e.g. current frame number) to the console
+
 ## [1.7.3] - 2024-05-22
 ### Added
 - async delayed ui frame build
