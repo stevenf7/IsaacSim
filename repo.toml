@@ -588,7 +588,6 @@ exclude = [
   "tests-omni.isaac.benchmarks*${shell_ext}",
   "tests-standalone*${shell_ext}",
   "tests-nativepython*${shell_ext}",
-  "tests-internalnativepython*${shell_ext}",
   "tests-internaldocker*${shell_ext}",
 ]
 args = ["--portable-root ${test_root}/portable_root", "--reset-user",  "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'"]
@@ -707,32 +706,6 @@ include = [
 name = "2"
 include = ["tests-omni.isaac.benchmarks*${shell_ext}"]
 
-[repo_test.suites.internalnativepythontests]
-kind = "glob_and_exec"
-path = "${test_root}/tests"
-
-generate_report_cmd = [
-    "./repo${shell_ext}",
-    "ci",
-    "standalone_report",
-    "--",
-    "${test_root}/_testoutput",
-    "internalnativepythontests"
-]
-
-[[repo_test.suites.internalnativepythontests.group]]
-include = [
-  "tests-internalnativepython*${shell_ext}"
-]
-exclude = []
-args = ["--portable-root ${test_root}/portable_root", "--reset-user",  "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'"]
-tc_report_enabled = false
-timeout = 960
-stdout_fail_patterns.exclude = [
-	"*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*",  # optix disk cache errors
-	"*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*", # optix disk cache errors
-]
-
 [repo_test.suites.nativepythontests]
 kind = "glob_and_exec"
 path = "${test_root}/tests"
@@ -763,6 +736,11 @@ include = [
 ]
 [[repo_test.suites.nativepythontests.bucket]]
 name = "2"
+include = [
+  "tests-nativepython-testing*${shell_ext}"
+]
+[[repo_test.suites.nativepythontests.bucket]]
+name = "3"
 include = ["*"]
 
 # [repo_test.suites.jupytertests]
