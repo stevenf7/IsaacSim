@@ -10,7 +10,7 @@
 import omni
 import omni.graph.core as og
 import pxr
-from pxr import UsdPhysics
+from pxr import PhysxSchema, UsdPhysics
 
 
 class CreateConveyorBelt(omni.kit.commands.Command):
@@ -67,24 +67,32 @@ class CreateConveyorBelt(omni.kit.commands.Command):
                 if not alt_conveyor:
                     UsdPhysics.RigidBodyAPI.Apply(self._conveyor_prim)
                     UsdPhysics.CollisionAPI.Apply(self._conveyor_prim)
+                    PhysxSchema.PhysxSurfaceVelocityAPI.Apply(self._conveyor_prim)
             base_path = self._conveyor_prim.GetPath()
             if self._conveyor_prim != self._stage.GetDefaultPrim():
                 base_path = self._conveyor_prim.GetParent().GetPath()
             self._prim_path = omni.usd.get_stage_next_free_path(
                 self._stage, base_path.AppendChild(pxr.Tf.MakeValidIdentifier(self._prim_name)), True
             )
+            print(self._prim_path)
             conveyor_node_name = "ConveyorNode"
             og.Controller.edit(
                 {"graph_path": self._prim_path, "evaluator_name": "execution"},
                 {
+                    keys.CREATE_VARIABLES: [("Velocity", "float")],
                     keys.CREATE_NODES: [
                         ("OnTick", "omni.graph.action.OnPlaybackTick"),
                         (conveyor_node_name, "omni.isaac.conveyor.IsaacConveyor"),
+                        ("read_speed", "omni.graph.core.ReadVariable"),
                     ],
-                    keys.SET_VALUES: [],
+                    keys.SET_VALUES: [
+                        ("read_speed.inputs:graph", self._prim_path),
+                        ("read_speed.inputs:variableName", "Velocity"),
+                    ],
                     keys.CONNECT: [
                         ("OnTick.outputs:tick", "{}.inputs:onStep".format(conveyor_node_name)),
                         ("OnTick.outputs:deltaSeconds", "{}.inputs:delta".format(conveyor_node_name)),
+                        ("read_speed.outputs:value", "{}.inputs:velocity".format(conveyor_node_name)),
                     ],
                 },
             )

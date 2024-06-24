@@ -7,7 +7,9 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 import omni.ui as ui
-from omni.isaac.conveyor.conveyor_builder.conveyor_track import Ramp, Type
+
+from .conveyor_builder.conveyor_track import Ramp, Type
+from .preferences import ConveyorBuilderPreferences
 
 
 class SelectedConveyorWidget:
@@ -62,6 +64,16 @@ class SelectedConveyorWidget:
                     self.available_anchors = self.selected_conveyor.get_anchors(direction)
                 else:
                     self.available_anchors = []
+            # Workaround for First item - If track type is flat and both anchors are free, use anchor 1.
+            if self.name == "current":
+                if len(self.available_anchors) > 1 and self.selected_conveyor.type == Type.STRAIGHT:
+                    self.current_anchor = 1
+                if len(self.available_anchors) > 2 and self.selected_conveyor.type in [
+                    Type.Y_MERGE,
+                    Type.T_MERGE,
+                    Type.FORK_MERGE,
+                ]:
+                    self.current_anchor = 1
             self.on_selection_changed(new_selection)
         # print("available anchors", available_anchors, self.available_anchors)
         self.build_ui()
