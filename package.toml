@@ -80,7 +80,6 @@ files_exclude = [
     ["tests/tests-internal*"],
     ["tests/tests-docker*"],
     ["dockertests/**"],
-    ["standalone_examples/testing/**"],
     ["exts/omni.isaac.core_archive/pip_prebundle/bin/**"], # OM-84922
     ["exts/omni.isaac.gym.benchmark"],
     ["tests/tests-startup.extscache*"],
@@ -156,7 +155,6 @@ files_exclude = [
     ["tests/tests-internal*"],
     ["tests/tests-docker*"],
     ["dockertests/**"],
-    ["standalone_examples/testing/**"],
     ["exts/omni.isaac.core_archive/pip_prebundle/bin/**"], # OM-84922
     ["exts/omni.isaac.gym.benchmark"],
     ["tests/tests-startup.extscache*"],
