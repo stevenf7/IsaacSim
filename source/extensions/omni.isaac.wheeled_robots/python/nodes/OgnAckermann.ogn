@@ -1,13 +1,17 @@
 {
     "AckermannSteering": {
         "version": 1,
-        "description": "Ackermann Steering Geometry",
+        "description": [
+            "NOTE: DEPRECATED as of Isaac Sim 4.1.0 in favour of OgnAckermannController",
+            "Ackermann Steering Geometry"
+        ],
         "language": "Python",
         "categories": {
             "isaacSim": "Ackermann steering for robots in Isaac Sim"
         },
         "metadata": {
-            "uiName": "Ackermann Steering"
+            "uiName": "Ackermann Steering",
+            "hidden": "true"
         },
         "$comment": "",
         "inputs": {
