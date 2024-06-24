@@ -14,18 +14,26 @@ from math import asin, degrees
 import carb
 import omni
 import omni.ui as ui
-from omni.isaac.conveyor.conveyor_builder.conveyor_system import (
-    ConveyorBuilder,
-    ConveyorFilter,
-    ConveyorSelector,
-    set_pose_from_transform,
-)
-from omni.isaac.conveyor.conveyor_builder.conveyor_track import Angle, Ramp, Style, Type
 from omni.isaac.core.utils.stage import get_next_free_path
 from pxr import Gf, Sdf, UsdGeom, UsdShade
 from pxr.Usd import EditContext, Stage
 
+from .conveyor_builder.conveyor_system import ConveyorBuilder, ConveyorFilter, ConveyorSelector, set_pose_from_transform
+from .conveyor_builder.conveyor_track import Angle, Ramp, Style, Type
+from .preferences import ConveyorBuilderPreferences
 from .selected_conveyor import SelectedConveyorWidget
+
+
+def Singleton(class_):
+    """A singleton decorator"""
+    instances = {}
+
+    def getinstance(*args, **kwargs):
+        if class_ not in instances:
+            instances[class_] = class_(*args, **kwargs)
+        return instances[class_]
+
+    return getinstance
 
 
 class ConveyorBuilderWidget:
@@ -72,7 +80,7 @@ class ConveyorBuilderWidget:
             self._on_stage_event, name="Onshape Usd Exporter stage Watch"
         )
 
-    def __init__(self, config_file, mdl_file, style):
+    def __init__(self, mdl_file, style):
         self._frame = ui.Frame(style=style)
         self.style = style
         self.style_buttons = []
@@ -87,8 +95,8 @@ class ConveyorBuilderWidget:
         self.flip_placement = False
         self.part_usd = None
         self.previous_selection = []
-
-        with open(config_file) as f:
+        preferences = ConveyorBuilderPreferences()
+        with open(preferences.config_file) as f:
             self.config = json.load(f)
         self._conveyor_selector = ConveyorSelector(self.config, thumb_loaded_callback=self.on_thumb_loaded)
 
@@ -166,7 +174,7 @@ class ConveyorBuilderWidget:
                         refs += omni.usd.get_composed_payloads_from_prim(sel, False)
                     for a in refs:
                         if self._conveyor_selector.asset_path in a[0].assetPath:
-                            asset = a[0].assetPath.replace(self._conveyor_selector.asset_path + "/", "")
+                            asset = a[0].assetPath.replace(self._conveyor_selector.asset_path, "")
                             self._selection.set_selected_prim_paths([str(sel.GetPath())], False)
                             self.previous_selection = [str(sel.GetPath())]
                             return self._conveyor_selector.tracks[asset], p

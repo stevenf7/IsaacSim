@@ -97,9 +97,13 @@ class TestConveyor(omni.kit.test.AsyncTestCase):
     async def test_add_conveyor(self, physics=True):
         stage = omni.usd.get_context().get_stage()
         cube_prim = add_cube(self._stage, "/cube", 1.00, (0, 0, 0), physics=physics)
+        rigid_prim = UsdPhysics.RigidBodyAPI(cube_prim)
+        if rigid_prim:
+            rigid_prim.GetKinematicEnabledAttr().Set(True)
         _, og_prim = omni.kit.commands.execute("CreateConveyorBelt", conveyor_prim=cube_prim)
         self.assertIsNotNone(og_prim)
         self.conveyor_node = og_prim
+        self.velocity_attr = stage.GetPrimAtPath("/ConveyorBeltGraph").GetAttribute("graph:variable:Velocity")
         self.assertTrue(self.conveyor_node.IsValid())
         pass
 
@@ -111,12 +115,13 @@ class TestConveyor(omni.kit.test.AsyncTestCase):
         dir_attr = self.conveyor_node.GetAttribute("inputs:direction")
         dir_attr.Set(Gf.Vec3f(*direction))
         attr = self.conveyor_node.GetAttribute("inputs:velocity")
-        attr.Set(0.10)
-        self.assertAlmostEqual(attr.Get(), 0.10, delta=1e-4)
+        self.velocity_attr.Set(0.10)
+        self.assertAlmostEqual(self.velocity_attr.Get(), 0.10, delta=1e-4)
         self._timeline.play()
         await simulate_async(0.4)
         rigid_prim = UsdPhysics.RigidBodyAPI(self._stage.GetPrimAtPath("/cube"))
-        usd_velocity = rigid_prim.GetVelocityAttr().Get()
+        surface_velocity = PhysxSchema.PhysxSurfaceVelocityAPI(rigid_prim)
+        usd_velocity = surface_velocity.GetSurfaceVelocityAttr().Get()
         self.assertAlmostEqual(usd_velocity.GetLength(), 0.10, delta=1e-4)
         self._timeline.stop()
         pass
@@ -127,13 +132,14 @@ class TestConveyor(omni.kit.test.AsyncTestCase):
         dir_attr.Set(True)
         dir_attr = self.conveyor_node.GetAttribute("inputs:direction")
         dir_attr.Set(Gf.Vec3f(*direction))
-        attr = self.conveyor_node.GetAttribute("inputs:velocity")
-        attr.Set(0.10)
-        self.assertAlmostEqual(attr.Get(), 0.10, delta=1e-4)
+        self.velocity_attr.Set(0.10)
+        self.assertAlmostEqual(self.velocity_attr.Get(), 0.10, delta=1e-4)
         self._timeline.play()
         await simulate_async(0.4)
         rigid_prim = UsdPhysics.RigidBodyAPI(self._stage.GetPrimAtPath("/cube"))
-        usd_velocity = rigid_prim.GetAngularVelocityAttr().Get()
+        rigid_prim.GetKinematicEnabledAttr().Set(True)
+        surface_velocity = PhysxSchema.PhysxSurfaceVelocityAPI(rigid_prim)
+        usd_velocity = surface_velocity.GetSurfaceAngularVelocityAttr().Get()
         self.assertAlmostEqual(usd_velocity.GetLength(), 0.10, delta=1e-4)
         self._timeline.stop()
         pass

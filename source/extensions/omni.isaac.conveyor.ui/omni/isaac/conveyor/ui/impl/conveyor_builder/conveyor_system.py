@@ -14,6 +14,7 @@ import omni
 from pxr import Gf, UsdGeom
 from pxr.Usd import Stage
 
+from ..preferences import ConveyorBuilderPreferences
 from .conveyor_track import Angle, ConveyorTrack, Curvature, Ramp, Style, Type
 
 
@@ -81,12 +82,14 @@ class ConveyorFilter:
 
 class ConveyorSelector:
     def __init__(self, config_file, **kwargs):
-        self.asset_path = config_file["source"]
+        preferences = ConveyorBuilderPreferences()
+        # config_file = preferences.config_file
+        self.asset_path = preferences.assets_location
         self.tracks = {}
         for track in config_file["assets"]:
             base_usd = "{}.usd".format(track)
             self.tracks[base_usd] = ConveyorTrack(
-                base_usd="{}/{}".format(self.asset_path, base_usd),
+                base_usd="{}{}".format(self.asset_path, base_usd),
                 **config_file["assets"][track],
                 thumb_loaded_callback=self.on_thumb_loaded,
             )
@@ -196,8 +199,8 @@ class ConveyorBuilder:
                         forward_direction = -1
                     if "1" in node and "1" in track_anchor:
                         forward_direction = -1
-                if track.angle != Angle.NONE:
-                    forward_direction *= y_direction
+                # if track.angle != Angle.NONE:
+                #     forward_direction *= y_direction
 
                 conveyor_prim.GetAttribute("inputs:animateScale").Set(track.conveyor_nodes[node]["animate_scale"])
                 direction = forward_direction * Gf.Vec3f(*track.conveyor_nodes[node]["direction"])

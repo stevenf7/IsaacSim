@@ -40,7 +40,7 @@ project_ext_plugin(ext, "omni.isaac.conveyor.plugin")
     
     add_ogn_dependencies(ogn)
     -- Specifies the external libraries required by the nodes
-    links {"vt", "gf", "sdf", "arch", "usd", "tf", "usdUtils", "usdShade", "usdGeom", "usdSkel", "omni.usd", "usdPhysics",}
+    links {"vt", "gf", "sdf", "arch", "usd", "tf", "usdUtils", "usdShade", "usdGeom", "usdSkel", "omni.usd", "usdPhysics","physxSchema",}
 
 
 project_ext_ogn( ext, ogn )
@@ -57,7 +57,7 @@ project_ext_bindings {
     add_files("python", "python/*.py")
     add_files("python/impl", "python/impl/**.py")
     add_files("python/tests", "python/tests/**.py")
-    add_files("python/conveyor_builder", "python/conveyor_builder/**.py")
+    
 
     add_ogn_dependencies(ogn)
 
@@ -67,7 +67,6 @@ project_ext_bindings {
         { "python/impl", ogn.python_target_path.."/impl" },    
         { "python/tests", ogn.python_target_path.."/tests" },    
         { "python/commands", ogn.python_target_path.."/commands" },    
-        { "python/conveyor_builder", ogn.python_target_path.."/conveyor_builder" },  
     }
 
     repo_build.prebuild_copy {

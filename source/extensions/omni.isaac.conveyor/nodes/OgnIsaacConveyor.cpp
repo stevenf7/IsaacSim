@@ -19,6 +19,7 @@
 
 #include <omni/fabric/FabricUSD.h>
 #include <omni/usd/UsdUtils.h>
+#include <physxSchema/physxSurfaceVelocityAPI.h>
 #include <pxr/pxr.h>
 #include <pxr/usd/usdPhysics/rigidBodyAPI.h>
 
@@ -57,54 +58,65 @@ public:
     {
         if (db.inputs.enabled())
         {
+            pxr::UsdStagePtr stage = omni::usd::UsdContext::getContext()->getStage();
+            const auto& prim = db.inputs.conveyorPrim();
+            UsdPrim conveyor;
+            if (prim.size() > 0)
+            {
+                conveyor = stage->GetPrimAtPath(omni::fabric::toSdfPath(prim[0]));
+            }
+            else
+            {
+                db.logError("no prim path found for the conveyor");
+                return false;
+            }
             // const GraphContextObj& context = db.abi_context();
             // pxr::SdfChangeBlock changeBlock(true);
             auto& state = db.perInstanceState<OgnIsaacConveyor>();
-            bool velocity_changed = state.mVelocity != db.inputs.velocity() ||
-                                    (state.mDirection - pxr::GfVec3f(db.inputs.direction())).GetLength() > 1.0e-6f;
+            pxr::UsdPhysicsRigidBodyAPI physics_conveyor(conveyor);
+            pxr::GfVec3f velocity;
+            auto new_velocity = db.inputs.direction() * db.inputs.velocity();
+            if (physics_conveyor)
+            {
+                auto surfaceVelocity = pxr::PhysxSchemaPhysxSurfaceVelocityAPI::Apply(conveyor);
+
+                if (db.inputs.curved())
+                {
+                    surfaceVelocity.GetSurfaceAngularVelocityAttr().Get(&velocity);
+                }
+                else
+                {
+                    surfaceVelocity.GetSurfaceVelocityAttr().Get(&velocity);
+                }
+            }
+            else
+            {
+                db.logError("Selected Prim is not a Rigid Body");
+                return false;
+            }
+            bool velocity_changed = (velocity - new_velocity).GetLengthSq() > 1e-6f;
             if (state.mOnStart || velocity_changed)
             {
-                pxr::UsdStagePtr stage = omni::usd::UsdContext::getContext()->getStage();
                 state.mVelocity = db.inputs.velocity();
-                const auto& prim = db.inputs.conveyorPrim();
-                UsdPrim conveyor;
-                if (prim.size() > 0)
+
+                auto surfaceVelocity = pxr::PhysxSchemaPhysxSurfaceVelocityAPI::Apply(conveyor);
+                // Cycle the enabled attr to hardwire it to work on first sim
+                surfaceVelocity.GetSurfaceVelocityEnabledAttr().Set(false);
+                surfaceVelocity.GetSurfaceVelocityEnabledAttr().Set(true);
+                auto m = omni::usd::UsdUtils::getWorldTransformMatrix(conveyor);
+                // m.Orthonormalize();
+                // pxr::GfRotation r = m.ExtractRotation();
+                // pxr::GfVec3f direction = r.TransformDir(pxr::GfVec3f(db.inputs.direction()));
+                auto vel = db.inputs.direction() * state.mVelocity;
+                if (db.inputs.curved())
                 {
-                    conveyor = stage->GetPrimAtPath(omni::fabric::toSdfPath(prim[0]));
+                    surfaceVelocity.GetSurfaceAngularVelocityAttr().Set(new_velocity);
                 }
                 else
                 {
-                    db.logError("no prim path found for the conveyor");
-                    return false;
+                    surfaceVelocity.GetSurfaceVelocityAttr().Set(new_velocity);
                 }
 
-                pxr::UsdPhysicsRigidBodyAPI physics_conveyor(conveyor);
-                if (physics_conveyor)
-                {
-                    bool isKinematic;
-                    physics_conveyor.GetKinematicEnabledAttr().Get(&isKinematic);
-                    if (!isKinematic)
-                    {
-                        physics_conveyor.GetKinematicEnabledAttr().Set(true);
-                    }
-                    auto m = omni::usd::UsdUtils::getWorldTransformMatrix(conveyor);
-                    m.Orthonormalize();
-                    pxr::GfRotation r = m.ExtractRotation();
-                    pxr::GfVec3f direction = r.TransformDir(pxr::GfVec3f(db.inputs.direction()));
-                    if (db.inputs.curved())
-                    {
-                        physics_conveyor.GetAngularVelocityAttr().Set(direction * state.mVelocity);
-                    }
-                    else
-                    {
-                        physics_conveyor.GetVelocityAttr().Set(direction * state.mVelocity);
-                    }
-                }
-                else
-                {
-                    db.logError("Selected Prim is not a Rigid Body");
-                    return false;
-                }
 
                 if (state.mOnStart)
                 {
