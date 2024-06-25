@@ -103,11 +103,6 @@ public:
                 // Cycle the enabled attr to hardwire it to work on first sim
                 surfaceVelocity.GetSurfaceVelocityEnabledAttr().Set(false);
                 surfaceVelocity.GetSurfaceVelocityEnabledAttr().Set(true);
-                auto m = omni::usd::UsdUtils::getWorldTransformMatrix(conveyor);
-                // m.Orthonormalize();
-                // pxr::GfRotation r = m.ExtractRotation();
-                // pxr::GfVec3f direction = r.TransformDir(pxr::GfVec3f(db.inputs.direction()));
-                auto vel = db.inputs.direction() * state.mVelocity;
                 if (db.inputs.curved())
                 {
                     surfaceVelocity.GetSurfaceAngularVelocityAttr().Set(new_velocity);
