@@ -666,7 +666,7 @@ generate_report_cmd = [
 [[repo_test.suites.benchmarks.group]]
 include = [
   "tests-omni.isaac.benchmarks*${shell_ext}",
-  "tests-standalone_benchmarkss*${shell_ext}",
+  "tests-standalone_benchmarks*${shell_ext}",
 ]
 exclude = []
 args = ["--portable-root ${test_root}/portable_root", "--reset-user",  "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'"]

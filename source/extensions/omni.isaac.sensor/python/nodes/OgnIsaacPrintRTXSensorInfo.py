@@ -33,7 +33,7 @@ class OgnIsaacPrintRTXSensorInfo:
     def compute(db) -> bool:
         """read a pointer and print data from it assuming it is Rtx"""
         if not db.inputs.dataPtr:
-            carb.log_warn("invalid data input to OgnIsaacPrintRTXLidarInfo")
+            carb.log_warn("invalid data input to OgnIsaacPrintRTXSensorInfo")
             return True
 
         import omni.sensors.nv.common.bindings._common as gmo
