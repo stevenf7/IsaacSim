@@ -9,6 +9,7 @@
 #pragma once
 
 #include <carb/Interface.h>
+#include <carb/logging/Log.h>
 
 #include <omni/fabric/RationalTime.h>
 

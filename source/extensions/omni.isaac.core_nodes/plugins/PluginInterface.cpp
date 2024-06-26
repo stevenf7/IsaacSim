@@ -258,22 +258,24 @@ double getSystemTimeAtTime(const omni::fabric::RationalTime& rtime)
 // TODO105 Depricate next 3 functions.
 double getSimulationTimeAtSwhFrame(const int64_t swhFrame)
 {
-    return gSimStageWithHistory ? getSimulationTimeAtTime(gSimStageWithHistory->getSimPeriod(gStageId) * swhFrame) :
-                                  gSimTime;
+    return gSimStageWithHistory ?
+               getSimulationTimeAtTime(gSimStageWithHistory->getSimPeriod(gStageId).asRationalTime() * swhFrame) :
+               gSimTime;
 }
 
 
 double getSimulationTimeMonotonicAtSwhFrame(const int64_t swhFrame)
 {
     return gSimStageWithHistory ?
-               getSimulationTimeMonotonicAtTime(gSimStageWithHistory->getSimPeriod(gStageId) * swhFrame) :
+               getSimulationTimeMonotonicAtTime(gSimStageWithHistory->getSimPeriod(gStageId).asRationalTime() * swhFrame) :
                gSimTimeMonotonic;
 }
 
 double getSystemTimeAtSwhFrame(const int64_t swhFrame)
 {
-    return gSimStageWithHistory ? getSystemTimeAtTime(gSimStageWithHistory->getSimPeriod(gStageId) * swhFrame) :
-                                  gSystemTime;
+    return gSimStageWithHistory ?
+               getSystemTimeAtTime(gSimStageWithHistory->getSimPeriod(gStageId).asRationalTime() * swhFrame) :
+               gSystemTime;
 }
 
 uint64_t addHandle(void* handle)
