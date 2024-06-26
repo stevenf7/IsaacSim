@@ -1,4 +1,15 @@
 # Changelog
+## [0.4.0] - 2024-06-13
+
+### Changed
+- Updated Physics API to use SurfaceVelocity instead of rigid Body deprecated modified Velocities.
+- Added Velocity Variable in omnigraph to control the conveyor speed
+
+### Removed
+- UI elements that didn't move over
+- Forcing Kinematics Body on Conveyor Creation
+
+# Changelog
 ## [0.3.14] - 2024-05-06
 ### Removed
 - Unused config file

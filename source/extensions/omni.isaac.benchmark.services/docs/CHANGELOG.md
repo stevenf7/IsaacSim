@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.8.1] - 2024-06-25
+### Removed
+- Stray print statement in IsaacFrameTimeRecorder
+
 ## [1.8.0] - 2024-06-07
 ### Changed
 - Always capture physics metrics even if stepping without rendering

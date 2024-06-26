@@ -37,6 +37,10 @@ class OgnAckermann:
 
     @staticmethod
     def compute(db) -> bool:
+
+        # Deprecation waning
+        db.log_warn("This node is deprecated as of Isaac Sim 4.1.0 in favour of OgnAckermannController")
+
         # avoid division by zero
         if db.inputs.turningWheelRadius <= 0:
             db.log_warn("Omnigraph warning: turning wheel radius is 0")

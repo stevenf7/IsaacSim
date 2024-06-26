@@ -2,7 +2,7 @@ include:
 # external
   - project: 'omniverse/devplat/gitlab/templates/runners'
     file: 'modules/include.yml'
-    ref: 1.9.3
+    ref: v1_latest
   - project: 'omniverse/devplat/gitlab/templates/common/utilities'
     file: 'modules/include.yml'
     ref: v1_latest

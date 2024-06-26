@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.0] - 2024-06-14
+### Changed
+- Deprecated OgnAckermann OmniGraph node
+
 ## [2.1.3] - 2024-05-29
 ### Fixed
 - Crash on stage close if twistsubscriber was not run for a single frame
