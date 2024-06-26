@@ -24,7 +24,7 @@ cd "$SCRIPT_DIR/../.."
 # ls tools/container/_inputs
 rm -rf tools/container/_inputs/*/
 cp VERSION tools/container/VERSION.md
-# ./tools/packman/packman install isaac-sim-standalone 4.0.0-rc.3+4.0.12843.07053822.gl.linux-x86_64.release -l tools/container/_inputs/isaac-sim
+# ./tools/packman/packman install isaac-sim-standalone 4.1.0-rc.3+4.0.12843.07053822.gl.linux-x86_64.release -l tools/container/_inputs/isaac-sim
 tools/container/7za/linux-x86/64/7za x _build/packages/$APP_NAME-standalone*.7z -otools/container/_inputs/isaac-sim
 ls tools/container/_inputs/isaac-sim
 

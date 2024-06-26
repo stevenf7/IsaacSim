@@ -36,7 +36,7 @@ Internal Developer Dailies:
 
 * [Isaac Sim Daily](https://web.launcher.omniverse.nvidia.com/exchange/app/isaac-sim-daily): Latest daily build from Develop branch. This build works with our internal isaac-dev.ov.nvidia.com Nucleus by default. (Use the Alpha/Beta channel only)
 
-Staging builds for release (These will be available when we build 4.0.0-rc.1):
+Staging builds for release (These will be available when we build 4.1.0-rc.1):
 
 * [Isaac Sim](https://web.launcher.omniverse.nvidia.com/exchange/app/isaac-sim): Latest build from Release branch. This build works staging or production assets. (Use the Release channel only)
 * [Isaac Sim Assets Pack 1](https://web.launcher.omniverse.nvidia.com/exchange/content-pack/isaac-sim-assets-1?text=&kind=content-pack): Latest asset pack download for use in an air-gapped environment. Pack 1 of 3.
