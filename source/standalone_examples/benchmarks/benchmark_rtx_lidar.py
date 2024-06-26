@@ -83,8 +83,8 @@ for i in range(n_sensor):
     hydra_texture = rep.create.render_product(sensor.GetPath(), [1, 1], name="Isaac")
     hydra_textures.append(hydra_texture)
     # Create the post process graph that publishes the render var
-    writer = rep.writers.get("Writer" + "IsaacPrintRTXLidarInfo")
-    writer.initialize(testMode=True)
+    writer = rep.writers.get("Writer" + "IsaacPrintRTXSensorInfo")
+    writer.initialize()
     writer.attach([hydra_texture])
     writers.append(writer)
 

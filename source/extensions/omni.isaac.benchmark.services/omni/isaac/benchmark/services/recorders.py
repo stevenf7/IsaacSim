@@ -61,7 +61,6 @@ class IsaacFrameTimeRecorder(interface.MeasurementDataRecorder):
         frametime_stats.calc_stats()
 
         measurements_out = []
-        print(frametime_stats.app_stats)
 
         measurements_out.append(
             measurements.SingleMeasurement(
