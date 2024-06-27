@@ -53,9 +53,9 @@ class OgnIsaacArticulationControllerInternalState(BaseResetNode):
             joint_actions.joint_indices = self.joint_indices
             if np.size(joint_positions) > 0:
                 joint_actions.joint_positions = joint_positions
-            elif np.size(joint_velocities) > 0:
+            if np.size(joint_velocities) > 0:
                 joint_actions.joint_velocities = joint_velocities
-            elif np.size(joint_efforts) > 0:
+            if np.size(joint_efforts) > 0:
                 joint_actions.joint_efforts = joint_efforts
             self.controller_handle.apply_action(control_actions=joint_actions)
 
@@ -117,6 +117,7 @@ class OgnIsaacArticulationController:
             joint_positions = db.inputs.positionCommand
             joint_velocities = db.inputs.velocityCommand
             joint_efforts = db.inputs.effortCommand
+
             state.apply_action(joint_positions, joint_velocities, joint_efforts)
 
         except Exception as error:

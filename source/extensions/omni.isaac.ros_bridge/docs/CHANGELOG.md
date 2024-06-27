@@ -1,9 +1,12 @@
 # Changelog
 
+## [1.19.5] - 2024-06-26
+### Added
+- Unit tests for joint state subscriber using mixed mode controls
+
 ## [1.19.4] - 2024-06-10
 ### Fixed
 - Unit tests
-
 
 ## [1.19.3] - 2024-06-03
 ### Fixed
