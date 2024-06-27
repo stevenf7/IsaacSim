@@ -10,15 +10,12 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#include "Ros2Humble.h"
+#include "Ros2Impl.h"
 
 #include <include/Ros2Macros.h>
 #include <rcl/rcl.h>
 
-Ros2PublisherHumble::Ros2PublisherHumble(Ros2NodeBase* node,
-                                         const char* topic_name,
-                                         const void* type,
-                                         const Ros2QoSProfile& qos)
+Ros2PublisherImpl::Ros2PublisherImpl(Ros2NodeBase* node, const char* topic_name, const void* type, const Ros2QoSProfile& qos)
     : mNode(node)
 {
     // Allocate memory for publisher
@@ -29,31 +26,31 @@ Ros2PublisherHumble::Ros2PublisherHumble(Ros2NodeBase* node,
                                                     rcl_publisher_fini(pub, static_cast<rcl_node_t*>(node->node()));
                                                 if (RCL_RET_OK != ret)
                                                 {
-                                                    RCL_ERROR_MSG(Ros2PublisherHumble, rcl_publisher_fini);
+                                                    RCL_ERROR_MSG(Ros2PublisherImpl, rcl_publisher_fini);
                                                 }
                                                 delete pub;
                                             });
     // Init publisher
     (*mPub) = rcl_get_zero_initialized_publisher();
     rcl_publisher_options_t pub_opt = rcl_publisher_get_default_options();
-    pub_opt.qos = Ros2QoSProfileHumbleConverter::convert(qos);
+    pub_opt.qos = Ros2QoSProfileConverter::convert(qos);
     rcl_ret_t rc = rcl_publisher_init(mPub.get(), static_cast<rcl_node_t*>(mNode->node()),
                                       static_cast<const rosidl_message_type_support_t*>(type), topic_name, &pub_opt);
     if (rc != RCL_RET_OK)
     {
-        RCL_ERROR_MSG(Ros2PublisherHumble, rcl_publisher_init);
+        RCL_ERROR_MSG(Ros2PublisherImpl, rcl_publisher_init);
         mPub.reset();
         return;
     }
 }
 
-Ros2PublisherHumble::~Ros2PublisherHumble()
+Ros2PublisherImpl::~Ros2PublisherImpl()
 {
     mPub.reset();
     return;
 }
 
-void Ros2PublisherHumble::publish(const void* msg)
+void Ros2PublisherImpl::publish(const void* msg)
 {
     rcl_ret_t rc = rcl_publish(mPub.get(), msg, NULL);
     if (rc != RCL_RET_OK)
@@ -62,7 +59,7 @@ void Ros2PublisherHumble::publish(const void* msg)
     }
 }
 
-size_t Ros2PublisherHumble::get_subscription_count()
+size_t Ros2PublisherImpl::get_subscription_count()
 {
     size_t sub_count = 0;
     rcl_ret_t rc = rcl_publisher_get_subscription_count(mPub.get(), &sub_count);

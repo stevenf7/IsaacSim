@@ -11,7 +11,7 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#include "Ros2Humble.h"
+#include "Ros2Impl.h"
 
 #include <carb/logging/Log.h>
 
@@ -20,11 +20,11 @@
 #include <iomanip>
 
 
-Ros2DynamicMessageHumble::Ros2DynamicMessageHumble(std::string pkgName,
-                                                   std::string msgSubfolder,
-                                                   std::string msgName,
-                                                   BackendMessageType messageType)
-    : Ros2BackendHumble(pkgName, msgSubfolder, msgName, messageType)
+Ros2DynamicMessageImpl::Ros2DynamicMessageImpl(std::string pkgName,
+                                               std::string msgSubfolder,
+                                               std::string msgName,
+                                               BackendMessageType messageType)
+    : Ros2BackendImpl(pkgName, msgSubfolder, msgName, messageType)
 {
     // create message
     msg = create();
@@ -39,18 +39,18 @@ Ros2DynamicMessageHumble::Ros2DynamicMessageHumble(std::string pkgName,
         parseMessageFields("", members);
 }
 
-Ros2DynamicMessageHumble::~Ros2DynamicMessageHumble()
+Ros2DynamicMessageImpl::~Ros2DynamicMessageImpl()
 {
     if (msg)
         destroy(static_cast<void*>(msg));
 }
 
-const void* Ros2DynamicMessageHumble::getTypeSupportHandle()
+const void* Ros2DynamicMessageImpl::getTypeSupportHandle()
 {
     return getTypeSupportHandleDynamic();
 }
 
-const nlohmann::json& Ros2DynamicMessageHumble::getData()
+const nlohmann::json& Ros2DynamicMessageImpl::getData()
 {
     const void* members = getIntrospectionMembers();
     mMessageJsonContainer.clear();
@@ -59,7 +59,7 @@ const nlohmann::json& Ros2DynamicMessageHumble::getData()
     return mMessageJsonContainer;
 }
 
-const std::vector<std::shared_ptr<void>>& Ros2DynamicMessageHumble::getData(bool asOgnType)
+const std::vector<std::shared_ptr<void>>& Ros2DynamicMessageImpl::getData(bool asOgnType)
 {
     size_t index = 0;
     const void* members = getIntrospectionMembers();
@@ -69,14 +69,14 @@ const std::vector<std::shared_ptr<void>>& Ros2DynamicMessageHumble::getData(bool
     return asOgnType ? mMessageVectorOgnContainer : mMessageVectorRosContainer;
 }
 
-void Ros2DynamicMessageHumble::setData(const nlohmann::json& data)
+void Ros2DynamicMessageImpl::setData(const nlohmann::json& data)
 {
     const void* members = getIntrospectionMembers();
     if (members)
         setMessageValues(members, reinterpret_cast<uint8_t*>(msg), data);
 }
 
-void Ros2DynamicMessageHumble::setData(const std::vector<std::shared_ptr<void>>& data, bool fromOgnType)
+void Ros2DynamicMessageImpl::setData(const std::vector<std::shared_ptr<void>>& data, bool fromOgnType)
 {
     size_t index = 0;
     const void* members = getIntrospectionMembers();
@@ -84,7 +84,7 @@ void Ros2DynamicMessageHumble::setData(const std::vector<std::shared_ptr<void>>&
         setMessageValues(members, reinterpret_cast<uint8_t*>(msg), data, index, fromOgnType);
 }
 
-const void* Ros2DynamicMessageHumble::getIntrospectionMembers()
+const void* Ros2DynamicMessageImpl::getIntrospectionMembers()
 {
     void* typeSupportHandle = getTypeSupportIntrospectionHandleDynamic();
     if (typeSupportHandle)
@@ -117,7 +117,7 @@ const void* Ros2DynamicMessageHumble::getIntrospectionMembers()
     return nullptr;
 }
 
-std::string Ros2DynamicMessageHumble::summary(bool print)
+std::string Ros2DynamicMessageImpl::summary(bool print)
 {
     // backend type
     std::unordered_map<BackendMessageType, std::string> backendType = {
@@ -188,7 +188,7 @@ std::string Ros2DynamicMessageHumble::summary(bool print)
     return stream.str();
 }
 
-void Ros2DynamicMessageHumble::parseMessageFields(const std::string& parentName, const void* members)
+void Ros2DynamicMessageImpl::parseMessageFields(const std::string& parentName, const void* members)
 {
     auto messageMembers = reinterpret_cast<const rosidl_typesupport_introspection_c__MessageMembers*>(members);
     for (size_t i = 0; i < messageMembers->member_count_; ++i)
@@ -202,7 +202,7 @@ void Ros2DynamicMessageHumble::parseMessageFields(const std::string& parentName,
         std::shared_ptr<void> rosValue = nullptr;
         std::shared_ptr<void> ognValue = nullptr;
         // parse message fields
-        switch (rosidl_typesupport_introspection_c_field_types(member->type_id_))
+        switch (member->type_id_)
         {
         case rosidl_typesupport_introspection_c__ROS_TYPE_FLOAT:
             type = member->is_array_ ? "float[]" : "float";
@@ -399,9 +399,9 @@ void Ros2DynamicMessageHumble::parseMessageFields(const std::string& parentName,
 }
 
 
-void Ros2DynamicMessageHumble::getArrayEmbeddedMessage(const rosidl_typesupport_introspection_c__MessageMember* member,
-                                                       uint8_t* data,
-                                                       nlohmann::json& array)
+void Ros2DynamicMessageImpl::getArrayEmbeddedMessage(const rosidl_typesupport_introspection_c__MessageMember* member,
+                                                     uint8_t* data,
+                                                     nlohmann::json& array)
 {
     auto embeddedMembers =
         reinterpret_cast<const rosidl_typesupport_introspection_c__MessageMembers*>(member->members_->data);
@@ -427,9 +427,9 @@ void Ros2DynamicMessageHumble::getArrayEmbeddedMessage(const rosidl_typesupport_
         }
 }
 
-void Ros2DynamicMessageHumble::setArrayEmbeddedMessage(const rosidl_typesupport_introspection_c__MessageMember* member,
-                                                       uint8_t* data,
-                                                       const nlohmann::json& array)
+void Ros2DynamicMessageImpl::setArrayEmbeddedMessage(const rosidl_typesupport_introspection_c__MessageMember* member,
+                                                     uint8_t* data,
+                                                     const nlohmann::json& array)
 {
     auto embeddedMembers =
         reinterpret_cast<const rosidl_typesupport_introspection_c__MessageMembers*>(member->members_->data);
@@ -448,10 +448,10 @@ void Ros2DynamicMessageHumble::setArrayEmbeddedMessage(const rosidl_typesupport_
 }
 
 template <typename ArrayType, typename RosType, typename OgnType>
-void Ros2DynamicMessageHumble::getArray(const rosidl_typesupport_introspection_c__MessageMember* member,
-                                        uint8_t* data,
-                                        std::shared_ptr<void>& arrayPtr,
-                                        bool asOgnType)
+void Ros2DynamicMessageImpl::getArray(const rosidl_typesupport_introspection_c__MessageMember* member,
+                                      uint8_t* data,
+                                      std::shared_ptr<void>& arrayPtr,
+                                      bool asOgnType)
 {
     // OGN data type array
     if (asOgnType)
@@ -498,9 +498,9 @@ void Ros2DynamicMessageHumble::getArray(const rosidl_typesupport_introspection_c
 }
 
 template <typename ArrayType, typename RosType>
-void Ros2DynamicMessageHumble::getArray(const rosidl_typesupport_introspection_c__MessageMember* member,
-                                        uint8_t* data,
-                                        nlohmann::json& array)
+void Ros2DynamicMessageImpl::getArray(const rosidl_typesupport_introspection_c__MessageMember* member,
+                                      uint8_t* data,
+                                      nlohmann::json& array)
 {
     // non-fixed size array
     if (member->is_upper_bound_ || !member->array_size_)
@@ -516,9 +516,9 @@ void Ros2DynamicMessageHumble::getArray(const rosidl_typesupport_introspection_c
 }
 
 template <typename ArrayType, typename RosType>
-void Ros2DynamicMessageHumble::getArray(const rosidl_typesupport_introspection_c__MessageMember* member,
-                                        uint8_t* data,
-                                        std::vector<RosType>& array)
+void Ros2DynamicMessageImpl::getArray(const rosidl_typesupport_introspection_c__MessageMember* member,
+                                      uint8_t* data,
+                                      std::vector<RosType>& array)
 {
     // non-fixed size array
     if (member->is_upper_bound_ || !member->array_size_)
@@ -537,9 +537,9 @@ void Ros2DynamicMessageHumble::getArray(const rosidl_typesupport_introspection_c
 }
 
 template <typename ArrayType, auto ArrayInit, typename RosType>
-void Ros2DynamicMessageHumble::setArray(const rosidl_typesupport_introspection_c__MessageMember* member,
-                                        uint8_t* data,
-                                        const nlohmann::json& value)
+void Ros2DynamicMessageImpl::setArray(const rosidl_typesupport_introspection_c__MessageMember* member,
+                                      uint8_t* data,
+                                      const nlohmann::json& value)
 {
     // non-fixed size array
     if (member->is_upper_bound_ || !member->array_size_)
@@ -556,10 +556,10 @@ void Ros2DynamicMessageHumble::setArray(const rosidl_typesupport_introspection_c
 }
 
 template <typename ArrayType, auto ArrayInit, typename RosType, typename OgnType>
-void Ros2DynamicMessageHumble::setArray(const rosidl_typesupport_introspection_c__MessageMember* member,
-                                        uint8_t* data,
-                                        const std::shared_ptr<void>& valuePtr,
-                                        bool fromOgnType)
+void Ros2DynamicMessageImpl::setArray(const rosidl_typesupport_introspection_c__MessageMember* member,
+                                      uint8_t* data,
+                                      const std::shared_ptr<void>& valuePtr,
+                                      bool fromOgnType)
 {
     // OGN data type array
     if (fromOgnType)
@@ -596,9 +596,9 @@ void Ros2DynamicMessageHumble::setArray(const rosidl_typesupport_introspection_c
 }
 
 template <typename ArrayType, auto ArrayInit, typename RosType>
-void Ros2DynamicMessageHumble::setArray(const rosidl_typesupport_introspection_c__MessageMember* member,
-                                        uint8_t* data,
-                                        const std::vector<RosType>& array)
+void Ros2DynamicMessageImpl::setArray(const rosidl_typesupport_introspection_c__MessageMember* member,
+                                      uint8_t* data,
+                                      const std::vector<RosType>& array)
 {
     // non-fixed size array
     if (member->is_upper_bound_ || !member->array_size_)
@@ -615,7 +615,7 @@ void Ros2DynamicMessageHumble::setArray(const rosidl_typesupport_introspection_c
 }
 
 template <typename RosType, typename OgnType>
-void Ros2DynamicMessageHumble::getSingleValue(uint8_t* data, std::shared_ptr<void>& valuePtr, bool asOgnType)
+void Ros2DynamicMessageImpl::getSingleValue(uint8_t* data, std::shared_ptr<void>& valuePtr, bool asOgnType)
 {
     auto value = reinterpret_cast<const RosType*>(data);
     if (asOgnType)
@@ -625,7 +625,7 @@ void Ros2DynamicMessageHumble::getSingleValue(uint8_t* data, std::shared_ptr<voi
 }
 
 template <typename RosType, typename OgnType>
-void Ros2DynamicMessageHumble::setSingleValue(uint8_t* data, const std::shared_ptr<void>& valuePtr, bool fromOgnType)
+void Ros2DynamicMessageImpl::setSingleValue(uint8_t* data, const std::shared_ptr<void>& valuePtr, bool fromOgnType)
 {
     if (fromOgnType)
         *reinterpret_cast<RosType*>(data) = static_cast<RosType>(*std::static_pointer_cast<const OgnType>(valuePtr));
@@ -634,14 +634,14 @@ void Ros2DynamicMessageHumble::setSingleValue(uint8_t* data, const std::shared_p
 }
 
 
-void Ros2DynamicMessageHumble::getMessageValues(const void* members, uint8_t* messageData, nlohmann::json& container)
+void Ros2DynamicMessageImpl::getMessageValues(const void* members, uint8_t* messageData, nlohmann::json& container)
 {
     auto messageMembers = reinterpret_cast<const rosidl_typesupport_introspection_c__MessageMembers*>(members);
     for (size_t i = 0; i < messageMembers->member_count_; ++i)
     {
         const rosidl_typesupport_introspection_c__MessageMember* member = messageMembers->members_ + i;
         auto data = &messageData[member->offset_];
-        switch (rosidl_typesupport_introspection_c_field_types(member->type_id_))
+        switch (member->type_id_)
         {
         case rosidl_typesupport_introspection_c__ROS_TYPE_FLOAT:
         {
@@ -858,11 +858,11 @@ void Ros2DynamicMessageHumble::getMessageValues(const void* members, uint8_t* me
     }
 }
 
-void Ros2DynamicMessageHumble::getMessageValues(const void* members,
-                                                uint8_t* messageData,
-                                                std::vector<std::shared_ptr<void>>& container,
-                                                size_t& index,
-                                                bool asOgnType)
+void Ros2DynamicMessageImpl::getMessageValues(const void* members,
+                                              uint8_t* messageData,
+                                              std::vector<std::shared_ptr<void>>& container,
+                                              size_t& index,
+                                              bool asOgnType)
 {
     auto messageMembers = reinterpret_cast<const rosidl_typesupport_introspection_c__MessageMembers*>(members);
     for (size_t i = 0; i < messageMembers->member_count_; ++i)
@@ -870,7 +870,7 @@ void Ros2DynamicMessageHumble::getMessageValues(const void* members,
         auto valuePtr = container.at(index++);
         const rosidl_typesupport_introspection_c__MessageMember* member = messageMembers->members_ + i;
         auto data = &messageData[member->offset_];
-        switch (rosidl_typesupport_introspection_c_field_types(member->type_id_))
+        switch (member->type_id_)
         {
         case rosidl_typesupport_introspection_c__ROS_TYPE_FLOAT:
         {
@@ -1044,7 +1044,7 @@ void Ros2DynamicMessageHumble::getMessageValues(const void* members,
 }
 
 
-void Ros2DynamicMessageHumble::setMessageValues(const void* members, uint8_t* messageData, const nlohmann::json& container)
+void Ros2DynamicMessageImpl::setMessageValues(const void* members, uint8_t* messageData, const nlohmann::json& container)
 {
     if (!container.is_object())
         return;
@@ -1056,7 +1056,7 @@ void Ros2DynamicMessageHumble::setMessageValues(const void* members, uint8_t* me
         if (!container.contains(member->name_))
             continue;
         auto value = container[member->name_];
-        switch (rosidl_typesupport_introspection_c_field_types(member->type_id_))
+        switch (member->type_id_)
         {
         case rosidl_typesupport_introspection_c__ROS_TYPE_FLOAT:
         {
@@ -1227,11 +1227,11 @@ void Ros2DynamicMessageHumble::setMessageValues(const void* members, uint8_t* me
     }
 }
 
-void Ros2DynamicMessageHumble::setMessageValues(const void* members,
-                                                uint8_t* messageData,
-                                                const std::vector<std::shared_ptr<void>>& container,
-                                                size_t& index,
-                                                bool fromOgnType)
+void Ros2DynamicMessageImpl::setMessageValues(const void* members,
+                                              uint8_t* messageData,
+                                              const std::vector<std::shared_ptr<void>>& container,
+                                              size_t& index,
+                                              bool fromOgnType)
 {
     auto messageMembers = reinterpret_cast<const rosidl_typesupport_introspection_c__MessageMembers*>(members);
     for (size_t i = 0; i < messageMembers->member_count_; ++i)
@@ -1239,7 +1239,7 @@ void Ros2DynamicMessageHumble::setMessageValues(const void* members,
         const rosidl_typesupport_introspection_c__MessageMember* member = messageMembers->members_ + i;
         auto data = &messageData[member->offset_];
         auto valuePtr = container.at(index++);
-        switch (rosidl_typesupport_introspection_c_field_types(member->type_id_))
+        switch (member->type_id_)
         {
         case rosidl_typesupport_introspection_c__ROS_TYPE_FLOAT:
         {

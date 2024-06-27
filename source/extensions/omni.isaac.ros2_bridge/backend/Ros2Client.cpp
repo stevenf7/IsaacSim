@@ -11,13 +11,13 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#include "Ros2Humble.h"
+#include "Ros2Impl.h"
 
 #include <include/Ros2Macros.h>
 #include <rcl/client.h>
 #include <rcl/rcl.h>
 
-Ros2ClientHumble::Ros2ClientHumble(Ros2NodeBase* node, const char* service_name, const void* type, const Ros2QoSProfile& qos)
+Ros2ClientImpl::Ros2ClientImpl(Ros2NodeBase* node, const char* service_name, const void* type, const Ros2QoSProfile& qos)
     : mNode(node), wait_set_initialized(false)
 {
     mClient = std::shared_ptr<rcl_client_t>(new rcl_client_t,
@@ -29,31 +29,31 @@ Ros2ClientHumble::Ros2ClientHumble(Ros2NodeBase* node, const char* service_name,
                                                     rcl_client_fini(client, static_cast<rcl_node_t*>(node->node()));
                                                 if (RCL_RET_OK != ret)
                                                 {
-                                                    RCL_ERROR_MSG(Ros2ClientHumble, rcl_client_fini);
+                                                    RCL_ERROR_MSG(Ros2ClientImpl, rcl_client_fini);
                                                 }
                                                 delete client;
                                             });
 
     (*mClient) = rcl_get_zero_initialized_client();
     rcl_client_options_t srv_ops = rcl_client_get_default_options();
-    srv_ops.qos = Ros2QoSProfileHumbleConverter::convert(qos);
+    srv_ops.qos = Ros2QoSProfileConverter::convert(qos);
     rcl_ret_t rc = rcl_client_init(mClient.get(), static_cast<rcl_node_t*>(mNode->node()),
                                    static_cast<const rosidl_service_type_support_t*>(type), service_name, &srv_ops);
     if (rc != RCL_RET_OK)
     {
-        RCL_ERROR_MSG(Ros2ClientHumble, rcl_client_init);
+        RCL_ERROR_MSG(Ros2ClientImpl, rcl_client_init);
         mClient.reset();
         return;
     }
 }
-Ros2ClientHumble::~Ros2ClientHumble()
+Ros2ClientImpl::~Ros2ClientImpl()
 {
     if (wait_set_initialized)
     {
         rcl_ret_t rc = rcl_wait_set_fini(&wait_set);
         if (rc != RCL_RET_OK)
         {
-            RCL_ERROR_MSG(~Ros2ClientHumble, rcl_wait_set_fini);
+            RCL_ERROR_MSG(~Ros2ClientImpl, rcl_wait_set_fini);
         }
         wait_set_initialized = false;
     }
@@ -62,7 +62,7 @@ Ros2ClientHumble::~Ros2ClientHumble()
     return;
 }
 
-bool Ros2ClientHumble::sendRequest(void* req_message)
+bool Ros2ClientImpl::sendRequest(void* req_message)
 {
     if (!wait_set_initialized)
     {
@@ -89,7 +89,7 @@ bool Ros2ClientHumble::sendRequest(void* req_message)
     return true;
 }
 
-bool Ros2ClientHumble::getResponse(void* res_message)
+bool Ros2ClientImpl::getResponse(void* res_message)
 {
     while (true)
     {

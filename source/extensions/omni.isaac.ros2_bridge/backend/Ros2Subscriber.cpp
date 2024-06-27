@@ -9,15 +9,15 @@
 // clang-format off
 #include <pch/UsdPCH.h>
 // clang-format on
-#include "Ros2Humble.h"
+#include "Ros2Impl.h"
 
 #include <include/Ros2Macros.h>
 #include <rcl/rcl.h>
 
-Ros2SubscriberHumble::Ros2SubscriberHumble(Ros2NodeBase* node,
-                                           const char* topic_name,
-                                           const void* type,
-                                           const Ros2QoSProfile& qos)
+Ros2SubscriberImpl::Ros2SubscriberImpl(Ros2NodeBase* node,
+                                       const char* topic_name,
+                                       const void* type,
+                                       const Ros2QoSProfile& qos)
     : mNode(node), wait_set_initialized(false)
 {
     mSub = std::shared_ptr<rcl_subscription_t>(new rcl_subscription_t,
@@ -29,13 +29,13 @@ Ros2SubscriberHumble::Ros2SubscriberHumble(Ros2NodeBase* node,
                                                        subscription, static_cast<rcl_node_t*>(node->node()));
                                                    if (RCL_RET_OK != ret)
                                                    {
-                                                       RCL_ERROR_MSG(Ros2SubscriberHumble, rcl_subscription_fini);
+                                                       RCL_ERROR_MSG(Ros2SubscriberImpl, rcl_subscription_fini);
                                                    }
                                                    delete subscription;
                                                });
     (*mSub) = rcl_get_zero_initialized_subscription();
     rcl_subscription_options_t sub_ops = rcl_subscription_get_default_options();
-    sub_ops.qos = Ros2QoSProfileHumbleConverter::convert(qos);
+    sub_ops.qos = Ros2QoSProfileConverter::convert(qos);
 
     // rcl_subscription_default_options sub_ops = {
     //     RMW_QOS_POLICY_HISTORY_KEEP_LAST,
@@ -53,19 +53,19 @@ Ros2SubscriberHumble::Ros2SubscriberHumble(Ros2NodeBase* node,
                                          static_cast<const rosidl_message_type_support_t*>(type), topic_name, &sub_ops);
     if (rc != RCL_RET_OK)
     {
-        RCL_ERROR_MSG(Ros2SubscriberHumble, rcl_subscription_init);
+        RCL_ERROR_MSG(Ros2SubscriberImpl, rcl_subscription_init);
         mSub.reset();
         return;
     }
 }
-Ros2SubscriberHumble::~Ros2SubscriberHumble()
+Ros2SubscriberImpl::~Ros2SubscriberImpl()
 {
     if (wait_set_initialized)
     {
         rcl_ret_t rc = rcl_wait_set_fini(&wait_set);
         if (rc != RCL_RET_OK)
         {
-            RCL_ERROR_MSG(~Ros2SubscriberHumble, rcl_wait_set_fini);
+            RCL_ERROR_MSG(~Ros2SubscriberImpl, rcl_wait_set_fini);
         }
         wait_set_initialized = false;
     }
@@ -74,7 +74,7 @@ Ros2SubscriberHumble::~Ros2SubscriberHumble()
     return;
 }
 
-bool Ros2SubscriberHumble::spin(void* ros_message)
+bool Ros2SubscriberImpl::spin(void* ros_message)
 {
     if (!wait_set_initialized)
     {

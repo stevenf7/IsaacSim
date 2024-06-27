@@ -11,7 +11,7 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#include "Ros2Foxy.h"
+#include "Ros2Impl.h"
 
 #include <include/Ros2Macros.h>
 #include <rcl/rcl.h>
@@ -50,12 +50,12 @@ const std::map<Ros2QoSLivelinessPolicyType, rmw_qos_liveliness_policy_t> ros2QoS
     { Ros2QoSLivelinessPolicyType::eUnknown, RMW_QOS_POLICY_LIVELINESS_UNKNOWN }
 };
 
-rmw_time_t convertRos2QosTimeToFoxy(const Ros2QoSTimeType& ros2Time)
+rmw_time_t convertRos2QosTimeToImpl(const Ros2QoSTimeType& ros2Time)
 {
     return { ros2Time.sec, ros2Time.nsec };
 }
 
-rmw_qos_profile_t Ros2QoSProfileFoxyConverter::convert(const Ros2QoSProfile& qos)
+rmw_qos_profile_t Ros2QoSProfileConverter::convert(const Ros2QoSProfile& qos)
 {
     rmw_qos_profile_t profile;
 
@@ -63,10 +63,10 @@ rmw_qos_profile_t Ros2QoSProfileFoxyConverter::convert(const Ros2QoSProfile& qos
     profile.depth = qos.depth;
     profile.reliability = ros2QoSReliabilityMap.at(qos.reliability);
     profile.durability = ros2QoSDurabilityMap.at(qos.durability);
-    profile.deadline = convertRos2QosTimeToFoxy(qos.deadline);
-    profile.lifespan = convertRos2QosTimeToFoxy(qos.lifespan);
+    profile.deadline = convertRos2QosTimeToImpl(qos.deadline);
+    profile.lifespan = convertRos2QosTimeToImpl(qos.lifespan);
     profile.liveliness = ros2QoSLivelinessMap.at(qos.liveliness);
-    profile.liveliness_lease_duration = convertRos2QosTimeToFoxy(qos.livelinessLeaseDuration);
+    profile.liveliness_lease_duration = convertRos2QosTimeToImpl(qos.livelinessLeaseDuration);
     profile.avoid_ros_namespace_conventions = qos.avoid_ros_namespace_conventions;
 
     return profile;

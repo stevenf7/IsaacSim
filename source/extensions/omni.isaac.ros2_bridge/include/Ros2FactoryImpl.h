@@ -9,7 +9,7 @@
 #pragma once
 #include <include/Ros2Factory.h>
 
-class Ros2FactoryHumble : public Ros2Factory
+class Ros2FactoryImpl : public Ros2Factory
 {
 public:
     virtual std::shared_ptr<Ros2HandleBase> CreateHandle();
@@ -30,6 +30,7 @@ public:
                                                      const char* service_name,
                                                      const void* type,
                                                      const Ros2QoSProfile& qos);
+
     virtual std::shared_ptr<Ros2ClockMessage> CreateClockMessage();
     virtual std::shared_ptr<Ros2ImuMessage> CreateImuMessage();
     virtual std::shared_ptr<Ros2CameraInfoMessage> CreateCameraInfoMessage();

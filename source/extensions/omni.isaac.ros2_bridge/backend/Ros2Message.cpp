@@ -10,7 +10,7 @@
 // clang-format off
 #include <pch/UsdPCH.h>
 // clang-format on
-#include "Ros2Foxy.h"
+#include "Ros2Impl.h"
 #include "pxr/usd/usdPhysics/joint.h"
 #include "sensor_msgs/image_encodings.hpp"
 
@@ -18,12 +18,14 @@
 
 #include <rcl/rcl.h>
 #include <sensor_msgs/msg/camera_info.h>
+
+
 // Clock message
-Ros2ClockMessageFoxy::Ros2ClockMessageFoxy() : Ros2BackendFoxy("rosgraph_msgs", "msg", "Clock")
+Ros2ClockMessageImpl::Ros2ClockMessageImpl() : Ros2BackendImpl("rosgraph_msgs", "msg", "Clock")
 {
     msg = rosgraph_msgs__msg__Clock__create();
 }
-Ros2ClockMessageFoxy::~Ros2ClockMessageFoxy()
+Ros2ClockMessageImpl::~Ros2ClockMessageImpl()
 {
     if (!msg)
     {
@@ -31,22 +33,22 @@ Ros2ClockMessageFoxy::~Ros2ClockMessageFoxy()
     }
     rosgraph_msgs__msg__Clock__destroy(static_cast<rosgraph_msgs__msg__Clock*>(msg));
 }
-const void* Ros2ClockMessageFoxy::getTypeSupportHandle()
+const void* Ros2ClockMessageImpl::getTypeSupportHandle()
 {
     return ROSIDL_GET_MSG_TYPE_SUPPORT(rosgraph_msgs, msg, Clock);
 }
 
-void Ros2ClockMessageFoxy::fill(double timestamp)
+void Ros2ClockMessageImpl::fill(double timestamp)
 {
     if (!msg)
     {
         return;
     }
     rosgraph_msgs__msg__Clock* time_msg = static_cast<rosgraph_msgs__msg__Clock*>(msg);
-    Ros2BackendFoxy::set_timestamp(static_cast<int64_t>(timestamp * 1e9), time_msg->clock);
+    Ros2BackendImpl::set_timestamp(static_cast<int64_t>(timestamp * 1e9), time_msg->clock);
 }
 
-void Ros2ClockMessageFoxy::setData(double& timeStamp)
+void Ros2ClockMessageImpl::setData(double& timeStamp)
 {
     if (!msg)
     {
@@ -59,17 +61,17 @@ void Ros2ClockMessageFoxy::setData(double& timeStamp)
 
 
 // IMU message
-Ros2ImuMessageFoxy::Ros2ImuMessageFoxy() : Ros2BackendFoxy("sensor_msgs", "msg", "Imu")
+Ros2ImuMessageImpl::Ros2ImuMessageImpl() : Ros2BackendImpl("sensor_msgs", "msg", "Imu")
 {
     msg = sensor_msgs__msg__Imu__create();
 }
 
-const void* Ros2ImuMessageFoxy::getTypeSupportHandle()
+const void* Ros2ImuMessageImpl::getTypeSupportHandle()
 {
     return ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu);
 }
 
-void Ros2ImuMessageFoxy::fillHeader(double timestamp, std::string& frame_id)
+void Ros2ImuMessageImpl::fillHeader(double timestamp, std::string& frame_id)
 {
     if (!msg)
     {
@@ -77,10 +79,10 @@ void Ros2ImuMessageFoxy::fillHeader(double timestamp, std::string& frame_id)
     }
 
     sensor_msgs__msg__Imu* imu_msg = static_cast<sensor_msgs__msg__Imu*>(msg);
-    Ros2BackendFoxy::set_header(frame_id, static_cast<int64_t>(timestamp * 1e9), imu_msg->header);
+    Ros2BackendImpl::set_header(frame_id, static_cast<int64_t>(timestamp * 1e9), imu_msg->header);
 }
 
-void Ros2ImuMessageFoxy::fillAccel(bool covariance = false, const std::vector<double>& accel = std::vector<double>())
+void Ros2ImuMessageImpl::fillAccel(bool covariance = false, const std::vector<double>& accel = std::vector<double>())
 {
     if (!msg)
     {
@@ -101,7 +103,7 @@ void Ros2ImuMessageFoxy::fillAccel(bool covariance = false, const std::vector<do
     }
 }
 
-void Ros2ImuMessageFoxy::fillVelo(bool covariance = false, const std::vector<double>& vel = std::vector<double>())
+void Ros2ImuMessageImpl::fillVelo(bool covariance = false, const std::vector<double>& vel = std::vector<double>())
 {
     if (!msg)
     {
@@ -122,7 +124,7 @@ void Ros2ImuMessageFoxy::fillVelo(bool covariance = false, const std::vector<dou
     }
 }
 
-void Ros2ImuMessageFoxy::fillOrient(bool covariance = false, const std::vector<double>& orient = std::vector<double>())
+void Ros2ImuMessageImpl::fillOrient(bool covariance = false, const std::vector<double>& orient = std::vector<double>())
 {
     if (!msg)
     {
@@ -144,7 +146,7 @@ void Ros2ImuMessageFoxy::fillOrient(bool covariance = false, const std::vector<d
     }
 }
 
-Ros2ImuMessageFoxy::~Ros2ImuMessageFoxy()
+Ros2ImuMessageImpl::~Ros2ImuMessageImpl()
 {
     if (!msg)
     {
@@ -156,17 +158,17 @@ Ros2ImuMessageFoxy::~Ros2ImuMessageFoxy()
 
 
 // Camera Info Message
-Ros2CameraInfoMessageFoxy::Ros2CameraInfoMessageFoxy() : Ros2BackendFoxy("sensor_msgs", "msg", "CameraInfo")
+Ros2CameraInfoMessageImpl::Ros2CameraInfoMessageImpl() : Ros2BackendImpl("sensor_msgs", "msg", "CameraInfo")
 {
     msg = sensor_msgs__msg__CameraInfo__create();
 }
 
-const void* Ros2CameraInfoMessageFoxy::getTypeSupportHandle()
+const void* Ros2CameraInfoMessageImpl::getTypeSupportHandle()
 {
     return ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, CameraInfo);
 }
 
-void Ros2CameraInfoMessageFoxy::fillHeader(const double timestamp, const std::string& frame_id)
+void Ros2CameraInfoMessageImpl::fillHeader(const double timestamp, const std::string& frame_id)
 {
     if (!msg)
     {
@@ -174,10 +176,10 @@ void Ros2CameraInfoMessageFoxy::fillHeader(const double timestamp, const std::st
     }
 
     sensor_msgs__msg__CameraInfo* camInfo_msg = static_cast<sensor_msgs__msg__CameraInfo*>(msg);
-    Ros2BackendFoxy::set_header(frame_id, static_cast<int64_t>(timestamp * 1e9), camInfo_msg->header);
+    Ros2BackendImpl::set_header(frame_id, static_cast<int64_t>(timestamp * 1e9), camInfo_msg->header);
 }
 
-void Ros2CameraInfoMessageFoxy::fillHeightWidth(const uint32_t height, const uint32_t width)
+void Ros2CameraInfoMessageImpl::fillHeightWidth(const uint32_t height, const uint32_t width)
 {
     if (!msg)
     {
@@ -190,7 +192,7 @@ void Ros2CameraInfoMessageFoxy::fillHeightWidth(const uint32_t height, const uin
     camInfo_msg->width = width;
 }
 
-void Ros2CameraInfoMessageFoxy::fillIntrisicArray(const double k_arr[], const int numElem)
+void Ros2CameraInfoMessageImpl::fillIntrisicArray(const double k_arr[], const int numElem)
 {
     if (!msg)
     {
@@ -201,7 +203,7 @@ void Ros2CameraInfoMessageFoxy::fillIntrisicArray(const double k_arr[], const in
     memcpy(camInfo_msg->k, k_arr, numElem * sizeof(double));
 }
 
-void Ros2CameraInfoMessageFoxy::fillDistortionModel(std::vector<double>& distort_array, const std::string& distort_model)
+void Ros2CameraInfoMessageImpl::fillDistortionModel(std::vector<double>& distort_array, const std::string& distort_model)
 {
     if (!msg)
     {
@@ -217,10 +219,10 @@ void Ros2CameraInfoMessageFoxy::fillDistortionModel(std::vector<double>& distort
         camInfo_msg->d.capacity = distort_array.size();
         memcpy(camInfo_msg->d.data, distort_array.data(), distort_array.size() * sizeof(double));
     }
-    Ros2BackendFoxy::set_string(distort_model, camInfo_msg->distortion_model);
+    Ros2BackendImpl::set_string(distort_model, camInfo_msg->distortion_model);
 }
 
-void Ros2CameraInfoMessageFoxy::fillProjectionArray(const double p_arr[], const int numElem)
+void Ros2CameraInfoMessageImpl::fillProjectionArray(const double p_arr[], const int numElem)
 {
     if (!msg)
     {
@@ -231,7 +233,7 @@ void Ros2CameraInfoMessageFoxy::fillProjectionArray(const double p_arr[], const 
     memcpy(camInfo_msg->p, p_arr, numElem * sizeof(double));
 }
 
-void Ros2CameraInfoMessageFoxy::fillRectificationArray(const double r_arr[], const int numElem)
+void Ros2CameraInfoMessageImpl::fillRectificationArray(const double r_arr[], const int numElem)
 {
     if (!msg)
     {
@@ -241,7 +243,7 @@ void Ros2CameraInfoMessageFoxy::fillRectificationArray(const double r_arr[], con
     sensor_msgs__msg__CameraInfo* camInfo_msg = static_cast<sensor_msgs__msg__CameraInfo*>(msg);
     memcpy(camInfo_msg->r, r_arr, numElem * sizeof(double));
 }
-Ros2CameraInfoMessageFoxy::~Ros2CameraInfoMessageFoxy()
+Ros2CameraInfoMessageImpl::~Ros2CameraInfoMessageImpl()
 {
     if (!msg)
     {
@@ -253,26 +255,26 @@ Ros2CameraInfoMessageFoxy::~Ros2CameraInfoMessageFoxy()
 
 
 // Image message
-Ros2ImageMessageFoxy::Ros2ImageMessageFoxy() : Ros2BackendFoxy("sensor_msgs", "msg", "Image")
+Ros2ImageMessageImpl::Ros2ImageMessageImpl() : Ros2BackendImpl("sensor_msgs", "msg", "Image")
 {
     msg = sensor_msgs__msg__Image__create();
 }
 
 
-const void* Ros2ImageMessageFoxy::getTypeSupportHandle()
+const void* Ros2ImageMessageImpl::getTypeSupportHandle()
 {
     return ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Image);
 }
-void Ros2ImageMessageFoxy::fillHeader(const double timestamp, const std::string& frame_id)
+void Ros2ImageMessageImpl::fillHeader(const double timestamp, const std::string& frame_id)
 {
     if (!msg)
         return;
 
     sensor_msgs__msg__Image* img_msg = static_cast<sensor_msgs__msg__Image*>(msg);
-    Ros2BackendFoxy::set_header(frame_id, static_cast<int64_t>(timestamp * 1e9), img_msg->header);
+    Ros2BackendImpl::set_header(frame_id, static_cast<int64_t>(timestamp * 1e9), img_msg->header);
 }
 
-void Ros2ImageMessageFoxy::generateBuffer(const uint32_t height, const uint32_t width, const std::string& encoding)
+void Ros2ImageMessageImpl::generateBuffer(const uint32_t height, const uint32_t width, const std::string& encoding)
 {
     if (!msg)
         return;
@@ -280,7 +282,7 @@ void Ros2ImageMessageFoxy::generateBuffer(const uint32_t height, const uint32_t 
     sensor_msgs__msg__Image* img_msg = static_cast<sensor_msgs__msg__Image*>(msg);
     img_msg->height = height;
     img_msg->width = width;
-    Ros2BackendFoxy::set_string(encoding, img_msg->encoding);
+    Ros2BackendImpl::set_string(encoding, img_msg->encoding);
 
     int channels = 0;
     int bitDepth = 0;
@@ -305,7 +307,7 @@ void Ros2ImageMessageFoxy::generateBuffer(const uint32_t height, const uint32_t 
     img_msg->data.data = &data[0];
 }
 
-Ros2ImageMessageFoxy::~Ros2ImageMessageFoxy()
+Ros2ImageMessageImpl::~Ros2ImageMessageImpl()
 {
     if (!msg)
         return;
@@ -316,6 +318,103 @@ Ros2ImageMessageFoxy::~Ros2ImageMessageFoxy()
     img_msg->data.capacity = 0;
     img_msg->data.data = nullptr;
     sensor_msgs__msg__Image__destroy(img_msg);
+}
+
+
+// NitrosBridgeImage message
+// For this specific message we disable logging when loading the message library to prevent spam
+Ros2NitrosBridgeImageMessageImpl::Ros2NitrosBridgeImageMessageImpl()
+    : Ros2BackendImpl("isaac_ros_nitros_bridge_interfaces", "msg", "NitrosBridgeImage", BackendMessageType::eMessage, true)
+{
+#if !defined(_WIN32) && !defined(ROS2_BACKEND_FOXY)
+    if (mTypesupportLibrary->isValid())
+    {
+        msg = create();
+    }
+#endif
+}
+
+const void* Ros2NitrosBridgeImageMessageImpl::getTypeSupportHandle()
+{
+    return getTypeSupportHandleDynamic();
+}
+
+void Ros2NitrosBridgeImageMessageImpl::fillHeader(const double timestamp, const std::string& frame_id)
+{
+    if (!msg)
+        return;
+#if !defined(_WIN32) && !defined(ROS2_BACKEND_FOXY)
+    isaac_ros_nitros_bridge_interfaces__msg__NitrosBridgeImage* img_msg =
+        static_cast<isaac_ros_nitros_bridge_interfaces__msg__NitrosBridgeImage*>(msg);
+    Ros2BackendImpl::set_header(frame_id, static_cast<int64_t>(timestamp * 1e9), img_msg->header);
+#endif
+}
+
+void Ros2NitrosBridgeImageMessageImpl::generateBuffer(const uint32_t height,
+                                                      const uint32_t width,
+                                                      const std::string& encoding)
+{
+    if (!msg)
+        return;
+#if !defined(_WIN32) && !defined(ROS2_BACKEND_FOXY)
+    isaac_ros_nitros_bridge_interfaces__msg__NitrosBridgeImage* img_msg =
+        static_cast<isaac_ros_nitros_bridge_interfaces__msg__NitrosBridgeImage*>(msg);
+    img_msg->height = height;
+    img_msg->width = width;
+    Ros2BackendImpl::set_string(encoding, img_msg->encoding);
+
+    int channels = 0;
+    int bitDepth = 0;
+    try
+    {
+        channels = sensor_msgs::image_encodings::numChannels(encoding);
+        bitDepth = sensor_msgs::image_encodings::bitDepth(encoding);
+    }
+    catch (std::exception& e)
+    {
+        fprintf(stderr, "[Error] %s\n", e.what());
+        return;
+    }
+    int byteDepth = bitDepth / 8;
+
+    uint32_t step = width * channels * byteDepth;
+    img_msg->step = step;
+    totalBytes = step * height;
+#endif
+}
+
+void Ros2NitrosBridgeImageMessageImpl::setData(const std::vector<int32_t>& data)
+{
+    if (!msg || !data.size())
+        return;
+#if !defined(_WIN32) && !defined(ROS2_BACKEND_FOXY)
+    mImageData.resize(data.size());
+    std::memcpy(mImageData.data(), data.data(), data.size() * sizeof(int32_t));
+
+    isaac_ros_nitros_bridge_interfaces__msg__NitrosBridgeImage* img_msg =
+        static_cast<isaac_ros_nitros_bridge_interfaces__msg__NitrosBridgeImage*>(msg);
+
+    img_msg->data.size = mImageData.size();
+    img_msg->data.capacity = mImageData.size();
+    img_msg->data.data = &mImageData[0];
+#endif
+}
+
+Ros2NitrosBridgeImageMessageImpl::~Ros2NitrosBridgeImageMessageImpl()
+{
+    if (!msg)
+        return;
+
+#if !defined(_WIN32) && !defined(ROS2_BACKEND_FOXY)
+    isaac_ros_nitros_bridge_interfaces__msg__NitrosBridgeImage* img_msg =
+        static_cast<isaac_ros_nitros_bridge_interfaces__msg__NitrosBridgeImage*>(msg);
+
+    // Lifetime of memory is not managed by the message as we use a std vector
+    img_msg->data.size = 0;
+    img_msg->data.capacity = 0;
+    img_msg->data.data = nullptr;
+    destroy(static_cast<isaac_ros_nitros_bridge_interfaces__msg__NitrosBridgeImage*>(msg));
+#endif
 }
 
 
@@ -330,26 +429,26 @@ struct Bbox2DData
     float occlusionRatio;
 };
 
-Ros2BoundingBox2DMessageFoxy::Ros2BoundingBox2DMessageFoxy() : Ros2BackendFoxy("vision_msgs", "msg", "Detection2DArray")
+Ros2BoundingBox2DMessageImpl::Ros2BoundingBox2DMessageImpl() : Ros2BackendImpl("vision_msgs", "msg", "Detection2DArray")
 {
     msg = create();
 }
 
-const void* Ros2BoundingBox2DMessageFoxy::getTypeSupportHandle()
+const void* Ros2BoundingBox2DMessageImpl::getTypeSupportHandle()
 {
     return getTypeSupportHandleDynamic();
 }
 
-void Ros2BoundingBox2DMessageFoxy::fillHeader(const double timestamp, const std::string& frame_id)
+void Ros2BoundingBox2DMessageImpl::fillHeader(const double timestamp, const std::string& frame_id)
 {
     if (!msg)
         return;
 
     vision_msgs__msg__Detection2DArray* detection_msg = static_cast<vision_msgs__msg__Detection2DArray*>(msg);
-    Ros2BackendFoxy::set_header(frame_id, static_cast<int64_t>(timestamp * 1e9), detection_msg->header);
+    Ros2BackendImpl::set_header(frame_id, static_cast<int64_t>(timestamp * 1e9), detection_msg->header);
 }
 
-void Ros2BoundingBox2DMessageFoxy::fillBboxData(const void* bboxArray, const size_t numBoxes)
+void Ros2BoundingBox2DMessageImpl::fillBboxData(const void* bboxArray, const size_t numBoxes)
 {
     if (!msg)
         return;
@@ -360,7 +459,6 @@ void Ros2BoundingBox2DMessageFoxy::fillBboxData(const void* bboxArray, const siz
     mGeneratorLibrary->callSymbolWithArg<void>(
         "vision_msgs__msg__Detection2D__Sequence__init", &detection_msg->detections, numBoxes);
 
-
     const Bbox2DData* bboxData = reinterpret_cast<const Bbox2DData*>(bboxArray);
 
     for (size_t i = 0; i < numBoxes; i++)
@@ -368,8 +466,13 @@ void Ros2BoundingBox2DMessageFoxy::fillBboxData(const void* bboxArray, const siz
         const Bbox2DData& box = bboxData[i];
 
         detection_msg->detections.data[i].bbox.center.theta = 0;
+#ifdef ROS2_BACKEND_FOXY
         detection_msg->detections.data[i].bbox.center.x = (box.x_max + box.x_min) / 2.0;
         detection_msg->detections.data[i].bbox.center.y = (box.y_max + box.y_min) / 2.0;
+#else
+        detection_msg->detections.data[i].bbox.center.position.x = (box.x_max + box.x_min) / 2.0;
+        detection_msg->detections.data[i].bbox.center.position.y = (box.y_max + box.y_min) / 2.0;
+#endif
         detection_msg->detections.data[i].bbox.size_x = box.x_max - box.x_min;
         detection_msg->detections.data[i].bbox.size_y = box.y_max - box.y_min;
         // TODO: Detection sub message header for all detections
@@ -378,12 +481,18 @@ void Ros2BoundingBox2DMessageFoxy::fillBboxData(const void* bboxArray, const siz
         mGeneratorLibrary->callSymbolWithArg<void>("vision_msgs__msg__ObjectHypothesisWithPose__Sequence__init",
                                                    &detection_msg->detections.data[i].results, 1);
 
+#ifdef ROS2_BACKEND_FOXY
         detection_msg->detections.data[i].results.data[0].score = 1.0;
-        Ros2BackendFoxy::set_string(std::to_string(box.semanticId), detection_msg->detections.data[i].results.data[0].id);
+        Ros2BackendImpl::set_string(std::to_string(box.semanticId), detection_msg->detections.data[i].results.data[0].id);
+#else
+        detection_msg->detections.data[i].results.data[0].hypothesis.score = 1.0;
+        Ros2BackendImpl::set_string(
+            std::to_string(box.semanticId), detection_msg->detections.data[i].results.data[0].hypothesis.class_id);
+#endif
     }
 }
 
-Ros2BoundingBox2DMessageFoxy::~Ros2BoundingBox2DMessageFoxy()
+Ros2BoundingBox2DMessageImpl::~Ros2BoundingBox2DMessageImpl()
 {
     if (!msg)
         return;
@@ -405,32 +514,33 @@ struct Bbox3DData
 };
 
 // 3D Detection array
-Ros2BoundingBox3DMessageFoxy::Ros2BoundingBox3DMessageFoxy() : Ros2BackendFoxy("vision_msgs", "msg", "Detection3DArray")
+Ros2BoundingBox3DMessageImpl::Ros2BoundingBox3DMessageImpl() : Ros2BackendImpl("vision_msgs", "msg", "Detection3DArray")
 {
     msg = create();
 }
 
-const void* Ros2BoundingBox3DMessageFoxy::getTypeSupportHandle()
+const void* Ros2BoundingBox3DMessageImpl::getTypeSupportHandle()
 {
     return getTypeSupportHandleDynamic();
 }
 
-void Ros2BoundingBox3DMessageFoxy::fillHeader(const double timestamp, const std::string& frame_id)
+void Ros2BoundingBox3DMessageImpl::fillHeader(const double timestamp, const std::string& frame_id)
 {
     if (!msg)
         return;
 
     vision_msgs__msg__Detection3DArray* detection_msg = static_cast<vision_msgs__msg__Detection3DArray*>(msg);
-    Ros2BackendFoxy::set_header(frame_id, static_cast<int64_t>(timestamp * 1e9), detection_msg->header);
+    Ros2BackendImpl::set_header(frame_id, static_cast<int64_t>(timestamp * 1e9), detection_msg->header);
 }
 
-void Ros2BoundingBox3DMessageFoxy::fillBboxData(const void* bboxArray, size_t numBoxes)
+void Ros2BoundingBox3DMessageImpl::fillBboxData(const void* bboxArray, size_t numBoxes)
 {
     if (!msg)
         return;
 
 
     vision_msgs__msg__Detection3DArray* detection_msg = static_cast<vision_msgs__msg__Detection3DArray*>(msg);
+
     mGeneratorLibrary->callSymbolWithArg<void>(
         "vision_msgs__msg__Detection3D__Sequence__init", &detection_msg->detections, numBoxes);
 
@@ -464,15 +574,22 @@ void Ros2BoundingBox3DMessageFoxy::fillBboxData(const void* bboxArray, size_t nu
         detection_msg->detections.data[i].bbox.size.y = (box.x_max - box.x_min) * scale[1];
         detection_msg->detections.data[i].bbox.size.z = (box.x_max - box.x_min) * scale[2];
 
+
         mGeneratorLibrary->callSymbolWithArg<void>("vision_msgs__msg__ObjectHypothesisWithPose__Sequence__init",
                                                    &detection_msg->detections.data[i].results, 1);
 
+#ifdef ROS2_BACKEND_FOXY
         detection_msg->detections.data[i].results.data[0].score = 1.0;
-        Ros2BackendFoxy::set_string(std::to_string(box.semanticId), detection_msg->detections.data[i].results.data[0].id);
+        Ros2BackendImpl::set_string(std::to_string(box.semanticId), detection_msg->detections.data[i].results.data[0].id);
+#else
+        detection_msg->detections.data[i].results.data[0].hypothesis.score = 1.0;
+        Ros2BackendImpl::set_string(
+            std::to_string(box.semanticId), detection_msg->detections.data[i].results.data[0].hypothesis.class_id);
+#endif
     }
 }
 
-Ros2BoundingBox3DMessageFoxy::~Ros2BoundingBox3DMessageFoxy()
+Ros2BoundingBox3DMessageImpl::~Ros2BoundingBox3DMessageImpl()
 {
     if (!msg)
         return;
@@ -482,24 +599,24 @@ Ros2BoundingBox3DMessageFoxy::~Ros2BoundingBox3DMessageFoxy()
 
 
 // Odom message implementations
-Ros2OdomMessageFoxy::Ros2OdomMessageFoxy() : Ros2BackendFoxy("nav_msgs", "msg", "Odometry")
+Ros2OdomMessageImpl::Ros2OdomMessageImpl() : Ros2BackendImpl("nav_msgs", "msg", "Odometry")
 {
     msg = nav_msgs__msg__Odometry__create();
 }
-const void* Ros2OdomMessageFoxy::getTypeSupportHandle()
+const void* Ros2OdomMessageImpl::getTypeSupportHandle()
 {
     return ROSIDL_GET_MSG_TYPE_SUPPORT(nav_msgs, msg, Odometry);
 }
-void Ros2OdomMessageFoxy::fillHeader(const double timestamp, const std::string& frame_id)
+void Ros2OdomMessageImpl::fillHeader(const double timestamp, const std::string& frame_id)
 {
     if (!msg)
         return;
 
     nav_msgs__msg__Odometry* odom_msg = static_cast<nav_msgs__msg__Odometry*>(msg);
-    Ros2BackendFoxy::set_header(frame_id, static_cast<int64_t>(timestamp * 1e9), odom_msg->header);
+    Ros2BackendImpl::set_header(frame_id, static_cast<int64_t>(timestamp * 1e9), odom_msg->header);
 }
 
-void Ros2OdomMessageFoxy::fillData(std::string& childFrame,
+void Ros2OdomMessageImpl::fillData(std::string& childFrame,
                                    const pxr::GfVec3d& linVel,
                                    const pxr::GfVec3d& angVel,
                                    const pxr::GfVec3f& mRobotFront,
@@ -513,7 +630,7 @@ void Ros2OdomMessageFoxy::fillData(std::string& childFrame,
         return;
 
     nav_msgs__msg__Odometry* odom_msg = static_cast<nav_msgs__msg__Odometry*>(msg);
-    Ros2BackendFoxy::set_string(childFrame, odom_msg->child_frame_id);
+    Ros2BackendImpl::set_string(childFrame, odom_msg->child_frame_id);
 
     float measuredSpeedFront =
         static_cast<float>(pxr::GfDot(pxr::GfVec3d(linVel[0], linVel[1], linVel[2]), mRobotFront) * mUnitScale);
@@ -543,7 +660,7 @@ void Ros2OdomMessageFoxy::fillData(std::string& childFrame,
     odom_msg->pose.pose.orientation.w = orientation.GetReal();
 }
 
-Ros2OdomMessageFoxy::~Ros2OdomMessageFoxy()
+Ros2OdomMessageImpl::~Ros2OdomMessageImpl()
 {
     if (!msg)
         return;
@@ -553,15 +670,15 @@ Ros2OdomMessageFoxy::~Ros2OdomMessageFoxy()
 
 
 // Raw Tf tree message
-Ros2RawTfTreeMessageFoxy::Ros2RawTfTreeMessageFoxy() : Ros2BackendFoxy("tf2_msgs", "msg", "TFMessage")
+Ros2RawTfTreeMessageImpl::Ros2RawTfTreeMessageImpl() : Ros2BackendImpl("tf2_msgs", "msg", "TFMessage")
 {
     msg = tf2_msgs__msg__TFMessage__create();
 }
-const void* Ros2RawTfTreeMessageFoxy::getTypeSupportHandle()
+const void* Ros2RawTfTreeMessageImpl::getTypeSupportHandle()
 {
     return ROSIDL_GET_MSG_TYPE_SUPPORT(tf2_msgs, msg, TFMessage);
 }
-void Ros2RawTfTreeMessageFoxy::fillData(const double timestamp,
+void Ros2RawTfTreeMessageImpl::fillData(const double timestamp,
                                         const std::string& headerFrame,
                                         const std::string& childFrame,
                                         const pxr::GfVec3d& translation,
@@ -574,8 +691,8 @@ void Ros2RawTfTreeMessageFoxy::fillData(const double timestamp,
 
     geometry_msgs__msg__TransformStamped__Sequence__init(&tf_msg->transforms, 1);
 
-    Ros2BackendFoxy::set_header(headerFrame, static_cast<int64_t>(timestamp * 1e9), tf_msg->transforms.data->header);
-    Ros2BackendFoxy::set_string(childFrame, tf_msg->transforms.data->child_frame_id);
+    Ros2BackendImpl::set_header(headerFrame, static_cast<int64_t>(timestamp * 1e9), tf_msg->transforms.data->header);
+    Ros2BackendImpl::set_string(childFrame, tf_msg->transforms.data->child_frame_id);
 
     tf_msg->transforms.data->transform.translation.x = translation[0];
     tf_msg->transforms.data->transform.translation.y = translation[1];
@@ -587,7 +704,7 @@ void Ros2RawTfTreeMessageFoxy::fillData(const double timestamp,
     tf_msg->transforms.data->transform.rotation.w = rotation.GetReal();
 }
 
-Ros2RawTfTreeMessageFoxy::~Ros2RawTfTreeMessageFoxy()
+Ros2RawTfTreeMessageImpl::~Ros2RawTfTreeMessageImpl()
 {
     tf2_msgs__msg__TFMessage__destroy(static_cast<tf2_msgs__msg__TFMessage*>(msg));
 }
@@ -595,43 +712,43 @@ Ros2RawTfTreeMessageFoxy::~Ros2RawTfTreeMessageFoxy()
 
 // Sematic label (string type message)
 
-Ros2SemanticLabelMessageFoxy::Ros2SemanticLabelMessageFoxy() : Ros2BackendFoxy("std_msgs", "msg", "String")
+Ros2SemanticLabelMessageImpl::Ros2SemanticLabelMessageImpl() : Ros2BackendImpl("std_msgs", "msg", "String")
 {
     msg = std_msgs__msg__String__create();
 }
-const void* Ros2SemanticLabelMessageFoxy::getTypeSupportHandle()
+const void* Ros2SemanticLabelMessageImpl::getTypeSupportHandle()
 {
     return ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, String);
 }
 
-void Ros2SemanticLabelMessageFoxy::fillData(const std::string& data)
+void Ros2SemanticLabelMessageImpl::fillData(const std::string& data)
 {
     if (!msg)
         return;
 
     std_msgs__msg__String* string_msg = static_cast<std_msgs__msg__String*>(msg);
 
-    Ros2BackendFoxy::set_string(data, string_msg->data);
+    Ros2BackendImpl::set_string(data, string_msg->data);
 }
 
-Ros2SemanticLabelMessageFoxy::~Ros2SemanticLabelMessageFoxy()
+Ros2SemanticLabelMessageImpl::~Ros2SemanticLabelMessageImpl()
 {
     std_msgs__msg__String__destroy(static_cast<std_msgs__msg__String*>(msg));
 }
 
 
 // Joint state
-Ros2JointStateMessageFoxy::Ros2JointStateMessageFoxy() : Ros2BackendFoxy("sensor_msgs", "msg", "JointState")
+Ros2JointStateMessageImpl::Ros2JointStateMessageImpl() : Ros2BackendImpl("sensor_msgs", "msg", "JointState")
 {
     msg = sensor_msgs__msg__JointState__create();
 }
-const void* Ros2JointStateMessageFoxy::getTypeSupportHandle()
+const void* Ros2JointStateMessageImpl::getTypeSupportHandle()
 {
     return ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, JointState);
 }
 
 // omni::isaac::dynamic_control::DcDofState* mStates
-void Ros2JointStateMessageFoxy::fillData(const double& timeStamp,
+void Ros2JointStateMessageImpl::fillData(const double& timeStamp,
                                          omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr,
                                          omni::isaac::dynamic_control::DcHandle mArticulationHandle,
                                          pxr::UsdStageWeakPtr mStage,
@@ -648,7 +765,7 @@ void Ros2JointStateMessageFoxy::fillData(const double& timeStamp,
 
     omni::isaac::dynamic_control::DcDofState* mStates = nullptr;
 
-    Ros2BackendFoxy::set_header("", static_cast<int64_t>(timeStamp * 1e9), jointState_msg->header);
+    Ros2BackendImpl::set_header("", static_cast<int64_t>(timeStamp * 1e9), jointState_msg->header);
 
     mDynamicControlPtr->wakeUpArticulation(mArticulationHandle);
     size_t num_dofs = mDynamicControlPtr->getArticulationDofCount(mArticulationHandle);
@@ -678,7 +795,7 @@ void Ros2JointStateMessageFoxy::fillData(const double& timeStamp,
 
             if (dof)
             {
-                Ros2BackendFoxy::set_string(mDynamicControlPtr->getDofName(dof), jointState_msg->name.data[j]);
+                Ros2BackendImpl::set_string(mDynamicControlPtr->getDofName(dof), jointState_msg->name.data[j]);
 
                 const char* mParentName = mDynamicControlPtr->getRigidBodyName(mDynamicControlPtr->getDofParentBody(dof));
                 const char* jointPath = mDynamicControlPtr->getDofPath(dof);
@@ -714,7 +831,7 @@ void Ros2JointStateMessageFoxy::fillData(const double& timeStamp,
     }
 }
 
-void Ros2JointStateMessageFoxy::getActuators(size_t& actuators)
+void Ros2JointStateMessageImpl::getActuators(size_t& actuators)
 {
     if (!msg)
         return;
@@ -724,7 +841,7 @@ void Ros2JointStateMessageFoxy::getActuators(size_t& actuators)
     actuators = jointState_msg->name.size;
 }
 
-bool Ros2JointStateMessageFoxy::checkValid()
+bool Ros2JointStateMessageImpl::checkValid()
 {
     if (!msg)
         return false;
@@ -741,7 +858,7 @@ bool Ros2JointStateMessageFoxy::checkValid()
     return true;
 }
 
-void Ros2JointStateMessageFoxy::getData(std::vector<char*>& jointNames,
+void Ros2JointStateMessageImpl::getData(std::vector<char*>& jointNames,
                                         double* positionCommand,
                                         double* velocityCommand,
                                         double* effortCommand,
@@ -811,7 +928,7 @@ void Ros2JointStateMessageFoxy::getData(std::vector<char*>& jointNames,
 }
 
 
-Ros2JointStateMessageFoxy::~Ros2JointStateMessageFoxy()
+Ros2JointStateMessageImpl::~Ros2JointStateMessageImpl()
 {
     if (!msg)
         return;
@@ -821,15 +938,15 @@ Ros2JointStateMessageFoxy::~Ros2JointStateMessageFoxy()
 
 
 // point cloud 2 message
-Ros2PointCloudMessageFoxy::Ros2PointCloudMessageFoxy() : Ros2BackendFoxy("sensor_msgs", "msg", "PointCloud2")
+Ros2PointCloudMessageImpl::Ros2PointCloudMessageImpl() : Ros2BackendImpl("sensor_msgs", "msg", "PointCloud2")
 {
     msg = sensor_msgs__msg__PointCloud2__create();
 }
-const void* Ros2PointCloudMessageFoxy::getTypeSupportHandle()
+const void* Ros2PointCloudMessageImpl::getTypeSupportHandle()
 {
     return ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, PointCloud2);
 }
-void Ros2PointCloudMessageFoxy::fillMetadata(const std::string& frameId,
+void Ros2PointCloudMessageImpl::fillMetadata(const std::string& frameId,
                                              const double& timeStamp,
                                              const size_t& width,
                                              const size_t& height,
@@ -841,7 +958,7 @@ void Ros2PointCloudMessageFoxy::fillMetadata(const std::string& frameId,
     sensor_msgs__msg__PointCloud2* point_cloud_msg = static_cast<sensor_msgs__msg__PointCloud2*>(msg);
 
     point_cloud_msg->is_dense = true;
-    Ros2BackendFoxy::set_header(frameId, static_cast<int64_t>(timeStamp * 1e9), point_cloud_msg->header);
+    Ros2BackendImpl::set_header(frameId, static_cast<int64_t>(timeStamp * 1e9), point_cloud_msg->header);
     point_cloud_msg->height = 1;
     point_cloud_msg->point_step = static_cast<uint32_t>(sizeof(pxr::GfVec3f));
     point_cloud_msg->width = static_cast<uint32_t>(width);
@@ -856,9 +973,9 @@ void Ros2PointCloudMessageFoxy::fillMetadata(const std::string& frameId,
 
     sensor_msgs__msg__PointField__Sequence__init(&point_cloud_msg->fields, 3);
 
-    Ros2BackendFoxy::set_string("x", point_cloud_msg->fields.data[0].name);
-    Ros2BackendFoxy::set_string("y", point_cloud_msg->fields.data[1].name);
-    Ros2BackendFoxy::set_string("z", point_cloud_msg->fields.data[2].name);
+    Ros2BackendImpl::set_string("x", point_cloud_msg->fields.data[0].name);
+    Ros2BackendImpl::set_string("y", point_cloud_msg->fields.data[1].name);
+    Ros2BackendImpl::set_string("z", point_cloud_msg->fields.data[2].name);
 
     point_cloud_msg->fields.data[0].count = 1;
     point_cloud_msg->fields.data[1].count = 1;
@@ -874,7 +991,7 @@ void Ros2PointCloudMessageFoxy::fillMetadata(const std::string& frameId,
     point_cloud_msg->fields.data[2].offset = 8;
 }
 
-Ros2PointCloudMessageFoxy::~Ros2PointCloudMessageFoxy()
+Ros2PointCloudMessageImpl::~Ros2PointCloudMessageImpl()
 {
     if (!msg)
         return;
@@ -888,15 +1005,15 @@ Ros2PointCloudMessageFoxy::~Ros2PointCloudMessageFoxy()
 
 
 // Laser scan message
-Ros2LaserScanMessageFoxy::Ros2LaserScanMessageFoxy() : Ros2BackendFoxy("sensor_msgs", "msg", "LaserScan")
+Ros2LaserScanMessageImpl::Ros2LaserScanMessageImpl() : Ros2BackendImpl("sensor_msgs", "msg", "LaserScan")
 {
     msg = sensor_msgs__msg__LaserScan__create();
 }
-const void* Ros2LaserScanMessageFoxy::getTypeSupportHandle()
+const void* Ros2LaserScanMessageImpl::getTypeSupportHandle()
 {
     return ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, LaserScan);
 }
-void Ros2LaserScanMessageFoxy::fillData(const std::string& frameId,
+void Ros2LaserScanMessageImpl::fillData(const std::string& frameId,
                                         const double& timeStamp,
                                         const pxr::GfVec2f& azimuthRange,
                                         const float& rotationRate,
@@ -911,9 +1028,9 @@ void Ros2LaserScanMessageFoxy::fillData(const std::string& frameId,
         return;
 
     sensor_msgs__msg__LaserScan* laser_msg = static_cast<sensor_msgs__msg__LaserScan*>(msg);
-
-    Ros2BackendFoxy::set_header(frameId, static_cast<int64_t>(timeStamp * 1e9), laser_msg->header);
     float DEG_TO_RAD_f = static_cast<float>(M_PI / 180.0f);
+
+    Ros2BackendImpl::set_header(frameId, static_cast<int64_t>(timeStamp * 1e9), laser_msg->header);
     laser_msg->angle_min = azimuthRange[0] * DEG_TO_RAD_f;
     laser_msg->angle_max = azimuthRange[1] * DEG_TO_RAD_f;
 
@@ -933,7 +1050,7 @@ void Ros2LaserScanMessageFoxy::fillData(const std::string& frameId,
     laser_msg->time_increment = (horizontalFov / 360.0f * laser_msg->scan_time) / laser_msg->ranges.size;
 }
 
-Ros2LaserScanMessageFoxy::~Ros2LaserScanMessageFoxy()
+Ros2LaserScanMessageImpl::~Ros2LaserScanMessageImpl()
 {
     if (!msg)
         return;
@@ -950,16 +1067,16 @@ Ros2LaserScanMessageFoxy::~Ros2LaserScanMessageFoxy()
 //     geometry_msgs__msg__Transform transform;
 // };
 
-Ros2TfTreeMessageFoxy::Ros2TfTreeMessageFoxy() : Ros2BackendFoxy("sensor_msgs", "msg", "TFMessage")
+Ros2TfTreeMessageImpl::Ros2TfTreeMessageImpl() : Ros2BackendImpl("sensor_msgs", "msg", "TFMessage")
 {
     msg = tf2_msgs__msg__TFMessage__create();
     ;
 }
-const void* Ros2TfTreeMessageFoxy::getTypeSupportHandle()
+const void* Ros2TfTreeMessageImpl::getTypeSupportHandle()
 {
     return ROSIDL_GET_MSG_TYPE_SUPPORT(tf2_msgs, msg, TFMessage);
 }
-void Ros2TfTreeMessageFoxy::fillData(const double& timeStamp, std::vector<tfMessageStruct>& tfMsg_vec)
+void Ros2TfTreeMessageImpl::fillData(const double& timeStamp, std::vector<tfMessageStruct>& tfMsg_vec)
 {
     if (!msg)
         return;
@@ -970,11 +1087,11 @@ void Ros2TfTreeMessageFoxy::fillData(const double& timeStamp, std::vector<tfMess
 
     for (size_t i = 0; i < tfMsg_vec.size(); i++)
     {
-        // Ros2BackendFoxy::set_timestamp(tfMsg_vec[i].timeStamp, tfMsg->transforms.data[i].header.stamp);
-        // Ros2BackendFoxy::set_string(tfMsg_vec[i].parentFrame, tfMsg->transforms.data[i].header.frame_id);
-        Ros2BackendFoxy::set_header(
+        // Ros2BackendImpl::set_timestamp(tfMsg_vec[i].timeStamp, tfMsg->transforms.data[i].header.stamp);
+        // Ros2BackendImpl::set_string(tfMsg_vec[i].parentFrame, tfMsg->transforms.data[i].header.frame_id);
+        Ros2BackendImpl::set_header(
             tfMsg_vec[i].parentFrame, static_cast<int64_t>(timeStamp * 1e9), tfMsg->transforms.data[i].header);
-        Ros2BackendFoxy::set_string(tfMsg_vec[i].childFrame, tfMsg->transforms.data[i].child_frame_id);
+        Ros2BackendImpl::set_string(tfMsg_vec[i].childFrame, tfMsg->transforms.data[i].child_frame_id);
 
         tfMsg->transforms.data[i].transform.translation.x = tfMsg_vec[i].trans_x;
         tfMsg->transforms.data[i].transform.translation.y = tfMsg_vec[i].trans_y;
@@ -986,7 +1103,8 @@ void Ros2TfTreeMessageFoxy::fillData(const double& timeStamp, std::vector<tfMess
         tfMsg->transforms.data[i].transform.rotation.w = tfMsg_vec[i].quat_w;
     }
 }
-void Ros2TfTreeMessageFoxy::getData(std::vector<tfMessageStruct>& tfMsg_vec)
+
+void Ros2TfTreeMessageImpl::getData(std::vector<tfMessageStruct>& tfMsg_vec)
 {
     if (!msg)
         return;
@@ -1017,22 +1135,22 @@ void Ros2TfTreeMessageFoxy::getData(std::vector<tfMessageStruct>& tfMsg_vec)
 }
 
 
-Ros2TfTreeMessageFoxy::~Ros2TfTreeMessageFoxy()
+Ros2TfTreeMessageImpl::~Ros2TfTreeMessageImpl()
 {
     tf2_msgs__msg__TFMessage__destroy(static_cast<tf2_msgs__msg__TFMessage*>(msg));
 }
 
 
 // twist message
-Ros2TwistMessageFoxy::Ros2TwistMessageFoxy() : Ros2BackendFoxy("geometry_msgs", "msg", "Twist")
+Ros2TwistMessageImpl::Ros2TwistMessageImpl() : Ros2BackendImpl("geometry_msgs", "msg", "Twist")
 {
     msg = geometry_msgs__msg__Twist__create();
 }
-const void* Ros2TwistMessageFoxy::getTypeSupportHandle()
+const void* Ros2TwistMessageImpl::getTypeSupportHandle()
 {
     return ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist);
 }
-void Ros2TwistMessageFoxy::getData(pxr::GfVec3d& linearVelocity, pxr::GfVec3d& angularVelocity)
+void Ros2TwistMessageImpl::getData(pxr::GfVec3d& linearVelocity, pxr::GfVec3d& angularVelocity)
 {
     if (!msg)
         return;
@@ -1048,7 +1166,7 @@ void Ros2TwistMessageFoxy::getData(pxr::GfVec3d& linearVelocity, pxr::GfVec3d& a
     angularVelocity[2] = twistMsg->angular.z;
 }
 
-Ros2TwistMessageFoxy::~Ros2TwistMessageFoxy()
+Ros2TwistMessageImpl::~Ros2TwistMessageImpl()
 {
     if (!msg)
         return;
@@ -1057,17 +1175,17 @@ Ros2TwistMessageFoxy::~Ros2TwistMessageFoxy()
 }
 
 // AckermannDriveStamped message
-Ros2AckermannDriveStampedMessageFoxy::Ros2AckermannDriveStampedMessageFoxy()
-    : Ros2BackendFoxy("ackermann_msgs", "msg", "AckermannDriveStamped")
+Ros2AckermannDriveStampedMessageImpl::Ros2AckermannDriveStampedMessageImpl()
+    : Ros2BackendImpl("ackermann_msgs", "msg", "AckermannDriveStamped")
 {
     msg = create();
 }
-const void* Ros2AckermannDriveStampedMessageFoxy::getTypeSupportHandle()
+const void* Ros2AckermannDriveStampedMessageImpl::getTypeSupportHandle()
 {
     return getTypeSupportHandleDynamic();
 }
 
-void Ros2AckermannDriveStampedMessageFoxy::getData(std::string& frameId,
+void Ros2AckermannDriveStampedMessageImpl::getData(std::string& frameId,
                                                    double& timeStamp,
                                                    double& steeringAngle,
                                                    double& steeringAngleVelocity,
@@ -1091,16 +1209,16 @@ void Ros2AckermannDriveStampedMessageFoxy::getData(std::string& frameId,
     jerk = driveMsg->drive.jerk;
 }
 
-void Ros2AckermannDriveStampedMessageFoxy::fillHeader(const double timestamp, const std::string& frame_id)
+void Ros2AckermannDriveStampedMessageImpl::fillHeader(const double timestamp, const std::string& frame_id)
 {
     if (!msg)
         return;
 
     ackermann_msgs__msg__AckermannDriveStamped* drive_msg = static_cast<ackermann_msgs__msg__AckermannDriveStamped*>(msg);
-    Ros2BackendFoxy::set_header(frame_id, static_cast<int64_t>(timestamp * 1e9), drive_msg->header);
+    Ros2BackendImpl::set_header(frame_id, static_cast<int64_t>(timestamp * 1e9), drive_msg->header);
 }
 
-void Ros2AckermannDriveStampedMessageFoxy::fillData(const double& steeringAngle,
+void Ros2AckermannDriveStampedMessageImpl::fillData(const double& steeringAngle,
                                                     const double& steeringAngleVelocity,
                                                     const double& speed,
                                                     const double& acceleration,
@@ -1118,7 +1236,7 @@ void Ros2AckermannDriveStampedMessageFoxy::fillData(const double& steeringAngle,
     drive_msg->drive.jerk = static_cast<float>(jerk);
 }
 
-Ros2AckermannDriveStampedMessageFoxy::~Ros2AckermannDriveStampedMessageFoxy()
+Ros2AckermannDriveStampedMessageImpl::~Ros2AckermannDriveStampedMessageImpl()
 {
     if (!msg)
         return;

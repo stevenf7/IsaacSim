@@ -11,7 +11,7 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(ROS2_BACKEND_FOXY)
 #    include <include/ipc_buffer_manager.hpp>
 #endif
 
@@ -282,7 +282,7 @@ public:
 
     bool publishNitrosBridgeImage(OgnROS2PublishImageDatabase& db, bool multithreadingDisabled)
     {
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(ROS2_BACKEND_FOXY)
         CARB_PROFILE_ZONE(1, "publish nitros bridge image function");
         auto& state = db.perInstanceState<OgnROS2PublishImage>();
         auto tasking = carb::getCachedInterface<carb::tasking::ITasking>();
@@ -490,7 +490,7 @@ public:
             mNitrosBridgeStreamNotCreated = true;
         }
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(ROS2_BACKEND_FOXY)
         mIPCBufferManager.reset();
         mIPCBufferManager = nullptr;
 #endif
@@ -505,7 +505,7 @@ private:
     std::shared_ptr<Ros2Publisher> mPublisher = nullptr;
     std::shared_ptr<Ros2ImageMessage> mMessage = nullptr;
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(ROS2_BACKEND_FOXY)
     std::shared_ptr<IPCBufferManager> mIPCBufferManager = nullptr; // CUDA IPC memory pool manager
 #endif
     std::shared_ptr<Ros2Publisher> mNitrosBridgePublisher = nullptr;

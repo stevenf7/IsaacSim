@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.29.0] - 2024-06-27
+### Changed
+- Unify ROS 2 backend implementations
+
 ## [2.28.1] - 2024-06-25
 ### Fixed
 - JointState Subscriber fills in nans when receiving empty arrays for command modes that are not used

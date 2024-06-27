@@ -10,7 +10,7 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#include "Ros2Humble.h"
+#include "Ros2Impl.h"
 #include "rosidl_runtime_c/string_functions.h"
 
 #include <include/Ros2Macros.h>
@@ -18,14 +18,14 @@
 
 #include <inttypes.h>
 
-Ros2BackendHumble::Ros2BackendHumble(
+Ros2BackendImpl::Ros2BackendImpl(
     std::string pkgName, std::string msgSubfolder, std::string msgName, BackendMessageType messageType, bool testLibrary)
     : Ros2Backend(pkgName, msgSubfolder, msgName, messageType, testLibrary)
 {
 }
 
 
-void Ros2BackendHumble::set_timestamp(const int64_t nanoseconds, builtin_interfaces__msg__Time& time)
+void Ros2BackendImpl::set_timestamp(const int64_t nanoseconds, builtin_interfaces__msg__Time& time)
 {
     // publish the input string to topic
     constexpr rcl_time_point_value_t kRemainder = RCL_S_TO_NS(1);
@@ -42,12 +42,12 @@ void Ros2BackendHumble::set_timestamp(const int64_t nanoseconds, builtin_interfa
     }
 }
 
-void Ros2BackendHumble::set_string(const std::string& input, rosidl_runtime_c__String& output)
+void Ros2BackendImpl::set_string(const std::string& input, rosidl_runtime_c__String& output)
 {
     rosidl_runtime_c__String__assign(&output, input.c_str());
 }
 
-void Ros2BackendHumble::set_header(const std::string& frame_id, const int64_t nanoseconds, std_msgs__msg__Header& header)
+void Ros2BackendImpl::set_header(const std::string& frame_id, const int64_t nanoseconds, std_msgs__msg__Header& header)
 {
     set_string(frame_id.c_str(), header.frame_id);
 
