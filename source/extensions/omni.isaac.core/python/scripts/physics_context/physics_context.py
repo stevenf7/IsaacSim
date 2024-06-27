@@ -532,7 +532,6 @@ class PhysicsContext(object):
 
     def set_physx_update_transformations_settings(
         self,
-        update_to_fast_cache: Optional[bool] = None,
         update_to_usd: Optional[bool] = None,
         update_velocities_to_usd: Optional[bool] = None,
         output_velocities_local_space: Optional[bool] = None,
@@ -540,34 +539,28 @@ class PhysicsContext(object):
         """Sets how physx syncs with the usd when transformations are updated.
 
         Args:
-            update_to_fast_cache (bool, optional): Uses Fast cache if set to True. Defaults to True.
             update_to_usd (bool, optional): Updates to USD the transformations. Defaults to True.
             update_velocities_to_usd (bool, optional): Updates Velocities to USD. Defaults to True.
             output_velocities_local_space (bool, optional): Output the velocities in the local frame and not the world frame. Defaults to False.
         """
-        if update_to_fast_cache is not None:
-            set_carb_setting(self._carb_settings, "/persistent/physics/useFastCache", update_to_fast_cache)
         if update_to_usd is not None:
-            set_carb_setting(self._carb_settings, "/persistent/physics/updateToUsd", update_to_usd)
+            set_carb_setting(self._carb_settings, "/physics/updateToUsd", update_to_usd)
         if update_velocities_to_usd is not None:
-            set_carb_setting(self._carb_settings, "/persistent/physics/updateVelocitiesToUsd", update_velocities_to_usd)
+            set_carb_setting(self._carb_settings, "/physics/updateVelocitiesToUsd", update_velocities_to_usd)
         if output_velocities_local_space is not None:
-            set_carb_setting(
-                self._carb_settings, "/persistent/physics/outputVelocitiesLocalSpace", output_velocities_local_space
-            )
+            set_carb_setting(self._carb_settings, "/physics/outputVelocitiesLocalSpace", output_velocities_local_space)
         return
 
     def get_physx_update_transformations_settings(self) -> Tuple[bool, bool, bool, bool]:
         """Gets how physx syncs with the usd when transformations are updated.
 
         Returns:
-            Tuple[bool, bool, bool, bool]: [update_to_fast_cache, update_to_usd, update_velocities_to_usd, output_velocities_local_space]
+            Tuple[bool, bool, bool, bool]: [update_to_usd, update_velocities_to_usd, output_velocities_local_space]
         """
         return (
-            get_carb_setting(self._carb_settings, "/persistent/physics/useFastCache"),
-            get_carb_setting(self._carb_settings, "/persistent/physics/updateToUsd"),
-            get_carb_setting(self._carb_settings, "/persistent/physics/updateVelocitiesToUsd"),
-            get_carb_setting(self._carb_settings, "/persistent/physics/outputVelocitiesLocalSpace"),
+            get_carb_setting(self._carb_settings, "/physics/updateToUsd"),
+            get_carb_setting(self._carb_settings, "/physics/updateVelocitiesToUsd"),
+            get_carb_setting(self._carb_settings, "/physics/outputVelocitiesLocalSpace"),
         )
 
     def _step(self, current_time: float) -> None:

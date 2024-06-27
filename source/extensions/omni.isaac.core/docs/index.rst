@@ -624,7 +624,7 @@ which can be automated, enumerated, serialized and so on.
 The most common types of settings are:
 
 * Persistent (saved between sessions): ``"/persistent/<setting>"``
-  |br| (e.g., ``"/persistent/physics/updateToUsd"``)
+  |br| (e.g., ``"/persistent/physics/numThreads"``)
 * Application: ``"/app/<setting>"`` (e.g., ``"/app/viewport/grid/enabled"``)
 * Extension: ``"/exts/<extension>/<setting>"`` (e.g., ``"/exts/omni.kit.debug.python/host"``)
 

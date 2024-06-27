@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.14.0] - 2024-06-27
+### Changed
+- Replaced persistent physics carb settings for the non persistent ones for USD updates.
+- Removed update_to_fast_cache from PhysicsContext.set_physx_update_transformations_settings and PhysicsContext.get_physx_update_transformations_settings
+
 ## [3.13.1] - 2024-06-14
 ### Changed
 - Moved common test code into common.py
