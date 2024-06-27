@@ -176,7 +176,7 @@ class DeformablePrimView(XFormPrimView):
                 "Using Deformable body requires the gpu pipeline or (a World initialized with a cuda device)"
             )
         self._physics_sim_view = physics_sim_view
-        self._physics_view = self._physics_sim_view.create_soft_body_view(self._regex_prim_paths.replace(".*", "*"))
+        self._physics_view = self._physics_sim_view.create_soft_body_view(self._regex_prim_paths[0].replace(".*", "*"))
         self._count = self._physics_view.count
         self._max_collision_mesh_elements_per_body = self._physics_view.max_elements_per_body
         self._max_collision_mesh_vertices_per_body = self._physics_view.max_vertices_per_body

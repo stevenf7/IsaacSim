@@ -49,6 +49,10 @@ class TestXFormPrimView(omni.kit.test.AsyncTestCase):
     async def tearDown(self):
         self._my_world.clear_instance()
 
+    async def test_list_of_regular_exprs(self):
+        view = XFormPrimView(prim_paths_expr=["/World/Franka_[1-2]", "/World/Frame_*"], name="random_view")
+        self.assertTrue(view.count() == 5)
+
     async def test_world_poses(self):
         current_positions, current_orientations = self._frankas_view.get_world_poses()
         self.assertTrue(np.isclose(current_positions, np.zeros([2, 3], dtype=np.float32)).all())

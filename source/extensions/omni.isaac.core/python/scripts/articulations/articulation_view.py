@@ -46,7 +46,7 @@ class ArticulationView(XFormPrimView):
         See the ``initialize`` method for more details.
 
     Args:
-        prim_paths_expr (str): prim paths regex to encapsulate all prims that match it.
+        prim_paths_expr (Union[str, List[str]]): prim paths regex to encapsulate all prims that match it.
                                 example: "/World/Env[1-5]/Franka" will match /World/Env1/Franka,
                                 /World/Env2/Franka..etc.
                                 (a non regex prim path can also be used to encapsulate one rigid prim).
@@ -104,7 +104,7 @@ class ArticulationView(XFormPrimView):
 
     def __init__(
         self,
-        prim_paths_expr: str,
+        prim_paths_expr: Union[str, List[str]],
         name: str = "articulation_prim_view",
         positions: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
         translations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
@@ -114,9 +114,15 @@ class ArticulationView(XFormPrimView):
         reset_xform_properties: bool = True,
     ) -> None:
         self._physics_view = None
+        if isinstance(prim_paths_expr, list):
+            prim_paths_expr = [
+                get_articulation_root_api_prim_path(prim_paths_expression) for prim_paths_expression in prim_paths_expr
+            ]
+        else:
+            prim_paths_expr = get_articulation_root_api_prim_path(prim_paths_expr)
         XFormPrimView.__init__(
             self,
-            prim_paths_expr=get_articulation_root_api_prim_path(prim_paths_expr),
+            prim_paths_expr=prim_paths_expr,
             name=name,
             positions=positions,
             translations=translations,
@@ -345,7 +351,9 @@ class ArticulationView(XFormPrimView):
             physics_sim_view = omni.physics.tensors.create_simulation_view(self._backend)
             physics_sim_view.set_subspace_roots("/")
         carb.log_info("initializing view for {}".format(self._name))
-        self._physics_view = physics_sim_view.create_articulation_view(self._regex_prim_paths.replace(".*", "*"))
+        self._physics_view = physics_sim_view.create_articulation_view(
+            [regular_expression.replace(".*", "*") for regular_expression in self._regex_prim_paths]
+        )
         assert self._physics_view.is_homogeneous
         self._physics_sim_view = physics_sim_view
         if not self._is_initialized:

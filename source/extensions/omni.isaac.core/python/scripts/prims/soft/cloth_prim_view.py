@@ -197,7 +197,7 @@ class ClothPrimView(XFormPrimView):
             carb.log_error("Using cloth view requires the gpu pipeline or (a World initialized with a cuda device)")
         self._physics_sim_view = physics_sim_view
         self._physics_view = self._physics_sim_view.create_particle_cloth_view(
-            self._regex_prim_paths.replace(".*", "*")
+            self._regex_prim_paths[0].replace(".*", "*")
         )
         self._count = self._physics_view.count
         self._max_springs_per_cloth = self._physics_view.max_springs_per_cloth

@@ -40,10 +40,11 @@ class RigidPrimView(XFormPrimView):
         See the ``initialize`` method for more details.
 
     Args:
-        prim_paths_expr (str): prim paths regex to encapsulate all prims that match it.
+        prim_paths_expr (Union[str, List[str]]): prim paths regex to encapsulate all prims that match it.
                                 example: "/World/Env[1-5]/Cube" will match /World/Env1/Cube,
                                 /World/Env2/Cube..etc.
-                                (a non regex prim path can also be used to encapsulate one rigid prim).
+                                (a non regex prim path can also be used to encapsulate one rigid prim). Additionally a
+                                list of regex can be provided. example ["/World/Env[1-5]/Cube", "/World/Env[10-19]/Cube"].
         name (str, optional): shortname to be used as a key by Scene class.
                                 Note: needs to be unique if the object is added to the Scene.
                                 Defaults to "rigid_prim_view".
@@ -247,7 +248,9 @@ class RigidPrimView(XFormPrimView):
             physics_sim_view.set_subspace_roots("/")
         carb.log_info("initializing view for {}".format(self._name))
         self._physics_sim_view = physics_sim_view
-        self._physics_view = physics_sim_view.create_rigid_body_view(self._regex_prim_paths.replace(".*", "*"))
+        self._physics_view = physics_sim_view.create_rigid_body_view(
+            [regular_expression.replace(".*", "*") for regular_expression in self._regex_prim_paths]
+        )
         self._num_shapes = self._physics_view.max_shapes
         if not self._non_root_link:
             default_positions, default_orientations = self.get_world_poses()
