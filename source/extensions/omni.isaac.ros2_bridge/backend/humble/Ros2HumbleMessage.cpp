@@ -879,14 +879,36 @@ void Ros2JointStateMessageHumble::getData(std::vector<char*>& jointNames,
     {
         std::memcpy(positionCommand, jointState_msg->position.data, num_actuators * sizeof(double));
     }
+    else if (positionCommand)
+    {
+        // Set to some sentinel value to indicate no data
+        for (size_t i = 0; i < num_actuators; i++)
+        {
+            positionCommand[i] = std::numeric_limits<double>::quiet_NaN();
+        }
+    }
     if (jointState_msg->velocity.size == num_actuators)
     {
         std::memcpy(velocityCommand, jointState_msg->velocity.data, num_actuators * sizeof(double));
+    }
+    else if (velocityCommand)
+    {
+        for (size_t i = 0; i < num_actuators; i++)
+        {
+            velocityCommand[i] = std::numeric_limits<double>::quiet_NaN();
+        }
     }
     if (jointState_msg->effort.size == num_actuators)
     {
         std::memcpy(effortCommand, jointState_msg->effort.data, num_actuators * sizeof(double));
     } // resize for the array was called before fillData in the subscriber callback
+    else if (effortCommand)
+    {
+        for (size_t i = 0; i < num_actuators; i++)
+        {
+            effortCommand[i] = std::numeric_limits<double>::quiet_NaN();
+        }
+    }
 
 
     timeStamp = jointState_msg->header.stamp.sec;

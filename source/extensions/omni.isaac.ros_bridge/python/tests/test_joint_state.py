@@ -367,14 +367,14 @@ class TestRosJointStateSubscriber(omni.kit.test.AsyncTestCase):
         ]
 
         joint_types = ["angular", "linear", "angular"]
-        test_velocities = [5, 0.1, -2.5]
+        target_velocities = [5, 0.1, -2.5]
         joint_stiffness = 0
         joint_damping = 1e4
         num_joints = 3
         # # set the stiffness and damping parameters accordingly for position control
         for i in range(num_joints):
             set_joint_drive_parameters(
-                joint_paths[i], joint_types[i], "velocity", test_velocities[i], joint_stiffness, joint_damping
+                joint_paths[i], joint_types[i], "velocity", target_velocities[i], joint_stiffness, joint_damping
             )
 
         # test velocity drive
@@ -392,6 +392,33 @@ class TestRosJointStateSubscriber(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(joint_command_received[0], test_velocity[0], delta=1e-3)
         self.assertAlmostEqual(joint_command_received[1], test_velocity[1], delta=1e-3)
         self.assertAlmostEqual(joint_command_received[2], test_velocity[2], delta=1e-3)
+
+        # test mixed drive
+        print("test mixed drive")
+        reset_robot()
+
+        # change prismatic joint back to postion drive
+        set_joint_drive_parameters(joint_paths[1], joint_types[1], "position", 0.2, 1e5, 1e4)
+
+        js_mixed = JointState()
+        js_mixed.name = ["CenterRevoluteJoint", "PrismaticJoint", "DistalRevoluteJoint"]
+        js_mixed.position = [float("nan"), 0.4, float("nan")]
+        js_mixed.velocity = [0.5, float("nan"), -2.5]
+
+        js_pub.publish(js_mixed)
+        # give it a second to move
+        await simulate_async(2)
+
+        joint_position_received = art_handle.get_joint_positions()
+        joint_velocity_received = art_handle.get_joint_velocities()
+        print("joint_position_received", joint_position_received)
+        print("joint_velocity_received", joint_velocity_received)
+
+        self.assertAlmostEqual(joint_position_received[1], 0.4, delta=1e-2)
+
+        self.assertAlmostEqual(joint_velocity_received[0], 0.5, delta=1e-2)
+        self.assertAlmostEqual(joint_velocity_received[2], -2.5, delta=1e-2)
+        self.assertAlmostEqual(joint_velocity_received[1], 0, delta=1e-2)
 
         reset_robot()
         js_pub.unregister()

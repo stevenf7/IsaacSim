@@ -1,4 +1,7 @@
 # Changelog
+## [1.15.5] - 2024-06-25
+### Fixed
+- ArticulationController Node allowing for multiple types of control
 
 ## [1.15.4] - 2024-05-16
 ### Fixed

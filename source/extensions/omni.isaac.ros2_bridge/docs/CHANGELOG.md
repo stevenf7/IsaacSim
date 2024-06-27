@@ -1,4 +1,10 @@
 # Changelog
+## [2.28.1] - 2024-06-25
+### Fixed
+- JointState Subscriber fills in nans when receiving empty arrays for command modes that are not used
+### Added
+- jointstate subscriber test for mixed controls
+
 ## [2.28.0] - 2024-06-17
 ### Added
 - Setting publish_multithreading_disabled for toggling ROS2 publishers to publish without multithreading
