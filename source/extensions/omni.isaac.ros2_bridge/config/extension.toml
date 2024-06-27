@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.27.0"
+version = "2.28.0"
 category = "Simulation"
 title = "ROS2 Bridge"
 description = "ROS2 Bridge"
@@ -34,6 +34,7 @@ preview_image = "data/preview.png"
 [settings]
 exts."omni.isaac.ros2_bridge".ros_distro = "humble" # This setting specified which ros distro to fallback onto if none were sourced.
 exts."omni.isaac.ros2_bridge".publish_without_verification = false # This setting specifies if ROS2 publishers are enabled regardless of whether there are active subscriptions to their topics.
+exts."omni.isaac.ros2_bridge".publish_multithreading_disabled = false # This setting specifies if multithreading should be disabled for the ROS2 image publisher node
 
 [[python.module]]
 name = "omni.isaac.ros2_bridge"
@@ -81,4 +82,3 @@ stdoutFailPatterns.exclude = [
     "*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_ros2_bridge_*: [/TestGraph] Unable to create ROS2 node, please check that namespace is valid*",
     '*[Error] [carb] [Plugin: omni.sensors.nv.lidar.ext.plugin] Dependency: [omni::sensors::lidar::IGenericModelOutputIOFactory v0.1] failed to be resolved.*', # feature not included in Windows
 ]
-
