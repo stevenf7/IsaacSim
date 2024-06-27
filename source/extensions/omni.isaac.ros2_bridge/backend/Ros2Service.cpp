@@ -11,15 +11,12 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#include "Ros2Humble.h"
+#include "Ros2Impl.h"
 
 #include <include/Ros2Macros.h>
 #include <rcl/rcl.h>
 
-Ros2ServiceHumble::Ros2ServiceHumble(Ros2NodeBase* node,
-                                     const char* service_name,
-                                     const void* type,
-                                     const Ros2QoSProfile& qos)
+Ros2ServiceImpl::Ros2ServiceImpl(Ros2NodeBase* node, const char* service_name, const void* type, const Ros2QoSProfile& qos)
     : mNode(node), wait_set_initialized(false)
 {
     mService = std::shared_ptr<rcl_service_t>(new rcl_service_t,
@@ -31,13 +28,13 @@ Ros2ServiceHumble::Ros2ServiceHumble(Ros2NodeBase* node,
                                                       rcl_service_fini(service, static_cast<rcl_node_t*>(node->node()));
                                                   if (RCL_RET_OK != ret)
                                                   {
-                                                      RCL_ERROR_MSG(Ros2ServiceHumble, rcl_service_fini);
+                                                      RCL_ERROR_MSG(Ros2ServiceImpl, rcl_service_fini);
                                                   }
                                                   delete service;
                                               });
     (*mService) = rcl_get_zero_initialized_service();
     rcl_service_options_t srv_ops = rcl_service_get_default_options();
-    srv_ops.qos = Ros2QoSProfileHumbleConverter::convert(qos);
+    srv_ops.qos = Ros2QoSProfileConverter::convert(qos);
     // srv_ops.qos.depth = history_depth;
 
     // rcl_service_default_options srv_ops = {
@@ -56,19 +53,19 @@ Ros2ServiceHumble::Ros2ServiceHumble(Ros2NodeBase* node,
                                     static_cast<const rosidl_service_type_support_t*>(type), service_name, &srv_ops);
     if (rc != RCL_RET_OK)
     {
-        RCL_ERROR_MSG(Ros2ServiceHumble, rcl_service_init);
+        RCL_ERROR_MSG(Ros2ServiceImpl, rcl_service_init);
         mService.reset();
         return;
     }
 }
-Ros2ServiceHumble::~Ros2ServiceHumble()
+Ros2ServiceImpl::~Ros2ServiceImpl()
 {
     if (wait_set_initialized)
     {
         rcl_ret_t rc = rcl_wait_set_fini(&wait_set);
         if (rc != RCL_RET_OK)
         {
-            RCL_ERROR_MSG(~Ros2ServiceHumble, rcl_wait_set_fini);
+            RCL_ERROR_MSG(~Ros2ServiceImpl, rcl_wait_set_fini);
         }
         wait_set_initialized = false;
     }
@@ -77,7 +74,7 @@ Ros2ServiceHumble::~Ros2ServiceHumble()
     return;
 }
 
-bool Ros2ServiceHumble::getRequest(void* req_message)
+bool Ros2ServiceImpl::getRequest(void* req_message)
 {
     if (!wait_set_initialized)
     {
@@ -123,7 +120,7 @@ bool Ros2ServiceHumble::getRequest(void* req_message)
     return false;
 }
 
-bool Ros2ServiceHumble::sendResponse(void* res_message)
+bool Ros2ServiceImpl::sendResponse(void* res_message)
 {
     if (!wait_set_initialized)
         return false;

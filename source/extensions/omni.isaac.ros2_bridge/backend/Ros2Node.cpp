@@ -10,11 +10,12 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#include "Ros2Foxy.h"
+#include "Ros2Impl.h"
 
 #include <include/Ros2Macros.h>
 #include <rcl/rcl.h>
-Ros2NodeFoxy::Ros2NodeFoxy(const char* name, const char* name_space, Ros2HandleBase* handle)
+
+Ros2NodeImpl::Ros2NodeImpl(const char* name, const char* name_space, Ros2HandleBase* handle)
     : mHandle(handle), mNode(nullptr)
 {
     rcl_ret_t rc;
@@ -24,7 +25,7 @@ Ros2NodeFoxy::Ros2NodeFoxy(const char* name, const char* name_space, Ros2HandleB
                                             rcl_ret_t ret = rcl_node_fini(node);
                                             if (RCL_RET_OK != ret)
                                             {
-                                                RCL_ERROR_MSG(Ros2NodeFoxy, rcl_node_fini);
+                                                RCL_ERROR_MSG(Ros2NodeImpl, rcl_node_fini);
                                             }
                                             delete node;
                                         });
@@ -36,20 +37,20 @@ Ros2NodeFoxy::Ros2NodeFoxy(const char* name, const char* name_space, Ros2HandleB
         if (rc != RCL_RET_OK)
         {
             mNode.reset();
-            RCL_ERROR_MSG(Ros2NodeFoxy, rcl_node_init);
+            RCL_ERROR_MSG(Ros2NodeImpl, rcl_node_init);
             return;
         }
     }
 }
-Ros2NodeFoxy::~Ros2NodeFoxy()
+Ros2NodeImpl::~Ros2NodeImpl()
 {
     mNode.reset();
 }
-Ros2HandleBase* Ros2NodeFoxy::handle()
+Ros2HandleBase* Ros2NodeImpl::handle()
 {
     return mHandle;
 }
-void* Ros2NodeFoxy::node()
+void* Ros2NodeImpl::node()
 {
     return mNode.get();
 }

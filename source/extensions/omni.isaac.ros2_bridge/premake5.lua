@@ -38,10 +38,12 @@ project_with_location("omni.isaac.ros2_bridge.foxy")
 
     pic "On"
     staticruntime "Off"
-    add_files("impl", "backend/foxy")
+    defines { "ROS2_BACKEND_FOXY" }
+    add_files("impl", "backend")
     add_files("iface", "include")
     includedirs {
         "%{root}/source/extensions/omni.isaac.common_includes/include",
+        "%{root}/_build/target-deps/cuda/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/omni_physics/%{config}/include",
@@ -96,7 +98,8 @@ project_with_location("omni.isaac.ros2_bridge.humble")
 
     pic "On"
     staticruntime "Off"
-    add_files("impl", "backend/humble")
+    defines { "ROS2_BACKEND_HUMBLE" }
+    add_files("impl", "backend")
     add_files("iface", "include")
     includedirs {
         "%{root}/source/extensions/omni.isaac.common_includes/include",

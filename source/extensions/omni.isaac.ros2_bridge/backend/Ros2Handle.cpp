@@ -9,16 +9,17 @@
 // clang-format off
 #include <pch/UsdPCH.h>
 // clang-format on
-#include "Ros2Foxy.h"
+#include "Ros2Impl.h"
 
 #include <include/Ros2Macros.h>
 #include <rcl/rcl.h>
-void* Ros2HandleFoxy::context()
+
+void* Ros2HandleImpl::context()
 {
     return mContext.get();
 }
 
-void Ros2HandleFoxy::init(int argc, char const* const* argv, bool setDomainId, size_t domainId)
+void Ros2HandleImpl::init(int argc, char const* const* argv, bool setDomainId, size_t domainId)
 {
     rcl_ret_t rc;
     // Initialize RCL init options and copy them
@@ -26,7 +27,7 @@ void Ros2HandleFoxy::init(int argc, char const* const* argv, bool setDomainId, s
     rc = rcl_init_options_init(&mInitOptions, rcl_get_default_allocator());
     if (rc != RCL_RET_OK)
     {
-        RCL_ERROR_MSG(Ros2HandleFoxy, rcl_init_options_init);
+        RCL_ERROR_MSG(Ros2HandleBase, rcl_init_options_init);
         return;
     }
     if (setDomainId)
@@ -46,13 +47,13 @@ void Ros2HandleFoxy::init(int argc, char const* const* argv, bool setDomainId, s
                                                           ret = rcl_shutdown(context);
                                                           if (RCL_RET_OK != ret)
                                                           {
-                                                              RCL_ERROR_MSG(Ros2HandleFoxy, rcl_shutdown);
+                                                              RCL_ERROR_MSG(Ros2HandleBase, rcl_shutdown);
                                                           }
 
                                                           ret = rcl_context_fini(context);
                                                           if (RCL_RET_OK != ret)
                                                           {
-                                                              RCL_ERROR_MSG(Ros2HandleFoxy, rcl_context_fini);
+                                                              RCL_ERROR_MSG(Ros2HandleBase, rcl_context_fini);
                                                           }
                                                       }
                                                   }
@@ -64,11 +65,11 @@ void Ros2HandleFoxy::init(int argc, char const* const* argv, bool setDomainId, s
     rc = rcl_init(argc, argv, &mInitOptions, mContext.get());
     if (rc != RCL_RET_OK)
     {
-        RCL_ERROR_MSG(Ros2HandleFoxy, rcl_init);
+        RCL_ERROR_MSG(Ros2HandleBase, rcl_init);
         return;
     }
 }
-bool Ros2HandleFoxy::is_valid()
+bool Ros2HandleImpl::is_valid()
 {
     if (mContext.get())
     {
@@ -76,7 +77,7 @@ bool Ros2HandleFoxy::is_valid()
     }
     return false;
 }
-bool Ros2HandleFoxy::shutdown(const char* shutdown_reason)
+bool Ros2HandleImpl::shutdown(const char* shutdown_reason)
 {
     // If the context is not valid, no need to do cleanup
     if (!mContext)
@@ -88,7 +89,7 @@ bool Ros2HandleFoxy::shutdown(const char* shutdown_reason)
     rcl_ret_t rc = rcl_init_options_fini(&mInitOptions);
     if (rc != RCL_RET_OK)
     {
-        RCL_ERROR_MSG(~Ros2HandleFoxy, rcl_init_options_fini);
+        RCL_ERROR_MSG(~Ros2HandleBase, rcl_init_options_fini);
         return false;
     }
     return true;
