@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.12.0] - 2024-06-26
+### Added
+- --ovd="/path/to/capture/" argument that simplifies capturing of physics debugging data
 
 ## [1.11.0] - 2024-05-28
 ### Added

@@ -374,6 +374,27 @@ class SimulationApp:
                 "--/app/profilerBackend=[tracy,nvtx]",
             ]
 
+        # look for --ovd="directory" and replace with the proper settings
+        index = None
+        for i, s in enumerate(unknown_args):
+            if s.startswith("--ovd"):
+                index = i
+                break
+        if index is not None:
+            # remove --opvd from the incoming arguments and replace with the following expanded settings
+            pvdString = unknown_args.pop(index)
+            # parse out the directory string, so find the first =
+            try:
+                indexEqual = pvdString.index("=")
+            except ValueError:
+                carb.log_error('Malformed --ovd argument. Expected: --ovd="/path/to/capture/"')
+            else:
+                pvdDirArg = "--/persistent/physics/omniPvdOvdRecordingDirectory" + pvdString[indexEqual:]
+                pvdEnabled = "--/physics/omniPvdOutputEnabled=true"
+                print("Passing the OmniPVD arguments:", pvdDirArg, pvdEnabled)
+                args.append(pvdDirArg)
+                args.append(pvdEnabled)
+
         # pass all extra arguments onto the main kit app
         print("Starting kit application with the following args: ", args)
         print("Passing the following args to the base kit application: ", unknown_args)
