@@ -13,9 +13,9 @@ WORKDIR /isaac-sim
 COPY _inputs/isaac-sim /isaac-sim/
 COPY data/license.sh /isaac-sim/
 COPY data/privacy.sh /isaac-sim/
-RUN mkdir -p /isaac-sim/oss/source
-COPY oss/source/isaac-sim /isaac-sim/oss/source
-COPY oss/license/isaac-sim /isaac-sim/oss/license
+# RUN mkdir -p /isaac-sim/oss/source
+# COPY oss/source/isaac-sim /isaac-sim/oss/source
+# COPY oss/license/isaac-sim /isaac-sim/oss/license
 
 # Reset apt sources.list
 RUN mv /etc/apt/sources.list.canonical /etc/apt/sources.list
@@ -26,10 +26,11 @@ RUN mv /etc/apt/sources.list.canonical /etc/apt/sources.list
 # USER ubuntu
 
 # ISIM-968 - libglib2.0-0
-RUN apt-get update && \
-	apt-get install -y --no-install-recommends \
-        libglib2.0-0 \
-        && rm -rf /var/lib/apt/lists/*
+# ISIM-1452 - removed libglib2.0-0
+# RUN apt-get update && \
+# 	apt-get install -y --no-install-recommends \
+#         libglib2.0-0 \
+#         && rm -rf /var/lib/apt/lists/*
 
 # WORKDIR /home/ubuntu/
 RUN mkdir -p /root/.nvidia-omniverse/config
