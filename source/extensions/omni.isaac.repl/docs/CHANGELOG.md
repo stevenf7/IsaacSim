@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.0] - 2024-06-26
+### Changed
+- Deprecate extension in favor of the vscode extension
+
 ## [1.0.3] - 2022-04-16
 
 ### Fixed
