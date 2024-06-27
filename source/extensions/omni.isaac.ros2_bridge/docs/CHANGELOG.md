@@ -1,4 +1,8 @@
 # Changelog
+## [2.28.0] - 2024-06-17
+### Added
+- Setting publish_multithreading_disabled for toggling ROS2 publishers to publish without multithreading
+
 ## [2.27.0] - 2024-06-14
 ### Changed
 - Moved and renamed Navigation example in the menu to under Isaac Examples -> ROS2 -> Navigation -> Carter Navigation
