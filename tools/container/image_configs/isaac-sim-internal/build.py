@@ -21,8 +21,6 @@ files = [
             "data/license.sh",
             "data/privacy.sh",
             "data/ov_config/*",
-            "oss/source/isaac-sim/*",
-            "oss/license/isaac-sim/*",
         ],
     }
 ]

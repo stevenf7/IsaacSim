@@ -1322,7 +1322,7 @@ internal-publish-to-packman:
 internal-publish-container:
   extends:
   - .deploy-common
-  - .runner-utility-linux-x86_64
+  - .omni_nvks_runner_with_docker
   variables:
     APP_NAME: "isaac-sim-internal"
     FAMILY_NAME: "gl"
@@ -1356,7 +1356,7 @@ internal-publish-container:
 publish-container:
   extends:
   - .deploy-common
-  - .runner-utility-linux-x86_64
+  - .omni_nvks_runner_with_docker
   variables:
     APP_NAME: "isaac-sim"
     FAMILY_NAME: "gl"
