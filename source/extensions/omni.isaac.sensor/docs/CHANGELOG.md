@@ -1,5 +1,10 @@
 # Changelog
 
+## [12.4.0] - 2024-06-28
+### Fixed
+- Performance issue due to CUDA sync in omni::sensors::nv::lidar::LidarRotary::batchEnd
+- Missing omni::sensors:::IProfileReaderFactory v0.1 dependency
+
 ## [12.3.1] - 2024-06-25
 ### Changed
 - OgnIsaacPrintRTXSensorInfo - corrects node name in warning text
