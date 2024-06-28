@@ -11,7 +11,9 @@ import carb
 import numpy as np
 import omni.kit.test
 import omni.physx
+from omni.isaac.core.objects import DynamicCuboid
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
+from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.stage import add_reference_to_stage, open_stage_async
 from omni.isaac.nucleus import get_assets_root_path_async
 from pxr import Gf, Sdf, UsdGeom, UsdPhysics
@@ -39,77 +41,30 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
         pass
 
-    # simple fastcache smoke test, disabling because fastcache is not used anymore
-    # async def test_fast_cache(self):
-    #     carb.settings.get_settings().set_int("persistent/physics/useFastCache", True)
-
-    #     cubePath = "/World/Cube"
-    #     cubeGeom = UsdGeom.Cube.Define(self._stage, cubePath)
-    #     cubeGeom.CreateSizeAttr(100)
-    #     cubePrim = self._stage.GetPrimAtPath(cubePath)
-    #     # await omni.kit.app.get_app().next_update_async()  # Need this to avoid flatcache errors
-    #     rigidBodyAPI = UsdPhysics.RigidBodyAPI.Apply(cubePrim)
-
-    #     omni.timeline.get_timeline_interface().play()
-    #     await omni.kit.app.get_app().next_update_async()
-    #     omni.timeline.get_timeline_interface().stop()
-    #     pass
-
-    # Disabling test, because fastcache is not used anymore
-    # async def test_fast_cache_no_usd_updates(self):
-
-    #     carb.settings.get_settings().set_int("persistent/physics/useFastCache", True)
-    #     carb.settings.get_settings().set_int("persistent/physics/updateToUsd", False)
-
-    #     cubePath = "/World/Cube"
-    #     cubeGeom = UsdGeom.Cube.Define(self._stage, cubePath)
-    #     cubeGeom.CreateSizeAttr(100)
-    #     cubePrim = self._stage.GetPrimAtPath(cubePath)
-    #     # await omni.kit.app.get_app().next_update_async()  # Need this to avoid flatcache errors
-    #     UsdPhysics.RigidBodyAPI.Apply(cubePrim)
-
-    #     omni.timeline.get_timeline_interface().play()
-    #     for frame in range(60):
-    #         await omni.kit.app.get_app().next_update_async()
-    #     physx_interface = omni.physx.acquire_physx_interface()
-    #     position = physx_interface.get_rigidbody_transformation("/World/Cube")["position"]
-    #     self.assertNotAlmostEqual(position[2], 0, 0)
-    #     usd_position = omni.usd.get_world_transform_matrix(cubePrim).ExtractTranslation()
-    #     self.assertAlmostEqual(usd_position[2], 0, 0)
-    #     # carb.settings.get_settings().set_int("persistent/physics/updateToUsd", True)
-    #     # await omni.kit.app.get_app().next_update_async()
-    #     # calling this forces the pose to update
-    #     physx_interface.update_transformations(True, True, True, False)
-    #     await omni.kit.app.get_app().next_update_async()
-    #     usd_position = omni.usd.get_world_transform_matrix(cubePrim).ExtractTranslation()
-    #     self.assertNotAlmostEqual(usd_position[2], 0, 0)
-    #     omni.timeline.get_timeline_interface().pause()
-    #     pass
-
-    async def test_fast_cache_with_usd_updates(self):
-        carb.settings.get_settings().set_int("persistent/physics/useFastCache", True)
-        carb.settings.get_settings().set_int("persistent/physics/updateToUsd", True)
-
-        cubePath = "/World/Cube"
-        cubeGeom = UsdGeom.Cube.Define(self._stage, cubePath)
-        cubeGeom.CreateSizeAttr(100)
-        cubePrim = self._stage.GetPrimAtPath(cubePath)
-        # await omni.kit.app.get_app().next_update_async()  # Need this to avoid flatcache errors
-        rigidBodyAPI = UsdPhysics.RigidBodyAPI.Apply(cubePrim)
+    async def test_usd_updates(self):
+        carb.settings.get_settings().set_int("physics/updateToUsd", True)
+        cube = DynamicCuboid(prim_path="/World/Cube", position=[0, 0, 25])
+        cube_prim = get_prim_at_path("/World/Cube")
 
         omni.timeline.get_timeline_interface().play()
         for frame in range(60):
             await omni.kit.app.get_app().next_update_async()
         # check to make sure that the cube fell due to gravity
-        position = np.array(omni.usd.get_world_transform_matrix(cubePrim).ExtractTranslation())
-        self.assertNotAlmostEqual(position[2], 0, 0)
+        position = np.array(omni.usd.get_world_transform_matrix(cube_prim).ExtractTranslation())
+        self.assertAlmostEquals(position[2], 20.013252, 0)
+        carb.settings.get_settings().set_int("physics/updateToUsd", False)
         omni.timeline.get_timeline_interface().stop()
+        await omni.kit.app.get_app().next_update_async()
+        omni.timeline.get_timeline_interface().play()
+        for frame in range(60):
+            await omni.kit.app.get_app().next_update_async()
+        position = np.array(omni.usd.get_world_transform_matrix(cube_prim).ExtractTranslation())
+        self.assertAlmostEquals(position[2], 25.0, 0)
         pass
 
     async def test_rigid_body(self):
 
-        carb.settings.get_settings().set_int("persistent/physics/useFastCache", False)
-        carb.settings.get_settings().set_int("persistent/physics/updateToUsd", True)
+        carb.settings.get_settings().set_int("/physics/updateToUsd", True)
 
         dt = 1.0 / self._physics_rate
 
