@@ -142,6 +142,10 @@ class ArticulationView(XFormPrimView):
         self._dof_indices = None
         self._dof_types = None
         self._metadata = None
+        self._paused_motion = False
+        self._paused_position_targets = None
+        self._paused_velocity_targets = None
+        self._paused_dof_velocities = None
 
     def __del__(self):
         del self._physics_view
@@ -4854,3 +4858,55 @@ class ArticulationView(XFormPrimView):
             )
         else:
             carb.log_warn("Physics Simulation View is not created yet in order to use set_fixed_tendon_properties")
+
+    def pause_motion(self) -> None:
+        """
+        Pauses the motion of all articulations wrapped under the ArticulationView.
+        """
+        if not self._is_initialized:
+            carb.log_warn("ArticulationView needs to be initialized.")
+            return None
+        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            indices = self._backend_utils.resolve_indices(None, self.count, self._device)
+            self._paused_position_targets = self._physics_view.get_dof_position_targets()
+            self._paused_velocity_targets = self._physics_view.get_dof_velocity_targets()
+            self._paused_dof_velocities = self._physics_view.get_dof_velocities()
+            self._physics_view.set_dof_velocities(
+                self._backend_utils.create_zeros_tensor(
+                    shape=[self.count, self.num_dof], dtype="float32", device=self._device
+                ),
+                indices,
+            )
+            self._physics_view.set_dof_position_targets(self._physics_view.get_dof_positions(), indices)
+            self._physics_view.set_dof_velocity_targets(
+                self._backend_utils.create_zeros_tensor(
+                    shape=[self.count, self.num_dof], dtype="float32", device=self._device
+                ),
+                indices,
+            )
+            self._paused_motion = True
+        else:
+            carb.log_warn("Physics Simulation View is not created yet in order to use pause_motion")
+            return None
+
+    def resume_motion(self):
+        """
+        Resumes the motion of all articulations wrapped under the ArticulationView using the position and velocity dof targets
+        cached when pause_motion was called.
+        """
+        if not self._is_initialized:
+            carb.log_warn("ArticulationView needs to be initialized.")
+            return None
+        if not self._paused_motion:
+            carb.log_warn("ArticulationView needs to be paused in order to use resume_motion.")
+            return None
+
+        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            indices = self._backend_utils.resolve_indices(None, self.count, self._device)
+            self._physics_view.set_dof_velocities(self._paused_dof_velocities, indices)
+            self._physics_view.set_dof_position_targets(self._paused_position_targets, indices)
+            self._physics_view.set_dof_velocity_targets(self._paused_velocity_targets, indices)
+            self._paused_motion = False
+        else:
+            carb.log_warn("Physics Simulation View is not created yet in order to use resume_motion")
+            return None

@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.16.0] - 2024-06-28
+### Added
+- ArticulationView.pause_motion() and ArticulationView.resume_motion() methods
+
 ## [3.15.0] - 2024-06-27
 ### Fixed
 - get_articulation_root_api_prim_path for inputs like "/World/Frank_*" instead of "/World/Franka_.*"
