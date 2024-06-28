@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.1.0] - 2024-06-28
+### Added
+- Added lightbeam sensor to Isaac Sensor Schema, bumping version
+
 ## [2.0.2] - 2024-04-19
 ### Changed
 - Removed omni.usd.schema.physics dependency
