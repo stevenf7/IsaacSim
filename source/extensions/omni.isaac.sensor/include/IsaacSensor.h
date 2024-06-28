@@ -96,6 +96,9 @@ struct LightBeamSensorInterface
     int(CARB_ABI* getNumRays)(const char* usdPath);
     uint8_t*(CARB_ABI* getBeamHitData)(const char* usdPath);
     carb::Float3*(CARB_ABI* getHitPosData)(const char* usdPath);
+    void(CARB_ABI* getTransformData)(const char* usdPath, omni::math::linalg::matrix4d& matrixOutput);
+    carb::Float3*(CARB_ABI* getBeamOrigins)(const char* usdPath);
+    carb::Float3*(CARB_ABI* getBeamEndPoints)(const char* usdPath);
 };
 
 }

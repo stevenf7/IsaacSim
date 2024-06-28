@@ -26,6 +26,11 @@
                 "type": "execution",
                 "description": "Output execution triggers when sensor has data"
             },
+            "numRays": {
+                "type": "int",
+                "description": "The number of rays in light curtain",
+                "default": 0
+            },
             "beamHitData": {
                 "type": "bool[]",
                 "description": "Array of bools that registers if a light beam is broken",
@@ -41,6 +46,18 @@
             "hitPosData": {
                 "type": "pointf[3][]",
                 "description": "Array containing hit position data",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "beamOrigins": {
+                "type": "pointf[3][]",
+                "description": "Array containing origins of each beam",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "beamEndPoints": {
+                "type": "pointf[3][]",
+                "description": "Array containing end points of each beam",
                 "memoryType": "cpu",
                 "default": []
             }

@@ -69,6 +69,29 @@ public:
         return mHitPos;
     }
 
+    // get transform of sensor
+    void getTransformData(omni::math::linalg::matrix4d& matrixOutput)
+    {
+        // quatd is i,j,k,w, but constructor is quatd(w, i, j, k)
+        omni::math::linalg::vec3d pos{ mWorldTranslation.x, mWorldTranslation.y, mWorldTranslation.z };
+        omni::math::linalg::quatd rot{ mWorldRotation.w, mWorldRotation.x, mWorldRotation.y, mWorldRotation.z };
+        matrixOutput.SetIdentity();
+        matrixOutput.SetRotateOnly(rot);
+        matrixOutput.SetTranslateOnly(pos);
+    }
+
+    // get array of beam origins
+    std::vector<carb::Float3>& getBeamOrigins()
+    {
+        return mBeamOrigins;
+    }
+
+    // get array of beam end points
+    std::vector<carb::Float3>& getBeamEndPoints()
+    {
+        return mBeamEndPoints;
+    }
+
 private:
     void scan(const ::physx::PxVec3& origin, const ::physx::PxQuat& worldRotation);
 
@@ -84,6 +107,8 @@ private:
     bool mPreviousEnabled = true;
     // we use uint8_t instead of bool because C++ doesn't support bool* pointer
     std::vector<uint8_t> mBeamHit; // 0 false, 1 true
+    std::vector<carb::Float3> mBeamOrigins;
+    std::vector<carb::Float3> mBeamEndPoints;
 
     // for ray cast
     float mMinDepth = 0.0f;

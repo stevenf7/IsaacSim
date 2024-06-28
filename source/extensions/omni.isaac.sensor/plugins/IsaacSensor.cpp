@@ -248,7 +248,7 @@ bool CARB_ABI isLightBeamSensor(const char* primPath)
         }
         else
         {
-            CARB_LOG_ERROR("Light Beam Sensor does not exist");
+            CARB_LOG_ERROR("isLightBeamSensor: Light Beam Sensor does not exist (%s)", primPath);
             return false;
         }
     }
@@ -272,7 +272,7 @@ float* CARB_ABI getLinearDepthData(const char* primPath)
         }
         else
         {
-            CARB_LOG_ERROR("Light Beam Sensor does not exist");
+            CARB_LOG_ERROR("getLinearDepthData: Light Beam Sensor does not exist (%s)", primPath);
             return nullptr;
         }
     }
@@ -296,7 +296,7 @@ int CARB_ABI getNumRays(const char* primPath)
         }
         else
         {
-            CARB_LOG_ERROR("Light Beam Sensor does not exist");
+            CARB_LOG_ERROR("getNumRays: Light Beam Sensor does not exist (%s)", primPath);
             return 0;
         }
     }
@@ -320,7 +320,7 @@ carb::Float3* CARB_ABI getHitPosData(const char* primPath)
         }
         else
         {
-            CARB_LOG_ERROR("Light Beam Sensor does not exist");
+            CARB_LOG_ERROR("getHitPosData: Light Beam Sensor does not exist (%s)", primPath);
             return 0;
         }
     }
@@ -344,7 +344,79 @@ uint8_t* CARB_ABI getBeamHitData(const char* primPath)
         }
         else
         {
-            CARB_LOG_ERROR("Light Beam Sensor does not exist");
+            CARB_LOG_ERROR("getBeamHitData: Light Beam Sensor does not exist (%s)", primPath);
+            return 0;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Isaac Sensor Manager does not exist");
+        return 0;
+    }
+}
+
+void CARB_ABI getTransformData(const char* primPath, omni::math::linalg::matrix4d& matrixOutput)
+{
+    if (g_stage && g_isaacSensorManager)
+    {
+        omni::isaac::sensor::LightBeamSensor* sensor =
+            g_isaacSensorManager->getLightBeamSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+
+        if (sensor)
+        {
+            sensor->getTransformData(matrixOutput);
+        }
+        else
+        {
+            CARB_LOG_ERROR("getTransformData: Light Beam Sensor does not exist (%s)", primPath);
+            matrixOutput.SetIdentity();
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Isaac Sensor Manager does not exist");
+        matrixOutput.SetIdentity();
+    }
+}
+
+carb::Float3* CARB_ABI getBeamOrigins(const char* primPath)
+{
+    if (g_stage && g_isaacSensorManager)
+    {
+        omni::isaac::sensor::LightBeamSensor* sensor =
+            g_isaacSensorManager->getLightBeamSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+
+        if (sensor)
+        {
+            return sensor->getBeamOrigins().data();
+        }
+        else
+        {
+            CARB_LOG_ERROR("getBeamOrigins: Light Beam Sensor does not exist (%s)", primPath);
+            return 0;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Isaac Sensor Manager does not exist");
+        return 0;
+    }
+}
+
+carb::Float3* CARB_ABI getBeamEndPoints(const char* primPath)
+{
+    if (g_stage && g_isaacSensorManager)
+    {
+        omni::isaac::sensor::LightBeamSensor* sensor =
+            g_isaacSensorManager->getLightBeamSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+
+        if (sensor)
+        {
+            return sensor->getBeamEndPoints().data();
+        }
+        else
+        {
+            CARB_LOG_ERROR("getBeamEndPoints: Light Beam Sensor does not exist (%s)", primPath);
             return 0;
         }
     }
@@ -600,6 +672,9 @@ void fillInterface(omni::isaac::sensor::LightBeamSensorInterface& iface)
     iface.getNumRays = lightbeam_sensor::getNumRays;
     iface.getLinearDepthData = lightbeam_sensor::getLinearDepthData;
     iface.getHitPosData = lightbeam_sensor::getHitPosData;
+    iface.getTransformData = lightbeam_sensor::getTransformData;
+    iface.getBeamOrigins = lightbeam_sensor::getBeamOrigins;
+    iface.getBeamEndPoints = lightbeam_sensor::getBeamEndPoints;
 }
 
 #ifdef _WIN32

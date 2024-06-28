@@ -82,6 +82,8 @@ void LightBeamSensor::onComponentChange()
     mLinearDepth.assign(mNumRays, 0);
     mHitPos.assign(mNumRays, { 0, 0, 0 });
     mBeamHit.assign(mNumRays, 0);
+    mBeamOrigins.assign(mNumRays, { 0, 0, 0 });
+    mBeamEndPoints.assign(mNumRays, { 0, 0, 0 });
 
     pxr::UsdPrimRange range = this->mStage->Traverse();
 
@@ -122,9 +124,15 @@ void LightBeamSensor::scan(const ::physx::PxVec3& origin, const ::physx::PxQuat&
             ::physx::PxVec3 rayOffset = ray * mCurtainLength / mNumRays * unitCurtain;
             ::physx::PxRaycastHit raycastHit;
 
+            // Calculate the start point of the ray
+            ::physx::PxVec3 startPoint = origin + unitDir * mMinDepth + rayOffset;
+
             // Project the start point out to prevent collisions from origin
             const bool hit = ::physx::PxSceneQueryExt::raycastSingle(
-                *mPxScene, origin + unitDir * mMinDepth + rayOffset, unitDir, mMaxDepth, mHitFlags, raycastHit);
+                *mPxScene, startPoint, unitDir, mMaxDepth, mHitFlags, raycastHit);
+
+            // Store the start point (in world coordinates)
+            mBeamOrigins[ray] = { startPoint.x, startPoint.y, startPoint.z };
 
             if (hit)
             {
@@ -133,12 +141,17 @@ void LightBeamSensor::scan(const ::physx::PxVec3& origin, const ::physx::PxQuat&
                 mLinearDepth[ray] = (raycastHit.distance + mMinDepth) * mMetersPerUnit; // in meters
                 ::physx::PxVec3 hitPosRel = worldRotation.rotateInv(raycastHit.position - origin);
                 mHitPos[ray] = { hitPosRel.x, hitPosRel.y, hitPosRel.z }; // relative to the sensor location
+                // Calculate and store the end point (in world coordinates)
+                ::physx::PxVec3 endPoint = raycastHit.position;
+                mBeamEndPoints[ray] = { endPoint.x, endPoint.y, endPoint.z };
             }
             else
             {
                 mBeamHit[ray] = 0;
                 mLinearDepth[ray] = mMaxDepth * mMetersPerUnit; // in meters
-                ::physx::PxVec3 hitPos = origin + unitDir * (mMaxDepth + mMinDepth);
+                ::physx::PxVec3 hitPos = origin + unitDir * (mMaxDepth + mMinDepth) + rayOffset;
+                // store the end point (in world coordinates)
+                mBeamEndPoints[ray] = { hitPos.x, hitPos.y, hitPos.z };
                 ::physx::PxVec3 hitPosRel = worldRotation.rotateInv(hitPos - origin);
                 mHitPos[ray] = { hitPosRel.x, hitPosRel.y, hitPosRel.z };
             }
