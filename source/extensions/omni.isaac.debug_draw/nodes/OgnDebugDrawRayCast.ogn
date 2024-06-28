@@ -1,0 +1,60 @@
+{
+    "DebugDrawRayCast": {
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",
+        "description": [
+            "Take arrays of ray start and end points as input and display it in the scene."
+        ],
+        "metadata": {
+            "uiName": "Isaac Debug Draw RayCast"
+        },
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacDebugDraw",
+        "inputs": {
+            "exec": {
+                "type": "execution",
+                "description": "The input execution port"
+            },
+            "numRays": {
+                "type": "int",
+                "description": "The number of rays to draw",
+                "default": 0
+            },
+            "transform": {
+                "type": "matrixd[4]",
+                "description": "The matrix to transform the rays by"
+            },
+            "color": {
+                "type": "colorf[4]",
+                "description": "Color of rays",
+                "default": [0.75, 0.75, 1, 1]
+            },
+            "beamWidth": {
+                "type": "float",
+                "description": "Width of rays",
+                "default": 0.02
+            },
+            "doTransform": {
+                "type": "bool",
+                "description": "Translate and Rotate rays by transform",
+                "default": true,
+                "uiName": "Do Transform"
+            },
+            "beamOrigins": {
+                "type": "pointf[3][]",
+                "description": "Array containing origins of each ray",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "beamEndPoints": {
+                "type": "pointf[3][]",
+                "description": "Array containing end points of each ray",
+                "memoryType": "cpu",
+                "default": []
+            }
+        },
+        "state": {
+            "$comment": "This section exists solely to inform the scheduler that there is internal state information."
+        }
+    }
+}

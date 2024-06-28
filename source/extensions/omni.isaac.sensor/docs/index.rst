@@ -273,6 +273,50 @@ Output Types
 
 - is_valid (*boolean*): The validitty of the sensor measurement.
 
+LightBeam sensor Interface
+===========================
+
+This submodule provides an interface to simulate a LightBeam sensor, which provides linear depth and hit positions of each raycast.
+
+A simplified command is provided to create a LightBeam sensor:
+
+.. automethod:: omni.isaac.sensor.scripts.commands.IsaacSensorCreateLightBeamSensor        
+
+Similiarly, once a LightBeam sensor is created, you can use this interface to interact with the simulated LightBeam sensor. 
+You must first call the acquire_lightbeam_sensor_interface. 
+
+.. code-block:: python
+    :linenos:
+
+    from omni.isaac.sensor import _sensor
+    _ls = _sensor.acquire_lightbeam_sensor_interface()
+
+Acquiring Extension Interface
+-------------------------------
+
+.. automethod:: omni.isaac.sensor._sensor.acquire_lightbeam_sensor_interface
+.. automethod:: omni.isaac.sensor._sensor.release_lightbeam_sensor_interface
+
+To collect the most recent data, call the following interface methods:
+
+.. code-block:: python
+
+    # This will return a vector of uint8_t (0 false, 1 true)
+    beam_hit = _ls.get_beam_hit_data("/World/LightBeam_Sensor")
+    # This will the number of rays in the light curtain
+    num_rays = _ls.get_num_rays("/World/LightBeam_Sensor")
+    # This will return a vector of floats of the linear depth of each raycast
+    linear_depth_data = _ls.get_linear_depth_data("/World/LightBeam_Sensor")
+    # This will return a vector of xyz points of hit positions of each raycast
+    hit_pos_data = _ls.get_hit_pos_data("/World/LightBeam_Sensor")
+
+Interface Methods
+-------------------
+
+.. autoclass:: omni.isaac.sensor._sensor.LightBeamSensorInterface
+    :members:
+    :undoc-members:
+
 Omnigraph Nodes
 =======================
 

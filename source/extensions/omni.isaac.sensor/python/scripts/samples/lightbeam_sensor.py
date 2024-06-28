@@ -11,10 +11,12 @@ import weakref
 
 import carb
 import omni
+import omni.graph.core as og
 import omni.kit.commands
 import omni.physx as _physx
 import omni.ui as ui
 from omni.isaac.core.utils.prims import delete_prim, get_prim_at_path
+from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.nucleus import get_assets_root_path
 from omni.isaac.sensor import _sensor
 from omni.isaac.ui.menu import make_menu_item_description
@@ -80,11 +82,9 @@ class LightBeamSensorDemo(omni.ext.IExt):
                     title = "LightBeam Sensor Example"
                     doc_link = "TBD"
 
-                    overview = "This Example shows the output of the LightBeam sensor. "
+                    overview = "This Example shows the output of the LightBeam sensor."
                     overview += "The LightBeam sensor constantly scans for any hits to its beams and outputs linear depth and hit position."
-                    overview += (
-                        "\nPress PLAY to start the simulation, hold 'shift' and left click the cube to drag it around"
-                    )
+                    overview += "\nPress PLAY to start the simulation and visualize the light beams, left click the cube/sensor origin to drag it around."
                     overview += "\n\nPress the 'Open in IDE' button to view the source code."
 
                     setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
@@ -153,6 +153,7 @@ class LightBeamSensorDemo(omni.ext.IExt):
             self.sub = None
             self._timeline = None
             self._stage_event_subscription = None
+            self._window.visible = False
 
         self._window = None
 
@@ -215,9 +216,9 @@ class LightBeamSensorDemo(omni.ext.IExt):
             "IsaacSensorCreateLightBeamSensor",
             path=self.sensor_path,
             parent=None,
-            min_range=0.4,
-            max_range=100.0,
-            translation=Gf.Vec3d(1.0, 0, 0),
+            min_range=0.2,
+            max_range=10.0,
+            translation=Gf.Vec3d(0, 0, 0),
             orientation=Gf.Quatd(1, 0, 0, 0),
             forward_axis=Gf.Vec3d(1, 0, 0),
             num_rays=5,
@@ -228,7 +229,35 @@ class LightBeamSensorDemo(omni.ext.IExt):
             carb.log_error("Could not create Light Beam Sensor")
             return
 
+        await omni.kit.app.get_app().next_update_async()
+
+        # we want to make sure we can see the sensor we made, so we set the camera position and look target
+        set_camera_view(eye=[-5.00, 5.00, 3.50], target=[0.0, 0.0, 0.0], camera_prim_path="/OmniverseKit_Persp")
+
         self._events = omni.usd.get_context().get_stage_event_stream()
         self._stage_event_subscription = self._events.create_subscription_to_pop(
             self._on_stage_event, name="LightBeam Sensor Sample Stage Watch"
         )
+
+        (action_graph, new_nodes, _, _) = og.Controller.edit(
+            {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
+            {
+                og.Controller.Keys.CREATE_NODES: [
+                    ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                    ("IsaacReadLightBeam", "omni.isaac.sensor.IsaacReadLightBeam"),
+                    ("DebugDrawRayCast", "omni.isaac.debug_draw.DebugDrawRayCast"),
+                ],
+                og.Controller.Keys.SET_VALUES: [
+                    ("IsaacReadLightBeam.inputs:lightbeamPrim", self.sensor_path),
+                ],
+                og.Controller.Keys.CONNECT: [
+                    ("OnPlaybackTick.outputs:tick", "IsaacReadLightBeam.inputs:execIn"),
+                    ("IsaacReadLightBeam.outputs:execOut", "DebugDrawRayCast.inputs:exec"),
+                    ("IsaacReadLightBeam.outputs:beamOrigins", "DebugDrawRayCast.inputs:beamOrigins"),
+                    ("IsaacReadLightBeam.outputs:beamEndPoints", "DebugDrawRayCast.inputs:beamEndPoints"),
+                    ("IsaacReadLightBeam.outputs:numRays", "DebugDrawRayCast.inputs:numRays"),
+                ],
+            },
+        )
+
+        await og.Controller.evaluate(action_graph)

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.0] - 2024-06-13
+### Added
+- Added DebugDrawRayCast node to visualize arrays of raycasts 
+
 ## [0.7.1] - 2024-04-16
 ### Fixed
 - Update IStageUpdate usage to fix deprecation error
