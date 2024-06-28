@@ -47,10 +47,11 @@ class XFormPrimView(object):
         unless it is a non-root articulation link.
 
     Args:
-        prim_paths_expr (str): prim paths regex to encapsulate all prims that match it.
+        prim_paths_expr (Union[str, List[str]]): prim paths regex to encapsulate all prims that match it.
                                 example: "/World/Env[1-5]/Franka" will match /World/Env1/Franka,
                                 /World/Env2/Franka..etc.
-                                (a non regex prim path can also be used to encapsulate one Xform).
+                                (a non regex prim path can also be used to encapsulate one Xform). Additionally a
+                                list of regex can be provided. example ["/World/Env[1-5]/Franka", "/World/Env[10-19]/Franka"].
         name (str, optional): shortname to be used as a key by Scene class.
                                 Note: needs to be unique if the object is added to the Scene.
                                 Defaults to "xform_prim_view".
@@ -116,7 +117,7 @@ class XFormPrimView(object):
 
     def __init__(
         self,
-        prim_paths_expr: str,
+        prim_paths_expr: Union[str, List[str]],
         name: str = "xform_prim_view",
         positions: Optional[Union[np.ndarray, torch.Tensor]] = None,
         translations: Optional[Union[np.ndarray, torch.Tensor]] = None,
@@ -127,7 +128,11 @@ class XFormPrimView(object):
         usd: bool = True,
     ) -> None:
         self._non_root_link = False
-        self._prim_paths = find_matching_prim_paths(prim_paths_expr)
+        if not isinstance(prim_paths_expr, list):
+            prim_paths_expr = [prim_paths_expr]
+        self._prim_paths = []
+        for prim_path_expression in prim_paths_expr:
+            self._prim_paths = self._prim_paths + find_matching_prim_paths(prim_path_expression)
         if len(self._prim_paths) == 0:
             raise Exception(
                 "Prim path expression {} is invalid, a prim matching the expression needs to created before wrapping it as view".format(

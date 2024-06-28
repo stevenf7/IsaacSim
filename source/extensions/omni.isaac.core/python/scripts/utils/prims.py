@@ -1015,7 +1015,9 @@ def get_articulation_root_api_prim_path(prim_path):
             prim = get_first_matching_child_prim(paths[0], predicate)
             if prim is not None:
                 path = get_prim_path(prim)
-                match = re.search(prim_path, path)
-                if match is not None:
-                    return prim_path + path.replace(match.group(), "", 1)
+                remainder_path = "/".join(path.split("/")[prim_path.count("/") + 1 :])
+                if remainder_path != "":
+                    return prim_path + "/" + remainder_path
+                else:
+                    return prim_path
     return prim_path

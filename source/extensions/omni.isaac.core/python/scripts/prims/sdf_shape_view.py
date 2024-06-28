@@ -170,7 +170,7 @@ class SdfShapeView(GeometryPrimView):
         carb.log_info("initializing view for {}".format(self._name))
         self._physics_sim_view = physics_sim_view
         self._physics_view = physics_sim_view.create_sdf_shape_view(
-            self._regex_prim_paths.replace(".*", "*"), self._num_query_points
+            self._regex_prim_paths[0].replace(".*", "*"), self._num_query_points
         )
         if not carb.settings.get_settings().get_as_bool("/physics/suppressReadback"):
             carb.log_error("Using SDFShapeView requires the gpu pipeline or (a World initialized with a cuda device)")

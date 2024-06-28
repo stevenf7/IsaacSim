@@ -30,10 +30,11 @@ class RigidContactView(object):
         See the ``initialize`` method for more details.
 
     Args:
-        prim_paths_expr (str): prim paths regex to encapsulate all prims that match it.
+        prim_paths_expr (Union[str, List[str]]): prim paths regex to encapsulate all prims that match it.
                                 example: "/World/Env[1-5]/Cube" will match /World/Env1/Cube,
                                 /World/Env2/Cube..etc.
-                                (a non regex prim path can also be used to encapsulate one rigid prim).
+                                (a non regex prim path can also be used to encapsulate one rigid prim).  Additionally a
+                                list of regex can be provided. example ["/World/Env[1-5]/Cube", "/World/Env[10-19]/Cube"].
         name (str, optional): shortname to be used as a key by Scene class.
                                 Note: needs to be unique if the object is added to the Scene.
                                 Defaults to "rigid_contact_view".
@@ -92,6 +93,8 @@ class RigidContactView(object):
         max_contact_count: int = 0,
     ) -> None:
         self._name = name
+        if not isinstance(prim_paths_expr, list):
+            prim_paths_expr = [prim_paths_expr]
         self._regex_prim_paths = prim_paths_expr
         self._regex_filter_paths = filter_paths_expr
         self._prim_paths = None
@@ -114,7 +117,9 @@ class RigidContactView(object):
             self._backend_utils = np_utils
 
         if prepare_contact_sensors:
-            self._prim_paths = find_matching_prim_paths(prim_paths_expr)
+            self._prim_paths = []
+            for prim_path_expression in prim_paths_expr:
+                self._prim_paths = self._prim_paths + find_matching_prim_paths(prim_path_expression)
             for path in self._prim_paths:
                 self._prepare_contact_reporter(get_prim_at_path(path))
 
@@ -215,7 +220,7 @@ class RigidContactView(object):
         carb.log_info("initializing view for {}".format(self._name))
         self._physics_sim_view = physics_sim_view
         self._physics_view = physics_sim_view.create_rigid_contact_view(
-            self._regex_prim_paths.replace(".*", "*"),
+            [regular_expression.replace(".*", "*") for regular_expression in self._regex_prim_paths],
             filter_patterns=[path.replace(".*", "*") for path in self._regex_filter_paths],
             max_contact_data_count=self.max_contact_count,
         )

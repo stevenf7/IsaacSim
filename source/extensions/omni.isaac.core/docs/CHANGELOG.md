@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.15.0] - 2024-06-27
+### Fixed
+- get_articulation_root_api_prim_path for inputs like "/World/Frank_*" instead of "/World/Franka_.*"
+### Changed
+- Changed prim_path_expr for XFormPrim, RigidPrimView, ArticulationView, RigidContactView to accept a list of regular expressions.
+
 ## [3.14.0] - 2024-06-27
 ### Changed
 - Replaced persistent physics carb settings for the non persistent ones for USD updates.
