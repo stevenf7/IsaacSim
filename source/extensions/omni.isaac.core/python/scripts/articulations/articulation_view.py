@@ -4418,9 +4418,6 @@ class ArticulationView(XFormPrimView):
         if not self._is_initialized:
             carb.log_warn("ArticulationView needs to be initialized.")
             return
-        if self._device is not None and "cuda" in self._device:
-            carb.log_warn("set_body_coms function is not supported for the gpu pipeline.")
-            return
 
         indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
