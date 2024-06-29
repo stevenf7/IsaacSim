@@ -22,6 +22,7 @@
 #include <omni/usd/UsdContext.h>
 #include <physicsSchemaTools/UsdTools.h>
 #include <physxSchema/physxContactReportAPI.h>
+#include <physxSchema/physxRigidBodyAPI.h>
 #include <pxr/usd/usdPhysics/scene.h>
 
 #include <IsaacSensorTypes.h>

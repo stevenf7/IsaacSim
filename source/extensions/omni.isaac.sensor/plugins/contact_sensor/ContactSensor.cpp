@@ -211,6 +211,16 @@ void ContactSensor::setContactReportApi()
     {
         contactReportAPI.CreateReportPairsRel();
     }
+    contactReportAPI.GetThresholdAttr().Set(0.0f);
+
+    pxr::PhysxSchemaPhysxRigidBodyAPI rigidBodyAPI =
+        pxr::PhysxSchemaPhysxRigidBodyAPI::Get(mStage, mParentPrim.GetPath());
+
+    if (rigidBodyAPI)
+    {
+        pxr::VtValue vtFloatValue(0);
+        rigidBodyAPI.CreateSleepThresholdAttr(vtFloatValue);
+    }
 }
 
 bool ContactSensor::findValidParent()

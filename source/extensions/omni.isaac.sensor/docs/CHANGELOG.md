@@ -1,6 +1,9 @@
 # Changelog
 
 ## [12.4.0] - 2024-06-28
+### Added
+- Setting the rigid body parent sleep threshold to 0 to prevent physics to go to sleep.
+- Setting the contact reporter threshold to 0 to make sure all contacts are reported.
 ### Fixed
 - Performance issue due to CUDA sync in omni::sensors::nv::lidar::LidarRotary::batchEnd
 - Missing omni::sensors:::IProfileReaderFactory v0.1 dependency
