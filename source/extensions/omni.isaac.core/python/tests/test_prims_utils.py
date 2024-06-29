@@ -11,9 +11,11 @@ import numpy as np
 import omni.kit.commands
 import omni.kit.test
 import torch
+from omni.isaac.core.objects import DynamicCuboid, VisualCuboid
 from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.utils.prims import get_all_matching_child_prims
+from omni.isaac.core.utils.prims import find_matching_prim_paths, get_all_matching_child_prims
 from omni.isaac.core.utils.stage import add_reference_to_stage
+from omni.isaac.nucleus import get_assets_root_path_async
 
 
 class TestPrims(omni.kit.test.AsyncTestCase):
@@ -132,3 +134,24 @@ class TestPrims(omni.kit.test.AsyncTestCase):
                 "/World/.*/env_3/articulation/torso",
             ],
         )
+
+    async def test_find_matching_prim_paths(self):
+        assets_root_path = await get_assets_root_path_async()
+        if assets_root_path is None:
+            raise Exception("Asset root path doesn't exist")
+        asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+        add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_1")
+        add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_2")
+        XFormPrim(prim_path="/World/Franka_3")
+        VisualCuboid(prim_path="/World/cube_1")
+        DynamicCuboid(prim_path="/World/cube_2")
+        DynamicCuboid(prim_path="/World/cube_3")
+        self.assertTrue(len(find_matching_prim_paths("/World/cube_.*", "rigid_body")) == 2)
+        self.assertTrue(len(find_matching_prim_paths("/World/cube_.*", "")) == 3)
+        with self.assertRaises(ValueError):
+            find_matching_prim_paths("/World/cube_.*", "geometry")
+        self.assertTrue(len(find_matching_prim_paths("/World/cube_.*", "rigid_body")) == 2)
+        self.assertTrue(len(find_matching_prim_paths("/World/cube_.*")) == 3)
+        self.assertTrue(len(find_matching_prim_paths("/World/Franka_.*")) == 3)
+        self.assertTrue(len(find_matching_prim_paths("/World/Franka_.*", "articulation")) == 2)
+        pass

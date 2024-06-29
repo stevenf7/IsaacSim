@@ -26,7 +26,9 @@ namespace isaac
 namespace core
 {
 
-DllExport std::vector<std::string> findMatchingPrimPaths(const std::string& pattern, long int stageId);
+DllExport std::vector<std::string> findMatchingPrimPaths(const std::string& pattern,
+                                                         long int stageId,
+                                                         const std::string& api = std::string(""));
 
 DllExport void findMatchingChildren(pxr::UsdPrim root, const std::string& pattern, std::vector<pxr::UsdPrim>& primsRet);
 }

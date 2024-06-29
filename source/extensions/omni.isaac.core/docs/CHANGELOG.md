@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.17.0] - 2024-06-28
+### Added
+- Allow find_matching_prim_paths in prim utils to return paths with valid physics APIs applied
+- Added a prim_type argument that supports filtering the prims returned by type: articulation and rigid_body are currently supported. 
+
 ## [3.16.0] - 2024-06-28
 ### Added
 - ArticulationView.pause_motion() and ArticulationView.resume_motion() methods
