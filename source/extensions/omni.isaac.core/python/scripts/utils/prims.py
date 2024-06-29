@@ -367,11 +367,12 @@ def get_all_matching_child_prims(
     return out
 
 
-def find_matching_prim_paths(prim_path_regex: str) -> typing.List[str]:
+def find_matching_prim_paths(prim_path_regex: str, prim_type: typing.Optional[str] = None) -> typing.List[str]:
     """Find all the matching prim paths in the stage based on Regex expression.
 
     Args:
         prim_path_regex (str): The Regex expression for prim path.
+        prim_type (typing.Optional[str]): The type of the prims to filter, only supports articulation and rigid_body currently. Defaults to None.
 
     Returns:
         typing.List[str]: List of prim paths that match input expression.
@@ -388,29 +389,9 @@ def find_matching_prim_paths(prim_path_regex: str) -> typing.List[str]:
         ['/World/env_01/Cube', '/World/env_02/Cube']
     """
     stage_id = omni.usd.get_context().get_stage_id()
-    return _find_matching_prim_paths(prim_path_regex.replace(".*", "*"), stage_id)
-    # expressions_to_match = [prim_path_regex]
-    # result = []
-    # while len(expressions_to_match) > 0:
-    #     expression_to_match = expressions_to_match.pop(0)
-    #     root_prim_path, tree_level = find_root_prim_path_from_regex(expression_to_match)
-    #     if root_prim_path is None:
-    #         if is_prim_path_valid(expression_to_match):
-    #             result.append(expression_to_match)
-    #     else:
-    #         immediate_expression_to_match = "/".join(expression_to_match.split("/")[: tree_level + 1])
-    #         children_matching = get_all_matching_child_prims(
-    #             prim_path=root_prim_path,
-    #             predicate=lambda a: re.search(immediate_expression_to_match, a) is not None,
-    #             depth=1,
-    #         )
-    #         children_matching = [get_prim_path(prim) for prim in children_matching]
-    #         remainder_expression = "/".join(expression_to_match.split("/")[tree_level + 1 :])
-    #         if remainder_expression != "":
-    #             remainder_expression = "/" + remainder_expression
-    #         children_expressions = [child + remainder_expression for child in children_matching]
-    #         expressions_to_match = expressions_to_match + children_expressions
-    # return result
+    if prim_type is None:
+        prim_type = ""
+    return _find_matching_prim_paths(prim_path_regex.replace(".*", "*"), stage_id, prim_type)
 
 
 def get_prim_children(prim: Usd.Prim) -> typing.List[Usd.Prim]:

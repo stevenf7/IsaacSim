@@ -51,7 +51,7 @@ project_ext_plugin(ext, "omni.isaac.core.plugin")
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
         "%{kit_sdk_bin_dir}/exts/omni.usd.core/bin"
     }
-    links{"sdf", "tf", "omni.usd", "usd", "usdGeom", "usdUtils"}
+    links{"sdf", "tf", "omni.usd", "usd", "usdGeom", "usdUtils",  "usdPhysics"}
 
     filter { "system:linux" }
         disablewarnings {"error=pragmas"}

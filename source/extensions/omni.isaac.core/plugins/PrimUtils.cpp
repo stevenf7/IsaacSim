@@ -13,6 +13,9 @@
 #include <pxr/base/tf/patternMatcher.h>
 // clang-format on
 
+#include <pxr/usd/usdPhysics/articulationRootAPI.h>
+#include <pxr/usd/usdPhysics/rigidBodyAPI.h>
+
 #include <PrimUtils.h>
 
 void omni::isaac::core::findMatchingChildren(pxr::UsdPrim root,
@@ -36,7 +39,9 @@ void omni::isaac::core::findMatchingChildren(pxr::UsdPrim root,
 }
 
 
-std::vector<std::string> omni::isaac::core::findMatchingPrimPaths(const std::string& pattern, long int stageId)
+std::vector<std::string> omni::isaac::core::findMatchingPrimPaths(const std::string& pattern,
+                                                                  long int stageId,
+                                                                  const std::string& api)
 {
     pxr::UsdStageRefPtr stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
     if (!stage)
@@ -75,9 +80,35 @@ std::vector<std::string> omni::isaac::core::findMatchingPrimPaths(const std::str
         }
     }
 
-    for (auto& prim : matches)
+    if (!api.empty())
     {
-        pathsRet.push_back(prim.GetPrimPath().GetString());
+        pxr::TfType type;
+        if (api == "articulation")
+        {
+            type = pxr::TfType::Find<pxr::UsdPhysicsArticulationRootAPI>();
+        }
+        else if (api == "rigid_body")
+        {
+            type = pxr::TfType::Find<pxr::UsdPhysicsRigidBodyAPI>();
+        }
+        else
+        {
+            throw std::invalid_argument("apis supported: articulation and rigid_body.");
+        }
+        for (auto& prim : matches)
+        {
+            if (prim.HasAPI(type))
+            {
+                pathsRet.push_back(prim.GetPrimPath().GetString());
+            }
+        }
+    }
+    else
+    {
+        for (auto& prim : matches)
+        {
+            pathsRet.push_back(prim.GetPrimPath().GetString());
+        }
     }
 
     return pathsRet;
