@@ -120,30 +120,6 @@ omni::isaac::sensor::CsRawData* CARB_ABI CsGetBodyRawData(const char* primPath, 
 {
     if (g_stage != nullptr)
     {
-        pxr::UsdPrim body = g_stage->GetPrimAtPath(pxr::SdfPath(primPath));
-        if (!body.IsValid())
-        {
-            CARB_LOG_ERROR("Prim Path is invalid");
-        }
-
-        pxr::PhysxSchemaPhysxContactReportAPI contactReportAPI =
-            pxr::PhysxSchemaPhysxContactReportAPI::Get(g_stage, pxr::SdfPath(primPath));
-
-        if (!contactReportAPI)
-        {
-            contactReportAPI = pxr::PhysxSchemaPhysxContactReportAPI::Apply(body);
-        }
-        if (!contactReportAPI.GetThresholdAttr())
-        {
-            contactReportAPI.CreateThresholdAttr();
-        }
-        if (!contactReportAPI.GetReportPairsRel())
-        {
-            contactReportAPI.CreateReportPairsRel();
-        }
-
-        // setting the minimum required force threshold to 0
-        contactReportAPI.GetThresholdAttr().Set(0.0f);
         omni::isaac::sensor::CsRawData* data = nullptr;
         if (g_isaacSensorManager != nullptr && g_isaacSensorManager->getContactManager() != nullptr)
         {
