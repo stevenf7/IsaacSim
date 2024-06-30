@@ -59,10 +59,3 @@ stdoutFailPatterns.exclude = [
     "*Invalid articulation pointer for*", # Per node tests won't have valid bundles
     '*[Error] [carb] [Plugin: omni.sensors.nv.lidar.ext.plugin] Dependency: [omni::sensors::lidar::IGenericModelOutputIOFactory v0.1] failed to be resolved.*', # feature not included in Windows
 ]
-
-[settings]
-persistent.isaac.asset_root.default = "omniverse://localhost/NVIDIA/Assets/Isaac/4.0"
-persistent.isaac.asset_root.nvidia = "omniverse://localhost/NVIDIA"
-persistent.isaac.asset_root.isaac = "omniverse://localhost/NVIDIA/Assets/Isaac/4.0/Isaac"
-persistent.isaac.asset_root.cloud = "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0"
-persistent.isaac.asset_root.timeout = 10.0

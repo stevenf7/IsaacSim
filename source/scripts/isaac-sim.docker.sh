@@ -8,7 +8,7 @@ if [[ -z "$@" ]]; then
     command="bash"
 fi
 # Set to desired Nucleus
-omni_server="http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.0"
+omni_server="http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.1"
 if ! [[ -z "${OMNI_SERVER}" ]]; then
 	omni_server="${OMNI_SERVER}"
 fi
@@ -45,7 +45,7 @@ echo "Pulling docker image..."
 docker pull nvcr.io/nvidia/isaac-sim:4.1.0
 
 echo "Running Isaac Sim container..."
-docker run --name isaac-sim --entrypoint bash --gpus all -e "ACCEPT_EULA=${accept_eula}" --rm --network=host \
+docker run --name isaac-sim --entrypoint bash --runtime=nvidia --gpus all -e "ACCEPT_EULA=${accept_eula}" --rm --network=host \
 	-e "OMNI_USER=${omni_user}" -e "OMNI_PASS=${omni_password}" \
 	-e "OMNI_SERVER=${omni_server}" \
     -e "PRIVACY_CONSENT=${privacy_consent}" -e "PRIVACY_USERID=${privacy_userid}" \

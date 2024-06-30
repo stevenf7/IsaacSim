@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.0] - 2024-06-30
+
+### Changed
+- Set Cloud assets path as default
+- Updated to 4.1 asset path
+
 ## [0.2.0] - 2024-06-06
 
 ### Changed
