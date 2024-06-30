@@ -46,7 +46,7 @@
 
 - Command Panel now completely expands upon selecting robot.
 
-## [2.0.0] - 2022-10-22
+## [2.0.0] - 2022-11-17
 
 ### Changed
 

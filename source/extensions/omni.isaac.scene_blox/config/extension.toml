@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.1"
+version = "0.1.2"
 title = "Scene Blox"
 category = "Simulation"
 description = "A package to buid scenes for Omniverse"

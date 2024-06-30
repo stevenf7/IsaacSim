@@ -76,7 +76,7 @@
 ### Changed
 - Update source code to run a build clean of warnings
 
-## [1.12.0] - 2024-02-09
+## [1.12.0] - 2024-02-22
 ### Changed
 - Converted Isaac Simulation Gate and Read Camera Info nodes to C++
 - Read camera info node no longer accept viewport as input

@@ -34,11 +34,11 @@
 ### Added
 - Add support for CenterPose and Dope to generic PoseWriter class 
 
-## [1.13.0] - 2024-01-31
+## [1.13.0] - 2024-02-21
 ### Added
 - Added a generic pose writer 
 
-## [1.12.2] - 2023-02-02
+## [1.12.2] - 2024-02-02
 ### Changed
 - Updated path to the nucleus extension
 

@@ -1,8 +1,7 @@
 # Changelog
 ## [7.0.2] - 2024-06-12
 ### Changed
-- No longer override Franka gains in RRT tests.  These tests now serve as a check to see if the Franka can closely
-    follow a trajectory with its default gains.
+- No longer override Franka gains in RRT tests.  These tests now serve as a check to see if the Franka can closely follow a trajectory with its default gains.
 
 ## [7.0.1] - 2024-04-29
 ### Added
@@ -20,7 +19,7 @@
 ### Changed
 - Updated path to UR10
 
-## [6.1.2] - 2023-02-02
+## [6.1.2] - 2024-02-02
 ### Changed
 - Updated path to the nucleus extension
 
@@ -290,7 +289,7 @@
 
 - Replaced InverseKinematicsSolver(BaseController) object with ArticulationKinematicsSolver
 
-## [2.0.0] - 2022-04-21
+## [2.0.0] - 2022-04-29
 
 ### Changed
 

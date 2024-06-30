@@ -66,7 +66,7 @@
 ### Changed
 - OgnROS2PublishImage does gpu->cpu copy on a separate cuda stream to improve performance
 
-## [2.23.8] - 2024-05-07
+## [2.23.8] - 2024-05-08
 ### Fixed
 - OgnROS2PublishLaserScan angle inputs now provided in degrees rather than mixed degrees/radians
 
@@ -193,7 +193,7 @@
 ### Added
 - ROS2 Service Prim node to list prims and their attributes, as well as read and write a specific attribute
 
-## [2.13.3] - 2024-04-01
+## [2.13.3] - 2024-04-02
 ### Changed
 - used IsaacCreateRenderProduct for the camera OG shortcuts
 - default to enable semanticlabels for some camera topics
@@ -212,7 +212,7 @@
 - node namespace options for all the shortcuts
 - popup notifications instead of print statements for errors in OG shortcuts
 
-## [2.13.0] - 2024-03-12
+## [2.13.0] - 2024-03-19
 ### Added
 - New folder under python/scripts/ for omnigraph shortcuts
 - Menu shortcuts to generate ROS Omnigraphs
@@ -273,7 +273,7 @@
 ### Changed
 - Update source code to run a build clean of warnings
 
-## [2.8.2] - 2023-02-07
+## [2.8.2] - 2024-02-07
 ### Changed
 - Updated path to the nucleus extension
 
@@ -366,7 +366,7 @@
 ## [2.3.1] - 2023-10-03
 ### Fixed
 - Windows message for setting PATH
-## [2.3.0] - 2023-09-26
+## [2.3.0] - 2023-09-27
 ### Added
 - Added enable flag for the lidar and camera helper
 - Improved description for the frame ID for the camera and lidar helper

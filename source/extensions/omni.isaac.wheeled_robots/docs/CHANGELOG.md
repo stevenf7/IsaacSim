@@ -20,7 +20,7 @@
 ### Changed
 - Changed desired velocity input name from velocityCommands to inputVelocity to fix a type not match issue
 
-## [2.0.0] - 2024-03-12
+## [2.0.0] - 2024-03-17
 ### Changed
 - Extension refactored into separate components.  See omni.isaac.wheeled_robots.ui for UI components of the extension.
 
@@ -29,17 +29,13 @@
 - added empty string to get_next_free_path's parent argument in Omnigraph shortcuts
 - added ability to open python script in the popup dialog for omnigraph shortcuts
 
-## [1.1.4] - 2024-02-24
+## [1.1.4] - 2024-03-12
 ### Added
 - Added acceleration restraints to differential controller
 
 ## [1.1.3] - 2024-03-06
 ### Fixed
 - Removed commented out code
-
-## [2.0.0] - 2024-02-28
-### Changed
-- extension refactored into multiple components
 
 ## [1.1.2] - 2024-02-24
 ### Changed
@@ -56,7 +52,7 @@
 ### Added
 - Reset test for holonomic controller
 
-## [1.1.0] - 2024-02-02
+## [1.1.0] - 2024-02-13
 ### Added
 - a menu item for the extension to allow for populating common controller omnigraphs
 - automatically populated omnigraph for controlling a differential robot
