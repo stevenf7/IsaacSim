@@ -98,7 +98,7 @@
 - SDG benchmark render product destruction (supported with Replicator 1.10.1)
 
 
-## [0.17.3] - 2023-07-19
+## [0.17.3] - 2023-07-25
 
 ### Changed
 - README to include information about reading a perflab report
@@ -123,7 +123,7 @@
 ### Changed
 - Cleaned up benchmark code - unused imports, formatting, etc.
 
-## [0.16.0] - 2023-07-03
+## [0.16.0] - 2023-07-11
 
 ### Added
 - Test mode for TeamCity, which runs each benchmark for 1 frame instead of 600 frames, just to check if there are no bugs. To enable test mode, set environment variable ISAAC_TEST_MODE to 1.

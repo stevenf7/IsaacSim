@@ -26,7 +26,7 @@
 ### Changed
 - Removed the usage of the deprecated dynamic_control extension 
 
-## [1.16.1] - 2023-02-02
+## [1.16.1] - 2024-02-02
 ### Changed
 - Updated path to the nucleus extension
 

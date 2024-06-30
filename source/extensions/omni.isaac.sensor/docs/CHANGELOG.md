@@ -27,7 +27,7 @@
 - Upgraded to omni.sensors.nv.* v1.1.0
 - Uses new common sensor profile reader
 
-## [12.0.0] - 2024-04-25
+## [12.0.0] - 2024-06-12
 ### Added
 - LightBeam Sensor class that uses raycasts to detect if a beam is broken
 - Omnigraph nodes to read data from this light beam sensor
@@ -38,8 +38,7 @@
 
 ## [11.3.2] - 2024-06-11
 ### Added
-- Unit tests for rotary and solid state lidars evaluating `RtxSensorCpuIsaacComputeRTXLidarPointCloud` and
-  `RtxSensorCpuIsaacComputeRTXLidarFlatScan` annotators
+- Unit tests for rotary and solid state lidars evaluating `RtxSensorCpuIsaacComputeRTXLidarPointCloud` and `RtxSensorCpuIsaacComputeRTXLidarFlatScan` annotators
 ### Fixed
 - `LidarRTX` no longer causes error when `position` is set in constructor
 - Corrects `OgnIsaacComputeRTXLidarFlatScan` `azimuthRange` output to span true min/max azimuth of scan
@@ -154,7 +153,7 @@
 - Deprecated functions: get_sensor_readings, get_sensor_num_readings, get_sensor_sim_readings
 - Sensor visualziation. (Please use omnigraph nodes to visualize the sensors)
 
-## [9.15.0] - 2024-03-13
+## [9.15.0] - 2024-03-21
 ### Added
 - Added Sick sensor config files for multiScan136, multiScan165, picoScan150
 
@@ -177,7 +176,7 @@
 ### Changed
 - Changed XT-32 lidar name from PandarXT-32 to XT-32
 
-## [9.14.2] - 2023-03-07
+## [9.14.2] - 2024-03-07
 ### Changed
 - Removed the usage of the deprecated dynamic_control extension
 
@@ -245,7 +244,7 @@
 - Camera Matrix calculation in set_matching_fisheye_polynomial_properties method in Camera.py
 - Camera class to work with torch backend
 
-## [9.10.0] - 2023-11-03
+## [9.10.0] - 2023-11-14
 ### Fixed
 - Contact Sensor can now measure force correctly when the rigid body is not its direct parent
 
@@ -286,7 +285,7 @@
 - Fixed elevation output for ComputeRTXLidarPointCloud node.
 
 
-## [9.7.0] - 2023-09-28
+## [9.7.0] - 2023-09-29
 ### Added
 - numEchos, numChannels, and numTicks output to IsaacReadRTXLidarData
 ### Changed
@@ -320,7 +319,7 @@
 - Updated usd paths for Sensing assets
 - Changed base prim type for sensors from Camera to Xform (real camera sensor should be inside of the default prim)
 
-## [9.5.0] - 2023-09-18
+## [9.5.0] - 2023-09-19
 ### Added
 - IsaacPrintRTXLidarInfo outputs largest velocity length
 - IsaacCreateRTXLidarScanBuffer node outputs all possible lidar data based on output flags on node.
@@ -618,12 +617,13 @@
 - crash when deleting
 - test_rtx_lidar passes now
 
-## [5.3.0] - 2022-12-10
+## [5.3.0] - 2022-12-11
 
 ### Changed
 - Switch debug draw nodes to use replicator writer backend
 - hide rtx lidar menu from windows as rtx sensor is not supported
 - disable rtx sensor tests on windows
+
 ## [5.2.4] - 2022-12-11
 ### Fixed
 - IMU sensor example not working

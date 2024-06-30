@@ -73,15 +73,16 @@ def validate_changelog(change: str, final_version: str):
                     if date > prev_date:
                         print(f"date decresed: {date} vs {prev_date}")
                         return False
-                else:
-                    prev_version = version
-                    prev_date = date
                 pass
             else:
                 print("Version or date is None: ")
                 print(version, date, line, i)
-    if final_version != prev_version:
-        print(f" extension toml version {final_version} does not match {prev_version}")
+            if final_version != version and prev_version == None:
+                print(f" extension toml version {final_version} does not match {prev_version}")
+                return False
+            prev_version = version
+            prev_date = date
+
     return True
 
 
@@ -283,6 +284,6 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
                 if options.validate:
                     validate(changelog_path, config_path)
 
-                generate_extension_diff_report(name, changelog_path, datetime.date(2023, 12, 18), datetime.date.today())
+                generate_extension_diff_report(name, changelog_path, datetime.date(2024, 5, 31), datetime.date.today())
 
     return run_repo_tool

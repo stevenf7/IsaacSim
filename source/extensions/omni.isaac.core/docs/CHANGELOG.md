@@ -105,12 +105,12 @@
 ### Fixed
 - Check for PhysicsScene USD type to identify whether a physics scene is already defined (OM-115537)
 
-## [3.3.7] - 2023-02-02
+## [3.3.7] - 2024-02-02
 ### Changed
 - Updated path to the nucleus extension
 - Added deprecation warnings to the nucleus functions in nucleus.py
 
-## [3.3.6] - 2024-01-31
+## [3.3.6] - 2024-02-02
 ### Changed
 - Changed get_assets_root_path to get_assets_root_path_async for the unit tests
 
@@ -180,7 +180,7 @@
 ### Changed
 - Add examples to docstrings, fix type annotations, and improve description. Affected modules: omni.isaac.core.objects (capsule, cone, cuboid, cylinder, sphere, ground_plane)
 
-## [3.0.4] - 2023-11-25
+## [3.0.4] - 2023-11-27
 ### Fixed
 - Add missing worker thread parsing from sim config
 
@@ -255,11 +255,11 @@
 ## [2.9.1] - 2023-09-26
 ### Fixed
 - Fixed a bug in a rigid_prim_view unit test
-## [2.9.0] - 2023-08-28
+## [2.9.0] - 2023-09-22
 ### Added
 - Add missing GPU collision stack size API in physics context
 
-## [2.8.0] - 2023-08-23
+## [2.8.0] - 2023-09-20
 ### Fixed
 - Fixed gpu device parsing.
 - Added gpu flushing as a physics callback to handle the extension workflow and the standalone one alike.
@@ -306,7 +306,7 @@
 ### Added
 - Add function create_viewport_for_camera() to viewports.py
 
-## [2.6.0] - 2023-08-03
+## [2.6.0] - 2023-08-09
 ### Added
 - get_local_pose and get_world_pose in xforms utils which will go through fabric if the prim exists there, otherwise it will read it from USD
 ### Changed
@@ -482,11 +482,11 @@
 - Updates ArticulationMotionPolicy to use the sparse API.
 
 
-## [1.35.0] - 2022-11-15
+## [1.35.0] - 2022-11-19
 ### Added
 - Base Sensor Class
 
-## [1.34.0] - 2022-11-15
+## [1.34.0] - 2022-11-19
 ### Added
 - Backend utils in torch and numpy: pas, stack, matmul, sin, cos, inverse and transpose_2d
 
@@ -532,7 +532,7 @@
 ### Added
 - allow applying rigid body forces in local coordinates and also at a position
 
-## [1.29.0] - 2022-10-05
+## [1.29.0] - 2022-10-16
 ### Added
 - moved standalone pose estimation example utils to core.utils
 
@@ -767,13 +767,13 @@
 - Removed persistent.isaac.nucleus.default setting
 - Removed find_nucleus_server() and find_nucleus_server_async()
 
-## [1.8.0] - 2022-05-04
+## [1.8.0] - 2022-05-06
 
 ### Changed
 - Removing redundant api in ArticulationView and RigidPrimView
 - Raise Exceptions when using set_linear_velocities and set_angular_velocities with the gpu pipeline
 
-## [1.7.0] - 2022-05-04
+## [1.7.0] - 2022-05-06
 
 ### Changed
 - RigidPrim class using RigidPrimView, GeometryPrim uses GeometryPrimView and Articulation uses ArticulationView class

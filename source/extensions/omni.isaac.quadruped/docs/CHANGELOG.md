@@ -14,7 +14,7 @@
 - Reduced the frequency of osqp solver from every physics step to every 5 physics steps
 - Contact sensor now uses the interface instead directly of the python wrapper
 
-## [1.4.2] - 2023-02-02
+## [1.4.2] - 2024-02-02
 ### Changed
 - Updated path to the nucleus extension
 

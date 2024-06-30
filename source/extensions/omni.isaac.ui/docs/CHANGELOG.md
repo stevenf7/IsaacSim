@@ -165,7 +165,7 @@
 ### Added
 - Windows support to open vscode and folders
 
-## [0.1.3] - 2021-01-18
+## [0.1.3] - 2022-01-18
 ### Fixed
 - Fixes layout issues
 

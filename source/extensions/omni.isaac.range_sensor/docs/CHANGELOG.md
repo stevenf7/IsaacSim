@@ -8,7 +8,7 @@
 ### Changed
 - Extension refactored into multiple components.  See omni.isaac.range_sensor.ui and omni.isaac.range_sensor.examples
 
-## [2.1.2] - 2023-02-02
+## [2.1.2] - 2024-02-02
 ### Changed
 - Updated path to the nucleus extension
 

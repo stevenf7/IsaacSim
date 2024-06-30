@@ -4,7 +4,7 @@
 ### Changed
 - Updated Path to UR10
 
-## [0.3.4] - 2023-02-02
+## [0.3.4] - 2024-02-02
 ### Changed
 - Updated path to the nucleus extension
 
