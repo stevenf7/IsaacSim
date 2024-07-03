@@ -1,20 +1,21 @@
 omni.replicator.agent:
-  version: 0.2.0
+  version: 0.3.0
   global:
     seed: 123456
-    camera_num: 5
+    camera_num: 12
     lidar_num: 0
-    simulation_length: 10
+    simulation_length: 600
   scene:
     asset_path:
   character:
     asset_path:
-    command_file:
+    command_file: default_command.txt
     filters:
-    num: 5
+    num: 8
   robot:
-    command_file:
-    num: 0
+    command_file: default_robot_command.txt
+    nova_carter_num: 0
+    transporter_num: 0
     write_data: false
   replicator:
     writer: TaoWriter
