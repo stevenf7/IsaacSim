@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.8.2] - 2024-07-02
+### Changed
+- Use psutil to count CPU cores.
+
 ## [1.8.1] - 2024-06-25
 ### Removed
 - Stray print statement in IsaacFrameTimeRecorder
