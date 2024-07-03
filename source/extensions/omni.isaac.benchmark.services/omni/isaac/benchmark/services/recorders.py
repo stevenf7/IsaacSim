@@ -6,10 +6,11 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-import os
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
+
+import psutil
 
 if TYPE_CHECKING:
     from omni.isaac.benchmark.services.settings import BenchmarkSettings
@@ -279,9 +280,7 @@ class IsaacHardwareSpecRecorder(interface.MeasurementDataRecorder):
 
         measurements_out = []
 
-        measurements_out.append(
-            measurements.SingleMeasurement(name=f"num_cpus", value=len(os.sched_getaffinity(0)), unit="")
-        )
+        measurements_out.append(measurements.SingleMeasurement(name=f"num_cpus", value=psutil.cpu_count(), unit=""))
         measurements_out.append(measurements.SingleMeasurement(name=f"gpu_device_name", value=device_names[0], unit=""))
 
         return interface.MeasurementData(measurements_out)
