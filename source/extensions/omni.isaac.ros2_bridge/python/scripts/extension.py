@@ -314,7 +314,6 @@ class ROS2BridgeExtension(omni.ext.IExt):
                 name=writer_name,
                 node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishCameraInfo",
                 annotators=[
-                    "IsaacReadCameraInfo",
                     "PostProcessDispatchIsaacSimulationGate",
                     omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                         f"IsaacReadS{time_type[0]}", attributes_mapping={f"outputs:s{time_type[0]}": "inputs:timeStamp"}

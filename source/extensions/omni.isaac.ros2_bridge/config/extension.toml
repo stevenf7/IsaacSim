@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.29.0"
+version = "2.30.0"
 category = "Simulation"
 title = "ROS2 Bridge"
 description = "ROS2 Bridge"
@@ -30,6 +30,7 @@ preview_image = "data/preview.png"
 "usdrt.scenegraph" = {}
 "omni.isaac.nucleus" = {}
 "omni.isaac.ui" = {}
+"omni.pip.compute" = {}
 
 [settings]
 exts."omni.isaac.ros2_bridge".ros_distro = "humble" # This setting specified which ros distro to fallback onto if none were sourced.
@@ -81,4 +82,7 @@ stdoutFailPatterns.exclude = [
     "*[Error] [omni.physx.plugin] Setting rigidBodyEnabled to false is not supported if the rigid body is part of an articulation*",
     "*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_ros2_bridge_*: [/TestGraph] Unable to create ROS2 node, please check that namespace is valid*",
     '*[Error] [carb] [Plugin: omni.sensors.nv.lidar.ext.plugin] Dependency: [omni::sensors::lidar::IGenericModelOutputIOFactory v0.1] failed to be resolved.*', # feature not included in Windows
+    "*[Error] [omni.isaac.sensor.plugin] *** error, No valid parent for /Hawk/Imu_Sensor with a rigid body api was found, sensor will not be created*",
+    "*[Error] [omni.isaac.sensor.plugin] Failed to create imu sensor, parent prim is not found or invalid*",
 ]
+

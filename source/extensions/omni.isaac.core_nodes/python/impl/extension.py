@@ -167,12 +167,24 @@ class Extension(omni.ext.IExt):
             input_rendervars=["IsaacReadTimes"],
             node_type_id="omni.isaac.core_nodes.IsaacReadSystemTime",
         )
-
         self.registered_annotators.append(annotator_name)
         # Register annotator for Replicator telemetry tracking
         AnnotatorRegistry._default_annotators.append(
             annotator_name
         ) if annotator_name not in AnnotatorRegistry._default_annotators else None
+
+        annotator_name = "IsaacReadWorldPose"
+        AnnotatorRegistry.register_annotator_from_node(
+            name=annotator_name,
+            input_rendervars=["PostProcessDispatch"],
+            node_type_id="omni.isaac.core_nodes.IsaacReadWorldPose",
+        )
+        self.registered_annotators.append(annotator_name)
+        # Register annotator for Replicator telemetry tracking
+        AnnotatorRegistry._default_annotators.append(
+            annotator_name
+        ) if annotator_name not in AnnotatorRegistry._default_annotators else None
+
         ##### Simulation Gates
         for rv in sensors.get_synthetic_data()._ogn_rendervars:
             if sensors.get_synthetic_data().is_node_template_registered(rv + "Ptr"):

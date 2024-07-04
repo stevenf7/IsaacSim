@@ -49,11 +49,24 @@ class BaseWriterNode(BaseResetNode):
         self.initialized = False
 
     def append_writer(self, writer):
+        """
+        Appends deepcopy of provided writer to internal writer list.
+        """
         self._writers.append(copy.deepcopy(writer))
 
     def attach_writers(self, render_product_path):
+        """
+        Creates writer request for all stored writers using provided render product,
+        and activates them.
+        """
         for w in self._writers:
             self._append_request(WriterRequest(w, render_product_path, True))
+
+    def attach_writer(self, writer, render_product_path):
+        """
+        Creates writer request for deepcopy of provided writer to provided render_product_path, and activates it.
+        """
+        self._append_request(WriterRequest(copy.deepcopy(writer), render_product_path, True))
 
     def _append_request(self, request: WriterRequest):
         self._requests.append(request)

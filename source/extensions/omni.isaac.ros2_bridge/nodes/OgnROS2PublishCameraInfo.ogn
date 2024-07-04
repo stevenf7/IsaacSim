@@ -1,6 +1,6 @@
 {
     "ROS2PublishCameraInfo": {
-        "version": 1,
+        "version": 2,
         "icon": "icons/isaac-sim.svg",
         "description": [
             "This node publishes camera info as a ROS2 CameraInfo message"
@@ -59,34 +59,21 @@
                 "type": "uint",
                 "description": "Height for output image"
             },
-            "focalLength":{
-                "type":"float",
-                "description": "focal length"
-            },
-            "horizontalAperture":{
-                "type":"float",
-                "description": "horizontal aperture"
-            },
-            "verticalAperture":{
-                "type":"float",
-                "description": "vertical aperture"
-            },
-            "horizontalOffset":{
-                "type":"float",
-                "description": "horizontal offset"
-            },
-            "verticalOffset":{
-                "type":"float",
-                "description": "vertical offset"
-            },
             "projectionType":{
                 "type":"token",
                 "description": "projection type"
             },
-            "stereoOffset":{
-                "type":"float[2]",
-                "description": "Stereo offset is the baseline between cameras in x and y component of the image plane in meters. (Tx, Ty is calculated using x and y component of StereoOffset value. i.e., Tx=fx*stereoOffset.X, Ty=fy*stereoOffset.Y). Used when publishing to the camera info topic",
-                "default": [0.0, 0.0]
+            "k": {
+                "type": "double[]",
+                "description": "3x3 Intrinsic camera matrix for the raw (distorted) images. Projects 3D points in the camera coordinate frame to 2D pixel coordinates using the focal lengths and principal point."
+            },
+            "r": {
+                "type": "double[]",
+                "description": "3x3 Rectification matrix (stereo cameras only). A rotation matrix aligning the camera coordinate system to the ideal stereo image plane so that epipolar lines in both stereo images are parallel."
+            },
+            "p": {
+                "type": "double[]",
+                "description": "3x4 Rectification matrix (stereo cameras only). A rotation matrix aligning the camera coordinate system to the ideal stereo image plane so that epipolar lines in both stereo images are parallel."
             },
             "physicalDistortionModel": {
                 "type": "token",

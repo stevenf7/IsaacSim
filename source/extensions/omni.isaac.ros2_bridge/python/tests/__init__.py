@@ -10,6 +10,7 @@
 import sys
 
 from .test_camera import *
+from .test_camera_info import *
 from .test_clock import *
 from .test_differential_base import *
 from .test_joint_state import *

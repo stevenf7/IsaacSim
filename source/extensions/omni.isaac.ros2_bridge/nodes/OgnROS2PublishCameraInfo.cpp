@@ -87,32 +87,12 @@ public:
             return;
         }
         state.mMessage->fillHeader(db.inputs.timeStamp(), state.mFrameId);
+        state.mMessage->fillHeightWidth(db.inputs.height(), db.inputs.width());
+        state.mMessage->fillIntrisicArray(db.inputs.k().data(), 9);
+        state.mMessage->fillRectificationArray(db.inputs.r().data(), 9);
+        state.mMessage->fillProjectionArray(db.inputs.p().data(), 12);
 
-        auto& height = db.inputs.height();
-        auto& width = db.inputs.width();
-        state.mMessage->fillHeightWidth(height, width);
-        // ROS image: conventions
-        // origin of frame should be optical center of camera
-        // +x should point to the right in the image
-        // +y should point down in the image
-        // +z should point into the plane of the image
-
-        float fx, fy, cy, cx;
-
-        fx = width * db.inputs.focalLength() / db.inputs.horizontalAperture();
-        fy = height * db.inputs.focalLength() / db.inputs.verticalAperture();
-        cx = width * 0.5f;
-        cy = height * 0.5f;
-        double k_arr[] = { fx, 0, cx, 0, fy, cy, 0, 0, 1 };
-        state.mMessage->fillIntrisicArray(k_arr, 9);
-
-        double p_arr[] = { fx, 0, cx, db.inputs.stereoOffset()[0] * fx, 0, fy, cy, db.inputs.stereoOffset()[1] * fy, 0,
-                           0,  1, 0 };
-        state.mMessage->fillProjectionArray(p_arr, 12);
         std::string physicalDistortion = db.tokenToString(db.inputs.physicalDistortionModel());
-
-        double r_arr[] = { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
-        state.mMessage->fillRectificationArray(r_arr, 9);
 
         if (physicalDistortion.length() > 0)
         {

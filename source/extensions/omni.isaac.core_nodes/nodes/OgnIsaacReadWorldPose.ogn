@@ -11,7 +11,7 @@
         "inputs": {
             "prim":{
                 "type": "target",
-                "description": "Usd prim reference read fabric pose from"
+                "description": "Usd prim reference from which fabric pose will be read"
             },
             "includeScale": {
                 "type": "bool",
