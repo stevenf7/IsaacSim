@@ -6,6 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+from .ackermann_controller import AckermannController
 from .differential_controller import DifferentialController
 from .holonomic_controller import HolonomicController
 from .quintic_path_planner import QuinticPolynomial, quintic_polynomials_planner

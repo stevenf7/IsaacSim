@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.3.0] - 2024-07-03
+### Added
+- Created Ackermann controller class
+- Created Ackermann controller Omnigraph node
+- Unit tests for Ackermann controller
+
 ## [2.2.0] - 2024-06-14
 ### Changed
 - Deprecated OgnAckermann OmniGraph node
