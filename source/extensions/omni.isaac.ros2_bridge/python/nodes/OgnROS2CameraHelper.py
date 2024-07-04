@@ -1,4 +1,4 @@
-# Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -15,6 +15,7 @@ import omni.replicator.core as rep
 import omni.syntheticdata
 import omni.syntheticdata._syntheticdata as sd
 from omni.isaac.core_nodes import BaseWriterNode, WriterRequest
+from omni.isaac.ros2_bridge import read_camera_info
 from omni.kit.viewport.utility import get_viewport_from_window_name
 from pxr import Usd
 
@@ -204,8 +205,12 @@ class OgnROS2CameraHelper:
                         )
 
                     elif sensor_type == "camera_info":
+                        db.log_warn(
+                            "OgnROS2CameraHelper:sensor_type == camera_info is deprecated as of Isaac Sim 4.1.0 in favour of OgnROS2CameraInfoHelper."
+                        )
                         db.per_instance_state.rv = "PostProcessDispatch"
                         writer = rep.writers.get(f"ROS2{time_type}PublishCameraInfo")
+                        camera_info = read_camera_info(render_product_path=db.inputs.renderProductPath)
                         writer.initialize(
                             frameId=db.inputs.frameId,
                             nodeNamespace=db.inputs.nodeNamespace,
@@ -213,7 +218,14 @@ class OgnROS2CameraHelper:
                             topicName=db.inputs.topicName,
                             context=db.inputs.context,
                             qosProfile=db.inputs.qosProfile,
-                            stereoOffset=db.inputs.stereoOffset,
+                            width=camera_info["width"],
+                            height=camera_info["height"],
+                            projectionType=camera_info["projectionType"],
+                            k=camera_info["k"].reshape([1, 9]),
+                            r=camera_info["r"].reshape([1, 9]),
+                            p=camera_info["p"].reshape([1, 12]),
+                            physicalDistortionModel=camera_info["physicalDistortionModel"],
+                            physicalDistortionCoefficients=camera_info["physicalDistortionCoefficients"],
                         )
 
                     else:

@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.30.0] - 2024-07-03
+### Added
+- OgnIsaacROS2CameraInfoHelper node to generate CameraInfo message with correct rectification parameters for stereo
+  cameras
+- camera_info_utils.py module contains utility functions for generating CameraInfo message
+### Changed
+- OgnIsaacROS2CameraHelper:sensor_type == camera_info deprecated in favor of OgnIsaacROS2CameraInfoHelper. This node
+  will use camera_info_utils.py module until the functionality is fully removed in a future release.
+
 ## [2.29.0] - 2024-06-27
 ### Changed
 - Unify ROS 2 backend implementations
@@ -36,7 +45,7 @@
 
 ## [2.26.1] - 2024-05-21
 ### Added
-- Resetting output of the Twist Subscriber to zeros upon stopping simulation. 
+- Resetting output of the Twist Subscriber to zeros upon stopping simulation.
 
 ## [2.26.0] - 2024-05-20
 ### Changed

@@ -3,6 +3,11 @@
 ### Fixed
 - ArticulationController Node allowing for multiple types of control
 
+## [1.15.5] - 2024-05-17
+### Added
+- New BaseWriterNode.attach_writer API enables attaching specific writer to specific render product,
+  rather than all writers to single render product.
+
 ## [1.15.4] - 2024-05-16
 ### Fixed
 - Fix Isaac Run One Simulation Frame node name
@@ -37,7 +42,7 @@
 
 ## [1.14.1] - 2024-04-18
 ### Fixed
-- Fault with Articulation Controller node when it receives no joint name or indices inputs 
+- Fault with Articulation Controller node when it receives no joint name or indices inputs
 
 ## [1.14.0] - 2024-04-04
 ### Added

@@ -13,7 +13,7 @@ project_with_location("omni.isaac.ros2_bridge.check")
         "%{root}/_build/target-deps/nv_ros2_humble/include",
         "%{root}/source/extensions/omni.isaac.ros2_bridge/include",
     }
-    
+
     filter { "system:linux" }
         links{"dl"}
     filter { "system:windows" }
