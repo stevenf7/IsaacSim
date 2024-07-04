@@ -1,5 +1,9 @@
 # Changelog
 
+## [12.4.1] - 2024-07-03
+### Added
+- Added error message for parents missing contact report API
+
 ## [12.4.0] - 2024-06-28
 ### Added
 - Setting the rigid body parent sleep threshold to 0 to prevent physics to go to sleep.

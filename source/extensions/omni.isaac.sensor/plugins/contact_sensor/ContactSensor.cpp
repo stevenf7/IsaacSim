@@ -205,6 +205,9 @@ void ContactSensor::setContactReportApi()
 
     if (!contactReportAPI)
     {
+        CARB_LOG_ERROR(
+            "*** error: %s parent prim is missing contact report API, automatically adding contact report API, stop and play the simulation for this change to take effect",
+            this->mPrim.GetPath().GetString().c_str());
         contactReportAPI = pxr::PhysxSchemaPhysxContactReportAPI::Apply(mParentPrim.GetPrim());
     }
     if (!contactReportAPI.GetReportPairsRel())
