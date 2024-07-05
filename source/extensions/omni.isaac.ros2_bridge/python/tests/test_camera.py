@@ -596,7 +596,7 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
         self.assertEqual(semantic_instance_dict["5"], "/cube_4")
 
         self.assertEqual(semantic_semantic_dict["0"]["class"], "BACKGROUND")
-        self.assertEqual(len(semantic_semantic_dict.keys()), 5)  # (background + 3 cubes + timestamp)
+        self.assertEqual(len(semantic_semantic_dict.keys()), 6)  # (background + unalbeled + 3 cubes + timestamp)
 
         # all times should match
         # TODO: Find a way to align timestamps for testing

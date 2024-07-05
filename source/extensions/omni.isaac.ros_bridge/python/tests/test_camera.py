@@ -543,7 +543,7 @@ class TestRosCamera(omni.kit.test.AsyncTestCase):
         self.assertEqual(semantic_instance_dict["5"], "/cube_4")
 
         self.assertEqual(semantic_semantic_dict["0"]["class"], "BACKGROUND")
-        self.assertEqual(len(semantic_semantic_dict.keys()), 5)  # (background + 3 cubes + timestamp)
+        self.assertEqual(len(semantic_semantic_dict.keys()), 6)  # (background + unlabeled + 3 cubes + timestamp)
 
         # all times should match
         self.assertDictEqual(semantic_3d_dict["time_stamp"], semantic_instance_dict["time_stamp"])

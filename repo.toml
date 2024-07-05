@@ -968,7 +968,7 @@ url = "https://gitlab-master.nvidia.com/omniverse/ov-create/-/raw/release/2024.1
 
 deps_for_isaac = [
   "omni.replicator.replicator_yaml-2.0.5",
-  "omni.replicator.core-1.11.10",
+  "omni.replicator.core-1.11.11",
   "omni.sensors.tiled-0.0.4",
   "omni.sensors.nv.common-1.2.1-isaac",
   "omni.sensors.nv.ids-1.1.0-isaac",
