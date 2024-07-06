@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.20.0] - 2024-07-05
+### Changed
+- use register_*_with_telemetry functions to simplify registration code
+- use OgnIsaacPassthroughImagePtr node for depth
+- switch to using ptr for depth data to avoid extra cpu copy
+
 ## [1.19.5] - 2024-06-26
 ### Added
 - Unit tests for joint state subscriber using mixed mode controls

@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.31.0] - 2024-07-05
+### Changed
+- use register_*_with_telemetry functions to simplify registration code
+- use OgnIsaacPassthroughImagePtr node for depth
+- switch to using ptr for depth data to avoid extra cpu copy
+
 ## [2.30.0] - 2024-07-03
 ### Added
 - OgnIsaacROS2CameraInfoHelper node to generate CameraInfo message with correct rectification parameters for stereo

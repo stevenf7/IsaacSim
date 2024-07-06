@@ -7,9 +7,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-"""
-Support required by the Carbonite extension loader
-"""
 import omni.ext
 import omni.kit.commands
 from omni.isaac.wheeled_robots.bindings._omni_isaac_wheeled_robots import acquire_interface, release_interface
