@@ -7,9 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-"""
-Support required by the Carbonite extension loader
-"""
+
 import gc
 
 import omni.ext

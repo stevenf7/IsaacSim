@@ -16,6 +16,10 @@ import omni.ext
 import omni.kit.commands
 import omni.replicator.core as rep
 from omni.isaac.core.utils.stage import traverse_stage
+from omni.isaac.core_nodes.scripts.utils import (
+    register_annotator_from_node_with_telemetry,
+    register_node_writer_with_telemetry,
+)
 from omni.replicator.core import AnnotatorRegistry
 from omni.syntheticdata import sensors
 
@@ -32,7 +36,7 @@ class Extension(omni.ext.IExt):
         self._ls = _sensor.acquire_lightbeam_sensor_interface()
         self._menu = IsaacSensorMenu(ext_id)
 
-        self.registered_template = []
+        self.registered_templates = []
         self.registered_annotators = []
         try:
             self.register_nodes()
@@ -89,7 +93,7 @@ class Extension(omni.ext.IExt):
                 ),
                 template_name=template_name,
             )
-            self.registered_template.append(template)
+            self.registered_templates.append(template)
 
         template_name = "RtxSensorGpu" + "IsaacSimulationGate"
         if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
@@ -101,23 +105,19 @@ class Extension(omni.ext.IExt):
                 ),
                 template_name=template_name,
             )
-            self.registered_template.append(template)
+            self.registered_templates.append(template)
 
         ### Read RtxLidar Data
         annotator_name = "RtxSensorCpu" + "IsaacReadRTXLidarData"
-        AnnotatorRegistry.register_annotator_from_node(
+        register_annotator_from_node_with_telemetry(
             name=annotator_name,
             input_rendervars=["RtxSensorCpu" + "Ptr"],
             node_type_id="omni.isaac.sensor.IsaacReadRTXLidarData",
         )
         self.registered_annotators.append(annotator_name)
-        # Register annotator for Replicator telemetry tracking
-        AnnotatorRegistry._default_annotators.append(
-            annotator_name
-        ) if annotator_name not in AnnotatorRegistry._default_annotators else None
 
         annotator_name = "RtxSensorGpu" + "IsaacReadRTXLidarData"
-        AnnotatorRegistry.register_annotator_from_node(
+        register_annotator_from_node_with_telemetry(
             name=annotator_name,
             input_rendervars=[
                 "RtxSensorGpu" + "Ptr",
@@ -125,10 +125,6 @@ class Extension(omni.ext.IExt):
             node_type_id="omni.isaac.sensor.IsaacReadRTXLidarData",
         )
         self.registered_annotators.append(annotator_name)
-        # Register annotator for Replicator telemetry tracking
-        AnnotatorRegistry._default_annotators.append(
-            annotator_name
-        ) if annotator_name not in AnnotatorRegistry._default_annotators else None
 
         # NodeConnectionTemplate(
         #    "SemanticBoundingBox2DExtentTightSDhostPtr",
@@ -137,7 +133,7 @@ class Extension(omni.ext.IExt):
 
         ### RtxLidar Point Cloud
         annotator_name = "RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud"
-        AnnotatorRegistry.register_annotator_from_node(
+        register_annotator_from_node_with_telemetry(
             name=annotator_name,
             input_rendervars=["RtxSensorCpu" + "Ptr"],
             node_type_id="omni.isaac.sensor.IsaacComputeRTXLidarPointCloud",
@@ -145,13 +141,9 @@ class Extension(omni.ext.IExt):
             output_channels=3,
         )
         self.registered_annotators.append(annotator_name)
-        # Register annotator for Replicator telemetry tracking
-        AnnotatorRegistry._default_annotators.append(
-            annotator_name
-        ) if annotator_name not in AnnotatorRegistry._default_annotators else None
 
         annotator_name = "RtxSensorCpu" + "IsaacCreateRTXLidarScanBuffer"
-        AnnotatorRegistry.register_annotator_from_node(
+        register_annotator_from_node_with_telemetry(
             name=annotator_name,
             input_rendervars=["RtxSensorCpu" + "Ptr"],
             node_type_id="omni.isaac.sensor.IsaacCreateRTXLidarScanBuffer",
@@ -159,13 +151,9 @@ class Extension(omni.ext.IExt):
             output_channels=3,
         )
         self.registered_annotators.append(annotator_name)
-        # Register annotator for Replicator telemetry tracking
-        AnnotatorRegistry._default_annotators.append(
-            annotator_name
-        ) if annotator_name not in AnnotatorRegistry._default_annotators else None
 
         annotator_name = "RtxSensorCpu" + "IsaacRTXLidarOutput"
-        AnnotatorRegistry.register_annotator_from_node(
+        register_annotator_from_node_with_telemetry(
             name=annotator_name,
             input_rendervars=["RtxSensorCpu" + "Ptr"],
             node_type_id="omni.isaac.sensor.IsaacRTXLidarOutput",
@@ -173,26 +161,18 @@ class Extension(omni.ext.IExt):
             output_channels=3,
         )
         self.registered_annotators.append(annotator_name)
-        # Register annotator for Replicator telemetry tracking
-        AnnotatorRegistry._default_annotators.append(
-            annotator_name
-        ) if annotator_name not in AnnotatorRegistry._default_annotators else None
 
         ### Rtx Sensor Print Info Writer
-        rep.writers.register_node_writer(
+        register_node_writer_with_telemetry(
             name="Writer" + "IsaacPrintRTXSensorInfo",
             node_type_id="omni.isaac.sensor.IsaacPrintRTXSensorInfo",
             annotators=[omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu" + "Ptr")],
             category="omni.isaac.sensor",
         )
-        # Register writer for Replicator telemetry tracking
-        rep.WriterRegistry._default_writers.append(
-            "Writer" + "IsaacPrintRTXSensorInfo"
-        ) if "Writer" + "IsaacPrintRTXSensorInfo" not in rep.WriterRegistry._default_writers else None
 
         ### RtxLidar Flat Scan
         annotator_name = "RtxSensorCpu" + "IsaacComputeRTXLidarFlatScan"
-        AnnotatorRegistry.register_annotator_from_node(
+        register_annotator_from_node_with_telemetry(
             name=annotator_name,
             input_rendervars=["RtxSensorCpu" + "Ptr"],
             node_type_id="omni.isaac.sensor.IsaacComputeRTXLidarFlatScan",
@@ -200,13 +180,9 @@ class Extension(omni.ext.IExt):
             output_channels=3,
         )
         self.registered_annotators.append(annotator_name)
-        # Register annotator for Replicator telemetry tracking
-        AnnotatorRegistry._default_annotators.append(
-            annotator_name
-        ) if annotator_name not in AnnotatorRegistry._default_annotators else None
 
         # RTX lidar Debug Draw Writer
-        rep.writers.register_node_writer(
+        register_node_writer_with_telemetry(
             name="RtxLidar" + "DebugDrawPointCloud",
             node_type_id="omni.isaac.debug_draw.DebugDrawPointCloud",
             annotators=[
@@ -216,13 +192,9 @@ class Extension(omni.ext.IExt):
             ],
             category="omni.isaac.sensor",
         )
-        # Register writer for Replicator telemetry tracking
-        rep.WriterRegistry._default_writers.append(
-            "RtxLidar" + "DebugDrawPointCloud"
-        ) if "RtxLidar" + "DebugDrawPointCloud" not in rep.WriterRegistry._default_writers else None
 
         # RTX lidar Debug Draw Writer
-        rep.writers.register_node_writer(
+        register_node_writer_with_telemetry(
             name="RtxLidar" + "DebugDrawPointCloud" + "Buffer",
             node_type_id="omni.isaac.debug_draw.DebugDrawPointCloud",
             annotators=[
@@ -233,13 +205,8 @@ class Extension(omni.ext.IExt):
             doTransform=True,
             category="omni.isaac.sensor",
         )
-        # Register writer for Replicator telemetry tracking
-        rep.WriterRegistry._default_writers.append(
-            "RtxLidar" + "DebugDrawPointCloud" + "Buffer"
-        ) if "RtxLidar" + "DebugDrawPointCloud" + "Buffer" not in rep.WriterRegistry._default_writers else None
-
         # RTX lidar Debug Draw Writer
-        rep.writers.register_node_writer(
+        register_node_writer_with_telemetry(
             name="RtxLidar" + "DebugDrawPointCloud" + "Buffer2",
             node_type_id="omni.isaac.debug_draw.DebugDrawPointCloud",
             annotators=[
@@ -251,7 +218,7 @@ class Extension(omni.ext.IExt):
 
         ### RtxRadar Point Cloud
         annotator_name = "RtxSensorCpu" + "IsaacComputeRTXRadarPointCloud"
-        AnnotatorRegistry.register_annotator_from_node(
+        register_annotator_from_node_with_telemetry(
             name=annotator_name,
             input_rendervars=["RtxSensorCpu" + "Ptr"],
             node_type_id="omni.isaac.sensor.IsaacComputeRTXRadarPointCloud",
@@ -259,13 +226,9 @@ class Extension(omni.ext.IExt):
             output_channels=3,
         )
         self.registered_annotators.append(annotator_name)
-        # Register annotator for Replicator telemetry tracking
-        AnnotatorRegistry._default_annotators.append(
-            annotator_name
-        ) if annotator_name not in AnnotatorRegistry._default_annotators else None
 
         # RTX radar Debug Draw Writer
-        rep.writers.register_node_writer(
+        register_node_writer_with_telemetry(
             name="RtxRadar" + "DebugDrawPointCloud",
             node_type_id=f"omni.isaac.debug_draw.DebugDrawPointCloud",
             annotators=["RtxSensorCpu" + "IsaacComputeRTXRadarPointCloud"],
@@ -274,15 +237,11 @@ class Extension(omni.ext.IExt):
             color=[1, 0.2, 0.3, 1],
             category="omni.isaac.sensor",
         )
-        # Register writer for Replicator telemetry tracking
-        rep.WriterRegistry._default_writers.append(
-            "RtxRadar" + "DebugDrawPointCloud"
-        ) if "RtxRadar" + "DebugDrawPointCloud" not in rep.WriterRegistry._default_writers else None
 
     def unregister_nodes(self):
-        for template in self.registered_template:
-            sensors.get_synthetic_data().unregister_node_template(template)
-        for annotator in self.registered_annotators:
-            AnnotatorRegistry.unregister_annotator(annotator)
         for writer in rep.WriterRegistry.get_writers(category="omni.isaac.sensor"):
             rep.writers.unregister_writer(writer)
+        for annotator in self.registered_annotators:
+            AnnotatorRegistry.unregister_annotator(annotator)
+        for template in self.registered_templates:
+            sensors.get_synthetic_data().unregister_node_template(template)

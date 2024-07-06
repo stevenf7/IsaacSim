@@ -1,4 +1,10 @@
 # Changelog
+
+## [1.16.0] - 2024-07-05
+### Added
+- Add OgnIsaacPassthroughImagePtr node
+- register_node_writer_with_telemetry and register_annotator_from_node_with_telemetry helper functions
+
 ## [1.15.5] - 2024-06-25
 ### Fixed
 - ArticulationController Node allowing for multiple types of control

@@ -213,7 +213,6 @@ class LidarRtx(BaseSensor):
     def is_paused(self) -> bool:
         return self._acquisition_callback is None
 
-    # TODO105 : ASYNCRENDERING VALIDATION
     def _data_acquisition_callback(self, event: carb.events.IEvent):
         self._current_frame["rendering_frame"] = (
             og.Controller()

@@ -183,7 +183,6 @@ class TestRos2BridgeCommands(omni.kit.test.AsyncTestCase):
         self._timeline.play()
 
         await simulate_async(1.0, callback=spin)
-        # TODO105  systemTime is double(uint64(-1))
         self.assertAlmostEqual(self._time_sec, time.time(), delta=0.5)
         self._timeline.stop()
         spin()

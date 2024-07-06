@@ -7,11 +7,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-"""
-Support required by the Carbonite extension loader
-"""
-import copy
-
 import carb
 import numpy as np
 import omni.ext
@@ -20,6 +15,7 @@ import omni.syntheticdata
 import omni.syntheticdata._syntheticdata as sd
 from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.stage import get_current_stage
+from omni.isaac.core_nodes.scripts.utils import register_annotator_from_node_with_telemetry
 from omni.replicator.core import AnnotatorRegistry
 from omni.syntheticdata import sensors
 from pxr import Sdf, Usd
@@ -34,7 +30,7 @@ from ..bindings._omni_isaac_core_nodes import acquire_interface, release_interfa
 class Extension(omni.ext.IExt):
     def on_startup(self):
         self.__interface = acquire_interface()
-        self.registered_template = []
+        self.registered_templates = []
         self.registered_annotators = []
         try:
             self.register_nodes()
@@ -77,31 +73,22 @@ class Extension(omni.ext.IExt):
         ## Annotators
         ### Add template to no_op
         annotator_name = "IsaacNoop"
-        AnnotatorRegistry.register_annotator_from_node(
+        register_annotator_from_node_with_telemetry(
             name=annotator_name,
             input_rendervars=["PostProcessDispatch"],
             node_type_id="omni.syntheticdata.SdNoOp",
         )
         self.registered_annotators.append(annotator_name)
-        # Register annotator for Replicator telemetry tracking
-        AnnotatorRegistry._default_annotators.append(
-            annotator_name
-        ) if annotator_name not in AnnotatorRegistry._default_annotators else None
 
         annotator_name = "IsaacReadCameraInfo"
-        AnnotatorRegistry.register_annotator_from_node(
+        register_annotator_from_node_with_telemetry(
             name=annotator_name,
             input_rendervars=["PostProcessDispatch"],
             node_type_id="omni.isaac.core_nodes.IsaacReadCameraInfo",
         )
         self.registered_annotators.append(annotator_name)
-        # Register annotator for Replicator telemetry tracking
-        AnnotatorRegistry._default_annotators.append(
-            annotator_name
-        ) if annotator_name not in AnnotatorRegistry._default_annotators else None
 
         ##### Time
-        # TODO105 : ASYNCRENDERING VALIDATION
         template_name = "IsaacReadTimesAOV"
         if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
             template = sensors.get_synthetic_data().register_node_template(
@@ -121,10 +108,10 @@ class Extension(omni.ext.IExt):
                 ),
                 template_name=template_name,
             )
-            self.registered_template.append(template)
+            self.registered_templates.append(template)
 
         annotator_name = "IsaacReadTimes"
-        AnnotatorRegistry.register_annotator_from_node(
+        register_annotator_from_node_with_telemetry(
             name=annotator_name,
             input_rendervars=[
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
@@ -144,46 +131,30 @@ class Extension(omni.ext.IExt):
             node_type_id="omni.isaac.core_nodes.IsaacReadTimes",
         )
         self.registered_annotators.append(annotator_name)
-        # Register annotator for Replicator telemetry tracking
-        AnnotatorRegistry._default_annotators.append(
-            annotator_name
-        ) if annotator_name not in AnnotatorRegistry._default_annotators else None
 
         annotator_name = "IsaacReadSimulationTime"
-        AnnotatorRegistry.register_annotator_from_node(
+        register_annotator_from_node_with_telemetry(
             name=annotator_name,
             input_rendervars=["IsaacReadTimes"],
             node_type_id="omni.isaac.core_nodes.IsaacReadSimulationTime",
         )
         self.registered_annotators.append(annotator_name)
-        # Register annotator for Replicator telemetry tracking
-        AnnotatorRegistry._default_annotators.append(
-            annotator_name
-        ) if annotator_name not in AnnotatorRegistry._default_annotators else None
 
         annotator_name = "IsaacReadSystemTime"
-        AnnotatorRegistry.register_annotator_from_node(
+        register_annotator_from_node_with_telemetry(
             name=annotator_name,
             input_rendervars=["IsaacReadTimes"],
             node_type_id="omni.isaac.core_nodes.IsaacReadSystemTime",
         )
         self.registered_annotators.append(annotator_name)
-        # Register annotator for Replicator telemetry tracking
-        AnnotatorRegistry._default_annotators.append(
-            annotator_name
-        ) if annotator_name not in AnnotatorRegistry._default_annotators else None
 
         annotator_name = "IsaacReadWorldPose"
-        AnnotatorRegistry.register_annotator_from_node(
+        register_annotator_from_node_with_telemetry(
             name=annotator_name,
             input_rendervars=["PostProcessDispatch"],
             node_type_id="omni.isaac.core_nodes.IsaacReadWorldPose",
         )
         self.registered_annotators.append(annotator_name)
-        # Register annotator for Replicator telemetry tracking
-        AnnotatorRegistry._default_annotators.append(
-            annotator_name
-        ) if annotator_name not in AnnotatorRegistry._default_annotators else None
 
         ##### Simulation Gates
         for rv in sensors.get_synthetic_data()._ogn_rendervars:
@@ -202,7 +173,7 @@ class Extension(omni.ext.IExt):
                         ),
                         template_name=template_name,
                     )
-                    self.registered_template.append(template)
+                    self.registered_templates.append(template)
         # These gates connect to annotators
         # instance_segmentation = anotator name?
         # InstanceSegmentation = sensor type
@@ -230,12 +201,12 @@ class Extension(omni.ext.IExt):
                     ),
                     template_name=template_name,
                 )
-                self.registered_template.append(template)
+                self.registered_templates.append(template)
 
         # ##### RGBA to RGB
         rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
         annotator_name = rv + "IsaacConvertRGBAToRGB"
-        AnnotatorRegistry.register_annotator_from_node(
+        register_annotator_from_node_with_telemetry(
             name=annotator_name,
             input_rendervars=[
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(rv + "Ptr"),
@@ -247,17 +218,29 @@ class Extension(omni.ext.IExt):
             output_channels=3,
         )
         self.registered_annotators.append(annotator_name)
-        # Register annotator for Replicator telemetry tracking
-        AnnotatorRegistry._default_annotators.append(
-            annotator_name
-        ) if annotator_name not in AnnotatorRegistry._default_annotators else None
+
+        # Depth ptr passthrough
+        rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.DistanceToImagePlane.name)
+        annotator_name = rv + "IsaacPassthroughImagePtr"
+        register_annotator_from_node_with_telemetry(
+            name=annotator_name,
+            input_rendervars=[
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(rv + "Ptr"),
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(rv + "IsaacSimulationGate"),
+            ],
+            node_type_id="omni.isaac.core_nodes.IsaacPassthroughImagePtr",
+        )
+        self.registered_annotators.append(annotator_name)
 
         # # convert depth to pcl
         rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.DistanceToImagePlane.name)
         annotator_name = rv + "IsaacConvertDepthToPointCloud"
-        AnnotatorRegistry.register_annotator_from_node(
+        register_annotator_from_node_with_telemetry(
             name=annotator_name,
             input_rendervars=[
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    rv + "IsaacSimulationGate", attributes_mapping={"outputs:execOut": "inputs:execIn"}
+                ),
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                     rv + "Ptr",
                 ),
@@ -269,22 +252,15 @@ class Extension(omni.ext.IExt):
                         "outputs:verticalAperture": "inputs:verticalAperture",
                     },
                 ),
-                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    rv + "IsaacSimulationGate", attributes_mapping={"outputs:execOut": "inputs:execIn"}
-                ),
             ],
             node_type_id="omni.isaac.core_nodes.IsaacConvertDepthToPointCloud",
             output_data_type=np.float32,
             output_channels=3,
         )
         self.registered_annotators.append(annotator_name)
-        # Register annotator for Replicator telemetry tracking
-        AnnotatorRegistry._default_annotators.append(
-            annotator_name
-        ) if annotator_name not in AnnotatorRegistry._default_annotators else None
 
     def unregister_nodes(self):
+        for template in self.registered_templates:
+            sensors.get_synthetic_data().unregister_node_template(template)
         for annotator in self.registered_annotators:
             AnnotatorRegistry.unregister_annotator(annotator)
-        for template in self.registered_template:
-            sensors.get_synthetic_data().unregister_node_template(template)
