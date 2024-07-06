@@ -221,7 +221,7 @@ void ContactSensor::setContactReportApi()
 
     if (rigidBodyAPI)
     {
-        pxr::VtValue vtFloatValue(0);
+        pxr::VtValue vtFloatValue(0.0f);
         rigidBodyAPI.CreateSleepThresholdAttr(vtFloatValue);
     }
 }
