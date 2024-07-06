@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "12.4.1"
+version = "12.4.2"
 
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
@@ -99,5 +99,6 @@ stdoutFailPatterns.exclude = [
     '*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_sensor_IsaacReadLightBeam: [/TestGraph] Invalid Light Beam Sensor prim*',
     '*[Error] [carb] [Plugin: omni.sensors.nv.lidar.ext.plugin] Dependency: [omni::sensors::lidar::IGenericModelOutputIOFactory v0.1] failed to be resolved.*',
     '*[Error] [omni.graph.core.plugin] /TestGraph/ReadEffortNode: [/TestGraph] OmniGraph Error: Failed to create effort sensor, unable to find prim path*',
-    '*[Error] [omni.graph.core.plugin] /TestGraph/ReadIMUNode: [/TestGraph] Invalid Imu sensor prim*'
+    '*[Error] [omni.graph.core.plugin] /TestGraph/ReadIMUNode: [/TestGraph] Invalid Imu sensor prim*',
+    '*parent prim is missing contact report API*'
 ]

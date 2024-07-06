@@ -1,5 +1,9 @@
 # Changelog
 
+## [12.4.2] - 2024-07-05
+### Added
+- Fixed bug with rigid body sleep threshold
+
 ## [12.4.1] - 2024-07-03
 ### Added
 - Added error message for parents missing contact report API

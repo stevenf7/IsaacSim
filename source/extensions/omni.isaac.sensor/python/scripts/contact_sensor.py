@@ -164,7 +164,7 @@ class ContactSensor(BaseSensor):
             return True
         return False
 
-    def set_frequency(self, value: int) -> None:
+    def set_frequency(self, value: float) -> None:
         self._isaac_sensor_prim.GetSensorPeriodAttr().Set(1.0 / value)
         return
 
