@@ -49,4 +49,5 @@ stdoutFailPatterns.exclude = [
     '*[Error] [omni.kit.commands.command] Failed to execute a command: ChangeProperty*',
     '*[Error] [asyncio] Task exception was never retrieved*',
     '*[Error] [carb] [Plugin: omni.sensors.nv.lidar.ext.plugin] Dependency: [omni::sensors::lidar::IGenericModelOutputIOFactory v0.1] failed to be resolved.*', # feature not included in Windows
+    '*[Error] [omni.isaac.sensor.plugin] *** error: /Cube/Contact_Sensor parent prim is missing contact report API, automatically adding contact report API, stop and play the simulation for this change to take effect*'
 ]
