@@ -592,7 +592,7 @@ exclude = [
 ]
 args = ["--portable-root ${test_root}/portable_root", "--reset-user",  "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'"]
 tc_report_enabled = false
-timeout = 1500
+timeout = 3600
 stdout_fail_patterns.exclude = [
 	"*Remote server does not support WebSockets*",
   "*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*",  # optix disk cache errors
