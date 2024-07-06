@@ -58,23 +58,17 @@ class TestMenuAssets(OmniUiTest):
         self.imu_sensor_interface = _sensor.acquire_imu_sensor_interface()
         self.lightbeam_sensor_interface = _sensor.acquire_lightbeam_sensor_interface()
         self.carb_settings = carb.settings.get_settings()
-        self.carb_settings.set("/persistent/app/viewport/displayOptions", 0)
         self.carb_settings.set("/rtx/rendermode", "RayTracedLighting")
         self.carb_settings.set("/rtx-transient/resourcemanager/enableTextureStreaming", False)
-        self.viewport_window = get_active_viewport_window()
-        self.viewport_window.visible = False
         pass
 
     # After running each test
     async def tearDown(self):
-        # need to move the window out of the way so it doesn't block the menu bar for the other tests
-        self.viewport_window.visible = True
         await omni.kit.app.get_app().next_update_async()
         # In some cases the test will end before the asset is loaded, in this case wait for assets to load
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await omni.kit.app.get_app().next_update_async()
         await super().tearDown()
-        self.carb_settings.set("/persistent/app/viewport/displayOptions", 1)
         pass
 
     # Actual test, notice it is "async" function, so "await" can be used if needed
@@ -229,8 +223,6 @@ class TestMenuAssets(OmniUiTest):
             create_new_stage()
             await omni.kit.app.get_app().next_update_async()
             await omni.kit.app.get_app().next_update_async()
-            # hide window to make sure it doesn't block the menu
-            self.viewport_window.visible = False
             await menu_click(test_path, human_delay_speed=10)
             for i in range(5):
                 await omni.kit.app.get_app().next_update_async()
@@ -239,7 +231,6 @@ class TestMenuAssets(OmniUiTest):
             while omni.usd.get_context().get_stage_loading_status()[2] > 0:
                 await omni.kit.app.get_app().next_update_async()
 
-            self.viewport_window.visible = True
             await omni.kit.app.get_app().next_update_async()
             # the golden image test file name and test file name are the last section of the path
             golden_img_name = test_path.split("/")[-1] + ".png"
