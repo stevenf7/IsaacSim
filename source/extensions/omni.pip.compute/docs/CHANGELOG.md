@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.0] - 2024-07-05
+### Change
+- switch to opencv-python==4.9.0.80
+
 ## [1.3.1] - 2024-05-16
 ### Fixed
 - Missing windows dlls

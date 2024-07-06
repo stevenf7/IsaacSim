@@ -4,7 +4,7 @@ packages = [
     "imageio==2.22.2",                 # SWIPAT filed under: https://nvbugs/3701046
     "scipy==1.10.1",                   # SWIPAT filed under: https://nvbugs/3673519
     "pyyaml==6.0.1",                   # SWIPAT filed under: https://nvbugs/3434739
-    "opencv-python-headless==4.9.0.80" # SWIPAT filed under:
+    "opencv-python==4.9.0.80"          # SWIPAT filed under:
 ]
 
 target = "../_build/target-deps/pip_compute_prebundle"
