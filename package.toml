@@ -52,9 +52,7 @@ files_exclude = [
     ["tests/tests-omni.isaac.internal_tools.*"],
     ["tests/tests-internal*"],
     ["tests/tests-docker*"],
-    ["exts/omni.isaac.gym.benchmark"],
     ["tests/tests-startup.extscache*"],
-    ["tests/tests-omni.isaac.gym.benchmark*"],
     ["tests/tests-omni.importer.onshape*"],
     ["kit/exts/omni.kit.extpath.git/**"], # ISIM-1020
     ["**/.git/**"], # ISIM-1020
@@ -81,9 +79,7 @@ files_exclude = [
     ["tests/tests-docker*"],
     ["dockertests/**"],
     ["exts/omni.isaac.core_archive/pip_prebundle/bin/**"], # OM-84922
-    ["exts/omni.isaac.gym.benchmark"],
     ["tests/tests-startup.extscache*"],
-    ["tests/tests-omni.isaac.gym.benchmark*"],
     ["tests/tests-omni.importer.onshape*"],
     ["kit/exts/omni.kit.extpath.git/**"], # ISIM-1020
     ["**/.git/**"], # ISIM-1020
@@ -156,9 +152,7 @@ files_exclude = [
     ["tests/tests-docker*"],
     ["dockertests/**"],
     ["exts/omni.isaac.core_archive/pip_prebundle/bin/**"], # OM-84922
-    ["exts/omni.isaac.gym.benchmark"],
     ["tests/tests-startup.extscache*"],
-    ["tests/tests-omni.isaac.gym.benchmark*"],
     ["tests/tests-omni.importer.onshape*"],
     ["kit/exts/omni.kit.extpath.git/**"], # ISIM-1020
     ["**/.git/**"], # ISIM-1020

@@ -311,7 +311,6 @@ inventory.include = [
     "LICENSE.txt",
     # extensions
     "exts/omni.isaac.cloner",
-    "exts/omni.isaac.gym.benchmark",
     "exts/omni.isaac.gym",
 ]
 

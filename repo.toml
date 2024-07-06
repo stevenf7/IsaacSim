@@ -583,7 +583,6 @@ exclude = [
   "tests-selector*${shell_ext}",
   "tests-unit*${shell_ext}",
   "tests-omni.isaac.gym${shell_ext}",
-  "tests-omni.isaac.gym.benchmark*${shell_ext}",
   "tests-omni.isaac.internal_tools*${shell_ext}",
   "tests-omni.isaac.benchmarks*${shell_ext}",
   "tests-standalone*${shell_ext}",
@@ -847,7 +846,7 @@ exts.include = [
     "omni.replicator.isaac",
     "omni.usd.schema.isaac",
 ]
-exts.exclude = ["omni.isaac.internal_tools", "omni.isaac.gym.benchmark"]
+exts.exclude = ["omni.isaac.internal_tools"]
 
 # This is hardcoded in template
 # # Registries to publish to.
