@@ -11,8 +11,7 @@
 
 ## [1.15.5] - 2024-05-17
 ### Added
-- New BaseWriterNode.attach_writer API enables attaching specific writer to specific render product,
-  rather than all writers to single render product.
+- New BaseWriterNode.attach_writer API enables attaching specific writer to specific render product, rather than all writers to single render product.
 
 ## [1.15.4] - 2024-05-16
 ### Fixed

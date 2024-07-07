@@ -2,8 +2,8 @@
 
 ## [12.5.0] - 2024-07-05
 ### Added
-- use register_*_with_telemetry functions to simplify registration code
-rename registered_template to registered_templates
+- use register_*_with_telemetry functions to simplify registration code 
+- rename registered_template to registered_templates
 
 ## [12.4.2] - 2024-07-05
 ### Added
