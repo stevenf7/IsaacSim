@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.31.1] - 2024-07-08
+### Changed
+- Use a per instance variable for publish_multithreading_disabled
+
 ## [2.31.0] - 2024-07-05
 ### Changed
 - use register_*_with_telemetry functions to simplify registration code

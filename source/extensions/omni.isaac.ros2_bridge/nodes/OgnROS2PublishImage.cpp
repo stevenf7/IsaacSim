@@ -40,7 +40,6 @@ public:
     static bool compute(OgnROS2PublishImageDatabase& db)
     {
         auto& state = db.perInstanceState<OgnROS2PublishImage>();
-        static bool multithreadingDisabled = false;
         // spin once calls reset automatically if it was not successful
         const auto& nodeObj = db.abi_node();
         if (!state.spinOnce(
@@ -101,21 +100,21 @@ public:
             // Get extension param setting for multithreading
             carb::settings::ISettings* threadSettings = carb::getCachedInterface<carb::settings::ISettings>();
             static constexpr char thread_disable[] = "/exts/omni.isaac.ros2_bridge/publish_multithreading_disabled";
-            multithreadingDisabled = threadSettings->getAsBool(thread_disable);
+            state.mMultithreadingDisabled = threadSettings->getAsBool(thread_disable);
 
             return true;
         }
 
         bool status;
-        status = state.publishImage(db, multithreadingDisabled);
+        status = state.publishImage(db);
         if (state.mNitrosBridgePublisher)
-            status = state.publishNitrosBridgeImage(db, multithreadingDisabled) && status;
+            status = state.publishNitrosBridgeImage(db) && status;
 
         return status;
     }
 
 
-    bool publishImage(OgnROS2PublishImageDatabase& db, bool multithreadingDisabled)
+    bool publishImage(OgnROS2PublishImageDatabase& db)
     {
         CARB_PROFILE_ZONE(1, "publish image function");
         auto& state = db.perInstanceState<OgnROS2PublishImage>();
@@ -167,7 +166,7 @@ public:
                             totalBytes, db.inputs.data.size());
                 return false;
             }
-            if (multithreadingDisabled)
+            if (state.mMultithreadingDisabled)
             {
                 CARB_PROFILE_ZONE(1, "image publisher publish");
                 state.mPublisher.get()->publish(state.mMessage->ptr());
@@ -184,7 +183,7 @@ public:
         }
         else
         {
-            if (multithreadingDisabled)
+            if (state.mMultithreadingDisabled)
             {
                 return publishImageHelper(db, state, dataPtr, totalBytes);
             }
@@ -280,7 +279,7 @@ public:
         return true;
     }
 
-    bool publishNitrosBridgeImage(OgnROS2PublishImageDatabase& db, bool multithreadingDisabled)
+    bool publishNitrosBridgeImage(OgnROS2PublishImageDatabase& db)
     {
 #if !defined(_WIN32) && !defined(ROS2_BACKEND_FOXY)
         CARB_PROFILE_ZONE(1, "publish nitros bridge image function");
@@ -343,7 +342,7 @@ public:
             state.mNitrosBridgeMessage->setData(state.mIPCBufferManager->get_cur_ipc_mem_handle());
             state.mIPCBufferManager->next();
 
-            if (multithreadingDisabled)
+            if (state.mMultithreadingDisabled)
             {
                 CARB_PROFILE_ZONE(1, "nitros image publisher publish");
                 state.mNitrosBridgePublisher.get()->publish(state.mNitrosBridgeMessage->ptr());
@@ -361,7 +360,7 @@ public:
         // data on device
         else
         {
-            if (multithreadingDisabled)
+            if (state.mMultithreadingDisabled)
             {
                 return publishNitrosBridgeHelper(db, state, dataPtr, totalBytes);
             }
@@ -524,6 +523,7 @@ private:
     cudaEvent_t mNitrosBridgeStop;
     int mNitrosBridgeStreamDevice = -1;
     bool mNitrosBridgeStreamNotCreated = true;
+    bool mMultithreadingDisabled = false;
 };
 
 REGISTER_OGN_NODE()
