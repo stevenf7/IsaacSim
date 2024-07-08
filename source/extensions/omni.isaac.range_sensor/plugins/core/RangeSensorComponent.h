@@ -53,7 +53,7 @@ public:
     /**
      * @brief Construct a new Isaac Component
      */
-    RangeSensorComponentBase(omni::renderer::IDebugDraw* debugDrawPtr, omni::physx::IPhysx* physxPtr)
+    RangeSensorComponentBase(omni::physx::IPhysx* physxPtr)
     {
         mPhysx = physxPtr;
         mTimeline = carb::getCachedInterface<omni::timeline::ITimeline>();
@@ -61,11 +61,11 @@ public:
         mToken = carb::getCachedInterface<omni::fabric::IToken>();
 
         mLineDrawing = std::make_shared<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper>(
-            omni::usd::UsdContext::getContext(), debugDrawPtr,
+            omni::usd::UsdContext::getContext(),
             omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::eLines);
 
         mPointDrawing = std::make_shared<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper>(
-            omni::usd::UsdContext::getContext(), debugDrawPtr,
+            omni::usd::UsdContext::getContext(),
             omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::ePoints);
     }
     /**

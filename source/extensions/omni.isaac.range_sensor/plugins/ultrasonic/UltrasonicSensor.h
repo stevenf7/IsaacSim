@@ -35,9 +35,7 @@ class UltrasonicSensor : public RangeSensorComponent
 {
 
 public:
-    UltrasonicSensor(omni::renderer::IDebugDraw* debugDrawPtr,
-                     omni::physx::IPhysx* physxPtr,
-                     carb::tasking::ITasking* taskingPtr);
+    UltrasonicSensor(omni::physx::IPhysx* physxPtr, carb::tasking::ITasking* taskingPtr);
     ~UltrasonicSensor();
 
     virtual void onStart();

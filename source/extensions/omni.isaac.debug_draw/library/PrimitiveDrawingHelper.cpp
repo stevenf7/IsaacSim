@@ -27,12 +27,10 @@ namespace debug_draw
 namespace drawing
 {
 PrimitiveDrawingHelper::PrimitiveDrawingHelper(omni::usd::UsdContext* usdContext,
-                                               omni::renderer::IDebugDraw* debugDrawPtr,
                                                RenderingMode renderingMode,
                                                bool worldSpace,
                                                bool depthTest)
     : mUsdContext(usdContext),
-      mDebugDrawPtr(debugDrawPtr),
       mRenderingMode(renderingMode),
       mWorldSpace(worldSpace),
       mDepthTest(depthTest),

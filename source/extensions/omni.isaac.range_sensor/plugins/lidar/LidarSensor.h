@@ -32,9 +32,7 @@ class LidarSensor : public RangeSensorComponent
 {
 
 public:
-    LidarSensor(omni::renderer::IDebugDraw* debugDrawPtr,
-                omni::physx::IPhysx* physxPtr,
-                omni::syntheticdata::SyntheticData* syntheticDataPtr);
+    LidarSensor(omni::physx::IPhysx* physxPtr, omni::syntheticdata::SyntheticData* syntheticDataPtr);
     ~LidarSensor();
 
     virtual void onStart();

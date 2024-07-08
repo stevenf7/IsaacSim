@@ -36,10 +36,8 @@ namespace range_sensor
 {
 
 
-UltrasonicSensor::UltrasonicSensor(omni::renderer::IDebugDraw* debugDrawPtr,
-                                   omni::physx::IPhysx* physxPtr,
-                                   carb::tasking::ITasking* taskingPtr)
-    : RangeSensorComponent(debugDrawPtr, physxPtr)
+UltrasonicSensor::UltrasonicSensor(omni::physx::IPhysx* physxPtr, carb::tasking::ITasking* taskingPtr)
+    : RangeSensorComponent(physxPtr)
 {
     mTasking = taskingPtr;
     mTaskCounter = mTasking->createCounter();

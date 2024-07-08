@@ -37,7 +37,6 @@ public:
 
     };
     PrimitiveDrawingHelper(omni::usd::UsdContext* usdContext,
-                           omni::renderer::IDebugDraw* debugDrawPtr,
                            RenderingMode renderingMode,
                            bool worldSpace = false,
                            bool depthTest = true);
@@ -81,7 +80,6 @@ private:
 
     omni::usd::UsdContext* mUsdContext;
 
-    omni::renderer::IDebugDraw* mDebugDrawPtr;
     RenderingMode mRenderingMode;
     bool mWorldSpace;
     bool mDepthTest;

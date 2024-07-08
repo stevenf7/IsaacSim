@@ -37,15 +37,11 @@
 const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.debug_draw.plugin", "Isaac Sim debug drawing plugin",
                                                   "NVIDIA", carb::PluginHotReload::eDisabled, "dev" };
 CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::debug_draw::DebugDraw)
-CARB_PLUGIN_IMPL_DEPS(omni::kit::IStageUpdate,
-                      omni::renderer::IDebugDraw,
-                      omni::graph::core::IGraphRegistry,
-                      omni::fabric::IToken)
+CARB_PLUGIN_IMPL_DEPS(omni::kit::IStageUpdate, omni::graph::core::IGraphRegistry, omni::fabric::IToken)
 DECLARE_OGN_NODES()
 
 using namespace carb::scenerenderer;
 
-omni::renderer::IDebugDraw* gDebugDraw = nullptr;
 omni::kit::StageUpdatePtr gStageUpdate = nullptr;
 omni::kit::StageUpdateNode* gStageUpdateNode = nullptr;
 // // Points
@@ -268,9 +264,9 @@ static void onAttach(long int stageId, double metersPerUnit, void* userData)
 {
     gUsdContext = omni::usd::UsdContext::getContext();
     gPointDrawing = std::make_unique<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper>(
-        gUsdContext, gDebugDraw, omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::ePoints);
+        gUsdContext, omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::ePoints);
     gLineDrawing = std::make_unique<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper>(
-        gUsdContext, gDebugDraw, omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::eLines);
+        gUsdContext, omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::eLines);
 }
 
 void onDetach(void* data)
@@ -285,13 +281,6 @@ CARB_EXPORT void carbOnPluginStartup()
     INITIALIZE_OGN_NODES()
     gStageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>()->getStageUpdate();
 
-
-    gDebugDraw = carb::getCachedInterface<omni::renderer::IDebugDraw>();
-    if (!gDebugDraw)
-    {
-        CARB_LOG_ERROR("*** Failed to acquire debugdraw interface\n");
-        return;
-    }
     omni::kit::StageUpdateNodeDesc desc = { 0 };
     desc.displayName = "Isaac DebugDraw";
     desc.onAttach = onAttach;
@@ -303,9 +292,9 @@ CARB_EXPORT void carbOnPluginStartup()
     gStageUpdate->setStageUpdateNodeOrder(index, 75);
 
     gPointDrawing = std::make_unique<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper>(
-        gUsdContext, gDebugDraw, omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::ePoints);
+        gUsdContext, omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::ePoints);
     gLineDrawing = std::make_unique<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper>(
-        gUsdContext, gDebugDraw, omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::eLines);
+        gUsdContext, omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::eLines);
 }
 
 CARB_EXPORT void carbOnPluginShutdown()

@@ -39,8 +39,7 @@ namespace range_sensor
 {
 
 
-GenericSensor::GenericSensor(omni::renderer::IDebugDraw* debugDrawPtr, omni::physx::IPhysx* physxPtr)
-    : RangeSensorComponent(debugDrawPtr, physxPtr)
+GenericSensor::GenericSensor(omni::physx::IPhysx* physxPtr) : RangeSensorComponent(physxPtr)
 {
 }
 

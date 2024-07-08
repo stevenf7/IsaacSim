@@ -36,13 +36,8 @@ class OgnDebugDrawRayCast : public BaseResetNode
 public:
     static void setLineDrawing(omni::isaac::debug_draw::OgnDebugDrawRayCast& state)
     {
-        omni::renderer::IDebugDraw* debugDrawPtr = carb::getCachedInterface<omni::renderer::IDebugDraw>();
-        if (!debugDrawPtr)
-        {
-            CARB_LOG_ERROR("*** OgnDebugDrawRayCast failed to acquire debugdraw interface\n");
-        }
         state.mLineDrawing = std::make_shared<drawing::PrimitiveDrawingHelper>(
-            omni::usd::UsdContext::getContext(), debugDrawPtr, drawing::PrimitiveDrawingHelper::RenderingMode::eLines,
+            omni::usd::UsdContext::getContext(), drawing::PrimitiveDrawingHelper::RenderingMode::eLines,
             true /*World Coords*/);
     }
 
