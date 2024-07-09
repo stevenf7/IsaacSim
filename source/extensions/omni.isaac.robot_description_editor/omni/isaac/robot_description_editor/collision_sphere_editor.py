@@ -292,11 +292,13 @@ class CollisionSphereEditor:
             self.clear_preview()
             return
 
-        if np.unique(vert_cts) != [3]:
+        unique_vert_cts = np.unique(vert_cts)
+        if len(unique_vert_cts) != 1 or unique_vert_cts[0] != 3:
             self.clear_preview()
             carb.log_error(
                 "Cannot generate collsision spheres for mesh because the specified mesh is not composed of triangles."
             )
+            return
 
         num_points = face_inds.shape[0]
 
@@ -561,19 +563,17 @@ class CollisionSphereEditor:
 
     # Used for XRDF files
     def write_spheres_to_dict(self, robot_prim_path, link_to_spheres):
-        robot_path_split = robot_prim_path.split("/")
         for sphere in self.path_2_spheres.values():
             prim_path = sphere.prim_path
             if is_prim_path_valid(prim_path):
-                s = prim_path.split("/")
-                if s[:-2] != robot_path_split:
+                if prim_path[: len(robot_prim_path)] != robot_prim_path:
                     carb.log_warn(
                         "Not writing sphere at path {} to file because it is not nested under the robot Articulation".format(
                             prim_path
                         )
                     )
                     continue
-                link_name = s[-2]
+                link_name = prim_path[len(robot_prim_path) + 1 : prim_path.rfind("/")]
                 link_spheres = link_to_spheres.get(link_name, [])
                 sphere_pose = self._round_list_floats(sphere.get_local_pose()[0])
                 link_spheres.append({"center": sphere_pose, "radius": sphere.get_radius()})
@@ -582,19 +582,17 @@ class CollisionSphereEditor:
     # Used for Robot Description Files
     def save_spheres(self, robot_prim_path, f):
         link_to_spheres = OrderedDict()
-        robot_path_split = robot_prim_path.split("/")
         for sphere in self.path_2_spheres.values():
             prim_path = sphere.prim_path
             if is_prim_path_valid(prim_path):
-                s = prim_path.split("/")
-                if s[:-2] != robot_path_split:
+                if prim_path[: len(robot_prim_path)] != robot_prim_path:
                     carb.log_warn(
                         "Not writing sphere at path {} to file because it is not nested under the robot Articulation".format(
                             prim_path
                         )
                     )
                     continue
-                link_name = s[-2]
+                link_name = prim_path[len(robot_prim_path) + 1 : prim_path.rfind("/")]
                 link_spheres = link_to_spheres.get(link_name, [])
                 sphere_pose = self._round_list_floats(sphere.get_local_pose()[0])
                 link_spheres.append({"center": sphere_pose, "radius": round(sphere.get_radius(), 5)})
