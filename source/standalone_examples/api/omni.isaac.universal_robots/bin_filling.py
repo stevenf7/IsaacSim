@@ -30,10 +30,10 @@ i = 0
 added_screws = False
 reset_needed = False
 while simulation_app.is_running():
+    my_world.step(render=True)
+    if my_world.is_stopped() and not reset_needed:
+        reset_needed = True
     if my_world.is_playing():
-        my_world.step(render=True)
-        if my_world.is_stopped() and not reset_needed:
-            reset_needed = True
         if reset_needed:
             my_world.reset()
             my_controller.reset()
@@ -54,6 +54,4 @@ while simulation_app.is_running():
         if my_controller.is_done():
             print("done picking and placing")
         articulation_controller.apply_action(actions)
-    else:
-        my_world.render()
 simulation_app.close()
