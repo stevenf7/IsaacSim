@@ -280,8 +280,8 @@ class TestAckermannControllerOgn(ogts.OmniGraphTestCase):
                     ("AckermannController.inputs:wheelBase", 1.65),
                     ("AckermannController.inputs:trackWidth", 1.25),
                     ("AckermannController.inputs:turningWheelRadius", 0.25),
-                    ("AckermannController.inputs:steeringAngle", 0.717),
-                    ("AckermannController.inputs:speed", 2.0),
+                    ("AckermannController.inputs:steeringAngle", 0.500),
+                    ("AckermannController.inputs:speed", 1.5),
                     ("ArticulationController.inputs:robotPath", "/World/Forklift"),
                     (
                         "ArticulationController.inputs:jointNames",
@@ -298,9 +298,9 @@ class TestAckermannControllerOgn(ogts.OmniGraphTestCase):
 
         robot = Robot(prim_path="/World/Forklift", name="Forklift")
         self._timeline.play()
-        await simulate_async(1)
+        await simulate_async(0.1)
         robot.initialize()
-        await simulate_async(1)
+        await simulate_async(3)
 
         # print(robot.dof_names)
         # print(robot.get_joint_velocities())
