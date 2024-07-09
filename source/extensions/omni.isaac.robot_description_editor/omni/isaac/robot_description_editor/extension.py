@@ -182,7 +182,9 @@ class Extension(omni.ext.IExt):
     def _menu_callback(self):
         self._window.visible = not self._window.visible
         # Update the Selection Box if the Timeline is already playing
-        self._refresh_selection_combobox()
+        if not self._timeline.is_stopped():
+            self._refresh_selection_combobox()
+            self._on_selection(self._get_selected_articulation())
 
     def _build_ui(self):
         # if not self._window:
@@ -434,7 +436,8 @@ class Extension(omni.ext.IExt):
 
     def get_all_sphere_gen_meshes(self):
         stage = self._usd_context.get_stage()
-        self._sphere_gen_link_2_mesh = OrderedDict()
+        sphere_gen_link_2_mesh = OrderedDict()
+
         if stage and self.articulation is not None:
             for prim in Usd.PrimRange(stage.GetPrimAtPath(self._articulation_base_path)):
                 path = str(prim.GetPath())
@@ -445,11 +448,38 @@ class Extension(omni.ext.IExt):
                     geom_mesh = UsdGeom.Mesh(prim)
                     if geom_mesh.GetPointsAttr().HasValue():
                         rel_path = path[len(self._articulation_base_path) :]
-                        div_index = rel_path[1:].find("/") + 1
+                        div_index = rel_path.rfind("/")
                         key = rel_path[:div_index]
-                        l = self._sphere_gen_link_2_mesh.get(key, [])
+                        l = sphere_gen_link_2_mesh.get(key, [])
                         l.append(rel_path[div_index:])
-                        self._sphere_gen_link_2_mesh[key] = l
+                        sphere_gen_link_2_mesh[key] = l
+
+        # Modify paths of links to be the shortest prim path that uniqeuly identifies each link's
+        # meshes rather than paths that are the direct parents of each mesh
+        mesh_parent_paths = sphere_gen_link_2_mesh.keys()
+        self._sphere_gen_link_2_mesh = OrderedDict()
+
+        # Path to parent prims of meshes
+        for p1 in mesh_parent_paths:
+            # index up to which p1 is unique
+            unique_index = 0
+            for p2 in mesh_parent_paths:
+                if p1 == p2:
+                    continue
+
+                # index of first mismatch between p1 and p2
+                mismatch_index = next((i for i, (a, b) in enumerate(zip(p1, p2)) if a != b), -1)
+
+                if mismatch_index > unique_index:
+                    unique_index = mismatch_index
+
+            key_end_index = unique_index + p1[unique_index:].find("/") if "/" in p1[unique_index:] else len(p1)
+            key = p1[:key_end_index]
+            mesh_prefix = p1[key_end_index:]
+
+            self._sphere_gen_link_2_mesh[key] = []
+            for val in sphere_gen_link_2_mesh[p1]:
+                self._sphere_gen_link_2_mesh[key].append(mesh_prefix + val)
 
     def get_articulation_values(self, articulation):
         """Get and store the latest dof_properties from the articulation.
@@ -499,12 +529,12 @@ class Extension(omni.ext.IExt):
         self._update_command_ui()
 
     def _reset_ui(self):
+        self._show_robot_if_hidden()
+
         """Reset / Hide UI Elements."""
         self._clear_selection_combobox()
         self._clear_link_selection_combobox()
         self._prev_art_prim_path = None
-
-        self._show_robot_if_hidden()
 
         # Reset & Disable Button
         self._models["frame_command_ui"].collapsed = True
@@ -785,6 +815,7 @@ class Extension(omni.ext.IExt):
                         num_sphere_kwargs = {
                             "label": "Number of Spheres",
                             "default_val": 0,
+                            "min": 0,
                             "tooltip": "Number of Spheres to Generate for Link",
                         }
 

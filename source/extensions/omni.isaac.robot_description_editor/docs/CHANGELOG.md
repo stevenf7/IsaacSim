@@ -1,4 +1,9 @@
 # Changelog
+## [2.5.0] - 2024-07-08
+### Fixed
+- Fixed behavior of Robot Description Editor for assets with nested link paths.
+- Fixed bug with toggling robot visibility causing an error on STOP.
+
 ## [2.4.0] - 2024-05-01
 ### Fixed
 - Fixed Articulation DropDown population and corresponding extension behavior.
