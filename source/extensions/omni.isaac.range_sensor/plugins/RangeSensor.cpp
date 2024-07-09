@@ -52,7 +52,6 @@ CARB_PLUGIN_IMPL(kPluginImpl,
 CARB_PLUGIN_IMPL_DEPS(omni::physx::IPhysx,
                       omni::kit::IStageUpdate,
                       omni::fabric::IStageReaderWriter,
-                      omni::renderer::IDebugDraw,
                       omni::syntheticdata::SyntheticData,
                       carb::tasking::ITasking,
                       omni::graph::core::IGraphRegistry)
@@ -65,7 +64,6 @@ namespace
 {
 
 
-omni::renderer::IDebugDraw* g_debugDraw = nullptr;
 omni::kit::StageUpdatePtr g_stageUpdate = nullptr;
 omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
 omni::physx::IPhysx* g_physx = nullptr;
@@ -1177,12 +1175,6 @@ void onPrimRemove(const pxr::SdfPath& primPath, void* userData)
 CARB_EXPORT void carbOnPluginStartup()
 {
 
-    g_debugDraw = carb::getCachedInterface<omni::renderer::IDebugDraw>();
-    if (!g_debugDraw)
-    {
-        CARB_LOG_ERROR("*** Failed to acquire debugdraw interface\n");
-        return;
-    }
 
     g_stageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>()->getStageUpdate();
     if (!g_stageUpdate)
@@ -1208,8 +1200,8 @@ CARB_EXPORT void carbOnPluginStartup()
     gTasking = carb::getCachedInterface<carb::tasking::ITasking>();
 
 
-    gRangeSensorManager = std::make_unique<omni::isaac::range_sensor::RangeSensorManager>(
-        g_debugDraw, g_physx, g_SyntheticDataInterface, gTasking);
+    gRangeSensorManager =
+        std::make_unique<omni::isaac::range_sensor::RangeSensorManager>(g_physx, g_SyntheticDataInterface, gTasking);
 
     omni::kit::StageUpdateNodeDesc desc = { 0 };
     desc.displayName = "Range Sensor Interface";

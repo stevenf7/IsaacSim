@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.1.0] - 2024-07-08
+### Removed
+- Deprecated and unused omni.debugdraw dependency
+
 ## [3.0.1] - 2024-04-16
 ### Fixed
 - Update IStageUpdate usage to fix deprecation error

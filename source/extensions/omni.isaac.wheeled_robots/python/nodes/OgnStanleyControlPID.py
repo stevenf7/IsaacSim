@@ -107,9 +107,6 @@ class OgnStanleyControlPID:
             # calculate speed profile with suggested/arbitrary target & min speed values
             state.sp = calc_speed_profile(np.array(state.rv), db.inputs.maxVelocity, 0.5, 0.05)
 
-            # save rgb path curve if user switches on path drawing mid-simulation
-            state.argb = draw_path_setup(state.sp)
-
         # check if rotate_only using distance threshold
         state.rotate_only = np.hypot(x - state.target[0], y - state.target[1]) <= state.thresholds[0] or reachedGoal[0]
 
@@ -218,17 +215,16 @@ def draw_path_setup(sp):  # use speed profile to create color array (copied from
 def draw_path(
     rx, ry, argb
 ):  # use color and path arrays to draw path along quintic curve (copied from simple_robot_controller in demo utils)
-    import carb
-    from omni.debugdraw import _debugDraw
-    from pxr import UsdGeom
+    try:
+        from omni.isaac.debug_draw import _debug_draw
+        from pxr import UsdGeom
 
-    stage = omni.usd.get_context().get_stage()
-    stage_unit = UsdGeom.GetStageMetersPerUnit(stage)
-
-    for i in range(len(rx) - 1):
-        _debugDraw.acquire_debug_draw_interface().draw_line(
-            carb.Float3(rx[i] / stage_unit, ry[i] / stage_unit, 0.14 / stage_unit),
-            argb[i],
-            carb.Float3(rx[i + 1] / stage_unit, ry[i + 1] / stage_unit, 0.14 / stage_unit),
-            argb[i - 1],
-        )
+        stage = omni.usd.get_context().get_stage()
+        stage_unit = UsdGeom.GetStageMetersPerUnit(stage)
+        points = []
+        for i in range(len(rx) - 1):
+            points.append((rx[i] / stage_unit, ry[i] / stage_unit, 0.14 / stage_unit))
+        _debug_draw.acquire_debug_draw_interface().clear_lines()
+        _debug_draw.acquire_debug_draw_interface().draw_lines_spline(points, (1, 1, 1, 1), 0.05, True)
+    except:
+        print("Error: omni.isaac.debug_draw must be enabled to draw path")

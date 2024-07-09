@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.0] - 2024-07-08
+### Removed
+- Deprecated and unused omni.debugdraw dependency
+
 ## [1.0.0] - 2024-06-13
 ### Added
 - Added DebugDrawRayCast node to visualize arrays of raycasts 

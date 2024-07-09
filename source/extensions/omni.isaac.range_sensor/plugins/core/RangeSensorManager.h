@@ -53,12 +53,10 @@ public:
      *
      * @param physxPtr
      */
-    RangeSensorManager(omni::renderer::IDebugDraw* debugDrawPtr,
-                       omni::physx::IPhysx* physxPtr,
+    RangeSensorManager(omni::physx::IPhysx* physxPtr,
                        omni::syntheticdata::SyntheticData* syntheticDataPtr,
                        carb::tasking::ITasking* taskingPtr)
     {
-        mDebugDrawPtr = debugDrawPtr;
         mPhysxPtr = physxPtr;
         mSyntheticDataPtr = syntheticDataPtr;
         mTasking = taskingPtr;
@@ -167,15 +165,15 @@ public:
 
         if (prim.IsA<pxr::RangeSensorLidar>())
         {
-            component = std::make_unique<LidarSensor>(mDebugDrawPtr, mPhysxPtr, mSyntheticDataPtr);
+            component = std::make_unique<LidarSensor>(mPhysxPtr, mSyntheticDataPtr);
         }
         else if (prim.IsA<pxr::RangeSensorUltrasonicArray>())
         {
-            component = std::make_unique<UltrasonicSensor>(mDebugDrawPtr, mPhysxPtr, mTasking);
+            component = std::make_unique<UltrasonicSensor>(mPhysxPtr, mTasking);
         }
         else if (prim.IsA<pxr::RangeSensorGeneric>())
         {
-            component = std::make_unique<GenericSensor>(mDebugDrawPtr, mPhysxPtr);
+            component = std::make_unique<GenericSensor>(mPhysxPtr);
         }
 
         if (component)
@@ -245,7 +243,6 @@ public:
 
 private:
     omni::physx::IPhysx* mPhysxPtr = nullptr;
-    omni::renderer::IDebugDraw* mDebugDrawPtr = nullptr;
     omni::syntheticdata::SyntheticData* mSyntheticDataPtr = nullptr;
 
     carb::tasking::ITasking* mTasking = nullptr;

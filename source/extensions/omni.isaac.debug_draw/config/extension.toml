@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.0"
+version = "1.1.0"
 category = "Simulation"
 title = "Isaac Sim Debug Drawing"
 description = "Persistent Debug Drawing Helpers"
@@ -20,7 +20,6 @@ writeTarget.kit = true
 [dependencies]
 "omni.graph" = {}
 "omni.graph.tools" = {}
-"omni.debugdraw" = {}
 # needed to access drawing interfaces:
 "omni.kit.renderer.core" = {}
 "omni.kit.viewport.window" = {}

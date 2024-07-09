@@ -35,13 +35,8 @@ class OgnDebugDrawPointCloud : public BaseResetNode
 public:
     static void setPointDrawing(omni::isaac::debug_draw::OgnDebugDrawPointCloud& state)
     {
-        omni::renderer::IDebugDraw* debugDrawPtr = carb::getCachedInterface<omni::renderer::IDebugDraw>();
-        if (!debugDrawPtr)
-        {
-            CARB_LOG_ERROR("*** OgnDebugDrawPointCloud failed to acquire debugdraw interface\n");
-        }
         state.m_pointDrawing = std::make_shared<drawing::PrimitiveDrawingHelper>(
-            omni::usd::UsdContext::getContext(), debugDrawPtr, drawing::PrimitiveDrawingHelper::RenderingMode::ePoints,
+            omni::usd::UsdContext::getContext(), drawing::PrimitiveDrawingHelper::RenderingMode::ePoints,
             true /*World Coords*/);
     }
 

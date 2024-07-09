@@ -40,13 +40,8 @@ public:
     {
         auto& state =
             OgnIsaacXPrimAxisVisualizerDatabase::sPerInstanceState<OgnIsaacXPrimAxisVisualizer>(nodeObj, instanceId);
-        omni::renderer::IDebugDraw* debugDrawPtr = carb::getCachedInterface<omni::renderer::IDebugDraw>();
-        if (!debugDrawPtr)
-        {
-            CARB_LOG_ERROR("*** OgnIsaacXPrimAxisVisualizer failed to acquire debugdraw interface\n");
-        }
         state.mLineDrawing = std::make_shared<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper>(
-            omni::usd::UsdContext::getContext(), debugDrawPtr,
+            omni::usd::UsdContext::getContext(),
             omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::eLines);
     }
 

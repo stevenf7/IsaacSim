@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.3.1] - 2024-07-08
+### Changed
+- use omni.isaac.debug_draw instead of omni.debugdraw
+
 ## [2.3.0] - 2024-07-03
 ### Added
 - Created Ackermann controller class

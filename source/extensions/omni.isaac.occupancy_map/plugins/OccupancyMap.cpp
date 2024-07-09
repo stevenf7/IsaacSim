@@ -35,7 +35,7 @@ const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.occupancy_map.plug
                                                   carb::PluginHotReload::eDisabled, "dev" };
 
 CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::occupancy_map::OccupancyMap)
-CARB_PLUGIN_IMPL_DEPS(omni::physx::IPhysx, omni::kit::IStageUpdate, omni::renderer::IDebugDraw)
+CARB_PLUGIN_IMPL_DEPS(omni::physx::IPhysx, omni::kit::IStageUpdate)
 
 // private stuff
 namespace
@@ -115,8 +115,6 @@ void CARB_ABI SetCellSize(float cellSize)
 {
     inputCellSize = cellSize;
 }
-
-omni::renderer::IDebugDraw* g_debugDraw = nullptr;
 
 void CARB_ABI Update()
 {
@@ -303,12 +301,10 @@ static void onAttach(long int stageId, double metersPerUnit, void* userData)
     gStage = stage;
     gMetersPerUnit = static_cast<float>(metersPerUnit);
     gLineDrawing = std::make_unique<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper>(
-        omni::usd::UsdContext::getContext(), g_debugDraw,
-        omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::eLines);
+        omni::usd::UsdContext::getContext(), omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::eLines);
 
     gCellDrawing = std::make_unique<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper>(
-        omni::usd::UsdContext::getContext(), g_debugDraw,
-        omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::eLines, true);
+        omni::usd::UsdContext::getContext(), omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::eLines, true);
 }
 
 static void onDetach(void* data)
@@ -338,12 +334,7 @@ CARB_EXPORT void carbOnPluginStartup()
         CARB_LOG_ERROR("*** Failed to acquire PhysX interface\n");
         return;
     }
-    g_debugDraw = carb::getCachedInterface<omni::renderer::IDebugDraw>();
-    if (!g_debugDraw)
-    {
-        CARB_LOG_ERROR("*** Failed to acquire debugdraw interface\n");
-        return;
-    }
+
     omni::kit::StageUpdateNodeDesc desc = { 0 };
     desc.displayName = "OccupancyMap";
     desc.onAttach = onAttach;

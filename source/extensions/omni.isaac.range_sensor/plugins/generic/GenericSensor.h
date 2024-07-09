@@ -33,7 +33,7 @@ class GenericSensor : public RangeSensorComponent
 {
 
 public:
-    GenericSensor(omni::renderer::IDebugDraw* debugDrawPtr, omni::physx::IPhysx* physxPtr);
+    GenericSensor(omni::physx::IPhysx* physxPtr);
     ~GenericSensor();
 
     virtual void onStart();

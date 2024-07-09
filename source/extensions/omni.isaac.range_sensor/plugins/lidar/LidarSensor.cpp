@@ -45,10 +45,8 @@ namespace range_sensor
 {
 
 
-LidarSensor::LidarSensor(omni::renderer::IDebugDraw* debugDrawPtr,
-                         omni::physx::IPhysx* physxPtr,
-                         omni::syntheticdata::SyntheticData* syntheticDataPtr)
-    : RangeSensorComponent(debugDrawPtr, physxPtr)
+LidarSensor::LidarSensor(omni::physx::IPhysx* physxPtr, omni::syntheticdata::SyntheticData* syntheticDataPtr)
+    : RangeSensorComponent(physxPtr)
 {
     mSyntheticDataPtr = syntheticDataPtr;
 }
