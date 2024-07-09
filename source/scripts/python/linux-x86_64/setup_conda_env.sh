@@ -1,5 +1,9 @@
 #!/bin/bash
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+if [ -n "$ZSH_VERSION" ]; then
+    SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
+    export BASH_SOURCE=$SCRIPT_DIR/setup_python_env.sh
+fi
 MY_DIR="$(realpath -s "$SCRIPT_DIR")"
 # path=$SCRIPT_DIR
 # while [[ $path != / ]];
