@@ -181,7 +181,7 @@ def enable_extensions():
     # Enable extensions
     from omni.isaac.core.utils.extensions import enable_extension
 
-    enable_extension("omni.kit.window.viewport")
+    enable_extension("omni.kit.viewport.window")
     enable_extension("omni.kit.manipulator.prim")
     enable_extension("omni.kit.property.usd")
     enable_extension("omni.anim.navigation.bundle")

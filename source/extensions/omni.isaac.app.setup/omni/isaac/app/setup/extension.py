@@ -116,11 +116,6 @@ class CreateSetupExtension(omni.ext.IExt):
         self._settings.set_default("/persistent/app/primCreation/DefaultRotationOrder", "ZYX")
         self._settings.set_default("/persistent/app/primCreation/DefaultXformOpPrecision", "Double")
 
-        # omni.kit.property.tagging
-        self._settings.set_default("/persistent/exts/omni.kit.property.tagging/showAdvancedTagView", False)
-        self._settings.set_default("/persistent/exts/omni.kit.property.tagging/showHiddenTags", False)
-        self._settings.set_default("/persistent/exts/omni.kit.property.tagging/modifyHiddenTags", False)
-
         # camera settings
         self._settings.set("persistent/app/viewport/camShowSpeedOnStart", False)
         self._settings.set("persistent/app/omniverse/gamepadCameraControl", False)
