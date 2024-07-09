@@ -1,8 +1,13 @@
 # Changelog
 
+## [12.6.0] - 2024-07-09
+### Fixed
+- Default sensor profiles omit deprecated fields and include new default fields
+- Warns when user provides invalid sensor config paths
+
 ## [12.5.0] - 2024-07-05
 ### Added
-- use register_*_with_telemetry functions to simplify registration code 
+- use register_*_with_telemetry functions to simplify registration code
 - rename registered_template to registered_templates
 
 ## [12.4.2] - 2024-07-05
