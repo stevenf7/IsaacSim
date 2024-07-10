@@ -55,8 +55,8 @@ COPY ${ISAACSIM_PATH} /isaac-sim
 RUN apt-get update && apt-get install -y rdfind
 RUN rdfind -makesymlinks true /isaac-sim
 
-# Add Tracy profiler dependencies
-RUN apt-get install -y libglfw3 libfreetype6 libdbus-1-3
+# Add Tracy profiler and opencv dependencies
+RUN apt-get install -y libglfw3 libfreetype6 libdbus-1-3 libglib2.0-0
 
 # multi stage build to remove all cached data and reduce image size
 # this effectively flattens all layers
