@@ -440,6 +440,7 @@ namespace ultrasonic
 {
 bool CARB_ABI isUltrasonicSensor(const char* primPath)
 {
+    CARB_LOG_WARN_ONCE("The ultrasonic sensor is deprecated and will be removed in a future release.");
     if (g_stage && gRangeSensorManager)
     {
         omni::isaac::range_sensor::UltrasonicSensor* sensor =
@@ -463,6 +464,7 @@ bool CARB_ABI isUltrasonicSensor(const char* primPath)
 
 int CARB_ABI getNumBins(const char* primPath)
 {
+    CARB_LOG_WARN_ONCE("The ultrasonic sensor is deprecated and will be removed in a future release.");
     if (g_stage && gRangeSensorManager)
     {
         omni::isaac::range_sensor::UltrasonicSensor* sensor =
@@ -487,6 +489,7 @@ int CARB_ABI getNumBins(const char* primPath)
 
 int CARB_ABI getNumRows(const char* primPath)
 {
+    CARB_LOG_WARN_ONCE("The ultrasonic sensor is deprecated and will be removed in a future release.");
     if (g_stage && gRangeSensorManager)
     {
         omni::isaac::range_sensor::UltrasonicSensor* sensor =
@@ -511,6 +514,7 @@ int CARB_ABI getNumRows(const char* primPath)
 
 int CARB_ABI getNumEmitters(const char* primPath)
 {
+    CARB_LOG_WARN_ONCE("The ultrasonic sensor is deprecated and will be removed in a future release.");
     if (g_stage && gRangeSensorManager)
     {
         omni::isaac::range_sensor::UltrasonicSensor* sensor =
@@ -534,6 +538,7 @@ int CARB_ABI getNumEmitters(const char* primPath)
 
 int CARB_ABI getNumCols(const char* primPath)
 {
+    CARB_LOG_WARN_ONCE("The ultrasonic sensor is deprecated and will be removed in a future release.");
     if (g_stage && gRangeSensorManager)
     {
         omni::isaac::range_sensor::UltrasonicSensor* sensor =
@@ -558,6 +563,7 @@ int CARB_ABI getNumCols(const char* primPath)
 
 uint16_t* CARB_ABI getDepthData(const char* primPath, int emitterIndex)
 {
+    CARB_LOG_WARN_ONCE("The ultrasonic sensor is deprecated and will be removed in a future release.");
     if (g_stage && gRangeSensorManager)
     {
         omni::isaac::range_sensor::UltrasonicSensor* sensor =
@@ -583,6 +589,7 @@ uint16_t* CARB_ABI getDepthData(const char* primPath, int emitterIndex)
 
 float* CARB_ABI getEnvelope(const char* primPath, int emitterIndex)
 {
+    CARB_LOG_WARN_ONCE("The ultrasonic sensor is deprecated and will be removed in a future release.");
     if (g_stage && gRangeSensorManager)
     {
         omni::isaac::range_sensor::UltrasonicSensor* sensor =
@@ -607,6 +614,7 @@ float* CARB_ABI getEnvelope(const char* primPath, int emitterIndex)
 
 std::vector<float> CARB_ABI getEnvelopeArrayFlattened(const char* primPath)
 {
+    CARB_LOG_WARN_ONCE("The ultrasonic sensor is deprecated and will be removed in a future release.");
     if (g_stage && gRangeSensorManager)
     {
         omni::isaac::range_sensor::UltrasonicSensor* sensor =
@@ -630,6 +638,7 @@ std::vector<float> CARB_ABI getEnvelopeArrayFlattened(const char* primPath)
 
 std::vector<std::vector<float>> CARB_ABI getActiveEnvelopeArray(const char* primPath)
 {
+    CARB_LOG_WARN_ONCE("The ultrasonic sensor is deprecated and will be removed in a future release.");
     if (g_stage && gRangeSensorManager)
     {
         omni::isaac::range_sensor::UltrasonicSensor* sensor =
@@ -653,6 +662,7 @@ std::vector<std::vector<float>> CARB_ABI getActiveEnvelopeArray(const char* prim
 
 std::vector<carb::Int2> CARB_ABI getEmitterFiringInfo(const char* primPath)
 {
+    CARB_LOG_WARN_ONCE("The ultrasonic sensor is deprecated and will be removed in a future release.");
     if (g_stage && gRangeSensorManager)
     {
         omni::isaac::range_sensor::UltrasonicSensor* sensor =
@@ -677,6 +687,7 @@ std::vector<carb::Int2> CARB_ABI getEmitterFiringInfo(const char* primPath)
 
 std::vector<carb::Int2> CARB_ABI getReceiverFiringInfo(const char* primPath)
 {
+    CARB_LOG_WARN_ONCE("The ultrasonic sensor is deprecated and will be removed in a future release.");
     if (g_stage && gRangeSensorManager)
     {
         omni::isaac::range_sensor::UltrasonicSensor* sensor =
@@ -700,6 +711,7 @@ std::vector<carb::Int2> CARB_ABI getReceiverFiringInfo(const char* primPath)
 
 float* CARB_ABI getLinearDepthData(const char* primPath, int emitterIndex)
 {
+    CARB_LOG_WARN_ONCE("The ultrasonic sensor is deprecated and will be removed in a future release.");
     if (g_stage && gRangeSensorManager)
     {
         omni::isaac::range_sensor::UltrasonicSensor* sensor =
@@ -723,6 +735,7 @@ float* CARB_ABI getLinearDepthData(const char* primPath, int emitterIndex)
 }
 uint8_t* CARB_ABI getIntensityData(const char* primPath, int emitterIndex)
 {
+    CARB_LOG_WARN_ONCE("The ultrasonic sensor is deprecated and will be removed in a future release.");
     if (g_stage && gRangeSensorManager)
     {
         omni::isaac::range_sensor::UltrasonicSensor* sensor =
@@ -747,6 +760,7 @@ uint8_t* CARB_ABI getIntensityData(const char* primPath, int emitterIndex)
 
 float* CARB_ABI getZenithData(const char* primPath)
 {
+    CARB_LOG_WARN_ONCE("The ultrasonic sensor is deprecated and will be removed in a future release.");
     if (g_stage && gRangeSensorManager)
     {
         omni::isaac::range_sensor::UltrasonicSensor* sensor =
@@ -771,6 +785,7 @@ float* CARB_ABI getZenithData(const char* primPath)
 
 float* CARB_ABI getAzimuthData(const char* primPath)
 {
+    CARB_LOG_WARN_ONCE("The ultrasonic sensor is deprecated and will be removed in a future release.");
     if (g_stage && gRangeSensorManager)
     {
         omni::isaac::range_sensor::UltrasonicSensor* sensor =
@@ -795,6 +810,7 @@ float* CARB_ABI getAzimuthData(const char* primPath)
 
 carb::Float3* CARB_ABI getPointCloud(const char* primPath)
 {
+    CARB_LOG_WARN_ONCE("The ultrasonic sensor is deprecated and will be removed in a future release.");
     if (g_stage && gRangeSensorManager)
     {
         omni::isaac::range_sensor::UltrasonicSensor* sensor =

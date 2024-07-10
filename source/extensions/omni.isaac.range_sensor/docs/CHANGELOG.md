@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.1.1] - 2024-07-09
+### Changed
+- Added deprecation warnings for the physx ultrasonic sensors
+
 ## [3.1.0] - 2024-07-08
 ### Removed
 - Deprecated and unused omni.debugdraw dependency

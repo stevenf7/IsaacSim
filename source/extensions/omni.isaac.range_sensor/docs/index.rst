@@ -32,6 +32,10 @@ It is also recommended to use the `is_lidar_sensor` function to check if a lidar
 Ultrasonic Sensor
 =================
 
+.. warning::
+
+    The ultrasonic sensor is deprecated and will be removed in a future release. 
+
 This submodule provides an interface to a simulated ultrasonic sensor.
 
 .. automethod:: omni.isaac.range_sensor.commands.RangeSensorCreateUltrasonicArray
