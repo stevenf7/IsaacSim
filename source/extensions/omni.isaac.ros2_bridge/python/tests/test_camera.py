@@ -279,6 +279,11 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
             self.assertAlmostEqual(self._camera_info.p[0], self._camera_info.p[5], delta=1.5)
             self.assertAlmostEqual(self._camera_info.k[0], self._camera_info.k[4], delta=1.5)
             self.assertGreaterEqual(self._camera_info.header.stamp.sec, 1)
+            self.assertEqual(self._camera_info.distortion_model, "plumb_bob")
+            self.assertEqual(self._camera_info.d[0], 0.0)
+            self.assertEqual(self._camera_info.d[1], 0.0)
+            self.assertEqual(self._camera_info.d[2], 0.0)
+            self.assertEqual(self._camera_info.d[3], 0.0)
             # self.assertAlmostEqual(self._camera_info.K[0], self._camera_info.K[4], delta=1.5)
 
             self._timeline.stop()

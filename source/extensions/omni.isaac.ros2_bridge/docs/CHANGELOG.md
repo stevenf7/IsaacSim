@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.31.2] - 2024-07-09
+### Changed
+- Updates default (undistorted) values for CameraInfo distortion_model, d fields
+
 ## [2.31.1] - 2024-07-08
 ### Changed
 - Use a per instance variable for publish_multithreading_disabled
