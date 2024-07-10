@@ -27,7 +27,7 @@
             },
             "robotModel":{
                 "type": "string",
-                "description": "type of robot. Options are: UR, Franka, or Dofbot",
+                "description": "type of robot. Options are: UR or Franka",
                 "default": ""
             },            
             "robotPrimPath":{

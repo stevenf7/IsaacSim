@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.0] - 2024-07-10
+### Removed
+- Deprecated omni.isaac.dofbot and removed its usage.
+
 ## [2.1.0] - 2024-06-07
 ### Changed
 - Base sample calls set_camera_view as it was removed from World/SimulationContext

@@ -14,8 +14,6 @@ simulation_app = SimulationApp({"headless": False})
 import carb
 import numpy as np
 from omni.isaac.core import World
-from omni.isaac.dofbot.controllers import PickPlaceController
-from omni.isaac.dofbot.tasks import PickPlace
 from omni.isaac.franka.controllers.stacking_controller import StackingController as FrankaStackingController
 from omni.isaac.franka.tasks import Stacking as FrankaStacking
 from omni.isaac.nucleus import get_assets_root_path
@@ -28,13 +26,11 @@ from omni.isaac.wheeled_robots.robots.holonomic_robot_usd_setup import Holonomic
 
 my_world = World(stage_units_in_meters=1.0)
 tasks = []
-num_of_tasks = 3
+num_of_tasks = 2
 
 tasks.append(FrankaStacking(name="task_0", offset=np.array([0, -2, 0])))
 my_world.add_task(tasks[-1])
 tasks.append(UR10Stacking(name="task_1", offset=np.array([0.5, 0.5, 0])))
-my_world.add_task(tasks[-1])
-tasks.append(PickPlace(offset=np.array([0, -1, 0])))
 my_world.add_task(tasks[-1])
 assets_root_path = get_assets_root_path()
 if assets_root_path is None:
@@ -89,9 +85,6 @@ controllers.append(
     )
 )
 controllers[-1].reset()
-controllers.append(
-    PickPlaceController(name="pick_place_controller", gripper=robots[2].gripper, robot_articulation=robots[2])
-)
 
 kaya_setup = HolonomicRobotUsdSetup(
     robot_prim_path=my_kaya.prim_path, com_prim_path="/World/Kaya/base_link/control_offset"
@@ -115,7 +108,6 @@ kaya_controller = HolonomicController(
 )
 
 jetbot_controller = DifferentialController(name="simple_control", wheel_radius=0.03, wheel_base=0.1125)
-pick_place_task_params = tasks[2].get_params()
 
 articulation_controllers = []
 for i in range(num_of_tasks):
@@ -133,7 +125,6 @@ while simulation_app.is_running():
             my_world.reset()
             controllers[0].reset()
             controllers[1].reset()
-            controllers[2].reset()
             kaya_controller.reset()
             jetbot_controller.reset()
             reset_needed = False
@@ -142,14 +133,6 @@ while simulation_app.is_running():
         articulation_controllers[0].apply_action(actions)
         actions = controllers[1].forward(observations=observations, end_effector_offset=np.array([0, 0, 0.02]))
         articulation_controllers[1].apply_action(actions)
-
-        actions = controllers[2].forward(
-            picking_position=observations[pick_place_task_params["cube_name"]["value"]]["position"],
-            placing_position=observations[pick_place_task_params["cube_name"]["value"]]["target_position"],
-            current_joint_positions=observations[pick_place_task_params["robot_name"]["value"]]["joint_positions"],
-            end_effector_offset=np.array([0, -0.06, 0]),
-        )
-        articulation_controllers[2].apply_action(actions)
         if i >= 0 and i < 500:
             my_kaya.apply_wheel_actions(kaya_controller.forward(command=[0.2, 0.0, 0.0]))
             my_jetbot.apply_wheel_actions(jetbot_controller.forward(command=[0.1, 0]))

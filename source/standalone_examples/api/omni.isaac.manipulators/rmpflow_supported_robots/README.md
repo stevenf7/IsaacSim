@@ -21,7 +21,7 @@ The supported command-line arguments are as follows:
 With the default arguments, the above script will run using the Cobotta Pro 900 robot and will produce the following output:
 
     Names of supported robots with provided RMPflow config
-        ['Franka', 'UR3', 'UR3e', 'UR5', 'UR5e', 'UR10', 'UR10e', 'UR16e', 'Rizon4', 'DofBot', 'Cobotta_Pro_900', 'Cobotta_Pro_1300', 'RS007L', 'RS007N', 'RS013N', 'RS025N', 'RS080N', 'FestoCobot']
+        ['Franka', 'UR3', 'UR3e', 'UR5', 'UR5e', 'UR10', 'UR10e', 'UR16e', 'Rizon4', 'Cobotta_Pro_900', 'Cobotta_Pro_1300', 'RS007L', 'RS007N', 'RS013N', 'RS025N', 'RS080N', 'FestoCobot']
 
     Successfully referenced RMPflow config for Cobotta_Pro_900.  Using the following parameters to initialize RmpFlow class:
     {

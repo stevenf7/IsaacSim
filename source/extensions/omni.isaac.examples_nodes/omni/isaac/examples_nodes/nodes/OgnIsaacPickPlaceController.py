@@ -8,8 +8,6 @@
 #
 
 from omni.isaac.core_nodes import BaseResetNode
-from omni.isaac.dofbot.controllers.pick_place_controller import PickPlaceController as PickPlaceControllerDofBot
-from omni.isaac.dofbot.dofbot import DofBot
 from omni.isaac.examples_nodes.ogn.OgnIsaacPickPlaceControllerDatabase import OgnIsaacPickPlaceControllerDatabase
 from omni.isaac.franka.controllers.pick_place_controller import PickPlaceController as PickPlaceControllerFranka
 from omni.isaac.franka.franka import Franka
@@ -56,14 +54,6 @@ class OgnIsaacPickPlaceControllerInternalState(BaseResetNode):
                 gripper=self.robot.gripper,
                 events_dt=self.events_dt,
             )
-        elif "dofbot" in self.robot_model.lower():
-            self.robot = DofBot(prim_path=self.robot_prim_path)
-            self.controller_handle = PickPlaceControllerDofBot(
-                name=controller_name + "_" + self.robot_model.lower(),
-                robot_articulation=self.robot,
-                gripper=self.robot.gripper,
-                events_dt=self.events_dt,
-            )
 
         self.gripper = self.robot.gripper
         self.robot.initialize()
@@ -104,7 +94,7 @@ class OgnIsaacPickPlaceController:
 
                 state.robot_model = db.inputs.robotModel
                 if not state.robot_model:
-                    db.log_warn("Please indicate your robot model before initializing: 'UR', 'Franka', or 'DofBot'")
+                    db.log_warn("Please indicate your robot model before initializing: 'UR' or 'Franka'")
                     return False
 
                 if db.inputs.usePath:

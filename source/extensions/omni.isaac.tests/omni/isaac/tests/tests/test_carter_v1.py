@@ -90,7 +90,7 @@ class TestCarterv1(omni.kit.test.AsyncTestCase):
         self.my_world.play()
         await omni.kit.app.get_app().next_update_async()
 
-        # get the dofbot
+        # get the jetbot
         self.ar = Articulation("/carter")
         self.ar._articulation_view.initialize()
         self.starting_pos, _ = self.ar.get_world_pose()
