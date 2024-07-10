@@ -51,7 +51,7 @@ class TestXFormPrimView(omni.kit.test.AsyncTestCase):
 
     async def test_list_of_regular_exprs(self):
         view = XFormPrimView(prim_paths_expr=["/World/Franka_[1-2]", "/World/Frame_*"], name="random_view")
-        self.assertTrue(view.count() == 5)
+        self.assertTrue(view.count == 5)
 
     async def test_world_poses(self):
         current_positions, current_orientations = self._frankas_view.get_world_poses()
