@@ -39,6 +39,7 @@ namespace range_sensor
 UltrasonicSensor::UltrasonicSensor(omni::physx::IPhysx* physxPtr, carb::tasking::ITasking* taskingPtr)
     : RangeSensorComponent(physxPtr)
 {
+    CARB_LOG_WARN("The ultrasonic sensor is deprecated and will be removed in a future release.");
     mTasking = taskingPtr;
     mTaskCounter = mTasking->createCounter();
 }
