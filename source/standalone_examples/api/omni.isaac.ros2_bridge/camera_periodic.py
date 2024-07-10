@@ -75,7 +75,7 @@ keys = og.Controller.Keys
             ("getRenderProduct", "omni.isaac.core_nodes.IsaacGetViewportRenderProduct"),
             ("setCamera", "omni.isaac.core_nodes.IsaacSetCameraOnRenderProduct"),
             ("cameraHelperRgb", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
-            ("cameraHelperInfo", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
+            ("cameraHelperInfo", "omni.isaac.ros2_bridge.ROS2CameraInfoHelper"),
             ("cameraHelperDepth", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
         ],
         keys.CONNECT: [
@@ -98,7 +98,6 @@ keys = og.Controller.Keys
             ("cameraHelperRgb.inputs:type", "rgb"),
             ("cameraHelperInfo.inputs:frameId", "sim_camera"),
             ("cameraHelperInfo.inputs:topicName", "camera_info"),
-            ("cameraHelperInfo.inputs:type", "camera_info"),
             ("cameraHelperDepth.inputs:frameId", "sim_camera"),
             ("cameraHelperDepth.inputs:topicName", "depth"),
             ("cameraHelperDepth.inputs:type", "depth"),

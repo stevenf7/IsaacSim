@@ -74,13 +74,13 @@ def read_camera_info(render_product_path: str) -> Dict:
     if physical_distortion is not None:
         camera_info["physicalDistortionModel"] = physical_distortion
     else:
-        camera_info["physicalDistortionModel"] = ""
+        camera_info["physicalDistortionModel"] = "plumb_bob"
 
     physical_distortion_coefs = camera.GetAttribute("physicalDistortionCoefficients").Get()
     if physical_distortion_coefs is not None:
         camera_info["physicalDistortionCoefficients"] = np.asarray(physical_distortion_coefs)
     else:
-        camera_info["physicalDistortionCoefficients"] = np.array([])
+        camera_info["physicalDistortionCoefficients"] = np.zeros((1, 4))
 
     # Compute and store camera intrinsics matrix (k)
     fx = width * focalLength / horizontalAperture
