@@ -6,6 +6,7 @@
     "profile": {
     "scanType": "solidState",
     "intensityProcessing": "normalization",
+    "rotationDirection": "CW",
     "rayType": "IDEALIZED",
     "rangeOffset": 0.05,
     "nearRangeM": 0.05,

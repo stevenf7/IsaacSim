@@ -1,5 +1,9 @@
 # Changelog
 
+## [12.6.1] - 2024-07-10
+### Fixed
+- Isaac Sim lidar profiles omit deprecated fields and include new default fields
+
 ## [12.6.0] - 2024-07-09
 ### Fixed
 - Default sensor profiles omit deprecated fields and include new default fields

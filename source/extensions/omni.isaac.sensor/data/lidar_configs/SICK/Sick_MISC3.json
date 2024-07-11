@@ -9,6 +9,7 @@
     {
         "scanType": "rotary",
         "intensityProcessing": "normalization",
+        "rotationDirection": "CW",
         "rayType": "IDEALIZED",
         "nearRangeM": 0.05, "_comment4": "(A) p.28, 50 mm",
         "minDistBetweenEchos": 0.05,
@@ -38,12 +39,14 @@
 
         "numberOfEmitters": 1, "_commentD": "(A) p.15",
 
-        "emitters":
+        "emitterStateCount": 1,
+        "emitterStates": [
         {
           "azimuthDeg": [0],
           "elevationDeg": [0],
           "fireTimeNs": [0]
-        },
+        }
+        ],
 
         "intensityMappingType": "LINEAR"
     }

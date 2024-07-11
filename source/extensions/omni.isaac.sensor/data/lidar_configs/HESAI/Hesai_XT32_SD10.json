@@ -9,6 +9,7 @@
     {
         "scanType": "rotary",
         "intensityProcessing": "normalization",
+        "rotationDirection": "CW",
         "rayType": "IDEALIZED",
         "nearRangeM": 0.05, "_comment4": "p.13 Instrument Range 0.05-120m",
         "minDistBetweenEchos": 0.05,
@@ -37,13 +38,15 @@
 
         "numberOfEmitters": 32,
 
-        "emitters":
+        "emitterStateCount": 1,
+        "emitterStates": [
         {
           "_commentD": "Firing Time offset of each channel, p.74",
           "azimuthDeg": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ],
           "elevationDeg": [15.0 ,14.0 ,13.0 ,12.0 ,11.0 ,10.0 ,9.0 ,8.0 ,7.0 ,6.0 ,5.0 ,4.0 ,3.0 ,2.0 ,1.0 ,0.0 ,-1.0 ,-2.0 ,-3.0 ,-4.0 ,-5.0 ,-6.0 ,-7.0 ,-8.0 ,-9.0 ,-10.0 ,-11.0 ,-12.0 ,-13.0 ,-14.0 ,-15.0 ,-16.0 ],
           "fireTimeNs": [368, 1880, 3392, 4904, 6416, 7928, 9440, 10952, 12464, 13976, 15488, 17000, 18512, 20024, 21536, 23048, 24560, 26072, 27584, 29096, 30608, 32120, 33632, 35144, 36656, 38168, 39680, 41192, 42704, 44216, 45728, 47240]
-        },
+        }
+        ],
 
         "intensityMappingType": "LINEAR"
     }
