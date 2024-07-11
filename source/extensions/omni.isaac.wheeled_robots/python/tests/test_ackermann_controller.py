@@ -6,6 +6,7 @@ import numpy as np
 import omni.graph.core as og
 import omni.graph.core.tests as ogts
 import omni.kit.test
+import usdrt.Sdf
 from omni.isaac.core import World
 from omni.isaac.core.robots import Robot
 from omni.isaac.core.utils.physics import simulate_async
@@ -145,13 +146,28 @@ class TestAckermannControllerOgn(ogts.OmniGraphTestCase):
     # ----------------------------------------------------------------------
 
     async def test_ackermann_controller_acceleration_enabled(self):
+        self._forklift = self.my_world.scene.add(
+            WheeledRobot(
+                prim_path="/World/Forklift",
+                name="forklift",
+                wheel_dof_names=[
+                    "left_back_wheel_joint",
+                    "right_back_wheel_joint",
+                    "left_rotator_joint",
+                    "right_rotator_joint",
+                ],
+                create_robot=True,
+                usd_path=self._assets_root_path + "/Isaac/Robots/Forklift/forklift_c.usd",
+            )
+        )
         # ensuring correct calculations when acceleration is disabled
-        (test_acker_graph, [acker_node, play_node], _, _) = og.Controller.edit(
+        (test_acker_graph, [acker_node, _, play_node], _, _) = og.Controller.edit(
             {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [
                     ("AckermannController", "omni.isaac.wheeled_robots.AckermannController"),
                     ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                    ("ComputeOdom", "omni.isaac.core_nodes.IsaacComputeOdometry"),
                 ],
                 og.Controller.Keys.SET_VALUES: [
                     ("AckermannController.inputs:wheelBase", 1.65),
@@ -161,10 +177,12 @@ class TestAckermannControllerOgn(ogts.OmniGraphTestCase):
                     ("AckermannController.inputs:speed", 2.0),
                     ("AckermannController.inputs:useAcceleration", True),
                     ("AckermannController.inputs:acceleration", 1.0),
+                    ("ComputeOdom.inputs:chassisPrim", [usdrt.Sdf.Path("/Forklift")]),
                 ],
                 og.Controller.Keys.CONNECT: [
                     ("OnPlaybackTick.outputs:tick", "AckermannController.inputs:execIn"),
                     ("OnPlaybackTick.outputs:deltaSeconds", "AckermannController.inputs:DT"),
+                    ("ComputeOdom.outputs:linearVelocity", "AckermannController.inputs:currentLinearVelocity"),
                 ],
             },
         )

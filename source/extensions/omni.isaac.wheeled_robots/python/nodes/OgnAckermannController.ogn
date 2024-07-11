@@ -31,9 +31,9 @@
                 "default": 0.0
             },
             "currentLinearVelocity": {
-                "type": "double",
+                "type": "vectord[3]",
                 "description": "Current linear velocity of the robot in m/s",
-                "default": 0.0
+                "default": [0.0, 0.0, 0.0]
             },
             "wheelBase": {
                 "type": "double",

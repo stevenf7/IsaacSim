@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.3.2] - 2024-07-10
+### Changed
+- Changed Ackermann controller currentLinearVelocity from double to vectord
+- Unit test for enabled acceleration on Ackermann controller altered
+
 ## [2.3.1] - 2024-07-08
 ### Changed
 - use omni.isaac.debug_draw instead of omni.debugdraw

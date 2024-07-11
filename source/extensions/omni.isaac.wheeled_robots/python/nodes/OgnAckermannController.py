@@ -81,7 +81,7 @@ class OgnAckermannController:
                 state.initialize_controller()
 
             actions = state.forward(
-                [db.inputs.steeringAngle, db.inputs.speed, db.inputs.currentLinearVelocity, db.inputs.DT]
+                [db.inputs.steeringAngle, db.inputs.speed, db.inputs.currentLinearVelocity[1], db.inputs.DT]
             )
 
             if actions.joint_velocities is not None:
