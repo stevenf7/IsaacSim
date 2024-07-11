@@ -177,11 +177,6 @@ class Extension(omni.ext.IExt):
             MenuItemDescription(name="Denso", sub_menu=menu_denso),
             make_menu_item_description(
                 ext_id,
-                "Dofbot",
-                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Dofbot/dofbot.usd", "/Dofbot"),
-            ),
-            make_menu_item_description(
-                ext_id,
                 "Fanuc CRX10IAL",
                 lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Fanuc/CRX10IAL/crx10ial.usd", "/CRX10IAL"),
             ),

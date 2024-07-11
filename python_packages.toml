@@ -333,7 +333,6 @@ inventory.include = [
     # extensions
     "exts/omni.isaac.surface_gripper.ui",
     "exts/omni.isaac.surface_gripper",
-    "exts/omni.isaac.dofbot",
     "exts/omni.isaac.franka",
     "exts/omni.isaac.manipulators.ui",
     "exts/omni.isaac.manipulators",

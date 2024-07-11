@@ -22,7 +22,6 @@ writeTarget.kit = true
 "omni.isaac.core_nodes" = {}
 "omni.isaac.ui" = {}
 "omni.isaac.franka" = {}
-"omni.isaac.dofbot" = {}
 "omni.isaac.universal_robots" = {}
 "omni.isaac.core_archive" = {} # scipy, osqp, qdldl
 "omni.graph" = {}

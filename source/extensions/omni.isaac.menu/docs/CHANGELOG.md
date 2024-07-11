@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.0] - 2024-07-10
+### Removed
+- Deprecated omni.isaac.dofbot and removed its usage.
+
 ## [0.4.1] - 2024-05-28
 ### Fixed
 - Robotiq asset links

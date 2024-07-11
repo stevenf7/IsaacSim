@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.18.0] - 2024-07-10
+### Removed
+- Deprecated omni.isaac.dofbot and removed its usage.
+
 ## [1.17.0] - 2024-05-23
 ### Added
 - Tests for the Leatherback robot.

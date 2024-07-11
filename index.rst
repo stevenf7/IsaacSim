@@ -29,7 +29,6 @@ Isaac Sim: Extensions API
    :caption: Robot Extensions
    :glob: 
 
-   source/extensions/omni.isaac.dofbot/docs/index
    source/extensions/omni.isaac.franka/docs/index
    source/extensions/omni.isaac.wheeled_robots/docs/index
    source/extensions/omni.isaac.universal_robots/docs/index
