@@ -978,7 +978,7 @@ deps_for_isaac = [
   "omni.sensors.nv.wpm-1.2.1-isaac",
   "semantics.schema.editor-0.3.4",
   "semantics.schema.property-1.0.2",
-  "omni.importer.mjcf-1.1.0",
+  "omni.importer.mjcf-1.1.1",
   "omni.importer.urdf-1.14.1",
   "omni.importer.onshape-0.7.1",
   "omni.anim.people-0.4.0",
