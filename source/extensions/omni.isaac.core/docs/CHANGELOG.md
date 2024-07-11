@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.17.1] - 2024-07-11
+### Fixed
+- Fixed passing filter_path_expressions as list of list of str in RigidContactView
+
 ## [3.17.0] - 2024-06-28
 ### Added
 - Allow find_matching_prim_paths in prim utils to return paths with valid physics APIs applied

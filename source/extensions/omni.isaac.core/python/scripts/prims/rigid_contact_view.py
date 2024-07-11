@@ -35,6 +35,9 @@ class RigidContactView(object):
                                 /World/Env2/Cube..etc.
                                 (a non regex prim path can also be used to encapsulate one rigid prim).  Additionally a
                                 list of regex can be provided. example ["/World/Env[1-5]/Cube", "/World/Env[10-19]/Cube"].
+        filter_paths_expr Union[List[str], List[List[str]]]: list of prim paths regex to filter the contacts for each corresponding
+                                                              prim_paths_expr. Example: ["/World/envs/env_2/Xform"] will filter the contacts corresponding to
+                                                              the expression passed.
         name (str, optional): shortname to be used as a key by Scene class.
                                 Note: needs to be unique if the object is added to the Scene.
                                 Defaults to "rigid_contact_view".
@@ -85,8 +88,8 @@ class RigidContactView(object):
 
     def __init__(
         self,
-        prim_paths_expr: str,
-        filter_paths_expr: List[str],
+        prim_paths_expr: Union[str, List[str]],
+        filter_paths_expr: Union[List[str], List[List[str]]],
         name: str = "rigid_contact_view",
         prepare_contact_sensors: bool = True,
         disable_stablization: bool = True,
@@ -95,6 +98,10 @@ class RigidContactView(object):
         self._name = name
         if not isinstance(prim_paths_expr, list):
             prim_paths_expr = [prim_paths_expr]
+        if len(filter_paths_expr) == 0:
+            filter_paths_expr = [[]]
+        elif not isinstance(filter_paths_expr[0], list):
+            filter_paths_expr = [filter_paths_expr]
         self._regex_prim_paths = prim_paths_expr
         self._regex_filter_paths = filter_paths_expr
         self._prim_paths = None
@@ -123,10 +130,11 @@ class RigidContactView(object):
             for path in self._prim_paths:
                 self._prepare_contact_reporter(get_prim_at_path(path))
 
-            for group_expr in filter_paths_expr:
-                self._filter_paths = find_matching_prim_paths(group_expr)
-                for path in self._filter_paths:
-                    self._prepare_contact_reporter(get_prim_at_path(path))
+            for expr in filter_paths_expr:
+                for group_expr in expr:
+                    self._filter_paths = find_matching_prim_paths(group_expr)
+                    for path in self._filter_paths:
+                        self._prepare_contact_reporter(get_prim_at_path(path))
         return
 
     @property
@@ -221,7 +229,10 @@ class RigidContactView(object):
         self._physics_sim_view = physics_sim_view
         self._physics_view = physics_sim_view.create_rigid_contact_view(
             [regular_expression.replace(".*", "*") for regular_expression in self._regex_prim_paths],
-            filter_patterns=[path.replace(".*", "*") for path in self._regex_filter_paths],
+            filter_patterns=[
+                [path.replace(".*", "*") for path in regex_filter_path]
+                for regex_filter_path in self._regex_filter_paths
+            ],
             max_contact_data_count=self.max_contact_count,
         )
         carb.log_info("Rigid Contact View Device: {}".format(self._device))
