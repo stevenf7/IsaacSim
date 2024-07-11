@@ -122,7 +122,7 @@ class RigidPrimView(XFormPrimView):
 
     def __init__(
         self,
-        prim_paths_expr: str,
+        prim_paths_expr: Union[str, List[str]],
         name: str = "rigid_prim_view",
         positions: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
         translations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
