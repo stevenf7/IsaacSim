@@ -430,6 +430,8 @@ class TestUI(omni.kit.test.AsyncTestCase):
         await ui_test.emulate_mouse_move_and_click(ui_test.Vec2(300, 120))
         await update_stage_async()
 
+        frame.set_num_lines(4)
+
         def new_build_fn():
             def on_new_click_fn():
                 self.btn_fun_clicks[1] += 1
