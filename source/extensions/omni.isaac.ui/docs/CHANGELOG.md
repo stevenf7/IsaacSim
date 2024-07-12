@@ -1,4 +1,8 @@
 # Changelog
+## [0.15.2] - 2024-07-12
+### Fixed
+- Fixed scrolling window set_num_lines() function argument type.
+
 ## [0.15.1] - 2024-04-13
 ### Added
 - optional tooltip entry for SelectPrimWidget and ParamWidget

@@ -189,6 +189,8 @@ class ScrollingFrame(Frame):
     """
 
     def __init__(self, num_lines=None, enabled: bool = True, visible: bool = True, build_fn: Callable = None):
+        self._bottom_line_buffer_size = 4
+
         # Create a Frame UI element
         self._frame = self._create_frame(num_lines, enabled, visible, build_fn)
         UIWidgetWrapper.__init__(self, self.frame)
@@ -200,13 +202,13 @@ class ScrollingFrame(Frame):
         Args:
             num_lines (int): Number of lines that should be shown in a ScrollingFrame.
         """
-        self.frame.height = LABEL_HEIGHT * num_lines
+        self.frame.height = ui.Length(LABEL_HEIGHT * num_lines + self._bottom_line_buffer_size)
 
     def _create_frame(
         self, num_lines: Optional[int], enabled: bool, visible: bool, build_fn: Callable
     ) -> ui.ScrollingFrame:
         if num_lines is not None:
-            height = LABEL_HEIGHT * num_lines
+            height = ui.Length(LABEL_HEIGHT * num_lines + self._bottom_line_buffer_size)
         else:
             height = ui.Fraction(1)
         frame = ui.ScrollingFrame(
@@ -1503,7 +1505,7 @@ class TextBlock(UIWidgetWrapper):
         Args:
             num_lines (int): Number of lines that should be visible in the TextBlock at one time.
         """
-        self.scrolling_frame.height = LABEL_HEIGHT * num_lines
+        self.scrolling_frame.set_num_lines(num_lines)
 
     def _create_ui_widget(self, num_lines, label, text, tooltip, include_copy_btn):
         containing_frame = Frame().frame
@@ -1513,7 +1515,7 @@ class TextBlock(UIWidgetWrapper):
                     self._label = ui.Label(
                         label, width=LABEL_WIDTH / 2, alignment=ui.Alignment.LEFT_TOP, tooltip=format_tt(tooltip)
                     )
-                    self._scrolling_frame = ScrollingFrame(num_lines=num_lines).frame
+                    self._scrolling_frame = ScrollingFrame(num_lines=num_lines)
                     with self._scrolling_frame:
                         self._text_block = ui.Label(
                             text,
