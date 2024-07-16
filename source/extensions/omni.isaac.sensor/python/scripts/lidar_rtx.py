@@ -158,7 +158,9 @@ class LidarRtx(BaseSensor):
         return
 
     def _create_flat_scan_graph_node(self):
-        self._flat_scan_annotator = rep.AnnotatorRegistry.get_annotator("RtxSensorCpu" + "IsaacComputeRTXLidarFlatScan")
+        self._flat_scan_annotator = rep.AnnotatorRegistry.get_annotator(
+            "RtxSensorCpu" + "IsaacComputeRTXLidarFlatScan" + "SimulationTime"
+        )
         self._flat_scan_annotator.attach([self._render_product_path])
         self._flat_scan_node_path = self._flat_scan_annotator.get_node().get_prim_path()
         return

@@ -1,5 +1,9 @@
 # Changelog
 
+## [12.7.0] - 2024-07-12
+### Fixed
+- OgnIsaacComputeRTXLidarFlatScan publishes timestamp of first beam in scan
+
 ## [12.6.1] - 2024-07-10
 ### Fixed
 - Isaac Sim lidar profiles omit deprecated fields and include new default fields

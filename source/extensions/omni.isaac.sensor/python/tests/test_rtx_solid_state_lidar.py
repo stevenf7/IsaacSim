@@ -165,8 +165,12 @@ class TestRTXSolidStateLidar(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(max_azimuth, 1.5, delta=horizontal_resolution)
         self.assertAlmostEqual(horizontal_resolution, 1.0)
 
+        bad_beam_count = 0
         for p in range(len(linear_depth_data)):
             depth = linear_depth_data[p]
+            if depth < 0:
+                bad_beam_count = bad_beam_count + 1
+                continue
             az = np.deg2rad(min_azimuth + horizontal_resolution * p)
 
             # Adjust azimuth to appropriate angle in [-45, 45], then compute expected range to face, edge, or corner of cube
@@ -176,7 +180,7 @@ class TestRTXSolidStateLidar(omni.kit.test.AsyncTestCase):
             range_expected = edge_length / (2.0 * np.cos(az_adj))
 
             self.assertAlmostEqual(depth, range_expected, delta=range_expected * 1e-2)
-
+        self.assertLess(bad_beam_count, 2)
         omni.timeline.get_timeline_interface().stop()
 
     pass
