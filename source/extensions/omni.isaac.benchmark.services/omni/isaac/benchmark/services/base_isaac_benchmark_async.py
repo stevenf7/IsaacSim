@@ -216,3 +216,31 @@ class BaseIsaacBenchmarkAsync(omni.kit.test.AsyncTestCase):
         """
         open_stage(usd_path)
         await wait_until_stage_is_fully_loaded_async()
+
+    async def store_custom_measurement(self, phase_name: str, custom_measurement: measurements) -> None:
+        """Stores the custom measurement specificed in the benchmark.
+
+        Args:
+            phase (str): The phase name to which the measurement belongs.
+            measurement (Measurement): The measurement object to store.
+        """
+        # Check if the phase already exists
+        for test_phase in self._test_phases:
+            if test_phase.phase_name == phase_name:
+                # Add the custom measurement to the existing phase
+                test_phase.measurements.append(custom_measurement)
+                logger.info(f"Stored {custom_measurement} for phase '{phase_name}'")
+                return
+
+        # Create a new test phase
+        new_test_phase = measurements.TestPhase(phase_name=phase_name, measurements=[custom_measurement], metadata=[])
+        # Update test phase metadata with phase name and benchmark metadata
+        new_test_phase.metadata.extend(self._metadata)
+        new_test_phase.metadata.append(measurements.StringMetadata(name="phase", data=phase_name))
+
+        # Add the new test phase to the list of test phases
+        self._test_phases.append(new_test_phase)
+
+        # Add metrics and metadata from the test phase to the backend
+        self._metrics.add_metrics(new_test_phase)
+        logger.info(f"Created new phase '{phase_name}' and stored {custom_measurement}")

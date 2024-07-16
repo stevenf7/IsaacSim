@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.8.3] - 2024-07-15
+### Added
+- Ability to store custom measurements in a specified phase
+
 ## [1.8.2] - 2024-07-02
 ### Changed
 - Use psutil to count CPU cores.
