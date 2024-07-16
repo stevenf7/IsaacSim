@@ -1,14 +1,15 @@
 # Changelog
 
+## [1.20.1] - 2024-07-12
+### Removed
+- IsaacReadSimulationTime removed from RTXLidarROS2PublishFlatScan, timestamp now comes from
+  OgnIsaacComputeRTXLidarFlatScan.
+
 ## [1.20.0] - 2024-07-05
 ### Changed
 - use register_*_with_telemetry functions to simplify registration code
 - use OgnIsaacPassthroughImagePtr node for depth
 - switch to using ptr for depth data to avoid extra cpu copy
-
-## [1.19.5] - 2024-06-26
-### Added
-- Unit tests for joint state subscriber using mixed mode controls
 
 ## [1.19.4] - 2024-06-10
 ### Fixed
@@ -20,7 +21,7 @@
 
 ## [1.19.2] - 2024-05-21
 ### Added
-- Resetting output of the Twist Subscriber to zeros upon stopping simulation. 
+- Resetting output of the Twist Subscriber to zeros upon stopping simulation.
 
 ## [1.19.1] - 2024-05-19
 ### Changed

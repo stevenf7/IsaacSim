@@ -170,11 +170,32 @@ class Extension(omni.ext.IExt):
             category="omni.isaac.sensor",
         )
 
-        ### RtxLidar Flat Scan
-        annotator_name = "RtxSensorCpu" + "IsaacComputeRTXLidarFlatScan"
+        ### RtxLidar Flat Scan - Simulation Time
+        annotator_name = "RtxSensorCpu" + "IsaacComputeRTXLidarFlatScan" + "SimulationTime"
         register_annotator_from_node_with_telemetry(
             name=annotator_name,
-            input_rendervars=["RtxSensorCpu" + "Ptr"],
+            input_rendervars=[
+                "RtxSensorCpu" + "Ptr",
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    f"IsaacReadSimulationTime", attributes_mapping={f"outputs:simulationTime": "inputs:timeStamp"}
+                ),
+            ],
+            node_type_id="omni.isaac.sensor.IsaacComputeRTXLidarFlatScan",
+            output_data_type=np.float32,
+            output_channels=3,
+        )
+        self.registered_annotators.append(annotator_name)
+
+        ### RtxLidar Flat Scan - System Time
+        annotator_name = "RtxSensorCpu" + "IsaacComputeRTXLidarFlatScan" + "SystemTime"
+        register_annotator_from_node_with_telemetry(
+            name=annotator_name,
+            input_rendervars=[
+                "RtxSensorCpu" + "Ptr",
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    f"IsaacReadSystemTime", attributes_mapping={f"outputs:systemTime": "inputs:timeStamp"}
+                ),
+            ],
             node_type_id="omni.isaac.sensor.IsaacComputeRTXLidarFlatScan",
             output_data_type=np.float32,
             output_channels=3,

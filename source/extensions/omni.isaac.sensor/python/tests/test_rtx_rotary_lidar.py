@@ -168,11 +168,13 @@ class TestRTXRotaryLidar(omni.kit.test.AsyncTestCase):
         horizontal_resolution = frame["horizontal_resolution"]
 
         self.assertAlmostEqual(min_azimuth, -180.0, delta=2.0 * horizontal_resolution)
-        self.assertAlmostEqual(max_azimuth, 3.0)
+        self.assertAlmostEqual(max_azimuth, 179.9, delta=1e-5)
         self.assertAlmostEqual(horizontal_resolution, 0.1)
 
         for p in range(len(linear_depth_data)):
             depth = linear_depth_data[p]
+            if depth < 0.0:
+                continue
             az = np.deg2rad(min_azimuth + horizontal_resolution * p)
 
             # Adjust azimuth to appropriate angle in [-45, 45], then compute expected range to face, edge, or corner of cube
