@@ -2,7 +2,7 @@
 [[dependency]]
 python = "../_build/target-deps/python"
 packages = [
-    "lxml==4.9.3",                   # SWIPAT filed under: https://nvbugs/4248625
+    "lxml==5.2.2",                   # SWIPAT filed under: https://nvbugs/4248625
     "nvidia-srl-base==0.10.0",       # SWIPAT filed under: https://nvbugs/4235578
     "nvidia-srl-math==0.9.0",        # SWIPAT filed under: https://nvbugs/4235574
     "nvidia-srl-usd==0.14.0",        # SWIPAT filed under: https://nvbugs/4235568
