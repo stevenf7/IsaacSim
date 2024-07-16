@@ -28,7 +28,7 @@ Standalone script to schedule people sdg jobs in a local env.
 """
 
 
-class PeopleSDG:
+class AgentSDG:
     def __init__(self, sim_app, num_runs=1):
         self.num_runs = num_runs
         self.config_dict = None
@@ -52,7 +52,7 @@ class PeopleSDG:
 
         try:
             folder_path = self.config_dict["replicator"]["parameters"]["output_dir"]
-            self.config_dict["replicator"]["parameters"]["output_dir"] = PeopleSDG._get_output_folder_by_index(
+            self.config_dict["replicator"]["parameters"]["output_dir"] = AgentSDG._get_output_folder_by_index(
                 folder_path, index=self.num_runs
             )
         except:
@@ -76,7 +76,6 @@ class PeopleSDG:
         self._settings.set("/app/scripting/ignoreWarningDialog", True)
         self._settings.set("/persistent/exts/omni.anim.navigation.core/navMesh/viewNavMesh", False)
         self._settings.set("/exts/omni.anim.people/navigation_settings/navmesh_enabled", True)
-        self._settings.set("/exts/omni.replicator.agent/default_robot_command_file_path", "default_robot_command.txt")
         self._settings.set("/persistent/exts/omni.replicator.agent/aim_camera_to_character", True)
         self._settings.set("/persistent/exts/omni.replicator.agent/min_camera_distance", 6.5)
         self._settings.set("/persistent/exts/omni.replicator.agent/max_camera_distance", 14.5)
@@ -88,6 +87,7 @@ class PeopleSDG:
         self._settings.set("/persistent/exts/omni.replicator.agent/frame_write_interval", 1)
 
     def bake_navmesh(self):
+        import carb
         import omni.anim.navigation.core as nav
 
         _nav = nav.nav.acquire_interface()
@@ -140,6 +140,7 @@ class PeopleSDG:
 
         # Open stage with blocking call
         stage_open_result = open_stage(self.config_dict["scene"]["asset_path"])
+
         if not stage_open_result:
             carb.log_error("Unable to open stage {}".format(self.config_dict["scene"]["asset_path"]))
             self._sim_app.close()
@@ -160,6 +161,11 @@ class PeopleSDG:
         if "character" in self.config_dict:
             commands_list = self._sim_manager.generate_random_commands()
             self._sim_manager.save_commands(commands_list)  # Write commands to file
+            self._sim_app.update()
+
+        if "robot" in self.config_dict:
+            commands_list = self._sim_manager.generate_random_robot_commands()
+            self._sim_manager.save_robot_commands(commands_list)  # Write commands to file
             self._sim_app.update()
 
         # Run data generation
@@ -188,10 +194,8 @@ def enable_extensions():
     enable_extension("omni.anim.timeline")
     enable_extension("omni.anim.graph.bundle")
     enable_extension("omni.anim.graph.core")
-    enable_extension("omni.anim.graph.ui")
     enable_extension("omni.anim.retarget.bundle")
     enable_extension("omni.anim.retarget.core")
-    enable_extension("omni.anim.retarget.ui")
     enable_extension("omni.kit.scripting")
     enable_extension("omni.extended.materials")
     enable_extension("omni.anim.people")
@@ -218,12 +222,12 @@ def launch_data_generation(config_file, num_runs=1):
     carb.settings.get_settings().set("/app/player/useFixedTimeStepping", False)
 
     # set config app
-    sdg = PeopleSDG(kit, num_runs)
+    sdg = AgentSDG(kit, num_runs)
     sdg.generate_data(config_file)
 
 
 def get_args():
-    parser = argparse.ArgumentParser("People SDG")
+    parser = argparse.ArgumentParser("Agent SDG")
     parser.add_argument("-c", "--config_file", required=True, help="Path to config file or a folder of config files")
     parser.add_argument(
         "-n",
