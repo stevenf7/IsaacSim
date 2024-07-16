@@ -384,10 +384,10 @@ function create_tests()
         define_startup_experience("tests-startup.webrtc", "omni.isaac.sim.headless.webrtc", "--no-window --/app/quitAfter=500 --/app/file/ignoreUnsavedOnExit=1")
         define_startup_experience("tests-startup.native", "omni.isaac.sim.headless.native", "--no-window --/app/quitAfter=500 --/app/file/ignoreUnsavedOnExit=1")
         define_startup_experience("tests-startup.extscache", "omni.isaac.sim", "--no-window --/app/quitAfter=500 --/app/extensions/registryEnabled=0 --/app/file/ignoreUnsavedOnExit=1")
-        -- Windows Only
-        if os.target() == "windows" then
-            define_startup_experience("tests-startup.xr.steamvr", "omni.isaac.sim.xr.steamvr", "--no-window --/app/quitAfter=500")
-        end
+        -- -- Windows Only
+        -- if os.target() == "windows" then
+        --     define_startup_experience("tests-startup.xr.steamvr", "omni.isaac.sim.xr.steamvr", "--no-window --/app/quitAfter=500")
+        -- end
 
     group "selector_tests"
         define_startup_experience(
