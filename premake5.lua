@@ -515,7 +515,6 @@ function create_tests()
         python_sample_test("tests-nativepython-testing-python_sh.import_sys", "standalone_examples/testing/python_sh/import_sys.py")
         python_sample_test("tests-nativepython-testing-omni.syntheticdata.test_basic", "standalone_examples/testing/omni.syntheticdata/test_basic.py")
         python_sample_test("tests-nativepython-testing-omni.replicator.agent.test_scripting", "standalone_examples/testing/omni.replicator.agent/test_scripting.py")
-        python_sample_test("tests-nativepython-testing-ar.ar_sdg_test", "standalone_examples/testing/ar/ar_sdg_test.py", "--scene standalone_examples/testing/ar/data/physics_GPU.usda --num_datasets 3 --num_frames 3 --windowed --test --output _out_ar_test")
         if os.target() == "linux" then
             python_sample_test("tests-nativepython-testing-omni.isaac.kit.test_ovd", "standalone_examples/testing/omni.isaac.kit/test_ovd.py", '--ovd=\"/tmp/\"')
         end
@@ -537,7 +536,6 @@ function create_tests()
         python_sample_test("tests-standalone_benchmarks-benchmark_sdg_simple", "standalone_examples/benchmarks/benchmark_sdg.py", "--num-frames 1 --num-cameras 2 --resolution 1280 720 --asset-count 10 --annotators rgb distance_to_camera --disable-viewport-rendering --delete-data-when-done --headless --print-results")
         python_sample_test("tests-standalone_benchmarks-benchmark_sdg_advanced", "standalone_examples/benchmarks/benchmark_sdg.py", "--num-frames 1 --num-cameras 2 --resolution 1280 720 --asset-count 10 --annotators all --disable-viewport-rendering --delete-data-when-done --headless --print-results")
         python_sample_test("tests-standalone_benchmarks-benchmark_robots_ur10", "standalone_examples/benchmarks/benchmark_robots_ur10.py", "--num-frames 1 -num-robots 10")
-        python_sample_test("tests-standalone_benchmarks-benchmark_ar_sdg_benchmark", "standalone_examples/testing/ar/ar_sdg_benchmark.py", "--scene standalone_examples/testing/ar/data/physics_GPU.usda  --num_datasets 3 --windowed --output _out_ar_benchmark")
 
     if os.target() == "linux" then
     group "docker_tests"
