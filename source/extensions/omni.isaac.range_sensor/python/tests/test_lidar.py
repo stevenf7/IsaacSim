@@ -217,7 +217,9 @@ class TestLidar(omni.kit.test.AsyncTestCase):
             carb.log_error("Could not find Isaac Sim assets folder")
             return
 
-        (result, error) = await open_stage_async(self._assets_root_path + "/Isaac/Robots/Carter/carter_v1.usd")
+        (result, error) = await open_stage_async(
+            self._assets_root_path + "/Isaac/Robots/Carter/carter_v1_physx_lidar.usd"
+        )
         self._stage = omni.usd.get_context().get_stage()
 
         # Add a cube
