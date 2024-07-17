@@ -1103,7 +1103,7 @@ enabled = true
 
 templates.pyproject = """
 [build-system]
-requires = [ "setuptools >= 68.0" ]
+requires = [ "setuptools >= 70.0" ]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
