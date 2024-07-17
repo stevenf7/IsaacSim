@@ -79,7 +79,9 @@ class TestArticulationOther(omni.kit.test.AsyncTestCase):
 
     async def test_articulation_carter(self, gpu=False):
 
-        (result, error) = await open_stage_async(self._assets_root_path + "/Isaac/Robots/Carter/carter_v1.usd")
+        (result, error) = await open_stage_async(
+            self._assets_root_path + "/Isaac/Robots/Carter/carter_v1_physx_lidar.usd"
+        )
         # Make sure the stage loaded
         self.assertTrue(result)
         dc_utils.set_scene_physics_type(gpu)

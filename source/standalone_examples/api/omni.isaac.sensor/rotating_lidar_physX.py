@@ -36,7 +36,7 @@ if assets_root_path is None:
     carb.log_error("Could not find Isaac Sim assets folder")
     simulation_app.close()
     sys.exit()
-asset_path = assets_root_path + "/Isaac/Robots/Carter/carter_v1.usd"
+asset_path = assets_root_path + "/Isaac/Robots/Carter/carter_v1_physx_lidar.usd"
 my_carter = my_world.scene.add(
     WheeledRobot(
         prim_path="/World/Carter",
