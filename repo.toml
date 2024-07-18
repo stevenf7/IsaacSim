@@ -935,6 +935,9 @@ python_analysis_extra_mapping=[
 
 [repo_generate_changelog]
 home_path = "${root}/source/extensions/"
+extscache_paths = [
+  "${root}/source/apps/omni.isaac.sim.extscache.kit",
+]
 
 [repo_lint]
 files.exclude = [
