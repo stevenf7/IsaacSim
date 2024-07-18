@@ -37,13 +37,10 @@ class BaseSample(object):
 
     async def load_world_async(self):
         """Function called when clicking load buttton"""
-        if World.instance() is None:
-            await create_new_stage_async()
-            self._world = World(**self._world_settings)
-            await self._world.initialize_simulation_context_async()
-            self.setup_scene()
-        else:
-            self._world = World.instance()
+        await create_new_stage_async()
+        self._world = World(**self._world_settings)
+        await self._world.initialize_simulation_context_async()
+        self.setup_scene()
         set_camera_view(eye=[1.5, 1.5, 1.5], target=[0.01, 0.01, 0.01], camera_prim_path="/OmniverseKit_Persp")
         self._current_tasks = self._world.get_current_tasks()
         await self._world.reset_async()

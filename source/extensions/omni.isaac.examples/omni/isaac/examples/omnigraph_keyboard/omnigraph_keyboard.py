@@ -85,6 +85,3 @@ class OmnigraphKeyboard(BaseSample):
                 ],
             },
         )
-
-    def world_cleanup(self):
-        pass
