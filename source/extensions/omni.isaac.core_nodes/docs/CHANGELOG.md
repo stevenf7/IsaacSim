@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.16.1] - 2024-07-16
+### Fixed
+- Missing omni.isaac.dynamic_control dependency
+
 ## [1.16.0] - 2024-07-05
 ### Added
 - Add OgnIsaacPassthroughImagePtr node

@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.9.0] - 2024-07-17
+### Changed
+- omni.hydra is not a required dependency, but is needed to collect memory stats
+- omni.kit.test is a required dependency, not just for running tests
+### Removed
+- removed unused omni.kit.profiler.window dependency
+
+
 ## [1.8.3] - 2024-07-15
 ### Added
 - Ability to store custom measurements in a specified phase

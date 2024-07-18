@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "3.17.1"
+version = "3.18.0"
 category = "Simulation"
 title = "Isaac Sim Core"
 description = "Core"
@@ -17,14 +17,14 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
-"omni.isaac.dynamic_control" = {}
 "omni.isaac.core_archive" = {}
 "omni.isaac.ml_archive" = {}
 "omni.isaac.nucleus" = {}
 "omni.pip.compute" = {} # scipy
 "omni.pip.cloud" = {}
 "omni.physx.tensors" = {}
-"omni.kit.material.library" = {} # omni.kit.material
+"omni.kit.usd.layers" = {}
+"omni.kit.material.library" = {optional = true} # OmniGlass
 "omni.isaac.version" = {}
 "omni.warp.core" = {}
 "omni.physx.stageupdate" = {}

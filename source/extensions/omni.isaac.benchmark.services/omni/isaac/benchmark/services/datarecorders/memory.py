@@ -14,7 +14,6 @@ from typing import TYPE_CHECKING, Dict, Optional, Tuple
 import omni.client
 import omni.stats
 import psutil
-from omni.hydra.engine.stats import get_device_info, get_mem_stats  # type: ignore
 
 from .. import stats
 from ..metrics import measurements
@@ -121,16 +120,27 @@ class MemoryRecorder(MeasurementDataRecorder):
         memStat_sort = True
         memStat_detail = False
         tracked_gpu_memory = 0.0
-        memStat_nodes = get_mem_stats(memStat_detail)
+        memStat_nodes = None
+        try:
+            from omni.hydra.engine.stats import get_mem_stats
+
+            memStat_nodes = get_mem_stats(memStat_detail)
+        except:
+            pass
+
         # Sort nodes in descending order based on time if requested
-        if memStat_sort is True:
-            memStat_nodes = sorted(memStat_nodes, key=lambda node: node["size"], reverse=True)
-        for node in memStat_nodes:
-            if node["category"] == "Total Physical GPU Memory":
-                tracked_gpu_memory = round(node["size"] / 1024, 3)  # MB to GB
+        if memStat_nodes is not None:
+            if memStat_sort is True:
+                memStat_nodes = sorted(memStat_nodes, key=lambda node: node["size"], reverse=True)
+
+            for node in memStat_nodes:
+                if node["category"] == "Total Physical GPU Memory":
+                    tracked_gpu_memory = round(node["size"] / 1024, 3)  # MB to GB
 
         dedicated_gpu_memory = 0
         try:
+            from omni.hydra.engine.stats import get_device_info
+
             devices = get_device_info()
             if len(devices) > 0:
                 device = devices[0]

@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.18.0] - 2024-07-16
+### Changed
+- Make omni.kit.material.library optional, it must be enabled when using OmniGlass helper class
+
 ## [3.17.1] - 2024-07-11
 ### Fixed
 - Fixed passing filter_path_expressions as list of list of str in RigidContactView
