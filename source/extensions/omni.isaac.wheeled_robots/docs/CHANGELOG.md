@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.3.3] - 2024-07-17
+### Fixed
+- Fixed acceleration control for the ackermann controller
+
 ## [2.3.2] - 2024-07-10
 ### Changed
 - Changed Ackermann controller currentLinearVelocity from double to vectord

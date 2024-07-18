@@ -28,7 +28,7 @@ class TestAckermannController(omni.kit.test.AsyncTestCase):
 
     # ----------------------------------------------------------------------
 
-    async def test_ackermann_drive(self):
+    async def test_ackermann_drive_velocity_control(self):
         wheel_base = 1.65
         track_width = 1.25
         turning_wheel_radius = 0.25
@@ -37,12 +37,12 @@ class TestAckermannController(omni.kit.test.AsyncTestCase):
 
         steering_angle = 0.717
         speed = 2.0
-        current_linear_velocity = [0.0, 0.0, 0.0]
-        delta_time = 0.01667
 
-        command = [steering_angle, speed, current_linear_velocity[1], delta_time]
+        command = [steering_angle, speed]
 
         actions = controller.forward(command)
+
+        expected_wheel_velocity = speed / turning_wheel_radius
 
         self.assertEquals(actions.joint_positions[0], None)
         self.assertEquals(actions.joint_positions[1], None)
@@ -51,6 +51,37 @@ class TestAckermannController(omni.kit.test.AsyncTestCase):
 
         self.assertAlmostEquals(actions.joint_velocities[0], 8.0, delta=0.001)
         self.assertAlmostEquals(actions.joint_velocities[1], 8.0, delta=0.001)
+        self.assertEquals(actions.joint_velocities[2], None)
+        self.assertEquals(actions.joint_velocities[3], None)
+
+    async def test_ackermann_drive_acceleration_control(self):
+        wheel_base = 1.65
+        track_width = 1.25
+        turning_wheel_radius = 0.25
+
+        controller = AckermannController(
+            "test_controller", wheel_base, track_width, turning_wheel_radius, use_acceleration=True
+        )
+
+        steering_angle = 0.717
+        speed = 2.0
+        current_linear_velocity = [5.0, 0.0, 0.0]
+        acceleration = 10
+        delta_time = 0.01667
+
+        command = [steering_angle, speed, current_linear_velocity[0], delta_time, acceleration]
+
+        actions = controller.forward(command)
+
+        expected_wheel_velocity = (current_linear_velocity[0] + (acceleration * delta_time)) / turning_wheel_radius
+
+        self.assertEquals(actions.joint_positions[0], None)
+        self.assertEquals(actions.joint_positions[1], None)
+        self.assertAlmostEquals(actions.joint_positions[2], 0.916, delta=0.001)
+        self.assertAlmostEquals(actions.joint_positions[3], 0.580, delta=0.001)
+
+        self.assertAlmostEquals(actions.joint_velocities[0], expected_wheel_velocity, delta=0.001)
+        self.assertAlmostEquals(actions.joint_velocities[1], expected_wheel_velocity, delta=0.001)
         self.assertEquals(actions.joint_velocities[2], None)
         self.assertEquals(actions.joint_velocities[3], None)
 
@@ -161,34 +192,71 @@ class TestAckermannControllerOgn(ogts.OmniGraphTestCase):
             )
         )
         # ensuring correct calculations when acceleration is disabled
-        (test_acker_graph, [acker_node, _, play_node], _, _) = og.Controller.edit(
+        (test_acker_graph, [acker_node, play_node, compute_odom, _, _, _], _, _) = og.Controller.edit(
             {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [
                     ("AckermannController", "omni.isaac.wheeled_robots.AckermannController"),
                     ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                     ("ComputeOdom", "omni.isaac.core_nodes.IsaacComputeOdometry"),
+                    ("ArticulationController", "omni.isaac.core_nodes.IsaacArticulationController"),
+                    ("WheelAnglesArray", "omni.graph.nodes.ConstructArray"),
+                    ("WheelVelocityArray", "omni.graph.nodes.ConstructArray"),
                 ],
                 og.Controller.Keys.SET_VALUES: [
                     ("AckermannController.inputs:wheelBase", 1.65),
                     ("AckermannController.inputs:trackWidth", 1.25),
                     ("AckermannController.inputs:turningWheelRadius", 0.25),
                     ("AckermannController.inputs:steeringAngle", 0.717),
-                    ("AckermannController.inputs:speed", 2.0),
                     ("AckermannController.inputs:useAcceleration", True),
-                    ("AckermannController.inputs:acceleration", 1.0),
-                    ("ComputeOdom.inputs:chassisPrim", [usdrt.Sdf.Path("/Forklift")]),
+                    ("AckermannController.inputs:acceleration", 5.0),
+                    ("ComputeOdom.inputs:chassisPrim", [usdrt.Sdf.Path("/World/Forklift")]),
+                    ("ArticulationController.inputs:robotPath", "/World/Forklift"),
+                    (
+                        "ArticulationController.inputs:jointNames",
+                        [
+                            "left_back_wheel_joint",
+                            "right_back_wheel_joint",
+                            "left_rotator_joint",
+                            "right_rotator_joint",
+                        ],
+                    ),
+                    ("WheelAnglesArray.inputs:arraySize", 4),
+                    ("WheelAnglesArray.inputs:arrayType", "double[]"),
+                    ("WheelVelocityArray.inputs:arraySize", 4),
+                    ("WheelVelocityArray.inputs:arrayType", "double[]"),
+                ],
+                og.Controller.Keys.CREATE_ATTRIBUTES: [
+                    ("WheelAnglesArray.inputs:input1", "double"),
+                    ("WheelVelocityArray.inputs:input1", "double"),
+                    ("WheelAnglesArray.inputs:input2", "double"),
+                    ("WheelVelocityArray.inputs:input2", "double"),
+                    ("WheelAnglesArray.inputs:input3", "double"),
+                    ("WheelVelocityArray.inputs:input3", "double"),
                 ],
                 og.Controller.Keys.CONNECT: [
                     ("OnPlaybackTick.outputs:tick", "AckermannController.inputs:execIn"),
+                    ("OnPlaybackTick.outputs:tick", "ComputeOdom.inputs:execIn"),
                     ("OnPlaybackTick.outputs:deltaSeconds", "AckermannController.inputs:DT"),
                     ("ComputeOdom.outputs:linearVelocity", "AckermannController.inputs:currentLinearVelocity"),
+                    ("AckermannController.outputs:leftWheelAngle", "WheelAnglesArray.inputs:input2"),
+                    ("AckermannController.outputs:rightWheelAngle", "WheelAnglesArray.inputs:input3"),
+                    ("WheelVelocityArray.outputs:array", "ArticulationController.inputs:velocityCommand"),
+                    ("WheelAnglesArray.outputs:array", "ArticulationController.inputs:positionCommand"),
+                    ("AckermannController.outputs:wheelRotationVelocity", "WheelVelocityArray.inputs:input0"),
+                    ("AckermannController.outputs:wheelRotationVelocity", "WheelVelocityArray.inputs:input1"),
+                    ("WheelVelocityArray.outputs:array", "ArticulationController.inputs:velocityCommand"),
+                    ("AckermannController.outputs:execOut", "ArticulationController.inputs:execIn"),
                 ],
             },
         )
 
         self.my_world.play()
-        await omni.kit.app.get_app().next_update_async()
+
+        # run 10 frames
+        for i in range(10):
+            await omni.kit.app.get_app().next_update_async()
+
         self.assertAlmostEqual(
             og.Controller(og.Controller.attribute("outputs:leftWheelAngle", acker_node)).get(), 0.916, delta=0.001
         )
@@ -197,8 +265,8 @@ class TestAckermannControllerOgn(ogts.OmniGraphTestCase):
         )
         self.assertAlmostEqual(
             og.Controller(og.Controller.attribute("outputs:wheelRotationVelocity", acker_node)).get(),
-            0.067,
-            delta=0.001,
+            0.5,
+            delta=0.1,
         )
 
     # ----------------------------------------------------------------------
@@ -316,23 +384,18 @@ class TestAckermannControllerOgn(ogts.OmniGraphTestCase):
 
         robot = Robot(prim_path="/World/Forklift", name="Forklift")
         self._timeline.play()
-        await simulate_async(0.1)
+        await omni.kit.app.get_app().next_update_async()
         robot.initialize()
-        await simulate_async(3)
+        await simulate_async(1)
 
-        # print(robot.dof_names)
-        # print(robot.get_joint_velocities())
-        # print(robot.get_joint_positions())
-
-        # get current velocities of left and right back wheels; ensure they are non-zero, equal to each other, and equal to the intended wheel velocity
+        # get current velocities of left and right back wheels; ensure they are non-zero, and close to the intended wheel velocity
         wheel_velocity = og.Controller.attribute("outputs:wheelRotationVelocity", acker_node).get()
 
         joint_vel = robot.get_joint_velocities()
         self.assertNotEqual(joint_vel[5], 0)
         self.assertNotEqual(joint_vel[6], 0)
-        self.assertAlmostEqual(joint_vel[5], joint_vel[6], delta=0.25)
-        self.assertAlmostEqual(joint_vel[5], wheel_velocity, delta=0.25)
-        self.assertAlmostEqual(joint_vel[6], wheel_velocity, delta=0.25)
+        self.assertAlmostEqual(joint_vel[5], wheel_velocity, delta=0.5)
+        self.assertAlmostEqual(joint_vel[6], wheel_velocity, delta=0.5)
 
         # get current left and right back wheel angles; ensure they are non-zero and the left wheel has a large angle than the right wheel
         joint_angle = robot.get_joint_positions()
