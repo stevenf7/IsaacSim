@@ -114,6 +114,9 @@ class BaseIsaacBenchmarkAsync(omni.kit.test.AsyncTestCase):
 
         logger.info("Writing metrics data.")
         logger.info(f"Metrics type = {type(self._metrics).__name__}")
+        # Finalize by adding all test phases to the backend metrics
+        for test_phase in self._test_phases:
+            self._metrics.add_metrics(test_phase)
         self._metrics.finalize(self._metrics_output_folder, randomize_filename_prefix)
 
         await omni.kit.app.get_app().next_update_async()
@@ -205,8 +208,7 @@ class BaseIsaacBenchmarkAsync(omni.kit.test.AsyncTestCase):
         # Update test phase metadata with phase name and benchmark metadata
         test_phase.metadata.extend(self._metadata)
         test_phase.metadata.append(measurements.StringMetadata(name="phase", data=self.context.phase))
-        # Add metrics and metadata from the test phase to the backend
-        self._metrics.add_metrics(test_phase)
+        self._test_phases.append(test_phase)
 
     async def fully_load_stage(self, usd_path):
         """Await this function to open a stage and then wait for it to fully load
@@ -225,22 +227,22 @@ class BaseIsaacBenchmarkAsync(omni.kit.test.AsyncTestCase):
             measurement (Measurement): The measurement object to store.
         """
         # Check if the phase already exists
-        for test_phase in self._test_phases:
-            if test_phase.phase_name == phase_name:
-                # Add the custom measurement to the existing phase
-                test_phase.measurements.append(custom_measurement)
-                logger.info(f"Stored {custom_measurement} for phase '{phase_name}'")
-                return
+        existing_phase = next((phase for phase in self._test_phases if phase.phase_name == phase_name), None)
 
-        # Create a new test phase
-        new_test_phase = measurements.TestPhase(phase_name=phase_name, measurements=[custom_measurement], metadata=[])
-        # Update test phase metadata with phase name and benchmark metadata
-        new_test_phase.metadata.extend(self._metadata)
-        new_test_phase.metadata.append(measurements.StringMetadata(name="phase", data=phase_name))
+        if existing_phase:
+            # Add the custom measurement to the existing phase
+            existing_phase.measurements.append(custom_measurement)
+            logger.info(f"Stored {custom_measurement} for phase '{phase_name}'")
+        else:
+            # If the phase does not exist, create a new test phase
+            new_test_phase = measurements.TestPhase(
+                phase_name=phase_name, measurements=[custom_measurement], metadata=[]
+            )
+            # Update test phase metadata with phase name and benchmark metadata
+            new_test_phase.metadata.extend(self._metadata)
+            new_test_phase.metadata.append(measurements.StringMetadata(name="phase", data=phase_name))
 
-        # Add the new test phase to the list of test phases
-        self._test_phases.append(new_test_phase)
+            # Add the new test phase to the list of test phases
+            self._test_phases.append(new_test_phase)
 
-        # Add metrics and metadata from the test phase to the backend
-        self._metrics.add_metrics(new_test_phase)
-        logger.info(f"Created new phase '{phase_name}' and stored {custom_measurement}")
+            logger.info(f"Created new phase '{phase_name}' and stored {custom_measurement}")
