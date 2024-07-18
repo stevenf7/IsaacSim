@@ -78,18 +78,22 @@ class TestUI(omni.kit.test.AsyncTestCase):
         height = 200
         window = await self._create_window(window_title, width, height)
 
-        self.btn_working = False
+        self.btn_counter = 0
 
         def on_click_fn():
-            self.btn_working = True
+            self.btn_counter += 1
 
         with window.frame:
-            Button("Button", "BUTTON", on_click_fn=on_click_fn)
+            btn = Button("Button", "BUTTON", on_click_fn=on_click_fn)
 
         button = ui_test.find(f"{window_title}//Frame/Frame[0]/HStack[0]/Button[0]")
         await button.click()
 
-        self.assertTrue(self.btn_working, "Button is not working as expected")
+        self.assertTrue(self.btn_counter == 1, "Button is not working as expected")
+
+        btn.trigger_click()
+
+        self.assertTrue(self.btn_counter == 2, "Button is not working as expected")
 
         window.destroy()
 
@@ -504,6 +508,25 @@ class TestUI(omni.kit.test.AsyncTestCase):
 
         self.assertTrue(self.physics_step_count == 9, "An unexpected number of physics step counts occured")
         self.assertTrue(self.btn_clicks == [2, 1])
+
+        self.assertTrue(state_button.get_current_text() == "B")
+        self.assertFalse(state_button.is_in_a_state())
+
+        # Nothing should happen
+        state_button.trigger_click_if_a_state()
+
+        self.assertTrue(state_button.get_current_text() == "B")
+        self.assertFalse(state_button.is_in_a_state())
+
+        state_button.trigger_click_if_b_state()
+
+        self.assertTrue(state_button.get_current_text() == "A")
+        self.assertTrue(state_button.is_in_a_state())
+
+        state_button.trigger_click_if_a_state()
+
+        self.assertTrue(state_button.get_current_text() == "B")
+        self.assertFalse(state_button.is_in_a_state())
 
         window.destroy()
 
