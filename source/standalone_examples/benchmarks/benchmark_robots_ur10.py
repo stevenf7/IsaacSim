@@ -4,6 +4,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--num-robots", type=int, default=1, help="Number of robots")
 parser.add_argument("--num-gpus", type=int, default=1, help="Number of GPUs on machine.")
 parser.add_argument("--num-frames", type=int, default=600, help="Number of frames to run benchmark for")
+parser.add_argument("--device", type=str, default="cpu", help="simulation device, cpu or cuda")
+parser.add_argument("--visual", type=bool, default=False, help="Render for debugging purposes")
 parser.add_argument(
     "--backend-type",
     default="OsmoKPIFile",
@@ -16,11 +18,14 @@ args, unknown = parser.parse_known_args()
 n_robot = args.num_robots
 n_gpu = args.num_gpus
 n_frames = args.num_frames
+device = args.device
+visual = args.visual
 
 import numpy as np
+import torch
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp({"headless": True, "max_gpu_count": n_gpu})
+simulation_app = SimulationApp({"headless": not visual, "max_gpu_count": n_gpu})
 
 import asyncio
 from functools import partial
@@ -28,8 +33,8 @@ from functools import partial
 import omni.isaac.core.utils.stage as stage_utils
 import omni.physx as _physx
 import omni.timeline
-from omni.isaac.core import PhysicsContext
-from omni.isaac.core.articulations import Articulation
+from omni.isaac.core import PhysicsContext, World
+from omni.isaac.core.articulations import ArticulationView
 from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.core.utils.stage import open_stage_async, update_stage_async
 from omni.isaac.core.utils.types import ArticulationAction
@@ -45,6 +50,7 @@ benchmark = BaseIsaacBenchmark(
         "metadata": [
             {"name": "num_robots", "data": n_robot},
             {"name": "num_gpus", "data": n_gpu},
+            {"name": "device", "data": device},
         ]
     },
     backend_type=args.backend_type,
@@ -57,54 +63,57 @@ observed_positions, observed_velocities = [], []
 commanded_positions, commanded_velocities = [], []
 
 # v_max is the maximum velocity that each joint will hit in its range of motion
-v_max = np.array([2.09, 2.09, 3.14, 3.14, 3.14, 3.14])
+v_max = torch.tensor([2.09, 2.09, 3.14, 3.14, 3.14, 3.14])
 
 # T is the period of each sinusoid
-T = np.array([9.43, 9.43, 6.28, 6.28, 6.28, 6.28])
+T = torch.tensor([9.43, 9.43, 6.28, 6.28, 6.28, 6.28])
 
-joint_indices = np.arange(6)
+joint_indices = torch.arange(6)
 
 robot_path = "/ur10"
 
 
-def get_clipped_joint_ranges(articulation):
-    lower_limit = articulation.dof_properties["lower"]
-    upper_limit = articulation.dof_properties["upper"]
+def get_clipped_joint_ranges(articulation_view):
 
-    l = np.copy(lower_limit)
-    u = np.copy(upper_limit)
+    limits = articulation_view.get_dof_limits()
+    lower_limit = limits[..., 0]
+    upper_limit = limits[..., 1]
+
+    l = lower_limit.clone()
+    u = upper_limit.clone()
     d = upper_limit - lower_limit
-    mask = d > 2 * np.pi
-    if np.any(mask):
-        l[mask] = (upper_limit[mask] - lower_limit[mask]) / 2 + lower_limit[mask] - np.pi
-        u[mask] = (upper_limit[mask] - lower_limit[mask]) / 2 + lower_limit[mask] + np.pi
+    mask = d > 2 * torch.pi
+
+    if torch.any(mask):
+        l[mask] = (upper_limit[mask] - lower_limit[mask]) / 2 + lower_limit[mask] - torch.pi
+        u[mask] = (upper_limit[mask] - lower_limit[mask]) / 2 + lower_limit[mask] + torch.pi
 
     return l, u
 
 
-def get_joint_commands(articulation, v_max, T, joint_indices):
-    lower_joint_limits, upper_joint_limits = get_clipped_joint_ranges(articulation)
+def get_joint_commands(articulation_view, v_max, T, joint_indices):
+    lower_joint_limits, upper_joint_limits = get_clipped_joint_ranges(articulation_view)
 
-    lower_joint_limits = lower_joint_limits[joint_indices]
-    upper_joint_limits = upper_joint_limits[joint_indices]
+    lower_joint_limits = lower_joint_limits[:, joint_indices]
+    upper_joint_limits = upper_joint_limits[:, joint_indices]
 
     p_0 = lower_joint_limits + (upper_joint_limits - lower_joint_limits) / 2
 
-    position = lambda t: p_0 - v_max * T / np.pi * np.cos(np.pi * t / T)
-    velocity = lambda t: v_max * np.sin(np.pi * t / T)
+    position = lambda t: p_0 - v_max * T / torch.pi * torch.cos(torch.pi * t / T)
+    velocity = lambda t: v_max * torch.sin(torch.pi * t / T)
 
     return position, velocity
 
 
-def on_physics_step(articulation, position_commands, velocity_commands, step):
+def on_physics_step(articulation_view, position_commands, velocity_commands, step):
     if position_commands is None:
         return
     timestep[0] += step
     if timestep[0] > 5:
         return
 
-    observed_positions.append(articulation.get_joint_positions(joint_indices))
-    observed_velocities.append(articulation.get_joint_velocities(joint_indices))
+    observed_positions.append(articulation_view.get_joint_positions(joint_indices=joint_indices))
+    observed_velocities.append(articulation_view.get_joint_velocities(joint_indices=joint_indices))
 
     position_command = position_commands(timestep[0])
     velocity_command = velocity_commands(timestep[0])
@@ -113,52 +122,52 @@ def on_physics_step(articulation, position_commands, velocity_commands, step):
     commanded_velocities.append(velocity_command)
 
     action = ArticulationAction(position_command, velocity_command, joint_indices=joint_indices)
-    articulation.apply_action(action)
+    articulation_view.apply_action(action)
 
 
 benchmark.set_phase("loading", start_recording_frametime=False, start_recording_runtime=True)
 
-get_active_viewport().updates_enabled = False
+get_active_viewport().updates_enabled = visual
 
 robot_usd_path = "omniverse://ov-isaac-dev.nvidia.com/Isaac/Robots/UR10/ur10.usd"
-stage = omni.usd.get_context().get_stage()
-PhysicsContext(physics_dt=1.0 / 60.0)
 
-robots = []
+my_world = World(backend="torch", device=device)
+PhysicsContext(physics_dt=1.0 / 60.0)
+MAX_IN_LINE = 10
+positions = torch.zeros((n_robot, 3))
 for i in range(n_robot):
     robot_prim_path = "/Robots/Robot_" + str(i)
     # position the robot
-    MAX_IN_LINE = 10
-    robot_position = np.array([-2 * (i % MAX_IN_LINE), -2 * np.floor(i / MAX_IN_LINE), 0])
+    robot_position = torch.tensor([-2 * (i % MAX_IN_LINE), -2 * np.floor(i / MAX_IN_LINE), 0])
+    positions[i, :] = robot_position
     stage_utils.add_reference_to_stage(robot_usd_path, robot_prim_path)
-    current_robot = Articulation(robot_prim_path)
 
-    omni.kit.app.get_app().update()
-    omni.kit.app.get_app().update()
 
-    robots.append(current_robot)
+omni.kit.app.get_app().update()
+my_world.scene.add_default_ground_plane(z_position=-1)
+
+robot_view = ArticulationView("/Robots/Robot_*", positions=positions)
 
 timeline = omni.timeline.get_timeline_interface()
 timeline.play()
 omni.kit.app.get_app().update()
 
-for robot in robots:
-    robot.initialize()
-    omni.kit.app.get_app().update()
+robot_view.initialize()
+omni.kit.app.get_app().update()
 
-    position_commands, velocity_commands = get_joint_commands(robot, v_max, T, joint_indices)
-    _physxIFace = _physx.acquire_physx_interface()
-    physx_subscription = _physxIFace.subscribe_physics_step_events(
-        partial(on_physics_step, robot, position_commands, velocity_commands)
-    )
+position_commands, velocity_commands = get_joint_commands(robot_view, v_max, T, joint_indices)
+_physxIFace = _physx.acquire_physx_interface()
+physx_subscription = _physxIFace.subscribe_physics_step_events(
+    partial(on_physics_step, robot_view, position_commands, velocity_commands)
+)
 
-    position_command = position_commands(0)
-    velocity_command = velocity_commands(0)
+position_command = position_commands(0)
+velocity_command = velocity_commands(0)
 
-    robot.set_joint_positions(position_command, joint_indices=joint_indices)
+robot_view.set_joint_positions(position_command, joint_indices=joint_indices)
 
-    commanded_positions.append(position_command)
-    commanded_velocities.append(velocity_command)
+commanded_positions.append(position_command)
+commanded_velocities.append(velocity_command)
 
 omni.kit.app.get_app().update()
 omni.kit.app.get_app().update()
