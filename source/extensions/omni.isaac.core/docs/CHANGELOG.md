@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.18.1] - 2024-07-17
+### Fixed
+- Fixed ArticulationController to handle joint indices along with Nan values in the target actions. 
+
 ## [3.18.0] - 2024-07-16
 ### Changed
 - Make omni.kit.material.library optional, it must be enabled when using OmniGlass helper class
