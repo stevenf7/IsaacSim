@@ -20,7 +20,6 @@ class OgnAckermannControllerInternalState(BaseResetNode):
         self.wheel_base = 0.0
         self.track_width = 0.0
         self.turning_wheel_radius = 0.0
-        self.acceleration = 1.0
         self.max_wheel_velocity = 1.0e20
         self.max_wheel_rotation_angle = 6.28
         self.use_acceleration = False
@@ -33,7 +32,6 @@ class OgnAckermannControllerInternalState(BaseResetNode):
         self.controller_handle = AckermannController(
             name="ackermann_controller",
             use_acceleration=self.use_acceleration,
-            acceleration=self.acceleration,
             turning_wheel_radius=self.turning_wheel_radius,
             wheel_base=self.wheel_base,
             track_width=self.track_width,
@@ -81,7 +79,13 @@ class OgnAckermannController:
                 state.initialize_controller()
 
             actions = state.forward(
-                [db.inputs.steeringAngle, db.inputs.speed, db.inputs.currentLinearVelocity[1], db.inputs.DT]
+                [
+                    db.inputs.steeringAngle,
+                    db.inputs.speed,
+                    db.inputs.currentLinearVelocity[0],
+                    db.inputs.DT,
+                    db.inputs.acceleration,
+                ]
             )
 
             if actions.joint_velocities is not None:

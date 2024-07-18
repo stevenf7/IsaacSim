@@ -37,15 +37,13 @@ class AckermannController(BaseController):
         name: str,
         wheel_base: float,
         track_width: float,
-        turning_wheel_radius: float = 0.0,
-        acceleration: float = 1.0,
+        turning_wheel_radius: float,
         max_wheel_velocity: float = 1.0e20,
         use_acceleration: bool = False,
         invert_steering_angle: bool = False,
         max_wheel_rotation_angle: float = 6.28,
     ) -> None:
         super().__init__(name)
-        self.acceleration = acceleration
         self.wheel_base = wheel_base
         self.track_width = track_width
         self.turning_wheel_radius = turning_wheel_radius
@@ -53,20 +51,24 @@ class AckermannController(BaseController):
         self.use_acceleration = use_acceleration
         self.invert_steering_angle = invert_steering_angle
         self.max_wheel_rotation_angle = max_wheel_rotation_angle
+        self.wheel_rotation_velocity = 0.0
 
     def forward(self, command: np.ndarray) -> ArticulationAction:
-        """Calculate right and left wheel angles given wheel rotation and velocity.
+        """Calculate right and left wheel angles given wheel rotation and velocity. If use_acceleration flag is enabled, desired velocity command (index 1) will be ignored.
 
         Args:
-            command (np.ndarray): steering angle (rad), linear velocity [speed] (m/s), current linear velocity [current speed y] (m/s), delta time (s)
+            command (np.ndarray): steering angle (rad), linear velocity [speed] (m/s), current linear velocity [current speed y] (m/s), delta time (s), acceleration (m/s^2)
 
         Returns:
             ArticulationAction: the articulation action to be applied to the robot.
         """
         if isinstance(command, list):
             command = np.array(command)
-        if command.shape[0] < 2 or command.shape[0] > 4:
-            raise Exception("command should be length of 2 to 4")
+
+        if self.use_acceleration and command.shape[0] < 5:
+            raise Exception("command should be length 5 for acceleration command")
+        elif command.shape[0] < 2:
+            raise Exception("command should be length 2 for velocity command")
 
         # avoid division by zero
         if self.turning_wheel_radius is None or self.turning_wheel_radius <= 0:
@@ -99,13 +101,13 @@ class AckermannController(BaseController):
             self.right_wheel_angle, -self.max_wheel_rotation_angle, self.max_wheel_rotation_angle
         )
 
-        self.wheel_rotation_velocity = 0.0
-
         if self.use_acceleration:
             if command[3] == 0.0:
                 carb.log_warn("Delta time for the simulation step is 0. Acceleration input will be ignored.")
-            # compute wheel rotation velocity --> (current linear velocity + acceleration adjusted for dt) / turning (driven) wheel radius
-            self.wheel_rotation_velocity = (command[2] + self.acceleration * command[3]) / self.turning_wheel_radius
+                return ArticulationAction()
+
+            # compute wheel rotation velocity --> (current linear velocity + acceleration * dt) / turning (driven) wheel radius
+            self.wheel_rotation_velocity = (command[2] + (command[4] * command[3])) / self.turning_wheel_radius
         else:
             self.wheel_rotation_velocity = command[1] / self.turning_wheel_radius
         # clamp wheel rotation velocity to max wheel velocity
