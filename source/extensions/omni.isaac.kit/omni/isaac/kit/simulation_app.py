@@ -248,12 +248,15 @@ class SimulationApp:
         omni.client.set_hang_detection_time_ms(10000)
 
         # Set the window title to something simpler
-        from omni.isaac.version import get_version
-        from omni.kit.window.title import get_main_window_title
+        try:
+            from omni.isaac.version import get_version
+            from omni.kit.window.title import get_main_window_title
 
-        window_title = get_main_window_title()
-        app_version_core, _, _, _, _, _, _, _ = get_version()
-        window_title.set_app_version(app_version_core)
+            window_title = get_main_window_title()
+            app_version_core, _, _, _, _, _, _, _ = get_version()
+            window_title.set_app_version(app_version_core)
+        except:
+            pass
 
         self._wait_for_viewport()
 
@@ -455,43 +458,23 @@ class SimulationApp:
 
     def _prepare_ui(self) -> None:
         """Dock the windows in the UI if they exist."""
-        import omni.ui
+        try:
+            import omni.ui
 
-        # Dock floating UIs this might not be needed anymore as extensions dock themselves
-        # # Method for docking a particular window to a location
-        # def dock_window(space, name, location, ratio=0.5):
-        #     window = omni.ui.Workspace.get_window(name)
-        #     if window and space:
-        #         window.dock_in(space, location, ratio=ratio)
-        #     return window
-        # # Acquire the main docking station
-        # main_dockspace = omni.ui.Workspace.get_window("DockSpace")
-        # # Acquire the docking space for viewport
-        # view = dock_window(main_dockspace, "Viewport", omni.ui.DockPosition.TOP)
-        # self._app.update()
-        # console = dock_window(view, "Console", omni.ui.DockPosition.BOTTOM, 0.3)
-        # dock_window(view, "Main ToolBar", omni.ui.DockPosition.LEFT)
-        # self._app.update()
-        # # Acquire the docking window where `Stage` tab is present and add tabs
-        # render = dock_window(main_dockspace, "Render Settings", omni.ui.DockPosition.RIGHT, 0.3)
-        # dock_window(render, "Stage", omni.ui.DockPosition.SAME)
-        # dock_window(render, "Layer", omni.ui.DockPosition.SAME)
-        # dock_window(console, "Content", omni.ui.DockPosition.SAME)
-        # self._app.update()
-        # dock_window(render, "Property", omni.ui.DockPosition.BOTTOM)
+            self._app.update()
+            content = omni.ui.Workspace.get_window("Content")
+            console = omni.ui.Workspace.get_window("Console")
+            samples = omni.ui.Workspace.get_window("Samples")
 
-        self._app.update()
-        content = omni.ui.Workspace.get_window("Content")
-        console = omni.ui.Workspace.get_window("Console")
-        samples = omni.ui.Workspace.get_window("Samples")
-
-        if content:
-            content.dock_order = 0
-            content.focus()
-        if console:
-            console.dock_order = 1
-        if samples:
-            samples.visible = False
+            if content:
+                content.dock_order = 0
+                content.focus()
+            if console:
+                console.dock_order = 1
+            if samples:
+                samples.visible = False
+        except:
+            pass
 
         self._app.update()
 

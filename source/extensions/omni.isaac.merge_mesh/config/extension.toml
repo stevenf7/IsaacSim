@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.1"
+version = "1.0.2"
 category = "Simulation"
 title = "Isaac Sim Merge Mesh"
 description = "Inspect Physics Merge Mesh Utility"
@@ -27,5 +27,6 @@ name = "omni.isaac.merge_mesh.tests"
 
 [[test]]
 dependencies = [
-   "omni.kit.primitive.mesh"
+   "omni.kit.primitive.mesh",
+   "omni.kit.material.library"
 ]

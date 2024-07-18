@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.2] - 2024-07-17
+### Fixed
+- Missing dependency for tests
+
 ## [1.0.1] - 2024-04-18
 ### Added
 - Dependency for tests

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.13.0] - 2024-07-16
+### Changed
+- omni.isaac.version, omni.ui, omni.kit.window.title are not required to use SimulationApp in headless mode
+
 ## [1.12.0] - 2024-06-26
 ### Added
 - --ovd="/path/to/capture/" argument that simplifies capturing of physics debugging data

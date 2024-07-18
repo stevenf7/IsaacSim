@@ -14,7 +14,6 @@ import numpy as np
 import omni.kit.app
 from omni.isaac.core.materials.visual_material import VisualMaterial
 from omni.isaac.core.utils.prims import get_prim_at_path, is_prim_path_valid, move_prim
-from omni.kit.material.library import CreateAndBindMdlMaterialFromLibrary
 from pxr import Gf, Sdf, UsdShade
 
 
@@ -48,6 +47,12 @@ class OmniGlass(VisualMaterial):
         if is_prim_path_valid(prim_path=prim_path):
             material = UsdShade.Material(get_prim_at_path(prim_path))
         else:
+            try:
+                from omni.kit.material.library import CreateAndBindMdlMaterialFromLibrary
+            except Exception as e:
+                carb.log_error(e)
+                carb.log_error("Enable the omni.kit.material.library extension before using OmniGlass")
+
             mtl_created_list = []
             CreateAndBindMdlMaterialFromLibrary(
                 mdl_name="OmniGlass.mdl", mtl_name="OmniGlass", mtl_created_list=mtl_created_list

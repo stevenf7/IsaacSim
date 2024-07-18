@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.0"
+version = "1.0.1"
 category = "Simulation"
 title = "Isaac Sim Range Sensor UI components"
 description = "UI components for the Range Sensor extension"
@@ -23,6 +23,7 @@ writeTarget.kit = true
 "omni.isaac.ui" = {}
 "omni.isaac.core" = {}
 "omni.isaac.range_sensor" = {}
+"omni.kit.context_menu" = {}
 
 [[python.module]]
 name = "omni.isaac.range_sensor.ui"
