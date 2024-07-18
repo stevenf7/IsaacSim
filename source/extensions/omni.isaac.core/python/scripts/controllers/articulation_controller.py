@@ -48,37 +48,41 @@ class ArticulationController(object):
         """
         applied_actions = self.get_applied_action()
         joint_positions = control_actions.joint_positions
+        if control_actions.joint_indices is None:
+            joint_indices = self._articulation_view._backend_utils.resolve_indices(
+                control_actions.joint_indices, applied_actions.joint_positions.shape[0], self._articulation_view._device
+            )
+        else:
+            joint_indices = control_actions.joint_indices
+
         if control_actions.joint_positions is not None:
             joint_positions = self._articulation_view._backend_utils.convert(
                 control_actions.joint_positions, device=self._articulation_view._device
             )
             joint_positions = self._articulation_view._backend_utils.expand_dims(joint_positions, 0)
-            if control_actions.joint_indices is None:
-                for i in range(control_actions.get_length()):
-                    if joint_positions[0][i] is None or np.isnan(
-                        self._articulation_view._backend_utils.to_numpy(joint_positions[0][i])
-                    ):
-                        joint_positions[0][i] = applied_actions.joint_positions[i]
+            for i in range(control_actions.get_length()):
+                if joint_positions[0][i] is None or np.isnan(
+                    self._articulation_view._backend_utils.to_numpy(joint_positions[0][i])
+                ):
+                    joint_positions[0][i] = applied_actions.joint_positions[joint_indices[i]]
         joint_velocities = control_actions.joint_velocities
         if control_actions.joint_velocities is not None:
             joint_velocities = self._articulation_view._backend_utils.convert(
                 control_actions.joint_velocities, device=self._articulation_view._device
             )
             joint_velocities = self._articulation_view._backend_utils.expand_dims(joint_velocities, 0)
-            if control_actions.joint_indices is None:
-                for i in range(control_actions.get_length()):
-                    if joint_velocities[0][i] is None or np.isnan(joint_velocities[0][i]):
-                        joint_velocities[0][i] = applied_actions.joint_velocities[i]
+            for i in range(control_actions.get_length()):
+                if joint_velocities[0][i] is None or np.isnan(joint_velocities[0][i]):
+                    joint_velocities[0][i] = applied_actions.joint_velocities[joint_indices[i]]
         joint_efforts = control_actions.joint_efforts
         if control_actions.joint_efforts is not None:
             joint_efforts = self._articulation_view._backend_utils.convert(
                 control_actions.joint_efforts, device=self._articulation_view._device
             )
-            if np.all(np.isnan(joint_efforts)):
-                joint_efforts = None
-            else:
-                joint_efforts = self._articulation_view._backend_utils.expand_dims(joint_efforts, 0)
-
+            joint_efforts = self._articulation_view._backend_utils.expand_dims(joint_efforts, 0)
+            for i in range(control_actions.get_length()):
+                if joint_efforts[0][i] is None or np.isnan(joint_efforts[0][i]):
+                    joint_efforts[0][i] = 0
         self._articulation_view.apply_action(
             ArticulationActions(
                 joint_positions=joint_positions,

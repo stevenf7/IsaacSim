@@ -1,4 +1,7 @@
 # Changelog
+## [2.31.4] - 2024-07-17
+### Added
+- added a joint state subscriber test where the jointNames are connected
 
 ## [2.31.3] - 2024-07-12
 ### Removed
