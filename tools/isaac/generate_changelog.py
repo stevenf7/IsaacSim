@@ -9,13 +9,18 @@
 import argparse
 import datetime
 import glob
+import logging
 import os
 import re
+import subprocess
 from distutils.version import LooseVersion
 from pprint import pprint
 from typing import Callable, Dict, List, Set, Tuple
 
+import omni.repo.man
 import toml
+
+logger = logging.getLogger(__name__)
 
 
 def parse_version(line: str):
@@ -255,6 +260,238 @@ def generate_extension_diff_report(
                 print("        - ", change)
 
 
+def generate_extscache_diff_report(extscache_paths: List[str], range: Dict):
+    for path in extscache_paths:
+        try:
+            cmd = ["git", "diff", "-U0", range[0]["commit"], range[1]["commit"], "--", path]
+            omni.repo.man.print_log(f"Executing: {' '.join(cmd)}", logging.INFO)
+            output = subprocess.check_output(cmd).decode()
+        except subprocess.CalledProcessError as e:
+            omni.repo.man.print_log(str(e), logging.ERROR)
+            exit()
+
+        data = {"kit": {}, "dependencies": {}, "exact_version_dependencies": {}, "version_lock_dependencies": {}}
+        for line in output.split("\n")[4:]:
+            if line.startswith("@@"):
+                continue
+            # parse: -"omni.replicator.core" = {version = "1.11.12", exact = true}
+            if "version =" in line:
+                status = line[:2]
+                if status not in ['+"', '-"']:
+                    omni.repo.man.print_log(f"Skipping: {line}", logging.INFO)
+                    continue
+                extension_name = line.split(" = ")[0][2:-1]
+                extension_version = line.split("version = ")[1].split('"')[1]
+                if not extension_name in data["dependencies"]:
+                    data["dependencies"][extension_name] = {}
+                data["dependencies"][extension_name][status[0]] = extension_version
+            # parse: -# Kit SDK Version: 106.0.1+release.126909.3a7abd1c.gl
+            elif "Kit SDK Version:" in line:
+                status = line[:2]
+                if status not in ["+#", "-#"]:
+                    omni.repo.man.print_log(f"Skipping: {line}", logging.INFO)
+                    continue
+                kit_version = line.split("Kit SDK Version: ")[1]
+                data["kit"][status[0]] = kit_version
+            # parse: -#      semantics.schema.property-1.0.3
+            elif line.startswith("-# \t") or line.startswith("+# \t"):
+                status = line[:2]
+                if status not in ["+#", "-#"]:
+                    omni.repo.man.print_log(f"Skipping: {line}", logging.INFO)
+                    continue
+                extension_name = line[4:].split("-")[0]
+                extension_version = line[4:].split("-")[-1]
+                if not extension_name in data["exact_version_dependencies"]:
+                    data["exact_version_dependencies"][extension_name] = {}
+                data["exact_version_dependencies"][extension_name][status[0]] = extension_version
+            # parse: -       "omni.kit.converter.common-500.0.6"
+            elif line.startswith('-\t"') or line.startswith('+\t"'):
+                status = line[:2]
+                if status not in ["+\t", "-\t"]:
+                    omni.repo.man.print_log(f"Skipping: {line}", logging.INFO)
+                    continue
+                extension_name = line[3:].split("-")[0]
+                extension_version = line[3:].split("-")[-1][:-2]
+                if not extension_name in data["version_lock_dependencies"]:
+                    data["version_lock_dependencies"][extension_name] = {}
+                data["version_lock_dependencies"][extension_name][status[0]] = extension_version
+
+        report = ""
+
+        # kit
+        if data["kit"]:
+            report += "# Kit SDK Version\n"
+            v = data["kit"]
+            # changed
+            if "+" in list(v.keys()) and "-" in list(v.keys()):
+                report += f"\nChanged: {v['-']} -> {v['+']}\n"
+            # added
+            elif "+" in list(v.keys()):
+                report += f"\nAdded: {v['+']}\n"
+            # removed
+            elif "-" in list(v.keys()):
+                report += f"\nRemoved: {v['-']}\n"
+
+        # dependencies
+        if data["dependencies"]:
+            extension_added = []
+            extension_changed = []
+            extension_removed = []
+
+            for k, v in data["dependencies"].items():
+                # changed
+                if "+" in list(v.keys()) and "-" in list(v.keys()):
+                    extension_changed.append(f"{k}: {v['-']} -> {v['+']}")
+                # added
+                elif "+" in list(v.keys()):
+                    extension_added.append(f"{k}: {v['+']}")
+                # removed
+                elif "-" in list(v.keys()):
+                    extension_removed.append(f"{k}: {v['-']}")
+
+            report += "\n# Dependencies\n"
+            if len(extension_added):
+                report += "\n### Added\n"
+                for extension in extension_added:
+                    report += f"- {extension}\n"
+            if len(extension_removed):
+                report += "\n### Removed\n"
+                for extension in extension_removed:
+                    report += f"- {extension}\n"
+            if len(extension_changed):
+                report += "\n### Changed\n"
+                for extension in extension_changed:
+                    report += f"- {extension}\n"
+
+        # exact version dependencies
+        if data["exact_version_dependencies"]:
+            extension_added = []
+            extension_changed = []
+            extension_removed = []
+
+            for k, v in data["exact_version_dependencies"].items():
+                # changed
+                if "+" in list(v.keys()) and "-" in list(v.keys()):
+                    extension_changed.append(f"{k}: {v['-']} -> {v['+']}")
+                # added
+                elif "+" in list(v.keys()):
+                    extension_added.append(f"{k}: {v['+']}")
+                # removed
+                elif "-" in list(v.keys()):
+                    extension_removed.append(f"{k}: {v['-']}")
+
+            report += "\n# Exact Version Dependencies\n"
+            if len(extension_added):
+                report += "\n### Added\n"
+                for extension in extension_added:
+                    report += f"- {extension}\n"
+            if len(extension_removed):
+                report += "\n### Removed\n"
+                for extension in extension_removed:
+                    report += f"- {extension}\n"
+            if len(extension_changed):
+                report += "\n### Changed\n"
+                for extension in extension_changed:
+                    report += f"- {extension}\n"
+
+        # exact version dependencies
+        if data["version_lock_dependencies"]:
+            extension_added = []
+            extension_changed = []
+            extension_removed = []
+
+            for k, v in data["version_lock_dependencies"].items():
+                # changed
+                if "+" in list(v.keys()) and "-" in list(v.keys()):
+                    extension_changed.append(f"{k}: {v['-']} -> {v['+']}")
+                # added
+                elif "+" in list(v.keys()):
+                    extension_added.append(f"{k}: {v['+']}")
+                # removed
+                elif "-" in list(v.keys()):
+                    extension_removed.append(f"{k}: {v['-']}")
+
+            report += "\n# Version Lock for all Dependencies\n"
+            if len(extension_added):
+                report += "\n### Added\n"
+                for extension in extension_added:
+                    report += f"- {extension}\n"
+            if len(extension_removed):
+                report += "\n### Removed\n"
+                for extension in extension_removed:
+                    report += f"- {extension}\n"
+            if len(extension_changed):
+                report += "\n### Changed\n"
+                for extension in extension_changed:
+                    report += f"- {extension}\n"
+
+        print()
+        print(report)
+
+
+def get_range(range: str):
+    def parse(token: str):
+        def _get_commit_date(commit):
+            try:
+                output = subprocess.check_output(["git", "show", "--no-patch", "--pretty=reference", value]).decode()
+                return output.split("\n")[0][:-1].split(" ")[-1]
+            except subprocess.CalledProcessError:
+                pass
+            return None
+
+        if token.count(":") == 1:
+            key, value = token.split(":")
+            # commit
+            if key.lower() == "commit":
+                # get date from commit ID
+                date = _get_commit_date(value)
+                if not date:
+                    omni.repo.man.print_log(f"Invalid commit ID ({value})", logging.ERROR)
+                    exit()
+                return {"commit": value, "date": date}
+            # date
+            elif key.lower() == "date":
+                return {"commit": f"HEAD@{{{value} ago}}", "date": value}
+            # tag
+            elif key.lower() == "tag":
+                commit = None
+                # get commit ID from tag
+                try:
+                    output = subprocess.check_output(["git", "rev-list", "-n", "1", value]).decode()
+                    if len(output):
+                        commit = output[:7]
+                except subprocess.CalledProcessError:
+                    commit = None
+                # get available tags
+                if not commit:
+                    try:
+                        output = subprocess.check_output(["git", "show-ref", "--tags"]).decode()
+                        output = [line.split("refs/tags/")[1] for line in output.split("\n") if "refs/tags/" in line]
+                        omni.repo.man.print_log(
+                            f"Invalid range tag ({token}). Available tags: {', '.join(output)}", logging.ERROR
+                        )
+                    except subprocess.CalledProcessError:
+                        pass
+                    exit()
+                # get date from commit ID
+                date = _get_commit_date(value)
+                if not date:
+                    omni.repo.man.print_log(f"Invalid commit ID ({value})", logging.ERROR)
+                    exit()
+                return {"commit": commit, "date": date}
+        omni.repo.man.print_log(
+            f"Invalid range format ({token}). Supported format is type:value (e.g.: commit:fc1ec839, tag:1.0.0, date:2024-01-31)",
+            logging.ERROR,
+        )
+        return None
+
+    range = range.split("..")
+    return (
+        parse(range[0]),
+        parse(range[1]) if len(range) == 2 else {"commit": "HEAD", "date": datetime.date.today().isoformat()},
+    )
+
+
 def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
     parser.description = "Generate changelog documentation"
     parser.add_argument(
@@ -265,15 +502,37 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         action="store_true",
         help="Validate all changelogs",
     )
+    parser.add_argument(
+        "--extscache",
+        required=False,
+        default=False,
+        action="store_true",
+        help="Generate extscache changelog",
+    )
+    parser.add_argument(
+        "-r",
+        "--range",
+        dest="range",
+        required=True,
+        help='Single (from) or pair (from..to) of commits/tags/dates prefixed with "commit:", "tag:", or "date:" respectively',
+    )
 
     def run_repo_tool(options: Dict, config: Dict):
         # tool_config = config.get("repo_build", {})
         # print(config)
         tool_config = config["repo_generate_changelog"]
+
+        # get range
+        range = get_range(options.range)
+
+        if options.extscache:
+            omni.repo.man.print_log(f"Report (extscache): {range}", logging.INFO)
+            generate_extscache_diff_report(tool_config["extscache_paths"], range)
+            exit()
+
         home_path = tool_config["home_path"]
-        # args = parser.parse_args()
-        # print(args)
         extensions = sorted(os.listdir(home_path))
+        omni.repo.man.print_log(f"Report (extensions): {range}", logging.INFO)
 
         for e in extensions:
             if e not in ["omni.isaac.internal_tools"]:
@@ -284,6 +543,11 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
                 if options.validate:
                     validate(changelog_path, config_path)
 
-                generate_extension_diff_report(name, changelog_path, datetime.date(2024, 5, 31), datetime.date.today())
+                generate_extension_diff_report(
+                    name,
+                    changelog_path,
+                    datetime.date.fromisoformat(range[0]["date"]),
+                    datetime.date.fromisoformat(range[1]["date"]),
+                )
 
     return run_repo_tool
