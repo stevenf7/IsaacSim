@@ -71,105 +71,106 @@ class TestRos2Lidar(omni.kit.test.AsyncTestCase):
         gc.collect()
         pass
 
-    async def test_lidar(self):
-        import rclpy
-        from sensor_msgs.msg import LaserScan
+    # TODO: Carter V1 uses RTX lidar now
+    # async def test_lidar(self):
+    #     import rclpy
+    #     from sensor_msgs.msg import LaserScan
 
-        await add_carter_ros()
-        await add_cube("/cube", 0.75, (2.00, 0, 0.75))
+    #     await add_carter_ros()
+    #     await add_cube("/cube", 0.75, (2.00, 0, 0.75))
 
-        self._lidar_data = None
-        self._lidar_data_prev = None
+    #     self._lidar_data = None
+    #     self._lidar_data_prev = None
 
-        def lidar_callback(data: LaserScan):
-            self._lidar_data = data
+    #     def lidar_callback(data: LaserScan):
+    #         self._lidar_data = data
 
-        node = rclpy.create_node("lidar_tester")
-        subscriber = node.create_subscription(LaserScan, "scan", lidar_callback, get_qos_profile())
+    #     node = rclpy.create_node("lidar_tester")
+    #     subscriber = node.create_subscription(LaserScan, "scan", lidar_callback, get_qos_profile())
 
-        def standard_checks():
-            self.assertIsNotNone(self._lidar_data)
-            self.assertGreater(self._lidar_data.angle_max, self._lidar_data.angle_min)
-            self.assertEqual(self._lidar_data.intensities[0], 0.0)
-            self.assertEqual(len(self._lidar_data.intensities), 900)
-            self.assertEqual(self._lidar_data.intensities[450], 255.0)
+    #     def standard_checks():
+    #         self.assertIsNotNone(self._lidar_data)
+    #         self.assertGreater(self._lidar_data.angle_max, self._lidar_data.angle_min)
+    #         self.assertEqual(self._lidar_data.intensities[0], 0.0)
+    #         self.assertEqual(len(self._lidar_data.intensities), 900)
+    #         self.assertEqual(self._lidar_data.intensities[450], 255.0)
 
-        omni.kit.commands.execute(
-            "ChangeProperty", prop_path=Sdf.Path("/Carter/chassis_link/carter_lidar.rotationRate"), value=0.0, prev=None
-        )
+    #     omni.kit.commands.execute(
+    #         "ChangeProperty", prop_path=Sdf.Path("/Carter/chassis_link/carter_lidar.rotationRate"), value=0.0, prev=None
+    #     )
 
-        def spin():
-            rclpy.spin_once(node, timeout_sec=0.1)
+    #     def spin():
+    #         rclpy.spin_once(node, timeout_sec=0.1)
 
-        # 0.0 Hz Lidar rotation
-        self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-        await simulate_async(1, 60, spin)
+    #     # 0.0 Hz Lidar rotation
+    #     self._timeline.play()
+    #     await omni.kit.app.get_app().next_update_async()
+    #     await omni.kit.app.get_app().next_update_async()
+    #     await simulate_async(1, 60, spin)
 
-        standard_checks()
-        self.assertEqual(self._lidar_data.time_increment, 0)
+    #     standard_checks()
+    #     self.assertEqual(self._lidar_data.time_increment, 0)
 
-        self._timeline.stop()
-        await omni.kit.app.get_app().next_update_async()
+    #     self._timeline.stop()
+    #     await omni.kit.app.get_app().next_update_async()
 
-        self._lidar_data_prev = copy.deepcopy(self._lidar_data)
-        self._lidar_data = None
+    #     self._lidar_data_prev = copy.deepcopy(self._lidar_data)
+    #     self._lidar_data = None
 
-        omni.kit.commands.execute(
-            "ChangeProperty",
-            prop_path=Sdf.Path("/Carter/chassis_link/carter_lidar.rotationRate"),
-            value=121.0,
-            prev=None,
-        )
+    #     omni.kit.commands.execute(
+    #         "ChangeProperty",
+    #         prop_path=Sdf.Path("/Carter/chassis_link/carter_lidar.rotationRate"),
+    #         value=121.0,
+    #         prev=None,
+    #     )
 
-        await omni.kit.app.get_app().next_update_async()
-        # 121.0 Hz Lidar rotation
-        self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-        await simulate_async(1, 60, spin)
-        spin()
+    #     await omni.kit.app.get_app().next_update_async()
+    #     # 121.0 Hz Lidar rotation
+    #     self._timeline.play()
+    #     await omni.kit.app.get_app().next_update_async()
+    #     await omni.kit.app.get_app().next_update_async()
+    #     await simulate_async(1, 60, spin)
+    #     spin()
 
-        standard_checks()
+    #     standard_checks()
 
-        self.assertGreater(self._lidar_data.header.stamp.sec, self._lidar_data_prev.header.stamp.sec)
-        self.assertEqual(len(self._lidar_data.intensities), len(self._lidar_data_prev.intensities))
-        self.assertEqual(self._lidar_data.intensities, self._lidar_data_prev.intensities)
-        self.assertGreater(self._lidar_data.time_increment, 0.0)
+    #     self.assertGreater(self._lidar_data.header.stamp.sec, self._lidar_data_prev.header.stamp.sec)
+    #     self.assertEqual(len(self._lidar_data.intensities), len(self._lidar_data_prev.intensities))
+    #     self.assertEqual(self._lidar_data.intensities, self._lidar_data_prev.intensities)
+    #     self.assertGreater(self._lidar_data.time_increment, 0.0)
 
-        self._timeline.stop()
-        await omni.kit.app.get_app().next_update_async()
+    #     self._timeline.stop()
+    #     await omni.kit.app.get_app().next_update_async()
 
-        self._lidar_data_prev = copy.deepcopy(self._lidar_data)
-        self._lidar_data = None
+    #     self._lidar_data_prev = copy.deepcopy(self._lidar_data)
+    #     self._lidar_data = None
 
-        omni.kit.commands.execute(
-            "ChangeProperty",
-            prop_path=Sdf.Path("/Carter/chassis_link/carter_lidar.rotationRate"),
-            value=201.0,
-            prev=None,
-        )
+    #     omni.kit.commands.execute(
+    #         "ChangeProperty",
+    #         prop_path=Sdf.Path("/Carter/chassis_link/carter_lidar.rotationRate"),
+    #         value=201.0,
+    #         prev=None,
+    #     )
 
-        # 201.0 Hz Lidar rotation
-        self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
+    #     # 201.0 Hz Lidar rotation
+    #     self._timeline.play()
+    #     await omni.kit.app.get_app().next_update_async()
+    #     await omni.kit.app.get_app().next_update_async()
 
-        await simulate_async(1, 60, spin)
+    #     await simulate_async(1, 60, spin)
 
-        standard_checks()
+    #     standard_checks()
 
-        self.assertGreater(self._lidar_data.header.stamp.sec, self._lidar_data_prev.header.stamp.sec)
-        self.assertEqual(len(self._lidar_data.intensities), len(self._lidar_data_prev.intensities))
-        self.assertEqual(self._lidar_data.intensities, self._lidar_data_prev.intensities)
+    #     self.assertGreater(self._lidar_data.header.stamp.sec, self._lidar_data_prev.header.stamp.sec)
+    #     self.assertEqual(len(self._lidar_data.intensities), len(self._lidar_data_prev.intensities))
+    #     self.assertEqual(self._lidar_data.intensities, self._lidar_data_prev.intensities)
 
-        self.assertGreater(self._lidar_data_prev.time_increment, self._lidar_data.time_increment)
+    #     self.assertGreater(self._lidar_data_prev.time_increment, self._lidar_data.time_increment)
 
-        self._timeline.stop()
-        spin()
+    #     self._timeline.stop()
+    #     spin()
 
-        pass
+    #     pass
 
     async def test_lidar_buffer(self):
         # Test Lidar buffer with replicator activated
