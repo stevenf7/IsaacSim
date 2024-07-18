@@ -12,7 +12,4 @@
 import sys
 
 from .test_benchmark_camera import *
-from .test_benchmark_physx_lidar import *
-from .test_benchmark_robots_o3dyn import *
 from .test_benchmark_ros_camera import *
-from .test_benchmark_rtx_radar import *

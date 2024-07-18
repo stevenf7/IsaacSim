@@ -64,16 +64,19 @@ class OgnIsaacPrintRTXSensorInfo:
         print(f"    elevation:    {gmo_data.y[gmo_data.numElements - 1]}")
         print(f"    range:        {gmo_data.z[gmo_data.numElements - 1]}")
         print(f"    intensity:    {gmo_data.scalar[gmo_data.numElements - 1]}")
-        print(f"Prim <-> Material mapping:")
-        material_mapping = {}
-        for i in range(gmo_data.numElements):
-            objId = gmo_data.objId[i]
-            matId = gmo_data.matId[i]
-            if gmo_data.z[i] > 0.0 and gmo_data.scalar[i] > 0.0:
-                if objId not in material_mapping:
-                    material_mapping[objId] = matId
 
-        for obj in material_mapping:
-            prim_path = object_id_to_prim_path(obj)
-            print(f"objectId {obj} with prim path {prim_path} has material ID {material_mapping[obj]}.")
+        # NOTE: Material mapping only valid for Lidar data currently
+        if gmo_data.auxType == gmo.AuxType.LIDAR:
+            print(f"Prim <-> Material mapping:")
+            material_mapping = {}
+            for i in range(gmo_data.numElements):
+                objId = gmo_data.objId[i]
+                matId = gmo_data.matId[i]
+                if gmo_data.z[i] > 0.0 and gmo_data.scalar[i] > 0.0:
+                    if objId not in material_mapping:
+                        material_mapping[objId] = matId
+
+            for obj in material_mapping:
+                prim_path = object_id_to_prim_path(obj)
+                print(f"objectId {obj} with prim path {prim_path} has material ID {material_mapping[obj]}.")
         return True
