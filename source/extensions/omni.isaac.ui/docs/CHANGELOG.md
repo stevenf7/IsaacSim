@@ -1,4 +1,8 @@
 # Changelog
+## [0.16.0] - 2024-07-18
+### Added
+- Added ability to trigger Button and StateButton clicks programmatically.
+
 ## [0.15.2] - 2024-07-12
 ### Fixed
 - Fixed scrolling window set_num_lines() function argument type.

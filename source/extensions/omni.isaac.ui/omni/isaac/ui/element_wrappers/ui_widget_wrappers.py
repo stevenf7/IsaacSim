@@ -851,6 +851,10 @@ class Button(UIWidgetWrapper):
         """
         self._on_click_fn = on_click_fn
 
+    def trigger_click(self):
+        """Trigger identical behavior as if the user pressed the Button through the UI."""
+        self._on_clicked_fn_wrapper()
+
     def _on_clicked_fn_wrapper(self):
         if self._on_click_fn is not None:
             self._on_click_fn()
@@ -965,6 +969,38 @@ class StateButton(UIWidgetWrapper):
                 Function should take no arguments.  The return value will not be used.
         """
         self._on_b_click_fn = on_b_click_fn
+
+    def is_in_a_state(self) -> bool:
+        """Return True if the StateButton is in the a state.  False implies that it is in the b state.
+
+        Returns:
+            bool: True when the StateButton is in the b state.
+        """
+        if self.state_button.text == self.a_text:
+            return True
+
+    def trigger_click_if_a_state(self):
+        """
+        If in the A state, trigger button to execute the same behavior as if it were clicked by the
+        user.  If the button is in the B state, nothing will happen.
+        """
+        if self.is_in_a_state():
+            self.state_button.text = self.b_text
+            self._on_clicked_fn_wrapper(True)
+
+    def trigger_click_if_b_state(self):
+        """
+        If in the B state, trigger button to execute the same behavior as if it were clicked by the
+        user.  If the button is in the A state, nothing will happen.  This is distinct from calling
+        reset() because the user on_b_click_fn() will be triggered.
+        """
+        if not self.is_in_a_state():
+            self.state_button.text = self.a_text
+            self._on_clicked_fn_wrapper(False)
+
+    def get_current_text(self) -> str:
+        """Get the current text on the button."""
+        return self.state_button.text
 
     def reset(self):
         """Reset StateButton to state A."""
