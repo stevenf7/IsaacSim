@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.1] - 2024-07-17
+### Fixed
+- Examples world instances clean up at beginning of every example
+
 ## [2.2.0] - 2024-07-10
 ### Removed
 - Deprecated omni.isaac.dofbot and removed its usage.
