@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.23.0] - 2024-07-15
+### Changed
+- Remove additional redundant benchmarks now covered by standalone scripts
+
 ## [0.22.0] - 2024-05-01
 ### Changed
 - Remove redundant benchmarks that are already covered by standalone scripts

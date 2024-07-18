@@ -536,6 +536,10 @@ function create_tests()
         python_sample_test("tests-standalone_benchmarks-benchmark_sdg_simple", "standalone_examples/benchmarks/benchmark_sdg.py", "--num-frames 1 --num-cameras 2 --resolution 1280 720 --asset-count 10 --annotators rgb distance_to_camera --disable-viewport-rendering --delete-data-when-done --headless --print-results")
         python_sample_test("tests-standalone_benchmarks-benchmark_sdg_advanced", "standalone_examples/benchmarks/benchmark_sdg.py", "--num-frames 1 --num-cameras 2 --resolution 1280 720 --asset-count 10 --annotators all --disable-viewport-rendering --delete-data-when-done --headless --print-results")
         python_sample_test("tests-standalone_benchmarks-benchmark_robots_ur10", "standalone_examples/benchmarks/benchmark_robots_ur10.py", "--num-frames 1 -num-robots 10")
+        python_sample_test("tests-standalone_benchmarks-benchmark_rtx_radar", "standalone_examples/benchmarks/benchmark_rtx_radar.py", "--num-frames 1 -num-sensors 4")
+        python_sample_test("tests-standalone_benchmarks-benchmark_physx_lidar", "standalone_examples/benchmarks/benchmark_physx_lidar.py", "--num-frames 1 -num-sensors 4")
+        python_sample_test("tests-standalone_benchmarks-benchmark_robots_o3dyn", "standalone_examples/benchmarks/benchmark_robots_o3dyn.py", "--num-frames 1 -num-robots 2")
+
 
     if os.target() == "linux" then
     group "docker_tests"

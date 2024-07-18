@@ -1,5 +1,9 @@
 # Changelog
 
+## [12.7.1] - 2024-07-16
+### Changed
+- OgnIsaacPrintRTXSensorInfo - adds check for auxType to avoid non-lidar data error messages in material mapping
+
 ## [12.7.0] - 2024-07-12
 ### Fixed
 - OgnIsaacComputeRTXLidarFlatScan publishes timestamp of first beam in scan
