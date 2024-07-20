@@ -2,8 +2,7 @@
 
 ## [1.20.1] - 2024-07-12
 ### Removed
-- IsaacReadSimulationTime removed from RTXLidarROS2PublishFlatScan, timestamp now comes from
-  OgnIsaacComputeRTXLidarFlatScan.
+- IsaacReadSimulationTime removed from RTXLidarROS2PublishFlatScan, timestamp now comes from OgnIsaacComputeRTXLidarFlatScan.
 
 ## [1.20.0] - 2024-07-05
 ### Changed
