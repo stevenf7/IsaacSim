@@ -1,6 +1,6 @@
 # Changelog
 
-## [3.18.1] - 2024-07-17
+## [3.18.1] - 2024-07-18
 ### Fixed
 - Fixed ArticulationController to handle joint indices along with Nan values in the target actions. 
 

@@ -128,7 +128,7 @@ Quintic Polynomial
 |
 
 Quintic Polynomials Planner
-*************************
+***************************
 
 .. autoclass:: omni.isaac.wheeled_robots.controllers.quintic_polynomials_planner
     :inherited-members:
@@ -160,7 +160,5 @@ PID Control
 
 |
 
-Omnigraph Nodes
-=======================
 
 .. include::  ogn.rst

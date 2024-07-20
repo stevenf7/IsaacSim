@@ -500,7 +500,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         required=False,
         default=False,
         action="store_true",
-        help="Validate all changelogs",
+        help="Validate all changelogs and exit",
     )
     parser.add_argument(
         "--extscache",
@@ -513,7 +513,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         "-r",
         "--range",
         dest="range",
-        required=True,
+        required=False,
         help='Single (from) or pair (from..to) of commits/tags/dates prefixed with "commit:", "tag:", or "date:" respectively',
     )
 
@@ -521,6 +521,17 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         # tool_config = config.get("repo_build", {})
         # print(config)
         tool_config = config["repo_generate_changelog"]
+        home_path = tool_config["home_path"]
+        extensions = sorted(os.listdir(home_path))
+
+        if options.validate:
+            for e in extensions:
+                if e not in ["omni.isaac.internal_tools"]:
+                    name = e.split("\\")[-1]
+                    changelog_path = os.path.join(home_path, e, "docs", "CHANGELOG.md")
+                    config_path = os.path.join(home_path, e, "config", "extension.toml")
+                    validate(changelog_path, config_path)
+            exit()
 
         # get range
         range = get_range(options.range)
@@ -528,10 +539,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         if options.extscache:
             omni.repo.man.print_log(f"Report (extscache): {range}", logging.INFO)
             generate_extscache_diff_report(tool_config["extscache_paths"], range)
-            exit()
 
-        home_path = tool_config["home_path"]
-        extensions = sorted(os.listdir(home_path))
         omni.repo.man.print_log(f"Report (extensions): {range}", logging.INFO)
 
         for e in extensions:
@@ -540,9 +548,6 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
                 # print(name)
                 changelog_path = os.path.join(home_path, e, "docs", "CHANGELOG.md")
                 config_path = os.path.join(home_path, e, "config", "extension.toml")
-                if options.validate:
-                    validate(changelog_path, config_path)
-
                 generate_extension_diff_report(
                     name,
                     changelog_path,

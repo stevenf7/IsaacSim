@@ -31,7 +31,7 @@ def parse_ogn(ogn_doc_file, ogn_src_file):
         comment = "\n    {}".format(ogn_src_file[nodename]["$comment"])
     else:
         comment = ""
-    node_markup = "-" * len(nodename)
+    node_markup = "*" * len(nodename)
     ogn_doc_file.write("\n\n\n{}\n{}\n    {}\n{}\n".format(nodename, node_markup, node_description, comment))
 
     if "inputs" in ogn_src_file[nodename].keys():
@@ -135,6 +135,7 @@ def compile_ogn_doc(ext_dir):
     ogn_doc_path = ext_dir + "/docs/ogn.rst"  # default ogn docs location and file name
     ogn_rst = open(ogn_doc_path, "w")  # will overwrite any existing ogn.rst file
     ogn_list = locate_ogn(ext_dir)  # find all the ogn files
+    ogn_rst.write("OmniGraph Nodes\n================\n")
     for file in ogn_list:  # parse them and write
         parse_ogn(ogn_rst, file)
     ogn_rst.close()
