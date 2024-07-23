@@ -72,7 +72,7 @@ vscode.python_env.PYTHONPATH= [
   "$root/_build/$platform/$config/kit/plugins/bindings-python/",
   "$root/_build/$platform/$config/exts/omni.isaac.lula/pip_prebundle",
   "$root/_build/$platform/$config/exts/omni.exporter.urdf/pip_prebundle",
-  "$root/_build/$platform/$config/kit/exts/omni.kit.pip_archive/pip_prebundle",
+  "$root/_build/$platform/$config/extscache/omni.kit.pip_archive*/pip_prebundle",
   "$root/_build/$platform/$config/exts/omni.isaac.core_archive/pip_prebundle",
   "$root/_build/$platform/$config/exts/omni.isaac.ml_archive/pip_prebundle",
   "$root/_build/$platform/$config/exts/omni.pip.compute/pip_prebundle",
@@ -157,6 +157,7 @@ apps = [
 # Registries to use
 registries = [
     { name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default" },
+    { name = "kit/sdk", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/sdk/${kit_version_short}/${kit_git_hash}" },
 ]
 
 # Link selected extensions into a separate folder without a version. Used for build-time referencing extensions.
@@ -164,6 +165,10 @@ registries = [
 links.path = "${root}/_build/${platform}/${config}/extsbuild"
 links.exts.include = [
     "omni.sensors.nv.*",
+    "omni.usd.core",
+    "omni.syntheticdata",
+    "usdrt.scenegraph",
+    "omni.graph.tools",
 ]
 
 

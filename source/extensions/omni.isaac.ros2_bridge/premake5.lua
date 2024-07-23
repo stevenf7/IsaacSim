@@ -55,7 +55,7 @@ project_with_location("omni.isaac.ros2_bridge.foxy")
     }
     libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-        "%{kit_sdk_bin_dir}/exts/omni.usd.core/bin",
+        bin_dir.."/extsbuild/omni.usd.core/bin",
         "%{root}/_build/target-deps/nv_ros2/lib",
     }
     links{
@@ -115,7 +115,7 @@ project_with_location("omni.isaac.ros2_bridge.humble")
     }
     libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-        "%{kit_sdk_bin_dir}/exts/omni.usd.core/bin",
+        bin_dir.."/extsbuild/omni.usd.core/bin",
         "%{root}/_build/target-deps/nv_ros2_humble/lib",
     }
     links{
@@ -192,8 +192,8 @@ project_ext_plugin(ext, "omni.isaac.ros2_bridge.plugin")
         "%{root}/_build/target-deps/python/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/omni_physics/%{config}/include",
-        "%{kit_sdk_bin_dir}/exts/omni.syntheticdata/include",
-        "%{kit_sdk_bin_dir}/exts/usdrt.scenegraph/include",
+        bin_dir.."/extsbuild/omni.syntheticdata/include",
+        bin_dir.."/extsbuild/usdrt.scenegraph/include",
         "%{root}/_build/target-deps/omni_client_library/include",
         "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/include",
         "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/RangeSensorSchema/include",
@@ -208,7 +208,7 @@ project_ext_plugin(ext, "omni.isaac.ros2_bridge.plugin")
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/usd_audio_schema/%{cfg.buildcfg}/lib",
-        "%{kit_sdk_bin_dir}/exts/omni.usd.core/bin",
+        bin_dir.."/extsbuild/omni.usd.core/bin",
         "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/lib",
     }
     links {

@@ -20,7 +20,7 @@ project_with_location("omni.isaac.debug_draw.primitive_drawing")
     }
     libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-        "%{kit_sdk_bin_dir}/exts/omni.usd.core/bin"
+        bin_dir.."/extsbuild/omni.usd.core/bin"
     }
     links{"sdf", "omni.usd"}
 
@@ -59,7 +59,7 @@ project_ext_plugin(ext, "omni.isaac.debug_draw.plugin")
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/omni_client_library/include",
-        "%{kit_sdk_bin_dir}/exts/usdrt.scenegraph/include",
+        bin_dir.."/extsbuild/usdrt.scenegraph/include",
         "%{root}/_build/target-deps/python/include",
         "%{kit_sdk_bin_dir}/dev/fabric/include/",
         "%{root}/source/extensions/omni.isaac.dynamic_control/include",
@@ -67,7 +67,7 @@ project_ext_plugin(ext, "omni.isaac.debug_draw.plugin")
     }
     libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-        "%{kit_sdk_bin_dir}/exts/omni.usd.core/bin"
+        bin_dir.."/extsbuild/omni.usd.core/bin"
     }
 
     if os.target() == "linux" then

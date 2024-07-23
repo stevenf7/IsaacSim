@@ -21,7 +21,7 @@ project_ext_plugin(ext, "omni.isaac.dynamic_control.plugin")
      libdirs {
         target_deps.."/nv_usd/%{cfg.buildcfg}/lib",
         target_deps.."/usd_ext_physics/%{cfg.buildcfg}/lib",
-        "%{kit_sdk_bin_dir}/exts/omni.usd.core/bin"
+        bin_dir.."/extsbuild/omni.usd.core/bin"
     }
 
     links {"gf", "sdf", "usd", "usdGeom","usdUtils", "tf", "arch",  "omni.usd"}
