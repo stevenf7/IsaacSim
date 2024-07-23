@@ -24,7 +24,7 @@ project_ext_plugin(ext, "omni.isaac.sensor.plugin")
         targetDepsDir.."/usd_ext_physics/%{cfg.buildcfg}/include",
         targetDepsDir.."/omni_physics/%{config}/include",
         targetDepsDir.."/rtx_plugins/include",
-        "%{kit_sdk_bin_dir}/exts/usdrt.scenegraph/include",
+        bin_dir.."/extsbuild/usdrt.scenegraph/include",
         "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/include",
         targetDepsDir.."/omni_client_library/include",
         targetDepsDir.."/python/include",
@@ -39,7 +39,7 @@ project_ext_plugin(ext, "omni.isaac.sensor.plugin")
         targetDepsDir.."/nv_usd/%{cfg.buildcfg}/lib",
         targetDepsDir.."/usd_ext_physics/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/lib",
-        "%{kit_sdk_bin_dir}/exts/omni.usd.core/bin"
+        bin_dir.."/extsbuild/omni.usd.core/bin"
     }
 
     links {"carb", "gf", "tf", "sdf", "usd", "usdGeom","usdUtils", "physxSchema","usdPhysics", "physicsSchemaTools", "omni.usd", "isaacSensorSchema", "arch", "vt"}
