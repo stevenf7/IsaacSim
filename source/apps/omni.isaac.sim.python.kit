@@ -141,6 +141,9 @@ app.runLoops.rendering_0.fillResolution = false
 
 exts."omni.kit.test".includeTests = [ "*isaac*" ]
 
+# Revert to old render product behavior
+exts."omni.kit.hydra_texture".renderProduct.path.prefix = "RenderProduct_"
+
 [settings.app.python]
 # These disable the kit app from also printing out python output, which gets confusing
 interceptSysStdOutput = false

@@ -98,13 +98,15 @@ function workspace_kit_settings()
         kit_sdk.."/include",
         kit_sdk.."/_build/target-deps/",
         kit_dev_dir.."/include",
+        targetDepsDir.."/gsl/include",
     }
 
     -- Carbonite carb lib
     libdirs {
         carbSDKLibs,
         carbSDKLibs.."/scripting-python-3.10",
-        "%{kit_sdk}/plugins"
+        "%{kit_sdk}/plugins",
+        targetDepsDir.."/nv_usd/%{cfg.buildcfg}/lib",
     }
 end
 

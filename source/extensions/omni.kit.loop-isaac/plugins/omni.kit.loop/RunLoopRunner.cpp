@@ -187,8 +187,8 @@ public:
     std::string name;
     RunLoop* loop = nullptr;
 
-    std::atomic<bool> quit = { false };
-    std::atomic<bool> running = { false };
+    std::atomic<bool> quit{ false };
+    std::atomic<bool> running{ false };
 
     // Rate limiting:
     bool rateLimitEnabled = false;
@@ -213,22 +213,24 @@ public:
 
     ~RunLoopThread()
     {
-        if (m_thread)
-            m_thread->join();
+        if (m_thread.joinable())
+            m_thread.join();
+    }
+
+    void updateLoop()
+    {
+        running = true;
+        while (!quit)
+        {
+            update();
+        }
+        running = false;
     }
 
     void run()
     {
         if (!mainThread && loop)
-            m_thread.reset(new std::thread{ [this]
-                                            {
-                                                this->running = true;
-                                                while (!quit)
-                                                {
-                                                    this->update();
-                                                }
-                                                this->running = false;
-                                            } });
+            m_thread = std::thread(&RunLoopThread::updateLoop, this);
     }
 
     void update()
@@ -336,7 +338,7 @@ public:
                 }
                 else
                 {
-                    std::this_thread::sleep_until(waitUntil);
+                    carb::cpp::this_thread::sleep_until(waitUntil);
                 }
             }
         }
@@ -439,7 +441,7 @@ private:
 
     high_resolution_clock::time_point m_lastUpdateTime;
 
-    std::unique_ptr<std::thread> m_thread;
+    std::thread m_thread;
     std::string m_minLoopTimeString;
     std::string m_rateLimitEnabledString;
     std::string m_rateLimitUseBusyLoopString;
@@ -481,14 +483,15 @@ private:
 
     PrecisionSleep m_windowsSleep;
 };
+
 // public so we can access it in setters
-std::map<std::string, std::unique_ptr<RunLoopThread>> m_runLoops;
+std::map<std::string, RunLoopThread> m_runLoops;
 
 class RunLoopRunnerImpl : public omni::kit::IRunLoopRunner
 {
-public:
     CARB_IOBJECT_IMPL
 
+public:
     virtual void startup() override
     {
         std::unique_lock<std::mutex> lock(m_mutex);
@@ -512,7 +515,7 @@ public:
         }
 
         for (auto& kv : m_runLoops)
-            kv.second->run();
+            kv.second.run();
 
         m_started = true;
     }
@@ -544,10 +547,10 @@ public:
             auto it = m_runLoops.find(name);
             if (it != m_runLoops.end())
             {
-                if (it->second->loop == loop)
+                if (it->second.loop == loop)
                 {
                     bRequestedQuit = true;
-                    it->second->quit = true;
+                    it->second.quit = true;
                 }
             }
         }
@@ -555,7 +558,7 @@ public:
         if (bRequestedQuit && bBlock)
         {
             static constexpr uint32_t kPollLimit = 100;
-            static constexpr uint32_t kSleepTimeMs = 50;
+            static constexpr std::chrono::milliseconds kSleepTimeMs(50);
 
             bool bRunning;
             uint32_t i = 0;
@@ -566,10 +569,10 @@ public:
                 auto it = m_runLoops.find(name);
                 if (it != m_runLoops.end())
                 {
-                    if (it->second->loop == loop && it->second->running)
+                    if (it->second.loop == loop && it->second.running)
                     {
                         bRunning = true;
-                        std::this_thread::sleep_for(std::chrono::milliseconds(kSleepTimeMs));
+                        carb::cpp::this_thread::sleep_for(kSleepTimeMs);
                     }
                 }
             } while (bRunning && ++i < kPollLimit);
@@ -593,9 +596,49 @@ public:
     {
         for (auto& l : m_runLoops)
         {
-            l.second->quit = true;
+            l.second.quit = true;
         }
         m_runLoops.clear();
+    }
+
+    void quickShutdown()
+    {
+        // Stop the threads
+        std::unique_lock lock(m_mutex);
+        for (auto& loop : m_runLoops)
+        {
+            if (!loop.second.mainThread)
+                loop.second.quit = true;
+        }
+
+        // Wait up to 100 ms for all threads to "exit". We cannot join these threads because the thread calling
+        // shutdown may have the UsdMutex locked and the run loop threads may be waiting on the UsdMutex.
+        constexpr static std::chrono::milliseconds kQuitDuration(100);
+        using Clock = std::chrono::steady_clock;
+        auto const kQuitTime = Clock::now() + kQuitDuration;
+
+        bool allDone;
+        do
+        {
+            allDone = true;
+            for (auto& loop : m_runLoops)
+            {
+                if (loop.second.running && !loop.second.mainThread)
+                    allDone = false;
+            }
+
+            if (allDone)
+                break;
+
+            lock.unlock();
+            std::this_thread::yield();
+            lock.lock();
+        } while (Clock::now() < kQuitTime);
+
+        if (!allDone)
+        {
+            CARB_LOG_INFO("RunLoopRunner: threads failed to stop in %" PRId64 " ms", int64_t(kQuitDuration.count()));
+        }
     }
 
 private:
@@ -606,8 +649,8 @@ private:
 
         auto it = m_runLoops.find(name);
         if (it == m_runLoops.end())
-            it = m_runLoops.insert({ name, std::make_unique<RunLoopThread>(name) }).first;
-        return it->second.get();
+            it = m_runLoops.emplace(std::piecewise_construct, std::forward_as_tuple(name), std::forward_as_tuple(name)).first;
+        return std::addressof(it->second);
     }
 
     bool m_started = false;
@@ -624,11 +667,11 @@ static void SetManualStepSize(double dt, std::string name = "")
         if (name.compare("") != 0)
         {
             if (l.first.compare(name) == 0)
-                l.second->setManualStepSize(dt);
+                l.second.setManualStepSize(dt);
         }
         else
         {
-            l.second->setManualStepSize(dt);
+            l.second.setManualStepSize(dt);
         }
     }
 }
@@ -639,14 +682,15 @@ static void SetManualMode(bool enabled, std::string name = "")
         if (name.compare("") != 0)
         {
             if (l.first.compare(name) == 0)
-                l.second->setManualMode(enabled);
+                l.second.setManualMode(enabled);
         }
         else
         {
-            l.second->setManualMode(enabled);
+            l.second.setManualMode(enabled);
         }
     }
 }
+
 
 class IExtensionPluginImpl : public ext::IExt
 {
@@ -655,20 +699,23 @@ public:
     {
         carb::Framework* f = carb::getFramework();
         m_app = f->tryAcquireInterface<omni::kit::IApp>();
-        m_runner = new RunLoopRunnerImpl();
-        m_app->setRunLoopRunner(m_runner);
+        CARB_ASSERT(!s_runner);
+        s_runner = new RunLoopRunnerImpl();
+        m_app->setRunLoopRunner(s_runner);
     }
 
     void onShutdown() override
     {
         m_app->setRunLoopRunner(nullptr);
-        delete m_runner;
+        delete std::exchange(s_runner, nullptr);
     }
 
+    static inline RunLoopRunnerImpl* s_runner = nullptr;
+
 private:
-    RunLoopRunnerImpl* m_runner;
     omni::kit::IApp* m_app;
 };
+
 }
 }
 
@@ -684,4 +731,12 @@ void fillInterface(omni::kit::IRunLoopRunnerImpl& iface)
 
 void fillInterface(omni::kit::IExtensionPluginImpl& iface)
 {
+}
+
+CARB_EXPORT void carbOnPluginQuickShutdown()
+{
+    if (auto runner = omni::kit::IExtensionPluginImpl::s_runner)
+    {
+        runner->quickShutdown();
+    }
 }

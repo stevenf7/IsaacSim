@@ -31,6 +31,8 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         options.build_verbose = False
         options.jobs = REPO_BUILD_DEFAULT_JOBS
         options.compilation_cores = 1
+        options.mem_per_core = 4
+        options.max_cores = 32
         settings = load_settings_from_config(config, options)
         repo_folders = get_repo_paths()
 
