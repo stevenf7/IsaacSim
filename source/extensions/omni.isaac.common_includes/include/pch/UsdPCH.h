@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2019-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -6,7 +6,6 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
-
 // PCH files require include guards instead of #pragma once directives because of an oustanding bug in g++:
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64117#c0
 #ifndef USD_PCH_H
@@ -25,6 +24,7 @@
 #    pragma warning(disable : 4305) // argument truncation from double to float
 #    pragma warning(disable : 4800) // int to bool
 #    pragma warning(disable : 4996) // call to std::copy with parameters that may be unsafe
+#    pragma warning(disable : 4005) // NOMINMAX macro redefinition
 #    define NOMINMAX // Make sure nobody #defines min or max
 #    include <Windows.h> // Include this here so we can curate
 #    undef small // defined in rpcndr.h
@@ -111,6 +111,7 @@
 #include <pxr/usd/sdf/relationshipSpec.h>
 #include <pxr/usd/sdr/registry.h>
 #include <pxr/usd/sdr/shaderNode.h>
+#include <pxr/usd/sdr/shaderProperty.h>
 #include <pxr/usd/usd/attribute.h>
 #include <pxr/usd/usd/editContext.h>
 #include <pxr/usd/usd/modelAPI.h>

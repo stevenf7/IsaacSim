@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -7,6 +7,7 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 #include <carb/dictionary/IDictionary.h>
+#include <carb/events/EventsUtils.h>
 #include <carb/logging/Log.h>
 #include <carb/profiler/Profile.h>
 #include <carb/settings/ISettings.h>

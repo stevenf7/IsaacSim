@@ -53,6 +53,9 @@ persistent.omnigraph.disablePrimNodes = true
 persistent.physics.visualizationDisplayJoints = false
 persistent.omni.replicator.captureOnPlay = true
 
+# Revert to old render product behavior
+exts."omni.kit.hydra_texture".renderProduct.path.prefix = "RenderProduct_"
+
 # Explicitly enable Vulkan (on by default on Linux, off by default on Windows)
 app.vulkan = true
 
