@@ -1002,6 +1002,7 @@ deps_for_isaac = [
   "omni.usd.metrics.assembler.physics-106.0.2",
   "omni.kit.gfn-106.0.4",
   "omni.extended.materials-105.0.9",
+  "omni.rtx.shadercache.vulkan"
 ]
 
 deps_for_testing = []
