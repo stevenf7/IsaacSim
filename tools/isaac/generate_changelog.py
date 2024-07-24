@@ -227,18 +227,19 @@ def get_extension_diff_data(
 
 
 def generate_extension_diff_report(
-    name: str, changelog_path: str, old_date: datetime.date, new_date: datetime.date
+    name: str, changelog_path: str, old_date: datetime.date, new_date: datetime.date, format_: str
 ) -> List[Tuple[str, List[str]]]:
     """
     generate a changelog for an extension by reading a range of versions
     from it's CHANGELOG.md
     """
+    report = ""
     results, is_new = get_extension_diff_data(changelog_path, old_date, new_date)
     if len(results) > 0:
-        print(f"\n- **{name}**")
+        report += f"\n- **{name}**"
     all_entries = {}
     if is_new:
-        print("\n    - New Extension")
+        report += f"\n  - New extension" if format_ == "md" else "\n\n    - New extension"
         return
     for entry in results:
         for k, values in entry[1].items():
@@ -246,21 +247,17 @@ def generate_extension_diff_report(
                 all_entries[k] = []
             for v in values:
                 all_entries[k].append(v)
-        # print("\t", entry[0])
-        # for k, values in entry[1].items():
-        #     if(len(values)>0):
-        #         print("\t\t", k)
-        #         for change in values:
-        #             print("\t\t\t", change)
-        # print("\t", entry[0], "".join(entry[1]))
     for k, values in all_entries.items():
         if len(values) > 0:
-            print(f"\n    - {k}\n")
+            report += f"\n  - {k}" if format_ == "md" else f"\n\n    - {k}"
             for change in values:
-                print("        - ", change)
+                report += f"\n    - {change}" if format_ == "md" else f"\n\n      - {change}"
+    if report:
+        print(report)
 
 
-def generate_extscache_diff_report(extscache_paths: List[str], range: Dict):
+def generate_extscache_diff_report(extscache_paths: List[str], range: Dict, format_: str):
+    """Generate extscache report from .kit files"""
     for path in extscache_paths:
         try:
             cmd = ["git", "diff", "-U0", range[0]["commit"], range[1]["commit"], "--", path]
@@ -320,7 +317,7 @@ def generate_extscache_diff_report(extscache_paths: List[str], range: Dict):
 
         # kit
         if data["kit"]:
-            report += "# Kit SDK Version\n"
+            report += "# Kit SDK Version\n" if format_ == "md" else "Kit SDK Version\n===============\n"
             v = data["kit"]
             # changed
             if "+" in list(v.keys()) and "-" in list(v.keys()):
@@ -331,6 +328,13 @@ def generate_extscache_diff_report(extscache_paths: List[str], range: Dict):
             # removed
             elif "-" in list(v.keys()):
                 report += f"\nRemoved: {v['-']}\n"
+
+        if data["dependencies"] or data["exact_version_dependencies"] or data["version_lock_dependencies"]:
+            report += (
+                "\n# Cached extensions (Kit)\n"
+                if format_ == "md"
+                else "\nCached extensions (Kit)\n=======================\n"
+            )
 
         # dependencies
         if data["dependencies"]:
@@ -349,17 +353,17 @@ def generate_extscache_diff_report(extscache_paths: List[str], range: Dict):
                 elif "-" in list(v.keys()):
                     extension_removed.append(f"{k}: {v['-']}")
 
-            report += "\n# Dependencies\n"
+            report += "\n## Dependencies\n" if format_ == "md" else "\nDependencies\n------------\n"
             if len(extension_added):
-                report += "\n### Added\n"
+                report += "\n### Added\n" if format_ == "md" else "\nAdded\n^^^^^\n"
                 for extension in extension_added:
                     report += f"- {extension}\n"
             if len(extension_removed):
-                report += "\n### Removed\n"
+                report += "\n### Removed\n" if format_ == "md" else "\nRemoved\n^^^^^^^\n"
                 for extension in extension_removed:
                     report += f"- {extension}\n"
             if len(extension_changed):
-                report += "\n### Changed\n"
+                report += "\n### Changed\n" if format_ == "md" else "\nChanged\n^^^^^^^\n"
                 for extension in extension_changed:
                     report += f"- {extension}\n"
 
@@ -380,21 +384,25 @@ def generate_extscache_diff_report(extscache_paths: List[str], range: Dict):
                 elif "-" in list(v.keys()):
                     extension_removed.append(f"{k}: {v['-']}")
 
-            report += "\n# Exact Version Dependencies\n"
+            report += (
+                "\n## Exact Version Dependencies\n"
+                if format_ == "md"
+                else "\nExact Version Dependencies\n--------------------------\n"
+            )
             if len(extension_added):
-                report += "\n### Added\n"
+                report += "\n### Added\n" if format_ == "md" else "\nAdded\n^^^^^\n"
                 for extension in extension_added:
                     report += f"- {extension}\n"
             if len(extension_removed):
-                report += "\n### Removed\n"
+                report += "\n### Removed\n" if format_ == "md" else "\nRemoved\n^^^^^^^\n"
                 for extension in extension_removed:
                     report += f"- {extension}\n"
             if len(extension_changed):
-                report += "\n### Changed\n"
+                report += "\n### Changed\n" if format_ == "md" else "\nChanged\n^^^^^^^\n"
                 for extension in extension_changed:
                     report += f"- {extension}\n"
 
-        # exact version dependencies
+        # version lock dependencies
         if data["version_lock_dependencies"]:
             extension_added = []
             extension_changed = []
@@ -411,17 +419,21 @@ def generate_extscache_diff_report(extscache_paths: List[str], range: Dict):
                 elif "-" in list(v.keys()):
                     extension_removed.append(f"{k}: {v['-']}")
 
-            report += "\n# Version Lock for all Dependencies\n"
+            report += (
+                "\n## Version Lock for all Dependencies\n"
+                if format_ == "md"
+                else "\nVersion Lock for all Dependencies\n---------------------------------\n"
+            )
             if len(extension_added):
-                report += "\n### Added\n"
+                report += "\n### Added\n" if format_ == "md" else "\nAdded\n^^^^^\n"
                 for extension in extension_added:
                     report += f"- {extension}\n"
             if len(extension_removed):
-                report += "\n### Removed\n"
+                report += "\n### Removed\n" if format_ == "md" else "\nRemoved\n^^^^^^^\n"
                 for extension in extension_removed:
                     report += f"- {extension}\n"
             if len(extension_changed):
-                report += "\n### Changed\n"
+                report += "\n### Changed\n" if format_ == "md" else "\nChanged\n^^^^^^^\n"
                 for extension in extension_changed:
                     report += f"- {extension}\n"
 
@@ -483,7 +495,7 @@ def get_range(range: str):
             f"Invalid range format ({token}). Supported format is type:value (e.g.: commit:fc1ec839, tag:1.0.0, date:2024-01-31)",
             logging.ERROR,
         )
-        return None
+        exit()
 
     range = range.split("..")
     return (
@@ -516,6 +528,13 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         required=False,
         help='Single (from) or pair (from..to) of commits/tags/dates prefixed with "commit:", "tag:", or "date:" respectively',
     )
+    parser.add_argument(
+        "--format",
+        type=str,
+        default="rst",
+        choices=["rst", "md"],
+        help="Output format: reStructuredText (rst) or Markdown (md)",
+    )
 
     def run_repo_tool(options: Dict, config: Dict):
         # tool_config = config.get("repo_build", {})
@@ -524,9 +543,10 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         home_path = tool_config["home_path"]
         extensions = sorted(os.listdir(home_path))
 
+        # validate CHANGELOGs
         if options.validate:
             for e in extensions:
-                if e not in ["omni.isaac.internal_tools"]:
+                if e not in tool_config["exts_exclude"]:
                     name = e.split("\\")[-1]
                     changelog_path = os.path.join(home_path, e, "docs", "CHANGELOG.md")
                     config_path = os.path.join(home_path, e, "config", "extension.toml")
@@ -534,18 +554,22 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
             exit()
 
         # get range
+        if options.range is None:
+            omni.repo.man.print_log(f"Missing --range argument", logging.ERROR)
+            parser.print_help()
+            exit()
         range = get_range(options.range)
+        omni.repo.man.print_log(f"Report range: {range}", logging.INFO)
 
+        # generate extscache report
         if options.extscache:
-            omni.repo.man.print_log(f"Report (extscache): {range}", logging.INFO)
-            generate_extscache_diff_report(tool_config["extscache_paths"], range)
+            generate_extscache_diff_report(tool_config["extscache_paths"], range, options.format)
 
-        omni.repo.man.print_log(f"Report (extensions): {range}", logging.INFO)
-
+        # generate extensions report
+        print("# Extensions" if options.format == "md" else "Extensions\n==========")
         for e in extensions:
-            if e not in ["omni.isaac.internal_tools"]:
+            if e not in tool_config["exts_exclude"]:
                 name = e.split("\\")[-1]
-                # print(name)
                 changelog_path = os.path.join(home_path, e, "docs", "CHANGELOG.md")
                 config_path = os.path.join(home_path, e, "config", "extension.toml")
                 generate_extension_diff_report(
@@ -553,6 +577,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
                     changelog_path,
                     datetime.date.fromisoformat(range[0]["date"]),
                     datetime.date.fromisoformat(range[1]["date"]),
+                    options.format,
                 )
 
     return run_repo_tool
