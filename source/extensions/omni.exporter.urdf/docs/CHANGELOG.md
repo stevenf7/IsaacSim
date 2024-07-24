@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1] - 2024-07-23
+
+### Fixed
+
+- removed unnecessary dependencies
+
+
 ## [0.3.0] - 2024-04-26
 
 ### Fixed

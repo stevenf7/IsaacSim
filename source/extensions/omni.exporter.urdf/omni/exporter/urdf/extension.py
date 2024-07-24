@@ -13,8 +13,6 @@ import gc
 import weakref
 
 import omni.ext
-import omni.kit.commands
-import omni.timeline
 import omni.ui as ui
 import omni.usd
 from omni.isaac.ui.menu import make_menu_item_description
@@ -53,7 +51,6 @@ class Extension(omni.ext.IExt):
         # Events
         self._usd_context = omni.usd.get_context()
         self._stage_event_sub = None
-        self._timeline = omni.timeline.get_timeline_interface()
 
     def on_shutdown(self):
         self._models = {}
@@ -65,18 +62,15 @@ class Extension(omni.ext.IExt):
 
     def _on_window(self, visible):
         if self._window.visible:
-            # Subscribe to Stage and Timeline Events
+            # Subscribe to Stage Events
             self._usd_context = omni.usd.get_context()
             events = self._usd_context.get_stage_event_stream()
             self._stage_event_sub = events.create_subscription_to_pop(self._on_stage_event)
-            stream = self._timeline.get_timeline_event_stream()
-            self._timeline_event_sub = stream.create_subscription_to_pop(self._on_timeline_event)
 
             self._build_ui()
         else:
             self._usd_context = None
             self._stage_event_sub = None
-            self._timeline_event_sub = None
             self.ui_builder.cleanup()
 
     def _build_ui(self):
@@ -102,9 +96,6 @@ class Extension(omni.ext.IExt):
     def _menu_callback(self):
         self._window.visible = not self._window.visible
         self.ui_builder.on_menu_callback()
-
-    def _on_timeline_event(self, event):
-        self.ui_builder.on_timeline_event(event)
 
     def _on_stage_event(self, event):
         if event.type == int(StageEventType.OPENED) or event.type == int(StageEventType.CLOSED):

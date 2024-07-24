@@ -11,7 +11,6 @@ import os
 import pathlib
 from pathlib import Path
 
-import omni.timeline
 import omni.ui as ui
 from omni.isaac.core.utils.stage import open_stage
 from omni.isaac.ui.element_wrappers import Button, CheckBox, CollapsableFrame, StringField
@@ -34,9 +33,6 @@ class UIBuilder:
         # UI elements created using a UIElementWrapper instance
         self.wrapped_ui_elements = []
 
-        # Get access to the timeline to control stop/pause/play programmatically
-        self._timeline = omni.timeline.get_timeline_interface()
-
         self.log_level = logger.level_from_name("ERROR")
 
         self._on_init()
@@ -52,11 +48,6 @@ class UIBuilder:
 
     def on_menu_callback(self):
         pass
-
-    def on_timeline_event(self, event):
-        if event.type == int(omni.timeline.TimelineEventType.STOP):
-            self._scenario_state_btn.reset()
-            self._scenario_state_btn.enabled = False
 
     def on_stage_event(self, event):
         if event.type == int(StageEventType.OPENED):
