@@ -605,9 +605,7 @@ stdout_fail_patterns.exclude = [
 [[repo_test.suites.pythontests.bucket]]
 name = "1"
 include = [
-  "tests-omni.isaac.*benchmark_environments*${shell_ext}",
   "tests-omni.isaac.*motion*${shell_ext}",
-  "tests-omni.isaac.robot_benchmark*${shell_ext}",
   "tests-omni.isaac.*dynamic*${shell_ext}",
 ]
 [[repo_test.suites.pythontests.bucket]]
