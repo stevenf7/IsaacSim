@@ -907,7 +907,8 @@ python.files.exclude = [
 
 [repo_ogn]
 
-home_path = "${root}/source/extensions/"
+home_path = "${root}/source/extensions"
+build_path = "${root}/_build/${platform}/release/exts"
 ogn_exts_includes = [
     "omni.isaac.core_nodes",
     "omni.isaac.conveyor",
