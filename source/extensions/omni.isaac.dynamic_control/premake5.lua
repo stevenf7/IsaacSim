@@ -6,7 +6,7 @@ project_ext_plugin(ext, "omni.isaac.dynamic_control.plugin")
 
     add_files("impl", "plugins")
 
-    include_physx()   
+    include_physx()
 
     includedirs {
         "%{root}/source/extensions/omni.isaac.common_includes/include",
@@ -21,7 +21,7 @@ project_ext_plugin(ext, "omni.isaac.dynamic_control.plugin")
      libdirs {
         target_deps.."/nv_usd/%{cfg.buildcfg}/lib",
         target_deps.."/usd_ext_physics/%{cfg.buildcfg}/lib",
-        bin_dir.."/extsbuild/omni.usd.core/bin"
+        extsbuild_dir.."/omni.usd.core/bin"
     }
 
     links {"gf", "sdf", "usd", "usdGeom","usdUtils", "tf", "arch",  "omni.usd"}

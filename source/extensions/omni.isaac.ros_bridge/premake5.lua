@@ -27,8 +27,8 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/omni_physics/%{config}/include",
         "%{root}/source/extensions/omni.isaac.ros_bridge",
-        bin_dir.."/extsbuild/omni.syntheticdata/include",
-        bin_dir.."/extsbuild/usdrt.scenegraph/include",
+        extsbuild_dir.."/omni.syntheticdata/include",
+        extsbuild_dir.."/usdrt.scenegraph/include",
         "%{root}/_build/target-deps/omni_client_library/include",
         "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/include",
         "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/RangeSensorSchema/include",
@@ -42,7 +42,7 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/usd_audio_schema/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/nv_ros/lib",
-        bin_dir.."/extsbuild/omni.usd.core/bin",
+        extsbuild_dir.."/omni.usd.core/bin",
         "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/lib",
         "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/RangeSensorSchema/lib",
     }
@@ -59,8 +59,8 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
     filter {}
 
 project_ext_ogn( ext, ogn )
-    
-    
+
+
 -- Python Bindings for Carobnite Plugin
 project_ext_bindings {
     ext = ext,

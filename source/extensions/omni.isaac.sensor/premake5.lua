@@ -8,7 +8,7 @@ project_ext (ext)
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.sensor.plugin")
     cppdialect "C++17"
-    
+
     dependson { "prebuild", "carb.physics-usd.plugin", "omni.physx.plugin"}
     add_files("impl", "plugins")
     add_files("ogn", ogn.nodes_path)
@@ -17,14 +17,14 @@ project_ext_plugin(ext, "omni.isaac.sensor.plugin")
 
     include_physx()
     add_cuda_dependencies()
-    
+
     includedirs {
         "%{root}/source/extensions/omni.isaac.common_includes/include",
         targetDepsDir.."/nv_usd/%{cfg.buildcfg}/include",
         targetDepsDir.."/usd_ext_physics/%{cfg.buildcfg}/include",
         targetDepsDir.."/omni_physics/%{config}/include",
         targetDepsDir.."/rtx_plugins/include",
-        bin_dir.."/extsbuild/usdrt.scenegraph/include",
+        extsbuild_dir.."/usdrt.scenegraph/include",
         "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/include",
         targetDepsDir.."/omni_client_library/include",
         targetDepsDir.."/python/include",
@@ -39,7 +39,7 @@ project_ext_plugin(ext, "omni.isaac.sensor.plugin")
         targetDepsDir.."/nv_usd/%{cfg.buildcfg}/lib",
         targetDepsDir.."/usd_ext_physics/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/lib",
-        bin_dir.."/extsbuild/omni.usd.core/bin"
+        extsbuild_dir.."/omni.usd.core/bin"
     }
 
     links {"carb", "gf", "tf", "sdf", "usd", "usdGeom","usdUtils", "physxSchema","usdPhysics", "physicsSchemaTools", "omni.usd", "isaacSensorSchema", "arch", "vt"}

@@ -21,8 +21,8 @@ project_ext_plugin(ext, "omni.isaac.range_sensor.plugin")
         "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/include",
         "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/RangeSensorSchema/include",
         "%{root}/_build/target-deps/usd_schema_semantics/%{cfg.buildcfg}/include",
-        bin_dir.."/extsbuild/omni.syntheticdata/include",
-        bin_dir.."/extsbuild/usdrt.scenegraph/include",
+        extsbuild_dir.."/omni.syntheticdata/include",
+        extsbuild_dir.."/usdrt.scenegraph/include",
         "%{kit_sdk_bin_dir}/dev/fabric/include/",
         "%{root}/_build/target-deps/omni_client_library/include",
         "%{root}/_build/target-deps/python/include",
@@ -35,7 +35,7 @@ project_ext_plugin(ext, "omni.isaac.range_sensor.plugin")
         "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/lib",
         "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/RangeSensorSchema/lib",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
-        bin_dir.."/extsbuild/omni.usd.core/bin",
+        extsbuild_dir.."/omni.usd.core/bin",
     }
 
     links {

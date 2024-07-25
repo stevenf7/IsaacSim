@@ -32,8 +32,8 @@ project_ext_plugin(ext, "omni.isaac.core_nodes.plugin")
         "%{root}/source/extensions/omni.isaac.dynamic_control/include",
         "%{root}/_build/target-deps/omni_client_library/include",
         "%{root}/_build/target-deps/omni_physics/%{config}/include",
-        bin_dir.."/extsbuild/omni.syntheticdata/include",
-        bin_dir.."/extsbuild/usdrt.scenegraph/include",
+        extsbuild_dir.."/omni.syntheticdata/include",
+        extsbuild_dir.."/usdrt.scenegraph/include",
         "%{root}/source/extensions/omni.isaac.core_nodes/include",
         "%{kit_sdk_bin_dir}/dev/fabric/include/",
         "%{root}/_build/target-deps/python/include",
@@ -43,7 +43,7 @@ project_ext_plugin(ext, "omni.isaac.core_nodes.plugin")
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/usd_audio_schema/%{cfg.buildcfg}/lib",
-        bin_dir.."/extsbuild/omni.usd.core/bin"
+        extsbuild_dir.."/omni.usd.core/bin"
     }
 
      links {
