@@ -357,8 +357,6 @@ inventory.include = [
     # extensions
     "exts/omni.isaac.motion_generation",
     "exts/omni.isaac.ocs2",
-    "exts/omni.isaac.robot_benchmark",
-    "exts/omni.isaac.benchmark_environments",
     "exts/omni.isaac.lula",
     "exts/omni.isaac.lula_test_widget",
 ]
