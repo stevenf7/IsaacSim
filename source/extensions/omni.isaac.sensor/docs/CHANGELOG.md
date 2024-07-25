@@ -1,5 +1,9 @@
 # Changelog
 
+## [12.8.0] - 2024-07-23
+### Added
+- New command "IsaacSensorCreateRtxIDS" to support occupancy sim extension
+
 ## [12.7.1] - 2024-07-16
 ### Changed
 - OgnIsaacPrintRTXSensorInfo - adds check for auxType to avoid non-lidar data error messages in material mapping
