@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.5] - 2024-07-25
+### Changed
+- Added deprecation notice
+
 ## [0.3.4] - 2024-02-02
 ### Changed
 - Updated path to the nucleus extension
