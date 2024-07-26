@@ -115,6 +115,7 @@ conf.py
 
 # ignore omnigraph docs file
 ogn.rst
+source/extensions/**/docs/ogn/
 
 output
 
