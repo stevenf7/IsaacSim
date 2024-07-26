@@ -20,7 +20,7 @@ project_with_location("omni.isaac.debug_draw.primitive_drawing")
     }
     libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-        bin_dir.."/extsbuild/omni.usd.core/bin"
+        extsbuild_dir.."/omni.usd.core/bin"
     }
     links{"sdf", "omni.usd"}
 
@@ -59,7 +59,7 @@ project_ext_plugin(ext, "omni.isaac.debug_draw.plugin")
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/omni_client_library/include",
-        bin_dir.."/extsbuild/usdrt.scenegraph/include",
+        extsbuild_dir.."/usdrt.scenegraph/include",
         "%{root}/_build/target-deps/python/include",
         "%{kit_sdk_bin_dir}/dev/fabric/include/",
         "%{root}/source/extensions/omni.isaac.dynamic_control/include",
@@ -67,7 +67,7 @@ project_ext_plugin(ext, "omni.isaac.debug_draw.plugin")
     }
     libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-        bin_dir.."/extsbuild/omni.usd.core/bin"
+        extsbuild_dir.."/omni.usd.core/bin"
     }
 
     if os.target() == "linux" then
@@ -81,7 +81,7 @@ project_ext_plugin(ext, "omni.isaac.debug_draw.plugin")
         }
     end
 
-    links { 
+    links {
         "gf", "tf", "sdf", "vt","usd", "usdGeom", "usdUtils", "usdShade", "usdImaging", "omni.usd", "omni.isaac.debug_draw.primitive_drawing"
     }
 
@@ -102,7 +102,7 @@ project_ext_bindings ({
     module = "_debug_draw",
     src = "bindings",
     target_subdir = "omni/isaac/debug_draw"})
-    
+
     -- Add the standard dependencies all OGN projects have, and link directories with Python nodes
     dependson {"omni.isaac.debug_draw.primitive_drawing"}
     --add_files("bindings", "bindings")
@@ -122,7 +122,7 @@ project_ext_bindings ({
     }
     links {"arch", "gf", "sdf", "tf", "vt", "pcp", "usd", "usdGeom", "usdUtils", "omni.isaac.debug_draw.primitive_drawing"}
 
-    filter { "system:linux", "platforms:x86_64" }        
+    filter { "system:linux", "platforms:x86_64" }
         links {"tbb", "boost_python310" }
     filter {}
 

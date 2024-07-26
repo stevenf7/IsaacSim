@@ -23,7 +23,7 @@ repo_build.prebuild_link {
     {"python/scripts/materials", ext.target_dir.."/omni/isaac/core/materials"},
     {"python/scripts/robots", ext.target_dir.."/omni/isaac/core/robots"},
     {"python/scripts/tasks", ext.target_dir.."/omni/isaac/core/tasks"}}
-    
+
 
 repo_build.prebuild_copy {
         { "python/scripts/*.py", ext.target_dir.."/omni/isaac/core" }}
@@ -38,7 +38,7 @@ project_ext_plugin(ext, "omni.isaac.core.plugin")
     add_files("iface", "include")
     defines { "OMPRIMUTILSEXPORT" }
 
-    
+
     includedirs {
         "%{root}/source/extensions/omni.isaac.common_includes/include",
         "%{root}/_build/generated/include/",
@@ -49,7 +49,7 @@ project_ext_plugin(ext, "omni.isaac.core.plugin")
     }
     libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-        bin_dir.."/extsbuild/omni.usd.core/bin"
+        extsbuild_dir.."/omni.usd.core/bin"
     }
     links{"sdf", "tf", "omni.usd", "usd", "usdGeom", "usdUtils",  "usdPhysics"}
 
@@ -80,7 +80,7 @@ project_ext_bindings ({
     module = "_core",
     src = "bindings",
     target_subdir = "omni/isaac/core"})
-    
+
     add_files("bindings", "bindings/*.*")
     -- Add the standard dependencies all OGN projects have, and link directories with Python nodes
     dependson {"omni.isaac.core.plugin"}
@@ -95,7 +95,7 @@ project_ext_bindings ({
     }
     links {"sdf", "usd", "tf","usdUtils", "omni.isaac.core.plugin"}
 
-    filter { "system:linux", "platforms:x86_64" }        
+    filter { "system:linux", "platforms:x86_64" }
         links {"tbb", "boost_python310" }
     filter {}
 

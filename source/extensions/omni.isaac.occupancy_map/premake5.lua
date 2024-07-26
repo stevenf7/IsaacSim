@@ -24,7 +24,7 @@ project_with_location("omni.isaac.occupancy_map.generator")
     libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
-        
+
     }
     links{"octomap", "octomath", "usdPhysics", "sdf", "tf", "usd"}
 
@@ -69,7 +69,7 @@ project_ext_plugin(ext, "omni.isaac.occupancy_map.plugin")
     libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
-        bin_dir.."/extsbuild/omni.usd.core/bin"
+        extsbuild_dir.."/omni.usd.core/bin"
     }
     links {"usdUtils", "omni.usd", "omni.isaac.debug_draw.primitive_drawing", "usdPhysics", "omni.isaac.occupancy_map.generator", "sdf", "tf", "usd"}
     filter { "system:linux" }
@@ -97,7 +97,7 @@ project_ext_plugin(ext, "omni.isaac.occupancy_map.plugin")
     filter { "configurations:release" }
         defines { "NDEBUG" }
     filter {}
-    
+
 -- Python Bindings for Carobnite Plugin
 project_ext_bindings ({
     ext = ext,
@@ -138,7 +138,7 @@ project_ext_bindings ({
     filter { "system:windows" }
         -- Warning C4099: 'omni::physx::IPhysx': type name first seen using 'class' now seen using 'struct'
         disablewarnings {"4099"}
-        disablewarnings {"4251"}         
+        disablewarnings {"4251"}
         link_boost_for_windows({"boost_python310"})
 
         libdirs {

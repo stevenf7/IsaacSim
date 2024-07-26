@@ -11,7 +11,7 @@ project_ext_plugin(ext, "omni.isaac.conveyor.plugin")
     add_files("impl", "plugins")
     add_files("ogn", ogn.nodes_path)
 
-    
+
     include_physx()
     includedirs {
         "%{root}/source/extensions/omni.isaac.common_includes/include",
@@ -25,7 +25,7 @@ project_ext_plugin(ext, "omni.isaac.conveyor.plugin")
     libdirs {
         target_deps.."/nv_usd/%{cfg.buildcfg}/lib",
         target_deps.."/usd_ext_physics/%{cfg.buildcfg}/lib",
-        bin_dir.."/extsbuild/omni.usd.core/bin"
+        extsbuild_dir.."/omni.usd.core/bin"
     }
 
     -- Linux-specific compile information
@@ -37,7 +37,7 @@ project_ext_plugin(ext, "omni.isaac.conveyor.plugin")
         target_deps.."/python/include/python3.10"
     }
     filter {}
-    
+
     add_ogn_dependencies(ogn)
     -- Specifies the external libraries required by the nodes
     links {"vt", "gf", "sdf", "arch", "usd", "tf", "usdUtils", "usdShade", "usdGeom", "usdSkel", "omni.usd", "usdPhysics","physxSchema",}
@@ -57,16 +57,16 @@ project_ext_bindings {
     add_files("python", "python/*.py")
     add_files("python/impl", "python/impl/**.py")
     add_files("python/tests", "python/tests/**.py")
-    
+
 
     add_ogn_dependencies(ogn)
 
     repo_build.prebuild_link {
         { "docs", ext.target_dir.."/docs" },
         { "data", ext.target_dir.."/data" },
-        { "python/impl", ogn.python_target_path.."/impl" },    
-        { "python/tests", ogn.python_target_path.."/tests" },    
-        { "python/commands", ogn.python_target_path.."/commands" },    
+        { "python/impl", ogn.python_target_path.."/impl" },
+        { "python/tests", ogn.python_target_path.."/tests" },
+        { "python/commands", ogn.python_target_path.."/commands" },
     }
 
     repo_build.prebuild_copy {

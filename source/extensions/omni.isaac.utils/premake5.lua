@@ -15,7 +15,7 @@ project_ext_bindings ({
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/omni_client_library/include",
-        bin_dir.."/extsbuild/usdrt.scenegraph/include",
+        extsbuild_dir.."/usdrt.scenegraph/include",
         "%{root}/source/extensions/omni.isaac.dynamic_control/include",
     }
 
