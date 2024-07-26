@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.31.5] - 2024-07-25
+### Fixed
+- Warnings when extension was shutdown
+
 ## [2.31.4] - 2024-07-17
 ### Added
 - added a joint state subscriber test where the jointNames are connected

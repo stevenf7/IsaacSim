@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.14.0] - 2024-07-25
+### Changed
+- Removed imgui calls on app startup to avoid crash when display was not set
+- Fixed deprecation warnings
+
+
 ## [0.13.2] - 2024-05-01
 ### Fixed
 - update for set_phase api change
