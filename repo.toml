@@ -978,6 +978,7 @@ deps_for_isaac = [
   "omni.replicator.replicator_yaml-2.0.5",
   "omni.replicator.core-1.11.14",
   "omni.net-0.0.1-isaac-1",
+  "omni.sensors.tiled-0.0.4",
   "omni.sensors.nv.camera-0.10.0-isaac-1",
   "omni.sensors.nv.common-1.2.2-isaac-1",
   "omni.sensors.nv.ids-1.1.0-isaac-1",

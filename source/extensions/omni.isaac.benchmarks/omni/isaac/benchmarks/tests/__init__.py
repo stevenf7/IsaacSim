@@ -12,4 +12,3 @@
 import sys
 
 from .test_benchmark_camera import *
-from .test_benchmark_ros_camera import *
