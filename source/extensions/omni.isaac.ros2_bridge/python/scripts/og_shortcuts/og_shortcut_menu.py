@@ -8,6 +8,8 @@
 #
 
 
+import weakref
+
 import omni.ext
 import omni.usd
 from omni.isaac.ros2_bridge.scripts.og_shortcuts.og_rtx_sensors import Ros2CameraGraph, Ros2RtxLidarGraph
@@ -26,13 +28,27 @@ class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         self.window_handle = None
         ros_og_menu = [
-            make_menu_item_description(ext_id, "ROS2 Camera", onclick_fun=self._open_camera_sensor),
-            make_menu_item_description(ext_id, "ROS2 RTX Lidar", onclick_fun=self._open_rtx_lidar_sensor),
-            make_menu_item_description(ext_id, "ROS2 TF Publisher", onclick_fun=self._open_pub_tf),
-            make_menu_item_description(ext_id, "ROS2 Odometry Publisher", onclick_fun=self._open_odometry_publisher),
-            make_menu_item_description(ext_id, "ROS2 JointStates", onclick_fun=self._open_joint_states_pubsub),
-            make_menu_item_description(ext_id, "ROS2 Clock", onclick_fun=self._open_clock),
-            make_menu_item_description(ext_id, "ROS2 Generic Publisher", onclick_fun=self._open_rtf),
+            make_menu_item_description(
+                ext_id, "ROS2 Camera", onclick_fun=lambda a=weakref.proxy(self): a._open_camera_sensor()
+            ),
+            make_menu_item_description(
+                ext_id, "ROS2 RTX Lidar", onclick_fun=lambda a=weakref.proxy(self): a._open_rtx_lidar_sensor()
+            ),
+            make_menu_item_description(
+                ext_id, "ROS2 TF Publisher", onclick_fun=lambda a=weakref.proxy(self): a._open_pub_tf()
+            ),
+            make_menu_item_description(
+                ext_id,
+                "ROS2 Odometry Publisher",
+                onclick_fun=lambda a=weakref.proxy(self): a._open_odometry_publisher(),
+            ),
+            make_menu_item_description(
+                ext_id, "ROS2 JointStates", onclick_fun=lambda a=weakref.proxy(self): a._open_joint_states_pubsub()
+            ),
+            make_menu_item_description(ext_id, "ROS2 Clock", onclick_fun=lambda a=weakref.proxy(self): a._open_clock()),
+            make_menu_item_description(
+                ext_id, "ROS2 Generic Publisher", onclick_fun=lambda a=weakref.proxy(self): a._open_rtf()
+            ),
         ]
 
         self._menu_items = [

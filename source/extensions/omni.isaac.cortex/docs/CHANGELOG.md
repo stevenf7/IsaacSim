@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.9] - 2024-07-25
+### Removed
+- Deprecation tag
+
 ## [0.3.8] - 2024-05-22
 ### Added
 - Deprecation tag

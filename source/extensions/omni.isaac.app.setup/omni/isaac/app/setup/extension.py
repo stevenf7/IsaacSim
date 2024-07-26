@@ -13,7 +13,6 @@ import sys
 import typing
 import webbrowser
 
-import carb.imgui as _imgui
 import carb.settings
 import carb.tokens
 import omni.appwindow
@@ -83,14 +82,6 @@ class CreateSetupExtension(omni.ext.IExt):
         window_title.set_app_version(app_version_core)
         self.app_title = self._settings.get("/app/window/title")
         omni.kit.app.get_app().print_and_log(f"{self.app_title} Version: {app_version_core}-{app_version_prerel}")
-
-        # setup some imgui Style overide
-        imgui = _imgui.acquire_imgui()
-        imgui.push_style_color(_imgui.StyleColor.ScrollbarGrab, carb.Float4(0.4, 0.4, 0.4, 1))
-        imgui.push_style_color(_imgui.StyleColor.ScrollbarGrabHovered, carb.Float4(0.6, 0.6, 0.6, 1))
-        imgui.push_style_color(_imgui.StyleColor.ScrollbarGrabActive, carb.Float4(0.8, 0.8, 0.8, 1))
-
-        imgui.push_style_var_float(_imgui.StyleVar.DockSplitterSize, 2)
 
         self.__setup_window_task = asyncio.ensure_future(self.__dock_windows())
         self.__setup_property_window = asyncio.ensure_future(self.__property_window())
@@ -234,11 +225,6 @@ class CreateSetupExtension(omni.ext.IExt):
             "Create Layout", ["path_prim", "material_prim", "xformable_prim", "shade_prim", "camera_prim"]
         )
 
-    def _add_menu(self, *argv, **kwargs):
-        new_menu = omni.kit.ui.get_editor_menu().add_item(*argv, **kwargs)
-        self.menus.append(new_menu)
-        return new_menu
-
     def _open_browser(self, path):
         import platform
         import subprocess
@@ -276,29 +262,25 @@ class CreateSetupExtension(omni.ext.IExt):
 
         editor_menu = omni.kit.ui.get_editor_menu()
 
-        ref_guide_menu = editor_menu.add_item(self.HELP_REFERENCE_GUIDE_MENU, None, priority=-23)
-        ref_guide_menu_action = omni.kit.menu.utils.add_action_to_menu(
-            self.HELP_REFERENCE_GUIDE_MENU, lambda *_: self._open_browser(REFERENCE_GUIDE_URL), "OpenRefGuide"
+        ref_guide_menu = editor_menu.add_item(
+            self.HELP_REFERENCE_GUIDE_MENU, lambda *_: self._open_browser(REFERENCE_GUIDE_URL), priority=-23
         )
-        self.menus.append((ref_guide_menu, ref_guide_menu_action))
+        self.menus.append(ref_guide_menu)
 
-        manual_url_path = editor_menu.add_item(self.HELP_SCRIPTING_MANUAL, None, priority=-21)
-        manual_url_path_action = omni.kit.menu.utils.add_action_to_menu(
-            self.HELP_SCRIPTING_MANUAL, lambda *_: self._open_browser(MANUAL_URL), "OpenManual"
+        manual_url_path = editor_menu.add_item(
+            self.HELP_SCRIPTING_MANUAL, lambda *_: self._open_browser(MANUAL_URL), priority=-21
         )
-        self.menus.append((manual_url_path, manual_url_path_action))
+        self.menus.append(manual_url_path)
 
-        forums_link = editor_menu.add_item(self.HELP_FORUMS_URL, None, priority=-21)
-        forums_link_action = omni.kit.menu.utils.add_action_to_menu(
-            self.HELP_FORUMS_URL, lambda *_: self._open_browser(FORUMS_URL), "OpenForums"
+        forums_link = editor_menu.add_item(
+            self.HELP_FORUMS_URL, lambda *_: self._open_browser(FORUMS_URL), priority=-21
         )
-        self.menus.append((forums_link, forums_link_action))
+        self.menus.append(forums_link)
 
-        kit_manual = editor_menu.add_item(self.HELP_KIT_MANUAL, None, priority=-11)
-        kit_manual_action = omni.kit.menu.utils.add_action_to_menu(
-            self.HELP_KIT_MANUAL, lambda *_: self._open_browser(KIT_MANUAL_URL), "OpenKitManual"
+        kit_manual = editor_menu.add_item(
+            self.HELP_KIT_MANUAL, lambda *_: self._open_browser(KIT_MANUAL_URL), priority=-11
         )
-        self.menus.append((kit_manual, kit_manual_action))
+        self.menus.append(kit_manual)
 
         # set omnu.ui Help Menu
         self._ui_doc_menu_item = editor_menu.add_item(self.HELP_UI_DOCS, lambda *_: self._show_ui_docs())
@@ -432,25 +414,22 @@ class CreateSetupExtension(omni.ext.IExt):
             import inspect
 
             menu_path = f"Layout/{name}"
-            menu = editor_menu.add_item(menu_path, None, False, self._current_layout_priority)
-            self._current_layout_priority = self._current_layout_priority + 1
 
             if inspect.isfunction(parameter):
-                menu_action = omni.kit.menu.utils.add_action_to_menu(
-                    menu_path,
-                    lambda *_: asyncio.ensure_future(parameter()),
-                    name,
-                    (carb.input.KEYBOARD_MODIFIER_FLAG_CONTROL, key),
+                menu = editor_menu.add_item(
+                    menu_path, lambda *_: asyncio.ensure_future(parameter()), False, self._current_layout_priority
                 )
+                self._layout_menu_items.append(menu)
             else:
-                menu_action = omni.kit.menu.utils.add_action_to_menu(
+                menu = editor_menu.add_item(
                     menu_path,
                     lambda *_: asyncio.ensure_future(_load_layout(f"{DATA_PATH}/layouts/{parameter}.json")),
-                    name,
-                    (carb.input.KEYBOARD_MODIFIER_FLAG_CONTROL, key),
+                    False,
+                    self._current_layout_priority,
                 )
+                self._layout_menu_items.append(menu)
 
-            self._layout_menu_items.append((menu, menu_action))
+            self._current_layout_priority = self._current_layout_priority + 1
 
         # add_layout_menu_entry("Reset Layout", "default", carb.input.KeyboardInput.KEY_1)
         # add_layout_menu_entry("Animation", "animation", carb.input.KeyboardInput.KEY_2)
@@ -500,6 +479,7 @@ StartupWMClass=IsaacSim"""
 
     def on_shutdown(self):
         omni.kit.menu.utils.remove_layout(self._menu_layout)
+        self.menus = None
         self._menu_layout = None
         self._layout_menu_items = None
         self._ui_doc_menu_item = None

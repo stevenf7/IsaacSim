@@ -31,7 +31,7 @@ app.runLoops.main.rateLimitFrequency = 120
 app.runLoops.main.rateLimitUseBusyLoop = false
 
 app.runLoops.present.rateLimitEnabled = true
-app.runLoops.present.rateLimitFrequency = 120
+app.runLoops.present.rateLimitFrequency = 60
 app.runLoops.present.rateLimitUseBusyLoop = false
 
 app.runLoops.rendering_0.rateLimitEnabled = true
