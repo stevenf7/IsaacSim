@@ -1100,7 +1100,7 @@ publish-docs:
     AWS_SECRET_ACCESS_KEY: $AWS_OMNIVERSEDOCS_SECRET_ACCESS_KEY
   needs: []
   script:
-  - curl -o ./artifact.zip  https://gitlab-master.nvidia.com/api/v4/projects/25020/jobs/artifacts/develop/download?job=build-linux-x86_64-release
+  - curl -o ./artifact.zip  https://gitlab-master.nvidia.com/api/v4/projects/25020/jobs/artifacts/release/4.1/download?job=build-linux-x86_64-release
   - unzip artifact.zip
   - mkdir -p /builds/omniverse/isaac/omni_isaac_sim/_build/docs/isaac_sim/latest
   - 7z x _build/packages/docs@*.7z -o/builds/omniverse/isaac/omni_isaac_sim/_build/docs/isaac_sim/latest
