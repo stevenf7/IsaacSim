@@ -386,7 +386,7 @@ class TestAckermannControllerOgn(ogts.OmniGraphTestCase):
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         robot.initialize()
-        await simulate_async(1)
+        await simulate_async(2)
 
         # get current velocities of left and right back wheels; ensure they are non-zero, and close to the intended wheel velocity
         wheel_velocity = og.Controller.attribute("outputs:wheelRotationVelocity", acker_node).get()
