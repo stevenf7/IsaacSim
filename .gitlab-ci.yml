@@ -555,8 +555,6 @@ test-linux-x86_64-benchmarks:
   script:
     - export ISAAC_TEST_MODE=1
     - ./repo.sh ci test -- -s benchmarks --generate-report
-  rules:
-    - !reference [.rules-nightly-tests, rules]
   after_script:
     - !reference [.datadog-test-visibility-linux-x86_64, script]
 
