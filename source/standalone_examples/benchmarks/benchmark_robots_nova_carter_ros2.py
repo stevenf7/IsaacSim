@@ -24,7 +24,7 @@ parser.add_argument(
     choices=range(0, 4 + 1),
     help="Number of Hawk camera stereo pairs to enable, per robot.",
 )
-parser.add_argument("--num-gpus", type=int, default=1, help="Number of GPUs on machine.")
+parser.add_argument("--num-gpus", type=int, default=None, help="Number of GPUs on machine.")
 parser.add_argument("--num-frames", type=int, default=600, help="Number of frames to run benchmark for")
 parser.add_argument(
     "--backend-type",
@@ -70,7 +70,7 @@ benchmark = BaseIsaacBenchmark(
             {"name": "num_2d_lidars", "data": enable_2d_lidar},
             {"name": "num_3d_lidars", "data": enable_3d_lidar},
             {"name": "num_robots", "data": n_robot},
-            {"name": "num_gpus", "data": n_gpu},
+            {"name": "num_gpus", "data": carb.settings.get_settings().get("/renderer/multiGpu/currentGpuCount")},
         ]
     },
     backend_type=args.backend_type,

@@ -14,7 +14,7 @@ parser.add_argument("--num-cameras", type=int, default=1, help="Number of camera
 parser.add_argument(
     "--resolution", nargs=2, type=int, default=[1280, 720], help="Camera resolution as [width, height] px"
 )
-parser.add_argument("--num-gpus", type=int, default=1, help="Number of GPUs on machine.")
+parser.add_argument("--num-gpus", type=int, default=None, help="Number of GPUs on machine.")
 parser.add_argument("--num-frames", type=int, default=600, help="Number of frames to run benchmark for")
 parser.add_argument(
     "--backend-type",
@@ -36,6 +36,7 @@ simulation_app = SimulationApp({"headless": True, "max_gpu_count": n_gpu})
 
 TEST_NUM_APP_UPDATES = 60 * 10
 
+import carb
 import omni
 from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
@@ -54,7 +55,7 @@ benchmark = BaseIsaacBenchmark(
             {"name": "num_cameras", "data": n_camera},
             {"name": "width", "data": resolution[0]},
             {"name": "height", "data": resolution[1]},
-            {"name": "num_gpus", "data": n_gpu},
+            {"name": "num_gpus", "data": carb.settings.get_settings().get("/renderer/multiGpu/currentGpuCount")},
         ]
     },
     backend_type=args.backend_type,

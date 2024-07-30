@@ -11,7 +11,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--num-sensors", type=int, default=1, help="Number of sensors")
-parser.add_argument("--num-gpus", type=int, default=1, help="Number of GPUs on machine.")
+parser.add_argument("--num-gpus", type=int, default=None, help="Number of GPUs on machine.")
 parser.add_argument(
     "--lidar-type", type=str, default="Rotary", choices=["Rotary", "Solid_State"], help="Type of lidar to create"
 )
@@ -34,7 +34,7 @@ from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": True, "max_gpu_count": n_gpu})
 
-
+import carb
 import omni
 import omni.replicator.core as rep
 from omni.isaac.core.utils.extensions import enable_extension
@@ -50,7 +50,7 @@ benchmark = BaseIsaacBenchmark(
     workflow_metadata={
         "metadata": [
             {"name": "num_3d_lidars", "data": n_sensor},
-            {"name": "num_gpus", "data": n_gpu},
+            {"name": "num_gpus", "data": carb.settings.get_settings().get("/renderer/multiGpu/currentGpuCount")},
         ]
     },
     backend_type=args.backend_type,
