@@ -13,9 +13,16 @@
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 import torch
+from omni.isaac.core.utils.prims import get_prim_at_path
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.core.utils.semantics import add_update_semantics, remove_all_semantics
+from omni.isaac.core.utils.semantics import (
+    add_update_semantics,
+    check_incorrect_semantics,
+    check_missing_semantics,
+    count_semantics_in_scene,
+    remove_all_semantics,
+)
 from pxr import Semantics
 
 
@@ -29,6 +36,20 @@ class TestSemantics(omni.kit.test.AsyncTestCase):
     async def tearDown(self):
         await omni.kit.app.get_app().next_update_async()
         pass
+
+    def create_test_environment(self):
+        # creates a test environment with 4 cubes meshes
+        # assign semantics "cube" for 2, "sphere" for 1, and leave the last one missing
+        result, path_0 = omni.kit.commands.execute("CreateMeshPrimCommand", prim_type="Cube")
+        result, path_1 = omni.kit.commands.execute("CreateMeshPrimCommand", prim_type="Cube")
+        result, path_2 = omni.kit.commands.execute("CreateMeshPrimCommand", prim_type="Cube")
+        result, path_3 = omni.kit.commands.execute("CreateMeshPrimCommand", prim_type="Cube")
+
+        add_update_semantics(get_prim_at_path(path_0), "cube")
+        add_update_semantics(get_prim_at_path(path_1), "cube")
+        add_update_semantics(get_prim_at_path(path_2), "sphere")
+
+        return [path_0, path_1, path_2, path_3]
 
     async def test_add_update_semantics(self):
         stage = omni.usd.get_context().get_stage()
@@ -111,3 +132,36 @@ class TestSemantics(omni.kit.test.AsyncTestCase):
         for nested_prim in prim.GetProperties():
             is_semantic = Semantics.SemanticsAPI.IsSemanticsAPIPath(prop.GetPath())
             self.assertFalse(is_semantic)
+
+    async def test_check_missing_semantics(self):
+        cube_paths = self.create_test_environment()
+        prim_paths = check_missing_semantics()
+
+        # there should be one cube missing the label, cube_4
+        self.assertEqual(len(prim_paths), 1)
+        self.assertTrue(prim_paths[0] == cube_paths[3])
+
+    async def test_check_incorrect_semantics(self):
+        cube_paths = self.create_test_environment()
+        mismatch_prims = check_incorrect_semantics()
+
+        # there should be one cube with an incorrect label, cube_3
+        self.assertEqual(len(mismatch_prims), 1)
+        self.assertTrue(mismatch_prims[0][0] == cube_paths[2])
+        self.assertTrue(mismatch_prims[0][1] == "sphere")
+
+    async def test_count_semantics_in_scene(self):
+        cube_paths = self.create_test_environment()
+        semantics_dict = count_semantics_in_scene()
+
+        # there should be 3 counts, 1 missing, 2 cube, and 1 sphere
+        self.assertEqual(len(semantics_dict), 3)
+        self.assertEqual(semantics_dict["missing"], 1)
+        self.assertEqual(semantics_dict["cube"], 2)
+        self.assertEqual(semantics_dict["sphere"], 1)
+
+        # only search at cube_0, there should be 2 counts, 0 missing, 1 cube
+        semantics_dict = count_semantics_in_scene(cube_paths[0])
+        self.assertEqual(len(semantics_dict), 2)
+        self.assertEqual(semantics_dict["missing"], 0)
+        self.assertEqual(semantics_dict["cube"], 1)
