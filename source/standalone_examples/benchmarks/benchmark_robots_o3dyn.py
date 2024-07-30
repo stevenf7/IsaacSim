@@ -12,7 +12,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--num-robots", type=int, default=1, help="Number of robots")
 parser.add_argument("--num-frames", type=int, default=600, help="Number of frames to run benchmark for")
-parser.add_argument("--num-gpus", type=int, default=1, help="Number of GPUs on machine.")
+parser.add_argument("--num-gpus", type=int, default=None, help="Number of GPUs on machine.")
 parser.add_argument("--max-in-line", type=int, default=10, help="Max number of robots in line")
 parser.add_argument(
     "--backend-type",
@@ -32,6 +32,7 @@ from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": True, "max_gpu_count": n_gpus})
 
+import carb
 import numpy as np
 import omni.kit.test
 from omni.isaac.core import PhysicsContext
@@ -50,7 +51,7 @@ benchmark = BaseIsaacBenchmark(
     workflow_metadata={
         "metadata": [
             {"name": "num_robots", "data": n_robots},
-            {"name": "num_gpus", "data": n_gpus},
+            {"name": "num_gpus", "data": carb.settings.get_settings().get("/renderer/multiGpu/currentGpuCount")},
         ]
     },
     backend_type=args.backend_type,

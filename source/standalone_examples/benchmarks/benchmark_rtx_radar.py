@@ -12,7 +12,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--num-sensors", type=int, default=1, help="Number of sensors")
 parser.add_argument("--num-frames", type=int, default=600, help="Number of frames to run benchmark for")
-parser.add_argument("--num-gpus", type=int, default=1, help="Number of GPUs on machine.")
+parser.add_argument("--num-gpus", type=int, default=None, help="Number of GPUs on machine.")
 parser.add_argument(
     "--backend-type",
     default="OsmoKPIFile",
@@ -30,6 +30,7 @@ from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": True, "max_gpu_count": n_gpus})
 
+import carb
 import omni.kit.test
 import omni.replicator.core as rep
 from omni.isaac.core.utils.extensions import enable_extension
@@ -57,7 +58,12 @@ def add_rtx_radar(prim_path, sensor_translation, sensor_orientation):
 # Create benchmark
 benchmark = BaseIsaacBenchmark(
     benchmark_name="benchmark_rtx_radar",
-    workflow_metadata={"metadata": [{"name": "num_radars", "data": n_sensor}, {"name": "num_gpus", "data": n_gpus}]},
+    workflow_metadata={
+        "metadata": [
+            {"name": "num_radars", "data": n_sensor},
+            {"name": "num_gpus", "data": carb.settings.get_settings().get("/renderer/multiGpu/currentGpuCount")},
+        ]
+    },
     backend_type=args.backend_type,
 )
 benchmark.set_phase("loading", start_recording_frametime=False, start_recording_runtime=True)

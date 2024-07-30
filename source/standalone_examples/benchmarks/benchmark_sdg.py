@@ -30,7 +30,7 @@ VALID_ANNOTATORS = {
 parser = argparse.ArgumentParser()
 parser.add_argument("--num-frames", type=int, default=600, help="Number of frames to capture")
 parser.add_argument("--num-cameras", type=int, default=1, help="Number of cameras")
-parser.add_argument("--num-gpus", type=int, default=1, help="Number of GPUs on machine.")
+parser.add_argument("--num-gpus", type=int, default=None, help="Number of GPUs on machine.")
 parser.add_argument("--resolution", nargs=2, type=int, default=[1280, 720], help="Camera resolution")
 parser.add_argument(
     "--asset-count", type=int, default=10, help="Number of assets of each type (cube, cone, cylinder, sphere, torus)"
@@ -97,6 +97,7 @@ simulation_app = SimulationApp({"headless": headless, "max_gpu_count": n_gpu})
 
 REPLICATOR_GLOBAL_SEED = 11
 
+import carb
 import omni.kit.app
 import omni.replicator.core as rep
 import omni.usd
@@ -118,7 +119,7 @@ benchmark = BaseIsaacBenchmark(
             {"name": "height", "data": height},
             {"name": "asset_count", "data": asset_count},
             {"name": "annotators", "data": args.annotators},
-            {"name": "num_gpus", "data": n_gpu},
+            {"name": "num_gpus", "data": carb.settings.get_settings().get("/renderer/multiGpu/currentGpuCount")},
         ]
     },
     backend_type=args.backend_type,

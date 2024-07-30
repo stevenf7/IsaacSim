@@ -2,7 +2,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--num-robots", type=int, default=1, help="Number of robots")
-parser.add_argument("--num-gpus", type=int, default=1, help="Number of GPUs on machine.")
+parser.add_argument("--num-gpus", type=int, default=None, help="Number of GPUs on machine.")
 parser.add_argument("--num-frames", type=int, default=600, help="Number of frames to run benchmark for")
 parser.add_argument("--device", type=str, default="cpu", help="simulation device, cpu or cuda")
 parser.add_argument("--visual", type=bool, default=False, help="Render for debugging purposes")
@@ -30,6 +30,7 @@ simulation_app = SimulationApp({"headless": not visual, "max_gpu_count": n_gpu})
 import asyncio
 from functools import partial
 
+import carb
 import omni.isaac.core.utils.stage as stage_utils
 import omni.physx as _physx
 import omni.timeline
@@ -49,7 +50,7 @@ benchmark = BaseIsaacBenchmark(
     workflow_metadata={
         "metadata": [
             {"name": "num_robots", "data": n_robot},
-            {"name": "num_gpus", "data": n_gpu},
+            {"name": "num_gpus", "data": carb.settings.get_settings().get("/renderer/multiGpu/currentGpuCount")},
             {"name": "device", "data": device},
         ]
     },
