@@ -6,10 +6,11 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-
 from typing import Dict, List, Tuple
 
-from pxr import Semantics, Usd
+import omni.isaac.core.utils.prims as prim_utils
+import omni.usd
+from pxr import Semantics, Usd, UsdGeom
 
 
 def add_update_semantics(prim: Usd.Prim, semantic_label: str, type_label: str = "class", suffix="") -> None:
@@ -89,3 +90,98 @@ def get_semantics(prim: Usd.Prim) -> Dict[str, Tuple[str, str]]:
             dataAttr = sem.GetSemanticDataAttr()
             result[name] = (typeAttr.Get(), dataAttr.Get())
     return result
+
+
+def check_missing_semantics(prim_path: str = None) -> List[str]:
+    """Returns a list of prim path of meshes with missing semantics
+
+    Args:
+        prim_path (str): This will check Prim path and its childrens' semantics
+
+    Returns:
+        List[str]: Prim paths
+    """
+
+    prim_paths = []
+    prims = []
+
+    if prim_path is None:
+        stage = omni.usd.get_context().get_stage()
+        prims = stage.Traverse()
+    else:
+        prims = prim_utils.get_all_matching_child_prims(prim_path, lambda prim: True)
+
+    for prim in prims:
+        if prim.IsA(UsdGeom.Mesh):
+            semantics = get_semantics(prim)
+            if not semantics:
+                prim_paths.append(prim.GetPath().pathString)
+    return prim_paths
+
+
+def check_incorrect_semantics(prim_path: str = None) -> List[List[str]]:
+    """Returns a list of prim path of meshes with different semantics labels than their prim path and their semantic labels
+
+    Args:
+        prim_path (str): This will check Prim path and its childrens' semantics
+
+    Returns:
+        List[List[str]]: List of prim path and semantic label
+    """
+
+    incorrect_pairs = []
+    if prim_path is None:
+        stage = omni.usd.get_context().get_stage()
+        prims = stage.Traverse()
+    else:
+        prims = prim_utils.get_all_matching_child_prims(prim_path, lambda prim: True)
+
+    for prim in prims:
+        if prim.IsA(UsdGeom.Mesh):
+            semantics = get_semantics(prim)
+            prim_path = prim.GetPath().pathString
+            if semantics:
+                for key in list(semantics.keys()):
+                    semantic_label = semantics[key][1].lower()
+
+                    if (
+                        semantic_label not in prim_path.lower()
+                        and semantic_label.replace("_", "") not in prim_path.lower()
+                        and semantic_label.replace("-", "") not in prim_path.lower()
+                    ):
+                        incorrect_pair = [prim_path, semantics[key][1]]
+                        incorrect_pairs.append(incorrect_pair)
+                        break
+    return incorrect_pairs
+
+
+def count_semantics_in_scene(prim_path: str = None) -> Dict[str, int]:
+    """Returns a dictionary of labels and the corresponding count
+
+    Args:
+        prim_path (str): This will check Prim path and its childrens' semantics
+
+    Returns:
+        Dict[str, int]: labels and count
+    """
+
+    semantics_counter = {"missing": 0}
+    if prim_path is None:
+        stage = omni.usd.get_context().get_stage()
+        prims = stage.Traverse()
+    else:
+        prims = prim_utils.get_all_matching_child_prims(prim_path, lambda prim: True)
+        print(len(prims))
+    for prim in prims:
+        if prim.IsA(UsdGeom.Mesh):
+            semantics = get_semantics(prim)
+            if not semantics:
+                semantics_counter["missing"] += 1
+            else:
+                for key in list(semantics.keys()):
+                    if semantics[key][1] not in semantics_counter:
+                        semantics_counter[semantics[key][1]] = 1
+                    else:
+                        semantics_counter[semantics[key][1]] += 1
+
+    return semantics_counter
