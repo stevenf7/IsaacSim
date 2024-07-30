@@ -545,7 +545,33 @@ test-linux-x86_64-nativepythontests-3:
   after_script:
     - !reference [.datadog-test-visibility-linux-x86_64, script]
 
-test-linux-x86_64-benchmarks:
+test-linux-x86_64-benchmarks-1-gpu:
+  extends:
+    - .test-common
+    - .test-linux-common
+    - .install-linux-test-packages
+    - .runner-test-linux-x86_64-gpu
+    - .omni_nvks_gpu
+  script:
+    - export ISAAC_TEST_MODE=1
+    - ./repo.sh ci test -- -s benchmarks --generate-report
+  after_script:
+    - !reference [.datadog-test-visibility-linux-x86_64, script]
+
+test-linux-x86_64-benchmarks-2-gpu:
+  extends:
+    - .test-common
+    - .test-linux-common
+    - .install-linux-test-packages
+    - .runner-test-linux-x86_64-gpu
+    - .omni_nvks_gpu_2x
+  script:
+    - export ISAAC_TEST_MODE=1
+    - ./repo.sh ci test -- -s benchmarks --generate-report
+  after_script:
+    - !reference [.datadog-test-visibility-linux-x86_64, script]
+
+test-linux-x86_64-benchmarks-4-gpu:
   extends:
     - .test-common
     - .test-linux-common
