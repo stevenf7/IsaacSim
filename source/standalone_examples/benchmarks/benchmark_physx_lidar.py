@@ -12,7 +12,6 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--num-sensors", type=int, default=1, help="Number of sensors")
 parser.add_argument("--num-frames", type=int, default=600, help="Number of frames to run benchmark for")
-parser.add_argument("--num-gpus", type=int, default=None, help="Number of GPUs on machine.")
 parser.add_argument(
     "--backend-type",
     default="OsmoKPIFile",
@@ -24,11 +23,10 @@ args, unknown = parser.parse_known_args()
 
 n_sensor = args.num_sensors
 n_frames = args.num_frames
-n_gpus = args.num_gpus
 
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp({"headless": True, "max_gpu_count": n_gpus})
+simulation_app = SimulationApp({"headless": True})
 
 import carb
 import omni.kit.test
@@ -74,12 +72,7 @@ def add_physx_lidar(prim_path, translation=Gf.Vec3f(0, 0, 0), orientation=Gf.Vec
 # Create benchmark
 benchmark = BaseIsaacBenchmark(
     benchmark_name="benchmark_physx_lidar",
-    workflow_metadata={
-        "metadata": [
-            {"name": "num_lidars", "data": n_sensor},
-            {"name": "num_gpus", "data": carb.settings.get_settings().get("/renderer/multiGpu/currentGpuCount")},
-        ]
-    },
+    workflow_metadata={"metadata": [{"name": "num_lidars", "data": n_sensor}]},
     backend_type=args.backend_type,
 )
 benchmark.set_phase("loading", start_recording_frametime=False, start_recording_runtime=True)
