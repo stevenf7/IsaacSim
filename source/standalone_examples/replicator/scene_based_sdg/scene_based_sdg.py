@@ -245,19 +245,20 @@ for rp in rps:
 num_frames = config.get("num_frames", 0)
 print(f"[scene_based_sdg] Running SDG for {num_frames} frames")
 for i in range(num_frames):
+    print(f"[scene_based_sdg] \t Capturing frame {i}")
     # Trigger the custom event to randomize the cones at specific frames
     if i % 2 != 0:
         rep.utils.send_og_event(event_name="randomize_cones")
     # Trigger any on_frame registered randomizers and the writers (delta_time=0.0 to avoid advancing the timeline)
     rep.orchestrator.step(delta_time=0.0, rt_subframes=rt_subframes)
 
+# Wait for the data to be written to disk
+rep.orchestrator.wait_until_complete()
+
 # Cleanup writer and render products
 writer.detach()
 for rp in rps:
     rp.destroy()
-
-# Wait for the data to be written to disk
-rep.orchestrator.wait_until_complete()
 
 # Check if the application should keep running after the data generation (debug purposes)
 close_app_after_run = config.get("close_app_after_run", True)
