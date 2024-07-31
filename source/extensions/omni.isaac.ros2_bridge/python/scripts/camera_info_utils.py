@@ -9,6 +9,7 @@
 
 from typing import Dict, Tuple
 
+import carb
 import cv2 as cv
 import numpy as np
 import omni
@@ -77,10 +78,16 @@ def read_camera_info(render_product_path: str) -> Dict:
         camera_info["physicalDistortionModel"] = "plumb_bob"
 
     physical_distortion_coefs = camera.GetAttribute("physicalDistortionCoefficients").Get()
-    if physical_distortion_coefs is not None:
+    if camera_info["physicalDistortionModel"] == "plumb_bob":
+        camera_info["physicalDistortionCoefficients"] = np.zeros((1, 5))
+        if physical_distortion_coefs is not None:
+            carb.log_warn(
+                f"Overriding existing physical distortion coefficients {physical_distortion_coefs} with [0, 0, 0, 0, 0] for physicalDistortionModel == 'plumb_bob'."
+            )
+    elif physical_distortion_coefs is not None:
         camera_info["physicalDistortionCoefficients"] = np.asarray(physical_distortion_coefs)
     else:
-        camera_info["physicalDistortionCoefficients"] = np.zeros((1, 4))
+        camera_info["physicalDistortionCoefficients"] = np.zeros((1, 5))
 
     # Compute and store camera intrinsics matrix (k)
     fx = width * focalLength / horizontalAperture
