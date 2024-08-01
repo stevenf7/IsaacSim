@@ -59,7 +59,7 @@ void Ros2BackendImpl::set_header(const std::string& frame_id, const int64_t nano
     {
         fprintf(stdout,
                 "[Warning] Timestamp is invalid. Timestamp %" PRId64
-                " will be neglected for all published ROS CameraInfo messages\n",
+                " will be neglected for all published ROS messages\n",
                 nanoseconds);
     }
 }
