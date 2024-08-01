@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.8.1] - 2024-07-31
+### Fixed
+- Fix deprecation warning and use Semantics instead of pxr.Semantics
+
 ## [1.8.0] - 2024-06-18
 ### Changed
 - Capture loop is now using orhcestrator.step in a loop instead of orchestrator.run gueranteeing that the recorder is always in sync with the simulation (useful if custom or exernal randomizations are changing the stage)

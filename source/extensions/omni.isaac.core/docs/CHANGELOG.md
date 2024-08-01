@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.19.1] - 2024-07-31
+### Fixed
+- Fix deprecation warning and use Semantics instead of pxr.Semantics
+
 ## [3.19.0] - 2024-07-26
 ### Added
 - Added functions to find missing and incorrect semantic labels
