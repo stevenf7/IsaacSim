@@ -42,28 +42,9 @@ class PoseWriter(Writer):
     BB3D_ANNOT_NAME = "bounding_box_3d_fast"
     CAM_PARAMS_ANNOT_NAME = "camera_params"
     SUPPORTED_FORMATS = set(["dope", "centerpose"])
-    CUBOID_KEYPOINTS_ORDER = [
-        "Center",
-        "LDB",
-        "LDF",
-        "LUB",
-        "LUF",
-        "RDB",
-        "RDF",
-        "RUB",
-        "RUF",
-    ]
-    CUBOID_KEYPOINT_COLORS = [
-        "white",
-        "red",
-        "green",
-        "blue",
-        "yellow",
-        "cyan",
-        "magenta",
-        "orange",
-        "purple",
-    ]
+    CUBOID_KEYPOINTS_ORDER_DEFAULT = ["Center", "LDB", "LDF", "LUB", "LUF", "RDB", "RDF", "RUB", "RUF"]
+    CUBOID_KEYPOINT_ORDER_DOPE = ["LUF", "RUF", "RDF", "LDF", "LUB", "RUB", "RDB", "LDB", "Center"]
+    CUBOID_KEYPOINT_COLORS = ["white", "red", "green", "blue", "yellow", "cyan", "magenta", "orange", "purple"]
     CUBOID_EDGE_COLORS = {"front": "red", "back": "blue", "connecting": "green"}
 
     def __init__(
@@ -109,6 +90,11 @@ class PoseWriter(Writer):
 
         # Store debug related data to write overlay images (projected cuboid, local frame axes, etc.)
         self._debug_frame_data = {}
+
+        if self._format == "dope":
+            self._cuboid_keypoints_order = self.CUBOID_KEYPOINT_ORDER_DOPE
+        else:
+            self._cuboid_keypoints_order = self.CUBOID_KEYPOINTS_ORDER_DEFAULT
 
         # For more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html
         self.annotators = []
@@ -177,7 +163,7 @@ class PoseWriter(Writer):
         self._frame_data["camera_data"] = self._process_camera_parameters(camera_params)
 
         # Store the predefined order of the cuboid keypoints
-        self._frame_data["keypoint_order"] = self.CUBOID_KEYPOINTS_ORDER
+        self._frame_data["keypoint_order"] = self._cuboid_keypoints_order
 
         # Add the objects data to the frame entries
         self._frame_data["objects"] = objs_data
@@ -207,7 +193,10 @@ class PoseWriter(Writer):
             if obj_visibility <= self._visibility_threshold:
                 continue
 
-            obj["label"] = id_to_labels[bbox["semanticId"]]
+            if self._format == "dope":
+                obj["class"] = id_to_labels[bbox["semanticId"]]
+            else:
+                obj["label"] = id_to_labels[bbox["semanticId"]]
             obj["prim_path"] = bb3d_info["primPaths"][i]
             obj["visibility"] = round(obj_visibility, 3)
 
@@ -288,7 +277,7 @@ class PoseWriter(Writer):
                 obj["scale"] = size_world
 
             # Transform the cuboid keypoints from local to world frame in the given order
-            keypoints_world_ordered = [keypoints_local[k] @ local_to_world_tf for k in self.CUBOID_KEYPOINTS_ORDER]
+            keypoints_world_ordered = [keypoints_local[k] @ local_to_world_tf for k in self._cuboid_keypoints_order]
             if self._format is None:
                 obj["cuboid_keypoints_world_frame"] = [point[:3].tolist() for point in keypoints_world_ordered]
             # Transform the cuboid keypoints from world to camera frame
