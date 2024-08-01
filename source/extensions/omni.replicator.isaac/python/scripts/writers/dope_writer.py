@@ -218,10 +218,10 @@ class DOPEWriter(Writer):
 
             groundtruth = {
                 "class": class_name,
-                "visibility": object["visibility"].astype(np.float),
-                "location": object["location"].astype(np.float),
-                "quaternion_wxyz": object["rotation"].astype(np.float),
-                "projected_cuboid": object["projected_cuboid"].astype(np.float),
+                "visibility": object["visibility"].astype(np.float64),
+                "location": object["location"].astype(np.float64),
+                "quaternion_wxyz": object["rotation"].astype(np.float64),
+                "projected_cuboid": object["projected_cuboid"].astype(np.float64),
             }
 
             objects.append(groundtruth)

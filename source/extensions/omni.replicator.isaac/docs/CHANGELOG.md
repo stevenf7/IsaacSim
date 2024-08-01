@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.15.1] - 2024-07-31
+### Fixed 
+- DOPE writer numpy deprecation fix: np.float --> np.float64
+- PoseWriter dope format output fix to match DOPE writer (label --> class, projected cuboid order fix)
+
 ## [1.15.0] - 2024-04-24
 ### Added 
 - Custom replicator randomization nodes
