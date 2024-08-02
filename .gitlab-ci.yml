@@ -138,6 +138,9 @@ variables:
   RUN_DOCS_BUILD:
     value: "false"
     description: "Set to true to build omni docs. Only happens on schedule."
+  RUN_PYTHON_PACKAGE_TEST:
+    value: "false"
+    description: "Set to true to run pip install tests for isaac sim packages"
 
 # ==============================================================================================================
 .check-common:
@@ -762,6 +765,24 @@ test-windows-x86_64-nativepythontests-3:
     - ./repo.bat ci test -- -s nativepythontests -b 3 --generate-report
   rules:
     - !reference [.rules-nightly-tests, rules] #only run linux ones per MR and these nightly
+
+test-python-packages-linux:
+extends:
+    - .test-common
+    - .test-linux-common
+    - .install-linux-test-packages
+    - .runner-test-linux-x86_64-gpu
+    - .omni_nvks_gpu
+# needs:
+#     - job: publish-python-packages-linux
+#       artifacts: true
+rules:
+    - if: $RUN_PYTHON_PACKAGE_TEST == "false"
+      when: never
+script:
+    # - apt-get update
+    # - apt-get install python3.10 -y
+    - python3.10 -m pip install --pre isaacsim --extra-index-url https://urm.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi/simple --extra-index-url https://urm.nvidia.com/artifactory/api/pypi/ct-omniverse-pypi/simple
 
 
 # ==============================================================================================================
