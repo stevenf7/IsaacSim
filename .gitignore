@@ -113,6 +113,8 @@ PACKAGE-DEPS.yaml
 .local
 conf.py
 
+.nvcode
+
 # ignore omnigraph docs file
 ogn.rst
 source/extensions/**/docs/ogn/
