@@ -192,7 +192,9 @@ class TestRobotAssembler(omni.kit.test.AsyncTestCase):
         XFormPrim("/World/ur10e").set_world_pose(np.array([-1.0, 0.0, 0.0]))
 
         # Move the Articulation root to different places in order to test that each location is handled correctly
-        RobotAssembler.move_articulation_root(get_prim_at_path("/World/ur10e"), get_prim_at_path(base_art_root))
+        RobotAssembler.move_articulation_root(
+            get_prim_at_path("/World/ur10e/root_joint"), get_prim_at_path(base_art_root)
+        )
         RobotAssembler.move_articulation_root(
             get_prim_at_path("/World/allegro_hand"), get_prim_at_path(attach_art_root)
         )
