@@ -767,15 +767,18 @@ test-windows-x86_64-nativepythontests-3:
     - !reference [.rules-nightly-tests, rules] #only run linux ones per MR and these nightly
 
 test-python-packages-linux:
+  stage: test
+  timeout: 3 hour
+  interruptible: true
   extends:
-      - .test-common
-      - .test-linux-common
-      - .install-linux-test-packages
-      - .runner-test-linux-x86_64-gpu
-      - .omni_nvks_gpu
+    - .test-artifacts
+    - .install-linux-test-packages
+    - .runner-test-linux-x86_64-gpu
+    - .omni_nvks_gpu
+  allow_failure: true
   rules:
-      - if: $RUN_PYTHON_PACKAGE_TEST == "true"
-        when: always
+      - if: $RUN_PYTHON_PACKAGE_TEST == "false"
+        when: never
   script:
       # - apt-get update
       # - apt-get install python3.10 -y
