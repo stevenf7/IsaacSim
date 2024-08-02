@@ -150,7 +150,7 @@ variables:
   rules:
   - if: $RUN_BUMP_VERSION == "true"
     when: never
-  - if: $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true"
+  - if: $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true" || $RUN_PYTHON_PACKAGE_TEST == "true"
     when: never
   - !reference [.rules-workflow, rules]
 
@@ -272,7 +272,7 @@ check-code-format:
   rules:
   - if: $RUN_BUMP_VERSION == "true"
     when: never
-  - if: $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true"
+  - if: $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true" || $RUN_PYTHON_PACKAGE_TEST == "true"
     when: never
   - !reference [.rules-workflow, rules]
 
@@ -359,7 +359,7 @@ build-windows-x86_64-debug:
     - .test-artifacts
   allow_failure: true
   rules:
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true"
+  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true" || $RUN_PYTHON_PACKAGE_TEST == "true"
     when: never
   - !reference [.rules-workflow, rules]
 
