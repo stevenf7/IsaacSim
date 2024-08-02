@@ -774,8 +774,8 @@ test-python-packages-linux:
       - .runner-test-linux-x86_64-gpu
       - .omni_nvks_gpu
   rules:
-      - if: $RUN_PYTHON_PACKAGE_TEST == "false"
-        when: never
+      - if: $RUN_PYTHON_PACKAGE_TEST == "true"
+        when: always
   script:
       # - apt-get update
       # - apt-get install python3.10 -y
