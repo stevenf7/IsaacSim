@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.1.2] - 2024-07-31
+### Fixed
+- Fix deprecation warning and use Semantics instead of pxr.Semantics
+
 ## [3.1.1] - 2024-07-09
 ### Changed
 - Added deprecation warnings for the physx ultrasonic sensors

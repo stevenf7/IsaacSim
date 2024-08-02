@@ -22,9 +22,9 @@ import omni.replicator.core as rep
 import omni.timeline
 import omni.ui as ui
 import omni.usd
+import Semantics
 from omni.kit.viewport.utility import get_active_viewport
 from omni.kit.window.extensions.utils import open_file_using_os_default
-from pxr import Semantics
 
 PARAM_TOOLTIPS = {
     "rgb": "Produces an array of type np.uint8 with shape (width, height, 4), where the four channels correspond to R,G,B,A.",

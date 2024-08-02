@@ -10,7 +10,8 @@ from typing import Dict, List, Tuple
 
 import omni.isaac.core.utils.prims as prim_utils
 import omni.usd
-from pxr import Semantics, Usd, UsdGeom
+import Semantics
+from pxr import Usd, UsdGeom
 
 
 def add_update_semantics(prim: Usd.Prim, semantic_label: str, type_label: str = "class", suffix="") -> None:
