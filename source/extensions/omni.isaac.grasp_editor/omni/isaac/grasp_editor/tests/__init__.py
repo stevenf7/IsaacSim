@@ -6,5 +6,5 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.grasp_editor.extension import *
-from omni.isaac.grasp_editor.grasp_importer import GraspSpec, import_grasps_from_file
+
+from .test_grasp_importer import *
