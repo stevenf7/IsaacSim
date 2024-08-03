@@ -362,6 +362,11 @@ class SimulationApp:
                 "--/rtx/addTileGpuAnnotations=true",
                 "--/profiler/gpu/tracyInject/enabled=true",
                 "--/profiler/gpu/tracyInject/msBetweenClockCalibration=0",
+                "--/app/profilerMask=1",
+                "--/plugins/carb.profiler-tracy.plugin/fibersAsThreads=false",
+                "--/profiler/channels/carb.events/enabled=false",
+                "--/profiler/channels/carb.tasking/enabled=false",
+                "--/profiler/gpu=true",
             ]
         # Enable the supported backend
         if "tracy" in profiler_backends and "nvtx" not in profiler_backends:

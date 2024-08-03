@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.13.1] - 2024-08-03
+### Changed
+- Added missing tracy parameters to reduce profiling bias on measured performance
+
 ## [1.13.0] - 2024-07-16
 ### Changed
 - omni.isaac.version, omni.ui, omni.kit.window.title are not required to use SimulationApp in headless mode
