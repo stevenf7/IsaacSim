@@ -67,7 +67,7 @@
                     "create_nodes": [["TestNode", "omni.isaac.core_nodes.IsaacReadCameraInfo"]]
                 },
                 "inputs":{
-                    "renderProductPath": "/Render/RenderProduct_omni_kit_widget_viewport_ViewportTexture_0"
+                    "renderProductPath": "/Render/OmniverseKit/HydraTextures/omni_kit_widget_viewport_ViewportTexture_0"
                 },
                 "outputs": {
                     "focalLength": 18.14756202697754

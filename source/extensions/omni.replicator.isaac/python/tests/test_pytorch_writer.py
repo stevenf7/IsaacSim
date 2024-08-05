@@ -137,9 +137,10 @@ class TestMultipleRenderProducts(omni.kit.test.AsyncTestCase):
 
         image = pytorch_listener.get_rgb_data()
         file_paths = []
+        rp_prefix = carb.settings.get_settings().get_as_string("/exts/omni.kit.hydra_texture/renderProduct/path/prefix")
         for rp in render_products:
-            name = rp.path.split("/Render/RenderProduct_")[-1]
-            path = os.path.join(out_dir, f"rgb_9_RenderProduct_{name}.png")
+            name = rp.path.split(rp_prefix)[-1]
+            path = os.path.join(out_dir, f"rgb_9_{name}.png")
             file_paths.append(path)
             self.assertTrue(Path(path).exists())
 
