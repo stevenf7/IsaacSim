@@ -36,7 +36,7 @@
     <package name="repo_bench" version="1.0.0" />
   </dependency>
   <dependency name="repo_python_package" linkPath="../_repo/deps/repo_python_package">
-    <package name="repo_python_package" version="0.5.3" />
+    <package name="repo_python_package" version="0.5.4" />
   </dependency>
   <dependency name="repo_usd" linkPath="../_repo/deps/repo_usd">
     <package name="repo_usd" version="4.4.8" />
