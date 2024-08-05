@@ -22,14 +22,11 @@ import omni.kit.test
 from omni.isaac.core import World
 from omni.isaac.core.articulations import Articulation
 from omni.isaac.core.objects import DynamicCuboid
-from omni.isaac.core.objects.ground_plane import GroundPlane
 from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.physics import simulate_async
 from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.rotations import quat_to_euler_angles
-from omni.isaac.core.utils.stage import clear_stage
-from omni.isaac.core.utils.transformations import get_relative_transform
 from omni.isaac.nucleus import get_assets_root_path_async
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
@@ -745,4 +742,3 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         self.my_world.play()
         await simulate_async(0.1)
         self.my_world.stop()
-        clear_stage()

@@ -62,9 +62,9 @@ class TestCreateRenderProduct(ogts.OmniGraphTestCase):
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
-
-        rp_1 = UsdRender.Product(self._stage.GetPrimAtPath("/Render/RenderProduct_Replicator"))
-        rp_2 = UsdRender.Product(self._stage.GetPrimAtPath("/Render/RenderProduct_Replicator_01"))
+        rp_prefix = carb.settings.get_settings().get_as_string("/exts/omni.kit.hydra_texture/renderProduct/path/prefix")
+        rp_1 = UsdRender.Product(self._stage.GetPrimAtPath("/Render/" + rp_prefix + "Replicator"))
+        rp_2 = UsdRender.Product(self._stage.GetPrimAtPath("/Render/" + rp_prefix + "Replicator_01"))
         self.assertTrue(rp_1)
         self.assertFalse(rp_2)
 
