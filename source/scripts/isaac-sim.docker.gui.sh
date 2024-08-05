@@ -8,7 +8,7 @@ if [[ -z "$@" ]]; then
     command="bash"
 fi
 # Set to desired Nucleus
-omni_server="http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.1"
+omni_server="http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.2"
 if ! [[ -z "${OMNI_SERVER}" ]]; then
 	omni_server="${OMNI_SERVER}"
 fi
@@ -42,7 +42,7 @@ echo "Logging in to nvcr.io..."
 docker login nvcr.io
 
 echo "Pulling docker image..."
-docker pull nvcr.io/nvidia/isaac-sim:4.1.0
+docker pull nvcr.io/nvidia/isaac-sim:4.2.0
 
 echo "Running Isaac Sim container with X11 forwarding..."
 xhost +
@@ -61,7 +61,7 @@ docker run --name isaac-sim --entrypoint bash --runtime=nvidia --gpus all -e "AC
 	-v ~/docker/isaac-sim/config:/root/.nvidia-omniverse/config:rw \
 	-v ~/docker/isaac-sim/data:/root/.local/share/ov/data:rw \
 	-v ~/docker/isaac-sim/documents:/root/Documents:rw \
-	nvcr.io/nvidia/isaac-sim:4.1.0 \
+	nvcr.io/nvidia/isaac-sim:4.2.0 \
 	-c "${command}"
 
 echo "Isaac Sim container run completed!"
