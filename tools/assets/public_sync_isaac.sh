@@ -4,7 +4,7 @@ set -e
 
 OMNICLI=~/.local/share/ov/pkg/prod-connectsample-203.0.0/omnicli.sh
 TEMP_DIR="$(dirname "$(realpath $0)")"/../../_assets
-ISAAC_VER=4.0
+ISAAC_VER=4.2
 
 #echo run $OMNICLI copy omniverse://ov-isaac-dev/Isaac/Samples $TEMP_DIR/Isaac/Samples
 #$OMNICLI copy omniverse://ov-isaac-dev/Isaac/Samples $TEMP_DIR/Isaac/Samples

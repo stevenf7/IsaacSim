@@ -6,7 +6,7 @@ ROOT_DIR="$(dirname "$(realpath $SCRIPT_DIR/../../../)")"
 OMNICLI="$ROOT_DIR/_build/_omnicli/omnicli.sh"
 SOURCE_PATH="https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac"
 OUTPUT_PATH="$ROOT_DIR/_assets-1_temp"
-VERSION="4.0"
+VERSION="4.2"
 NAME="isaac-sim-assets-1"
 
 
