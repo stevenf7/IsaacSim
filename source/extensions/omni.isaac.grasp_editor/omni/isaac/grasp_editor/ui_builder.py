@@ -739,10 +739,19 @@ class UIBuilder:
         if self._gripper_selection_dropdown.get_selection() == "":
             self._selection_frame_helper_text.visible = True
             self._selection_frame_helper_text.set_text("An Articulation must be present on the stage to continue.")
+            self._selection_ready_btn.reset()
             return
         elif self._rb_conversion_stringfield.get_value() == "":
             self._selection_frame_helper_text.visible = True
             self._selection_frame_helper_text.set_text("A valid prim must be selected on the stage to continue.")
+            self._selection_ready_btn.reset()
+            return
+        elif not is_yaml(self._export_path.get_value()):
+            self._selection_frame_helper_text.visible = True
+            self._selection_frame_helper_text.set_text(
+                "A valid export path must be selected to continue.  Make sure the path ends in '.yaml'."
+            )
+            self._selection_ready_btn.reset()
             return
 
         rb_prim_path = self._rb_conversion_stringfield.get_value()
