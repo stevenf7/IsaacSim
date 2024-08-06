@@ -1,4 +1,7 @@
 # Changelog
+## [1.1.1] - 2024-08-06
+### Fixed
+- Fix UI bug that allowed users to continue from selection frame prematurely.
 
 ## [1.1.0] - 2024-08-02
 ### Added
