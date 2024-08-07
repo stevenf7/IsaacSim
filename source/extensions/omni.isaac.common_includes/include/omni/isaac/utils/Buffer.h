@@ -94,7 +94,7 @@ public:
     }
     virtual void resize(size_t size)
     {
-        if (size != mSize && size > 0)
+        if ((size != mSize && size > 0) || mBuffer == nullptr)
         {
             ScopedDevice scopedDevice(mDevice);
             if (mBuffer)
