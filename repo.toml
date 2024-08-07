@@ -818,7 +818,7 @@ git_url = "https://oauth2:${env:GITLAB_PUSH_TOKEN}@gitlab-master.nvidia.com/omni
 # FOR DEVELOPMENT #
 branch_name = "develop"
 # # FOR PRODUCTION #
-# branch_name = "release/2023.1"
+# branch_name = "release/4.2"
 
 
 ########################################################################################################################
