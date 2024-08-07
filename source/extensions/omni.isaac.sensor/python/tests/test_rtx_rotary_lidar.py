@@ -89,6 +89,36 @@ class TestRTXRotaryLidar(omni.kit.test.AsyncTestCase):
         await update_stage_async()
         texture.destroy()
 
+    def create_lidar(
+        self,
+        prim_path="/sensor",
+        position=[0.0, 0.0, 0.0],
+        orientation=[0.0, 0.0, 0.0],
+        config_file_name="Example_Rotary",
+    ):
+        """Create RTX lidar in scene. Add annotators for point cloud and flatscan data.
+
+        Args:
+            prim_path (str, optional): Prim path of sensor. Defaults to "/sensor".
+            position (list, optional): Position of sensor in scene units. Defaults to [0.0, 0.0, 0.0].
+            orientation (list, optional): Euler angles specifying sensor orientation. Defaults to [0.0, 0.0, 0.0].
+            config_file_name (str, optional): Name of sensor config file. Defaults to "Example_Rotary".
+        """
+        sensor = LidarRtx(
+            prim_path=prim_path,
+            position=np.array(position),
+            orientation=rot_utils.euler_angles_to_quats(np.array(orientation), degrees=True),
+            config_file_name=config_file_name,
+        )
+        sensor.initialize()
+        sensor.add_range_data_to_frame()
+        sensor.add_elevation_data_to_frame()
+        sensor.add_azimuth_data_to_frame()
+        sensor.add_linear_depth_data_to_frame()
+        sensor.add_azimuth_range_to_frame()
+        sensor.add_horizontal_resolution_to_frame()
+        return sensor
+
     async def test_rtx_rotary_lidar_point_cloud_in_cube(self):
         """
         Tests RTX lidar point cloud returns correct range for all azimuth/elevation pairs across multiple frames.
@@ -101,16 +131,7 @@ class TestRTXRotaryLidar(omni.kit.test.AsyncTestCase):
         await update_stage_async()
 
         # Place RTX lidar in the cube, automatically creating point cloud and flat scan annotators
-        sensor = LidarRtx(
-            prim_path="/sensor",
-            position=np.array([0.0, 0.0, 0.0]),
-            orientation=rot_utils.euler_angles_to_quats(np.array([0, 0, 0]), degrees=True),
-            config_file_name="Example_Rotary",
-        )
-        sensor.initialize()
-        sensor.add_range_data_to_frame()
-        sensor.add_elevation_data_to_frame()
-        sensor.add_azimuth_data_to_frame()
+        sensor = self.create_lidar()
         await update_stage_async()
 
         omni.timeline.get_timeline_interface().play()
@@ -135,6 +156,59 @@ class TestRTXRotaryLidar(omni.kit.test.AsyncTestCase):
 
         omni.timeline.get_timeline_interface().stop()
 
+    async def test_rtx_rotary_lidar_point_cloud_in_cube_multi(self):
+        """
+        Tests all RTX lidar point clouds returns correct range for all azimuth/elevation pairs across multiple frames, when
+        multiple RTX lidars are in the scene.
+        """
+        from math import floor
+
+        position_a = [0, 0, 0]
+        position_b = [100.0, 0, 0]
+
+        # Create two distant cubes with different edge lengths
+        edge_length_a = 10.0
+        VisualCuboid(prim_path="/World/cube_a", position=np.array(position_a), scale=edge_length_a * np.ones(3))
+        await update_stage_async()
+        edge_length_b = 20.0
+        VisualCuboid(prim_path="/World/cube_b", position=np.array(position_b), scale=edge_length_b * np.ones(3))
+        await update_stage_async()
+
+        # Place RTX lidar in center of each cube, automatically creating point cloud and flat scan annotators
+        sensor_a = self.create_lidar(prim_path="/sensor_a", position=position_a)
+        await update_stage_async()
+        sensor_b = self.create_lidar(prim_path="/sensor_b", position=position_b)
+        await update_stage_async()
+
+        omni.timeline.get_timeline_interface().play()
+
+        def test_sensor_frame(sensor, edge_length):
+            frame = sensor.get_current_frame()
+            num_points = len(frame["range"])
+            self.assertEqual(num_points, len(frame["elevation"]))
+            self.assertEqual(num_points, len(frame["azimuth"]))
+
+            for p in range(num_points):
+                az = frame["azimuth"][p]
+                el = frame["elevation"][p]
+                r = frame["range"][p]
+
+                # Adjust azimuth to appropriate angle in [-45, 45], then compute expected range to face, edge, or corner of cube
+                az_adj = az + (1 - floor((3 * np.pi / 4.0 + az) / (np.pi / 2.0))) * np.pi / 2.0
+                range_expected = edge_length / (2.0 * np.cos(az_adj) * np.cos(el))
+
+                self.assertAlmostEqual(r, range_expected, delta=range_expected * 1e-2)
+
+        for _ in range(6):
+            await omni.kit.app.get_app().next_update_async()
+
+            # Test that point cloud ranges line up with edges of the cube that the lidar is in
+            # If one sensor returns point cloud from the other sensor, the ranges won't line up and test will fail
+            test_sensor_frame(sensor_a, edge_length_a)
+            test_sensor_frame(sensor_b, edge_length_b)
+
+        omni.timeline.get_timeline_interface().stop()
+
     async def test_rtx_rotary_lidar_flat_scan_in_cube(self):
         """
         Tests RTX lidar flat scan returns correct range for all azimuth/elevation pairs across multiple frames.
@@ -146,16 +220,8 @@ class TestRTXRotaryLidar(omni.kit.test.AsyncTestCase):
         VisualCuboid(prim_path="/World/cube", position=np.array([0, 0, 0]), scale=edge_length * np.ones(3))
 
         # Place RTX lidar in the cube, automatically creating point cloud and flat scan annotators
-        sensor = LidarRtx(
-            prim_path="/sensor",
-            position=np.array([0.0, 0.0, 0.0]),
-            orientation=rot_utils.euler_angles_to_quats(np.array([0, 0, 0]), degrees=True),
-            config_file_name="Example_Rotary",
-        )
-        sensor.initialize()
-        sensor.add_linear_depth_data_to_frame()
-        sensor.add_azimuth_range_to_frame()
-        sensor.add_horizontal_resolution_to_frame()
+        sensor = self.create_lidar()
+        await update_stage_async()
 
         omni.timeline.get_timeline_interface().play()
         for i in range(10):

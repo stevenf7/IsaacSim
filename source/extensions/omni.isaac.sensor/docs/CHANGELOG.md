@@ -1,5 +1,9 @@
 # Changelog
 
+## [12.8.1] - 2024-08-06
+### Fixed
+- Disables per-view TLAS so that individual RTX sensors return separate point clouds
+
 ## [12.8.0] - 2024-07-23
 ### Added
 - New command "IsaacSensorCreateRtxIDS" to support occupancy sim extension
