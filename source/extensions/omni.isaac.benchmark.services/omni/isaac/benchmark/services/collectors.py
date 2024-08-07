@@ -84,7 +84,8 @@ class IsaacUpdateFrametimeCollector:
         self.elapsed_sim_time += event.payload["dt"]
         if self.__physx_benchmarking_iface:
             physics_stats = self.__physx_benchmarking_iface.get_profile_stats()
-            self.physics_frametimes_ms.append(physics_stats["PhysX Update"])
+            if "PhysX Update" in physics_stats:
+                self.physics_frametimes_ms.append(physics_stats["PhysX Update"])
 
     def start_collecting(self):
         # reset our tracking variables
