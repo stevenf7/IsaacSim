@@ -66,7 +66,6 @@ vscode.python_env.PYTHONPATH= [
   "$root/_build/$platform/$config/kit/python/lib/python3.10/site-packages",
   "$root/_build/$platform/$config/python_packages",
   "$root/_build/$platform/$config/exts/omni.isaac.kit",
-  "$root/_build/$platform/$config/exts/omni.isaac.gym",
   "$root/_build/$platform/$config/kit/kernel/py",
   "$root/_build/$platform/$config/kit/plugins/bindings-python/",
   "$root/_build/$platform/$config/exts/omni.isaac.lula/pip_prebundle",
@@ -257,7 +256,7 @@ sphinx_conf_py_extra = """
     autodoc_mock_imports = ["torch", "omni.ui", "usdrt",  "omni.kit.window", "omni.kit.helper", "omni.kit.ui", "omni.graph", "omni.replicator.core", "omni.activity", "omni.kit.app", "omni.stats"]
     import sys
     if sys.platform == "win32":
-        autodoc_mock_imports.extend(["omni.isaac.IsaacSensorSchema", "omni.isaac.RangeSensorSchema", "omni.isaac.gym", "osqp", "omni.isaac.ros_bridge"])
+        autodoc_mock_imports.extend(["omni.isaac.IsaacSensorSchema", "omni.isaac.RangeSensorSchema", "osqp", "omni.isaac.ros_bridge"])
 
     rst_prolog = '''
     .. |br| raw:: html
@@ -587,7 +586,6 @@ exclude = [
   "tests-startup*${shell_ext}",
   "tests-selector*${shell_ext}",
   "tests-unit*${shell_ext}",
-  "tests-omni.isaac.gym${shell_ext}",
   "tests-omni.isaac.internal_tools*${shell_ext}",
   "tests-omni.isaac.benchmarks*${shell_ext}",
   "tests-standalone*${shell_ext}",
