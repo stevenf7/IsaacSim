@@ -41,6 +41,7 @@ stages:
   - test
   - security
   - deploy
+  - deploy-test
   - prod-test
   - pages
 
@@ -1058,8 +1059,13 @@ publish-extensions:
 # ==============================================================================================================
 .publish-python-packages-deploy-common:
   stage: deploy
-  extends:
-    - .deploy-artifacts
+  artifacts:
+    when: always
+    expire_in: 2 weeks
+    paths:
+      - _build/packages/python/requirements.txt  # produced by repo_python_package
+      - _repo/repo.log
+      - _repo/repolog*.txt
   timeout: 3 hour
   interruptible: false
   rules:
@@ -1112,6 +1118,28 @@ publish-python-packages-windows:
     - !reference [.rules-version-changed, rules]
     - !reference [.rules-push-manual, rules]
 
+test-python-packages-linux:
+  stage: deploy-test
+  timeout: 3 hour
+  interruptible: true
+  allow_failure: true
+  extends:
+  - .runner-test-linux-x86_64-gpu
+  script:
+  - sudo apt update
+  - sudo apt -y install python3.10-venv
+  - python3.10 -m venv env_isaacsim
+  - source env_isaacsim/bin/activate
+  - pip install --upgrade pip
+  - pip install -r _build/packages/python/requirements.txt --extra-index-url https://urm.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi/simple --extra-index-url https://urm.nvidia.com/artifactory/api/pypi/ct-omniverse-pypi/simple
+  - export OMNI_KIT_ACCEPT_EULA=YES
+  - python -c "import isaacsim"
+  - isaacsim omni.isaac.sim --/app/quitAfter=100 --no-window
+  needs:
+    - job: publish-python-packages-linux
+      artifacts: true
+  rules:
+    - !reference [.rules-workflow, rules]
 
 # ==============================================================================================================
 publish-docs:
