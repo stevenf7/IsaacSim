@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.32.0] - 2024-08-07
+### Added
+- New iw.hub warehouse navigation sample for Foxy and Humble
+
 ## [2.31.6] - 2024-07-31
 ### Fixed
 - CameraInfo messages now have distortion coefficients forcibly set to [0,0,0,0,0] if the user sets distortion model
