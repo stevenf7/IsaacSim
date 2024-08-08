@@ -1126,17 +1126,52 @@ test-python-packages-linux:
   extends:
   - .runner-test-linux-x86_64-gpu
   script:
+  # install Python 3.10
   - sudo apt update
   - sudo apt -y install python3.10-venv
+  # create and source a virtual environment
   - python3.10 -m venv env_isaacsim
   - source env_isaacsim/bin/activate
+  # upgrade pip and install Isaac Sim - Python packages
   - pip install --upgrade pip
   - pip install -r _build/packages/python/requirements.txt --extra-index-url https://urm.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi/simple --extra-index-url https://urm.nvidia.com/artifactory/api/pypi/ct-omniverse-pypi/simple
+  # accept EULA
   - export OMNI_KIT_ACCEPT_EULA=YES
+  # run tests
   - python -c "import isaacsim"
   - isaacsim omni.isaac.sim --/app/quitAfter=100 --no-window
   needs:
     - job: publish-python-packages-linux
+      artifacts: true
+  rules:
+    - if: '$CI_COMMIT_BRANCH != "develop"'
+      when: never
+    - !reference [.rules-workflow, rules]
+
+test-python-packages-windows:
+  stage: deploy-test
+  timeout: 3 hour
+  interruptible: true
+  allow_failure: true
+  extends:
+  - .runner-test-windows-x86_64-gpu
+  script:
+  # install Python 3.10
+  - curl -o python-3.10.exe https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe
+  - cmd /c start /wait python-3.10.exe /quiet TargetDir=C:\Python310
+  # create and source a virtual environment
+  - C:\Python310\python.exe -m venv C:\env_isaacsim
+  - C:\env_isaacsim\Scripts\activate.bat
+  # upgrade pip and install Isaac Sim - Python packages
+  - C:\env_isaacsim\Scripts\python.exe -m pip install --upgrade pip
+  - pip install -r _build/packages/python/requirements.txt --extra-index-url https://urm.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi/simple --extra-index-url https://urm.nvidia.com/artifactory/api/pypi/ct-omniverse-pypi/simple
+  # accept EULA
+  - set OMNI_KIT_ACCEPT_EULA=YES
+  # run tests
+  - python -c "import isaacsim"
+  - isaacsim omni.isaac.sim --/app/quitAfter=100 --no-window
+  needs:
+    - job: publish-python-packages-windows
       artifacts: true
   rules:
     - if: '$CI_COMMIT_BRANCH != "develop"'
