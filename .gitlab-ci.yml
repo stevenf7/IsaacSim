@@ -1139,6 +1139,8 @@ test-python-packages-linux:
     - job: publish-python-packages-linux
       artifacts: true
   rules:
+    - if: '$CI_COMMIT_BRANCH != "develop"'
+      when: never
     - !reference [.rules-workflow, rules]
 
 # ==============================================================================================================
