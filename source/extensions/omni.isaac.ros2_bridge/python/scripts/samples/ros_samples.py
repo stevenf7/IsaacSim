@@ -35,7 +35,14 @@ class Extension(omni.ext.IExt):
                                 lambda a=weakref.proxy(self): a._on_environment_setup(
                                     "/Isaac/Samples/ROS2/Scenario/carter_warehouse_navigation.usd"
                                 ),
-                            )
+                            ),
+                            make_menu_item_description(
+                                ext_id,
+                                "iw.hub Navigation",
+                                lambda a=weakref.proxy(self): a._on_environment_setup(
+                                    "/Isaac/Samples/ROS2/Scenario/iw_hub_warehouse_navigation.usd"
+                                ),
+                            ),
                         ],
                     )
                 ],
