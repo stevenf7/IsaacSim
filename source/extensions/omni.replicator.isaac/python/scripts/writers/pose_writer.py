@@ -552,7 +552,7 @@ class PoseWriter(Writer):
         if not isinstance(render_products, list):
             render_products = [render_products]
         for rp in render_products:
-            rp_name = rp.path.split("/Render/")[-1]
+            rp_name = rp.hydra_texture.get_name()
             self._render_product_names.append(rp_name)
         # Check if there are multiple render products, this is used to suffix the annotator names for data access
         self._multiple_render_products = len(self._render_product_names) > 1

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.15.2] - 2024-08-08
+### Fixed 
+- PoseWriter render product names changes fix
+
 ## [1.15.1] - 2024-07-31
 ### Fixed 
 - DOPE writer numpy deprecation fix: np.float --> np.float64
