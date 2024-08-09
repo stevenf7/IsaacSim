@@ -539,6 +539,7 @@ function create_tests()
         python_sample_test("tests-standalone_benchmarks-benchmark_rtx_radar", "standalone_examples/benchmarks/benchmark_rtx_radar.py", "--num-frames 10 -num-sensors 4")
         python_sample_test("tests-standalone_benchmarks-benchmark_physx_lidar", "standalone_examples/benchmarks/benchmark_physx_lidar.py", "--num-frames 10 -num-sensors 4")
         python_sample_test("tests-standalone_benchmarks-benchmark_robots_o3dyn", "standalone_examples/benchmarks/benchmark_robots_o3dyn.py", "--num-frames 10 -num-robots 2")
+        python_sample_test("tests-standalone_benchmarks-benchmark_scene_loading", "standalone_examples/benchmarks/benchmark_scene_loading.py", "--num-frames 10 --env-url /Isaac/Environments/Simple_Warehouse/full_warehouse.usd")
 
 
     if os.target() == "linux" then
