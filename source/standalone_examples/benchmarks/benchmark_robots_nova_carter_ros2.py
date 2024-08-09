@@ -47,18 +47,19 @@ from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": True, "max_gpu_count": n_gpu})
 
-
 import carb
 import omni
 import omni.graph.core as og
 import omni.kit.test
 from omni.isaac.core import PhysicsContext
 from omni.isaac.core.utils.extensions import enable_extension
-from omni.isaac.core.utils.types import ArticulationAction
+from omni.isaac.core.utils.stage import get_current_stage
 from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.wheeled_robots.robots import WheeledRobot
+from pxr import Usd
 
 enable_extension("omni.isaac.benchmark.services")
+
 from omni.isaac.benchmark.services import BaseIsaacBenchmark
 
 # Create the benchmark
@@ -75,15 +76,40 @@ benchmark = BaseIsaacBenchmark(
     },
     backend_type=args.backend_type,
 )
+
+# Generate Twist message
+def move_cmd_msg(x, y, z, ax, ay, az):
+    msg = Twist()
+    msg.linear.x = x
+    msg.linear.y = y
+    msg.linear.z = z
+    msg.angular.x = ax
+    msg.angular.y = ay
+    msg.angular.z = az
+    return msg
+
+
 benchmark.set_phase("loading", start_recording_frametime=False, start_recording_runtime=True)
 
 enable_extension("omni.isaac.ros2_bridge")
+import rclpy
+from geometry_msgs.msg import Twist
+
 omni.kit.app.get_app().update()
+
+# Create publisher for move commands
+rclpy.init()
+node = rclpy.create_node("cmd_vel_publisher")
+cmd_vel_pub = node.create_publisher(Twist, "cmd_vel", 1)
 
 robot_path = "/Isaac/Samples/ROS2/Robots/Nova_Carter_ROS.usd"
 scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
 
 benchmark.fully_load_stage(benchmark.assets_root_path + scene_path)
+
+# NOTE: Modify endtimecode to prevent step skipping errors
+with Usd.EditContext(get_current_stage(), get_current_stage().GetRootLayer()):
+    get_current_stage().SetEndTimeCode(1000000.0)
 
 stage = omni.usd.get_context().get_stage()
 PhysicsContext(physics_dt=1.0 / 60.0)
@@ -149,9 +175,8 @@ omni.kit.app.get_app().update()
 for robot in robots:
     robot.initialize()
     # start the robot rotating in place so not to run into each
-    robot.apply_wheel_actions(
-        ArticulationAction(joint_positions=None, joint_efforts=None, joint_velocities=5 * np.array([0, 1]))
-    )
+    move_cmd = move_cmd_msg(0.0, 0.0, 0.0, 0.0, 0.0, 1.0)
+    cmd_vel_pub.publish(move_cmd)
 
 omni.kit.app.get_app().update()
 omni.kit.app.get_app().update()
@@ -160,12 +185,14 @@ benchmark.store_measurements()
 # perform benchmark
 benchmark.set_phase("benchmark")
 
-
 for _ in range(1, n_frames):
     omni.kit.app.get_app().update()
 
 benchmark.store_measurements()
 benchmark.stop()
+
+node.destroy_node()
+rclpy.shutdown()
 
 timeline.stop()
 simulation_app.close()
