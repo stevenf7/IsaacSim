@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.19.2] - 2024-08-09
+### Fixed
+- missing omni.kit.stage_templates dependency
+
 ## [3.19.1] - 2024-07-31
 ### Fixed
 - Fix deprecation warning and use Semantics instead of pxr.Semantics
