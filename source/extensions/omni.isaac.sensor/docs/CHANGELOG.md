@@ -1,5 +1,12 @@
 # Changelog
 
+## [12.8.2] - 2024-08-09
+### Added
+- Added Gemini 335, 335L to the menu
+
+### Updated
+- Updated Gemini 2 usd file path
+
 ## [12.8.1] - 2024-08-06
 ### Fixed
 - Disables per-view TLAS so that individual RTX sensors return separate point clouds

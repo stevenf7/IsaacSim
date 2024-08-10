@@ -53,10 +53,10 @@ class IsaacSensorMenu:
                                 ext_id,
                                 "Orbbec Gemini 2",
                                 lambda a=weakref.proxy(self): create_prim(
-                                    prim_path=get_next_free_path("/Gemini", None),
+                                    prim_path=get_next_free_path("/Gemini2", None),
                                     prim_type="Xform",
                                     usd_path=get_assets_root_path()
-                                    + "/Isaac/Sensors/Orbbec/Gemini 2/orbbec_gemini2_V1.0.usd",
+                                    + "/Isaac/Sensors/Orbbec/Gemini2/orbbec_gemini2_v1.0.usd",
                                 ),
                             ),
                             make_menu_item_description(
@@ -67,6 +67,26 @@ class IsaacSensorMenu:
                                     prim_type="Xform",
                                     usd_path=get_assets_root_path()
                                     + "/Isaac/Sensors/Orbbec/FemtoMega/orbbec_femtomega_v1.0.usd",
+                                ),
+                            ),
+                            make_menu_item_description(
+                                ext_id,
+                                "Orbbec Gemini 335",
+                                lambda a=weakref.proxy(self): create_prim(
+                                    prim_path=get_next_free_path("/Gemini335", None),
+                                    prim_type="Xform",
+                                    usd_path=get_assets_root_path()
+                                    + "/Isaac/Sensors/Orbbec/Gemini335/orbbec_gemini_335.usd",
+                                ),
+                            ),
+                            make_menu_item_description(
+                                ext_id,
+                                "Orbbec Gemini 335L",
+                                lambda a=weakref.proxy(self): create_prim(
+                                    prim_path=get_next_free_path("/Gemini335L", None),
+                                    prim_type="Xform",
+                                    usd_path=get_assets_root_path()
+                                    + "/Isaac/Sensors/Orbbec/Gemini335L/orbbec_gemini_335L.usd",
                                 ),
                             ),
                         ],
