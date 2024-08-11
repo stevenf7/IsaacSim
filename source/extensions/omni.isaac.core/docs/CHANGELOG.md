@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.19.3] - 2024-08-09
+### Fixed
+- Do not delete the default renderproduct for the viewport when calling clear stage
+
 ## [3.19.2] - 2024-08-09
 ### Fixed
 - missing omni.kit.stage_templates dependency
