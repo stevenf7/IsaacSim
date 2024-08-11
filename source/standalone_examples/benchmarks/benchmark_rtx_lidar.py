@@ -112,6 +112,8 @@ for sensor in sensors:
 omni.kit.app.get_app().update()
 
 for texture in hydra_textures:
+    omni.kit.app.get_app().update()
+    texture.destroy()
     texture = None
 omni.kit.app.get_app().update()
 
