@@ -1,8 +1,7 @@
 # Changelog
 ## [1.5.1] - 2024-08-01
 ### Fixed
-- Fixed test that failed due to changes in underlying UR10e asset on Nucleus server.  The test
-  had an incorrect hard-coded path for the robot's Articulation Root.
+- Fixed test that failed due to changes in underlying UR10e asset on Nucleus server.  The test had an incorrect hard-coded path for the robot's Articulation Root.
 
 ## [1.5.0] - 2024-05-23
 ### Fixed

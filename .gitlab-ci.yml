@@ -1178,7 +1178,7 @@ test-python-packages-windows:
   rules:
     - if: '$CI_COMMIT_BRANCH != "develop"'
       when: never
-    - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true"
+    - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true" || $RUN_NIGHTLY_TESTS == "true"
       when: never
     - !reference [.rules-workflow, rules]
 

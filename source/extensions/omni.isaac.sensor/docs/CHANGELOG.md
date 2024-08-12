@@ -4,7 +4,7 @@
 ### Added
 - Added Gemini 335, 335L to the menu
 
-### Updated
+### Changed
 - Updated Gemini 2 usd file path
 
 ## [12.8.1] - 2024-08-06

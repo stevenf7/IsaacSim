@@ -6,8 +6,7 @@
 
 ## [2.31.6] - 2024-07-31
 ### Fixed
-- CameraInfo messages now have distortion coefficients forcibly set to [0,0,0,0,0] if the user sets distortion model
-  as "plumb_bob", regardless of distortion coefficient values set in camera prim.
+- CameraInfo messages now have distortion coefficients forcibly set to [0,0,0,0,0] if the user sets distortion model as "plumb_bob", regardless of distortion coefficient values set in camera prim.
 
 ## [2.31.5] - 2024-07-25
 ### Fixed
