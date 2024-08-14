@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.32.1] - 2024-08-14
+### Fixed
+- ROS2CameraInfoHelper publishes correct frame ID.
+
 ## [2.32.0] - 2024-08-07
 ### Added
 - New iw.hub warehouse navigation sample for Foxy and Humble

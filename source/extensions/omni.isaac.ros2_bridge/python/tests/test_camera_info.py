@@ -301,6 +301,8 @@ class TestRos2CameraInfo(omni.kit.test.AsyncTestCase):
                         ("CreateRenderProductRight.inputs:width", 1920),
                         ("CameraInfoPublish.inputs:topicName", "camera_info_left"),
                         ("CameraInfoPublish.inputs:topicNameRight", "camera_info_right"),
+                        ("CameraInfoPublish.inputs:frameId", "frame_left"),
+                        ("CameraInfoPublish.inputs:frameIdRight", "frame_right"),
                         ("CameraInfoPublish.inputs:resetSimulationTimeOnStop", True),
                         ("RGBPublishLeft.inputs:topicName", "rgb_left"),
                         ("RGBPublishLeft.inputs:type", "rgb"),
@@ -395,11 +397,13 @@ class TestRos2CameraInfo(omni.kit.test.AsyncTestCase):
         self.assertEqual(self._camera_info_left.height, 1200)
         self.assertGreaterEqual(self._camera_info_left.header.stamp.sec, 0)
         self.assertLess(self._camera_info_left.header.stamp.sec, system_time / 2.0)
+        self.assertEqual(self._camera_info_left.header.frame_id, "frame_left")
 
         self.assertEqual(self._camera_info_right.width, 1920)
         self.assertEqual(self._camera_info_right.height, 1200)
         self.assertGreaterEqual(self._camera_info_right.header.stamp.sec, 0)
         self.assertLess(self._camera_info_right.header.stamp.sec, system_time / 2.0)
+        self.assertEqual(self._camera_info_right.header.frame_id, "frame_right")
 
         # Test contents of k matrix (function of width, height, focal length, apertures)
         self.assertAlmostEqual(self._camera_info_left.k[0], 1920.0 * 2.87343 / 5.76, places=2)
