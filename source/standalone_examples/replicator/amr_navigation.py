@@ -26,14 +26,15 @@ import omni.kit.app
 import omni.replicator.core as rep
 import omni.timeline
 import omni.usd
+import omni.usd.commands
 from omni.isaac.core.utils.stage import add_reference_to_stage, create_new_stage
 from omni.isaac.nucleus import get_assets_root_path
-from pxr import Gf, PhysxSchema, UsdGeom, UsdLux, UsdPhysics
+from pxr import Gf, PhysxSchema, Usd, UsdGeom, UsdLux, UsdPhysics
 
 
 class NavSDGDemo:
     CARTER_URL = "/Isaac/Samples/Replicator/OmniGraph/nova_carter_nav_only.usd"
-    DOLLY_URL = "/Isaac/Props/Dolly/dolly_physics.usd"
+    DOLLY_URL = "/Isaac/Props/Dolly/dolly.usd"
     PROPS_URL = "/Isaac/Props/YCB/Axis_Aligned_Physics"
     LEFT_CAMERA_PATH = "/NavWorld/CarterNav/chassis_link/front_hawk/left/camera_left"
     RIGHT_CAMERA_PATH = "/NavWorld/CarterNav/chassis_link/front_hawk/right/camera_right"
@@ -144,6 +145,23 @@ class NavSDGDemo:
             UsdGeom.Xformable(self._dolly).AddTranslateOp()
         if not self._dolly.GetAttribute("xformOp:rotateXYZ"):
             UsdGeom.Xformable(self._dolly).AddRotateXYZOp()
+        # Add colliders to the mesh and primitive types of the dolly descendent prims
+        for desc_prim in Usd.PrimRange(self._dolly):
+            # Enable collisions if the prim is of type mesh or gprim (primitive)
+            if desc_prim.IsA(UsdGeom.Mesh) or desc_prim.IsA(UsdGeom.Gprim):
+                if not desc_prim.HasAPI(UsdPhysics.CollisionAPI):
+                    collision_api = UsdPhysics.CollisionAPI.Apply(desc_prim)
+                else:
+                    collision_api = UsdPhysics.CollisionAPI(desc_prim)
+                collision_api.CreateCollisionEnabledAttr(True)
+            # If the prim is a mesh add a collider aproximation type
+            if desc_prim.IsA(UsdGeom.Mesh):
+                if not desc_prim.HasAPI(UsdPhysics.MeshCollisionAPI):
+                    mesh_collision_api = UsdPhysics.MeshCollisionAPI.Apply(desc_prim)
+                else:
+                    mesh_collision_api = UsdPhysics.MeshCollisionAPI(desc_prim)
+                # The prim is static, setting the collider type to "none" (defaulting to "TriangleMesh", e.g. no approx)
+                mesh_collision_api.CreateApproximationAttr().Set("none")
 
         # Light
         light = UsdLux.SphereLight.Define(self._stage, f"/NavWorld/DollyLight")
@@ -253,8 +271,8 @@ class NavSDGDemo:
         for rp in self._render_products:
             rp.destroy()
         self._render_products.clear()
-        if self._stage.GetPrimAtPath("/Replicator"):
-            omni.kit.commands.execute("DeletePrimsCommand", paths=["/Replicator"])
+        if self._stage.GetPrimAtPath("/Replicator").IsValid():
+            omni.usd.commands.DeletePrimsCommand(["/Replicator"]).do()
 
     def _enable_render_products(self):
         print(f"[NavSDGDemo] Enabling render products for SDG..")
@@ -283,8 +301,8 @@ class NavSDGDemo:
             self._disable_render_products()
 
     def _load_next_env(self):
-        if self._stage.GetPrimAtPath("/Environment"):
-            omni.kit.commands.execute("DeletePrimsCommand", paths=["/Environment"])
+        if self._stage.GetPrimAtPath("/Environment").IsValid():
+            omni.usd.commands.DeletePrimsCommand(["/Environment"]).do()
         assets_root_path = get_assets_root_path()
         add_reference_to_stage(usd_path=assets_root_path + next(self._cycled_env_urls), prim_path="/Environment")
 
