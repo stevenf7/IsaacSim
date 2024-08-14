@@ -1163,12 +1163,12 @@ test-python-packages-windows:
   - cmd /c start /wait python-3.10.exe /quiet TargetDir=C:\Python310
   # create and source a virtual environment
   - C:\Python310\python.exe -m venv C:\env_isaacsim
-  - C:\env_isaacsim\Scripts\activate.bat
-  # upgrade pip and install Isaac Sim - Python packages
   - C:\env_isaacsim\Scripts\python.exe -m pip install --upgrade pip
+  - C:\env_isaacsim\Scripts\activate.ps1
+  # install Isaac Sim - Python packages
   - pip install -r _build/packages/python/requirements.txt --extra-index-url https://urm.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi/simple --extra-index-url https://urm.nvidia.com/artifactory/api/pypi/ct-omniverse-pypi/simple
   # accept EULA
-  - set OMNI_KIT_ACCEPT_EULA=YES
+  - $env:OMNI_KIT_ACCEPT_EULA = "YES"
   # run tests
   - python -c "import isaacsim"
   - isaacsim omni.isaac.sim --/app/quitAfter=100 --no-window
