@@ -42,19 +42,19 @@ config = {
     "clear_previous_semantics": True,
     "forklift": {
         "url": "/Isaac/Props/Forklift/forklift.usd",
-        "class": "Forklift",
+        "class": "forklift",
     },
     "cone": {
         "url": "/Isaac/Environments/Simple_Warehouse/Props/S_TrafficCone.usd",
-        "class": "TrafficCone",
+        "class": "traffic_cone",
     },
     "pallet": {
         "url": "/Isaac/Environments/Simple_Warehouse/Props/SM_PaletteA_01.usd",
-        "class": "Pallet",
+        "class": "pallet",
     },
     "cardbox": {
         "url": "/Isaac/Environments/Simple_Warehouse/Props/SM_CardBoxD_04.usd",
-        "class": "Cardbox",
+        "class": "cardbox",
     },
     "close_app_after_run": True,
 }
@@ -247,7 +247,7 @@ print(f"[scene_based_sdg] Running SDG for {num_frames} frames")
 for i in range(num_frames):
     print(f"[scene_based_sdg] \t Capturing frame {i}")
     # Trigger the custom event to randomize the cones at specific frames
-    if i % 2 != 0:
+    if i % 2 == 0:
         rep.utils.send_og_event(event_name="randomize_cones")
     # Trigger any on_frame registered randomizers and the writers (delta_time=0.0 to avoid advancing the timeline)
     rep.orchestrator.step(delta_time=0.0, rt_subframes=rt_subframes)

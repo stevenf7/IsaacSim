@@ -11,15 +11,36 @@ import math
 import random
 
 import numpy as np
-import omni
 import omni.replicator.core as rep
+import omni.usd
 from omni.isaac.core import World
 from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.utils import prims
 from omni.isaac.core.utils.bounds import compute_combined_aabb, compute_obb, create_bbox_cache, get_obb_corners
 from omni.isaac.core.utils.rotations import euler_angles_to_quat, quat_to_euler_angles
 from omni.isaac.core.utils.semantics import remove_all_semantics
-from pxr import Gf
+from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics
+
+
+# Add colliders to Gprim and Mesh descendants of the root prim
+def add_colliders(root_prim, approx_type="convexHull"):
+    # Iterate descendant prims (including root) and add colliders to mesh or primitive types
+    for desc_prim in Usd.PrimRange(root_prim):
+        if desc_prim.IsA(UsdGeom.Mesh) or desc_prim.IsA(UsdGeom.Gprim):
+            # Physics
+            if not desc_prim.HasAPI(UsdPhysics.CollisionAPI):
+                collision_api = UsdPhysics.CollisionAPI.Apply(desc_prim)
+            else:
+                collision_api = UsdPhysics.CollisionAPI(desc_prim)
+            collision_api.CreateCollisionEnabledAttr(True)
+        # Add mesh specific collision properties only to mesh types
+        if desc_prim.IsA(UsdGeom.Mesh):
+            # Add mesh collision properties to the mesh (e.g. collider aproximation type)
+            if not desc_prim.HasAPI(UsdPhysics.MeshCollisionAPI):
+                mesh_collision_api = UsdPhysics.MeshCollisionAPI.Apply(desc_prim)
+            else:
+                mesh_collision_api = UsdPhysics.MeshCollisionAPI(desc_prim)
+            mesh_collision_api.CreateApproximationAttr().Set(approx_type)
 
 
 # Clear any previous semantic data in the stage
@@ -39,33 +60,33 @@ def simulate_falling_objects(forklift_prim, assets_root_path, config, max_sim_st
     pallet_offset_tf = Gf.Matrix4d().SetTranslate(Gf.Vec3d(random.uniform(-1, 1), random.uniform(-4, -3.6), 0))
     pallet_pos = (pallet_offset_tf * forklift_tf).ExtractTranslation()
 
-    # Spawn pallet prim at a relative random offset to the forklift
-    pallet_prim_name = "SimulatedPallet"
+    # Spawn a pallet prim at a random offset from the forklift
     pallet_prim = prims.create_prim(
-        prim_path=f"/World/{pallet_prim_name}",
+        prim_path=f"/World/SimulatedPallet",
+        position=pallet_pos,
+        orientation=euler_angles_to_quat([0, 0, random.uniform(0, math.pi)]),
         usd_path=assets_root_path + config["pallet"]["url"],
         semantic_label=config["pallet"]["class"],
-        translation=pallet_pos,
-        orientation=euler_angles_to_quat([0, 0, random.uniform(0, math.pi)]),
     )
 
-    # Wrap the pallet as a simulation ready rigid prim a
-    pallet_rigid_prim = RigidPrim(prim_path=str(pallet_prim.GetPrimPath()), name=pallet_prim_name)
-
-    # Enable physics and add to isaacsim world scene
+    # Wrap the pallet as simulation ready with a simplified collider
+    add_colliders(pallet_prim, approx_type="boundingCube")
+    pallet_rigid_prim = RigidPrim(prim_path=str(pallet_prim.GetPrimPath()))
     pallet_rigid_prim.enable_rigid_body_physics()
-    world.scene.add(pallet_rigid_prim)
 
     # Use the height of the pallet as a spawn base for the boxes
     bb_cache = create_bbox_cache()
     spawn_height = bb_cache.ComputeLocalBound(pallet_prim).GetRange().GetSize()[2] * 1.1
 
+    # Keep track of the last box to stop the simulation early once it stops moving
+    last_box = None
     # Spawn boxes falling on the pallet
     for i in range(num_boxes):
-        # Spawn box prim
-        cardbox_prim_name = f"SimulatedCardbox_{i}"
+        # Spawn the carbox prim by creating a new Xform prim and adding the USD reference to it
         box_prim = prims.create_prim(
-            prim_path=f"/World/{cardbox_prim_name}",
+            prim_path=f"/World/SimulatedCardbox_{i}",
+            position=pallet_pos + Gf.Vec3d(random.uniform(-0.2, 0.2), random.uniform(-0.2, 0.2), spawn_height),
+            orientation=euler_angles_to_quat([0, 0, random.uniform(0, math.pi)]),
             usd_path=assets_root_path + config["cardbox"]["url"],
             semantic_label=config["cardbox"]["class"],
         )
@@ -73,25 +94,18 @@ def simulate_falling_objects(forklift_prim, assets_root_path, config, max_sim_st
         # Get the next spawn height for the box
         spawn_height += bb_cache.ComputeLocalBound(box_prim).GetRange().GetSize()[2] * 1.1
 
-        # Wrap the cardbox prim into a rigid prim to be able to simulate it
-        box_rigid_prim = RigidPrim(
-            prim_path=str(box_prim.GetPrimPath()),
-            name=cardbox_prim_name,
-            position=pallet_pos + Gf.Vec3d(random.uniform(-0.2, 0.2), random.uniform(-0.2, 0.2), spawn_height),
-            orientation=euler_angles_to_quat([0, 0, random.uniform(0, math.pi)]),
-        )
-
-        # Make sure physics are enabled on the rigid prim
+        # Wrap the prim as simulation ready with a simplified collider
+        add_colliders(box_prim, approx_type="boundingCube")
+        box_rigid_prim = RigidPrim(prim_path=str(box_prim.GetPrimPath()))
         box_rigid_prim.enable_rigid_body_physics()
 
-        # Register rigid prim with the scene
-        world.scene.add(box_rigid_prim)
+        # Cache the rigid prim
+        last_box = box_rigid_prim
 
     # Reset the world to handle the physics of the newly created rigid prims
     world.reset()
 
     # Simulate the world for the given number of steps or until the highest box stops moving
-    last_box = world.scene.get_object(f"SimulatedCardbox_{num_boxes - 1}")
     for i in range(max_sim_steps):
         world.step(render=False)
         if last_box and np.linalg.norm(last_box.get_linear_velocity()) < 0.001:

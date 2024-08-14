@@ -248,7 +248,6 @@ for i in range(mesh_distactors_num):
     # Remove any previous semantics on the mesh distractor
     remove_all_semantics(prim, recursive=True)
 
-
 # REPLICATOR
 # Disable capturing every frame (capture will be triggered manually using the step function)
 rep.orchestrator.set_capture_on_play(False)
@@ -605,6 +604,7 @@ print(
 # Unsubscribe the physics overlap checks and stop the timeline
 physx_sub.unsubscribe()
 physx_sub = None
+simulation_app.update()
 timeline.stop()
 
 simulation_app.close()
