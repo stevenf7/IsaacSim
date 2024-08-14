@@ -142,7 +142,7 @@ class OgnROS2CameraInfoHelper:
                 OgnROS2CameraInfoHelper.add_camera_info_writer(
                     db,
                     topicName=db.inputs.topicNameRight,
-                    frameId=db.inputs.topicNameRight,
+                    frameId=db.inputs.frameIdRight,
                     camera_info=camera_info_right,
                     render_product_path=db.inputs.renderProductPathRight,
                 )
@@ -152,7 +152,7 @@ class OgnROS2CameraInfoHelper:
             OgnROS2CameraInfoHelper.add_camera_info_writer(
                 db,
                 topicName=db.inputs.topicName,
-                frameId=db.inputs.topicName,
+                frameId=db.inputs.frameId,
                 camera_info=camera_info_left,
                 render_product_path=db.inputs.renderProductPath,
             )
