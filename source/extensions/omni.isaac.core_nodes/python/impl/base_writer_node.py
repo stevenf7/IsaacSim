@@ -66,7 +66,11 @@ class BaseWriterNode(BaseResetNode):
         """
         Creates writer request for deepcopy of provided writer to provided render_product_path, and activates it.
         """
-        self._append_request(WriterRequest(copy.deepcopy(writer), render_product_path, True))
+        # Appending provided writer to member list
+        self._writers.append(copy.deepcopy(writer))
+
+        # Ensure previously appended writer is referenced for the WriterRequest
+        self._append_request(WriterRequest(self._writers[-1], render_product_path, True))
 
     def _append_request(self, request: WriterRequest):
         self._requests.append(request)

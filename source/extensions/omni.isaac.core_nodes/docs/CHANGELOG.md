@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.16.2] - 2024-08-15
+### Fixed
+- Handling of writers when they are added via attach_writer function
+
 ## [1.16.1] - 2024-07-16
 ### Fixed
 - Missing omni.isaac.dynamic_control dependency
