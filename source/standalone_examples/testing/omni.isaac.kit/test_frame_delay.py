@@ -7,161 +7,241 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+USE_REPLICATOR_WRITER = False
+
+RESOLUTION = (256, 256)
+PIXELS_PER_METER = 25
+CAMERA_PATH = "/camera"
+CAMERA_POS = [0, 0, 25]
+
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp()
+simulation_app = SimulationApp({"headless": False})
 
-# Expected delay values (first frame is expected to be different than the following frames)
-EXPECTED_FIRST_DELAY = 2
-EXPECTED_FOLLOWING_DELAYS = 1
-
-import argparse
-
-import carb.settings
+import carb
+import cv2
 import numpy as np
-import omni.graph.core as og
+import omni.isaac.core.utils.numpy.rotations as rot_utils
 import omni.replicator.core as rep
-import omni.timeline
-from omni.isaac.core.utils.semantics import add_update_semantics, remove_all_semantics
-from omni.isaac.nucleus import get_assets_root_path
+import omni.usd
+from omni.isaac.core import World
+from omni.isaac.core.objects import DynamicCuboid
+from omni.isaac.core.utils.extensions import enable_extension
+from omni.isaac.core.utils.prims import add_update_semantics
+from omni.isaac.core.utils.viewports import set_camera_view
+from omni.isaac.sensor import Camera
+from omni.replicator.core import AnnotatorRegistry, Writer
 from pxr import UsdGeom
 
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    "--waitidle",
-    required=False,
-    help="Set `hydraEngine/waitIdle` and `renderer/waitIdle` to True at runtime",
-    action="store_true",
-)
-parser.add_argument("--env-url", default=None, help="Path to a custom environment url, default None")
-parser.add_argument(
-    "--num-additional-render-products",
-    type=int,
-    default=0,
-    help="Number of additional render products to create to increase the rendering load",
-)
-args, unknown = parser.parse_known_args()
+# rep.settings.set_render_rtx_realtime(antialiasing="FXAA")
 
 
-# Create a new empty stage or load a custom environment
-env_url = args.env_url
-if env_url is not None:
-    env_path = env_url if env_url.startswith("omniverse://") else get_assets_root_path() + env_url
-    print(f"[FrameDelay] Loading custom stage from path: {env_path}")
-    omni.usd.get_context().open_stage(env_path)
+class CustomWriter(Writer):
+    def __init__(self):
+        self.annotators.append(AnnotatorRegistry.get_annotator("rgb"))
+        self.annotators.append(AnnotatorRegistry.get_annotator("semantic_segmentation"))
+        self.annotators.append(AnnotatorRegistry.get_annotator("bounding_box_2d_tight"))
+
+    def write(self, data):
+        pass
+
+
+def get_data(sensor: Camera | Writer) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Get RGB, semantic segmentation and BBox from Camera or Writer (according to `USE_REPLICATOR_WRITER`)"""
+    if USE_REPLICATOR_WRITER:
+        rgb = sensor.get_data()["rgb"]
+        semantic_segmentation = sensor.get_data()["semantic_segmentation"]["data"]
+        bbox = sensor.get_data()["bounding_box_2d_tight"]["data"][0]
+    else:
+        rgb = sensor.get_rgba()
+        semantic_segmentation = sensor._custom_annotators["semantic_segmentation"].get_data()["data"]
+        bbox = sensor._custom_annotators["bounding_box_2d_tight"].get_data()["data"][0]
+
+    semantic_segmentation = (semantic_segmentation * 255 / np.max(semantic_segmentation)).astype(np.uint8)
+    semantic_segmentation = np.repeat(semantic_segmentation[:, :, np.newaxis], 3, axis=2)
+    return rgb[:, :, :3], semantic_segmentation, bbox
+
+
+def draw_data(frame, position, bbox, label):
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    frame = cv2.rectangle(
+        img=frame,
+        pt1=(
+            int(RESOLUTION[1] / 2 + PIXELS_PER_METER * position[0] - PIXELS_PER_METER / 2),
+            int(RESOLUTION[1] / 2 + PIXELS_PER_METER * position[1] - PIXELS_PER_METER),
+        ),
+        pt2=(
+            int(RESOLUTION[1] / 2 + PIXELS_PER_METER * position[0] + PIXELS_PER_METER / 2),
+            int(RESOLUTION[1] / 2 + PIXELS_PER_METER * position[1] + PIXELS_PER_METER),
+        ),
+        color=(255, 255, 0),
+        thickness=4,
+        lineType=cv2.LINE_AA,
+    )
+    frame = cv2.rectangle(
+        img=frame,
+        pt1=(bbox["x_min"], bbox["y_min"]),
+        pt2=(bbox["x_max"], bbox["y_max"]),
+        color=(0, 255, 0),
+        thickness=2,
+        lineType=cv2.LINE_AA,
+    )
+    frame = cv2.putText(
+        img=frame,
+        text=label,
+        org=(5, 15),
+        fontFace=cv2.FONT_HERSHEY_PLAIN,
+        fontScale=0.75,
+        color=(0, 255, 255),
+        thickness=1,
+        lineType=cv2.LINE_AA,
+    )
+    frame = cv2.putText(
+        img=frame,
+        text=f"position: {(round(position[0], 2), round(position[1], 2), round(position[2], 2))}",
+        org=(5, 30),
+        fontFace=cv2.FONT_HERSHEY_PLAIN,
+        fontScale=0.75,
+        color=(255, 255, 0),
+        thickness=1,
+        lineType=cv2.LINE_AA,
+    )
+    frame = cv2.putText(
+        img=frame,
+        text=f'bbox: {(bbox["x_min"], bbox["y_min"])} {(bbox["x_max"], bbox["y_max"])}',
+        org=(5, 45),
+        fontFace=cv2.FONT_HERSHEY_PLAIN,
+        fontScale=0.75,
+        color=(0, 255, 0),
+        thickness=1,
+        lineType=cv2.LINE_AA,
+    )
+    return frame
+
+
+def generate_result(data: list[dict], banner: list[str] = []):
+    rgb_frames = []
+    semantic_segmentation_frames = []
+    for item in data:
+        rgb_frames.append(draw_data(item["rgb"], item["position"], item["bbox"], item["label"]))
+        semantic_segmentation_frames.append(
+            draw_data(item["semantic_segmentation"], item["position"], item["bbox"], item["label"])
+        )
+
+    separator = np.full((RESOLUTION[0], 5, 3), 0, dtype=np.uint8)
+    rgb_frames = [x for item in rgb_frames for x in (item, separator)][:-1]
+    semantic_segmentation_frames = [x for item in semantic_segmentation_frames for x in (item, separator)][:-1]
+
+    frame = cv2.vconcat([cv2.hconcat(rgb_frames), cv2.hconcat(semantic_segmentation_frames)])
+    if banner:
+        frame = cv2.copyMakeBorder(
+            frame, top=25, bottom=0, left=0, right=0, borderType=cv2.BORDER_CONSTANT, value=[0] * 3
+        )
+        frame = cv2.putText(
+            img=frame,
+            text=", ".join(banner),
+            org=(5, 15),
+            fontFace=cv2.FONT_HERSHEY_PLAIN,
+            fontScale=0.75,
+            color=(255, 255, 255),
+            thickness=1,
+            lineType=cv2.LINE_AA,
+        )
+    return frame
+
+
+# Enable omni.physx.fabric
+enable_extension("omni.physx.fabric")
+simulation_app.update()
+
+# Setup scene
+set_camera_view(eye=CAMERA_POS, target=[0, 0, 0], camera_prim_path="/OmniverseKit_Persp")
+
+world = World(stage_units_in_meters=1.0)
+world.scene.add_default_ground_plane()
+
+cube = world.scene.add(
+    DynamicCuboid(
+        prim_path="/cube",
+        name="cube",
+        position=np.array([-3.0, 0.0, 0.1]),
+        scale=np.array([1.0, 2.0, 0.2]),
+        size=1.0,
+        color=np.array([255, 0, 0]),
+    )
+)
+add_update_semantics(cube.prim, "cube")
+
+camera = None
+writer = None
+if USE_REPLICATOR_WRITER:
+    stage = omni.usd.get_context().get_stage()
+    camera_prim = stage.DefinePrim(CAMERA_PATH, "Camera")
+    UsdGeom.Xformable(camera_prim).AddTranslateOp().Set(tuple(CAMERA_POS))
+    render_product = rep.create.render_product(str(camera_prim.GetPrimPath()), resolution=RESOLUTION)
 else:
-    print(f"[FrameDelay] Creating a new emtpy stage")
-    omni.usd.get_context().new_stage()
-stage = omni.usd.get_context().get_stage()
-
-# Clear any previous semantic data in the stage (we only want to track the cube location at index 0)
-for prim in stage.Traverse():
-    remove_all_semantics(prim, recursive=True)
-
-# Create additional render products to increase the rendering load
-additional_render_products = []
-for i in range(args.num_additional_render_products):
-    rp = rep.create.render_product("/OmniverseKit_Persp", (1280, 720), name=f"AdditionalRenderProduct_{i}")
-    additional_render_products.append(rp)
-if additional_render_products:
-    print(
-        f"[FrameDelay] Created {len(additional_render_products)} additional render products: {additional_render_products}"
+    camera = Camera(
+        prim_path=CAMERA_PATH,
+        position=np.array(CAMERA_POS),
+        resolution=RESOLUTION,
+        orientation=rot_utils.euler_angles_to_quats(np.array([0, 90, 90]), degrees=True),
     )
 
-# NOTE: Capture on play needs to stay True (default value) to get annotator data every update
-rep.orchestrator.set_capture_on_play(True)
+world.reset()
 
-# Set `hydraEngine/waitIdle` and `renderer/waitIdle` to True during runtime (ideally set from the command line)
-if args.waitidle:
-    print(f"[FrameDelay] Setting `hydraEngine/waitIdle` and `renderer/waitIdle` to True")
-    carb.settings.get_settings().set("/app/hydraEngine/waitIdle", True)
-    carb.settings.get_settings().set("/app/renderer/waitIdle", True)
-
-cube = stage.DefinePrim(f"/World/Cube", "Cube")
-add_update_semantics(cube, "my_cube")
-UsdGeom.Xformable(cube).AddTranslateOp().Set((0, 0, 0))
-print(f"[FrameDelay] Cube's initial location set to: {cube.GetAttribute('xformOp:translate').Get()}")
+if USE_REPLICATOR_WRITER:
+    rep.WriterRegistry.register(CustomWriter)
+    writer = rep.WriterRegistry.get("CustomWriter")
+    writer.initialize()
+    writer.attach([render_product])
+else:
+    camera.initialize()
+    camera.add_bounding_box_2d_tight_to_frame()
+    camera.add_semantic_segmentation_to_frame()
 
 
-# Create a camera and render product to look at the cube from a top view, use a 3d bbox annotator to track the cube bb location
-camera = rep.create.camera(position=(0, 0, 10), look_at=(0, 0, 0))
-render_product = rep.create.render_product(camera, (512, 512))
-bbox3d_annot = rep.annotators.get("bounding_box_3d")
-bbox3d_annot.attach(render_product)
-bbox_data = bbox3d_annot.get_data()
+# Do some warmup steps
+for _ in range(5):
+    world.step(render=True)
 
-# Access the current frame number from the post process dispatcher or the ReferenceTime annotator
-dispatcher = og.get_node_by_path("/Render/PostProcess/SDGPipeline/PostProcessDispatcher")
-frame_no = dispatcher.get_attribute("outputs:referenceTimeNumerator").get()
-# ref_time_annot = rep.annotators.get("ReferenceTime")
-# ref_time_annot.attach(render_product)
-# frame_no = ref_time_annot.get_data()["referenceTimeNumerator"]
+data = []
+# Get data and object info before running the collection steps
+position = cube.get_world_pose()[0]
+rgb, semantic_segmentation, bbox = get_data(camera or writer)
+data.append(
+    {"position": position, "rgb": rgb, "semantic_segmentation": semantic_segmentation, "bbox": bbox, "label": "before"}
+)
 
-# Frame number warmup, stop once the frame number data is available
-print(f"[FrameDelay] Starting warmup until the frame number is available")
-for i in range(10):
-    simulation_app.update()
-    frame_no = dispatcher.get_attribute("outputs:referenceTimeNumerator").get()
-    print(f"\tstep={i}; frame_no={frame_no};")
-    if frame_no > 0:
-        print(f"\t\t Warmup finished (frame_no={frame_no} > 0).")
-        break
+# Do some collection steps
+for i in range(5):
+    # Move object
+    position = cube.get_world_pose()[0]
+    position[0] += 1.0
+    cube.set_world_pose(position=position)
 
-# Timeline needs to run to get annotator data
-print(f"[FrameDelay] Starting timeline")
-timeline = omni.timeline.get_timeline_interface()
-timeline.play()
+    # Step the simulation
+    world.step(render=True)
 
-# Number of cube mobements to test
-num_movements = 20
-step_size = 1 / num_movements
-cube_locations = [(0, 0, step_size * i) for i in range(num_movements)]
-num_delay_frames = []
+    # Get data and object info
+    position = cube.get_world_pose()[0]
+    rgb, semantic_segmentation, bbox = get_data(camera or writer)
+    data.append(
+        {
+            "position": position,
+            "rgb": rgb,
+            "semantic_segmentation": semantic_segmentation,
+            "bbox": bbox,
+            "label": f"step {i + 1}",
+        }
+    )
 
-for i, loc in enumerate(cube_locations):
-    # Set the cube to a new location in stage
-    print(f"[FrameDelay] location idx={i}; new cube location={loc}")
-    cube.GetAttribute("xformOp:translate").Set(loc)
-    target_height = loc[2]
-
-    # Update the app until the annotator bounding box height matches the target height
-    for j in range(10):
-        simulation_app.update()
-        frame_no = dispatcher.get_attribute("outputs:referenceTimeNumerator").get()
-        bbox_data = bbox3d_annot.get_data()["data"]
-
-        # The first frames the annotator data might still be empty
-        if len(bbox_data) > 0:
-            # Get the height location of the cube's bounding box from the annotator data
-            transform = bbox_data[0]["transform"]
-            annot_height = transform[3][2]
-            print(
-                f"\tstep={j}; frame_no={frame_no}; annot_height={annot_height:.4f}; target_height={target_height:.4f};"
-            )
-            if np.isclose(annot_height, target_height, atol=0.001):
-                # NOTE: one app update is needed to generate annotator data, hence a delay counts as num app updates - 1
-                print(f"\t\t Annotator data in sync with stage after a delay of {j} frames.")
-                num_delay_frames.append(j)
-                break
-        else:
-            f"\tstep={j}; frame_no={frame_no}; no annotator data yet."
-
-# Stats
-print(f"[FrameDelay] Stats (num app updates to sync, from writing the USD attributes until annotator access):")
-print(f"\tnum_delay_frames: {num_delay_frames}")
-print(f"\tmin num_delay_frames: {min(num_delay_frames)}")
-print(f"\tmax num_delay_frames: {max(num_delay_frames)}")
-print(f"\tmean num_delay_frames: {np.mean(num_delay_frames)}")
-
-# Check the first delay
-if num_delay_frames[0] != EXPECTED_FIRST_DELAY:
-    raise ValueError(f"The first delay is {num_delay_frames[0]}, from the expected: {EXPECTED_FIRST_DELAY}.")
-
-# Check the following delays
-for i, x in enumerate(num_delay_frames[1:], start=1):
-    if x != EXPECTED_FOLLOWING_DELAYS:
-        raise ValueError(
-            f"The delay at index {i} is {x}, all non-first delays are extected to be: {EXPECTED_FOLLOWING_DELAYS}."
-        )
+# Export result
+banner = [
+    f"source: {'rep.Writer' if USE_REPLICATOR_WRITER else 'Camera'}",
+    f"checkForHydraRenderComplete: {carb.settings.get_settings().get('/app/updateOrder/checkForHydraRenderComplete')}",
+    f"app.hydraEngine.waitIdle: {carb.settings.get_settings().get('/app/hydraEngine/waitIdle')}",
+    f"rtx.post.aa.op: {carb.settings.get_settings().get('/rtx/post/aa/op')}",
+]
+cv2.imwrite(f"result.png", generate_result(data, banner))
 
 simulation_app.close()
