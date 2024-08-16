@@ -16,10 +16,11 @@ import numpy as np
 import omni.timeline
 import omni.ui as ui
 from omni.isaac.core.articulations import Articulation, ArticulationSubset
-from omni.isaac.core.prims import RigidPrimView
+from omni.isaac.core.prims import RigidPrimView, XFormPrim
 from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
 from omni.isaac.core.utils.stage import set_stage_units, update_stage_async
 from omni.isaac.core.utils.types import ArticulationAction
+from omni.isaac.core.utils.xforms import get_world_pose
 from omni.isaac.ui.element_wrappers import (
     Button,
     CheckBox,
@@ -41,6 +42,7 @@ from .util import (
     convert_prim_to_collidable_rigid_body,
     find_all_articulations,
     mask_collisions,
+    move_rb_subframe_to_position,
     show_physics_colliders,
     unmask_collisions,
 )
@@ -683,17 +685,18 @@ class UIBuilder:
 
                 # Teleport rigid body to correct position relative to gripper.  This inverts the
                 # transforms defined in grasp_tester.compute_relative_pose().
-                art_trans, art_quat = self._articulation.get_world_pose()
+                art_trans, art_quat = get_world_pose(self._gripper_subframe.get_selection())
 
                 art_quat_rel_rb = np.array([grasp["orientation"]["w"], *grasp["orientation"]["xyz"]])
                 art_rot_rel_rb, art_rot = quats_to_rot_matrices(np.vstack([art_quat_rel_rb, art_quat]))
                 art_trans_rel_rb = np.array(grasp["position"])
 
-                rb_rot_rel_art = art_rot_rel_rb.T @ art_rot
-                rb_quat_rel_art = rot_matrices_to_quats(rb_rot_rel_art)
-                rb_trans_rel_art = art_trans - rb_rot_rel_art @ art_trans_rel_rb
+                rb_rot = art_rot @ art_rot_rel_rb.T
+                rb_quat = rot_matrices_to_quats(rb_rot)
+                rb_trans = art_trans - rb_rot @ art_trans_rel_rb
 
-                self._rigid_body.set_world_poses([rb_trans_rel_art], [rb_quat_rel_art])
+                move_rb_subframe_to_position(self._rigid_body, self._rb_subframe.get_selection(), rb_trans, rb_quat)
+                # XFormPrim(self._rb_subframe.get_selection()).set_world_pose(rb_trans, rb_quat)
                 self.stop_rigid_body()
 
                 await update_stage_async()
@@ -880,7 +883,7 @@ class UIBuilder:
 
         grasp_test_settings = GraspTestSettings(
             self._articulation.prim_path,
-            self._gripper_selection_dropdown.get_selection(),
+            self._gripper_subframe.get_selection(),
             active_joint_names,
             active_joint_open_positions,
             active_joint_closed_positions,

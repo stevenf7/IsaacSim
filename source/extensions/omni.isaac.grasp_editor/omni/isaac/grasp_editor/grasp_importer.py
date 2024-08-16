@@ -134,7 +134,7 @@ class GraspSpec:
         art_rot_rel_rb, art_rot = quats_to_rot_matrices(np.vstack([art_quat_rel_rb, gripper_quat]))
         art_trans_rel_rb = np.array(grasp["position"])
 
-        rb_rot = art_rot_rel_rb.T @ art_rot
+        rb_rot = art_rot @ art_rot_rel_rb.T
         rb_quat = rot_matrices_to_quats(rb_rot)
         rb_trans_rel_art = gripper_trans - rb_rot @ art_trans_rel_rb
 

@@ -12,8 +12,32 @@ from typing import List
 import carb
 import numpy as np
 import omni
+from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
 from omni.isaac.core.utils.prims import get_prim_at_path
+from omni.isaac.core.utils.xforms import get_world_pose
 from pxr import PhysxSchema, Sdf, Usd, UsdPhysics
+
+
+def move_rb_subframe_to_position(rb_xform_view, rb_subframe, desired_translation, desired_orientation):
+    # Get position of rb_xform as `a`
+    a_trans, a_orient = rb_xform_view.get_world_poses()
+    a_trans = a_trans[0]
+    a_orient = a_orient[0]
+
+    # Get the subframe position as `b`
+    b_trans, b_orient = get_world_pose(rb_subframe)
+
+    # The goal is to move `a` such that `rb_subframe` ends up at `desired_translation`, `desired_orientation`
+    c_trans, c_orient = desired_translation, desired_orientation
+
+    a_rot, b_rot, c_rot = quats_to_rot_matrices(np.vstack([a_orient, b_orient, c_orient]))
+
+    a_rot_cmd = c_rot @ b_rot.T @ a_rot
+    a_trans_cmd = c_trans + c_rot @ b_rot.T @ (a_trans - b_trans)
+
+    a_orient_cmd = rot_matrices_to_quats(a_rot_cmd)
+
+    rb_xform_view.set_world_poses(a_trans_cmd[np.newaxis, :], a_orient_cmd[np.newaxis, :])
 
 
 def show_physics_colliders(show: bool):

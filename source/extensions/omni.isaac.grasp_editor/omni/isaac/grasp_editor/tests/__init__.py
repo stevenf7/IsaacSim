@@ -7,4 +7,5 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+from .test_grasp_editor_subframes import *
 from .test_grasp_importer import *

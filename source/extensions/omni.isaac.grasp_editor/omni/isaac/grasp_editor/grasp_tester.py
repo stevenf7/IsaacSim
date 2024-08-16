@@ -45,7 +45,7 @@ class GraspTestSettings:
             active_joint_closed_positions - self.active_joint_open_positions
         )
         self.inactive_joint_fixed_positions = np.array(inactive_joint_fixed_positions)
-        self.rigid_body_path = (rigid_body_path,)
+        self.rigid_body_path = rigid_body_path
         self.rigid_body_pose_frame = rigid_body_pose_frame
         self.external_force_magnitude = external_force_magnitude
         self.external_torque_magnitude = external_torque_magnitude

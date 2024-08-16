@@ -1,4 +1,9 @@
 # Changelog
+## [1.2.0] - 2024-08-14
+### Fixed
+- Fixed serious bug in supported use-case where selected frames of reference have arbitrary relative
+  transforms from the base frame.
+
 ## [1.1.1] - 2024-08-06
 ### Fixed
 - Fix UI bug that allowed users to continue from selection frame prematurely.
