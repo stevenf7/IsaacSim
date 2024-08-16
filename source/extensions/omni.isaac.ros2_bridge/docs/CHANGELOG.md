@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.32.2] - 2024-08-15
+### Fixed
+- ROS2CameraInfoHelper correctly allocates camera_info publishers in between simulation runs.
+
 ## [2.32.1] - 2024-08-14
 ### Fixed
 - ROS2CameraInfoHelper publishes correct frame ID.

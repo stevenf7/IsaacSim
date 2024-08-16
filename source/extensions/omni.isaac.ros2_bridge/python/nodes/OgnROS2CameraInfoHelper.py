@@ -92,70 +92,72 @@ class OgnROS2CameraInfoHelper:
             # Get stage reference
             stage = omni.usd.get_context().get_stage()
 
-            is_stereo = False
-            if not db.inputs.renderProductPath:
-                carb.log_warn(f"Render product {db.inputs.renderProductPath} not valid")
-                db.per_instance_state.initialized = False
-                return False
-            if db.inputs.renderProductPathRight:
-                is_stereo = True
+            with Usd.EditContext(stage, stage.GetSessionLayer()):
 
-            db.per_instance_state.resetSimulationTimeOnStop = db.inputs.resetSimulationTimeOnStop
-            db.per_instance_state.publishStepSize = db.inputs.frameSkipCount + 1
-
-            camera_info_left = read_camera_info(render_product_path=db.inputs.renderProductPath)
-
-            if is_stereo:
-                camera_info_right = read_camera_info(render_product_path=db.inputs.renderProductPathRight)
-
-                width_left = camera_info_left["width"]
-                height_left = camera_info_left["height"]
-                width_right = camera_info_right["width"]
-                height_right = camera_info_right["height"]
-                if width_left != width_right or height_left != height_right:
-                    carb.log_warn(
-                        f"Mismatched stereo camera resolutions: left = [{width_left}, {height_left}], right = [{width_right}, {height_right}]"
-                    )
+                is_stereo = False
+                if not db.inputs.renderProductPath:
+                    carb.log_warn(f"Render product {db.inputs.renderProductPath} not valid")
+                    db.per_instance_state.initialized = False
                     return False
+                if db.inputs.renderProductPathRight:
+                    is_stereo = True
 
-                translation, orientation = compute_relative_pose(
-                    left_camera_prim=camera_info_left["prim"], right_camera_prim=camera_info_right["prim"]
-                )
+                db.per_instance_state.resetSimulationTimeOnStop = db.inputs.resetSimulationTimeOnStop
+                db.per_instance_state.publishStepSize = db.inputs.frameSkipCount + 1
 
-                # Compute stereo rectification parameters
-                R1, R2, P1, P2, _, _, _ = cv.stereoRectify(
-                    cameraMatrix1=camera_info_left["k"],
-                    distCoeffs1=np.asarray(camera_info_left["physicalDistortionCoefficients"]),
-                    cameraMatrix2=camera_info_right["k"],
-                    distCoeffs2=np.asarray(camera_info_right["physicalDistortionCoefficients"]),
-                    imageSize=(width_left, height_left),
-                    R=orientation,
-                    T=translation,
-                )
-                camera_info_left["r"] = R1
-                camera_info_right["r"] = R2
-                camera_info_left["p"] = P1
-                camera_info_right["p"] = P2
+                camera_info_left = read_camera_info(render_product_path=db.inputs.renderProductPath)
 
-                # Create right-side writer
-                db.per_instance_state.rvRight = "PostProcessDispatchRight"
+                if is_stereo:
+                    camera_info_right = read_camera_info(render_product_path=db.inputs.renderProductPathRight)
+
+                    width_left = camera_info_left["width"]
+                    height_left = camera_info_left["height"]
+                    width_right = camera_info_right["width"]
+                    height_right = camera_info_right["height"]
+                    if width_left != width_right or height_left != height_right:
+                        carb.log_warn(
+                            f"Mismatched stereo camera resolutions: left = [{width_left}, {height_left}], right = [{width_right}, {height_right}]"
+                        )
+                        return False
+
+                    translation, orientation = compute_relative_pose(
+                        left_camera_prim=camera_info_left["prim"], right_camera_prim=camera_info_right["prim"]
+                    )
+
+                    # Compute stereo rectification parameters
+                    R1, R2, P1, P2, _, _, _ = cv.stereoRectify(
+                        cameraMatrix1=camera_info_left["k"],
+                        distCoeffs1=np.asarray(camera_info_left["physicalDistortionCoefficients"]),
+                        cameraMatrix2=camera_info_right["k"],
+                        distCoeffs2=np.asarray(camera_info_right["physicalDistortionCoefficients"]),
+                        imageSize=(width_left, height_left),
+                        R=orientation,
+                        T=translation,
+                    )
+                    camera_info_left["r"] = R1
+                    camera_info_right["r"] = R2
+                    camera_info_left["p"] = P1
+                    camera_info_right["p"] = P2
+
+                    # Create right-side writer
+                    db.per_instance_state.rvRight = "PostProcessDispatchRight"
+                    OgnROS2CameraInfoHelper.add_camera_info_writer(
+                        db,
+                        topicName=db.inputs.topicNameRight,
+                        frameId=db.inputs.frameIdRight,
+                        camera_info=camera_info_right,
+                        render_product_path=db.inputs.renderProductPathRight,
+                    )
+
+                # Create left-side writer
+                db.per_instance_state.rv = "PostProcessDispatch"
                 OgnROS2CameraInfoHelper.add_camera_info_writer(
                     db,
-                    topicName=db.inputs.topicNameRight,
-                    frameId=db.inputs.frameIdRight,
-                    camera_info=camera_info_right,
-                    render_product_path=db.inputs.renderProductPathRight,
+                    topicName=db.inputs.topicName,
+                    frameId=db.inputs.frameId,
+                    camera_info=camera_info_left,
+                    render_product_path=db.inputs.renderProductPath,
                 )
-
-            # Create left-side writer
-            db.per_instance_state.rv = "PostProcessDispatch"
-            OgnROS2CameraInfoHelper.add_camera_info_writer(
-                db,
-                topicName=db.inputs.topicName,
-                frameId=db.inputs.frameId,
-                camera_info=camera_info_left,
-                render_product_path=db.inputs.renderProductPath,
-            )
 
         else:
             return True
