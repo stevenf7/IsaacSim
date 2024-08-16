@@ -43,10 +43,9 @@ class TestGraspImporter(omni.kit.test.AsyncTestCase):
 
         gripper_usd_path = asset_root_path + "/Isaac/Robots/Robotiq/2F-85/Robotiq_2F_85_flattened.usd"
         self._gripper_path = "/gripper"
+        add_reference_to_stage(gripper_usd_path, self._gripper_path)
         self._gripper_xform = XFormPrim(self._gripper_path)
         self._gripper_xform.set_world_pose(np.array([0.0, 0.2, 0.0]), np.array([0.8, 0.0, 0.2, 0.0]))
-
-        add_reference_to_stage(gripper_usd_path, self._gripper_path)
 
         fixed_joint_path = self._gripper_path + "/FixedJoint"
 
@@ -98,7 +97,11 @@ class TestGraspImporter(omni.kit.test.AsyncTestCase):
         self.assertTrue(d["grasp_0"] == self._grasp_spec.get_grasp_dict_by_name("grasp_0"))
         self.assertTrue(d["grasp_1"] == self._grasp_spec.get_grasp_dict_by_name("grasp_1"))
 
-    async def test_compute_rigid_body_pose(self):
+    # The two tests below do not numerically test the correctness of the `compute()` functions.
+    # Refer to `test_grasp_editor_subframes()` for a mroe rigorous test.
+    # These tests simply store golden values of positions that looked visually correct when compared
+    # to pictures of the grasps saved to the `isaac_grasp` file.
+    async def test_compute_gripper_pose(self):
         rb_trans, rb_quat = self._cube_xform.get_world_pose()
 
         pos, orient = self._grasp_spec.compute_gripper_pose_from_rigid_body_pose("grasp_0", rb_trans, rb_quat)
@@ -112,16 +115,17 @@ class TestGraspImporter(omni.kit.test.AsyncTestCase):
         # This line was used to visually verify that pos, orient are correct for both grasps
         # self._gripper_xform.set_world_pose(pos, orient)
 
-    async def test_compute_gripper_pose(self):
+    async def test_compute_rigid_body_pose(self):
         gripper_trans, gripper_quat = self._gripper_xform.get_world_pose()
 
         pos, orient = self._grasp_spec.compute_rigid_body_pose_from_gripper_pose("grasp_0", gripper_trans, gripper_quat)
-        self.assertAlmostEqual(pos, [0.15021043, 0.20441614, -0.06354552])
-        self.assertAlmostEqual(orient, [0.94041751, 0.17136645, -0.04889639, -0.28958176])
+        self.assertAlmostEqual(pos, [0.14131404, 0.16882488, -0.07536021])
+        self.assertAlmostEqual(orient, [0.94041753, 0.01493187, -0.04889638, -0.3361563])
 
         pos, orient = self._grasp_spec.compute_rigid_body_pose_from_gripper_pose("grasp_1", gripper_trans, gripper_quat)
-        self.assertAlmostEqual(pos, [0.16482809, 0.13177512, -0.11132888])
-        self.assertAlmostEqual(orient, [0.70542976, -0.0992358, 0.61794966, -0.33265498])
+        self._cube_xform.set_world_pose(pos, orient)
+        self.assertAlmostEqual(pos, [0.16610557, 0.17034578, -0.12548552])
+        self.assertAlmostEqual(orient, [0.70542973, -0.24410456, 0.61794968, -0.24681987])
 
         # This line was used to visually verify that pos, orient are correct for both grasps
         # self._cube_xform.set_world_pose(pos, orient)
