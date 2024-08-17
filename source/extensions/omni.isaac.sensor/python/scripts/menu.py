@@ -30,7 +30,7 @@ class IsaacSensorMenu:
                 ext_id, "LightBeam Sensor", lambda a=weakref.proxy(self): a._add_lightbeam_sensor()
             ),
             MenuItemDescription(
-                name="RGBD Sensor",
+                name="Camera and Depth Sensors",
                 sub_menu=[
                     MenuItemDescription(
                         name="Intel",
@@ -111,9 +111,9 @@ class IsaacSensorMenu:
                         sub_menu=[
                             make_menu_item_description(
                                 ext_id,
-                                "Sensing SG2-OX03CC-5200-GMSL2-H100F1A",
+                                "Sensing SG2-AR0233C-5200-G2A-H100F1A",
                                 lambda a=weakref.proxy(self): create_prim(
-                                    prim_path=get_next_free_path("/SG2_OX03CC_5200_GMSL2_H100F1A", None),
+                                    prim_path=get_next_free_path("/SG2_AR0233C-5200-G2A_H100F1A", None),
                                     prim_type="Xform",
                                     usd_path=get_assets_root_path()
                                     + "/Isaac/Sensors/Sensing/SG2/H100F1A/SG2-AR0233C-5200-G2A-H100F1A.usd",
@@ -131,9 +131,9 @@ class IsaacSensorMenu:
                             ),
                             make_menu_item_description(
                                 ext_id,
-                                "Sensing SG3-ISX031C-GMSL2-H190XA",
+                                "Sensing SG3-ISX031C-GMSL2F-H190XA",
                                 lambda a=weakref.proxy(self): create_prim(
-                                    prim_path=get_next_free_path("/SG3_ISX031C_GMSL2_H190XA", None),
+                                    prim_path=get_next_free_path("/SG3_ISX031C_GMSL2F_H190XA", None),
                                     prim_type="Xform",
                                     usd_path=get_assets_root_path()
                                     + "/Isaac/Sensors/Sensing/SG3/H190XA/SG3S-ISX031C-GMSL2F-H190XA.usd",
@@ -151,9 +151,9 @@ class IsaacSensorMenu:
                             ),
                             make_menu_item_description(
                                 ext_id,
-                                "Sensing SG8-AR0820C-5300-GMSL2-H120YA",
+                                "Sensing SG8-AR0820C-5300-G2A-H120YA",
                                 lambda a=weakref.proxy(self): create_prim(
-                                    prim_path=get_next_free_path("/SG8_AR0820C_5300_GMSL2_H120YA", None),
+                                    prim_path=get_next_free_path("/SG8_AR0820C_5300_G2A_H120YA", None),
                                     prim_type="Xform",
                                     usd_path=get_assets_root_path()
                                     + "/Isaac/Sensors/Sensing/SG8/H120YA/SG8S-AR0820C-5300-G2A-H120YA.usd",
@@ -161,9 +161,9 @@ class IsaacSensorMenu:
                             ),
                             make_menu_item_description(
                                 ext_id,
-                                "Sensing SG8-AR0820C-5300-GMSL2-H30SA",
+                                "Sensing SG8-AR0820C-5300-G2A-H30SA",
                                 lambda a=weakref.proxy(self): create_prim(
-                                    prim_path=get_next_free_path("/SG8_AR0820C_5300_GMSL2_H30SA", None),
+                                    prim_path=get_next_free_path("/SG8_AR0820C_5300_G2A_H30SA", None),
                                     prim_type="Xform",
                                     usd_path=get_assets_root_path()
                                     + "/Isaac/Sensors/Sensing/SG8/H30SA/SG8S-AR0820C-5300-G2A-H30YA.usd",
@@ -171,9 +171,9 @@ class IsaacSensorMenu:
                             ),
                             make_menu_item_description(
                                 ext_id,
-                                "Sensing SG8-AR0820C-5300-GMSL2-H60SA",
+                                "Sensing SG8-AR0820C-5300-G2A-H60SA",
                                 lambda a=weakref.proxy(self): create_prim(
-                                    prim_path=get_next_free_path("/SG8_AR0820C_5300_GMSL2_H60SA", None),
+                                    prim_path=get_next_free_path("/SG8_AR0820C_5300_G2A_H60SA", None),
                                     prim_type="Xform",
                                     usd_path=get_assets_root_path()
                                     + "/Isaac/Sensors/Sensing/SG8/H60SA/SG8S-AR0820C-5300-G2A-H60SA.usd",
@@ -199,16 +199,7 @@ class IsaacSensorMenu:
             ),
         ]
 
-        rtx_lidar_sub_menu = [
-            make_menu_item_description(
-                ext_id, "Rotating", lambda a=weakref.proxy(self): a._add_rtx_lidar("Rotating", "Example_Rotary")
-            ),
-            make_menu_item_description(
-                ext_id,
-                "Solid State",
-                lambda a=weakref.proxy(self): a._add_rtx_lidar("Solid_State", "Example_Solid_State"),
-            ),
-        ]
+        rtx_lidar_sub_menu = {}
 
         # TODO: This currently scans for all the subfolders for json config files, in the future we want to make the menu resemble the folder structure
         config_dir_path = get_extension_path(ext_id) + "/data/lidar_configs"
@@ -222,7 +213,7 @@ class IsaacSensorMenu:
         for d in config_dirs:
             if d is None:
                 continue
-            sub_menu = []
+            sub_menu = {}
             n = d.split("/")[-1]
 
             config_files = os.listdir(d)
@@ -232,22 +223,58 @@ class IsaacSensorMenu:
                     data = json.load(open(d + "/" + file))
                     ui_name = data["name"]
                     file_name = file[:-5]
-                    sub_menu.append(
-                        make_menu_item_description(
-                            ext_id,
-                            ui_name,
-                            lambda a=weakref.proxy(self), name=ui_name, config_name=file_name: a._add_rtx_lidar(
-                                name, config_name
-                            ),
-                        )
+                    sub_menu[ui_name] = make_menu_item_description(
+                        ext_id,
+                        ui_name,
+                        lambda a=weakref.proxy(self), name=ui_name, config_name=file_name: a._add_rtx_lidar(
+                            name, config_name
+                        ),
                     )
             if len(sub_menu) > 0:
-                rtx_lidar_sub_menu.append(MenuItemDescription(name=n, sub_menu=sub_menu))
+                rtx_lidar_sub_menu[n] = sub_menu
+
+        def update_lidar_menu_item_with_usd_path(sub_menu: str, config_name: str, usd_path: str):
+            rtx_lidar_sub_menu[sub_menu][config_name] = make_menu_item_description(
+                ext_id,
+                config_name,
+                lambda a=weakref.proxy(self): create_prim(
+                    prim_path=get_next_free_path("/" + Tf.MakeValidIdentifier(config_name), None),
+                    prim_type="Xform",
+                    usd_path=get_assets_root_path() + usd_path,
+                ),
+            )
+
+        update_lidar_menu_item_with_usd_path("HESAI", "XT-32 10hz", "/Isaac/Sensors/HESAI/XT-32.usd")
+        update_lidar_menu_item_with_usd_path("SICK", "SICK microscan3 official", "/Isaac/Sensors/SICK/microScan3.usd")
+        update_lidar_menu_item_with_usd_path("SICK", "SICK multiScan136", "/Isaac/Sensors/SICK/multiScan136.usd")
+        update_lidar_menu_item_with_usd_path("SICK", "SICK multiScan165", "/Isaac/Sensors/SICK/multiScan165.usd")
+        update_lidar_menu_item_with_usd_path("SICK", "SICK picoScan150", "/Isaac/Sensors/SICK/picoScan150.usd")
+        update_lidar_menu_item_with_usd_path("SICK", "SICK TiM781", "/Isaac/Sensors/SICK/tim781.usd")
+        update_lidar_menu_item_with_usd_path("SLAMTEC", "RPLIDAR S2E", "/Isaac/Sensors/Slamtec/RPLidar_S2e.usd")
+        update_lidar_menu_item_with_usd_path(
+            "Velodyne", "Velodyne VLS-128", "/Isaac/Sensors/Velodyne/vls-128/vls_128.usd"
+        )
+
+        # Convert lidar submenu dictionary into list
+        rtx_lidar_sub_menu_as_list = [
+            make_menu_item_description(
+                ext_id, "Rotating", lambda a=weakref.proxy(self): a._add_rtx_lidar("Rotating", "Example_Rotary")
+            ),
+            make_menu_item_description(
+                ext_id,
+                "Solid State",
+                lambda a=weakref.proxy(self): a._add_rtx_lidar("Solid_State", "Example_Solid_State"),
+            ),
+        ]
+        for name in rtx_lidar_sub_menu:
+            rtx_lidar_sub_menu_as_list.append(
+                MenuItemDescription(name=name, sub_menu=list(rtx_lidar_sub_menu[name].values()))
+            )
 
         menu_items.append(
             MenuItemDescription(
                 name="RTX Lidar",
-                sub_menu=rtx_lidar_sub_menu,
+                sub_menu=rtx_lidar_sub_menu_as_list,
             )
         )
         self._menu_items = [
