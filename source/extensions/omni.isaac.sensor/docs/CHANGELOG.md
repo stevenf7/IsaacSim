@@ -1,5 +1,11 @@
 # Changelog
 
+## [12.8.3] - 2024-08-13
+### Fixed
+- Sensing RGBD sensor names in Create -> Isaac menu now match USD filenames.
+- Create -> Isaac -> Sensor -> RTX Lidar options now spawn USD sample asset rather than
+  bare prim, if one exists
+
 ## [12.8.2] - 2024-08-09
 ### Added
 - Added Gemini 335, 335L to the menu
