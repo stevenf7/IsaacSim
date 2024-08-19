@@ -1139,6 +1139,7 @@ distributions_folder = "${root}/_build/packages/dist"
 # package metadata (common)
 # pyproject.toml
 pyproject.requires-python = "==3.10.*"
+pyproject.version = "${build_string}"
 pyproject.authors = [
     { name = "Isaac Sim team" },
 ]
