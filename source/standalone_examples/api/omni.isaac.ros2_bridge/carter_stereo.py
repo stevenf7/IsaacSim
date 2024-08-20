@@ -58,11 +58,12 @@ ros_cameras_graph_path = "/World/Nova_Carter_ROS/front_hawk"
 # Enabling rgb image publishers for left camera. Cameras will automatically publish images each frame
 og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/left_camera_render_product.inputs:enabled"), True)
 
+# Enabling rgb image publishers for right camera. Cameras will automatically publish images each frame
+og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/right_camera_render_product.inputs:enabled"), True)
+
 simulation_context.play()
 simulation_context.step()
 
-# Enabling rgb image publishers for right camera after left cameras are initialized. Cameras will automatically publish images each frame
-og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/right_camera_render_product.inputs:enabled"), True)
 
 # Simulate for one second to warm up sim and let everything settle
 for frame in range(60):
