@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.32.3] - 2024-08-20
+### Fixed
+- ROS2 Camera graph uses ROS2CameraInfoHelper instead of ROS2CameraHelper.
+
 ## [2.32.2] - 2024-08-15
 ### Fixed
 - ROS2CameraInfoHelper correctly allocates camera_info publishers in between simulation runs.
