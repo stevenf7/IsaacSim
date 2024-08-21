@@ -7,16 +7,37 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-USE_REPLICATOR_WRITER = False
+"""
+To generate several frames, create and run a bash script with the following content:
 
-RESOLUTION = (256, 256)
-PIXELS_PER_METER = 25
+for i in $(seq 64 512); do
+    echo ${i}x${i}
+    PATH/TO/python.sh test_frame_delay.py --resolution ${i}x${i} --/app/updateOrder/checkForHydraRenderComplete=1000
+done
+"""
+
+
+USE_REPLICATOR_WRITER = True
 CAMERA_PATH = "/camera"
 CAMERA_POS = [0, 0, 25]
+COLLECTION_STEPS = 10
+
+# parse any command-line arguments specific to the standalone application
+import argparse
 
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp({"headless": False})
+parser = argparse.ArgumentParser()
+parser.add_argument("--resolution", type=str, default="256x256", help="Resolution (WxH)")
+# Parse only known arguments, so that any (eg) Kit settings are passed through to the core Kit app
+args, _ = parser.parse_known_args()
+
+RESOLUTION = tuple([int(item) for item in args.resolution.split("x")])
+PIXELS_PER_METER = 0.09765625 * RESOLUTION[0]
+
+simulation_app = SimulationApp({"headless": True})
+
+import pprint
 
 import carb
 import cv2
@@ -33,7 +54,7 @@ from omni.isaac.sensor import Camera
 from omni.replicator.core import AnnotatorRegistry, Writer
 from pxr import UsdGeom
 
-# rep.settings.set_render_rtx_realtime(antialiasing="FXAA")
+# rep.settings.set_render_rtx_realtime(antialiasing="DLAA")
 
 
 class CustomWriter(Writer):
@@ -75,7 +96,7 @@ def draw_data(frame, position, bbox, label):
             int(RESOLUTION[1] / 2 + PIXELS_PER_METER * position[1] + PIXELS_PER_METER),
         ),
         color=(255, 255, 0),
-        thickness=4,
+        thickness=1,
         lineType=cv2.LINE_AA,
     )
     frame = cv2.rectangle(
@@ -83,7 +104,7 @@ def draw_data(frame, position, bbox, label):
         pt1=(bbox["x_min"], bbox["y_min"]),
         pt2=(bbox["x_max"], bbox["y_max"]),
         color=(0, 255, 0),
-        thickness=2,
+        thickness=1,
         lineType=cv2.LINE_AA,
     )
     frame = cv2.putText(
@@ -213,10 +234,10 @@ data.append(
 )
 
 # Do some collection steps
-for i in range(5):
+for i in range(COLLECTION_STEPS):
     # Move object
     position = cube.get_world_pose()[0]
-    position[0] += 1.0
+    position[0] += 0.5
     cube.set_world_pose(position=position)
 
     # Step the simulation
@@ -242,6 +263,9 @@ banner = [
     f"app.hydraEngine.waitIdle: {carb.settings.get_settings().get('/app/hydraEngine/waitIdle')}",
     f"rtx.post.aa.op: {carb.settings.get_settings().get('/rtx/post/aa/op')}",
 ]
-cv2.imwrite(f"result.png", generate_result(data, banner))
+print("")
+pprint.pprint(banner)
+print("")
+cv2.imwrite(f"result-{args.resolution}.png", generate_result(data, banner))
 
 simulation_app.close()
