@@ -6,6 +6,10 @@ This is where the Omniverse Isaac Sim application is developed.
 * Slack: [#omni-isaac-support](https://nvidia.slack.com/archives/CBDM22E5P)
 * [Confluence](https://confluence.nvidia.com/display/OMNIVERSE/Omniverse+Isaac+Sim)
 
+# Table of contents
+
+[[_TOC_]]
+
 # Getting Started
 
 See [here](https://omniverse.gitlab-master-pages.nvidia.com/isaac/omni_isaac_sim/isaacsim/latest/requirements.html) for general hardware and driver requirements
@@ -72,6 +76,13 @@ Notes:
   - Access to [``nvidian``](https://docs.google.com/forms/d/e/1FAIpQLScHfy_rMaUwpDVF7vpUuZe68fKESB7CN8twnXQnrZSUZnAfFA/viewform) org in NGC. 
   - See [Branches](#branches)
   - See [Binary Builds (Omniverse Launcher)](#binary-builds-omniverse-launcher-recommended)
+
+## Python packages
+
+* Python packages (public): [pypi.nvidia.com](https://pypi.nvidia.com)
+  * See [Install Isaac Sim using PIP](https://docs.omniverse.nvidia.com/isaacsim/latest/installation/install_python.html#install-isaac-sim-using-pip) for installation instructions.
+* Python packages (internal: beta, release candidates, etc.): [urm.nvidia.com/artifactory/sw-isaacsim-pypi-local](https://urm.nvidia.com/artifactory/sw-isaacsim-pypi-local)
+  * See the internal [README](https://urm.nvidia.com/artifactory/sw-isaacsim-pypi-local/README.md) for installation instructions.
 
 ## Native Python Sample Repository
 
