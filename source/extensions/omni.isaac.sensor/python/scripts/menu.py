@@ -104,6 +104,15 @@ class IsaacSensorMenu:
                                     + "/Isaac/Sensors/LeopardImaging/Hawk/hawk_v1.1_nominal.usd",
                                 ),
                             ),
+                            make_menu_item_description(
+                                ext_id,
+                                "Owl",
+                                lambda a=weakref.proxy(self): create_prim(
+                                    prim_path=get_next_free_path("/Owl", None),
+                                    prim_type="Xform",
+                                    usd_path=get_assets_root_path() + "/Isaac/Sensors/LeopardImaging/Owl/owl.usd",
+                                ),
+                            ),
                         ],
                     ),
                     MenuItemDescription(
@@ -202,7 +211,7 @@ class IsaacSensorMenu:
         rtx_lidar_sub_menu = {}
 
         # TODO: This currently scans for all the subfolders for json config files, in the future we want to make the menu resemble the folder structure
-        config_dir_path = get_extension_path(ext_id) + "/data/lidar_configs"
+        config_dir_path = os.path.join(get_extension_path(ext_id), "data", "lidar_configs")
         config_dirs = []
         config_dirs.sort()
 
@@ -214,13 +223,13 @@ class IsaacSensorMenu:
             if d is None:
                 continue
             sub_menu = {}
-            n = d.split("/")[-1]
+            n = os.path.basename(d)
 
             config_files = os.listdir(d)
             config_files.sort()
             for file in config_files:
                 if file.endswith(".json"):
-                    data = json.load(open(d + "/" + file))
+                    data = json.load(open(os.path.join(d, file)))
                     ui_name = data["name"]
                     file_name = file[:-5]
                     sub_menu[ui_name] = make_menu_item_description(
