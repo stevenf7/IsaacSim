@@ -46,7 +46,7 @@
             },
             "topicName": {
                 "type": "string",
-                "description": "Topic name for the monocular or left stereo camera data..",
+                "description": "Topic name for the monocular or left stereo camera data.",
                 "default": "camera_info"
             },
             "renderProductPath": {

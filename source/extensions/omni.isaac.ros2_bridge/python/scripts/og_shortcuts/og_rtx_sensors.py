@@ -61,7 +61,7 @@ class Ros2CameraGraph:
                 {
                     keys.CREATE_NODES: [
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                        ("CameraInfoPublish", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
+                        ("CameraInfoPublish", "omni.isaac.ros2_bridge.ROS2CameraInfoHelper"),
                         ("RenderProduct", "omni.isaac.core_nodes.IsaacCreateRenderProduct"),
                         ("RunOnce", "omni.isaac.core_nodes.OgnIsaacRunOneSimulationFrame"),
                         ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
@@ -69,7 +69,6 @@ class Ros2CameraGraph:
                     keys.SET_VALUES: [
                         ("RenderProduct.inputs:cameraPrim", self._camera_prim),
                         ("CameraInfoPublish.inputs:topicName", self._camera_info_topic),
-                        ("CameraInfoPublish.inputs:type", "camera_info"),
                         ("CameraInfoPublish.inputs:frameId", self._frame_id),
                         ("CameraInfoPublish.inputs:nodeNamespace", self._node_namespace),
                         ("CameraInfoPublish.inputs:resetSimulationTimeOnStop", True),
