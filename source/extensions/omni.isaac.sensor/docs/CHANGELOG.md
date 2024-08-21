@@ -1,5 +1,11 @@
 # Changelog
 
+## [12.8.4] - 2024-08-20
+### Added
+- Adds Owl to Create->Sensor menu.
+### Fixed
+- Corrects path manipulations when building menu.
+
 ## [12.8.3] - 2024-08-13
 ### Fixed
 - Sensing RGBD sensor names in Create -> Isaac menu now match USD filenames.
