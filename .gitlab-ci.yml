@@ -1032,6 +1032,7 @@ verify-publish-extensions:
 # but this can be changed in repo.toml config if necessary:
 #    [repo_publish_exts]
 #    platforms = ["linux-x86_64"]
+# Currently, extensions are published frome the 'develop' branch only
 publish-extensions:
   extends:
   - .deploy-common
@@ -1059,6 +1060,8 @@ publish-extensions:
     - if: $ALLOW_PUBLISH_EXTENSIONS != "true"
       when: never
     - if: $RUN_BUMP_VERSION == "true"
+      when: never
+    - if: '$CI_COMMIT_BRANCH != "develop"'
       when: never
     - !reference [.rules-version-changed, rules]
     - !reference [.rules-push-manual, rules]
@@ -1152,8 +1155,6 @@ test-python-packages-linux:
     - job: publish-python-packages-linux
       artifacts: true
   rules:
-    - if: '$CI_COMMIT_BRANCH != "develop"'
-      when: never
     - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true" || $RUN_NIGHTLY_TESTS == "true"
       when: never
     - !reference [.rules-workflow, rules]
@@ -1184,8 +1185,6 @@ test-python-packages-windows:
     - job: publish-python-packages-windows
       artifacts: true
   rules:
-    - if: '$CI_COMMIT_BRANCH != "develop"'
-      when: never
     - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true" || $RUN_NIGHTLY_TESTS == "true"
       when: never
     - !reference [.rules-workflow, rules]
@@ -1554,6 +1553,7 @@ binaryscan-publish-to-packman:
 
 
 # ==============================================================================================================
+# Run only on release branches
 isaac-sim-assets-1:
   extends:
   - .deploy-common
@@ -1575,6 +1575,7 @@ isaac-sim-assets-1:
 
 
 # ==============================================================================================================
+# Run only on release branches
 isaac-sim-assets-2:
   extends:
   - .deploy-common
@@ -1596,6 +1597,7 @@ isaac-sim-assets-2:
 
 
 # ==============================================================================================================
+# Run only on release branches
 isaac-sim-assets-3:
   extends:
   - .deploy-common
@@ -1617,6 +1619,7 @@ isaac-sim-assets-3:
 
 
 # ==============================================================================================================
+# Run only on release branches
 isaac-sim-assets-4:
   extends:
   - .deploy-common
