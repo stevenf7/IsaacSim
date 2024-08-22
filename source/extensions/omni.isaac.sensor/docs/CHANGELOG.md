@@ -1,5 +1,9 @@
 # Changelog
 
+## [12.8.6] - 2024-08-21
+### Fixed
+- Corrects prim path for Sensing SG2-AR0233C-5200-G2A-H100F1A
+
 ## [12.8.5] - 2024-08-21
 ### Fixed
 - Making auto-add contact report API when creating a sensor

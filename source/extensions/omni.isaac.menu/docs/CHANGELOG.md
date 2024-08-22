@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0] - 2024-08-21
+### Changed
+- Adds original Franka to robot asset menu
+- Renames Franka -> Franka (alt. fingers)
+- Moves Ant to Quadruped menu
+- Adds Black Grid and Curved Grid menu options.
+
 ## [0.5.0] - 2024-07-10
 ### Removed
 - Deprecated omni.isaac.dofbot and removed its usage.
