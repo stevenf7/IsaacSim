@@ -1,7 +1,6 @@
 [isaacsim]
 # pyproject.toml
 pyproject.description = "A metapackage that installs the complete version of Isaac Sim"
-pyproject.readme = ""
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim"]
 pyproject.dependencies = [
     # isaacsim packages
@@ -37,7 +36,6 @@ inventory.include = [
 [isaacsim-kernel]
 # pyproject.toml
 pyproject.description = "Isaac Sim kernel"
-pyproject.readme = ""
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "kernel"]
 pyproject.dependencies = [
     "omniverse-kit==106.1.0.135697",
@@ -54,7 +52,6 @@ inventory.include = [
 [isaacsim-extscache-kit]
 # pyproject.toml
 pyproject.description = "Kit extensions cache for Isaac Sim"
-pyproject.readme = ""
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "kit", "cache"]
 # inventory (relative to the build config)
 inventory.include = [
@@ -67,7 +64,6 @@ inventory.include = [
 [isaacsim-extscache-kit-sdk]
 # pyproject.toml
 pyproject.description = "Kit-SDK extensions cache for Isaac Sim"
-pyproject.readme = ""
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "kit-sdk", "cache"]
 # inventory (relative to the build config)
 inventory.include = [
@@ -80,7 +76,6 @@ inventory.include = [
 [isaacsim-extscache-physics]
 # pyproject.toml
 pyproject.description = "Physics extensions cache for Isaac Sim"
-pyproject.readme = ""
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "physics", "cache"]
 # inventory (relative to the build config)
 inventory.include = [
@@ -95,7 +90,6 @@ inventory.include = [
 [isaacsim-app]
 # pyproject.toml
 pyproject.description = "Isaac Sim components for application setup"
-pyproject.readme = ""
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "app"]
 pyproject.dependencies = [
     # isaacsim packages
@@ -119,7 +113,6 @@ inventory.include = [
 [isaacsim-asset]
 # pyproject.toml
 pyproject.description = "Isaac Sim components for asset import, creation and management"
-pyproject.readme = ""
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "asset"]
 pyproject.dependencies = [
     # isaacsim packages
@@ -146,7 +139,6 @@ inventory.include = [
 [isaacsim-benchmark]
 # pyproject.toml
 pyproject.description = "Isaac Sim components for benchmarking"
-pyproject.readme = ""
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "benchmark"]
 pyproject.dependencies = [
     "isaacsim-robot==${version}",
@@ -163,7 +155,6 @@ inventory.include = [
 [isaacsim-code-editor]
 # pyproject.toml
 pyproject.description = "Isaac Sim components for scripting and code edition"
-pyproject.readme = ""
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "editor"]
 pyproject.dependencies = [
     "isaacsim-kernel==${version}",
@@ -181,7 +172,6 @@ inventory.include = [
 [isaacsim-core]
 # pyproject.toml
 pyproject.description = "Isaac Sim core extensions and APIs"
-pyproject.readme = ""
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "core"]
 pyproject.dependencies = [
     # isaacsim packages
@@ -218,7 +208,6 @@ inventory.include = [
 [isaacsim-cortex]
 # pyproject.toml
 pyproject.description = "Isaac Sim components to enable the Cortex decision framework for intelligent robot behavior"
-pyproject.readme = ""
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "cortex"]
 pyproject.dependencies = [
     "isaacsim-robot==${version}",
@@ -237,7 +226,6 @@ inventory.include = [
 [isaacsim-example]
 # pyproject.toml
 pyproject.description = "Isaac Sim examples"
-pyproject.readme = ""
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "example"]
 pyproject.dependencies = [
     "isaacsim-cortex==${version}",
@@ -255,7 +243,6 @@ inventory.include = [
 [isaacsim-gui]
 # pyproject.toml
 pyproject.description = "Isaac Sim components for the graphical user interface (GUI)"
-pyproject.readme = ""
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "gui"]
 pyproject.dependencies = [
     "isaacsim-core==${version}",
@@ -274,7 +261,6 @@ inventory.include = [
 [isaacsim-replicator]
 # pyproject.toml
 pyproject.description = "Isaac Sim components to enable the Replicator framework for synthetic data generation pipelines and services"
-pyproject.readme = ""
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "replicator"]
 pyproject.dependencies = [
     # isaacsim packages
@@ -296,7 +282,6 @@ inventory.include = [
 [isaacsim-rl]
 # pyproject.toml
 pyproject.description = "Isaac Sim components for reinforcement learning"
-pyproject.readme = ""
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "rl"]
 pyproject.dependencies = [
     # isaacsim packages
@@ -316,7 +301,6 @@ inventory.include = [
 [isaacsim-robot]
 # pyproject.toml
 pyproject.description = "Isaac Sim's robot models and APIs"
-pyproject.readme = ""
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "robot"]
 pyproject.dependencies = [
     # isaacsim packages
@@ -344,7 +328,6 @@ inventory.include = [
 [isaacsim-robot-motion]
 # pyproject.toml
 pyproject.description = "Isaac Sim components for motion generation pipelines and algorithms"
-pyproject.readme = ""
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "robot", "motion"]
 pyproject.dependencies = [
     "isaacsim-gui==${version}",
@@ -363,7 +346,6 @@ inventory.include = [
 [isaacsim-robot-setup]
 # pyproject.toml
 pyproject.description = "Isaac Sim components for robot setup"
-pyproject.readme = ""
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "robot", "setup"]
 pyproject.dependencies = [
     "isaacsim-robot-motion==${version}",
@@ -384,7 +366,6 @@ inventory.include = [
 [isaacsim-ros1]
 # pyproject.toml
 pyproject.description = "Isaac Sim components for ROS 1 system integration"
-pyproject.readme = ""
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "ros", "ros1"]
 pyproject.dependencies = [
     "isaacsim-sensor==${version}",
@@ -400,7 +381,6 @@ inventory.include = [
 [isaacsim-ros2]
 # pyproject.toml
 pyproject.description = "Isaac Sim components for ROS 2 system integration"
-pyproject.readme = ""
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "ros", "ros2"]
 pyproject.dependencies = [
     "isaacsim-sensor==${version}",
@@ -418,7 +398,6 @@ inventory.include = [
 [isaacsim-sensor]
 # pyproject.toml
 pyproject.description = "Isaac Sim components to simulate sensors"
-pyproject.readme = ""
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "sensor"]
 pyproject.dependencies = [
     # isaacsim packages
@@ -445,7 +424,6 @@ inventory.include = [
 [isaacsim-storage]
 # pyproject.toml
 pyproject.description = "Isaac Sim components for storage system"
-pyproject.readme = ""
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "storage"]
 pyproject.dependencies = [
     "isaacsim-kernel==${version}",
@@ -464,7 +442,6 @@ inventory.include = [
 [isaacsim-template]
 # pyproject.toml
 pyproject.description = "Isaac Sim templates"
-pyproject.readme = ""
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "template"]
 pyproject.dependencies = [
     "isaacsim-storage==${version}",
@@ -481,7 +458,6 @@ inventory.include = [
 [isaacsim-test]
 # pyproject.toml
 pyproject.description = "Isaac Sim components for testings"
-pyproject.readme = ""
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "test"]
 pyproject.dependencies = [
     "isaacsim-robot==${version}",
@@ -498,7 +474,6 @@ inventory.include = [
 [isaacsim-utils]
 # pyproject.toml
 pyproject.description = "Isaac Sim utilities"
-pyproject.readme = ""
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "utils"]
 pyproject.dependencies = [
     "isaacsim-gui==${version}",
@@ -511,4 +486,5 @@ inventory.include = [
     "exts/omni.isaac.debug_draw",
     "exts/omni.isaac.merge_mesh",
     "exts/omni.isaac.physics_utilities",
+    "exts/omni.isaac.grasp_editor",
 ]
