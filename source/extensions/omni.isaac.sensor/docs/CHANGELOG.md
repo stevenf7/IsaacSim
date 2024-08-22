@@ -1,5 +1,9 @@
 # Changelog
 
+## [12.8.5] - 2024-08-21
+### Fixed
+- Making auto-add contact report API when creating a sensor
+
 ## [12.8.4] - 2024-08-20
 ### Added
 - Adds Owl to Create->Sensor menu.

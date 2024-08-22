@@ -17,7 +17,7 @@ import omni.usd
 from omni.isaac.core.utils.prims import delete_prim
 from omni.isaac.core.utils.stage import get_next_free_path
 from omni.isaac.core.utils.xforms import reset_and_set_xform_ops
-from pxr import Gf, Sdf, UsdGeom
+from pxr import Gf, PhysxSchema, Sdf, UsdGeom
 
 
 class IsaacSensorCreatePrim(omni.kit.commands.Command):
@@ -83,6 +83,13 @@ class IsaacSensorCreateContactSensor(omni.kit.commands.Command):
             self._prim.CreateColorAttr().Set(self._color)
             self._prim.CreateSensorPeriodAttr().Set(self._sensor_period)
             self._prim.CreateRadiusAttr().Set(self._radius)
+
+            # Ensure parent has contact report API in it.
+            stage = omni.usd.get_context().get_stage()
+            parent_prim = stage.GetPrimAtPath(self._parent)
+            contact_report = PhysxSchema.PhysxContactReportAPI.Apply(parent_prim)
+            contact_report.CreateThresholdAttr(self._min_threshold)
+
             return self._prim
 
         else:
