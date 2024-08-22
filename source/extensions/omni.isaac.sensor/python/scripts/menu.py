@@ -122,7 +122,7 @@ class IsaacSensorMenu:
                                 ext_id,
                                 "Sensing SG2-AR0233C-5200-G2A-H100F1A",
                                 lambda a=weakref.proxy(self): create_prim(
-                                    prim_path=get_next_free_path("/SG2_AR0233C-5200-G2A_H100F1A", None),
+                                    prim_path=get_next_free_path("/SG2_AR0233C_5200_G2A_H100F1A", None),
                                     prim_type="Xform",
                                     usd_path=get_assets_root_path()
                                     + "/Isaac/Sensors/Sensing/SG2/H100F1A/SG2-AR0233C-5200-G2A-H100F1A.usd",

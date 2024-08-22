@@ -163,6 +163,11 @@ class Extension(omni.ext.IExt):
             make_menu_item_description(
                 ext_id,
                 "Franka",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Franka/franka.usd", "/Franka"),
+            ),
+            make_menu_item_description(
+                ext_id,
+                "Franka (alt. fingers)",
                 lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Franka/franka_alt_fingers.usd", "/Franka"),
             ),
             make_menu_item_description(
@@ -244,6 +249,11 @@ class Extension(omni.ext.IExt):
 
         menu_quadrupeds = [
             MenuItemDescription(header="Quadrupeds"),
+            make_menu_item_description(
+                ext_id,
+                "Ant",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Ant/ant_instanceable.usd", "/Ant"),
+            ),
             make_menu_item_description(
                 ext_id,
                 "ANYmal C",
@@ -452,21 +462,11 @@ class Extension(omni.ext.IExt):
             MenuItemDescription(name="Xiao Peng", sub_menu=menu_xiaopeng_humanoid),
         ]
 
-        menu_other = [
-            MenuItemDescription(header="Other"),
-            make_menu_item_description(
-                ext_id,
-                "Ant",
-                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Ant/ant_instanceable.usd", "/Ant"),
-            ),
-        ]
-
         robot_menu += menu_manipulators
         robot_menu += menu_quadrupeds
         robot_menu += menu_aerial
         robot_menu += menu_mobile
         robot_menu += menu_humanoid
-        robot_menu += menu_other
 
         env_menu = [
             MenuItemDescription(header="Basic"),
@@ -475,6 +475,20 @@ class Extension(omni.ext.IExt):
                 "Flat Grid",
                 lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Environments/Grid/default_environment.usd", "/FlatGrid"
+                ),
+            ),
+            make_menu_item_description(
+                ext_id,
+                "Black Grid",
+                lambda a=weakref.proxy(self): a.create_asset(
+                    "/Isaac/Environments/Grid/gridroom_black.usd", "/BlackGrid"
+                ),
+            ),
+            make_menu_item_description(
+                ext_id,
+                "Curved Grid",
+                lambda a=weakref.proxy(self): a.create_asset(
+                    "/Isaac/Environments/Grid/gridroom_curved.usd", "/CurvedGrid"
                 ),
             ),
             MenuItemDescription(header="Rooms"),
