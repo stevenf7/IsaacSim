@@ -1148,6 +1148,10 @@ pyproject.classifiers = [
     "Programming Language :: Python :: 3",
     "License :: Other/Proprietary License",
 ]
+pyproject.readme = """
+See [Install Isaac Sim using PIP](https://docs.omniverse.nvidia.com/isaacsim/latest/installation/install_python.html)
+for details on how to install and run Isaac Sim in a (virtual) Python environment.
+"""
 pyproject.urls = [
     { "Home page" = "https://developer.nvidia.com/isaac-sim" },
     { "Documentation" = "https://docs.omniverse.nvidia.com/isaacsim/latest/index.html" },
@@ -1162,6 +1166,23 @@ packages_wildcard_path = "${root}/_build/packages/dist/*.whl"
 pypi.repository_url = "https://urm.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi-local"
 pypi.user = "${env:ISAACSIM_ARTIFACTORY_USERNAME}"
 pypi.password = "${env:ISAACSIM_ARTIFACTORY_PASSWORD}"
+
+# check python package definitions
+[repo_check_python_package_definitions]
+kit_sdk_packman = "${root}/deps/kit-sdk.packman.xml"
+omniverse_kit_version = "${major}.${minor}.${patch}.${build_number}"
+extension_folder = "${root}/source/extensions"
+excluded_extensions = [
+    # archives
+    "omni.isaac.core_archive",
+    "omni.isaac.ml_archive",
+    "omni.pip.compute",
+    "omni.pip.cloud",
+    # others
+    "omni.isaac.common_includes",
+    "omni.isaac.internal_tools",
+    "omni.isaac.unit_converter",
+]
 
 # comment archive extension dependencies
 [repo_comment_archive_deps]
