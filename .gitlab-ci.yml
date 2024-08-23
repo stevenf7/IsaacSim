@@ -1095,6 +1095,9 @@ publish-python-packages-windows:
   extends:
   - .deploy-common
   - .runner-build-windows-x86_64
+  - .osec:vault:v3:prod_token_job
+  before_script:
+  - !reference ['.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests']
   script:
   - ./repo.bat unzip_file --file _build/packages/isaac-sim-standalone*.windows-x86_64.release.7z --dst _build/windows-x86_64/release
   - ls _build/windows-x86_64/release
@@ -1114,7 +1117,7 @@ publish-python-packages-windows:
   - !reference [.rules-version-changed, rules]
   - !reference [.rules-push-manual, rules]
 
-test-python-packages-linux:
+verify-publish-python-packages-linux:
   interruptible: true
   allow_failure: true
   extends:
@@ -1144,12 +1147,15 @@ test-python-packages-linux:
   - !reference [.rules-version-changed, rules]
   - !reference [.rules-push-manual, rules]
 
-test-python-packages-windows:
+verify-publish-python-packages-windows:
   interruptible: true
   allow_failure: true
   extends:
   - .deploy-common
   - .runner-test-windows-x86_64-gpu
+  - .osec:vault:v3:prod_token_job
+  before_script:
+  - !reference ['.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests']
   script:
   # install Python 3.10
   - curl -o python-3.10.exe https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe
