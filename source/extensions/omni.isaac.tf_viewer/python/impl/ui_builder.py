@@ -9,7 +9,7 @@
 
 import carb
 import omni.isaac.ui.ui_utils as ui_utils
-import omni.kit.ui
+import omni.kit.menu.utils
 import omni.ui as ui
 
 
@@ -17,17 +17,18 @@ class UIBuilder:
     """Manage extension UI"""
 
     def __init__(self, menu_path, window_title, viewport_scene, on_visibility_changed_callback, on_reset_callback):
-        self._menu_path = menu_path
         self._window_title = window_title
         self._viewport_scene = viewport_scene
-        self._on_visibility_changed = on_visibility_changed_callback
+        self._on_visibility_changed_callback = on_visibility_changed_callback
         self._on_reset = on_reset_callback
 
         self._root_frame = "World"
         self._update_frequency = 10
 
+        ui.Workspace.set_show_window_fn(self._window_title, self.show_window)
+        self._menu_helper = omni.kit.menu.utils.MenuHelperExtension()
+        self._menu_helper.menu_startup(self._window_title, self._window_title, menu_path)
         self._window = None
-        self._menu = omni.kit.ui.get_editor_menu().add_item(self._menu_path, self._on_toggle, toggle=True, value=False)
 
     @property
     def root_frame(self):
@@ -37,9 +38,13 @@ class UIBuilder:
     def update_frequency(self):
         return self._update_frequency
 
-    def _on_toggle(self, *args, **kwargs):
+    def show_window(self, value):
         self._build_ui()
-        self._window.visible = not self._window.visible
+        self._window.visible = value
+
+    def _on_visibility_changed(self, visible):
+        self._on_visibility_changed_callback(visible)
+        self._menu_helper.menu_refresh()
 
     def _on_update_frequency_changed(self, model):
         frequency = model.as_int
@@ -332,9 +337,7 @@ class UIBuilder:
 
     def shutdown(self):
         """Clean up menu item"""
-        if self._menu is not None:
-            try:
-                omni.kit.ui.get_editor_menu().remove_item(self._menu)
-            except:
-                omni.kit.ui.get_editor_menu().remove_item(self._menu_path)
-            self._menu = None
+        ui.Workspace.set_show_window_fn(self._window_title, None)
+        if self._window:
+            self._window.destroy()
+            self._window = None
