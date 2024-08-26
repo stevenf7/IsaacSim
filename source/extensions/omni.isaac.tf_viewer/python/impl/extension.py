@@ -57,7 +57,7 @@ class Extension(omni.ext.IExt):
 
         # ui components
         self._ui_builder = ui_builder.UIBuilder(
-            menu_path="Window/TF Viewer",
+            menu_path="Window",
             window_title="TF Viewer",
             viewport_scene=self._viewport_scene,
             on_visibility_changed_callback=self._on_visibility_changed,
