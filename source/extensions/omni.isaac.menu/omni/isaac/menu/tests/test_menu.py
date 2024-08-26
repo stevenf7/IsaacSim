@@ -105,8 +105,10 @@ class TestMenuAssets(OmniUiTest):
 
         test_list = robot_menu_list + ee_menu_list
 
-        # surface gripper is just a graph
-        skip_list = ["Create/Isaac/End Effectors/Surface Gripper"]
+        skip_list = [
+            "Create/Isaac/End Effectors/Surface Gripper",  # surface gripper is just a graph
+            "Create/Isaac/Robots/Wheeled Robots/Idealworks/Idealworks iw.hub (static)",  # static mesh
+        ]
 
         failed_robots = []
         for test_path in test_list:
@@ -183,7 +185,7 @@ class TestMenuAssets(OmniUiTest):
 
         await omni.kit.app.get_app().next_update_async()
 
-    async def test_loading_environment(self):
+    async def test_loading_environments(self):
         from omni.kit.viewport.utility.tests.capture import capture_viewport_and_wait, finalize_capture_and_compare
 
         self.environment_menu_dict = self.menu_dict["Create"]["Isaac"]["Environments"]
@@ -220,7 +222,7 @@ class TestMenuAssets(OmniUiTest):
                 print("skipping ", test_path)
                 continue
 
-            create_new_stage()
+            clear_stage()
             await omni.kit.app.get_app().next_update_async()
             await omni.kit.app.get_app().next_update_async()
             await menu_click(test_path, human_delay_speed=10)
@@ -244,7 +246,7 @@ class TestMenuAssets(OmniUiTest):
             else:
                 set_camera_view(eye=[3, -3, 3], target=[0, 0, 0])
 
-            for i in range(200):
+            for _ in range(200):
                 await omni.kit.app.get_app().next_update_async()
             # capture and compare with golden image
             output_dir = Path(omni.kit.test.get_test_output_path())
@@ -255,13 +257,12 @@ class TestMenuAssets(OmniUiTest):
                 golden_img_dir=self._golden_img_dir,
                 threshold=1000,
             )
-            print("DIFF:", test_path, diff)
             self.assertIsNotNone(diff)
-            self.assertLess(diff, 1000)
+            self.assertLess(diff, 1000, f"DIFF: {test_path} - {diff}")
 
             # count the number of prims in the stage
             num_prims = 0
-            for prim in traverse_stage():
+            for _ in traverse_stage():
                 num_prims += 1
 
             # There should be at least 9 prims
@@ -270,7 +271,7 @@ class TestMenuAssets(OmniUiTest):
             # `at least 1 environment prim`
 
             if num_prims < 9:
-                print(f"failed to find any prims at {test_path}")
+                print(f"failed to find sufficient prims when testing {test_path}")
                 failed_environments.append(test_path)
         print(failed_environments)
         # if failed_environments array has 0 entries, then test passed

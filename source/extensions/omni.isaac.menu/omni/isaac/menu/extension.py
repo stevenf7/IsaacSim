@@ -23,8 +23,6 @@ from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
 
-        robot_menu = []
-
         menu_universal_robots = [
             make_menu_item_description(
                 ext_id,
@@ -33,8 +31,18 @@ class Extension(omni.ext.IExt):
             ),
             make_menu_item_description(
                 ext_id,
+                "UR3e",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/UniversalRobots/ur3e/ur3e.usd", "/UR3e"),
+            ),
+            make_menu_item_description(
+                ext_id,
                 "UR5",
                 lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/UniversalRobots/ur5/ur5.usd", "/UR5"),
+            ),
+            make_menu_item_description(
+                ext_id,
+                "UR5e",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/UniversalRobots/ur5e/ur5e.usd", "/UR5e"),
             ),
             make_menu_item_description(
                 ext_id,
@@ -43,13 +51,13 @@ class Extension(omni.ext.IExt):
             ),
             make_menu_item_description(
                 ext_id,
-                "UR3e",
-                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/UniversalRobots/ur3e/ur3e.usd", "/UR3e"),
+                "UR10 (short suction gripper)",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/UR10/ur10_short_suction.usd", "/UR10"),
             ),
             make_menu_item_description(
                 ext_id,
-                "UR5e",
-                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/UniversalRobots/ur5e/ur5e.usd", "/UR5e"),
+                "UR10 (long suction gripper)",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/UR10/ur10_long_suction.usd", "/UR10"),
             ),
             make_menu_item_description(
                 ext_id,
@@ -153,13 +161,6 @@ class Extension(omni.ext.IExt):
         ]
 
         menu_franka = [
-            # make_menu_item_description(
-            #     ext_id,
-            #     "FactoryFranka",
-            #     lambda a=weakref.proxy(self): a.create_asset(
-            #         "/Isaac/Robots/FactoryFranka/factory_franka_instanceable.usd", "/FactoryFranka"
-            #     ),
-            # ),
             make_menu_item_description(
                 ext_id,
                 "Franka",
@@ -178,7 +179,6 @@ class Extension(omni.ext.IExt):
         ]
 
         menu_manipulators = [
-            MenuItemDescription(header="Manipulators"),
             MenuItemDescription(name="Denso", sub_menu=menu_denso),
             make_menu_item_description(
                 ext_id,
@@ -199,9 +199,9 @@ class Extension(omni.ext.IExt):
                     "/Isaac/Robots/Flexiv/Rizon4/flexiv_rizon4.usd", "/Rizon_4"
                 ),
             ),
+            MenuItemDescription(name="Franka", sub_menu=menu_franka),
             MenuItemDescription(name="Kawasaki", sub_menu=menu_kawasaki),
             MenuItemDescription(name="Kinova", sub_menu=menu_kinova),
-            MenuItemDescription(name="Franka", sub_menu=menu_franka),
             make_menu_item_description(
                 ext_id,
                 "Kuka KR210_L150",
@@ -229,10 +229,10 @@ class Extension(omni.ext.IExt):
                 ext_id, "A1", lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Unitree/A1/a1.usd", "/A1")
             ),
             make_menu_item_description(
-                ext_id, "Go1", lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Unitree/Go1/go1.usd", "/Go1")
+                ext_id, "B2", lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Unitree/B2/b2.usd", "/B2")
             ),
             make_menu_item_description(
-                ext_id, "B2", lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Unitree/B2/b2.usd", "/B2")
+                ext_id, "Go1", lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Unitree/Go1/go1.usd", "/Go1")
             ),
             make_menu_item_description(
                 ext_id, "Go2", lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Unitree/Go2/go2.usd", "/Go2")
@@ -245,10 +245,16 @@ class Extension(omni.ext.IExt):
                 "Spot",
                 lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/BostonDynamics/spot/spot.usd", "/spot"),
             ),
+            make_menu_item_description(
+                ext_id,
+                "Spot (with arm)",
+                lambda a=weakref.proxy(self): a.create_asset(
+                    "/Isaac/Robots/BostonDynamics/spot/spot_with_arm.usd", "/spot"
+                ),
+            ),
         ]
 
         menu_quadrupeds = [
-            MenuItemDescription(header="Quadrupeds"),
             make_menu_item_description(
                 ext_id,
                 "Ant",
@@ -256,19 +262,17 @@ class Extension(omni.ext.IExt):
             ),
             make_menu_item_description(
                 ext_id,
-                "ANYmal C",
+                "ANYbotics ANYmal",
                 lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/ANYbotics/anymal_c.usd", "/ANYmal_C"),
             ),
+            MenuItemDescription(name="BostonDynamics", sub_menu=menu_boston_dynamics),
             MenuItemDescription(name="Unitree", sub_menu=menu_unitree),
-            MenuItemDescription(name="BostonDynamics", sub_menu=menu_boston_dynamics)
-            # MenuItemDescription(name="ANYbotics", sub_menu=menu_anybotics), # for some reason, the header needed to be above a item, not submenu, to show up
         ]
 
         menu_aerial = [
-            MenuItemDescription(header="Aerials"),
             make_menu_item_description(
                 ext_id,
-                "Crazyflie",
+                "Crazyflie 2.x",
                 lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Crazyflie/cf2x.usd", "/Crazyflie"),
             ),
             make_menu_item_description(
@@ -296,7 +300,7 @@ class Extension(omni.ext.IExt):
             ),
             make_menu_item_description(
                 ext_id,
-                "RidgebackFranka",
+                "Ridgeback Franka",
                 lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Robots/Clearpath/RidgebackFranka/ridgeback_franka.usd", "/RidgebackFranka"
                 ),
@@ -310,10 +314,10 @@ class Extension(omni.ext.IExt):
             ),
         ]
 
-        menu_nvidia = [
+        menu_nvidia_wheeled_robots = [
             make_menu_item_description(
                 ext_id,
-                "Carter V1",
+                "Carter v1",
                 lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Robots/Carter/carter_v1_physx_lidar.usd", "/Carter_v1"
                 ),
@@ -332,26 +336,25 @@ class Extension(omni.ext.IExt):
             ),
             make_menu_item_description(
                 ext_id,
+                "Jetbot (simpliifed)",
+                lambda a=weakref.proxy(self): a.create_asset(
+                    "/Isaac/Robots/Jetbot/aws_robomaker_jetbot.usd", "/Jetbot_simplified"
+                ),
+            ),
+            make_menu_item_description(
+                ext_id,
                 "Leatherback",
                 lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Robots/Leatherback/leatherback.usd", "/Leatherback"
                 ),
             ),
-            make_menu_item_description(
-                ext_id, "Kaya", lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Kaya/kaya.usd", "/Kaya")
-            ),
         ]
 
-        menu_fraunhofer = [
+        menu_fraunhofer_wheeled_robots = [
             make_menu_item_description(
                 ext_id,
                 "Evobot",
                 lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Evobot/evobot.usd", "/Evobot"),
-            ),
-            make_menu_item_description(
-                ext_id,
-                "O3dyn",
-                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/O3dyn/o3dyn.usd", "/O3dyn"),
             ),
         ]
 
@@ -371,26 +374,74 @@ class Extension(omni.ext.IExt):
         menu_agilexRobotics = [
             make_menu_item_description(
                 ext_id,
-                "limo",
+                "Limo",
                 lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/AgilexRobotics/limo/limo.usd", "/limo"),
             ),
         ]
 
-        menu_mobile = [
-            MenuItemDescription(header="Wheeled Robots"),
-            MenuItemDescription(name="Clearpath", sub_menu=menu_clearpath),
-            MenuItemDescription(name="Fraunhofer", sub_menu=menu_fraunhofer),
-            MenuItemDescription(name="Forklift", sub_menu=menu_forklift),
-            MenuItemDescription(name="AgilexRobotics", sub_menu=menu_agilexRobotics),
+        menu_idealworks = [
             make_menu_item_description(
                 ext_id,
                 "Idealworks iw.hub",
-                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Idealworks/iw_hub_sensors.usd", "/iw_hub"),
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Idealworks/iw_hub.usd", "/iw_hub"),
             ),
-            MenuItemDescription(name="NVIDIA", sub_menu=menu_nvidia),
+            make_menu_item_description(
+                ext_id,
+                "Idealworks iw.hub (with sensors)",
+                lambda a=weakref.proxy(self): a.create_asset(
+                    "/Isaac/Robots/Idealworks/iw_hub_sensors.usd", "/iw_hub_sensors"
+                ),
+            ),
+            make_menu_item_description(
+                ext_id,
+                "Idealworks iw.hub (static)",
+                lambda a=weakref.proxy(self): a.create_asset(
+                    "/Isaac/Robots/Idealworks/iw_hub_static.usd", "/iw_hub_static"
+                ),
+            ),
+        ]
+
+        menu_irobot = [
+            make_menu_item_description(
+                ext_id,
+                "Create3",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/iRobot/create_3.usd", "/create_3"),
+            ),
+        ]
+
+        menu_wheeled_robots = [
+            MenuItemDescription(name="AgilexRobotics", sub_menu=menu_agilexRobotics),
+            MenuItemDescription(name="Clearpath", sub_menu=menu_clearpath),
+            MenuItemDescription(name="Forklift", sub_menu=menu_forklift),
+            MenuItemDescription(name="Fraunhofer", sub_menu=menu_fraunhofer_wheeled_robots),
+            MenuItemDescription(name="Idealworks", sub_menu=menu_idealworks),
+            MenuItemDescription(name="iRobot", sub_menu=menu_irobot),
+            MenuItemDescription(name="NVIDIA", sub_menu=menu_nvidia_wheeled_robots),
+        ]
+
+        menu_fraunhofer_holonomic_robots = [
+            make_menu_item_description(
+                ext_id,
+                "O3dyn",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/O3dyn/o3dyn.usd", "/O3dyn"),
+            ),
+        ]
+
+        menu_nvidia_holonomic_robots = [
+            make_menu_item_description(
+                ext_id, "Kaya", lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Kaya/kaya.usd", "/Kaya")
+            ),
+        ]
+
+        menu_holonomic_robots = [
+            MenuItemDescription(name="Fraunhofer", sub_menu=menu_fraunhofer_holonomic_robots),
+            MenuItemDescription(name="NVIDIA", sub_menu=menu_nvidia_holonomic_robots),
         ]
 
         menu_unitree_humanoid = [
+            make_menu_item_description(
+                ext_id, "G1", lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Unitree/G1/g1.usd", "/H1")
+            ),
             make_menu_item_description(
                 ext_id, "H1", lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Unitree/H1/h1.usd", "/H1")
             ),
@@ -398,14 +449,14 @@ class Extension(omni.ext.IExt):
 
         menu_1x_humanoid = [
             make_menu_item_description(
-                ext_id, "Neo", lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/1X/Neo/neo.usd", "/Neo")
+                ext_id, "NEO", lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/1X/Neo/neo.usd", "/Neo")
             ),
         ]
 
         menu_agility_humanoid = [
             make_menu_item_description(
                 ext_id,
-                "DigitV4",
+                "Digit",
                 lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Agility/Digit/digit_v4.usd", "/Digit"),
             ),
         ]
@@ -413,14 +464,14 @@ class Extension(omni.ext.IExt):
         menu_fourier_intelligence_humanoid = [
             make_menu_item_description(
                 ext_id,
-                "GR1_T1",
+                "GR1 T1",
                 lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Robots/FourierIntelligence/GR-1/GR1_T1.usd", "/GR1_T1"
                 ),
             ),
             make_menu_item_description(
                 ext_id,
-                "GR1_T2",
+                "GR1 T2",
                 lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Robots/FourierIntelligence/GR-1/GR1_T2.usd", "/GR1_T2"
                 ),
@@ -443,10 +494,16 @@ class Extension(omni.ext.IExt):
                 "PX5",
                 lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/XiaoPeng/PX5/px5.usd", "/PX5"),
             ),
+            make_menu_item_description(
+                ext_id,
+                "PX5 (without housing)",
+                lambda a=weakref.proxy(self): a.create_asset(
+                    "/Isaac/Robots/XiaoPeng/PX5/px5_without_housing.usd", "/PX5"
+                ),
+            ),
         ]
 
         menu_humanoid = [
-            MenuItemDescription(header="Humanoid"),
             make_menu_item_description(
                 ext_id,
                 "Humanoid",
@@ -462,11 +519,14 @@ class Extension(omni.ext.IExt):
             MenuItemDescription(name="Xiao Peng", sub_menu=menu_xiaopeng_humanoid),
         ]
 
-        robot_menu += menu_manipulators
-        robot_menu += menu_quadrupeds
-        robot_menu += menu_aerial
-        robot_menu += menu_mobile
-        robot_menu += menu_humanoid
+        robot_menu = [
+            MenuItemDescription(name="Wheeled Robots", sub_menu=menu_wheeled_robots),
+            MenuItemDescription(name="Holonomic Robots", sub_menu=menu_holonomic_robots),
+            MenuItemDescription(name="Quadruped Robots", sub_menu=menu_quadrupeds),
+            MenuItemDescription(name="Manipulator Robots", sub_menu=menu_manipulators),
+            MenuItemDescription(name="Aerial Robots", sub_menu=menu_aerial),
+            MenuItemDescription(name="Humanoid Robots", sub_menu=menu_humanoid),
+        ]
 
         env_menu = [
             MenuItemDescription(header="Basic"),
@@ -581,6 +641,13 @@ class Extension(omni.ext.IExt):
                     "/Isaac/Robots/Robotiq/2F-85/Robotiq_2F_85_edit.usd", "/Robotiq_2F_85"
                 ),
             ),
+            make_menu_item_description(
+                ext_id,
+                "Hand-E",
+                lambda a=weakref.proxy(self): a.create_asset(
+                    "/Isaac/Robots/Robotiq/Hand-E/Robotiq_Hand_E_base.usd", "/Robotiq_Hand_E"
+                ),
+            ),
         ]
 
         menu_grippers = [
@@ -594,13 +661,15 @@ class Extension(omni.ext.IExt):
                 ext_id,
                 "Allegro Hand",
                 lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/AllegroHand/allegro_hand.usd", "/AllegroHand"
+                    "/Isaac/Robots/AllegroHand/allegro_hand_instanceable.usd", "/AllegroHand"
                 ),
             ),
             make_menu_item_description(
                 ext_id,
                 "Shadow Hand",
-                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/ShadowHand/shadow_hand.usd", "/ShadowHand"),
+                lambda a=weakref.proxy(self): a.create_asset(
+                    "/Isaac/Robots/ShadowHand/shadow_hand_instanceable.usd", "/ShadowHand"
+                ),
             ),
         ]
 

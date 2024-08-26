@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0] - 2024-08-23
+### Added
+- Several new robots to robot menu
+### Changed
+- Modifies robot menu to have multiple submenus based on robot type
+- Aligns robot menu ordering with documentation
+
 ## [0.6.0] - 2024-08-21
 ### Changed
 - Adds original Franka to robot asset menu
