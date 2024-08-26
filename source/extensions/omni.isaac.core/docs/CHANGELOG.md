@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.19.4] - 2024-08-26
+### Fixed
+- Exempts /Render and child prims when calling clear stage
+
 ## [3.19.3] - 2024-08-09
 ### Fixed
 - Do not delete the default renderproduct for the viewport when calling clear stage
@@ -19,7 +23,7 @@
 
 ## [3.18.1] - 2024-07-18
 ### Fixed
-- Fixed ArticulationController to handle joint indices along with Nan values in the target actions. 
+- Fixed ArticulationController to handle joint indices along with Nan values in the target actions.
 
 ## [3.18.0] - 2024-07-16
 ### Changed
@@ -32,7 +36,7 @@
 ## [3.17.0] - 2024-06-28
 ### Added
 - Allow find_matching_prim_paths in prim utils to return paths with valid physics APIs applied
-- Added a prim_type argument that supports filtering the prims returned by type: articulation and rigid_body are currently supported. 
+- Added a prim_type argument that supports filtering the prims returned by type: articulation and rigid_body are currently supported.
 
 ## [3.16.0] - 2024-06-28
 ### Added
@@ -89,7 +93,7 @@
 
 ## [3.9.1] - 2024-04-17
 ### Fixed
-- removed the deprecated physX force sensor 
+- removed the deprecated physX force sensor
 
 ## [3.9.0] - 2024-04-16
 ### Added
@@ -101,7 +105,7 @@
 
 ## [3.8.1] - 2024-04-08
 ### Added
-- Added crash metadata 
+- Added crash metadata
 
 ## [3.8.0] - 2024-03-24
 ### Added

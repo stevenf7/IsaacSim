@@ -172,10 +172,7 @@ def clear_stage(predicate: typing.Optional[typing.Callable[[str], bool]] = None)
         if prim_path == "/":
             return False
         # TODO, check if this can be removed
-        if prim_path == "/Render/Vars":
-            return False
-        # Don't delete the viewport render product
-        if "omni_kit_widget_viewport_ViewportTexture" in prim_path:
+        if prim_path.startswith("/Render"):
             return False
         return True
 
