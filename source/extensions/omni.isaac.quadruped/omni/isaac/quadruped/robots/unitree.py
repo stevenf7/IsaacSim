@@ -55,6 +55,10 @@ class Unitree(Articulation):
             way_points {np.ndarray} -- waypoint and heading of the robot
 
         """
+
+        carb.log_warn(
+            "warning, optimization control based quadruped example will be deprecated in favor of the policy based robot control"
+        )
         self._stage = get_current_stage()
         self._prim_path = prim_path
         prim = get_prim_at_path(self._prim_path)

@@ -10,17 +10,14 @@
 import os
 
 from omni.isaac.examples.base_sample import BaseSampleExtension
-from omni.isaac.examples.unitree_quadruped import QuadrupedExample
+from omni.isaac.examples.quadruped import QuadrupedExample
 
 
 class QuadrupedExampleExtension(BaseSampleExtension):
     def on_startup(self, ext_id: str):
         super().on_startup(ext_id)
 
-        overview = "This Example shows quadruped simulation in Isaac Sim. Currently there is a performance issue with "
-        overview += (
-            "the quadruped gait controller; it's being investigated and will be improved in an upcoming release."
-        )
+        overview = "This Example shows an Boston Dynamics Spot running a flat terrain policy trained in Isaac Lab"
         overview += "\n\tKeybord Input:"
         overview += "\n\t\tup arrow / numpad 8: Move Forward"
         overview += "\n\t\tdown arrow/ numpad 2: Move Reverse"
@@ -35,8 +32,8 @@ class QuadrupedExampleExtension(BaseSampleExtension):
             menu_name="",
             submenu_name="",
             name="Quadruped",
-            title="Unitree A1 Quadruped Example",
-            doc_link="https://docs.omniverse.nvidia.com/isaacsim/latest/features/robots_simulation/ext_omni_isaac_quadruped.html",
+            title="Boston Dynamic Spot Quadruped Example",
+            doc_link="https://docs.omniverse.nvidia.com/isaacsim/latest/isaac_lab_tutorials/tutorial_policy_deployment.html",
             overview=overview,
             file_path=os.path.abspath(__file__),
             sample=QuadrupedExample(),

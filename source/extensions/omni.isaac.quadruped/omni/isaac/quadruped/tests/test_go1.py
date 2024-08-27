@@ -55,8 +55,6 @@ class TestGo1(omni.kit.test.AsyncTestCase):
         self._auto_start = True
         await omni.kit.app.get_app().next_update_async()
 
-        pass
-
     async def tearDown(self):
         await omni.kit.app.get_app().next_update_async()
         self._timeline.stop()
@@ -64,7 +62,6 @@ class TestGo1(omni.kit.test.AsyncTestCase):
             print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
-        pass
 
     async def test_go1_add(self):
         self._path_follow = False
@@ -79,7 +76,7 @@ class TestGo1(omni.kit.test.AsyncTestCase):
         self.assertTrue(get_prim_at_path("/World/Go1").IsValid(), True)
         self.assertTrue(get_prim_at_path("/World/Go1").HasAPI(UsdPhysics.ArticulationRootAPI))
 
-        print("articulation check passed")
+        print("articulation check ed")
         await omni.kit.app.get_app().next_update_async()
 
         # if dc interface is valid, that means the prim is likely imported correctly
@@ -105,7 +102,6 @@ class TestGo1(omni.kit.test.AsyncTestCase):
 
         self._world.add_physics_callback("go1_advance", callback_fn=self.on_physics_step)
         await self._world.reset_async()
-        return
 
     def on_physics_step(self, step_size):
         if self._go1:

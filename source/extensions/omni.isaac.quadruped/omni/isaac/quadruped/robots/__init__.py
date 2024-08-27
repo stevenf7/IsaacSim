@@ -7,7 +7,11 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.isaac.quadruped.robots.anymal import Anymal
+# RL based robot template classes
+from omni.isaac.quadruped.robots.anymal import AnymalFlatTerrainPolicy
+from omni.isaac.quadruped.robots.spot import SpotFlatTerrainPolicy
+
+# Classical control based robot template classes
 from omni.isaac.quadruped.robots.unitree import Unitree
 from omni.isaac.quadruped.robots.unitree_direct import UnitreeDirect
 from omni.isaac.quadruped.robots.unitree_vision import UnitreeVision

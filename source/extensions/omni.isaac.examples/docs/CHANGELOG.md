@@ -1,5 +1,14 @@
 # Changelog
 
+## [3.0.0] - 2024-08-06
+### Added
+- Reinforcement learning based humanoid and quadruped examples
+- Humanoid H1 definition file
+- Unit tests for the humanoid H1 example
+
+### Removed
+- Optimization based quadruped controller example
+
 ## [2.2.1] - 2024-07-17
 ### Fixed
 - Examples world instances clean up at beginning of every example
@@ -18,7 +27,7 @@
 
 ## [1.7.17] - 2024-05-03
 ### Fixed
-- Quadruped exmaple to clear callbacks after it's complete
+- Quadruped example to clear callbacks after it's complete
 
 ## [1.7.16] - 2024-04-19
 ### Fixed
