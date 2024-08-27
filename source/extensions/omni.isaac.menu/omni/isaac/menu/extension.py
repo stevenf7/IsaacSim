@@ -583,7 +583,7 @@ class Extension(omni.ext.IExt):
             ),
             make_menu_item_description(
                 ext_id,
-                "Warehouse With Forklifts",
+                "Small Warehouse With Forklifts",
                 lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Environments/Simple_Warehouse/warehouse_with_forklifts.usd", "/Warehouse"
                 ),
@@ -595,10 +595,10 @@ class Extension(omni.ext.IExt):
                     "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd", "/Warehouse"
                 ),
             ),
-            MenuItemDescription(header="Racetrack"),
+            MenuItemDescription(header="Jetracer Track"),
             make_menu_item_description(
                 ext_id,
-                "RaceTrack",
+                "Jetracer Track",
                 lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Environments/Jetracer/jetracer_track_solid.usd", "/Racetrack"
                 ),
