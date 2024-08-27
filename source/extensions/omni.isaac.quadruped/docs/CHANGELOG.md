@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.0] - 2024-08-01
+### Added
+- RL policy based robot simulation for anymal and spot quadruped
+
 ## [1.4.5] - 2024-04-30
 ### Changed
 - Updated unitree folder structure and opt to use unitree models with sensors attached

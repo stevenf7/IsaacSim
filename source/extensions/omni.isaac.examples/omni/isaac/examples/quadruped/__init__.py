@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .test_a1 import *
-from .test_anymal import *
-from .test_go1 import *
-from .test_spot import *
+# NOTE: Import here your extension examples to be propagated to ISAAC SIM Extensions startup
+
+from omni.isaac.examples.quadruped.quadruped_example import QuadrupedExample
+from omni.isaac.examples.quadruped.quadruped_example_extension import QuadrupedExampleExtension

@@ -58,8 +58,6 @@ class TestA1(omni.kit.test.AsyncTestCase):
 
         await omni.kit.app.get_app().next_update_async()
 
-        pass
-
     async def tearDown(self):
         await omni.kit.app.get_app().next_update_async()
         self._timeline.stop()
@@ -67,7 +65,6 @@ class TestA1(omni.kit.test.AsyncTestCase):
             print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
-        pass
 
     async def test_a1_add(self):
         self._path_follow = False
@@ -81,11 +78,6 @@ class TestA1(omni.kit.test.AsyncTestCase):
         self.assertEqual(self._a1.num_dof, 12)
         self.assertTrue(get_prim_at_path("/World/A1").IsValid(), True)
         self.assertTrue(get_prim_at_path("/World/A1").HasAPI(UsdPhysics.ArticulationRootAPI))
-
-        print("robot articulation passed")
-        await omni.kit.app.get_app().next_update_async()
-
-        # if dc interface is valid, that means the prim is likely imported correctly
 
     async def test_robot_move_command(self):
         self._path_follow = False
@@ -105,8 +97,6 @@ class TestA1(omni.kit.test.AsyncTestCase):
         delta = np.linalg.norm(self.current_pos[0] - self.start_pos[0])
 
         self.assertTrue(delta > 0.5)  # physics change result in limited mobility
-
-        pass
 
     async def test_robot_move_forward_waypoint(self):
         self._path_follow = True

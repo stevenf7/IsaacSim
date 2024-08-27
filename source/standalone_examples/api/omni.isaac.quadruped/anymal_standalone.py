@@ -17,15 +17,12 @@ import omni.appwindow  # Contains handle to keyboard
 from omni.isaac.core import World
 from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
 from omni.isaac.nucleus import get_assets_root_path
-from omni.isaac.quadruped.robots import Anymal
-from pxr import Gf, UsdGeom
+from omni.isaac.quadruped.robots import AnymalFlatTerrainPolicy
 
 
 class Anymal_runner(object):
     def __init__(self, physics_dt, render_dt) -> None:
         """
-        Summary
-
         creates the simulation world with preset physics_dt and render_dt and creates an anymal robot inside the warehouse
 
         Argument:
@@ -40,23 +37,17 @@ class Anymal_runner(object):
             carb.log_error("Could not find Isaac Sim assets folder")
 
         # spawn warehouse scene
-        prim = get_prim_at_path("/World/GroundPlane")
-        if not prim.IsValid():
-            prim = define_prim("/World/GroundPlane", "Xform")
-            asset_path = assets_root_path + "/Isaac/Environments/Simple_Warehouse/warehouse.usd"
-            prim.GetReferences().AddReference(asset_path)
+        prim = define_prim("/World/Warehouse", "Xform")
+        asset_path = assets_root_path + "/Isaac/Environments/Simple_Warehouse/warehouse.usd"
+        prim.GetReferences().AddReference(asset_path)
 
-        self._anymal = self._world.scene.add(
-            Anymal(
-                prim_path="/World/Anymal",
-                name="Anymal",
-                usd_path=assets_root_path + "/Isaac/Robots/ANYbotics/anymal_c.usd",
-                position=np.array([0, 0, 0.70]),
-            )
+        self._anymal = AnymalFlatTerrainPolicy(
+            prim_path="/World/Anymal",
+            name="Anymal",
+            usd_path=assets_root_path + "/Isaac/Robots/ANYbotics/anymal_c.usd",
+            position=np.array([0, 0, 0.7]),
         )
 
-        self._world.reset()
-        self._enter_toggled = 0
         self._base_command = np.zeros(3)
 
         # bindings for keyboard to command
@@ -81,11 +72,10 @@ class Anymal_runner(object):
             "M": [0.0, 0.0, -1.0],
         }
         self.needs_reset = False
+        self.first_step = True
 
     def setup(self) -> None:
         """
-        [Summary]
-
         Set up keyboard listener and add physics callback
 
         """
@@ -97,56 +87,52 @@ class Anymal_runner(object):
 
     def on_physics_step(self, step_size) -> None:
         """
-        [Summary]
-
-        Physics call back, switch robot mode and call robot advance function to compute and apply joint torque
+        Physics call back, initialize robot (first frame) and call robot advance function to compute and apply joint torque
 
         """
-        if self.needs_reset:
+        if self.first_step:
+            self._anymal.initialize()
+            self.first_step = False
+        elif self.needs_reset:
             self._world.reset(True)
             self.needs_reset = False
-        self._anymal.advance(step_size, self._base_command)
+            self.first_step = True
+        else:
+            self._anymal.advance(step_size, self._base_command)
 
     def run(self) -> None:
         """
-        [Summary]
-
         Step simulation based on rendering downtime
 
         """
         # change to sim running
         while simulation_app.is_running():
             self._world.step(render=True)
-            if not self._world.is_simulating():
+            if self._world.is_stopped():
                 self.needs_reset = True
         return
 
     def _sub_keyboard_event(self, event, *args, **kwargs) -> bool:
         """
-        [Summary]
-
         Keyboard subscriber callback to when kit is updated.
 
         """
-        # reset event
-        self._event_flag = False
+
         # when a key is pressed for released  the command is adjusted w.r.t the key-mapping
         if event.type == carb.input.KeyboardEventType.KEY_PRESS:
             # on pressing, the command is incremented
             if event.input.name in self._input_keyboard_mapping:
-                self._base_command[0:3] += np.array(self._input_keyboard_mapping[event.input.name])
+                self._base_command += np.array(self._input_keyboard_mapping[event.input.name])
 
         elif event.type == carb.input.KeyboardEventType.KEY_RELEASE:
             # on release, the command is decremented
             if event.input.name in self._input_keyboard_mapping:
-                self._base_command[0:3] -= np.array(self._input_keyboard_mapping[event.input.name])
+                self._base_command -= np.array(self._input_keyboard_mapping[event.input.name])
         return True
 
 
 def main():
     """
-    [Summary]
-
     Parse arguments and instantiate the ANYmal runner
 
     """
@@ -156,10 +142,9 @@ def main():
     runner = Anymal_runner(physics_dt=physics_dt, render_dt=render_dt)
     simulation_app.update()
     runner.setup()
-
-    # an extra reset is needed to register
+    simulation_app.update()
     runner._world.reset()
-    runner._world.reset()
+    simulation_app.update()
     runner.run()
     simulation_app.close()
 
