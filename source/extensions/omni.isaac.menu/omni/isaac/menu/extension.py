@@ -583,9 +583,24 @@ class Extension(omni.ext.IExt):
             ),
             make_menu_item_description(
                 ext_id,
+                "Warehouse With Forklifts",
+                lambda a=weakref.proxy(self): a.create_asset(
+                    "/Isaac/Environments/Simple_Warehouse/warehouse_with_forklifts.usd", "/Warehouse"
+                ),
+            ),
+            make_menu_item_description(
+                ext_id,
                 "Full Warehouse",
                 lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd", "/Warehouse"
+                ),
+            ),
+            MenuItemDescription(header="Racetrack"),
+            make_menu_item_description(
+                ext_id,
+                "RaceTrack",
+                lambda a=weakref.proxy(self): a.create_asset(
+                    "/Isaac/Environments/Jetracer/jetracer_track_solid.usd", "/Racetrack"
                 ),
             ),
             MenuItemDescription(header="Architectural"),
@@ -696,13 +711,16 @@ class Extension(omni.ext.IExt):
             carb.log_error("Could not find Isaac Sim assets folder")
             return
 
-        omni.kit.commands.execute(
+        path_to = omni.kit.commands.execute(
             "CreateReferenceCommand",
             usd_context=omni.usd.get_context(),
             path_to=stage_path,
             asset_path=self._assets_root_path + usd_path,
             instanceable=False,
         )
+
+        carb.log_info(f"Added reference to {stage_path} at {path_to}")
+
         if camera_position is not None and camera_target is not None:
             set_camera_view(camera_position, camera_target)
 
@@ -728,15 +746,8 @@ class Extension(omni.ext.IExt):
                 select_new_prim=True,
             )
             mtl = stage.GetPrimAtPath(stage_path + "/Shader")
-            # it can take multiple frames after mdl is created to be able to set a property
-            while mtl.GetAttribute("inputs:tag_mosaic").Get() is None:
-                await omni.kit.app.get_app().next_update_async()
-                omni.kit.commands.execute(
-                    "ChangeProperty",
-                    prop_path=Sdf.Path(stage_path + "/Shader.inputs:tag_mosaic"),
-                    value=Sdf.AssetPath(self._assets_root_path + tag_path),
-                    prev=None,
-                )
+            attr = mtl.CreateAttribute("inputs:tag_mosaic", Sdf.ValueTypeNames.Asset)
+            attr.Set(Sdf.AssetPath(self._assets_root_path + tag_path))
 
         asyncio.ensure_future(create_tag())
 

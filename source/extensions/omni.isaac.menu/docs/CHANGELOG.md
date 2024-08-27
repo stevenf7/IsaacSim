@@ -1,5 +1,12 @@
 # Changelog
 
+
+## [0.7.1] - 2024-08-26
+### Added
+- Missing environments to the menu
+### Fixed
+- Generation of April Tag
+
 ## [0.7.0] - 2024-08-23
 ### Added
 - Several new robots to robot menu
