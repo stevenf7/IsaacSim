@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.0.1] - 2024-08-27
+### Fixed
+- Fixed glitch with quadruped example
+
 ## [3.0.0] - 2024-08-06
 ### Added
 - Reinforcement learning based humanoid and quadruped examples

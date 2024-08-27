@@ -46,7 +46,6 @@ class QuadrupedExample(BaseSample):
         }
 
     def setup_scene(self) -> None:
-        world = self.get_world()
         self._world.scene.add_default_ground_plane(
             z_position=0,
             name="default_ground_plane",
@@ -67,7 +66,6 @@ class QuadrupedExample(BaseSample):
         self.spot.robot.set_joints_default_state(self.spot._default_joint_pos)
 
     async def setup_post_load(self) -> None:
-        self._world = self.get_world()
         self._appwindow = omni.appwindow.get_default_app_window()
         self._input = carb.input.acquire_input_interface()
         self._keyboard = self._appwindow.get_keyboard()
@@ -83,7 +81,7 @@ class QuadrupedExample(BaseSample):
         self.spot.initialize()
 
     def on_physics_step(self, step_size) -> None:
-        if self._physics_ready > 3:
+        if self._physics_ready == True:
             self.spot.advance(step_size, self._base_command)
         else:
             self._physics_ready = True
