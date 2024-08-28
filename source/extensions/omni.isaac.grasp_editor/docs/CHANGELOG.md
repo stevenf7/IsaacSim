@@ -1,8 +1,7 @@
 # Changelog
 ## [1.2.0] - 2024-08-14
 ### Fixed
-- Fixed serious bug in supported use-case where selected frames of reference have arbitrary relative
-  transforms from the base frame.
+- Fixed serious bug in supported use-case where selected frames of reference have arbitrary relative transforms from the base frame.
 
 ## [1.1.1] - 2024-08-06
 ### Fixed
