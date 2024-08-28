@@ -1,6 +1,6 @@
 <project toolsVersion="5.6">
   <dependency name="kit_sdk_${config}" linkPath="../_build/${platform}/${config}/kit" tags="${config} non-redist">
-    <package name="kit-kernel" version="106.1.0+release.137002.988b9187.gl.${platform}.${config}"/>
+    <package name="kit-kernel" version="106.1.0+release.137680.5563a301.gl.${platform}.${config}"/>
     <!--source path="/home/mcarlson/gitlab-master/Graphene/kit/_build/${platform}/${config}"/-->
   </dependency>
 </project>
