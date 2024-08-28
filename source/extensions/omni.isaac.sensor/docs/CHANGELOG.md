@@ -1,5 +1,9 @@
 # Changelog
 
+## [12.8.7] - 2024-08-27
+### Fixed
+- Add omni.sensors.tiled as a dependency
+
 ## [12.8.6] - 2024-08-21
 ### Fixed
 - Corrects prim path for Sensing SG2-AR0233C-5200-G2A-H100F1A
