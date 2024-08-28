@@ -11,6 +11,7 @@ import os
 import pathlib
 from pathlib import Path
 
+import omni
 import omni.ui as ui
 from omni.isaac.core.utils.stage import open_stage
 from omni.isaac.ui.element_wrappers import Button, CheckBox, CollapsableFrame, StringField

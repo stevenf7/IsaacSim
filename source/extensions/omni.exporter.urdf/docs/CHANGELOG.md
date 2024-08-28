@@ -1,5 +1,12 @@
 # Changelog
 
+
+## [0.3.2] - 2024-08-28
+
+### Fixed
+
+- Added missing dependency
+
 ## [0.3.1] - 2024-07-23
 
 ### Fixed
