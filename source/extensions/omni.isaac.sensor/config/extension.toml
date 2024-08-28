@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "12.8.6"
+version = "12.8.7"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Support physics based sensors, such as contact sensors and imu sensors"
@@ -37,6 +37,7 @@ writeTarget.kit = true
 "omni.sensors.nv.lidar" = {}
 "omni.sensors.nv.radar" = {}
 "omni.sensors.nv.ids" = {}
+"omni.sensors.tiled" = {}
 "omni.isaac.nucleus" = {}
 
 [[python.module]]
