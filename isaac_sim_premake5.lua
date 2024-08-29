@@ -243,7 +243,7 @@ set PATH=%PATH%;%basedir%
 ]],
 ["linux"] =[[
 export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
-export ROS_DOMAIN_ID=93
+export ROS_DOMAIN_ID=$((($RANDOM % 18) + 80))
 INTERNAL_LIBS=$(readlink -f $SCRIPT_DIR/../exts/omni.isaac.ros2_bridge/humble/lib)
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$INTERNAL_LIBS
 ]]

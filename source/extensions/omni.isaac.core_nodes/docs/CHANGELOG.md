@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.16.3] - 2024-08-28
+### Fixed
+- Unit test failures due to omni.graph.nodes MakeArray being deprecated in favor of ConstructArray
+
 ## [1.16.2] - 2024-08-15
 ### Fixed
 - Handling of writers when they are added via attach_writer function

@@ -54,6 +54,9 @@ class TestArticulationControllerNode(ogts.OmniGraphTestCase):
                     ("JointCommandArray", "omni.graph.nodes.ConstructArray"),
                     ("ArticulationController", "omni.isaac.core_nodes.IsaacArticulationController"),
                 ],
+                og.Controller.Keys.CREATE_ATTRIBUTES: [
+                    ("JointCommandArray.inputs:input1", "double"),
+                ],
                 og.Controller.Keys.SET_VALUES: [
                     ("JointNameArray.inputs:arraySize", 2),
                     ("JointNameArray.inputs:arrayType", "token[]"),
@@ -98,11 +101,15 @@ class TestArticulationControllerNode(ogts.OmniGraphTestCase):
                     ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                     ("Joint1Index", "omni.graph.nodes.ConstantInt"),
                     ("Joint2Index", "omni.graph.nodes.ConstantInt"),
-                    ("JointIndexArray", "omni.graph.nodes.MakeArray"),
+                    ("JointIndexArray", "omni.graph.nodes.ConstructArray"),
                     ("Joint1Position", "omni.graph.nodes.ConstantDouble"),
                     ("Joint2Position", "omni.graph.nodes.ConstantDouble"),
-                    ("JointCommandArray", "omni.graph.nodes.MakeArray"),
+                    ("JointCommandArray", "omni.graph.nodes.ConstructArray"),
                     ("ArticulationController", "omni.isaac.core_nodes.IsaacArticulationController"),
+                ],
+                og.Controller.Keys.CREATE_ATTRIBUTES: [
+                    ("JointIndexArray.inputs:input1", "int"),
+                    ("JointCommandArray.inputs:input1", "double"),
                 ],
                 og.Controller.Keys.SET_VALUES: [
                     ("Joint1Index.inputs:value", 1),
@@ -115,11 +122,11 @@ class TestArticulationControllerNode(ogts.OmniGraphTestCase):
                 ],
                 og.Controller.Keys.CONNECT: [
                     ("OnPlaybackTick.outputs:tick", "ArticulationController.inputs:execIn"),
-                    ("Joint1Index.inputs:value", "JointIndexArray.inputs:a"),
-                    ("Joint2Index.inputs:value", "JointIndexArray.inputs:b"),
+                    ("Joint1Index.inputs:value", "JointIndexArray.inputs:input0"),
+                    ("Joint2Index.inputs:value", "JointIndexArray.inputs:input1"),
                     ("JointIndexArray.outputs:array", "ArticulationController.inputs:jointIndices"),
-                    ("Joint1Position.inputs:value", "JointCommandArray.inputs:a"),
-                    ("Joint2Position.inputs:value", "JointCommandArray.inputs:b"),
+                    ("Joint1Position.inputs:value", "JointCommandArray.inputs:input0"),
+                    ("Joint2Position.inputs:value", "JointCommandArray.inputs:input1"),
                     ("JointCommandArray.outputs:array", "ArticulationController.inputs:positionCommand"),
                 ],
             },
@@ -146,8 +153,12 @@ class TestArticulationControllerNode(ogts.OmniGraphTestCase):
                     ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                     ("Joint1Position", "omni.graph.nodes.ConstantDouble"),
                     ("Joint2Position", "omni.graph.nodes.ConstantDouble"),
-                    ("JointCommandArray", "omni.graph.nodes.MakeArray"),
+                    ("JointCommandArray", "omni.graph.nodes.ConstructArray"),
                     ("ArticulationController", "omni.isaac.core_nodes.IsaacArticulationController"),
+                ],
+                og.Controller.Keys.CREATE_ATTRIBUTES: [
+                    ("JointCommandArray.inputs:input1", "double"),
+                    ("JointCommandArray.inputs:input2", "double"),
                 ],
                 og.Controller.Keys.SET_VALUES: [
                     ("Joint1Position.inputs:value", -1.0),
@@ -157,8 +168,8 @@ class TestArticulationControllerNode(ogts.OmniGraphTestCase):
                 ],
                 og.Controller.Keys.CONNECT: [
                     ("OnPlaybackTick.outputs:tick", "ArticulationController.inputs:execIn"),
-                    ("Joint1Position.inputs:value", "JointCommandArray.inputs:b"),
-                    ("Joint2Position.inputs:value", "JointCommandArray.inputs:c"),
+                    ("Joint1Position.inputs:value", "JointCommandArray.inputs:input1"),
+                    ("Joint2Position.inputs:value", "JointCommandArray.inputs:input2"),
                     ("JointCommandArray.outputs:array", "ArticulationController.inputs:positionCommand"),
                 ],
             },
@@ -184,9 +195,9 @@ class TestArticulationControllerNode(ogts.OmniGraphTestCase):
                 og.Controller.Keys.CREATE_NODES: [
                     ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                     ("Joint1Name", "omni.graph.nodes.ConstantToken"),
-                    ("JointNameArray", "omni.graph.nodes.MakeArray"),
+                    ("JointNameArray", "omni.graph.nodes.ConstructArray"),
                     ("Joint1Position", "omni.graph.nodes.ConstantDouble"),
-                    ("JointCommandArray", "omni.graph.nodes.MakeArray"),
+                    ("JointCommandArray", "omni.graph.nodes.ConstructArray"),
                     ("ArticulationController", "omni.isaac.core_nodes.IsaacArticulationController"),
                 ],
                 og.Controller.Keys.SET_VALUES: [
@@ -198,9 +209,9 @@ class TestArticulationControllerNode(ogts.OmniGraphTestCase):
                 ],
                 og.Controller.Keys.CONNECT: [
                     ("OnPlaybackTick.outputs:tick", "ArticulationController.inputs:execIn"),
-                    ("Joint1Name.inputs:value", "JointNameArray.inputs:a"),
+                    ("Joint1Name.inputs:value", "JointNameArray.inputs:input0"),
                     ("JointNameArray.outputs:array", "ArticulationController.inputs:jointNames"),
-                    ("Joint1Position.inputs:value", "JointCommandArray.inputs:a"),
+                    ("Joint1Position.inputs:value", "JointCommandArray.inputs:input0"),
                     ("JointCommandArray.outputs:array", "ArticulationController.inputs:positionCommand"),
                 ],
             },
@@ -226,9 +237,9 @@ class TestArticulationControllerNode(ogts.OmniGraphTestCase):
                 og.Controller.Keys.CREATE_NODES: [
                     ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                     ("Joint1Index", "omni.graph.nodes.ConstantInt"),
-                    ("JointIndexArray", "omni.graph.nodes.MakeArray"),
+                    ("JointIndexArray", "omni.graph.nodes.ConstructArray"),
                     ("Joint1Position", "omni.graph.nodes.ConstantDouble"),
-                    ("JointCommandArray", "omni.graph.nodes.MakeArray"),
+                    ("JointCommandArray", "omni.graph.nodes.ConstructArray"),
                     ("ArticulationController", "omni.isaac.core_nodes.IsaacArticulationController"),
                 ],
                 og.Controller.Keys.SET_VALUES: [
@@ -240,9 +251,9 @@ class TestArticulationControllerNode(ogts.OmniGraphTestCase):
                 ],
                 og.Controller.Keys.CONNECT: [
                     ("OnPlaybackTick.outputs:tick", "ArticulationController.inputs:execIn"),
-                    ("Joint1Index.inputs:value", "JointIndexArray.inputs:a"),
+                    ("Joint1Index.inputs:value", "JointIndexArray.inputs:input0"),
                     ("JointIndexArray.outputs:array", "ArticulationController.inputs:jointIndices"),
-                    ("Joint1Position.inputs:value", "JointCommandArray.inputs:a"),
+                    ("Joint1Position.inputs:value", "JointCommandArray.inputs:input0"),
                     ("JointCommandArray.outputs:array", "ArticulationController.inputs:positionCommand"),
                 ],
             },
