@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.2.1] - 2024-08-28
+### Fixed
+- Unit test errors due to missing dependencies
+
 ## [1.2.0] - 2024-08-14
 ### Fixed
 - Fixed serious bug in supported use-case where selected frames of reference have arbitrary relative transforms from the base frame.
