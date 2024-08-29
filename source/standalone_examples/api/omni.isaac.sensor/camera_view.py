@@ -50,10 +50,10 @@ camera_view = CameraView(
 simulation_app.update()
 
 # Pre-allocate memory for using the out argument (float32)
-rgb_np_tiled_out = np.zeros((*camera_view.tiled_resolution, 3), dtype=np.float32)
-rgb_tiled_torch_out = torch.zeros((*camera_view.tiled_resolution, 3), device="cuda", dtype=torch.float32)
+rgb_np_tiled_out = np.zeros((*camera_view.tiled_resolution, 3), dtype=np.uint8)
+rgb_tiled_torch_out = torch.zeros((*camera_view.tiled_resolution, 3), device="cuda", dtype=torch.uint8)
 batched_rgb_shape = (len(camera_view.prims), *camera_view.camera_resolution, 3)
-rgb_batched_out = torch.zeros(batched_rgb_shape, device="cuda", dtype=torch.float32)
+rgb_batched_out = torch.zeros(batched_rgb_shape, device="cuda", dtype=torch.uint8)
 
 depth_np_tiled_out = np.zeros(camera_view.tiled_resolution, dtype=np.float32)
 depth_tiled_torch_out = torch.zeros(camera_view.tiled_resolution, device="cuda", dtype=torch.float32)
@@ -188,10 +188,6 @@ for i in range(2):
         depth_batched_out_img.save(f"{out_dir}/batched/{str(i).zfill(3)}_depth_batched_out_{camera_id}.png")
 
     # API
-    raw_data_cpu = camera_view.get_data(device="cpu")
-    print(f"len(raw_data_cpu): {len(raw_data_cpu)}, type: {type(raw_data_cpu)}, dtype: {raw_data_cpu.dtype}")
-    raw_data_cuda = camera_view.get_data(device="cuda")
-    print(f"len(raw_data_cuda): {len(raw_data_cuda)}, type: {type(raw_data_cuda)}, dtype: {raw_data_cuda.dtype}")
     print(f"camera_view.get_local_poses(camera_axes='ros'): {camera_view.get_local_poses(camera_axes='ros')}")
     print(f"camera_view.get_local_poses(camera_axes='usd'): {camera_view.get_local_poses(camera_axes='usd')}")
     print(f"camera_view.get_local_poses(camera_axes='world'): {camera_view.get_local_poses(camera_axes='world')}")

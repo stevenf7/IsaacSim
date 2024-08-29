@@ -6,7 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Callable, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, List, Optional, Sequence, Tuple, Union
 
 import carb
 import numpy as np
@@ -33,11 +33,12 @@ U_W_TRANSFORM = np.array([[0, -1, 0, 0], [0, 0, 1, 0], [-1, 0, 0, 0], [0, 0, 0, 
 
 @wp.kernel
 def reshape_tiled_image(
-    tiled_image_buffer: wp.array(dtype=float),
-    batched_image: wp.array(dtype=float, ndim=4),
+    tiled_image_buffer: Any,
+    batched_image: Any,
     image_height: int,
     image_width: int,
     num_channels: int,
+    channels_out: int,
     num_tiles_x: int,
     offset: int,
 ):
@@ -61,8 +62,19 @@ def reshape_tiled_image(
         + num_channels * tile_x_id * image_width
         + num_channels * width_id
     )
-    for i in range(num_channels):
+    for i in range(channels_out):
         batched_image[camera_id, height_id, width_id, i] = tiled_image_buffer[pixel_start + i]
+
+
+wp.overload(
+    reshape_tiled_image,
+    {"tiled_image_buffer": wp.array(dtype=wp.uint8), "batched_image": wp.array(dtype=wp.uint8, ndim=4)},
+)
+
+wp.overload(
+    reshape_tiled_image,
+    {"tiled_image_buffer": wp.array(dtype=wp.float32), "batched_image": wp.array(dtype=wp.float32, ndim=4)},
+)
 
 
 class CameraView(XFormPrimView):
@@ -71,7 +83,7 @@ class CameraView(XFormPrimView):
         prim_paths_expr: str = None,
         name: str = "camera_prim_view",
         camera_resolution: Tuple[int, int] = (256, 256),
-        output_annotators: Optional[List[str]] = ["rgb"],
+        output_annotators: Optional[List[str]] = ["rgb", "depth"],
         positions: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
         translations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
         orientations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
@@ -90,21 +102,10 @@ class CameraView(XFormPrimView):
             visibilities=visibilities,
             reset_xform_properties=reset_xform_properties,
         )
-
-        for annotator in output_annotators:
-            if annotator not in ["rgb", "depth"]:
-                raise ValueError(
-                    f"Unsupported annotator: {annotator}. Currently only support 'rgb' and 'depth' annotators for tiled sensor."
-                )
-
-        self.output_annotators = output_annotators
-
+        self._output_annotators = output_annotators
+        self._annotators = dict()
         self.camera_resolution = camera_resolution
-
         self._tiled_render_product = None
-        self._tiled_annotator = None
-        self._tiled_sensor = None
-
         self._setup_tiled_sensor()
 
     def __del__(self):
@@ -141,21 +142,28 @@ class CameraView(XFormPrimView):
 
         self.tiled_resolution = self._get_tiled_resolution(len(self.prims), self.camera_resolution)
 
-        self._tiled_sensor = rep.create.tiled_sensor(
+        self._render_product = rep.create.render_product_tiled(
             cameras=self.prim_paths,
-            camera_resolution=self.camera_resolution,
-            tiled_resolution=self.tiled_resolution,
-            output_types=self.output_annotators,
+            tile_resolution=self.camera_resolution,
             name=f"{self.name}_tiled_sensor",
         )
-
-        self._tiled_render_product = rep.create.render_product(
-            camera=self._tiled_sensor, resolution=self.tiled_resolution
-        )
-
-        self._tiled_annotator = rep.AnnotatorRegistry.get_annotator("RtxSensorGpu")
-        self._tiled_annotator.attach(self._tiled_render_product)
-
+        self._render_product_path = self._render_product.path
+        for annotator_type in self._output_annotators:
+            if annotator_type == "rgba" or annotator_type == "rgb":
+                annotator = rep.AnnotatorRegistry.get_annotator("rgb", device="cuda", do_array_copy=False)
+                self._annotators["rgba"] = annotator
+            elif annotator_type == "depth" or annotator_type == "distance_to_image_plane":
+                annotator = rep.AnnotatorRegistry.get_annotator(
+                    "distance_to_image_plane", device="cuda", do_array_copy=False
+                )
+                self._annotators["distance_to_image_plane"] = annotator
+            else:
+                annotator = rep.AnnotatorRegistry.get_annotator(
+                    annotator_type, init_params, device="cuda", do_array_copy=False
+                )
+                self._annotators[annotator_type] = annotator
+        for annotator in self._annotators.values():
+            annotator.attach(self._render_product_path)
         return
 
     def get_render_product_path(self) -> str:
@@ -164,62 +172,9 @@ class CameraView(XFormPrimView):
         Returns:
             str: The path to the render product, or None if not available.
         """
-        if self._tiled_render_product:
-            return self._tiled_render_product.path
-        else:
-            return None
-
-    def set_frequency(self, value: int) -> None:
-        """
-        Args:
-            value (int): sets the frequency to acquire new data frames
-        """
-        current_rendering_frequency = get_carb_setting(
-            carb.settings.get_settings(), "/app/runLoops/main/rateLimitFrequency"
-        )
-        if current_rendering_frequency is None:
-            # Target rendering frequency is not known, processing all frames
-            self._frequency = -1
-        else:
-            if current_rendering_frequency % value != 0:
-                raise Exception("frequency of the camera sensor needs to be a divisible by the rendering frequency.")
-            self._frequency = value
-        return
-
-    def get_frequency(self) -> float:
-        """
-        Returns:
-            float: gets the frequency to acquire new data frames
-        """
-        return self._frequency
-
-    def set_dt(self, value: float) -> None:
-        """
-        Args:
-            value (float):  sets the dt to acquire new data frames
-
-        """
-        current_rendering_frequency = get_carb_setting(
-            carb.settings.get_settings(), "/app/runLoops/main/rateLimitFrequency"
-        )
-        if current_rendering_frequency is None:
-            # Target rendering frequency is not known, processing all frames
-            self._frequency = -1
-        else:
-            if value % (1.0 / current_rendering_frequency) != 0:
-                raise Exception("dt of the contact sensor needs to be a multiple of the physics frequency.")
-            self._frequency = 1.0 / value
-        return
-
-    def get_dt(self) -> float:
-        """
-        Returns:
-            float:  gets the dt to acquire new data frames
-        """
-        return 1.0 / self._frequency
+        return self._render_product_path
 
     # TODO: add functionality to pause and resume tiled sensor, similar to camera.py
-
     def set_resolutions(self, resolution: Tuple[int, int]) -> None:
         """Set the resolutions for all cameras, updating the tiled sensor configuration if changed.
 
@@ -457,7 +412,7 @@ class CameraView(XFormPrimView):
         Returns:
             np.ndarray | torch.Tensor: containing the RGBA data for each camera. Depth channel is excluded if present.
         """
-        if "rgb" not in self.output_annotators:
+        if "rgba" not in self._annotators:
             if out is None:
                 if device == "cuda":
                     out = torch.zeros((*self.tiled_resolution, 3), device=device, dtype=torch.float32)
@@ -465,17 +420,10 @@ class CameraView(XFormPrimView):
                     out = np.zeros((*self.tiled_resolution, 3), dtype=np.float32)
             print("Warning: RGB data is not available. Please enable RGB annotator when creating CameraView object.")
         else:
-            linear_sensor_data = self._tiled_annotator.get_data(device=device)
-            if isinstance(linear_sensor_data, wp.types.array):
-                linear_sensor_data = wp.to_torch(linear_sensor_data).to(device)
-
-            # If depth data is present, get the index where RGB data ends, otherwise use all the data as RGB data
-            if "depth" in self.output_annotators:
-                rgb_idx = len(linear_sensor_data) * 3 // 4
-                rgb_data = linear_sensor_data[:rgb_idx].reshape(*self.tiled_resolution, 3)
-            else:
-                rgb_data = linear_sensor_data.reshape(*self.tiled_resolution, 3)
-
+            rgb_data = self._annotators["rgba"].get_data(device=device)
+            if isinstance(rgb_data, wp.types.array):
+                rgb_data = wp.to_torch(rgb_data).to(device)
+            rgb_data = rgb_data[..., :3]
             # Check if the data should be copied to the pre-allocated memory
             if out is not None:
                 if isinstance(out, np.ndarray):
@@ -502,7 +450,7 @@ class CameraView(XFormPrimView):
         Returns:
             np.ndarray | torch.Tensor: containing the depth data for each camera.
         """
-        if "depth" not in self.output_annotators:
+        if "distance_to_image_plane" not in self._annotators:
             if out is None:
                 if device == "cuda":
                     out = torch.zeros(self.tiled_resolution, device=device, dtype=torch.float32)
@@ -512,17 +460,9 @@ class CameraView(XFormPrimView):
                 "Warning: Depth data is not available. Please enable depth annotator when creating CameraView object."
             )
         else:
-            linear_sensor_data = self._tiled_annotator.get_data(device=device)
-            if isinstance(linear_sensor_data, wp.types.array):
-                linear_sensor_data = wp.to_torch(linear_sensor_data).to(device)
-
-            # If RGB data is present, depth data starts after the RGB index, otherwise the data only includes depth
-            if "rgb" in self.output_annotators:
-                rgb_idx = len(linear_sensor_data) * 3 // 4
-                depth_data = linear_sensor_data[rgb_idx:].reshape(*self.tiled_resolution)
-            else:
-                depth_data = linear_sensor_data.reshape(*self.tiled_resolution)
-
+            depth_data = self._annotators["distance_to_image_plane"].get_data(device=device)
+            if isinstance(depth_data, wp.types.array):
+                depth_data = wp.to_torch(depth_data).to(device)
             # Check if the data should be copied to the pre-allocated memory
             if out is not None:
                 if isinstance(out, np.ndarray):
@@ -536,19 +476,7 @@ class CameraView(XFormPrimView):
                     out[:] = depth_data.to(out.device)
             else:
                 out = depth_data
-
         return out
-
-    def get_data(self, device="cpu") -> np.ndarray | wp.types.array:
-        """Get the tiled annotator data directly.
-
-        Args:
-            device (str, optional): The device to return the data on ("cpu" or "cuda"). Defaults to "cpu".
-
-        Returns:
-            np.ndarray | wp.types.array: The data from the tiled annotator.
-        """
-        return self._tiled_annotator.get_data(device=device)
 
     def get_rgb(self, out=None) -> torch.Tensor:
         """Get the RGB data for all cameras as a batch of images (num_cameras, height, width, num_channels=3).
@@ -561,28 +489,26 @@ class CameraView(XFormPrimView):
         # Check if the data should be copied to the pre-allocated memory
         if out is None:
             out_shape = (len(self.prims), *self.camera_resolution, 3)
-            out = torch.zeros(out_shape, device="cuda", dtype=torch.float32).contiguous()
+            out = torch.zeros(out_shape, device="cuda", dtype=torch.uint8).contiguous()
 
         # Get the linear sensor data from the tiled annotator and (if needed) slice it to get only the RGB data
-        linear_sensor_data = self._tiled_annotator.get_data(device="cuda")
-        if "depth" in self.output_annotators:
-            rgb_offset = len(linear_sensor_data) * 3 // 4
-            linear_sensor_data = linear_sensor_data[:rgb_offset]
-
+        rgba_data = self._annotators["rgba"].get_data(device="cuda")
         # Use a warp kernel to convert the linear sensor data to a batch of images
         img_height, img_width = self.camera_resolution
-        num_channels = 3
+        num_channels = 4
+        channels_out = 3
         num_tiles_x = self.tiled_resolution[0] // img_width
         offset = 0  # always 0 since we sliced the data above (if depth data is present)
         wp.launch(
             kernel=reshape_tiled_image,
             dim=(len(self.prims), *self.camera_resolution),
             inputs=[
-                linear_sensor_data,
+                rgba_data.flatten(),
                 wp.from_torch(out),
                 img_height,
                 img_width,
                 num_channels,
+                channels_out,
                 num_tiles_x,
                 offset,
             ],
@@ -602,27 +528,26 @@ class CameraView(XFormPrimView):
         if out is None:
             out_shape = (len(self.prims), *self.camera_resolution, 1)
             out = torch.zeros(out_shape, device="cuda", dtype=torch.float32).contiguous()
+        print(out.shape)
 
         # Get the linear sensor data from the tiled annotator and (if needed) slice it to get only the depth data
-        linear_sensor_data = self._tiled_annotator.get_data(device="cuda")
-        if "rgb" in self.output_annotators:
-            depth_offset = len(linear_sensor_data) * 3 // 4
-            linear_sensor_data = linear_sensor_data[depth_offset:]
-
+        depth_data = self._annotators["distance_to_image_plane"].get_data(device="cuda")
         # Use a warp kernel to convert the linear sensor data to a batch of images
         img_height, img_width = self.camera_resolution
         num_channels = 1
+        channels_out = 1
         num_tiles_x = self.tiled_resolution[0] // img_width
         offset = 0  # always 0 since we sliced the data above (if RGB data is present)
         wp.launch(
             kernel=reshape_tiled_image,
             dim=(len(self.prims), *self.camera_resolution),
             inputs=[
-                linear_sensor_data,
+                depth_data.flatten(),
                 wp.from_torch(out),
                 img_height,
                 img_width,
                 num_channels,
+                channels_out,
                 num_tiles_x,
                 offset,
             ],
