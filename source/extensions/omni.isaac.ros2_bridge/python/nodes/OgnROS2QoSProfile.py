@@ -131,6 +131,8 @@ class OgnROS2QoSProfile:
             attr_policy = node.get_attribute(attrInput)
             attr_policy.register_value_changed_callback(state.on_qos_policy_change)
 
+        state.on_attribute_changed(attr)
+
     @staticmethod
     def release_instance(node, graph_instance_id):
         try:
