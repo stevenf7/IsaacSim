@@ -35,7 +35,7 @@ args, _ = parser.parse_known_args()
 RESOLUTION = tuple([int(item) for item in args.resolution.split("x")])
 PIXELS_PER_METER = 0.09765625 * RESOLUTION[0]
 
-simulation_app = SimulationApp({"headless": True})
+simulation_app = SimulationApp({"headless": True}, experience="apps/omni.isaac.sim.zero_delay.python.kit")
 
 import pprint
 
@@ -171,8 +171,6 @@ def generate_result(data: list[dict], banner: list[str] = []):
     return frame
 
 
-# Enable omni.physx.fabric
-enable_extension("omni.physx.fabric")
 simulation_app.update()
 
 # Setup scene
