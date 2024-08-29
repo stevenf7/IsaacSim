@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.32.4] - 2024-08-29
+### Fixed
+- ROS2 QoS Profile node issue where preset profiles are sometimes not saved.
+
 ## [2.32.3] - 2024-08-20
 ### Fixed
 - ROS2 Camera graph uses ROS2CameraInfoHelper instead of ROS2CameraHelper.
