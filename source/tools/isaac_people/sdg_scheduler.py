@@ -29,10 +29,9 @@ Standalone script to schedule people sdg jobs in a local env.
 
 
 class AgentSDG:
-    def __init__(self, sim_app, num_runs=1):
+    def __init__(self, sim_app):
         import omni.anim.navigation.navmesh.recast as navmesh
 
-        self.num_runs = num_runs
         self.config_dict = None
         self._sim_manager = None
         self._data_generator = None
@@ -52,14 +51,6 @@ class AgentSDG:
         if not self.config_dict:
             carb.log_error("Loading config file ({0}) fails. Data generation will not start.".format(config_file))
             return
-
-        try:
-            folder_path = self.config_dict["replicator"]["parameters"]["output_dir"]
-            self.config_dict["replicator"]["parameters"]["output_dir"] = AgentSDG._get_output_folder_by_index(
-                folder_path, index=self.num_runs
-            )
-        except:
-            carb.log_warn("'output_dir' does not exists in config file. Will not auto increase output path")
 
         camera_start_index = 0
         if "camera_start_index" in self.config_dict["global"]:
@@ -96,7 +87,7 @@ class AgentSDG:
         _nav = nav.acquire_interface()
         # Do not proceed if navmesh volume does not exist
         if _nav.get_navmesh_volume_count() == 0:
-            carb.log_error("Scene does not have navigation volume. Stoping data generation and closing app.")
+            carb.log_error("Scene does not have navigation volume. Stopping data generation and closing app.")
             self._sim_app.update()
             self._sim_app.close()
             return
@@ -114,21 +105,6 @@ class AgentSDG:
                 self._sim_app.close()
 
         self._nav_mesh_event_handle = _nav.get_navmesh_event_stream().create_subscription_to_pop(nav_mesh_callback)
-
-    def _get_output_folder_by_index(path, index):
-        """
-        Get the next output_folder following naming convention '_d' where d is digit string.
-        If file name dose not follow naming convention, append '_d' at the end.
-        """
-        if index == 0:
-            return path
-        m = re.search(r"_\d+$", path)
-        if m:
-            cur_index = int(m.group()[1:])
-            if cur_index:
-                index = cur_index + index
-                path = path[: m.start()]
-        return path + "_" + str(index)
 
     def generate_data(self, config_file):
         import carb
@@ -203,7 +179,7 @@ def enable_extensions():
     enable_extension("omni.kit.mesh.raycast")
 
 
-def launch_data_generation(config_file, num_runs=1):
+def launch_data_generation(config_file):
 
     # Initalize kit app
     kit = SimulationApp(launch_config=CONFIG, experience=CUSTOM_APP_PATH)
@@ -222,24 +198,13 @@ def launch_data_generation(config_file, num_runs=1):
     carb.settings.get_settings().set("/app/player/useFixedTimeStepping", False)
 
     # set config app
-    sdg = AgentSDG(kit, num_runs)
+    sdg = AgentSDG(kit)
     sdg.generate_data(config_file)
 
 
 def get_args():
     parser = argparse.ArgumentParser("Agent SDG")
     parser.add_argument("-c", "--config_file", required=True, help="Path to config file or a folder of config files")
-    parser.add_argument(
-        "-n",
-        "--num_runs",
-        required=False,
-        type=int,
-        nargs="?",
-        default=1,
-        const=1,
-        help="Number or run. After each run, the output path index will increase. If not provided, the default run is 1.",
-    )
-    parser.add_argument("-o", "--osmo", action="store_true")
     args, _ = parser.parse_known_args()
     return args
 
@@ -247,36 +212,12 @@ def get_args():
 def main():
     args = get_args()
     config_path = args.config_file
-    num_runs = args.num_runs
-    osmo = args.osmo
-    files = []
 
     # Check for config file or folder
-    if os.path.isdir(config_path):
-        files = glob.glob("{}/*.yaml".format(config_path))
-    elif os.path.isfile(config_path):
-        files.append(config_path)
+    if os.path.isfile(config_path):
+        launch_data_generation(config_path)
     else:
-        print("Invalid config path passed. Path must be a file or a folder containing config files.")
-    print("Total SDG jobs - {}".format(len(files)))
-
-    # In OSMO env, start single sdg task
-    if osmo:
-        launch_data_generation(files[0])
-    # In local env, start sdg tasks as processes.
-    else:
-        for run in range(num_runs):
-            for idx, config_file in enumerate(files):
-                print("{} round: Starting SDG job number - {} with config file {}".format(run, idx, config_file))
-                p = Process(
-                    target=launch_data_generation,
-                    args=(
-                        config_file,
-                        run,
-                    ),
-                )
-                p.start()
-                p.join()
+        print("Invalid config path passed. Path must be a file")
 
 
 if __name__ == "__main__":
