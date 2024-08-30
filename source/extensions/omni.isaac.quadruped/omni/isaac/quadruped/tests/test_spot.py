@@ -85,13 +85,12 @@ class TestSpot(omni.kit.test.AsyncTestCase):
     async def test_robot_turn_command(self):
         await self.spawn_spot()
         await omni.kit.app.get_app().next_update_async()
-        self.spot = self._world.scene.get_object("spot")
 
-        self.start_orientation = np.array(self.spot.robot.get_world_pose()[1])
+        self.start_orientation = np.array(self._spot.robot.get_world_pose()[1])
         self._base_command = [0, 0, 1]
         await simulate_async(seconds=1.0)
 
-        self.current_orientation = np.array(self.spot.robot.get_world_pose()[1])
+        self.current_orientation = np.array(self._spot.robot.get_world_pose()[1])
 
         print(str(quat_to_euler_angles(self.start_orientation)))
         print(str(quat_to_euler_angles(self.current_orientation)))
