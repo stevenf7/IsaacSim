@@ -16,10 +16,10 @@ from multiprocessing import Process
 CUSTOM_APP_PATH = ""
 try:
     from isaacsim import SimulationApp
-except ModuleNotFoundError:
+except:
     # running in custom app env
     CUSTOM_APP_PATH = f"{os.environ['EXP_PATH']}/omni.agent_sdg.base.kit"
-    from people_sdg_bootstrap import SimulationApp
+    from app_framework import SimulationApp
 
 CONFIG = {"renderer": "RayTracedLighting", "headless": True, "width": 1920, "height": 1080}
 
@@ -30,12 +30,15 @@ Standalone script to schedule people sdg jobs in a local env.
 
 class AgentSDG:
     def __init__(self, sim_app, num_runs=1):
+        import omni.anim.navigation.navmesh.recast as navmesh
+
         self.num_runs = num_runs
         self.config_dict = None
         self._sim_manager = None
         self._data_generator = None
         self._settings = None
         self._sim_app = sim_app
+        self._navmesh = navmesh.acquire_interface()
         self._nav_mesh_event_handle = None
         self.navmesh_baking_complete = False
 
@@ -90,7 +93,7 @@ class AgentSDG:
         import carb
         import omni.anim.navigation.core as nav
 
-        _nav = nav.nav.acquire_interface()
+        _nav = nav.acquire_interface()
         # Do not proceed if navmesh volume does not exist
         if _nav.get_navmesh_volume_count() == 0:
             carb.log_error("Scene does not have navigation volume. Stoping data generation and closing app.")
@@ -190,11 +193,8 @@ def enable_extensions():
     enable_extension("omni.kit.viewport.window")
     enable_extension("omni.kit.manipulator.prim")
     enable_extension("omni.kit.property.usd")
-    enable_extension("omni.anim.navigation.bundle")
     enable_extension("omni.anim.timeline")
-    enable_extension("omni.anim.graph.bundle")
     enable_extension("omni.anim.graph.core")
-    enable_extension("omni.anim.retarget.bundle")
     enable_extension("omni.anim.retarget.core")
     enable_extension("omni.kit.scripting")
     enable_extension("omni.extended.materials")
