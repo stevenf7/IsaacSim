@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.1] - 2024-08-28
+### Fixed
+- Spot unit test
+
 ## [2.0.0] - 2024-08-01
 ### Added
 - RL policy based robot simulation for anymal and spot quadruped
