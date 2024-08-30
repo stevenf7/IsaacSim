@@ -1,5 +1,12 @@
 # Changelog
 
+## [12.9.0] - 2024-08-29
+### Changed
+- CameraView class to use the tiled RTX sensor instead of the single raycast Tiled Sensor
+- Changed default output annotators to rgb and depth
+### Deleted
+- CameraView methods: set_frequency, get_frequency, set_dt, get_dt, get_data (Currently the CameraView class follows the global rendering_dt)
+
 ## [12.8.7] - 2024-08-27
 ### Fixed
 - Add omni.sensors.tiled as a dependency
