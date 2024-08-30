@@ -987,7 +987,7 @@ deps_for_isaac = [
   "omni.sensors.nv.ultrasonic-1.2.1-isaac-1",
   "omni.sensors.nv.visualizer-1.0.1-isaac-1",
   "omni.sensors.nv.wpm-1.2.1-isaac-1",
-  "semantics.schema.editor-0.3.6",
+  "semantics.schema.editor-0.3.7",
   "semantics.schema.property-1.0.3",
   "omni.importer.mjcf-1.1.1",
   "omni.importer.urdf-1.14.1",
