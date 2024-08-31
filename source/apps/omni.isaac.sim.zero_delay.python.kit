@@ -1,6 +1,6 @@
 [package]
-title = "Isaac Sim"
-description = "Main Omniverse Isaac Sim Application"
+title = "Isaac Sim Python"
+description = "A trimmed down app for use with python providing zero frame delay"
 version = "4.2.0"
 execFile = "isaac-sim"
 
@@ -8,17 +8,15 @@ execFile = "isaac-sim"
 keywords = ["experience", "app", "usd"]
 
 [dependencies]
-"omni.isaac.sim.base" = {}
-"omni.physx.fabric" = {}
-"omni.physx.stageupdate" = {}
-"usdrt.scenegraph" = {}
-# "omni.kit.splash" = { order = -5000}
+"omni.isaac.sim.python" = {}
 
 [settings]
 app.name = "Isaac-Sim"
 app.version = "4.2.0"
 app.fastShutdown = true
 foundation.verifyOsVersion.enabled = false
+app.hydraEngine.waitIdle = true
+app.updateOrder.checkForHydraRenderComplete = 1000
 
 [settings.app.exts]
 folders = ["${app}/../exts", "${app}/../extscache", "${app}/../extsPhysics", "${app}/../extsUser"]
@@ -48,13 +46,3 @@ postToSlack = false
 [settings.exts."omni.kit.window.content_browser"]
 enable_thumbnail_generation_images = false # temp fix to avoid leaking python processes
 
-
-
-[settings]
-app.useFabricSceneDelegate = false
-[settings.persistent]
-omnigraph.updateToUsd = false
-omnihydra.useFastSceneDelegate = true
-omnihydra.useSceneGraphInstancing = true
-physics.updateForceSensorsToUsd = false
-physics.visualizationDisplayJoints = false

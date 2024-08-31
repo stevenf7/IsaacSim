@@ -50,7 +50,7 @@ class SimulationApp:
 
     Arguments:
         config (dict): A dictionary containing the configuration for the app. (default: None)
-        experience (str): Path to the application config loaded by the launcher (default: "", will load app/omni.isaac.sim.python.kit if left blank)
+        experience (str): Path to the application config loaded by the launcher (default: "", will load apps/omni.isaac.sim.python.kit if left blank)
     """
 
     DEFAULT_LAUNCHER_CONFIG = {
