@@ -1,5 +1,9 @@
 # Changelog
 
+## [12.9.1] - 2024-09-02
+### Fixed
+- Point cloud error in data acquisition test for camera class
+
 ## [12.9.0] - 2024-08-29
 ### Changed
 - CameraView class to use the tiled RTX sensor instead of the single raycast Tiled Sensor

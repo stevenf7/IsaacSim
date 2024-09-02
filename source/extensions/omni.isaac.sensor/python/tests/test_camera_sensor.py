@@ -81,6 +81,8 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
+        self.my_world.stop()
+        await omni.kit.app.get_app().next_update_async()
         self.camera = None
         self.viewport_camera = None
         self.my_world.clear_instance()
@@ -137,6 +139,8 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
             await omni.syntheticdata.sensors.next_render_simulation_async(self.camera.get_render_product_path(), 10)
             data = self.camera.get_current_frame()
             self.assertTrue(len(data[annotator]) > 0, f"{annotator}")
+            if isinstance(data[annotator], dict) and "data" in data[annotator]:
+                self.assertTrue(len(data[annotator]["data"]) > 0, f"check for data in {annotator}")
             getattr(self.camera, "remove_{}_from_frame".format(annotator))()
             await omni.syntheticdata.sensors.next_render_simulation_async(self.camera.get_render_product_path(), 1)
             data = self.camera.get_current_frame()
