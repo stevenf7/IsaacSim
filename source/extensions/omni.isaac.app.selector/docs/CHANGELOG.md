@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.8.2] - 2024-09-02
+### Fixed
+- Spelling mistake in UI
+
 ## [2.8.1] - 2024-05-23
 ### Fixed
 - Forward the internal environment variables to support configuring the ROS bridge for x-terminal-emulator
