@@ -54,6 +54,11 @@ echo !Publishing to nvcr.io/nvidian/$APP_NAME:latest-$CI_COMMIT_BRANCH!
 docker tag $docker_image_tag nvcr.io/nvidian/$APP_NAME:latest-$CI_COMMIT_BRANCH
 docker push nvcr.io/nvidian/$APP_NAME:latest-$CI_COMMIT_BRANCH
 
+# # FOR PRODUCTION #
+# echo !Publishing to nvcr.io/nvstaging/isaacsim/isaac-sim:4.2.0!
+# docker tag $docker_image_tag nvcr.io/nvstaging/isaacsim/isaac-sim:4.2.0
+# docker push nvcr.io/nvstaging/isaacsim/isaac-sim:4.2.0
+
 docker images
 docker rmi -f $(docker images --filter=reference="$docker_image_tag" -q)
 docker images
