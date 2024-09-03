@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.7.2] - 2024-09-03
+### Added
+- Missing robots to the menu
+### Fixed
+- some naming to match documentation
 
 ## [0.7.1] - 2024-08-26
 ### Added
