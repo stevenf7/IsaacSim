@@ -623,7 +623,7 @@ class SelectorWindow:
                 self._auto_start_chk.set_value(self._auto_start)
                 self._auto_start_chk.add_value_changed_fn(on_value_changed)
 
-                ui.Label("Automaticly start default app", width=100, style={"font_size": 18, "color": 0xFFBBBBBB})
+                ui.Label("Automatically start default app", width=100, style={"font_size": 18, "color": 0xFFBBBBBB})
 
             ui.Spacer(height=5)
             with ui.HStack(height=0):
