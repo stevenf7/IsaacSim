@@ -1,8 +1,5 @@
 <project toolsVersion="5.6">
-  <dependency name="kit_sdk_debug" linkPath="../_build/kit_debug" tags="debug">
-    <source path="/path/to/kit/kit" />
-  </dependency>
-  <dependency name="kit_sdk_release" linkPath="../_build/kit_release" tags="release">
-    <source path="/path/to/kit/kit" />
+  <dependency name="kit_sdk_${config}" linkPath="../_build/${platform}/${config}/kit" tags="${config} non-redist">
+    <!--source path="/path/to/kit/kit/_build/${platform}/${config}"/-->
   </dependency>
 </project>
