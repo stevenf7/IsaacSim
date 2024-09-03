@@ -139,7 +139,7 @@ class Extension(omni.ext.IExt):
         menu_kinova = [
             make_menu_item_description(
                 ext_id,
-                "Gen3",
+                "Gen 3",
                 lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Robots/Kinova/Gen3/gen3n7_instanceable.usd", "/Gen3"
                 ),
@@ -204,14 +204,14 @@ class Extension(omni.ext.IExt):
             MenuItemDescription(name="Kinova", sub_menu=menu_kinova),
             make_menu_item_description(
                 ext_id,
-                "Kuka KR210_L150",
+                "Kuka KR210 L150",
                 lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Robots/Kuka/KR210_L150/kr210_l150.usd", "/kuka_kr210"
                 ),
             ),
             make_menu_item_description(
                 ext_id,
-                "RethinkRobotics Sawyer",
+                "Rethink Robotics Sawyer",
                 lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Robots/RethinkRobotics/sawyer_instanceable.usd", "/Sawyer"
                 ),
@@ -265,7 +265,7 @@ class Extension(omni.ext.IExt):
                 "ANYbotics ANYmal",
                 lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/ANYbotics/anymal_c.usd", "/ANYmal_C"),
             ),
-            MenuItemDescription(name="BostonDynamics", sub_menu=menu_boston_dynamics),
+            MenuItemDescription(name="Boston Dynamics", sub_menu=menu_boston_dynamics),
             MenuItemDescription(name="Unitree", sub_menu=menu_unitree),
         ]
 
@@ -425,11 +425,21 @@ class Extension(omni.ext.IExt):
                 "O3dyn",
                 lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/O3dyn/o3dyn.usd", "/O3dyn"),
             ),
+            make_menu_item_description(
+                ext_id,
+                "O3dyn (gamepad control)",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/O3dyn/o3dyn_controller.usd", "/O3dyn"),
+            ),
         ]
 
         menu_nvidia_holonomic_robots = [
             make_menu_item_description(
                 ext_id, "Kaya", lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Kaya/kaya.usd", "/Kaya")
+            ),
+            make_menu_item_description(
+                ext_id,
+                "Kaya (gamepad control)",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Kaya/kaya_ogn_gamepad.usd", "/Kaya"),
             ),
         ]
 
