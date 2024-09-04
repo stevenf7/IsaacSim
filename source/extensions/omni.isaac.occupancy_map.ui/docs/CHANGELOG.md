@@ -1,8 +1,12 @@
 # Changelog
 
+## [1.1.1] - 2024-09-03
+### Changed
+- Limit Cell Size slider's minimum value to avoid it begin less than or equal to 0
+
 ## [1.1.0] - 2024-05-16
 ### Changed
-- invisible geometry will not be mapped when Use PhysX Collision Geometry is false
+- Invisible geometry will not be mapped when Use PhysX Collision Geometry is false
 
 ## [1.0.1] - 2024-05-15
 ### Fixed

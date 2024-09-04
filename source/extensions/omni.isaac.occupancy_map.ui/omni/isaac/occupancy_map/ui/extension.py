@@ -88,6 +88,9 @@ class Extension(omni.ext.IExt):
                     self._models["cell_size"] = float_builder(
                         label="Cell Size",
                         default_val=units,
+                        min=0.001,
+                        step=0.001,
+                        format="%.3f",
                         tooltip="Size of each pixel in stage units in output occupancy map image",
                     )
                     self._models["cell_size"].add_value_changed_fn(self.on_update_cell_size)
@@ -356,6 +359,9 @@ class Extension(omni.ext.IExt):
     def _fill_image(self):
         dims = self._om.get_dimensions()
         scale = self._models["cell_size"].get_value_as_float()
+        if scale <= 0:
+            carb.log_warn("Cell size is less than or equal to 0. A value of 0.01 meters will be used instead.")
+            scale = 0.01
         # Clockwise rotation
         rotate_image_angle = 0
         current_image_rotation_index = self._models["rotation"].get_item_value_model().as_int

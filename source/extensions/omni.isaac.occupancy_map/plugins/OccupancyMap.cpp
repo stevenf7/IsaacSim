@@ -113,6 +113,11 @@ void CARB_ABI SetTransform(carb::Float3 origin, carb::Float3 minimum, carb::Floa
 
 void CARB_ABI SetCellSize(float cellSize)
 {
+    if (cellSize <= 0)
+    {
+        cellSize = .01f / gMetersPerUnit;
+        CARB_LOG_WARN("Cell size is less than or equal to 0. A value of 0.01 meters will be used instead.");
+    }
     inputCellSize = cellSize;
 }
 
