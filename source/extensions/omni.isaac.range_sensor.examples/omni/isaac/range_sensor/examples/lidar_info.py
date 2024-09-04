@@ -44,6 +44,8 @@ class Extension(omni.ext.IExt):
         ]
         add_menu_items(self._menu_items, "Isaac Examples")
 
+        self._load_lidar_button = None
+        self._load_lidar_scene_button = None
         self._build_ui()
 
     def _build_ui(self):
@@ -85,7 +87,7 @@ class Extension(omni.ext.IExt):
                             "tooltip": "Loads a LIDAR Sensor and sets its properties",
                             "on_clicked_fn": self._on_spawn_lidar_button,
                         }
-                        btn_builder(**dict)
+                        self._load_lidar_button = btn_builder(**dict)
 
                         dict = {
                             "label": "Load LIDAR Scene",
@@ -94,7 +96,7 @@ class Extension(omni.ext.IExt):
                             "tooltip": "Loads a obstacles for the LIDAR to sense",
                             "on_clicked_fn": self._on_spawn_obstacles_button,
                         }
-                        btn_builder(**dict)
+                        self._load_lidar_scene_button = btn_builder(**dict)
 
                         dict = {
                             "label": "Show Data Stream",
@@ -115,6 +117,9 @@ class Extension(omni.ext.IExt):
 
     async def _spawn_lidar_function(self, task):
         # Wait for stage clear to complete before creating LIDAR
+        # Disable buttons while waiting to avoid issues if user keeps clicking button
+        self._load_lidar_button.enabled = False
+        self._load_lidar_button_scene.enabled = False
         done, pending = await asyncio.wait({task})
         if task in done:
             stage = omni.usd.get_context().get_stage()
@@ -168,6 +173,10 @@ class Extension(omni.ext.IExt):
 
             # we want to make sure we can see the lidar we made, so we set the camera position and look target
             set_camera_view(eye=[5.00, 5.00, 5.00], target=[0.0, 0.0, 0.0], camera_prim_path="/OmniverseKit_Persp")
+
+            # Re-enable buttons
+            self._load_lidar_button.enabled = True
+            self._load_lidar_button_scene.enabled = False
 
     def _on_spawn_lidar_button(self):
         # wait for new stage before creating lidar
