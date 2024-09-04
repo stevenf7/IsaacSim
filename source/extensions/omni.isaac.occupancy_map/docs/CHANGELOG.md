@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.3] - 2024-09-03
+### Fixed
+- Prevent cell size being less than or equal to 0 by showing a warning message and using a default value
+
 ## [1.0.2] - 2024-07-08
 ### Changed
 - Remove unused omni.debugdraw interface
