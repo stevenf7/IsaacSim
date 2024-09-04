@@ -119,7 +119,7 @@ class Extension(omni.ext.IExt):
         # Wait for stage clear to complete before creating LIDAR
         # Disable buttons while waiting to avoid issues if user keeps clicking button
         self._load_lidar_button.enabled = False
-        self._load_lidar_button_scene.enabled = False
+        self._load_lidar_scene_button.enabled = False
         done, pending = await asyncio.wait({task})
         if task in done:
             stage = omni.usd.get_context().get_stage()
@@ -176,7 +176,7 @@ class Extension(omni.ext.IExt):
 
             # Re-enable buttons
             self._load_lidar_button.enabled = True
-            self._load_lidar_button_scene.enabled = False
+            self._load_lidar_scene_button.enabled = True
 
     def _on_spawn_lidar_button(self):
         # wait for new stage before creating lidar
