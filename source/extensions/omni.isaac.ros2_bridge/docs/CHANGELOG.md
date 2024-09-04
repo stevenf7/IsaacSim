@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.32.5] - 2024-09-04
+### Fixed
+- ROS2 image publisher threading crash fixed.
+
 ## [2.32.4] - 2024-08-29
 ### Fixed
 - ROS2 QoS Profile node issue where preset profiles are sometimes not saved.
