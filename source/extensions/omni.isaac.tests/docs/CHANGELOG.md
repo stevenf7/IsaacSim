@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.18.1] - 2024-09-04
+### Fixed
+- Incorrect physics setting in test influencing other tests
+
 ## [1.18.0] - 2024-07-10
 ### Removed
 - Deprecated omni.isaac.dofbot and removed its usage.
