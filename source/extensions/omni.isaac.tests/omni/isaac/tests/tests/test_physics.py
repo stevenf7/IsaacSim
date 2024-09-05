@@ -60,11 +60,10 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
         position = np.array(omni.usd.get_world_transform_matrix(cube_prim).ExtractTranslation())
         self.assertAlmostEquals(position[2], 25.0, 0)
+        carb.settings.get_settings().set_int("physics/updateToUsd", True)
         pass
 
     async def test_rigid_body(self):
-
-        carb.settings.get_settings().set_int("/physics/updateToUsd", True)
 
         dt = 1.0 / self._physics_rate
 

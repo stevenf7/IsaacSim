@@ -128,7 +128,7 @@ class TestHangBugs(omni.kit.test.AsyncTestCase):
         obs = objects.cuboid.FixedCuboid("/scene/obstacle", position=obs_pos, scale=0.1 * np.array([2.0, 3.0, 1.0]))
 
         for i in range(100):
-            print(f"Iteration {i}")
+            carb.log_info(f"Iteration {i}")
             await update_stage_async()
 
     async def test_freeze_sim(self):
@@ -140,4 +140,4 @@ class TestHangBugs(omni.kit.test.AsyncTestCase):
             await update_stage_async()
             self.assertTrue(result)
 
-            print(f"Opened Stage {i+1} times")
+            carb.log_info(f"Opened Stage {i+1} times")

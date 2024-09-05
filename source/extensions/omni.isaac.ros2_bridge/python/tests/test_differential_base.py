@@ -9,6 +9,7 @@
 
 import asyncio
 import gc
+from copy import deepcopy
 
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
@@ -25,7 +26,7 @@ import omni.kit.usd
 import usdrt.Sdf
 from omni.isaac.core.utils.physics import simulate_async
 from omni.isaac.nucleus import get_assets_root_path_async
-from pxr import Gf, Sdf
+from pxr import Gf, Sdf, UsdGeom
 
 from .common import add_carter, add_carter_ros, add_nova_carter_ros, get_qos_profile, set_rotate, set_translate
 
@@ -72,12 +73,10 @@ class TestRos2DifferentialBase(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_carter_differential_base(self):
-        from copy import deepcopy
 
         import rclpy
         from geometry_msgs.msg import Twist
         from nav_msgs.msg import Odometry
-        from pxr import UsdGeom
         from tf2_msgs.msg import TFMessage
 
         await add_carter_ros()
@@ -250,12 +249,10 @@ class TestRos2DifferentialBase(omni.kit.test.AsyncTestCase):
 
         self._timeline.stop()
         spin()
-        print("End of test")
         pass
 
     # add carter and ROS topic from scratch
     async def test_differential_base_scratch(self):
-        from copy import deepcopy
 
         import rclpy
         from geometry_msgs.msg import Twist
@@ -366,12 +363,9 @@ class TestRos2DifferentialBase(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_nova_carter_differential_base(self):
-        from copy import deepcopy
-
         import rclpy
         from geometry_msgs.msg import Twist
         from nav_msgs.msg import Odometry
-        from pxr import UsdGeom
         from tf2_msgs.msg import TFMessage
 
         await add_nova_carter_ros()
@@ -483,8 +477,8 @@ class TestRos2DifferentialBase(omni.kit.test.AsyncTestCase):
         # check 1: location using default param
         odom_data = deepcopy(self._odom_data)
 
-        print(str(self.trans.transform))
-        print(str(odom_data))
+        carb.log_info(str(self.trans.transform))
+        carb.log_info(str(odom_data))
         self.assertAlmostEqual(self.trans.transform.translation.x, 1.22 * meters_per_unit, 2)
         self.assertAlmostEqual(self.trans.transform.translation.y, -2.78 * meters_per_unit, 2)
         self.assertAlmostEqual(self.trans.transform.rotation.x, 0, 2)
@@ -535,8 +529,8 @@ class TestRos2DifferentialBase(omni.kit.test.AsyncTestCase):
 
         # check 4: location after change radius
         odom_data = deepcopy(self._odom_data)
-        print(str(self.trans.transform))
-        print(str(odom_data))
+        carb.log_info(str(self.trans.transform))
+        carb.log_info(str(odom_data))
         self.assertAlmostEqual(self.trans.transform.translation.x, 1.30 * meters_per_unit, delta=0.01)
         self.assertAlmostEqual(self.trans.transform.translation.y, -2.69 * meters_per_unit, delta=0.01)
         self.assertAlmostEqual(self.trans.transform.rotation.x, 0, 2)
@@ -552,12 +546,10 @@ class TestRos2DifferentialBase(omni.kit.test.AsyncTestCase):
 
         self._timeline.stop()
         spin()
-        print("End of test")
         pass
 
     # add carter and ROS topic from scratch
     async def test_differential_base_scratch(self):
-        from copy import deepcopy
 
         import rclpy
         from geometry_msgs.msg import Twist
