@@ -3,6 +3,7 @@
 ## [2.32.5] - 2024-09-04
 ### Fixed
 - ROS2 image publisher threading crash fixed.
+- Update nv_ros2 dependency for Humble on Linux to support the new NITROS Bridge message definition
 
 ## [2.32.4] - 2024-08-29
 ### Fixed
