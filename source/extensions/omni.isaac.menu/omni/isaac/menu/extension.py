@@ -564,13 +564,6 @@ class Extension(omni.ext.IExt):
             MenuItemDescription(header="Rooms"),
             make_menu_item_description(
                 ext_id,
-                "Grid Room",
-                lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Environments/Grid/gridroom_curved.usd", "/GridRoom"
-                ),
-            ),
-            make_menu_item_description(
-                ext_id,
                 "Simple Room",
                 lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Environments/Simple_Room/simple_room.usd", "/SimpleRoom", [3.15, 3.15, 2.0], [0, 0, 0]
