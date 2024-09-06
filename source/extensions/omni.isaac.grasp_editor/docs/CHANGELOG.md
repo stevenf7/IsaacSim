@@ -1,4 +1,7 @@
 # Changelog
+## [1.3.0] - 2024-09-06
+### Changed
+- Changed metadata fields in Isaac Grasp file that will not interfere with grasp files that have already been created.
 
 ## [1.2.1] - 2024-08-28
 ### Fixed
