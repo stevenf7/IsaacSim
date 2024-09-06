@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.7.3] - 2024-09-05
+### Removed
+- Grid Room from menu to match documentation
+
 ## [0.7.2] - 2024-09-03
 ### Added
 - Missing robots to the menu
