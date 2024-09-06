@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.10.1] - 2024-09-05
+### Fixed
+- convert sim_elapsed_time to ms for calculating real-time factor
+
 ## [1.10.0] - 2024-08-05
 ### Changed
 - use omni.physdx.get_physx_benchmarks_interface() to get physics simulation profiling data

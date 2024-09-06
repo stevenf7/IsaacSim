@@ -111,4 +111,6 @@ class IsaacUpdateFrametimeCollector:
         if len(self.physics_frametimes_ms) > 0:
             self.physics_frametimes_ms.pop(0)
 
+        # convert s to ms for consistency
+        self.elapsed_sim_time *= 1000
         return self.app_frametimes_ms, self.gpu_frametimes_ms, self.physics_frametimes_ms
