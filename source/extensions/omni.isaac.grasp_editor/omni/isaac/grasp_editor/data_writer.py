@@ -13,8 +13,8 @@ class DataWriter:
         self.data["format"] = "isaac_grasp"
         self.data["format_version"] = 1.0
 
-        self.data["object_frame_link"] = rb_frame_name
-        self.data["gripper_frame_link"] = gripper_frame_name
+        self.data["object_frame"] = rb_frame_name
+        self.data["gripper_frame"] = gripper_frame_name
 
         self.data["grasps"] = OrderedDict()
 
@@ -120,7 +120,7 @@ class DataWriter:
         x = self.data
 
         v = x["grasps"][k]
-        f.write(f"{s(1)}{k}:\n")
+        f.write(f'{s(1)}"{k}":\n')
 
         f.write(f'{s(2)}confidence: {v["confidence"]}\n')
 
@@ -142,7 +142,7 @@ class DataWriter:
         with open(file_path, "w") as f:
             f.write(f'format: {x["format"]}\n')
             f.write(f'format_version: {x["format_version"]}\n\n')
-            f.write(f'object_frame_link: {x["object_frame_link"]}\n')
-            f.write(f'gripper_frame_link: {x["gripper_frame_link"]}\n\n')
+            f.write(f'object_frame: {x["object_frame"]}\n')
+            f.write(f'gripper_frame: {x["gripper_frame"]}\n\n')
             f.write(f"grasps:\n")
             self._write_grasp(grasp_name, f)
