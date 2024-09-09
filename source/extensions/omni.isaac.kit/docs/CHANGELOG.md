@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.13.2] - 2024-09-08
+### Fixed
+- Error on exit caused by stage closure while sdg was finishing writing
+
 ## [1.13.1] - 2024-08-03
 ### Changed
 - Added missing tracy parameters to reduce profiling bias on measured performance
