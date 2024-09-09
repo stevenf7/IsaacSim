@@ -16,6 +16,7 @@ import os
 import re
 import signal
 import sys
+import time
 
 import carb
 import omni.kit.app
@@ -542,14 +543,19 @@ class SimulationApp:
                 rep.orchestrator.stop()
             if wait_for_replicator:
                 rep.orchestrator.wait_until_complete()
+                time.sleep(1.0)
 
             # Disable capture on play to avoid replicator engaging on any new timeline events
             rep.orchestrator.set_capture_on_play(False)
         except Exception:
             pass
+
         # workaround for exit issues, clean the stage first:
-        if omni.usd.get_context().can_close_stage():
-            omni.usd.get_context().close_stage()
+        try:
+            if omni.usd.get_context().can_close_stage():
+                omni.usd.get_context().close_stage()
+        except Exception:
+            pass
         # omni.kit.app.get_app().update()
         # check if exited already
         if not self._exiting:
@@ -560,8 +566,8 @@ class SimulationApp:
             from .utils import is_stage_loading
 
             if is_stage_loading():
-                print(
-                    "   Waiting for USD resource operations to complete (this may take a few seconds), use Ctrl-C to exit immediately"
+                self._app.print_and_log(
+                    "Waiting for USD resource operations to complete (this may take a few seconds), use Ctrl-C to exit immediately"
                 )
             while is_stage_loading():
                 self._app.update()
