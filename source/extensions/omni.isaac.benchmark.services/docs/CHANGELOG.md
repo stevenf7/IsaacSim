@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.10.2] - 2024-09-09
+### Fixed
+- Physics time not captured unless app update was called
+
 ## [1.10.1] - 2024-09-05
 ### Fixed
 - convert sim_elapsed_time to ms for calculating real-time factor
