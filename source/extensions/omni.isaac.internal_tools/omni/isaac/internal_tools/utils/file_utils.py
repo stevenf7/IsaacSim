@@ -72,7 +72,11 @@ def isabs(path):
     return os.path.isabs(path)
 
 
-def filter_usd(item) -> bool:
+def filter_usd(item, excludes) -> bool:
+    # remove any substrings we dont want
+    for e in excludes:
+        if e in item:
+            return False
     _, ext = os.path.splitext(item)
     if ext in [".usd", ".usda", ".usdc", ".usdz"]:
         return True

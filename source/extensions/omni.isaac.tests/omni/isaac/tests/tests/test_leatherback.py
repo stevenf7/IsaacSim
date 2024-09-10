@@ -167,4 +167,5 @@ class TestLeatherback(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.isinf(depth_data[0]))
         self.assertTrue(np.abs(depth_data[-1] - 0.602) < 0.1)
 
+        node.destroy_node()
         pass
