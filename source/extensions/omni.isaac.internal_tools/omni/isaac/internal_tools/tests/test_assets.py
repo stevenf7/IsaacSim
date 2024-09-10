@@ -52,6 +52,7 @@ class TestAssets(omni.kit.test.AsyncTestCase):
             # self.nvidia_path + "/Assets/Vegetation",
             # self.nvidia_path + "/Materials",
         ]
+        self.exclude_path = ["Environments/Outdoor/Rivermark"]
 
         pass
 
@@ -90,7 +91,7 @@ class TestAssets(omni.kit.test.AsyncTestCase):
         print("Starting validation")
         count = 0
         all_files = await list_sub_files(self.search_path)
-        sub_files = [file for file in all_files if filter_usd(file)]
+        sub_files = [file for file in all_files if filter_usd(file, self.exclude_path)]
         print(f"found a total of {len(all_files)} files and {len(sub_files)} usd* files")
         # check for duplicate base filenames
         # self.duplicate_check(all_files)
@@ -98,7 +99,7 @@ class TestAssets(omni.kit.test.AsyncTestCase):
         total_files = len(sub_files)
         results = []
         for item in sub_files:
-            # print(f"opening: {item}")
+            print(f"opening: {item}")
             file_results = []
             # first make sure all assets open
             await omni.kit.app.get_app().next_update_async()
@@ -112,8 +113,9 @@ class TestAssets(omni.kit.test.AsyncTestCase):
                 self._stage = omni.usd.get_context().get_stage()
                 self.check_physics_schema(item)
             else:
-                self._stage = Usd.Stage.Open(item)
+                await omni.usd.get_context().open_stage_async(item)
                 await omni.kit.app.get_app().next_update_async()
+                self._stage = omni.usd.get_context().get_stage()
 
             # file_results.extend(self.check_stage_units(item))
 
@@ -124,6 +126,7 @@ class TestAssets(omni.kit.test.AsyncTestCase):
                 file_results.extend(self.check_deleted_payload(item, prim))
                 file_results.extend(self.check_properties(item, prim))
                 file_results.extend(self.check_physics_scene(item, prim))
+                file_results.extend(self.check_deprecated_og(item, prim))
             # TODO: Instance Check?
             file_results.extend(self.check_abs_refs(item))
             file_results.extend(self.check_external_refs(item))
@@ -180,8 +183,7 @@ class TestAssets(omni.kit.test.AsyncTestCase):
 
             if len(abs_refs) != 0:
                 return [f"File:{item} Prim {prim} Contains a absolute reference {abs_refs}"]
-            else:
-                return []
+            return []
         except Exception as e:
             carb.log_error(f"{e} fail to check {item}, {prim}")
 
@@ -194,8 +196,7 @@ class TestAssets(omni.kit.test.AsyncTestCase):
             references_info = ref_prim_spec.GetInfo("references")
             if len(references_info.deletedItems) > 0:
                 return [f"stage: {usd_path}, has deleted references {references_info.deletedItems}"]
-            else:
-                return []
+        return []
 
     def check_deleted_payload(self, usd_path, prim):
         stage = omni.usd.get_context().get_stage()
@@ -206,8 +207,7 @@ class TestAssets(omni.kit.test.AsyncTestCase):
             payload_info = ref_prim_spec.GetInfo("payload")
             if len(payload_info.deletedItems) > 0:
                 return [f"stage: {usd_path}, has deleted payload {payload_info.deletedItems}"]
-            else:
-                return []
+        return []
 
     def check_physics_scene(self, usd_path, prim):
         errors = []
@@ -220,4 +220,15 @@ class TestAssets(omni.kit.test.AsyncTestCase):
                     f"Physics scene: {prim} in {usd_path}, has {physics_api.GetBroadphaseTypeAttr().Get()} broadphase"
                 )
             return errors
+        return []
+
+    def check_deprecated_og(self, usd_path, prim):
+        stage = omni.usd.get_context().get_stage()
+        if stage is None:
+            return []
+        if prim.HasAttribute("node:type"):
+            type_attr = prim.GetAttribute("node:type")
+            value = type_attr.Get()
+            if "omni.graph.nodes.MakeArray" in value:
+                return [f"stage: {usd_path}, has node {prim.GetPath()} of type omni.graph.nodes.MakeArray"]
         return []

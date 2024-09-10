@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.4.0] - 2024-09-08
+### Changed
+- Updated and added rules for deprecated OG nodes
+
 ## [1.3.2] - 2024-02-02
 ### Changed
 - Updated path to the nucleus extension
