@@ -11,8 +11,10 @@
 import carb
 import omni.graph.core as og
 import omni.usd
+from omni.isaac.core.objects.ground_plane import GroundPlane
 from omni.isaac.examples.base_sample import BaseSample
 from omni.isaac.nucleus import get_assets_root_path
+from pxr import Sdf, UsdLux
 
 
 class KayaGamepad(BaseSample):
@@ -24,11 +26,17 @@ class KayaGamepad(BaseSample):
         if assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return
-        kaya_usd = assets_root_path + "/Isaac/Robots/Kaya/kaya.usd"
+
+        # add kaya robot rigged with gamepad controller
         kaya_ogn_usd = assets_root_path + "/Isaac/Robots/Kaya/kaya_ogn_gamepad.usd"
         stage = omni.usd.get_context().get_stage()
-        graph_prim = stage.DefinePrim("/World", "Xform")
+        graph_prim = stage.DefinePrim("/kaya", "Xform")
         graph_prim.GetReferences().AddReference(kaya_ogn_usd)
+
+        # add ground plane and light
+        GroundPlane("/World/ground_plane", visible=True)
+        dome_light = stage.DefinePrim("/World/DomeLight", "DomeLight")
+        dome_light.CreateAttribute("inputs:intensity", Sdf.ValueTypeNames.Float).Set(450.0)
 
     def world_cleanup(self):
         pass

@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.0.2] - 2024-09-16
+### Fixed
+- Fixed Kaya gamepad example, loading ground and light manually
+
 ## [3.0.1] - 2024-08-27
 ### Fixed
 - Fixed glitch with quadruped example
