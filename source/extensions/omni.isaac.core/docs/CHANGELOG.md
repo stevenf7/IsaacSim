@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.19.5] - 2024-09-17
+### Fixed
+- .render() call to fetch physX data into fabric in the GPU pipeline
+- .render() call implicitly calls update_articulations_kinematic in order to update articulations kinematic before rendering the result
+
 ## [3.19.4] - 2024-08-26
 ### Fixed
 - Exempts /Render and child prims when calling clear stage
