@@ -13,6 +13,7 @@ import logging
 import os
 import re
 import subprocess
+from collections import OrderedDict
 from distutils.version import LooseVersion
 from pprint import pprint
 from typing import Callable, Dict, List, Set, Tuple
@@ -256,7 +257,9 @@ def generate_extension_diff_report(
         print(report)
 
 
-def generate_extscache_diff_report(extscache_paths: List[str], range: Dict, format_: str):
+def generate_extscache_diff_report(
+    extscache_paths: List[str], range: Dict, format_: str, merge_extscache_sections: bool
+):
     """Generate extscache report from .kit files"""
     for path in extscache_paths:
         try:
@@ -312,6 +315,17 @@ def generate_extscache_diff_report(extscache_paths: List[str], range: Dict, form
                 if not extension_name in data["version_lock_dependencies"]:
                     data["version_lock_dependencies"][extension_name] = {}
                 data["version_lock_dependencies"][extension_name][status[0]] = extension_version
+
+        # sort dicts
+        data["dependencies"] = OrderedDict(sorted(data["dependencies"].items()))
+        data["exact_version_dependencies"] = OrderedDict(sorted(data["exact_version_dependencies"].items()))
+        data["version_lock_dependencies"] = OrderedDict(sorted(data["version_lock_dependencies"].items()))
+
+        # merge results to "dependencies"
+        if merge_extscache_sections:
+            data["exact_version_dependencies"].update(data["dependencies"])
+            data["dependencies"] = OrderedDict(sorted(data["exact_version_dependencies"].items()))
+            data["exact_version_dependencies"] = {}
 
         report = ""
 
@@ -535,6 +549,13 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         choices=["rst", "md"],
         help="Output format: reStructuredText (rst) or Markdown (md)",
     )
+    parser.add_argument(
+        "--merge-extscache-sections",
+        required=False,
+        default=False,
+        action="store_true",
+        help="Whether to merge the section generated for the extscache changelog",
+    )
 
     def run_repo_tool(options: Dict, config: Dict):
         # tool_config = config.get("repo_build", {})
@@ -563,7 +584,9 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
 
         # generate extscache report
         if options.extscache:
-            generate_extscache_diff_report(tool_config["extscache_paths"], range, options.format)
+            generate_extscache_diff_report(
+                tool_config["extscache_paths"], range, options.format, options.merge_extscache_sections
+            )
 
         # generate extensions report
         print("# Extensions" if options.format == "md" else "Extensions\n==========")
