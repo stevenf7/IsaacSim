@@ -14,13 +14,14 @@ import omni.graph.core as og
 import omni.isaac.IsaacSensorSchema as IsaacSensorSchema
 import omni.kit.viewport.utility
 import omni.ui as ui
+import OmniGraphSchema
 from omni.isaac.core.utils.stage import get_next_free_path
 from omni.isaac.ui.callbacks import on_docs_link_clicked, on_open_IDE_clicked
 from omni.isaac.ui.style import get_style
 from omni.isaac.ui.widgets import ParamWidget, SelectPrimWidget
 from omni.kit.notification_manager import NotificationStatus, post_notification
 from omni.kit.window.extensions import SimpleCheckBox
-from pxr import OmniGraphSchema, UsdGeom
+from pxr import UsdGeom
 
 
 class Ros2CameraGraph:

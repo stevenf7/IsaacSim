@@ -13,6 +13,7 @@ from pathlib import Path
 import omni.graph.core as og
 import omni.ui as ui
 import omni.usd
+import OmniGraphSchema
 from omni.isaac.core.utils.stage import get_next_free_path
 from omni.isaac.ui.callbacks import on_docs_link_clicked, on_open_IDE_clicked
 from omni.isaac.ui.style import get_style
@@ -20,7 +21,7 @@ from omni.isaac.ui.ui_utils import dropdown_builder
 from omni.isaac.ui.widgets import ParamWidget, SelectPrimWidget
 from omni.kit.notification_manager import NotificationStatus, post_notification
 from omni.kit.window.extensions import SimpleCheckBox
-from pxr import OmniGraphSchema, Sdf
+from pxr import Sdf
 
 
 class Ros2ClockGraph:

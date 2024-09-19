@@ -11,6 +11,7 @@ import os
 import omni.graph.core as og
 import omni.ui as ui
 import omni.usd
+import OmniGraphSchema
 from numpy import pi as PI
 from omni.isaac.core.utils.prims import get_all_matching_child_prims, get_prim_at_path
 from omni.isaac.core.utils.stage import get_next_free_path
@@ -19,7 +20,7 @@ from omni.isaac.ui.style import get_style
 from omni.isaac.ui.widgets import ParamWidget, SelectPrimWidget
 from omni.kit.notification_manager import NotificationStatus, post_notification
 from omni.kit.window.extensions import SimpleCheckBox
-from pxr import OmniGraphSchema, Usd, UsdPhysics
+from pxr import Usd, UsdPhysics
 
 OG_DOCS_LINK = (
     "https://docs.omniverse.nvidia.com/isaacsim/latest/advanced_tutorials/tutorial_advanced_omnigraph_shortcuts.html"
