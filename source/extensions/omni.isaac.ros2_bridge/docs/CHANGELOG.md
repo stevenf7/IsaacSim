@@ -4,6 +4,10 @@
 ### Changed
 - Update source code to follow the Isaac Sim's Coding Style Guidelines for C++
 
+## [2.32.7] - 2024-09-13
+### Fixed
+- changed pxr.OmniGraphSchema import to OmniGraphSchema
+
 ## [2.32.6] - 2024-09-05
 ### Changed
 - Update nv_ros2 dependency for Foxy, Humble on Linux and Humble only on Windows with upgraded sqlite 3.46.1 package

@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.1.2] - 2024-09-13
+### Fixed
+- changed pxr.OmniGraphSchema import to OmniGraphSchema
+
 ## [1.1.1] - 2024-05-22
 ### Changed
 - docs link changed from internal to external
