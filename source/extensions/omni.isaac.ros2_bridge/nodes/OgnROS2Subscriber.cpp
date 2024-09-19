@@ -11,6 +11,7 @@
 
 #include <OgnROS2SubscriberDatabase.h>
 
+using namespace omni::isaac::ros2_bridge;
 
 class OgnROS2Subscriber : public Ros2Node
 {
@@ -18,9 +19,9 @@ public:
     static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
         auto& state = OgnROS2SubscriberDatabase::sPerInstanceState<OgnROS2Subscriber>(nodeObj, instanceId);
-        state.mNodeObj = nodeObj;
+        state.m_nodeObj = nodeObj;
 
-        // register change event for message type
+        // Register change event for message type
         AttributeObj attrMessagePackageObj = nodeObj.iNode->getAttribute(nodeObj, "inputs:messagePackage");
         AttributeObj attrMessageSubfolderObj = nodeObj.iNode->getAttribute(nodeObj, "inputs:messageSubfolder");
         AttributeObj attrMessageNameObj = nodeObj.iNode->getAttribute(nodeObj, "inputs:messageName");
@@ -35,7 +36,7 @@ public:
     {
         auto& state = db.perInstanceState<OgnROS2Subscriber>();
 
-        // spin once calls reset automatically if it was not successful
+        // Spin once calls reset automatically if it was not successful
         const auto& nodeObj = db.abi_node();
         if (!state.spinOnce(
                 std::string(nodeObj.iNode->getPrimPath(nodeObj)), db.inputs.nodeNamespace(), db.inputs.context()))
@@ -44,69 +45,71 @@ public:
             return false;
         }
 
-        // check for changes in message type
+        // Check for changes in message type
         std::string messagePackage = std::string(db.inputs.messagePackage());
         std::string messageSubfolder = std::string(db.inputs.messageSubfolder());
         std::string messageName = std::string(db.inputs.messageName());
-        if (messagePackage != state.mMessagePackage)
+        if (messagePackage != state.m_messagePackage)
         {
-            state.mIsMessageUpdateNeeded = true;
-            state.mMessagePackage = messagePackage;
+            state.m_messageUpdateNeeded = true;
+            state.m_messagePackage = messagePackage;
         }
-        if (messageSubfolder != state.mMessageSubfolder)
+        if (messageSubfolder != state.m_messageSubfolder)
         {
-            state.mIsMessageUpdateNeeded = true;
-            state.mMessageSubfolder = messageSubfolder;
+            state.m_messageUpdateNeeded = true;
+            state.m_messageSubfolder = messageSubfolder;
         }
-        if (messageName != state.mMessageName)
+        if (messageName != state.m_messageName)
         {
-            state.mIsMessageUpdateNeeded = true;
-            state.mMessageName = messageName;
+            state.m_messageUpdateNeeded = true;
+            state.m_messageName = messageName;
         }
-        // update message and node attributes
-        if (state.mIsMessageUpdateNeeded || !state.mMessage)
+        // Update message and node attributes
+        if (state.m_messageUpdateNeeded || !state.m_message)
         {
-            bool status =
-                createMessageAndAttributes(nodeObj, state.mMessagePackage, state.mMessageSubfolder, state.mMessageName);
+            bool status = createMessageAndAttributes(
+                nodeObj, state.m_messagePackage, state.m_messageSubfolder, state.m_messageName);
             if (!status)
+            {
                 return false;
-            state.mIsMessageUpdateNeeded = false;
-            state.mIsSubscriberUpdateNeeded = true;
+            }
+            state.m_messageUpdateNeeded = false;
+            state.m_subscriberUpdateNeeded = true;
             return false;
         }
 
-        // check for changes in subscriber
+        // Check for changes in subscriber
         std::string topicName = std::string(db.inputs.topicName());
         uint64_t queueSize = db.inputs.queueSize();
         std::string qosProfile = db.inputs.qosProfile();
-        if (topicName != state.mTopicName)
+        if (topicName != state.m_topicName)
         {
-            state.mIsSubscriberUpdateNeeded = true;
-            state.mTopicName = topicName;
+            state.m_subscriberUpdateNeeded = true;
+            state.m_topicName = topicName;
         }
-        if (queueSize != state.mQueueSize)
+        if (queueSize != state.m_queueSize)
         {
-            state.mIsSubscriberUpdateNeeded = true;
-            state.mQueueSize = queueSize;
+            state.m_subscriberUpdateNeeded = true;
+            state.m_queueSize = queueSize;
         }
-        if (qosProfile != state.mQosProfile)
+        if (qosProfile != state.m_qosProfile)
         {
-            state.mIsSubscriberUpdateNeeded = true;
-            state.mQosProfile = qosProfile;
+            state.m_subscriberUpdateNeeded = true;
+            state.m_qosProfile = qosProfile;
         }
-        // update subscriber
-        if (state.mIsSubscriberUpdateNeeded)
+        // Update subscriber
+        if (state.m_subscriberUpdateNeeded)
         {
-            // destroy previous subscriber
-            state.mSubscriber.reset();
-            // get topic name
-            std::string fullTopicName = addTopicPrefix(state.mNamespaceName, state.mTopicName);
-            if (!state.mFactory->validateTopic(fullTopicName))
+            // Destroy previous subscriber
+            state.m_subscriber.reset();
+            // Get topic name
+            std::string fullTopicName = addTopicPrefix(state.m_namespaceName, state.m_topicName);
+            if (!state.m_factory->validateTopicName(fullTopicName))
             {
                 db.logError("Unable to create ROS2 subscriber, invalid topic name");
                 return false;
             }
-            // create subscriber
+            // Create subscriber
             std::string messageType = messagePackage + "/" + messageSubfolder + "/" + messageName;
             CARB_LOG_INFO("OgnROS2Subscriber: creating subscriber: %s (%s)", fullTopicName.c_str(), messageType.c_str());
 
@@ -114,25 +117,25 @@ public:
             const std::string& qosProfile = db.inputs.qosProfile();
             if (qosProfile == "")
             {
-                qos.depth = state.mQueueSize;
+                qos.depth = state.m_queueSize;
             }
             else
             {
-                if (!jsonToRos2QoSProfile(qos, state.mQosProfile))
+                if (!jsonToRos2QoSProfile(qos, state.m_qosProfile))
                 {
                     return false;
                 }
             }
-            state.mSubscriber = state.mFactory->CreateSubscriber(
-                state.mNodeHandle.get(), fullTopicName.c_str(), state.mMessage->getTypeSupportHandle(), qos);
-            if (!state.mSubscriber->isValid())
+            state.m_subscriber = state.m_factory->createSubscriber(
+                state.m_nodeHandle.get(), fullTopicName.c_str(), state.m_message->getTypeSupportHandle(), qos);
+            if (!state.m_subscriber->isValid())
             {
                 db.logWarning(
                     ("Invalid subscription to the topic " + fullTopicName + " for the message type " + messageType).c_str());
-                state.mSubscriber.reset();
+                state.m_subscriber.reset();
                 return false;
             }
-            state.mIsSubscriberUpdateNeeded = false;
+            state.m_subscriberUpdateNeeded = false;
             return true;
         }
 
@@ -147,18 +150,18 @@ public:
 
     virtual void reset()
     {
-        mIsSubscriberUpdateNeeded = false;
-        mIsMessageUpdateNeeded = false;
+        m_subscriberUpdateNeeded = false;
+        m_messageUpdateNeeded = false;
 
-        mMessagePackage.clear();
-        mMessageSubfolder.clear();
-        mMessageName.clear();
-        mTopicName.clear();
-        mQosProfile.clear();
-        mQueueSize = 0;
+        m_messagePackage.clear();
+        m_messageSubfolder.clear();
+        m_messageName.clear();
+        m_topicName.clear();
+        m_qosProfile.clear();
+        m_queueSize = 0;
 
-        mMessage.reset();
-        mSubscriber.reset(); // this should be reset before reset the handle
+        m_message.reset();
+        m_subscriber.reset(); // This should be reset before reset the handle
 
         Ros2Node::reset();
     }
@@ -166,18 +169,24 @@ public:
     bool subscriberCallback(OgnROS2SubscriberDatabase& db)
     {
         auto& state = db.perInstanceState<OgnROS2Subscriber>();
-        if (!state.mSubscriber)
+        if (!state.m_subscriber)
+        {
             return false;
-        if (!state.mSubscriber->spin(state.mMessage->ptr()))
+        }
+        if (!state.m_subscriber->spin(state.m_message->getPtr()))
+        {
             return false;
+        }
 
-        auto messageData = std::static_pointer_cast<Ros2DynamicMessage>(state.mMessage)->getData(true);
-        auto messageFields = std::static_pointer_cast<Ros2DynamicMessage>(state.mMessage)->getMessageFields();
+        auto messageData = std::static_pointer_cast<Ros2DynamicMessage>(state.m_message)->readData(true);
+        auto messageFields = std::static_pointer_cast<Ros2DynamicMessage>(state.m_message)->getMessageFields();
 
         for (size_t i = 0; i < messageFields.size(); ++i)
         {
             if (!messageData.at(i))
+            {
                 continue;
+            }
             auto messageField = messageFields.at(i);
             switch (messageField.dataType)
             {
@@ -188,8 +197,11 @@ public:
                     auto data = *std::static_pointer_cast<const std::vector<bool>>(messageData.at(i));
                     auto outputValue =
                         getAttributeWritableArrayData<bool*>(db.abi_node(), "outputs:" + messageField.name, data.size());
-                    for (size_t j = 0; j < data.size(); ++j) // std::vector<bool> is a specialization that has no ::data
+                    // std::vector<bool> is a specialization that has no ::data
+                    for (size_t j = 0; j < data.size(); ++j)
+                    {
                         *((*outputValue) + j) = data.at(j);
+                    }
                 }
                 else
                 {
@@ -323,7 +335,9 @@ public:
                     auto outputValue = getAttributeWritableArrayData<NameToken*>(
                         db.abi_node(), "outputs:" + messageField.name, stringValues.size());
                     for (size_t j = 0; j < stringValues.size(); ++j)
+                    {
                         *((*outputValue) + j) = db.stringToToken(stringValues.at(j).c_str());
+                    }
                 }
                 else
                 {
@@ -341,7 +355,9 @@ public:
                     auto outputValue = getAttributeWritableArrayData<NameToken*>(
                         db.abi_node(), "outputs:" + messageField.name, array.size());
                     for (size_t j = 0; j < array.size(); ++j)
+                    {
                         *((*outputValue) + j) = db.stringToToken(array.at(j).dump().c_str());
+                    }
                 }
                 break;
             }
@@ -355,19 +371,19 @@ public:
     }
 
 private:
-    NodeObj mNodeObj;
-    bool mIsSubscriberUpdateNeeded = false;
-    bool mIsMessageUpdateNeeded = false;
+    NodeObj m_nodeObj;
+    bool m_subscriberUpdateNeeded = false;
+    bool m_messageUpdateNeeded = false;
 
-    std::shared_ptr<Ros2Subscriber> mSubscriber = nullptr;
-    std::shared_ptr<Ros2Message> mMessage = nullptr;
+    std::shared_ptr<Ros2Subscriber> m_subscriber = nullptr;
+    std::shared_ptr<Ros2Message> m_message = nullptr;
 
-    std::string mMessagePackage;
-    std::string mMessageSubfolder;
-    std::string mMessageName;
-    std::string mTopicName;
-    uint64_t mQueueSize;
-    std::string mQosProfile;
+    std::string m_messagePackage;
+    std::string m_messageSubfolder;
+    std::string m_messageName;
+    std::string m_topicName;
+    uint64_t m_queueSize;
+    std::string m_qosProfile;
 
     // OGN utils
 
@@ -396,9 +412,9 @@ private:
         GraphContextObj context = graphObj.iGraph->getDefaultGraphContext(graphObj);
         AttributeDataHandle handle =
             getAttributeW(context, nodeObj.nodeContextHandle, Token(attrName.c_str()), kAccordingToContextIndex);
-        // resize first
+        // Resize first
         context.iAttributeData->setElementCount(context, handle, newCount);
-        // get writable data
+        // Get writable data
         T* value = getDataW<T>(context, handle);
         return value;
     }
@@ -440,42 +456,50 @@ private:
         // USD
         pxr::UsdStagePtr stage = omni::usd::UsdContext::getContext()->getStage();
         if (!stage)
+        {
             return false;
+        }
         const pxr::UsdPrim prim = stage->GetPrimAtPath(pxr::SdfPath(nodeObj.iNode->getPrimPath(nodeObj)));
         const pxr::UsdAttribute attr = prim.GetAttribute(pxr::TfToken(attrName));
         if (!attr.IsValid())
+        {
             return false;
+        }
         attr.SetMetadata(pxr::TfToken(kOgnMetadataAllowedTokens), allowedTokens);
         return true;
     }
 
     static bool removeDynamicAttributes(const NodeObj& nodeObj, AttributePortType portType)
     {
-        // get node attributes
+        // Get node attributes
         auto attrCount = nodeObj.iNode->getAttributeCount(nodeObj);
         std::vector<AttributeObj> attrObjects(attrCount);
         nodeObj.iNode->getAttributes(nodeObj, attrObjects.data(), attrCount);
-        // iterate and delete requested attributes
+        // Iterate and delete requested attributes
         bool status = true;
         for (auto const& attrObj : attrObjects)
+        {
             if (attrObj.iAttribute->isDynamic(attrObj))
+            {
                 if (attrObj.iAttribute->getPortType(attrObj) == portType)
                 {
-                    // disconnect attribute if connected
+                    // Disconnect attribute if connected
                     if (attrObj.iAttribute->getDownstreamConnectionCount(attrObj))
                     {
                         ConnectionInfo connectionInfo;
                         attrObj.iAttribute->getDownstreamConnectionsInfo(attrObj, &connectionInfo, 1);
                         status = status && attrObj.iAttribute->disconnectAttrs(attrObj, connectionInfo.attrObj, true);
                     }
-                    // remove attribute
+                    // Remove attribute
                     char const* attrName = attrObj.iAttribute->getName(attrObj);
                     status = status && nodeObj.iNode->removeAttribute(nodeObj, attrName);
                 }
+            }
+        }
         return status;
     }
 
-    // node
+    // Node
 
     static bool createMessageAndAttributes(const NodeObj& nodeObj,
                                            const std::string& messagePackage,
@@ -485,27 +509,29 @@ private:
         auto db = OgnROS2SubscriberDatabase(nodeObj);
         auto& state = db.perInstanceState<OgnROS2Subscriber>();
         std::string messageType = messagePackage + "/" + messageSubfolder + "/" + messageName;
-        // naive check on inputs
+        // Naive check on inputs
         if (messagePackage.empty() || messageSubfolder.empty() || messageName.empty())
+        {
             return false;
-        // create message
+        }
+        // Create message
         CARB_LOG_INFO("OgnROS2Subscriber: create message for %s", messageType.c_str());
-        state.mMessage = state.mFactory->createDynamicMessage(messagePackage, messageSubfolder, messageName);
-        auto messageFields = std::static_pointer_cast<Ros2DynamicMessage>(state.mMessage)->getMessageFields();
-        bool status = std::static_pointer_cast<Ros2DynamicMessage>(state.mMessage)->isValid();
+        state.m_message = state.m_factory->createDynamicMessage(messagePackage, messageSubfolder, messageName);
+        auto messageFields = std::static_pointer_cast<Ros2DynamicMessage>(state.m_message)->getMessageFields();
+        bool status = std::static_pointer_cast<Ros2DynamicMessage>(state.m_message)->isValid();
         if (!status)
         {
             db.logWarning((messageType + " does not exist or is not available in the ROS 2 environment").c_str());
-            state.mMessage.reset();
+            state.m_message.reset();
             return false;
         }
-        // check if existing dynamic attributes match the message
+        // Check if existing dynamic attributes match the message
         if (checkForMatchingAttributes(nodeObj, messageFields))
         {
             CARB_LOG_INFO("OgnROS2Subscriber: reuse of existing dynamic attributes: %s", messageType.c_str());
             return true;
         }
-        // remove dynamic attributes
+        // Remove dynamic attributes
         CARB_LOG_INFO("OgnROS2Subscriber: remove dynamic attributes: %s", messageType.c_str());
         status = removeDynamicAttributes(nodeObj, AttributePortType::kAttributePortType_Output);
         if (!status)
@@ -513,7 +539,7 @@ private:
             db.logWarning("Unable to remove existing attributes from the node");
             return false;
         }
-        // create dynamic attributes
+        // Create dynamic attributes
         CARB_LOG_INFO("OgnROS2Subscriber: create dynamic attributes: %s", messageType.c_str());
         for (auto const& messageField : messageFields)
         {
@@ -536,64 +562,70 @@ private:
         return status;
     }
 
-    static bool checkForMatchingAttributes(const NodeObj& nodeObj, std::vector<MessageField> messageFields)
+    static bool checkForMatchingAttributes(const NodeObj& nodeObj, std::vector<DynamicMessageField> messageFields)
     {
         auto db = OgnROS2SubscriberDatabase(nodeObj);
         auto dynamicOutputs = db.getDynamicOutputs();
-        // check for the number of attributes
+        // Check for the number of attributes
         if (dynamicOutputs.size() != messageFields.size())
+        {
             return false;
-        // check for attribute name and type
+        }
+        // Check for attribute name and type
         for (auto const& dynamicOutput : dynamicOutputs)
         {
             bool status = false;
             for (auto const& messageField : messageFields)
+            {
                 if (db.tokenToString(dynamicOutput().name()) == ("outputs:" + messageField.name))
                 {
                     status = dynamicOutput().typeName() == messageField.ognType;
                     break;
                 }
+            }
             if (!status)
+            {
                 return false;
+            }
         }
         return true;
     }
 
-    // node events
+    // Node events
 
     static void onMessagePackageChanged(AttributeObj const& attrObj, void const* userData)
     {
-        // get message package, subfolder and name
+        // Get message package, subfolder and name
         NodeObj nodeObj = attrObj.iAttribute->getNode(attrObj);
         auto db = OgnROS2SubscriberDatabase(nodeObj);
         std::string messagePackage = std::string(db.inputs.messagePackage());
         std::string messageSubfolder = std::string(db.inputs.messageSubfolder());
         std::string messageName = std::string(db.inputs.messageName());
-        // build message attributes
+        // Build message attributes
         createMessageAndAttributes(nodeObj, messagePackage, messageSubfolder, messageName);
     }
 
     static void onMessageSubfolderChanged(const AttributeObj& attrObj, void const* userData)
     {
-        // get message package, subfolder and name
+        // Get message package, subfolder and name
         NodeObj nodeObj = attrObj.iAttribute->getNode(attrObj);
         auto db = OgnROS2SubscriberDatabase(nodeObj);
         std::string messagePackage = std::string(db.inputs.messagePackage());
         std::string messageSubfolder = std::string(db.inputs.messageSubfolder());
         std::string messageName = std::string(db.inputs.messageName());
-        // build message attributes
+        // Build message attributes
         createMessageAndAttributes(nodeObj, messagePackage, messageSubfolder, messageName);
     }
 
     static void onMessageNameChanged(const AttributeObj& attrObj, void const* userData)
     {
-        // get message package, subfolder and name
+        // Get message package, subfolder and name
         NodeObj nodeObj = attrObj.iAttribute->getNode(attrObj);
         auto db = OgnROS2SubscriberDatabase(nodeObj);
         std::string messagePackage = std::string(db.inputs.messagePackage());
         std::string messageSubfolder = std::string(db.inputs.messageSubfolder());
         std::string messageName = std::string(db.inputs.messageName());
-        // build message attributes
+        // Build message attributes
         createMessageAndAttributes(nodeObj, messagePackage, messageSubfolder, messageName);
     }
 };

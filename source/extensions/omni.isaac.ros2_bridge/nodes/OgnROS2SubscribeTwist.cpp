@@ -7,25 +7,21 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
-
 #include <include/Ros2Node.h>
 
 #include <OgnROS2SubscribeTwistDatabase.h>
 
+using namespace omni::isaac::ros2_bridge;
+
 class OgnROS2SubscribeTwist : public Ros2Node
 {
 public:
-    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
-    // {
-    //     auto& state = OgnROS2SubscribeTwistDatabase::sPerInstanceState<OgnROS2SubscribeTwist>(nodeObj, instanceId);
-    // }
-
     static bool compute(OgnROS2SubscribeTwistDatabase& db)
     {
         auto& state = db.perInstanceState<OgnROS2SubscribeTwist>();
-        state.nodeObj = db.abi_node();
+        state.m_nodeObj = db.abi_node();
 
-        // spin once calls reset automatically if it was not successful
+        // Spin once calls reset automatically if it was not successful
         const auto& nodeObj = db.abi_node();
         if (!state.spinOnce(
                 std::string(nodeObj.iNode->getPrimPath(nodeObj)), db.inputs.nodeNamespace(), db.inputs.context()))
@@ -35,20 +31,19 @@ public:
         }
 
         // Subscriber was not valid, create a new one
-        if (!state.mSubscriber)
+        if (!state.m_subscriber)
         {
             const std::string& topicName = db.inputs.topicName();
-            std::string fullTopicName = addTopicPrefix(state.mNamespaceName, topicName);
-            if (!state.mFactory->validateTopic(fullTopicName))
+            std::string fullTopicName = addTopicPrefix(state.m_namespaceName, topicName);
+            if (!state.m_factory->validateTopicName(fullTopicName))
             {
                 db.logError("Unable to create ROS2 subscriber, invalid topic name");
                 return false;
             }
 
-            state.mMessage = state.mFactory->CreateTwistMessage();
+            state.m_message = state.m_factory->createTwistMessage();
 
             Ros2QoSProfile qos;
-
             const std::string& qosProfile = db.inputs.qosProfile();
             if (qosProfile == "")
             {
@@ -61,10 +56,9 @@ public:
                     return false;
                 }
             }
-            state.mSubscriber = state.mFactory->CreateSubscriber(
-                state.mNodeHandle.get(), fullTopicName.c_str(), state.mMessage->getTypeSupportHandle(), qos);
 
-
+            state.m_subscriber = state.m_factory->createSubscriber(
+                state.m_nodeHandle.get(), fullTopicName.c_str(), state.m_message->getTypeSupportHandle(), qos);
             return true;
         }
 
@@ -77,22 +71,16 @@ public:
         state.reset();
     }
 
-    /**
-     * @brief Reset the node
-     * Note that we need to reset the subscriber first so it doesn't get called again, then the callback, and then call
-     * the base class reset
-     *
-     */
     virtual void reset()
     {
-        if (!nodeObj.iNode)
+        if (!m_nodeObj.iNode)
         {
             return;
         }
-        GraphObj graphObj{ nodeObj.iNode->getGraph(nodeObj) };
+        GraphObj graphObj{ m_nodeObj.iNode->getGraph(m_nodeObj) };
         GraphContextObj context{ graphObj.iGraph->getDefaultGraphContext(graphObj) };
 
-        AttributeObj linearAttr = nodeObj.iNode->getAttribute(nodeObj, "outputs:linearVelocity");
+        AttributeObj linearAttr = m_nodeObj.iNode->getAttribute(m_nodeObj, "outputs:linearVelocity");
         auto linearHandle = linearAttr.iAttribute->getAttributeDataHandle(linearAttr, kAccordingToContextIndex);
         double* linearCommand = getDataW<double>(context, linearHandle);
         if (linearCommand)
@@ -102,7 +90,7 @@ public:
             linearCommand[2] = 0.0;
         }
 
-        AttributeObj angularAttr = nodeObj.iNode->getAttribute(nodeObj, "outputs:angularVelocity");
+        AttributeObj angularAttr = m_nodeObj.iNode->getAttribute(m_nodeObj, "outputs:angularVelocity");
         auto angularHandle = angularAttr.iAttribute->getAttributeDataHandle(angularAttr, kAccordingToContextIndex);
         double* angularCommand = getDataW<double>(context, angularHandle);
         if (angularCommand)
@@ -112,34 +100,30 @@ public:
             angularCommand[2] = 0.0;
         }
 
-
-        mSubscriber.reset(); // This should be reset before we reset the handle.
+        m_subscriber.reset(); // This should be reset before we reset the handle.
         Ros2Node::reset();
     }
-
 
     bool subscriberCallback(OgnROS2SubscribeTwistDatabase& db)
     {
         auto& state = db.perInstanceState<OgnROS2SubscribeTwist>();
 
-
-        if (state.mSubscriber->spin(state.mMessage->ptr()))
+        if (state.m_subscriber->spin(state.m_message->getPtr()))
         {
-            auto& linVel = db.outputs.linearVelocity();
-            auto& angVel = db.outputs.angularVelocity();
+            auto& linearVelocity = db.outputs.linearVelocity();
+            auto& angularVelocity = db.outputs.angularVelocity();
 
-            state.mMessage->getData(linVel, angVel);
+            state.m_message->readData(linearVelocity, angularVelocity);
             db.outputs.execOut() = kExecutionAttributeStateEnabled;
             return true;
         }
-
         return false;
     }
 
 private:
-    std::shared_ptr<Ros2Subscriber> mSubscriber = nullptr;
-    std::shared_ptr<Ros2TwistMessage> mMessage = nullptr;
-    NodeObj nodeObj;
+    std::shared_ptr<Ros2Subscriber> m_subscriber = nullptr;
+    std::shared_ptr<Ros2TwistMessage> m_message = nullptr;
+    NodeObj m_nodeObj;
 };
 
 REGISTER_OGN_NODE()

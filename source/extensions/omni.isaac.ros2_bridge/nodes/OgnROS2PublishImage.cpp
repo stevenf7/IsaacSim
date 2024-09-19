@@ -26,6 +26,8 @@
 
 #include <OgnROS2PublishImageDatabase.h>
 
+using namespace omni::isaac::ros2_bridge;
+
 extern "C" void textureFloatCopyToRawBuffer(cudaTextureObject_t, uint8_t*, uint32_t, uint32_t, cudaStream_t);
 
 class PublishImageThreadData
@@ -35,21 +37,21 @@ public:
     {
     }
 
-    void* mInputDataPtr;
-    void* mOutputDataPtr;
-    carb::graphics::Format mFormat;
-    int mWidth;
-    int mHeight;
-    size_t mBufferSize;
-    size_t mTotalBytes; // Should be the same as mBufferSize, need to refactor this
-    int mCudaDeviceIndex;
+    void* inputDataPtr;
+    void* outputDataPtr;
+    carb::graphics::Format resourceFormat;
+    int width;
+    int height;
+    size_t bufferSize;
+    size_t totalBytes; // Should be the same as bufferSize, need to refactor this
+    int cudaDeviceIndex;
 
-    cudaStream_t* mStream;
-    int* mStreamDevice;
+    cudaStream_t* stream;
+    int* streamDevice;
     bool* mStreamNotCreated;
 
-    std::shared_ptr<Ros2Publisher> mPublisher;
-    std::shared_ptr<Ros2ImageMessage> mMessage;
+    std::shared_ptr<Ros2Publisher> publisher;
+    std::shared_ptr<Ros2ImageMessage> message;
 };
 
 class PublishNitrosBridgeImageThreadData
@@ -59,40 +61,34 @@ public:
     {
     }
 
-    void* mInputDataPtr;
-    void* mOutputDataPtr;
-    carb::graphics::Format mFormat;
-    int mWidth;
-    int mHeight;
-    size_t mBufferSize;
-    size_t mTotalBytes; // Should be the same as mBufferSize, need to refactor this
-    int mCudaDeviceIndex;
+    void* inputDataPtr;
+    void* outputDataPtr;
+    carb::graphics::Format resourceFormat;
+    int width;
+    int height;
+    size_t bufferSize;
+    size_t totalBytes; // Should be the same as bufferSize, need to refactor this
+    int cudaDeviceIndex;
 
-    cudaStream_t* mNitrosBridgeStream;
-    int* mNitrosBridgeStreamDevice;
-    bool* mNitrosBridgeStreamNotCreated;
+    cudaStream_t* nitrosBridgeStream;
+    int* nitrosBridgeStreamDevice;
+    bool* nitrosBridgeStreamNotCreated;
 
 #if !defined(_WIN32) && !defined(ROS2_BACKEND_FOXY)
-    std::shared_ptr<IPCBufferManager> mIPCBufferManager;
+    std::shared_ptr<IPCBufferManager> ipcBufferManager;
 #endif
 
-    std::shared_ptr<Ros2Publisher> mNitrosBridgePublisher;
-    std::shared_ptr<Ros2NitrosBridgeImageMessage> mNitrosBridgeMessage;
+    std::shared_ptr<Ros2Publisher> nitrosBridgePublisher;
+    std::shared_ptr<Ros2NitrosBridgeImageMessage> nitrosBridgeMessage;
 };
-
 
 class OgnROS2PublishImage : public Ros2Node
 {
 public:
-    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
-    // {
-    //     auto& state = OgnROS2PublishImageDatabase::sPerInstanceState<OgnROS2PublishImage>(nodeObj, instanceId);
-    // }
-
     static bool compute(OgnROS2PublishImageDatabase& db)
     {
         auto& state = db.perInstanceState<OgnROS2PublishImage>();
-        // spin once calls reset automatically if it was not successful
+        // Spin once calls reset automatically if it was not successful
         const auto& nodeObj = db.abi_node();
         if (!state.spinOnce(
                 std::string(nodeObj.iNode->getPrimPath(nodeObj)), db.inputs.nodeNamespace(), db.inputs.context()))
@@ -102,24 +98,22 @@ public:
         }
 
         // Publisher was not valid, create a new one
-        if (!state.mPublisher)
+        if (!state.m_publisher)
         {
             CARB_PROFILE_ZONE(0, "setup publisher");
             // Setup ROS publisher
             const std::string& topicName = db.inputs.topicName();
-
-            std::string fullTopicName = addTopicPrefix(state.mNamespaceName, topicName);
-
-            if (!state.mFactory->validateTopic(fullTopicName))
+            std::string fullTopicName = addTopicPrefix(state.m_namespaceName, topicName);
+            if (!state.m_factory->validateTopicName(fullTopicName))
             {
                 db.logError("Unable to create ROS2 publisher, invalid topic name");
                 return false;
             }
 
-            state.mMessage = state.mFactory->CreateImageMessage();
-            state.mNitrosBridgeMessage = state.mFactory->CreateNitrosBridgeImageMessage();
-            Ros2QoSProfile qos;
+            state.m_message = state.m_factory->createImageMessage();
+            state.m_nitrosBridgeMessage = state.m_factory->createNitrosBridgeImageMessage();
 
+            Ros2QoSProfile qos;
             const std::string& qosProfile = db.inputs.qosProfile();
             if (qosProfile == "")
             {
@@ -132,14 +126,14 @@ public:
                     return false;
                 }
             }
-            state.mPublisher = state.mFactory->CreatePublisher(
-                state.mNodeHandle.get(), fullTopicName.c_str(), state.mMessage->getTypeSupportHandle(), qos);
 
-            if (state.mNitrosBridgeMessage && state.mNitrosBridgeMessage->ptr())
+            state.m_publisher = state.m_factory->createPublisher(
+                state.m_nodeHandle.get(), fullTopicName.c_str(), state.m_message->getTypeSupportHandle(), qos);
+            if (state.m_nitrosBridgeMessage && state.m_nitrosBridgeMessage->getPtr())
             {
-                state.mNitrosBridgePublisher =
-                    state.mFactory->CreatePublisher(state.mNodeHandle.get(), (fullTopicName + "/nitros_bridge").c_str(),
-                                                    state.mNitrosBridgeMessage->getTypeSupportHandle(), qos);
+                state.m_nitrosBridgePublisher = state.m_factory->createPublisher(
+                    state.m_nodeHandle.get(), (fullTopicName + "/nitros_bridge").c_str(),
+                    state.m_nitrosBridgeMessage->getTypeSupportHandle(), qos);
             }
             else
             {
@@ -147,24 +141,23 @@ public:
                     "isaac_ros_nitros_bridge_interfaces NitrosBridgeImage message type not found. The NITROS bridge publisher was not created");
             }
 
-            state.mFrameId = db.inputs.frameId();
+            state.m_frameId = db.inputs.frameId();
 
-            // Get extension param setting for multithreading
+            // Get extension settings for multithreading
             carb::settings::ISettings* threadSettings = carb::getCachedInterface<carb::settings::ISettings>();
             static constexpr char thread_disable[] = "/exts/omni.isaac.ros2_bridge/publish_multithreading_disabled";
-            state.mMultithreadingDisabled = threadSettings->getAsBool(thread_disable);
-
+            state.m_multithreadingDisabled = threadSettings->getAsBool(thread_disable);
             return true;
         }
 
         bool status;
         status = state.publishImage(db);
-        if (state.mNitrosBridgePublisher)
+        if (state.m_nitrosBridgePublisher)
+        {
             status = state.publishNitrosBridgeImage(db) && status;
-
+        }
         return status;
     }
-
 
     bool publishImage(OgnROS2PublishImageDatabase& db)
     {
@@ -174,17 +167,16 @@ public:
 
         {
             CARB_PROFILE_ZONE(1, "wait for previous publish");
-            // wait for last message to publish before starting next
-            state.mTasks.wait();
+            // Wait for last message to publish before starting next
+            state.m_tasks.wait();
         }
         // Check if subscription count is 0
-        if (!mPublishWithoutVerification && !state.mPublisher.get()->get_subscription_count())
+        if (!state.m_publishWithoutVerification && !state.m_publisher.get()->getSubscriptionCount())
         {
             return false;
         }
 
-
-        state.mMessage->fillHeader(db.inputs.timeStamp(), state.mFrameId);
+        state.m_message->writeHeader(db.inputs.timeStamp(), state.m_frameId);
 
         if (db.inputs.width() == 0 || db.inputs.height() == 0)
         {
@@ -193,9 +185,9 @@ public:
         }
 
         std::string encoding = db.tokenToString(db.inputs.encoding());
-        state.mMessage->generateBuffer(db.inputs.height(), db.inputs.width(), encoding);
-        size_t totalBytes = state.mMessage->getTotalBytes();
-        void* dataPtr = state.mMessage->getDataPtr();
+        state.m_message->generateBuffer(db.inputs.height(), db.inputs.width(), encoding);
+        size_t totalBytes = state.m_message->getTotalBytes();
+        void* dataPtr = state.m_message->getBufferPtr();
 
         if (db.inputs.cudaDeviceIndex() == -1)
         {
@@ -207,7 +199,7 @@ public:
             }
             else if (db.inputs.dataPtr() == 0 && totalBytes == db.inputs.data.size())
             {
-                // data is on host as ogn data, copy from cpu
+                // Data is on host as ogn data, copy from cpu
                 memcpy(dataPtr, reinterpret_cast<const uint8_t*>(db.inputs.data.cpu().data()), totalBytes);
             }
             else
@@ -218,37 +210,36 @@ public:
                             totalBytes, db.inputs.data.size());
                 return false;
             }
-            if (state.mMultithreadingDisabled)
+
+            if (state.m_multithreadingDisabled)
             {
                 CARB_PROFILE_ZONE(1, "image publisher publish");
-                state.mPublisher.get()->publish(state.mMessage->ptr());
+                state.m_publisher.get()->publish(state.m_message->getPtr());
             }
             else
             {
-                tasking->addTask(carb::tasking::Priority::eHigh, state.mTasks,
+                tasking->addTask(carb::tasking::Priority::eHigh, state.m_tasks,
                                  [&state]
                                  {
                                      CARB_PROFILE_ZONE(1, "image publisher publish");
-                                     state.mPublisher.get()->publish(state.mMessage->ptr());
+                                     state.m_publisher.get()->publish(state.m_message->getPtr());
                                  });
             }
         }
         else
         {
             PublishImageThreadData publishImageThreadData = buildThreadData(db, state, dataPtr, totalBytes);
-
-            if (state.mMultithreadingDisabled)
+            if (state.m_multithreadingDisabled)
             {
                 return publishImageHelper(publishImageThreadData);
             }
             else
             {
                 // In order to get the benefits of using a separate stream, do the work in a new thread
-                tasking->addTask(carb::tasking::Priority::eHigh, state.mTasks,
+                tasking->addTask(carb::tasking::Priority::eHigh, state.m_tasks,
                                  [data = publishImageThreadData]() mutable { return publishImageHelper(data); });
             }
         }
-
         return true;
     }
 
@@ -259,91 +250,87 @@ public:
     {
         PublishImageThreadData threadData;
 
-        threadData.mInputDataPtr = reinterpret_cast<void*>(db.inputs.dataPtr());
-        threadData.mOutputDataPtr = dataPtr;
-        threadData.mFormat = static_cast<carb::graphics::Format>(db.inputs.format());
-        threadData.mWidth = db.inputs.width();
-        threadData.mHeight = db.inputs.height();
-        threadData.mBufferSize = db.inputs.bufferSize();
-        threadData.mTotalBytes = totalBytes;
-        threadData.mCudaDeviceIndex = db.inputs.cudaDeviceIndex();
+        threadData.inputDataPtr = reinterpret_cast<void*>(db.inputs.dataPtr());
+        threadData.outputDataPtr = dataPtr;
+        threadData.resourceFormat = static_cast<carb::graphics::Format>(db.inputs.format());
+        threadData.width = db.inputs.width();
+        threadData.height = db.inputs.height();
+        threadData.bufferSize = db.inputs.bufferSize();
+        threadData.totalBytes = totalBytes;
+        threadData.cudaDeviceIndex = db.inputs.cudaDeviceIndex();
 
-        threadData.mStream = &state.mStream;
-        threadData.mStreamDevice = &state.mStreamDevice;
-        threadData.mStreamNotCreated = &state.mStreamNotCreated;
+        threadData.stream = &state.m_stream;
+        threadData.streamDevice = &state.m_streamDevice;
+        threadData.mStreamNotCreated = &state.m_streamNotCreated;
 
-        threadData.mPublisher = state.mPublisher;
-        threadData.mMessage = state.mMessage;
+        threadData.publisher = state.m_publisher;
+        threadData.message = state.m_message;
 
         return threadData;
     }
 
     static bool publishImageHelper(PublishImageThreadData& data)
     {
-
         CARB_PROFILE_ZONE(1, "Publish Image Thread");
+        omni::isaac::utils::ScopedDevice scopedDev(data.cudaDeviceIndex);
 
-        omni::isaac::utils::ScopedDevice scopedDev(data.mCudaDeviceIndex);
-
-        // if the device doesn't match and we have created a stream, destroy it
-        if (*data.mStreamDevice != data.mCudaDeviceIndex && *data.mStreamNotCreated == false)
+        // If the device doesn't match and we have created a stream, destroy it
+        if (*data.streamDevice != data.cudaDeviceIndex && *data.mStreamNotCreated == false)
         {
             CARB_PROFILE_ZONE(1, "Destroy stream");
-            CUDA_CHECK(cudaStreamDestroy(*data.mStream));
+            CUDA_CHECK(cudaStreamDestroy(*data.stream));
             *data.mStreamNotCreated = true;
-            *data.mStreamDevice = -1;
+            *data.streamDevice = -1;
         }
-        // create a stream if it does not exist
+        // Create a stream if it does not exist
         if (*data.mStreamNotCreated)
         {
             CARB_PROFILE_ZONE(1, "Create stream");
-            CUDA_CHECK(cudaStreamCreate(data.mStream));
+            CUDA_CHECK(cudaStreamCreate(data.stream));
             *data.mStreamNotCreated = false;
-            *data.mStreamDevice = data.mCudaDeviceIndex;
+            *data.streamDevice = data.cudaDeviceIndex;
         }
 
-
-        if (data.mBufferSize == 0)
+        if (data.bufferSize == 0)
         {
             CARB_PROFILE_ZONE(1, "data in gpu texture");
             cudaArray_t levelArray = 0;
             CUDA_CHECK(
-                cudaGetMipmappedArrayLevel(&levelArray, reinterpret_cast<cudaMipmappedArray_t>(data.mInputDataPtr), 0));
-            switch (static_cast<carb::graphics::Format>(data.mFormat))
+                cudaGetMipmappedArrayLevel(&levelArray, reinterpret_cast<cudaMipmappedArray_t>(data.inputDataPtr), 0));
+            switch (static_cast<carb::graphics::Format>(data.resourceFormat))
             {
             case carb::graphics::Format::eR32_SFLOAT:
-                if (data.mWidth * data.mHeight * sizeof(float) != data.mTotalBytes)
+                if (data.width * data.height * sizeof(float) != data.totalBytes)
                 {
                     CARB_LOG_ERROR("totalBytes doesn't match eR32_SFLOAT %zu %zu",
-                                   data.mWidth * data.mHeight * sizeof(float), data.mTotalBytes);
+                                   data.width * data.height * sizeof(float), data.totalBytes);
                 }
                 else
                 {
-                    CUDA_CHECK(cudaMemcpy2DFromArrayAsync(data.mOutputDataPtr, data.mWidth * sizeof(float), levelArray,
-                                                          0, 0, data.mWidth * sizeof(float), data.mHeight,
-                                                          cudaMemcpyDeviceToHost, *data.mStream));
-                    CUDA_CHECK(cudaStreamSynchronize(*data.mStream));
+                    CUDA_CHECK(cudaMemcpy2DFromArrayAsync(data.outputDataPtr, data.width * sizeof(float), levelArray, 0,
+                                                          0, data.width * sizeof(float), data.height,
+                                                          cudaMemcpyDeviceToHost, *data.stream));
+                    CUDA_CHECK(cudaStreamSynchronize(*data.stream));
                 }
                 break;
 
             default:
                 CARB_LOG_ERROR("SdRenderVarToRawArray : input texture format (%d) is not supported.",
-                               static_cast<int>(data.mFormat));
+                               static_cast<int>(data.resourceFormat));
                 return false;
             }
         }
         else
         {
             CARB_PROFILE_ZONE(1, "data in cuda memory");
-            // xprintf("CPY %p %p %d %p", data.mOutputDataPtr, data.mInputDataPtr, data.mBufferSize, data.mStream);
-            CUDA_CHECK(cudaMemcpyAsync(data.mOutputDataPtr, reinterpret_cast<void*>(data.mInputDataPtr),
-                                       data.mBufferSize, cudaMemcpyDeviceToHost, *data.mStream));
-            CUDA_CHECK(cudaStreamSynchronize(*data.mStream));
+            CUDA_CHECK(cudaMemcpyAsync(data.outputDataPtr, reinterpret_cast<void*>(data.inputDataPtr), data.bufferSize,
+                                       cudaMemcpyDeviceToHost, *data.stream));
+            CUDA_CHECK(cudaStreamSynchronize(*data.stream));
         }
 
         {
             CARB_PROFILE_ZONE(1, "image publisher publish");
-            data.mPublisher.get()->publish(data.mMessage->ptr());
+            data.publisher.get()->publish(data.message->getPtr());
         }
         return true;
     }
@@ -355,25 +342,25 @@ public:
     {
         PublishNitrosBridgeImageThreadData threadData;
 
-        threadData.mInputDataPtr = reinterpret_cast<void*>(db.inputs.dataPtr());
-        threadData.mOutputDataPtr = dataPtr;
-        threadData.mFormat = static_cast<carb::graphics::Format>(db.inputs.format());
-        threadData.mWidth = db.inputs.width();
-        threadData.mHeight = db.inputs.height();
-        threadData.mBufferSize = db.inputs.bufferSize();
-        threadData.mTotalBytes = totalBytes;
-        threadData.mCudaDeviceIndex = db.inputs.cudaDeviceIndex();
+        threadData.inputDataPtr = reinterpret_cast<void*>(db.inputs.dataPtr());
+        threadData.outputDataPtr = dataPtr;
+        threadData.resourceFormat = static_cast<carb::graphics::Format>(db.inputs.format());
+        threadData.width = db.inputs.width();
+        threadData.height = db.inputs.height();
+        threadData.bufferSize = db.inputs.bufferSize();
+        threadData.totalBytes = totalBytes;
+        threadData.cudaDeviceIndex = db.inputs.cudaDeviceIndex();
 
-        threadData.mNitrosBridgeStream = &state.mNitrosBridgeStream;
-        threadData.mNitrosBridgeStreamDevice = &state.mNitrosBridgeStreamDevice;
-        threadData.mNitrosBridgeStreamNotCreated = &state.mNitrosBridgeStreamNotCreated;
+        threadData.nitrosBridgeStream = &state.m_nitrosBridgeStream;
+        threadData.nitrosBridgeStreamDevice = &state.m_nitrosBridgeStreamDevice;
+        threadData.nitrosBridgeStreamNotCreated = &state.m_nitrosBridgeStreamNotCreated;
 
 #if !defined(_WIN32) && !defined(ROS2_BACKEND_FOXY)
-        threadData.mIPCBufferManager = state.mIPCBufferManager;
+        threadData.ipcBufferManager = state.m_ipcBufferManager;
 #endif
 
-        threadData.mNitrosBridgePublisher = state.mNitrosBridgePublisher;
-        threadData.mNitrosBridgeMessage = state.mNitrosBridgeMessage;
+        threadData.nitrosBridgePublisher = state.m_nitrosBridgePublisher;
+        threadData.nitrosBridgeMessage = state.m_nitrosBridgeMessage;
 
         return threadData;
     }
@@ -387,16 +374,16 @@ public:
 
         {
             CARB_PROFILE_ZONE(1, "wait for previous publish");
-            // wait for last message to publish before starting next
-            state.mNitrosBridgeTasks.wait();
+            // Wait for last message to publish before starting next
+            state.m_nitrosBridgeTasks.wait();
         }
         // Check if subscription count is 0
-        if (!mPublishWithoutVerification && !state.mNitrosBridgePublisher.get()->get_subscription_count())
+        if (!m_publishWithoutVerification && !state.m_nitrosBridgePublisher.get()->getSubscriptionCount())
         {
             return false;
         }
 
-        state.mNitrosBridgeMessage->fillHeader(db.inputs.timeStamp(), state.mFrameId);
+        state.m_nitrosBridgeMessage->writeHeader(db.inputs.timeStamp(), state.m_frameId);
 
         if (db.inputs.width() == 0 || db.inputs.height() == 0)
         {
@@ -405,25 +392,27 @@ public:
         }
 
         std::string encoding = db.tokenToString(db.inputs.encoding());
-        state.mNitrosBridgeMessage->generateBuffer(db.inputs.height(), db.inputs.width(), encoding);
-        size_t totalBytes = state.mNitrosBridgeMessage->getTotalBytes();
+        state.m_nitrosBridgeMessage->generateBuffer(db.inputs.height(), db.inputs.width(), encoding);
+        size_t totalBytes = state.m_nitrosBridgeMessage->getTotalBytes();
 
         // IPC manager
-        if (!state.mIPCBufferManager)
-            state.mIPCBufferManager = std::make_shared<IPCBufferManager>(40, totalBytes);
-        void* dataPtr = (void*)state.mIPCBufferManager->get_cur_buffer_ptr();
+        if (!state.m_ipcBufferManager)
+        {
+            state.m_ipcBufferManager = std::make_shared<IPCBufferManager>(40, totalBytes);
+        }
+        void* dataPtr = (void*)state.m_ipcBufferManager->get_cur_buffer_ptr();
 
-        // data on host
+        // Data on host
         if (db.inputs.cudaDeviceIndex() == -1)
         {
             CARB_PROFILE_ZONE(1, "Data on host");
-            // data is on host as ptr, buffer size matches
+            // Data is on host as ptr, buffer size matches
             if (db.inputs.dataPtr() != 0 && totalBytes == db.inputs.bufferSize())
             {
                 CUDA_CHECK(cudaMemcpy(
                     dataPtr, reinterpret_cast<const void*>(db.inputs.dataPtr()), totalBytes, cudaMemcpyHostToDevice));
             }
-            // data is on host as ogn data, copy from CPU
+            // Data is on host as ogn data, copy from CPU
             else if (db.inputs.dataPtr() == 0 && totalBytes == db.inputs.data.size())
             {
                 CUDA_CHECK(cudaMemcpy(dataPtr, reinterpret_cast<const uint8_t*>(db.inputs.data.cpu().data()),
@@ -438,38 +427,38 @@ public:
                 return false;
             }
 
-            state.mNitrosBridgeMessage->setData(state.mIPCBufferManager->get_cur_ipc_mem_handle());
-            state.mIPCBufferManager->next();
+            state.m_nitrosBridgeMessage->writeData(state.m_ipcBufferManager->get_cur_ipc_mem_handle());
+            state.m_ipcBufferManager->next();
 
-            if (state.mMultithreadingDisabled)
+            if (state.m_multithreadingDisabled)
             {
                 CARB_PROFILE_ZONE(1, "nitros image publisher publish");
-                state.mNitrosBridgePublisher.get()->publish(state.mNitrosBridgeMessage->ptr());
+                state.m_nitrosBridgePublisher.get()->publish(state.m_nitrosBridgeMessage->getPtr());
             }
             else
             {
-                tasking->addTask(carb::tasking::Priority::eHigh, state.mNitrosBridgeTasks,
+                tasking->addTask(carb::tasking::Priority::eHigh, state.m_nitrosBridgeTasks,
                                  [&state]
                                  {
                                      CARB_PROFILE_ZONE(1, "nitros image publisher publish");
-                                     state.mNitrosBridgePublisher.get()->publish(state.mNitrosBridgeMessage->ptr());
+                                     state.m_nitrosBridgePublisher.get()->publish(state.m_nitrosBridgeMessage->getPtr());
                                  });
             }
         }
-        // data on device
+        // Data on device
         else
         {
             PublishNitrosBridgeImageThreadData publishNitrosBridgeImageThreadData =
                 buildNitrosBridgeThreadData(db, state, dataPtr, totalBytes);
 
-            if (state.mMultithreadingDisabled)
+            if (state.m_multithreadingDisabled)
             {
                 return publishNitrosBridgeHelper(publishNitrosBridgeImageThreadData);
             }
             else
             {
-                // in order to get the benefits of using a separate stream, do all of the work in a new thread
-                tasking->addTask(carb::tasking::Priority::eHigh, state.mTasks,
+                // In order to get the benefits of using a separate stream, do all of the work in a new thread
+                tasking->addTask(carb::tasking::Priority::eHigh, state.m_tasks,
                                  [data = publishNitrosBridgeImageThreadData]() mutable
                                  { return publishNitrosBridgeHelper(data); });
             }
@@ -482,73 +471,70 @@ public:
     {
 #if !defined(_WIN32) && !defined(ROS2_BACKEND_FOXY)
         CARB_PROFILE_ZONE(1, "publish nitros image thread");
-        omni::isaac::utils::ScopedDevice scopedDev(data.mCudaDeviceIndex);
+        omni::isaac::utils::ScopedDevice scopedDev(data.cudaDeviceIndex);
 
-        // if the device doesn't match and we have created a stream, destroy it
-        if (*data.mNitrosBridgeStreamDevice != data.mCudaDeviceIndex && *data.mNitrosBridgeStreamNotCreated == false)
+        // If the device doesn't match and we have created a stream, destroy it
+        if (*data.nitrosBridgeStreamDevice != data.cudaDeviceIndex && *data.nitrosBridgeStreamNotCreated == false)
         {
             CARB_PROFILE_ZONE(1, "Destroy stream");
-            cudaStreamDestroy(*data.mNitrosBridgeStream);
-            *data.mNitrosBridgeStreamNotCreated = true;
-            *data.mNitrosBridgeStreamDevice = -1;
+            cudaStreamDestroy(*data.nitrosBridgeStream);
+            *data.nitrosBridgeStreamNotCreated = true;
+            *data.nitrosBridgeStreamDevice = -1;
         }
-        // create a stream if it does not exist
-        if (*data.mNitrosBridgeStreamNotCreated)
+        // Create a stream if it does not exist
+        if (*data.nitrosBridgeStreamNotCreated)
         {
             CARB_PROFILE_ZONE(1, "Create stream");
-            cudaStreamCreate(&*data.mNitrosBridgeStream);
-            *data.mNitrosBridgeStreamNotCreated = false;
-            *data.mNitrosBridgeStreamDevice = data.mCudaDeviceIndex;
+            cudaStreamCreate(&*data.nitrosBridgeStream);
+            *data.nitrosBridgeStreamNotCreated = false;
+            *data.nitrosBridgeStreamDevice = data.cudaDeviceIndex;
         }
 
-        // data in gpu texture
-        if (data.mBufferSize == 0)
+        // Data in gpu texture
+        if (data.bufferSize == 0)
         {
             CARB_PROFILE_ZONE(1, "data in gpu texture");
             cudaArray_t levelArray = 0;
             CUDA_CHECK(
-                cudaGetMipmappedArrayLevel(&levelArray, reinterpret_cast<cudaMipmappedArray_t>(data.mInputDataPtr), 0));
-            switch (static_cast<carb::graphics::Format>(data.mFormat))
+                cudaGetMipmappedArrayLevel(&levelArray, reinterpret_cast<cudaMipmappedArray_t>(data.inputDataPtr), 0));
+            switch (static_cast<carb::graphics::Format>(data.resourceFormat))
             {
             case carb::graphics::Format::eR32_SFLOAT:
-                if (data.mWidth * data.mHeight * sizeof(float) != data.mTotalBytes)
+                if (data.width * data.height * sizeof(float) != data.totalBytes)
                 {
                     CARB_LOG_ERROR("totalBytes doesn't match eR32_SFLOAT %zu %zu",
-                                   data.mWidth * data.mHeight * sizeof(float), data.mTotalBytes);
+                                   data.width * data.height * sizeof(float), data.totalBytes);
                 }
                 else
                 {
-                    CUDA_CHECK(cudaMemcpy2DFromArrayAsync(data.mOutputDataPtr, data.mWidth * sizeof(float), levelArray,
-                                                          0, 0, data.mWidth * sizeof(float), data.mHeight,
-                                                          cudaMemcpyDeviceToDevice, *data.mNitrosBridgeStream));
-                    CUDA_CHECK(cudaStreamSynchronize(*data.mNitrosBridgeStream));
+                    CUDA_CHECK(cudaMemcpy2DFromArrayAsync(data.outputDataPtr, data.width * sizeof(float), levelArray, 0,
+                                                          0, data.width * sizeof(float), data.height,
+                                                          cudaMemcpyDeviceToDevice, *data.nitrosBridgeStream));
+                    CUDA_CHECK(cudaStreamSynchronize(*data.nitrosBridgeStream));
                 }
                 break;
             default:
                 CARB_LOG_ERROR("SdRenderVarToRawArray : input texture format (%d) is not supported.",
-                               static_cast<int>(data.mFormat));
+                               static_cast<int>(data.resourceFormat));
                 return false;
             }
         }
-        // data in CUDA memory
+        // Data in CUDA memory
         else
         {
             CARB_PROFILE_ZONE(1, "data in cuda memory");
-            CUDA_CHECK(cudaMemcpyAsync(data.mOutputDataPtr, reinterpret_cast<void*>(data.mInputDataPtr),
-                                       data.mBufferSize, cudaMemcpyDeviceToDevice, *data.mNitrosBridgeStream));
-            CUDA_CHECK(cudaStreamSynchronize(*data.mNitrosBridgeStream));
+            CUDA_CHECK(cudaMemcpyAsync(data.outputDataPtr, reinterpret_cast<void*>(data.inputDataPtr), data.bufferSize,
+                                       cudaMemcpyDeviceToDevice, *data.nitrosBridgeStream));
+            CUDA_CHECK(cudaStreamSynchronize(*data.nitrosBridgeStream));
         }
 
-        data.mNitrosBridgeMessage->setData(data.mIPCBufferManager->get_cur_ipc_mem_handle());
-        data.mIPCBufferManager->next();
-
+        data.nitrosBridgeMessage->writeData(data.ipcBufferManager->get_cur_ipc_mem_handle());
+        data.ipcBufferManager->next();
         {
             CARB_PROFILE_ZONE(1, "nitros image publisher publish");
-            data.mNitrosBridgePublisher.get()->publish(data.mNitrosBridgeMessage->ptr());
+            data.nitrosBridgePublisher.get()->publish(data.nitrosBridgeMessage->getPtr());
         }
-
 #endif
-
         return true;
     }
 
@@ -562,59 +548,59 @@ public:
     {
         {
             CARB_PROFILE_ZONE(1, "wait for previous publish");
-            // wait for last message to publish before starting next
-            mTasks.wait();
-            mNitrosBridgeTasks.wait();
+            // Wait for last message to publish before starting next
+            m_tasks.wait();
+            m_nitrosBridgeTasks.wait();
         }
-        if (mStreamNotCreated == false)
+        if (m_streamNotCreated == false)
         {
-            omni::isaac::utils::ScopedDevice scopedDev(mStreamDevice);
-            CUDA_CHECK(cudaStreamDestroy(mStream));
-            mStreamDevice = -1;
-            mStreamNotCreated = true;
+            omni::isaac::utils::ScopedDevice scopedDev(m_streamDevice);
+            CUDA_CHECK(cudaStreamDestroy(m_stream));
+            m_streamDevice = -1;
+            m_streamNotCreated = true;
         }
-        if (mNitrosBridgeStreamNotCreated == false)
+        if (m_nitrosBridgeStreamNotCreated == false)
         {
-            omni::isaac::utils::ScopedDevice scopedDev(mNitrosBridgeStreamDevice);
-            CUDA_CHECK(cudaStreamDestroy(mNitrosBridgeStream));
-            mNitrosBridgeStreamDevice = -1;
-            mNitrosBridgeStreamNotCreated = true;
+            omni::isaac::utils::ScopedDevice scopedDev(m_nitrosBridgeStreamDevice);
+            CUDA_CHECK(cudaStreamDestroy(m_nitrosBridgeStream));
+            m_nitrosBridgeStreamDevice = -1;
+            m_nitrosBridgeStreamNotCreated = true;
         }
 
 #if !defined(_WIN32) && !defined(ROS2_BACKEND_FOXY)
-        mIPCBufferManager.reset();
-        mIPCBufferManager = nullptr;
+        m_ipcBufferManager.reset();
+        m_ipcBufferManager = nullptr;
 #endif
-        mNitrosBridgePublisher.reset();
-        mNitrosBridgePublisher = nullptr;
+        m_nitrosBridgePublisher.reset();
+        m_nitrosBridgePublisher = nullptr;
 
-        mPublisher.reset(); // This should be reset before we reset the handle.
+        m_publisher.reset(); // This should be reset before we reset the handle.
         Ros2Node::reset();
     }
 
 private:
-    std::shared_ptr<Ros2Publisher> mPublisher = nullptr;
-    std::shared_ptr<Ros2ImageMessage> mMessage = nullptr;
+    std::shared_ptr<Ros2Publisher> m_publisher = nullptr;
+    std::shared_ptr<Ros2ImageMessage> m_message = nullptr;
 
 #if !defined(_WIN32) && !defined(ROS2_BACKEND_FOXY)
-    std::shared_ptr<IPCBufferManager> mIPCBufferManager = nullptr; // CUDA IPC memory pool manager
+    std::shared_ptr<IPCBufferManager> m_ipcBufferManager = nullptr; // CUDA IPC memory pool manager
 #endif
-    std::shared_ptr<Ros2Publisher> mNitrosBridgePublisher = nullptr;
-    std::shared_ptr<Ros2NitrosBridgeImageMessage> mNitrosBridgeMessage = nullptr;
+    std::shared_ptr<Ros2Publisher> m_nitrosBridgePublisher = nullptr;
+    std::shared_ptr<Ros2NitrosBridgeImageMessage> m_nitrosBridgeMessage = nullptr;
 
-    std::string mFrameId = "sim_camera";
+    std::string m_frameId = "sim_camera";
 
-    carb::tasking::TaskGroup mTasks;
-    cudaStream_t mStream;
-    int mStreamDevice = -1;
-    bool mStreamNotCreated = true;
+    carb::tasking::TaskGroup m_tasks;
+    cudaStream_t m_stream;
+    int m_streamDevice = -1;
+    bool m_streamNotCreated = true;
 
-    carb::tasking::TaskGroup mNitrosBridgeTasks;
-    cudaStream_t mNitrosBridgeStream;
-    int mNitrosBridgeStreamDevice = -1;
-    bool mNitrosBridgeStreamNotCreated = true;
+    carb::tasking::TaskGroup m_nitrosBridgeTasks;
+    cudaStream_t m_nitrosBridgeStream;
+    int m_nitrosBridgeStreamDevice = -1;
+    bool m_nitrosBridgeStreamNotCreated = true;
 
-    bool mMultithreadingDisabled = false;
+    bool m_multithreadingDisabled = false;
 };
 
 REGISTER_OGN_NODE()

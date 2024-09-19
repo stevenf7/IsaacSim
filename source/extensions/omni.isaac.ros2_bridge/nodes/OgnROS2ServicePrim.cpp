@@ -17,6 +17,7 @@
 
 #include <OgnROS2ServicePrimDatabase.h>
 
+using namespace omni::isaac::ros2_bridge;
 
 enum class SdfDataType
 {
@@ -257,294 +258,303 @@ public:
     static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
         auto& state = OgnROS2ServicePrimDatabase::sPerInstanceState<OgnROS2ServicePrim>(nodeObj, instanceId);
-        state.mNodeObj = nodeObj;
+        state.m_nodeObj = nodeObj;
     }
 
     static bool compute(OgnROS2ServicePrimDatabase& db)
     {
         auto& state = db.perInstanceState<OgnROS2ServicePrim>();
 
-        // spin once calls reset automatically if it was not successful
+        // Spin once calls reset automatically if it was not successful
         const auto& nodeObj = db.abi_node();
         if (!state.spinOnce(
                 std::string(nodeObj.iNode->getPrimPath(nodeObj)), db.inputs.nodeNamespace(), db.inputs.context()))
+        {
             return false;
+        }
 
-        // create messages (isaac_ros2_messages/srv/GetPrims)
+        // Create messages (isaac_ros2_messages/srv/GetPrims)
         std::string messageType = "isaac_ros2_messages/srv/GetPrims";
-        if (!state.mMessageGetPrimsRequest)
+        if (!state.m_messageGetPrimsRequest)
         {
             CARB_LOG_INFO("OgnROS2ServicePrim: create request message for %s", messageType.c_str());
-            state.mMessageGetPrimsRequest = state.mFactory->createDynamicMessage(
+            state.m_messageGetPrimsRequest = state.m_factory->createDynamicMessage(
                 "isaac_ros2_messages", "srv", "GetPrims", BackendMessageType::eRequest);
-            bool status = std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageGetPrimsRequest)->isValid();
+            bool status = std::static_pointer_cast<Ros2DynamicMessage>(state.m_messageGetPrimsRequest)->isValid();
             if (!status)
             {
                 db.logWarning((messageType + " does not exist or is not available in the ROS 2 environment").c_str());
-                state.mMessageGetPrimsRequest.reset();
+                state.m_messageGetPrimsRequest.reset();
                 return false;
             }
         }
-        if (!state.mMessageGetPrimsResponse)
+        if (!state.m_messageGetPrimsResponse)
         {
             CARB_LOG_INFO("OgnROS2ServicePrim: create response message for %s", messageType.c_str());
-            state.mMessageGetPrimsResponse = state.mFactory->createDynamicMessage(
+            state.m_messageGetPrimsResponse = state.m_factory->createDynamicMessage(
                 "isaac_ros2_messages", "srv", "GetPrims", BackendMessageType::eResponse);
-            bool status = std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageGetPrimsResponse)->isValid();
+            bool status = std::static_pointer_cast<Ros2DynamicMessage>(state.m_messageGetPrimsResponse)->isValid();
             if (!status)
             {
                 db.logWarning((messageType + " does not exist or is not available in the ROS 2 environment").c_str());
-                state.mMessageGetPrimsResponse.reset();
+                state.m_messageGetPrimsResponse.reset();
                 return false;
             }
         }
-        // create messages (isaac_ros2_messages/srv/GetPrimAttributes)
+        // Create messages (isaac_ros2_messages/srv/GetPrimAttributes)
         messageType = "isaac_ros2_messages/srv/GetPrimAttributes";
-        if (!state.mMessageGetAttributesRequest)
+        if (!state.m_messageGetAttributesRequest)
         {
             CARB_LOG_INFO("OgnROS2ServicePrim: create request message for %s", messageType.c_str());
-            state.mMessageGetAttributesRequest = state.mFactory->createDynamicMessage(
+            state.m_messageGetAttributesRequest = state.m_factory->createDynamicMessage(
                 "isaac_ros2_messages", "srv", "GetPrimAttributes", BackendMessageType::eRequest);
-            bool status = std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageGetAttributesRequest)->isValid();
+            bool status = std::static_pointer_cast<Ros2DynamicMessage>(state.m_messageGetAttributesRequest)->isValid();
             if (!status)
             {
                 db.logWarning((messageType + " does not exist or is not available in the ROS 2 environment").c_str());
-                state.mMessageGetAttributesRequest.reset();
+                state.m_messageGetAttributesRequest.reset();
                 return false;
             }
         }
-        if (!state.mMessageGetAttributesResponse)
+        if (!state.m_messageGetAttributesResponse)
         {
             CARB_LOG_INFO("OgnROS2ServicePrim: create response message for %s", messageType.c_str());
-            state.mMessageGetAttributesResponse = state.mFactory->createDynamicMessage(
+            state.m_messageGetAttributesResponse = state.m_factory->createDynamicMessage(
                 "isaac_ros2_messages", "srv", "GetPrimAttributes", BackendMessageType::eResponse);
-            bool status = std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageGetAttributesResponse)->isValid();
+            bool status = std::static_pointer_cast<Ros2DynamicMessage>(state.m_messageGetAttributesResponse)->isValid();
             if (!status)
             {
                 db.logWarning((messageType + " does not exist or is not available in the ROS 2 environment").c_str());
-                state.mMessageGetAttributesResponse.reset();
+                state.m_messageGetAttributesResponse.reset();
                 return false;
             }
         }
-        // create messages (isaac_ros2_messages/srv/GetPrimAttribute)
+        // Create messages (isaac_ros2_messages/srv/GetPrimAttribute)
         messageType = "isaac_ros2_messages/srv/GetPrimAttribute";
-        if (!state.mMessageGetAttributeRequest)
+        if (!state.m_messageGetAttributeRequest)
         {
             CARB_LOG_INFO("OgnROS2ServicePrim: create request message for %s", messageType.c_str());
-            state.mMessageGetAttributeRequest = state.mFactory->createDynamicMessage(
+            state.m_messageGetAttributeRequest = state.m_factory->createDynamicMessage(
                 "isaac_ros2_messages", "srv", "GetPrimAttribute", BackendMessageType::eRequest);
-            bool status = std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageGetAttributeRequest)->isValid();
+            bool status = std::static_pointer_cast<Ros2DynamicMessage>(state.m_messageGetAttributeRequest)->isValid();
             if (!status)
             {
                 db.logWarning((messageType + " does not exist or is not available in the ROS 2 environment").c_str());
-                state.mMessageGetAttributeRequest.reset();
+                state.m_messageGetAttributeRequest.reset();
                 return false;
             }
         }
-        if (!state.mMessageGetAttributeResponse)
+        if (!state.m_messageGetAttributeResponse)
         {
             CARB_LOG_INFO("OgnROS2ServicePrim: create response message for %s", messageType.c_str());
-            state.mMessageGetAttributeResponse = state.mFactory->createDynamicMessage(
+            state.m_messageGetAttributeResponse = state.m_factory->createDynamicMessage(
                 "isaac_ros2_messages", "srv", "GetPrimAttribute", BackendMessageType::eResponse);
-            bool status = std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageGetAttributeResponse)->isValid();
+            bool status = std::static_pointer_cast<Ros2DynamicMessage>(state.m_messageGetAttributeResponse)->isValid();
             if (!status)
             {
                 db.logWarning((messageType + " does not exist or is not available in the ROS 2 environment").c_str());
-                state.mMessageGetAttributeResponse.reset();
+                state.m_messageGetAttributeResponse.reset();
                 return false;
             }
         }
-        // create messages (isaac_ros2_messages/srv/SetPrimAttribute)
+        // Create messages (isaac_ros2_messages/srv/SetPrimAttribute)
         messageType = "isaac_ros2_messages/srv/SetPrimAttribute";
-        if (!state.mMessageSetAttributeRequest)
+        if (!state.m_messageSetAttributeRequest)
         {
             CARB_LOG_INFO("OgnROS2ServicePrim: create request message for %s", messageType.c_str());
-            state.mMessageSetAttributeRequest = state.mFactory->createDynamicMessage(
+            state.m_messageSetAttributeRequest = state.m_factory->createDynamicMessage(
                 "isaac_ros2_messages", "srv", "SetPrimAttribute", BackendMessageType::eRequest);
-            bool status = std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageSetAttributeRequest)->isValid();
+            bool status = std::static_pointer_cast<Ros2DynamicMessage>(state.m_messageSetAttributeRequest)->isValid();
             if (!status)
             {
                 db.logWarning((messageType + " does not exist or is not available in the ROS 2 environment").c_str());
-                state.mMessageSetAttributeRequest.reset();
+                state.m_messageSetAttributeRequest.reset();
                 return false;
             }
         }
-        if (!state.mMessageSetAttributeResponse)
+        if (!state.m_messageSetAttributeResponse)
         {
             CARB_LOG_INFO("OgnROS2ServicePrim: create response message for %s", messageType.c_str());
-            state.mMessageSetAttributeResponse = state.mFactory->createDynamicMessage(
+            state.m_messageSetAttributeResponse = state.m_factory->createDynamicMessage(
                 "isaac_ros2_messages", "srv", "SetPrimAttribute", BackendMessageType::eResponse);
-            bool status = std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageSetAttributeResponse)->isValid();
+            bool status = std::static_pointer_cast<Ros2DynamicMessage>(state.m_messageSetAttributeResponse)->isValid();
             if (!status)
             {
                 db.logWarning((messageType + " does not exist or is not available in the ROS 2 environment").c_str());
-                state.mMessageSetAttributeResponse.reset();
+                state.m_messageSetAttributeResponse.reset();
                 return false;
             }
         }
 
-        // check for changes in service names
+        // Check for changes in service names
         std::string primsServiceName = std::string(db.inputs.primsServiceName());
         std::string getAttributesServiceName = std::string(db.inputs.getAttributesServiceName());
         std::string getAttributeServiceName = std::string(db.inputs.getAttributeServiceName());
         std::string setAttributeServiceName = std::string(db.inputs.setAttributeServiceName());
-        if (primsServiceName != state.mGetPrimsServiceName)
+        if (primsServiceName != state.m_getPrimsServiceName)
         {
-            state.mIsServiceGetPrimsUpdateNeeded = true;
-            state.mGetPrimsServiceName = primsServiceName;
+            state.m_serviceGetPrimsUpdateNeeded = true;
+            state.m_getPrimsServiceName = primsServiceName;
         }
-        if (getAttributesServiceName != state.mGetAttributesServiceName)
+        if (getAttributesServiceName != state.m_getAttributesServiceName)
         {
-            state.mIsServiceGetAttributesUpdateNeeded = true;
-            state.mGetAttributesServiceName = getAttributesServiceName;
+            state.m_serviceGetAttributesUpdateNeeded = true;
+            state.m_getAttributesServiceName = getAttributesServiceName;
         }
-        if (getAttributeServiceName != state.mGetAttributeServiceName)
+        if (getAttributeServiceName != state.m_getAttributeServiceName)
         {
-            state.mIsServiceGetAttributeUpdateNeeded = true;
-            state.mGetAttributeServiceName = getAttributeServiceName;
+            state.m_serviceGetAttributeUpdateNeeded = true;
+            state.m_getAttributeServiceName = getAttributeServiceName;
         }
-        if (setAttributeServiceName != state.mSetAttributeServiceName)
+        if (setAttributeServiceName != state.m_setAttributeServiceName)
         {
-            state.mIsServiceSetAttributeUpdateNeeded = true;
-            state.mSetAttributeServiceName = setAttributeServiceName;
+            state.m_serviceSetAttributeUpdateNeeded = true;
+            state.m_setAttributeServiceName = setAttributeServiceName;
         }
         std::string qosProfile = std::string(db.inputs.qosProfile());
-        if (qosProfile != state.mQosProfile)
+        if (qosProfile != state.m_qosProfile)
         {
-            state.mIsServiceGetPrimsUpdateNeeded = true;
-            state.mIsServiceGetAttributesUpdateNeeded = true;
-            state.mIsServiceGetAttributeUpdateNeeded = true;
-            state.mIsServiceSetAttributeUpdateNeeded = true;
-            state.mQosProfile = qosProfile;
+            state.m_serviceGetPrimsUpdateNeeded = true;
+            state.m_serviceGetAttributesUpdateNeeded = true;
+            state.m_serviceGetAttributeUpdateNeeded = true;
+            state.m_serviceSetAttributeUpdateNeeded = true;
+            state.m_qosProfile = qosProfile;
         }
 
-        // update services
-        if (state.mIsServiceGetPrimsUpdateNeeded)
+        // Update services
+        if (state.m_serviceGetPrimsUpdateNeeded)
         {
-            // destroy previous subscriber
-            state.mServiceGetPrims.reset();
-            // get service name
-            std::string fullServiceName = addTopicPrefix(state.mNamespaceName, state.mGetPrimsServiceName);
-            if (!state.mFactory->validateTopic(fullServiceName))
+            // Destroy previous subscriber
+            state.m_serviceGetPrims.reset();
+            // Get service name
+            std::string fullServiceName = addTopicPrefix(state.m_namespaceName, state.m_getPrimsServiceName);
+            if (!state.m_factory->validateTopicName(fullServiceName))
+            {
                 return false;
-            // create service
+            }
+            // Create service
             CARB_LOG_INFO("OgnROS2ServicePrim: creating service: %s", fullServiceName.c_str());
             Ros2QoSProfile qos;
             if (qosProfile != "")
             {
-                if (!jsonToRos2QoSProfile(qos, state.mQosProfile))
+                if (!jsonToRos2QoSProfile(qos, state.m_qosProfile))
                 {
                     return false;
                 }
             }
-            state.mServiceGetPrims =
-                state.mFactory->CreateService(state.mNodeHandle.get(), fullServiceName.c_str(),
-                                              state.mMessageGetPrimsRequest->getTypeSupportHandle(), qos);
+            state.m_serviceGetPrims =
+                state.m_factory->createService(state.m_nodeHandle.get(), fullServiceName.c_str(),
+                                               state.m_messageGetPrimsRequest->getTypeSupportHandle(), qos);
             CARB_LOG_INFO("OgnROS2ServicePrim: service: %s", fullServiceName.c_str());
-            if (!state.mServiceGetPrims->isValid())
+            if (!state.m_serviceGetPrims->isValid())
             {
                 db.logWarning(("Invalid service for " + fullServiceName).c_str());
-                state.mServiceGetPrims.reset();
+                state.m_serviceGetPrims.reset();
                 return false;
             }
-            state.mIsServiceGetPrimsUpdateNeeded = false;
+            state.m_serviceGetPrimsUpdateNeeded = false;
             return true;
         }
-        if (state.mIsServiceGetAttributesUpdateNeeded)
+        if (state.m_serviceGetAttributesUpdateNeeded)
         {
-            // destroy previous subscriber
-            state.mServiceGetAttributes.reset();
-            // get service name
-            std::string fullServiceName = addTopicPrefix(state.mNamespaceName, state.mGetAttributesServiceName);
-            if (!state.mFactory->validateTopic(fullServiceName))
+            // Destroy previous subscriber
+            state.m_serviceGetAttributes.reset();
+            // Get service name
+            std::string fullServiceName = addTopicPrefix(state.m_namespaceName, state.m_getAttributesServiceName);
+            if (!state.m_factory->validateTopicName(fullServiceName))
+            {
                 return false;
-            // create service
+            }
+            // Create service
             CARB_LOG_INFO("OgnROS2ServicePrim: creating service: %s", fullServiceName.c_str());
             Ros2QoSProfile qos;
             if (qosProfile != "")
             {
-                if (!jsonToRos2QoSProfile(qos, state.mQosProfile))
+                if (!jsonToRos2QoSProfile(qos, state.m_qosProfile))
                 {
                     return false;
                 }
             }
-            state.mServiceGetAttributes =
-                state.mFactory->CreateService(state.mNodeHandle.get(), fullServiceName.c_str(),
-                                              state.mMessageGetAttributesRequest->getTypeSupportHandle(), qos);
+            state.m_serviceGetAttributes =
+                state.m_factory->createService(state.m_nodeHandle.get(), fullServiceName.c_str(),
+                                               state.m_messageGetAttributesRequest->getTypeSupportHandle(), qos);
             CARB_LOG_INFO("OgnROS2ServicePrim: service: %s", fullServiceName.c_str());
-            if (!state.mServiceGetAttributes->isValid())
+            if (!state.m_serviceGetAttributes->isValid())
             {
                 db.logWarning(("Invalid service for " + fullServiceName).c_str());
-                state.mServiceGetAttributes.reset();
+                state.m_serviceGetAttributes.reset();
                 return false;
             }
-            state.mIsServiceGetAttributesUpdateNeeded = false;
+            state.m_serviceGetAttributesUpdateNeeded = false;
             return true;
         }
-        if (state.mIsServiceGetAttributeUpdateNeeded)
+        if (state.m_serviceGetAttributeUpdateNeeded)
         {
-            // destroy previous subscriber
-            state.mServiceGetAttribute.reset();
-            // get service name
-            std::string fullServiceName = addTopicPrefix(state.mNamespaceName, state.mGetAttributeServiceName);
-            if (!state.mFactory->validateTopic(fullServiceName))
+            // Destroy previous subscriber
+            state.m_serviceGetAttribute.reset();
+            // Get service name
+            std::string fullServiceName = addTopicPrefix(state.m_namespaceName, state.m_getAttributeServiceName);
+            if (!state.m_factory->validateTopicName(fullServiceName))
+            {
                 return false;
-            // create service
+            }
+            // Create service
             CARB_LOG_INFO("OgnROS2ServicePrim: creating service: %s", fullServiceName.c_str());
 
             Ros2QoSProfile qos;
             if (qosProfile != "")
             {
-                if (!jsonToRos2QoSProfile(qos, state.mQosProfile))
+                if (!jsonToRos2QoSProfile(qos, state.m_qosProfile))
                 {
                     return false;
                 }
             }
-            state.mServiceGetAttribute =
-                state.mFactory->CreateService(state.mNodeHandle.get(), fullServiceName.c_str(),
-                                              state.mMessageGetAttributeRequest->getTypeSupportHandle(), qos);
+            state.m_serviceGetAttribute =
+                state.m_factory->createService(state.m_nodeHandle.get(), fullServiceName.c_str(),
+                                               state.m_messageGetAttributeRequest->getTypeSupportHandle(), qos);
             CARB_LOG_INFO("OgnROS2ServicePrim: service: %s", fullServiceName.c_str());
-            if (!state.mServiceGetAttribute->isValid())
+            if (!state.m_serviceGetAttribute->isValid())
             {
                 db.logWarning(("Invalid service for " + fullServiceName).c_str());
-                state.mServiceGetAttribute.reset();
+                state.m_serviceGetAttribute.reset();
                 return false;
             }
-            state.mIsServiceGetAttributeUpdateNeeded = false;
+            state.m_serviceGetAttributeUpdateNeeded = false;
             return true;
         }
-        if (state.mIsServiceSetAttributeUpdateNeeded)
+        if (state.m_serviceSetAttributeUpdateNeeded)
         {
-            // destroy previous subscriber
-            state.mServiceSetAttribute.reset();
-            // get service name
-            std::string fullServiceName = addTopicPrefix(state.mNamespaceName, state.mSetAttributeServiceName);
-            if (!state.mFactory->validateTopic(fullServiceName))
+            // Destroy previous subscriber
+            state.m_serviceSetAttribute.reset();
+            // Get service name
+            std::string fullServiceName = addTopicPrefix(state.m_namespaceName, state.m_setAttributeServiceName);
+            if (!state.m_factory->validateTopicName(fullServiceName))
+            {
                 return false;
-            // create service
+            }
+            // Create service
             CARB_LOG_INFO("OgnROS2ServicePrim: creating service: %s", fullServiceName.c_str());
             Ros2QoSProfile qos;
             if (qosProfile != "")
             {
-                if (!jsonToRos2QoSProfile(qos, state.mQosProfile))
+                if (!jsonToRos2QoSProfile(qos, state.m_qosProfile))
                 {
                     return false;
                 }
             }
-            state.mServiceSetAttribute =
-                state.mFactory->CreateService(state.mNodeHandle.get(), fullServiceName.c_str(),
-                                              state.mMessageSetAttributeRequest->getTypeSupportHandle(), qos);
+            state.m_serviceSetAttribute =
+                state.m_factory->createService(state.m_nodeHandle.get(), fullServiceName.c_str(),
+                                               state.m_messageSetAttributeRequest->getTypeSupportHandle(), qos);
             CARB_LOG_INFO("OgnROS2ServicePrim: service: %s", fullServiceName.c_str());
-            if (!state.mServiceSetAttribute->isValid())
+            if (!state.m_serviceSetAttribute->isValid())
             {
                 db.logWarning(("Invalid service for " + fullServiceName).c_str());
-                state.mServiceSetAttribute.reset();
+                state.m_serviceSetAttribute.reset();
                 return false;
             }
-            state.mIsServiceSetAttributeUpdateNeeded = false;
+            state.m_serviceSetAttributeUpdateNeeded = false;
             return true;
         }
-
 
         state.serviceGetPrimsCallback(db);
         state.serviceGetAttributesCallback(db);
@@ -561,58 +571,62 @@ public:
 
     virtual void reset()
     {
-        mGetPrimsServiceName.clear();
-        mGetAttributesServiceName.clear();
-        mGetAttributeServiceName.clear();
-        mSetAttributeServiceName.clear();
+        m_getPrimsServiceName.clear();
+        m_getAttributesServiceName.clear();
+        m_getAttributeServiceName.clear();
+        m_setAttributeServiceName.clear();
 
-        mServiceGetPrims.reset(); // this should be reset before reset the handle
-        mServiceGetAttributes.reset(); // this should be reset before reset the handle
-        mServiceGetAttribute.reset(); // this should be reset before reset the handle
-        mServiceSetAttribute.reset(); // this should be reset before reset the handle
+        m_serviceGetPrims.reset(); // This should be reset before reset the handle
+        m_serviceGetAttributes.reset(); // This should be reset before reset the handle
+        m_serviceGetAttribute.reset(); // This should be reset before reset the handle
+        m_serviceSetAttribute.reset(); // This should be reset before reset the handle
         Ros2Node::reset();
     }
 
 private:
-    NodeObj mNodeObj;
-    bool mIsServiceGetPrimsUpdateNeeded = false;
-    bool mIsServiceGetAttributesUpdateNeeded = false;
-    bool mIsServiceGetAttributeUpdateNeeded = false;
-    bool mIsServiceSetAttributeUpdateNeeded = false;
+    NodeObj m_nodeObj;
+    bool m_serviceGetPrimsUpdateNeeded = false;
+    bool m_serviceGetAttributesUpdateNeeded = false;
+    bool m_serviceGetAttributeUpdateNeeded = false;
+    bool m_serviceSetAttributeUpdateNeeded = false;
 
-    std::shared_ptr<Ros2Service> mServiceGetPrims = nullptr;
-    std::shared_ptr<Ros2Service> mServiceGetAttributes = nullptr;
-    std::shared_ptr<Ros2Service> mServiceGetAttribute = nullptr;
-    std::shared_ptr<Ros2Service> mServiceSetAttribute = nullptr;
+    std::shared_ptr<Ros2Service> m_serviceGetPrims = nullptr;
+    std::shared_ptr<Ros2Service> m_serviceGetAttributes = nullptr;
+    std::shared_ptr<Ros2Service> m_serviceGetAttribute = nullptr;
+    std::shared_ptr<Ros2Service> m_serviceSetAttribute = nullptr;
 
-    std::shared_ptr<Ros2Message> mMessageGetPrimsRequest = nullptr;
-    std::shared_ptr<Ros2Message> mMessageGetPrimsResponse = nullptr;
-    std::shared_ptr<Ros2Message> mMessageGetAttributesRequest = nullptr;
-    std::shared_ptr<Ros2Message> mMessageGetAttributesResponse = nullptr;
-    std::shared_ptr<Ros2Message> mMessageGetAttributeRequest = nullptr;
-    std::shared_ptr<Ros2Message> mMessageGetAttributeResponse = nullptr;
-    std::shared_ptr<Ros2Message> mMessageSetAttributeRequest = nullptr;
-    std::shared_ptr<Ros2Message> mMessageSetAttributeResponse = nullptr;
+    std::shared_ptr<Ros2Message> m_messageGetPrimsRequest = nullptr;
+    std::shared_ptr<Ros2Message> m_messageGetPrimsResponse = nullptr;
+    std::shared_ptr<Ros2Message> m_messageGetAttributesRequest = nullptr;
+    std::shared_ptr<Ros2Message> m_messageGetAttributesResponse = nullptr;
+    std::shared_ptr<Ros2Message> m_messageGetAttributeRequest = nullptr;
+    std::shared_ptr<Ros2Message> m_messageGetAttributeResponse = nullptr;
+    std::shared_ptr<Ros2Message> m_messageSetAttributeRequest = nullptr;
+    std::shared_ptr<Ros2Message> m_messageSetAttributeResponse = nullptr;
 
-    std::string mGetPrimsServiceName;
-    std::string mGetAttributesServiceName;
-    std::string mGetAttributeServiceName;
-    std::string mSetAttributeServiceName;
-    std::string mQosProfile;
+    std::string m_getPrimsServiceName;
+    std::string m_getAttributesServiceName;
+    std::string m_getAttributeServiceName;
+    std::string m_setAttributeServiceName;
+    std::string m_qosProfile;
 
-    // node
+    // Node
 
     bool serviceGetPrimsCallback(OgnROS2ServicePrimDatabase& db)
     {
         auto& state = db.perInstanceState<OgnROS2ServicePrim>();
-        if (!state.mServiceGetPrims)
+        if (!state.m_serviceGetPrims)
+        {
             return false;
-        if (!state.mServiceGetPrims->getRequest(state.mMessageGetPrimsRequest->ptr()))
+        }
+        if (!state.m_serviceGetPrims->takeRequest(state.m_messageGetPrimsRequest->getPtr()))
+        {
             return false;
+        }
 
-        auto requestData = std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageGetPrimsRequest)->getData(false);
+        auto requestData = std::static_pointer_cast<Ros2DynamicMessage>(state.m_messageGetPrimsRequest)->readData(false);
         auto messageFields =
-            std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageGetPrimsRequest)->getMessageFields();
+            std::static_pointer_cast<Ros2DynamicMessage>(state.m_messageGetPrimsRequest)->getMessageFields();
         CARB_ASSERT(messageFields.size() == requestData.size());
 
         std::string path = *std::static_pointer_cast<std::string>(requestData.at(0));
@@ -624,7 +638,7 @@ private:
         bool success = false;
         std::string message;
 
-        // get all prim path under the specified path
+        // Get all prim path under the specified path
         pxr::UsdStagePtr stage = omni::usd::UsdContext::getContext()->getStage();
         if (stage)
         {
@@ -639,10 +653,14 @@ private:
                 success = true;
             }
             else
+            {
                 message = "Invalid prim: '" + path + "'";
+            }
         }
         else
+        {
             message = "Unable to query the scene";
+        }
 
         responseData.push_back(std::make_shared<std::vector<std::string>>(paths));
         responseData.push_back(std::make_shared<std::vector<std::string>>(types));
@@ -650,8 +668,8 @@ private:
         responseData.push_back(std::make_shared<std::string>(message));
 
         CARB_ASSERT(messageFields.size() == responseData.size());
-        std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageGetPrimsResponse)->setData(responseData, false);
-        state.mServiceGetPrims->sendResponse(state.mMessageGetPrimsResponse->ptr());
+        std::static_pointer_cast<Ros2DynamicMessage>(state.m_messageGetPrimsResponse)->writeData(responseData, false);
+        state.m_serviceGetPrims->sendResponse(state.m_messageGetPrimsResponse->getPtr());
 
         db.outputs.execOut() = kExecutionAttributeStateEnabled;
         return true;
@@ -660,15 +678,19 @@ private:
     bool serviceGetAttributesCallback(OgnROS2ServicePrimDatabase& db)
     {
         auto& state = db.perInstanceState<OgnROS2ServicePrim>();
-        if (!state.mServiceGetAttributes)
+        if (!state.m_serviceGetAttributes)
+        {
             return false;
-        if (!state.mServiceGetAttributes->getRequest(state.mMessageGetAttributesRequest->ptr()))
+        }
+        if (!state.m_serviceGetAttributes->takeRequest(state.m_messageGetAttributesRequest->getPtr()))
+        {
             return false;
+        }
 
         auto requestData =
-            std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageGetAttributesRequest)->getData(false);
+            std::static_pointer_cast<Ros2DynamicMessage>(state.m_messageGetAttributesRequest)->readData(false);
         auto messageFields =
-            std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageGetAttributesRequest)->getMessageFields();
+            std::static_pointer_cast<Ros2DynamicMessage>(state.m_messageGetAttributesRequest)->getMessageFields();
         CARB_ASSERT(messageFields.size() == requestData.size());
 
         std::string path = *std::static_pointer_cast<std::string>(requestData.at(0));
@@ -681,7 +703,7 @@ private:
         bool success = false;
         std::string message;
 
-        // get all prim attribute names and their types
+        // Get all prim attribute names and their types
         pxr::UsdStagePtr stage = omni::usd::UsdContext::getContext()->getStage();
         if (stage)
         {
@@ -691,19 +713,27 @@ private:
                 for (auto attr : targetPrim.GetAttributes())
                 {
                     if (attr.GetNamespace().GetString().empty())
+                    {
                         names.push_back(attr.GetBaseName().GetString());
+                    }
                     else
+                    {
                         names.push_back(attr.GetNamespace().GetString() + ":" + attr.GetBaseName().GetString());
+                    }
                     displays.push_back(attr.GetDisplayName());
                     types.push_back(attr.GetTypeName().GetAsToken().GetString());
                 }
                 success = true;
             }
             else
+            {
                 message = "Invalid prim: '" + path + "'";
+            }
         }
         else
+        {
             message = "Unable to query the scene";
+        }
 
         responseData.push_back(std::make_shared<std::vector<std::string>>(names));
         responseData.push_back(std::make_shared<std::vector<std::string>>(displays));
@@ -712,8 +742,8 @@ private:
         responseData.push_back(std::make_shared<std::string>(message));
 
         CARB_ASSERT(messageFields.size() == responseData.size());
-        std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageGetAttributesResponse)->setData(responseData, false);
-        state.mServiceGetAttributes->sendResponse(state.mMessageGetAttributesResponse->ptr());
+        std::static_pointer_cast<Ros2DynamicMessage>(state.m_messageGetAttributesResponse)->writeData(responseData, false);
+        state.m_serviceGetAttributes->sendResponse(state.m_messageGetAttributesResponse->getPtr());
 
         db.outputs.execOut() = kExecutionAttributeStateEnabled;
         return true;
@@ -722,15 +752,19 @@ private:
     bool serviceGetAttributeCallback(OgnROS2ServicePrimDatabase& db)
     {
         auto& state = db.perInstanceState<OgnROS2ServicePrim>();
-        if (!state.mServiceGetAttribute)
+        if (!state.m_serviceGetAttribute)
+        {
             return false;
-        if (!state.mServiceGetAttribute->getRequest(state.mMessageGetAttributeRequest->ptr()))
+        }
+        if (!state.m_serviceGetAttribute->takeRequest(state.m_messageGetAttributeRequest->getPtr()))
+        {
             return false;
+        }
 
         auto requestData =
-            std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageGetAttributeRequest)->getData(false);
+            std::static_pointer_cast<Ros2DynamicMessage>(state.m_messageGetAttributeRequest)->readData(false);
         auto messageFields =
-            std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageGetAttributeRequest)->getMessageFields();
+            std::static_pointer_cast<Ros2DynamicMessage>(state.m_messageGetAttributeRequest)->getMessageFields();
         CARB_ASSERT(messageFields.size() == requestData.size());
 
         std::string path = *std::static_pointer_cast<std::string>(requestData.at(0));
@@ -751,28 +785,38 @@ private:
             {
                 if (targetPrim.HasAttribute(pxr::TfToken(attrName.c_str())))
                 {
-                    // get prim attribute
+                    // Get prim attribute
                     auto attr = targetPrim.GetAttribute(pxr::TfToken(attrName.c_str()));
                     auto jsonObj = valueTypeToJson(attr); // pxr::TfStringify(vtValue);
-                    // build message
+                    // Build message
                     value = jsonObj.dump();
                     type = attr.GetTypeName().GetAsToken().GetString();
                     success = (jsonObj.is_array() || jsonObj.is_object()) || !jsonObj.empty();
                     if (!success)
+                    {
                         message = "Unable to serialize the attribute";
+                    }
                     CARB_LOG_INFO("OgnROS2ServicePrim: |-- %s (type name: %s)", value.c_str(), type.c_str());
                 }
                 else
+                {
                     message = "Prim has not attribute: '" + attrName + "'";
+                }
             }
             else
+            {
                 message = "Invalid prim: '" + path + "'";
+            }
         }
         else
+        {
             message = "Unable to query the scene";
+        }
 
         if (!success)
+        {
             db.logWarning(message.c_str());
+        }
 
         responseData.push_back(std::make_shared<std::string>(value));
         responseData.push_back(std::make_shared<std::string>(type));
@@ -780,8 +824,8 @@ private:
         responseData.push_back(std::make_shared<std::string>(message));
 
         CARB_ASSERT(messageFields.size() == responseData.size());
-        std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageGetAttributeResponse)->setData(responseData, false);
-        state.mServiceGetAttribute->sendResponse(state.mMessageGetAttributeResponse->ptr());
+        std::static_pointer_cast<Ros2DynamicMessage>(state.m_messageGetAttributeResponse)->writeData(responseData, false);
+        state.m_serviceGetAttribute->sendResponse(state.m_messageGetAttributeResponse->getPtr());
 
         db.outputs.execOut() = kExecutionAttributeStateEnabled;
         return true;
@@ -790,15 +834,19 @@ private:
     bool serviceSetAttributeCallback(OgnROS2ServicePrimDatabase& db)
     {
         auto& state = db.perInstanceState<OgnROS2ServicePrim>();
-        if (!state.mServiceSetAttribute)
+        if (!state.m_serviceSetAttribute)
+        {
             return false;
-        if (!state.mServiceSetAttribute->getRequest(state.mMessageSetAttributeRequest->ptr()))
+        }
+        if (!state.m_serviceSetAttribute->takeRequest(state.m_messageSetAttributeRequest->getPtr()))
+        {
             return false;
+        }
 
         auto requestData =
-            std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageSetAttributeRequest)->getData(false);
+            std::static_pointer_cast<Ros2DynamicMessage>(state.m_messageSetAttributeRequest)->readData(false);
         auto messageFields =
-            std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageSetAttributeRequest)->getMessageFields();
+            std::static_pointer_cast<Ros2DynamicMessage>(state.m_messageSetAttributeRequest)->getMessageFields();
         CARB_ASSERT(messageFields.size() == requestData.size());
 
         std::string path = *std::static_pointer_cast<std::string>(requestData.at(0));
@@ -810,7 +858,7 @@ private:
         bool success = false;
         std::string message;
 
-        // set prim attribute
+        // Set prim attribute
         pxr::UsdStagePtr stage = omni::usd::UsdContext::getContext()->getStage();
         if (stage)
         {
@@ -828,31 +876,45 @@ private:
                         auto vtValue = valueTypeFromJson(attr, jsonObj);
                         success = !vtValue.IsEmpty();
                         if (success)
+                        {
                             attr.Set(vtValue); // pxr::TfUnstringify(attrValueAsString);
+                        }
                         else
+                        {
                             message = "Unable to deserialize the attribute";
+                        }
                     }
                     else
+                    {
                         message = "Given value is not a valid JSON: '" + attrValueAsString + "'";
+                    }
                 }
                 else
+                {
                     message = "Prim has not attribute: '" + attrName + "'";
+                }
             }
             else
+            {
                 message = "Invalid prim: '" + path + "'";
+            }
         }
         else
+        {
             message = "Unable to query the scene";
+        }
 
         if (!success)
+        {
             db.logWarning(message.c_str());
+        }
 
         responseData.push_back(std::make_shared<bool>(success));
         responseData.push_back(std::make_shared<std::string>(message));
 
         CARB_ASSERT(messageFields.size() == responseData.size());
-        std::static_pointer_cast<Ros2DynamicMessage>(state.mMessageSetAttributeResponse)->setData(responseData, false);
-        state.mServiceSetAttribute->sendResponse(state.mMessageSetAttributeResponse->ptr());
+        std::static_pointer_cast<Ros2DynamicMessage>(state.m_messageSetAttributeResponse)->writeData(responseData, false);
+        state.m_serviceSetAttribute->sendResponse(state.m_messageSetAttributeResponse->getPtr());
 
         db.outputs.execOut() = kExecutionAttributeStateEnabled;
         return true;
@@ -867,7 +929,9 @@ private:
     {
         auto name = typeName.GetString();
         if (s_mapStringToSdfDataType.find(name) != s_mapStringToSdfDataType.end())
+        {
             return valueTypeFromJson(jsonObj, s_mapStringToSdfDataType[name]);
+        }
         return pxr::VtValue();
     }
 
@@ -880,7 +944,9 @@ private:
         case SdfDataType::eAsset:
         {
             if (jsonObj.is_string())
+            {
                 vtValue = pxr::VtValue(pxr::SdfAssetPath(jsonObj.get<std::string>()));
+            }
             break;
         }
         case SdfDataType::eAssetArray:
@@ -891,9 +957,13 @@ private:
         case SdfDataType::eBool:
         {
             if (jsonObj.is_boolean())
+            {
                 vtValue = pxr::VtValue(jsonObj.get<bool>());
+            }
             else if (jsonObj.is_number())
+            {
                 vtValue = pxr::VtValue(static_cast<bool>(jsonObj.get<double>()));
+            }
             break;
         }
         case SdfDataType::eBoolArray:
@@ -909,8 +979,10 @@ private:
         case SdfDataType::eVector3d:
         {
             if (validateJsonContainer(jsonObj, SdfDataType::eDouble, 3))
+            {
                 vtValue = pxr::VtValue(
                     pxr::GfVec3d(jsonObj[0].get<double>(), jsonObj[1].get<double>(), jsonObj[2].get<double>()));
+            }
             break;
         }
         case SdfDataType::eColor3dArray:
@@ -931,8 +1003,10 @@ private:
         case SdfDataType::eVector3f:
         {
             if (validateJsonContainer(jsonObj, SdfDataType::eFloat, 3))
+            {
                 vtValue =
                     pxr::VtValue(pxr::GfVec3f(jsonObj[0].get<float>(), jsonObj[1].get<float>(), jsonObj[2].get<float>()));
+            }
             break;
         }
         case SdfDataType::eColor3fArray:
@@ -953,8 +1027,10 @@ private:
         case SdfDataType::eVector3h:
         {
             if (validateJsonContainer(jsonObj, SdfDataType::eHalf, 3))
+            {
                 vtValue = pxr::VtValue(pxr::GfVec3h(
                     pxr::GfVec3f(jsonObj[0].get<float>(), jsonObj[1].get<float>(), jsonObj[2].get<float>())));
+            }
             break;
         }
         case SdfDataType::eColor3hArray:
@@ -971,8 +1047,10 @@ private:
         case SdfDataType::eDouble4:
         {
             if (validateJsonContainer(jsonObj, SdfDataType::eDouble, 4))
+            {
                 vtValue = pxr::VtValue(pxr::GfVec4d(jsonObj[0].get<double>(), jsonObj[1].get<double>(),
                                                     jsonObj[2].get<double>(), jsonObj[3].get<double>()));
+            }
             break;
         }
         case SdfDataType::eColor4dArray:
@@ -985,8 +1063,10 @@ private:
         case SdfDataType::eFloat4:
         {
             if (validateJsonContainer(jsonObj, SdfDataType::eFloat, 4))
+            {
                 vtValue = pxr::VtValue(pxr::GfVec4f(jsonObj[0].get<float>(), jsonObj[1].get<float>(),
                                                     jsonObj[2].get<float>(), jsonObj[3].get<float>()));
+            }
             break;
         }
         case SdfDataType::eColor4fArray:
@@ -999,8 +1079,10 @@ private:
         case SdfDataType::eHalf4:
         {
             if (validateJsonContainer(jsonObj, SdfDataType::eHalf, 4))
+            {
                 vtValue = pxr::VtValue(pxr::GfVec4h(pxr::GfVec4f(jsonObj[0].get<float>(), jsonObj[1].get<float>(),
                                                                  jsonObj[2].get<float>(), jsonObj[3].get<float>())));
+            }
             break;
         }
         case SdfDataType::eColor4hArray:
@@ -1012,7 +1094,9 @@ private:
         case SdfDataType::eDouble:
         {
             if (jsonObj.is_number())
+            {
                 vtValue = pxr::VtValue(jsonObj.get<double>());
+            }
             break;
         }
         case SdfDataType::eDoubleArray:
@@ -1024,7 +1108,9 @@ private:
         case SdfDataType::eTexCoord2d:
         {
             if (validateJsonContainer(jsonObj, SdfDataType::eDouble, 2))
+            {
                 vtValue = pxr::VtValue(pxr::GfVec2d(jsonObj[0].get<double>(), jsonObj[1].get<double>()));
+            }
             break;
         }
         case SdfDataType::eDouble2Array:
@@ -1036,7 +1122,9 @@ private:
         case SdfDataType::eFloat:
         {
             if (jsonObj.is_number())
+            {
                 vtValue = pxr::VtValue(jsonObj.get<float>());
+            }
             break;
         }
         case SdfDataType::eFloatArray:
@@ -1048,7 +1136,9 @@ private:
         case SdfDataType::eTexCoord2f:
         {
             if (validateJsonContainer(jsonObj, SdfDataType::eFloat, 2))
+            {
                 vtValue = pxr::VtValue(pxr::GfVec2f(jsonObj[0].get<float>(), jsonObj[1].get<float>()));
+            }
             break;
         }
         case SdfDataType::eFloat2Array:
@@ -1064,10 +1154,14 @@ private:
             for (int i = 0; i < 4; ++i)
             {
                 if (validateJsonContainer(jsonObj[i], SdfDataType::eDouble, 4))
+                {
                     value.SetRow(i, pxr::GfVec4d(jsonObj[i][0].get<double>(), jsonObj[i][1].get<double>(),
                                                  jsonObj[i][2].get<double>(), jsonObj[i][3].get<double>()));
+                }
                 else
+                {
                     return pxr::VtValue();
+                }
             }
             vtValue = pxr::VtValue(value);
             break;
@@ -1081,7 +1175,9 @@ private:
         case SdfDataType::eHalf:
         {
             if (jsonObj.is_number())
+            {
                 vtValue = pxr::VtValue(pxr::GfHalf(jsonObj.get<float>()));
+            }
             break;
         }
         case SdfDataType::eHalfArray:
@@ -1093,7 +1189,9 @@ private:
         case SdfDataType::eTexCoord2h:
         {
             if (validateJsonContainer(jsonObj, SdfDataType::eHalf, 2))
+            {
                 vtValue = pxr::VtValue(pxr::GfVec2h(pxr::GfVec2f(jsonObj[0].get<float>(), jsonObj[1].get<float>())));
+            }
             break;
         }
         case SdfDataType::eHalf2Array:
@@ -1105,7 +1203,9 @@ private:
         case SdfDataType::eInt:
         {
             if (jsonObj.is_number_integer())
+            {
                 vtValue = pxr::VtValue(jsonObj.get<int32_t>());
+            }
             break;
         }
         case SdfDataType::eIntArray:
@@ -1116,7 +1216,9 @@ private:
         case SdfDataType::eInt2:
         {
             if (validateJsonContainer(jsonObj, SdfDataType::eInt, 2))
+            {
                 vtValue = pxr::VtValue(pxr::GfVec2i(jsonObj[0].get<int32_t>(), jsonObj[1].get<int32_t>()));
+            }
             break;
         }
         case SdfDataType::eInt2Array:
@@ -1127,8 +1229,10 @@ private:
         case SdfDataType::eInt3:
         {
             if (validateJsonContainer(jsonObj, SdfDataType::eInt, 3))
+            {
                 vtValue = pxr::VtValue(
                     pxr::GfVec3i(jsonObj[0].get<int32_t>(), jsonObj[1].get<int32_t>(), jsonObj[2].get<int32_t>()));
+            }
             break;
         }
         case SdfDataType::eInt3Array:
@@ -1139,8 +1243,10 @@ private:
         case SdfDataType::eInt4:
         {
             if (validateJsonContainer(jsonObj, SdfDataType::eInt, 4))
+            {
                 vtValue = pxr::VtValue(pxr::GfVec4i(jsonObj[0].get<int32_t>(), jsonObj[1].get<int32_t>(),
                                                     jsonObj[2].get<int32_t>(), jsonObj[3].get<int32_t>()));
+            }
             break;
         }
         case SdfDataType::eInt4Array:
@@ -1151,7 +1257,9 @@ private:
         case SdfDataType::eInt64:
         {
             if (jsonObj.is_number_integer())
+            {
                 vtValue = pxr::VtValue(jsonObj.get<int64_t>());
+            }
             break;
         }
         case SdfDataType::eInt64Array:
@@ -1165,9 +1273,13 @@ private:
             for (int i = 0; i < 2; ++i)
             {
                 if (validateJsonContainer(jsonObj[i], SdfDataType::eDouble, 2))
+                {
                     value.SetRow(i, pxr::GfVec2d(jsonObj[i][0].get<double>(), jsonObj[i][1].get<double>()));
+                }
                 else
+                {
                     return pxr::VtValue();
+                }
             }
             vtValue = pxr::VtValue(value);
             break;
@@ -1183,10 +1295,14 @@ private:
             for (int i = 0; i < 3; ++i)
             {
                 if (validateJsonContainer(jsonObj[i], SdfDataType::eDouble, 3))
+                {
                     value.SetRow(i, pxr::GfVec3d(jsonObj[i][0].get<double>(), jsonObj[i][1].get<double>(),
                                                  jsonObj[i][2].get<double>()));
+                }
                 else
+                {
                     return pxr::VtValue();
+                }
             }
             vtValue = pxr::VtValue(value);
             break;
@@ -1199,8 +1315,10 @@ private:
         case SdfDataType::eQuatd:
         {
             if (validateJsonContainer(jsonObj, SdfDataType::eDouble, 4))
+            {
                 vtValue = pxr::VtValue(pxr::GfQuatd(jsonObj[0].get<double>(), jsonObj[1].get<double>(),
                                                     jsonObj[2].get<double>(), jsonObj[3].get<double>()));
+            }
             break;
         }
         case SdfDataType::eQuatdArray:
@@ -1211,8 +1329,10 @@ private:
         case SdfDataType::eQuatf:
         {
             if (validateJsonContainer(jsonObj, SdfDataType::eFloat, 4))
+            {
                 vtValue = pxr::VtValue(pxr::GfQuatf(jsonObj[0].get<float>(), jsonObj[1].get<float>(),
                                                     jsonObj[2].get<float>(), jsonObj[3].get<float>()));
+            }
             break;
         }
         case SdfDataType::eQuatfArray:
@@ -1223,8 +1343,10 @@ private:
         case SdfDataType::eQuath:
         {
             if (validateJsonContainer(jsonObj, SdfDataType::eHalf, 4))
+            {
                 vtValue = pxr::VtValue(pxr::GfQuath(pxr::GfQuatf(jsonObj[0].get<float>(), jsonObj[1].get<float>(),
                                                                  jsonObj[2].get<float>(), jsonObj[3].get<float>())));
+            }
             break;
         }
         case SdfDataType::eQuathArray:
@@ -1235,7 +1357,9 @@ private:
         case SdfDataType::eString:
         {
             if (jsonObj.is_string())
+            {
                 vtValue = pxr::VtValue(jsonObj.get<std::string>());
+            }
             break;
         }
         case SdfDataType::eStringArray:
@@ -1246,7 +1370,9 @@ private:
         case SdfDataType::eTimeCode:
         {
             if (jsonObj.is_number())
+            {
                 vtValue = pxr::VtValue(pxr::SdfTimeCode(jsonObj.get<double>()));
+            }
             break;
         }
         case SdfDataType::eTimeCodeArray:
@@ -1257,7 +1383,9 @@ private:
         case SdfDataType::eToken:
         {
             if (jsonObj.is_string())
+            {
                 vtValue = pxr::VtValue(pxr::TfToken(jsonObj.get<std::string>()));
+            }
             break;
         }
         case SdfDataType::eTokenArray:
@@ -1268,7 +1396,9 @@ private:
         case SdfDataType::eUChar:
         {
             if (jsonObj.is_number_unsigned())
+            {
                 vtValue = pxr::VtValue(jsonObj.get<uint8_t>());
+            }
             break;
         }
         case SdfDataType::eUCharArray:
@@ -1279,7 +1409,9 @@ private:
         case SdfDataType::eUInt:
         {
             if (jsonObj.is_number_unsigned())
+            {
                 vtValue = pxr::VtValue(jsonObj.get<uint32_t>());
+            }
             break;
         }
         case SdfDataType::eUIntArray:
@@ -1290,7 +1422,9 @@ private:
         case SdfDataType::eUInt64:
         {
             if (jsonObj.is_number_unsigned())
+            {
                 vtValue = pxr::VtValue(jsonObj.get<uint64_t>());
+            }
             break;
         }
         case SdfDataType::eUInt64Array:
@@ -1302,7 +1436,9 @@ private:
             break;
         }
         if (!status)
+        {
             return pxr::VtValue();
+        }
         return vtValue;
     }
 
@@ -1312,6 +1448,7 @@ private:
         *status = true;
         pxr::VtArray<DataType> array;
         if (jsonObj.is_array())
+        {
             for (size_t i = 0; i < jsonObj.size(); ++i)
             {
                 auto value = valueTypeFromJson(jsonObj.at(i), type);
@@ -1321,47 +1458,64 @@ private:
                     break;
                 }
                 else
+                {
                     array.push_back(value.Get<DataType>());
+                }
             }
+        }
         return array;
     }
 
     bool validateJsonContainer(const nlohmann::json& jsonObj, SdfDataType type, size_t size)
     {
         if (!jsonObj.is_array() || jsonObj.size() != size)
+        {
             return false;
+        }
         for (size_t i = 0; i < jsonObj.size(); ++i)
+        {
             switch (type)
             {
             case SdfDataType::eBool:
                 if (!jsonObj.at(i).is_boolean())
+                {
                     return false;
+                }
                 break;
             case SdfDataType::eUChar:
             case SdfDataType::eUInt:
             case SdfDataType::eUInt64:
                 if (!jsonObj.at(i).is_number_unsigned())
+                {
                     return false;
+                }
                 break;
             case SdfDataType::eInt:
             case SdfDataType::eInt64:
                 if (!jsonObj.at(i).is_number_integer())
+                {
                     return false;
+                }
                 break;
             case SdfDataType::eHalf:
             case SdfDataType::eFloat:
             case SdfDataType::eDouble:
                 if (!jsonObj.at(i).is_number())
+                {
                     return false;
+                }
                 break;
             case SdfDataType::eString:
             case SdfDataType::eToken:
                 if (!jsonObj.at(i).is_string())
+                {
                     return false;
+                }
                 break;
             default:
                 break;
             }
+        }
         return true;
     }
 
@@ -1378,7 +1532,9 @@ private:
     {
         auto name = typeName.GetString();
         if (s_mapStringToSdfDataType.find(name) != s_mapStringToSdfDataType.end())
+        {
             return valueTypeToJson(vtValue, s_mapStringToSdfDataType[name], useDefaultValueIfEmpty);
+        }
         return nlohmann::json();
     }
 

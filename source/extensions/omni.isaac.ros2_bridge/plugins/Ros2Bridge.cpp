@@ -9,7 +9,6 @@
 
 #define CARB_EXPORTS
 
-
 #ifdef _WIN32
 #    pragma warning(push)
 #    pragma warning(disable : 4996)
@@ -46,6 +45,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+
 const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.ros2_bridge.plugin", "Isaac ROS2 bridge", "NVIDIA",
                                                   carb::PluginHotReload::eDisabled, "dev" };
 
@@ -58,28 +58,29 @@ CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       omni::physx::IPhysx,
                       carb::tasking::ITasking,
                       carb::tokens::ITokens)
+
 DECLARE_OGN_NODES()
 
-// private stuff
 namespace
 {
+
 omni::kit::StageUpdatePtr g_stageUpdate = nullptr;
 omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
-std::shared_ptr<Ros2HandleBase> g_defaultHandle;
+std::shared_ptr<omni::isaac::ros2_bridge::Ros2ContextHandle> g_defaultContextHandle;
 std::shared_ptr<omni::isaac::utils::LibraryLoader> g_factoryLoader;
-omni::isaac::utils::MultiLibraryLoader g_backupLibLoader;
-Ros2Factory* g_Factory = nullptr;
+omni::isaac::utils::MultiLibraryLoader g_backupLibraryLoader;
+omni::isaac::ros2_bridge::Ros2Factory* g_factory = nullptr;
 std::string g_extensionPath;
 
 void onResume(float currentTime, void* userData)
 {
-    if (!g_defaultHandle->is_valid())
+    if (!g_defaultContextHandle->isValid())
     {
         CARB_LOG_INFO("rcl::init()");
         int argc = 0;
         char** argv = nullptr;
 
-        g_defaultHandle->init(argc, argv);
+        g_defaultContextHandle->init(argc, argv);
     }
     else
     {
@@ -89,41 +90,39 @@ void onResume(float currentTime, void* userData)
 
 void onStop(void* userData)
 {
-
-    if (g_defaultHandle->is_valid())
+    if (g_defaultContextHandle->isValid())
     {
         CARB_LOG_INFO("rcl::shutdown()");
-        g_defaultHandle->shutdown();
+        g_defaultContextHandle->shutdown();
     }
 }
 
-uint64_t const CARB_ABI getDefaultContextHandle()
+uint64_t const CARB_ABI getDefaultContextHandleAddr()
 {
-    return reinterpret_cast<uint64_t>(&g_defaultHandle);
+    return reinterpret_cast<uint64_t>(&g_defaultContextHandle);
 }
 
-Ros2Factory* const CARB_ABI getFactory()
+omni::isaac::ros2_bridge::Ros2Factory* const CARB_ABI getFactory()
 {
-    return g_Factory;
+    return g_factory;
 }
 
 bool const CARB_ABI getStartupStatus()
 {
-    if (g_Factory && g_defaultHandle)
+    if (g_factory && g_defaultContextHandle)
     {
         return true;
     }
     return false;
 }
 
-
-}
+} // namespace anonymous
 
 
 CARB_EXPORT void carbOnPluginStartup()
 {
     omni::kit::IApp* app = carb::getCachedInterface<omni::kit::IApp>();
-    std::vector<std::string> lib_list = {
+    std::vector<std::string> libraryList = {
         "rcutils",
         "rosidl_runtime_c",
         "rmw",
@@ -183,16 +182,16 @@ CARB_EXPORT void carbOnPluginStartup()
 
     if (strcmp(rosDistro, "humble") == 0)
     {
-        lib_list.insert(lib_list.begin() + 5, std::string("ament_index_cpp"));
-        lib_list.insert(lib_list.begin() + 8, std::string("rcl_logging_interface"));
-        lib_list.insert(lib_list.end(), std::string("rcl_lifecycle"));
+        libraryList.insert(libraryList.begin() + 5, std::string("ament_index_cpp"));
+        libraryList.insert(libraryList.begin() + 8, std::string("rcl_logging_interface"));
+        libraryList.insert(libraryList.end(), std::string("rcl_lifecycle"));
     }
     if (strcmp(rosDistro, "foxy") == 0)
     {
         CARB_LOG_WARN("Support for ROS 2 Foxy is deprecated and will be removed in a future release");
     }
-    // attempt to load a ros library
-    // if it fails, force load internal distro
+
+    // Attempt to load a ROS 2 library. If it fails, force load internal Distro
     if (rosDistro && strcmp(rosDistro, "foxy") != 0 && strcmp(rosDistro, "humble") != 0)
     {
         CARB_LOG_ERROR("Unsupported ROS_DISTRO or ROS_DISTRO env var not specified: %s", rosDistro);
@@ -200,9 +199,9 @@ CARB_EXPORT void carbOnPluginStartup()
     }
     else
     {
-        // load test library, print error if it fails
-        auto temp_loader = std::make_shared<omni::isaac::utils::LibraryLoader>("rosidl_runtime_c", "", false);
-        if (temp_loader->loadedLibrary == carb::extras::kInvalidLibraryHandle)
+        // Load test library, print error if it fails
+        auto tempLoader = std::make_shared<omni::isaac::utils::LibraryLoader>("rosidl_runtime_c", "", false);
+        if (tempLoader->loadedLibrary == carb::extras::kInvalidLibraryHandle)
         {
 #ifdef _WIN32
             app->printAndLog(
@@ -217,25 +216,24 @@ CARB_EXPORT void carbOnPluginStartup()
             g_extensionPath =
                 p.parent_path().string() + "/exts/omni.isaac.ros2_bridge/" + std::string(rosDistro) + "/lib/";
 
-            // Try and load internal lib, this will fail if ENV vars are not set correctly due to dependency tree
-            // Do not print lib specific error
-            auto temp_loader =
+            // Try and load internal lib, this will fail if ENV vars are not set correctly due to dependency tree.
+            // Do not print lib specific errors
+            auto tempLoader =
                 std::make_shared<omni::isaac::utils::LibraryLoader>("rosidl_runtime_c", g_extensionPath, true);
-            if (temp_loader->loadedLibrary == carb::extras::kInvalidLibraryHandle)
+            if (tempLoader->loadedLibrary == carb::extras::kInvalidLibraryHandle)
             {
                 CARB_LOG_WARN(
                     "Could not load ROS2 Bridge due to missing library dependencies, please make sure your sourced ROS2 workspace has the correct packages/libraries installed");
                 return;
             }
-            for (std::string lib : lib_list)
+            for (std::string lib : libraryList)
             {
-                g_backupLibLoader.LoadLibrary(lib, g_extensionPath);
+                g_backupLibraryLoader.LoadLibrary(lib, g_extensionPath);
             }
         }
         g_factoryLoader =
             std::make_shared<omni::isaac::utils::LibraryLoader>("omni.isaac.ros2_bridge." + std::string(rosDistro));
     }
-
 
     g_stageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>()->getStageUpdate();
 
@@ -248,12 +246,12 @@ CARB_EXPORT void carbOnPluginStartup()
 
     if (g_factoryLoader)
     {
-        typedef Ros2Factory* (*createFactory_binding)(void);
+        typedef omni::isaac::ros2_bridge::Ros2Factory* (*createFactory_binding)(void);
         createFactory_binding createFactory = (g_factoryLoader->getSymbol<createFactory_binding>("createFactory"));
 
         if (createFactory)
         {
-            g_Factory = (Ros2Factory*)createFactory();
+            g_factory = (omni::isaac::ros2_bridge::Ros2Factory*)createFactory();
         }
         else
         {
@@ -263,7 +261,7 @@ CARB_EXPORT void carbOnPluginStartup()
         }
     }
 
-    g_defaultHandle = g_Factory->CreateHandle();
+    g_defaultContextHandle = g_factory->createContextHandle();
 
     INITIALIZE_OGN_NODES()
 }
@@ -275,14 +273,14 @@ CARB_EXPORT void carbOnPluginShutdown()
         g_stageUpdate->destroyStageUpdateNode(g_stageUpdateNode);
         g_stageUpdateNode = nullptr;
     }
-    g_defaultHandle.reset();
+    g_defaultContextHandle.reset();
 
     RELEASE_OGN_NODES()
     g_factoryLoader.reset();
-    if (g_Factory)
+    if (g_factory)
     {
-        delete g_Factory;
-        g_Factory = nullptr;
+        delete g_factory;
+        g_factory = nullptr;
     }
 }
 
@@ -291,7 +289,7 @@ void fillInterface(omni::isaac::ros2_bridge::Ros2Bridge& iface)
     using namespace omni::isaac::ros2_bridge;
 
     memset(&iface, 0, sizeof(iface));
-    iface.getDefaultContextHandle = getDefaultContextHandle;
+    iface.getDefaultContextHandleAddr = getDefaultContextHandleAddr;
     iface.getFactory = getFactory;
     iface.getStartupStatus = getStartupStatus;
 }

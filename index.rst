@@ -3,6 +3,13 @@ Isaac Sim: Extensions API
 
 .. toctree::
    :maxdepth: 1
+   :caption: C++ API
+
+   C++ API <api/isaac_sim_api>
+   Coding Style Guide <CODING.md>
+
+.. toctree::
+   :maxdepth: 1
    :caption: Main Extensions
    :glob:
 

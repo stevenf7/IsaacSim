@@ -11,7 +11,6 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-
 #include <include/Ros2Node.h>
 #include <omni/fabric/FabricUSD.h>
 #include <omni/isaac/utils/PoseTree.h>
@@ -22,7 +21,7 @@
 #include <iomanip>
 #include <sstream>
 
-
+using namespace omni::isaac::ros2_bridge;
 using namespace omni::isaac::dynamic_control;
 
 class OgnROS2PublishTransformTree : public Ros2Node
@@ -33,17 +32,14 @@ public:
         auto& state =
             OgnROS2PublishTransformTreeDatabase::sPerInstanceState<OgnROS2PublishTransformTree>(nodeObj, instanceId);
 
-        state.mThisPrimPath = nodeObj.iNode->getPrimPath(nodeObj);
-
-        state.mDynamicControlPtr = carb::getCachedInterface<omni::isaac::dynamic_control::DynamicControl>();
-
-        if (!state.mDynamicControlPtr)
+        state.m_dynamicControlPtr = carb::getCachedInterface<omni::isaac::dynamic_control::DynamicControl>();
+        if (!state.m_dynamicControlPtr)
         {
             CARB_LOG_ERROR("Failed to acquire omni::isaac::dynamic_control interface");
             return;
         }
 
-        state.mFirstIteration = true;
+        state.m_firstIteration = true;
     }
 
     static bool compute(OgnROS2PublishTransformTreeDatabase& db)
@@ -51,7 +47,7 @@ public:
         const GraphContextObj& context = db.abi_context();
         auto& state = db.perInstanceState<OgnROS2PublishTransformTree>();
 
-        // spin once calls reset automatically if it was not successful
+        // Spin once calls reset automatically if it was not successful
         const auto& nodeObj = db.abi_node();
         if (!state.spinOnce(
                 std::string(nodeObj.iNode->getPrimPath(nodeObj)), db.inputs.nodeNamespace(), db.inputs.context()))
@@ -61,26 +57,25 @@ public:
         }
 
         // Publisher was not valid, create a new one
-        if (!state.mPublisher)
+        if (!state.m_publisher)
         {
             //  Find our stage
-            state.mStageId = context.iContext->getStageId(context);
-            state.mUsdStage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(state.mStageId));
-            if (!state.mUsdStage)
+            state.m_stageId = context.iContext->getStageId(context);
+            state.m_usdStage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(state.m_stageId));
+            if (!state.m_usdStage)
             {
-                db.logError("Could not find USD stage %ld", state.mStageId);
+                db.logError("Could not find USD stage %ld", state.m_stageId);
                 return false;
             }
 
-            state.mStageUnits = UsdGeomGetStageMetersPerUnit(state.mUsdStage);
+            state.m_stageUnits = UsdGeomGetStageMetersPerUnit(state.m_usdStage);
 
             //  Finding target prims
             const auto& targetPrims = db.inputs.targetPrims();
-
             if (targetPrims.size() > 0)
             {
-                state.mTargets.resize(targetPrims.size());
-                std::transform(targetPrims.begin(), targetPrims.end(), state.mTargets.begin(),
+                state.m_targets.resize(targetPrims.size());
+                std::transform(targetPrims.begin(), targetPrims.end(), state.m_targets.begin(),
                                [](TargetPath path) { return omni::fabric::toSdfPath(path); });
             }
             else
@@ -91,42 +86,38 @@ public:
 
             // Finding Parent Prim
             const auto& parentPrim = db.inputs.parentPrim();
-
             if (parentPrim.size() > 0)
             {
-                state.mParentPath = omni::fabric::toSdfPath(parentPrim[0]);
+                state.m_parentPath = omni::fabric::toSdfPath(parentPrim[0]);
             }
             else
             {
-                state.mParentPath = pxr::SdfPath();
+                state.m_parentPath = pxr::SdfPath();
             }
 
-            // reset this object
-            state.mPoseTree =
-                std::make_unique<omni::isaac::utils::posetree::PoseTree>(state.mStageId, state.mDynamicControlPtr);
-            state.mPoseTree->setParentPrimPath(state.mParentPath, "world");
-            state.mPoseTree->setTargetPrimPaths(state.mTargets);
+            // Reset this object
+            state.m_poseTree =
+                std::make_unique<omni::isaac::utils::posetree::PoseTree>(state.m_stageId, state.m_dynamicControlPtr);
+            state.m_poseTree->setParentPrimPath(state.m_parentPath, "world");
+            state.m_poseTree->setTargetPrimPaths(state.m_targets);
 
             // Setup ROS publisher
             const std::string& topicName = db.inputs.topicName();
-
-            std::string fullTopicName = addTopicPrefix(state.mNamespaceName, topicName);
-
-            if (!state.mFactory->validateTopic(fullTopicName))
+            std::string fullTopicName = addTopicPrefix(state.m_namespaceName, topicName);
+            if (!state.m_factory->validateTopicName(fullTopicName))
             {
                 db.logError("Unable to create ROS2 publisher, invalid topic name");
                 return false;
             }
 
-            state.mMessage = state.mFactory->CreateTfTreeMessage();
+            state.m_message = state.m_factory->createTfTreeMessage();
 
             Ros2QoSProfile qos;
-
             const std::string& qosProfile = db.inputs.qosProfile();
             if (db.inputs.staticPublisher())
             {
                 qos.depth = 1;
-                qos.durability = Ros2QoSDurabilityPolicyType::eTransientLocal;
+                qos.durability = Ros2QoSDurabilityPolicy::eTransientLocal;
             }
             else if (qosProfile == "")
             {
@@ -139,15 +130,13 @@ public:
                     return false;
                 }
             }
-            state.mPublisher = state.mFactory->CreatePublisher(
-                state.mNodeHandle.get(), fullTopicName.c_str(), state.mMessage->getTypeSupportHandle(), qos);
 
+            state.m_publisher = state.m_factory->createPublisher(
+                state.m_nodeHandle.get(), fullTopicName.c_str(), state.m_message->getTypeSupportHandle(), qos);
             return true;
         }
 
         return state.publishTF(db, context);
-
-        return true;
     }
 
     bool publishTF(OgnROS2PublishTransformTreeDatabase& db, const GraphContextObj& context)
@@ -158,24 +147,23 @@ public:
 
         auto& state = db.perInstanceState<OgnROS2PublishTransformTree>();
 
-        bool isStaticPublisher = db.inputs.staticPublisher();
-
         // If we're a static publisher we only publish once on the first iteration.
         // The message will persist as long as the simulation is playing.
         // If we're not a static publisher, we publish every tick only if
-        // we have subscribers or mPublishWithoutVerification is true.
+        // we have subscribers or m_publishWithoutVerification is true.
+        bool isStaticPublisher = db.inputs.staticPublisher();
         if (isStaticPublisher)
         {
-            if (!state.mFirstIteration)
+            if (!state.m_firstIteration)
             {
                 return false;
             }
-            state.mFirstIteration = false;
+            state.m_firstIteration = false;
         }
         else
         {
             // Check if subscription count is 0
-            if (!mPublishWithoutVerification && !state.mPublisher.get()->get_subscription_count())
+            if (!m_publishWithoutVerification && !state.m_publisher.get()->getSubscriptionCount())
             {
                 return false;
             }
@@ -188,38 +176,35 @@ public:
         }
 
         const double time = db.inputs.timeStamp();
-        std::vector<tfMessageStruct> tfMsg_vec;
+        std::vector<TfTransformStamped> transforms;
 
-        double stageUnits = mStageUnits;
-
-        // TODO: Define tfmessagevec as state member and load with this
+        double stageUnits = m_stageUnits;
 
         std::function<void(const std::string&, const std::string&, const physx::PxTransform&)> addPoseLambda =
-            [stageUnits, &tfMsg_vec, &time](
+            [stageUnits, &transforms, &time](
                 const std::string& parent_frame, const std::string& child_frame, const physx::PxTransform& t)
         {
-            tfMessageStruct currentMsg;
+            TfTransformStamped currentMsg;
             currentMsg.timeStamp = time;
             currentMsg.childFrame = child_frame;
             currentMsg.parentFrame = parent_frame;
 
-            currentMsg.trans_x = t.p.x * static_cast<float>(stageUnits);
-            currentMsg.trans_y = t.p.y * static_cast<float>(stageUnits);
-            currentMsg.trans_z = t.p.z * static_cast<float>(stageUnits);
+            currentMsg.translation_x = t.p.x * static_cast<float>(stageUnits);
+            currentMsg.translation_y = t.p.y * static_cast<float>(stageUnits);
+            currentMsg.translation_z = t.p.z * static_cast<float>(stageUnits);
 
-            currentMsg.quat_x = t.q.x;
-            currentMsg.quat_y = t.q.y;
-            currentMsg.quat_z = t.q.z;
-            currentMsg.quat_w = t.q.w;
+            currentMsg.rotation_x = t.q.x;
+            currentMsg.rotation_y = t.q.y;
+            currentMsg.rotation_z = t.q.z;
+            currentMsg.rotation_w = t.q.w;
 
-            tfMsg_vec.push_back(currentMsg);
+            transforms.push_back(currentMsg);
         };
 
-        mPoseTree->processAllFrames(addPoseLambda);
+        m_poseTree->processAllFrames(addPoseLambda);
 
-        state.mMessage->fillData(time, tfMsg_vec);
-
-        state.mPublisher.get()->publish(state.mMessage->ptr());
+        state.m_message->writeData(time, transforms);
+        state.m_publisher.get()->publish(state.m_message->getPtr());
 
         return true;
     }
@@ -233,29 +218,26 @@ public:
 
     virtual void reset()
     {
-        mPublisher.reset(); // This should be reset before we reset the handle.
+        m_publisher.reset(); // This should be reset before we reset the handle.
         Ros2Node::reset();
-        mPoseTree.reset();
-        mFirstIteration = true;
+        m_poseTree.reset();
+        m_firstIteration = true;
     }
 
-
 private:
-    std::shared_ptr<Ros2Publisher> mPublisher = nullptr;
-    std::shared_ptr<Ros2TfTreeMessage> mMessage = nullptr;
+    std::shared_ptr<Ros2Publisher> m_publisher = nullptr;
+    std::shared_ptr<Ros2TfTreeMessage> m_message = nullptr;
 
-    bool mFirstIteration = true;
+    bool m_firstIteration = true;
 
-    const char* mThisPrimPath = nullptr;
+    omni::isaac::dynamic_control::DynamicControl* m_dynamicControlPtr = nullptr;
+    double m_stageUnits = 1;
+    pxr::SdfPath m_parentPath;
+    pxr::SdfPathVector m_targets;
 
-    omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
-    double mStageUnits = 1;
-    pxr::SdfPath mParentPath;
-    pxr::SdfPathVector mTargets;
-
-    long mStageId;
-    pxr::UsdStageRefPtr mUsdStage;
-    std::unique_ptr<omni::isaac::utils::posetree::PoseTree> mPoseTree;
+    long m_stageId;
+    pxr::UsdStageRefPtr m_usdStage;
+    std::unique_ptr<omni::isaac::utils::posetree::PoseTree> m_poseTree;
 };
 
 REGISTER_OGN_NODE()

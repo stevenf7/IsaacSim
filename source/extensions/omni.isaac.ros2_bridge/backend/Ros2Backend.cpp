@@ -6,6 +6,7 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
+
 // clang-format off
 #include <pch/UsdPCH.h>
 // clang-format on
@@ -18,16 +19,24 @@
 
 #include <inttypes.h>
 
-Ros2BackendImpl::Ros2BackendImpl(
-    std::string pkgName, std::string msgSubfolder, std::string msgName, BackendMessageType messageType, bool testLibrary)
-    : Ros2Backend(pkgName, msgSubfolder, msgName, messageType, testLibrary)
+namespace omni
+{
+namespace isaac
+{
+namespace ros2_bridge
+{
+
+Ros2MessageInterfaceImpl::Ros2MessageInterfaceImpl(std::string pkgName,
+                                                   std::string msgSubfolder,
+                                                   std::string msgName,
+                                                   BackendMessageType messageType,
+                                                   bool showLoadingError)
+    : Ros2MessageInterface(pkgName, msgSubfolder, msgName, messageType, showLoadingError)
 {
 }
 
-
-void Ros2BackendImpl::set_timestamp(const int64_t nanoseconds, builtin_interfaces__msg__Time& time)
+void Ros2MessageInterfaceImpl::writeRosTime(const int64_t nanoseconds, builtin_interfaces__msg__Time& time)
 {
-    // publish the input string to topic
     constexpr rcl_time_point_value_t kRemainder = RCL_S_TO_NS(1);
     const auto result = std::div(nanoseconds, kRemainder);
     if (result.rem >= 0)
@@ -42,18 +51,19 @@ void Ros2BackendImpl::set_timestamp(const int64_t nanoseconds, builtin_interface
     }
 }
 
-void Ros2BackendImpl::set_string(const std::string& input, rosidl_runtime_c__String& output)
+void Ros2MessageInterfaceImpl::writeRosString(const std::string& input, rosidl_runtime_c__String& output)
 {
     rosidl_runtime_c__String__assign(&output, input.c_str());
 }
 
-void Ros2BackendImpl::set_header(const std::string& frame_id, const int64_t nanoseconds, std_msgs__msg__Header& header)
+void Ros2MessageInterfaceImpl::writeRosHeader(const std::string& frameId,
+                                              const int64_t nanoseconds,
+                                              std_msgs__msg__Header& header)
 {
-    set_string(frame_id.c_str(), header.frame_id);
-
+    writeRosString(frameId.c_str(), header.frame_id);
     if (nanoseconds > 0)
     {
-        set_timestamp(nanoseconds, header.stamp);
+        writeRosTime(nanoseconds, header.stamp);
     }
     else
     {
@@ -63,3 +73,7 @@ void Ros2BackendImpl::set_header(const std::string& frame_id, const int64_t nano
                 nanoseconds);
     }
 }
+
+} // namespace ros2_bridge
+} // namespace isaac
+} // namespace omni

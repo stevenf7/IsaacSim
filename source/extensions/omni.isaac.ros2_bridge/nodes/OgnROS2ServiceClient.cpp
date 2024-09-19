@@ -22,6 +22,7 @@
 
 #include <OgnROS2ServiceClientDatabase.h>
 
+using namespace omni::isaac::ros2_bridge;
 
 class OgnROS2ServiceClient : public Ros2Node
 {
@@ -29,8 +30,8 @@ public:
     static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
         auto& state = OgnROS2ServiceClientDatabase::sPerInstanceState<OgnROS2ServiceClient>(nodeObj, instanceId);
-        state.mNodeObj = nodeObj;
-        // register change event for message type
+        state.m_nodeObj = nodeObj;
+        // Register change event for message type
         AttributeObj attrMessagePackageObj = nodeObj.iNode->getAttribute(nodeObj, "inputs:messagePackage");
         AttributeObj attrMessageSubfolderObj = nodeObj.iNode->getAttribute(nodeObj, "inputs:messageSubfolder");
         AttributeObj attrServiceNameObj = nodeObj.iNode->getAttribute(nodeObj, "inputs:messageName");
@@ -42,10 +43,10 @@ public:
     static bool compute(OgnROS2ServiceClientDatabase& db)
     {
         const GraphContextObj& context = db.abi_context();
-
         auto& state = db.perInstanceState<OgnROS2ServiceClient>();
         const auto& nodeObj = db.abi_node();
-        // spin once calls reset automatically if it was not successful
+
+        // Spin once calls reset automatically if it was not successful
         if (!state.spinOnce(
                 std::string(nodeObj.iNode->getPrimPath(nodeObj)), db.inputs.nodeNamespace(), db.inputs.context()))
         {
@@ -62,60 +63,60 @@ public:
             return false;
         }
 
-        if (messagePackage != state.mMessagePackage)
+        if (messagePackage != state.m_messagePackage)
         {
-            state.mIsMessageUpdateNeeded = true;
-            state.mMessagePackage = messagePackage;
+            state.m_messageUpdateNeeded = true;
+            state.m_messagePackage = messagePackage;
         }
-        if (messageSubfolder != state.mMessageSubfolder)
+        if (messageSubfolder != state.m_messageSubfolder)
         {
-            state.mIsMessageUpdateNeeded = true;
-            state.mMessageSubfolder = messageSubfolder;
+            state.m_messageUpdateNeeded = true;
+            state.m_messageSubfolder = messageSubfolder;
         }
-        if (messageName != state.mMassageName)
+        if (messageName != state.m_messageName)
         {
-            state.mIsMessageUpdateNeeded = true;
-            state.mMassageName = messageName;
+            state.m_messageUpdateNeeded = true;
+            state.m_messageName = messageName;
         }
-        // update message and node attributes
-        if (state.mIsMessageUpdateNeeded)
+        // Update message and node attributes
+        if (state.m_messageUpdateNeeded)
         {
-            state.mMessageRequest = state.mFactory->createDynamicMessage(
-                state.mMessagePackage, state.mMessageSubfolder, state.mMassageName, BackendMessageType::eRequest);
-            OgnDynamicMesssageUtils::createOgAttributesForMessage<OgnROS2ServiceClientDatabase, false>(
-                db, nodeObj, state.mMessagePackage, state.mMessageSubfolder, state.mMassageName, state.mMessageRequest,
-                "Request:");
-            state.mMessageResponse = state.mFactory->createDynamicMessage(
-                state.mMessagePackage, state.mMessageSubfolder, state.mMassageName, BackendMessageType::eResponse);
-            OgnDynamicMesssageUtils::createOgAttributesForMessage<OgnROS2ServiceClientDatabase, true>(
-                db, nodeObj, state.mMessagePackage, state.mMessageSubfolder, state.mMassageName, state.mMessageResponse,
-                "Response:");
+            state.m_messageRequest = state.m_factory->createDynamicMessage(
+                state.m_messagePackage, state.m_messageSubfolder, state.m_messageName, BackendMessageType::eRequest);
+            omni::isaac::omnigraph_utils::createOgAttributesForMessage<OgnROS2ServiceClientDatabase, false>(
+                db, nodeObj, state.m_messagePackage, state.m_messageSubfolder, state.m_messageName,
+                state.m_messageRequest, "Request:");
+            state.m_messageResponse = state.m_factory->createDynamicMessage(
+                state.m_messagePackage, state.m_messageSubfolder, state.m_messageName, BackendMessageType::eResponse);
+            omni::isaac::omnigraph_utils::createOgAttributesForMessage<OgnROS2ServiceClientDatabase, true>(
+                db, nodeObj, state.m_messagePackage, state.m_messageSubfolder, state.m_messageName,
+                state.m_messageResponse, "Response:");
 
-            state.mIsMessageUpdateNeeded = false;
-            state.mIsServiceUpdateNeeded = true;
+            state.m_messageUpdateNeeded = false;
+            state.m_serviceUpdateNeeded = true;
             return false;
         }
 
         std::string qosProfile = std::string(db.inputs.qosProfile());
         std::string serviceName = std::string(db.inputs.serviceName());
-        if (qosProfile != state.mQosProfile)
+        if (qosProfile != state.m_qosProfile)
         {
-            state.mQosProfile = qosProfile;
-            state.mIsServiceUpdateNeeded = true;
+            state.m_qosProfile = qosProfile;
+            state.m_serviceUpdateNeeded = true;
         }
-        if (serviceName != state.mServiceName)
+        if (serviceName != state.m_serviceName)
         {
-            state.mServiceName = serviceName;
-            state.mIsServiceUpdateNeeded = true;
+            state.m_serviceName = serviceName;
+            state.m_serviceUpdateNeeded = true;
         }
 
         // ServiceServer was not valid, create a new one
-        if (state.mIsServiceUpdateNeeded)
+        if (state.m_serviceUpdateNeeded)
         {
             // Setup ROS ServiceServer
             const std::string& serviceName = db.inputs.serviceName();
             std::string fullServiceName = addTopicPrefix(db.inputs.nodeNamespace(), serviceName);
-            if (!state.mFactory->validateTopic(fullServiceName))
+            if (!state.m_factory->validateTopicName(fullServiceName))
             {
                 db.logWarning("No Valid service name : %s", fullServiceName.c_str());
                 return false;
@@ -124,39 +125,36 @@ public:
             Ros2QoSProfile qos;
             if (qosProfile != "")
             {
-                if (!jsonToRos2QoSProfile(qos, state.mQosProfile))
+                if (!jsonToRos2QoSProfile(qos, state.m_qosProfile))
                 {
                     db.logWarning("No qos");
                     return false;
                 }
             }
 
-            state.mServiceClient = state.mFactory->CreateClient(
-                state.mNodeHandle.get(), fullServiceName.c_str(), state.mMessageRequest->getTypeSupportHandle(), qos);
-            state.mIsServiceUpdateNeeded = false;
+            state.m_serviceClient = state.m_factory->createClient(
+                state.m_nodeHandle.get(), fullServiceName.c_str(), state.m_messageRequest->getTypeSupportHandle(), qos);
+            state.m_serviceUpdateNeeded = false;
         }
 
         return state.serviceClient(db, context);
     }
 
-
     bool serviceClient(OgnROS2ServiceClientDatabase& db, const GraphContextObj& context)
     {
         auto& state = db.perInstanceState<OgnROS2ServiceClient>();
-        if (!state.mServiceClient->isValid())
+        if (!state.m_serviceClient->isValid())
         {
             db.logWarning("Service is invalid");
             return false;
         }
 
         // Write the request field/data from the node and compose a message
-        OgnDynamicMesssageUtils::writeMessageDataFromNode(db, state.mMessageRequest, "Request:", false);
-        // CARB_LOG_INFO("Client: Sending Request ...");
-        state.mServiceClient->sendRequest(state.mMessageRequest->ptr());
-        // CARB_LOG_INFO("Client: Getting Response ...");
-        state.mServiceClient->getResponse(state.mMessageResponse->ptr());
+        omni::isaac::omnigraph_utils::writeMessageDataFromNode(db, state.m_messageRequest, "Request:", false);
+        state.m_serviceClient->sendRequest(state.m_messageRequest->getPtr());
+        state.m_serviceClient->takeResponse(state.m_messageResponse->getPtr());
         // write response of the node from server to the node outputs
-        OgnDynamicMesssageUtils::writeNodeAttributeFromMessage(db, state.mMessageResponse, "Response:", true);
+        omni::isaac::omnigraph_utils::writeNodeAttributeFromMessage(db, state.m_messageResponse, "Response:", true);
 
         db.outputs.execOut() = kExecutionAttributeStateEnabled;
         return true;
@@ -170,32 +168,32 @@ public:
 
     virtual void reset()
     {
-        mServiceClient.reset(); // This should be reset before we reset the handle.
-        mMessagePackage.clear();
-        mMessageSubfolder.clear();
-        mServiceName.clear();
-        mMassageName.clear();
-        mQosProfile.clear();
+        m_serviceClient.reset(); // This should be reset before we reset the handle.
+        m_messagePackage.clear();
+        m_messageSubfolder.clear();
+        m_serviceName.clear();
+        m_messageName.clear();
+        m_qosProfile.clear();
         Ros2Node::reset();
     }
 
 private:
-    std::shared_ptr<Ros2Client> mServiceClient = nullptr;
-    std::shared_ptr<Ros2Message> mMessageRequest = nullptr;
-    std::shared_ptr<Ros2Message> mMessageResponse = nullptr;
-    bool mIsServiceUpdateNeeded = true;
-    bool mIsMessageUpdateNeeded = true;
-    NodeObj mNodeObj;
+    std::shared_ptr<Ros2Client> m_serviceClient = nullptr;
+    std::shared_ptr<Ros2Message> m_messageRequest = nullptr;
+    std::shared_ptr<Ros2Message> m_messageResponse = nullptr;
+    bool m_serviceUpdateNeeded = true;
+    bool m_messageUpdateNeeded = true;
+    NodeObj m_nodeObj;
 
-    std::string mMessagePackage;
-    std::string mMessageSubfolder;
-    std::string mMassageName;
-    std::string mQosProfile;
-    std::string mServiceName;
+    std::string m_messagePackage;
+    std::string m_messageSubfolder;
+    std::string m_messageName;
+    std::string m_qosProfile;
+    std::string m_serviceName;
 
     static void onPackageChanged(AttributeObj const& attrObj, void const* userData)
     {
-        // get message package, subfolder and name
+        // Get message package, subfolder and name
         NodeObj nodeObj = attrObj.iAttribute->getNode(attrObj);
         auto db = OgnROS2ServiceClientDatabase(nodeObj);
         auto& state = db.perInstanceState<OgnROS2ServiceClient>();
@@ -210,22 +208,22 @@ private:
             return;
         }
 
-        // build message attributes
-        if (!OgnDynamicMesssageUtils::removeDynamicAttributes<true, true>(nodeObj))
+        // Build message attributes
+        if (!omni::isaac::omnigraph_utils::removeDynamicAttributes<true, true>(nodeObj))
         {
             db.logError("Unable to remove existing attributes from the node");
             return;
         }
-        state.mMessageRequest = state.mFactory->createDynamicMessage(
+        state.m_messageRequest = state.m_factory->createDynamicMessage(
             messagePackage, messageSubfolder, messageName, BackendMessageType::eRequest);
-        OgnDynamicMesssageUtils::createOgAttributesForMessage<OgnROS2ServiceClientDatabase, false, false>(
-            db, nodeObj, messagePackage, messageSubfolder, messageName, state.mMessageRequest, "Request:");
-        state.mMessageResponse = state.mFactory->createDynamicMessage(
+        omni::isaac::omnigraph_utils::createOgAttributesForMessage<OgnROS2ServiceClientDatabase, false, false>(
+            db, nodeObj, messagePackage, messageSubfolder, messageName, state.m_messageRequest, "Request:");
+        state.m_messageResponse = state.m_factory->createDynamicMessage(
             messagePackage, messageSubfolder, messageName, BackendMessageType::eResponse);
-        OgnDynamicMesssageUtils::createOgAttributesForMessage<OgnROS2ServiceClientDatabase, true, false>(
-            db, nodeObj, messagePackage, messageSubfolder, messageName, state.mMessageResponse, "Response:");
+        omni::isaac::omnigraph_utils::createOgAttributesForMessage<OgnROS2ServiceClientDatabase, true, false>(
+            db, nodeObj, messagePackage, messageSubfolder, messageName, state.m_messageResponse, "Response:");
 
-        state.mIsServiceUpdateNeeded = true;
+        state.m_serviceUpdateNeeded = true;
     }
 };
 

@@ -6,6 +6,7 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
+
 #pragma once
 
 #if !defined(_WIN32) && !defined(ROS2_BACKEND_FOXY)
@@ -44,346 +45,350 @@
 #include <std_msgs/msg/header.h>
 #include <std_msgs/msg/string.h>
 
-class Ros2BackendImpl : public Ros2Backend
+namespace omni
+{
+namespace isaac
+{
+namespace ros2_bridge
+{
+
+class Ros2MessageInterfaceImpl : public Ros2MessageInterface
 {
 public:
-    Ros2BackendImpl(std::string pkgName,
-                    std::string msgSubfolder,
-                    std::string msgName,
-                    BackendMessageType messageType = BackendMessageType::eMessage,
-                    bool testLibrary = false);
-    void set_timestamp(const int64_t nanoseconds, builtin_interfaces__msg__Time& time);
-    void set_string(const std::string& input, rosidl_runtime_c__String& output);
-    void set_header(const std::string& frame_id, const int64_t nanoseconds, std_msgs__msg__Header& header);
+    Ros2MessageInterfaceImpl(std::string pkgName,
+                             std::string msgSubfolder,
+                             std::string msgName,
+                             BackendMessageType messageType = BackendMessageType::eMessage,
+                             bool showLoadingError = false);
+    void writeRosTime(const int64_t nanoseconds, builtin_interfaces__msg__Time& time);
+    void writeRosString(const std::string& input, rosidl_runtime_c__String& output);
+    void writeRosHeader(const std::string& frameId, const int64_t nanoseconds, std_msgs__msg__Header& header);
 };
 
-class Ros2ClockMessageImpl : public Ros2ClockMessage, Ros2BackendImpl
+class Ros2ClockMessageImpl : public Ros2ClockMessage, Ros2MessageInterfaceImpl
 {
 public:
     Ros2ClockMessageImpl();
     virtual ~Ros2ClockMessageImpl();
     virtual const void* getTypeSupportHandle();
-    virtual void fill(double timestamp);
-    virtual void setData(double& timeStamp);
+    virtual void readData(double& timeStamp);
+    virtual void writeData(double timeStamp);
 };
 
-class Ros2ImuMessageImpl : public Ros2ImuMessage, Ros2BackendImpl
+class Ros2ImuMessageImpl : public Ros2ImuMessage, Ros2MessageInterfaceImpl
 {
 public:
     Ros2ImuMessageImpl();
     virtual ~Ros2ImuMessageImpl();
     virtual const void* getTypeSupportHandle();
-    virtual void fillHeader(double timestamp, std::string& frame_id);
-    virtual void fillAccel(bool covariance, const std::vector<double>& accel);
-    virtual void fillVelo(bool covariance, const std::vector<double>& velo);
-    virtual void fillOrient(bool covariance, const std::vector<double>& orient);
+    virtual void writeHeader(double timeStamp, std::string& frameId);
+    virtual void writeAcceleration(bool covariance, const std::vector<double>& acceleration);
+    virtual void writeVelocity(bool covariance, const std::vector<double>& velocity);
+    virtual void writeOrientation(bool covariance, const std::vector<double>& orientation);
 };
 
-class Ros2CameraInfoMessageImpl : public Ros2CameraInfoMessage, Ros2BackendImpl
+class Ros2CameraInfoMessageImpl : public Ros2CameraInfoMessage, Ros2MessageInterfaceImpl
 {
 public:
     Ros2CameraInfoMessageImpl();
     virtual ~Ros2CameraInfoMessageImpl();
     virtual const void* getTypeSupportHandle();
-    virtual void fillHeader(const double timestamp, const std::string& frame_id);
-    virtual void fillHeightWidth(const uint32_t height, const uint32_t width);
-    virtual void fillIntrisicArray(const double k_arr[], const int numElem);
-    virtual void fillProjectionArray(const double p_arr[], const int numElem);
-    virtual void fillRectificationArray(const double r_arr[], const int numElem);
-    virtual void fillDistortionModel(std::vector<double>& distort_array, const std::string& distort_model);
+    virtual void writeHeader(const double timeStamp, const std::string& frameId);
+    virtual void writeResolution(const uint32_t height, const uint32_t width);
+    virtual void writeIntrinsicMatrix(const double array[], const int arraySize);
+    virtual void writeProjectionMatrix(const double array[], const int arraySize);
+    virtual void writeRectificationMatrix(const double array[], const int arraySize);
+    virtual void writeDistortionParameters(std::vector<double>& array, const std::string& distortionModel);
 };
 
-class Ros2ImageMessageImpl : public Ros2ImageMessage, Ros2BackendImpl
+class Ros2ImageMessageImpl : public Ros2ImageMessage, Ros2MessageInterfaceImpl
 {
 public:
     Ros2ImageMessageImpl();
     virtual ~Ros2ImageMessageImpl();
     virtual const void* getTypeSupportHandle();
-    virtual void fillHeader(const double timestamp, const std::string& frame_id);
+    virtual void writeHeader(const double timeStamp, const std::string& frameId);
     virtual void generateBuffer(const uint32_t height, const uint32_t width, const std::string& encoding);
 };
 
-class Ros2NitrosBridgeImageMessageImpl : public Ros2NitrosBridgeImageMessage, Ros2BackendImpl
+class Ros2NitrosBridgeImageMessageImpl : public Ros2NitrosBridgeImageMessage, Ros2MessageInterfaceImpl
 {
 public:
     Ros2NitrosBridgeImageMessageImpl();
     virtual ~Ros2NitrosBridgeImageMessageImpl();
     virtual const void* getTypeSupportHandle();
-    virtual void fillHeader(const double timestamp, const std::string& frame_id);
+    virtual void writeHeader(const double timeStamp, const std::string& frameId);
     virtual void generateBuffer(const uint32_t height, const uint32_t width, const std::string& encoding);
-    virtual void setData(const std::vector<int32_t>& imageData);
+    virtual void writeData(const std::vector<int32_t>& imageData);
 };
 
-class Ros2BoundingBox2DMessageImpl : public Ros2BoundingBox2DMessage, Ros2BackendImpl
+class Ros2BoundingBox2DMessageImpl : public Ros2BoundingBox2DMessage, Ros2MessageInterfaceImpl
 {
 public:
     Ros2BoundingBox2DMessageImpl();
     virtual ~Ros2BoundingBox2DMessageImpl();
     virtual const void* getTypeSupportHandle();
-    virtual void fillHeader(const double timestamp, const std::string& frame_id);
-    virtual void fillBboxData(const void* bboxArray, size_t numBoxes);
+    virtual void writeHeader(const double timeStamp, const std::string& frameId);
+    virtual void writeBboxData(const void* bboxArray, size_t numBoxes);
 };
 
-class Ros2BoundingBox3DMessageImpl : public Ros2BoundingBox3DMessage, Ros2BackendImpl
+class Ros2BoundingBox3DMessageImpl : public Ros2BoundingBox3DMessage, Ros2MessageInterfaceImpl
 {
 public:
     Ros2BoundingBox3DMessageImpl();
     virtual ~Ros2BoundingBox3DMessageImpl();
     virtual const void* getTypeSupportHandle();
-    virtual void fillHeader(const double timestamp, const std::string& frame_id);
-    virtual void fillBboxData(const void* bboxArray, size_t numBoxes);
+    virtual void writeHeader(const double timeStamp, const std::string& frameId);
+    virtual void writeBboxData(const void* bboxArray, size_t numBoxes);
 };
 
-class Ros2OdomMessageImpl : public Ros2OdomMessage, Ros2BackendImpl
+class Ros2OdometryMessageImpl : public Ros2OdometryMessage, Ros2MessageInterfaceImpl
 {
 public:
-    Ros2OdomMessageImpl();
-    virtual ~Ros2OdomMessageImpl();
+    Ros2OdometryMessageImpl();
+    virtual ~Ros2OdometryMessageImpl();
     virtual const void* getTypeSupportHandle();
-    virtual void fillHeader(const double timestamp, const std::string& frame_id);
-    virtual void fillData(std::string& childFrame,
-                          const pxr::GfVec3d& linVel,
-                          const pxr::GfVec3d& angVel,
-                          const pxr::GfVec3f& mRobotFront,
-                          const pxr::GfVec3f& mRobotSide,
-                          double mUnitScale,
-                          bool mZUp,
-                          const pxr::GfVec3d& position,
-                          const pxr::GfQuatd& orientation);
+    virtual void writeHeader(const double timeStamp, const std::string& frameId);
+    virtual void writeData(std::string& childFrame,
+                           const pxr::GfVec3d& linearVelocity,
+                           const pxr::GfVec3d& angularVelocity,
+                           const pxr::GfVec3f& robotFront,
+                           const pxr::GfVec3f& robotSide,
+                           double unitScale,
+                           bool zUp,
+                           const pxr::GfVec3d& position,
+                           const pxr::GfQuatd& orientation);
 };
 
-class Ros2RawTfTreeMessageImpl : public Ros2RawTfTreeMessage, Ros2BackendImpl
+class Ros2RawTfTreeMessageImpl : public Ros2RawTfTreeMessage, Ros2MessageInterfaceImpl
 {
 public:
     Ros2RawTfTreeMessageImpl();
     virtual ~Ros2RawTfTreeMessageImpl();
     virtual const void* getTypeSupportHandle();
-    // virtual void fillHeader(const double timestamp, const std::string& frame_id);
-    virtual void fillData(const double timestamp,
-                          const std::string& headerFrame,
-                          const std::string& childFrame,
-                          const pxr::GfVec3d& translation,
-                          const pxr::GfQuatd& rotation);
+    // virtual void writeHeader(const double timeStamp, const std::string& frameId);
+    virtual void writeData(const double timeStamp,
+                           const std::string& frameId,
+                           const std::string& childFrame,
+                           const pxr::GfVec3d& translation,
+                           const pxr::GfQuatd& rotation);
 };
 
-class Ros2SemanticLabelMessageImpl : public Ros2SemanticLabelMessage, Ros2BackendImpl
+class Ros2SemanticLabelMessageImpl : public Ros2SemanticLabelMessage, Ros2MessageInterfaceImpl
 {
 public:
     Ros2SemanticLabelMessageImpl();
     virtual ~Ros2SemanticLabelMessageImpl();
     virtual const void* getTypeSupportHandle();
-    virtual void fillData(const std::string& data);
+    virtual void writeData(const std::string& data);
 };
 
-class Ros2JointStateMessageImpl : public Ros2JointStateMessage, Ros2BackendImpl
+class Ros2JointStateMessageImpl : public Ros2JointStateMessage, Ros2MessageInterfaceImpl
 {
 public:
     Ros2JointStateMessageImpl();
     virtual ~Ros2JointStateMessageImpl();
     virtual const void* getTypeSupportHandle();
-    virtual void fillData(const double& timeStamp,
-                          omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr,
-                          omni::isaac::dynamic_control::DcHandle mArticulationHandle,
-                          pxr::UsdStageWeakPtr mStage,
-                          std::vector<omni::isaac::dynamic_control::DcDofProperties>& mDofProps,
-                          std::vector<float>& mPrevJointPosition,
-                          std::vector<float>& mCalculatedJointVelocity,
-                          const double& dt,
-                          const double& stageUnits);
+    virtual void writeData(const double& timeStamp,
+                           omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr,
+                           omni::isaac::dynamic_control::DcHandle articulationHandle,
+                           pxr::UsdStageWeakPtr stage,
+                           std::vector<omni::isaac::dynamic_control::DcDofProperties>& dofProperties,
+                           std::vector<float>& previousJointPosition,
+                           std::vector<float>& calculatedJointVelocity,
+                           const double& dt,
+                           const double& stageUnits);
 
-    virtual void getData(std::vector<char*>& jointNames,
-                         double* positionCommand,
-                         double* velocityCommand,
-                         double* effortCommand,
-                         double& timeStamp);
+    virtual void readData(std::vector<char*>& jointNames,
+                          double* jointPositions,
+                          double* jointVelocities,
+                          double* jointEfforts,
+                          double& timeStamp);
 
-    virtual void getActuators(size_t& actuators);
-
+    virtual size_t getNumJoints();
     virtual bool checkValid();
 };
 
-
-class Ros2PointCloudMessageImpl : public Ros2PointCloudMessage, Ros2BackendImpl
+class Ros2PointCloudMessageImpl : public Ros2PointCloudMessage, Ros2MessageInterfaceImpl
 {
 public:
     Ros2PointCloudMessageImpl();
     virtual ~Ros2PointCloudMessageImpl();
     virtual const void* getTypeSupportHandle();
-    virtual void fillMetadata(const std::string& frameId,
-                              const double& timeStamp,
-                              const size_t& width,
-                              const size_t& height,
-                              const uint32_t& point_step);
+    virtual void generateBuffer(const double& timeStamp,
+                                const std::string& frameId,
+                                const size_t& width,
+                                const size_t& height,
+                                const uint32_t& pointStep);
 };
 
-
-class Ros2LaserScanMessageImpl : public Ros2LaserScanMessage, Ros2BackendImpl
+class Ros2LaserScanMessageImpl : public Ros2LaserScanMessage, Ros2MessageInterfaceImpl
 {
 public:
     Ros2LaserScanMessageImpl();
     virtual ~Ros2LaserScanMessageImpl();
     virtual const void* getTypeSupportHandle();
-    virtual void fillData(const std::string& frameId,
-                          const double& timeStamp,
-                          const pxr::GfVec2f& azimuthRange,
-                          const float& rotationRate,
-                          const pxr::GfVec2f& depthRange,
-                          size_t buffSize,
-                          float* rangeData,
-                          float* intensitiesData,
-                          float horizontalResolution,
-                          float horizontalFov) override;
+    virtual void writeData(const double& timeStamp,
+                           const std::string& frameId,
+                           const pxr::GfVec2f& azimuthRange,
+                           const float& rotationRate,
+                           const pxr::GfVec2f& depthRange,
+                           size_t buffSize,
+                           float* rangeData,
+                           float* intensitiesData,
+                           float horizontalResolution,
+                           float horizontalFov) override;
 };
 
-
-class Ros2TfTreeMessageImpl : public Ros2TfTreeMessage, Ros2BackendImpl
+class Ros2TfTreeMessageImpl : public Ros2TfTreeMessage, Ros2MessageInterfaceImpl
 {
 public:
     Ros2TfTreeMessageImpl();
     virtual ~Ros2TfTreeMessageImpl();
     virtual const void* getTypeSupportHandle();
-    virtual void fillData(const double& timeStamp, std::vector<tfMessageStruct>& tfMsg_vec);
-    virtual void getData(std::vector<tfMessageStruct>& tfMsg_vec);
+    virtual void writeData(const double& timeStamp, std::vector<TfTransformStamped>& transforms);
+    virtual void readData(std::vector<TfTransformStamped>& transforms);
 };
 
-
-class Ros2TwistMessageImpl : public Ros2TwistMessage, Ros2BackendImpl
+class Ros2TwistMessageImpl : public Ros2TwistMessage, Ros2MessageInterfaceImpl
 {
 public:
     Ros2TwistMessageImpl();
     virtual ~Ros2TwistMessageImpl();
     virtual const void* getTypeSupportHandle();
-    virtual void getData(pxr::GfVec3d& linearVelocity, pxr::GfVec3d& angularVelocity);
+    virtual void readData(pxr::GfVec3d& linearVelocity, pxr::GfVec3d& angularVelocity);
 };
 
-class Ros2AckermannDriveStampedMessageImpl : public Ros2AckermannDriveStampedMessage, Ros2BackendImpl
+class Ros2AckermannDriveStampedMessageImpl : public Ros2AckermannDriveStampedMessage, Ros2MessageInterfaceImpl
 {
 public:
     Ros2AckermannDriveStampedMessageImpl();
     virtual ~Ros2AckermannDriveStampedMessageImpl();
     virtual const void* getTypeSupportHandle();
-    virtual void getData(std::string& frameId,
-                         double& timeStamp,
-                         double& steeringAngle,
-                         double& steeringAngleVelocity,
-                         double& speed,
-                         double& acceleration,
-                         double& jerk);
-    virtual void fillHeader(const double timestamp, const std::string& frame_id);
-    virtual void fillData(const double& steeringAngle,
-                          const double& steeringAngleVelocity,
-                          const double& speed,
-                          const double& acceleration,
-                          const double& jerk);
+    virtual void readData(double& timeStamp,
+                          std::string& frameId,
+                          double& steeringAngle,
+                          double& steeringAngleVelocity,
+                          double& speed,
+                          double& acceleration,
+                          double& jerk);
+    virtual void writeHeader(const double timeStamp, const std::string& frameId);
+    virtual void writeData(const double& steeringAngle,
+                           const double& steeringAngleVelocity,
+                           const double& speed,
+                           const double& acceleration,
+                           const double& jerk);
 };
 
-class Ros2HandleImpl : public Ros2HandleBase
+class Ros2ContextHandleImpl : public Ros2ContextHandle
 {
 public:
-    virtual ~Ros2HandleImpl()
+    virtual ~Ros2ContextHandleImpl()
     {
         shutdown();
     }
-    virtual void* context();
+    virtual void* getContext();
     virtual void init(int argc, char const* const* argv, bool setDomainId = false, size_t domainId = 0);
-    virtual bool is_valid();
-    virtual bool shutdown(const char* shutdown_reason = nullptr);
+    virtual bool isValid();
+    virtual bool shutdown(const char* shutdownReason = nullptr);
 
 private:
-    rcl_init_options_t mInitOptions;
-    std::shared_ptr<rcl_context_t> mContext;
+    rcl_init_options_t m_initOptions;
+    std::shared_ptr<rcl_context_t> m_context;
 };
 
-
-class Ros2NodeImpl : public Ros2NodeBase
+class Ros2NodeHandleImpl : public Ros2NodeHandle
 {
 public:
-    Ros2NodeImpl(const char* name, const char* name_space, Ros2HandleBase* rcl_handle);
-    virtual ~Ros2NodeImpl();
-    virtual Ros2HandleBase* handle();
-    virtual void* node();
+    Ros2NodeHandleImpl(const char* name, const char* namespaceName, Ros2ContextHandle* contextHandle);
+    virtual ~Ros2NodeHandleImpl();
+    virtual Ros2ContextHandle* getContextHandle();
+    virtual void* getNode();
 
 private:
-    Ros2HandleBase* mHandle;
-    std::shared_ptr<rcl_node_t> mNode;
+    Ros2ContextHandle* m_contextHandle;
+    std::shared_ptr<rcl_node_t> m_node;
 };
 
 class Ros2PublisherImpl : public Ros2Publisher
 {
 public:
-    Ros2PublisherImpl(Ros2NodeBase* node, const char* topic_name, const void* type, const Ros2QoSProfile& qos);
+    Ros2PublisherImpl(Ros2NodeHandle* nodeHandle, const char* topicName, const void* typeSupport, const Ros2QoSProfile& qos);
     virtual ~Ros2PublisherImpl();
     virtual void publish(const void* msg);
-    virtual size_t get_subscription_count();
+    virtual size_t getSubscriptionCount();
     virtual bool isValid()
     {
-        return mPub != nullptr;
+        return m_publisher != nullptr;
     }
 
 private:
-    Ros2NodeBase* mNode;
-    std::shared_ptr<rcl_publisher_t> mPub = nullptr;
+    Ros2NodeHandle* m_nodeHandle;
+    std::shared_ptr<rcl_publisher_t> m_publisher = nullptr;
 };
 
 class Ros2SubscriberImpl : public Ros2Subscriber
 {
 public:
-    Ros2SubscriberImpl(Ros2NodeBase* node, const char* topic_name, const void* type, const Ros2QoSProfile& qos);
+    Ros2SubscriberImpl(Ros2NodeHandle* nodeHandle,
+                       const char* topicName,
+                       const void* typeSupport,
+                       const Ros2QoSProfile& qos);
     virtual ~Ros2SubscriberImpl();
     virtual bool spin(void* msg);
     virtual bool isValid()
     {
-        return mSub != nullptr;
+        return m_subscription != nullptr;
     }
 
 private:
-    Ros2NodeBase* mNode;
-    std::shared_ptr<rcl_subscription_t> mSub = nullptr;
-    rcl_wait_set_t wait_set;
-    bool wait_set_initialized = false;
+    Ros2NodeHandle* m_nodeHandle;
+    std::shared_ptr<rcl_subscription_t> m_subscription = nullptr;
+    rcl_wait_set_t m_waitSet;
+    bool m_waitSetInitialized = false;
 };
 
 class Ros2ServiceImpl : public Ros2Service
 {
 public:
-    Ros2ServiceImpl(Ros2NodeBase* node, const char* service_name, const void* type, const Ros2QoSProfile& qos);
+    Ros2ServiceImpl(Ros2NodeHandle* nodeHandle, const char* serviceName, const void* typeSupport, const Ros2QoSProfile& qos);
     virtual ~Ros2ServiceImpl();
-    virtual bool getRequest(void* msg);
-    virtual bool sendResponse(void* msg);
+    virtual bool takeRequest(void* requestMsg);
+    virtual bool sendResponse(void* responseMsg);
     virtual bool isValid()
     {
-        return mService != nullptr;
+        return m_service != nullptr;
     }
 
 private:
-    Ros2NodeBase* mNode;
-    std::shared_ptr<rcl_service_t> mService = nullptr;
-    rcl_wait_set_t wait_set;
-    rmw_request_id_t request_id;
-    bool wait_set_initialized = false;
+    Ros2NodeHandle* m_nodeHandle;
+    std::shared_ptr<rcl_service_t> m_service = nullptr;
+    rcl_wait_set_t m_waitSet;
+    rmw_request_id_t m_requestId;
+    bool m_waitSetInitialized = false;
 };
 
 class Ros2ClientImpl : public Ros2Client
 {
 public:
-    Ros2ClientImpl(Ros2NodeBase* node, const char* service_name, const void* type, const Ros2QoSProfile& qos);
+    Ros2ClientImpl(Ros2NodeHandle* nodeHandle, const char* serviceName, const void* typeSupport, const Ros2QoSProfile& qos);
     virtual ~Ros2ClientImpl();
-    virtual bool sendRequest(void* msg);
-    virtual bool getResponse(void* msg);
+    virtual bool sendRequest(void* requestMsg);
+    virtual bool takeResponse(void* responseMsg);
     virtual bool isValid()
     {
-        return mClient != nullptr;
+        return m_client != nullptr;
     }
 
 private:
-    Ros2NodeBase* mNode;
-    std::shared_ptr<rcl_client_t> mClient = nullptr;
-    rcl_wait_set_t wait_set;
-    rmw_request_id_t request_id;
-    bool wait_set_initialized = false;
+    Ros2NodeHandle* m_nodeHandle;
+    std::shared_ptr<rcl_client_t> m_client = nullptr;
+    rcl_wait_set_t m_waitSet;
+    rmw_request_id_t m_requestId;
+    bool m_waitSetInitialized = false;
 };
 
-class Ros2DynamicMessageImpl : public Ros2DynamicMessage, Ros2BackendImpl
+class Ros2DynamicMessageImpl : public Ros2DynamicMessage, Ros2MessageInterfaceImpl
 {
 public:
     Ros2DynamicMessageImpl(std::string pkgName,
@@ -392,11 +397,11 @@ public:
                            BackendMessageType messageType = BackendMessageType::eMessage);
     virtual ~Ros2DynamicMessageImpl();
     virtual const void* getTypeSupportHandle();
-    virtual std::string summary(bool print);
-    virtual const nlohmann::json& getData();
-    virtual const std::vector<std::shared_ptr<void>>& getData(bool asOgnType);
-    virtual void setData(const nlohmann::json& data);
-    virtual void setData(const std::vector<std::shared_ptr<void>>& data, bool fromOgnType);
+    virtual std::string generateSummary(bool print);
+    virtual const nlohmann::json& readData();
+    virtual const std::vector<std::shared_ptr<void>>& readData(bool asOgnType);
+    virtual void writeData(const nlohmann::json& data);
+    virtual void writeData(const std::vector<std::shared_ptr<void>>& data, bool fromOgnType);
 
 protected:
     virtual const void* getIntrospectionMembers();
@@ -461,3 +466,7 @@ class Ros2QoSProfileConverter
 public:
     static rmw_qos_profile_t convert(const Ros2QoSProfile& qos);
 };
+
+} // namespace ros2_bridge
+} // namespace isaac
+} // namespace omni

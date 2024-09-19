@@ -7,6 +7,9 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
+/** @file
+ * @brief ROS 2 Node definition.
+ */
 #pragma once
 
 #include "omni/isaac//utils/BaseResetNode.h"
@@ -24,33 +27,43 @@
 //
 #include <omni/usd/UsdContext.h>
 
+namespace omni
+{
+namespace isaac
+{
+namespace ros2_bridge
+{
+
 /**
- * @brief Base class for all ROS2 bridge nodes. It handles the lifetime of the internal ROS node handle automatically.
+ * Base class for ROS 2 bridge nodes.
  *
+ * This class handles the lifetime of the internal ROS 2 node handle automatically.
  */
 class Ros2Node : public BaseResetNode
 {
 
 public:
     /**
-     * @brief Construct a new Ros Node object
+     * Constructor.
      *
+     * During the construction of the object, the carb interfaces and the ROS 2 factory will be retrieved to be used by
+     * the derived classes.
      */
     Ros2Node()
     {
-        mCoreNodeFramework = carb::getCachedInterface<omni::isaac::core_nodes::CoreNodes>();
-        mRos2Bridge = carb::getCachedInterface<omni::isaac::ros2_bridge::Ros2Bridge>();
+        m_coreNodeFramework = carb::getCachedInterface<omni::isaac::core_nodes::CoreNodes>();
+        m_ros2Bridge = carb::getCachedInterface<omni::isaac::ros2_bridge::Ros2Bridge>();
 
-        mSettings = carb::getCachedInterface<carb::settings::ISettings>();
+        m_settings = carb::getCachedInterface<carb::settings::ISettings>();
         static constexpr char setting[] = "/exts/omni.isaac.ros2_bridge/publish_without_verification";
-        mPublishWithoutVerification = mSettings->getAsBool(setting);
+        m_publishWithoutVerification = m_settings->getAsBool(setting);
 
-        // Here mFactory should be set according to the env var for ROS Distro..?
-        mFactory = mRos2Bridge->getFactory();
+        // Here m_factory should be set according to the env var for ROS Distro..?
+        m_factory = m_ros2Bridge->getFactory();
     }
+
     /**
-     * @brief Destroy the Ros Node object
-     *
+     * Destructor.
      */
     ~Ros2Node()
     {
@@ -58,72 +71,60 @@ public:
     }
 
     /**
-     * @brief Reset the node handle
-     * Should be called by all derived classes after they reset any publishers/subscribers attached to the node
+     * Reset the \ref Ros2NodeHandle handler.
      *
+     * This method should be called by derived classes after they reset any publishers/subscribers attached to the node.
      */
     virtual void reset()
     {
-        // if (executor)
-        // {
-        //     executor->cancel();
-        //     executor->remove_node(mNodeHandle);
-        //     executor.reset();
-        // }
-        if (mNodeHandle)
+        if (m_nodeHandle)
         {
             // std::cout << "Calling RESET for this ROS2 Node..." << std::endl;
-            // mNodeHandle->handle()->shutdown();
-            mNodeHandle.reset();
+            // m_nodeHandle->getContextHandle()->shutdown();
+            m_nodeHandle.reset();
         }
     }
 
     /**
-     * @brief This function should be called before doing any work  with the OGN Node. It makes sure that ROS master is
-     * running, the node is valid and all subscribers are called. Generally this should be called each frame.
-     * Changes to the nodeName are only handled if stop or play are pressed.
+     * Do node work to initialize the node handler once.
      *
-     * @param nodeName
-     * @return true
-     * @return false
+     * This function should be called before doing any work with any OmniGraph node (generally it should be called each
+     * frame). Changes to the node name are only handled if Stop and Play are pressed.
+     *
+     * @param nodeName Name of the node.
+     * @param namespaceName Namespace of the node.
+     * @param contextHandleAddr Context handler's memory address.
+     * @returns Whether the node handler has been initialized.
      */
-    bool spinOnce(const std::string& nodeName, const std::string namespaceName, uint64_t contextHandle)
+    bool spinOnce(const std::string& nodeName, const std::string namespaceName, uint64_t contextHandleAddr)
     {
         // If the handle was not initialized, try to initialize it
-        if (!initializeNodeHandle(nodeName, namespaceName, contextHandle))
+        if (!initializeNodeHandle(nodeName, namespaceName, contextHandleAddr))
         {
             return false;
         }
-        // Call and subscriber callbacks that are attachd to this node.
-        // executor->spin_once(std::chrono::nanoseconds(0));
         return true;
     }
-    /**
-     * @brief Validates a ROS topic name, returns true if valid, false if not
-     *
-     * @param topicName
-     * @return true
-     * @return false
-     */
 
     /**
-     * @brief Set prefixes to frameIds
+     * Add the specified prefix to the given topic name.
      *
-     * @param prefix ros2NodePrefix
-     * @param string_value frameId string
+     * This method will insert the separator character (`/`) between the prefix and the topic name.
      *
+     * @param prefix Prefix to add to the topic.
+     * @param topicName Name of the topic.
+     * @returns Name of the topic prefixed with the specified prefix.
      */
-
-    static inline std::string addTopicPrefix(const std::string& prefix, const std::string& topic_name)
+    static inline std::string addTopicPrefix(const std::string& prefix, const std::string& topicName)
     {
-        if (topic_name.size() == 0)
+        if (topicName.size() == 0)
+        {
             return std::string("");
-
-        std::string str = prefix + std::string("/") + trimNonAlnum(topic_name);
-
-        return str;
+        }
+        return prefix + std::string("/") + trimNonAlnum(topicName);
     }
 
+private:
     static inline std::string sanitizeName(std::string input)
     {
         std::replace_if(
@@ -134,7 +135,9 @@ public:
     static inline std::string trimNonAlnum(const std::string& s)
     {
         if (s.size() == 0)
+        {
             return "";
+        }
 
         size_t startIdx = 0;
         size_t endIdx = s.size() - 1;
@@ -148,78 +151,75 @@ public:
         return s.substr(startIdx, endIdx - startIdx + 1);
     }
 
-private:
-    /**
-     * @brief Handles initialization and validation of the ROS node handle.
-     *
-     * @param nodeName
-     * @return true
-     * @return false
-     */
-    bool initializeNodeHandle(const std::string& nodeName, const std::string& nodeNamespace, uint64_t contexthandle)
+    bool initializeNodeHandle(const std::string& nodeName, const std::string& namespaceName, uint64_t contextHandleAddr)
     {
         // Handle is initialized, so we should be ok, return true
-        if (mNodeHandle)
+        if (m_nodeHandle)
         {
             return true;
         }
-        // // Check rclcpp is running
-        // if (!rclcpp::ok())
-        // {
-        //     return false;
-        // }
 
-        // Handle is not valid, try to initialize handle
+        // Handle is not valid, try to initialize handle.
         // Make sure the ROS node name is valid
         std::string sanitizedNodeName = sanitizeName(nodeName);
-        if (!mFactory->validateNodeName(sanitizedNodeName))
+        if (!m_factory->validateNodeName(sanitizedNodeName))
         {
             return false;
         }
 
-        mNamespaceName = trimNonAlnum(nodeNamespace);
-        if (mNamespaceName.size() > 0)
-            mNamespaceName = std::string("/") + mNamespaceName;
-
-        // Set the ROS context if its available, if this is zero we use the default context
-        if (contexthandle)
+        m_namespaceName = trimNonAlnum(namespaceName);
+        if (m_namespaceName.size() > 0)
         {
-            // CARB_LOG_WARN("GET HANDLE %" PRIu64 "\n", contexthandle);
-            void* voidPtr = mCoreNodeFramework->getHandle(contexthandle);
-            if (voidPtr == nullptr)
+            m_namespaceName = std::string("/") + m_namespaceName;
+        }
+
+        // Set the ROS 2 context if its available, if this is zero we use the default context
+        if (contextHandleAddr)
+        {
+            // CARB_LOG_WARN("GET HANDLE %" PRIu64 "\n", contextHandleAddr);
+            void* contextHandlePtr = m_coreNodeFramework->getHandle(contextHandleAddr);
+            if (contextHandlePtr == nullptr)
             {
                 // CARB_LOG_WARN("CONTEXT DOES NOT EXIST");
                 return false;
             }
-
-            contextPtr = reinterpret_cast<std::shared_ptr<Ros2HandleBase>*>(voidPtr);
+            m_contextHandle = reinterpret_cast<std::shared_ptr<Ros2ContextHandle>*>(contextHandlePtr);
         }
         else
         {
-            contextPtr = reinterpret_cast<std::shared_ptr<Ros2HandleBase>*>(mRos2Bridge->getDefaultContextHandle());
+            m_contextHandle =
+                reinterpret_cast<std::shared_ptr<Ros2ContextHandle>*>(m_ros2Bridge->getDefaultContextHandleAddr());
         }
 
-        if (mNamespaceName.size() == 0)
+        // Create the ROS 2 node handler
+        if (m_namespaceName.size() == 0)
         {
-            mNodeHandle = mFactory->CreateNode(sanitizedNodeName.c_str(), "", contextPtr->get());
+            m_nodeHandle = m_factory->createNodeHandle(sanitizedNodeName.c_str(), "", m_contextHandle->get());
         }
-        else if (mFactory->validateNodeNamespace(mNamespaceName))
+        else if (m_factory->validateNamespaceName(m_namespaceName))
         {
-            mNodeHandle = mFactory->CreateNode(sanitizedNodeName.c_str(), mNamespaceName.c_str(), contextPtr->get());
+            m_nodeHandle =
+                m_factory->createNodeHandle(sanitizedNodeName.c_str(), m_namespaceName.c_str(), m_contextHandle->get());
         }
         else
+        {
             return false;
-
-        return mNodeHandle->node() != nullptr;
+        }
+        return m_nodeHandle->getNode() != nullptr;
     }
 
 protected:
-    omni::isaac::ros2_bridge::Ros2Bridge* mRos2Bridge = nullptr;
-    std::shared_ptr<Ros2NodeBase> mNodeHandle = nullptr;
-    carb::settings::ISettings* mSettings = nullptr;
-    bool mPublishWithoutVerification;
-    std::shared_ptr<Ros2HandleBase>* contextPtr;
-    omni::isaac::core_nodes::CoreNodes* mCoreNodeFramework;
-    Ros2Factory* mFactory = nullptr;
-    std::string mNamespaceName;
+    omni::isaac::ros2_bridge::Ros2Bridge* m_ros2Bridge = nullptr; //!< \ref Ros2Bridge (carb) interface.
+    std::shared_ptr<Ros2NodeHandle> m_nodeHandle = nullptr; //!< Node handler.
+    carb::settings::ISettings* m_settings = nullptr; //!< Settings (carb) interface.
+    bool m_publishWithoutVerification; //!< Whether to publish in a topic even if there are no subscription to it.
+    std::shared_ptr<Ros2ContextHandle>* m_contextHandle; //!< Context handler.
+    omni::isaac::core_nodes::CoreNodes* m_coreNodeFramework; //!< CoreNodes (carb) interface.
+    Ros2Factory* m_factory = nullptr; //!< Factory instance for creating ROS 2 related objects according to the sourced
+                                      //!< ROS 2 distribution.
+    std::string m_namespaceName; //!< Namespace name.
 };
+
+} // namespace ros2_bridge
+} // namespace isaac
+} // namespace omni

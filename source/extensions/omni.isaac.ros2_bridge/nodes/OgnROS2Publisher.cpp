@@ -15,6 +15,7 @@
 
 #include <OgnROS2PublisherDatabase.h>
 
+using namespace omni::isaac::ros2_bridge;
 
 class OgnROS2Publisher : public Ros2Node
 {
@@ -22,9 +23,9 @@ public:
     static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
         auto& state = OgnROS2PublisherDatabase::sPerInstanceState<OgnROS2Publisher>(nodeObj, instanceId);
-        state.mNodeObj = nodeObj;
+        state.m_nodeObj = nodeObj;
 
-        // register change event for message type
+        // Register change event for message type
         AttributeObj attrMessagePackageObj = nodeObj.iNode->getAttribute(nodeObj, "inputs:messagePackage");
         AttributeObj attrMessageSubfolderObj = nodeObj.iNode->getAttribute(nodeObj, "inputs:messageSubfolder");
         AttributeObj attrMessageNameObj = nodeObj.iNode->getAttribute(nodeObj, "inputs:messageName");
@@ -37,7 +38,7 @@ public:
     {
         auto& state = db.perInstanceState<OgnROS2Publisher>();
 
-        // spin once calls reset automatically if it was not successful
+        // Spin once calls reset automatically if it was not successful
         const auto& nodeObj = db.abi_node();
         if (!state.spinOnce(
                 std::string(nodeObj.iNode->getPrimPath(nodeObj)), db.inputs.nodeNamespace(), db.inputs.context()))
@@ -46,94 +47,96 @@ public:
             return false;
         }
 
-        // check for changes in message type
+        // Check for changes in message type
         std::string messagePackage = std::string(db.inputs.messagePackage());
         std::string messageSubfolder = std::string(db.inputs.messageSubfolder());
         std::string messageName = std::string(db.inputs.messageName());
-        if (messagePackage != state.mMessagePackage)
+        if (messagePackage != state.m_messagePackage)
         {
-            state.mIsMessageUpdateNeeded = true;
-            state.mMessagePackage = messagePackage;
+            state.m_messageUpdateNeeded = true;
+            state.m_messagePackage = messagePackage;
         }
-        if (messageSubfolder != state.mMessageSubfolder)
+        if (messageSubfolder != state.m_messageSubfolder)
         {
-            state.mIsMessageUpdateNeeded = true;
-            state.mMessageSubfolder = messageSubfolder;
+            state.m_messageUpdateNeeded = true;
+            state.m_messageSubfolder = messageSubfolder;
         }
-        if (messageName != state.mMessageName)
+        if (messageName != state.m_messageName)
         {
-            state.mIsMessageUpdateNeeded = true;
-            state.mMessageName = messageName;
+            state.m_messageUpdateNeeded = true;
+            state.m_messageName = messageName;
         }
-        // update message and node attributes
-        if (state.mIsMessageUpdateNeeded || !state.mMessage)
+        // Update message and node attributes
+        if (state.m_messageUpdateNeeded || !state.m_message)
         {
-            bool status =
-                createMessageAndAttributes(nodeObj, state.mMessagePackage, state.mMessageSubfolder, state.mMessageName);
+            bool status = createMessageAndAttributes(
+                nodeObj, state.m_messagePackage, state.m_messageSubfolder, state.m_messageName);
             if (!status)
                 return false;
-            state.mIsMessageUpdateNeeded = false;
-            state.mIsPublisherUpdateNeeded = true;
+            state.m_messageUpdateNeeded = false;
+            state.m_publisherUpdateNeeded = true;
             return false;
         }
 
-        // check for changes in publisher
+        // Check for changes in publisher
         std::string topicName = std::string(db.inputs.topicName());
         uint64_t queueSize = db.inputs.queueSize();
         std::string qosProfile = db.inputs.qosProfile();
-        if (topicName != state.mTopicName)
+        if (topicName != state.m_topicName)
         {
-            state.mIsPublisherUpdateNeeded = true;
-            state.mTopicName = topicName;
+            state.m_publisherUpdateNeeded = true;
+            state.m_topicName = topicName;
         }
-        if (queueSize != state.mQueueSize)
+        if (queueSize != state.m_queueSize)
         {
-            state.mIsPublisherUpdateNeeded = true;
-            state.mQueueSize = queueSize;
+            state.m_publisherUpdateNeeded = true;
+            state.m_queueSize = queueSize;
         }
-        if (qosProfile != state.mQosProfile)
+        if (qosProfile != state.m_qosProfile)
         {
-            state.mIsPublisherUpdateNeeded = true;
-            state.mQosProfile = qosProfile;
+            state.m_publisherUpdateNeeded = true;
+            state.m_qosProfile = qosProfile;
         }
-        // update publisher
-        if (state.mIsPublisherUpdateNeeded)
+        // Update publisher
+        if (state.m_publisherUpdateNeeded)
         {
-            // destroy previous publisher
-            state.mPublisher.reset();
-            // get topic name
-            std::string fullTopicName = addTopicPrefix(state.mNamespaceName, state.mTopicName);
-            if (!state.mFactory->validateTopic(fullTopicName))
+            // Destroy previous publisher
+            state.m_publisher.reset();
+
+            std::string fullTopicName = addTopicPrefix(state.m_namespaceName, state.m_topicName);
+            if (!state.m_factory->validateTopicName(fullTopicName))
             {
                 db.logError("Unable to create ROS2 publisher, invalid topic name");
                 return false;
             }
-            // create publisher
-            std::string messageType = messagePackage + "/" + messageSubfolder + "/" + messageName;
-            CARB_LOG_INFO("OgnROS2Publisher: creating publisher: %s (%s)", fullTopicName.c_str(), messageType.c_str());
+
             Ros2QoSProfile qos;
             const std::string& qosProfile = db.inputs.qosProfile();
             if (qosProfile == "")
             {
-                qos.depth = state.mQueueSize;
+                qos.depth = state.m_queueSize;
             }
             else
             {
-                if (!jsonToRos2QoSProfile(qos, state.mQosProfile))
+                if (!jsonToRos2QoSProfile(qos, state.m_qosProfile))
                 {
                     return false;
                 }
             }
-            state.mPublisher = state.mFactory->CreatePublisher(
-                state.mNodeHandle.get(), fullTopicName.c_str(), state.mMessage->getTypeSupportHandle(), qos);
-            if (!state.mPublisher->isValid())
+
+            // Create publisher
+            std::string messageType = messagePackage + "/" + messageSubfolder + "/" + messageName;
+            CARB_LOG_INFO("OgnROS2Publisher: creating publisher: %s (%s)", fullTopicName.c_str(), messageType.c_str());
+            state.m_publisher = state.m_factory->createPublisher(
+                state.m_nodeHandle.get(), fullTopicName.c_str(), state.m_message->getTypeSupportHandle(), qos);
+            if (!state.m_publisher->isValid())
             {
                 db.logWarning(
                     ("Invalid publication to the topic " + fullTopicName + " for the message type " + messageType).c_str());
-                state.mPublisher.reset();
+                state.m_publisher.reset();
                 return false;
             }
-            state.mIsPublisherUpdateNeeded = false;
+            state.m_publisherUpdateNeeded = false;
             return true;
         }
 
@@ -148,18 +151,18 @@ public:
 
     virtual void reset()
     {
-        mIsPublisherUpdateNeeded = false;
-        mIsMessageUpdateNeeded = false;
+        m_publisherUpdateNeeded = false;
+        m_messageUpdateNeeded = false;
 
-        mMessagePackage.clear();
-        mMessageSubfolder.clear();
-        mMessageName.clear();
-        mTopicName.clear();
-        mQosProfile.clear();
-        mQueueSize = 0;
+        m_messagePackage.clear();
+        m_messageSubfolder.clear();
+        m_messageName.clear();
+        m_topicName.clear();
+        m_qosProfile.clear();
+        m_queueSize = 0;
 
-        mMessage.reset();
-        mPublisher.reset(); // this should be reset before reset the handle
+        m_message.reset();
+        m_publisher.reset(); // This should be reset before reset the handle
 
         Ros2Node::reset();
     }
@@ -167,11 +170,13 @@ public:
     bool publisherCallback(OgnROS2PublisherDatabase& db)
     {
         auto& state = db.perInstanceState<OgnROS2Publisher>();
-        if (!state.mPublisher)
+        if (!state.m_publisher)
+        {
             return false;
+        }
 
-        auto messageData = std::static_pointer_cast<Ros2DynamicMessage>(state.mMessage)->getVectorContainer(true);
-        auto messageFields = std::static_pointer_cast<Ros2DynamicMessage>(state.mMessage)->getMessageFields();
+        auto messageData = std::static_pointer_cast<Ros2DynamicMessage>(state.m_message)->getVectorContainer(true);
+        auto messageFields = std::static_pointer_cast<Ros2DynamicMessage>(state.m_message)->getMessageFields();
 
         size_t arraySize;
         for (size_t i = 0; i < messageFields.size(); ++i)
@@ -188,8 +193,11 @@ public:
                     auto data = std::static_pointer_cast<std::vector<bool>>(messageData[i]);
                     data->clear();
                     data->resize(arraySize);
-                    for (size_t j = 0; j < arraySize; ++j) // std::vector<bool> is a specialization that has no ::data
+                    // std::vector<bool> is a specialization that has no ::data
+                    for (size_t j = 0; j < arraySize; ++j)
+                    {
                         (*data)[j] = *((*inputValue) + j);
+                    }
                 }
                 else
                 {
@@ -290,7 +298,7 @@ public:
             }
             case omni::fabric::BaseDataType::eHalf:
             {
-                // no half-precision floating point number in types for ROS message fields
+                // No half-precision floating point number in types for ROS message fields
                 break;
             }
             case omni::fabric::BaseDataType::eFloat:
@@ -339,7 +347,9 @@ public:
                     data->clear();
                     data->resize(arraySize);
                     for (size_t j = 0; j < arraySize; ++j)
+                    {
                         (*data)[j] = db.tokenToString(*((*inputValue) + j));
+                    }
                 }
                 else
                 {
@@ -358,7 +368,9 @@ public:
                     data->clear();
                     data->resize(arraySize);
                     for (size_t j = 0; j < arraySize; ++j)
+                    {
                         (*data)[j] = nlohmann::json::parse(db.tokenToString(*((*inputValue) + j)));
+                    }
                 }
                 break;
             }
@@ -367,27 +379,27 @@ public:
             }
         }
 
-        std::static_pointer_cast<Ros2DynamicMessage>(state.mMessage)->setData(messageData, true);
-        state.mPublisher->publish(state.mMessage->ptr());
+        std::static_pointer_cast<Ros2DynamicMessage>(state.m_message)->writeData(messageData, true);
+        state.m_publisher->publish(state.m_message->getPtr());
 
         db.outputs.execOut() = kExecutionAttributeStateEnabled;
         return true;
     }
 
 private:
-    NodeObj mNodeObj;
-    bool mIsPublisherUpdateNeeded = false;
-    bool mIsMessageUpdateNeeded = false;
+    NodeObj m_nodeObj;
+    bool m_publisherUpdateNeeded = false;
+    bool m_messageUpdateNeeded = false;
 
-    std::shared_ptr<Ros2Publisher> mPublisher = nullptr;
-    std::shared_ptr<Ros2Message> mMessage = nullptr;
+    std::shared_ptr<Ros2Publisher> m_publisher = nullptr;
+    std::shared_ptr<Ros2Message> m_message = nullptr;
 
-    std::string mMessagePackage;
-    std::string mMessageSubfolder;
-    std::string mMessageName;
-    std::string mTopicName;
-    uint64_t mQueueSize;
-    std::string mQosProfile;
+    std::string m_messagePackage;
+    std::string m_messageSubfolder;
+    std::string m_messageName;
+    std::string m_topicName;
+    uint64_t m_queueSize;
+    std::string m_qosProfile;
 
     // OGN utils
 
@@ -416,9 +428,9 @@ private:
         GraphContextObj context = graphObj.iGraph->getDefaultGraphContext(graphObj);
         ConstAttributeDataHandle handle =
             getAttributeR(context, nodeObj.nodeContextHandle, Token(attrName.c_str()), kAccordingToContextIndex);
-        // get size
+        // Get size
         context.iAttributeData->getElementCount(&countOut, context, &handle, 1u);
-        // get readable data
+        // Get readable data
         T const* value = getDataR<T>(context, handle);
         return value;
     }
@@ -460,42 +472,50 @@ private:
         // USD
         pxr::UsdStagePtr stage = omni::usd::UsdContext::getContext()->getStage();
         if (!stage)
+        {
             return false;
+        }
         const pxr::UsdPrim prim = stage->GetPrimAtPath(pxr::SdfPath(nodeObj.iNode->getPrimPath(nodeObj)));
         const pxr::UsdAttribute attr = prim.GetAttribute(pxr::TfToken(attrName));
         if (!attr.IsValid())
+        {
             return false;
+        }
         attr.SetMetadata(pxr::TfToken(kOgnMetadataAllowedTokens), allowedTokens);
         return true;
     }
 
     static bool removeDynamicAttributes(const NodeObj& nodeObj, AttributePortType portType)
     {
-        // get node attributes
+        // Get node attributes
         auto attrCount = nodeObj.iNode->getAttributeCount(nodeObj);
         std::vector<AttributeObj> attrObjects(attrCount);
         nodeObj.iNode->getAttributes(nodeObj, attrObjects.data(), attrCount);
-        // iterate and delete requested attributes
+        // Iterate and delete requested attributes
         bool status = true;
         for (auto const& attrObj : attrObjects)
+        {
             if (attrObj.iAttribute->isDynamic(attrObj))
+            {
                 if (attrObj.iAttribute->getPortType(attrObj) == portType)
                 {
-                    // disconnect attribute if connected
+                    // Disconnect attribute if connected
                     if (attrObj.iAttribute->getUpstreamConnectionCount(attrObj))
                     {
                         ConnectionInfo connectionInfo;
                         attrObj.iAttribute->getUpstreamConnectionsInfo(attrObj, &connectionInfo, 1);
                         status = status && attrObj.iAttribute->disconnectAttrs(connectionInfo.attrObj, attrObj, true);
                     }
-                    // remove attribute
+                    // Remove attribute
                     char const* attrName = attrObj.iAttribute->getName(attrObj);
                     status = status && nodeObj.iNode->removeAttribute(nodeObj, attrName);
                 }
+            }
+        }
         return status;
     }
 
-    // node
+    // Node
 
     static bool createMessageAndAttributes(const NodeObj& nodeObj,
                                            const std::string& messagePackage,
@@ -505,27 +525,29 @@ private:
         auto db = OgnROS2PublisherDatabase(nodeObj);
         auto& state = db.perInstanceState<OgnROS2Publisher>();
         std::string messageType = messagePackage + "/" + messageSubfolder + "/" + messageName;
-        // naive check on inputs
+        // Naive check on inputs
         if (messagePackage.empty() || messageSubfolder.empty() || messageName.empty())
+        {
             return false;
-        // create message
+        }
+        // Create message
         CARB_LOG_INFO("OgnROS2Publisher: create message for %s", messageType.c_str());
-        state.mMessage = state.mFactory->createDynamicMessage(messagePackage, messageSubfolder, messageName);
-        auto messageFields = std::static_pointer_cast<Ros2DynamicMessage>(state.mMessage)->getMessageFields();
-        bool status = std::static_pointer_cast<Ros2DynamicMessage>(state.mMessage)->isValid();
+        state.m_message = state.m_factory->createDynamicMessage(messagePackage, messageSubfolder, messageName);
+        auto messageFields = std::static_pointer_cast<Ros2DynamicMessage>(state.m_message)->getMessageFields();
+        bool status = std::static_pointer_cast<Ros2DynamicMessage>(state.m_message)->isValid();
         if (!status)
         {
             db.logWarning((messageType + " does not exist or is not available in the ROS 2 environment").c_str());
-            state.mMessage.reset();
+            state.m_message.reset();
             return false;
         }
-        // check if existing dynamic attributes match the message
+        // Check if existing dynamic attributes match the message
         if (checkForMatchingAttributes(nodeObj, messageFields))
         {
             CARB_LOG_INFO("OgnROS2Publisher: reuse of existing dynamic attributes: %s", messageType.c_str());
             return true;
         }
-        // remove dynamic attributes
+        // Remove dynamic attributes
         CARB_LOG_INFO("OgnROS2Publisher: remove dynamic attributes: %s", messageType.c_str());
         status = removeDynamicAttributes(nodeObj, AttributePortType::kAttributePortType_Input);
         if (!status)
@@ -533,7 +555,7 @@ private:
             db.logWarning("Unable to remove existing attributes from the node");
             return false;
         }
-        // create dynamic attributes
+        // Create dynamic attributes
         CARB_LOG_INFO("OgnROS2Publisher: create dynamic attributes: %s", messageType.c_str());
         for (auto const& messageField : messageFields)
         {
@@ -556,14 +578,16 @@ private:
         return status;
     }
 
-    static bool checkForMatchingAttributes(const NodeObj& nodeObj, std::vector<MessageField> messageFields)
+    static bool checkForMatchingAttributes(const NodeObj& nodeObj, std::vector<DynamicMessageField> messageFields)
     {
         auto db = OgnROS2PublisherDatabase(nodeObj);
         auto dynamicInputs = db.getDynamicInputs();
-        // check for the number of attributes
+        // Check for the number of attributes
         if (dynamicInputs.size() != messageFields.size())
+        {
             return false;
-        // check for attribute name and type
+        }
+        // Check for attribute name and type
         for (auto const& dynamicInput : dynamicInputs)
         {
             bool status = false;
@@ -574,22 +598,24 @@ private:
                     break;
                 }
             if (!status)
+            {
                 return false;
+            }
         }
         return true;
     }
 
-    // node events
+    // Node events
 
     static void onMessageChanged(AttributeObj const& attrObj, void const* userData)
     {
-        // get message package, subfolder and name
+        // Get message package, subfolder and name
         NodeObj nodeObj = attrObj.iAttribute->getNode(attrObj);
         auto db = OgnROS2PublisherDatabase(nodeObj);
         std::string messagePackage = std::string(db.inputs.messagePackage());
         std::string messageSubfolder = std::string(db.inputs.messageSubfolder());
         std::string messageName = std::string(db.inputs.messageName());
-        // build message attributes
+        // Build message attributes
         createMessageAndAttributes(nodeObj, messagePackage, messageSubfolder, messageName);
     }
 };

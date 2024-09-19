@@ -11,27 +11,21 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-
 #include <include/Ros2Node.h>
 
 #include <OgnROS2PublishImuDatabase.h>
 
+using namespace omni::isaac::ros2_bridge;
 
 class OgnROS2PublishImu : public Ros2Node
 {
 public:
-    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
-    // {
-    //     auto& state = OgnROS2PublishImuDatabase::sPerInstanceState<OgnROS2PublishImu>(nodeObj, instanceId);
-    // }
-
     static bool compute(OgnROS2PublishImuDatabase& db)
     {
         const GraphContextObj& context = db.abi_context();
-
         auto& state = db.perInstanceState<OgnROS2PublishImu>();
 
-        // spin once calls reset automatically if it was not successful
+        // Spin once calls reset automatically if it was not successful
         const auto& nodeObj = db.abi_node();
         if (!state.spinOnce(
                 std::string(nodeObj.iNode->getPrimPath(nodeObj)), db.inputs.nodeNamespace(), db.inputs.context()))
@@ -41,9 +35,8 @@ public:
         }
 
         // Either publisher was not valid, create a new one
-        if (!state.mPublisher)
+        if (!state.m_publisher)
         {
-
             // Find our stage
             long stageId = context.iContext->getStageId(context);
             auto stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
@@ -56,19 +49,16 @@ public:
 
             // Setup ROS IMU publisher
             const std::string& topicName = db.inputs.topicName();
-
-            std::string fullTopicName = addTopicPrefix(state.mNamespaceName, topicName);
-
-            if (!state.mFactory->validateTopic(fullTopicName))
+            std::string fullTopicName = addTopicPrefix(state.m_namespaceName, topicName);
+            if (!state.m_factory->validateTopicName(fullTopicName))
             {
                 db.logError("Unable to create ROS2 publisher, invalid topic name");
                 return false;
             }
 
-            state.mMessage = state.mFactory->CreateImuMessage();
+            state.m_message = state.m_factory->createImuMessage();
 
             Ros2QoSProfile qos;
-
             const std::string& qosProfile = db.inputs.qosProfile();
             if (qosProfile == "")
             {
@@ -81,65 +71,64 @@ public:
                     return false;
                 }
             }
-            state.mPublisher = state.mFactory->CreatePublisher(
-                state.mNodeHandle.get(), fullTopicName.c_str(), state.mMessage->getTypeSupportHandle(), qos);
-            state.mFrameId = db.inputs.frameId();
 
+            state.m_publisher = state.m_factory->createPublisher(
+                state.m_nodeHandle.get(), fullTopicName.c_str(), state.m_message->getTypeSupportHandle(), qos);
+            state.m_frameId = db.inputs.frameId();
             return true;
         }
 
         state.publishImu(db);
-
         return true;
     }
 
-
     void publishImu(OgnROS2PublishImuDatabase& db)
     {
-
         auto& state = db.perInstanceState<OgnROS2PublishImu>();
+
         // Check if subscription count is 0
-        if (!mPublishWithoutVerification && !state.mPublisher.get()->get_subscription_count())
+        if (!m_publishWithoutVerification && !state.m_publisher.get()->getSubscriptionCount())
         {
             return;
         }
-        state.mMessage->fillHeader(db.inputs.timeStamp(), state.mFrameId);
+
+        state.m_message->writeHeader(db.inputs.timeStamp(), state.m_frameId);
 
         if (!db.inputs.publishLinearAcceleration())
         {
-            state.mMessage->fillAccel(true);
+            state.m_message->writeAcceleration(true);
         }
         else
         {
-            auto& linAccel = db.inputs.linearAcceleration();
-            std::vector<double> accel{ linAccel[0], linAccel[1], linAccel[2] };
-            state.mMessage->fillAccel(false, accel);
+            auto& linearAcceleration = db.inputs.linearAcceleration();
+            std::vector<double> acceleration{ linearAcceleration[0], linearAcceleration[1], linearAcceleration[2] };
+            state.m_message->writeAcceleration(false, acceleration);
         }
 
         if (!db.inputs.publishAngularVelocity())
         {
-            state.mMessage->fillVelo(true);
+            state.m_message->writeVelocity(true);
         }
         else
         {
-            auto& angVel = db.inputs.angularVelocity();
-            std::vector<double> velo{ angVel[0], angVel[1], angVel[2] };
-            state.mMessage->fillVelo(false, velo);
+            auto& angularVelocity = db.inputs.angularVelocity();
+            std::vector<double> velocity{ angularVelocity[0], angularVelocity[1], angularVelocity[2] };
+            state.m_message->writeVelocity(false, velocity);
         }
 
         if (!db.inputs.publishOrientation())
         {
-            state.mMessage->fillOrient(true);
+            state.m_message->writeOrientation(true);
         }
         else
         {
             auto& orientation = db.inputs.orientation();
-            std::vector<double> orient{ orientation.GetImaginary()[0], orientation.GetImaginary()[1],
-                                        orientation.GetImaginary()[2], orientation.GetReal() };
-            state.mMessage->fillOrient(false, orient);
+            std::vector<double> orientationVector{ orientation.GetImaginary()[0], orientation.GetImaginary()[1],
+                                                   orientation.GetImaginary()[2], orientation.GetReal() };
+            state.m_message->writeOrientation(false, orientationVector);
         }
 
-        state.mPublisher.get()->publish(state.mMessage->ptr());
+        state.m_publisher.get()->publish(state.m_message->getPtr());
     }
 
     static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
@@ -150,15 +139,15 @@ public:
 
     virtual void reset()
     {
-        mPublisher.reset(); // Publisher should be reset before we reset the handle.
+        m_publisher.reset(); // Publisher should be reset before we reset the handle.
         Ros2Node::reset();
     }
 
 
 private:
-    std::shared_ptr<Ros2Publisher> mPublisher = nullptr;
-    std::shared_ptr<Ros2ImuMessage> mMessage = nullptr;
-    std::string mFrameId = "sim_imu";
+    std::shared_ptr<Ros2Publisher> m_publisher = nullptr;
+    std::shared_ptr<Ros2ImuMessage> m_message = nullptr;
+    std::string m_frameId = "sim_imu";
 };
 
 REGISTER_OGN_NODE()
