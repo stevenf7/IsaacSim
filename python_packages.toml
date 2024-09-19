@@ -60,6 +60,11 @@ inventory.include = [
     # cache
     "extscache/*",
 ]
+inventory.exclude = [
+    # large in size cache (to isaacsim-extscache-kit-sdk)
+    "extscache/omni.sensors*",
+    "extscache/omni.kit.converter*",
+]
 
 [isaacsim-extscache-kit-sdk]
 # pyproject.toml
@@ -71,6 +76,9 @@ inventory.include = [
     "LICENSE.txt",
     # cache
     [ "kit/exts/*", "extscache" ],
+    # large in size cache (from isaacsim-extscache-kit)
+    "extscache/omni.sensors*",
+    "extscache/omni.kit.converter*",
 ]
 
 [isaacsim-extscache-physics]
