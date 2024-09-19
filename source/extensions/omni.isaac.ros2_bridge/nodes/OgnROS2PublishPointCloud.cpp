@@ -22,21 +22,16 @@
 
 #include <OgnROS2PublishPointCloudDatabase.h>
 
+using namespace omni::isaac::ros2_bridge;
 
 class OgnROS2PublishPointCloud : public Ros2Node
 {
 public:
-    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
-    // {
-    //     auto& state = OgnROS2PublishPointCloudDatabase::sPerInstanceState<OgnROS2PublishPointCloud>(nodeObj,
-    //     instanceId);
-    // }
-
     static bool compute(OgnROS2PublishPointCloudDatabase& db)
     {
         auto& state = db.perInstanceState<OgnROS2PublishPointCloud>();
 
-        // spin once calls reset automatically if it was not successful
+        // Spin once calls reset automatically if it was not successful
         const auto& nodeObj = db.abi_node();
         if (!state.spinOnce(
                 std::string(nodeObj.iNode->getPrimPath(nodeObj)), db.inputs.nodeNamespace(), db.inputs.context()))
@@ -46,23 +41,20 @@ public:
         }
 
         // Publisher was not valid, create a new one
-        if (!state.mPublisher)
+        if (!state.m_publisher)
         {
             // Setup ROS publisher
             const std::string& topicName = db.inputs.topicName();
-
-            std::string fullTopicName = addTopicPrefix(state.mNamespaceName, topicName);
-
-            if (!state.mFactory->validateTopic(fullTopicName))
+            std::string fullTopicName = addTopicPrefix(state.m_namespaceName, topicName);
+            if (!state.m_factory->validateTopicName(fullTopicName))
             {
                 db.logError("Unable to create ROS2 publisher, invalid topic name");
                 return false;
             }
 
-            state.mMessage = state.mFactory->CreatePointCloudMessage();
+            state.m_message = state.m_factory->createPointCloudMessage();
 
             Ros2QoSProfile qos;
-
             const std::string& qosProfile = db.inputs.qosProfile();
             if (qosProfile == "")
             {
@@ -75,11 +67,11 @@ public:
                     return false;
                 }
             }
-            state.mPublisher = state.mFactory->CreatePublisher(
-                state.mNodeHandle.get(), fullTopicName.c_str(), state.mMessage->getTypeSupportHandle(), qos);
 
-            state.mFrameId = db.inputs.frameId();
+            state.m_publisher = state.m_factory->createPublisher(
+                state.m_nodeHandle.get(), fullTopicName.c_str(), state.m_message->getTypeSupportHandle(), qos);
 
+            state.m_frameId = db.inputs.frameId();
             return true;
         }
 
@@ -88,18 +80,17 @@ public:
 
     bool publishLidar(OgnROS2PublishPointCloudDatabase& db)
     {
-
         CARB_PROFILE_ZONE(0, "Lidar Point Cloud Pub");
-
         auto& state = db.perInstanceState<OgnROS2PublishPointCloud>();
 
         // Check if subscription count is 0
-        if (!mPublishWithoutVerification && !state.mPublisher.get()->get_subscription_count())
+        if (!m_publishWithoutVerification && !state.m_publisher.get()->getSubscriptionCount())
         {
             return false;
         }
+
         size_t height = 1;
-        uint32_t point_step = sizeof(GfVec3f);
+        uint32_t pointStep = sizeof(GfVec3f);
         size_t width = 0;
         size_t row_step = 0;
 
@@ -107,22 +98,22 @@ public:
         {
             if (db.inputs.dataPtr() != 0)
             {
-                width = db.inputs.bufferSize() / point_step;
+                width = db.inputs.bufferSize() / pointStep;
                 row_step = db.inputs.bufferSize();
                 size_t totalBytes = row_step;
-                state.mMessage->fillMetadata(mFrameId, db.inputs.timeStamp(), width, height, point_step);
+                state.m_message->generateBuffer(db.inputs.timeStamp(), m_frameId, width, height, pointStep);
                 // Data is on host as ptr, buffer size matches
-                memcpy(state.mMessage->getDataPtr(), reinterpret_cast<void*>(db.inputs.dataPtr()), totalBytes);
+                memcpy(state.m_message->getBufferPtr(), reinterpret_cast<void*>(db.inputs.dataPtr()), totalBytes);
             }
 
             else if (db.inputs.dataPtr() == 0)
             {
                 width = db.inputs.data.size();
-                row_step = point_step * db.inputs.data.size();
+                row_step = pointStep * db.inputs.data.size();
                 size_t totalBytes = row_step;
-                state.mMessage->fillMetadata(mFrameId, db.inputs.timeStamp(), width, height, point_step);
-                // data is on host as ogn data, copy from cpu
-                memcpy(state.mMessage->getDataPtr(), reinterpret_cast<const uint8_t*>(db.inputs.data.cpu().data()),
+                state.m_message->generateBuffer(db.inputs.timeStamp(), m_frameId, width, height, pointStep);
+                // Data is on host as ogn data, copy from cpu
+                memcpy(state.m_message->getBufferPtr(), reinterpret_cast<const uint8_t*>(db.inputs.data.cpu().data()),
                        totalBytes);
             }
         }
@@ -130,21 +121,21 @@ public:
         {
             if (db.inputs.dataPtr() != 0)
             {
-                width = db.inputs.bufferSize() / point_step;
+                width = db.inputs.bufferSize() / pointStep;
                 row_step = db.inputs.bufferSize();
                 // size_t totalBytes = row_step;
-                state.mMessage->fillMetadata(mFrameId, db.inputs.timeStamp(), width, height, point_step);
+                state.m_message->generateBuffer(db.inputs.timeStamp(), m_frameId, width, height, pointStep);
 
                 omni::isaac::utils::ScopedDevice scopedDev(db.inputs.cudaDeviceIndex());
                 auto src = reinterpret_cast<void*>(db.inputs.dataPtr());
-                CUDA_CHECK(cudaMemcpy(state.mMessage->getDataPtr(), src, db.inputs.bufferSize(), cudaMemcpyDeviceToHost));
+                CUDA_CHECK(
+                    cudaMemcpy(state.m_message->getBufferPtr(), src, db.inputs.bufferSize(), cudaMemcpyDeviceToHost));
             }
         }
-        state.mPublisher.get()->publish(state.mMessage->ptr());
 
+        state.m_publisher.get()->publish(state.m_message->getPtr());
         return true;
     }
-
 
     static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
@@ -152,19 +143,17 @@ public:
         state.reset();
     }
 
-
     virtual void reset()
     {
-        mPublisher.reset(); // This should be reset before we reset the handle.
+        m_publisher.reset(); // This should be reset before we reset the handle.
         Ros2Node::reset();
     }
 
-
 private:
-    std::shared_ptr<Ros2Publisher> mPublisher = nullptr;
-    std::shared_ptr<Ros2PointCloudMessage> mMessage = nullptr;
+    std::shared_ptr<Ros2Publisher> m_publisher = nullptr;
+    std::shared_ptr<Ros2PointCloudMessage> m_message = nullptr;
 
-    std::string mFrameId = "sim_lidar";
+    std::string m_frameId = "sim_lidar";
 };
 
 REGISTER_OGN_NODE()

@@ -6,6 +6,7 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
+
 // clang-format off
 #include <pch/UsdPCH.h>
 // clang-format on
@@ -14,20 +15,16 @@
 
 #include <OgnROS2PublishAckermannDatabase.h>
 
+using namespace omni::isaac::ros2_bridge;
+
 class OgnROS2PublishAckermann : public Ros2Node
 {
 public:
-    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
-    // {
-    //     auto& state = OgnROS2PublishAckermannDatabase::sPerInstanceState<OgnROS2PublishAckermann>(nodeObj,
-    //     instanceId);
-    // }
-
     static bool compute(OgnROS2PublishAckermannDatabase& db)
     {
         auto& state = db.perInstanceState<OgnROS2PublishAckermann>();
 
-        // spin once calls reset automatically if it was not successful
+        // Spin once calls reset automatically if it was not successful
         const auto& nodeObj = db.abi_node();
         if (!state.spinOnce(
                 std::string(nodeObj.iNode->getPrimPath(nodeObj)), db.inputs.nodeNamespace(), db.inputs.context()))
@@ -37,30 +34,25 @@ public:
         }
 
         // Either publisher was not valid, create a new one
-        if (!state.mPublisher)
+        if (!state.m_publisher)
         {
-
             // Setup ROS AckermannDriveStamped publisher
             const std::string& topicName = db.inputs.topicName();
-
-            std::string fullTopicName = addTopicPrefix(state.mNamespaceName, topicName);
-
-            if (!state.mFactory->validateTopic(fullTopicName))
+            std::string fullTopicName = addTopicPrefix(state.m_namespaceName, topicName);
+            if (!state.m_factory->validateTopicName(fullTopicName))
             {
                 db.logError("Unable to create ROS2 publisher, invalid topic name");
                 return false;
             }
-            state.mMessage = state.mFactory->CreateAckermannDriveStampedMessage();
 
-            if (!state.mMessage->ptr())
+            state.m_message = state.m_factory->createAckermannDriveStampedMessage();
+            if (!state.m_message->getPtr())
             {
                 CARB_LOG_ERROR("Unable to find AckermannDriveStamped message type");
-
                 return false;
             }
 
             Ros2QoSProfile qos;
-
             const std::string& qosProfile = db.inputs.qosProfile();
             if (qosProfile == "")
             {
@@ -73,34 +65,30 @@ public:
                     return false;
                 }
             }
-            state.mPublisher = state.mFactory->CreatePublisher(
-                state.mNodeHandle.get(), fullTopicName.c_str(), state.mMessage->getTypeSupportHandle(), qos);
 
+            state.m_publisher = state.m_factory->createPublisher(
+                state.m_nodeHandle.get(), fullTopicName.c_str(), state.m_message->getTypeSupportHandle(), qos);
             return true;
         }
 
         state.publishAckermmanDrive(db);
-
         return true;
     }
 
-
     void publishAckermmanDrive(OgnROS2PublishAckermannDatabase& db)
     {
-
         auto& state = db.perInstanceState<OgnROS2PublishAckermann>();
 
         // Check if subscription count is 0
-        if (!mPublishWithoutVerification && !state.mPublisher.get()->get_subscription_count())
+        if (!m_publishWithoutVerification && !state.m_publisher.get()->getSubscriptionCount())
         {
             return;
         }
 
-        state.mMessage->fillHeader(db.inputs.timeStamp(), db.inputs.frameId());
-        state.mMessage->fillData(db.inputs.steeringAngle(), db.inputs.steeringAngleVelocity(), db.inputs.speed(),
-                                 db.inputs.acceleration(), db.inputs.jerk());
-
-        state.mPublisher.get()->publish(state.mMessage->ptr());
+        state.m_message->writeHeader(db.inputs.timeStamp(), db.inputs.frameId());
+        state.m_message->writeData(db.inputs.steeringAngle(), db.inputs.steeringAngleVelocity(), db.inputs.speed(),
+                                   db.inputs.acceleration(), db.inputs.jerk());
+        state.m_publisher.get()->publish(state.m_message->getPtr());
     }
 
     static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
@@ -111,14 +99,13 @@ public:
 
     virtual void reset()
     {
-        mPublisher.reset(); // Publisher should be reset before we reset the handle.
+        m_publisher.reset(); // Publisher should be reset before we reset the handle.
         Ros2Node::reset();
     }
 
-
 private:
-    std::shared_ptr<Ros2Publisher> mPublisher = nullptr;
-    std::shared_ptr<Ros2AckermannDriveStampedMessage> mMessage = nullptr;
+    std::shared_ptr<Ros2Publisher> m_publisher = nullptr;
+    std::shared_ptr<Ros2AckermannDriveStampedMessage> m_message = nullptr;
 };
 
 REGISTER_OGN_NODE()

@@ -7,24 +7,20 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
-
 #include <include/Ros2Node.h>
 
 #include <OgnROS2SubscribeAckermannDatabase.h>
 
+using namespace omni::isaac::ros2_bridge;
+
 class OgnROS2SubscribeAckermann : public Ros2Node
 {
 public:
-    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
-    // {
-    //     auto& state = OgnROS2SubscribeAckermannDatabase::sPerInstanceState<OgnROS2SubscribeAckermann>(nodeObj,
-    //     instanceId);
-    // }
-
     static bool compute(OgnROS2SubscribeAckermannDatabase& db)
     {
         auto& state = db.perInstanceState<OgnROS2SubscribeAckermann>();
-        // spin once calls reset automatically if it was not successful
+
+        // Spin once calls reset automatically if it was not successful
         const auto& nodeObj = db.abi_node();
         if (!state.spinOnce(
                 std::string(nodeObj.iNode->getPrimPath(nodeObj)), db.inputs.nodeNamespace(), db.inputs.context()))
@@ -34,26 +30,24 @@ public:
         }
 
         // Subscriber was not valid, create a new one
-        if (!state.mSubscriber)
+        if (!state.m_subscriber)
         {
             const std::string& topicName = db.inputs.topicName();
-            std::string fullTopicName = addTopicPrefix(state.mNamespaceName, topicName);
-            if (!state.mFactory->validateTopic(fullTopicName))
+            std::string fullTopicName = addTopicPrefix(state.m_namespaceName, topicName);
+            if (!state.m_factory->validateTopicName(fullTopicName))
             {
                 db.logError("Unable to create ROS2 subscriber, invalid topic name");
                 return false;
             }
 
-            state.mMessage = state.mFactory->CreateAckermannDriveStampedMessage();
-
-            if (!state.mMessage->ptr())
+            state.m_message = state.m_factory->createAckermannDriveStampedMessage();
+            if (!state.m_message->getPtr())
             {
                 CARB_LOG_ERROR("Unable to find AckermannDriveStamped message type");
                 return false;
             }
 
             Ros2QoSProfile qos;
-
             const std::string& qosProfile = db.inputs.qosProfile();
             if (qosProfile == "")
             {
@@ -66,9 +60,9 @@ public:
                     return false;
                 }
             }
-            state.mSubscriber = state.mFactory->CreateSubscriber(
-                state.mNodeHandle.get(), fullTopicName.c_str(), state.mMessage->getTypeSupportHandle(), qos);
 
+            state.m_subscriber = state.m_factory->createSubscriber(
+                state.m_nodeHandle.get(), fullTopicName.c_str(), state.m_message->getTypeSupportHandle(), qos);
             return true;
         }
 
@@ -82,27 +76,18 @@ public:
         state.reset();
     }
 
-    /**
-     * @brief Reset the node
-     * Note that we need to reset the subscriber first so it doesn't get called again, then the callback, and then call
-     * the base class reset
-     *
-     */
     virtual void reset()
     {
-        mSubscriber.reset(); // This should be reset before we reset the handle.
+        m_subscriber.reset(); // This should be reset before we reset the handle.
         Ros2Node::reset();
     }
-
 
     bool subscriberCallback(OgnROS2SubscribeAckermannDatabase& db)
     {
         auto& state = db.perInstanceState<OgnROS2SubscribeAckermann>();
 
-
-        if (state.mSubscriber->spin(state.mMessage->ptr()))
+        if (state.m_subscriber->spin(state.m_message->getPtr()))
         {
-
             std::string frameId;
 
             auto& timeStamp = db.outputs.timeStamp();
@@ -112,20 +97,20 @@ public:
             auto& acceleration = db.outputs.acceleration();
             auto& jerk = db.outputs.jerk();
 
-            state.mMessage->getData(frameId, timeStamp, steeringAngle, steeringAngleVelocity, speed, acceleration, jerk);
+            state.m_message->readData(
+                timeStamp, frameId, steeringAngle, steeringAngleVelocity, speed, acceleration, jerk);
 
             db.outputs.frameId() = frameId;
 
             db.outputs.execOut() = kExecutionAttributeStateEnabled;
             return true;
         }
-
         return false;
     }
 
 private:
-    std::shared_ptr<Ros2Subscriber> mSubscriber = nullptr;
-    std::shared_ptr<Ros2AckermannDriveStampedMessage> mMessage = nullptr;
+    std::shared_ptr<Ros2Subscriber> m_subscriber = nullptr;
+    std::shared_ptr<Ros2AckermannDriveStampedMessage> m_message = nullptr;
 };
 
 REGISTER_OGN_NODE()

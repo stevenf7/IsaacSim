@@ -6,6 +6,7 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
+
 // clang-format off
 #include <pch/UsdPCH.h>
 // clang-format on
@@ -15,42 +16,57 @@
 #include <include/Ros2Macros.h>
 #include <rcl/rcl.h>
 
-Ros2NodeImpl::Ros2NodeImpl(const char* name, const char* name_space, Ros2HandleBase* handle)
-    : mHandle(handle), mNode(nullptr)
+namespace omni
+{
+namespace isaac
+{
+namespace ros2_bridge
+{
+
+Ros2NodeHandleImpl::Ros2NodeHandleImpl(const char* name, const char* namespaceName, Ros2ContextHandle* contextHandle)
+    : m_contextHandle(contextHandle), m_node(nullptr)
 {
     rcl_ret_t rc;
-    mNode = std::shared_ptr<rcl_node_t>(new rcl_node_t,
-                                        [](rcl_node_t* node)
-                                        {
-                                            rcl_ret_t ret = rcl_node_fini(node);
-                                            if (RCL_RET_OK != ret)
-                                            {
-                                                RCL_ERROR_MSG(Ros2NodeImpl, rcl_node_fini);
-                                            }
-                                            delete node;
-                                        });
-    if (mNode != NULL)
+    m_node = std::shared_ptr<rcl_node_t>(new rcl_node_t,
+                                         [](rcl_node_t* node)
+                                         {
+                                             rcl_ret_t ret = rcl_node_fini(node);
+                                             if (RCL_RET_OK != ret)
+                                             {
+                                                 RCL_ERROR_MSG(Ros2NodeHandleImpl, rcl_node_fini);
+                                             }
+                                             delete node;
+                                         });
+    if (m_node != NULL)
     {
-        (*mNode) = rcl_get_zero_initialized_node();
-        rcl_node_options_t node_ops = rcl_node_get_default_options();
-        rc = rcl_node_init(mNode.get(), name, name_space, static_cast<rcl_context_t*>(mHandle->context()), &node_ops);
+        (*m_node) = rcl_get_zero_initialized_node();
+        rcl_node_options_t nodeOptions = rcl_node_get_default_options();
+        rc = rcl_node_init(m_node.get(), name, namespaceName,
+                           static_cast<rcl_context_t*>(m_contextHandle->getContext()), &nodeOptions);
         if (rc != RCL_RET_OK)
         {
-            mNode.reset();
-            RCL_ERROR_MSG(Ros2NodeImpl, rcl_node_init);
+            m_node.reset();
+            RCL_ERROR_MSG(Ros2NodeHandleImpl, rcl_node_init);
             return;
         }
     }
 }
-Ros2NodeImpl::~Ros2NodeImpl()
+
+Ros2NodeHandleImpl::~Ros2NodeHandleImpl()
 {
-    mNode.reset();
+    m_node.reset();
 }
-Ros2HandleBase* Ros2NodeImpl::handle()
+
+Ros2ContextHandle* Ros2NodeHandleImpl::getContextHandle()
 {
-    return mHandle;
+    return m_contextHandle;
 }
-void* Ros2NodeImpl::node()
+
+void* Ros2NodeHandleImpl::getNode()
 {
-    return mNode.get();
+    return m_node.get();
 }
+
+} // namespace ros2_bridge
+} // namespace isaac
+} // namespace omni

@@ -16,41 +16,47 @@
 #include <include/Ros2Macros.h>
 #include <rcl/rcl.h>
 
+namespace omni
+{
+namespace isaac
+{
+namespace ros2_bridge
+{
 
-const std::map<Ros2QoSHistoryPolicyType, rmw_qos_history_policy_t> ros2QoSHistoryMap = {
-    { Ros2QoSHistoryPolicyType::eSystemDefault, RMW_QOS_POLICY_HISTORY_SYSTEM_DEFAULT },
-    { Ros2QoSHistoryPolicyType::eKeepLast, RMW_QOS_POLICY_HISTORY_KEEP_LAST },
-    { Ros2QoSHistoryPolicyType::eKeepAll, RMW_QOS_POLICY_HISTORY_KEEP_ALL },
-    { Ros2QoSHistoryPolicyType::eUnknown, RMW_QOS_POLICY_HISTORY_UNKNOWN }
+const std::map<Ros2QoSHistoryPolicy, rmw_qos_history_policy_t> ros2QoSHistoryMap = {
+    { Ros2QoSHistoryPolicy::eSystemDefault, RMW_QOS_POLICY_HISTORY_SYSTEM_DEFAULT },
+    { Ros2QoSHistoryPolicy::eKeepLast, RMW_QOS_POLICY_HISTORY_KEEP_LAST },
+    { Ros2QoSHistoryPolicy::eKeepAll, RMW_QOS_POLICY_HISTORY_KEEP_ALL },
+    { Ros2QoSHistoryPolicy::eUnknown, RMW_QOS_POLICY_HISTORY_UNKNOWN }
 };
 
 
-const std::map<Ros2QoSReliabilityPolicyType, rmw_qos_reliability_policy_t> ros2QoSReliabilityMap = {
-    { Ros2QoSReliabilityPolicyType::eSystemDefault, RMW_QOS_POLICY_RELIABILITY_SYSTEM_DEFAULT },
-    { Ros2QoSReliabilityPolicyType::eReliable, RMW_QOS_POLICY_RELIABILITY_RELIABLE },
-    { Ros2QoSReliabilityPolicyType::eBestEffort, RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT },
-    { Ros2QoSReliabilityPolicyType::eUnknown, RMW_QOS_POLICY_RELIABILITY_UNKNOWN }
+const std::map<Ros2QoSReliabilityPolicy, rmw_qos_reliability_policy_t> ros2QoSReliabilityMap = {
+    { Ros2QoSReliabilityPolicy::eSystemDefault, RMW_QOS_POLICY_RELIABILITY_SYSTEM_DEFAULT },
+    { Ros2QoSReliabilityPolicy::eReliable, RMW_QOS_POLICY_RELIABILITY_RELIABLE },
+    { Ros2QoSReliabilityPolicy::eBestEffort, RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT },
+    { Ros2QoSReliabilityPolicy::eUnknown, RMW_QOS_POLICY_RELIABILITY_UNKNOWN }
 };
 
 
-const std::map<Ros2QoSDurabilityPolicyType, rmw_qos_durability_policy_t> ros2QoSDurabilityMap = {
-    { Ros2QoSDurabilityPolicyType::eSystemDefault, RMW_QOS_POLICY_DURABILITY_SYSTEM_DEFAULT },
-    { Ros2QoSDurabilityPolicyType::eTransientLocal, RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL },
-    { Ros2QoSDurabilityPolicyType::eVolatile, RMW_QOS_POLICY_DURABILITY_VOLATILE },
-    { Ros2QoSDurabilityPolicyType::eUnknown, RMW_QOS_POLICY_DURABILITY_UNKNOWN }
+const std::map<Ros2QoSDurabilityPolicy, rmw_qos_durability_policy_t> ros2QoSDurabilityMap = {
+    { Ros2QoSDurabilityPolicy::eSystemDefault, RMW_QOS_POLICY_DURABILITY_SYSTEM_DEFAULT },
+    { Ros2QoSDurabilityPolicy::eTransientLocal, RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL },
+    { Ros2QoSDurabilityPolicy::eVolatile, RMW_QOS_POLICY_DURABILITY_VOLATILE },
+    { Ros2QoSDurabilityPolicy::eUnknown, RMW_QOS_POLICY_DURABILITY_UNKNOWN }
 };
 
 // NOTE : RMW_QOS_POLICY_LIVELINESS_MANUAL_BY_NODE is deprecated and throws compiler errors,
 //        so we handle this by just using the system default
-const std::map<Ros2QoSLivelinessPolicyType, rmw_qos_liveliness_policy_t> ros2QoSLivelinessMap = {
-    { Ros2QoSLivelinessPolicyType::eSystemDefault, RMW_QOS_POLICY_LIVELINESS_SYSTEM_DEFAULT },
-    { Ros2QoSLivelinessPolicyType::eAutomatic, RMW_QOS_POLICY_LIVELINESS_AUTOMATIC },
-    { Ros2QoSLivelinessPolicyType::eManualByNode, RMW_QOS_POLICY_LIVELINESS_SYSTEM_DEFAULT },
-    { Ros2QoSLivelinessPolicyType::eManualByTopic, RMW_QOS_POLICY_LIVELINESS_MANUAL_BY_TOPIC },
-    { Ros2QoSLivelinessPolicyType::eUnknown, RMW_QOS_POLICY_LIVELINESS_UNKNOWN }
+const std::map<Ros2QoSLivelinessPolicy, rmw_qos_liveliness_policy_t> ros2QoSLivelinessMap = {
+    { Ros2QoSLivelinessPolicy::eSystemDefault, RMW_QOS_POLICY_LIVELINESS_SYSTEM_DEFAULT },
+    { Ros2QoSLivelinessPolicy::eAutomatic, RMW_QOS_POLICY_LIVELINESS_AUTOMATIC },
+    { Ros2QoSLivelinessPolicy::eManualByNode, RMW_QOS_POLICY_LIVELINESS_SYSTEM_DEFAULT },
+    { Ros2QoSLivelinessPolicy::eManualByTopic, RMW_QOS_POLICY_LIVELINESS_MANUAL_BY_TOPIC },
+    { Ros2QoSLivelinessPolicy::eUnknown, RMW_QOS_POLICY_LIVELINESS_UNKNOWN }
 };
 
-rmw_time_t convertRos2QosTimeToImpl(const Ros2QoSTimeType& ros2Time)
+rmw_time_t convertRos2QosTimeToImpl(const Ros2QoSTime& ros2Time)
 {
     return { ros2Time.sec, ros2Time.nsec };
 }
@@ -67,7 +73,11 @@ rmw_qos_profile_t Ros2QoSProfileConverter::convert(const Ros2QoSProfile& qos)
     profile.lifespan = convertRos2QosTimeToImpl(qos.lifespan);
     profile.liveliness = ros2QoSLivelinessMap.at(qos.liveliness);
     profile.liveliness_lease_duration = convertRos2QosTimeToImpl(qos.livelinessLeaseDuration);
-    profile.avoid_ros_namespace_conventions = qos.avoid_ros_namespace_conventions;
+    profile.avoid_ros_namespace_conventions = qos.avoidRosNamespaceConventions;
 
     return profile;
 }
+
+} // namespace ros2_bridge
+} // namespace isaac
+} // namespace omni

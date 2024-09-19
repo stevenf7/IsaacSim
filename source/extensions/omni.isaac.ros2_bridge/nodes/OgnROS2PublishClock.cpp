@@ -18,18 +18,20 @@
 
 #include <OgnROS2PublishClockDatabase.h>
 
+using namespace omni::isaac::ros2_bridge;
+
 class OgnROS2PublishClock : public Ros2Node
 {
 public:
     static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        // auto& state = OgnROS2PublishClockDatabase::sPerInstanceState<OgnROS2PublishClock>(nodeObj, instanceId);
     }
 
     static bool compute(OgnROS2PublishClockDatabase& db)
     {
         auto& state = db.perInstanceState<OgnROS2PublishClock>();
-        // spin once calls reset automatically if it was not successful
+
+        // Spin once calls reset automatically if it was not successful
         const auto& nodeObj = db.abi_node();
         if (!state.spinOnce(
                 std::string(nodeObj.iNode->getPrimPath(nodeObj)), db.inputs.nodeNamespace(), db.inputs.context()))
@@ -37,19 +39,21 @@ public:
             db.logError("Unable to create ROS2 node, please check that namespace is valid");
             return false;
         }
+
         // Publisher was not valid, create a new one
-        if (!state.mPublisher)
+        if (!state.m_publisher)
         {
             const std::string& topicName = db.inputs.topicName();
-            std::string fullTopicName = addTopicPrefix(state.mNamespaceName, topicName);
-            if (!state.mFactory->validateTopic(fullTopicName))
+            std::string fullTopicName = addTopicPrefix(state.m_namespaceName, topicName);
+            if (!state.m_factory->validateTopicName(fullTopicName))
             {
                 db.logError("Unable to create ROS2 publisher, invalid topic name");
                 return false;
             }
-            state.mMessage = state.mFactory->CreateClockMessage();
-            Ros2QoSProfile qos;
 
+            state.m_message = state.m_factory->createClockMessage();
+
+            Ros2QoSProfile qos;
             const std::string& qosProfile = db.inputs.qosProfile();
             if (qosProfile == "")
             {
@@ -62,40 +66,27 @@ public:
                     return false;
                 }
             }
-            state.mPublisher = state.mFactory->CreatePublisher(
-                state.mNodeHandle.get(), fullTopicName.c_str(), state.mMessage->getTypeSupportHandle(), qos);
 
+            state.m_publisher = state.m_factory->createPublisher(
+                state.m_nodeHandle.get(), fullTopicName.c_str(), state.m_message->getTypeSupportHandle(), qos);
             return true;
         }
 
         return state.publishClock(db);
-        // return true;
     }
 
     bool publishClock(OgnROS2PublishClockDatabase& db)
     {
         auto& state = db.perInstanceState<OgnROS2PublishClock>();
 
-        // std::cout << "Creating message next...." << std::endl;
-
-
         // Check if subscription count is 0
-        if (!mPublishWithoutVerification && !state.mPublisher.get()->get_subscription_count())
+        if (!m_publishWithoutVerification && !state.m_publisher.get()->getSubscriptionCount())
         {
             return false;
         }
-        // if (1 != 0){
 
-        // std::cout << "Filling Message... " << std::endl;
-        state.mMessage->fill(db.inputs.timeStamp());
-
-        // std::cout << "Publishing message" << std::endl;
-
-        state.mPublisher.get()->publish(state.mMessage->ptr());
-
-
-        // std::cout << "Message published..." << std::endl;
-
+        state.m_message->writeData(db.inputs.timeStamp());
+        state.m_publisher.get()->publish(state.m_message->getPtr());
         return true;
     }
 
@@ -107,13 +98,13 @@ public:
 
     virtual void reset()
     {
-        mPublisher.reset(); // This should be reset before we reset the handle.
+        m_publisher.reset(); // This should be reset before we reset the handle.
         Ros2Node::reset();
     }
 
 private:
-    std::shared_ptr<Ros2Publisher> mPublisher = nullptr;
-    std::shared_ptr<Ros2ClockMessage> mMessage = nullptr;
+    std::shared_ptr<Ros2Publisher> m_publisher = nullptr;
+    std::shared_ptr<Ros2ClockMessage> m_message = nullptr;
 };
 
 REGISTER_OGN_NODE()

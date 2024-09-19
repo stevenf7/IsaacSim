@@ -19,20 +19,26 @@
 
 #include <iomanip>
 
+namespace omni
+{
+namespace isaac
+{
+namespace ros2_bridge
+{
 
 Ros2DynamicMessageImpl::Ros2DynamicMessageImpl(std::string pkgName,
                                                std::string msgSubfolder,
                                                std::string msgName,
                                                BackendMessageType messageType)
-    : Ros2BackendImpl(pkgName, msgSubfolder, msgName, messageType)
+    : Ros2MessageInterfaceImpl(pkgName, msgSubfolder, msgName, messageType)
 {
     // create message
-    msg = create();
+    m_msg = create();
     // clear message fields and containers
-    mMessagesFields.clear();
-    mMessageVectorRosContainer.clear();
-    mMessageVectorOgnContainer.clear();
-    mMessageJsonContainer = nlohmann::json::object();
+    m_messagesFields.clear();
+    m_messageVectorRosContainer.clear();
+    m_messageVectorOgnContainer.clear();
+    m_messageJsonContainer = nlohmann::json::object();
     // get message fields
     const void* members = getIntrospectionMembers();
     if (members)
@@ -41,8 +47,8 @@ Ros2DynamicMessageImpl::Ros2DynamicMessageImpl(std::string pkgName,
 
 Ros2DynamicMessageImpl::~Ros2DynamicMessageImpl()
 {
-    if (msg)
-        destroy(static_cast<void*>(msg));
+    if (m_msg)
+        destroy(static_cast<void*>(m_msg));
 }
 
 const void* Ros2DynamicMessageImpl::getTypeSupportHandle()
@@ -50,38 +56,38 @@ const void* Ros2DynamicMessageImpl::getTypeSupportHandle()
     return getTypeSupportHandleDynamic();
 }
 
-const nlohmann::json& Ros2DynamicMessageImpl::getData()
+const nlohmann::json& Ros2DynamicMessageImpl::readData()
 {
     const void* members = getIntrospectionMembers();
-    mMessageJsonContainer.clear();
+    m_messageJsonContainer.clear();
     if (members)
-        getMessageValues(members, reinterpret_cast<uint8_t*>(msg), mMessageJsonContainer);
-    return mMessageJsonContainer;
+        getMessageValues(members, reinterpret_cast<uint8_t*>(m_msg), m_messageJsonContainer);
+    return m_messageJsonContainer;
 }
 
-const std::vector<std::shared_ptr<void>>& Ros2DynamicMessageImpl::getData(bool asOgnType)
+const std::vector<std::shared_ptr<void>>& Ros2DynamicMessageImpl::readData(bool asOgnType)
 {
     size_t index = 0;
     const void* members = getIntrospectionMembers();
     if (members)
-        getMessageValues(members, reinterpret_cast<uint8_t*>(msg),
-                         asOgnType ? mMessageVectorOgnContainer : mMessageVectorRosContainer, index, asOgnType);
-    return asOgnType ? mMessageVectorOgnContainer : mMessageVectorRosContainer;
+        getMessageValues(members, reinterpret_cast<uint8_t*>(m_msg),
+                         asOgnType ? m_messageVectorOgnContainer : m_messageVectorRosContainer, index, asOgnType);
+    return asOgnType ? m_messageVectorOgnContainer : m_messageVectorRosContainer;
 }
 
-void Ros2DynamicMessageImpl::setData(const nlohmann::json& data)
+void Ros2DynamicMessageImpl::writeData(const nlohmann::json& data)
 {
     const void* members = getIntrospectionMembers();
     if (members)
-        setMessageValues(members, reinterpret_cast<uint8_t*>(msg), data);
+        setMessageValues(members, reinterpret_cast<uint8_t*>(m_msg), data);
 }
 
-void Ros2DynamicMessageImpl::setData(const std::vector<std::shared_ptr<void>>& data, bool fromOgnType)
+void Ros2DynamicMessageImpl::writeData(const std::vector<std::shared_ptr<void>>& data, bool fromOgnType)
 {
     size_t index = 0;
     const void* members = getIntrospectionMembers();
     if (members)
-        setMessageValues(members, reinterpret_cast<uint8_t*>(msg), data, index, fromOgnType);
+        setMessageValues(members, reinterpret_cast<uint8_t*>(m_msg), data, index, fromOgnType);
 }
 
 const void* Ros2DynamicMessageImpl::getIntrospectionMembers()
@@ -89,7 +95,7 @@ const void* Ros2DynamicMessageImpl::getIntrospectionMembers()
     void* typeSupportHandle = getTypeSupportIntrospectionHandleDynamic();
     if (typeSupportHandle)
     {
-        switch (BackendMessageType(mMessageType))
+        switch (BackendMessageType(m_msgType))
         {
         case BackendMessageType::eMessage:
         case BackendMessageType::eSendGoalRequest:
@@ -117,7 +123,7 @@ const void* Ros2DynamicMessageImpl::getIntrospectionMembers()
     return nullptr;
 }
 
-std::string Ros2DynamicMessageImpl::summary(bool print)
+std::string Ros2DynamicMessageImpl::generateSummary(bool print)
 {
     // backend type
     std::unordered_map<BackendMessageType, std::string> backendType = {
@@ -169,13 +175,13 @@ std::string Ros2DynamicMessageImpl::summary(bool print)
     };
     std::ostringstream stream;
     stream << std::endl;
-    stream << "Message: " << mPkgName << "/" << mMsgSubfolder << "/" << mMsgName;
-    stream << " (" << backendType[mMessageType] << ")" << std::endl;
+    stream << "Message: " << m_pkgName << "/" << m_msgSubfolder << "/" << m_msgName;
+    stream << " (" << backendType[m_msgType] << ")" << std::endl;
     stream << "Idx Array ROS type                  OGN type                  Name" << std::endl;
     stream << "=== ===== ========================= ========================= ====" << std::endl;
-    for (size_t i = 0; i < mMessagesFields.size(); ++i)
+    for (size_t i = 0; i < m_messagesFields.size(); ++i)
     {
-        auto field = mMessagesFields.at(i);
+        auto field = m_messagesFields.at(i);
         stream << std::left << std::setw(4) << std::setfill(' ') << i;
         stream << std::left << std::setw(6) << std::setfill(' ') << (field.isArray ? "yes" : "no");
         stream << std::left << std::setw(26) << std::setfill(' ') << rosType[field.rosType];
@@ -391,10 +397,10 @@ void Ros2DynamicMessageImpl::parseMessageFields(const std::string& parentName, c
             break;
         }
         // preallocate message containers
-        mMessageVectorRosContainer.push_back(rosValue);
-        mMessageVectorOgnContainer.push_back(ognValue);
+        m_messageVectorRosContainer.push_back(rosValue);
+        m_messageVectorOgnContainer.push_back(ognValue);
         // define message field
-        mMessagesFields.push_back({ name, member->type_id_, member->is_array_, type, dataType });
+        m_messagesFields.push_back({ name, member->type_id_, member->is_array_, type, dataType });
     }
 }
 
@@ -1415,3 +1421,7 @@ void Ros2DynamicMessageImpl::setMessageValues(const void* members,
         }
     }
 }
+
+} // namespace ros2_bridge
+} // namespace isaac
+} // namespace omni

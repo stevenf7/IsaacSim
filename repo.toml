@@ -250,7 +250,7 @@ sphinx_conf_py_extra = """
     add_module_names = False
     html_logo = "docs/media/main_ov_logo_square.png"
     html_favicon = "docs/media/favicon.ico"
-    html_static_path = [
+    html_static_path += [
         "docs/media/NVIDIA-LogoBlack.svg",
     ]
     autodoc_mock_imports = ["torch", "omni.ui", "usdrt",  "omni.kit.window", "omni.kit.helper", "omni.kit.ui", "omni.graph", "omni.replicator.core", "omni.activity", "omni.kit.app", "omni.stats"]
@@ -305,6 +305,20 @@ sphinx_exclude_patterns = [
     ".nvidia-omniverse",
     "_build",
 ]
+
+doxygen_input = [
+    "source/extensions/omni.isaac.ros2_bridge/include/Ros2Bridge.h",
+    "source/extensions/omni.isaac.ros2_bridge/include/Ros2Factory.h",
+    "source/extensions/omni.isaac.ros2_bridge/include/Ros2Macros.h",
+    "source/extensions/omni.isaac.ros2_bridge/include/Ros2Node.h",
+    "source/extensions/omni.isaac.ros2_bridge/include/Ros2QoS.h",
+]
+doxygen_predefined = [
+    "CARB_PLUGIN_INTERFACE=",
+]
+
+api_output_directory = "api"
+use_fast_doxygen_conversion = true
 
 [repo_docs.editions.production]
 protocol = "s3"

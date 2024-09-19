@@ -11,21 +11,15 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-
 #include <include/Ros2Node.h>
 
 #include <OgnROS2PublishLaserScanDatabase.h>
 
+using namespace omni::isaac::ros2_bridge;
 
 class OgnROS2PublishLaserScan : public Ros2Node
 {
 public:
-    // static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
-    // {
-    //     auto& state = OgnROS2PublishLaserScanDatabase::sPerInstanceState<OgnROS2PublishLaserScan>(nodeObj,
-    //     instanceId);
-    // }
-
     static bool compute(OgnROS2PublishLaserScanDatabase& db)
     {
         auto& state = db.perInstanceState<OgnROS2PublishLaserScan>();
@@ -40,22 +34,20 @@ public:
         }
 
         // Publisher was not valid, create a new one
-        if (!state.mPublisher)
+        if (!state.m_publisher)
         {
             // Setup ROS publisher
             const std::string& topicName = db.inputs.topicName();
-
-            std::string fullTopicName = addTopicPrefix(state.mNamespaceName, topicName);
-
-            if (!state.mFactory->validateTopic(fullTopicName))
+            std::string fullTopicName = addTopicPrefix(state.m_namespaceName, topicName);
+            if (!state.m_factory->validateTopicName(fullTopicName))
             {
                 db.logError("Unable to create ROS2 publisher, invalid topic name");
                 return false;
             }
-            state.mMessage = state.mFactory->CreateLaserScanMessage();
+
+            state.m_message = state.m_factory->createLaserScanMessage();
 
             Ros2QoSProfile qos;
-
             const std::string& qosProfile = db.inputs.qosProfile();
             if (qosProfile == "")
             {
@@ -68,29 +60,27 @@ public:
                     return false;
                 }
             }
-            state.mPublisher = state.mFactory->CreatePublisher(
-                state.mNodeHandle.get(), fullTopicName.c_str(), state.mMessage->getTypeSupportHandle(), qos);
-            state.mFrameId = db.inputs.frameId();
 
-
+            state.m_publisher = state.m_factory->createPublisher(
+                state.m_nodeHandle.get(), fullTopicName.c_str(), state.m_message->getTypeSupportHandle(), qos);
+            state.m_frameId = db.inputs.frameId();
             return true;
         }
 
         return state.publishLidar(db);
     }
 
-
     bool publishLidar(OgnROS2PublishLaserScanDatabase& db)
     {
         CARB_PROFILE_ZONE(0, "Lidar 2D Pub");
-
         auto& state = db.perInstanceState<OgnROS2PublishLaserScan>();
 
         // Check if subscription count is 0
-        if (!mPublishWithoutVerification && !state.mPublisher.get()->get_subscription_count())
+        if (!m_publishWithoutVerification && !state.m_publisher.get()->getSubscriptionCount())
         {
             return false;
         }
+
         size_t buffSize = db.inputs.numCols() * db.inputs.numRows();
         if (buffSize == 0)
         {
@@ -136,11 +126,11 @@ public:
             intensityData[i] = static_cast<float>(intensityPointsCpu[i]);
         }
 
-        state.mMessage->fillData(state.mFrameId, db.inputs.timeStamp(), db.inputs.azimuthRange(), rotationRate,
-                                 db.inputs.depthRange(), buffSize, rangeData, intensityData,
-                                 db.inputs.horizontalResolution(), db.inputs.horizontalFov());
+        state.m_message->writeData(db.inputs.timeStamp(), state.m_frameId, db.inputs.azimuthRange(), rotationRate,
+                                   db.inputs.depthRange(), buffSize, rangeData, intensityData,
+                                   db.inputs.horizontalResolution(), db.inputs.horizontalFov());
 
-        state.mPublisher.get()->publish(state.mMessage->ptr());
+        state.m_publisher.get()->publish(state.m_message->getPtr());
 
         return true;
     }
@@ -153,18 +143,16 @@ public:
 
     virtual void reset()
     {
-        mPublisher.reset(); // This should be reset before we reset the handle.
+        m_publisher.reset(); // This should be reset before we reset the handle.
         Ros2Node::reset();
     }
 
 
 private:
-    std::shared_ptr<Ros2Publisher> mPublisher = nullptr;
-    std::shared_ptr<Ros2LaserScanMessage> mMessage = nullptr;
+    std::shared_ptr<Ros2Publisher> m_publisher = nullptr;
+    std::shared_ptr<Ros2LaserScanMessage> m_message = nullptr;
 
-    std::string mFrameId = "sim_lidar";
-    std::vector<float> range_data;
-    std::vector<float> intensities_data;
+    std::string m_frameId = "sim_lidar";
 };
 
 REGISTER_OGN_NODE()

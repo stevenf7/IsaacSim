@@ -18,34 +18,36 @@
 #include <CoreNodes.h>
 #include <OgnROS2ContextDatabase.h>
 
+using namespace omni::isaac::ros2_bridge;
+
 class OgnROS2Context : public BaseResetNode
 {
 public:
     static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
         auto& state = OgnROS2ContextDatabase::sPerInstanceState<OgnROS2Context>(nodeObj, instanceId);
-        state.mCoreNodeFramework = carb::getCachedInterface<omni::isaac::core_nodes::CoreNodes>();
-        omni::isaac::ros2_bridge::Ros2Bridge* mRos2Bridge =
+        state.m_coreNodeFramework = carb::getCachedInterface<omni::isaac::core_nodes::CoreNodes>();
+        omni::isaac::ros2_bridge::Ros2Bridge* ros2Bridge =
             carb::getCachedInterface<omni::isaac::ros2_bridge::Ros2Bridge>();
-        Ros2Factory* mFactory = mRos2Bridge->getFactory();
-        state.mContext = mFactory->CreateHandle();
+        Ros2Factory* factory = ros2Bridge->getFactory();
+        state.m_contextHandle = factory->createContextHandle();
     }
+
     static bool compute(OgnROS2ContextDatabase& db)
     {
         auto& state = db.perInstanceState<OgnROS2Context>();
 
-        // if the domain id has changed, reset the context
-        if (state.mContext->is_valid() && state.mCleanup && db.inputs.domain_id() != state.mDomain)
+        // If the domain id has changed, reset the context
+        if (state.m_contextHandle->isValid() && state.m_cleanUp && db.inputs.domain_id() != state.m_domainId)
         {
-            state.mContext->shutdown("Omnigraph ROS2 Context node resetting");
-            state.mCleanup = false;
+            state.m_contextHandle->shutdown("Omnigraph ROS2 Context node resetting");
+            state.m_cleanUp = false;
         }
 
-        if (!state.mContext->is_valid())
+        if (!state.m_contextHandle->isValid())
         {
-
             // Set the Domain ID of the context
-            state.mDomain = db.inputs.domain_id();
+            state.m_domainId = db.inputs.domain_id();
             const bool useDomainIDEnvVar = db.inputs.useDomainIDEnvVar();
 
             if (useDomainIDEnvVar)
@@ -62,11 +64,10 @@ public:
 
                 if (domain_id_str != NULL)
                 {
-                    state.mDomain = strtoul(domain_id_str, NULL, 0);
+                    state.m_domainId = strtoul(domain_id_str, NULL, 0);
 
-                    if (state.mDomain == (std::numeric_limits<uint32_t>::max)())
+                    if (state.m_domainId == (std::numeric_limits<uint32_t>::max)())
                     {
-
                         CARB_LOG_INFO("ROS_DOMAIN_ID: %s could not be interpreted as a legal number", domain_id_str);
 #ifdef _MSC_VER
                         free(domain_id_str);
@@ -79,17 +80,15 @@ public:
                 }
                 else
                 {
-                    CARB_LOG_INFO("ROS_DOMAIN_ID not found. Using input value of %zd", state.mDomain);
+                    CARB_LOG_INFO("ROS_DOMAIN_ID not found. Using input value of %zd", state.m_domainId);
                 }
             }
 
-            state.mContext->init(0, nullptr, true, state.mDomain);
+            state.m_contextHandle->init(0, nullptr, true, state.m_domainId);
             // We cast the shared ptr directly (and not the pointer inside of it)
             // This allows us to keep track of the shared pointer properly.
-            state.mHandle = state.mCoreNodeFramework->addHandle(&state.mContext);
-            // CARB_LOG_WARN("GEN CONTEXT %" PRIu64 "\n", state.mHandle);
-
-            db.outputs.context() = state.mHandle;
+            state.m_contextHandleAddr = state.m_coreNodeFramework->addHandle(&state.m_contextHandle);
+            db.outputs.context() = state.m_contextHandleAddr;
             return true;
         }
         return true;
@@ -98,16 +97,17 @@ public:
     {
         auto& state = OgnROS2ContextDatabase::sPerInstanceState<OgnROS2Context>(nodeObj, instanceId);
         state.reset();
-        state.mContext.reset();
-        state.mCoreNodeFramework->removeHandle(state.mHandle);
+        state.m_contextHandle.reset();
+        state.m_coreNodeFramework->removeHandle(state.m_contextHandleAddr);
     }
 
     virtual void reset()
     {
-        // We cannot actually destroy the context here because downstream nodes would fail
+        // We cannot actually destroy the context here because downstream nodes would fail.
         // Instead perform cleanup on next frame
-        mCleanup = true;
+        m_cleanUp = true;
     }
+
     static bool updateNodeVersion(const GraphContextObj& context, const NodeObj& nodeObj, int oldVersion, int newVersion)
     {
         if (oldVersion < newVersion)
@@ -126,11 +126,11 @@ public:
     }
 
 private:
-    std::shared_ptr<Ros2HandleBase> mContext = nullptr;
-    bool mCleanup = false;
-    size_t mDomain = 0;
-    uint64_t mHandle;
-    omni::isaac::core_nodes::CoreNodes* mCoreNodeFramework;
+    std::shared_ptr<Ros2ContextHandle> m_contextHandle = nullptr;
+    bool m_cleanUp = false;
+    size_t m_domainId = 0;
+    uint64_t m_contextHandleAddr;
+    omni::isaac::core_nodes::CoreNodes* m_coreNodeFramework;
 };
 
 REGISTER_OGN_NODE()

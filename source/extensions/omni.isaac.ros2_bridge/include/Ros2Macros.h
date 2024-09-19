@@ -6,7 +6,9 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
+
 #pragma once
+
 #include <carb/logging/Log.h>
 
 #include <rcl/error_handling.h>
@@ -16,7 +18,19 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+namespace omni
+{
+namespace isaac
+{
+namespace ros2_bridge
+{
 
+/**
+ * Print `rcl` current error string as ERROR.
+ *
+ * @param caller Class, method, function, etc. from which the code is called.
+ * @param called Called code (method, function, etc.).
+ */
 #define RCL_ERROR_MSG(caller, called)                                                                                  \
     do                                                                                                                 \
     {                                                                                                                  \
@@ -24,10 +38,19 @@
         rcl_reset_error();                                                                                             \
     } while (0)
 
-
+/**
+ * Print `rcl` current error string as WARNING.
+ *
+ * @param caller Class, method, function, etc. from which the code is called.
+ * @param called Called code (method, function, etc.).
+ */
 #define RCL_WARN_MSG(caller, called)                                                                                   \
     do                                                                                                                 \
     {                                                                                                                  \
         printf("[" #caller "] warning in " #called ": %s\n", rcutils_get_error_string().str);                          \
         rcl_reset_error();                                                                                             \
     } while (0)
+
+} // namespace ros2_bridge
+} // namespace isaac
+} // namespace omni
