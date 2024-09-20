@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.0] - 2024-04-10
+### Changed
+- Extension renamed to isaacsim.core.throttling
+
 ## [1.1.0] - 2024-04-10
 ### Added
 - Added on stop play callback to enable/disable eco mode. Pressing play will disable, pressing stop will enable.
