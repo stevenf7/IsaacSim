@@ -228,7 +228,6 @@ inventory.include = [
     # extensions
     "exts/omni.isaac.cortex.sample_behaviors",
     "exts/omni.isaac.cortex",
-    "exts/omni.isaac.cortex_sync",
 ]
 
 [isaacsim-example]

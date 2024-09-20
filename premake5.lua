@@ -265,7 +265,6 @@ function include_extensions()
     if os.target() == "linux" then
         include ("source/extensions/omni.isaac.benchmarks")
         include ("source/extensions/omni.isaac.repl")
-        include ("source/extensions/omni.isaac.cortex_sync")
         include ("source/extensions/omni.isaac.ocs2")
         include ("source/extensions/omni.isaac.ros_bridge")
     end
