@@ -201,6 +201,7 @@ inventory.include = [
     # apps
     "apps/omni.isaac.sim.python.kit",
     # extensions
+    "exts/isaacsim.core.throttling",
     "exts/omni.isaac.core",
     "exts/omni.isaac.core_nodes",
     "exts/omni.isaac.dynamic_control",

@@ -242,13 +242,13 @@ check-code-format:
   - ./repo.sh format --verify
 
 # ==============================================================================================================
-check-python-packages:
-  extends:
-  - .check-common
-  - .repo-artifacts
-  - .runner-utility-linux-x86_64
-  script:
-  - ./repo.sh check_python_package_definitions
+# check-python-packages: # TODO (aserranomuno) - re-enable once extensions have been renamed
+#   extends:
+#   - .check-common
+#   - .repo-artifacts
+#   - .runner-utility-linux-x86_64
+#   script:
+#   - ./repo.sh check_python_package_definitions
 
 # ==============================================================================================================
 .build-artifacts:

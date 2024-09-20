@@ -8,19 +8,20 @@ keywords = ["experience", "app", "usd"]
 
 [dependencies]
 # Isaac Sim extensions
+"isaacsim.core.throttling" = {}
 "omni.isaac.app.setup" = { order = 1000 }
 "omni.isaac.asset_browser" = {}
 "omni.isaac.assets_check" = { order = 1001 }
+"omni.isaac.block_world" = {}
 "omni.isaac.camera_inspector" = {}
 "omni.isaac.cloner" = {}
-"omni.isaac.block_world" = {}
-"omni.isaac.core" = {}
 "omni.isaac.core_archive" = {}
 "omni.isaac.core_nodes" = {}
+"omni.isaac.core" = {}
 "omni.isaac.debug_draw" = {}
 "omni.isaac.dynamic_control" = {}
-"omni.isaac.examples" = {}
 "omni.isaac.examples_nodes" = {}
+"omni.isaac.examples" = {}
 "omni.isaac.extension_templates" = {}
 "omni.isaac.franka" = {}
 "omni.isaac.gain_tuner" = {}
@@ -28,27 +29,27 @@ keywords = ["experience", "app", "usd"]
 "omni.isaac.import_wizard" = {}
 "omni.isaac.kit" = {}
 "omni.isaac.lula" = {order = 100}
-"omni.isaac.manipulators" = {}
 "omni.isaac.manipulators.ui" = {}
-"omni.isaac.merge_mesh" = {}
+"omni.isaac.manipulators" = {}
 "omni.isaac.menu" = {}
+"omni.isaac.merge_mesh" = {}
 "omni.isaac.ml_archive" = {}
 "omni.isaac.motion_generation" = {}
 "omni.isaac.nucleus" = {}
-"omni.isaac.occupancy_map" = {}
 "omni.isaac.occupancy_map.ui" = {}
+"omni.isaac.occupancy_map" = {}
 "omni.isaac.physics_inspector" = {}
 "omni.isaac.physics_utilities" = {}
 "omni.isaac.quadruped" = {}
-"omni.isaac.range_sensor" = {}
-"omni.isaac.range_sensor.ui" = {}
 "omni.isaac.range_sensor.examples" = {}
+"omni.isaac.range_sensor.ui" = {}
+"omni.isaac.range_sensor" = {}
 "omni.isaac.robot_assembler" = {}
 "omni.isaac.robot_description_editor" = {}
 "omni.isaac.scene_blox" = {}
 "omni.isaac.sensor" = {}
-"omni.isaac.surface_gripper" = {}
 "omni.isaac.surface_gripper.ui" = {}
+"omni.isaac.surface_gripper" = {}
 "omni.isaac.synthetic_recorder" = {}
 "omni.isaac.throttling" = {}
 "omni.isaac.ui" = {}
@@ -372,7 +373,7 @@ changeWindowRegion = true
 
 # Register extension folder from this repo in kit
 [settings.app.exts]
-folders = ["${app}/../exts", "${app}/../extscache", "${app}/../extsPhysics", "${app}/../extsUser"]
+folders = ["${app}/../exts", "${app}/../extscache", "${app}/../extsPhysics", "${app}/../extsUser", "${app}/../extsDeprecated"]
 
 [settings.crashreporter.data]
 experience = "Isaac Sim"
