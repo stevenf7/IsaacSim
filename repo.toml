@@ -1161,6 +1161,7 @@ pyproject.authors = [
 pyproject.license = { text = "NVIDIA Proprietary Software" }
 pyproject.classifiers = [
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
     "License :: Other/Proprietary License",
 ]
 pyproject.readme = """
