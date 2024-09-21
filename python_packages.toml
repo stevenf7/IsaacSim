@@ -1,29 +1,41 @@
 [isaacsim]
 # pyproject.toml
-pyproject.description = "A metapackage that installs the complete version of Isaac Sim"
+pyproject.description = "A metapackage to manage the Isaac Sim installation"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim"]
 pyproject.dependencies = [
-    # isaacsim packages
-    "isaacsim-app==${version}",
-    "isaacsim-asset==${version}",
-    "isaacsim-benchmark==${version}",
-    "isaacsim-code-editor==${version}",
-    "isaacsim-core==${version}",
-    "isaacsim-cortex==${version}",
-    "isaacsim-example==${version}",
-    "isaacsim-gui==${version}",
-    "isaacsim-replicator==${version}",
-    "isaacsim-rl==${version}",
-    "isaacsim-robot==${version}",
-    "isaacsim-robot-motion==${version}",
-    "isaacsim-robot-setup==${version}",
-    "isaacsim-ros1==${version}",
-    "isaacsim-ros2==${version}",
-    "isaacsim-sensor==${version}",
-    "isaacsim-storage==${version}",
-    "isaacsim-template==${version}",
-    "isaacsim-test==${version}",
-    "isaacsim-utils==${version}",
+    "isaacsim-kernel==${version}",
+]
+pyproject.optional-dependencies = [
+    { "rl" = ["isaacsim-rl==${version}", "isaacsim-replicator==${version}", "isaacsim-app==${version}"] },
+    { "ros" = ["isaacsim-ros==${version}"] },
+    { "ros2" = ["isaacsim-ros2==${version}"] },
+    { "extscache" = [
+        "isaacsim-extscache-kit==${version}",
+        "isaacsim-extscache-kit-sdk==${version}",
+        "isaacsim-extscache-physics==${version}",
+        ] },
+    { "all" = [
+        "isaacsim-app==${version}",
+        "isaacsim-asset==${version}",
+        "isaacsim-benchmark==${version}",
+        "isaacsim-code-editor==${version}",
+        "isaacsim-core==${version}",
+        "isaacsim-cortex==${version}",
+        "isaacsim-example==${version}",
+        "isaacsim-gui==${version}",
+        "isaacsim-replicator==${version}",
+        "isaacsim-rl==${version}",
+        "isaacsim-robot==${version}",
+        "isaacsim-robot-motion==${version}",
+        "isaacsim-robot-setup==${version}",
+        "isaacsim-ros1==${version}",
+        "isaacsim-ros2==${version}",
+        "isaacsim-sensor==${version}",
+        "isaacsim-storage==${version}",
+        "isaacsim-template==${version}",
+        "isaacsim-test==${version}",
+        "isaacsim-utils==${version}",
+        ] }
 ]
 # inventory (relative to the build config)
 inventory.include = [
