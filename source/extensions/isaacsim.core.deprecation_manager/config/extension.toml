@@ -25,6 +25,9 @@ name = "isaacsim.core.deprecation_manager"
 [settings]
 # settings
 exts."isaacsim.core.deprecation_manager".settings = [
+    { deprecated = "/exts/omni.isaac.benchmark.services/metrics/metrics_output_folder", new = "/exts/isaacsim.benchmark.services/metrics/metrics_output_folder", update = true },
+    { deprecated = "/exts/omni.isaac.benchmark.services/metrics/nvdataflow_default_test_suite_name", new = "/exts/isaacsim.benchmark.services/metrics/nvdataflow_default_test_suite_name", update = true },
+    { deprecated = "/exts/omni.isaac.benchmark.services/metrics/randomize_filename_prefix", new = "/exts/isaacsim.benchmark.services/metrics/randomize_filename_prefix", update = true },
     { deprecated = "/exts/omni.isaac.vscode/host", new = "/exts/isaacsim.code_editor.vscode/host", update = true },
 ]
 # OmniGraph nodes

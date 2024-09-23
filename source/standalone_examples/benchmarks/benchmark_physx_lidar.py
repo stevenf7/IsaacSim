@@ -35,8 +35,8 @@ from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from pxr import Gf, UsdGeom
 
-enable_extension("omni.isaac.benchmark.services")
-from omni.isaac.benchmark.services import BaseIsaacBenchmark
+enable_extension("isaacsim.benchmark.services")
+from isaacsim.benchmark.services import BaseIsaacBenchmark
 
 
 # Create PhysX Lidar from params

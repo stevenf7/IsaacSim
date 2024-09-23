@@ -105,8 +105,8 @@ from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.nucleus import get_assets_root_path
 from omni.kit.viewport.utility import get_active_viewport
 
-enable_extension("omni.isaac.benchmark.services")
-from omni.isaac.benchmark.services import BaseIsaacBenchmark
+enable_extension("isaacsim.benchmark.services")
+from isaacsim.benchmark.services import BaseIsaacBenchmark
 
 # Create the benchmark
 benchmark = BaseIsaacBenchmark(

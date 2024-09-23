@@ -266,8 +266,8 @@ class SimulationApp:
 
         # Record startup time as time at which app is ready for use
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        if ext_manager.is_extension_enabled("omni.isaac.benchmark.services"):
-            from omni.isaac.benchmark.services import BaseIsaacBenchmark
+        if ext_manager.is_extension_enabled("isaacsim.benchmark.services"):
+            from isaacsim.benchmark.services import BaseIsaacBenchmark
 
             benchmark = BaseIsaacBenchmark(
                 benchmark_name="app_startup",

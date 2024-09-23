@@ -42,8 +42,8 @@ from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.wheeled_robots.robots import WheeledRobot
 from omni.kit.viewport.utility import get_active_viewport
 
-enable_extension("omni.isaac.benchmark.services")
-from omni.isaac.benchmark.services import BaseIsaacBenchmark
+enable_extension("isaacsim.benchmark.services")
+from isaacsim.benchmark.services import BaseIsaacBenchmark
 
 # Create benchmark
 benchmark = BaseIsaacBenchmark(
