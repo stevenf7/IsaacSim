@@ -7,5 +7,14 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.isaac.doctest.tests.test_async_doctest import *
-from omni.isaac.doctest.tests.test_standalone_doctest import *
+import carb
+
+old_extension_name = "omni.isaac.doctest"
+new_extension_name = "isaacsim.test.docstring"
+
+# Provide deprecation warning to user
+carb.log_warn(
+    f"{old_extension_name} has been deprecated in favor of {new_extension_name}. Please update your code accordingly."
+)
+
+from isaacsim.test.docstring import AsyncDocTestCase, StandaloneDocTestCase

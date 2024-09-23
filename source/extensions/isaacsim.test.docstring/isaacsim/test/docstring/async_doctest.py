@@ -33,8 +33,8 @@ class AsyncDocTestCase(omni.kit.test.AsyncTestCase):
 
     .. code-block:: python
 
-        >>> import omni.isaac.doctest
-        >>> tester = omni.isaac.doctest.AsyncDocTestCase()
+        >>> import isaacsim.test.docstring
+        >>> tester = isaacsim.test.docstring.AsyncDocTestCase()
         >>> tester.__class__.__name__
         'AsyncDocTestCase'
     """
@@ -60,7 +60,7 @@ class AsyncDocTestCase(omni.kit.test.AsyncTestCase):
 
         .. code-block:: python
 
-            >>> from omni.isaac.doctest import AsyncDocTestCase
+            >>> from isaacsim.test.docstring import AsyncDocTestCase
             >>>
             >>> tester.assertDocTest(AsyncDocTestCase)
         """
@@ -94,7 +94,7 @@ class AsyncDocTestCase(omni.kit.test.AsyncTestCase):
 
         .. code-block:: python
 
-            >>> from omni.isaac.doctest import AsyncDocTestCase
+            >>> from isaacsim.test.docstring import AsyncDocTestCase
             >>> from omni.kit.async_engine import run_coroutine
             >>>
             >>> async def task():

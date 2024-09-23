@@ -30,8 +30,8 @@ class StandaloneDocTestCase(unittest.TestCase):
 
     .. code-block:: python
 
-        >>> import omni.isaac.doctest
-        >>> tester = omni.isaac.doctest.StandaloneDocTestCase()
+        >>> import isaacsim.test.docstring
+        >>> tester = isaacsim.test.docstring.StandaloneDocTestCase()
         >>> tester.__class__.__name__
         'StandaloneDocTestCase'
     """
@@ -57,7 +57,7 @@ class StandaloneDocTestCase(unittest.TestCase):
 
         .. code-block:: python
 
-            >>> from omni.isaac.doctest import StandaloneDocTestCase
+            >>> from isaacsim.test.docstring import StandaloneDocTestCase
             >>>
             >>> tester.assertDocTest(StandaloneDocTestCase)
         """
@@ -89,7 +89,7 @@ class StandaloneDocTestCase(unittest.TestCase):
 
         .. code-block:: python
 
-            >>> from omni.isaac.doctest import StandaloneDocTestCase
+            >>> from isaacsim.test.docstring import StandaloneDocTestCase
             >>>
             >>> tester.assertDocTests(StandaloneDocTestCase, exclude=[StandaloneDocTestCase.assertDocTests])
             ... # doctest: +NO_CHECK
