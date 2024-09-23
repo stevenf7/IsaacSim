@@ -1,0 +1,35 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.1.0"
+category = "Utility"
+title = "Deprecation manager"
+description = "Manage deprecated OmniGraph nodes and app/extension settings"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.core.deprecation_manager"
+keywords = ["isaacsim", "deprecation", "manager"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+
+[dependencies]
+"omni.usd" = {}
+"omni.kit.notification_manager" = { optional = true }
+
+[[python.module]]
+name = "isaacsim.core.deprecation_manager"
+
+[settings]
+# settings
+exts."isaacsim.core.deprecation_manager".settings = [
+    { deprecated = "/exts/omni.isaac.vscode/host", new = "/exts/isaacsim.code_editor.vscode/host", update = true },
+]
+# OmniGraph nodes
+exts."isaacsim.core.deprecation_manager".omnigraph = [
+    { deprecated = "omni.isaac.ros_bridge", new = "isaacsim.ros1.bridge" },
+    { deprecated = "omni.isaac.ros2_bridge", new = "isaacsim.ros2.bridge" },
+    { deprecated = "omni.isaac.core_nodes", new = "isaacsim.core.nodes" },
+]

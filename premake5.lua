@@ -185,6 +185,7 @@ function include_extensions()
 
     -- Windows and Linux
     include ("source/deprecated/omni.isaac.throttling")
+    include ("source/extensions/isaacsim.core.deprecation_manager")
     include ("source/extensions/isaacsim.core.throttling")
     include ("source/extensions/omni.exporter.urdf")
     include ("source/extensions/omni.isaac.app.selector")
