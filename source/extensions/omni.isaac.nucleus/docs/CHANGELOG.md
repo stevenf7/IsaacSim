@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.2] - 2024-09-23
+
+### Changed
+- Updated to 4.5 asset path
+
 ## [0.3.1] - 2024-08-05
 
 ### Changed
