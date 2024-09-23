@@ -680,7 +680,7 @@ generate_report_cmd = [
 
 [[repo_test.suites.benchmarks.group]]
 include = [
-  "tests-omni.isaac.benchmarks*${shell_ext}",
+  "tests-isaacsim.benchmark.*${shell_ext}",
   "tests-standalone_benchmarks*${shell_ext}",
 ]
 exclude = []
@@ -717,9 +717,6 @@ name = "1"
 include = [
   "tests-omni.isaac.internal_tools*${shell_ext}",
 ]
-[[repo_test.suites.internalpythontests.bucket]]
-name = "2"
-include = ["tests-omni.isaac.benchmarks*${shell_ext}"]
 
 [repo_test.suites.nativepythontests]
 kind = "glob_and_exec"

@@ -605,18 +605,6 @@ test-linux-x86_64-internalpythontests-1:
   rules:
   - !reference [.rules-nightly-tests, rules]
 
-test-linux-x86_64-internalpythontests-2:
-  extends:
-  - .test-common
-  - .test-linux-common
-  - .install-linux-test-packages
-  - .runner-test-linux-x86_64-gpu
-  - .omni_nvks_gpu
-  script:
-  - ./repo.sh ci test -- -s internalpythontests -b 2
-  rules:
-  - !reference [.rules-nightly-tests, rules]
-
 test-windows-x86_64-startuptests:
   extends:
   - .test-common
@@ -728,16 +716,6 @@ test-windows-x86_64-internalpythontests-1:
   - .runner-test-windows-x86_64-gpu
   script:
   - ./repo.bat ci test -- -s internalpythontests -b 1
-  rules:
-  - !reference [.rules-nightly-tests, rules]
-
-test-windows-x86_64-internalpythontests-2:
-  extends:
-  - .test-common
-  - .test-windows-common
-  - .runner-test-windows-x86_64-gpu
-  script:
-  - ./repo.bat ci test -- -s internalpythontests -b 2
   rules:
   - !reference [.rules-nightly-tests, rules]
 

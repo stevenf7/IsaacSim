@@ -41,8 +41,8 @@ from omni.isaac.core.utils.stage import open_stage_async, update_stage_async
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.kit.viewport.utility import get_active_viewport
 
-enable_extension("omni.isaac.benchmark.services")
-from omni.isaac.benchmark.services import BaseIsaacBenchmark
+enable_extension("isaacsim.benchmark.services")
+from isaacsim.benchmark.services import BaseIsaacBenchmark
 
 # Create the benchmark
 benchmark = BaseIsaacBenchmark(

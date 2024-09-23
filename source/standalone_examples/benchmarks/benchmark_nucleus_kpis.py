@@ -19,11 +19,11 @@ import asyncio
 from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.nucleus import get_assets_root_path, recursive_list_folder
 
-enable_extension("omni.isaac.benchmark.services")
+enable_extension("isaacsim.benchmark.services")
 
-from omni.isaac.benchmark.services import BaseIsaacBenchmark
-from omni.isaac.benchmark.services.datarecorders import interface
-from omni.isaac.benchmark.services.metrics import measurements
+from isaacsim.benchmark.services import BaseIsaacBenchmark
+from isaacsim.benchmark.services.datarecorders import interface
+from isaacsim.benchmark.services.metrics import measurements
 
 
 class IsaacSimNucleusKPIRecorder(interface.MeasurementDataRecorder):

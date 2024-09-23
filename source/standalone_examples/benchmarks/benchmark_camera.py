@@ -44,8 +44,8 @@ from omni.isaac.core.utils.stage import is_stage_loading
 from omni.isaac.sensor import Camera
 from omni.kit.viewport.utility import get_active_viewport
 
-enable_extension("omni.isaac.benchmark.services")
-from omni.isaac.benchmark.services import BaseIsaacBenchmark
+enable_extension("isaacsim.benchmark.services")
+from isaacsim.benchmark.services import BaseIsaacBenchmark
 
 # Create the benchmark
 benchmark = BaseIsaacBenchmark(

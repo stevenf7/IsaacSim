@@ -21,13 +21,13 @@ simulation_app = SimulationApp({"headless": True})
 
 from omni.isaac.core.utils.extensions import enable_extension
 
-enable_extension("omni.isaac.benchmark.services")
+enable_extension("isaacsim.benchmark.services")
 
 import sys
 
 import carb
 import numpy as np
-from omni.isaac.benchmark.services import BaseIsaacBenchmark
+from isaacsim.benchmark.services import BaseIsaacBenchmark
 from omni.isaac.cloner import GridCloner
 from omni.isaac.core import World
 from omni.isaac.core.articulations import Articulation, ArticulationView
