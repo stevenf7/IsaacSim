@@ -214,6 +214,7 @@ inventory.include = [
     "apps/omni.isaac.sim.python.kit",
     # extensions
     "exts/isaacsim.core.throttling",
+    # deprecated extensions
     "exts/omni.isaac.core",
     "exts/omni.isaac.core_nodes",
     "exts/omni.isaac.dynamic_control",
@@ -487,6 +488,8 @@ inventory.include = [
     # license
     "LICENSE.txt",
     # extensions
+    "exts/isaacsim.test.docstring",
+    # deprecated extensions
     "exts/omni.isaac.doctest",
     "exts/omni.isaac.tests",
 ]

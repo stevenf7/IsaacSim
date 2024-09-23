@@ -3,12 +3,12 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.0"
+version = "1.0.0"
 category = "Internal"
 title = "Isaac Sim DocTest"
 description = "Test interactive Python docstrings examples"
 authors = ["Isaac Sim Team"]
-repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.doctest"
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.test.docstring"
 keywords = ["isaac", "test", "doctest", "docstrings"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
@@ -17,6 +17,7 @@ icon = "data/icon.png"
 
 [dependencies]
 "omni.kit.test" = {}
+"isaacsim.core.deprecation_manager" = {}
 
 [[python.module]]
-name = "omni.isaac.doctest"
+name = "isaacsim.test.docstring"

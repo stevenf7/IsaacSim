@@ -15,11 +15,11 @@ simulation_app = SimulationApp({"headless": True})
 import omni.isaac.core.utils.extensions as extensions_utils
 
 simulation_app.update()
-extensions_utils.enable_extension("omni.isaac.doctest")
+extensions_utils.enable_extension("isaacsim.test.docstring")
 simulation_app.update()
 
 # run test
-from omni.isaac.doctest import StandaloneDocTestCase
+from isaacsim.test.docstring import StandaloneDocTestCase
 
 tester = StandaloneDocTestCase()
 tester.assertDocTests(StandaloneDocTestCase)

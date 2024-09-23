@@ -7,19 +7,5 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni.isaac.doctest
-
-
-class TestStandaloneDocTest(omni.isaac.doctest.AsyncDocTestCase):
-    # Before running each test
-    async def setUp(self):
-        pass
-
-    # After running each test
-    async def tearDown(self):
-        pass
-
-    async def test_async_doctest_case(self):
-        from omni.isaac.doctest import StandaloneDocTestCase
-
-        await self.assertDocTests(StandaloneDocTestCase)
+from isaacsim.test.docstring.tests.test_async_doctest import *
+from isaacsim.test.docstring.tests.test_standalone_doctest import *
