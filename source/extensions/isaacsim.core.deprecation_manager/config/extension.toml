@@ -25,10 +25,24 @@ name = "isaacsim.core.deprecation_manager"
 [settings]
 # settings
 exts."isaacsim.core.deprecation_manager".settings = [
+    # omni.isaac.benchmark.services -> isaacsim.benchmark.services
     { deprecated = "/exts/omni.isaac.benchmark.services/metrics/metrics_output_folder", new = "/exts/isaacsim.benchmark.services/metrics/metrics_output_folder", update = true },
     { deprecated = "/exts/omni.isaac.benchmark.services/metrics/nvdataflow_default_test_suite_name", new = "/exts/isaacsim.benchmark.services/metrics/nvdataflow_default_test_suite_name", update = true },
     { deprecated = "/exts/omni.isaac.benchmark.services/metrics/randomize_filename_prefix", new = "/exts/isaacsim.benchmark.services/metrics/randomize_filename_prefix", update = true },
+    # omni.isaac.vscode -> isaacsim.code_editor.vscode
     { deprecated = "/exts/omni.isaac.vscode/host", new = "/exts/isaacsim.code_editor.vscode/host", update = true },
+    { deprecated = "/exts/omni.isaac.vscode/port", new = "/exts/isaacsim.code_editor.vscode/port", update = true },
+    { deprecated = "/exts/omni.isaac.vscode/carb_logs", new = "/exts/isaacsim.code_editor.vscode/carb_logs", update = true },
+    # omni.isaac.jupyter_notebook -> isaacsim.code_editor.jupyter
+    { deprecated = "/exts/omni.isaac.jupyter_notebook/host", new = "/exts/isaacsim.code_editor.jupyter/host", update = true },
+    { deprecated = "/exts/omni.isaac.jupyter_notebook/port", new = "/exts/isaacsim.code_editor.jupyter/port", update = true },
+    { deprecated = "/exts/omni.isaac.jupyter_notebook/kill_processes_with_port_in_use", new = "/exts/isaacsim.code_editor.jupyter/kill_processes_with_port_in_use", update = true },
+    { deprecated = "/exts/omni.isaac.jupyter_notebook/classic_notebook_interface", new = "/exts/isaacsim.code_editor.jupyter/classic_notebook_interface", update = true },
+    { deprecated = "/exts/omni.isaac.jupyter_notebook/notebook_ip", new = "/exts/isaacsim.code_editor.jupyter/notebook_ip", update = true },
+    { deprecated = "/exts/omni.isaac.jupyter_notebook/notebook_port", new = "/exts/isaacsim.code_editor.jupyter/notebook_port", update = true },
+    { deprecated = "/exts/omni.isaac.jupyter_notebook/notebook_token", new = "/exts/isaacsim.code_editor.jupyter/notebook_token", update = true },
+    { deprecated = "/exts/omni.isaac.jupyter_notebook/notebook_dir", new = "/exts/isaacsim.code_editor.jupyter/notebook_dir", update = true },
+    { deprecated = "/exts/omni.isaac.jupyter_notebook/command_line_options", new = "/exts/isaacsim.code_editor.jupyter/command_line_options", update = true },
 ]
 # OmniGraph nodes
 exts."isaacsim.core.deprecation_manager".omnigraph = [

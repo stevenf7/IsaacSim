@@ -184,8 +184,10 @@ inventory.include = [
     # license
     "LICENSE.txt",
     # extensions
+    "isaacsim.code_editor.jupyter",
+    "isaacsim.code_editor.vscode",
+    # deprecated extensions
     "exts/omni.isaac.jupyter_notebook",
-    "exts/omni.isaac.repl",
     "exts/omni.isaac.vscode",
 ]
 
