@@ -91,10 +91,10 @@ class TestPrims(omni.kit.test.AsyncTestCase):
 
     async def test_get_articulation_root_api_prim_path(self):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_manager.get_enabled_extension_id("omni.isaac.cloner")
+        ext_manager.get_enabled_extension_id("isaacsim.core.cloner")
         await omni.kit.app.get_app().next_update_async()
 
-        from omni.isaac.cloner import GridCloner
+        from isaacsim.core.cloner import GridCloner
         from omni.isaac.core.utils.prims import get_articulation_root_api_prim_path
         from omni.isaac.core.utils.stage import clear_stage, get_current_stage
         from omni.isaac.nucleus import get_assets_root_path_async

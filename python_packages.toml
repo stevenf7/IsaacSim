@@ -319,7 +319,9 @@ inventory.include = [
     # license
     "LICENSE.txt",
     # extensions
-    "exts/omni.isaac.cloner",
+    "exts/isaacsim.core.cloner",
+    # deprecated extensions
+    "extsDeprecated/omni.isaac.cloner"
 ]
 
 [isaacsim-robot]

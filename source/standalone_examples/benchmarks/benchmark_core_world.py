@@ -28,7 +28,7 @@ import sys
 import carb
 import numpy as np
 from isaacsim.benchmark.services import BaseIsaacBenchmark
-from omni.isaac.cloner import GridCloner
+from isaacsim.core.cloner import GridCloner
 from omni.isaac.core import World
 from omni.isaac.core.articulations import Articulation, ArticulationView
 from omni.isaac.core.objects import DynamicCuboid, VisualCuboid

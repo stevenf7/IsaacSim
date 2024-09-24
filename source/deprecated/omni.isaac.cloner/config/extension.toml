@@ -3,12 +3,12 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.8.1"
+version = "1.0.0"
 category = "Simulation"
 title = "Isaac Sim Cloner"
 description = "Cloner"
 authors = ["Isaac Sim Team"]
-repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.cloner"
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/omni.isaac.cloner"
 keywords = ["isaac"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
@@ -17,17 +17,12 @@ preview_image = "data/preview.png"
 writeTarget.kit = true
 
 [dependencies]
-"omni.usd" = {}
-"omni.usd.libs" = {}
-"omni.physx" = {}
-"omni.isaac.ml_archive" = {}  # needed for torch
+"isaacsim.core.deprecation_manager" = {}
+
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.core.cloner"
 
 [[python.module]]
 name = "omni.isaac.cloner"
 
-[[test]]
-dependencies = [
-    "omni.physx",
-    "omni.isaac.core",
-    "omni.isaac.nucleus", # test only
-]
+

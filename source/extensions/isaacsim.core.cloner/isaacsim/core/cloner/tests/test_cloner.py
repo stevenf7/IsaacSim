@@ -11,7 +11,7 @@ import unittest
 
 import numpy as np
 import omni.kit
-from omni.isaac.cloner import Cloner, GridCloner
+from isaacsim.core.cloner import Cloner, GridCloner
 from omni.isaac.nucleus import get_assets_root_path_async
 from pxr import Gf, Usd, UsdGeom, UsdPhysics, Vt
 
@@ -19,7 +19,7 @@ from pxr import Gf, Usd, UsdGeom, UsdPhysics, Vt
 class TestSimpleCloner(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.cloner")
+        ext_id = ext_manager.get_enabled_extension_id("isaacsim.core.cloner")
         self._extension_path = ext_manager.get_extension_path(ext_id)
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()

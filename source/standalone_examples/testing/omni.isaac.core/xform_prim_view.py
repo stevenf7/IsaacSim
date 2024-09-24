@@ -18,7 +18,7 @@ import sys
 import carb
 import numpy as np
 import torch
-from omni.isaac.cloner import Cloner
+from isaacsim.core.cloner import Cloner
 from omni.isaac.core import World
 from omni.isaac.core.materials.omni_glass import OmniGlass
 from omni.isaac.core.prims.xform_prim_view import XFormPrimView

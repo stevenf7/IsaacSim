@@ -1,10 +1,10 @@
-Isaac Cloner [omni.isaac.cloner]
-################################
+Isaac Cloner [isaacsim.core.cloner]
+####################################
 
 Base Cloner
 ===========
 
-.. automodule:: omni.isaac.cloner.cloner
+.. automodule:: isaacsim.core.cloner.cloner
     :inherited-members:
     :imported-members:
     :members:
@@ -14,7 +14,7 @@ Base Cloner
 Grid Cloner
 ===========
 
-.. automodule:: omni.isaac.cloner.grid_cloner
+.. automodule:: isaacsim.core.cloner.grid_cloner
     :inherited-members:
     :imported-members:
     :members:

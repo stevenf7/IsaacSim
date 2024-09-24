@@ -70,7 +70,7 @@ class GeometryPrimView(XFormPrimView):
         reset_xform_properties (bool, optional): True if the prims don't have the right set of xform properties
                                                 (i.e: translate, orient and scale) ONLY and in that order.
                                                 Set this parameter to False if the object were cloned using using
-                                                the cloner api in omni.isaac.cloner. Defaults to True.
+                                                the cloner api in isaacsim.core.cloner. Defaults to True.
         collisions (Optional[Union[np.ndarray, torch.Tensor, wp.array]], optional): Set to True if the geometry already have/
                                                     should have a collider (i.e not only a visual geometry). shape is (N,).
                                                     Defaults to None.
@@ -91,7 +91,7 @@ class GeometryPrimView(XFormPrimView):
     .. code-block:: python
 
         >>> import omni.isaac.core.utils.stage as stage_utils
-        >>> from omni.isaac.cloner import GridCloner
+        >>> from isaacsim.core.cloner import GridCloner
         >>> from omni.isaac.core.prims import GeometryPrimView
         >>> from pxr import UsdGeom
         >>>

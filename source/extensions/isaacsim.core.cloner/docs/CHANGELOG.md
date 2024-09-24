@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.0] - 2024-09-24
+### Changed
+- Extension renamed to isaacsim.core.cloner
+
 ## [0.8.1] - 2024-02-07
 ### Changed
 - Updated path to the nucleus extension

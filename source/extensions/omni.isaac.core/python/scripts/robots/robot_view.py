@@ -53,7 +53,7 @@ class RobotView(ArticulationView):
     .. code-block:: python
 
         >>> import omni.isaac.core.utils.stage as stage_utils
-        >>> from omni.isaac.cloner import GridCloner
+        >>> from isaacsim.core.cloner import GridCloner
         >>> from omni.isaac.core.robots import RobotView
         >>> from pxr import UsdGeom
         >>>
