@@ -64,7 +64,7 @@ RUN apt-get install -y libglfw3 libfreetype6 libdbus-1-3 libglib2.0-0
 FROM scratch
 COPY --from=isaac-sim / /
 
-# ENV OMNI_SERVER http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.2
+# ENV OMNI_SERVER http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5
 ARG OMNI_SERVER_ENV omniverse://isaac-dev.ov.nvidia.com
 ENV OMNI_SERVER omniverse://isaac-dev.ov.nvidia.com
 # ENV OMNI_USER admin

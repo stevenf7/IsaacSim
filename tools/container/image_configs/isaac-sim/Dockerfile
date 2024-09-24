@@ -61,7 +61,7 @@ ENV NVIDIA_VISIBLE_DEVICES=all NVIDIA_DRIVER_CAPABILITIES=all
 # # Switch back to non-root user
 # USER ubuntu
 
-ENV OMNI_SERVER http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.2
+ENV OMNI_SERVER http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5
 ENV OMNI_USER admin
 ENV OMNI_PASS admin
 ENV MIN_DRIVER_VERSION 525.60.11
