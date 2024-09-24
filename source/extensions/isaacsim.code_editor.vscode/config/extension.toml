@@ -1,0 +1,29 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "1.0.0"
+category = "Utility"
+title = "VS Code integration"
+description = "VS Code version of Omniverse's script editor"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.code_editor.vscode"
+keywords = ["isaac", "python", "vscode", "editor"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+
+[dependencies]
+"omni.kit.uiapp" = { optional = true }
+"omni.kit.notification_manager" = { optional = true }
+"isaacsim.core.deprecation_manager" = {}
+
+[[python.module]]
+name = "isaacsim.code_editor.vscode"
+
+[settings]
+exts."isaacsim.code_editor.vscode".host = "0.0.0.0"
+exts."isaacsim.code_editor.vscode".port = 8226
+exts."isaacsim.code_editor.vscode".carb_logs = true
