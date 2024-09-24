@@ -1,0 +1,35 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "1.0.0"
+category = "Simulation"
+title = "Isaac Sim: Optimal Control for Switched Systems"
+description = "Extension that provides OCS2 python interface."
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot_motion.ocs2"
+keywords = ["isaac", "ocs2", "mpc"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+icon = "data/icon.png"
+preview_image = "data/preview.png"
+writeTarget.kit = true
+writeTarget.platform = true # pip prebundle makes this extension os specific
+
+[dependencies]
+"omni.kit.test" = {}
+"omni.kit.pip_archive" = {}
+"isaacsim.core.deprecation_manager" = {}
+
+[[python.module]]
+path = "pip_prebundle"
+
+[[python.module]]
+name = "isaacsim.robot_motion.ocs2"
+
+[[python.module]]
+name = "isaacsim.robot_motion.ocs2.tests"
+
+[[native.library]]
+"filter:platform"."linux-x86_64".path = "pip_prebundle/lib/liboctomap.so"

@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.0] - 2024-09-23
+
+### Deprecated
+- Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.robot_motion.ocs2
+
 ## [0.2.1] - 2023-12-12
 
 ### Changed
@@ -19,7 +24,6 @@
 
 ### Fixed
 - Startup errors due to missing symbols
-
 
 ## [0.1.0] - 2022-11-21
 

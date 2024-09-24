@@ -271,8 +271,9 @@ function include_extensions()
 
     -- Linux Only
     if os.target() == "linux" then
+        include ("source/deprecated/omni.isaac.ocs2")
+        include ("source/extensions/isaacsim.robot_motion.ocs2")
         include ("source/extensions/omni.isaac.repl")
-        include ("source/extensions/omni.isaac.ocs2")
         include ("source/extensions/omni.isaac.ros_bridge")
     end
 end

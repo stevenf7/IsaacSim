@@ -38,8 +38,8 @@ from omni.isaac.core.world import World
 from omni.isaac.franka import Franka
 
 # isaac-ocs2
-enable_extension("omni.isaac.ocs2")
-from omni.isaac.ocs2.end_effector_pose_tracking_mpc import EndEffectorPoseTrackingMpc
+enable_extension("isaacsim.robot_motion.ocs2")
+from isaacsim.robot_motion.ocs2.end_effector_pose_tracking_mpc import EndEffectorPoseTrackingMpc
 
 # print settings
 np.set_printoptions(formatter={"float_kind": "{:.2f}".format})

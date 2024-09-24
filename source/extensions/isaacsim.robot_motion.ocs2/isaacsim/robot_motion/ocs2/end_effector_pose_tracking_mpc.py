@@ -45,7 +45,7 @@ class EndEffectorPoseTrackingMpc:
 
         Note:
             If input paths are not absolute, they are resolved with respect to the path of the
-            directory `omni.isaac.ocs2`.
+            directory `isaacsim.robot_motion.ocs2`.
 
         Args:
             config_file (str): The path to the configuration file.
@@ -58,7 +58,7 @@ class EndEffectorPoseTrackingMpc:
         """
         # get extension directory
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.ocs2")
+        ext_id = ext_manager.get_enabled_extension_id("isaacsim.robot_motion.ocs2")
         self._ocs2_extension_path = ext_manager.get_extension_path(ext_id)
 
         # resolve the paths
