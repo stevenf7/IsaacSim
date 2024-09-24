@@ -16,7 +16,7 @@ import numpy as np
 import omni.kit.test
 
 # omni-isaac-ocs2
-from omni.isaac.ocs2.end_effector_pose_tracking_mpc import EndEffectorPoseTrackingMpc
+from isaacsim.robot_motion.ocs2.end_effector_pose_tracking_mpc import EndEffectorPoseTrackingMpc
 
 
 class TestEndEffectorPoseTrackingMpc(omni.kit.test.AsyncTestCase):
