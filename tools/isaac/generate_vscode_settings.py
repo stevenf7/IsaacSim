@@ -33,6 +33,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         options.compilation_cores = 1
         options.mem_per_core = 4
         options.max_cores = 32
+        options.msbuild_renice = False
         settings = load_settings_from_config(config, options)
         repo_folders = get_repo_paths()
 
