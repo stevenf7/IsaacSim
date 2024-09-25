@@ -36,8 +36,6 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
 
         # Read custom dependencies from ./repo.toml and convert to dict of {dep: ver} or {dep: (ver, tag)}
         deps_for_isaac = dict()
-        deps_for_testing = dict()
-        deps_for_ml = dict()
         override = dict()  # override version of a dependency to set specific versions regardless of version in Create
 
         # if dependency has a tag, it should have format {dep: "ext.name-ver", tag: "tag"} in repo.toml
@@ -50,21 +48,6 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
                 (dep, _, ver) = item.partition("-")
                 deps_for_isaac[dep] = ver
 
-        for item in tool_config["deps_for_testing"]:
-            if type(item) is dict:
-                (dep, _, ver) = item["dep"].partition("-")
-                deps_for_testing[dep] = (ver, item["tag"])
-            else:
-                (dep, _, ver) = item.partition("-")
-                deps_for_testing[dep] = ver
-
-        for item in tool_config["deps_for_ml"]:
-            if type(item) is dict:
-                (dep, _, ver) = item["dep"].partition("-")
-                deps_for_ml[dep] = (ver, item["tag"])
-            else:
-                (dep, _, ver) = item.partition("-")
-                deps_for_ml[dep] = ver
         for item in tool_config["override"]:
             if type(item) is dict:
                 (dep, _, ver) = item["dep"].partition("-")
@@ -76,8 +59,6 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         # These tuples contain the comment that will be printed above the dependencies for each set of custom dependencies
         deps = [
             ("Only for Isaac Sim", deps_for_isaac),
-            ("Testing dependencies\n# internal only, used for benchmarking, removed from package", deps_for_testing),
-            ("ML dependencies", deps_for_ml),
             (None, None),  # This is a marker that indicates that the next set of dependencies are the Create extensions
         ]
 
@@ -100,7 +81,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         if not options.offline:
             # Read the extensions from Create
             # exacts contains the "Exact Version dependencies" list from Create, enableds contains the "enabled" list from Create
-            exacts, enableds = read_source(tool_config["url"])
+            exacts, enableds = read_source(tool_config["output_file"])
         else:
             reached_enableds = False
             reached_exacts = False
@@ -175,7 +156,13 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
                 break
 
             # ignore lines that are not dependencies
-            elif line.startswith("#") or line.startswith("[dependencies]") or line == "" or line == "\n":
+            elif (
+                line.startswith("#")
+                or line.startswith("[dependencies]")
+                or line == ""
+                or line == "\n"
+                or ("[" in line and "]" in line)
+            ):
                 continue
 
             # read the dependency, version, and tag (if present) from the line
@@ -223,9 +210,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
                     continue
 
                 # If the dependency is in the list of custom dependencies, or if it is in the list of dependencies from Create and not in the list of custom dependencies (i.e. has already been printed), print it
-                if not create_exts or (
-                    create_exts and dep not in deps_for_isaac and dep not in deps_for_testing and dep not in deps_for_ml
-                ):
+                if not create_exts or (create_exts and dep not in deps_for_isaac):
                     output.append(print_dep(dep, ver))
             output.append("\n")
 
@@ -261,7 +246,8 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
 # Read the dependencies from Create
 def read_source(file):
     # Read the file from the given URL
-    source_file = urlopen(file)
+    # source_file = urlopen(file)
+    source_file = open(file, "r")
     source_file_lines = source_file.readlines()
     source_file.close()
 
@@ -275,7 +261,7 @@ def read_source(file):
     enabled = False
 
     for line in source_file_lines:
-        line = line.decode("utf-8")
+        # line = line.decode("utf-8")
         # Use the comments (and other text) in the file to determine which section is currently being read
         if not generated and line.startswith("# BEGIN GENERATED PART"):
             generated = True
