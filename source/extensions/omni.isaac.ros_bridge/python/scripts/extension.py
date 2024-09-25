@@ -27,7 +27,7 @@ class Extension(omni.ext.IExt):
     def on_startup(self):
         self._rosbridge = None
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        for b in ["omni.isaac.ros_bridge", "omni.isaac.ros2_bridge"]:
+        for b in ["omni.isaac.ros_bridge", "isaacsim.ros2.bridge"]:
             if b != BRIDGE_NAME and ext_manager.is_extension_enabled(b):
                 carb.log_error(f"{BRIDGE_PREFIX} bridge extension cannot be enabled if {b} is enabled")
                 ext_manager.set_extension_enabled(BRIDGE_NAME, False)

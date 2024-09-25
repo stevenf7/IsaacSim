@@ -17,6 +17,6 @@ import omni
 from omni.isaac.core.utils.extensions import enable_extension
 
 # enable ROS bridge extension
-enable_extension("omni.isaac.ros2_bridge")
+enable_extension("isaacsim.ros2.bridge")
 kit.update()
 kit.close()

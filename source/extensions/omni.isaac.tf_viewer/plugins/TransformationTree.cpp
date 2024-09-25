@@ -27,7 +27,7 @@ namespace transform_listener
 {
 
 
-class TransformListener : public ITransformListener, omni::isaac::ros2_bridge::Ros2Node
+class TransformListener : public ITransformListener, isaacsim::ros2::bridge::Ros2Node
 {
 public:
     bool initialize(const std::string& rosDistro)
@@ -90,7 +90,7 @@ public:
 
         if (!mSubscriberTf)
         {
-            omni::isaac::ros2_bridge::Ros2QoSProfile qos;
+            isaacsim::ros2::bridge::Ros2QoSProfile qos;
             qos.depth = 100;
             mMessageTf = m_factory->createTfTreeMessage();
             mSubscriberTf =
@@ -99,7 +99,7 @@ public:
         }
         if (!mSubscriberTfStatic)
         {
-            omni::isaac::ros2_bridge::Ros2QoSProfile qos;
+            isaacsim::ros2::bridge::Ros2QoSProfile qos;
             qos.depth = 100;
             mMessageTfStatic = m_factory->createTfTreeMessage();
             mSubscriberTfStatic = m_factory->createSubscriber(
@@ -166,11 +166,11 @@ private:
     std::shared_ptr<omni::isaac::utils::LibraryLoader> mLibraryLoader = nullptr;
     Tf2Factory* mTf2Factory = nullptr;
 
-    std::shared_ptr<omni::isaac::ros2_bridge::Ros2Subscriber> mSubscriberTf = nullptr;
-    std::shared_ptr<omni::isaac::ros2_bridge::Ros2Subscriber> mSubscriberTfStatic = nullptr;
+    std::shared_ptr<isaacsim::ros2::bridge::Ros2Subscriber> mSubscriberTf = nullptr;
+    std::shared_ptr<isaacsim::ros2::bridge::Ros2Subscriber> mSubscriberTfStatic = nullptr;
 
-    std::shared_ptr<omni::isaac::ros2_bridge::Ros2TfTreeMessage> mMessageTf = nullptr;
-    std::shared_ptr<omni::isaac::ros2_bridge::Ros2TfTreeMessage> mMessageTfStatic = nullptr;
+    std::shared_ptr<isaacsim::ros2::bridge::Ros2TfTreeMessage> mMessageTf = nullptr;
+    std::shared_ptr<isaacsim::ros2::bridge::Ros2TfTreeMessage> mMessageTfStatic = nullptr;
 
     std::shared_ptr<Ros2BufferCore> mBuffer = nullptr;
 

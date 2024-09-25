@@ -91,7 +91,7 @@ def move_cmd_msg(x, y, z, ax, ay, az):
 
 benchmark.set_phase("loading", start_recording_frametime=False, start_recording_runtime=True)
 
-enable_extension("omni.isaac.ros2_bridge")
+enable_extension("isaacsim.ros2.bridge")
 import rclpy
 from geometry_msgs.msg import Twist
 
@@ -166,7 +166,7 @@ for i in range(n_robot):
     robots.append(current_robot)
 
 # Set this to true so that we always publish regardless of subscribers
-carb.settings.get_settings().set_bool("/exts/omni.isaac.ros2_bridge/publish_without_verification", True)
+carb.settings.get_settings().set_bool("/exts/isaacsim.ros2.bridge/publish_without_verification", True)
 
 timeline = omni.timeline.get_timeline_interface()
 timeline.play()

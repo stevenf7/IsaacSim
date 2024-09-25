@@ -165,7 +165,7 @@ class SelectorWindow:
 
                     self.env_vars[
                         "PATH"
-                    ] = f"{'' if os.getenv('PATH') is None else os.getenv('PATH')};{self.package_path}\exts\omni.isaac.ros2_bridge\humble\lib"
+                    ] = f"{'' if os.getenv('PATH') is None else os.getenv('PATH')};{self.package_path}\exts\isaacsim.ros2.bridge\humble\lib"
         # Linux
         else:
             if ros_bridge_selection == 2:
@@ -194,7 +194,7 @@ class SelectorWindow:
 
                     self.env_vars[
                         "LD_LIBRARY_PATH"
-                    ] = f"{'' if os.getenv('LD_LIBRARY_PATH') is None else os.getenv('LD_LIBRARY_PATH')}:{self.package_path}/exts/omni.isaac.ros2_bridge/humble/lib"
+                    ] = f"{'' if os.getenv('LD_LIBRARY_PATH') is None else os.getenv('LD_LIBRARY_PATH')}:{self.package_path}/exts/isaacsim.ros2.bridge/humble/lib"
 
                 # Use Internal libs for Foxy
                 elif internal_libs_selection == 2:
@@ -209,7 +209,7 @@ class SelectorWindow:
                     self.env_vars["ROS_DISTRO"] = "foxy"
                     self.env_vars[
                         "LD_LIBRARY_PATH"
-                    ] = f"{'' if os.getenv('LD_LIBRARY_PATH') is None else os.getenv('LD_LIBRARY_PATH')}:{self.package_path}/exts/omni.isaac.ros2_bridge/foxy/lib"
+                    ] = f"{'' if os.getenv('LD_LIBRARY_PATH') is None else os.getenv('LD_LIBRARY_PATH')}:{self.package_path}/exts/isaacsim.ros2.bridge/foxy/lib"
 
         self._settings.set(PERSISTENT_ROS_BRIDGE_SETTING, ros_bridge_selection)
         self._settings.set(PERSISTENT_ROS_INTERNAL_LIBS_SETTING, internal_libs_selection)
@@ -525,7 +525,7 @@ class SelectorWindow:
                     self._ros_bridge_selection = ui.ComboBox(
                         self._settings.get_as_int(PERSISTENT_ROS_BRIDGE_SETTING),
                         "",
-                        "omni.isaac.ros2_bridge",
+                        "isaacsim.ros2.bridge",
                         tooltip=textwrap.fill("ROS Bridge to enable on startup", 80),
                     ).model
                 # Linux
@@ -534,7 +534,7 @@ class SelectorWindow:
                         self._settings.get_as_int(PERSISTENT_ROS_BRIDGE_SETTING),
                         "",
                         "omni.isaac.ros_bridge (deprecated)",
-                        "omni.isaac.ros2_bridge",
+                        "isaacsim.ros2.bridge",
                         tooltip=textwrap.fill("ROS Bridge to enable on startup", 80),
                     ).model
 

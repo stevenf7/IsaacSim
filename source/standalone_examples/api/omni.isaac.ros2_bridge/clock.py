@@ -21,7 +21,7 @@ from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils.extensions import enable_extension
 
 # enable ROS2 bridge extension
-enable_extension("omni.isaac.ros2_bridge")
+enable_extension("isaacsim.ros2.bridge")
 
 simulation_app.update()
 # Note that this is not the system level rclpy, but one compiled for omniverse
@@ -40,9 +40,9 @@ try:
             og.Controller.Keys.CREATE_NODES: [
                 ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
                 ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                ("PublishClock", "omni.isaac.ros2_bridge.ROS2PublishClock"),
+                ("PublishClock", "isaacsim.ros2.bridge.ROS2PublishClock"),
                 ("OnImpulseEvent", "omni.graph.action.OnImpulseEvent"),
-                ("PublishManualClock", "omni.isaac.ros2_bridge.ROS2PublishClock"),
+                ("PublishManualClock", "isaacsim.ros2.bridge.ROS2PublishClock"),
             ],
             og.Controller.Keys.CONNECT: [
                 # Connecting execution of OnPlaybackTick node to PublishClock to automatically publish each frame

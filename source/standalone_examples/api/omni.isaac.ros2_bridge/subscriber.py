@@ -17,7 +17,7 @@ from omni.isaac.core.objects import VisualCuboid
 from omni.isaac.core.utils.extensions import enable_extension
 
 # enable ROS2 bridge extension
-enable_extension("omni.isaac.ros2_bridge")
+enable_extension("isaacsim.ros2.bridge")
 
 simulation_app.update()
 

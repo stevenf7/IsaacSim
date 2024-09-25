@@ -339,13 +339,13 @@ exts."omni.kit.browser.texture".folders = [
  ]
 
 # default internal ros2 bridge distro to use if no ros2 distro is sourced
-exts."omni.isaac.ros2_bridge".ros_distro = "humble"
+exts."isaacsim.ros2.bridge".ros_distro = "humble"
 
 # set the default ros bridge to enable on startup
 [settings."filter:platform"."windows-x86_64"]
 isaac.startup.ros_bridge_extension = ""
 [settings."filter:platform"."linux-x86_64"]
-isaac.startup.ros_bridge_extension = "omni.isaac.ros2_bridge"
+isaac.startup.ros_bridge_extension = "isaacsim.ros2.bridge"
 
 # Content Browser
 ###############################

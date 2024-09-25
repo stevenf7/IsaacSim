@@ -24,7 +24,7 @@ from omni.isaac.nucleus import get_assets_root_path
 from pxr import Gf
 
 # enable ROS2 bridge extension
-enable_extension("omni.isaac.ros2_bridge")
+enable_extension("isaacsim.ros2.bridge")
 
 simulation_app.update()
 

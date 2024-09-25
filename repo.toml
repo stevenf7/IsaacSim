@@ -308,11 +308,11 @@ sphinx_exclude_patterns = [
 ]
 
 doxygen_input = [
-    "source/extensions/omni.isaac.ros2_bridge/include/Ros2Bridge.h",
-    "source/extensions/omni.isaac.ros2_bridge/include/Ros2Factory.h",
-    "source/extensions/omni.isaac.ros2_bridge/include/Ros2Macros.h",
-    "source/extensions/omni.isaac.ros2_bridge/include/Ros2Node.h",
-    "source/extensions/omni.isaac.ros2_bridge/include/Ros2QoS.h",
+    "source/extensions/isaacsim.ros2.bridge/include/Ros2Bridge.h",
+    "source/extensions/isaacsim.ros2.bridge/include/Ros2Factory.h",
+    "source/extensions/isaacsim.ros2.bridge/include/Ros2Macros.h",
+    "source/extensions/isaacsim.ros2.bridge/include/Ros2Node.h",
+    "source/extensions/isaacsim.ros2.bridge/include/Ros2QoS.h",
 ]
 doxygen_predefined = [
     "CARB_PLUGIN_INTERFACE=",
@@ -475,7 +475,7 @@ test_root = "$root/_build/$platform/$config"
 env_vars = [
   ["LD_PRELOAD", "${root}/_build/${platform}/${config}/kit/libcarb.so"],
   ["RMW_IMPLEMENTATION", "rmw_fastrtps_cpp"],
-  ["LD_LIBRARY_PATH", "${root}/_build/${platform}/${config}/exts/omni.isaac.ros2_bridge/humble/lib"],
+  ["LD_LIBRARY_PATH", "${root}/_build/${platform}/${config}/exts/isaacsim.ros2.bridge/humble/lib"],
 ]
 
 # When running from package, look for package using that path/pattern:
@@ -894,7 +894,7 @@ etm_emails = ["hmazhar@nvidia.com"]
 
 cpp.files.exclude = [
     "source/extensions/omni.isaac.ros_bridge/isaac_ros_messages/**",
-    "source/extensions/omni.isaac.ros2_bridge/isaac_ros2_messages/**",
+    "source/extensions/isaacsim.ros2.bridge/isaac_ros2_messages/**",
     "tools/container/**",
 ]
 
@@ -931,7 +931,7 @@ ogn_exts_includes = [
     "omni.isaac.sensor",
     "omni.isaac.range_sensor",
     "omni.isaac.ros_bridge",
-    "omni.isaac.ros2_bridge",
+    "isaacsim.ros2.bridge",
     "omni.isaac.wheeled_robots",
 ]
 

@@ -22,8 +22,8 @@ ECO_MODE_SETTING = "/persistent/rtx/ecoMode/enabled"
 
 PERSISTENT_ROS_BRIDGE_SETTING = "/persistent/ext/omni.isaac.selector/ros_bridge_extension"
 if platform.system().lower() == "windows":
-    ROS_BRIDGE_EXTENSIONS = ["", "omni.isaac.ros2_bridge"]
+    ROS_BRIDGE_EXTENSIONS = ["", "isaacsim.ros2.bridge"]
 else:
-    ROS_BRIDGE_EXTENSIONS = ["", "omni.isaac.ros_bridge", "omni.isaac.ros2_bridge"]
+    ROS_BRIDGE_EXTENSIONS = ["", "omni.isaac.ros_bridge", "isaacsim.ros2.bridge"]
 
 PERSISTENT_ROS_INTERNAL_LIBS_SETTING = "/persistent/ext/omni.isaac.selector/ros_internal_libs"

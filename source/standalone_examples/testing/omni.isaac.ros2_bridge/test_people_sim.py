@@ -34,7 +34,7 @@ for e in ADDITIONAL_EXTENSIONS_PEOPLE:
     enable_extension(e)
     kit.update()
 
-enable_extension("omni.isaac.ros2_bridge")
+enable_extension("isaacsim.ros2.bridge")
 kit.update()
 
 # Locate Isaac Sim assets folder to load sample
