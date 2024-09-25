@@ -15,7 +15,7 @@ import sys
 
 import carb
 import numpy as np
-from omni.isaac.cloner import GridCloner
+from isaacsim.core.cloner import GridCloner
 from omni.isaac.core import World
 from omni.isaac.core.articulations import ArticulationView
 from omni.isaac.core.utils.stage import add_reference_to_stage, get_stage_units

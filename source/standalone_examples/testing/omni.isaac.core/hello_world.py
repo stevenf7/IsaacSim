@@ -16,7 +16,7 @@ simulation_app = SimulationApp({"headless": False})
 import argparse
 from abc import abstractmethod
 
-from omni.isaac.cloner import GridCloner
+from isaacsim.core.cloner import GridCloner
 from omni.isaac.core import World
 from omni.isaac.core.objects import DynamicCuboid, DynamicSphere
 from omni.isaac.core.prims.rigid_prim_view import RigidPrimView

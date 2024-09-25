@@ -11,7 +11,7 @@ from typing import List, Union
 import numpy as np
 import omni.usd
 import torch
-from omni.isaac.cloner import Cloner
+from isaacsim.core.cloner import Cloner
 from pxr import Gf, Usd, UsdGeom
 
 

@@ -6,5 +6,15 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.cloner.cloner import Cloner
-from omni.isaac.cloner.grid_cloner import GridCloner
+import carb
+
+old_extension_name = "omni.isaac.cloner"
+new_extension_name = "isaacsim.core.cloner"
+
+# Provide deprecation warning to user
+carb.log_warn(
+    f"{old_extension_name} has been deprecated in favor of {new_extension_name}. Please update your code accordingly."
+)
+
+from isaacsim.core.cloner.cloner import Cloner
+from isaacsim.core.cloner.grid_cloner import GridCloner

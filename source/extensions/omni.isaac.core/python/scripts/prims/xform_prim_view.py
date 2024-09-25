@@ -77,7 +77,7 @@ class XFormPrimView(object):
         reset_xform_properties (bool, optional): True if the prims don't have the right set of xform properties
                                                 (i.e: translate, orient and scale) ONLY and in that order.
                                                 Set this parameter to False if the object were cloned using using
-                                                the cloner api in omni.isaac.cloner. Defaults to True.
+                                                the cloner api in isaacsim.core.cloner. Defaults to True.
         usd (bool, optional): True to strictly read/ write from usd. Otherwise False to allow read/ write from Fabric during initialization. Defaults to True.
 
     Raises:
@@ -89,7 +89,7 @@ class XFormPrimView(object):
     .. code-block:: python
 
         >>> import omni.isaac.core.utils.stage as stage_utils
-        >>> from omni.isaac.cloner import GridCloner
+        >>> from isaacsim.core.cloner import GridCloner
         >>> from omni.isaac.core.prims import XFormPrimView
         >>> from pxr import UsdGeom
         >>>

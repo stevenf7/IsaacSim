@@ -52,7 +52,7 @@ dependencies = [
     "omni.warp",
     "omni.isaac.sensor",
     "omni.isaac.nucleus",
-    "omni.isaac.cloner",
+    "isaacsim.core.cloner",
 ]
 
 stdoutFailPatterns.exclude = [

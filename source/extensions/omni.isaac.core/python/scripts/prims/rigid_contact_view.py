@@ -52,7 +52,7 @@ class RigidContactView(object):
     .. code-block:: python
 
         >>> import omni.isaac.core.utils.stage as stage_utils
-        >>> from omni.isaac.cloner import GridCloner
+        >>> from isaacsim.core.cloner import GridCloner
         >>> from omni.isaac.core.prims import RigidContactView
         >>> from pxr import UsdGeom
         >>>

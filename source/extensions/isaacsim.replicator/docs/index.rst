@@ -70,7 +70,7 @@ After setting up this action graph, it is necessesary to run ``omni.replicator.c
     from omni.isaac.core.utils.stage import get_current_stage, add_reference_to_stage
     from omni.isaac.nucleus import get_assets_root_path
     from omni.isaac.core.objects import DynamicSphere
-    from omni.isaac.cloner import GridCloner
+    from isaacsim.core.cloner import GridCloner
 
     # create the world
     world = World(stage_units_in_meters=1.0, physics_prim_path="/physicsScene", backend="numpy")
