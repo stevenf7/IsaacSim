@@ -283,7 +283,7 @@
     "ROS Bridge OmniGraphs":
     {
         "App Name": "ROS Bridge OmniGraphs",
-        "Extension":"omni.isaac.ros2_bridge",
+        "Extension":"isaacsim.ros2.bridge",
         "Window": 0,
         "Summary":"Create and edit ROS bridge graphs",
         "Basic Instructions":"All ROS bridge functions are in form of Omnigraph Nodes and Graphs. \n\n For the most commonly used ROS bridges, you can find their shortcuts in `Isaac Utils -> Common Omnigraphs -> ROS*`. If you don't see any ROS graphs, make sure your ROS2 bridge is enabled.  \n\n- a popup box will appear asking for a few required parameters, as well as instructions on how to use the generated graph. \n\n Find more tips by expanding the 'Advanced Instructions' section below.",

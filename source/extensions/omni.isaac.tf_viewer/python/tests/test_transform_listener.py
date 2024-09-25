@@ -45,7 +45,7 @@ class TestTransformListener(omni.kit.test.AsyncTestCase):
             {
                 og.Controller.Keys.CREATE_NODES: [
                     ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                    ("PublishTransformTree", "omni.isaac.ros2_bridge.ROS2PublishTransformTree"),
+                    ("PublishTransformTree", "isaacsim.ros2.bridge.ROS2PublishTransformTree"),
                 ],
                 og.Controller.Keys.SET_VALUES: [
                     ("PublishTransformTree.inputs:topicName", "tf"),

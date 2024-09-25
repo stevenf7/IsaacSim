@@ -46,7 +46,7 @@ timeout = 1500
 dependencies = [
    "omni.kit.window.toolbar",
    "omni.isaac.core",
-   "omni.isaac.ros2_bridge"
+   "isaacsim.ros2.bridge"
 ]
 
 stdoutFailPatterns.exclude = [

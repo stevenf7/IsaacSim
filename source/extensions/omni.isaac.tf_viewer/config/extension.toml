@@ -19,7 +19,7 @@ icon = "data/icon.png"
 "omni.ui.scene" = {}
 "omni.kit.uiapp" = {}
 "omni.kit.viewport.utility" = {}
-"omni.isaac.ros2_bridge" = {}
+"isaacsim.ros2.bridge" = {}
 
 [[python.module]]
 name = "omni.isaac.tf_viewer"

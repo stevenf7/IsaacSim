@@ -43,11 +43,13 @@ exts."isaacsim.core.deprecation_manager".settings = [
     { deprecated = "/exts/omni.isaac.jupyter_notebook/notebook_token", new = "/exts/isaacsim.code_editor.jupyter/notebook_token", update = true },
     { deprecated = "/exts/omni.isaac.jupyter_notebook/notebook_dir", new = "/exts/isaacsim.code_editor.jupyter/notebook_dir", update = true },
     { deprecated = "/exts/omni.isaac.jupyter_notebook/command_line_options", new = "/exts/isaacsim.code_editor.jupyter/command_line_options", update = true },
+    # omni.isaac.ros2_bridge -> isaacsim.ros2.bridge
+    { deprecated = "/exts/omni.isaac.ros2_bridge/ros_distro", new = "/exts/isaacsim.ros2.bridge/ros_distro", update = true },
+    { deprecated = "/exts/omni.isaac.ros2_bridge/publish_without_verification", new = "/exts/isaacsim.ros2.bridge/publish_without_verification", update = true },
+    { deprecated = "/exts/omni.isaac.ros2_bridge/publish_multithreading_disabled", new = "/exts/isaacsim.ros2.bridge/publish_multithreading_disabled", update = true },
 ]
 # OmniGraph nodes
 exts."isaacsim.core.deprecation_manager".omnigraph = [
-    { deprecated = "omni.isaac.ros_bridge", new = "isaacsim.ros1.bridge" },
     { deprecated = "omni.isaac.ros2_bridge", new = "isaacsim.ros2.bridge" },
-    { deprecated = "omni.isaac.core_nodes", new = "isaacsim.core.nodes" },
     { deprecated = "omni.replicator.isaac", new = "isaacsim.replicator" },
 ]

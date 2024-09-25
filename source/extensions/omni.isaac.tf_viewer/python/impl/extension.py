@@ -85,10 +85,10 @@ class Extension(omni.ext.IExt):
     def _on_visibility_changed(self, visible):
         if self._extension_manager.is_extension_enabled("omni.isaac.ros_bridge"):
             self._ros_version = "ros"
-        elif self._extension_manager.is_extension_enabled("omni.isaac.ros2_bridge"):
+        elif self._extension_manager.is_extension_enabled("isaacsim.ros2.bridge"):
             self._ros_version = "ros2"
         else:
-            carb.log_warn("Neither the 'omni.isaac.ros_bridge' nor the 'omni.isaac.ros2_bridge' extension is enabled")
+            carb.log_warn("Neither the 'omni.isaac.ros_bridge' nor the 'isaacsim.ros2.bridge' extension is enabled")
 
         distro = os.environ.get("ROS_DISTRO", "").lower()
         module = self._module.get(self._ros_version, None)

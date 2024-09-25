@@ -25,7 +25,7 @@ from omni.isaac.quadruped.robots import UnitreeVision
 
 # enable ROS2 bridge extension
 ext_manager = omni.kit.app.get_app().get_extension_manager()
-ext_manager.set_extension_enabled_immediate("omni.isaac.ros2_bridge", True)
+ext_manager.set_extension_enabled_immediate("isaacsim.ros2.bridge", True)
 
 
 class A1_runner(object):
@@ -82,7 +82,7 @@ class A1_runner(object):
                     keys.CREATE_NODES: [
                         ("OnTick", "omni.graph.action.OnTick"),
                         ("readSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
-                        ("publishClock", "omni.isaac.ros2_bridge.ROS2PublishClock"),
+                        ("publishClock", "isaacsim.ros2.bridge.ROS2PublishClock"),
                     ],
                     keys.CONNECT: [
                         ("OnTick.outputs:tick", "publishClock.inputs:execIn"),

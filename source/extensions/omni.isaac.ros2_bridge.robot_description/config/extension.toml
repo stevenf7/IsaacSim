@@ -20,7 +20,7 @@ writeTarget.kit = true
 "omni.kit.pip_archive" = {} # import the base kit python archive
 "omni.kit.viewport.utility"= {}
 "omni.kit.viewport.window"= {}
-"omni.isaac.ros2_bridge" = {}
+"isaacsim.ros2.bridge" = {}
 "omni.importer.urdf" = {}
 "omni.ui" = {}
 

@@ -33,7 +33,7 @@ from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.nucleus import get_assets_root_path
 from pxr import Gf, Sdf, UsdGeom, UsdPhysics
 
-enable_extension("omni.isaac.ros2_bridge")
+enable_extension("isaacsim.ros2.bridge")
 
 simulation_app.update()
 

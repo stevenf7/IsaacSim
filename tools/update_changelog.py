@@ -21,7 +21,7 @@ extensions = [
     "omni.isaac.synthetic_recorder",
     "omni.isaac.sensor",
     "omni.isaac.ros_bridge",
-    "omni.isaac.ros2_bridge",
+    "isaacsim.ros2.bridge",
     "omni.isaac.robot_description_editor",
     "omni.isaac.robot_benchmark",
     "omni.isaac.range_sensor",

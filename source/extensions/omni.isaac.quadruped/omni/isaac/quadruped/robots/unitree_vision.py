@@ -91,11 +91,11 @@ class UnitreeVision(Unitree):
             self.is_ros2 = is_ros2
 
             ros_version = "ROS1"
-            ros_bridge_version = "ros_bridge."
+            ros_bridge_version = "omni.isaac.ros_bridge."
             self.ros_vp_offset = 1
             if self.is_ros2:
                 ros_version = "ROS2"
-                ros_bridge_version = "ros2_bridge."
+                ros_bridge_version = "isaacsim.ros2.bridge."
 
             # Creating an on-demand push graph with cameraHelper nodes to generate ROS image publishers
 
@@ -114,8 +114,8 @@ class UnitreeVision(Unitree):
                         ("setViewportResolution", "omni.isaac.core_nodes.IsaacSetViewportResolution"),
                         ("getRenderProduct", "omni.isaac.core_nodes.IsaacGetViewportRenderProduct"),
                         ("setCamera", "omni.isaac.core_nodes.IsaacSetCameraOnRenderProduct"),
-                        ("cameraHelperRgb", "omni.isaac." + ros_bridge_version + ros_version + "CameraHelper"),
-                        ("cameraHelperInfo", "omni.isaac." + ros_bridge_version + ros_version + "CameraHelper"),
+                        ("cameraHelperRgb", ros_bridge_version + ros_version + "CameraHelper"),
+                        ("cameraHelperInfo", ros_bridge_version + ros_version + "CameraHelper"),
                     ],
                     keys.CONNECT: [
                         ("OnPlaybackTick.outputs:tick", "createViewport.inputs:execIn"),
