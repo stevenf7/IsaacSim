@@ -649,6 +649,7 @@ include = [
   "tests-omni.isaac.debug_draw*${shell_ext}",
   "tests-omni.isaac.synthetic*${shell_ext}",
   "tests-omni.replicator.isaac*${shell_ext}",
+  "tests-isaacsim.replicator*${shell_ext}",
 ]
 [[repo_test.suites.pythontests.bucket]]
 name = "7"
@@ -851,13 +852,13 @@ ext_folders = [
 
 # Extensions to publish, include and exclude among those discovered by kit. Wildcards are supported.
 exts.include = [
+    "isaacsim.replicator",
     "omni.exporter.urdf",
     "omni.isaac.*",
     "omni.kit.loop-isaac",
     "omni.kit.property.isaac",
     "omni.pip.cloud",
     "omni.pip.compute",
-    "omni.replicator.isaac",
     "omni.usd.schema.isaac",
 ]
 exts.exclude = ["omni.isaac.internal_tools"]
@@ -922,6 +923,7 @@ python.files.exclude = [
 home_path = "${root}/source/extensions"
 build_path = "${root}/_build/${platform}/release/exts"
 ogn_exts_includes = [
+    "isaacsim.replicator",
     "omni.isaac.core_nodes",
     "omni.isaac.conveyor",
     "omni.isaac.debug_draw",
@@ -931,7 +933,6 @@ ogn_exts_includes = [
     "omni.isaac.ros_bridge",
     "omni.isaac.ros2_bridge",
     "omni.isaac.wheeled_robots",
-    "omni.replicator.isaac",
 ]
 
 [repo_generate_vscode_settings]

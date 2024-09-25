@@ -1,0 +1,27 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "2.0.0"
+category = "SyntheticData"
+title = "Replicator Isaac"
+description="Omni Replicator Isaac Sim Extension"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/omni.replicator.isaac"
+keywords = ["Synthetic", "Data", "Randomization", "Generator", "Domain Randomization", "DR"]
+changelog="docs/CHANGELOG.md"
+readme  = "docs/README.md"
+icon = "data/icon.png"
+preview_image = "data/preview.png"
+writeTarget.kit = true
+
+[dependencies]
+"isaacsim.core.deprecation_manager" = {}
+"isaacsim.replicator" = {}
+
+[[python.module]]
+name = "omni.replicator.isaac"
+
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.replicator."

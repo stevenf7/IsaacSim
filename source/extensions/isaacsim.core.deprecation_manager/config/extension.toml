@@ -49,4 +49,5 @@ exts."isaacsim.core.deprecation_manager".omnigraph = [
     { deprecated = "omni.isaac.ros_bridge", new = "isaacsim.ros1.bridge" },
     { deprecated = "omni.isaac.ros2_bridge", new = "isaacsim.ros2.bridge" },
     { deprecated = "omni.isaac.core_nodes", new = "isaacsim.core.nodes" },
+    { deprecated = "omni.replicator.isaac", new = "isaacsim.replicator" },
 ]
