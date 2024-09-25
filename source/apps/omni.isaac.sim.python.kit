@@ -9,6 +9,7 @@ keywords = ["experience", "app", "usd"]
 [dependencies]
 # Isaac Sim extensions
 "isaacsim.core.deprecation_manager" = { order = -100 }
+"isaacsim.simulation_app" = {}
 "omni.isaac.cloner" = {}
 "omni.isaac.core" = {}
 "omni.isaac.core_archive" = {}
@@ -18,7 +19,6 @@ keywords = ["experience", "app", "usd"]
 "omni.isaac.debug_draw" = {}
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.franka" = {}
-"omni.isaac.kit" = {}
 "omni.isaac.lula" = {}
 "omni.isaac.manipulators" = {}
 "omni.isaac.ml_archive" = {}
@@ -156,7 +156,7 @@ fabricDefaultStageFrameHistoryCount = 3 # needed for omni.syntheticdata TODO105 
 title = "Isaac Sim Python"
 hideUi = false
 _iconSize = 256
-iconPath = "${omni.isaac.kit}/data/omni.isaac.sim.png"
+iconPath = "${isaacsim.simulation_app}/data/omni.isaac.sim.png"
 
 # width = 1700
 # height = 900

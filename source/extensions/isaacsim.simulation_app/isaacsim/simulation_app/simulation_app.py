@@ -34,7 +34,7 @@ class SimulationApp:
     .. code-block:: python
 
         # At top of your application
-        from omni.isaac.kit import SimulationApp
+        from isaacsim.simulation_app import SimulationApp
         config = {
              width: "1280",
              height: "720",
@@ -138,6 +138,9 @@ class SimulationApp:
             "omni.isaac.kit.app_framework",
             "omni.isaac.kit.simulation_app",
             "omni.isaac.kit",
+            "isaacsim.simulation_app.app_framework",
+            "isaacsim.simulation_app.simulation_app",
+            "isaacsim.simulation_app",
             "omni.isaac.gym",
             "omniisaacgymenvs",
             "omniisaacgymenvs.utils",

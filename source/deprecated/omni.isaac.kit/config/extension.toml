@@ -1,0 +1,24 @@
+[core]
+reloadable = false
+order = 0
+
+[package]
+version = "2.0.0"
+category = "Simulation"
+title = "Isaac Sim Kit Helpers"
+description = "This Extension that provides a way to launch a python app"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/omni.isaac.kit"
+keywords = ["isaac", "kit", "python"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+icon = "data/icon.png"
+preview_image = "data/preview.png"
+writeTarget.kit = true
+toggleable = false
+
+[[python.module]]
+name = "omni.isaac.kit"
+
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.simulation_app."
