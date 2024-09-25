@@ -986,6 +986,7 @@ sysconfig_path = "${root}/_build/${platform}/${config}/kit/python/lib/python3.10
 
 url = "https://gitlab-master.nvidia.com/omniverse/ov-create/-/raw/release/2024.1.0/source/apps/omni.create.full.kit"
 
+# please provide extensions in the format "extension.name-version" or {dep = "extension.name-version", tag = "tag"}
 deps_for_isaac = [
   "omni.replicator.replicator_yaml-2.0.6",
   "omni.replicator.core-1.11.20",
@@ -1004,13 +1005,13 @@ deps_for_isaac = [
   "semantics.schema.property-1.0.4",
   "omni.importer.mjcf-1.1.1",
   "omni.importer.urdf-1.14.1",
-  "omni.importer.onshape-0.7.1",
+  "omni.importer.onshape-0.7.3",
   "omni.anim.people-0.5.0",
   "omni.replicator.object-0.3.8",
   "omni.replicator.agent.core-0.4.1",
   "omni.replicator.agent.ui-0.4.0",
   "omni.replicator.agent.camera_calibration-0.4.0",
-  "omni.kit.profiler.tracy-1.1.4",
+  "omni.kit.profiler.tracy-1.1.5",
   "omni.cuopt.service-1.0.0",
   "omni.cuopt.visualization-1.0.0",
   "omni.cuopt.examples-1.0.0",
@@ -1021,14 +1022,8 @@ deps_for_isaac = [
   "omni.kit.test_helpers_gfx"
 ]
 
-deps_for_testing = []
-
-deps_for_ml = []
-
 windows_only = [
   "omni.kit.window.modifier.titlebar",
-  "omni.houdini_engine.core",
-  "omni.houdini_engine.hda_loader",
   "omni.kit.converter.patchmanager"
 ]
 
@@ -1041,12 +1036,7 @@ exclude = [
   "omni.create.tests",
 ]
 
-# please provide extensions in the format "extension.name-version" or {dep = "extension.name-version", tag = "tag"}
 override = [
-  # TODO 105.2 update extensions
-  # "omni.anim.graph.core-105.2.15",
-  # "omni.anim.graph.ui-105.2.4",
-  # "omni.anim.graph.bundle-105.2.0"
 ]
 
 output_file = "${root}/source/apps/omni.isaac.sim.extscache.kit"
