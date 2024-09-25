@@ -1,5 +1,5 @@
-Simulation Application [omni.isaac.kit]
-##############################################
+Simulation Application [isaacsim.simulation_app]
+#################################################
 
 This extension provides convenience functions when running in pure python mode
 

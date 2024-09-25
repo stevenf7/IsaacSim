@@ -3,12 +3,12 @@ reloadable = false
 order = 0
 
 [package]
-version = "1.13.2"
+version = "2.0.0"
 category = "Simulation"
 title = "Isaac Sim Kit Helpers"
 description = "This Extension that provides a way to launch a python app"
 authors = ["Isaac Sim Team"]
-repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.kit"
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.simulation_app"
 keywords = ["isaac", "kit", "python"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
@@ -21,4 +21,4 @@ toggleable = false
 "omni.usd" = {}
 
 [[python.module]]
-name = "omni.isaac.kit"
+name = "isaacsim.simulation_app"

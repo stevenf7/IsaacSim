@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.0] - 2024-09-24
+### Changed
+- Extension renamed to isaacsim.simulation_app
+
 ## [1.13.2] - 2024-09-08
 ### Fixed
 - Error on exit caused by stage closure while sdg was finishing writing
@@ -19,7 +23,6 @@
 ## [1.11.0] - 2024-05-28
 ### Added
 - profiler_backend setting for tracy and nvtx
-
 
 ## [1.10.0] - 2024-05-22
 ### Added

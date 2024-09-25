@@ -39,13 +39,15 @@ if check_for_isaacsim_module and "isaacsim" not in sys.modules:
                 continue
             elif "omni.isaac.kit/omni/isaac/kit" in item.filename:
                 break
+            elif "isaacsim.simulation_app/isaacsim/simulation_app" in item.filename:
+                break
             carb.log_warn(f"File '{item.filename}', line {item.lineno}")
             if item.line is not None:
                 carb.log_warn(f"  {item.line}")
         carb.log_warn("")
-    carb.log_warn("Please import 'isaacsim' before importing the 'omni.isaac.kit' extension...")
+    carb.log_warn("Please import 'isaacsim' before importing the 'isaacsim.simulation_app' extension...")
     carb.log_warn("  >>> import isaacsim")
-    carb.log_warn("  >>> from omni.isaac.kit import SimulationApp")
+    carb.log_warn("  >>> from isaacsim.simulation_app import SimulationApp")
     carb.log_warn("")
     carb.log_warn("or get the 'SimulationApp' class directly from the 'isaacsim' module")
     carb.log_warn("  >>> from isaacsim import SimulationApp")

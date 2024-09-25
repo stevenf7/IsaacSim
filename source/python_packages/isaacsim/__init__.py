@@ -63,7 +63,8 @@ def bootstrap_kernel():
         ]
     # isaac-sim
     paths += [
-        os.path.join(isaacsim_path, "exts", "omni.isaac.kit"),
+        os.path.join(isaacsim_path, "exts", "isaacsim.simulation_app"),
+        os.path.join(isaacsim_path, "extsDeprecated", "omni.isaac.kit"),
     ]
     # update sys.path
     for path in paths:
@@ -79,6 +80,36 @@ def bootstrap_kernel():
     carb.log_info(f"Isaac Sim path: {isaacsim_path}")
     carb.log_info(f"Kit path: {kit_path}")
     carb.log_info(f"Using inner kernel: {using_inner_kernel}")
+
+
+def expose_api():
+    AppFramework, SimulationApp = None, None
+    try:
+        # try a direct import
+        from isaacsim.simulation_app import AppFramework, SimulationApp
+    except ImportError:
+        # try to import API from isaacsim/simulation_app folder instead
+        try:
+            # get isaacsim/simulation_app folder path
+            isaacsim_path = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
+            path = os.path.join(
+                os.environ.get("ISAAC_PATH", isaacsim_path), "exts", "isaacsim.simulation_app", "isaacsim"
+            )
+            if os.path.exists(path):
+                # register path
+                sys.path.insert(0, path)
+                # import API
+                from simulation_app import AppFramework, SimulationApp
+
+                # register module to support 'from isaacsim.simulation_app import SimulationApp'
+                sys.modules["isaacsim.simulation_app"] = type(sys)("isaacsim.simulation_app")
+                sys.modules["isaacsim.simulation_app.SimulationApp"] = SimulationApp
+                sys.modules["isaacsim.simulation_app.AppFramework"] = AppFramework
+            else:
+                print(f"PYTHONPATH: path doesn't exist ({path})")
+        except ImportError:
+            pass
+    return AppFramework, SimulationApp
 
 
 def main():
@@ -132,9 +163,5 @@ def main():
 
 bootstrap_kernel()
 
-
-# make omni.isaac.kit discoverable
-try:
-    from omni.isaac.kit import AppFramework, SimulationApp
-except ImportError:
-    AppFramework, SimulationApp = None, None
+# make isaacsim.simulation_app discoverable
+AppFramework, SimulationApp = expose_api()

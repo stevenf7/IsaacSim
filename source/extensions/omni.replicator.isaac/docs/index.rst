@@ -59,7 +59,7 @@ After setting up this action graph, it is necessesary to run ``omni.replicator.c
 
 .. code-block:: python
 
-    from omni.isaac.kit import SimulationApp
+    from isaacsim import SimulationApp
     simulation_app = SimulationApp({"headless": False})
 
     import numpy as np
