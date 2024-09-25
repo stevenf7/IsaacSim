@@ -57,10 +57,9 @@ world.reset()
 
 num_dof = franka_view.num_dof
 
+# set up randomization with isaacsim.replicator, imported as dr
+import isaacsim.replicator as dr
 import omni.replicator.core as rep
-
-# set up randomization with omni.replicator.isaac, imported as dr
-import omni.replicator.isaac as dr
 
 dr.physics_view.register_simulation_context(world)
 dr.physics_view.register_rigid_prim_view(object_view)

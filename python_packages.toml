@@ -298,9 +298,13 @@ inventory.include = [
     # license
     "LICENSE.txt",
     # extensions
-    "exts/omni.isaac.scene_blox",
-    "exts/omni.isaac.synthetic_recorder",
-    "exts/omni.replicator.isaac",
+    "exts/isaacsim.replicator",
+    "exts/isaacsim.replicator.scene_blox",
+    "exts/isaacsim.replicator.synthetic_recorder",
+    # deprecated extensions
+    "extsDeprecated/omni.isaac.scene_blox",
+    "extsDeprecated/omni.isaac.synthetic_recorder",
+    "extsDeprecated/omni.replicator.isaac",
 ]
 
 [isaacsim-rl]

@@ -87,12 +87,12 @@ import math
 
 import carb
 import omni.replicator.core as rep
+from isaacsim.replicator.scripts.writers import PoseWriter, YCBVideoWriter
 from omni.isaac.core import World
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.core.utils.semantics import add_update_semantics
 from omni.isaac.nucleus import get_assets_root_path
-from omni.replicator.isaac.scripts.writers import PoseWriter, YCBVideoWriter
 
 # Since the simulation is mostly collision checking, a larger physics dt can be used to speed up the object movements
 world = World(physics_dt=1.0 / 30.0)
