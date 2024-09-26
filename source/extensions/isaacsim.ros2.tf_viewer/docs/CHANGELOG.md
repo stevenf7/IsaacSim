@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.0] - 2024-09-25
+
+### Changed
+- Extension renamed to isaacsim.ros2.tf_viewer
+
 ## [0.1.1] - 2024-08-26
 
 ### Fixed
