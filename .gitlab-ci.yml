@@ -7,13 +7,16 @@ include:
   file: 'modules/include.yml'
   ref: v1_latest
 - project: 'omniverse/sectools/vault'
-  file: ['templates/v2/omni-codesign-creds.yml', 'templates/v3/linux/codesign.gitlab-ci.yml']
-- project: 'omniverse/sectools/vault'
-  file: ['templates/v2/windows/repo-codesign-creds.yml', 'templates/v3/windows/codesign.gitlab-ci.yml']
-- project: 'omniverse/sectools/vault'
-  file: ['templates/v2/omni-packman-s3-creds.yml', 'templates/v3/linux/packman_s3.gitlab-ci.yml']
-- project: 'omniverse/sectools/vault'
-  file: ['templates/v2/windows/packman-s3-creds.gitlab-ci.yml', 'templates/v3/windows/packman_s3.gitlab-ci.yml']
+  file:
+    - 'templates/v2/omni-codesign-creds.yml'
+    - 'templates/v3/linux/codesign.gitlab-ci.yml'
+    - 'templates/v2/windows/repo-codesign-creds.yml'
+    - 'templates/v3/windows/codesign.gitlab-ci.yml'
+    - 'templates/v2/omni-packman-s3-creds.yml'
+    - 'templates/v3/linux/packman_s3.gitlab-ci.yml'
+    - 'templates/v2/windows/packman-s3-creds.gitlab-ci.yml'
+    - 'templates/v3/windows/packman_s3.gitlab-ci.yml'
+    - 'templates/v3/linux/nucleus/kit-extensions.ov.nvidia.com/kit-extension-svc.gitlab-ci.yml'
 - project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
   # local to devplat/gitlab/templates/runners, external to this repo:
   file: 'modules/common.yml'
@@ -32,7 +35,6 @@ include:
   file: 'modules/stage-security.yml'
 - project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
   file: 'modules/sanitizers.yml'
-
 
 # ==============================================================================================================
 stages:
@@ -1043,6 +1045,7 @@ publish-extensions:
     when: never
   - !reference [.rules-version-changed, rules]
   - !reference [.rules-push-manual, rules]
+  - !reference [.osec:vault:v3:linux, nucleus:kit-extensions.ov.nvidia.com:kit-extension-svc:perform_vault_requests]
 
 
 # ==============================================================================================================

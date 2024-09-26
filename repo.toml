@@ -847,7 +847,8 @@ kit_path = "${root}/_build/$platform/$config/kit/kit${exe_ext}"
 publish_root = "${root}/_build/$platform/$config"
 
 ext_folders = [
-  "${publish_root}/exts"
+  "${publish_root}/exts",
+  "${publish_root}/extsDeprecated"
 ]
 
 # Extensions to publish, include and exclude among those discovered by kit. Wildcards are supported.
@@ -855,6 +856,7 @@ exts.include = [
     "isaacsim.replicator",
     "omni.exporter.urdf",
     "omni.isaac.*",
+    "isaacsim.*",
     "omni.kit.loop-isaac",
     "omni.kit.property.isaac",
     "omni.pip.cloud",
