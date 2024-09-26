@@ -17,6 +17,7 @@ preview_image = "data/preview.png"
 writeTarget.kit = true
 
 [dependencies]
+"isaacsim.core.cloner" = {}
 "isaacsim.core.deprecation_manager" = {}
 
 [deprecation]
