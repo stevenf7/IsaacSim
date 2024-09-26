@@ -69,7 +69,7 @@ class TFListener:
             self._listener = None
 
         # shutdown ROS node
-        # rospy.signal_shutdown("omni.isaac.tf_viewer")
+        # rospy.signal_shutdown("isaacsim.ros2.tf_viewer")
 
     def get_transforms(self, root_frame):
         frames = set()

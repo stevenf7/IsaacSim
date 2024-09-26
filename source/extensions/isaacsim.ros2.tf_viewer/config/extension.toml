@@ -3,12 +3,12 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.1"
+version = "1.0.0"
 category = "Utility"
 title = "TF Viewer"
 description = "Show the tf transform tree in the viewport"
 authors = ["Isaac Sim Team"]
-repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.tf_viewer"
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.ros2.tf_viewer"
 keywords = ["isaac", "ROS2", "tf"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
@@ -19,13 +19,14 @@ icon = "data/icon.png"
 "omni.ui.scene" = {}
 "omni.kit.uiapp" = {}
 "omni.kit.viewport.utility" = {}
+"isaacsim.core.deprecation_manager" = {}
 "isaacsim.ros2.bridge" = {}
 
 [[python.module]]
-name = "omni.isaac.tf_viewer"
+name = "isaacsim.ros2.tf_viewer"
 
 [settings]
-exts."omni.isaac.tf_viewer".cpp = true
+exts."isaacsim.ros2.tf_viewer".cpp = true
 
 [test]
 stdoutFailPatterns.exclude = [

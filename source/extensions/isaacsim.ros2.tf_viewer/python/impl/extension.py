@@ -27,7 +27,7 @@ class Extension(omni.ext.IExt):
 
         # get extension settings
         settings = carb.settings.get_settings()
-        self._cpp = settings.get("/exts/omni.isaac.tf_viewer/cpp")
+        self._cpp = settings.get("/exts/isaacsim.ros2.tf_viewer/cpp")
 
         # load plugin
         if self._cpp:

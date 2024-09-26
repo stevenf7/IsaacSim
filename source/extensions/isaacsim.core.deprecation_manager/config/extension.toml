@@ -47,6 +47,8 @@ exts."isaacsim.core.deprecation_manager".settings = [
     { deprecated = "/exts/omni.isaac.ros2_bridge/ros_distro", new = "/exts/isaacsim.ros2.bridge/ros_distro", update = true },
     { deprecated = "/exts/omni.isaac.ros2_bridge/publish_without_verification", new = "/exts/isaacsim.ros2.bridge/publish_without_verification", update = true },
     { deprecated = "/exts/omni.isaac.ros2_bridge/publish_multithreading_disabled", new = "/exts/isaacsim.ros2.bridge/publish_multithreading_disabled", update = true },
+    # omni.isaac.tf_viewer -> isaacsim.ros2.tf_viewer
+    { deprecated = "/exts/omni.isaac.tf_viewer/cpp", new = "/exts/isaacsim.ros2.tf_viewer/cpp", update = true },
 ]
 # OmniGraph nodes
 exts."isaacsim.core.deprecation_manager".omnigraph = [

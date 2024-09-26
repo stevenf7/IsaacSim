@@ -423,10 +423,11 @@ inventory.include = [
     "LICENSE.txt",
     # extensions
     "exts/isaacsim.ros2.bridge",
+    "exts/isaacsim.ros2.tf_viewer",
     # deprecated extensions
     "exts/omni.isaac.ros2_bridge.robot_description",
-    "exts/omni.isaac.ros2_bridge",
-    "exts/omni.isaac.tf_viewer",
+    "extsDeprecated/omni.isaac.ros2_bridge",
+    "extsDeprecated/omni.isaac.tf_viewer",
 ]
 
 [isaacsim-sensor]

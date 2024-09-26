@@ -15,7 +15,7 @@ project_with_location("omni.isaac.transform_listener.humble")
     includedirs {
         "%{root}/_build/target-deps/nv_ros2_humble/include",
         "%{root}/_build/target-deps/nv_ros2_humble/include/console_bridge_vendor",
-        "%{root}/source/extensions/omni.isaac.tf_viewer",
+        "%{root}/source/extensions/isaacsim.ros2.tf_viewer",
     }
     libdirs {
         "%{root}/_build/target-deps/nv_ros2_humble/lib",
@@ -68,7 +68,7 @@ if os.target() == "linux" then
         add_files("source", "%{root}/_build/target-deps/nv_ros2/src/geometry2/tf2/src")
         includedirs {
             "%{root}/_build/target-deps/nv_ros2/include",
-            "%{root}/source/extensions/omni.isaac.tf_viewer",
+            "%{root}/source/extensions/isaacsim.ros2.tf_viewer",
         }
         libdirs {
             "%{root}/_build/target-deps/nv_ros2/lib",
@@ -133,7 +133,7 @@ project_ext_bindings {
     project_name = "omni.isaac.transform_listener.python",
     module = "_transform_listener",
     src = "bindings",
-    target_subdir = "omni/isaac/tf_viewer"
+    target_subdir = "isaacsim/ros2/tf_viewer"
 }
     includedirs {
         "include",
@@ -141,12 +141,12 @@ project_ext_bindings {
 
 -- link/copy folders and files that should be packaged with the extension
 repo_build.prebuild_link {
-    { "python/impl", ext.target_dir.."/omni/isaac/tf_viewer/impl" },
-    { "python/tests", ext.target_dir.."/omni/isaac/tf_viewer/tests" },
+    { "python/impl", ext.target_dir.."/isaacsim/ros2/tf_viewer/impl" },
+    { "python/tests", ext.target_dir.."/isaacsim/ros2/tf_viewer/tests" },
     { "data", ext.target_dir.."/data" },
     { "docs", ext.target_dir.."/docs" },
 }
 
 repo_build.prebuild_copy {
-    { "python/*.py", ext.target_dir.."/omni/isaac/tf_viewer" },
+    { "python/*.py", ext.target_dir.."/isaacsim/ros2/tf_viewer" },
 }
