@@ -31,7 +31,7 @@
         <package name="assimp" version="5.0.0.50.aa41375a-linux-x86_64-release" platforms="linux-x86_64"/>
     </dependency>
     <dependency name="doctest" linkPath="../_build/target-deps/doctest">
-        <package name="doctest" version="2.4.0-b29bc767" />
+        <package name="doctest" version="2.4.5+nv4-0.7z" />
     </dependency>
     <dependency name="openssl" linkPath="../_build/target-deps/openssl">
         <package name="openssl" version="1.1.1t+nv1-${platform}" />
