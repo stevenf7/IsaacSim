@@ -53,6 +53,18 @@ exts."isaacsim.core.deprecation_manager".settings = [
 ]
 # OmniGraph nodes
 exts."isaacsim.core.deprecation_manager".omnigraph = [
+    { deprecated = "omni.isaac.range_sensor.IsaacReadLidarBeams", new = "isaacsim.sensors.physx.IsaacReadLidarBeams" },
+    { deprecated = "omni.isaac.range_sensor.IsaacReadLidarPointCloud", new = "isaacsim.sensors.physx.IsaacReadLidarPointCloud" },
     { deprecated = "omni.isaac.ros2_bridge", new = "isaacsim.ros2.bridge" },
+    { deprecated = "omni.isaac.sensor.IsaacComputeRTXLidarFlatScan", new = "isaacsim.sensors.rtx.IsaacComputeRTXLidarFlatScan" },
+    { deprecated = "omni.isaac.sensor.IsaacComputeRTXLidarPointCloud", new = "isaacsim.sensors.rtx.IsaacComputeRTXLidarPointCloud" },
+    { deprecated = "omni.isaac.sensor.IsaacComputeRTXRadarPointCloud", new = "isaacsim.sensors.rtx.IsaacComputeRTXRadarPointCloud" },
+    { deprecated = "omni.isaac.sensor.IsaacCreateRTXLidarScanBuffer", new = "isaacsim.sensors.rtx.IsaacCreateRTXLidarScanBuffer" },
+    { deprecated = "omni.isaac.sensor.IsaacPrintRTXSensorInfo", new = "isaacsim.sensors.rtx.IsaacPrintRTXSensorInfo" },
+    { deprecated = "omni.isaac.sensor.IsaacReadContactSensor", new = "isaacsim.sensors.physics.IsaacReadContactSensor" },
+    { deprecated = "omni.isaac.sensor.IsaacReadEffortSensor", new = "isaacsim.sensors.physics.IsaacReadEffortSensor" },
+    { deprecated = "omni.isaac.sensor.IsaacReadIMU", new = "isaacsim.sensors.physics.IsaacReadIMU" },
+    { deprecated = "omni.isaac.sensor.IsaacReadLightBeamSensor", new = "isaacsim.sensors.physx.IsaacReadLightBeamSensor" },
+    { deprecated = "omni.isaac.sensor.IsaacReadRTXLidarData", new = "isaacsim.sensors.rtx.IsaacReadRTXLidarData" },
     { deprecated = "omni.replicator.isaac", new = "isaacsim.replicator" },
 ]

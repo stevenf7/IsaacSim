@@ -14,13 +14,13 @@ import numpy as np
 import omni.isaac.core.utils.numpy.rotations as rot_utils
 import omni.isaac.core.utils.prims as prim_utils
 import omni.isaac.core.utils.stage as stage_utils
+from isaacsim.sensors.camera import Camera
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.articulations import Articulation
 from omni.isaac.core.objects import DynamicCuboid
 from omni.isaac.core.prims import RigidPrim
 from omni.isaac.core.utils.prims import add_update_semantics, get_prim_attribute_value
 from omni.isaac.nucleus import get_assets_root_path
-from omni.isaac.sensor import Camera
 
 assets_root_path = get_assets_root_path()
 if assets_root_path is None:

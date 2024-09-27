@@ -1,0 +1,61 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "1.0.0"
+category = "Simulation"
+title = "Isaac Sim PhysX Sensors"
+description = "Extension that provides PhysX sensor models."
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.sensors.physx"
+keywords = ["isaac", "lula", "rmp", "physx", "sensor", "lidar"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+icon = "data/icon.png"
+preview_image = "data/preview.png"
+
+
+[dependencies]
+"isaacsim.core.deprecation_manager" = {}
+"omni.graph" = {}
+"omni.isaac.core" = {}
+"omni.isaac.debug_draw" = {}
+"omni.isaac.ui" = {}
+"omni.kit.menu.utils" = {}
+"omni.kit.pip_archive" = {} # pulls in numpy
+"omni.kit.uiapp" = {}
+"omni.kit.viewport.window" = {}
+"omni.physx" = {}
+"omni.syntheticdata" = {}
+"omni.timeline" = {} # needed for simulation to start
+"omni.usd.schema.isaac" = {}
+"omni.usd" = {}
+"omni.usdphysics" = {}
+"usdrt.scenegraph" = {}
+
+[[python.module]]
+name = "isaacsim.sensors.physx"
+
+[[python.module]]
+name = "isaacsim.sensors.physx.tests"
+public = false
+
+[[python.module]]
+name = "isaacsim.sensors.physx.scripts.samples.lightbeam_sensor"
+
+[[native.plugin]]
+path = "bin/*.plugin"
+recursive = false
+
+[[test]]
+
+stdoutFailPatterns.exclude = [
+ "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_sensors_physx_IsaacReadLidarBeams: [/TestGraph] no prim path found for the lidar*",
+ "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_sensors_physx_IsaacReadLidarPointCloud: [/TestGraph] no prim path found for the lidar*",
+ "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_sensors_physx_IsaacReadLightBeam: [/TestGraph] Invalid Light Beam Sensor prim*",
+]
+
+dependencies = [
+    "omni.isaac.nucleus" # test only
+]

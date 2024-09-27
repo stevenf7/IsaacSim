@@ -16,10 +16,24 @@ date = "2023-01-06"
 changelog_text = [f"### Fixed", f"- onclick_fn warning when creating UI"]
 
 extensions = [
-    "omni.isaac.utils",
-    "omni.isaac.ui_template",
-    "omni.isaac.synthetic_recorder",
-    "omni.isaac.sensor",
+    "isaacsim.sensors.camera",
+    "isaacsim.sensors.physics",
+    "isaacsim.sensors.physx",
+    "isaacsim.sensors.rtx",
+    "omni.isaac.articulation_inspector",
+    "omni.isaac.assets_check",
+    "omni.isaac.conveyor",
+    "omni.isaac.examples",
+    "omni.isaac.extension_templates",
+    "omni.isaac.gain_tuner",
+    "omni.isaac.internal_tools",
+    "omni.isaac.merge_mesh",
+    "omni.isaac.occupancy_map",
+    "omni.isaac.physics_inspector",
+    "omni.isaac.physics_utilities",
+    "omni.isaac.range_sensor",
+    "omni.isaac.robot_benchmark",
+    "omni.isaac.robot_description_editor",
     "omni.isaac.ros_bridge",
     "isaacsim.ros2.bridge",
     "omni.isaac.robot_description_editor",
@@ -36,6 +50,10 @@ extensions = [
     "omni.isaac.conveyor",
     "omni.isaac.assets_check",
     "omni.isaac.articulation_inspector",
+    "omni.isaac.sensor",
+    "omni.isaac.synthetic_recorder",
+    "omni.isaac.ui_template",
+    "omni.isaac.utils",
 ]
 
 # compute and replace the version number

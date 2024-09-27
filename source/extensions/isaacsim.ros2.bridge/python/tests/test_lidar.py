@@ -221,7 +221,7 @@ class TestRos2Lidar(omni.kit.test.AsyncTestCase):
                 {
                     keys.CREATE_NODES: [
                         ("OnTick", "omni.graph.action.OnTick"),
-                        ("LidarLaserScanNode", "omni.isaac.range_sensor.IsaacReadLidarBeams"),
+                        ("LidarLaserScanNode", "isaacsim.sensors.physx.IsaacReadLidarBeams"),
                         ("LaserScanPublisher", "isaacsim.ros2.bridge.ROS2PublishLaserScan"),
                         ("CameraHelper", "isaacsim.ros2.bridge.ROS2CameraHelper"),
                     ],

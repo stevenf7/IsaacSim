@@ -1,0 +1,42 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.1.0"
+category = "Simulation"
+title = "Isaac Sim Camera Simulation"
+description = "Supports camera simulation"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.sensors.camera"
+keywords = ["isaac", "physics", "robotics"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+writeTarget.kit = true
+
+[dependencies]
+"isaacsim.core.deprecation_manager" = {}
+"omni.graph" = {}
+"omni.isaac.core_nodes" = {}
+"omni.isaac.core" = {}
+"omni.kit.numpy.common" = {}
+"omni.kit.pip_archive" = {} # pulls in numpy
+"omni.replicator.core" = {}
+"omni.syntheticdata" = {}
+"omni.timeline" = {} # Needed for simulation to occur
+"omni.usd.schema.isaac" = {}
+"omni.usd" = {} # needed for call to add aov
+
+[[python.module]]
+name = "isaacsim.sensors.camera"
+
+[[python.module]]
+name = "isaacsim.sensors.camera.tests"
+public = false
+
+[settings]
+
+[[test]]
+timeout=1200

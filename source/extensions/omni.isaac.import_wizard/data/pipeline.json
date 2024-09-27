@@ -29,7 +29,7 @@
             "Script Folder": "omni.importer.urdf"
         }
     },
- 
+
     "Import MJCF from File":
     {
         "App Name": "MJCF Importer",
@@ -43,7 +43,7 @@
             "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/features/environment_setup/ext_omni_isaac_mjcf.html",
             "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/advanced_tutorials/tutorial_advanced_import_mjcf.html",
             "Script Folder": "omni.importer.mjcf"
-        }                      
+        }
     },
 
     "Import from CAD":
@@ -58,7 +58,7 @@
         "Resources":{
             "Documentation Link":"https://docs.omniverse.nvidia.com/extensions/latest/ext_cad-converter.html",
             "Examples Link": "https://docs.omniverse.nvidia.com/extensions/latest/ext_cad-converter/manual.html"
-        }   
+        }
     },
 
     "Rigging Robots":
@@ -117,8 +117,8 @@
             "Documentation Link":"https://docs.omniverse.nvidia.com/extensions/latest/ext_onshape.html#isaac-onshape-importer",
             "Examples Link": "https://docs.omniverse.nvidia.com/extensions/latest/ext_onshape.html#tutorials-examples",
             "Script Folder": "omni.importer.onshape"
-        }                       
-    },   
+        }
+    },
 
     "Articulation and Physics Inspector":
     {
@@ -201,7 +201,7 @@
     "Sensors: IMU":
     {
         "App Name": "IMU Sensor",
-        "Extension":"omni.isaac.sensor",
+        "Extension":"isaacsim.sensors.physics",
         "Window": 0,
         "Summary":"How to add an IMU sensor to your robot",
         "Basic Instructions":"There is no separate windows for this tool. \n\n- Add the IMU sensor to the robot by navigating to `Create -> Isaac -> Sensors -> IMU Sensor`\n- attach sensor the robot by dragging the sensor to be a child of the link that you wish to attach the sensor to on the Stage window. \n- Play the simulation and interact with the robot to see the sensor data",
@@ -209,16 +209,16 @@
         "Menu": "Create -> Isaac -> Sensors -> IMU Sensor",
         "Resources":{
             "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/isaac_sim_sensors_physics_based_imu.html",
-            "API Link":"https://docs.omniverse.nvidia.com/py/isaacsim/source/extensions/omni.isaac.sensor/docs/index.html#imu-sensor-interface",
+            "API Link":"https://docs.omniverse.nvidia.com/py/isaacsim/source/extensions/isaacsim.sensors.physics/docs/index.html#imu-sensor-interface",
             "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/isaac_sim_sensors_physics_based_imu.html#isaac-example",
-            "Script Folder": "omni.isaac.sensor"
+            "Script Folder": "isaacsim.sensors.physics"
         }
     },
 
     "Sensors: PhysX Lidar":
     {
         "App Name": "PhysX Lidar Sensor",
-        "Extension":"omni.isaac.sensor",
+        "Extension":"isaacsim.sensors.physx",
         "Window": 0,
         "Summary":"How to add an physics Lidar sensor to your robot",
         "Basic Instructions":"There is no separate windows for this tool. \n\n- Add the physX Lidar sensor to the robot by navigating to `Create -> Isaac -> Sensors -> physX Lidar -> (your choice of Lidar). `Rotating` Lidar is the most generic one.\n- attach sensor the robot by dragging the sensor to be a child of the link that you wish to attach the sensor to on the Stage window. \n- You can edits its properties by select the Lidar on Stage and open its raw properties under `Property` tab. \n- Play the simulation and interact with the robot to see the sensor data",
@@ -226,16 +226,16 @@
         "Menu": "Create -> Isaac -> Sensors -> physX Lidar",
         "Resources":{
             "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/advanced_tutorials/tutorial_advanced_range_sensor_lidar.html#isaac-sim-app-tutorial-advanced-range-sensor-lidar",
-            "API Link":"https://docs.omniverse.nvidia.com/py/isaacsim/source/extensions/omni.isaac.sensor/docs/index.html#module-omni.isaac.sensor.scripts.lidar_physX",
+            "API Link":"https://docs.omniverse.nvidia.com/py/isaacsim/source/extensions/isaacsim.sensors.physx/docs/index.html#module-isaacsim.sensors.physx.scripts.lidar_physX",
             "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/ext_omni_isaac_range_sensor.html#lidar-example",
-            "Script Folder": "omni.isaac.sensor"
+            "Script Folder": "isaacsim.sensors.physx"
         }
-    },   
+    },
 
     "Sensors: RTX Lidar":
     {
         "App Name": "RTX Lidar Sensor",
-        "Extension":"omni.isaac.sensor",
+        "Extension":"isaacsim.sensors.rtx",
         "Window": 0,
         "Summary":"How to add an RTX Lidar sensor to your robot",
         "Basic Instructions":"There is no separate windows for this tool. \n\n- Add the RTX Lidar sensor to the robot by navigating to `Create -> Isaac -> Sensors -> RTX Lidar -> (your choice of Lidar). `Rotating` Lidar is the most generic one.\n- attach sensor the robot by dragging the sensor to be a child of the link that you wish to attach the sensor to on the Stage window. \n- Play the simulation and interact with the robot to see the sensor data",
@@ -243,16 +243,16 @@
         "Menu": "Create -> Isaac -> Sensors -> RTX Lidar",
         "Resources":{
             "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/isaac_sim_sensors_rtx_based_lidar.html",
-            "API Link":"https://docs.omniverse.nvidia.com/py/isaacsim/source/extensions/omni.isaac.sensor/docs/index.html#module-omni.isaac.sensor.scripts.lidar_rtx",
+            "API Link":"https://docs.omniverse.nvidia.com/py/isaacsim/source/extensions/isaacsim.sensors.rtx/docs/index.html#module-isaacsim.sensors.rtx.scripts.lidar_rtx",
             "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/isaac_sim_sensors_rtx_based_lidar/node_overview.html",
-            "Script Folder": "omni.isaac.sensor"
+            "Script Folder": "isaacsim.sensors.rtx"
         }
     },
 
     "Sensors: Contact":
     {
         "App Name": "Contact Sensor",
-        "Extension":"omni.isaac.sensor",
+        "Extension":"isaacsim.sensors.physics",
         "Window": 0,
         "Summary":"How to add a contact sensor to your robot",
         "Basic Instructions":"There is no separate windows for this tool. \n\n- Add the contact sensor to the robot by navigating to `Create -> Isaac -> Sensors -> Contact Sensor`\n- attach sensor the robot by dragging the sensor to be a child of the link that you wish to attach the sensor to on the Stage window. \n- Play the simulation and interact with the robot to see the sensor data",
@@ -260,9 +260,9 @@
         "Menu": "Create -> Isaac -> Sensors -> Contact Sensor",
         "Resources":{
             "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/isaac_sim_sensors_physics_based_contact.html",
-            "API Link":"https://docs.omniverse.nvidia.com/py/isaacsim/source/extensions/omni.isaac.sensor/docs/index.html#module-omni.isaac.sensor.scripts.contact_sensor",
+            "API Link":"https://docs.omniverse.nvidia.com/py/isaacsim/source/extensions/isaacsim.sensors.physics/docs/index.html#module-isaacsim.sensors.physics.scripts.contact_sensor",
             "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/advanced_tutorials/tutorial_advanced_isaac_contact_sensor.html#isaac-sim-app-tutorial-advanced-isaac-contact-sensor",
-            "Script Folder": "omni.isaac.sensor"
+            "Script Folder": "isaacsim.sensors.physics"
         }
     },
 

@@ -655,8 +655,8 @@ include = [
 [[repo_test.suites.pythontests.bucket]]
 name = "7"
 include = [
+  "tests-isaacsim.sensors.*${shell_ext}",
   "tests-omni.isaac.*motion*${shell_ext}",
-  "tests-omni.isaac.*sensor*${shell_ext}",
 ]
 [[repo_test.suites.pythontests.bucket]]
 name = "8"
@@ -927,14 +927,16 @@ home_path = "${root}/source/extensions"
 build_path = "${root}/_build/${platform}/release/exts"
 ogn_exts_includes = [
     "isaacsim.replicator",
-    "omni.isaac.core_nodes",
+    "isaacsim.ros2.bridge",
+    "isaacsim.sensors.physics",
+    "isaacsim.sensors.physx",
+    "isaacsim.sensors.rtx",
     "omni.isaac.conveyor",
+    "omni.isaac.core_nodes",
+    "omni.isaac.core_nodes",
     "omni.isaac.debug_draw",
     "omni.isaac.examples_nodes",
-    "omni.isaac.sensor",
-    "omni.isaac.range_sensor",
     "omni.isaac.ros_bridge",
-    "isaacsim.ros2.bridge",
     "omni.isaac.wheeled_robots",
 ]
 

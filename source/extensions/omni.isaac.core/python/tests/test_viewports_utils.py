@@ -184,9 +184,9 @@ class TestViewports(omni.kit.test.AsyncTestCase):
         set_camera_view(eye=np.array([0, 0, 0]), target=np.array([0, 0, 1]), camera_prim_path="/OmniverseKit_Front")
 
     async def test_set_camera_view_camera_prim(self):
-        # create a camera prim using omni.isaac.sensor
+        # create a camera prim using isaacsim.sensors.camera
         import numpy as np
-        from omni.isaac.sensor import Camera
+        from isaacsim.sensors.camera import Camera
         from pxr import Gf, UsdGeom
 
         viewport_api = get_active_viewport()

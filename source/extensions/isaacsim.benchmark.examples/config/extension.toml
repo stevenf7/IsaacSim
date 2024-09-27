@@ -17,16 +17,17 @@ preview_image = "data/preview.png"
 writeTarget.kit = true
 
 [dependencies]
+"isaacsim.benchmark.services" = {}
+"isaacsim.sensors.camera" = {}
+"isaacsim.sensors.physx" = {}
+"isaacsim.sensors.rtx" = {}
 "omni.graph.tools" = {}
 "omni.graph.ui" = {}
 "omni.graph" = {}
 "omni.hydra.rtx"= {}
-"isaacsim.benchmark.services" = {}
 "omni.isaac.core_archive" = {} # pulls in nvsmi
 "omni.isaac.core_nodes" = {}
 "omni.isaac.core" = {}
-"omni.isaac.range_sensor" = {}
-"omni.isaac.sensor" = {}
 "omni.isaac.wheeled_robots" = {}
 "omni.kit.material.library"= {}
 "omni.kit.primitive.mesh"= {}
