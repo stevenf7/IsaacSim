@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.0"
+version = "0.1.1"
 category = "Utility"
 title = "Deprecation manager"
 description = "Manage deprecated OmniGraph nodes and app/extension settings"
@@ -17,6 +17,7 @@ icon = "data/icon.png"
 
 [dependencies]
 "omni.usd" = {}
+"omni.graph.core" = { optional = true }
 "omni.kit.notification_manager" = { optional = true }
 
 [[python.module]]

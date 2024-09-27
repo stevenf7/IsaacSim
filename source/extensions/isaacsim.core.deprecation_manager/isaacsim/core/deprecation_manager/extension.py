@@ -88,3 +88,14 @@ class Extension(omni.ext.IExt):
                 status=notification_manager.NotificationStatus.WARNING,
                 button_infos=[notification_manager.NotificationButtonInfo("OK", on_complete=None)],
             )
+
+        try:
+            # reload all graphs if we made any changes
+            # in some cases the omni.graph.core extension may not be enabled so this is optional
+            import omni.graph.core as og
+
+            all_graphs = og.get_all_graphs()
+            for graph in all_graphs:
+                graph.reload_from_stage()
+        except Exception as e:
+            carb.log_warn(f"Could not reload graphs after renaming nodes: {e}")
