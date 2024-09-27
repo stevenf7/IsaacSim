@@ -92,7 +92,7 @@ class TestRos2PointCloud(omni.kit.test.AsyncTestCase):
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                         ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
                         # Added nodes used for Point Cloud Publisher
-                        ("ReadLidarPCL", "omni.isaac.range_sensor.IsaacReadLidarPointCloud"),
+                        ("ReadLidarPCL", "isaacsim.sensors.physx.IsaacReadLidarPointCloud"),
                         ("PublishPCL", "isaacsim.ros2.bridge.ROS2PublishPointCloud"),
                     ],
                     keys.SET_VALUES: [
@@ -174,7 +174,7 @@ class TestRos2PointCloud(omni.kit.test.AsyncTestCase):
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                         ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
                         # Added nodes used for Point Cloud Publisher
-                        ("ReadLidarPCL", "omni.isaac.range_sensor.IsaacReadLidarPointCloud"),
+                        ("ReadLidarPCL", "isaacsim.sensors.physx.IsaacReadLidarPointCloud"),
                         ("PublishPCL", "isaacsim.ros2.bridge.ROS2PublishPointCloud"),
                     ],
                     keys.SET_VALUES: [
@@ -368,7 +368,7 @@ class TestRos2PointCloud(omni.kit.test.AsyncTestCase):
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                         ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
                         # Added nodes used for Point Cloud Publisher
-                        ("ReadLidarPCL", "omni.isaac.range_sensor.IsaacReadLidarPointCloud"),
+                        ("ReadLidarPCL", "isaacsim.sensors.physx.IsaacReadLidarPointCloud"),
                         ("PublishPCL", "isaacsim.ros2.bridge.ROS2PublishPointCloud"),
                         ("CameraHelper", "isaacsim.ros2.bridge.ROS2CameraHelper"),
                     ],

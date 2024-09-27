@@ -18,10 +18,12 @@ preview_image = "data/preview.png"
 [dependencies]
 "omni.kit.uiapp" = {}
 "omni.isaac.dynamic_control" = {}
-"omni.isaac.range_sensor" = {}
+"isaacsim.sensors.physx" = {}
 "omni.isaac.core" = {}
 "omni.isaac.core_nodes" = {}
-"omni.isaac.sensor" = {}
+"isaacsim.sensors.physics" = {}
+"isaacsim.sensors.camera" = {}
+"isaacsim.sensors.rtx" = {}
 "omni.syntheticdata" = {}
 "omni.replicator.core" = {}
 "omni.usd.schema.isaac" = {}

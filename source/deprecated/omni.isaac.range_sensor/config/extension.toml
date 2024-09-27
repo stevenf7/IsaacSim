@@ -1,0 +1,27 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "4.0.0"
+category = "Simulation"
+title = "Isaac Sim Range Sensor"
+description = "Range based sensor simulation using physx"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/omni.isaac.range_sensor"
+keywords = ["isaac", "physics", "sensor", "lidar"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+writeTarget.kit = true
+
+[dependencies]
+"isaacsim.core.deprecation_manager" = {}
+"isaacsim.sensors.physx" = {}
+
+[[python.module]]
+name = "omni.isaac.range_sensor"
+
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.sensors.physx."

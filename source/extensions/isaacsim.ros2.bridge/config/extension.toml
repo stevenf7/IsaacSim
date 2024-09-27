@@ -18,7 +18,7 @@ preview_image = "data/preview.png"
 [dependencies]
 "omni.kit.uiapp" = {}
 "omni.isaac.dynamic_control" = {}
-"omni.isaac.range_sensor" = {}
+"isaacsim.sensors.physx" = {}
 "omni.isaac.core" = {}
 "omni.isaac.core_nodes" = {}
 "omni.syntheticdata" = {}
@@ -26,7 +26,9 @@ preview_image = "data/preview.png"
 "omni.usd.schema.isaac" = {}
 "omni.graph" = {}
 "omni.graph.tools" = {}
-"omni.isaac.sensor" = {}
+"isaacsim.sensors.physics" = {}
+"isaacsim.sensors.camera" = {}
+"isaacsim.sensors.rtx" = {}
 "usdrt.scenegraph" = {}
 "omni.isaac.nucleus" = {}
 "omni.isaac.ui" = {}
@@ -83,7 +85,7 @@ stdoutFailPatterns.exclude = [
     "*[Error] [omni.physx.plugin] Setting rigidBodyEnabled to false is not supported if the rigid body is part of an articulation*",
     "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_ros2_bridge_*: [/TestGraph] Unable to create ROS2 node, please check that namespace is valid*",
     '*[Error] [carb] [Plugin: omni.sensors.nv.lidar.ext.plugin] Dependency: [omni::sensors::lidar::IGenericModelOutputIOFactory v0.1] failed to be resolved.*', # feature not included in Windows
-    "*[Error] [omni.isaac.sensor.plugin] *** error, No valid parent for /Hawk/Imu_Sensor with a rigid body api was found, sensor will not be created*",
-    "*[Error] [omni.isaac.sensor.plugin] Failed to create imu sensor, parent prim is not found or invalid*",
+    "*[Error] [isaacsim.sensors.physics.plugin] *** error, No valid parent for /Hawk/Imu_Sensor with a rigid body api was found, sensor will not be created*",
+    "*[Error] [isaacsim.sensors.physics.plugin] Failed to create imu sensor, parent prim is not found or invalid*",
 ]
 

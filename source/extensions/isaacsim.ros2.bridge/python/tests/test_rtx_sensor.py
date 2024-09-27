@@ -23,11 +23,11 @@ import omni.kit.commands
 import omni.kit.test
 import omni.replicator.core as rep
 import usdrt.Sdf
-from omni.isaac.core.utils.physics import simulate_async
-from omni.isaac.core.utils.viewports import add_aov_to_viewport
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.sensor import _sensor
+from isaacsim.sensors.physics import _sensor
+from omni.isaac.core.utils.physics import simulate_async
+from omni.isaac.core.utils.viewports import add_aov_to_viewport
 from omni.kit.viewport.utility import get_active_viewport
 from omni.syntheticdata import sensors
 from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics

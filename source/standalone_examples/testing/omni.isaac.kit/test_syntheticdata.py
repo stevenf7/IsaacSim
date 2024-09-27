@@ -19,8 +19,8 @@ simulation_app.update()
 omni.usd.get_context().new_stage()
 simulation_app.update()
 
+from isaacsim.sensors.camera import Camera
 from omni.isaac.core.objects import VisualCuboid
-from omni.isaac.sensor import Camera
 from omni.kit.viewport.utility import get_active_viewport
 
 viewport_api = get_active_viewport()

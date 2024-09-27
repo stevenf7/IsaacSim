@@ -447,12 +447,13 @@ inventory.include = [
     # license
     "LICENSE.txt",
     # extensions
+    "exts/isaacsim.sensors.camera",
+    "exts/isaacsim.sensors.physics",
+    "exts/isaacsim.sensors.physx.examples",
+    "exts/isaacsim.sensors.physx.ui",
+    "exts/isaacsim.sensors.physx",
+    "exts/isaacsim.sensors.rtx",
     "exts/omni.isaac.camera_inspector",
-    "exts/omni.isaac.proximity_sensor",
-    "exts/omni.isaac.range_sensor.examples",
-    "exts/omni.isaac.range_sensor.ui",
-    "exts/omni.isaac.range_sensor",
-    "exts/omni.isaac.sensor",
     "exts/omni.usd.schema.isaac",
 ]
 

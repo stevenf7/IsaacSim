@@ -25,15 +25,17 @@ Isaac Sim: Extensions API
 .. toctree::
    :maxdepth: 1
    :caption: Sensor Extensions
-   :glob: 
+   :glob:
 
-   source/extensions/omni.isaac.sensor/docs/index
-   source/extensions/omni.isaac.range_sensor/docs/index
+   source/extensions/isaacsim.sensors.camera/docs/index
+   source/extensions/isaacsim.sensors.physics/docs/index
+   source/extensions/isaacsim.sensors.physx/docs/index
+   source/extensions/isaacsim.sensors.rtx/docs/index
 
 .. toctree::
    :maxdepth: 1
    :caption: Robot Extensions
-   :glob: 
+   :glob:
 
    source/extensions/omni.isaac.franka/docs/index
    source/extensions/omni.isaac.wheeled_robots/docs/index

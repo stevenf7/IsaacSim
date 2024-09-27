@@ -1,0 +1,26 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "2.0.0"
+category = "Simulation"
+title = "Isaac Sim Proximity Sensor Example"
+description = "Extension that provides a proximity sensor example"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/omni.isaac.proximity_sensor"
+keywords = ["isaac", "lula", "rmp"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+icon = "data/icon.png"
+preview_image = "data/preview.png"
+
+[dependencies]
+"isaacsim.core.deprecation_manager" = {}
+"isaacsim.sensors.physx" = {}
+
+[[python.module]]
+name = "omni.isaac.proximity_sensor"
+
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.sensors.physx."

@@ -17,11 +17,11 @@ preview_image = "data/preview.png"
 writeTarget.kit = true
 
 [dependencies]
-"omni.physx" = {}
+"isaacsim.sensors.camera" = {}
 "omni.isaac.core" = {}
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.ui" = {}
-"omni.isaac.sensor" = {}
+"omni.physx" = {}
 
 [[python.module]]
 name = "omni.isaac.camera_inspector"

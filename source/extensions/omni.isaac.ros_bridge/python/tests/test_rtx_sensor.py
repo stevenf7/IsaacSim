@@ -23,11 +23,11 @@ import omni.kit.commands
 import omni.kit.test
 import omni.replicator.core as rep
 import usdrt.Sdf
-from omni.isaac.core.utils.physics import simulate_async
-from omni.isaac.core.utils.viewports import add_aov_to_viewport
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.sensor import _sensor
+from isaacsim.sensors.physics import _sensor
+from omni.isaac.core.utils.physics import simulate_async
+from omni.isaac.core.utils.viewports import add_aov_to_viewport
 from omni.kit.viewport.utility import get_active_viewport
 from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics
 
@@ -67,7 +67,7 @@ class TestROS1RTXSensor(omni.kit.test.AsyncTestCase):
         self._timeline = omni.timeline.get_timeline_interface()
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.sensor")
+        ext_id = ext_manager.get_enabled_extension_id("isaacsim.sensors.physics")
         self._extension_path = ext_manager.get_extension_path(ext_id)
 
         self._roscore = Roscore()

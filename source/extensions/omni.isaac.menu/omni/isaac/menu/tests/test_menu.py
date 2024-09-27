@@ -19,12 +19,12 @@ import omni.kit.commands
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 import omni.usd
+from isaacsim.sensors.physics import _sensor
+from isaacsim.sensors.physx import _range_sensor
 from omni.isaac.core.objects import DynamicCuboid
 from omni.isaac.core.utils.prims import get_prim_path
 from omni.isaac.core.utils.stage import clear_stage, create_new_stage, traverse_stage
 from omni.isaac.core.utils.viewports import set_camera_view
-from omni.isaac.range_sensor import _range_sensor
-from omni.isaac.sensor import _sensor
 from omni.kit.mainwindow import get_main_window
 from omni.kit.ui_test.menu import *
 from omni.kit.ui_test.query import *
@@ -56,7 +56,7 @@ class TestMenuAssets(OmniUiTest):
         self.generic_sensor_interface = _range_sensor.acquire_generic_sensor_interface()
         self.contact_sensor_interface = _sensor.acquire_contact_sensor_interface()
         self.imu_sensor_interface = _sensor.acquire_imu_sensor_interface()
-        self.lightbeam_sensor_interface = _sensor.acquire_lightbeam_sensor_interface()
+        self.lightbeam_sensor_interface = _range_sensor.acquire_lightbeam_sensor_interface()
         self.carb_settings = carb.settings.get_settings()
         self.carb_settings.set("/rtx/rendermode", "RayTracedLighting")
         self.carb_settings.set("/rtx-transient/resourcemanager/enableTextureStreaming", False)

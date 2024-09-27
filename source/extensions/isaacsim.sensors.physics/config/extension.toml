@@ -1,0 +1,66 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.1.0"
+category = "Simulation"
+title = "Isaac Sim Isaac Sensor Simulation"
+description = "Support physics based sensors, such as contact sensors and imu sensors"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.sensors.physics"
+keywords = ["isaac", "physics", "robotics"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+writeTarget.kit = true
+
+[dependencies]
+"isaacsim.core.deprecation_manager" = {}
+"omni.graph" = {}
+"omni.isaac.core_nodes" = {}
+"omni.isaac.core" = {}
+"omni.isaac.nucleus" = {}
+"omni.isaac.ui" = {}
+"omni.kit.numpy.common" = {}
+"omni.kit.pip_archive" = {} # pulls in numpy
+"omni.physx" = {}
+"omni.replicator.core" = {}
+"omni.timeline" = {} # Needed for simulation to occur
+"omni.usd.schema.isaac" = {}
+"omni.usd" = {} # needed for call to add aov
+"usdrt.scenegraph" = {}
+
+[[python.module]]
+name = "isaacsim.sensors.physics"
+
+[[python.module]]
+name = "isaacsim.sensors.physics.tests"
+public = false
+
+[[python.module]]
+name = "isaacsim.sensors.physics.scripts.samples.contact_sensor"
+
+[[python.module]]
+name = "isaacsim.sensors.physics.scripts.samples.imu_sensor"
+
+[[native.plugin]]
+path = "bin/*.plugin"
+recursive = false
+
+[settings]
+
+[[test]]
+timeout=1200
+stdoutFailPatterns.exclude = [
+    # This is excluded in at least 3 kit tests.
+    "*Missing call to destroyResourceBindingSignature()*",
+    '*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_sensors_physics_IsaacReadContactSensor: [/TestGraph] Invalid contact sensor prim*',
+    '*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_sensors_physics_IsaacReadEffortSensor: [/TestGraph] OmniGraph Error: Failed to create effort sensor, unable to find prim path*',
+    '*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_sensors_physics_IsaacReadIMU: [/TestGraph] Invalid Imu sensor prim*',
+    '*[Error] [omni.graph.core.plugin] /TestGraph/ReadEffortNode: [/TestGraph] OmniGraph Error: Failed to create effort sensor, unable to find prim path*',
+    '*[Error] [omni.graph.core.plugin] /TestGraph/ReadIMUNode: [/TestGraph] Invalid Imu sensor prim*',
+    '*parent prim is missing contact report API*',
+    '*Error processing node attribute `outputs:pointInstanceDataType`: dataType attribute is empty*'
+]

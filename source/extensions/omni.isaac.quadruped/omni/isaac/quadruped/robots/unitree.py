@@ -15,6 +15,7 @@ import carb.profiler
 import numpy as np
 import omni
 import omni.kit.commands
+from isaacsim.sensors.physics import _sensor
 from omni.isaac.core.articulations import Articulation
 from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
 from omni.isaac.core.utils.stage import get_current_stage, get_stage_units
@@ -22,7 +23,6 @@ from omni.isaac.core_nodes.bindings import _omni_isaac_core_nodes
 from omni.isaac.nucleus import get_assets_root_path
 from omni.isaac.quadruped.controllers import A1QPController
 from omni.isaac.quadruped.utils.a1_classes import A1Command, A1Measurement, A1State
-from omni.isaac.sensor import _sensor
 
 
 class Unitree(Articulation):
