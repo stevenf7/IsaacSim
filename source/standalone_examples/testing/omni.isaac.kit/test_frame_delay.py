@@ -24,6 +24,7 @@ COLLECTION_STEPS = 10
 
 # parse any command-line arguments specific to the standalone application
 import argparse
+import os
 
 from isaacsim import SimulationApp
 
@@ -35,7 +36,9 @@ args, _ = parser.parse_known_args()
 RESOLUTION = tuple([int(item) for item in args.resolution.split("x")])
 PIXELS_PER_METER = 0.09765625 * RESOLUTION[0]
 
-simulation_app = SimulationApp({"headless": True}, experience="apps/omni.isaac.sim.zero_delay.python.kit")
+simulation_app = SimulationApp(
+    {"headless": True}, experience=f'{os.environ["EXP_PATH"]}/omni.isaac.sim.zero_delay.python.kit'
+)
 
 import pprint
 
