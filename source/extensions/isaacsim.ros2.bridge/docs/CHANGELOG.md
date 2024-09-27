@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.1.0] - 2024-09-25
+### Added
+- Isaac ROS Perceptor scene in the menu to under Isaac Examples -> ROS2 -> Isaac ROS -> Perceptor Scene
+
 ## [3.0.0] - 2024-09-25
 ### Changed
 - Extension renamed to isaacsim.ros2.bridge

@@ -68,6 +68,23 @@ class Extension(omni.ext.IExt):
                 name="ROS2",
                 sub_menu=[
                     MenuItemDescription(
+                        name="Isaac ROS",
+                        sub_menu=[
+                            make_menu_item_description(
+                                ext_id,
+                                "Perceptor Scene",
+                                lambda a=weakref.proxy(self): a._on_environment_setup(
+                                    "/Isaac/Samples/ROS2/Scenario/perceptor_navigation.usd"
+                                ),
+                            ),
+                        ],
+                    )
+                ],
+            ),
+            MenuItemDescription(
+                name="ROS2",
+                sub_menu=[
+                    MenuItemDescription(
                         name="Multiple Robot Navigation",
                         sub_menu=[
                             make_menu_item_description(
