@@ -286,7 +286,7 @@ sphinx_exclude_patterns = [
     "**/omni.isaac.repl",
     "**/omni.isaac.tests",
     "**/omni.isaac.utils_manager",
-    "**/omni.kit.property.isaac",
+    "**/isaacsim.gui.property",
     "**/omni.usd.schema.isaac",     #TODO?
     "**/omni.isaac.window.about",
     "**/omni.isaac.unit_converter",
@@ -647,7 +647,7 @@ include = [
 [[repo_test.suites.pythontests.bucket]]
 name = "6"
 include = [
-  "tests-omni.isaac.debug_draw*${shell_ext}",
+  "tests-isaacsim.util.debug_draw*${shell_ext}",
   "tests-omni.isaac.synthetic*${shell_ext}",
   "tests-omni.replicator.isaac*${shell_ext}",
   "tests-isaacsim.replicator*${shell_ext}",
@@ -854,12 +854,10 @@ ext_folders = [
 
 # Extensions to publish, include and exclude among those discovered by kit. Wildcards are supported.
 exts.include = [
-    "isaacsim.replicator",
     "omni.exporter.urdf",
     "omni.isaac.*",
     "isaacsim.*",
     "omni.kit.loop-isaac",
-    "omni.kit.property.isaac",
     "omni.pip.cloud",
     "omni.pip.compute",
     "omni.usd.schema.isaac",
@@ -934,7 +932,7 @@ ogn_exts_includes = [
     "omni.isaac.conveyor",
     "omni.isaac.core_nodes",
     "omni.isaac.core_nodes",
-    "omni.isaac.debug_draw",
+    "isaacsim.util.debug_draw",
     "omni.isaac.examples_nodes",
     "omni.isaac.ros_bridge",
     "omni.isaac.wheeled_robots",

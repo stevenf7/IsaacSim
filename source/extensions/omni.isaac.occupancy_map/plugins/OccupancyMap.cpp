@@ -49,8 +49,8 @@ carb::Float3 inputMinPoint = { -1.00f, -1.00f, 0.0f };
 carb::Float3 inputMaxPoint = { 1.00f, 1.00f, 0.0f };
 float inputCellSize = .05f;
 std::unique_ptr<omni::isaac::occupancy_map::MapGenerator> gGenerator = nullptr;
-std::unique_ptr<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper> gLineDrawing;
-std::unique_ptr<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper> gCellDrawing;
+std::unique_ptr<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper> gLineDrawing;
+std::unique_ptr<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper> gCellDrawing;
 float gMetersPerUnit = 1.0f;
 }
 
@@ -305,11 +305,11 @@ static void onAttach(long int stageId, double metersPerUnit, void* userData)
 
     gStage = stage;
     gMetersPerUnit = static_cast<float>(metersPerUnit);
-    gLineDrawing = std::make_unique<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper>(
-        omni::usd::UsdContext::getContext(), omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::eLines);
+    gLineDrawing = std::make_unique<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper>(
+        omni::usd::UsdContext::getContext(), isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper::eLines);
 
-    gCellDrawing = std::make_unique<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper>(
-        omni::usd::UsdContext::getContext(), omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::eLines, true);
+    gCellDrawing = std::make_unique<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper>(
+        omni::usd::UsdContext::getContext(), isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper::eLines, true);
 }
 
 static void onDetach(void* data)

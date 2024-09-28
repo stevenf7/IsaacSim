@@ -60,13 +60,13 @@ public:
         mTasking = carb::getCachedInterface<carb::tasking::ITasking>();
         mToken = carb::getCachedInterface<omni::fabric::IToken>();
 
-        mLineDrawing = std::make_shared<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper>(
+        mLineDrawing = std::make_shared<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper>(
             omni::usd::UsdContext::getContext(),
-            omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::eLines);
+            isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::eLines);
 
-        mPointDrawing = std::make_shared<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper>(
+        mPointDrawing = std::make_shared<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper>(
             omni::usd::UsdContext::getContext(),
-            omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::ePoints);
+            isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::ePoints);
     }
     /**
      * @brief Destroy the Range Sensor Component Base object
@@ -248,8 +248,8 @@ protected:
     omni::timeline::ITimeline* mTimeline = nullptr;
     omni::fabric::IToken* mToken = nullptr;
     carb::tasking::ITasking* mTasking = nullptr;
-    std::shared_ptr<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper> mLineDrawing;
-    std::shared_ptr<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper> mPointDrawing;
+    std::shared_ptr<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper> mLineDrawing;
+    std::shared_ptr<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper> mPointDrawing;
 
     pxr::RangeSensorRangeSensor mRangeSensorPrim;
 

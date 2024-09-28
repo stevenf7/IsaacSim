@@ -52,7 +52,7 @@ project_with_location("omni.isaac.occupancy_map.generator")
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.occupancy_map.plugin")
     dependson {"omni.isaac.occupancy_map.generator"}
-    dependson {"omni.isaac.debug_draw.primitive_drawing"}
+    dependson {"isaacsim.util.debug_draw.primitive_drawing"}
 
     add_files("impl", "plugins")
     include_physx()
@@ -64,14 +64,14 @@ project_ext_plugin(ext, "omni.isaac.occupancy_map.plugin")
         "%{root}/_build/target-deps/omni_physics/%{config}/include",
         "%{root}/_build/target-deps/omni_client_library/include",
         "%{root}/source/extensions/omni.isaac.occupancy_map/include",
-        "%{root}/source/extensions/omni.isaac.debug_draw/include",
+        "%{root}/source/extensions/isaacsim.util.debug_draw/include",
     }
     libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
         extsbuild_dir.."/omni.usd.core/bin"
     }
-    links {"usdUtils", "omni.usd", "omni.isaac.debug_draw.primitive_drawing", "usdPhysics", "omni.isaac.occupancy_map.generator", "sdf", "tf", "usd"}
+    links {"usdUtils", "omni.usd", "isaacsim.util.debug_draw.primitive_drawing", "usdPhysics", "omni.isaac.occupancy_map.generator", "sdf", "tf", "usd"}
     filter { "system:linux" }
         disablewarnings {"error=pragmas"}
         includedirs {

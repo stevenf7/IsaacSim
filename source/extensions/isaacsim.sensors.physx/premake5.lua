@@ -4,7 +4,7 @@ project_ext (ext)
 
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "isaacsim.sensors.physx.plugin")
-    dependson {"omni.isaac.debug_draw.primitive_drawing"}
+    dependson {"isaacsim.util.debug_draw.primitive_drawing"}
     add_files("impl", "plugins")
     add_files("ogn", ogn.nodes_path)
 
@@ -28,7 +28,7 @@ project_ext_plugin(ext, "isaacsim.sensors.physx.plugin")
         "%{root}/_build/target-deps/python/include",
         "%{root}/source/extensions/isaacsim.sensors.physx/include",
         "%{root}/source/extensions/omni.isaac.dynamic_control/include",
-        "%{root}/source/extensions/omni.isaac.debug_draw/include",
+        "%{root}/source/extensions/isaacsim.util.debug_draw/include",
      }
      libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
@@ -40,7 +40,7 @@ project_ext_plugin(ext, "isaacsim.sensors.physx.plugin")
 
     links {
         "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace", "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
-        "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "isaacSensorSchema", "rangeSensorSchema", "omni.usd", "usdPhysics",  "omni.isaac.debug_draw.primitive_drawing"
+        "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "isaacSensorSchema", "rangeSensorSchema", "omni.usd", "usdPhysics",  "isaacsim.util.debug_draw.primitive_drawing"
     }
 
     filter { "system:linux" }

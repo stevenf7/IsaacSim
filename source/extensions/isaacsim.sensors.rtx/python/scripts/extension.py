@@ -204,7 +204,7 @@ class Extension(omni.ext.IExt):
         # RTX lidar Debug Draw Writer
         register_node_writer_with_telemetry(
             name="RtxLidar" + "DebugDrawPointCloud",
-            node_type_id="omni.isaac.debug_draw.DebugDrawPointCloud",
+            node_type_id="isaacsim.util.debug_draw.DebugDrawPointCloud",
             annotators=[
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                     "RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud"
@@ -216,7 +216,7 @@ class Extension(omni.ext.IExt):
         # RTX lidar Debug Draw Writer
         register_node_writer_with_telemetry(
             name="RtxLidar" + "DebugDrawPointCloud" + "Buffer",
-            node_type_id="omni.isaac.debug_draw.DebugDrawPointCloud",
+            node_type_id="isaacsim.util.debug_draw.DebugDrawPointCloud",
             annotators=[
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                     "RtxSensorCpu" + "IsaacCreateRTXLidarScanBuffer"
@@ -228,7 +228,7 @@ class Extension(omni.ext.IExt):
         # RTX lidar Debug Draw Writer
         register_node_writer_with_telemetry(
             name="RtxLidar" + "DebugDrawPointCloud" + "Buffer2",
-            node_type_id="omni.isaac.debug_draw.DebugDrawPointCloud",
+            node_type_id="isaacsim.util.debug_draw.DebugDrawPointCloud",
             annotators=[
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu" + "IsaacRTXLidarOutput")
             ],
@@ -250,7 +250,7 @@ class Extension(omni.ext.IExt):
         # RTX radar Debug Draw Writer
         register_node_writer_with_telemetry(
             name="RtxRadar" + "DebugDrawPointCloud",
-            node_type_id=f"omni.isaac.debug_draw.DebugDrawPointCloud",
+            node_type_id=f"isaacsim.util.debug_draw.DebugDrawPointCloud",
             annotators=["RtxSensorCpu" + "IsaacComputeRTXRadarPointCloud"],
             # hard to see radar points... so make them more visible.
             size=0.2,

@@ -18,11 +18,11 @@ writeTarget.kit = true
 
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
+"isaacsim.util.debug_draw" = {}
 "omni.graph.action" = {}
 "omni.graph" = {}
 "omni.isaac.core_nodes" = {}
 "omni.isaac.core" = {}
-"omni.isaac.debug_draw" = {}
 "omni.isaac.nucleus" = {}
 "omni.isaac.ui" = {}
 "omni.kit.numpy.common" = {}

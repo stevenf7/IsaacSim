@@ -53,6 +53,7 @@ exts."isaacsim.core.deprecation_manager".settings = [
 ]
 # OmniGraph nodes
 exts."isaacsim.core.deprecation_manager".omnigraph = [
+    { deprecated = "omni.isaac.debug_draw", new = "isaacsim.util.debug_draw" },
     { deprecated = "omni.isaac.range_sensor.IsaacReadLidarBeams", new = "isaacsim.sensors.physx.IsaacReadLidarBeams" },
     { deprecated = "omni.isaac.range_sensor.IsaacReadLidarPointCloud", new = "isaacsim.sensors.physx.IsaacReadLidarPointCloud" },
     { deprecated = "omni.isaac.ros2_bridge", new = "isaacsim.ros2.bridge" },
