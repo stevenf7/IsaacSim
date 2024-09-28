@@ -245,7 +245,7 @@ class LightBeamSensorDemo(omni.ext.IExt):
                 og.Controller.Keys.CREATE_NODES: [
                     ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                     ("IsaacReadLightBeam", "omni.sensors.physx.IsaacReadLightBeam"),
-                    ("DebugDrawRayCast", "omni.isaac.debug_draw.DebugDrawRayCast"),
+                    ("DebugDrawRayCast", "isaacsim.util.debug_draw.DebugDrawRayCast"),
                 ],
                 og.Controller.Keys.SET_VALUES: [
                     ("IsaacReadLightBeam.inputs:lightbeamPrim", self.sensor_path),

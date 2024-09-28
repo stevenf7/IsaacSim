@@ -216,7 +216,7 @@ def draw_path(
     rx, ry, argb
 ):  # use color and path arrays to draw path along quintic curve (copied from simple_robot_controller in demo utils)
     try:
-        from omni.isaac.debug_draw import _debug_draw
+        from isaacsim.util.debug_draw import _debug_draw
         from pxr import UsdGeom
 
         stage = omni.usd.get_context().get_stage()
@@ -227,4 +227,4 @@ def draw_path(
         _debug_draw.acquire_debug_draw_interface().clear_lines()
         _debug_draw.acquire_debug_draw_interface().draw_lines_spline(points, (1, 1, 1, 1), 0.05, True)
     except:
-        print("Error: omni.isaac.debug_draw must be enabled to draw path")
+        print("Error: isaacsim.util.debug_draw must be enabled to draw path")
