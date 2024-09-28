@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.14.1] - 2024-09-27
+### Fixed
+- Missing keyboard bindings for layout menu items
+
 ## [0.14.0] - 2024-07-25
 ### Changed
 - Removed imgui calls on app startup to avoid crash when display was not set

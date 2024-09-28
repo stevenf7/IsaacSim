@@ -429,6 +429,8 @@ class CreateSetupExtension(omni.ext.IExt):
                 )
                 self._layout_menu_items.append(menu)
 
+            editor_menu.set_hotkey(menu_path, carb.input.KEYBOARD_MODIFIER_FLAG_CONTROL, key)
+
             self._current_layout_priority = self._current_layout_priority + 1
 
         # add_layout_menu_entry("Reset Layout", "default", carb.input.KeyboardInput.KEY_1)
