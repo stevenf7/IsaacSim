@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.1.1] - 2024-09-28
+### Fixed
+- ROS2 Subscribe Clock node issue where any received data was not sent to outputs.
+
 ## [3.1.0] - 2024-09-25
 ### Added
 - Isaac ROS Perceptor scene in the menu to under Isaac Examples -> ROS2 -> Isaac ROS -> Perceptor Scene

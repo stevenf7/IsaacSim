@@ -82,7 +82,7 @@ public:
 
         if (state.m_subscriber->spin(state.m_message->getPtr()))
         {
-            state.m_message->writeData(db.outputs.timeStamp());
+            state.m_message->readData(db.outputs.timeStamp());
             db.outputs.execOut() = kExecutionAttributeStateEnabled;
             return true;
         }
