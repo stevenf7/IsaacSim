@@ -12,8 +12,8 @@ from abc import ABC, abstractmethod
 from typing import Optional
 
 import numpy as np
-from omni.isaac.core import World
-from omni.isaac.core.prims.rigid_prim import RigidPrim
+from isaacsim.core.api import World
+from isaacsim.core.api.prims.rigid_prim import RigidPrim
 
 from .collision_box import CollisionBox
 

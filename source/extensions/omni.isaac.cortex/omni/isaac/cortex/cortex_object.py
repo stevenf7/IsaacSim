@@ -12,8 +12,8 @@ from typing import Optional, Sequence, Tuple
 
 import numpy as np
 import omni.isaac.cortex.math_util as math_util
-from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.utils.rotations import gf_quat_to_np_array
+from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.api.utils.rotations import gf_quat_to_np_array
 from pxr import Gf, Usd
 
 

@@ -19,17 +19,15 @@ import carb.tokens
 import numpy as np
 import omni.kit.commands
 import omni.kit.test
-
-# Import extension python module we are testing with absolute import path, as if we are external user (other extension)
+from isaacsim.core.api import World
+from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.api.objects import DynamicCuboid
+from isaacsim.core.api.prims.rigid_prim import RigidPrim
+from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.api.utils.physics import simulate_async
+from isaacsim.core.api.utils.prims import get_prim_at_path
+from isaacsim.core.api.utils.rotations import quat_to_euler_angles
 from isaacsim.sensors.physics import _sensor
-from omni.isaac.core import World
-from omni.isaac.core.articulations import Articulation
-from omni.isaac.core.objects import DynamicCuboid
-from omni.isaac.core.prims.rigid_prim import RigidPrim
-from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.utils.physics import simulate_async
-from omni.isaac.core.utils.prims import get_prim_at_path
-from omni.isaac.core.utils.rotations import quat_to_euler_angles
 from omni.isaac.nucleus import get_assets_root_path_async
 from pxr import Gf, UsdGeom
 

@@ -9,10 +9,10 @@
 import gc
 from abc import abstractmethod
 
-from omni.isaac.core import World
-from omni.isaac.core.scenes.scene import Scene
-from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
-from omni.isaac.core.utils.viewports import set_camera_view
+from isaacsim.core.api import World
+from isaacsim.core.api.scenes.scene import Scene
+from isaacsim.core.api.utils.stage import create_new_stage_async, update_stage_async
+from isaacsim.core.api.utils.viewports import set_camera_view
 
 
 class BaseSample(object):

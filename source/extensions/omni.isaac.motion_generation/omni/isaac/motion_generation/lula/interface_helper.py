@@ -10,12 +10,12 @@ from typing import List, Optional, Tuple, Union
 
 import lula
 import numpy as np
-from omni.isaac.core import objects
-from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices
-from omni.isaac.core.utils.prims import delete_prim, is_prim_path_valid
-from omni.isaac.core.utils.stage import get_stage_units
-from omni.isaac.core.utils.string import find_unique_string_name
+from isaacsim.core.api import objects
+from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.api.utils.numpy.rotations import quats_to_rot_matrices
+from isaacsim.core.api.utils.prims import delete_prim, is_prim_path_valid
+from isaacsim.core.api.utils.stage import get_stage_units
+from isaacsim.core.api.utils.string import find_unique_string_name
 
 from . import utils as lula_utils
 from .world import LulaWorld

@@ -14,7 +14,7 @@ from isaacsim import SimulationApp
 # Example ROS bridge sample showing rospy and rosclock interaction
 kit = SimulationApp()
 import omni
-from omni.isaac.core.utils.extensions import enable_extension
+from isaacsim.core.api.utils.extensions import enable_extension
 
 # enable ROS bridge extension
 enable_extension("isaacsim.ros2.bridge")

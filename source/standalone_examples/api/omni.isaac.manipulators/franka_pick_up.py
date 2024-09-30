@@ -16,9 +16,9 @@ import sys
 
 import carb
 import numpy as np
-from omni.isaac.core import World
-from omni.isaac.core.objects import DynamicCuboid
-from omni.isaac.core.utils.stage import add_reference_to_stage
+from isaacsim.core.api import World
+from isaacsim.core.api.objects import DynamicCuboid
+from isaacsim.core.api.utils.stage import add_reference_to_stage
 from omni.isaac.franka.controllers.pick_place_controller import PickPlaceController
 from omni.isaac.manipulators import SingleManipulator
 from omni.isaac.manipulators.grippers import ParallelGripper

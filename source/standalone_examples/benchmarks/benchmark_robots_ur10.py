@@ -31,14 +31,14 @@ import asyncio
 from functools import partial
 
 import carb
-import omni.isaac.core.utils.stage as stage_utils
+import isaacsim.core.api.utils.stage as stage_utils
 import omni.physx as _physx
 import omni.timeline
-from omni.isaac.core import PhysicsContext, World
-from omni.isaac.core.articulations import ArticulationView
-from omni.isaac.core.utils.extensions import enable_extension
-from omni.isaac.core.utils.stage import open_stage_async, update_stage_async
-from omni.isaac.core.utils.types import ArticulationAction
+from isaacsim.core.api import PhysicsContext, World
+from isaacsim.core.api.articulations import ArticulationView
+from isaacsim.core.api.utils.extensions import enable_extension
+from isaacsim.core.api.utils.stage import open_stage_async, update_stage_async
+from isaacsim.core.api.utils.types import ArticulationAction
 from omni.kit.viewport.utility import get_active_viewport
 
 enable_extension("isaacsim.benchmark.services")

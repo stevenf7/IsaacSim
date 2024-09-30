@@ -9,9 +9,9 @@
 
 import omni.timeline
 import omni.ui as ui
-from omni.isaac.core.prims import XFormPrim
-from omni.isaac.core.utils.stage import create_new_stage, get_current_stage
-from omni.isaac.core.world import World
+from isaacsim.core.api.prims import XFormPrim
+from isaacsim.core.api.utils.stage import create_new_stage, get_current_stage
+from isaacsim.core.api.world import World
 from omni.isaac.ui.element_wrappers import CollapsableFrame, StateButton
 from omni.isaac.ui.element_wrappers.core_connectors import LoadButton, ResetButton
 from omni.isaac.ui.ui_utils import get_style

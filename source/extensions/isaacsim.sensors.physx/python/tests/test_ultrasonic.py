@@ -12,10 +12,10 @@ import numpy as np
 import omni.isaac.RangeSensorSchema as RangeSensorSchema
 import omni.kit.commands
 import omni.kit.test
+from isaacsim.core.api.utils.physics import simulate_async
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from isaacsim.sensors.physx import _range_sensor
-from omni.isaac.core.utils.physics import simulate_async
 from pxr import Gf, PhysicsSchemaTools, Sdf, Usd, UsdGeom, UsdLux, UsdPhysics, UsdShade
 
 

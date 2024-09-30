@@ -33,8 +33,8 @@ simulation_app = SimulationApp({"headless": True, "max_gpu_count": n_gpus})
 import carb
 import omni.kit.test
 import omni.replicator.core as rep
-from omni.isaac.core.utils.extensions import enable_extension
-from omni.isaac.core.utils.prims import delete_prim
+from isaacsim.core.api.utils.extensions import enable_extension
+from isaacsim.core.api.utils.prims import delete_prim
 from pxr import Gf
 
 enable_extension("isaacsim.benchmark.services")

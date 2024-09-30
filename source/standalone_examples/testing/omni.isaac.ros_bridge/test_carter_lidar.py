@@ -29,8 +29,8 @@ import carb
 import omni
 import omni.graph.core as og
 import usdrt.Sdf
-from omni.isaac.core import SimulationContext
-from omni.isaac.core.utils import extensions, prims, rotations, stage, viewports
+from isaacsim.core.api import SimulationContext
+from isaacsim.core.api.utils import extensions, prims, rotations, stage, viewports
 from omni.isaac.nucleus import get_assets_root_path
 from pxr import Gf
 

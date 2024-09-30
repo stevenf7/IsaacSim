@@ -9,10 +9,10 @@
 import typing
 
 import numpy as np
-from omni.isaac.core.controllers.base_controller import BaseController
-from omni.isaac.core.utils.rotations import euler_angles_to_quat
-from omni.isaac.core.utils.stage import get_stage_units
-from omni.isaac.core.utils.types import ArticulationAction
+from isaacsim.core.api.controllers.base_controller import BaseController
+from isaacsim.core.api.utils.rotations import euler_angles_to_quat
+from isaacsim.core.api.utils.stage import get_stage_units
+from isaacsim.core.api.utils.types import ArticulationAction
 from omni.isaac.manipulators.grippers.gripper import Gripper
 
 

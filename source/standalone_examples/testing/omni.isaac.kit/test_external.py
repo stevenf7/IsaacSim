@@ -14,7 +14,7 @@ from isaacsim import SimulationApp
 simulation_app = SimulationApp()
 
 import omni
-from omni.isaac.core.utils.extensions import disable_extension, enable_extension
+from isaacsim.core.api.utils.extensions import disable_extension, enable_extension
 
 simulation_app.update()
 

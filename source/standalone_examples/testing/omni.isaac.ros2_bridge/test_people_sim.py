@@ -28,7 +28,7 @@ ADDITIONAL_EXTENSIONS_PEOPLE = [
 
 import carb
 import omni
-from omni.isaac.core.utils.extensions import enable_extension
+from isaacsim.core.api.utils.extensions import enable_extension
 
 for e in ADDITIONAL_EXTENSIONS_PEOPLE:
     enable_extension(e)

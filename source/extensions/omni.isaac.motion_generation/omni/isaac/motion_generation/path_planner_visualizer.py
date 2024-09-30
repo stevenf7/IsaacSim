@@ -11,8 +11,8 @@ from typing import List
 
 import carb
 import numpy as np
-from omni.isaac.core.articulations import Articulation, ArticulationSubset
-from omni.isaac.core.utils.types import ArticulationAction
+from isaacsim.core.api.articulations import Articulation, ArticulationSubset
+from isaacsim.core.api.utils.types import ArticulationAction
 
 from .path_planning_interface import PathPlanner
 

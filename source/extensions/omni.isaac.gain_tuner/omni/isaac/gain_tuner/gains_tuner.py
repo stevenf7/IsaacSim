@@ -12,8 +12,8 @@ from enum import Enum
 import carb
 import numpy as np
 import omni.timeline as timeline
-from omni.isaac.core.articulations import Articulation
-from omni.isaac.core.utils.types import ArticulationAction
+from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.api.utils.types import ArticulationAction
 
 
 class GainsTestMode(Enum):

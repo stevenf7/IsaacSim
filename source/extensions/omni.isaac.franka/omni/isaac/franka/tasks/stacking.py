@@ -9,10 +9,10 @@
 from typing import Optional
 
 import numpy as np
-from omni.isaac.core.tasks import Stacking as BaseStacking
-from omni.isaac.core.utils.prims import is_prim_path_valid
-from omni.isaac.core.utils.stage import get_stage_units
-from omni.isaac.core.utils.string import find_unique_string_name
+from isaacsim.core.api.tasks import Stacking as BaseStacking
+from isaacsim.core.api.utils.prims import is_prim_path_valid
+from isaacsim.core.api.utils.stage import get_stage_units
+from isaacsim.core.api.utils.string import find_unique_string_name
 from omni.isaac.franka import Franka
 
 

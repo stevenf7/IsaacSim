@@ -14,17 +14,17 @@ from typing import List
 import carb
 import numpy as np
 import omni.kit.test
-from omni.isaac.core.articulations import Articulation
-from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.utils.prims import get_prim_at_path
-from omni.isaac.core.utils.stage import (
+from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.api.utils.prims import get_prim_at_path
+from isaacsim.core.api.utils.stage import (
     add_reference_to_stage,
     create_new_stage_async,
     get_current_stage,
     update_stage_async,
 )
-from omni.isaac.core.utils.types import ArticulationAction
-from omni.isaac.core.world import World
+from isaacsim.core.api.utils.types import ArticulationAction
+from isaacsim.core.api.world import World
 from omni.isaac.nucleus import get_assets_root_path_async
 from omni.isaac.robot_assembler import AssembledRobot, RobotAssembler
 from pxr import PhysxSchema, Sdf, UsdLux, UsdPhysics

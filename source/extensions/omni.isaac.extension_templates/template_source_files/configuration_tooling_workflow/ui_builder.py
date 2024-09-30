@@ -10,9 +10,9 @@
 import numpy as np
 import omni.timeline
 import omni.ui as ui
-from omni.isaac.core.articulations import Articulation
-from omni.isaac.core.utils.prims import get_prim_object_type
-from omni.isaac.core.utils.types import ArticulationAction
+from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.api.utils.prims import get_prim_object_type
+from isaacsim.core.api.utils.types import ArticulationAction
 from omni.isaac.ui.element_wrappers import CollapsableFrame, DropDown, FloatField, TextBlock
 from omni.isaac.ui.ui_utils import get_style
 

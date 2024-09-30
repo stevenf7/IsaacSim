@@ -23,7 +23,7 @@ warning = "Extension deprecated since Isaac Sim 4.0.0. Replaced by omni.physx.in
 
 [dependencies]
 "omni.physx" = {}
-"omni.isaac.core" = {}
+"isaacsim.core.api" = {}
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.ui" = {}
 

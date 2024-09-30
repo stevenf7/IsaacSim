@@ -9,17 +9,17 @@ simulation_app = SimulationApp(
 import sys
 
 import carb
+import isaacsim.core.api.utils.numpy.rotations as rot_utils
+import isaacsim.core.api.utils.prims as prim_utils
+import isaacsim.core.api.utils.stage as stage_utils
 import matplotlib.pyplot as plt
 import numpy as np
-import omni.isaac.core.utils.numpy.rotations as rot_utils
-import omni.isaac.core.utils.prims as prim_utils
-import omni.isaac.core.utils.stage as stage_utils
+from isaacsim.core.api import SimulationContext
+from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.api.objects import DynamicCuboid
+from isaacsim.core.api.prims import RigidPrim
+from isaacsim.core.api.utils.prims import add_update_semantics, get_prim_attribute_value
 from isaacsim.sensors.camera import Camera
-from omni.isaac.core import SimulationContext
-from omni.isaac.core.articulations import Articulation
-from omni.isaac.core.objects import DynamicCuboid
-from omni.isaac.core.prims import RigidPrim
-from omni.isaac.core.utils.prims import add_update_semantics, get_prim_attribute_value
 from omni.isaac.nucleus import get_assets_root_path
 
 assets_root_path = get_assets_root_path()

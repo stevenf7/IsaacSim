@@ -15,6 +15,10 @@ readme = "docs/README.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 
+[dependencies]
+"isaacsim.core.deprecation_manager" = {}
+"isaacsim.core.throttling" = {}
+
 [[python.module]]
 name = "omni.isaac.throttling"
 

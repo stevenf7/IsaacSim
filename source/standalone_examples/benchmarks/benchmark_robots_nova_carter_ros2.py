@@ -51,10 +51,10 @@ import carb
 import omni
 import omni.graph.core as og
 import omni.kit.test
-from omni.isaac.core import PhysicsContext
-from omni.isaac.core.utils.extensions import enable_extension
-from omni.isaac.core.utils.stage import get_current_stage
-from omni.isaac.core.utils.viewports import set_camera_view
+from isaacsim.core.api import PhysicsContext
+from isaacsim.core.api.utils.extensions import enable_extension
+from isaacsim.core.api.utils.stage import get_current_stage
+from isaacsim.core.api.utils.viewports import set_camera_view
 from omni.isaac.wheeled_robots.robots import WheeledRobot
 from pxr import Usd
 

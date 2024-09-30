@@ -10,12 +10,12 @@
 import asyncio
 
 import carb
+import isaacsim.core.api.objects as objects
 import numpy as np
-import omni.isaac.core.objects as objects
 import omni.kit.test
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.core.utils.stage import (
+from isaacsim.core.api.utils.stage import (
     add_reference_to_stage,
     create_new_stage_async,
     open_stage_async,

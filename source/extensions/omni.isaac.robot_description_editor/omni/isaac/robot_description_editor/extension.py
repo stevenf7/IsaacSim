@@ -24,10 +24,10 @@ import omni.timeline
 import omni.ui as ui
 import omni.usd
 import yaml
-from omni.isaac.core.articulations import Articulation, ArticulationView
-from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices
-from omni.isaac.core.utils.prims import get_prim_at_path, get_prim_object_type
+from isaacsim.core.api.articulations import Articulation, ArticulationView
+from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.api.utils.numpy.rotations import quats_to_rot_matrices
+from isaacsim.core.api.utils.prims import get_prim_at_path, get_prim_object_type
 
 # New way of making UI being integrated in through feature updates
 from omni.isaac.ui.element_wrappers import Button, CheckBox, CollapsableFrame, DropDown, FloatField, ScrollingWindow

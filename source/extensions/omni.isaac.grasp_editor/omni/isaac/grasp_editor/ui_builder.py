@@ -15,12 +15,12 @@ import carb
 import numpy as np
 import omni.timeline
 import omni.ui as ui
-from omni.isaac.core.articulations import Articulation, ArticulationSubset
-from omni.isaac.core.prims import RigidPrimView, XFormPrim
-from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
-from omni.isaac.core.utils.stage import set_stage_units, update_stage_async
-from omni.isaac.core.utils.types import ArticulationAction
-from omni.isaac.core.utils.xforms import get_world_pose
+from isaacsim.core.api.articulations import Articulation, ArticulationSubset
+from isaacsim.core.api.prims import RigidPrimView, XFormPrim
+from isaacsim.core.api.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
+from isaacsim.core.api.utils.stage import set_stage_units, update_stage_async
+from isaacsim.core.api.utils.types import ArticulationAction
+from isaacsim.core.api.utils.xforms import get_world_pose
 from omni.isaac.ui.element_wrappers import (
     Button,
     CheckBox,

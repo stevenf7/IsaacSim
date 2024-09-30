@@ -1,17 +1,17 @@
 import asyncio
 
 import carb
+import isaacsim.core.api.utils.stage as stage_utils
 import numpy as np
 import omni.graph.core as og
-import omni.isaac.core.utils.stage as stage_utils
 import omni.kit.commands
 import omni.kit.test
 import usdrt.Sdf
-from omni.isaac.core import World
-from omni.isaac.core.objects import DynamicCuboid, GroundPlane
-from omni.isaac.core.utils.physics import simulate_async
-from omni.isaac.core.utils.prims import delete_prim, get_prim_at_path
-from omni.isaac.core.utils.stage import create_new_stage_async
+from isaacsim.core.api import World
+from isaacsim.core.api.objects import DynamicCuboid, GroundPlane
+from isaacsim.core.api.utils.physics import simulate_async
+from isaacsim.core.api.utils.prims import delete_prim, get_prim_at_path
+from isaacsim.core.api.utils.stage import create_new_stage_async
 from omni.physx.scripts import physicsUtils
 from pxr import Gf
 

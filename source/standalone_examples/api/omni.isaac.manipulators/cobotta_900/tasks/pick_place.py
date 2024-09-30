@@ -10,9 +10,9 @@
 import os
 from typing import Optional
 
+import isaacsim.core.api.tasks as tasks
 import numpy as np
-import omni.isaac.core.tasks as tasks
-from omni.isaac.core.utils.stage import add_reference_to_stage
+from isaacsim.core.api.utils.stage import add_reference_to_stage
 from omni.isaac.manipulators import SingleManipulator
 from omni.isaac.manipulators.grippers import ParallelGripper
 from omni.isaac.nucleus import get_assets_root_path

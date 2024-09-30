@@ -11,7 +11,7 @@
 import carb
 import numpy as np
 import omni
-from omni.isaac.core.objects import DynamicCuboid, VisualCuboid
+from isaacsim.core.api.objects import DynamicCuboid, VisualCuboid
 from omni.isaac.cortex.cortex_utils import load_behavior_module
 from omni.isaac.cortex.cortex_world import Behavior, CortexWorld, LogicalStateMonitor
 from omni.isaac.cortex.dfb import DfDiagnosticsMonitor

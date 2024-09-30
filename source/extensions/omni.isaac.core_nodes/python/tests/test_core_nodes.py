@@ -10,7 +10,7 @@
 
 import carb
 import omni.kit.test
-from omni.isaac.core.utils.stage import open_stage_async
+from isaacsim.core.api.utils.stage import open_stage_async
 from omni.isaac.core_nodes.bindings import _omni_isaac_core_nodes
 from omni.isaac.nucleus import get_assets_root_path_async
 

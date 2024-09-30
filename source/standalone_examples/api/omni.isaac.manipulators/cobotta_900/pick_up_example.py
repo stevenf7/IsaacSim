@@ -15,7 +15,7 @@ import argparse
 
 import numpy as np
 from controllers.pick_place import PickPlaceController
-from omni.isaac.core import World
+from isaacsim.core.api import World
 from tasks.pick_place import PickPlace
 
 parser = argparse.ArgumentParser()

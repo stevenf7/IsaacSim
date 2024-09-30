@@ -11,7 +11,7 @@ from typing import List, Tuple
 
 import carb
 import numpy as np
-from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
+from isaacsim.core.api.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
 
 from .data_writer import DataWriter
 

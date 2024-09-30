@@ -12,8 +12,9 @@ import numpy as np
 import omni.replicator.core as rep
 import torch
 import warp as wp
-from omni.isaac.core.prims.xform_prim_view import XFormPrimView
-from pxr import Vt
+from isaacsim.core.api.prims.xform_prim_view import XFormPrimView
+from isaacsim.core.api.utils.carb import get_carb_setting
+from pxr import Usd, Vt
 
 # from ROS camera convention to USD camera convention
 U_R_TRANSFORM = np.array([[1, 0, 0, 0], [0, -1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])

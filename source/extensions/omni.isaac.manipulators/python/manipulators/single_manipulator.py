@@ -9,8 +9,8 @@
 from typing import Optional, Sequence
 
 import omni.kit.app
-from omni.isaac.core.articulations.articulation import Articulation
-from omni.isaac.core.prims.rigid_prim import RigidPrim
+from isaacsim.core.api.articulations.articulation import Articulation
+from isaacsim.core.api.prims.rigid_prim import RigidPrim
 from omni.isaac.manipulators.grippers.gripper import Gripper
 from omni.isaac.manipulators.grippers.parallel_gripper import ParallelGripper
 from omni.isaac.manipulators.grippers.surface_gripper import SurfaceGripper

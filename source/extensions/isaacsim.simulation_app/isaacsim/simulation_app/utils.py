@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-# The functions in this file are copies from omni.isaac.core to make the dependency structure cleaner.
+# The functions in this file are copies from isaacsim.core.api to make the dependency structure cleaner.
 
 from __future__ import annotations
 

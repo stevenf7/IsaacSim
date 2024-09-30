@@ -11,12 +11,12 @@ import random
 import numpy as np
 import omni
 import omni.isaac.cortex.math_util as math_util
-from omni.isaac.core.objects.capsule import VisualCapsule
-from omni.isaac.core.objects.sphere import VisualSphere
-from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.tasks.base_task import BaseTask
-from omni.isaac.core.utils.rotations import euler_angles_to_quat
-from omni.isaac.core.utils.stage import add_reference_to_stage
+from isaacsim.core.api.objects.capsule import VisualCapsule
+from isaacsim.core.api.objects.sphere import VisualSphere
+from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.api.tasks.base_task import BaseTask
+from isaacsim.core.api.utils.rotations import euler_angles_to_quat
+from isaacsim.core.api.utils.stage import add_reference_to_stage
 from omni.isaac.cortex.cortex_rigid_prim import CortexRigidPrim
 from omni.isaac.cortex.cortex_utils import get_assets_root_path
 from omni.isaac.cortex.robot import CortexUr10

@@ -23,10 +23,10 @@ import omni.kit.test
 import omni.kit.usd
 import rospy
 import usdrt.Sdf
+from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.api.utils.physics import simulate_async
+from isaacsim.core.api.utils.stage import open_stage_async
 from numpy import pi as PI
-from omni.isaac.core.articulations import Articulation
-from omni.isaac.core.utils.physics import simulate_async
-from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.nucleus import get_assets_root_path_async
 from sensor_msgs.msg import JointState
 

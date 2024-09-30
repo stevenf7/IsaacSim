@@ -9,8 +9,8 @@
 import carb
 import numpy as np
 import omni.kit.app
-from omni.isaac.core.articulations.articulation import Articulation
-from omni.isaac.core.utils.types import ArticulationAction
+from isaacsim.core.api.articulations.articulation import Articulation
+from isaacsim.core.api.utils.types import ArticulationAction
 from omni.isaac.manipulators.grippers.gripper import Gripper
 from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper, Surface_Gripper_Properties
 

@@ -27,9 +27,9 @@ from typing import Optional, Tuple, Union
 
 import numpy as np
 import omni.isaac.cortex.math_util as math_util
-from omni.isaac.core.prims.geometry_prim import GeometryPrim
-from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.utils.rotations import quat_to_rot_matrix
+from isaacsim.core.api.prims.geometry_prim import GeometryPrim
+from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.api.utils.rotations import quat_to_rot_matrix
 from omni.isaac.cortex.commander import Commander
 from omni.isaac.cortex.cortex_object import CortexObject
 from omni.isaac.cortex.smoothed_command import SmoothedCommand, TargetAdapter

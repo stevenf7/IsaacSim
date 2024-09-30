@@ -9,7 +9,7 @@
 
 
 import numpy as np
-from omni.isaac.core.utils.types import ArticulationAction
+from isaacsim.core.api.utils.types import ArticulationAction
 from omni.isaac.core_nodes import BaseResetNode
 from omni.isaac.wheeled_robots.controllers.holonomic_controller import HolonomicController
 from omni.isaac.wheeled_robots.ogn.OgnHolonomicControllerDatabase import OgnHolonomicControllerDatabase

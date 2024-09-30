@@ -11,12 +11,13 @@ import os
 from typing import Optional
 
 import carb
+import isaacsim.core.api.objects
 import numpy as np
-import omni.isaac.core.objects
 import omni.isaac.motion_generation.interface_config_loader as interface_config_loader
-from omni.isaac.core.articulations import Articulation
-from omni.isaac.core.controllers.base_controller import BaseController
-from omni.isaac.core.utils.types import ArticulationAction
+import omni.kit
+from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.api.controllers.base_controller import BaseController
+from isaacsim.core.api.utils.types import ArticulationAction
 from omni.isaac.motion_generation import ArticulationTrajectory
 from omni.isaac.motion_generation.lula import RRT
 from omni.isaac.motion_generation.lula.trajectory_generator import LulaCSpaceTrajectoryGenerator
@@ -105,10 +106,10 @@ class PathPlannerController(BaseController):
 
         return self._action_sequence.pop(0)
 
-    def add_obstacle(self, obstacle: omni.isaac.core.objects, static: bool = False) -> None:
+    def add_obstacle(self, obstacle: isaacsim.core.api.objects, static: bool = False) -> None:
         self._path_planner.add_obstacle(obstacle, static)
 
-    def remove_obstacle(self, obstacle: omni.isaac.core.objects) -> None:
+    def remove_obstacle(self, obstacle: isaacsim.core.api.objects) -> None:
         self._path_planner.remove_obstacle(obstacle)
 
     def reset(self) -> None:

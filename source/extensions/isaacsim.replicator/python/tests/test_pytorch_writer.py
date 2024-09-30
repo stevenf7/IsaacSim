@@ -17,8 +17,8 @@ import omni.kit
 import omni.replicator.core as rep
 import omni.usd
 import torch
+from isaacsim.core.api.utils.stage import create_new_stage_async
 from isaacsim.replicator.scripts.writers.pytorch_listener import PytorchListener
-from omni.isaac.core.utils.stage import create_new_stage_async
 from PIL import Image
 
 

@@ -8,7 +8,7 @@
 #
 
 import numpy as np
-from omni.isaac.core.utils.rotations import euler_angles_to_quat
+from isaacsim.core.api.utils.rotations import euler_angles_to_quat
 from omni.isaac.examples.base_sample import BaseSample
 from omni.isaac.universal_robots.controllers.pick_place_controller import PickPlaceController
 from omni.isaac.universal_robots.tasks import BinFilling as BinFillingTask

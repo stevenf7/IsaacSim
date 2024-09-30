@@ -14,10 +14,10 @@ simulation_app = SimulationApp({"renderer": "RayTracedLighting", "headless": Tru
 import carb
 import omni
 import omni.kit.commands
+from isaacsim.core.api import World
+from isaacsim.core.api.objects import DynamicCuboid
+from isaacsim.core.api.utils.extensions import enable_extension
 from isaacsim.sensors.physics import _sensor
-from omni.isaac.core import World
-from omni.isaac.core.objects import DynamicCuboid
-from omni.isaac.core.utils.extensions import enable_extension
 from pxr import Gf
 
 # enable ROS bridge extension

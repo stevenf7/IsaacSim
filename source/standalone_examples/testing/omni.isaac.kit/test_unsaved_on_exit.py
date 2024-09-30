@@ -12,7 +12,7 @@ from isaacsim import SimulationApp
 simulation_app = SimulationApp()
 
 import omni.kit.app
-from omni.isaac.core import World
+from isaacsim.core.api import World
 
 world = World(stage_units_in_meters=1.0, physics_prim_path="/physicsScene", backend="numpy")
 world.scene.add_default_ground_plane()

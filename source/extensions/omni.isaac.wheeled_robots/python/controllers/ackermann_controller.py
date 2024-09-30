@@ -2,8 +2,8 @@ import carb
 import numpy as np
 
 # Import packages.
-from omni.isaac.core.controllers.base_controller import BaseController
-from omni.isaac.core.utils.types import ArticulationAction
+from isaacsim.core.api.controllers.base_controller import BaseController
+from isaacsim.core.api.utils.types import ArticulationAction
 
 
 class AckermannController(BaseController):

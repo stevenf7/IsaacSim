@@ -8,7 +8,7 @@
 #
 
 import omni.isaac.manipulators.controllers as manipulators_controllers
-from omni.isaac.core.articulations import Articulation
+from isaacsim.core.api.articulations import Articulation
 from omni.isaac.manipulators.grippers import ParallelGripper
 
 from .rmpflow import RMPFlowController

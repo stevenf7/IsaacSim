@@ -13,7 +13,7 @@ simulation_app = SimulationApp({"headless": False})
 
 import carb
 import numpy as np
-from omni.isaac.core import World
+from isaacsim.core.api import World
 from omni.isaac.franka.controllers.stacking_controller import StackingController as FrankaStackingController
 from omni.isaac.franka.tasks import Stacking as FrankaStacking
 from omni.isaac.nucleus import get_assets_root_path

@@ -13,7 +13,7 @@ Isaac Sim: Extensions API
    :caption: Main Extensions
    :glob:
 
-   source/extensions/omni.isaac.core/docs/index
+   source/extensions/isaacsim.core.api/docs/index
    source/extensions/omni.isaac.core_nodes/docs/index
    source/extensions/omni.isaac.dynamic_control/docs/index
    source/extensions/isaacsim.simulation_app/docs/index

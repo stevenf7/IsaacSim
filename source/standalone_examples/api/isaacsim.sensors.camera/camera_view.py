@@ -16,9 +16,9 @@ import os
 import numpy as np
 import omni.replicator.core as rep
 import torch
+from isaacsim.core.api import World
+from isaacsim.core.api.objects import VisualCuboid
 from isaacsim.sensors.camera import CameraView
-from omni.isaac.core import World
-from omni.isaac.core.objects import VisualCuboid
 from PIL import Image
 
 my_world = World(stage_units_in_meters=1.0)

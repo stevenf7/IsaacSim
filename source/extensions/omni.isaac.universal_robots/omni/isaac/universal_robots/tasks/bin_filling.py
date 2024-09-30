@@ -10,12 +10,12 @@ import random
 
 import carb
 import numpy as np
-from omni.isaac.core.prims.rigid_prim import RigidPrim
-from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.scenes.scene import Scene
-from omni.isaac.core.tasks import BaseTask
-from omni.isaac.core.utils.rotations import euler_angles_to_quat
-from omni.isaac.core.utils.stage import add_reference_to_stage, get_stage_units
+from isaacsim.core.api.prims.rigid_prim import RigidPrim
+from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.api.scenes.scene import Scene
+from isaacsim.core.api.tasks import BaseTask
+from isaacsim.core.api.utils.rotations import euler_angles_to_quat
+from isaacsim.core.api.utils.stage import add_reference_to_stage, get_stage_units
 from omni.isaac.nucleus import get_assets_root_path
 from omni.isaac.universal_robots import UR10
 

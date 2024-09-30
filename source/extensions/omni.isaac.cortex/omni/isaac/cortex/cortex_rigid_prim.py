@@ -11,14 +11,14 @@
 from typing import Sequence
 
 import numpy as np
-from omni.isaac.core.prims.xform_prim import XFormPrim
+from isaacsim.core.api.prims.xform_prim import XFormPrim
 from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics
 
 
 class CortexRigidPrim(XFormPrim):
     """A simple API access to the RigidBodyAPI USD schema of an object.
 
-    Args: The arguments are the same as XFormPrim. See omni.isaac.core/omni/isaac/core/prims/xform_prim.py
+    Args: The arguments are the same as XFormPrim. See isaacsim.core.api/isaacsim/core/api/prims/xform_prim.py
     """
 
     def __init__(self, *args, **kwargs):

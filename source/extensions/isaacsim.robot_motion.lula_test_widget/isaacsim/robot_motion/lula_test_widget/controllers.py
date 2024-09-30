@@ -11,9 +11,9 @@ from typing import Optional
 
 import carb
 import numpy as np
-from omni.isaac.core import objects
-from omni.isaac.core.controllers.base_controller import BaseController
-from omni.isaac.core.utils.types import ArticulationAction
+from isaacsim.core.api import objects
+from isaacsim.core.api.controllers.base_controller import BaseController
+from isaacsim.core.api.utils.types import ArticulationAction
 from omni.isaac.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
 from omni.isaac.motion_generation.articulation_trajectory import ArticulationTrajectory
 from omni.isaac.motion_generation.path_planner_visualizer import PathPlannerVisualizer

@@ -13,11 +13,11 @@ from typing import List, Tuple, Union
 import carb
 import lula
 import numpy as np
-from omni.isaac.core import objects
-from omni.isaac.core.utils.math import normalized
-from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
-from omni.isaac.core.utils.prims import delete_prim, is_prim_path_valid
-from omni.isaac.core.utils.string import find_unique_string_name
+from isaacsim.core.api import objects
+from isaacsim.core.api.utils.math import normalized
+from isaacsim.core.api.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
+from isaacsim.core.api.utils.prims import delete_prim, is_prim_path_valid
+from isaacsim.core.api.utils.string import find_unique_string_name
 from pxr import Sdf
 
 from ..motion_policy_interface import MotionPolicy

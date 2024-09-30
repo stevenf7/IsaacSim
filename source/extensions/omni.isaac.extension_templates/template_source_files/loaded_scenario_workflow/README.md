@@ -5,7 +5,7 @@ The user will see the extension appear on the toolbar on startup with the title 
 
 # Extension Usage
 This template extension creates a Load, Reset, and Run button in a simple UI.
-The Load and Reset buttons interact with the omni.isaac.core World() in order
+The Load and Reset buttons interact with the isaacsim.core.api World() in order
 to simplify user interaction with the simulator and provide certain gurantees to the user
 at the times their callback functions are called.  
 

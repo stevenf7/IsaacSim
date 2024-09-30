@@ -10,9 +10,9 @@
 import carb
 import numpy as np
 import omni
-from omni.isaac.core.utils.prims import get_prim_at_path
-from omni.isaac.core.utils.rotations import gf_rotation_to_np_array
-from omni.isaac.core.utils.stage import get_current_stage
+from isaacsim.core.api.utils.prims import get_prim_at_path
+from isaacsim.core.api.utils.rotations import gf_rotation_to_np_array
+from isaacsim.core.api.utils.stage import get_current_stage
 from pxr import Gf, Usd, UsdGeom, UsdPhysics
 
 

@@ -8,11 +8,11 @@
 #
 from typing import Optional
 
+import isaacsim.core.api.objects
 import numpy as np
-import omni.isaac.core.objects
-from omni.isaac.core.controllers.base_controller import BaseController
-from omni.isaac.core.utils.rotations import euler_angles_to_quat
-from omni.isaac.core.utils.types import ArticulationAction
+from isaacsim.core.api.controllers.base_controller import BaseController
+from isaacsim.core.api.utils.rotations import euler_angles_to_quat
+from isaacsim.core.api.utils.types import ArticulationAction
 from omni.isaac.motion_generation.articulation_motion_policy import ArticulationMotionPolicy
 from omni.isaac.motion_generation.motion_policy_interface import MotionPolicy
 
@@ -55,21 +55,21 @@ class MotionPolicyController(BaseController):
 
         return action
 
-    def add_obstacle(self, obstacle: omni.isaac.core.objects, static: bool = False) -> None:
-        """Add an object from omni.isaac.core.objects as an obstacle to the motion_policy
+    def add_obstacle(self, obstacle: isaacsim.core.api.objects, static: bool = False) -> None:
+        """Add an object from isaacsim.core.api.objects as an obstacle to the motion_policy
 
         Args:
-            obstacle (omni.isaac.core.objects): Dynamic, Visual, or Fixed object from omni.isaac.core.objects
+            obstacle (isaacsim.core.api.objects): Dynamic, Visual, or Fixed object from isaacsim.core.api.objects
             static (bool): If True, the obstacle may be assumed by the MotionPolicy to remain stationary over time
         """
         self._motion_policy.add_obstacle(obstacle, static=static)
         return
 
-    def remove_obstacle(self, obstacle: omni.isaac.core.objects) -> None:
+    def remove_obstacle(self, obstacle: isaacsim.core.api.objects) -> None:
         """Remove and added obstacle from the motion_policy
 
         Args:
-            obstacle (omni.isaac.core.objects): Object from omni.isaac.core.objects that has been added to the motion_policy
+            obstacle (isaacsim.core.api.objects): Object from isaacsim.core.api.objects that has been added to the motion_policy
         """
         self._motion_policy.remove_obstacle(obstacle)
         return

@@ -8,7 +8,7 @@
 #
 
 import omni.graph.core as og
-from omni.isaac.core.utils.stage import get_stage_units
+from isaacsim.core.api.utils.stage import get_stage_units
 
 
 class OgnIsaacScaleToFromStageUnit:

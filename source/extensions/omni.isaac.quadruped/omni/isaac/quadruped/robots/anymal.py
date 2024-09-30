@@ -15,10 +15,10 @@ import numpy as np
 import omni
 import omni.kit.commands
 import torch
-from omni.isaac.core.articulations import Articulation
-from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
-from omni.isaac.core.utils.rotations import quat_to_rot_matrix
-from omni.isaac.core.utils.stage import get_current_stage
+from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.api.utils.prims import define_prim, get_prim_at_path
+from isaacsim.core.api.utils.rotations import quat_to_rot_matrix
+from isaacsim.core.api.utils.stage import get_current_stage
 from omni.isaac.nucleus import get_assets_root_path
 from omni.isaac.quadruped.utils import LstmSeaNetwork
 from pxr import Gf

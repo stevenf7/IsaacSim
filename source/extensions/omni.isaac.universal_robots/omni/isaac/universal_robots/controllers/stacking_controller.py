@@ -10,8 +10,8 @@ from typing import List, Optional
 
 import numpy as np
 import omni.isaac.manipulators.controllers as manipulators_controllers
-from omni.isaac.core.articulations import Articulation
-from omni.isaac.core.utils.types import ArticulationAction
+from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.api.utils.types import ArticulationAction
 from omni.isaac.manipulators.grippers import SurfaceGripper
 from omni.isaac.universal_robots.controllers.pick_place_controller import PickPlaceController
 

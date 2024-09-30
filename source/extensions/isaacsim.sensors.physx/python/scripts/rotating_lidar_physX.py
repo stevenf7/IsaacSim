@@ -12,10 +12,10 @@ import carb
 import numpy as np
 import omni
 import omni.isaac.RangeSensorSchema as RangeSensorSchema
+from isaacsim.core.api.prims.base_sensor import BaseSensor
+from isaacsim.core.api.utils.prims import get_prim_at_path, is_prim_path_valid
+from isaacsim.core.api.utils.stage import get_current_stage
 from isaacsim.sensors.physx import _range_sensor
-from omni.isaac.core.prims.base_sensor import BaseSensor
-from omni.isaac.core.utils.prims import get_prim_at_path, is_prim_path_valid
-from omni.isaac.core.utils.stage import get_current_stage
 from pxr import Sdf
 
 

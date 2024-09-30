@@ -18,9 +18,9 @@ import carb.settings
 import numpy as np
 import omni
 import omni.replicator.core as rep
-from omni.isaac.core import World
-from omni.isaac.core.objects import DynamicCuboid
-from omni.isaac.core.utils.semantics import add_update_semantics
+from isaacsim.core.api import World
+from isaacsim.core.api.objects import DynamicCuboid
+from isaacsim.core.api.utils.semantics import add_update_semantics
 from PIL import Image
 
 

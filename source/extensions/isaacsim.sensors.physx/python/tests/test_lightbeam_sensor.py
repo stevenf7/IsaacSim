@@ -10,10 +10,10 @@ import asyncio
 import numpy as np
 import omni.kit.commands
 import omni.kit.test
+from isaacsim.core.api import World
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from isaacsim.sensors.physx import _range_sensor
-from omni.isaac.core import World
 from pxr import Gf, Sdf, UsdGeom, UsdLux, UsdPhysics
 
 

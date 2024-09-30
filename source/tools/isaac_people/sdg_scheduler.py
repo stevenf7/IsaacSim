@@ -109,7 +109,7 @@ class AgentSDG:
     def generate_data(self, config_file):
         import carb
         import omni.replicator.core as rep
-        from omni.isaac.core.utils.stage import open_stage
+        from isaacsim.core.api.utils.stage import open_stage
 
         # Set simulation settings
         self.set_simulation_settings()
@@ -164,7 +164,7 @@ class AgentSDG:
 
 def enable_extensions():
     # Enable extensions
-    from omni.isaac.core.utils.extensions import enable_extension
+    from isaacsim.core.api.utils.extensions import enable_extension
 
     enable_extension("omni.kit.viewport.window")
     enable_extension("omni.kit.manipulator.prim")

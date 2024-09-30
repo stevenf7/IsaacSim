@@ -9,8 +9,8 @@ Reinforcement Learning Domain Randomization
 ============================================
 
 The following methods provide randomization functionalities of various parameters 
-pertaining to omni.isaac.core.prims.RigidPrimView, omni.isaac.core.articulations.ArticulationView,
-and omni.isaac.core.SimulationContext. These methods are designed to perform randomizations in 
+pertaining to isaacsim.core.api.prims.RigidPrimView, isaacsim.core.api.articulations.ArticulationView,
+and isaacsim.core.api.SimulationContext. These methods are designed to perform randomizations in 
 simulations where *update to USD* is disabled for faster simulation speed. These methods directly
 set randomized values to Physx as opposed to existing methods in omni.replicator.core, 
 such as omni.replicator.core.modify.pose or omni.replicator.core.physics.physics_material, which
@@ -63,11 +63,11 @@ After setting up this action graph, it is necessesary to run ``omni.replicator.c
     simulation_app = SimulationApp({"headless": False})
 
     import numpy as np
-    from omni.isaac.core import World
-    from omni.isaac.core.prims.rigid_prim_view import RigidPrimView
-    from omni.isaac.core.articulations import ArticulationView
-    from omni.isaac.core.utils.prims import get_prim_at_path, define_prim
-    from omni.isaac.core.utils.stage import get_current_stage, add_reference_to_stage
+    from isaacsim.core.api import World
+    from isaacsim.core.api.prims.rigid_prim_view import RigidPrimView
+    from isaacsim.core.api.articulations import ArticulationView
+    from isaacsim.core.api.utils.prims import get_prim_at_path, define_prim
+    from isaacsim.core.api.utils.stage import get_current_stage, add_reference_to_stage
     from omni.isaac.nucleus import get_assets_root_path
     from omni.isaac.core.objects import DynamicSphere
     from isaacsim.core.cloner import GridCloner

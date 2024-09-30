@@ -26,13 +26,13 @@ simulation_app = SimulationApp({"headless": False})
 
 
 import numpy as np
-from omni.isaac.core.objects.sphere import VisualSphere
-from omni.isaac.core.utils.extensions import enable_extension
-from omni.isaac.core.utils.types import ArticulationAction
-from omni.isaac.core.utils.viewports import set_camera_view
+from isaacsim.core.api.objects.sphere import VisualSphere
+from isaacsim.core.api.utils.extensions import enable_extension
+from isaacsim.core.api.utils.types import ArticulationAction
+from isaacsim.core.api.utils.viewports import set_camera_view
 
 # isaac-core
-from omni.isaac.core.world import World
+from isaacsim.core.api.world import World
 
 # isaac-franka
 from omni.isaac.franka import Franka

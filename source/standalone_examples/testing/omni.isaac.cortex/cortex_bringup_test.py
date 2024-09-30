@@ -14,7 +14,7 @@ simulation_app = SimulationApp({"headless": False})
 import time
 
 import numpy as np
-from omni.isaac.core.objects import VisualSphere
+from isaacsim.core.api.objects import VisualSphere
 from omni.isaac.cortex.cortex_world import CortexWorld
 from omni.isaac.cortex.df import DfNetwork, DfState, DfStateMachineDecider
 from omni.isaac.cortex.dfb import DfBasicContext

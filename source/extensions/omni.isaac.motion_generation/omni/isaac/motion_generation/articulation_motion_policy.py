@@ -9,8 +9,8 @@
 
 import carb
 import torch
-from omni.isaac.core.articulations import Articulation, ArticulationSubset
-from omni.isaac.core.utils.types import ArticulationAction
+from isaacsim.core.api.articulations import Articulation, ArticulationSubset
+from isaacsim.core.api.utils.types import ArticulationAction
 
 from .motion_policy_interface import MotionPolicy
 

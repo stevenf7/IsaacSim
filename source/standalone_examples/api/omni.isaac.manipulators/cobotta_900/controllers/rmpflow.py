@@ -10,8 +10,8 @@
 import os
 
 import omni.isaac.motion_generation as mg
-from omni.isaac.core.articulations import Articulation
-from omni.isaac.core.utils.extensions import get_extension_path_from_name
+from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.api.utils.extensions import get_extension_path_from_name
 
 
 class RMPFlowController(mg.MotionPolicyController):

@@ -11,7 +11,7 @@
 import carb
 import omni.graph.core as og
 import omni.usd
-from omni.isaac.core.objects.ground_plane import GroundPlane
+from isaacsim.core.api.objects.ground_plane import GroundPlane
 from omni.isaac.examples.base_sample import BaseSample
 from omni.isaac.nucleus import get_assets_root_path
 from pxr import Sdf, UsdLux

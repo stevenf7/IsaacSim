@@ -23,7 +23,7 @@ import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd
 import usdrt.Sdf
-from omni.isaac.core.utils.physics import simulate_async
+from isaacsim.core.api.utils.physics import simulate_async
 from omni.isaac.nucleus import get_assets_root_path_async
 from pxr import Gf, Sdf
 

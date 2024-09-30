@@ -11,7 +11,7 @@ from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
-from omni.isaac.core import World
+from isaacsim.core.api import World
 from omni.isaac.universal_robots.controllers.rmpflow_controller import RMPFlowController
 from omni.isaac.universal_robots.tasks import FollowTarget
 

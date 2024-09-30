@@ -19,7 +19,7 @@ import omni.kit.test
 from isaacsim.benchmark.services import execution, settings, utils
 from isaacsim.benchmark.services.datarecorders import interface
 from isaacsim.benchmark.services.metrics import backend, measurements
-from omni.isaac.core.utils.stage import is_stage_loading, open_stage
+from isaacsim.core.api.utils.stage import is_stage_loading, open_stage
 from omni.isaac.nucleus import get_assets_root_path_async
 
 from .recorders import *

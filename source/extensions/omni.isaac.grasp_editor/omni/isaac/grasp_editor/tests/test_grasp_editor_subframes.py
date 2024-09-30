@@ -13,15 +13,15 @@ import numpy as np
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.kit.test
-from omni.isaac.core.objects import GroundPlane
-from omni.isaac.core.prims import XFormPrim, XFormPrimView
-from omni.isaac.core.utils.stage import (
+from isaacsim.core.api.objects import GroundPlane
+from isaacsim.core.api.prims import XFormPrim, XFormPrimView
+from isaacsim.core.api.utils.stage import (
     add_reference_to_stage,
     create_new_stage_async,
     get_current_stage,
     update_stage_async,
 )
-from omni.isaac.core.utils.viewports import set_camera_view
+from isaacsim.core.api.utils.viewports import set_camera_view
 from omni.isaac.grasp_editor import import_grasps_from_file
 from omni.isaac.grasp_editor.util import move_rb_subframe_to_position
 from omni.isaac.nucleus import get_assets_root_path_async

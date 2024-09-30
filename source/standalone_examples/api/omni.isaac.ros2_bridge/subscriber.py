@@ -12,9 +12,9 @@ from isaacsim import SimulationApp
 simulation_app = SimulationApp({"renderer": "RayTracedLighting", "headless": False})
 
 import omni
-from omni.isaac.core import World
-from omni.isaac.core.objects import VisualCuboid
-from omni.isaac.core.utils.extensions import enable_extension
+from isaacsim.core.api import World
+from isaacsim.core.api.objects import VisualCuboid
+from isaacsim.core.api.utils.extensions import enable_extension
 
 # enable ROS2 bridge extension
 enable_extension("isaacsim.ros2.bridge")

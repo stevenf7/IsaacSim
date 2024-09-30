@@ -16,8 +16,8 @@ import omni.kit
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-from omni.isaac.core.utils.stage import create_new_stage_async, is_stage_loading, update_stage_async
-from omni.isaac.core.world.world import World
+from isaacsim.core.api.utils.stage import create_new_stage_async, is_stage_loading, update_stage_async
+from isaacsim.core.api.world.world import World
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.examples.kaya_gamepad import KayaGamepad

@@ -8,8 +8,8 @@
 #
 
 import numpy as np
-from omni.isaac.core.articulations.articulation import Articulation
-from omni.isaac.core.utils.stage import get_current_stage
+from isaacsim.core.api.articulations.articulation import Articulation
+from isaacsim.core.api.utils.stage import get_current_stage
 from omni.isaac.core_nodes import BaseResetNode
 from omni.isaac.core_nodes.ogn.OgnIsaacArticulationStateDatabase import OgnIsaacArticulationStateDatabase
 from pxr import UsdPhysics

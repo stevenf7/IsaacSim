@@ -17,8 +17,8 @@ simulation_app = SimulationApp({"renderer": "RayTracedLighting", "headless": Tru
 import carb
 import omni
 import omni.graph.core as og
-from omni.isaac.core import SimulationContext
-from omni.isaac.core.utils.extensions import enable_extension
+from isaacsim.core.api import SimulationContext
+from isaacsim.core.api.utils.extensions import enable_extension
 
 # enable ROS2 bridge extension
 enable_extension("isaacsim.ros2.bridge")

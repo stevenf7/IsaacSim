@@ -165,9 +165,9 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.kit.close()
 
     def setup_scene(self):
-        from omni.isaac.core.utils.prims import create_prim
-        from omni.isaac.core.utils.rotations import euler_angles_to_quat
-        from omni.isaac.core.utils.stage import set_stage_up_axis
+        from isaacsim.core.api.utils.prims import create_prim
+        from isaacsim.core.api.utils.rotations import euler_angles_to_quat
+        from isaacsim.core.api.utils.stage import set_stage_up_axis
 
         """Setup lights, walls, floor, ceiling and camera"""
         # Set stage up axis to Y-up

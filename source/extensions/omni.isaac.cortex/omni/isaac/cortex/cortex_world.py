@@ -57,9 +57,9 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict
 from typing import Optional
 
-from omni.isaac.core import World
-from omni.isaac.core.articulations import Articulation
-from omni.isaac.core.simulation_context import SimulationContext
+from isaacsim.core.api import World
+from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.api.simulation_context import SimulationContext
 from omni.isaac.cortex.df import DfBehavior, DfLogicalState, DfNetwork
 from omni.isaac.cortex.tools import SteadyRate
 
@@ -175,7 +175,7 @@ class CortexWorld(World):
     pipeline as well as stopping, pausing, and playing the simulation.
 
     Args:
-        See omni.isaac.core.world.world.py The args are the same as those available from the
+        See isaacsim.core.api.world.world.py The args are the same as those available from the
         underlying core API World.
     """
 

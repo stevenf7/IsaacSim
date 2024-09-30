@@ -11,8 +11,8 @@
 import numpy as np
 import omni.ext
 import omni.graph.core as og
-from omni.isaac.core.objects import VisualCuboid
-from omni.isaac.core.utils.viewports import set_camera_view
+from isaacsim.core.api.objects import VisualCuboid
+from isaacsim.core.api.utils.viewports import set_camera_view
 from omni.isaac.examples.base_sample import BaseSample
 
 

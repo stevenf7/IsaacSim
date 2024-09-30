@@ -21,8 +21,8 @@ import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd
 import omni.physics.tensors
-from omni.isaac.core.prims.rigid_prim import RigidPrim
-from omni.isaac.core.utils.physics import simulate_async
+from isaacsim.core.api.prims.rigid_prim import RigidPrim
+from isaacsim.core.api.utils.physics import simulate_async
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper, Surface_Gripper_Properties

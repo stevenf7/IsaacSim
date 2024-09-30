@@ -15,8 +15,8 @@ import numpy as np
 import omni.graph.core as og
 import omni.graph.core.tests as ogts
 import omni.kit.test
-from omni.isaac.core.utils.physics import simulate_async
-from omni.isaac.core.utils.stage import create_new_stage_async
+from isaacsim.core.api.utils.physics import simulate_async
+from isaacsim.core.api.utils.stage import create_new_stage_async
 
 
 class TestRos2Publisher(ogts.OmniGraphTestCase):

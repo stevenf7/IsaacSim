@@ -12,9 +12,9 @@ import omni.graph.core as og
 import omni.ui as ui
 import omni.usd
 import OmniGraphSchema
+from isaacsim.core.api.utils.prims import get_all_matching_child_prims, get_prim_at_path
+from isaacsim.core.api.utils.stage import get_next_free_path
 from numpy import pi as PI
-from omni.isaac.core.utils.prims import get_all_matching_child_prims, get_prim_at_path
-from omni.isaac.core.utils.stage import get_next_free_path
 from omni.isaac.ui.callbacks import on_docs_link_clicked, on_open_IDE_clicked
 from omni.isaac.ui.style import get_style
 from omni.isaac.ui.widgets import ParamWidget, SelectPrimWidget

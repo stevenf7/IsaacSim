@@ -12,23 +12,23 @@ import json
 import os
 
 import carb
+import isaacsim.core.api.objects as objects
 import numpy as np
-import omni.isaac.core.objects as objects
 import omni.isaac.motion_generation.interface_config_loader as interface_config_loader
 import omni.kit.test
-from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.robots.robot import Robot
-from omni.isaac.core.utils import distance_metrics
-from omni.isaac.core.utils.prims import delete_prim, is_prim_path_valid
-from omni.isaac.core.utils.rotations import gf_quat_to_np_array, quat_to_rot_matrix
-from omni.isaac.core.utils.stage import (
+from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.api.robots.robot import Robot
+from isaacsim.core.api.utils import distance_metrics
+from isaacsim.core.api.utils.prims import delete_prim, is_prim_path_valid
+from isaacsim.core.api.utils.rotations import gf_quat_to_np_array, quat_to_rot_matrix
+from isaacsim.core.api.utils.stage import (
     add_reference_to_stage,
     create_new_stage_async,
     get_current_stage,
     open_stage_async,
     update_stage_async,
 )
-from omni.isaac.core.world import World
+from isaacsim.core.api.world import World
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.motion_generation.articulation_motion_policy import ArticulationMotionPolicy

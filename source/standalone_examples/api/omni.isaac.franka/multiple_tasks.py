@@ -12,7 +12,7 @@ from isaacsim import SimulationApp
 simulation_app = SimulationApp({"headless": False})
 
 import numpy as np
-from omni.isaac.core import World
+from isaacsim.core.api import World
 from omni.isaac.franka.controllers.pick_place_controller import PickPlaceController
 from omni.isaac.franka.tasks import PickPlace
 

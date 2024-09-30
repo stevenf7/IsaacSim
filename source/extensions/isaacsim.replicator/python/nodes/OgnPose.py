@@ -11,9 +11,9 @@ import json
 
 import numpy as np
 import omni.graph.core as og
+from isaacsim.core.api.utils.rotations import euler_angles_to_quat
+from isaacsim.core.api.utils.transformations import get_transform_with_normalized_rotation, tf_matrix_from_pose
 from isaacsim.replicator.scripts.utils import get_image_space_points
-from omni.isaac.core.utils.rotations import euler_angles_to_quat
-from omni.isaac.core.utils.transformations import get_transform_with_normalized_rotation, tf_matrix_from_pose
 
 
 class OgnPose:

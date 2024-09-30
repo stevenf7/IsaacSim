@@ -54,7 +54,7 @@
 ## [0.3.0] - 2022-07-11
 
 ### Changed
-- Added setting and deleting the different xform properties used by omni.isaac.core
+- Added setting and deleting the different xform properties used by isaacsim.core.api
 
 ## [0.2.1] - 2022-06-23
 

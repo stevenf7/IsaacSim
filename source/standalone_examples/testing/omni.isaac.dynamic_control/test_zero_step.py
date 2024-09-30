@@ -12,7 +12,7 @@ from isaacsim import SimulationApp
 simulation_app = SimulationApp({"headless": False})
 import carb
 import omni
-from omni.isaac.core import SimulationContext
+from isaacsim.core.api import SimulationContext
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.nucleus import get_assets_root_path
 

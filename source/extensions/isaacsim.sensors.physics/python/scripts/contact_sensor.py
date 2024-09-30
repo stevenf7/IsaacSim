@@ -12,10 +12,10 @@ import carb
 import numpy as np
 import omni.isaac.IsaacSensorSchema as IsaacSensorSchema
 import omni.kit.commands
+from isaacsim.core.api.prims.base_sensor import BaseSensor
+from isaacsim.core.api.utils.prims import get_prim_at_path, is_prim_path_valid
+from isaacsim.core.api.utils.stage import traverse_stage
 from isaacsim.sensors.physics import _sensor
-from omni.isaac.core.prims.base_sensor import BaseSensor
-from omni.isaac.core.utils.prims import get_prim_at_path, is_prim_path_valid
-from omni.isaac.core.utils.stage import traverse_stage
 from omni.isaac.core_nodes.bindings import _omni_isaac_core_nodes
 from pxr import Gf, PhysxSchema, UsdPhysics
 

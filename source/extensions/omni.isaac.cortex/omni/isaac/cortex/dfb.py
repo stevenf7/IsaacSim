@@ -21,7 +21,7 @@ from typing import Optional
 
 import numpy as np
 import omni.isaac.cortex.math_util as math_util
-from omni.isaac.core.utils.math import normalized
+from isaacsim.core.api.utils.math import normalized
 from omni.isaac.cortex.df import (
     DfAction,
     DfDecider,

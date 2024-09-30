@@ -23,15 +23,15 @@ import math
 from typing import Optional, Sequence, Tuple
 
 import numpy as np
-from numpy.linalg import norm
-from omni.isaac.core.utils.math import normalized
-from omni.isaac.core.utils.rotations import (
+from isaacsim.core.api.utils.math import normalized
+from isaacsim.core.api.utils.rotations import (
     euler_angles_to_quat,
     matrix_to_euler_angles,
     quat_to_rot_matrix,
     rot_matrix_to_quat,
 )
-from omni.isaac.core.utils.stage import get_stage_units
+from isaacsim.core.api.utils.stage import get_stage_units
+from numpy.linalg import norm
 
 
 def transform_dist(T1: np.ndarray, T2: np.ndarray, position_scalar: float, rotation_matrix_scalar: float) -> float:
