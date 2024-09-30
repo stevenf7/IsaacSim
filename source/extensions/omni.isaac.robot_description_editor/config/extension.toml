@@ -20,7 +20,7 @@ preview_image = "data/preview.png"
 "omni.kit.uiapp" = {}
 "omni.isaac.ui" = {}
 "omni.isaac.core" = {}
-"omni.isaac.lula" = {}
+"isaacsim.robot_motion.lula" = {}
 
 [[python.module]]
 name = "omni.isaac.robot_description_editor"

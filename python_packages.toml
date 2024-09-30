@@ -370,11 +370,13 @@ inventory.include = [
     "LICENSE.txt",
     # extensions
     "exts/isaacsim.robot_motion.ocs2",
+    "exts/isaacsim.robot_motion.lula",
+    "exts/isaacsim.robot_motion.lula_test_widget",
     # deprecated extensions
     "exts/omni.isaac.motion_generation",
-    "exts/omni.isaac.ocs2",
-    "exts/omni.isaac.lula",
-    "exts/omni.isaac.lula_test_widget",
+    "extsDeprecated/omni.isaac.ocs2",
+    "extsDeprecated/omni.isaac.lula",
+    "extsDeprecated/omni.isaac.lula_test_widget",
 ]
 
 [isaacsim-robot-setup]

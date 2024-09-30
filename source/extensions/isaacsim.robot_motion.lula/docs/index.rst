@@ -1,4 +1,4 @@
-Lula [omni.isaac.lula]
+Lula [isaacsim.robot_motion.lula]
 ######################
 
 Overview
