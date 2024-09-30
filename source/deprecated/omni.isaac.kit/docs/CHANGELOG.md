@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.1] - 2024-09-30
+### Deprecated
+- Resolve isaacsim.simulation_app extension path when import statement fails
+
 ## [2.0.0] - 2024-09-24
 ### Deprecated
 - Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.simulation_app
