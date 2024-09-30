@@ -14,7 +14,7 @@ new_extension_name = "isaacsim.benchmark.services"
 
 # Provide deprecation warning to user
 carb.log_warn(
-    f"{new_extension_name} has been deprecated in favor of {old_extension_name}. Please update your code accordingly."
+    f"{old_extension_name} has been deprecated in favor of {new_extension_name}. Please update your code accordingly."
 )
 
 from .base_isaac_benchmark import *
