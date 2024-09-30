@@ -12,7 +12,7 @@ import numpy as np
 from omni.replicator.core import AnnotatorRegistry, BackendDispatch, Writer, WriterRegistry
 from PIL import Image, ImageDraw
 
-__version__ = "0.0.2"
+__version__ = "0.1.0"
 
 
 class DataVisualizationWriter(Writer):
@@ -68,13 +68,13 @@ class DataVisualizationWriter(Writer):
         frame_padding: int = 4,
     ):
         self.version = __version__
+        self.data_structure = "renderProduct"
         self._output_dir = output_dir
         self.backend = BackendDispatch({"paths": {"out_dir": output_dir}})
 
         self._frame_id = 0
         self._frame_padding = frame_padding
 
-        self._render_product_names = []
         self.annotators = []
         self._annotator_params = {}
         valid_backgrounds = set()
@@ -118,102 +118,50 @@ class DataVisualizationWriter(Writer):
             self.annotators.append(AnnotatorRegistry.get_annotator(background))
 
     def write(self, data: dict):
-        # Cache render product names
-        if len(self._render_product_names) == 0:
-            self._save_render_product_names(data)
+        # Iterate over the render products
+        for rp_name, annotators_data in data["renderProducts"].items():
 
-        # In case of multiple render products:
-        # * annotator names are suffixed with the render product name
-        # * data is separated into subfolders using the render product names
-        multiple_render_products = len(self._render_product_names) > 1
-        for rp_name in self._render_product_names:
-            rp_subfolder = "" if not multiple_render_products else f"{rp_name}/"
+            # Iterate over the selected annotators and their parameters
+            for annot_name, annot_params in self._annotator_params.items():
 
-            if self.BB_2D_TIGHT in self._annotator_params:
-                annot_name = self.BB_2D_TIGHT if not multiple_render_products else f"{self.BB_2D_TIGHT}-{rp_name}"
-                write_params = self._annotator_params.get(self.BB_2D_TIGHT, {})
-                self._write_bounding_box_overlay(data, annot_name, rp_name, rp_subfolder, write_params)
+                # Get the background image for the selected annotator
+                background_type = annot_params.get("background", None)
+                background_res = tuple(annotators_data["resolution"])
+                background_img = self._get_background_image(annotators_data, background_type, background_res)
 
-            if self.BB_2D_LOOSE in self._annotator_params:
-                annot_name = self.BB_2D_LOOSE if not multiple_render_products else f"{self.BB_2D_LOOSE}-{rp_name}"
-                write_params = self._annotator_params.get(self.BB_2D_LOOSE, {})
-                self._write_bounding_box_overlay(data, annot_name, rp_name, rp_subfolder, write_params)
+                # Draw the overlay type on the background image
+                if annot_data := annotators_data.get(annot_name, None):
+                    draw = ImageDraw.Draw(background_img)
+                    if annot_name == self.BB_2D_TIGHT or annot_name == self.BB_2D_LOOSE:
+                        self._draw_2d_bounding_boxes(draw, annot_data, annot_params)
 
-            if self.BB_3D in self._annotator_params:
-                annot_name = self.BB_3D if not multiple_render_products else f"{self.BB_3D}-{rp_name}"
-                write_params = self._annotator_params.get(self.BB_3D, {})
-                self._write_bounding_box_overlay(data, annot_name, rp_name, rp_subfolder, write_params)
+                    if annot_name == self.BB_3D:
+                        camera_params = annotators_data.get("camera_params", None)
+                        self._draw_3d_bounding_boxes(draw, annot_data, camera_params, annot_params)
+
+                    file_path = f"{rp_name}/{annot_name}_{self._frame_id:0{self._frame_padding}}.png"
+                    self.backend.write_image(file_path, np.asarray(background_img))
 
         self._frame_id += 1
 
-    def _write_bounding_box_overlay(
-        self,
-        data: dict,
-        bb_annot_name: str,
-        render_product_name: str,
-        render_product_subfolder: str,
-        write_params: dict,
-    ):
-        # Check the bbox data type
-        bbox_type = ""
-        if bb_annot_name.startswith(self.BB_2D_TIGHT):
-            bbox_type = "2d_tight"
-        elif bb_annot_name.startswith(self.BB_2D_LOOSE):
-            bbox_type = "2d_loose"
-        elif bb_annot_name.startswith(self.BB_3D):
-            bbox_type = "3d"
-
-        # Get the background type on which the bounding boxes will be drawn
-        img = self._get_background_image(data, render_product_name, write_params)
-
-        # Draw the bounding boxes on the selected background image
-        self._draw_bounding_boxes(img, data, bb_annot_name, render_product_name, bbox_type, write_params)
-
-        # Save the image
-        file_path = f"{render_product_subfolder}bounding_box_{bbox_type}_{self._frame_id:0{self._frame_padding}}.png"
-        self.backend.write_image(file_path, np.asarray(img))
-
-    def _get_background_image(self, data: dict, render_product_name: str, write_params: dict) -> Image:
-        # Check the background type for the given annotator
-        if "background" in write_params:
-            background_type = write_params["background"]
-            multiple_render_products = len(self._render_product_names) > 1
-            annot_name = background_type if not multiple_render_products else f"{background_type}-{render_product_name}"
+    def _get_background_image(self, annotators_data: dict, background_type: str, resolution: tuple) -> Image:
+        # Check if the background type is available in the annotators data and if needed convert it to image format
+        if background_annot_data := annotators_data.get(background_type):
+            background_data = background_annot_data["data"]
 
             if background_type == "rgb":
-                annot_data = data[annot_name]
-                return Image.fromarray(annot_data)
+                return Image.fromarray(background_data)
 
             if background_type == "normals":
-                annot_data = data[annot_name]
-                colored_data = ((annot_data * 0.5 + 0.5) * 255).astype(np.uint8)
+                colored_data = ((background_data * 0.5 + 0.5) * 255).astype(np.uint8)
                 return Image.fromarray(colored_data)
 
-        # If no  background is chosen use a transparent image as default
-        resolution = tuple(data[f"rp_{render_product_name}"]["resolution"])
+        # If no background is chosen use a transparent image as default
         return Image.new("RGBA", resolution, (0, 0, 0, 0))
 
-    def _draw_bounding_boxes(
-        self,
-        background_img: Image,
-        data: dict,
-        bb_annot_name: str,
-        render_product_name: str,
-        bbox_type: str,
-        write_params: dict,
-    ):
-        # Draw the bounding boxes on the selected background image
-        draw = ImageDraw.Draw(background_img)
-
-        if bbox_type == "2d_tight" or bbox_type == "2d_loose":
-            self._draw_2d_bounding_boxes(draw, data, bb_annot_name, write_params)
-
-        if bbox_type == "3d":
-            self._draw_3d_bounding_boxes(draw, data, bb_annot_name, render_product_name, write_params)
-
-    def _draw_2d_bounding_boxes(self, draw: ImageDraw, data: dict, bb_annot_name: str, write_params: dict):
-        # Get the 2d bbox data from the annotator
-        bb_annot_data = data[bb_annot_name]["data"]
+    def _draw_2d_bounding_boxes(self, draw: ImageDraw, annot_data: dict, write_params: dict):
+        # Get the 2d bboxes from the annotator
+        bboxes_data = annot_data["data"]
 
         # Get the recangle draw parameters
         fill_color = None if "fill" not in write_params else write_params["fill"]
@@ -221,53 +169,38 @@ class DataVisualizationWriter(Writer):
         rectangle_width = 1 if "width" not in write_params else write_params["width"]
 
         # Iterate the bounding boxes and draw the rectangles
-        for bbox_data in bb_annot_data:
+        for bbox in bboxes_data:
             # ('semanticId', '<u4'), ('x_min', '<i4'), ('y_min', '<i4'), ('x_max', '<i4'), ('y_max', '<i4'), ('occlusionRatio', '<f4')
-            x_min, y_min, x_max, y_max = bbox_data[1], bbox_data[2], bbox_data[3], bbox_data[4]
+            x_min, y_min, x_max, y_max = bbox[1], bbox[2], bbox[3], bbox[4]
             draw.rectangle(
                 [x_min, y_min, x_max, y_max], fill=fill_color, outline=rectangle_color, width=rectangle_width
             )
 
-    def _draw_3d_bounding_boxes(
-        self, draw: ImageDraw, data: dict, bb_annot_name: str, render_product_name: str, write_params: dict
-    ):
-        # Get the 3d bbox data from the annotator
-        annot_data = data[bb_annot_name]["data"]
-
-        # Access the camera parameters
-        multiple_render_products = len(self._render_product_names) > 1
-        camera_params_annot_name = (
-            "camera_params" if not multiple_render_products else f"camera_params-{render_product_name}"
-        )
+    def _draw_3d_bounding_boxes(self, draw: ImageDraw, annot_data: dict, camera_params: dict, write_params: dict):
+        # Get the 3d bboxes from the annotator
+        bboxes_data = annot_data["data"]
 
         # Transpose is needed for the row-column-major conversion
-        cam_view_transform = data[camera_params_annot_name]["cameraViewTransform"].reshape((4, 4))
+        cam_view_transform = camera_params["cameraViewTransform"].reshape((4, 4))
         cam_view_transform = cam_view_transform.T
-        cam_projection_transform = data[camera_params_annot_name]["cameraProjection"].reshape((4, 4))
+        cam_projection_transform = camera_params["cameraProjection"].reshape((4, 4))
         cam_projection_transform = cam_projection_transform.T
 
         # The resolution is used to map the Normalized Device Coordinates (NDC) to screen space
-        screen_width, screen_height = data[camera_params_annot_name]["renderProductResolution"]
+        screen_width, screen_height = camera_params["renderProductResolution"]
 
         # Get the line draw parameters
         line_color = "green" if "fill" not in write_params else write_params["fill"]
         line_width = 1 if "width" not in write_params else write_params["width"]
 
         # Iterate the bounding boxes and draw the edges
-        for bbox_data in annot_data:
+        for bbox in bboxes_data:
             # ('semanticId', '<u4'), ('x_min', '<f4'), ('y_min', '<f4'), ('z_min', '<f4'), ('x_max', '<f4'), ('y_max', '<f4'), ('z_max', '<f4'), ('transform', '<f4', (4, 4)), ('occlusionRatio', '<f4')
             # Bounding box points in local coordinate system
-            x_min, y_min, z_min, x_max, y_max, z_max = (
-                bbox_data[1],
-                bbox_data[2],
-                bbox_data[3],
-                bbox_data[4],
-                bbox_data[5],
-                bbox_data[6],
-            )
+            x_min, y_min, z_min, x_max, y_max, z_max = (bbox[1], bbox[2], bbox[3], bbox[4], bbox[5], bbox[6])
 
             # Transformation matrix from local to world coordinate system
-            local_to_world_transform = bbox_data[7]
+            local_to_world_transform = bbox[7]
             local_to_world_transform = local_to_world_transform.T
 
             # Calculate all 8 vertices of the bounding box in local space
@@ -311,11 +244,6 @@ class DataVisualizationWriter(Writer):
             draw.line([vertices_screen[5], vertices_screen[7]], fill=line_color, width=line_width)
             draw.line([vertices_screen[6], vertices_screen[7]], fill=line_color, width=line_width)
 
-    def _save_render_product_names(self, data: dict):
-        for k in data.keys():
-            if k.startswith("rp_"):
-                self._render_product_names.append(k[3:])
-
     def _is_valid_background(self, background: str) -> bool:
         if background in self.SUPPORTED_BACKGROUNDS:
             return True
@@ -326,7 +254,6 @@ class DataVisualizationWriter(Writer):
             return False
 
     def detach(self):
-        self._render_product_names = []
         self._frame_id = 0
         return super().detach()
 
