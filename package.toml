@@ -48,8 +48,8 @@ files_exclude = [
     ["**/*.a"], # static libs
     ["kit/data/**"], # This can contain portable files we don't want to package
     ["extsbuild"],
-    ["exts/omni.isaac.internal_tools"],
-    ["tests/tests-omni.isaac.internal_tools.*"],
+    ["exts/isaacsim.util.internal"],
+    ["tests/tests-isaacsim.util.internal.*"],
     ["tests/tests-internal*"],
     ["tests/tests-docker*"],
     ["tests/tests-startup.extscache*"],
@@ -73,8 +73,8 @@ files_exclude = [
     ["kit/data/**"], # This can contain portable files we don't want to package
     ["kit/extsPhysics/**"], # This can contain portable files we don't want to package
     ["extsbuild"],
-    ["exts/omni.isaac.internal_tools"],
-    ["tests/tests-omni.isaac.internal_tools.*"],
+    ["exts/isaacsim.util.internal"],
+    ["tests/tests-isaacsim.util.internal.*"],
     ["tests/tests-internal*"],
     ["tests/tests-docker*"],
     ["dockertests/**"],
@@ -146,8 +146,8 @@ files_exclude = [
     ["kit/data/**"], # This can contain portable files we don't want to package
     ["kit/extsPhysics/**"], # This can contain portable files we don't want to package
     ["extsbuild"],
-    ["exts/omni.isaac.internal_tools"],
-    ["tests/tests-omni.isaac.internal_tools.*"],
+    ["exts/isaacsim.util.internal"],
+    ["tests/tests-isaacsim.util.internal.*"],
     ["tests/tests-internal*"],
     ["tests/tests-docker*"],
     ["dockertests/**"],

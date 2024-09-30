@@ -277,7 +277,7 @@ sphinx_exclude_patterns = [
     "**/omni.isaac.app.setup",
     "**/omni.isaac.assets_check",
     "**/omni.isaac.asset_browser",
-    "**/omni.isaac.internal_tools",
+    "**/isaacsim.util.internal",
     "**/omni.isaac.core_archive",
     "**/omni.isaac.ml_archive",
     "**/omni.pip.compute",
@@ -603,7 +603,7 @@ exclude = [
   "tests-startup*${shell_ext}",
   "tests-selector*${shell_ext}",
   "tests-unit*${shell_ext}",
-  "tests-omni.isaac.internal_tools*${shell_ext}",
+  "tests-isaacsim.util.internal*${shell_ext}",
   "tests-omni.isaac.benchmarks*${shell_ext}",
   "tests-standalone*${shell_ext}",
   "tests-nativepython*${shell_ext}",
@@ -704,7 +704,7 @@ path = "${test_root}/tests"
 
 [[repo_test.suites.internalpythontests.group]]
 include = [
-  "tests-omni.isaac.internal_tools*${shell_ext}",
+  "tests-isaacsim.util.internal*${shell_ext}",
 ]
 exclude = []
 args = ["--portable-root ${test_root}/portable_root", "--reset-user",  "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'"]
@@ -719,7 +719,7 @@ stdout_fail_patterns.exclude = [
 [[repo_test.suites.internalpythontests.bucket]]
 name = "1"
 include = [
-  "tests-omni.isaac.internal_tools*${shell_ext}",
+  "tests-isaacsim.util.internal*${shell_ext}",
 ]
 
 [repo_test.suites.nativepythontests]
@@ -863,7 +863,7 @@ exts.include = [
     "omni.pip.compute",
     "omni.usd.schema.isaac",
 ]
-exts.exclude = ["omni.isaac.internal_tools"]
+exts.exclude = ["isaacsim.util.internal"]
 
 # This is hardcoded in template
 # # Registries to publish to.
@@ -956,7 +956,7 @@ python_analysis_extra_mapping=[
 [repo_generate_changelog]
 home_path = "${root}/source/extensions/"
 exts_exclude = [
-  "omni.isaac.internal_tools",
+  "isaacsim.util.internal",
 ]
 extscache_paths = [
   "${root}/source/apps/omni.isaac.sim.extscache.kit",
@@ -1189,7 +1189,7 @@ excluded_extensions = [
     "omni.pip.cloud",
     # others
     "omni.isaac.common_includes",
-    "omni.isaac.internal_tools",
+    "isaacsim.util.internal",
     "omni.isaac.unit_converter",
 ]
 

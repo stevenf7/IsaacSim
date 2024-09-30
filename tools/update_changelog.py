@@ -16,6 +16,8 @@ date = "2023-01-06"
 changelog_text = [f"### Fixed", f"- onclick_fn warning when creating UI"]
 
 extensions = [
+    "isaacsim.ros2.bridge",
+    "isaacsim.util.internal",
     "isaacsim.sensors.camera",
     "isaacsim.sensors.physics",
     "isaacsim.sensors.physx",
@@ -26,7 +28,6 @@ extensions = [
     "omni.isaac.examples",
     "omni.isaac.extension_templates",
     "omni.isaac.gain_tuner",
-    "omni.isaac.internal_tools",
     "omni.isaac.merge_mesh",
     "omni.isaac.occupancy_map",
     "omni.isaac.physics_inspector",
@@ -35,7 +36,6 @@ extensions = [
     "omni.isaac.robot_benchmark",
     "omni.isaac.robot_description_editor",
     "omni.isaac.ros_bridge",
-    "isaacsim.ros2.bridge",
     "omni.isaac.robot_description_editor",
     "omni.isaac.robot_benchmark",
     "omni.isaac.range_sensor",
@@ -43,7 +43,6 @@ extensions = [
     "omni.isaac.physics_inspector",
     "omni.isaac.occupancy_map",
     "omni.isaac.merge_mesh",
-    "omni.isaac.internal_tools",
     "omni.isaac.gain_tuner",
     "omni.isaac.extension_templates",
     "omni.isaac.examples",
