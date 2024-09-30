@@ -34,11 +34,6 @@ class AboutExtension(omni.ext.IExt):
 
         self.get_values()
 
-        manager = omni.kit.app.get_app().get_extension_manager()
-        extension_path = manager.get_extension_path(ext_id)
-        global TEST_DATA_PATH
-        TEST_DATA_PATH = Path(extension_path).joinpath("data").joinpath("tests")
-
         global _extension_instance
         _extension_instance = self
 

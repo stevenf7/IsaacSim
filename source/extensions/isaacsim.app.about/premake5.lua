@@ -6,4 +6,4 @@ project_ext (ext)
     -- Link more folder to target folder. 
     repo_build.prebuild_link { "docs", ext.target_dir.."/docs" }
     repo_build.prebuild_link { "data", ext.target_dir.."/data" }
-    repo_build.prebuild_link { "omni", ext.target_dir.."/omni" }
+    repo_build.prebuild_link { "isaacsim", ext.target_dir.."/isaacsim" }

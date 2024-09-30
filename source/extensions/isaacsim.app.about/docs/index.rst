@@ -1,4 +1,4 @@
-omni.isaac.window.about
+isaacsim.app.about
 ###########################
 
 .. toctree::

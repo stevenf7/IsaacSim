@@ -125,7 +125,9 @@ inventory.include = [
     "exts/omni.isaac.app.selector",
     "exts/omni.isaac.app.setup",
     "exts/omni.isaac.version",
-    "exts/omni.isaac.window.about",
+    "exts/isaacsim.app.about",
+    # deprecated
+     "extsDeprecated/omni.isaac.window.about",
     # others
     "VERSION",
 ]

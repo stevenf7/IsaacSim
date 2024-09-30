@@ -6,9 +6,10 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-import pathlib
 
-import omni.kit.app
+from pathlib import Path
+
+import isaacsim.app.about
 import omni.kit.test
 from omni.ui.tests.test_base import OmniUiTest
 
@@ -18,9 +19,11 @@ class TestAboutWindow(OmniUiTest):
     async def setUp(self):
         await super().setUp()
 
-        # from omni.isaac.window.about.about import TEST_DATA_PATH
-
-        # self._golden_img_dir = TEST_DATA_PATH.absolute().joinpath("golden_img").absolute()
+        EXTENSION_FOLDER_PATH = Path(
+            omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module(__name__)
+        )
+        TEST_DATA_PATH = EXTENSION_FOLDER_PATH.joinpath("data/tests")
+        self._golden_img_dir = TEST_DATA_PATH.absolute().joinpath("golden_img").absolute()
 
     # After running each test
     async def tearDown(self):
@@ -37,7 +40,7 @@ class TestAboutWindow(OmniUiTest):
                 self.impl = FakePluginImpl("Impl " + name)
                 self.interfaces = "Interface " + name
 
-        about = omni.isaac.window.about.get_instance()
+        about = isaacsim.app.about.get_instance()
         about.kit_version = "#Version#"
         about.nucleus_version = "#Nucleus Version#"
         about.client_library_version = "#Client Library Version#"
@@ -51,4 +54,4 @@ class TestAboutWindow(OmniUiTest):
 
         await self.docked_test_window(window=about_window, width=400, height=510)
 
-        # await self.finalize_test(golden_img_dir=self._golden_img_dir, golden_img_name="test_about_ui.png")
+        await self.finalize_test(golden_img_dir=self._golden_img_dir, golden_img_name="test_about_ui.png")
