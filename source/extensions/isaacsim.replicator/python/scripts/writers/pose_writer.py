@@ -15,7 +15,7 @@ from omni.replicator.core.scripts.functional import write_image, write_json
 from PIL import Image, ImageDraw
 from pxr import Gf
 
-__version__ = "0.0.1"
+__version__ = "0.1.0"
 
 
 class PoseWriter(Writer):
@@ -62,7 +62,7 @@ class PoseWriter(Writer):
         s3_region: str = None,
     ):
         self.version = __version__
-
+        self.data_structure = "renderProduct"
         if not use_s3:
             self.backend = BackendDispatch(output_dir=output_dir)
         else:
@@ -80,10 +80,6 @@ class PoseWriter(Writer):
             raise ValueError(f"Unsupported format: {format}. Supported formats: {self.SUPPORTED_FORMATS}")
         else:
             self._format = format
-
-        # Handle multiple render products scenario (e.g. single render product:'rgb', multiple render products: 'rgb-{rp_name}')
-        self._render_product_names = []
-        self._multiple_render_products = False
 
         # Store processed data to be written every frame in the selected format
         self._frame_data = {}
@@ -104,23 +100,26 @@ class PoseWriter(Writer):
 
     # Abstract method from Writer to access the annotator data and write to disk
     def write(self, data: dict):
-        # In case of multiple render products annotator names are suffixed with the render product name:
-        # (e.g. 'rgb' -> 'rgb-{rp_name}')
-        for rp_name in self._render_product_names:
+        # Iterate over the render products
+        for rp_name, annotators_data in data["renderProducts"].items():
+
             # Process the frame data of the current render product
-            num_objs = self._process_frame_data(data, rp_name)
+            bounding_box_3d_data = annotators_data[self.BB3D_ANNOT_NAME]
+            camera_params_data = annotators_data[self.CAM_PARAMS_ANNOT_NAME]
+            num_objs = self._process_frame_data(bounding_box_3d_data, camera_params_data)
 
             # Early exist if empty frames should not be written
             if self._skip_empty_frames and num_objs == 0:
                 continue
 
-            # Create subfolder name if data should be separated for each render product
-            rp_subfolder = f"{rp_name}/" if self._multiple_render_products and self._use_subfolders else ""
+            # Create render product name subfolder if data should be separated for each render product
+            rp_subfolder = f"{rp_name}/" if self._use_subfolders else ""
 
             # Write frame data to disk
-            self._write_frame_data(data, rp_name, rp_subfolder)
+            rgb_data = annotators_data[self.RGB_ANNOT_NAME]["data"]
+            self._write_frame_data(rgb_data, rp_subfolder)
             if self._write_debug_images:
-                self._write_debug_data(data, rp_name, rp_subfolder)
+                self._write_debug_data(rgb_data, rp_subfolder)
 
             # If render products are NOT separated into subfolders increment the frame id after processing each render product
             if not self._use_subfolders:
@@ -135,32 +134,19 @@ class PoseWriter(Writer):
         return self._frame_id
 
     # Process the render product data and store it in the selected format, return the number of objects in the frame
-    def _process_frame_data(self, data: dict, render_product_name: str) -> int:
+    def _process_frame_data(self, bounding_box_3d_data: dict, camera_params_data: dict) -> int:
         # Store the frame data for writing to disk
         self._frame_data = {}
 
-        # Get and process the camera parameters annotator data in the selected format
-        camera_params_annot_name = (
-            f"{self.CAM_PARAMS_ANNOT_NAME}-{render_product_name}"
-            if self._multiple_render_products
-            else self.CAM_PARAMS_ANNOT_NAME
-        )
-        camera_params = data[camera_params_annot_name]
-
         # Get and process the bounding box 3d annotator data in the selected format
-        bb3d_annot_name = (
-            f"{self.BB3D_ANNOT_NAME}-{render_product_name}" if self._multiple_render_products else self.BB3D_ANNOT_NAME
-        )
-        bb3d_data = data[bb3d_annot_name]["data"]
-        bb3d_info = data[bb3d_annot_name]["info"]
-        objs_data = self._process_bounding_boxes(bb3d_data, bb3d_info, camera_params)
+        objs_data = self._process_bounding_boxes(bounding_box_3d_data, camera_params_data)
 
         # Early exist if empty frames should be skipped and there are no visible objects in the frame
         if self._skip_empty_frames and len(objs_data) == 0:
             return 0
 
         # Store the camera information in the
-        self._frame_data["camera_data"] = self._process_camera_parameters(camera_params)
+        self._frame_data["camera_data"] = self._process_camera_parameters(camera_params_data)
 
         # Store the predefined order of the cuboid keypoints
         self._frame_data["keypoint_order"] = self._cuboid_keypoints_order
@@ -171,10 +157,10 @@ class PoseWriter(Writer):
         return len(objs_data)
 
     # Process the bounding box annotator data (extract objects label, location, rotation, visibility, etc.)
-    def _process_bounding_boxes(self, bb3d_data, bb3d_info, camera_params) -> list:
+    def _process_bounding_boxes(self, bounding_box_3d_data: dict, camera_params: dict) -> list:
         # Map the ids to class names from the bbox annotator "idToLabels" data
         # ('idToLabels': {0: {'class': 'cube'}, 1: {'class': 'sphere'}} -> {0: 'cube', 1: 'sphere'})
-        id_to_labels = {k: v["class"] for k, v in bb3d_info["idToLabels"].items()}
+        id_to_labels = {k: v["class"] for k, v in bounding_box_3d_data["idToLabels"].items()}
 
         if self._write_debug_images:
             self._debug_frame_data["world_frame_transforms"] = []
@@ -183,7 +169,7 @@ class PoseWriter(Writer):
             self._debug_frame_data["center_local"] = []
         # Iterate the bounding box data and extract the object informations
         objs = []
-        for i, bbox in enumerate(bb3d_data):
+        for i, bbox in enumerate(bounding_box_3d_data["data"]):
             obj = {}
             # `occlusionRatio` represents (visible pixels / total pixels) where `0.0` is fully visible and `1.0` is fully occluded
             # NOTE: `obj_visibility` is inverted to match the format where `0.0` is fully occluded and `1.0`` is fully visible
@@ -197,7 +183,7 @@ class PoseWriter(Writer):
                 obj["class"] = id_to_labels[bbox["semanticId"]]
             else:
                 obj["label"] = id_to_labels[bbox["semanticId"]]
-            obj["prim_path"] = bb3d_info["primPaths"][i]
+            obj["prim_path"] = bounding_box_3d_data["primPaths"][i]
             obj["visibility"] = round(obj_visibility, 3)
 
             # Local space to to world transform (row-major)
@@ -343,29 +329,17 @@ class PoseWriter(Writer):
         return camera_data
 
     # Write the processed data to disk
-    def _write_frame_data(self, data: dict, render_product_name: str, render_product_subfolder: str = ""):
+    def _write_frame_data(self, rgb_data: dict, render_product_subfolder: str = ""):
         # Write frame data to as a JSON file
         file_path_json = f"{render_product_subfolder}{self._frame_id:0{self._frame_padding}}.json"
         self.backend.schedule(write_json, path=file_path_json, data=self._frame_data, indent=2)
-
-        # Get RGB data from annotator
-        rgb_annot_name = (
-            f"{self.RGB_ANNOT_NAME}-{render_product_name}" if self._multiple_render_products else self.RGB_ANNOT_NAME
-        )
-        rgb_data = data[rgb_annot_name]
 
         # Write image to disk
         rgb_file_path = f"{render_product_subfolder}{self._frame_id:0{self._frame_padding}}.png"
         self.backend.schedule(write_image, path=rgb_file_path, data=rgb_data)
 
     # Write overlay debug data to disk
-    def _write_debug_data(self, data: dict, render_product_name: str, render_product_subfolder: str = ""):
-        # Get RGB data to overlay with the debug information
-        rgb_annot_name = (
-            f"{self.RGB_ANNOT_NAME}-{render_product_name}" if self._multiple_render_products else self.RGB_ANNOT_NAME
-        )
-        rgb_data = data[rgb_annot_name]
-
+    def _write_debug_data(self, rgb_data: dict, render_product_subfolder: str = ""):
         # Create overlay image from the RGB data
         rgb_img = Image.fromarray(rgb_data)
         draw = ImageDraw.Draw(rgb_img)
@@ -537,31 +511,10 @@ class PoseWriter(Writer):
             for start, end in edge_list:
                 draw.line(keypoints[start] + keypoints[end], fill=self.CUBOID_EDGE_COLORS[edge_type], width=edge_size)
 
-    # Override to cache the render product names
-    def attach(self, render_products, trigger="omni.replicator.core.OgnOnFrame"):
-        super().attach(render_products, trigger)
-        self._cache_render_product_names(render_products)
-
     # Override to clear the writer state
     def detach(self):
         super().detach()
-        self._reset_writer_state()
-
-    # Save the render product names for easier data access in the write function
-    def _cache_render_product_names(self, render_products):
-        if not isinstance(render_products, list):
-            render_products = [render_products]
-        for rp in render_products:
-            rp_name = rp.hydra_texture.get_name()
-            self._render_product_names.append(rp_name)
-        # Check if there are multiple render products, this is used to suffix the annotator names for data access
-        self._multiple_render_products = len(self._render_product_names) > 1
-
-    # Reset the writer state
-    def _reset_writer_state(self):
-        self._render_product_names = []
         self._frame_id = 0
-        self._multiple_render_products = False
 
 
 WriterRegistry.register(PoseWriter)

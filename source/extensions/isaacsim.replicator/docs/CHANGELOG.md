@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.1] - 2024-09-27
+### Changed
+- Changed DataVisualizationWriter and PoseWriter to use `self.data_structure = "renderProduct"` [OMREQ-235]
+
 ## [2.0.0] - 2024-09-23
 ### Changed
 - Extension renamed to isaacsim.replicator.
