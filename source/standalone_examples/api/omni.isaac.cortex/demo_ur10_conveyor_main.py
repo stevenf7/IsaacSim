@@ -16,10 +16,10 @@ import random
 import numpy as np
 import omni.isaac.cortex.math_util as math_util
 import omni.isaac.cortex.sample_behaviors.ur10.bin_stacking_behavior as behavior
-from omni.isaac.core.objects import VisualCapsule, VisualSphere
-from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.tasks import BaseTask
-from omni.isaac.core.utils.stage import add_reference_to_stage
+from isaacsim.core.api.objects import VisualCapsule, VisualSphere
+from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.api.tasks import BaseTask
+from isaacsim.core.api.utils.stage import add_reference_to_stage
 from omni.isaac.cortex.cortex_rigid_prim import CortexRigidPrim
 from omni.isaac.cortex.cortex_utils import get_assets_root_path_or_die
 from omni.isaac.cortex.cortex_world import CortexWorld

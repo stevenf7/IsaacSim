@@ -49,7 +49,7 @@
     "Import from CAD":
     {
         "App Name": "CAD Importer",
-        "Extension": "omni.isaac.core",
+        "Extension": "isaacsim.core.api",
         "Window": 0,
         "Summary":"Importing CAD files",
         "Basic Instructions":"There is no separate windows for this tool. Simply import the CAD file by `File->Import. Make sure to select the file format that matches the source.\nBe sure to check the additional options on the right side panel if the basic import is missing some desired function. \n\nOnce import completes. You may need to manually add joints and actuators for your robot. For that, check our documentation \n\n- Find more tips by expanding the 'Advanced Instructions' section below.",
@@ -64,7 +64,7 @@
     "Rigging Robots":
     {
         "App Name": "Rigging Robots",
-        "Extension": "omni.isaac.core",
+        "Extension": "isaacsim.core.api",
         "Window": 0,
         "Summary":"Manually Adding Joints, Actuation, and Physics and Material Properties",
         "Basic Instructions":"There is no separate windows for this tool. \n\n Joints can be added by`Create -> Physics -> Joint`. \n\n Actuators can be added by selecting the joint on the stage, and Right click `Add -> Physics -> Angular/Linear Drive` . \n\n Physics properties (such as friction) can be added by `Create -> Physics -> Physics Material`, then assign the material to the associated body under `Physics material on selected body` \n\n Geometry material (such as color) can be added by `Create -> Material -> OmniPBR`, then assign the material to the body under `Material on selected body`",
@@ -297,7 +297,7 @@
     "April Tags":
     {
         "App Name": "April Tags",
-        "Extension":"omni.isaac.core",
+        "Extension":"isaacsim.core.api",
         "Window": 0,
         "Summary":"Add, detect, and track April Tags",
         "Basic Instructions":"There is no seaprate window for this tool. There are a few premade April Tags images available to be used for marking and labeling",
@@ -355,7 +355,7 @@
     "Common Tools":
     {
         "App Name": "Common Tools",
-        "Extension":"omni.isaac.core",
+        "Extension":"isaacsim.core.api",
         "Window": 0,
         "Summary":"Some Helpful tips for using Isaac Sim",
         "Basic Instructions":"- There is a library of sim-ready assets that you can find under `Create -> Isaac -> Robots(Environments/End Effectors)'. Feel free to load any of them to experiment. You may need to add a ground for mobile robots (Create->Physics->Ground Plane). Large environments and complex robots may take a while to load. \n\n- FPS display can be found under the `eye` icon on the upper left hand corner of the viewport `eye -> Heads up Disply -> FPS`\n\n- to visualize collision frame, 'eye ->Show by type -> Physics -> Colliders \n\n- To check if you have joints and/or joint drives, click on the funnel icon trailing the search bar on the Stage tab. You can filter for a number of things, including Physics Joints and Physics Drives.\n\n- If your robot is not in the same scale as the scene (e.g. it was imported in centimeters), the Metrics assembler tool should automatically scale it for you and you'll see a notice message about it.",

@@ -15,9 +15,9 @@ import omni.graph.core as og
 import omni.kit.commands
 import omni.physx as _physx
 import omni.ui as ui
+from isaacsim.core.api.utils.prims import delete_prim, get_prim_at_path
+from isaacsim.core.api.utils.viewports import set_camera_view
 from isaacsim.sensors.physx import _range_sensor
-from omni.isaac.core.utils.prims import delete_prim, get_prim_at_path
-from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.nucleus import get_assets_root_path
 from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.ui.ui_utils import LABEL_WIDTH, get_style, setup_ui_headers

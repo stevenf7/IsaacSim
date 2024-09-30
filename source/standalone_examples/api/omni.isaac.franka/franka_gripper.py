@@ -13,8 +13,8 @@ simulation_app = SimulationApp({"headless": False})
 
 import argparse
 
-from omni.isaac.core import World
-from omni.isaac.core.utils.types import ArticulationAction
+from isaacsim.core.api import World
+from isaacsim.core.api.utils.types import ArticulationAction
 from omni.isaac.franka import Franka
 
 parser = argparse.ArgumentParser()

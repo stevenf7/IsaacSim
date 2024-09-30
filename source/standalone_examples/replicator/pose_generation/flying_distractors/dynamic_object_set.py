@@ -10,7 +10,7 @@ import random
 from typing import List, Optional
 
 import numpy as np
-from omni.isaac.core.materials.omni_glass import OmniGlass
+from isaacsim.core.api.materials.omni_glass import OmniGlass
 
 from .collision_box import CollisionBox
 from .dynamic_asset_set import DynamicAssetSet

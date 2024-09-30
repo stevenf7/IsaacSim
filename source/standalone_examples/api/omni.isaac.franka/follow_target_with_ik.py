@@ -12,7 +12,7 @@ from isaacsim import SimulationApp
 simulation_app = SimulationApp({"headless": False})
 
 import carb
-from omni.isaac.core import World
+from isaacsim.core.api import World
 from omni.isaac.franka import KinematicsSolver
 from omni.isaac.franka.controllers.rmpflow_controller import RMPFlowController
 from omni.isaac.franka.tasks import FollowTarget

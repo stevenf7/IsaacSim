@@ -27,14 +27,14 @@ def main(args):
     simulation_app = SimulationApp()
 
     # Late import because of runtime modules
+    from isaacsim.core.api import World
+    from isaacsim.core.api.utils.stage import close_stage
     from isaacsim.replicator.scene_blox.generation.scene_generator import SceneGenerator
     from isaacsim.replicator.scene_blox.grid_utils import config
     from isaacsim.replicator.scene_blox.grid_utils.grid import Grid
     from isaacsim.replicator.scene_blox.grid_utils.grid_constraints import GridConstraints
     from isaacsim.replicator.scene_blox.grid_utils.tile import tile_loader
     from isaacsim.replicator.scene_blox.grid_utils.tile_superposition import TileSuperposition
-    from omni.isaac.core import World
-    from omni.isaac.core.utils.stage import close_stage
 
     tiles, weights = tile_loader(args.grid_config)
     constraints = None

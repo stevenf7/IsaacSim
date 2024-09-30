@@ -10,8 +10,8 @@ import random
 from typing import Optional
 
 import numpy as np
-from omni.isaac.core.materials.omni_glass import OmniGlass
-from omni.isaac.core.objects import DynamicCapsule, DynamicCone, DynamicCuboid, DynamicCylinder, DynamicSphere
+from isaacsim.core.api.materials.omni_glass import OmniGlass
+from isaacsim.core.api.objects import DynamicCapsule, DynamicCone, DynamicCuboid, DynamicCylinder, DynamicSphere
 
 from .collision_box import CollisionBox
 from .dynamic_asset_set import DynamicAssetSet

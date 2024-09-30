@@ -13,7 +13,7 @@ import carb
 import numpy as np
 import omni.kit.utils
 import omni.usd
-from omni.isaac.core.articulations.articulation import Articulation
+from isaacsim.core.api.articulations.articulation import Articulation
 from omni.isaac.core_nodes.bindings import _omni_isaac_core_nodes
 
 

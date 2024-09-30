@@ -12,8 +12,8 @@ import time
 import numpy as np
 import omni
 import omni.isaac.cortex.math_util as math_util
-from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.utils.math import normalized
+from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.api.utils.math import normalized
 from omni.isaac.cortex.cortex_world import CortexWorld
 from omni.isaac.cortex.df import (
     DfDecider,

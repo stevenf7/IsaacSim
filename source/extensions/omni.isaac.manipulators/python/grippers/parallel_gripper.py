@@ -10,7 +10,7 @@ from typing import Callable, List
 
 import numpy as np
 import omni.kit.app
-from omni.isaac.core.utils.types import ArticulationAction
+from isaacsim.core.api.utils.types import ArticulationAction
 from omni.isaac.manipulators.grippers.gripper import Gripper
 
 

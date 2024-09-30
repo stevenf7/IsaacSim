@@ -17,7 +17,7 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
-"omni.isaac.core" = {}
+"isaacsim.core.api" = {}
 "omni.isaac.ui" = {}
 "omni.graph" = {}
 "omni.graph.tools" = {}

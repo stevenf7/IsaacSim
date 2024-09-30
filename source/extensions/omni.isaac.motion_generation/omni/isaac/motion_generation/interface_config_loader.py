@@ -11,7 +11,7 @@ import os
 from typing import List
 
 import carb
-from omni.isaac.core.utils.extensions import get_extension_path_from_name
+from isaacsim.core.api.utils.extensions import get_extension_path_from_name
 
 """This InterfaceLoader makes it trivial to load a valid config for supported interface implementations
 For example, RMPflow has a collection of robot-specific config files stored in the motion_generation extension.

@@ -9,9 +9,9 @@
 import math
 
 import numpy as np
-from omni.isaac.core.controllers.base_controller import BaseController
-from omni.isaac.core.utils.rotations import quat_to_euler_angles
-from omni.isaac.core.utils.types import ArticulationAction
+from isaacsim.core.api.controllers.base_controller import BaseController
+from isaacsim.core.api.utils.rotations import quat_to_euler_angles
+from isaacsim.core.api.utils.types import ArticulationAction
 
 
 class WheelBasePoseController(BaseController):

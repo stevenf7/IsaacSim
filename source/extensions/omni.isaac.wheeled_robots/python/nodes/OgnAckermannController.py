@@ -9,7 +9,7 @@
 
 import numpy as np
 import omni.graph.core as og
-from omni.isaac.core.utils.types import ArticulationAction
+from isaacsim.core.api.utils.types import ArticulationAction
 from omni.isaac.core_nodes import BaseResetNode
 from omni.isaac.wheeled_robots.controllers.ackermann_controller import AckermannController
 from omni.isaac.wheeled_robots.ogn.OgnAckermannControllerDatabase import OgnAckermannControllerDatabase

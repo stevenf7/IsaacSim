@@ -9,7 +9,7 @@
 from typing import List, Optional
 
 import omni.isaac.manipulators.controllers as manipulators_controllers
-from omni.isaac.core.articulations import Articulation
+from isaacsim.core.api.articulations import Articulation
 from omni.isaac.franka.controllers.rmpflow_controller import RMPFlowController
 from omni.isaac.manipulators.grippers.parallel_gripper import ParallelGripper
 

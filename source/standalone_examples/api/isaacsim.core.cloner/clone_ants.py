@@ -15,10 +15,10 @@ import sys
 
 import carb
 import numpy as np
+from isaacsim.core.api import World
+from isaacsim.core.api.articulations import ArticulationView
+from isaacsim.core.api.utils.stage import add_reference_to_stage, get_stage_units
 from isaacsim.core.cloner import GridCloner
-from omni.isaac.core import World
-from omni.isaac.core.articulations import ArticulationView
-from omni.isaac.core.utils.stage import add_reference_to_stage, get_stage_units
 from omni.isaac.nucleus import get_assets_root_path
 
 assets_root_path = get_assets_root_path()

@@ -11,11 +11,11 @@ from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": True})
 
+import isaacsim.core.api.utils.numpy.rotations as rot_utils
 import numpy as np
-import omni.isaac.core.utils.numpy.rotations as rot_utils
+from isaacsim.core.api import World
+from isaacsim.core.api.objects import DynamicCuboid
 from isaacsim.sensors.camera import Camera
-from omni.isaac.core import World
-from omni.isaac.core.objects import DynamicCuboid
 from PIL import Image, ImageDraw
 
 # Given the OpenCV camera matrix and distortion coefficients (Rational Polynomial model),

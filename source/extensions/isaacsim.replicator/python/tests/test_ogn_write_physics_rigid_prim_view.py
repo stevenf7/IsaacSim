@@ -16,11 +16,11 @@ import omni.physics.tensors
 import omni.physx
 import omni.timeline
 import omni.usd
+from isaacsim.core.api import World
+from isaacsim.core.api.objects import DynamicCuboid
+from isaacsim.core.api.prims.rigid_prim_view import RigidPrimView
+from isaacsim.core.api.utils.stage import create_new_stage_async
 from isaacsim.replicator import physics_view as physics
-from omni.isaac.core import World
-from omni.isaac.core.objects import DynamicCuboid
-from omni.isaac.core.prims.rigid_prim_view import RigidPrimView
-from omni.isaac.core.utils.stage import create_new_stage_async
 
 
 class TestOgnWritePhysicsRigidPrimView(omni.kit.test.AsyncTestCase):

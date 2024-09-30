@@ -11,14 +11,14 @@ from collections import OrderedDict
 from typing import List, Optional, Tuple
 
 import numpy as np
-from omni.isaac.core.objects import FixedCuboid, VisualCuboid
-from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.scenes.scene import Scene
-from omni.isaac.core.tasks import BaseTask
-from omni.isaac.core.utils.prims import is_prim_path_valid
-from omni.isaac.core.utils.rotations import euler_angles_to_quat
-from omni.isaac.core.utils.stage import get_stage_units
-from omni.isaac.core.utils.string import find_unique_string_name
+from isaacsim.core.api.objects import FixedCuboid, VisualCuboid
+from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.api.scenes.scene import Scene
+from isaacsim.core.api.tasks import BaseTask
+from isaacsim.core.api.utils.prims import is_prim_path_valid
+from isaacsim.core.api.utils.rotations import euler_angles_to_quat
+from isaacsim.core.api.utils.stage import get_stage_units
+from isaacsim.core.api.utils.string import find_unique_string_name
 from omni.isaac.franka import Franka
 
 

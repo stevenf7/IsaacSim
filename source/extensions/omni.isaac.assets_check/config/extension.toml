@@ -17,7 +17,7 @@ toggleable = false
 "omni.ui" = { order = -100 }
 
 # Isaac Sim Core Extensions
-"omni.isaac.core" = {}
+"isaacsim.core.api" = {}
 "omni.isaac.nucleus" = {}
 
 [deprecation]

@@ -11,10 +11,10 @@ import carb
 import numpy as np
 import omni.kit.test
 import omni.physx
-from omni.isaac.core.objects import DynamicCuboid
-from omni.isaac.core.utils.extensions import get_extension_path_from_name
-from omni.isaac.core.utils.prims import get_prim_at_path
-from omni.isaac.core.utils.stage import add_reference_to_stage, open_stage_async
+from isaacsim.core.api.objects import DynamicCuboid
+from isaacsim.core.api.utils.extensions import get_extension_path_from_name
+from isaacsim.core.api.utils.prims import get_prim_at_path
+from isaacsim.core.api.utils.stage import add_reference_to_stage, open_stage_async
 from omni.isaac.nucleus import get_assets_root_path_async
 from pxr import Gf, Sdf, UsdGeom, UsdPhysics
 

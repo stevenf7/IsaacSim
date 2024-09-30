@@ -8,11 +8,11 @@
 #
 from typing import Optional
 
+import isaacsim.core.api.tasks as tasks
 import numpy as np
-import omni.isaac.core.tasks as tasks
-from omni.isaac.core.utils.prims import is_prim_path_valid
-from omni.isaac.core.utils.rotations import euler_angles_to_quat
-from omni.isaac.core.utils.string import find_unique_string_name
+from isaacsim.core.api.utils.prims import is_prim_path_valid
+from isaacsim.core.api.utils.rotations import euler_angles_to_quat
+from isaacsim.core.api.utils.string import find_unique_string_name
 from omni.isaac.universal_robots import UR10
 
 

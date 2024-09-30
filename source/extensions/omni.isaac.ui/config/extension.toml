@@ -27,7 +27,7 @@ writeTarget.kit = true
 "omni.graph" = {}
 "omni.graph.action" = {}
 "omni.graph.visualization.nodes" = {}
-"omni.isaac.core" = {}
+"isaacsim.core.api" = {}
 "omni.kit.property.usd" = {}
 
 [[python.module]]

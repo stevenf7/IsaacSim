@@ -8,7 +8,7 @@
 #
 
 import numpy as np
-from omni.isaac.core.utils.types import ArticulationAction
+from isaacsim.core.api.utils.types import ArticulationAction
 from omni.isaac.examples.base_sample import BaseSample
 from omni.isaac.franka.tasks import FollowTarget as FollowTargetTask
 

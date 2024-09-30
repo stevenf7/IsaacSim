@@ -14,8 +14,8 @@ simulation_app = SimulationApp({"headless": False})
 import carb
 import numpy as np
 import omni.appwindow  # Contains handle to keyboard
-from omni.isaac.core import World
-from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
+from isaacsim.core.api import World
+from isaacsim.core.api.utils.prims import define_prim, get_prim_at_path
 from omni.isaac.nucleus import get_assets_root_path
 from omni.isaac.quadruped.robots import AnymalFlatTerrainPolicy
 

@@ -18,7 +18,7 @@ writeTarget.kit = true
 
 [dependencies]
 "isaacsim.sensors.camera" = {}
-"omni.isaac.core" = {}
+"isaacsim.core.api" = {}
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.ui" = {}
 "omni.physx" = {}

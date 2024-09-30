@@ -20,7 +20,7 @@ writeTarget.kit = true
 "omni.kit.uiapp" = {}
 "omni.kit.viewport.window" = {}
 "omni.isaac.ui" = {}
-"omni.isaac.core" = {}
+"isaacsim.core.api" = {}
 
 [[python.module]]
 name = "omni.isaac.block_world"

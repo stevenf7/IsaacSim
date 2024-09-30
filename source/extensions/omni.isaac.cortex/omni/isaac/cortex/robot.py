@@ -57,9 +57,9 @@ from typing import Dict, Optional, Sequence
 import numpy as np
 import omni.isaac.motion_generation.interface_config_loader as icl
 import omni.physics.tensors
-from omni.isaac.core.articulations import Articulation, ArticulationSubset
-from omni.isaac.core.objects import VisualCuboid
-from omni.isaac.core.utils.stage import add_reference_to_stage
+from isaacsim.core.api.articulations import Articulation, ArticulationSubset
+from isaacsim.core.api.objects import VisualCuboid
+from isaacsim.core.api.utils.stage import add_reference_to_stage
 from omni.isaac.cortex.commander import Commander
 from omni.isaac.cortex.cortex_utils import get_assets_root_path_or_die
 from omni.isaac.cortex.cortex_world import CommandableArticulation, CortexWorld

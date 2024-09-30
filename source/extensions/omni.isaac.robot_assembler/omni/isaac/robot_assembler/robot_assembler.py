@@ -12,17 +12,17 @@ import carb
 import numpy as np
 import omni.kit.commands
 import omni.timeline
-from omni.isaac.core.prims import XFormPrim
-from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
-from omni.isaac.core.utils.prims import (
+from isaacsim.core.api.prims import XFormPrim
+from isaacsim.core.api.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
+from isaacsim.core.api.utils.prims import (
     delete_prim,
     get_articulation_root_api_prim_path,
     get_prim_at_path,
     get_prim_object_type,
     is_prim_path_valid,
 )
-from omni.isaac.core.utils.stage import get_current_stage
-from omni.isaac.core.utils.string import find_unique_string_name
+from isaacsim.core.api.utils.stage import get_current_stage
+from isaacsim.core.api.utils.string import find_unique_string_name
 from pxr import Gf, PhysxSchema, Sdf, Usd, UsdPhysics
 
 

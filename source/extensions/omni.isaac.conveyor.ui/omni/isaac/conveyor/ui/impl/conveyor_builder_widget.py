@@ -14,7 +14,7 @@ from math import asin, degrees
 import carb
 import omni
 import omni.ui as ui
-from omni.isaac.core.utils.stage import get_next_free_path
+from isaacsim.core.api.utils.stage import get_next_free_path
 from pxr import Gf, Sdf, UsdGeom, UsdShade
 from pxr.Usd import EditContext, Stage
 

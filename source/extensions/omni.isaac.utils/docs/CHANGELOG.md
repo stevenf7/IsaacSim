@@ -97,18 +97,18 @@
 ## [0.1.10] - 2021-12-01
 
 ### Removed
-- isaac.nucleus.default setting moved to omni.isaac.core
+- isaac.nucleus.default setting moved to isaacsim.core.api
 
 ## [0.1.9] - 2021-10-21
 
 ### Removed
-- lookat_to_quat to omni.isaac.core.utils.rotations
-- get_intrinsics_matrix, backproject_depth, project_depth_to_worldspace to omni.isaac.core.utils.viewports
-- set_up_z_axis to omni.isaac.core.utils.stage.set_stage_up_axis
+- lookat_to_quat to isaacsim.core.api.utils.rotations
+- get_intrinsics_matrix, backproject_depth, project_depth_to_worldspace to isaacsim.core.api.utils.viewports
+- set_up_z_axis to isaacsim.core.api.utils.stage.set_stage_up_axis
 - omni.isaac.demo specific math utils
 - test_utils.py
 - create_background
-- quat_to_euler_angles, use omni.isaac.core.utils.rotations.quat_to_euler_angles
+- quat_to_euler_angles, use isaacsim.core.api.utils.rotations.quat_to_euler_angles
 
 ## [0.1.8] - 2021-08-13
 

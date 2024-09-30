@@ -19,7 +19,7 @@ writeTarget.kit = true
 [dependencies]
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.ui" = {}
-"omni.isaac.core" = {}
+"isaacsim.core.api" = {}
 "omni.graph.tools" = {}
 "omni.graph" = {}
 

@@ -14,7 +14,7 @@ from isaacsim.benchmark.services.metrics.measurements import (
     ListMeasurement,
     SingleMeasurement,
 )
-from omni.isaac.core import SimulationContext
+from isaacsim.core.api import SimulationContext
 
 
 class TestBaseIsaacBenchmarkAsync(BaseIsaacBenchmarkAsync):

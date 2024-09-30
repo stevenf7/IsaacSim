@@ -12,7 +12,7 @@ import math
 import numpy as np
 import omni
 import omni.graph.core as og
-from omni.isaac.core.utils.rotations import quat_to_euler_angles
+from isaacsim.core.api.utils.rotations import quat_to_euler_angles
 from omni.isaac.core_nodes import BaseResetNode
 from omni.isaac.wheeled_robots.controllers.stanley_control import State, normalize_angle, pid_control, stanley_control
 from omni.isaac.wheeled_robots.ogn.OgnStanleyControlPIDDatabase import OgnStanleyControlPIDDatabase

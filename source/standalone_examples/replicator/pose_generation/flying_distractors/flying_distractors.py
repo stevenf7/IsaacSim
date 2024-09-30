@@ -8,7 +8,7 @@
 #
 import itertools
 
-from omni.isaac.core import World
+from isaacsim.core.api import World
 
 from .dynamic_object_set import DynamicObjectSet
 from .dynamic_shape_set import DynamicShapeSet

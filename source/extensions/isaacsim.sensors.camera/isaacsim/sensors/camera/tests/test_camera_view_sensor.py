@@ -15,10 +15,11 @@ import numpy as np
 import omni.kit.test
 import omni.replicator.core as rep
 import torch
+import warp as wp
+from isaacsim.core.api import World
+from isaacsim.core.api.objects import VisualCuboid
+from isaacsim.core.api.utils.stage import create_new_stage_async, update_stage_async
 from isaacsim.sensors.camera import CameraView
-from omni.isaac.core import World
-from omni.isaac.core.objects import VisualCuboid
-from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
 from PIL import Image
 
 

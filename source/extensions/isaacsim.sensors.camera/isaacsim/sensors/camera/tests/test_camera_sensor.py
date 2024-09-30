@@ -10,15 +10,15 @@
 import asyncio
 import math
 
+import isaacsim.core.api.utils.numpy.rotations as rot_utils
 import numpy as np
-import omni.isaac.core.utils.numpy.rotations as rot_utils
 import omni.kit.test
+from isaacsim.core.api import World
+from isaacsim.core.api.objects import DynamicCuboid
+from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.api.utils.semantics import add_update_semantics
+from isaacsim.core.api.utils.stage import create_new_stage_async, update_stage_async
 from isaacsim.sensors.camera import Camera
-from omni.isaac.core import World
-from omni.isaac.core.objects import DynamicCuboid
-from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.utils.semantics import add_update_semantics
-from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
 from omni.kit.viewport.utility import get_active_viewport
 
 

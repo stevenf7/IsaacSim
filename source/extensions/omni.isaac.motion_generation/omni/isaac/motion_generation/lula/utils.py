@@ -7,8 +7,8 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 import lula
-from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices
+from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.api.utils.numpy.rotations import quats_to_rot_matrices
 
 
 def get_prim_pose_in_meters(prim: XFormPrim, meters_per_unit: float):

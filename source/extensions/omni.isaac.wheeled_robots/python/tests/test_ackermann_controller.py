@@ -7,11 +7,11 @@ import omni.graph.core as og
 import omni.graph.core.tests as ogts
 import omni.kit.test
 import usdrt.Sdf
-from omni.isaac.core import World
-from omni.isaac.core.robots import Robot
-from omni.isaac.core.utils.physics import simulate_async
-from omni.isaac.core.utils.prims import delete_prim, get_prim_at_path
-from omni.isaac.core.utils.stage import create_new_stage_async
+from isaacsim.core.api import World
+from isaacsim.core.api.robots import Robot
+from isaacsim.core.api.utils.physics import simulate_async
+from isaacsim.core.api.utils.prims import delete_prim, get_prim_at_path
+from isaacsim.core.api.utils.stage import create_new_stage_async
 from omni.isaac.nucleus import get_assets_root_path_async
 from omni.isaac.wheeled_robots.controllers.ackermann_controller import AckermannController
 from omni.isaac.wheeled_robots.robots import WheeledRobot

@@ -16,8 +16,8 @@ import omni.graph.core as og
 import omni.graph.core.tests as ogts
 import omni.kit.test
 import omni.usd
-from omni.isaac.core.utils.physics import simulate_async
-from omni.isaac.core.utils.stage import create_new_stage_async
+from isaacsim.core.api.utils.physics import simulate_async
+from isaacsim.core.api.utils.stage import create_new_stage_async
 from pxr import Gf, Sdf, Tf
 
 

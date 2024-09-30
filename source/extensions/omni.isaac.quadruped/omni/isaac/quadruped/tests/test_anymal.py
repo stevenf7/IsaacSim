@@ -17,11 +17,11 @@ import omni.kit.commands
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-from omni.isaac.core import World
-from omni.isaac.core.utils.physics import simulate_async
-from omni.isaac.core.utils.prims import get_prim_at_path
-from omni.isaac.core.utils.rotations import quat_to_euler_angles
-from omni.isaac.core.utils.stage import create_new_stage_async
+from isaacsim.core.api import World
+from isaacsim.core.api.utils.physics import simulate_async
+from isaacsim.core.api.utils.prims import get_prim_at_path
+from isaacsim.core.api.utils.rotations import quat_to_euler_angles
+from isaacsim.core.api.utils.stage import create_new_stage_async
 from omni.isaac.quadruped.robots.anymal import AnymalFlatTerrainPolicy
 from pxr import UsdPhysics
 

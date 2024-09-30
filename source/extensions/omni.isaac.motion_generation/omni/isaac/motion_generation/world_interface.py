@@ -10,8 +10,8 @@
 from typing import List, Optional, Union
 
 import carb
-import omni.isaac.core.objects
-from omni.isaac.core.objects import capsule, cone, cuboid, cylinder, ground_plane, sphere
+import isaacsim.core.api.objects
+from isaacsim.core.api.objects import capsule, cone, cuboid, cylinder, ground_plane, sphere
 
 
 class WorldInterface:
@@ -34,11 +34,11 @@ class WorldInterface:
         """
         pass
 
-    def add_obstacle(self, obstacle: omni.isaac.core.objects, static: Optional[bool] = False) -> bool:
+    def add_obstacle(self, obstacle: isaacsim.core.api.objects, static: Optional[bool] = False) -> bool:
         """Add an obstacle
 
         Args:
-            obstacle (omni.isaac.core.objects): An obstacle from the package omni.isaac.core.obstacles
+            obstacle (isaacsim.core.api.objects): An obstacle from the package isaacsim.core.api.obstacles
                             The type of the obstacle will be checked, and the appropriate add function will be called \n
             static (Optional[bool]): When True, the obstacle will be assumed to remain stationary relative to the USD global frame over time
 
@@ -72,7 +72,7 @@ class WorldInterface:
             carb.log_warning(
                 "Obstacle added with unsuported type: "
                 + str(type(obstacle))
-                + "\nObstacle should be from the package omni.isaac.core.objects"
+                + "\nObstacle should be from the package isaacsim.core.api.objects"
             )
             return False
 
@@ -162,7 +162,7 @@ class WorldInterface:
         carb.log_warning("Function add_ground_plane() has not been implemented for this WorldInterface")
         return False
 
-    def disable_obstacle(self, obstacle: omni.isaac.core.objects) -> bool:
+    def disable_obstacle(self, obstacle: isaacsim.core.api.objects) -> bool:
         """Disable collision avoidance for obstacle.
 
         Args:
@@ -174,7 +174,7 @@ class WorldInterface:
         carb.log_warning("Function disable_obstacle() has not been implemented for this WorldInterface")
         return False
 
-    def enable_obstacle(self, obstacle: omni.isaac.core.objects) -> bool:
+    def enable_obstacle(self, obstacle: isaacsim.core.api.objects) -> bool:
         """Enable collision avoidance for obstacle.
 
         Args:
@@ -186,7 +186,7 @@ class WorldInterface:
         carb.log_warning("Function enable_obstacle() has not been implemented for this WorldInterface")
         return False
 
-    def remove_obstacle(self, obstacle: omni.isaac.core.objects) -> bool:
+    def remove_obstacle(self, obstacle: isaacsim.core.api.objects) -> bool:
         """Remove obstacle from collision avoidance. Obstacle cannot be re-enabled via enable_obstacle() after
         removal.
 

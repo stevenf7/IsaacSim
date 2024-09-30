@@ -18,7 +18,7 @@ writeTarget.kit = true
 
 [dependencies]
 "omni.kit.menu.utils" = {}
-"omni.isaac.core" = {}
+"isaacsim.core.api" = {}
 "omni.isaac.ui" = {}
 
 [[python.module]]

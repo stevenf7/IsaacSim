@@ -29,6 +29,6 @@ name = "isaacsim.core.cloner"
 [[test]]
 dependencies = [
     "omni.physx",
-    "omni.isaac.core",
+    "isaacsim.core.api",
     "omni.isaac.nucleus", # test only
 ]

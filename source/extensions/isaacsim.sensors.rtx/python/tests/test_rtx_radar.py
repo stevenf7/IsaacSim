@@ -20,8 +20,8 @@ import omni.kit.commands
 import omni.kit.test
 import omni.replicator.core as rep
 import omni.usd
-from omni.isaac.core.objects import VisualCuboid
-from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
+from isaacsim.core.api.objects import VisualCuboid
+from isaacsim.core.api.utils.stage import create_new_stage_async, update_stage_async
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test

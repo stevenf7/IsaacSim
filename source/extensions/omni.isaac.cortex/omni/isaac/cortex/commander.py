@@ -16,8 +16,8 @@ commanders.
 from abc import ABC, abstractmethod
 from typing import Any, Sequence
 
-from omni.isaac.core.articulations import ArticulationSubset
-from omni.isaac.core.utils.types import ArticulationAction
+from isaacsim.core.api.articulations import ArticulationSubset
+from isaacsim.core.api.utils.types import ArticulationAction
 
 
 class Commander(ABC):

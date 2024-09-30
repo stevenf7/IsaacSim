@@ -15,18 +15,18 @@ import asyncio
 import sys
 
 import carb
+import isaacsim.core.api.utils.numpy.rotations as rot_utils
 import numpy as np
-import omni.isaac.core.utils.numpy.rotations as rot_utils
 import omni.kit
 import omni.kit.commands
 import omni.kit.test
 import omni.replicator.core as rep
 import omni.usd
+from isaacsim.core.api.objects import VisualCuboid
+from isaacsim.core.api.utils.physics import simulate_async
+from isaacsim.core.api.utils.prims import delete_prim
+from isaacsim.core.api.utils.stage import create_new_stage_async, update_stage_async
 from isaacsim.sensors.rtx import LidarRtx
-from omni.isaac.core.objects import VisualCuboid
-from omni.isaac.core.utils.physics import simulate_async
-from omni.isaac.core.utils.prims import delete_prim
-from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test

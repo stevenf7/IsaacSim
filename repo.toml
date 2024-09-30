@@ -638,7 +638,7 @@ include = [
 name = "4"
 include = [
   "tests-isaacsim.core.*${shell_ext}",
-  "tests-omni.isaac.core*${shell_ext}",
+  "tests-isaacsim.core.api*${shell_ext}",
 ]
 [[repo_test.suites.pythontests.bucket]]
 name = "5"

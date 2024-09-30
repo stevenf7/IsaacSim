@@ -22,7 +22,7 @@ writeTarget.kit = true
 "omni.kit.menu.utils" = {}
 "omni.usd.schema.isaac" = {}
 "omni.isaac.ui" = {}
-"omni.isaac.core" = {}
+"isaacsim.core.api" = {}
 "isaacsim.sensors.physx" = {}
 "omni.kit.context_menu" = {}
 

@@ -9,8 +9,8 @@
 import os
 from typing import Optional
 
-from omni.isaac.core.articulations import Articulation
-from omni.isaac.core.utils.extensions import get_extension_path_from_name
+from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.api.utils.extensions import get_extension_path_from_name
 from omni.isaac.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
 from omni.isaac.motion_generation.lula.kinematics import LulaKinematicsSolver
 

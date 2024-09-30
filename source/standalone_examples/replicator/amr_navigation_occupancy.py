@@ -30,9 +30,9 @@ import omni.occupancy_sim
 import omni.replicator.core as rep
 import omni.timeline
 import omni.usd
-from omni.isaac.core.utils.render_product import *
-from omni.isaac.core.utils.stage import add_reference_to_stage, create_new_stage
-from omni.isaac.core.utils.viewports import add_aov_to_viewport
+from isaacsim.core.api.utils.render_product import *
+from isaacsim.core.api.utils.stage import add_reference_to_stage, create_new_stage
+from isaacsim.core.api.utils.viewports import add_aov_to_viewport
 from omni.isaac.nucleus import get_assets_root_path
 from omni.kit.viewport.utility import get_active_viewport
 from pxr import Gf, PhysxSchema, UsdGeom, UsdLux, UsdPhysics

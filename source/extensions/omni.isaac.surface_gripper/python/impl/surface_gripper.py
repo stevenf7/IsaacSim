@@ -11,7 +11,7 @@ from typing import Optional
 import carb
 import numpy as np
 import omni.physics.tensors
-from omni.isaac.core.utils.stage import add_reference_to_stage
+from isaacsim.core.api.utils.stage import add_reference_to_stage
 from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper, Surface_Gripper_Properties
 
 

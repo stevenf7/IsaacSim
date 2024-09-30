@@ -12,8 +12,8 @@ from isaacsim import SimulationApp
 # URDF import, configuration and simulation sample
 kit = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
 import omni.kit.commands
-from omni.isaac.core.articulations import Articulation
-from omni.isaac.core.utils.extensions import get_extension_path_from_name
+from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.api.utils.extensions import get_extension_path_from_name
 from pxr import Gf, PhysxSchema, Sdf, UsdLux, UsdPhysics
 
 # Setting up import configuration:

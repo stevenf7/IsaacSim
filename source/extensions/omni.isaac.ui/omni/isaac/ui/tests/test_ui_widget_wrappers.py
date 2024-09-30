@@ -15,8 +15,8 @@ import omni.kit.test
 import omni.kit.ui_test as ui_test
 import omni.timeline
 import omni.ui as ui
-from omni.isaac.core.utils.prims import delete_prim
-from omni.isaac.core.utils.stage import add_reference_to_stage, create_new_stage, update_stage_async
+from isaacsim.core.api.utils.prims import delete_prim
+from isaacsim.core.api.utils.stage import add_reference_to_stage, create_new_stage, update_stage_async
 from omni.isaac.nucleus import get_assets_root_path
 from omni.isaac.ui.element_wrappers import (
     Button,
@@ -493,7 +493,7 @@ class TestUI(omni.kit.test.AsyncTestCase):
 
         state_button.set_physics_callback_fn(physics_step_count)
 
-        from omni.isaac.core.world import World
+        from isaacsim.core.api.world import World
 
         world = World()
 

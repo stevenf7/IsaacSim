@@ -20,8 +20,8 @@ import omni.physx as _physx
 import omni.timeline
 import omni.ui as ui
 import omni.usd
-from omni.isaac.core.articulations import Articulation
-from omni.isaac.core.utils.prims import get_prim_object_type
+from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.api.utils.prims import get_prim_object_type
 from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.ui.ui_utils import (
     add_line_rect_flourish,

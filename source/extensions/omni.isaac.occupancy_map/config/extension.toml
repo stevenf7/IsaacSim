@@ -19,7 +19,7 @@ writeTarget.kit = true
 [dependencies]
 "isaacsim.util.debug_draw" = {}
 "omni.isaac.block_world" = {}
-"omni.isaac.core" = {}
+"isaacsim.core.api" = {}
 "omni.isaac.ui" = {}
 "omni.kit.pip_archive" = {} # pulls in pillow
 "omni.kit.uiapp" = {}

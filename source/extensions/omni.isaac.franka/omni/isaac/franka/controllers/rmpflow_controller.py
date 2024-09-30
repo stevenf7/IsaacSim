@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 import omni.isaac.motion_generation as mg
-from omni.isaac.core.articulations import Articulation
+from isaacsim.core.api.articulations import Articulation
 
 
 class RMPFlowController(mg.MotionPolicyController):

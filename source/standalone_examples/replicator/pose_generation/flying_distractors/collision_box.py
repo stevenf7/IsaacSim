@@ -9,9 +9,9 @@
 from typing import Optional
 
 import numpy as np
-from omni.isaac.core import World
-from omni.isaac.core.objects import FixedCuboid
-from omni.isaac.core.prims.xform_prim import XFormPrim
+from isaacsim.core.api import World
+from isaacsim.core.api.objects import FixedCuboid
+from isaacsim.core.api.prims.xform_prim import XFormPrim
 from pxr import Usd, UsdGeom
 
 

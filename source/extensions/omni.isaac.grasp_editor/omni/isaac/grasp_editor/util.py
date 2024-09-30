@@ -12,9 +12,9 @@ from typing import List
 import carb
 import numpy as np
 import omni
-from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
-from omni.isaac.core.utils.prims import get_prim_at_path
-from omni.isaac.core.utils.xforms import get_world_pose
+from isaacsim.core.api.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
+from isaacsim.core.api.utils.prims import get_prim_at_path
+from isaacsim.core.api.utils.xforms import get_world_pose
 from pxr import PhysxSchema, Sdf, Usd, UsdPhysics
 
 

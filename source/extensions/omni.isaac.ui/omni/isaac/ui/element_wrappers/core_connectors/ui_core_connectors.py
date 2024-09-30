@@ -11,15 +11,15 @@ from typing import Callable, List
 
 import carb
 import omni.ui as ui
-from omni.isaac.core.utils.stage import update_stage_async
-from omni.isaac.core.world import World
+from isaacsim.core.api.utils.stage import update_stage_async
+from isaacsim.core.api.world import World
 
 from ..ui_widget_wrappers import *
 
 
 class LoadButton(UIWidgetWrapper):
     """
-    Create a special type of UI button that connects to the omni.isaac.core.World to enable convenient "Load" functionality.
+    Create a special type of UI button that connects to the isaacsim.core.api.World to enable convenient "Load" functionality.
     The World acts as a scene manager that simplifies user interaction with the simulator.
     This provides the user with certain guarantees at the time that their callback functions are
     called.
@@ -134,7 +134,7 @@ class LoadButton(UIWidgetWrapper):
 
     def set_world_settings(self, **kwargs):
         """
-        Pressing a Load Button will create a new instance of the omni.isaac.core.World.
+        Pressing a Load Button will create a new instance of the isaacsim.core.api.World.
         The default settings will be used unless the user specifies new settings at runtime before the Load Button is clicked.
 
         The default settings will ensure that the physics and rendering timesteps are fixed at 1/60.0 seconds (see set_defaults argument).
@@ -226,7 +226,7 @@ class LoadButton(UIWidgetWrapper):
 
 class ResetButton(UIWidgetWrapper):
     """
-    Create a special type of UI button that connects to the omni.isaac.core.World to perform a reset.
+    Create a special type of UI button that connects to the isaacsim.core.api.World to perform a reset.
     If no World instance exists when this button will be clicked, this button will not create one.
     In this case, the button logs a warning and calls user callback functions with no guarantees
     on the Simulator State.

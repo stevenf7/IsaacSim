@@ -22,7 +22,7 @@ import carb.settings
 import numpy as np
 import omni.replicator.core as rep
 import warp as wp
-from omni.isaac.core.utils.stage import open_stage
+from isaacsim.core.api.utils.stage import open_stage
 from omni.isaac.nucleus import get_assets_root_path
 from PIL import Image
 

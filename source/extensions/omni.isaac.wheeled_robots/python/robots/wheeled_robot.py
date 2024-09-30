@@ -11,9 +11,9 @@ from typing import Optional
 
 import carb
 import numpy as np
-from omni.isaac.core.robots.robot import Robot
-from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
-from omni.isaac.core.utils.types import ArticulationAction
+from isaacsim.core.api.robots.robot import Robot
+from isaacsim.core.api.utils.prims import define_prim, get_prim_at_path
+from isaacsim.core.api.utils.types import ArticulationAction
 
 
 class WheeledRobot(Robot):

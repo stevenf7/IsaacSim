@@ -15,15 +15,15 @@ import omni.kit.test
 import omni.kit.ui_test as ui_test
 import omni.timeline
 import omni.ui as ui
-from omni.isaac.core.articulations import Articulation
-from omni.isaac.core.objects.cuboid import FixedCuboid, VisualCuboid
-from omni.isaac.core.utils.stage import (
+from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.api.objects.cuboid import FixedCuboid, VisualCuboid
+from isaacsim.core.api.utils.stage import (
     add_reference_to_stage,
     create_new_stage,
     create_new_stage_async,
     update_stage_async,
 )
-from omni.isaac.core.world import World
+from isaacsim.core.api.world import World
 from omni.isaac.nucleus import get_assets_root_path
 from omni.isaac.ui.element_wrappers.core_connectors import LoadButton, ResetButton
 

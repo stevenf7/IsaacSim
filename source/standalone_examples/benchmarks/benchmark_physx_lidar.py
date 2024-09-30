@@ -30,9 +30,9 @@ simulation_app = SimulationApp({"headless": True})
 
 import carb
 import omni.kit.test
-from omni.isaac.core import PhysicsContext
-from omni.isaac.core.utils.extensions import enable_extension
-from omni.isaac.core.utils.rotations import euler_angles_to_quat
+from isaacsim.core.api import PhysicsContext
+from isaacsim.core.api.utils.extensions import enable_extension
+from isaacsim.core.api.utils.rotations import euler_angles_to_quat
 from pxr import Gf, UsdGeom
 
 enable_extension("isaacsim.benchmark.services")

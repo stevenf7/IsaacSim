@@ -18,10 +18,10 @@ import omni.physx as _physx
 import omni.timeline
 import omni.ui as ui
 import omni.usd
+from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.api.utils.prims import get_prim_object_type
+from isaacsim.core.api.utils.stage import get_stage_units
 from omni.isaac.articulation_inspector.widgets import ComboBoxModel, ListItemDelegate, ListItemModel
-from omni.isaac.core.articulations import Articulation
-from omni.isaac.core.utils.prims import get_prim_object_type
-from omni.isaac.core.utils.stage import get_stage_units
 from omni.isaac.ui.element_wrappers import ScrollingWindow
 from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.ui.ui_utils import (

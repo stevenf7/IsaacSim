@@ -17,10 +17,10 @@ import omni.kit.commands
 import omni.timeline
 import omni.ui as ui
 import omni.usd
+from isaacsim.core.api.utils.prims import is_prim_path_valid
+from isaacsim.core.api.utils.stage import get_current_stage
+from isaacsim.core.api.utils.viewports import create_viewport_for_camera
 from isaacsim.sensors.camera import get_all_camera_objects
-from omni.isaac.core.utils.prims import is_prim_path_valid
-from omni.isaac.core.utils.stage import get_current_stage
-from omni.isaac.core.utils.viewports import create_viewport_for_camera
 from omni.isaac.ui.element_wrappers import TextBlock
 from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.ui.style import COLOR_W, COLOR_X, COLOR_Y, COLOR_Z

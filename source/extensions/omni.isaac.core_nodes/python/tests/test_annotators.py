@@ -14,10 +14,10 @@ import omni.graph.core as og
 import omni.graph.core.tests as ogts
 import omni.kit.test
 import omni.replicator.core as rep
-from omni.isaac.core.objects.ground_plane import GroundPlane
-from omni.isaac.core.robots import Robot
-from omni.isaac.core.utils.stage import get_current_stage, open_stage_async
-from omni.isaac.core.utils.viewports import set_camera_view
+from isaacsim.core.api.objects.ground_plane import GroundPlane
+from isaacsim.core.api.robots import Robot
+from isaacsim.core.api.utils.stage import get_current_stage, open_stage_async
+from isaacsim.core.api.utils.viewports import set_camera_view
 from omni.isaac.nucleus import get_assets_root_path
 from omni.kit.viewport.utility import get_active_viewport
 from pxr import Sdf, UsdLux

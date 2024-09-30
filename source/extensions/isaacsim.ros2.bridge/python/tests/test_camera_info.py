@@ -26,13 +26,13 @@ import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd
 import omni.kit.viewport.utility
+from isaacsim.core.api.objects import VisualCuboid
+from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.api.utils.physics import simulate_async
+from isaacsim.core.api.utils.semantics import add_update_semantics
+from isaacsim.core.api.utils.stage import add_reference_to_stage, get_current_stage, open_stage_async
+from isaacsim.core.api.utils.viewports import set_camera_view
 from isaacsim.sensors.camera import Camera
-from omni.isaac.core.objects import VisualCuboid
-from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.utils.physics import simulate_async
-from omni.isaac.core.utils.semantics import add_update_semantics
-from omni.isaac.core.utils.stage import add_reference_to_stage, get_current_stage, open_stage_async
-from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.nucleus import get_assets_root_path_async
 from pxr import Gf, Sdf, UsdLux
 

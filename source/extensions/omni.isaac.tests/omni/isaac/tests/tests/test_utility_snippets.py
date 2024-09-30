@@ -404,7 +404,7 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
 
         ### Code Start
         import omni.usd
-        from omni.isaac.core.utils.semantics import add_update_semantics
+        from isaacsim.core.api.utils.semantics import add_update_semantics
 
         def remove_prefix(name, prefix):
             if name.startswith(prefix):

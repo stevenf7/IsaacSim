@@ -15,7 +15,7 @@ import argparse
 
 import numpy as np
 from controllers.rmpflow import RMPFlowController
-from omni.isaac.core import World
+from isaacsim.core.api import World
 from tasks.follow_target import FollowTarget
 
 parser = argparse.ArgumentParser()

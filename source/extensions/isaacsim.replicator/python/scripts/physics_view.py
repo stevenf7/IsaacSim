@@ -9,16 +9,16 @@
 import copy
 from typing import List, Optional, Tuple, Union
 
+import isaacsim.core.api
 import numpy as np
 import omni.graph.core as og
-import omni.isaac.core
 import omni.kit
 import omni.timeline
 import omni.usd
 import torch
+from isaacsim.core.api.utils.numpy.rotations import quats_to_euler_angles as quat_to_euler_numpy
+from isaacsim.core.api.utils.torch.rotations import get_euler_xyz as quat_to_euler_torch
 from isaacsim.replicator.scripts import context
-from omni.isaac.core.utils.numpy.rotations import quats_to_euler_angles as quat_to_euler_numpy
-from omni.isaac.core.utils.torch.rotations import get_euler_xyz as quat_to_euler_torch
 from omni.replicator.core import distribution
 from omni.replicator.core.utils import ReplicatorItem, ReplicatorWrapper, utils
 
@@ -40,11 +40,11 @@ _articulation_views_reset_values = dict()
 
 
 def register_simulation_context(
-    simulation_context: Union[omni.isaac.core.SimulationContext, omni.isaac.core.World]
+    simulation_context: Union[isaacsim.core.api.SimulationContext, isaacsim.core.api.World]
 ) -> None:
     """
     Args:
-        simulation_context (Union[omni.isaac.core.SimulationContext, omni.isaac.core.World]): Registering the SimulationContext.
+        simulation_context (Union[isaacsim.core.api.SimulationContext, isaacsim.core.api.World]): Registering the SimulationContext.
     """
     global _simulation_context
     _simulation_context = simulation_context
@@ -54,10 +54,10 @@ def register_simulation_context(
     _simulation_context_reset_values["gravity"] = copy.deepcopy(gravity_vector)
 
 
-def register_rigid_prim_view(rigid_prim_view: omni.isaac.core.prims.RigidPrimView) -> None:
+def register_rigid_prim_view(rigid_prim_view: isaacsim.core.api.prims.RigidPrimView) -> None:
     """
     Args:
-        rigid_prim_view (omni.isaac.core.prims.RigidPrimView): Registering the RigidPrimView to be randomized.
+        rigid_prim_view (isaacsim.core.api.prims.RigidPrimView): Registering the RigidPrimView to be randomized.
     """
     clone_tensor = rigid_prim_view._backend_utils.clone_tensor
     tensor_cat = rigid_prim_view._backend_utils.tensor_cat
@@ -96,10 +96,10 @@ def register_rigid_prim_view(rigid_prim_view: omni.isaac.core.prims.RigidPrimVie
     _rigid_prim_views_reset_values[name] = copy.deepcopy(initial_values)
 
 
-def register_articulation_view(articulation_view: omni.isaac.core.articulations.ArticulationView) -> None:
+def register_articulation_view(articulation_view: isaacsim.core.api.articulations.ArticulationView) -> None:
     """
     Args:
-        articulation_view (omni.isaac.core.articulations.ArticulationView): Registering the ArticulationView to be randomized.
+        articulation_view (isaacsim.core.api.articulations.ArticulationView): Registering the ArticulationView to be randomized.
     """
     clone_tensor = articulation_view._backend_utils.clone_tensor
     tensor_cat = articulation_view._backend_utils.tensor_cat

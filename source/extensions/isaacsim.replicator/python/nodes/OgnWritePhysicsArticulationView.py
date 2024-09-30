@@ -11,10 +11,10 @@ import carb
 import numpy as np
 import omni.graph.core as og
 import torch
+from isaacsim.core.api.utils.numpy.rotations import euler_angles_to_quats as euler_angles_to_quats_numpy
+from isaacsim.core.api.utils.torch.rotations import euler_angles_to_quats as euler_angles_to_quats_torch
 from isaacsim.replicator import ARTICULATION_ATTRIBUTES, TENDON_ATTRIBUTES
 from isaacsim.replicator import physics_view as physics
-from omni.isaac.core.utils.numpy.rotations import euler_angles_to_quats as euler_angles_to_quats_numpy
-from omni.isaac.core.utils.torch.rotations import euler_angles_to_quats as euler_angles_to_quats_torch
 
 OPERATION_TYPES = ["direct", "additive", "scaling"]
 

@@ -18,18 +18,18 @@ import numpy as np
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.isaac.motion_generation.interface_config_loader as interface_config_loader
 import omni.kit.test
-from omni.isaac.core.objects.cuboid import VisualCuboid
-from omni.isaac.core.prims import XFormPrim
-from omni.isaac.core.robots.robot import Robot
-from omni.isaac.core.utils.numpy.rotations import rot_matrices_to_quats, rotvecs_to_quats
-from omni.isaac.core.utils.prims import delete_prim
-from omni.isaac.core.utils.stage import (
+from isaacsim.core.api.objects.cuboid import VisualCuboid
+from isaacsim.core.api.prims import XFormPrim
+from isaacsim.core.api.robots.robot import Robot
+from isaacsim.core.api.utils.numpy.rotations import rot_matrices_to_quats, rotvecs_to_quats
+from isaacsim.core.api.utils.prims import delete_prim
+from isaacsim.core.api.utils.stage import (
     add_reference_to_stage,
     create_new_stage_async,
     get_current_stage,
     update_stage_async,
 )
-from omni.isaac.core.world import World
+from isaacsim.core.api.world import World
 from omni.isaac.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
 from omni.isaac.motion_generation.articulation_trajectory import ArticulationTrajectory
 from omni.isaac.motion_generation.lula.kinematics import LulaKinematicsSolver

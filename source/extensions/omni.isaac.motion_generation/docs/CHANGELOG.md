@@ -141,7 +141,7 @@
 - Updated ArticulationSubset to handle sparse ArticulationActions. Previously, it None-padded the ArticulationAction.
 - Some modifications to ArticulationSubset to simplify the error checking code and change member names.
 - Updates ArticulationMotionPolicy to use the sparse API.
-- Moved ArticulationSubset to omni.isaac.core
+- Moved ArticulationSubset to isaacsim.core.api
 
 ## [4.2.0] - 2022-11-18
 ### Added
@@ -157,7 +157,7 @@
 
 ## [4.0.3] - 2022-11-10
 ### Changed
-- Updated determinism settings to include omni.isaac.core World
+- Updated determinism settings to include isaacsim.core.api World
 
 ## [4.0.2] - 2022-10-24
 
@@ -388,7 +388,7 @@
 
 ### Added
 
-- moved kinematics.py from omni.isaac.core.utils to this extension
+- moved kinematics.py from isaacsim.core.api.utils to this extension
 
 ## [0.1.3] - 2021-12-13
 

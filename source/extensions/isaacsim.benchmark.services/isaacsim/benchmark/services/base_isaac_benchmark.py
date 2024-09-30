@@ -16,7 +16,7 @@ import carb
 from isaacsim.benchmark.services import utils
 from isaacsim.benchmark.services.datarecorders import interface
 from isaacsim.benchmark.services.metrics import backend, measurements
-from omni.isaac.core.utils.stage import open_stage
+from isaacsim.core.api.utils.stage import open_stage
 from omni.isaac.nucleus import get_assets_root_path
 
 from .recorders import *

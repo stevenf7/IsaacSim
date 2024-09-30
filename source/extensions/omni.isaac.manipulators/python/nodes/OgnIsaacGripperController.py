@@ -8,8 +8,8 @@
 #
 import numpy as np
 import omni.graph.core as og
-from omni.isaac.core.articulations.articulation import Articulation
-from omni.isaac.core.utils.types import ArticulationAction
+from isaacsim.core.api.articulations.articulation import Articulation
+from isaacsim.core.api.utils.types import ArticulationAction
 from omni.isaac.core_nodes import BaseResetNode
 from omni.isaac.manipulators.grippers.parallel_gripper import ParallelGripper
 from omni.isaac.manipulators.ogn.OgnIsaacGripperControllerDatabase import OgnIsaacGripperControllerDatabase

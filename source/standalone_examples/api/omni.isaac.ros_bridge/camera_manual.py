@@ -25,8 +25,8 @@ import omni
 import omni.graph.core as og
 import omni.replicator.core as rep
 import usdrt.Sdf
-from omni.isaac.core import SimulationContext
-from omni.isaac.core.utils import extensions, stage
+from isaacsim.core.api import SimulationContext
+from isaacsim.core.api.utils import extensions, stage
 from omni.isaac.nucleus import get_assets_root_path
 from omni.kit.viewport.utility import get_active_viewport
 from pxr import Gf, Usd, UsdGeom

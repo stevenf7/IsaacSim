@@ -16,12 +16,12 @@ import omni.kit.commands
 import omni.timeline
 import omni.ui as ui
 import omni.usd
-from omni.isaac.core.articulations import Articulation
-from omni.isaac.core.prims import XFormPrim
-from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
-from omni.isaac.core.utils.prims import get_prim_at_path, get_prim_object_type
-from omni.isaac.core.utils.stage import update_stage_async
-from omni.isaac.core.utils.types import ArticulationAction
+from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.api.prims import XFormPrim
+from isaacsim.core.api.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
+from isaacsim.core.api.utils.prims import get_prim_at_path, get_prim_object_type
+from isaacsim.core.api.utils.stage import update_stage_async
+from isaacsim.core.api.utils.types import ArticulationAction
 from omni.isaac.ui.element_wrappers import (
     Button,
     CheckBox,
@@ -462,7 +462,7 @@ class UIBuilder:
 
         self.assembly_code_summary.set_text(
             "from omni.isaac.robot_assembler import RobotAssembler,AssembledRobot \n"
-            + "from omni.isaac.core.articulations import Articulation\n"
+            + "from isaacsim.core.api.articulations import Articulation\n"
             + "import numpy as np\n\n"
             + f'base_robot_path = "{art_1_path}"\n'
             + f'attach_robot_path = "{art_2_path}"\n'
@@ -502,7 +502,7 @@ class UIBuilder:
 
         text = (
             "from omni.isaac.robot_assembler import RobotAssembler,AssembledBodies \n"
-            + "from omni.isaac.core.articulations import Articulation\n"
+            + "from isaacsim.core.api.articulations import Articulation\n"
             + "import numpy as np\n\n"
             + "robot_assembler = RobotAssembler()\n"
             + f'base_robot_path = "{art_1_path}"\n'

@@ -9,7 +9,7 @@
 import os
 from typing import Optional
 
-from omni.isaac.core.utils.extensions import get_extension_path_from_name
+from isaacsim.core.api.utils.extensions import get_extension_path_from_name
 from omni.isaac.motion_generation.kinematics import InverseKinematicsSolver as BaseInverseKinematicsSolver
 
 

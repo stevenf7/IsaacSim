@@ -12,7 +12,7 @@ import omni.isaac.IsaacSensorSchema as IsaacSensorSchema
 import omni.isaac.RangeSensorSchema as RangeSensorSchema
 import omni.kit.commands
 import omni.kit.utils
-from omni.isaac.core.utils.stage import get_next_free_path
+from isaacsim.core.api.utils.stage import get_next_free_path
 from pxr import Gf, UsdGeom
 
 

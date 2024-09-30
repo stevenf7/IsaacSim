@@ -14,19 +14,19 @@ import os
 import numpy as np
 import omni.isaac.motion_generation.interface_config_loader as interface_config_loader
 import omni.kit.test
-from omni.isaac.core.objects import FixedCuboid, VisualCuboid
-from omni.isaac.core.objects.ground_plane import GroundPlane
-from omni.isaac.core.prims import XFormPrim
-from omni.isaac.core.robots import Robot
-from omni.isaac.core.utils.numpy.rotations import euler_angles_to_quats, rot_matrices_to_quats
-from omni.isaac.core.utils.stage import (
+from isaacsim.core.api.objects import FixedCuboid, VisualCuboid
+from isaacsim.core.api.objects.ground_plane import GroundPlane
+from isaacsim.core.api.prims import XFormPrim
+from isaacsim.core.api.robots import Robot
+from isaacsim.core.api.utils.numpy.rotations import euler_angles_to_quats, rot_matrices_to_quats
+from isaacsim.core.api.utils.stage import (
     add_reference_to_stage,
     create_new_stage_async,
     get_current_stage,
     update_stage_async,
 )
-from omni.isaac.core.utils.viewports import set_camera_view
-from omni.isaac.core.world import World
+from isaacsim.core.api.utils.viewports import set_camera_view
+from isaacsim.core.api.world import World
 from omni.isaac.motion_generation import ArticulationTrajectory
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)

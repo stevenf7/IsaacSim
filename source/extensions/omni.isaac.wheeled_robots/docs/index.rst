@@ -8,7 +8,7 @@ robots in isaac sim.
 Basic Usage
 ==============
 
-The classes and controllers provided by omni.isaac.wheeled_robots are designed to be run within the **world** simulation context provided by :ref:`omni.isaac.core<API omni.isaac.core>`. Like many other classes provided by core, **wheeled_robots** are created by wrapping prims already present on the stage in an interface class. This API is expected by **world** to do things like initialize and reset data structures, apply drive commands, retrieve joint states, etc...
+The classes and controllers provided by omni.isaac.wheeled_robots are designed to be run within the **world** simulation context provided by :ref:`isaacsim.core.api<API isaacsim.core.api>`. Like many other classes provided by core, **wheeled_robots** are created by wrapping prims already present on the stage in an interface class. This API is expected by **world** to do things like initialize and reset data structures, apply drive commands, retrieve joint states, etc...
 
 Creating this interface means specifying the articulation being managed, the name that **world** will know this object by, and the names of the drivable joints
 
@@ -25,12 +25,12 @@ Creating this interface means specifying the articulation being managed, the nam
                           wheel_dof_names=["left_wheel_joint", "right_wheel_joint"]
                          )
 
-Commanding the robot should be done prior to the physics step using an **ArticulationAction**, a type provided by omni.isaac.core to facilitate things like mixed command modes (effort, velocity, and position) and complex robots with multiple types of actions that could be taken.
+Commanding the robot should be done prior to the physics step using an **ArticulationAction**, a type provided by isaacsim.core.api to facilitate things like mixed command modes (effort, velocity, and position) and complex robots with multiple types of actions that could be taken.
 
 .. code-block:: python
     :linenos:
 
-    from omni.isaac.core.utils.types import ArticulationAction
+    from isaacsim.core.api.utils.types import ArticulationAction
     
     action = ArticulationAction(joint_velocities = np.array([1.14, 1.42]))
     jetbot.apply_wheel_actions(action)

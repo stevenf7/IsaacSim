@@ -14,8 +14,8 @@ import cv2 as cv
 import numpy as np
 import omni
 import omni.syntheticdata
-from omni.isaac.core.utils.render_product import get_camera_prim_path, get_resolution
-from omni.isaac.core.utils.transformations import get_relative_transform
+from isaacsim.core.api.utils.render_product import get_camera_prim_path, get_resolution
+from isaacsim.core.api.utils.transformations import get_relative_transform
 from pxr import Gf, Usd
 
 

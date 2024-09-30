@@ -9,7 +9,7 @@
 
 import carb
 import omni
-from omni.isaac.core.utils.render_product import set_camera_prim_path
+from isaacsim.core.api.utils.render_product import set_camera_prim_path
 
 
 class OgnIsaacSetCameraOnRenderProduct:

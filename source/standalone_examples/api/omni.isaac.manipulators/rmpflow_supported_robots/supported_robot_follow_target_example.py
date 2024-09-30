@@ -15,11 +15,11 @@ import argparse
 from pprint import pprint
 
 import numpy as np
-from omni.isaac.core import World
-from omni.isaac.core.objects import cuboid
-from omni.isaac.core.robots import Robot
-from omni.isaac.core.utils.prims import create_prim
-from omni.isaac.core.utils.stage import add_reference_to_stage
+from isaacsim.core.api import World
+from isaacsim.core.api.objects import cuboid
+from isaacsim.core.api.robots import Robot
+from isaacsim.core.api.utils.prims import create_prim
+from isaacsim.core.api.utils.stage import add_reference_to_stage
 from omni.isaac.motion_generation.articulation_motion_policy import ArticulationMotionPolicy
 from omni.isaac.motion_generation.interface_config_loader import (
     get_supported_robot_policy_pairs,
