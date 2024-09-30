@@ -6,5 +6,8 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+import carb
 
-from .about import *
+carb.log_warn(
+    "omni.isaac.window.about.about has been deprecated in favor of isaacsim.app.about.about. Please update your code accordingly."
+)
