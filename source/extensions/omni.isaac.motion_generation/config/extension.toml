@@ -16,7 +16,7 @@ preview_image = "data/preview.png"
 icon = "data/icon.png"
 
 [dependencies]
-"omni.isaac.lula" = {}
+"isaacsim.robot_motion.lula" = {}
 "omni.isaac.core" = {}
 
 [[python.module]]

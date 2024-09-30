@@ -3,12 +3,12 @@ reloadable = true
 order = 0
 
 [package]
-version = "3.0.1"
+version = "4.0.0"
 category = "Simulation"
 title = "Isaac Sim Lula"
 description = "Extension that provides lula python interface"
 authors = ["Isaac Sim Team"]
-repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.lula"
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot_motion.lula"
 keywords = ["isaac", "lula", "rmp"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
@@ -25,7 +25,7 @@ writeTarget.platform = true # pip prebundle makes this extension os specific
 path = "pip_prebundle"
 
 [[python.module]]
-name = "omni.isaac.lula"
+name = "isaacsim.robot_motion.lula"
 
 [[python.module]]
-name = "omni.isaac.lula.tests"
+name = "isaacsim.robot_motion.lula.tests"
