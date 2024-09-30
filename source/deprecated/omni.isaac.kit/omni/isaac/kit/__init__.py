@@ -7,6 +7,9 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import os
+import sys
+
 import carb
 
 old_extension_name = "omni.isaac.kit"
@@ -17,4 +20,12 @@ carb.log_warn(
     f"{old_extension_name} has been deprecated in favor of {new_extension_name}. Please update your code accordingly."
 )
 
-from isaacsim.simulation_app import AppFramework, SimulationApp
+try:
+    from isaacsim.simulation_app import AppFramework, SimulationApp
+except ModuleNotFoundError:
+    # resolve isaacsim.simulation_app extension path
+    path = os.path.dirname(os.path.abspath(__file__))
+    path = os.path.join(path, "..", "..", "..", "..", "..", "exts", "isaacsim.simulation_app")
+    sys.path.insert(0, os.path.abspath(path))
+
+    from isaacsim.simulation_app import AppFramework, SimulationApp
