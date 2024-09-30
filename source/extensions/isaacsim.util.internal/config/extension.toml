@@ -3,12 +3,12 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.4.0"
+version = "2.0.0"
 category = "Simulation"
 title = "Isaac Sim Internal Utils"
 description = "Internal Utilities"
 authors = ["Isaac Sim Team"]
-repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.internal_tools"
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.util.internal"
 keywords = ["isaac"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
@@ -24,10 +24,10 @@ preview_image = "data/preview.png"
 "omni.isaac.ui" = {}
 
 [[python.module]]
-name = "omni.isaac.internal_tools"
+name = "isaacsim.util.internal"
 
 [[python.module]]
-name = "omni.isaac.internal_tools.tests"
+name = "isaacsim.util.internal.tests"
 
 [[test]]
 dependencies = [

@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.0] - 2024-09-29
+### Changed
+- Renamed to isaacsim.util.internal
+
 ## [1.4.0] - 2024-09-08
 ### Changed
 - Updated and added rules for deprecated OG nodes

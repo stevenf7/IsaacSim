@@ -16,7 +16,7 @@ import omni.kit.test
 import omni.kit.usd
 import omni.kit.viewport.utility
 import omni.usd
-from omni.isaac.internal_tools.utils.file_utils import (
+from isaacsim.util.internal.utils.file_utils import (
     filter_usd,
     has_missing_reference,
     is_external,

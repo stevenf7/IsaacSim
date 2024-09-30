@@ -391,12 +391,14 @@ inventory.include = [
     # license
     "LICENSE.txt",
     # extensions
-    "exts/omni.isaac.articulation_inspector",
     "exts/omni.isaac.gain_tuner",
     "exts/omni.isaac.import_wizard",
-    "exts/omni.isaac.physics_inspector",
     "exts/omni.isaac.robot_assembler",
     "exts/omni.isaac.robot_description_editor",
+
+    # deprecated extensions
+    "extsDeprecated/omni.isaac.articulation_inspector",
+    "extsDeprecated/omni.isaac.physics_inspector",
 ]
 
 [isaacsim-ros1]
