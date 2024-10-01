@@ -1,0 +1,27 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "1.0.0"
+category = "Simulation"
+title = "Isaac Sim Menus"
+description = "Isaac Sim Utility Extensions"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.menu"
+keywords = ["isaac", "menu"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+icon = "data/icon.png"
+preview_image = "data/preview.png"
+writeTarget.kit = true
+
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.gui.menu"
+
+[dependencies]
+"isaacsim.core.deprecation_manager" = {}
+"isaacsim.gui.menu" = {}
+
+[[python.module]]
+name = "omni.isaac.menu"

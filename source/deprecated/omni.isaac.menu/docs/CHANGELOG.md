@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.0] - 2024-09-30
+### Deprecated
+- Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.gui.menu
+
 ## [0.7.3] - 2024-09-05
 ### Removed
 - Grid Room from menu to match documentation

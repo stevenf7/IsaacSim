@@ -3,12 +3,12 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.7.3"
+version = "1.0.0"
 category = "Simulation"
 title = "Isaac Sim Menus"
 description = "Isaac Sim Utility Extensions"
 authors = ["Isaac Sim Team"]
-repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.menu"
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.gui.menu"
 keywords = ["isaac", "menu"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
@@ -22,10 +22,10 @@ writeTarget.kit = true
 "omni.isaac.ui" = {}
 
 [[python.module]]
-name = "omni.isaac.menu"
+name = "isaacsim.gui.menu"
 
 [[python.module]]
-name = "omni.isaac.menu.tests"
+name = "isaacsim.gui.menu.tests"
 
 
 [[test]]

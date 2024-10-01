@@ -662,7 +662,7 @@ include = [
 [[repo_test.suites.pythontests.bucket]]
 name = "8"
 include = [
-  "tests-omni.isaac.menu*${shell_ext}",
+  "tests-isaacsim.gui.menu*${shell_ext}",
   "tests-omni.isaac.asset_browser*${shell_ext}",
 ]
 [[repo_test.suites.pythontests.bucket]]

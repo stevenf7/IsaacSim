@@ -287,10 +287,13 @@ inventory.include = [
     # license
     "LICENSE.txt",
     # extensions
-    "exts/omni.isaac.menu",
+    "exts/isaacsim.gui.menu",
     "exts/omni.isaac.ui",
     "exts/omni.kit.property.isaac",
     "exts/omni.usd.schema.isaac",
+    # deprecated extensions
+    "extsDeprecated/omni.isaac.menu",
+
 ]
 
 [isaacsim-replicator]
