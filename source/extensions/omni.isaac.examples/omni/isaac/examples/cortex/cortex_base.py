@@ -13,7 +13,7 @@ from isaacsim.core.api import World
 from isaacsim.core.api.scenes.scene import Scene
 from isaacsim.core.api.tasks.base_task import BaseTask
 from isaacsim.core.api.utils.stage import create_new_stage_async, update_stage_async
-from omni.isaac.cortex.cortex_world import CortexWorld
+from isaacsim.cortex.framework.cortex_world import CortexWorld
 from omni.isaac.examples import base_sample
 
 

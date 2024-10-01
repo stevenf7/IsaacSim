@@ -1,4 +1,9 @@
 # Changelog
+## [0.5.3] - 2024-09-28
+### Changed
+- Merge Mesh extension renaming
+
+
 ## [0.5.2] - 2024-05-22
 ### Changed
 - links to omnigraph shortcut from internal docs to external docs

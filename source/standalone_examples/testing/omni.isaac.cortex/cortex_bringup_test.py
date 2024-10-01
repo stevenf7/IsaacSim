@@ -15,10 +15,10 @@ import time
 
 import numpy as np
 from isaacsim.core.api.objects import VisualSphere
-from omni.isaac.cortex.cortex_world import CortexWorld
-from omni.isaac.cortex.df import DfNetwork, DfState, DfStateMachineDecider
-from omni.isaac.cortex.dfb import DfBasicContext
-from omni.isaac.cortex.robot import add_franka_to_stage
+from isaacsim.cortex.framework.cortex_world import CortexWorld
+from isaacsim.cortex.framework.df import DfNetwork, DfState, DfStateMachineDecider
+from isaacsim.cortex.framework.dfb import DfBasicContext
+from isaacsim.cortex.framework.robot import add_franka_to_stage
 
 
 class FollowState(DfState):

@@ -11,7 +11,7 @@ import asyncio
 import os
 
 import omni.ui as ui
-from omni.isaac.cortex.cortex_world import CortexWorld
+from isaacsim.cortex.framework.cortex_world import CortexWorld
 from omni.isaac.examples.base_sample import BaseSampleExtension
 from omni.isaac.examples.ur10_palletizing.ur10_palletizing import BinStacking
 from omni.isaac.ui.ui_utils import btn_builder, cb_builder, get_style, str_builder

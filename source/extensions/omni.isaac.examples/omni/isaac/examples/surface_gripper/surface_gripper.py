@@ -22,7 +22,7 @@ from isaacsim.core.api.prims.rigid_prim import RigidPrim
 from isaacsim.core.api.utils.viewports import set_camera_view
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper, Surface_Gripper_Properties
+from isaacsim.robot.surface_gripper._surface_gripper import Surface_Gripper, Surface_Gripper_Properties
 from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.ui.ui_utils import (
     add_separator,
@@ -75,7 +75,7 @@ class Extension(omni.ext.IExt):
             with self._window.frame:
                 with ui.VStack(spacing=5, height=0):
                     title = "Surface Gripper Example"
-                    doc_link = "https://docs.omniverse.nvidia.com/isaacsim/latest/features/robots_simulation/ext_omni_isaac_surface_gripper.html"
+                    doc_link = "https://docs.omniverse.nvidia.com/isaacsim/latest/features/robots_simulation/ext_isaacsim_robot_surface_gripper.html"
 
                     overview = "This Example shows how to simulate a suction-cup gripper in Isaac Sim. "
                     overview += "It simulates suction by creating a Joint between two bodies when the parent and child bodies are close at the gripper's point of contact."

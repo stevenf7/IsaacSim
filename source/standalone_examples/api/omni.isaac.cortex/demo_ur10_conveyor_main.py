@@ -13,17 +13,17 @@ simulation_app = SimulationApp({"headless": False})
 
 import random
 
+import isaacsim.cortex.behaviors.ur10.bin_stacking_behavior as behavior
+import isaacsim.cortex.framework.math_util as math_util
 import numpy as np
-import omni.isaac.cortex.math_util as math_util
-import omni.isaac.cortex.sample_behaviors.ur10.bin_stacking_behavior as behavior
 from isaacsim.core.api.objects import VisualCapsule, VisualSphere
 from isaacsim.core.api.prims.xform_prim import XFormPrim
 from isaacsim.core.api.tasks import BaseTask
 from isaacsim.core.api.utils.stage import add_reference_to_stage
-from omni.isaac.cortex.cortex_rigid_prim import CortexRigidPrim
-from omni.isaac.cortex.cortex_utils import get_assets_root_path_or_die
-from omni.isaac.cortex.cortex_world import CortexWorld
-from omni.isaac.cortex.robot import CortexUr10
+from isaacsim.cortex.framework.cortex_rigid_prim import CortexRigidPrim
+from isaacsim.cortex.framework.cortex_utils import get_assets_root_path_or_die
+from isaacsim.cortex.framework.cortex_world import CortexWorld
+from isaacsim.cortex.framework.robot import CortexUr10
 
 
 class Ur10Assets:

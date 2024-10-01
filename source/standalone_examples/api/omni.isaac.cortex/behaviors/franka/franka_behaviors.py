@@ -6,14 +6,14 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.cortex.dfb import DfDiagnosticsMonitor
-from omni.isaac.cortex.sample_behaviors.franka import (
+from isaacsim.cortex.behaviors.franka import (
     block_stacking_behavior,
     peck_decider_network,
     peck_game,
     peck_state_machine,
 )
-from omni.isaac.cortex.sample_behaviors.franka.simple import simple_decider_network, simple_state_machine
+from isaacsim.cortex.behaviors.franka.simple import simple_decider_network, simple_state_machine
+from isaacsim.cortex.framework.dfb import DfDiagnosticsMonitor
 
 behaviors = {
     "block_stacking_behavior": block_stacking_behavior,
