@@ -15,6 +15,7 @@
 
 #include <foundation/PxTransform.h>
 #include <foundation/PxVec3.h>
+#include <foundation/PxVec4.h>
 
 #include <vector>
 
