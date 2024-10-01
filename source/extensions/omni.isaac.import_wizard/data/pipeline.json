@@ -79,15 +79,15 @@
     "Merge Meshes":
     {
         "App Name": "Mesh Merge Tool",
-        "Extension": "omni.isaac.merge_mesh",
+        "Extension": "isaacsim.util.merge_mesh",
         "Window": 1,
         "Summary":"Merge multiple meshes into a single prim",
         "Basic Instructions": "Place all meshes you want to merge under a common parent, and select this parent on the stage. Click on Merge. \n\n If you want to reset the parent transform to origin, select the \"Clear Parent Transform\". \n\n If the asset contains Repeat references to the same materials (e.g. Multiple part References each with it's own Materials library), Select the \"Override Looks Directory\" - It will search for the materials with same name in the provided folder (make sure the material exists in that folder first) ",
         "Advanced Instructions": "",
         "Menu": "Isaac Utils -> Mesh Merge Tool",
         "Resources":{
-            "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/features/environment_setup/ext_omni_isaac_merge_mesh.html",
-            "Script Folder": "omni.isaac.merge_mesh"
+            "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/features/environment_setup/ext_isaacsim_util_merge_mesh.html",
+            "Script Folder": "isaacsim.util.merge_mesh"
         }
     },
 

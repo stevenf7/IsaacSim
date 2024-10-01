@@ -148,14 +148,19 @@ inventory.include = [
     # license
     "LICENSE.txt",
     # extensions
-    "exts/omni.exporter.urdf",
+    "exts/isaacsim.asset.exporter.urdf",
     "exts/omni.isaac.asset_browser",
     "exts/omni.isaac.assets_check",
     "exts/omni.isaac.block_world",
-    "exts/omni.isaac.conveyor.ui",
-    "exts/omni.isaac.conveyor",
+    "exts/isaacsim.asset.conveyor.ui",
+    "exts/isaacsim.asset.conveyor",
     "exts/omni.isaac.occupancy_map.ui",
     "exts/omni.isaac.occupancy_map",
+    # deprecated extensions
+    "extsDeprecated/omni.exporter.urdf",
+    "extsDeprecated/omni.isaac.conveyor.ui",
+    "extsDeprecated/omni.isaac.conveyor",
+    
 ]
 
 [isaacsim-benchmark]
@@ -246,8 +251,11 @@ inventory.include = [
     # license
     "LICENSE.txt",
     # extensions
-    "exts/omni.isaac.cortex.sample_behaviors",
-    "exts/omni.isaac.cortex",
+    "exts/isaacsim.cortex.behaviors",
+    "exts/isaacsim.cortex.framework",
+    # deprecate extensions
+    "deprecated/omni.isaac.cortex.sample_behaviors",
+    "deprecated/omni.isaac.cortex",
 ]
 
 [isaacsim-example]
@@ -347,8 +355,8 @@ inventory.include = [
     # license
     "LICENSE.txt",
     # extensions
-    "exts/omni.isaac.surface_gripper.ui",
-    "exts/omni.isaac.surface_gripper",
+    "exts/isaacsim.robot.surface_gripper.ui",
+    "exts/isaacsim.robot.surface_gripper",
     "exts/omni.isaac.franka",
     "exts/omni.isaac.manipulators.ui",
     "exts/omni.isaac.manipulators",
@@ -356,6 +364,9 @@ inventory.include = [
     "exts/omni.isaac.universal_robots",
     "exts/omni.isaac.wheeled_robots.ui",
     "exts/omni.isaac.wheeled_robots",
+    # deprecated extensions
+    "extsDeprecated/omni.isaac.surface_gripper.ui",
+    "extsDeprecated/omni.isaac.surface_gripper",
 ]
 
 [isaacsim-robot-motion]
@@ -431,8 +442,9 @@ inventory.include = [
     # extensions
     "exts/isaacsim.ros2.bridge",
     "exts/isaacsim.ros2.tf_viewer",
+    "exts/isaacsim.ros2.urdf",
     # deprecated extensions
-    "exts/omni.isaac.ros2_bridge.robot_description",
+    "extsDeprecated/omni.isaac.ros2_bridge.robot_description",
     "extsDeprecated/omni.isaac.ros2_bridge",
     "extsDeprecated/omni.isaac.tf_viewer",
 ]
@@ -529,7 +541,9 @@ inventory.include = [
     "LICENSE.txt",
     # extensions
     "exts/omni.isaac.debug_draw",
-    "exts/omni.isaac.merge_mesh",
+    "exts/isaac.util.merge_mesh",
     "exts/omni.isaac.physics_utilities",
     "exts/omni.isaac.grasp_editor",
+    # deprecated extensions
+     "extsDeprecated/omni.isaac.merge_mesh",
 ]

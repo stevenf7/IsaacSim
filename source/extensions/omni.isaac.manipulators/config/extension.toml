@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.1.0"
+version = "2.1.1"
 category = "Simulation"
 title = "Isaac Sim Manipulators"
 description = "Manipulators"
@@ -19,7 +19,7 @@ writeTarget.kit = true
 [dependencies]
 "isaacsim.core.api" = {}
 "omni.isaac.core_nodes" = {}
-"omni.isaac.surface_gripper" = {}
+"isaacsim.robot.surface_gripper" = {}
 
 [[python.module]]
 name = "omni.isaac.manipulators"

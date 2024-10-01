@@ -1,0 +1,26 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "1.0.0"
+category = "Simulation"
+title = "Isaac Sim Conveyor belt utility"
+description="Omnigraph Node for Defining the behavior of a linear conveyor belt"
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+icon = "data/icon.png"
+preview_image = "data/preview.png"
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/isaacsim.asset.conveyor"
+
+keywords = ["kit", "example"]
+
+[dependencies]
+"isaacsim.core.deprecation_manager" = {}
+"isaacsim.asset.conveyor" = {}
+
+[[python.module]]
+name = "omni.isaac.conveyor"
+
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.asset.conveyor.ui."

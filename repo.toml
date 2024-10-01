@@ -70,7 +70,7 @@ vscode.python_env.PYTHONPATH= [
   "$root/_build/$platform/$config/kit/kernel/py",
   "$root/_build/$platform/$config/kit/plugins/bindings-python/",
   "$root/_build/$platform/$config/exts/isaacsim.robot_motion.lula/pip_prebundle",
-  "$root/_build/$platform/$config/exts/omni.exporter.urdf/pip_prebundle",
+  "$root/_build/$platform/$config/exts/isaacsim.asset.exporter.urdf/pip_prebundle",
   "$root/_build/$platform/$config/extscache/omni.kit.pip_archive*/pip_prebundle",
   "$root/_build/$platform/$config/exts/omni.isaac.core_archive/pip_prebundle",
   "$root/_build/$platform/$config/exts/omni.isaac.ml_archive/pip_prebundle",
@@ -84,7 +84,7 @@ vscode.python_env.PATH= [
   "$root/_build/$platform/$config/exts/omni.usd.schema.isaac/plugins/IsaacSensorSchema/lib",
   "$root/_build/$platform/$config/exts/omni.usd.schema.isaac/plugins/RangeSensorSchema/lib",
   "$root/_build/$platform/$config/exts/isaacsim.robot_motion.lula/pip_prebundle",
-  "$root/_build/$platform/$config/exts/omni.exporter.urdf/pip_prebundle",
+  "$root/_build/$platform/$config/exts/isaacsim.asset.exporter.urdf/pip_prebundle",
   "$root/_build/$platform/$config/kit",
   "$root/_build/$platform/$config/kit/kernel/plugins",
   "$root/_build/$platform/$config/kit/libs/iray",
@@ -855,7 +855,7 @@ ext_folders = [
 
 # Extensions to publish, include and exclude among those discovered by kit. Wildcards are supported.
 exts.include = [
-    "omni.exporter.urdf",
+    "isaacsim.asset.exporter.urdf",
     "omni.isaac.*",
     "isaacsim.*",
     "omni.kit.loop-isaac",
@@ -926,6 +926,7 @@ home_path = "${root}/source/extensions"
 build_path = "${root}/_build/${platform}/release/exts"
 ogn_exts_includes = [
     "isaacsim.replicator",
+    "isaacsim.asset.conveyor",
     "isaacsim.ros2.bridge",
     "isaacsim.sensors.physics",
     "isaacsim.sensors.physx",

@@ -19,9 +19,9 @@ simulation_app = SimulationApp({"headless": False})
 import numpy as np
 from isaacsim.core.api.objects import DynamicCuboid
 from isaacsim.core.api.utils.extensions import enable_extension
-from omni.isaac.cortex.cortex_utils import load_behavior_module
-from omni.isaac.cortex.cortex_world import CortexWorld
-from omni.isaac.cortex.robot import add_franka_to_stage
+from isaacsim.cortex.framework.cortex_utils import load_behavior_module
+from isaacsim.cortex.framework.cortex_world import CortexWorld
+from isaacsim.cortex.framework.robot import add_franka_to_stage
 
 enable_extension("omni.isaac.cortex_sync")
 from omni.isaac.cortex_sync.cortex_ros import CortexSimObjectsRos, CortexSimRobotRos, cortex_init_ros_node

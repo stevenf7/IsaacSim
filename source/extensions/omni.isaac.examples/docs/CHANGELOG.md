@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.0.3] - 2024-09-28
+### Fixed
+- Surface Gripper extension renaming
+
 ## [3.0.2] - 2024-09-16
 ### Fixed
 - Fixed Kaya gamepad example, loading ground and light manually
@@ -105,7 +109,7 @@
 
 ## [1.7.0] - 2023-08-15
 ### Removed
-- Moved Cortex Behaviors to omni.isaac.cortex.sample_behaviors
+- Moved Cortex Behaviors to isaacsim.cortex.behaviors
 ## [1.6.5] - 2023-08-07
 ### Fixed
 - Incorrect scaling factor in Omnigraph Keyboard example

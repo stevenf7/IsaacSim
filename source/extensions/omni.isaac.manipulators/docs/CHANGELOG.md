@@ -1,4 +1,8 @@
 # Changelog
+## [2.1.1] - 2024-09-28
+### Added
+- isaacsim.robot.surface_gripper extension rename
+
 ## [2.1.0] - 2024-05-24
 ### Added
 - end_effector_prim_path argument added to the SingleManipulator alongside the end_effector_prim_name
