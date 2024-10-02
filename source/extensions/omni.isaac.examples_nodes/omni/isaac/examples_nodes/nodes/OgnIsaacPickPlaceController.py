@@ -7,12 +7,16 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+from isaacsim.robot.manipulators.examples.franka.controllers.pick_place_controller import (
+    PickPlaceController as PickPlaceControllerFranka,
+)
+from isaacsim.robot.manipulators.examples.franka.franka import Franka
+from isaacsim.robot.manipulators.examples.universal_robots.controllers.pick_place_controller import (
+    PickPlaceController as PickPlaceControllerUR,
+)
+from isaacsim.robot.manipulators.examples.universal_robots.ur10 import UR10
 from omni.isaac.core_nodes import BaseResetNode
 from omni.isaac.examples_nodes.ogn.OgnIsaacPickPlaceControllerDatabase import OgnIsaacPickPlaceControllerDatabase
-from omni.isaac.franka.controllers.pick_place_controller import PickPlaceController as PickPlaceControllerFranka
-from omni.isaac.franka.franka import Franka
-from omni.isaac.universal_robots.controllers.pick_place_controller import PickPlaceController as PickPlaceControllerUR
-from omni.isaac.universal_robots.ur10 import UR10
 
 
 class OgnIsaacPickPlaceControllerInternalState(BaseResetNode):

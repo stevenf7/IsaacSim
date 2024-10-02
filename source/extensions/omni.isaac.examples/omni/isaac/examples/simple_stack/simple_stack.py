@@ -7,9 +7,9 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+from isaacsim.robot.manipulators.examples.franka.controllers.stacking_controller import StackingController
+from isaacsim.robot.manipulators.examples.franka.tasks import Stacking
 from omni.isaac.examples.base_sample import BaseSample
-from omni.isaac.franka.controllers.stacking_controller import StackingController
-from omni.isaac.franka.tasks import Stacking
 
 
 class SimpleStack(BaseSample):

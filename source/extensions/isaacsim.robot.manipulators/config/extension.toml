@@ -1,0 +1,39 @@
+[manipulators]
+reloadable = true
+order = 0
+
+[package]
+version = "3.0.0"
+category = "Simulation"
+title = "Isaac Sim Manipulators"
+description = "Manipulators"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot.manipulators"
+keywords = ["isaac", "manipulators"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+icon = "data/icon.png"
+preview_image = "data/preview.png"
+writeTarget.kit = true
+
+[dependencies]
+"omni.isaac.core" = {}
+"omni.isaac.core_nodes" = {}
+"isaacsim.robot.surface_gripper" = {}
+
+[[python.module]]
+name = "isaacsim.robot.manipulators"
+
+[[python.module]]
+name = "isaacsim.robot.manipulators.tests"
+
+[fswatcher.patterns]
+include = ["*.ogn", "*.py"]
+exclude = ["Ogn*Database.py"]
+
+[[test]]
+timeout = 1200
+
+stdoutFailPatterns.exclude = [
+    "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_robots_manipulators_IsaacGripperController: [/TestGraph] OmniGraph Error: No robot prim found for the articulation controller*",
+]

@@ -19,7 +19,7 @@ writeTarget.kit = true
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.core.api" = {}
-"omni.isaac.franka" = {}
+"isaacsim.robot.manipulators.examples" = {}
 "omni.isaac.motion_generation" = {}
 "omni.isaac.nucleus" = {}
 

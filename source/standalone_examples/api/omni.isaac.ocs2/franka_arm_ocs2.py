@@ -35,7 +35,7 @@ from isaacsim.core.api.utils.viewports import set_camera_view
 from isaacsim.core.api.world import World
 
 # isaac-franka
-from omni.isaac.franka import Franka
+from isaacsim.robot.manipulators.examples.franka import Franka
 
 # isaac-ocs2
 enable_extension("isaacsim.robot_motion.ocs2")
