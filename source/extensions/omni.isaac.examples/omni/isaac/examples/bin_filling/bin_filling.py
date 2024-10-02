@@ -9,9 +9,9 @@
 
 import numpy as np
 from isaacsim.core.api.utils.rotations import euler_angles_to_quat
+from isaacsim.robot.manipulators.examples.universal_robots.controllers.pick_place_controller import PickPlaceController
+from isaacsim.robot.manipulators.examples.universal_robots.tasks import BinFilling as BinFillingTask
 from omni.isaac.examples.base_sample import BaseSample
-from omni.isaac.universal_robots.controllers.pick_place_controller import PickPlaceController
-from omni.isaac.universal_robots.tasks import BinFilling as BinFillingTask
 
 
 class BinFilling(BaseSample):

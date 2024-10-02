@@ -7,9 +7,9 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+from isaacsim.robot.manipulators.examples.franka.controllers.rmpflow_controller import RMPFlowController
+from isaacsim.robot.manipulators.examples.franka.tasks import FollowTarget as FollowTargetTask
 from omni.isaac.examples.base_sample import BaseSample
-from omni.isaac.franka.controllers.rmpflow_controller import RMPFlowController
-from omni.isaac.franka.tasks import FollowTarget as FollowTargetTask
 
 
 class FollowTarget(BaseSample):

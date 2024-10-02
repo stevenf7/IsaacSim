@@ -1,0 +1,9 @@
+# Changelog
+
+## [1.0.0] - 2024-09-30
+### Changed
+- extension renamed to isaacsim.robot.manipulators.examples (from omni.isaac.manipulators.examples)
+
+## [0.1.0] - 2024-08-09
+### Added
+- franka and universal_robots folder

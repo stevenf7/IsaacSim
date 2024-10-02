@@ -9,12 +9,16 @@
 
 import carb
 import numpy as np
+from isaacsim.robot.manipulators.examples.franka.controllers.stacking_controller import (
+    StackingController as FrankaStackingController,
+)
+from isaacsim.robot.manipulators.examples.franka.tasks import Stacking as FrankaStacking
+from isaacsim.robot.manipulators.examples.universal_robots.controllers import (
+    StackingController as UR10StackingController,
+)
+from isaacsim.robot.manipulators.examples.universal_robots.tasks import Stacking as UR10Stacking
 from omni.isaac.examples.base_sample import BaseSample
-from omni.isaac.franka.controllers.stacking_controller import StackingController as FrankaStackingController
-from omni.isaac.franka.tasks import Stacking as FrankaStacking
 from omni.isaac.nucleus import get_assets_root_path
-from omni.isaac.universal_robots.controllers import StackingController as UR10StackingController
-from omni.isaac.universal_robots.tasks import Stacking as UR10Stacking
 from omni.isaac.wheeled_robots.controllers.differential_controller import DifferentialController
 from omni.isaac.wheeled_robots.controllers.holonomic_controller import HolonomicController
 from omni.isaac.wheeled_robots.robots import WheeledRobot

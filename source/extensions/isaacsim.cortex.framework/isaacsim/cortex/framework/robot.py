@@ -64,7 +64,7 @@ from isaacsim.cortex.framework.commander import Commander
 from isaacsim.cortex.framework.cortex_utils import get_assets_root_path_or_die
 from isaacsim.cortex.framework.cortex_world import CommandableArticulation, CortexWorld
 from isaacsim.cortex.framework.motion_commander import CortexObstacleType, MotionCommander
-from omni.isaac.manipulators.grippers.surface_gripper import SurfaceGripper
+from isaacsim.robot.manipulators.grippers.surface_gripper import SurfaceGripper
 from omni.isaac.motion_generation.articulation_motion_policy import ArticulationMotionPolicy
 from omni.isaac.motion_generation.lula.motion_policies import RmpFlow, RmpFlowSmoothed
 

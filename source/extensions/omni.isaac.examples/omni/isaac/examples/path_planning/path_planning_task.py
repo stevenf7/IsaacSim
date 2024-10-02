@@ -19,7 +19,7 @@ from isaacsim.core.api.utils.prims import is_prim_path_valid
 from isaacsim.core.api.utils.rotations import euler_angles_to_quat
 from isaacsim.core.api.utils.stage import get_stage_units
 from isaacsim.core.api.utils.string import find_unique_string_name
-from omni.isaac.franka import Franka
+from isaacsim.robot.manipulators.examples.franka import Franka
 
 
 class PathPlanningTask(BaseTask):

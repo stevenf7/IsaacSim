@@ -146,7 +146,7 @@ class PickPlace(ABC, BaseTask):
         return
 
     def post_reset(self) -> None:
-        from omni.isaac.manipulators.grippers.parallel_gripper import ParallelGripper
+        from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGripper
 
         if isinstance(self._robot.gripper, ParallelGripper):
             self._robot.gripper.set_joint_positions(self._robot.gripper.joint_opened_positions)

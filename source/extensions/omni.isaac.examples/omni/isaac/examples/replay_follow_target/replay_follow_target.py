@@ -9,8 +9,8 @@
 
 import numpy as np
 from isaacsim.core.api.utils.types import ArticulationAction
+from isaacsim.robot.manipulators.examples.franka.tasks import FollowTarget as FollowTargetTask
 from omni.isaac.examples.base_sample import BaseSample
-from omni.isaac.franka.tasks import FollowTarget as FollowTargetTask
 
 
 class ReplayFollowTarget(BaseSample):

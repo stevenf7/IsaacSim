@@ -214,7 +214,7 @@
 ### Changed
 
 - Changed gripper_controller argument to gripper in the PickPlaceController.
-- moved PickPlaceController and StackingController to omni.isaac.manipulators
+- moved PickPlaceController and StackingController to isaacsim.robot.manipulators
 
 ## [3.4.0] - 2022-07-20
 
