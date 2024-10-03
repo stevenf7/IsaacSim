@@ -995,7 +995,7 @@ url = "https://gitlab-master.nvidia.com/omniverse/ov-create/-/raw/release/2024.1
 # please provide extensions in the format "extension.name-version" or {dep = "extension.name-version", tag = "tag"}
 deps_for_isaac = [
   "omni.replicator.replicator_yaml-2.0.6",
-  "omni.replicator.core-1.11.20",
+  "omni.replicator.core-1.11.22",
   "omni.net-0.0.1-isaac-1",
   "omni.sensors.tiled-0.0.6",
   "omni.sensors.nv.camera-0.10.0-isaac-1",
