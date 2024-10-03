@@ -144,7 +144,7 @@ class TestArticulationOther(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(0, dof_states["vel"][right_dof_idx], delta=0.01)
 
         # spin at slow velocity
-        drive_target = 0.05
+        drive_target = 0.1
         self._dc.wake_up_articulation(art)
         self._dc.set_dof_velocity_target(left_wheel_ptr, -drive_target)
         self._dc.set_dof_velocity_target(right_wheel_ptr, drive_target)

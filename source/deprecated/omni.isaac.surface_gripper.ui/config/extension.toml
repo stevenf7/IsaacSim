@@ -20,7 +20,7 @@ writeTarget.kit = true
 
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
-"isaacsim.ros2.bridge" = {}
+"isaacsim.robot.surface_gripper.ui" = {}
 
 [[python.module]]
 name = "omni.isaac.ros2_bridge.robot_description"
