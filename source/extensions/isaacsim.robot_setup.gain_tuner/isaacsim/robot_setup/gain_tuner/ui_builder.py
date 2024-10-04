@@ -419,7 +419,7 @@ class UIBuilder:
         overview += "gains test. Try running both tests to understand more."
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.gain_tuner")
+        ext_id = ext_manager.get_enabled_extension_id("isaacsim.robot_setup.gain_tuner")
 
         setup_ui_headers(ext_id, __file__, title, doc_link, overview)
 

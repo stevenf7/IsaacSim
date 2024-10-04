@@ -1,4 +1,8 @@
 # Changelog
+## [2.0.0] - 2024-10-01
+### Deprecated
+- Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.robot_setup.gain_tuner.
+
 ## [1.1.2] - 2024-06-13
 ### Fixed
 - Fixed bug where robot with zero-gains causes a math error in trying to take log(0).

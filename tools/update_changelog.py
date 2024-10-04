@@ -17,6 +17,7 @@ changelog_text = [f"### Fixed", f"- onclick_fn warning when creating UI"]
 
 extensions = [
     "isaacsim.asset.conveyor",
+    "isaacsim.robot_setup.gain_tuner",
     "isaacsim.ros2.bridge",
     "isaacsim.sensors.camera",
     "isaacsim.sensors.physics",
@@ -28,7 +29,6 @@ extensions = [
     "omni.isaac.assets_check",
     "omni.isaac.examples",
     "omni.isaac.extension_templates",
-    "omni.isaac.gain_tuner",
     "omni.isaac.occupancy_map",
     "omni.isaac.physics_inspector",
     "omni.isaac.physics_utilities",
