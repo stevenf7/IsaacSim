@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.0.0] - 2024-10-01
+### Deprecated
+- Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.gui.robot_wizard
+
 ## [0.5.3] - 2024-09-28
 ### Changed
 - Merge Mesh extension renaming
