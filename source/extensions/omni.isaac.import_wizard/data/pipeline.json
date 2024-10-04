@@ -137,7 +137,7 @@
     "Gain Tuner":
     {
         "App Name": "Gain Tuner",
-        "Extension":"omni.isaac.gain_tuner",
+        "Extension":"isaacsim.robot_setup.gain_tuner",
         "Window": 1,
         "Summary":"Tune gain parameters for a simulated Articulation asset.",
         "Basic Instructions":"Unlike many platforms for robot simulation, an Articulation in Isaac Sim is physically simulated with tunable parameters.  I.e. it does not simply teleport to the commanded position; there are proportional and damping gains for each joint driving them to the desired positions and determining the dynamics of interaction with the environment.  A common source of issues with a new asset in Isaac Sim is poorly-tuned gains.\n\nThe Gain Tuner allows you to visualize the performance of the current gains and helps you to quickly tune the asset to have desirable behavior.  The default desirable outcome is for the joint position tracking to be near-perfect, which can usually be acheived by simply clicking the `Set Stiff Gains` button.  The potential downside to stiff gains is that the robot will have no compliance when colliding with the environment.",
@@ -146,7 +146,7 @@
         "Resources":{
             "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/features/robots_simulation/ext_omni_isaac_gain_tuner.html",
             "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/features/robots_simulation/ext_omni_isaac_gain_tuner.html#tutorials-examples",
-            "Script Folder": "omni.isaac.gain_tuner"
+            "Script Folder": "isaacsim.robot_setup.gain_tuner"
         }
     },
 
