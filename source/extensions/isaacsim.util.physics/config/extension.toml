@@ -1,0 +1,28 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "1.0.0"
+category = "Simulation"
+title = "Isaac Sim Physics Utilities"
+description = "Collision and Physics Utils"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.util.physics"
+keywords = ["isaac", "physics", "utils",]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+icon = "data/icon.png"
+preview_image = "data/preview.png"
+writeTarget.kit = true
+
+[dependencies]
+"omni.physx" = {}
+"omni.isaac.ui" = {}
+"isaacsim.core.deprecation_manager" = {}
+
+[[python.module]]
+name = "isaacsim.util.physics"
+
+[[python.module]]
+name = "isaacsim.util.physics.tests"

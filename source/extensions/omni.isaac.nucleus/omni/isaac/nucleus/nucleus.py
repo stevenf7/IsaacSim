@@ -20,8 +20,8 @@ import carb
 
 # omniverse
 import omni.client
+from isaacsim.core.version import get_version
 from omni.client._omniclient import CopyBehavior, Result
-from omni.isaac.version import get_version
 
 
 class Version(namedtuple("Version", "major minor patch")):

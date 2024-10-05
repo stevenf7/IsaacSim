@@ -253,7 +253,7 @@ class SimulationApp:
 
         # Set the window title to something simpler
         try:
-            from omni.isaac.version import get_version
+            from isaacsim.core.version import get_version
             from omni.kit.window.title import get_main_window_title
 
             window_title = get_main_window_title()

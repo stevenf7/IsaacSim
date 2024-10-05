@@ -276,8 +276,8 @@ sphinx_exclude_patterns = [
     "**/omni.isaac.app.selector",
     "**/omni.isaac.app.setup",
     "**/omni.isaac.assets_check",
-    "**/omni.isaac.asset_browser",
     "**/isaacsim.util.internal",
+    "**/isaacsim.asset.browser",
     "**/omni.isaac.core_archive",
     "**/omni.isaac.ml_archive",
     "**/omni.pip.compute",
@@ -663,8 +663,7 @@ include = [
 name = "8"
 include = [
   "tests-isaacsim.gui.menu*${shell_ext}",
-  "tests-omni.isaac.asset_browser*${shell_ext}",
-]
+  "tests-isaacsim.asset.browser*${shell_ext}",]
 [[repo_test.suites.pythontests.bucket]]
 name = "9"
 include = ["*"]

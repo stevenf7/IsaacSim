@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.8.3] - 2024-09-23
+### Changes
+- Update dependency omni.isaac.version to isaacsim.core.version
+
 ## [2.8.2] - 2024-09-02
 ### Fixed
 - Spelling mistake in UI

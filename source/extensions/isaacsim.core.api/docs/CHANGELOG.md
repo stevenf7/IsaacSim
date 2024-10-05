@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.0.1] - 2024-10-03
+### Changed
+- Updated omni.isaac.version dependency to isaacsim.core.version
+
 ## [4.0.0] - 2024-09-25
 ### Changed
 - Extension renamed to isaacsim.core.api.

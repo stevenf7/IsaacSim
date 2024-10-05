@@ -1,4 +1,7 @@
 # Changelog
+## [2.0.1] - 2024-10-04
+### Changed
+- Updated omni.isaac.version dependency to isaacsim.core.version
 
 ## [2.0.0] - 2024-09-27
 ### Changed

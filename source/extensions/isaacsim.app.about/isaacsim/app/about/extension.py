@@ -15,8 +15,8 @@ import omni.client
 import omni.ext
 import omni.kit.app
 import omni.kit.ui
+from isaacsim.core.version import get_version
 from omni import ui
-from omni.isaac.version import get_version
 
 WINDOW_NAME = "About"
 DISCONNECTED = "** disconnected **"

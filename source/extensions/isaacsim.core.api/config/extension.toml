@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "4.0.0"
+version = "4.0.1"
 category = "Simulation"
 title = "Isaac Sim Core"
 description = "Core"
@@ -25,7 +25,7 @@ writeTarget.kit = true
 "omni.physx.tensors" = {}
 "omni.kit.usd.layers" = {}
 "omni.kit.material.library" = {optional = true} # OmniGlass
-"omni.isaac.version" = {}
+"isaacsim.core.version" = {}
 "omni.warp.core" = {}
 "omni.physx.stageupdate" = {}
 "omni.usd.schema.semantics" = {}

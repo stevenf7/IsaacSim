@@ -23,8 +23,8 @@ import omni.kit.stage_templates as stage_templates
 import omni.kit.ui
 import omni.ui as ui
 from carb.input import KeyboardInput as Key
+from isaacsim.core.version import get_version
 from omni.client._omniclient import CopyBehavior, Result
-from omni.isaac.version import get_version
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from omni.kit.window.title import get_main_window_title
 

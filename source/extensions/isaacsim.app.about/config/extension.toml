@@ -1,5 +1,5 @@
 [package]
-version = "1.0.0"
+version = "2.0.1"
 category = "Internal"
 title = "Isaac Sim About Window"
 description="Show application/build information."
@@ -19,7 +19,7 @@ icon = "data/icon.png"
 # "omni.kit.renderer.core" = {}
 # "omni.kit.renderer.capture" = {}
 # "omni.kit.pip_archive" = {} # pulls in pyperclip
-"omni.isaac.version" = {}
+"isaacsim.core.version" = {}
 
 [[python.module]]
 name = "isaacsim.app.about"

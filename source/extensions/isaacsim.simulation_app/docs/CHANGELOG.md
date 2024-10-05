@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.1] - 2024-10-02
+### Changes
+- Update dependency omni.isaac.version to isaacsim.core.version
+
 ## [2.0.0] - 2024-09-24
 ### Changed
 - Extension renamed to isaacsim.simulation_app

@@ -15,7 +15,7 @@ import carb.tokens
 import carb.windowing
 import omni.ext
 import omni.kit.app
-from omni.isaac.version import get_version
+from isaacsim.core.version import get_version
 
 from .selector_window import SelectorWindow
 from .settings import (

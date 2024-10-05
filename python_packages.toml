@@ -124,10 +124,10 @@ inventory.include = [
     # extensions
     "exts/omni.isaac.app.selector",
     "exts/omni.isaac.app.setup",
-    "exts/omni.isaac.version",
+    "exts/isaacsim.core.version",
     "exts/isaacsim.app.about",
     # deprecated
-     "extsDeprecated/omni.isaac.window.about",
+    "extsDeprecated/omni.isaac.window.about",
     # others
     "VERSION",
 ]
@@ -149,9 +149,10 @@ inventory.include = [
     "LICENSE.txt",
     # extensions
     "exts/isaacsim.asset.exporter.urdf",
-    "exts/omni.isaac.asset_browser",
+    "exts/isaacsim.asset.browser",
+    "exts/omni.exporter.urdf",
     "exts/omni.isaac.assets_check",
-    "exts/omni.isaac.block_world",
+    "exts/isaacsim.asset.importer.heightmap",
     "exts/isaacsim.asset.conveyor.ui",
     "exts/isaacsim.asset.conveyor",
     "exts/omni.isaac.occupancy_map.ui",
@@ -160,7 +161,7 @@ inventory.include = [
     "extsDeprecated/omni.exporter.urdf",
     "extsDeprecated/omni.isaac.conveyor.ui",
     "extsDeprecated/omni.isaac.conveyor",
-    
+    "extsDeprecated/omni.isaac.asset_browser",    
 ]
 
 [isaacsim-benchmark]
@@ -230,7 +231,7 @@ inventory.include = [
     "exts/omni.isaac.kit",
     "exts/omni.isaac.throttling",
     "exts/omni.isaac.utils",
-    "exts/omni.isaac.version",
+    "exts/isaacsim.core.version",
     "exts/omni.kit.loop-isaac",
     # deprecated extensions
     "extsDeprecated/omni.isaac.core",
@@ -272,7 +273,9 @@ inventory.include = [
     # extensions
     "exts/omni.isaac.examples",
     "exts/omni.isaac.examples_nodes",
-    "exts/omni.isaac.ui_template",
+    "exts/isaacsim.examples.ui",
+    # deprecated extensions
+    "extsDeprecated/omni.isaac.ui_template",
 ]
 
 [isaacsim-gui]
@@ -496,7 +499,7 @@ inventory.include = [
     "LICENSE.txt",
     # extensions
     "exts/omni.isaac.nucleus",
-    "exts/omni.isaac.version",
+    "exts/isaacsim.core.version",
     # others
     "VERSION",
 ]
@@ -514,7 +517,9 @@ inventory.include = [
     # license
     "LICENSE.txt",
     # extensions
-    "exts/omni.isaac.extension_templates",
+    "exts/isaacsim.examples.extension",
+    # deprecated
+    "extsDeprecated/omni.isaac.extension_templates",
 ]
 
 [isaacsim-test]
@@ -549,8 +554,9 @@ inventory.include = [
     # extensions
     "exts/omni.isaac.debug_draw",
     "exts/isaac.util.merge_mesh",
-    "exts/omni.isaac.physics_utilities",
+    "exts/isaacsim.util.physics",
     "exts/omni.isaac.grasp_editor",
     # deprecated extensions
-     "extsDeprecated/omni.isaac.merge_mesh",
+    "extsDeprecated/omni.isaac.merge_mesh",
+    "extsDeprecated/omni.isaac.physics_utilities",
 ]
