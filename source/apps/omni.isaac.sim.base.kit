@@ -8,11 +8,14 @@ keywords = ["experience", "app", "usd"]
 
 [dependencies]
 # Isaac Sim extensions
+"isaacsim.asset.importer.heightmap" = {}
 "isaacsim.app.about" = {}
 "isaacsim.core.cloner" = {}
 "isaacsim.core.api" = {}
 "isaacsim.core.deprecation_manager" = { order = -100 }
 "isaacsim.core.throttling" = {}
+"isaacsim.core.version" = {}
+"isaacsim.examples.extension" = {}
 "isaacsim.gui.property" = {}
 "isaacsim.robot.manipulators.examples" = {}
 "isaacsim.robot.manipulators.ui" = {}
@@ -34,8 +37,9 @@ keywords = ["experience", "app", "usd"]
 "isaacsim.robot.surface_gripper.ui" = {}
 "isaacsim.robot.surface_gripper" = {}
 "isaacsim.util.merge_mesh" = {}
+"isaacsim.asset.browser" = {}
+"isaacsim.util.physics" = {}
 "omni.isaac.app.setup" = { order = 1000 }
-"omni.isaac.asset_browser" = {}
 "omni.isaac.assets_check" = { order = 1001 }
 "omni.isaac.block_world" = {}
 "omni.isaac.camera_inspector" = {}
@@ -56,7 +60,6 @@ keywords = ["experience", "app", "usd"]
 "omni.isaac.occupancy_map.ui" = {}
 "omni.isaac.occupancy_map" = {}
 "omni.isaac.physics_inspector" = {}
-"omni.isaac.physics_utilities" = {}
 "omni.isaac.quadruped" = {}
 "omni.isaac.range_sensor.examples" = {}
 "omni.isaac.range_sensor.ui" = {}
@@ -465,7 +468,7 @@ persistent.isaac.asset_root.nvidia = "omniverse://isaac-dev.ov.nvidia.com/NVIDIA
 persistent.isaac.asset_root.isaac = "omniverse://isaac-dev.ov.nvidia.com/Isaac"
 persistent.isaac.asset_root.cloud = "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"
 
-exts."omni.isaac.asset_browser".folders = [
+exts."isaacsim.asset.browser".folders = [
     "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Robots",
     "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/People",
     "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Props",

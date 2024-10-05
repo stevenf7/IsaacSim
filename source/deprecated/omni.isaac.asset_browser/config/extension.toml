@@ -1,0 +1,59 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "1.0.0"
+category = "Rendering"
+title = "Isaac Sim Asset Browser"
+description = "A browser for Isaac Sim assets"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/omni.isaac.asset_browser"
+keywords = ["isaac", "browser", "asset"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.svg"
+feature = true
+# writeTarget.kit = true
+
+[dependencies]
+"isaacsim.core.deprecation_manager" = {}
+"isaacsim.asset.browser" = {}
+
+# Main python module this extension provides, it will be publicly available as "import omni.isaac.asset_browser".
+[[python.module]]
+name = "omni.isaac.asset_browser"
+
+[settings]
+exts."omni.isaac.asset_browser".folders = [
+    "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Robots",
+    "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/People",
+    "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/IsaacLab",
+    "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Props",
+    "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Environments",
+    "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Materials",
+    "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Samples",
+    "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Sensors",
+]
+exts."isaacsim.asset.browser".instanceable = []
+exts."isaacsim.asset.browser".data.timeout = 10
+exts."isaacsim.asset.browser".visible_after_startup = true
+
+[[trigger]]
+menu.name = "Window/Browsers/Isaac"
+menu.window = "Isaac Assets (Beta)"
+
+args = [
+    "--/app/window/dpiScaleOverride=1.0",
+    "--/app/window/scaleToMonitor=false",
+    "--/app/menu/legacy_mode=false",
+    "--/exts/omni.kit.browser.asset/folders/0='http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Robots'",
+    "--/exts/omni.kit.browser.asset/folders/1=''",
+    "--/exts/omni.kit.browser.asset/folders/2=''",
+    "--/exts/omni.kit.browser.asset/visible_after_startup=true",
+]
+
+
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.asset.browser."

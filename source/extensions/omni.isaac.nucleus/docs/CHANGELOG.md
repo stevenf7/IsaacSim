@@ -4,6 +4,7 @@
 
 ### Changed
 - Updated to 4.5 asset path
+- Updated omni.isaac.version dependency to isaacsim.core.version
 
 ## [0.3.1] - 2024-08-05
 

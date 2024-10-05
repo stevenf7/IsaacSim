@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.14.2] - 2024-10-02
+### Changes
+- Update dependency omni.isaac.version to isaacsim.core.version
+
 ## [0.14.1] - 2024-09-27
 ### Fixed
 - Missing keyboard bindings for layout menu items
