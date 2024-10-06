@@ -72,7 +72,7 @@ class Extension(omni.ext.IExt):
                 overview = "This sample demonstrates the Generic range sensor python API for Isaac Sim. It shows how to create an Generic Range Sensor, set its properties, and read data streaming from it. "
                 overview += "First press the 'Load Sensor' button and then press PLAY to simulate."
                 overview += "\n\nPress the 'Open in IDE' button to view the source code."
-                overview += "\nNote: The buttons above only work with an Ultrasonic sensor made by the 'Load Sensor' button; not existing ones in the stage."
+                overview += "\nNote: The buttons above only work with an Generic range sensor made by the 'Load Sensor' button; not existing ones in the stage."
 
                 setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
 

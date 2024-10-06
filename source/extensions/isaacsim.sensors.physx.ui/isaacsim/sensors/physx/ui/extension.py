@@ -21,7 +21,6 @@ from .menu import RangeSensorMenu
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         self._lidar = _range_sensor.acquire_lidar_sensor_interface()
-        self._ultrasonic = _range_sensor.acquire_ultrasonic_sensor_interface()
         self._generic = _range_sensor.acquire_generic_sensor_interface()
 
         self._menu = RangeSensorMenu(ext_id)
@@ -42,7 +41,6 @@ class Extension(omni.ext.IExt):
         self._menu = None
 
         _range_sensor.release_lidar_sensor_interface(self._lidar)
-        _range_sensor.release_ultrasonic_sensor_interface(self._ultrasonic)
         _range_sensor.release_generic_sensor_interface(self._generic)
 
     def _register_property_menu(self):
@@ -55,10 +53,6 @@ class Extension(omni.ext.IExt):
             self._menu_button1 = None
             carb.log_error("context_menu is disabled!")
             return None
-
-        self._menu_button1 = PrimPathWidget.add_button_menu_entry(
-            "USS Material", show_fn=partial(self._is_material), onclick_fn=partial(self._apply_uss_material)
-        )
 
     def _unregister_property_menu(self):
         # prevent unregistering multiple times
@@ -82,14 +76,3 @@ class Extension(omni.ext.IExt):
                         return True
 
         return False
-
-    def _apply_uss_material(self, payload):
-        stage = payload.get_stage()
-        if stage:
-            selected_prims = omni.usd.get_context().get_selection().get_selected_prim_paths()
-            for prim_path in selected_prims:
-                prim = stage.GetPrimAtPath(prim_path)
-                RangeSensorSchema.UltrasonicMaterialAPI.Apply(prim)
-        else:
-            carb.log_error("_apply_uss_material stage not found")
-        return

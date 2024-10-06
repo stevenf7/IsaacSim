@@ -1,7 +1,7 @@
 PhysX Sensor Model Extension [isaacsim.sensors.physx]
 #######################################################
 
-This extension provides a set of simulated range based sensors like lidar, ultrasonic, & generic, and interfaces to access them in the simulator.
+This extension provides a set of simulated range based sensors like lidar, lightbeam, and a generic raycast-based PhysX sensor, and interfaces to access them in the simulator.
 
 Lidar Sensor
 ============
@@ -25,39 +25,6 @@ It is also recommended to use the `is_lidar_sensor` function to check if a lidar
 .. automethod:: isaacsim.sensors.physx._range_sensor.release_lidar_sensor_interface
 
 .. autoclass:: isaacsim.sensors.physx._range_sensor.LidarSensorInterface
-    :members:
-    :undoc-members:
-    :exclude-members:
-
-Ultrasonic Sensor
-=================
-
-.. warning::
-
-    The ultrasonic sensor is deprecated and will be removed in a future release.
-
-This submodule provides an interface to a simulated ultrasonic sensor.
-
-.. automethod:: isaacsim.sensors.physx.commands.RangeSensorCreateUltrasonicArray
-.. automethod:: isaacsim.sensors.physx.commands.RangeSensorCreateUltrasonicEmitter
-.. automethod:: isaacsim.sensors.physx.commands.RangeSensorCreateUltrasonicFiringGroup
-
-**Example**
-
-To use this interface, you must first call the acquire interface function.
-It is also recommended to use the `is_ultrasonic_sensor` function to check if a ultrasonic sensor exists at the given USD path
-
-.. code-block:: python
-
-    from isaacsim.sensors.physx._range_sensor import acquire_ultrasonic_sensor_interface
-    ultrasonic_sensor_interface = acquire_ultrasonic_sensor_interface()
-    if ultrasonic_sensor_interface.is_ultrasonic_sensor("/World/UltrasonicArray"):
-        print("ultrasonic sensor is valid")
-
-.. automethod:: isaacsim.sensors.physx._range_sensor.acquire_ultrasonic_sensor_interface
-.. automethod:: isaacsim.sensors.physx._range_sensor.release_ultrasonic_sensor_interface
-
-.. autoclass:: isaacsim.sensors.physx._range_sensor.UltrasonicSensorInterface
     :members:
     :undoc-members:
     :exclude-members:

@@ -59,7 +59,6 @@ stdoutFailPatterns.exclude = [
     '*[Error] [isaacsim.sensors.physics.plugin] Imu Sensor does not exist*',
     '*[Error] [isaacsim.sensors.physics.plugin] Contact Sensor does not exist*',
     '*[Error] [carb] [Plugin: omni.sensors.nv.lidar.ext.plugin] Dependency: [omni::sensors::lidar::IGenericModelOutputIOFactory v0.1] failed to be resolved.*', # feature not included in Windows
-    '*[Error] [isaacsim.sensors.physx.plugin] Ultrasonic Sensor does not exist*',
     '*[Error] [isaacsim.sensors.physx.plugin] Lidar Sensor does not exist*',
     '*[Error] [isaacsim.sensors.physx.plugin] Generic Sensor does not exist*',
     '*[Error] [omni.kit.commands.command] Failed to execute a command: ChangeProperty*',

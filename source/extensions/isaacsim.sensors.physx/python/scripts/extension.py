@@ -21,7 +21,6 @@ class Extension(omni.ext.IExt):
         self._physics_step_subscription = get_physx_interface().subscribe_physics_step_events(self._on_update)
         self._proximity_sensor_manager = ProximitySensorManager()  # Store instance to sensor manager singleton
         self._lidar = _range_sensor.acquire_lidar_sensor_interface()
-        self._ultrasonic = _range_sensor.acquire_ultrasonic_sensor_interface()
         self._generic = _range_sensor.acquire_generic_sensor_interface()
         self._lightbeam = _range_sensor.acquire_lightbeam_sensor_interface()
 
@@ -33,7 +32,6 @@ class Extension(omni.ext.IExt):
 
         # Release sensor interfaces
         _range_sensor.release_lidar_sensor_interface(self._lidar)
-        _range_sensor.release_ultrasonic_sensor_interface(self._ultrasonic)
         _range_sensor.release_generic_sensor_interface(self._generic)
         _range_sensor.release_lightbeam_sensor_interface(self._lightbeam)
 

@@ -10,4 +10,3 @@
 from .test_generic import *
 from .test_lidar import *
 from .test_lightbeam_sensor import *
-from .test_ultrasonic import *

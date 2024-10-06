@@ -17,11 +17,4 @@ carb.log_warn(
     f"{old_extension_name}.commands has been deprecated in favor of {new_extension_name}.commands. Please update your code accordingly."
 )
 
-from isaacsim.sensors.physx import (
-    RangeSensorCreateGeneric,
-    RangeSensorCreateLidar,
-    RangeSensorCreatePrim,
-    RangeSensorCreateUltrasonicArray,
-    RangeSensorCreateUltrasonicEmitter,
-    RangeSensorCreateUltrasonicFiringGroup,
-)
+from isaacsim.sensors.physx import RangeSensorCreateGeneric, RangeSensorCreateLidar, RangeSensorCreatePrim

@@ -27,9 +27,6 @@ name = "omni.isaac.range_sensor.examples"
 name = "omni.isaac.range_sensor.examples.lidar_info"
 
 [[python.module]]
-name = "omni.isaac.range_sensor.examples.ultrasonic_info"
-
-[[python.module]]
 name = "omni.isaac.range_sensor.examples.generic_info"
 
 [deprecation]
