@@ -87,7 +87,7 @@ EXPOSE 47995-48012/udp \
 WORKDIR /isaac-sim
 
 # Add symlink
-RUN ln -s exts/omni.isaac.examples/omni/isaac/examples extension_examples
+RUN ln -s exts/isaacsim.examples.interactive/isaacsim/examples/interactive extension_examples
 
 # Default entrypoint to launch headless with streaming
 ENTRYPOINT ./isaac-sim.headless.native.sh --/persistent/isaac/asset_root/default="${OMNI_SERVER_ENV}" --allow-root

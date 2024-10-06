@@ -74,7 +74,7 @@ ENV MIN_DRIVER_VERSION 525.60.11
 WORKDIR /isaac-sim
 
 # Add symlink
-RUN ln -s exts/omni.isaac.examples/omni/isaac/examples extension_examples
+RUN ln -s exts/isaacsim.examples.interactive/isaacsim/examples/interactive extension_examples
 
 # Create aliases
 RUN echo '#! /bin/sh' > runapp.sh && \

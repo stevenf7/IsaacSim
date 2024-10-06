@@ -12,7 +12,7 @@ else
     echo Creating extension_examples symlink...
     pushd ${SCRIPT_DIR}
     if [ ! -L extension_examples ] && [ ! -e extension_examples ]; then
-        ln -s exts/omni.isaac.examples/omni/isaac/examples extension_examples &>>${SCRIPT_DIR}/omni.isaac.sim.post.install.log
+        ln -s exts/isaacsim.examples.interactive/isaacsim/examples/interactive extension_examples &>>${SCRIPT_DIR}/omni.isaac.sim.post.install.log
         echo Symlink extension_examples created. &>>${SCRIPT_DIR}/omni.isaac.sim.post.install.log
     else
         echo Symlink or folder extension_examples exists. &>>${SCRIPT_DIR}/omni.isaac.sim.post.install.log

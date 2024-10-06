@@ -271,10 +271,12 @@ inventory.include = [
     # license
     "LICENSE.txt",
     # extensions
-    "exts/omni.isaac.examples",
-    "exts/omni.isaac.examples_nodes",
+    "exts/isaacsim.examples.interactive",
+    "exts/isaacsim.examples.extension",
     "exts/isaacsim.examples.ui",
     # deprecated extensions
+    "extsDeprecated/omni.isaac.examples",
+    "extsDeprecated/omni.isaac.examples_nodes",
     "extsDeprecated/omni.isaac.ui_template",
 ]
 
