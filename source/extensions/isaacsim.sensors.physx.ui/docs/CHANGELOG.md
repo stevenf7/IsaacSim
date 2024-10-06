@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.0] - 2024-10-04
+### Removed
+- Ultrasonic sensor UI elements
+
 ## [1.0.1] - 2024-07-17
 ### Fixed
 - missing omni.kit.context_menu dependency

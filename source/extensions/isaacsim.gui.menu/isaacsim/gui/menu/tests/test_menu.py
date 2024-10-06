@@ -52,7 +52,6 @@ class TestMenuAssets(OmniUiTest):
         window = get_main_window()
         self.menu_dict = await get_context_menu(window._ui_main_window.main_menu_bar, get_all=False)
         self.lidar_sensor_interface = _range_sensor.acquire_lidar_sensor_interface()
-        self.ultrasonic_sensor_interface = _range_sensor.acquire_ultrasonic_sensor_interface()
         self.generic_sensor_interface = _range_sensor.acquire_generic_sensor_interface()
         self.contact_sensor_interface = _sensor.acquire_contact_sensor_interface()
         self.imu_sensor_interface = _sensor.acquire_imu_sensor_interface()
@@ -295,14 +294,13 @@ class TestMenuAssets(OmniUiTest):
             return result
 
         empty_list = []
-        skip_list = ["Create/Isaac/Sensors/Ultrasonic/Emitter", "Create/Isaac/Sensors/Ultrasonic/FiringGroup"]
+        skip_list = []
         failed_sensors = []
 
         # each type of sensor will get a different prim type test, RGBD and RTX will check for camera prim
         sensor_test_types = [
             "Rotating",
             "Generic",
-            "Ultrasonic",
             "Contact",
             "Imu",
             "Camera and Depth Sensors",
@@ -352,11 +350,6 @@ class TestMenuAssets(OmniUiTest):
                     sensor_passed = True
 
                 elif sensor_test == "Generic" and self.generic_sensor_interface.is_generic_sensor(get_prim_path(prim)):
-                    sensor_passed = True
-
-                elif sensor_test == "Ultrasonic" and self.ultrasonic_sensor_interface.is_ultrasonic_sensor(
-                    get_prim_path(prim)
-                ):
                     sensor_passed = True
 
                 elif sensor_test == "Contact" and self.contact_sensor_interface.is_contact_sensor(get_prim_path(prim)):

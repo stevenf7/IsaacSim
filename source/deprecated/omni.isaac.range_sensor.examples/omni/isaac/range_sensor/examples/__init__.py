@@ -19,4 +19,3 @@ carb.log_warn(
 
 from .generic_info import *
 from .lidar_info import *
-from .ultrasonic_info import *

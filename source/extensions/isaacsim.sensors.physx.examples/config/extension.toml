@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.1"
+version = "2.0.0"
 category = "Simulation"
 title = "Isaac Sim Range Sensor Examples"
 description = "Examples for the Range Sensor extension"
@@ -30,9 +30,6 @@ name = "isaacsim.sensors.physx.examples"
 
 [[python.module]]
 name = "isaacsim.sensors.physx.examples.lidar_info"
-
-[[python.module]]
-name = "isaacsim.sensors.physx.examples.ultrasonic_info"
 
 [[python.module]]
 name = "isaacsim.sensors.physx.examples.generic_info"

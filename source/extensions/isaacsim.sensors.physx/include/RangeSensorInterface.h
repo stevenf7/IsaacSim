@@ -47,30 +47,6 @@ struct LidarSensorInterface
     carb::Float2(CARB_ABI* getZenithRange)(const char* sensorPath);
 };
 
-struct UltrasonicSensorInterface
-{
-    CARB_PLUGIN_INTERFACE("isaacsim::sensors::physx::UltrasonicSensorInterface", 0, 1);
-    bool(CARB_ABI* isUSS)(const char* sensorPath);
-    int(CARB_ABI* getNumCols)(const char* sensorPath);
-    int(CARB_ABI* getNumRows)(const char* sensorPath);
-    int(CARB_ABI* getNumEmitters)(const char* sensorPath);
-    int(CARB_ABI* getNumColsTicked)(const char* sensorPath);
-    int(CARB_ABI* getNumBins)(const char* sensorPath);
-
-
-    uint16_t*(CARB_ABI* getDepthData)(const char* sensorPath, int emitterIndex);
-    float*(CARB_ABI* getLinearDepthData)(const char* sensorPath, int emitterIndex);
-    float*(CARB_ABI* getEnvelope)(const char* sensorPath, int emitterIndex);
-    std::vector<std::vector<float>>(CARB_ABI* getActiveEnvelopeArray)(const char* sensorPath);
-    std::vector<float>(CARB_ABI* getEnvelopeArrayFlattened)(const char* sensorPath);
-    uint8_t*(CARB_ABI* getIntensityData)(const char* sensorPath, int emitterIndex);
-    std::vector<carb::Int2>(CARB_ABI* getEmitterFiringInfo)(const char* sensorPath);
-    std::vector<carb::Int2>(CARB_ABI* getReceiverFiringInfo)(const char* sensorPath);
-    float*(CARB_ABI* getZenithData)(const char* sensorPath);
-    float*(CARB_ABI* getAzimuthData)(const char* sensorPath);
-    carb::Float3*(CARB_ABI* getPointCloud)(const char* sensorPath);
-};
-
 struct RadarSensorInterface
 {
     CARB_PLUGIN_INTERFACE("isaacsim::sensors::physx::RadarSensorInterface", 0, 1);

@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.1.0] - 2024-10-04
+### Removed
+- References to PhysX ultrasonic sensor
+
 ## [1.0.0] - 2024-09-30
 ### Changed
 - extension renamed to isaacsim.gui.menu

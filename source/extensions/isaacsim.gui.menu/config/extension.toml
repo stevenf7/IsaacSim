@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.0"
+version = "1.1.0"
 category = "Simulation"
 title = "Isaac Sim Menus"
 description = "Isaac Sim Utility Extensions"
@@ -44,7 +44,6 @@ stdoutFailPatterns.exclude = [
     '*[Error] [isaacsim.sensors.physics.plugin] Imu Sensor does not exist*',
     '*[Error] [isaacsim.sensors.physics.plugin] Contact Sensor does not exist*',
     '*[isaacsim.sensors.physics.plugin] Failed to create contact sensor, parent prim is not found or invalid*',
-    '*[Error] [isaacsim.sensors.physx.plugin] Ultrasonic Sensor does not exist*',
     '*[Error] [isaacsim.sensors.physx.plugin] Lidar Sensor does not exist*',
     '*[Error] [isaacsim.sensors.physx.plugin] Generic Sensor does not exist*',
     '*[Error] [omni.kit.commands.command] Failed to execute a command: ChangeProperty*',

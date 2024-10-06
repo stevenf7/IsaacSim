@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.1"
+version = "2.0.0"
 category = "Simulation"
 title = "Isaac Sim Range Sensor UI components"
 description = "UI components for the Range Sensor extension"

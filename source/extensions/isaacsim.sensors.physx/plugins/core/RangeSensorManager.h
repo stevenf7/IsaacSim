@@ -12,7 +12,6 @@
 #include "../generic/GenericSensor.h"
 #include "../lidar/LidarSensor.h"
 #include "../lightbeam_sensor/LightBeamSensor.h"
-#include "../ultrasonic/UltrasonicSensor.h"
 #include "RangeSensorComponent.h"
 #include "omni/isaac/bridge/BridgeApplication.h"
 #include "omni/isaac/utils/ScopedTimer.h"
@@ -197,10 +196,6 @@ public:
         {
             component = std::make_unique<LidarSensor>(mPhysxPtr, mSyntheticDataPtr);
         }
-        else if (prim.IsA<pxr::RangeSensorUltrasonicArray>())
-        {
-            component = std::make_unique<UltrasonicSensor>(mPhysxPtr, mTasking);
-        }
         else if (prim.IsA<pxr::RangeSensorGeneric>())
         {
             component = std::make_unique<GenericSensor>(mPhysxPtr);
@@ -227,16 +222,6 @@ public:
         {
             mComponents[prim.GetPath().GetString()]->onComponentChange();
         }
-        // Also need to make sure all emitters get their functions called
-        for (auto& component : mComponents)
-        {
-            UltrasonicSensor* uss = dynamic_cast<UltrasonicSensor*>(component.second.get());
-            if (uss)
-            {
-                uss->onEmitterChange(prim);
-                uss->onFiringGroupChange(prim);
-            }
-        }
     }
 
     LidarSensor* getLidarSensor(const pxr::UsdPrim& prim)
@@ -251,17 +236,6 @@ public:
         return nullptr;
     }
 
-    UltrasonicSensor* getUltrasonicSensor(const pxr::UsdPrim& prim)
-    {
-        if (prim)
-        {
-            if (mComponents.find(prim.GetPath().GetString()) != mComponents.end())
-            {
-                return dynamic_cast<UltrasonicSensor*>(mComponents[prim.GetPath().GetString()].get());
-            }
-        }
-        return nullptr;
-    }
     GenericSensor* getGenericSensor(const pxr::UsdPrim& prim)
     {
         if (prim)
