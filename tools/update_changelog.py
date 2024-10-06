@@ -29,7 +29,7 @@ extensions = [
     "isaacsim.examples.extension",
     "omni.isaac.articulation_inspector",
     "omni.isaac.assets_check",
-    "omni.isaac.examples",
+    "isaacsim.examples.interactive",
     "omni.isaac.extension_templates",
     "omni.isaac.gain_tuner",
     "omni.isaac.occupancy_map",

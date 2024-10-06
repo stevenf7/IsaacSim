@@ -1,0 +1,25 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "4.0.0"
+category = "Simulation"
+title = "Isaac Sim Samples"
+description = "Sample extensions for Isaac Sim"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/omni.isaac.examples"
+keywords = ["isaac", "samples", "manipulation"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+icon = "data/icon.png"
+preview_image = "data/preview.png"
+writeTarget.kit = true
+
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.examples.interactive"
+
+
+[dependencies]
+"isaacsim.core.deprecation_manager" = {}
+"isaacsim.examples.interactive" = {}
