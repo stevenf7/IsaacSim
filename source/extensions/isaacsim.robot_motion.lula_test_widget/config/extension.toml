@@ -21,7 +21,7 @@ preview_image = "data/preview.png"
 "isaacsim.gui.components" = {}
 "isaacsim.core.api" = {}
 "isaacsim.robot_motion.lula" = {}
-"omni.isaac.motion_generation" = {}
+"isaacsim.robot_motion.motion_generation" = {}
 
 [[python.module]]
 name = "isaacsim.robot_motion.lula_test_widget"

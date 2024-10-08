@@ -20,7 +20,7 @@ writeTarget.kit = true
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.core.api" = {}
 "isaacsim.robot.manipulators.examples" = {}
-"omni.isaac.motion_generation" = {}
+"isaacsim.robot_motion.motion_generation" = {}
 "omni.isaac.nucleus" = {}
 
 [[python.module]]

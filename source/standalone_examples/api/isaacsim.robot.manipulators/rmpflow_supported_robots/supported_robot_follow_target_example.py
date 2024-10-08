@@ -20,12 +20,12 @@ from isaacsim.core.api.objects import cuboid
 from isaacsim.core.api.robots import Robot
 from isaacsim.core.api.utils.prims import create_prim
 from isaacsim.core.api.utils.stage import add_reference_to_stage
-from omni.isaac.motion_generation.articulation_motion_policy import ArticulationMotionPolicy
-from omni.isaac.motion_generation.interface_config_loader import (
+from isaacsim.robot_motion.motion_generation.articulation_motion_policy import ArticulationMotionPolicy
+from isaacsim.robot_motion.motion_generation.interface_config_loader import (
     get_supported_robot_policy_pairs,
     load_supported_motion_policy_config,
 )
-from omni.isaac.motion_generation.lula import RmpFlow
+from isaacsim.robot_motion.motion_generation.lula import RmpFlow
 from omni.isaac.nucleus import get_assets_root_path
 
 parser = argparse.ArgumentParser()

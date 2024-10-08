@@ -10,7 +10,7 @@ import os
 from typing import Optional
 
 from isaacsim.core.api.utils.extensions import get_extension_path_from_name
-from omni.isaac.motion_generation.kinematics import InverseKinematicsSolver as BaseInverseKinematicsSolver
+from isaacsim.robot_motion.motion_generation.kinematics import InverseKinematicsSolver as BaseInverseKinematicsSolver
 
 
 class InverseKinematicsSolver(BaseInverseKinematicsSolver):
@@ -34,7 +34,7 @@ class InverseKinematicsSolver(BaseInverseKinematicsSolver):
         end_effector_frame_name: Optional[str] = None,
         attach_gripper: bool = False,
     ) -> None:
-        mg_extension_path = get_extension_path_from_name("omni.isaac.motion_generation")
+        mg_extension_path = get_extension_path_from_name("isaacsim.robot_motion.motion_generation")
         if robot_urdf_path is None:
             if attach_gripper:
                 robot_urdf_path = os.path.join(mg_extension_path, "policy_configs/ur10/ur10_robot_suction.urdf")

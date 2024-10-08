@@ -9,7 +9,7 @@
 
 import os
 
-import omni.isaac.motion_generation as mg
+import isaacsim.robot_motion.motion_generation as mg
 from isaacsim.core.api.articulations import Articulation
 from isaacsim.core.api.utils.extensions import get_extension_path_from_name
 

@@ -54,8 +54,8 @@ from abc import abstractmethod
 from collections import OrderedDict
 from typing import Dict, Optional, Sequence
 
+import isaacsim.robot_motion.motion_generation.interface_config_loader as icl
 import numpy as np
-import omni.isaac.motion_generation.interface_config_loader as icl
 import omni.physics.tensors
 from isaacsim.core.api.articulations import Articulation, ArticulationSubset
 from isaacsim.core.api.objects import VisualCuboid
@@ -65,8 +65,8 @@ from isaacsim.cortex.framework.cortex_utils import get_assets_root_path_or_die
 from isaacsim.cortex.framework.cortex_world import CommandableArticulation, CortexWorld
 from isaacsim.cortex.framework.motion_commander import CortexObstacleType, MotionCommander
 from isaacsim.robot.manipulators.grippers.surface_gripper import SurfaceGripper
-from omni.isaac.motion_generation.articulation_motion_policy import ArticulationMotionPolicy
-from omni.isaac.motion_generation.lula.motion_policies import RmpFlow, RmpFlowSmoothed
+from isaacsim.robot_motion.motion_generation.articulation_motion_policy import ArticulationMotionPolicy
+from isaacsim.robot_motion.motion_generation.lula.motion_policies import RmpFlow, RmpFlowSmoothed
 
 
 class CortexGripper(Commander):

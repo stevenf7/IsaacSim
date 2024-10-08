@@ -12,17 +12,17 @@ from typing import Optional
 
 import carb
 import isaacsim.core.api.objects
+import isaacsim.robot_motion.motion_generation.interface_config_loader as interface_config_loader
 import numpy as np
-import omni.isaac.motion_generation.interface_config_loader as interface_config_loader
 import omni.kit
 from isaacsim.core.api.articulations import Articulation
 from isaacsim.core.api.controllers.base_controller import BaseController
 from isaacsim.core.api.utils.types import ArticulationAction
-from omni.isaac.motion_generation import ArticulationTrajectory
-from omni.isaac.motion_generation.lula import RRT
-from omni.isaac.motion_generation.lula.trajectory_generator import LulaCSpaceTrajectoryGenerator
-from omni.isaac.motion_generation.path_planner_visualizer import PathPlannerVisualizer
-from omni.isaac.motion_generation.path_planning_interface import PathPlanner
+from isaacsim.robot_motion.motion_generation import ArticulationTrajectory
+from isaacsim.robot_motion.motion_generation.lula import RRT
+from isaacsim.robot_motion.motion_generation.lula.trajectory_generator import LulaCSpaceTrajectoryGenerator
+from isaacsim.robot_motion.motion_generation.path_planner_visualizer import PathPlannerVisualizer
+from isaacsim.robot_motion.motion_generation.path_planning_interface import PathPlanner
 
 
 class PathPlannerController(BaseController):
@@ -132,7 +132,7 @@ class FrankaRrtController(PathPlannerController):
         ext_id = ext_manager.get_enabled_extension_id("isaacsim.examples.interactive")
         examples_extension_path = ext_manager.get_extension_path(ext_id)
 
-        # Load default RRT config files stored in the omni.isaac.motion_generation extension
+        # Load default RRT config files stored in the isaacsim.robot_motion.motion_generation extension
         rrt_config = interface_config_loader.load_supported_path_planner_config("Franka", "RRT")
 
         # Replace the default robot description file with a copy that has inflated collision spheres

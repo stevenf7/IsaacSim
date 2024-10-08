@@ -16,8 +16,8 @@ from isaacsim.core.api.utils.numpy.rotations import euler_angles_to_quats, quats
 from isaacsim.core.api.utils.stage import add_reference_to_stage
 from isaacsim.core.api.utils.types import ArticulationAction
 from isaacsim.core.api.utils.viewports import set_camera_view
-from omni.isaac.motion_generation import ArticulationMotionPolicy, RmpFlow
-from omni.isaac.motion_generation.interface_config_loader import load_supported_motion_policy_config
+from isaacsim.robot_motion.motion_generation import ArticulationMotionPolicy, RmpFlow
+from isaacsim.robot_motion.motion_generation.interface_config_loader import load_supported_motion_policy_config
 from omni.isaac.nucleus import get_assets_root_path
 
 

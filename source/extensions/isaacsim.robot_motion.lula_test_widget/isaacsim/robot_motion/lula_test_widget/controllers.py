@@ -14,9 +14,9 @@ import numpy as np
 from isaacsim.core.api import objects
 from isaacsim.core.api.controllers.base_controller import BaseController
 from isaacsim.core.api.utils.types import ArticulationAction
-from omni.isaac.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
-from omni.isaac.motion_generation.articulation_trajectory import ArticulationTrajectory
-from omni.isaac.motion_generation.path_planner_visualizer import PathPlannerVisualizer
+from isaacsim.robot_motion.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
+from isaacsim.robot_motion.motion_generation.articulation_trajectory import ArticulationTrajectory
+from isaacsim.robot_motion.motion_generation.path_planner_visualizer import PathPlannerVisualizer
 
 
 class LulaController(BaseController):

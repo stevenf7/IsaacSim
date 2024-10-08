@@ -18,13 +18,13 @@ from isaacsim.core.api.utils.prims import delete_prim, is_prim_path_valid
 from isaacsim.core.api.utils.rotations import euler_angles_to_quat
 from isaacsim.core.api.utils.string import find_unique_string_name
 from isaacsim.core.api.utils.types import ArticulationAction
-from omni.isaac.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
-from omni.isaac.motion_generation.articulation_motion_policy import ArticulationMotionPolicy
-from omni.isaac.motion_generation.articulation_trajectory import ArticulationTrajectory
-from omni.isaac.motion_generation.lula.kinematics import LulaKinematicsSolver
-from omni.isaac.motion_generation.lula.motion_policies import RmpFlow
-from omni.isaac.motion_generation.lula.trajectory_generator import LulaTaskSpaceTrajectoryGenerator
-from omni.isaac.motion_generation.motion_policy_controller import MotionPolicyController
+from isaacsim.robot_motion.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
+from isaacsim.robot_motion.motion_generation.articulation_motion_policy import ArticulationMotionPolicy
+from isaacsim.robot_motion.motion_generation.articulation_trajectory import ArticulationTrajectory
+from isaacsim.robot_motion.motion_generation.lula.kinematics import LulaKinematicsSolver
+from isaacsim.robot_motion.motion_generation.lula.motion_policies import RmpFlow
+from isaacsim.robot_motion.motion_generation.lula.trajectory_generator import LulaTaskSpaceTrajectoryGenerator
+from isaacsim.robot_motion.motion_generation.motion_policy_controller import MotionPolicyController
 
 from .controllers import KinematicsController, TrajectoryController
 

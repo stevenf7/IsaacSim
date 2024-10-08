@@ -8,10 +8,10 @@
 #
 from typing import Optional
 
-import omni.isaac.motion_generation.interface_config_loader as interface_config_loader
+import isaacsim.robot_motion.motion_generation.interface_config_loader as interface_config_loader
 from isaacsim.core.api.articulations import Articulation
-from omni.isaac.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
-from omni.isaac.motion_generation.lula.kinematics import LulaKinematicsSolver
+from isaacsim.robot_motion.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
+from isaacsim.robot_motion.motion_generation.lula.kinematics import LulaKinematicsSolver
 
 
 class KinematicsSolver(ArticulationKinematicsSolver):
