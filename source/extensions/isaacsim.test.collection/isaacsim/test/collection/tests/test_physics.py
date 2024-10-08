@@ -239,7 +239,7 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
 
     async def test_articulation_drive(self):
         timeline = omni.timeline.get_timeline_interface()
-        extension_path = get_extension_path_from_name("omni.isaac.tests")
+        extension_path = get_extension_path_from_name("isaacsim.test.collection")
         usd_path = extension_path + "/data/tests/articulation_drives_opposite.usd"
         (result, error) = await open_stage_async(usd_path)
         # Make sure the stage loaded

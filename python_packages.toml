@@ -536,6 +536,7 @@ inventory.include = [
     # license
     "LICENSE.txt",
     # extensions
+    "exts/isaacsim.test.collection",
     "exts/isaacsim.test.docstring",
     # deprecated extensions
     "exts/omni.isaac.doctest",

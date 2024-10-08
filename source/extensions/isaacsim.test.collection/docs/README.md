@@ -1,6 +1,6 @@
 # Usage
 
-To enable this extension, go to the Extension Manager menu and enable omni.isaac.tests extension.
+To enable this extension, go to the Extension Manager menu and enable isaacsim.test.collection extension.
 
 # Generate golden image
 

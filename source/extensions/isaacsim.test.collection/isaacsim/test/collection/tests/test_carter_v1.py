@@ -50,7 +50,7 @@ class TestCarterv1(omni.kit.test.AsyncTestCase):
             carb.log_error("Could not find Isaac Sim assets folder")
             return
 
-        self._extension_path = get_extension_path_from_name("omni.isaac.tests")
+        self._extension_path = get_extension_path_from_name("isaacsim.test.collection")
 
         ## setup carter_v1:
         # open local carter_v1:

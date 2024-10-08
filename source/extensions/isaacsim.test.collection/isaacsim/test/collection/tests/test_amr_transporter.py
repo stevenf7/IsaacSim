@@ -7,6 +7,9 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import math
+import time
+
 import carb
 import carb.tokens
 import numpy as np
@@ -20,53 +23,43 @@ from isaacsim.core.api import World
 from isaacsim.core.api.articulations.articulation import Articulation
 from isaacsim.core.api.utils.extensions import get_extension_path_from_name
 from isaacsim.core.api.utils.prims import delete_prim
+from isaacsim.core.api.utils.rotations import quat_to_euler_angles
 from isaacsim.core.api.utils.stage import open_stage_async
 from omni.isaac.nucleus import get_assets_root_path_async
 
-from .robot_helpers import init_robot_sim, setup_robot_og
-
-
-async def ramp_velocity(forward_velocity, angular_velocity, ramp_frames, graph_path):
-    for i in range(ramp_frames):
-        og.Controller.attribute(graph_path + "/DifferentialController.inputs:linearVelocity").set(
-            forward_velocity * ((i + 1) / ramp_frames)
-        )
-        og.Controller.attribute(graph_path + "/DifferentialController.inputs:angularVelocity").set(
-            angular_velocity * ((i + 1) / ramp_frames)
-        )
-        await omni.kit.app.get_app().next_update_async()
+from .robot_helpers import init_robot_sim, set_physics_frequency, setup_robot_og
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestCarterv2(omni.kit.test.AsyncTestCase):
+class TestIw_hub(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
-        self._timeline = omni.timeline.get_timeline_interface()
-
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
 
         self._assets_root_path = await get_assets_root_path_async()
         if self._assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return
 
-        self._extension_path = get_extension_path_from_name("omni.isaac.tests")
+        self._extension_path = get_extension_path_from_name("isaacsim.test.collection")
+
+        ## setup iw_hub:
+        # open local iw_hub
+        # (result, error) = await omni.usd.get_context().open_stage_async(self._extension_path + "/data/tests/iw_hub.usd")
 
         # add in carter (from nucleus)
-        self.usd_path = self._assets_root_path + "/Isaac/Robots/Carter/nova_carter.usd"
+        self.usd_path = self._assets_root_path + "/Isaac/Robots/Idealworks/iw_hub.usd"
         (result, error) = await open_stage_async(self.usd_path)
 
         # Make sure the stage loaded
         self.assertTrue(result)
         await omni.kit.app.get_app().next_update_async()
-
         self.my_world = World(stage_units_in_meters=1.0)
         await self.my_world.initialize_simulation_context_async()
 
         # setup omnigraph
         self.graph_path = "/ActionGraph"
         graph, self.odom_node = setup_robot_og(
-            self.graph_path, "joint_wheel_left", "joint_wheel_right", "/nova_carter", 0.14, 0.4132
+            self.graph_path, "left_wheel_joint", "right_wheel_joint", "/iw_hub", 0.08, 0.58
         )
 
         pass
@@ -81,7 +74,6 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
         pass
 
-    # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_loading(self):
 
         delete_prim("/ActionGraph")
@@ -90,21 +82,20 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         # get the jetbot
-        self.ar = Articulation("/nova_carter")
+        self.ar = Articulation("/iw_hub")
         self.ar._articulation_view.initialize()
         self.starting_pos, _ = self.ar.get_world_pose()
-        left_wheel_joint_idx = self.ar._articulation_view.get_dof_index("joint_wheel_left")
-        right_wheel_joint_idx = self.ar._articulation_view.get_dof_index("joint_wheel_right")
+        left_wheel_joint_idx = self.ar._articulation_view.get_dof_index("left_wheel_joint")
+        right_wheel_joint_idx = self.ar._articulation_view.get_dof_index("right_wheel_joint")
         self.ar._articulation_view.set_joint_velocity_targets(
             velocities=np.array([1.0, 1.0]), joint_indices=[left_wheel_joint_idx, right_wheel_joint_idx]
         )
 
-        # move the jetbot
-        for i in range(60):
+        # simulate for 1 second
+        for frame in range(int(60)):
             await omni.kit.app.get_app().next_update_async()
 
         self.current_pos, _ = self.ar.get_world_pose()
-
         delta = np.linalg.norm(self.current_pos - self.starting_pos)
         print("Diff is ", delta)
         self.assertTrue(delta > 0.02)
@@ -121,7 +112,7 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
         self.my_world.play()
         await omni.kit.app.get_app().next_update_async()
 
-        await init_robot_sim("/nova_carter")
+        await init_robot_sim("/iw_hub")
 
         for x in range(1, 5):
             forward_velocity = x * 0.15
@@ -152,7 +143,7 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
         self.my_world.play()
         await omni.kit.app.get_app().next_update_async()
 
-        await init_robot_sim("/nova_carter")
+        await init_robot_sim("/iw_hub")
         for x in range(1, 5):
             self.my_world.play()
             await omni.kit.app.get_app().next_update_async()
@@ -182,22 +173,20 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
         # Start Simulation and wait
         self.my_world.play()
         await omni.kit.app.get_app().next_update_async()
-        await init_robot_sim("/nova_carter")
+        await init_robot_sim("/iw_hub")
 
-        for x in range(1, 3):
+        for x in range(1, 4):
             angular_velocity = 0.6 * x
             og.Controller.attribute(self.graph_path + "/DifferentialController.inputs:angularVelocity").set(
                 angular_velocity
             )
 
             # wait until const velocity reached
-            for i in range(200):
+            for i in range(60):
                 await omni.kit.app.get_app().next_update_async()
-                curr_ang_vel = float(og.DataView.get(odom_ang_vel)[2])
-                print(f"current: {curr_ang_vel}  target: {angular_velocity}")
 
             curr_ang_vel = float(og.DataView.get(odom_ang_vel)[2])
-            self.assertAlmostEqual(curr_ang_vel, angular_velocity, delta=1e-1)
+            self.assertAlmostEqual(curr_ang_vel, angular_velocity, delta=5e-2)
 
         # self.my_world.stop()
 
@@ -213,20 +202,19 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
         self.my_world.play()
         await omni.kit.app.get_app().next_update_async()
 
-        await init_robot_sim("/nova_carter")
+        await init_robot_sim("/iw_hub")
         forward_velocity = -0.1
         angular_velocity = -0.5
         og.Controller.attribute(self.graph_path + "/DifferentialController.inputs:linearVelocity").set(forward_velocity)
         og.Controller.attribute(self.graph_path + "/DifferentialController.inputs:angularVelocity").set(
             angular_velocity
         )
-        for j in range(800):
+        for j in range(782):
             await omni.kit.app.get_app().next_update_async()
-
-        self.assertAlmostEqual(og.DataView.get(odom_position)[0], 0, delta=1)
-        self.assertAlmostEqual(og.DataView.get(odom_position)[1], 0, delta=3e-1)
+        self.assertAlmostEqual(og.DataView.get(odom_position)[0], 0, delta=5e-2)
+        self.assertAlmostEqual(og.DataView.get(odom_position)[1], 0, delta=5e-2)
         self.assertAlmostEqual(og.DataView.get(odom_velocity)[0], forward_velocity, delta=5e-2)
-        self.assertAlmostEqual(og.DataView.get(odom_ang_vel)[2], angular_velocity, delta=1e-1)
+        self.assertAlmostEqual(og.DataView.get(odom_ang_vel)[2], angular_velocity, delta=5e-2)
 
         await omni.kit.app.get_app().next_update_async()
 
