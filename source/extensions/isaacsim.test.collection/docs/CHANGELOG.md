@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.0] - 2024-10-07
+### Changed
+- Extension  renamed to isaacsim.test.collection.
+
 ## [1.18.1] - 2024-09-04
 ### Fixed
 - Incorrect physics setting in test influencing other tests

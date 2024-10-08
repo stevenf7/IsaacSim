@@ -19,7 +19,7 @@ class TestExternalDependencies(omni.kit.test.AsyncTestCase):
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
         self.ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = self.ext_manager.get_enabled_extension_id("omni.isaac.tests")
+        ext_id = self.ext_manager.get_enabled_extension_id("isaacsim.test.collection")
         self._extension_path = self.ext_manager.get_extension_path(ext_id)
 
     async def tearDown(self):

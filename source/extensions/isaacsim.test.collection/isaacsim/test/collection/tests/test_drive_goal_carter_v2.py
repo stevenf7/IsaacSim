@@ -36,7 +36,7 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
             carb.log_error("Could not find Isaac Sim assets folder")
             return
 
-        self._extension_path = get_extension_path_from_name("omni.isaac.tests")
+        self._extension_path = get_extension_path_from_name("isaacsim.test.collection")
 
         # add in carter (from nucleus)
         self.usd_path = self._assets_root_path + "/Isaac/Robots/Carter/nova_carter.usd"

@@ -287,6 +287,7 @@ sphinx_exclude_patterns = [
     "**/omni.isaac.tests",
     "**/omni.isaac.utils_manager",
     "**/isaacsim.gui.property",
+    "**/isaacsim.test.collection",
     "**/omni.usd.schema.isaac",     #TODO?
     "**/omni.isaac.window.about",
     "**/isaacsim.app.about",
@@ -643,6 +644,7 @@ include = [
 [[repo_test.suites.pythontests.bucket]]
 name = "5"
 include = [
+  "tests-isaacsim.test.collection*${shell_ext}",
   "tests-omni.isaac.tests*${shell_ext}",
 ]
 [[repo_test.suites.pythontests.bucket]]
