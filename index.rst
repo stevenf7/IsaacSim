@@ -38,7 +38,7 @@ Isaac Sim: Extensions API
    :glob:
 
    source/extensions/omni.isaac.wheeled_robots/docs/index
-   source/extensions/omni.isaac.quadruped/docs/index
+   source/extensions/isaacsim.robot.policy.examples/docs/index
    source/extensions/isaacsim.robot.manipulators/docs/index
    source/extensions/omni.isaac.robot_assembler/docs/index
 
@@ -54,7 +54,7 @@ Isaac Sim: Extensions API
    source/extensions/omni.isaac.nucleus/docs/index
    source/extensions/isaacsim.robot_motion.lula/docs/index
    source/extensions/isaacsim.robot.surface_gripper/docs/index
-   source/extensions/omni.isaac.occupancy_map/docs/index
+   source/extensions/isaacsim.asset.generator.occupancy_map/docs/index
    source/extensions/omni.replicator.isaac/docs/index
    source/extensions/isaacsim.asset.conveyor/docs/index
    source/extensions/isaacsim.core.version/docs/index

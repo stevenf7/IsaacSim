@@ -1,5 +1,10 @@
 # Changelog
 
+## [4.1.0] - 2024-10-07
+### Changed
+- Updated quadruped dependency to isaacsim.robot.policy.examples
+- Moved H1 humanoid exmaple to isaacsim.robot.policy.examples
+
 ## [4.0.0] - 2024-09-30
 ### Changed
 - changed extension name to isaacsim.examples.interactive

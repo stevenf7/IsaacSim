@@ -1,0 +1,24 @@
+display_name = "Isaac Quadruped Robot"
+
+[package]
+version = "3.0.0"
+category = "Simulation"
+title = "Isaac Quadruped Robot"
+description = "Simulation for legged robots"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/omni.isaac.quadruped"
+keywords = ["isaac", "robot", "quadruped"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+icon = "data/icon.png"
+preview_image = "data/preview.png"
+
+[dependencies]
+"isaacsim.robot.policy.examples" = {}
+"isaacsim.core.deprecation_manager" = {}
+
+[[python.module]]
+name = "omni.isaac.quadruped"
+
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 4.5.0. The built in optimization controller will be removed. The RL based controller will be replaced by isaacsim.robot.policy.examples"
