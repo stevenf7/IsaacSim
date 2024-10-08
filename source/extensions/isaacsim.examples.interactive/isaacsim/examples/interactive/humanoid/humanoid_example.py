@@ -12,7 +12,7 @@ import numpy as np
 import omni
 import omni.appwindow  # Contains handle to keyboard
 from isaacsim.examples.interactive.base_sample import BaseSample
-from isaacsim.examples.interactive.humanoid.h1 import H1FlatTerrainPolicy
+from isaacsim.robot.policy.examples.robots.h1 import H1FlatTerrainPolicy
 
 
 class HumanoidExample(BaseSample):

@@ -9,6 +9,5 @@
 
 # NOTE: Import here your extension examples to be propagated to ISAAC SIM Extensions startup
 
-from isaacsim.examples.interactive.humanoid.h1 import H1FlatTerrainPolicy
 from isaacsim.examples.interactive.humanoid.humanoid_example import HumanoidExample
 from isaacsim.examples.interactive.humanoid.humanoid_example_extension import HumanoidExampleExtension

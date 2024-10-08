@@ -9,7 +9,6 @@
 
 from .test_bin_filling import *
 from .test_follow_target import *
-from .test_h1 import *
 from .test_hello_world import *
 from .test_kaya_gamepad import *
 from .test_omnigraph_keyboard import *

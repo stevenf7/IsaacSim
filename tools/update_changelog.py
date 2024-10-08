@@ -32,7 +32,7 @@ extensions = [
     "isaacsim.examples.interactive",
     "omni.isaac.extension_templates",
     "omni.isaac.gain_tuner",
-    "omni.isaac.occupancy_map",
+    "isaacsim.asset.generator.occupancy_map",
     "omni.isaac.physics_inspector",
     "isaacsim.util.physics",
     "omni.isaac.range_sensor",

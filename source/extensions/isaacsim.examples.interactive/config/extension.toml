@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "4.0.0"
+version = "4.1.0"
 category = "Simulation"
 title = "Isaac Sim Samples"
 description = "Sample extensions for Isaac Sim"
@@ -17,22 +17,23 @@ preview_image = "data/preview.png"
 writeTarget.kit = true
 
 [dependencies]
-"omni.kit.uiapp" = {}
-"omni.physx" = {}
-"omni.isaac.dynamic_control" = {}
-"isaacsim.gui.components" = {}
 "isaacsim.core.api" = {}
+"isaacsim.cortex.behaviors" = {}
+"isaacsim.cortex.framework" = {}
+"isaacsim.gui.components" = {}
 "isaacsim.robot.manipulators" = {}
 "isaacsim.robot.manipulators.examples" = {}
 "isaacsim.robot_motion.motion_generation" = {}
+"isaacsim.robot.policy.examples" = {}
 "omni.graph.action" = {}
 "omni.graph.nodes" = {}
 "omni.graph.core" = {}
-"omni.isaac.quadruped" = {}
-"omni.isaac.wheeled_robots" = {}
-"isaacsim.cortex.framework" = {}
-"isaacsim.cortex.behaviors" = {}
+"omni.isaac.dynamic_control" = {}
+"omni.isaac.motion_generation" = {}
 "omni.isaac.nucleus" = {}
+"omni.isaac.wheeled_robots" = {}
+"omni.kit.uiapp" = {}
+"omni.physx" = {}
 
 [[python.module]]
 name = "isaacsim.examples.interactive.tests"

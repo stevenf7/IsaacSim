@@ -155,13 +155,16 @@ inventory.include = [
     "exts/isaacsim.asset.importer.heightmap",
     "exts/isaacsim.asset.conveyor.ui",
     "exts/isaacsim.asset.conveyor",
-    "exts/omni.isaac.occupancy_map.ui",
-    "exts/omni.isaac.occupancy_map",
+    "exts/isaacsim.asset.generator.occupancy_map.ui",
+    "exts/isaacsim.asset.generator.occupancy_map",
     # deprecated extensions
     "extsDeprecated/omni.exporter.urdf",
     "extsDeprecated/omni.isaac.conveyor.ui",
     "extsDeprecated/omni.isaac.conveyor",
     "extsDeprecated/omni.isaac.asset_browser",    
+    "extsDeprecated/omni.isaac.occupancy_map.ui",
+    "extsDeprecated/omni.isaac.occupancy_map",
+    
 ]
 
 [isaacsim-benchmark]

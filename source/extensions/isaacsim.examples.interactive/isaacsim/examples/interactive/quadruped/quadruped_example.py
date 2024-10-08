@@ -12,7 +12,7 @@ import numpy as np
 import omni
 import omni.appwindow  # Contains handle to keyboard
 from isaacsim.examples.interactive.base_sample import BaseSample
-from omni.isaac.quadruped.robots import SpotFlatTerrainPolicy
+from isaacsim.robot.policy.examples.robots import SpotFlatTerrainPolicy
 
 
 class QuadrupedExample(BaseSample):
