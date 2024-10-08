@@ -12,8 +12,8 @@ from typing import Optional
 
 from isaacsim.core.api.articulations import Articulation
 from isaacsim.core.api.utils.extensions import get_extension_path_from_name
-from omni.isaac.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
-from omni.isaac.motion_generation.lula.kinematics import LulaKinematicsSolver
+from isaacsim.robot_motion.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
+from isaacsim.robot_motion.motion_generation.lula.kinematics import LulaKinematicsSolver
 
 
 class KinematicsSolver(ArticulationKinematicsSolver):

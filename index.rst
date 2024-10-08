@@ -50,7 +50,7 @@ Isaac Sim: Extensions API
    source/extensions/omni.isaac.ros_bridge/docs/index
    source/extensions/isaacsim.ros2.bridge/docs/index
    source/extensions/isaacsim.util.debug_draw/docs/index
-   source/extensions/omni.isaac.motion_generation/docs/index
+   source/extensions/isaacsim.robot_motion.motion_generation/docs/index
    source/extensions/omni.isaac.nucleus/docs/index
    source/extensions/isaacsim.robot_motion.lula/docs/index
    source/extensions/isaacsim.robot.surface_gripper/docs/index

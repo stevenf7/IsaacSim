@@ -6,7 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-import omni.isaac.motion_generation as mg
+import isaacsim.robot_motion.motion_generation as mg
 from isaacsim.core.api.articulations import Articulation
 
 

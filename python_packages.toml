@@ -397,8 +397,9 @@ inventory.include = [
     "exts/isaacsim.robot_motion.ocs2",
     "exts/isaacsim.robot_motion.lula",
     "exts/isaacsim.robot_motion.lula_test_widget",
+    "exts/isaacsim.robot_motion.motion_generation
     # deprecated extensions
-    "exts/omni.isaac.motion_generation",
+    "extsDeprecated/omni.isaac.motion_generation",
     "extsDeprecated/omni.isaac.ocs2",
     "extsDeprecated/omni.isaac.lula",
     "extsDeprecated/omni.isaac.lula_test_widget",

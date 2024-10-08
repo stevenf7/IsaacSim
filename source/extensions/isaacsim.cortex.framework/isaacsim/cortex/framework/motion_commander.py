@@ -33,13 +33,13 @@ from isaacsim.core.api.utils.rotations import quat_to_rot_matrix
 from isaacsim.cortex.framework.commander import Commander
 from isaacsim.cortex.framework.cortex_object import CortexObject
 from isaacsim.cortex.framework.smoothed_command import SmoothedCommand, TargetAdapter
-from omni.isaac.motion_generation.articulation_motion_policy import ArticulationMotionPolicy
-from omni.isaac.motion_generation.motion_policy_interface import MotionPolicy
+from isaacsim.robot_motion.motion_generation.articulation_motion_policy import ArticulationMotionPolicy
+from isaacsim.robot_motion.motion_generation.motion_policy_interface import MotionPolicy
 
 # The CortexObject wraps a core API object. Obstacles can either be the core API object or a
 # CortexObject wrapped variant. All of these objects derive from GeometryPrim, although the
 # specifics of the supportant variants are policy specific. See the specific motion policy's
-# obstacle support in omni.isaac.motion_generation for details of which objects are supported.
+# obstacle support in isaacsim.robot_motion.motion_generation for details of which objects are supported.
 CortexObstacleType = Union[CortexObject, GeometryPrim]
 
 
