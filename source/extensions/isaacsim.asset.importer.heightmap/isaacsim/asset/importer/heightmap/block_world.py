@@ -19,8 +19,8 @@ import omni.ui
 import omni.ui as ui
 from isaacsim.core.api import PhysicsContext
 from isaacsim.core.api.utils.stage import set_stage_up_axis
-from omni.isaac.ui.menu import make_menu_item_description
-from omni.isaac.ui.ui_utils import btn_builder, float_builder
+from isaacsim.gui.components.menu import make_menu_item_description
+from isaacsim.gui.components.ui_utils import btn_builder, float_builder
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from omni.physx.scripts.physicsUtils import add_ground_plane
 from PIL import Image

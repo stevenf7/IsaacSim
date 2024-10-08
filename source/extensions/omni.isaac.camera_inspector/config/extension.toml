@@ -20,7 +20,7 @@ writeTarget.kit = true
 "isaacsim.sensors.camera" = {}
 "isaacsim.core.api" = {}
 "omni.isaac.dynamic_control" = {}
-"omni.isaac.ui" = {}
+"isaacsim.gui.components" = {}
 "omni.physx" = {}
 
 [[python.module]]

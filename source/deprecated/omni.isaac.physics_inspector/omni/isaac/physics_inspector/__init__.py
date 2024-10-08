@@ -7,4 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .extension import *
+import carb
+
+# Provide deprecation warning to user
+carb.log_warn(f"omni.isaac.physics_inspector has been deprecated.Replaced by Physics Visualization tools")

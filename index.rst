@@ -18,7 +18,7 @@ Isaac Sim: Extensions API
    source/extensions/omni.isaac.dynamic_control/docs/index
    source/extensions/isaacsim.simulation_app/docs/index
    source/extensions/omni.isaac.utils/docs/index
-   source/extensions/omni.isaac.ui/docs/index
+   source/extensions/isaacsim.gui.components/docs/index
    source/extensions/omni.kit.loop-isaac/docs/index
    source/extensions/isaacsim.core.cloner/docs/index
 

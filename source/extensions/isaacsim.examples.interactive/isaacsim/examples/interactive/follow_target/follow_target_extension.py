@@ -14,7 +14,7 @@ import carb
 import omni.ui as ui
 from isaacsim.examples.interactive.base_sample import BaseSampleExtension
 from isaacsim.examples.interactive.follow_target import FollowTarget
-from omni.isaac.ui.ui_utils import btn_builder, state_btn_builder, str_builder
+from isaacsim.gui.components.ui_utils import btn_builder, state_btn_builder, str_builder
 
 
 class FollowTargetExtension(BaseSampleExtension):

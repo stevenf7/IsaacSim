@@ -10,8 +10,8 @@
 from cmath import inf
 
 import omni.ui as ui
-from omni.isaac.ui.element_wrappers import FloatField, Frame
-from omni.isaac.ui.ui_utils import LABEL_WIDTH, add_line_rect_flourish, format_tt
+from isaacsim.gui.components.element_wrappers import FloatField, Frame
+from isaacsim.gui.components.ui_utils import LABEL_WIDTH, add_line_rect_flourish, format_tt
 
 
 class LogFloatField(FloatField):

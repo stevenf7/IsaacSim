@@ -10,7 +10,7 @@
 
 import omni.ext
 import omni.kit.commands
-from omni.isaac.ui.menu import make_menu_item_description
+from isaacsim.gui.components.menu import make_menu_item_description
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 
 from .menu_graphs import ArticulationPositionGraph, ArticulationVelocityGraph, GripperGraph

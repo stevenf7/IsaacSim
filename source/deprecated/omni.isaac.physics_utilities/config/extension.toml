@@ -8,7 +8,7 @@ category = "Simulation"
 title = "Isaac Sim Physics Utilities"
 description = "Collision and Physics Utils"
 authors = ["Isaac Sim Team"]
-repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.physics_utilities"
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/omni.isaac.physics_utilities"
 keywords = ["isaac", "physics", "utils",]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
@@ -17,8 +17,6 @@ preview_image = "data/preview.png"
 writeTarget.kit = true
 
 [dependencies]
-"omni.physx" = {}
-"omni.isaac.ui" = {}
 "isaacsim.core.deprecation_manager" = {}
 
 [deprecation]
@@ -26,6 +24,3 @@ warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.util
 
 [[python.module]]
 name = "omni.isaac.physics_utilities"
-
-[[python.module]]
-name = "omni.isaac.physics_utilities.tests"

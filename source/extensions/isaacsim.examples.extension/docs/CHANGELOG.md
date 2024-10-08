@@ -59,7 +59,7 @@
 
 ## [1.0.0] - 2023-02-28
 ### Changed
-- Updated Templates along with breaking changes to omni.isaac.ui replacing UIFrameWrapper with CollapsableFrame instance of UIElementWrapper
+- Updated Templates along with breaking changes to isaacsim.gui.components replacing UIFrameWrapper with CollapsableFrame instance of UIElementWrapper
 - Updated Configuration Tooling Template to use rebuild() function of a CollapsableFrame instead of pre-allocating 100 invisible frames.
 
 ### Added

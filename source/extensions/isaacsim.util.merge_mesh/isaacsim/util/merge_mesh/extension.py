@@ -16,10 +16,10 @@ import omni.kit.commands
 import omni.kit.utils
 import omni.ui as ui
 import omni.usd
-from omni.isaac.ui.element_wrappers import ScrollingWindow
-from omni.isaac.ui.menu import make_menu_item_description
-from omni.isaac.ui.style import get_style
-from omni.isaac.ui.ui_utils import btn_builder, cb_builder, combo_cb_str_builder, str_builder
+from isaacsim.gui.components.element_wrappers import ScrollingWindow
+from isaacsim.gui.components.menu import make_menu_item_description
+from isaacsim.gui.components.style import get_style
+from isaacsim.gui.components.ui_utils import btn_builder, cb_builder, combo_cb_str_builder, str_builder
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from pxr import Gf, Sdf, Usd, UsdGeom, UsdShade
 

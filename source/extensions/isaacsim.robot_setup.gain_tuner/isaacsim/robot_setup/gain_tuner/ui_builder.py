@@ -16,7 +16,7 @@ import numpy as np
 import omni.timeline
 import omni.ui as ui
 from isaacsim.core.api.utils.types import ArticulationAction
-from omni.isaac.ui.element_wrappers import (
+from isaacsim.gui.components.element_wrappers import (
     Button,
     CheckBox,
     CollapsableFrame,
@@ -26,7 +26,7 @@ from omni.isaac.ui.element_wrappers import (
     TextBlock,
     XYPlot,
 )
-from omni.isaac.ui.ui_utils import get_style, setup_ui_headers
+from isaacsim.gui.components.ui_utils import get_style, setup_ui_headers
 from omni.usd import StageEventType
 
 from .custom_ui_elements import LogFloatField
@@ -144,7 +144,7 @@ class UIBuilder:
         """
         Called when the stage is closed or the extension is hot reloaded.
         Perform any necessary cleanup such as removing active callback functions
-        Buttons imported from omni.isaac.ui.element_wrappers implement a cleanup function that should be called
+        Buttons imported from isaacsim.gui.components.element_wrappers implement a cleanup function that should be called
         """
         for ui_elem in self.wrapped_ui_elements:
             ui_elem.cleanup()

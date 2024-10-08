@@ -14,10 +14,10 @@ import carb
 import omni.appwindow
 import omni.ext
 import omni.ui as ui
-from omni.isaac.ui.dpad import Dpad
-from omni.isaac.ui.menu import make_menu_item_description
-from omni.isaac.ui.style import VERTICAL_SPACING
-from omni.isaac.ui.ui_utils import *
+from isaacsim.gui.components.dpad import Dpad
+from isaacsim.gui.components.menu import make_menu_item_description
+from isaacsim.gui.components.style import VERTICAL_SPACING
+from isaacsim.gui.components.ui_utils import *
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 
 EXTENSION_NAME = "Example UI"

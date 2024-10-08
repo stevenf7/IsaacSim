@@ -15,7 +15,7 @@ import weakref
 import omni.ext
 import omni.ui as ui
 import omni.usd
-from omni.isaac.ui.menu import make_menu_item_description
+from isaacsim.gui.components.menu import make_menu_item_description
 from omni.kit.menu.utils import add_menu_items, remove_menu_items
 from omni.usd import StageEventType
 

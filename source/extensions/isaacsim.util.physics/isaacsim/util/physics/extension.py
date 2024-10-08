@@ -16,9 +16,15 @@ import omni.kit.commands
 import omni.kit.utils
 import omni.ui as ui
 import omni.usd
-from omni.isaac.ui.element_wrappers import ScrollingWindow
-from omni.isaac.ui.menu import make_menu_item_description
-from omni.isaac.ui.ui_utils import btn_builder, cb_builder, dropdown_builder, multi_btn_builder, progress_bar_builder
+from isaacsim.gui.components.element_wrappers import ScrollingWindow
+from isaacsim.gui.components.menu import make_menu_item_description
+from isaacsim.gui.components.ui_utils import (
+    btn_builder,
+    cb_builder,
+    dropdown_builder,
+    multi_btn_builder,
+    progress_bar_builder,
+)
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from omni.physx.scripts import utils
 from pxr import Usd, UsdGeom, UsdPhysics

@@ -12,7 +12,7 @@ import gc
 
 import omni.ext
 import omni.kit.commands
-from omni.isaac.ui.menu import make_menu_item_description
+from isaacsim.gui.components.menu import make_menu_item_description
 from omni.isaac.wheeled_robots.bindings._omni_isaac_wheeled_robots import acquire_interface, release_interface
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 

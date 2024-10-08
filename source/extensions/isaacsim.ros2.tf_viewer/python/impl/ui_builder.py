@@ -8,7 +8,7 @@
 #
 
 import carb
-import omni.isaac.ui.ui_utils as ui_utils
+import isaacsim.gui.components.ui_utils as ui_utils
 import omni.kit.menu.utils
 import omni.ui as ui
 

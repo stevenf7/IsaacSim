@@ -21,7 +21,7 @@ preview_image = "data/preview.png"
 "omni.kit.widget.stage" = {}
 "omni.kit.viewport.window" = {}
 "isaacsim.core.api" = {}
-"omni.isaac.ui" = {}
+"isaacsim.gui.components" = {}
 
 [[python.module]]
 name = "isaacsim.util.internal"

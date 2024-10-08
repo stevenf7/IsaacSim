@@ -18,9 +18,9 @@ import omni.kit.commands
 import omni.timeline
 import omni.ui as ui
 import omni.usd
-from omni.isaac.ui.element_wrappers import CollapsableFrame, ScrollingWindow, TextBlock
-from omni.isaac.ui.menu import make_menu_item_description
-from omni.isaac.ui.ui_utils import btn_builder, get_style, setup_ui_headers, str_builder
+from isaacsim.gui.components.element_wrappers import CollapsableFrame, ScrollingWindow, TextBlock
+from isaacsim.gui.components.menu import make_menu_item_description
+from isaacsim.gui.components.ui_utils import btn_builder, get_style, setup_ui_headers, str_builder
 from omni.kit.menu.utils import add_menu_items, remove_menu_items
 
 from .template_generator import TemplateGenerator

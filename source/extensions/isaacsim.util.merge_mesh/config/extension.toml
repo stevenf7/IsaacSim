@@ -18,7 +18,7 @@ writeTarget.kit = true
 
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
-"omni.isaac.ui" = {}
+"isaacsim.gui.components" = {}
 
 [[python.module]]
 name = "isaacsim.util.merge_mesh"

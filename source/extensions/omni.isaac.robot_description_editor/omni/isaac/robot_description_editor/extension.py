@@ -30,11 +30,18 @@ from isaacsim.core.api.utils.numpy.rotations import quats_to_rot_matrices
 from isaacsim.core.api.utils.prims import get_prim_at_path, get_prim_object_type
 
 # New way of making UI being integrated in through feature updates
-from omni.isaac.ui.element_wrappers import Button, CheckBox, CollapsableFrame, DropDown, FloatField, ScrollingWindow
-from omni.isaac.ui.menu import make_menu_item_description
+from isaacsim.gui.components.element_wrappers import (
+    Button,
+    CheckBox,
+    CollapsableFrame,
+    DropDown,
+    FloatField,
+    ScrollingWindow,
+)
+from isaacsim.gui.components.menu import make_menu_item_description
 
 # Old way of making UI
-from omni.isaac.ui.ui_utils import (
+from isaacsim.gui.components.ui_utils import (
     add_line_rect_flourish,
     btn_builder,
     color_picker_builder,
@@ -46,7 +53,7 @@ from omni.isaac.ui.ui_utils import (
     str_builder,
     xyz_builder,
 )
-from omni.isaac.ui.widgets import DynamicComboBoxModel
+from isaacsim.gui.components.widgets import DynamicComboBoxModel
 from omni.kit.menu.utils import add_menu_items, remove_menu_items
 from omni.kit.window.property.templates import LABEL_WIDTH
 from pxr import Usd, UsdGeom, UsdPhysics

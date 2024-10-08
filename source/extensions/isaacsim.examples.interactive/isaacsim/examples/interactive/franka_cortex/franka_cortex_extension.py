@@ -16,7 +16,7 @@ import omni.ui as ui
 from isaacsim.cortex.framework.cortex_world import CortexWorld
 from isaacsim.examples.interactive.base_sample import BaseSampleExtension
 from isaacsim.examples.interactive.franka_cortex.franka_cortex import FrankaCortex
-from omni.isaac.ui.ui_utils import btn_builder, cb_builder, dropdown_builder, get_style, str_builder
+from isaacsim.gui.components.ui_utils import btn_builder, cb_builder, dropdown_builder, get_style, str_builder
 
 
 class FrankaCortexExtension(BaseSampleExtension):

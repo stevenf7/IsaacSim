@@ -12,6 +12,7 @@ import weakref
 
 import omni.ext
 import omni.usd
+from isaacsim.gui.components.menu import make_menu_item_description
 from isaacsim.ros2.bridge.scripts.og_shortcuts.og_rtx_sensors import Ros2CameraGraph, Ros2RtxLidarGraph
 from isaacsim.ros2.bridge.scripts.og_shortcuts.og_utils import (
     Ros2ClockGraph,
@@ -20,7 +21,6 @@ from isaacsim.ros2.bridge.scripts.og_shortcuts.og_utils import (
     Ros2OdometryGraph,
     Ros2TfPubGraph,
 )
-from omni.isaac.ui.menu import make_menu_item_description
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 
 

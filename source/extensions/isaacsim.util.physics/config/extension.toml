@@ -18,7 +18,7 @@ writeTarget.kit = true
 
 [dependencies]
 "omni.physx" = {}
-"omni.isaac.ui" = {}
+"isaacsim.gui.components" = {}
 "isaacsim.core.deprecation_manager" = {}
 
 [[python.module]]

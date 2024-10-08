@@ -18,7 +18,7 @@ keywords = ["kit", "example", "ui"]
 "omni.kit.test" = {}
 "omni.kit.uiapp" = {}
 "omni.kit.window.preferences" = {}
-"omni.isaac.ui"={}
+"isaacsim.gui.components"={}
 "omni.usd" = {}
 "isaacsim.asset.conveyor" = {}
 

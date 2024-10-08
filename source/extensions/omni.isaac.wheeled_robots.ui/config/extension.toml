@@ -18,7 +18,7 @@ writeTarget.kit = true
 
 [dependencies]
 "isaacsim.core.api" = {}
-"omni.isaac.ui" = {}
+"isaacsim.gui.components" = {}
 "omni.graph" = {}
 "omni.graph.tools" = {}
 "omni.isaac.wheeled_robots" = {}

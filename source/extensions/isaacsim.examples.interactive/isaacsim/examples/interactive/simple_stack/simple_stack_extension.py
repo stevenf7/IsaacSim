@@ -13,7 +13,7 @@ import os
 import omni.ui as ui
 from isaacsim.examples.interactive.base_sample import BaseSampleExtension
 from isaacsim.examples.interactive.simple_stack import SimpleStack
-from omni.isaac.ui.ui_utils import btn_builder
+from isaacsim.gui.components.ui_utils import btn_builder
 
 
 class SimpleStackExtension(BaseSampleExtension):

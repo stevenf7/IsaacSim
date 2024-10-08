@@ -17,7 +17,7 @@ preview_image = "data/preview.png"
 writeTarget.kit = true
 
 [dependencies]
-"omni.isaac.ui" = {}
+"isaacsim.gui.components" = {}
 "isaacsim.core.api" = {}
 "omni.isaac.occupancy_map" = {}
 
