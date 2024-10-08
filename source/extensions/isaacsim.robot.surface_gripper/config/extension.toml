@@ -18,7 +18,7 @@ writeTarget.kit = true
 
 [dependencies]
 "omni.isaac.dynamic_control" = {}
-"omni.isaac.ui" = {}
+"isaacsim.gui.components" = {}
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.core.api" = {}
 "omni.graph.tools" = {}

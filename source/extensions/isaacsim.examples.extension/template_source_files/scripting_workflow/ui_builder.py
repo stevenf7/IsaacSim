@@ -12,9 +12,9 @@ import omni.ui as ui
 from isaacsim.core.api.prims import XFormPrim
 from isaacsim.core.api.utils.stage import create_new_stage, get_current_stage
 from isaacsim.core.api.world import World
-from omni.isaac.ui.element_wrappers import CollapsableFrame, StateButton
-from omni.isaac.ui.element_wrappers.core_connectors import LoadButton, ResetButton
-from omni.isaac.ui.ui_utils import get_style
+from isaacsim.gui.components.element_wrappers import CollapsableFrame, StateButton
+from isaacsim.gui.components.element_wrappers.core_connectors import LoadButton, ResetButton
+from isaacsim.gui.components.ui_utils import get_style
 from omni.usd import StageEventType
 from pxr import Sdf, UsdLux
 
@@ -81,7 +81,7 @@ class UIBuilder:
         """
         Called when the stage is closed or the extension is hot reloaded.
         Perform any necessary cleanup such as removing active callback functions
-        Buttons imported from omni.isaac.ui.element_wrappers implement a cleanup function that should be called
+        Buttons imported from isaacsim.gui.components.element_wrappers implement a cleanup function that should be called
         """
         for ui_elem in self.wrapped_ui_elements:
             ui_elem.cleanup()

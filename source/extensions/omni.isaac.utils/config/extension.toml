@@ -23,7 +23,7 @@ writeTarget.kit = true
 "omni.client" = {}
 "omni.kit.menu.utils" = {}
 "isaacsim.core.api" = {}
-"omni.isaac.ui" = {}
+"isaacsim.gui.components" = {}
 "omni.isaac.nucleus" = {}
 
 [[python.module]]

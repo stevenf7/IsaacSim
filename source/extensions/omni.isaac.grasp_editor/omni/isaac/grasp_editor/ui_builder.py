@@ -21,7 +21,7 @@ from isaacsim.core.api.utils.numpy.rotations import quats_to_rot_matrices, rot_m
 from isaacsim.core.api.utils.stage import set_stage_units, update_stage_async
 from isaacsim.core.api.utils.types import ArticulationAction
 from isaacsim.core.api.utils.xforms import get_world_pose
-from omni.isaac.ui.element_wrappers import (
+from isaacsim.gui.components.element_wrappers import (
     Button,
     CheckBox,
     CollapsableFrame,
@@ -32,7 +32,7 @@ from omni.isaac.ui.element_wrappers import (
     StringField,
     TextBlock,
 )
-from omni.isaac.ui.ui_utils import get_style
+from isaacsim.gui.components.ui_utils import get_style
 from pxr import Usd, UsdGeom
 
 from .data_writer import DataWriter
@@ -121,7 +121,7 @@ class UIBuilder:
         """
         Called when the stage is closed or the extension is hot reloaded.
         Perform any necessary cleanup such as removing active callback functions
-        Buttons imported from omni.isaac.ui.element_wrappers implement a cleanup function that should be called
+        Buttons imported from isaacsim.gui.components.element_wrappers implement a cleanup function that should be called
         """
         for ui_elem in self.wrapped_ui_elements:
             ui_elem.cleanup()

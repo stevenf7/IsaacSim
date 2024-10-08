@@ -18,8 +18,8 @@ import omni.kit.app
 import omni.kit.commands
 import omni.kit.ui
 import omni.ui as ui
+from isaacsim.gui.components.menu import make_menu_item_description
 from omni.client._omniclient import Result
-from omni.isaac.ui.menu import make_menu_item_description
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 
 DOCS_URL = "https://docs.omniverse.nvidia.com"

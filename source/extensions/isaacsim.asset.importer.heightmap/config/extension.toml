@@ -19,7 +19,7 @@ writeTarget.kit = true
 [dependencies]
 "omni.kit.uiapp" = {}
 "omni.kit.viewport.window" = {}
-"omni.isaac.ui" = {}
+"isaacsim.gui.components" = {}
 "isaacsim.core.api" = {}
 "isaacsim.core.deprecation_manager" = {}
 

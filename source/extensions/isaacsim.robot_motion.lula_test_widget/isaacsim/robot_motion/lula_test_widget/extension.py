@@ -22,8 +22,8 @@ import omni.ui as ui
 import omni.usd
 from isaacsim.core.api.articulations import Articulation
 from isaacsim.core.api.utils.prims import get_prim_object_type
-from omni.isaac.ui.menu import make_menu_item_description
-from omni.isaac.ui.ui_utils import (
+from isaacsim.gui.components.menu import make_menu_item_description
+from isaacsim.gui.components.ui_utils import (
     add_line_rect_flourish,
     btn_builder,
     float_builder,
@@ -32,7 +32,7 @@ from omni.isaac.ui.ui_utils import (
     state_btn_builder,
     str_builder,
 )
-from omni.isaac.ui.widgets import DynamicComboBoxModel
+from isaacsim.gui.components.widgets import DynamicComboBoxModel
 from omni.kit.menu.utils import add_menu_items, remove_menu_items
 from omni.kit.window.extensions import SimpleCheckBox
 from omni.kit.window.property.templates import LABEL_WIDTH

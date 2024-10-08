@@ -17,11 +17,9 @@ import omni.ext
 import omni.kit.usd.layers
 import omni.ui as ui
 from isaacsim.core.api.utils.stage import get_stage_units
-from omni.isaac.occupancy_map.bindings import _occupancy_map
-from omni.isaac.occupancy_map.utils import compute_coordinates, generate_image, update_location
-from omni.isaac.ui.element_wrappers import ScrollingWindow
-from omni.isaac.ui.menu import make_menu_item_description
-from omni.isaac.ui.ui_utils import (
+from isaacsim.gui.components.element_wrappers import ScrollingWindow
+from isaacsim.gui.components.menu import make_menu_item_description
+from isaacsim.gui.components.ui_utils import (
     btn_builder,
     cb_builder,
     color_picker_builder,
@@ -30,6 +28,8 @@ from omni.isaac.ui.ui_utils import (
     multi_btn_builder,
     xyz_builder,
 )
+from omni.isaac.occupancy_map.bindings import _occupancy_map
+from omni.isaac.occupancy_map.utils import compute_coordinates, generate_image, update_location
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from omni.physx.scripts import utils
 from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics

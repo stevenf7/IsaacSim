@@ -11,7 +11,7 @@ import os
 from typing import List
 
 import omni.ui as ui
-from omni.isaac.ui.element_wrappers import (
+from isaacsim.gui.components.element_wrappers import (
     Button,
     CheckBox,
     CollapsableFrame,
@@ -24,7 +24,7 @@ from omni.isaac.ui.element_wrappers import (
     TextBlock,
     XYPlot,
 )
-from omni.isaac.ui.ui_utils import get_style
+from isaacsim.gui.components.ui_utils import get_style
 
 
 class UIBuilder:
@@ -32,7 +32,7 @@ class UIBuilder:
         # Frames are sub-windows that can contain multiple UI elements
         self.frames = []
 
-        # UI elements created using a UIElementWrapper from omni.isaac.ui.element_wrappers
+        # UI elements created using a UIElementWrapper from isaacsim.gui.components.element_wrappers
         self.wrapped_ui_elements = []
 
     ###################################################################################
@@ -74,7 +74,7 @@ class UIBuilder:
         """
         Called when the stage is closed or the extension is hot reloaded.
         Perform any necessary cleanup such as removing active callback functions
-        Buttons imported from omni.isaac.ui.element_wrappers implement a cleanup function that should be called
+        Buttons imported from isaacsim.gui.components.element_wrappers implement a cleanup function that should be called
         """
         # None of the UI elements in this template actually have any internal state that needs to be cleaned up.
         # But it is best practice to call cleanup() on all wrapped UI elements to simplify development.

@@ -14,8 +14,8 @@ from pathlib import Path
 import omni
 import omni.ui as ui
 from isaacsim.core.api.utils.stage import open_stage
-from omni.isaac.ui.element_wrappers import Button, CheckBox, CollapsableFrame, StringField
-from omni.isaac.ui.ui_utils import get_style
+from isaacsim.gui.components.element_wrappers import Button, CheckBox, CollapsableFrame, StringField
+from isaacsim.gui.components.ui_utils import get_style
 from omni.usd import StageEventType
 
 if os.name == "nt":

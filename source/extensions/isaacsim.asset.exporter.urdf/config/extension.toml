@@ -21,7 +21,7 @@ writeTarget.platform = true # pip prebundle makes this extension os specific
 "isaacsim.core.deprecation_manager" = {}
 "omni.kit.test" = {}
 "omni.kit.pip_archive" = {}
-"omni.isaac.ui" = {}
+"isaacsim.gui.components" = {}
 
 [[python.module]]
 path = "pip_prebundle"

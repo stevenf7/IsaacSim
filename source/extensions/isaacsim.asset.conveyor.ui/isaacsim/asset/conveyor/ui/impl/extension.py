@@ -15,7 +15,7 @@ import omni.kit.commands
 import omni.ui as ui
 from isaacsim.asset.conveyor.bindings._isaacsim_asset_conveyor import acquire_interface as _acquire
 from isaacsim.asset.conveyor.bindings._isaacsim_asset_conveyor import release_interface as _release
-from omni.isaac.ui.menu import make_menu_item_description
+from isaacsim.gui.components.menu import make_menu_item_description
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from omni.kit.window.preferences import register_page, unregister_page
 from pxr import Gf, Sdf, UsdGeom

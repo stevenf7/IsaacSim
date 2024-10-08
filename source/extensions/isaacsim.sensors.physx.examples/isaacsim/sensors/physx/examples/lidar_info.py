@@ -14,9 +14,9 @@ import omni.isaac.RangeSensorSchema as RangeSensorSchema
 import omni.ui as ui
 from isaacsim.core.api.utils.prims import delete_prim, get_prim_at_path
 from isaacsim.core.api.utils.viewports import set_camera_view
+from isaacsim.gui.components.menu import make_menu_item_description
+from isaacsim.gui.components.ui_utils import btn_builder, combo_cb_scrolling_frame_builder, get_style, setup_ui_headers
 from isaacsim.sensors.physx import _range_sensor
-from omni.isaac.ui.menu import make_menu_item_description
-from omni.isaac.ui.ui_utils import btn_builder, combo_cb_scrolling_frame_builder, get_style, setup_ui_headers
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from pxr import Gf, Sdf, UsdGeom, UsdLux, UsdPhysics
 

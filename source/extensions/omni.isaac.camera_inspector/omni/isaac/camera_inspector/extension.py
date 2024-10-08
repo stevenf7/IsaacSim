@@ -20,11 +20,17 @@ import omni.usd
 from isaacsim.core.api.utils.prims import is_prim_path_valid
 from isaacsim.core.api.utils.stage import get_current_stage
 from isaacsim.core.api.utils.viewports import create_viewport_for_camera
+from isaacsim.gui.components.element_wrappers import TextBlock
+from isaacsim.gui.components.menu import make_menu_item_description
+from isaacsim.gui.components.style import COLOR_W, COLOR_X, COLOR_Y, COLOR_Z
+from isaacsim.gui.components.ui_utils import (
+    BUTTON_WIDTH,
+    add_line_rect_flourish,
+    btn_builder,
+    get_style,
+    setup_ui_headers,
+)
 from isaacsim.sensors.camera import get_all_camera_objects
-from omni.isaac.ui.element_wrappers import TextBlock
-from omni.isaac.ui.menu import make_menu_item_description
-from omni.isaac.ui.style import COLOR_W, COLOR_X, COLOR_Y, COLOR_Z
-from omni.isaac.ui.ui_utils import BUTTON_WIDTH, add_line_rect_flourish, btn_builder, get_style, setup_ui_headers
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from omni.kit.viewport.window import get_viewport_window_instances
 from omni.kit.window.property.templates import LABEL_WIDTH
