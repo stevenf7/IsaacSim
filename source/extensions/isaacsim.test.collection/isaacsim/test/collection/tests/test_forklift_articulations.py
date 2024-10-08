@@ -49,7 +49,7 @@ class TestForkliftArticulations(omni.kit.test.AsyncTestCase):
             {
                 keys.CREATE_NODES: [
                     ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                    ("ArticulationController", "omni.isaac.core_nodes.IsaacArticulationController"),
+                    ("ArticulationController", "isaacsim.core.nodes.IsaacArticulationController"),
                     ("WritePrimAttributeLeft", "omni.graph.nodes.WritePrimAttribute"),
                     ("WritePrimAttributeRight", "omni.graph.nodes.WritePrimAttribute"),
                     ("WritePrimAttributeLift", "omni.graph.nodes.WritePrimAttribute"),

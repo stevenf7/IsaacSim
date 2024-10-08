@@ -19,11 +19,11 @@ writeTarget.kit = true
 [dependencies]
 "isaacsim.core.api" = {}
 "isaacsim.core.deprecation_manager" = {}
+"isaacsim.core.nodes" = {}
 "isaacsim.gui.components" = {}
 "isaacsim.util.debug_draw" = {}
 "omni.graph.action" = {}
 "omni.graph" = {}
-"omni.isaac.core_nodes" = {}
 "omni.isaac.nucleus" = {}
 "omni.kit.numpy.common" = {}
 "omni.kit.pip_archive" = {} # pulls in numpy

@@ -15,8 +15,8 @@ import omni.kit.commands
 from isaacsim.core.api.prims.base_sensor import BaseSensor
 from isaacsim.core.api.utils.prims import get_prim_at_path, is_prim_path_valid
 from isaacsim.core.api.utils.stage import traverse_stage
+from isaacsim.core.nodes.bindings import _isaacsim_core_nodes
 from isaacsim.sensors.physics import _sensor
-from omni.isaac.core_nodes.bindings import _omni_isaac_core_nodes
 from pxr import PhysxSchema
 
 
@@ -43,7 +43,7 @@ class IMUSensor(BaseSensor):
         self._body_prim_path = "/".join(prim_path.split("/")[:-1])
         self._sensor_name = prim_path.split("/")[-1]
         self._imu_sensor_interface = _sensor.acquire_imu_sensor_interface()
-        self._core_nodes = _omni_isaac_core_nodes.acquire_interface()
+        self._core_nodes = _isaacsim_core_nodes.acquire_interface()
 
         linear_acceleration_filter_size = max(linear_acceleration_filter_size, 1)
         angular_velocity_filter_size = max(angular_velocity_filter_size, 1)

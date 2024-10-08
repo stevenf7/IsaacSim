@@ -198,8 +198,8 @@ class TestAckermannControllerOgn(ogts.OmniGraphTestCase):
                 og.Controller.Keys.CREATE_NODES: [
                     ("AckermannController", "isaacsim.robot.wheeled_robots.AckermannController"),
                     ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                    ("ComputeOdom", "omni.isaac.core_nodes.IsaacComputeOdometry"),
-                    ("ArticulationController", "omni.isaac.core_nodes.IsaacArticulationController"),
+                    ("ComputeOdom", "isaacsim.core.nodes.IsaacComputeOdometry"),
+                    ("ArticulationController", "isaacsim.core.nodes.IsaacArticulationController"),
                     ("WheelAnglesArray", "omni.graph.nodes.ConstructArray"),
                     ("WheelVelocityArray", "omni.graph.nodes.ConstructArray"),
                 ],
@@ -336,7 +336,7 @@ class TestAckermannControllerOgn(ogts.OmniGraphTestCase):
                     ("AckermannController", "isaacsim.robot.wheeled_robots.AckermannController"),
                     ("WheelAnglesArray", "omni.graph.nodes.ConstructArray"),
                     ("WheelVelocityArray", "omni.graph.nodes.ConstructArray"),
-                    ("ArticulationController", "omni.isaac.core_nodes.IsaacArticulationController"),
+                    ("ArticulationController", "isaacsim.core.nodes.IsaacArticulationController"),
                     ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                 ],
                 og.Controller.Keys.CONNECT: [
@@ -434,7 +434,7 @@ class TestAckermannControllerOgn(ogts.OmniGraphTestCase):
                     ("AckermannController", "isaacsim.robot.wheeled_robots.AckermannController"),
                     ("WheelAnglesArray", "omni.graph.nodes.ConstructArray"),
                     ("WheelVelocityArray", "omni.graph.nodes.ConstructArray"),
-                    ("ArticulationController", "omni.isaac.core_nodes.IsaacArticulationController"),
+                    ("ArticulationController", "isaacsim.core.nodes.IsaacArticulationController"),
                     ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                 ],
                 og.Controller.Keys.SET_VALUES: [

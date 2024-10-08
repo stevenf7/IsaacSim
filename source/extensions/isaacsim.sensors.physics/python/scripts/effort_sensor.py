@@ -14,7 +14,7 @@ import numpy as np
 import omni.kit.utils
 import omni.usd
 from isaacsim.core.api.articulations.articulation import Articulation
-from omni.isaac.core_nodes.bindings import _omni_isaac_core_nodes
+from isaacsim.core.nodes.bindings import _isaacsim_core_nodes
 
 
 class EsSensorReading:
@@ -41,7 +41,7 @@ class EffortSensor(Articulation):
         self.data_buffer_size = 10
         self.sensor_reading_buffer = [EsSensorReading() for i in range(self.data_buffer_size)]
         self.interpolation_buffer = copy.deepcopy(self.sensor_reading_buffer)
-        self.core_nodes = _omni_isaac_core_nodes.acquire_interface()
+        self.core_nodes = _isaacsim_core_nodes.acquire_interface()
         self.physics_num_steps = 0
         self.is_initialized = False
         self.dof = None

@@ -10,9 +10,9 @@
 import numpy as np
 import omni.graph.core as og
 from isaacsim.core.api.utils.rotations import quat_to_euler_angles
+from isaacsim.core.nodes import BaseResetNode
 from isaacsim.robot.wheeled_robots.controllers.stanley_control import normalize_angle
 from isaacsim.robot.wheeled_robots.ogn.OgnCheckGoal2DDatabase import OgnCheckGoal2DDatabase
-from omni.isaac.core_nodes import BaseResetNode
 
 
 class OgnCheckGoal2DInternalState(BaseResetNode):

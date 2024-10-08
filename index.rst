@@ -14,8 +14,8 @@ Isaac Sim: Extensions API
    :glob:
 
    source/extensions/isaacsim.core.api/docs/index
-   source/extensions/omni.isaac.core_nodes/docs/index
    source/deprecated/omni.isaac.dynamic_control/docs/index
+   source/extensions/isaacsim.core.nodes/docs/index
    source/extensions/isaacsim.simulation_app/docs/index
    source/extensions/omni.isaac.utils/docs/index
    source/extensions/isaacsim.gui.components/docs/index

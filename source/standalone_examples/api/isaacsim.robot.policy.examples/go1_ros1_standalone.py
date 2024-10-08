@@ -110,7 +110,7 @@ class Go1_runner(object):
                 {
                     keys.CREATE_NODES: [
                         ("OnTick", "omni.graph.action.OnTick"),
-                        ("readSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                        ("readSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                         ("publishClock", "omni.isaac.ros_bridge.ROS1PublishClock"),
                     ],
                     keys.CONNECT: [

@@ -63,8 +63,8 @@ class Ros2CameraGraph:
                     keys.CREATE_NODES: [
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                         ("CameraInfoPublish", "isaacsim.ros2.bridge.ROS2CameraInfoHelper"),
-                        ("RenderProduct", "omni.isaac.core_nodes.IsaacCreateRenderProduct"),
-                        ("RunOnce", "omni.isaac.core_nodes.OgnIsaacRunOneSimulationFrame"),
+                        ("RenderProduct", "isaacsim.core.nodes.IsaacCreateRenderProduct"),
+                        ("RunOnce", "isaacsim.core.nodes.OgnIsaacRunOneSimulationFrame"),
                         ("Context", "isaacsim.ros2.bridge.ROS2Context"),
                     ],
                     keys.SET_VALUES: [
@@ -99,7 +99,7 @@ class Ros2CameraGraph:
                 tick_node = node_path
             elif node_type == "isaacsim.ros2.bridge.ROS2Context":
                 context_node = node_path
-            elif node_type == "omni.isaac.core_nodes.IsaacCreateRenderProduct":
+            elif node_type == "isaacsim.core.nodes.IsaacCreateRenderProduct":
                 render_node_path = node_path
                 render_node = node
 
@@ -115,7 +115,7 @@ class Ros2CameraGraph:
                 graph_handle,
                 {
                     keys.CREATE_NODES: [
-                        (render_node_name, "omni.isaac.core_nodes.IsaacCreateRenderProduct"),
+                        (render_node_name, "isaacsim.core.nodes.IsaacCreateRenderProduct"),
                     ],
                     keys.SET_VALUES: [
                         (render_node_name + ".inputs:cameraPrim", self._camera_prim),
@@ -590,8 +590,8 @@ class Ros2RtxLidarGraph:
                 {
                     keys.CREATE_NODES: [
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                        ("RunOnce", "omni.isaac.core_nodes.OgnIsaacRunOneSimulationFrame"),
-                        ("RenderProduct", "omni.isaac.core_nodes.IsaacCreateRenderProduct"),
+                        ("RunOnce", "isaacsim.core.nodes.OgnIsaacRunOneSimulationFrame"),
+                        ("RenderProduct", "isaacsim.core.nodes.IsaacCreateRenderProduct"),
                         ("Context", "isaacsim.ros2.bridge.ROS2Context"),
                     ],
                     keys.SET_VALUES: [("RenderProduct.inputs:cameraPrim", self._lidar_prim)],
@@ -617,9 +617,9 @@ class Ros2RtxLidarGraph:
                 tick_node = node_path
             elif node_type == "isaacsim.ros2.bridge.ROS2Context":
                 context_node = node_path
-            elif node_type == "omni.isaac.core_nodes.IsaacReadSimulationTime":
+            elif node_type == "isaacsim.core.nodes.IsaacReadSimulationTime":
                 sim_time_node = node_path
-            elif node_type == "omni.isaac.core_nodes.IsaacCreateRenderProduct":
+            elif node_type == "isaacsim.core.nodes.IsaacCreateRenderProduct":
                 render_node = node_path
 
         if self._laser_scan_pub:

@@ -9,8 +9,8 @@
 
 import numpy as np
 import omni.graph.core as og
+from isaacsim.core.nodes import BaseResetNode
 from isaacsim.robot.wheeled_robots.ogn.OgnAckermannDatabase import OgnAckermannDatabase
-from omni.isaac.core_nodes import BaseResetNode
 
 
 class OgnAckermannInternalState(BaseResetNode):

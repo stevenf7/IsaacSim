@@ -74,7 +74,7 @@ class DifferentialRobotGraph:
                 # if there already exist a differential controller, add a new one
                 diff_node = get_next_free_path(node_path, "")
                 diff_node_name = Path(diff_node).name
-            elif node_type == "omni.isaac.core_nodes.IsaacArticulationController":
+            elif node_type == "isaacsim.core.nodes.IsaacArticulationController":
                 # if there already exist an articulation controller, add a new one
                 art_node = get_next_free_path(node_path, "")
                 art_node_name = Path(art_node).name
@@ -85,7 +85,7 @@ class DifferentialRobotGraph:
             {
                 keys.CREATE_NODES: [
                     (diff_node_name, "isaacsim.robot.wheeled_robots.DifferentialController"),
-                    (art_node_name, "omni.isaac.core_nodes.IsaacArticulationController"),
+                    (art_node_name, "isaacsim.core.nodes.IsaacArticulationController"),
                 ],
                 keys.SET_VALUES: [
                     (diff_node_name + ".inputs:wheelRadius", self._wheel_radius),

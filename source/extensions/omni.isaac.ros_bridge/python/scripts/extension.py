@@ -15,7 +15,7 @@ import omni.ext
 import omni.replicator.core as rep
 import omni.syntheticdata
 import omni.syntheticdata._syntheticdata as sd
-from omni.isaac.core_nodes.scripts.utils import register_node_writer_with_telemetry
+from isaacsim.core.nodes.scripts.utils import register_node_writer_with_telemetry
 
 from .. import _ros_bridge
 

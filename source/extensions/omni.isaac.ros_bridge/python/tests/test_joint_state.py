@@ -81,7 +81,7 @@ class TestRosJointStatePublisher(omni.kit.test.AsyncTestCase):
                     og.Controller.Keys.CREATE_NODES: [
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                         ("PublishJointState", "omni.isaac.ros_bridge.ROS1PublishJointState"),
-                        ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                        ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                     ],
                     og.Controller.Keys.SET_VALUES: [
                         (
@@ -233,7 +233,7 @@ class TestRosJointStateSubscriber(omni.kit.test.AsyncTestCase):
                     og.Controller.Keys.CREATE_NODES: [
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                         ("SubscribeJointState", "omni.isaac.ros_bridge.ROS1SubscribeJointState"),
-                        ("ArticulationController", "omni.isaac.core_nodes.IsaacArticulationController"),
+                        ("ArticulationController", "isaacsim.core.nodes.IsaacArticulationController"),
                     ],
                     og.Controller.Keys.CONNECT: [
                         ("OnPlaybackTick.outputs:tick", "SubscribeJointState.inputs:execIn"),

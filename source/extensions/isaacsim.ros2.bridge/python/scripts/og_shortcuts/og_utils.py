@@ -38,7 +38,7 @@ class Ros2ClockGraph:
             {
                 keys.CREATE_NODES: [
                     ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                    ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                    ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                     ("PublishClock", "isaacsim.ros2.bridge.ROS2PublishClock"),
                     ("Context", "isaacsim.ros2.bridge.ROS2Context"),
                 ],
@@ -142,7 +142,7 @@ class Ros2GenericPubGraph:
                 keys.CREATE_NODES: [
                     ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                     ("GenericPublisher", "isaacsim.ros2.bridge.ROS2Publisher"),
-                    ("RTF", "omni.isaac.core_nodes.IsaacRealTimeFactor"),
+                    ("RTF", "isaacsim.core.nodes.IsaacRealTimeFactor"),
                     ("Context", "isaacsim.ros2.bridge.ROS2Context"),
                 ],
                 keys.SET_VALUES: [
@@ -362,7 +362,7 @@ class Ros2JointStatesGraph:
                     keys.CREATE_NODES: [
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                         ("Context", "isaacsim.ros2.bridge.ROS2Context"),
-                        ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                        ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                     ],
                     keys.SET_VALUES: [
                         ("ReadSimTime.inputs:resetOnStop", False),
@@ -388,7 +388,7 @@ class Ros2JointStatesGraph:
                 tick_node = node_path
             elif node_type == "isaacsim.ros2.bridge.ROS2Context":
                 context_node = node_path
-            elif node_type == "omni.isaac.core_nodes.IsaacReadSimulationTime":
+            elif node_type == "isaacsim.core.nodes.IsaacReadSimulationTime":
                 sim_time_node = node_path
             elif node_type == "isaacsim.ros2.bridge.ROS2PublishJointState":
                 # if there already exist a js pub node, add a new one with a different name
@@ -398,7 +398,7 @@ class Ros2JointStatesGraph:
                 # if there already exist a js sub node, add a new one with a different name
                 js_sub_node_path = get_next_free_path(node_path, "")
                 js_sub_node_name = Path(js_sub_node_path).name
-            elif node_type == "omni.isaac.core_nodes.IsaacArticulationController":
+            elif node_type == "isaacsim.core.nodes.IsaacArticulationController":
                 msg = "already has an articulation controller node, CREATING A NEW ARTICULATION NODE"
                 print(msg)
                 post_notification(msg, status=NotificationStatus.WARNING)
@@ -466,7 +466,7 @@ class Ros2JointStatesGraph:
                     graph_handle,
                     {
                         keys.CREATE_NODES: [
-                            (art_node_name, "omni.isaac.core_nodes.IsaacArticulationController"),
+                            (art_node_name, "isaacsim.core.nodes.IsaacArticulationController"),
                         ],
                         keys.SET_VALUES: [
                             (art_node_name + ".inputs:targetPrim", self._art_root_path),
@@ -638,7 +638,7 @@ class Ros2TfPubGraph:
                     keys.CREATE_NODES: [
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                         ("Context", "isaacsim.ros2.bridge.ROS2Context"),
-                        ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                        ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                     ],
                     keys.SET_VALUES: [
                         ("ReadSimTime.inputs:resetOnStop", False),
@@ -662,7 +662,7 @@ class Ros2TfPubGraph:
                 tick_node = node_path
             elif node_type == "isaacsim.ros2.bridge.ROS2Context":
                 context_node = node_path
-            elif node_type == "omni.isaac.core_nodes.IsaacReadSimulationTime":
+            elif node_type == "isaacsim.core.nodes.IsaacReadSimulationTime":
                 sim_time_node = node_path
             elif node_type == "isaacsim.ros2.bridge.ROS2PublishTransformTree":
                 self._has_existing_node = True
@@ -853,7 +853,7 @@ class Ros2OdometryGraph:
                     keys.CREATE_NODES: [
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                         ("Context", "isaacsim.ros2.bridge.ROS2Context"),
-                        ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                        ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                     ],
                     keys.SET_VALUES: [
                         ("ReadSimTime.inputs:resetOnStop", False),
@@ -882,13 +882,13 @@ class Ros2OdometryGraph:
                 tick_node = node_path
             elif node_type == "isaacsim.ros2.bridge.ROS2Context":
                 context_node = node_path
-            elif node_type == "omni.isaac.core_nodes.IsaacReadSimulationTime":
+            elif node_type == "isaacsim.core.nodes.IsaacReadSimulationTime":
                 sim_time_node = node_path
             elif node_type == "isaacsim.ros2.bridge.ROS2PublishOdometry":
                 # get ready to add a new odom publisher nodes
                 odom_pub_node = get_next_free_path(node_path, "")
                 odom_pub_name = Path(odom_pub_node).name
-            elif node_type == "omni.isaac.core_nodes.IsaacComputeOdometry":
+            elif node_type == "isaacsim.core.nodes.IsaacComputeOdometry":
                 # get ready to add a new odom compute nodes
                 odom_compute_node = get_next_free_path(node_path, "")
                 odom_compute_name = Path(odom_compute_node).name
@@ -909,7 +909,7 @@ class Ros2OdometryGraph:
                 keys.CREATE_NODES: [
                     (tf_world2odom_name, "isaacsim.ros2.bridge.ROS2PublishRawTransformTree"),
                     (tf_odom2robot_name, "isaacsim.ros2.bridge.ROS2PublishRawTransformTree"),
-                    (odom_compute_name, "omni.isaac.core_nodes.IsaacComputeOdometry"),
+                    (odom_compute_name, "isaacsim.core.nodes.IsaacComputeOdometry"),
                     (odom_pub_name, "isaacsim.ros2.bridge.ROS2PublishOdometry"),
                 ],
                 keys.SET_VALUES: [

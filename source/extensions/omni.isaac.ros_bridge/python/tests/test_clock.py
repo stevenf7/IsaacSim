@@ -77,7 +77,7 @@ class TestRosClock(omni.kit.test.AsyncTestCase):
             {
                 keys.CREATE_NODES: [
                     ("OnTick", "omni.graph.action.OnTick"),
-                    ("IsaacClock", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                    ("IsaacClock", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                     ("RosPublisher", "omni.isaac.ros_bridge.ROS1PublishClock"),
                 ],
                 keys.CONNECT: [
@@ -113,7 +113,7 @@ class TestRosClock(omni.kit.test.AsyncTestCase):
             {
                 keys.CREATE_NODES: [
                     ("Impulse", "omni.graph.action.OnImpulseEvent"),
-                    ("IsaacClock", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                    ("IsaacClock", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                     ("RosPublisher", "omni.isaac.ros_bridge.ROS1PublishClock"),
                 ],
                 keys.SET_VALUES: [("IsaacClock.inputs:resetOnStop", True)],
@@ -162,7 +162,7 @@ class TestRosClock(omni.kit.test.AsyncTestCase):
             {
                 keys.CREATE_NODES: [
                     ("OnTick", "omni.graph.action.OnTick"),
-                    ("IsaacClock", "omni.isaac.core_nodes.IsaacReadTimes"),
+                    ("IsaacClock", "isaacsim.core.nodes.IsaacReadTimes"),
                     ("RosPublisher", "omni.isaac.ros_bridge.ROS1PublishClock"),
                 ],
                 keys.CONNECT: [

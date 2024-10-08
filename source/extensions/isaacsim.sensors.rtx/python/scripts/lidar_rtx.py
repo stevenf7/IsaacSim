@@ -22,7 +22,7 @@ from isaacsim.core.api.prims.base_sensor import BaseSensor
 from isaacsim.core.api.utils.extensions import get_extension_path_from_name
 from isaacsim.core.api.utils.prims import get_prim_at_path, get_prim_type_name, is_prim_path_valid
 from isaacsim.core.api.utils.stage import get_stage_units
-from omni.isaac.core_nodes.bindings import _omni_isaac_core_nodes
+from isaacsim.core.nodes.bindings import _isaacsim_core_nodes
 from omni.isaac.IsaacSensorSchema import IsaacRtxLidarSensorAPI
 from omni.syntheticdata import sensors
 
@@ -108,7 +108,7 @@ class LidarRtx(BaseSensor):
         self._create_point_cloud_graph_node()
         self._create_flat_scan_graph_node()
         self._debug_draw_node_path = None
-        self._core_nodes_interface = _omni_isaac_core_nodes.acquire_interface()
+        self._core_nodes_interface = _isaacsim_core_nodes.acquire_interface()
         BaseSensor.__init__(
             self, prim_path=prim_path, name=name, translation=translation, position=position, orientation=orientation
         )

@@ -80,9 +80,9 @@ keys = og.Controller.Keys
     {
         keys.CREATE_NODES: [
             ("OnTick", "omni.graph.action.OnTick"),
-            ("createViewport", "omni.isaac.core_nodes.IsaacCreateViewport"),
-            ("getRenderProduct", "omni.isaac.core_nodes.IsaacGetViewportRenderProduct"),
-            ("setCamera", "omni.isaac.core_nodes.IsaacSetCameraOnRenderProduct"),
+            ("createViewport", "isaacsim.core.nodes.IsaacCreateViewport"),
+            ("getRenderProduct", "isaacsim.core.nodes.IsaacGetViewportRenderProduct"),
+            ("setCamera", "isaacsim.core.nodes.IsaacSetCameraOnRenderProduct"),
             ("cameraHelperRgb", "omni.isaac.ros_bridge.ROS1CameraHelper"),
             ("cameraHelperInfo", "omni.isaac.ros_bridge.ROS1CameraHelper"),
             ("cameraHelperDepth", "omni.isaac.ros_bridge.ROS1CameraHelper"),

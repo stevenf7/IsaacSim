@@ -156,7 +156,7 @@ class TestRos2CameraInfo(omni.kit.test.AsyncTestCase):
                 {
                     og.Controller.Keys.CREATE_NODES: [
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                        ("CreateRenderProduct", "omni.isaac.core_nodes.IsaacCreateRenderProduct"),
+                        ("CreateRenderProduct", "isaacsim.core.nodes.IsaacCreateRenderProduct"),
                         ("CameraInfoPublish", "isaacsim.ros2.bridge.ROS2CameraInfoHelper"),
                     ],
                     og.Controller.Keys.SET_VALUES: [
@@ -285,9 +285,9 @@ class TestRos2CameraInfo(omni.kit.test.AsyncTestCase):
                 {
                     og.Controller.Keys.CREATE_NODES: [
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                        ("RunOneSimulationFrame", "omni.isaac.core_nodes.OgnIsaacRunOneSimulationFrame"),
-                        ("CreateRenderProductLeft", "omni.isaac.core_nodes.IsaacCreateRenderProduct"),
-                        ("CreateRenderProductRight", "omni.isaac.core_nodes.IsaacCreateRenderProduct"),
+                        ("RunOneSimulationFrame", "isaacsim.core.nodes.OgnIsaacRunOneSimulationFrame"),
+                        ("CreateRenderProductLeft", "isaacsim.core.nodes.IsaacCreateRenderProduct"),
+                        ("CreateRenderProductRight", "isaacsim.core.nodes.IsaacCreateRenderProduct"),
                         ("CameraInfoPublish", "isaacsim.ros2.bridge.ROS2CameraInfoHelper"),
                         ("RGBPublishLeft", "isaacsim.ros2.bridge.ROS2CameraHelper"),
                         ("RGBPublishRight", "isaacsim.ros2.bridge.ROS2CameraHelper"),

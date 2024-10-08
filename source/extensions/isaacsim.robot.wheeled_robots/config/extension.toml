@@ -19,7 +19,7 @@ writeTarget.kit = true
 [dependencies]
 "omni.physx" = {}
 "isaacsim.core.api" = {}
-"omni.isaac.core_nodes" = {}
+"isaacsim.core.nodes" = {}
 "isaacsim.gui.components" = {}
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.core_archive" = {} # scipy, osqp, qdldl

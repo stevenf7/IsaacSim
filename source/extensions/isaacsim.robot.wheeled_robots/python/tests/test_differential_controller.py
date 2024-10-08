@@ -176,7 +176,7 @@ class TestDifferentialControllerNode(ogts.OmniGraphTestCase):
                 og.Controller.Keys.CREATE_NODES: [
                     ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                     ("DifferentialController", "isaacsim.robot.wheeled_robots.DifferentialController"),
-                    ("ArticulationController", "omni.isaac.core_nodes.IsaacArticulationController"),
+                    ("ArticulationController", "isaacsim.core.nodes.IsaacArticulationController"),
                 ],
                 og.Controller.Keys.CONNECT: [
                     ("OnPlaybackTick.outputs:tick", "DifferentialController.inputs:execIn"),
