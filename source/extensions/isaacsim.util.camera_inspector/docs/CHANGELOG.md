@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.0] - 2024-10-08
+### Changed
+- Extension  renamed to isaacsim.util.camera_inspector.
+
 ## [0.2.2] - 2024-06-17
 ### Fixed
 - Camera Inspector erroring out on creating a new stage
