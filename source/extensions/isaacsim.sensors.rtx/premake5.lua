@@ -30,7 +30,7 @@ project_ext_plugin(ext, ogn.plugin_project)
         targetDepsDir.."/python/include",
         "%{root}/source/extensions/omni.isaac.core_nodes/include",
         "%{kit_sdk_bin_dir}/dev/fabric/include/",
-        "%{root}/source/extensions/omni.isaac.dynamic_control/include",
+        "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
         bin_dir.."/extsbuild/omni.sensors.nv.common/include",
     }
     libdirs {

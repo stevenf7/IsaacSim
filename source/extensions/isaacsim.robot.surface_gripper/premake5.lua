@@ -37,7 +37,7 @@ project_ext_bindings ({
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/source/extensions/isaacsim.robot.surface_gripper/include",
-        "%{root}/source/extensions/omni.isaac.dynamic_control/include",
+        "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
         "%{root}/_build/target-deps/omni_physics/%{config}/include",
     }
 
