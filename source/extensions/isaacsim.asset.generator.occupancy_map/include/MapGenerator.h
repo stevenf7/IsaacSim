@@ -39,7 +39,12 @@ namespace physx
 {
 class IPhysx;
 }
-namespace isaac
+}
+namespace isaacsim
+{
+namespace asset
+{
+namespace generator
 {
 namespace occupancy_map
 {
@@ -94,6 +99,7 @@ private:
     float mUnknownValue = 0.5;
 };
 
+}
 }
 }
 }

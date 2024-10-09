@@ -28,13 +28,14 @@
 #include <PxScene.h>
 #include <stack>
 
-namespace omni
+namespace isaacsim
 {
-namespace isaac
+namespace asset
+{
+namespace generator
 {
 namespace occupancy_map
 {
-
 
 const ::physx::PxHitFlags gHitFlags = ::physx::PxHitFlag::eDEFAULT | ::physx::PxHitFlag::eMESH_BOTH_SIDES;
 ::physx::PxScene* findScene(omni::physx::IPhysx* physXPtr, pxr::UsdStageWeakPtr stagePtr)
@@ -407,6 +408,7 @@ std::vector<char> MapGenerator::getColoredByteBuffer(const carb::Int4& occupied,
         }
     }
     return colorBuffer;
+}
 }
 }
 }

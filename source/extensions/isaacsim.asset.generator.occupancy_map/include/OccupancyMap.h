@@ -13,20 +13,20 @@
 #include <carb/Types.h>
 
 
-namespace omni
+namespace isaacsim
 {
 
-namespace isaac
+namespace asset
+{
+namespace generator
 {
 namespace occupancy_map
 {
-
-
 struct OccupancyMap
 {
 
 
-    CARB_PLUGIN_INTERFACE("omni::isaac::occupancy_map::OccupancyMap", 0, 1);
+    CARB_PLUGIN_INTERFACE("isaacsim::asset::generator::occupancy_map::OccupancyMap", 0, 1);
 
     void(CARB_ABI* generateMap)();
     void(CARB_ABI* update)();
@@ -42,6 +42,7 @@ struct OccupancyMap
                                                       const carb::Int4& unoccupied,
                                                       const carb::Int4& unknown);
 };
+}
 }
 }
 }

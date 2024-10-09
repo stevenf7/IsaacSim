@@ -35,7 +35,7 @@ const struct carb::PluginImplDesc kPluginImpl = { "isaacsim.asset.generator.occu
                                                   "Isaac Motion Planning", "NVIDIA", carb::PluginHotReload::eDisabled,
                                                   "dev" };
 
-CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::occupancy_map::OccupancyMap)
+CARB_PLUGIN_IMPL(kPluginImpl, isaacsim::asset::generator::occupancy_map::OccupancyMap)
 CARB_PLUGIN_IMPL_DEPS(omni::physx::IPhysx, omni::kit::IStageUpdate)
 
 // private stuff
@@ -49,7 +49,7 @@ carb::Float3 inputOrigin = { 0, 0, 0 };
 carb::Float3 inputMinPoint = { -1.00f, -1.00f, 0.0f };
 carb::Float3 inputMaxPoint = { 1.00f, 1.00f, 0.0f };
 float inputCellSize = .05f;
-std::unique_ptr<omni::isaac::occupancy_map::MapGenerator> gGenerator = nullptr;
+std::unique_ptr<isaacsim::asset::generator::occupancy_map::MapGenerator> gGenerator = nullptr;
 std::unique_ptr<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper> gLineDrawing;
 std::unique_ptr<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper> gCellDrawing;
 float gMetersPerUnit = 1.0f;
@@ -59,7 +59,7 @@ float gMetersPerUnit = 1.0f;
 void CARB_ABI GenerateMap()
 {
 
-    gGenerator = std::make_unique<omni::isaac::occupancy_map::MapGenerator>(gPhysx, gStage);
+    gGenerator = std::make_unique<isaacsim::asset::generator::occupancy_map::MapGenerator>(gPhysx, gStage);
 
     gGenerator->setTransform(inputOrigin, inputMinPoint, inputMaxPoint);
     gGenerator->updateSettings(inputCellSize, 1.0f, 0.0f, 0.5f);
@@ -358,9 +358,9 @@ CARB_EXPORT void carbOnPluginShutdown()
     gCellDrawing.reset();
 }
 
-void fillInterface(omni::isaac::occupancy_map::OccupancyMap& iface)
+void fillInterface(isaacsim::asset::generator::occupancy_map::OccupancyMap& iface)
 {
-    using namespace omni::isaac::occupancy_map;
+    using namespace isaacsim::asset::generator::occupancy_map;
 
     memset(&iface, 0, sizeof(iface));
 

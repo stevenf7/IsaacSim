@@ -1,5 +1,10 @@
 # Changelog
 
+
+## [2.0.1] - 2024-10-08
+### Changed
+- Updated occupancy map namespace
+
 ## [2.0.0] - 2024-10-04
 ### Changed
 - Extension renamed to isaacsim.asset.generator.occupancy_map.
