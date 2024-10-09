@@ -403,7 +403,7 @@ inventory.include = [
     "exts/isaacsim.robot_motion.ocs2",
     "exts/isaacsim.robot_motion.lula",
     "exts/isaacsim.robot_motion.lula_test_widget",
-    "exts/isaacsim.robot_motion.motion_generation
+    "exts/isaacsim.robot_motion.motion_generation",
     # deprecated extensions
     "extsDeprecated/omni.isaac.motion_generation",
     "extsDeprecated/omni.isaac.ocs2",
@@ -493,8 +493,11 @@ inventory.include = [
     "exts/isaacsim.sensors.physx.ui",
     "exts/isaacsim.sensors.physx",
     "exts/isaacsim.sensors.rtx",
-    "exts/omni.isaac.camera_inspector",
+    "exts/isaacsim.util.camera_inspector",
     "exts/omni.usd.schema.isaac",
+
+    # deprecated extensions
+    "extsDeprecated/omni.isaac.camera_inspector",
 ]
 
 [isaacsim-storage]
