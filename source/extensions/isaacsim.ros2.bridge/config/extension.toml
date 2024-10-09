@@ -69,7 +69,7 @@ exclude = ["Ogn*Database.py"]
 timeout=900
 dependencies = [
     "omni.graph.ui",
-    "omni.isaac.wheeled_robots",
+    "isaacsim.robot.wheeled_robots",
 ]
 
 args = [

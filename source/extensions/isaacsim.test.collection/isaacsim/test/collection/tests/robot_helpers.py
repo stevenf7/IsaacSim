@@ -45,7 +45,7 @@ def setup_robot_og(graph_path, lwheel_name, rwheel_name, robot_path, wheel_rad, 
         {
             keys.CREATE_NODES: [
                 ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                ("DifferentialController", "omni.isaac.wheeled_robots.DifferentialController"),
+                ("DifferentialController", "isaacsim.robot.wheeled_robots.DifferentialController"),
                 ("ArticulationController", "omni.isaac.core_nodes.IsaacArticulationController"),
                 ("computeOdom", "omni.isaac.core_nodes.IsaacComputeOdometry"),
             ],

@@ -374,8 +374,8 @@ inventory.include = [
     "exts/isaacsim.robot.manipulators.examples",
     "exts/isaacsim.robot.manipulators",
     "exts/omni.isaac.quadruped",
-    "exts/omni.isaac.wheeled_robots.ui",
-    "exts/omni.isaac.wheeled_robots",
+    "exts/isaacsim.robot.wheeled_robots.ui",
+    "exts/isaacsim.robot.wheeled_robots",
     # deprecated extensions
     "extsDeprecated/omni.isaac.franka",
     "extsDeprecated/omni.isaac.universal_robots",
@@ -383,6 +383,9 @@ inventory.include = [
     "extsDeprecated/omni.isaac.manipulators",
     "extsDeprecated/omni.isaac.surface_gripper.ui",
     "extsDeprecated/omni.isaac.surface_gripper",
+    "extsDeprecated/omni.isaac.wheeled_robots",
+    "extsDeprecated/omni.isaac.wheeled_robots.ui",
+
 ]
 
 [isaacsim-robot-motion]

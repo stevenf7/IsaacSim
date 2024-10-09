@@ -677,7 +677,7 @@ class TestRos2DifferentialBase(omni.kit.test.AsyncTestCase):
                         ("subscribeTwist", "isaacsim.ros2.bridge.ROS2SubscribeTwist"),
                         ("breakLinVel", "omni.graph.nodes.BreakVector3"),
                         ("breakAngVel", "omni.graph.nodes.BreakVector3"),
-                        ("diffController", "omni.isaac.wheeled_robots.DifferentialController"),
+                        ("diffController", "isaacsim.robot.wheeled_robots.DifferentialController"),
                         ("artController", "omni.isaac.core_nodes.IsaacArticulationController"),
                     ],
                     keys.CONNECT: [

@@ -18,11 +18,11 @@ from isaacsim.robot.manipulators.examples.universal_robots.controllers import (
     StackingController as UR10StackingController,
 )
 from isaacsim.robot.manipulators.examples.universal_robots.tasks import Stacking as UR10Stacking
+from isaacsim.robot.wheeled_robots.controllers.differential_controller import DifferentialController
+from isaacsim.robot.wheeled_robots.controllers.holonomic_controller import HolonomicController
+from isaacsim.robot.wheeled_robots.robots import WheeledRobot
+from isaacsim.robot.wheeled_robots.robots.holonomic_robot_usd_setup import HolonomicRobotUsdSetup
 from omni.isaac.nucleus import get_assets_root_path
-from omni.isaac.wheeled_robots.controllers.differential_controller import DifferentialController
-from omni.isaac.wheeled_robots.controllers.holonomic_controller import HolonomicController
-from omni.isaac.wheeled_robots.robots import WheeledRobot
-from omni.isaac.wheeled_robots.robots.holonomic_robot_usd_setup import HolonomicRobotUsdSetup
 
 
 class RoboParty(BaseSample):

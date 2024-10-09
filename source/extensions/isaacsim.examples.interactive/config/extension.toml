@@ -29,9 +29,8 @@ writeTarget.kit = true
 "omni.graph.nodes" = {}
 "omni.graph.core" = {}
 "omni.isaac.dynamic_control" = {}
-"omni.isaac.motion_generation" = {}
 "omni.isaac.nucleus" = {}
-"omni.isaac.wheeled_robots" = {}
+"isaacsim.robot.wheeled_robots" = {}
 "omni.kit.uiapp" = {}
 "omni.physx" = {}
 

@@ -20,9 +20,9 @@ simulation_app = SimulationApp({"headless": False})
 import carb
 import numpy as np
 from isaacsim.core.api import World
+from isaacsim.robot.wheeled_robots.controllers.differential_controller import DifferentialController
+from isaacsim.robot.wheeled_robots.robots import WheeledRobot
 from omni.isaac.nucleus import get_assets_root_path
-from omni.isaac.wheeled_robots.controllers.differential_controller import DifferentialController
-from omni.isaac.wheeled_robots.robots import WheeledRobot
 
 my_world = World(stage_units_in_meters=1.0)
 assets_root_path = get_assets_root_path()

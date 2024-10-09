@@ -72,9 +72,9 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
                     ("GetPrimLocalToWorldTransform", "omni.graph.nodes.GetPrimLocalToWorldTransform"),
                     ("GetRotationQuaternion", "omni.graph.nodes.GetMatrix4Quaternion"),
                     ("GetTranslation", "omni.graph.nodes.GetMatrix4Translation"),
-                    ("QuinticPathPlanner", "omni.isaac.wheeled_robots.QuinticPathPlanner"),
-                    ("CheckGoal2D", "omni.isaac.wheeled_robots.CheckGoal2D"),
-                    ("StanleyControlPID", "omni.isaac.wheeled_robots.StanleyControlPID"),
+                    ("QuinticPathPlanner", "isaacsim.robot.wheeled_robots.QuinticPathPlanner"),
+                    ("CheckGoal2D", "isaacsim.robot.wheeled_robots.CheckGoal2D"),
+                    ("StanleyControlPID", "isaacsim.robot.wheeled_robots.StanleyControlPID"),
                 ],
                 keys.CONNECT: [
                     (self.graph_path + "/OnPlaybackTick.outputs:tick", "QuinticPathPlanner.inputs:execIn"),

@@ -938,7 +938,7 @@ ogn_exts_includes = [
     "isaacsim.util.debug_draw",
     "isaacsim.examples.interactive_nodes",
     "omni.isaac.ros_bridge",
-    "omni.isaac.wheeled_robots",
+    "isaacsim.robot.wheeled_robots",
 ]
 
 [repo_generate_vscode_settings]

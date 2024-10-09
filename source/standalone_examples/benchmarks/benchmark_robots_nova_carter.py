@@ -38,7 +38,7 @@ from isaacsim.core.api import PhysicsContext
 from isaacsim.core.api.utils.extensions import enable_extension
 from isaacsim.core.api.utils.types import ArticulationAction
 from isaacsim.core.api.utils.viewports import set_camera_view
-from omni.isaac.wheeled_robots.robots import WheeledRobot
+from isaacsim.robot.wheeled_robots.robots import WheeledRobot
 
 enable_extension("isaacsim.benchmark.services")
 from isaacsim.benchmark.services import BaseIsaacBenchmark
