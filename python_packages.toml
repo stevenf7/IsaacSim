@@ -423,15 +423,17 @@ inventory.include = [
     # license
     "LICENSE.txt",
     # extensions
+    "exts/isaacsim.robot_setup.assembler",
     "exts/isaacsim.robot_setup.gain_tuner",
-    "exts/omni.isaac.robot_assembler",
-    "exts/omni.isaac.robot_description_editor",
+    "exts/isaacsim.robot_setup.xrdf_editor",
 
     # deprecated extensions
     "extsDeprecated/omni.isaac.articulation_inspector",
     "extsDeprecated/omni.isaac.gain_tuner",
     "extsDeprecated/omni.isaac.import_wizard",
     "extsDeprecated/omni.isaac.physics_inspector",
+    "extsDeprecated/omni.isaac.robot_assembler",
+    "extsDeprecated/omni.isaac.robot_description_editor",
 ]
 
 [isaacsim-ros1]
@@ -548,8 +550,8 @@ inventory.include = [
     "exts/isaacsim.test.collection",
     "exts/isaacsim.test.docstring",
     # deprecated extensions
-    "exts/omni.isaac.doctest",
-    "exts/omni.isaac.tests",
+    "extsDeprecated/omni.isaac.doctest",
+    "extsDeprecated/omni.isaac.tests",
 ]
 
 [isaacsim-utils]
@@ -566,9 +568,10 @@ inventory.include = [
     # extensions
     "exts/omni.isaac.debug_draw",
     "exts/isaac.util.merge_mesh",
+    "exts/isaacsim.robot_setup.grasp_editor",
     "exts/isaacsim.util.physics",
-    "exts/omni.isaac.grasp_editor",
     # deprecated extensions
     "extsDeprecated/omni.isaac.merge_mesh",
     "extsDeprecated/omni.isaac.physics_utilities",
+    "extsDeprecated/omni.isaac.grasp_editor",
 ]

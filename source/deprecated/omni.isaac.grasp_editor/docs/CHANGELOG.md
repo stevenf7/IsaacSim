@@ -1,0 +1,28 @@
+# Changelog
+## [2.0.0] - 2024-10-07
+### Deprecated
+- Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.robot_setup.grasp_editor.
+
+## [1.3.0] - 2024-09-06
+### Changed
+- Changed metadata fields in Isaac Grasp file that will not interfere with grasp files that have already been created.
+
+## [1.2.1] - 2024-08-28
+### Fixed
+- Unit test errors due to missing dependencies
+
+## [1.2.0] - 2024-08-14
+### Fixed
+- Fixed serious bug in supported use-case where selected frames of reference have arbitrary relative transforms from the base frame.
+
+## [1.1.1] - 2024-08-06
+### Fixed
+- Fix UI bug that allowed users to continue from selection frame prematurely.
+
+## [1.1.0] - 2024-08-02
+### Added
+- Add Python API with tests to support loading and using imported grasps in Isaac Sim.
+
+## [1.0.0] - 2024-07-23
+### Added
+- Initial version of Grasp Editor Extension
