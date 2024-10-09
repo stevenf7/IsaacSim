@@ -41,7 +41,7 @@ Isaac Sim: Extensions API
    source/extensions/isaacsim.robot.policy.examples/docs/index
    source/extensions/isaacsim.robot.manipulators/docs/index
    source/extensions/isaacsim.robot.manipulators/docs/index
-   source/extensions/omni.isaac.robot_assembler/docs/index
+   source/extensions/isaacsim.robot_setup.assembler/docs/index
 
 .. toctree::
    :maxdepth: 1

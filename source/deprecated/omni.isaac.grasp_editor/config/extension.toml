@@ -1,0 +1,24 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "2.0.0"
+category = "Simulation"
+title = "Grasp Editor"
+description = "Author grasps by hand for a specific robot gripper and USD asset."
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/omni.isaac.grasp_editor"
+keywords = []
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+
+
+[dependencies]
+"isaacsim.core.deprecation_manager" = {}
+"isaacsim.robot_setup.grasp_editor" = {}
+
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.robot_setup.grasp_editor."
