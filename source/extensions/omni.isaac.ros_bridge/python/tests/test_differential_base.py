@@ -379,7 +379,7 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
                         ("subscribeTwist", "omni.isaac.ros_bridge.ROS1SubscribeTwist"),
                         ("breakLinVel", "omni.graph.nodes.BreakVector3"),
                         ("breakAngVel", "omni.graph.nodes.BreakVector3"),
-                        ("diffController", "omni.isaac.wheeled_robots.DifferentialController"),
+                        ("diffController", "isaacsim.robot.wheeled_robots.DifferentialController"),
                         ("artController", "omni.isaac.core_nodes.IsaacArticulationController"),
                     ],
                     keys.CONNECT: [

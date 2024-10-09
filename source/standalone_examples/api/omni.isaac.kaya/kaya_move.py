@@ -15,10 +15,10 @@ import carb
 import numpy as np
 from isaacsim.core.api import World
 from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.robot.wheeled_robots.controllers.holonomic_controller import HolonomicController
+from isaacsim.robot.wheeled_robots.robots import WheeledRobot
+from isaacsim.robot.wheeled_robots.robots.holonomic_robot_usd_setup import HolonomicRobotUsdSetup
 from omni.isaac.nucleus import get_assets_root_path
-from omni.isaac.wheeled_robots.controllers.holonomic_controller import HolonomicController
-from omni.isaac.wheeled_robots.robots import WheeledRobot
-from omni.isaac.wheeled_robots.robots.holonomic_robot_usd_setup import HolonomicRobotUsdSetup
 
 my_world = World(stage_units_in_meters=1.0)
 
