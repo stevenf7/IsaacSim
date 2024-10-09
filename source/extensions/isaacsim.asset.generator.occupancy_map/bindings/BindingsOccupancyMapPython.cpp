@@ -25,16 +25,18 @@
 
 CARB_BINDINGS("isaacsim.asset.generator.occupancy_map.python")
 
-namespace omni
+namespace isaacsim
 {
-namespace isaac
+namespace asset
+{
+namespace generator
 {
 namespace occupancy_map
 {
 }
 }
 }
-
+}
 
 namespace
 {
@@ -44,7 +46,7 @@ namespace py = pybind11;
 PYBIND11_MODULE(_occupancy_map, m)
 {
     using namespace carb;
-    using namespace omni::isaac::occupancy_map;
+    using namespace isaacsim::asset::generator::occupancy_map;
     // We use carb data types, must import bindings for them
     auto carb_module = py::module::import("carb");
 

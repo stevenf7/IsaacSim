@@ -30,8 +30,6 @@ from isaacsim.gui.components.ui_utils import (
     multi_btn_builder,
     xyz_builder,
 )
-from omni.isaac.occupancy_map.bindings import _occupancy_map
-from omni.isaac.occupancy_map.utils import compute_coordinates, generate_image, update_location
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from omni.physx.scripts import utils
 from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics
