@@ -110,7 +110,7 @@ project_ext_plugin(ext, "omni.isaac.transform_listener.plugin")
         "%{root}/source/extensions/isaacsim.ros2.bridge",
         "%{root}/source/extensions/isaacsim.ros2.bridge/include",
         "%{root}/source/extensions/omni.isaac.core_nodes/include",
-        "%{root}/source/extensions/omni.isaac.dynamic_control/include",
+        "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
     }
     libdirs {
        "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",

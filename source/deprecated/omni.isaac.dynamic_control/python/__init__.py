@@ -7,4 +7,11 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import carb
+
 from .scripts import *
+
+extension_name = "omni.isaac.dynamic_control"
+
+# Provide deprecation warning to user
+carb.log_warn(f"{extension_name} is deprecated as of Isaac Sim 4.5. No action is needed from end-users.")

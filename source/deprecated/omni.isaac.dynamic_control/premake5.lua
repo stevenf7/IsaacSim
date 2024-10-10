@@ -16,7 +16,7 @@ project_ext_plugin(ext, "omni.isaac.dynamic_control.plugin")
         target_deps.."/omni_physics/%{config}/include",
         target_deps.."/rtx_plugins/include",
         target_deps.."/omni_client_library/include",
-        "%{root}/source/extensions/omni.isaac.dynamic_control/include",
+        "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
      }
      libdirs {
         target_deps.."/nv_usd/%{cfg.buildcfg}/lib",
@@ -53,7 +53,7 @@ project_ext_bindings {
 }
 
     includedirs {
-        "%{root}/source/extensions/omni.isaac.dynamic_control/include",
+        "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
     }
 
 repo_build.prebuild_link {

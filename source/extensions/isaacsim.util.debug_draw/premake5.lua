@@ -62,7 +62,7 @@ project_ext_plugin(ext, "isaacsim.util.debug_draw.plugin")
         extsbuild_dir.."/usdrt.scenegraph/include",
         "%{root}/_build/target-deps/python/include",
         "%{kit_sdk_bin_dir}/dev/fabric/include/",
-        "%{root}/source/extensions/omni.isaac.dynamic_control/include",
+        "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
         "%{root}/source/extensions/isaacsim.util.debug_draw/include",
     }
     libdirs {

@@ -31,7 +31,7 @@ project_ext_plugin(ext, "isaacsim.sensors.physics.plugin")
         "%{root}/source/extensions/omni.isaac.core_nodes/include",
         "%{kit_sdk_bin_dir}/dev/fabric/include/",
         "%{root}/source/extensions/isaacsim.sensors.physics/include",
-        "%{root}/source/extensions/omni.isaac.dynamic_control/include",
+        "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
     }
     libdirs {
         targetDepsDir.."/python/lib",
