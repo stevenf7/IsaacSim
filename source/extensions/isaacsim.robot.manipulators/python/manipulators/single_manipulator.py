@@ -9,11 +9,11 @@
 from typing import Optional, Sequence
 
 import omni.kit.app
+from isaacsim.core.api.articulations.articulation import Articulation
+from isaacsim.core.api.prims.rigid_prim import RigidPrim
 from isaacsim.robot.manipulators.grippers.gripper import Gripper
 from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGripper
 from isaacsim.robot.manipulators.grippers.surface_gripper import SurfaceGripper
-from omni.isaac.core.articulations.articulation import Articulation
-from omni.isaac.core.prims.rigid_prim import RigidPrim
 
 
 class SingleManipulator(Articulation):

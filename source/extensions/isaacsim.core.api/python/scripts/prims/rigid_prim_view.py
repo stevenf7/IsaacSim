@@ -94,9 +94,9 @@ class RigidPrimView(XFormPrimView):
 
     .. code-block:: python
 
-        >>> import omni.isaac.core.utils.stage as stage_utils
+        >>> import isaacsim.core.api.utils.stage as stage_utils
         >>> from isaacsim.core.cloner import GridCloner
-        >>> from omni.isaac.core.prims import RigidPrimView
+        >>> from isaacsim.core.api.prims import RigidPrimView
         >>> from pxr import UsdGeom
         >>>
         >>> env_zero_path = "/World/envs/env_0"

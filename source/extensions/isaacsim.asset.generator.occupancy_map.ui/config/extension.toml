@@ -20,7 +20,7 @@ writeTarget.kit = true
 "isaacsim.asset.generator.occupancy_map" = {}
 "isaacsim.core.api" = {}
 "isaacsim.core.deprecation_manager" = {}
-"omni.isaac.ui" = {}
+"isaacsim.gui.components" = {}
 
 [[python.module]]
 name = "isaacsim.asset.generator.occupancy_map.ui"

@@ -17,5 +17,5 @@ carb.log_warn(
     f"{old_extension_name} has been deprecated in favor of {new_extension_name}. Please update your code accordingly."
 )
 
-from isaacsim.robot.surface_griper import _surface_gripper
+from isaacsim.robot.surface_gripper import _surface_gripper
 from isaacsim.robot.surface_gripper._impl import *

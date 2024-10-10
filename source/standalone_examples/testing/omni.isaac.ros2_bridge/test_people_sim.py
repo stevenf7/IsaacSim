@@ -14,6 +14,7 @@ from isaacsim import SimulationApp
 kit = SimulationApp()
 
 ADDITIONAL_EXTENSIONS_PEOPLE = [
+    "omni.isaac.core",
     "omni.anim.people",
     "omni.anim.navigation.bundle",
     "omni.anim.timeline",

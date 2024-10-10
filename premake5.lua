@@ -503,7 +503,7 @@ function create_tests()
         -- isaacsim.sensors.physics
         python_sample_test("tests-nativepython-isaacsim.sensors.physx.rotating_lidar_physX", "standalone_examples/api/isaacsim.sensors.physx/rotating_lidar_physX.py", "--test")
         -- isaacsim.robot.manipulators
-        python_sample_test("tests-nativepython-isaacsim.robot.manipulators.franka.franka_gripper", "standalone_examples/api/isaacsim.robot.manipulators.franka/franka_gripper.py", "--test")
+        python_sample_test("tests-nativepython-isaacsim.robot.manipulators.franka.franka_gripper", "standalone_examples/api/isaacsim.robot.manipulators/franka/franka_gripper.py", "--test")
         python_sample_test("tests-nativepython-isaacsim.robot.manipulators.cobotta_900.follow_target_example", "standalone_examples/api/isaacsim.robot.manipulators/cobotta_900/follow_target_example.py", "--test")
         python_sample_test("tests-nativepython-isaacsim.robot.manipulators.cobotta_900.pick_up_example", "standalone_examples/api/isaacsim.robot.manipulators/cobotta_900/pick_up_example.py", "--test")
         python_sample_test("tests-nativepython-isaacsim.robot.manipulators.cobotta_900.gripper_control", "standalone_examples/api/isaacsim.robot.manipulators/cobotta_900/gripper_control.py", "--test")

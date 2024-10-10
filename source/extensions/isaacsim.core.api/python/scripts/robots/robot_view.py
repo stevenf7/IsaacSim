@@ -52,9 +52,9 @@ class RobotView(ArticulationView):
 
     .. code-block:: python
 
-        >>> import omni.isaac.core.utils.stage as stage_utils
+        >>> import isaacsim.core.api.utils.stage as stage_utils
         >>> from isaacsim.core.cloner import GridCloner
-        >>> from omni.isaac.core.robots import RobotView
+        >>> from isaacsim.core.api.robots import RobotView
         >>> from pxr import UsdGeom
         >>>
         >>> usd_path = "/home/<user>/Documents/Assets/Robots/Franka/franka_alt_fingers.usd"

@@ -94,9 +94,9 @@ class TestPrims(omni.kit.test.AsyncTestCase):
         ext_manager.get_enabled_extension_id("isaacsim.core.cloner")
         await omni.kit.app.get_app().next_update_async()
 
+        from isaacsim.core.api.utils.prims import get_articulation_root_api_prim_path
+        from isaacsim.core.api.utils.stage import clear_stage, get_current_stage
         from isaacsim.core.cloner import GridCloner
-        from omni.isaac.core.utils.prims import get_articulation_root_api_prim_path
-        from omni.isaac.core.utils.stage import clear_stage, get_current_stage
         from omni.isaac.nucleus import get_assets_root_path_async
         from pxr import UsdGeom
 
