@@ -21,4 +21,4 @@ writeTarget.kit = true
 "isaacsim.core.deprecation_manager" = {}
 
 [[python.module]]
-name = "omni.isaac.generator.occupancy_map.ui"
+name = "omni.isaac.occupancy_map.ui"

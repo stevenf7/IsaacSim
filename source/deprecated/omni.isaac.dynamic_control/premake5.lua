@@ -1,5 +1,6 @@
 local ext = get_current_extension_info()
 ext.target_dir = deprecated_exts_path.."/"..ext.id
+ext.bin_dir = ext.target_dir.."/bin"
 project_ext (ext)
 
 -- C++ Carbonite plugin
