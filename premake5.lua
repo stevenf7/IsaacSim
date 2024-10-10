@@ -508,8 +508,8 @@ function create_tests()
         python_sample_test("tests-nativepython-isaacsim.robot.manipulators.cobotta_900.gripper_control", "standalone_examples/api/isaacsim.robot.manipulators/cobotta_900/gripper_control.py", "--test")
         python_sample_test("tests-nativepython-isaacsim.robot.manipulators.franka_pick_up", "standalone_examples/api/isaacsim.robot.manipulators/franka_pick_up.py", "--test")
         python_sample_test("tests-nativepython-isaacsim.robot.manipulators.ur10_pick_up", "standalone_examples/api/isaacsim.robot.manipulators/ur10_pick_up.py", "--test")
-        -- omni.isaac.jetbot
-        python_sample_test("tests-nativepython-omni.isaac.jetbot.jetbot_move", "standalone_examples/api/omni.isaac.jetbot/jetbot_move.py", "--test")
+        -- isaacsim.robot.wheeled_robots.examples
+        python_sample_test("tests-nativepython-isaacsim.robot.wheeled_robots.examples.jetbot_differential_move", "standalone_examples/api/isaacsim.robot.wheeled_robots.examples/jetbot_differential_move.py", "--test")
         -- omni.isaac.dynamic_control
         python_sample_test("tests-nativepython-omni.isaac.dynamic_control.franka_articulation", "standalone_examples/api/omni.isaac.dynamic_control/franka_articulation.py")
         -- omni.isaac.urdf
