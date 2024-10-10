@@ -1,0 +1,45 @@
+# Copyright (c) 2024, NVIDIA CORPORATION. All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto. Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+#
+
+import carb
+import omni.ext
+import omni.kit.app
+
+from .. import _openxr
+
+# expose pybind interface/API
+_openxr_interface = None
+
+
+def acquire_openxr_interface():
+    return _openxr_interface
+
+
+set_default_status = _openxr.set_default_status
+
+
+class Extension(omni.ext.IExt):
+    """The Extension class"""
+
+    def on_startup(self, ext_id):
+        """Method called when the extension is loaded/enabled"""
+        carb.log_info(f"on_startup {ext_id}")
+        ext_path = omni.kit.app.get_app().get_extension_manager().get_extension_path(ext_id)
+
+        # acquire the pybind interface
+        global _openxr_interface
+        _openxr_interface = _openxr.acquire_openxr_interface()
+
+    def on_shutdown(self):
+        """Method called when the extension is disabled"""
+        carb.log_info(f"on_shutdown")
+        # release the pybind interface
+        global _openxr_interface
+        _openxr.release_openxr_interface(_openxr_interface)
+        _openxr_interface = None
