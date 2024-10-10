@@ -71,7 +71,7 @@ project_ext_bindings {
 }
     add_files("bindings", "bindings/*.*")
     add_files("python", "python/*.py")
-    add_files("python/scriots", "python/scripts/**.py")
+    add_files("python/scripts", "python/scripts/**.py")
     add_files("python/tests", "python/tests/**.py")
 
 
