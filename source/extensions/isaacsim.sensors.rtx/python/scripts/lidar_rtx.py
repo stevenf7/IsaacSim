@@ -368,6 +368,7 @@ class LidarRtx(BaseSensor):
             config["profile"]["scanType"] = "rotary"
 
         config["profile"]["intensityProcessing"] = "normalization"
+        config["profile"]["rotationDirection"] = "CW"
         config["profile"]["rayType"] = "IDEALIZED"
 
         if valid_range:
@@ -415,9 +416,10 @@ class LidarRtx(BaseSensor):
         config["profile"]["elevationErrorStd"] = 0.0000
         config["profile"]["maxReturns"] = 2
         config["profile"]["numberOfEmitters"] = 128
+        config["profile"]["emitterStateCount"] = 1
         config["profile"]["intensityMappingType"] = "LINEAR"
-        config["profile"]["emitters"] = dict()
-        config["profile"]["emitters"]["azimuthDeg"] = [
+        config["profile"]["emitterStates"] = [dict()]
+        config["profile"]["emitterStates"][0]["azimuthDeg"] = [
             -3.0,
             -3.0,
             -3.0,
@@ -547,7 +549,7 @@ class LidarRtx(BaseSensor):
             3.0,
             3.0,
         ]
-        config["profile"]["emitters"]["elevationDeg"] = [
+        config["profile"]["emitterStates"][0]["elevationDeg"] = [
             -15.0,
             -14.19,
             -13.39,
@@ -677,7 +679,7 @@ class LidarRtx(BaseSensor):
             9.19,
             10.0,
         ]
-        config["profile"]["emitters"]["fireTimeNs"] = [
+        config["profile"]["emitterStates"][0]["fireTimeNs"] = [
             0,
             0,
             0,

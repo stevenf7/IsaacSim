@@ -56,7 +56,7 @@ private:
     omni::isaac::utils::HostBufferBase<float> hostIntensityScanBuffer;
     omni::isaac::utils::HostBufferBase<float> hostAzimuthScanBuffer;
     omni::isaac::utils::HostBufferBase<float> hostElevationScanBuffer;
-    omni::isaac::utils::HostBufferBase<uint32_t> hostObjectIdScanBuffer;
+    omni::isaac::utils::HostBufferBase<uint8_t> hostObjectIdScanBuffer;
     omni::isaac::utils::HostBufferBase<float3> hostVelocityScanBuffer;
     omni::isaac::utils::HostBufferBase<float3> hostNormalScanBuffer;
     omni::isaac::utils::HostBufferBase<int32_t> hostTimestampScanBuffer;
@@ -70,7 +70,7 @@ private:
     omni::isaac::utils::HostBufferBase<float> hostIntensityShrunkBuffer;
     omni::isaac::utils::HostBufferBase<float> hostAzimuthShrunkBuffer;
     omni::isaac::utils::HostBufferBase<float> hostElevationShrunkBuffer;
-    omni::isaac::utils::HostBufferBase<uint32_t> hostObjectIdShrunkBuffer;
+    omni::isaac::utils::HostBufferBase<uint8_t> hostObjectIdShrunkBuffer;
     omni::isaac::utils::HostBufferBase<float3> hostVelocityShrunkBuffer;
     omni::isaac::utils::HostBufferBase<float3> hostNormalShrunkBuffer;
     omni::isaac::utils::HostBufferBase<int32_t> hostTimestampShrunkBuffer;

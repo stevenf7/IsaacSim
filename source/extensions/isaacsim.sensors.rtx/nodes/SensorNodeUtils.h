@@ -200,8 +200,8 @@ public:
         }
         if ((auxData->filledAuxMembers & LidarAuxHas::OBJ_ID) == LidarAuxHas::OBJ_ID)
         {
-            auxData->objId = reinterpret_cast<uint32_t*>(data + offset);
-            offset += sizeof(uint32_t) * modelOutput->numElements;
+            auxData->objId = reinterpret_cast<uint8_t*>(data + offset);
+            offset += sizeof(uint8_t) * modelOutput->numElements;
         }
         else
         {

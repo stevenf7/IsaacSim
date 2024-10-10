@@ -1,5 +1,10 @@
 # Changelog
 
+## [13.1.0] - 2024-10-10
+### Changed
+- Updated omni.sensor extension dependencies to latest kit.
+- Updates default LidarRTX rotary lidar configuration to avoid deprecation warnings.
+
 ## [13.0.0] - 2024-09-24
 ### Changed
 - Renamed extension to isaacsim.sensors.rtx

@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "13.0.0"
+version = "13.1.0"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Support physics based sensors, such as contact sensors and imu sensors"
@@ -17,24 +17,16 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
+"isaacsim.core.api" = {}
 "isaacsim.core.deprecation_manager" = {}
+"isaacsim.gui.components" = {}
 "isaacsim.util.debug_draw" = {}
 "omni.graph.action" = {}
 "omni.graph" = {}
 "omni.isaac.core_nodes" = {}
-"isaacsim.core.api" = {}
 "omni.isaac.nucleus" = {}
-"isaacsim.gui.components" = {}
 "omni.kit.numpy.common" = {}
 "omni.kit.pip_archive" = {} # pulls in numpy
-"isaacsim.gui.components" = {}
-"isaacsim.core.api" = {}
-"omni.isaac.range_sensor" = {}
-"omni.isaac.core_nodes" = {}
-"omni.usd.schema.isaac" = {}
-"omni.graph" = {}
-"omni.graph.action" = {}
-"omni.syntheticdata" = {}
 "omni.replicator.core" = {}
 "omni.sensors.nv.common" = {}
 "omni.sensors.nv.ids" = {}
