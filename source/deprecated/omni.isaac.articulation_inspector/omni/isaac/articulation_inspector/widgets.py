@@ -13,7 +13,7 @@ from typing import Callable, Optional
 import carb
 import omni
 import omni.ui as ui
-from omni.isaac.ui.ui_utils import BUTTON_WIDTH, LABEL_WIDTH, get_style
+from isaacsim.gui.components.ui_utils import BUTTON_WIDTH, LABEL_WIDTH, get_style
 
 
 class ListItem(ui.AbstractItem):

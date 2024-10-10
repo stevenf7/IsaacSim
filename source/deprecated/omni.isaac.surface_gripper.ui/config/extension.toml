@@ -23,7 +23,7 @@ writeTarget.kit = true
 "isaacsim.robot.surface_gripper.ui" = {}
 
 [[python.module]]
-name = "omni.isaac.ros2_bridge.robot_description"
+name = "omni.isaac.surface_gripper.ui"
 
 [deprecation]
-warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.ros2.bridge."
+warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.robot.surface_gripper.ui."

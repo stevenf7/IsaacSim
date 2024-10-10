@@ -69,7 +69,7 @@ After setting up this action graph, it is necessesary to run ``omni.replicator.c
     from isaacsim.core.api.utils.prims import get_prim_at_path, define_prim
     from isaacsim.core.api.utils.stage import get_current_stage, add_reference_to_stage
     from omni.isaac.nucleus import get_assets_root_path
-    from omni.isaac.core.objects import DynamicSphere
+    from isaacsim.core.api.objects import DynamicSphere
     from isaacsim.core.cloner import GridCloner
 
     # create the world

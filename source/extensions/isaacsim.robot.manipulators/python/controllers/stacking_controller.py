@@ -9,9 +9,9 @@
 import typing
 
 import numpy as np
+from isaacsim.core.api.controllers.base_controller import BaseController
+from isaacsim.core.api.utils.types import ArticulationAction
 from isaacsim.robot.manipulators.controllers.pick_place_controller import PickPlaceController
-from omni.isaac.core.controllers.base_controller import BaseController
-from omni.isaac.core.utils.types import ArticulationAction
 
 
 class StackingController(BaseController):

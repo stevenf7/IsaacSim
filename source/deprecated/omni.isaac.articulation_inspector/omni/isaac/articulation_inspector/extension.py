@@ -21,10 +21,9 @@ import omni.usd
 from isaacsim.core.api.articulations import Articulation
 from isaacsim.core.api.utils.prims import get_prim_object_type
 from isaacsim.core.api.utils.stage import get_stage_units
-from omni.isaac.articulation_inspector.widgets import ComboBoxModel, ListItemDelegate, ListItemModel
-from omni.isaac.ui.element_wrappers import ScrollingWindow
-from omni.isaac.ui.menu import make_menu_item_description
-from omni.isaac.ui.ui_utils import (
+from isaacsim.gui.components.element_wrappers import ScrollingWindow
+from isaacsim.gui.components.menu import make_menu_item_description
+from isaacsim.gui.components.ui_utils import (
     add_line_rect_flourish,
     btn_builder,
     combo_floatfield_slider_builder,
@@ -32,6 +31,7 @@ from omni.isaac.ui.ui_utils import (
     setup_ui_headers,
     str_builder,
 )
+from omni.isaac.articulation_inspector.widgets import ComboBoxModel, ListItemDelegate, ListItemModel
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from omni.kit.window.property.templates import LABEL_WIDTH
 from pxr import Usd

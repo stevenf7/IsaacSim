@@ -30,8 +30,6 @@ from isaacsim.cortex.framework.df import (
 from isaacsim.cortex.framework.dfb import DfDiagnosticsMonitor, DfLift, make_go_home
 from isaacsim.cortex.framework.motion_commander import ApproachParams, MotionCommand, PosePq
 from isaacsim.cortex.framework.obstacle_monitor_context import ObstacleMonitor, ObstacleMonitorContext
-from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.utils.math import normalized
 
 
 class BinState:

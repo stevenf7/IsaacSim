@@ -21,7 +21,7 @@ warning = "Extension deprecated since Isaac Sim 4.0.0. Replaced by omni.usd.metr
 
 
 [dependencies]
-"omni.isaac.ui" = {}
+"isaacsim.gui.components" = {}
 "omni.kit.menu.utils" = {}
 "omni.usdphysics" = {}
 "omni.usd.schema.isaac" = {}

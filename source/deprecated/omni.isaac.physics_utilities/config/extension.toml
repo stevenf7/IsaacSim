@@ -18,6 +18,7 @@ writeTarget.kit = true
 
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
+"isaacsim.util.physics" = {}
 
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.util.physics."

@@ -34,7 +34,6 @@ from isaacsim.cortex.framework.df import (
 )
 from isaacsim.cortex.framework.motion_commander import ApproachParams, MotionCommand, PosePq
 from isaacsim.cortex.framework.robot import CortexRobot
-from omni.isaac.core.utils.math import normalized
 
 
 class DfRobotApiContext(DfLogicalState):

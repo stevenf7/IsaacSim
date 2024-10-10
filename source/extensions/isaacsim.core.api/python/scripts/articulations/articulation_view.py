@@ -79,9 +79,9 @@ class ArticulationView(XFormPrimView):
 
     .. code-block:: python
 
-        >>> import omni.isaac.core.utils.stage as stage_utils
+        >>> import isaacsim.core.api.utils.stage as stage_utils
         >>> from isaacsim.core.cloner import GridCloner
-        >>> from omni.isaac.core.articulations import ArticulationView
+        >>> from isaacsim.core.api.articulations import ArticulationView
         >>> from pxr import UsdGeom
         >>>
         >>> usd_path = "/home/<user>/Documents/Assets/Robots/Franka/franka_alt_fingers.usd"
