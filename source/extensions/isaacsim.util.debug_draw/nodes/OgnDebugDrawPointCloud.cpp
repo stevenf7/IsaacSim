@@ -17,7 +17,7 @@
 
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
-#include <omni/isaac/utils/BaseResetNode.h>
+#include <isaacsim/core/utils/BaseResetNode.h>
 
 #include <OgnDebugDrawPointCloudDatabase.h>
 #include <PrimitiveDrawingHelper.h>

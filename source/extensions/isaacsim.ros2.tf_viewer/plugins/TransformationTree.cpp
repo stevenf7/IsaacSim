@@ -40,7 +40,7 @@ public:
         if (!mLibraryLoader)
         {
             mLibraryLoader =
-                std::make_shared<omni::isaac::utils::LibraryLoader>("omni.isaac.transform_listener." + rosDistro);
+                std::make_shared<isaacsim::core::utils::LibraryLoader>("omni.isaac.transform_listener." + rosDistro);
             if (!mLibraryLoader)
             {
                 CARB_LOG_ERROR("Unable to load the omni.isaac.transform_listener.%s library", rosDistro.c_str());
@@ -163,7 +163,7 @@ public:
     };
 
 private:
-    std::shared_ptr<omni::isaac::utils::LibraryLoader> mLibraryLoader = nullptr;
+    std::shared_ptr<isaacsim::core::utils::LibraryLoader> mLibraryLoader = nullptr;
     Tf2Factory* mTf2Factory = nullptr;
 
     std::shared_ptr<isaacsim::ros2::bridge::Ros2Subscriber> mSubscriberTf = nullptr;

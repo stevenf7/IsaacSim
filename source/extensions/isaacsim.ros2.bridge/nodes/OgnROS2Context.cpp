@@ -13,7 +13,7 @@
 
 #include <include/Ros2Bridge.h>
 #include <include/Ros2Factory.h>
-#include <omni/isaac/utils/BaseResetNode.h>
+#include <isaacsim/core/utils/BaseResetNode.h>
 
 #include <CoreNodes.h>
 #include <OgnROS2ContextDatabase.h>

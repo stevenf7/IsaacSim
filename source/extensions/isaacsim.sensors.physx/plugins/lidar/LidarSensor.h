@@ -172,7 +172,7 @@ private:
                             (mLinearDepth[i] - mMinDepth * mMetersPerUnit) / ((mMaxDepth - mMinDepth) * mMetersPerUnit);
 
                         data.position = hitPos;
-                        data.color = omni::isaac::utils::color::distToRgba(ratio);
+                        data.color = isaacsim::core::utils::color::distToRgba(ratio);
                         data.width = 5.0;
 
                         mPointDrawing->addVertex(data);
@@ -191,7 +191,7 @@ private:
                             (mLinearDepth[i] - mMinDepth * mMetersPerUnit) / ((mMaxDepth - mMinDepth) * mMetersPerUnit);
 
                         data.position = { temp.x, temp.y, temp.z };
-                        data.color = omni::isaac::utils::color::distToRgba(ratio);
+                        data.color = isaacsim::core::utils::color::distToRgba(ratio);
                         data.width = 1.0;
 
                         mLineDrawing->addVertex(data);

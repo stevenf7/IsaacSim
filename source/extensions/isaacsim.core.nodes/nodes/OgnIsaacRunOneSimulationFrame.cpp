@@ -8,7 +8,7 @@
 //
 
 
-#include <omni/isaac/utils/BaseResetNode.h>
+#include <isaacsim/core/utils/BaseResetNode.h>
 
 #include <CoreNodes.h>
 #include <OgnIsaacRunOneSimulationFrameDatabase.h>

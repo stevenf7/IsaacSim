@@ -16,9 +16,9 @@
 #include <carb/events/EventsUtils.h>
 #include <carb/logging/Logger.h>
 
+#include <isaacsim/core/utils/BaseResetNode.h>
+#include <isaacsim/core/utils/Conversions.h>
 #include <omni/fabric/FabricUSD.h>
-#include <omni/isaac/utils/BaseResetNode.h>
-#include <omni/isaac/utils/Conversions.h>
 #include <omni/usd/UsdContext.h>
 #include <omni/usd/UsdContextIncludes.h>
 
@@ -33,8 +33,8 @@ namespace core
 namespace nodes
 {
 
-using omni::isaac::utils::conversions::asGfRotation;
-using omni::isaac::utils::conversions::asGfVec3d;
+using isaacsim::core::utils::conversions::asGfRotation;
+using isaacsim::core::utils::conversions::asGfVec3d;
 
 class OgnIsaacComputeOdometry : public BaseResetNode
 {

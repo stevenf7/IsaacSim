@@ -12,7 +12,7 @@ import asyncio
 import carb
 import omni.kit.commands
 import omni.kit.utils
-from omni.isaac.utils._isaac_utils import transforms
+from isaacsim.core.utils._isaac_utils import transforms
 from pxr import Sdf
 
 

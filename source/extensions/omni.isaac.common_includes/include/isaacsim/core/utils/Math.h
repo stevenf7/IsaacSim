@@ -12,9 +12,9 @@
 #include <DynamicControlTypes.h>
 #include <cmath>
 
-namespace omni
+namespace isaacsim
 {
-namespace isaac
+namespace core
 {
 namespace utils
 {

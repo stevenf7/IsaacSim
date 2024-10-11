@@ -15,10 +15,10 @@
 // clang-format off
 #include <pch/UsdPCH.h>
 // clang-format on
-#include "omni/isaac/utils/UsdUtilities.h"
+#include "isaacsim/core/utils/UsdUtilities.h"
 
 #include <include/Ros2Node.h>
-#include <omni/isaac/utils/ScopedCudaDevice.h>
+#include <isaacsim/core/utils/ScopedCudaDevice.h>
 
 #include <OgnROS2PublishPointCloudDatabase.h>
 
@@ -126,7 +126,7 @@ public:
                 // size_t totalBytes = row_step;
                 state.m_message->generateBuffer(db.inputs.timeStamp(), m_frameId, width, height, pointStep);
 
-                omni::isaac::utils::ScopedDevice scopedDev(db.inputs.cudaDeviceIndex());
+                isaacsim::core::utils::ScopedDevice scopedDev(db.inputs.cudaDeviceIndex());
                 auto src = reinterpret_cast<void*>(db.inputs.dataPtr());
                 CUDA_CHECK(
                     cudaMemcpy(state.m_message->getBufferPtr(), src, db.inputs.bufferSize(), cudaMemcpyDeviceToHost));

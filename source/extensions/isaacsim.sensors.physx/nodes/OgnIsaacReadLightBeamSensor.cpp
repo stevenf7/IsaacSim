@@ -11,10 +11,10 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#include "omni/isaac/utils/UsdUtilities.h"
+#include "isaacsim/core/utils/UsdUtilities.h"
 
+#include <isaacsim/core/utils/Conversions.h>
 #include <omni/fabric/FabricUSD.h>
-#include <omni/isaac/utils/Conversions.h>
 #include <pxr/base/gf/quatd.h>
 #include <pxr/base/gf/vec3d.h>
 
@@ -90,9 +90,9 @@ public:
         {
             state.mBeamHitData.push_back(beamHitData[i]);
             state.mLinearDepthData.push_back(linearDepthData[i]);
-            state.mHitPosData.push_back(omni::isaac::utils::conversions::asGfVec3f(hitPosData[i]) * unitScale);
-            state.mBeamOrigins.push_back(omni::isaac::utils::conversions::asGfVec3f(rayOrigins[i]) * unitScale);
-            state.mBeamEndPoints.push_back(omni::isaac::utils::conversions::asGfVec3f(rayEndPoints[i]) * unitScale);
+            state.mHitPosData.push_back(isaacsim::core::utils::conversions::asGfVec3f(hitPosData[i]) * unitScale);
+            state.mBeamOrigins.push_back(isaacsim::core::utils::conversions::asGfVec3f(rayOrigins[i]) * unitScale);
+            state.mBeamEndPoints.push_back(isaacsim::core::utils::conversions::asGfVec3f(rayEndPoints[i]) * unitScale);
         }
 
         // fill in outputs

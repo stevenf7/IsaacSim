@@ -21,8 +21,8 @@
 #include <carb/tasking/TaskingUtils.h>
 
 #include <include/Ros2Node.h>
-#include <omni/isaac/utils/Buffer.h>
-#include <omni/isaac/utils/ScopedCudaDevice.h>
+#include <isaacsim/core/utils/Buffer.h>
+#include <isaacsim/core/utils/ScopedCudaDevice.h>
 
 #include <OgnROS2PublishImageDatabase.h>
 
@@ -272,7 +272,7 @@ public:
     static bool publishImageHelper(PublishImageThreadData& data)
     {
         CARB_PROFILE_ZONE(1, "Publish Image Thread");
-        omni::isaac::utils::ScopedDevice scopedDev(data.cudaDeviceIndex);
+        isaacsim::core::utils::ScopedDevice scopedDev(data.cudaDeviceIndex);
 
         // If the device doesn't match and we have created a stream, destroy it
         if (*data.streamDevice != data.cudaDeviceIndex && *data.mStreamNotCreated == false)
@@ -471,7 +471,7 @@ public:
     {
 #if !defined(_WIN32) && !defined(ROS2_BACKEND_FOXY)
         CARB_PROFILE_ZONE(1, "publish nitros image thread");
-        omni::isaac::utils::ScopedDevice scopedDev(data.cudaDeviceIndex);
+        isaacsim::core::utils::ScopedDevice scopedDev(data.cudaDeviceIndex);
 
         // If the device doesn't match and we have created a stream, destroy it
         if (*data.nitrosBridgeStreamDevice != data.cudaDeviceIndex && *data.nitrosBridgeStreamNotCreated == false)
@@ -554,14 +554,14 @@ public:
         }
         if (m_streamNotCreated == false)
         {
-            omni::isaac::utils::ScopedDevice scopedDev(m_streamDevice);
+            isaacsim::core::utils::ScopedDevice scopedDev(m_streamDevice);
             CUDA_CHECK(cudaStreamDestroy(m_stream));
             m_streamDevice = -1;
             m_streamNotCreated = true;
         }
         if (m_nitrosBridgeStreamNotCreated == false)
         {
-            omni::isaac::utils::ScopedDevice scopedDev(m_nitrosBridgeStreamDevice);
+            isaacsim::core::utils::ScopedDevice scopedDev(m_nitrosBridgeStreamDevice);
             CUDA_CHECK(cudaStreamDestroy(m_nitrosBridgeStream));
             m_nitrosBridgeStreamDevice = -1;
             m_nitrosBridgeStreamNotCreated = true;

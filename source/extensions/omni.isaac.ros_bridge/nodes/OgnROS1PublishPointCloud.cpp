@@ -11,13 +11,13 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#include "omni/isaac/utils/UsdUtilities.h"
+#include "isaacsim/core/utils/UsdUtilities.h"
 #define BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include "pcl_ros/point_cloud.h"
 #undef BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include "sensor_msgs/PointCloud2.h"
 
-#include <omni/isaac/utils/ScopedCudaDevice.h>
+#include <isaacsim/core/utils/ScopedCudaDevice.h>
 
 #include <OgnROS1PublishPointCloudDatabase.h>
 #include <RosNode.h>
@@ -109,7 +109,7 @@ public:
                 size_t totalBytes = point_cloud_msg.row_step;
                 point_cloud_msg.data.resize(totalBytes);
 
-                omni::isaac::utils::ScopedDevice scopedDev(db.inputs.cudaDeviceIndex());
+                isaacsim::core::utils::ScopedDevice scopedDev(db.inputs.cudaDeviceIndex());
                 auto src = reinterpret_cast<void*>(db.inputs.dataPtr());
                 CUDA_CHECK(cudaMemcpy(&point_cloud_msg.data[0], src, db.inputs.bufferSize(), cudaMemcpyDeviceToHost));
             }

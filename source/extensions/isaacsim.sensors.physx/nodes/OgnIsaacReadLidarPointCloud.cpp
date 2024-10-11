@@ -11,10 +11,10 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#include "omni/isaac/utils/UsdUtilities.h"
+#include "isaacsim/core/utils/UsdUtilities.h"
 
+#include <isaacsim/core/utils/BaseResetNode.h>
 #include <omni/fabric/FabricUSD.h>
-#include <omni/isaac/utils/BaseResetNode.h>
 #include <rangeSensorSchema/lidar.h>
 #include <rangeSensorSchema/rangeSensor.h>
 
@@ -108,7 +108,7 @@ public:
     {
         float maxRange = 100;
 
-        omni::isaac::utils::safeGetAttribute(mRangeSensorPrim.GetMaxRangeAttr(), maxRange);
+        isaacsim::core::utils::safeGetAttribute(mRangeSensorPrim.GetMaxRangeAttr(), maxRange);
 
         carb::Float3* lidarData = mLidarSensorInterface->getPointCloud(mLidarPrimPath);
         // float* theta = mLidarSensorInterface->getAzimuthData(mLidarPrimPath);

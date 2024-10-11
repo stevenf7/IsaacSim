@@ -21,9 +21,9 @@
 #include <unordered_map>
 #include <vector>
 
-namespace omni
+namespace isaacsim
 {
-namespace isaac
+namespace core
 {
 namespace utils
 {

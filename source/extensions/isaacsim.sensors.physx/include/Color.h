@@ -12,9 +12,9 @@
 #include <carb/Defines.h>
 #include <carb/Types.h>
 
-namespace omni
+namespace isaacsim
 {
-namespace isaac
+namespace core
 {
 namespace utils
 {

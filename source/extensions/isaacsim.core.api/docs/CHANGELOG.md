@@ -1059,7 +1059,7 @@
 ## [0.1.10] - 2021-12-01
 
 ### Added
-- isaac.nucleus.default setting moved from omni.isaac.utils
+- isaac.nucleus.default setting moved from isaacsim.core.utils
 
 ### Fixed
 - XformPrim now checks if orient is in single or double precision before setting

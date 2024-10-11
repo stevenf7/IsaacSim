@@ -12,8 +12,8 @@
 
 #include <carb/graphics/GraphicsTypes.h>
 
-#include <omni/isaac/utils/Buffer.h>
-#include <omni/isaac/utils/ScopedCudaDevice.h>
+#include <isaacsim/core/utils/Buffer.h>
+#include <isaacsim/core/utils/ScopedCudaDevice.h>
 
 #include <OgnROS1PublishImageDatabase.h>
 #include <RosNode.h>
@@ -124,11 +124,11 @@ public:
         }
         else
         {
-            omni::isaac::utils::ScopedDevice scopedDev(db.inputs.cudaDeviceIndex());
+            isaacsim::core::utils::ScopedDevice scopedDev(db.inputs.cudaDeviceIndex());
 
             if (db.inputs.bufferSize() == 0)
             {
-                omni::isaac::utils::ScopedCudaTextureObject srcTexObj(
+                isaacsim::core::utils::ScopedCudaTextureObject srcTexObj(
                     reinterpret_cast<cudaMipmappedArray_t>(db.inputs.dataPtr()), 0);
                 switch (static_cast<carb::graphics::Format>(db.inputs.format()))
                 {
@@ -182,7 +182,7 @@ private:
     std::unique_ptr<ros::Publisher> mPublisher;
     std::string mFrameId = "sim_camera";
     sensor_msgs::Image msg;
-    omni::isaac::utils::DeviceBuffer mBuffer;
+    isaacsim::core::utils::DeviceBuffer mBuffer;
 };
 
 REGISTER_OGN_NODE()

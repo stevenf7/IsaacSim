@@ -12,8 +12,8 @@
 #include <carb/graphics/GraphicsTypes.h>
 #include <carb/logging/Log.h>
 
-#include <omni/isaac/utils/Buffer.h>
-#include <omni/isaac/utils/ScopedCudaDevice.h>
+#include <isaacsim/core/utils/Buffer.h>
+#include <isaacsim/core/utils/ScopedCudaDevice.h>
 
 #include <cmath>
 #include <string>
@@ -56,9 +56,9 @@ public:
         cx = width * 0.5f;
         cy = height * 0.5f;
         {
-            omni::isaac::utils::ScopedDevice scopedDev(db.inputs.cudaDeviceIndex());
+            isaacsim::core::utils::ScopedDevice scopedDev(db.inputs.cudaDeviceIndex());
             uint64_t handle = db.inputs.dataPtr();
-            omni::isaac::utils::ScopedCudaTextureObject srcTexObj(reinterpret_cast<cudaMipmappedArray_t>(handle), 0);
+            isaacsim::core::utils::ScopedCudaTextureObject srcTexObj(reinterpret_cast<cudaMipmappedArray_t>(handle), 0);
             state.mBuffer.resize(db.inputs.width() * db.inputs.height());
             depthToPCLOgn(state.mBuffer.data(), srcTexObj, width, height, fx, fy, cx, cy);
         }
@@ -73,7 +73,7 @@ public:
     }
 
 private:
-    omni::isaac::utils::DeviceBufferBase<float3> mBuffer;
+    isaacsim::core::utils::DeviceBufferBase<float3> mBuffer;
 };
 REGISTER_OGN_NODE()
 }

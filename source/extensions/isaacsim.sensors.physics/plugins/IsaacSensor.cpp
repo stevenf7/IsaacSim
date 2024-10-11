@@ -109,7 +109,7 @@ bool CARB_ABI isContactSensor(const char* primPath)
 
 const char* CARB_ABI CsDecodeBodyName(uint64_t path_token)
 {
-    return omni::isaac::utils::getSdfPathFromUint64(path_token).GetString().c_str();
+    return isaacsim::core::utils::getSdfPathFromUint64(path_token).GetString().c_str();
 }
 
 isaacsim::sensors::physics::CsRawData* CARB_ABI CsGetBodyRawData(const char* primPath, size_t& numContacts)

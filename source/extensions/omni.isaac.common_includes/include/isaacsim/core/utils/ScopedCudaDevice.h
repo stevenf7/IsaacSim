@@ -13,9 +13,9 @@
 
 #include <cuda.h>
 
-namespace omni
+namespace isaacsim
 {
-namespace isaac
+namespace core
 {
 namespace utils
 {

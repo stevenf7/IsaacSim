@@ -11,12 +11,12 @@
 // clang-format on
 
 #include "SensorNodeUtils.h"
-#include "omni/isaac/utils/UsdUtilities.h"
+#include "isaacsim/core/utils/UsdUtilities.h"
 
 #include <carb/InterfaceUtils.h>
 #include <carb/Types.h>
 
-#include <omni/isaac/utils/Buffer.h>
+#include <isaacsim/core/utils/Buffer.h>
 #include <omni/math/linalg/matrix.h>
 #include <omni/sensors/GenericModelOutput.h>
 
@@ -94,14 +94,14 @@ public:
 #else
         pxr::GfVec3d translate{ 0, 0, 0 };
         pxr::GfQuatd rotate{ 1, 0, 0, 0 };
-        pxr::UsdAttribute transAttr = omni::isaac::utils::getCameraAttributeFromRenderProduct(
+        pxr::UsdAttribute transAttr = isaacsim::core::utils::getCameraAttributeFromRenderProduct(
             "xformOp:translate", db.tokenToString(db.inputs.renderProductPath()));
-        pxr::UsdAttribute rotAttr = omni::isaac::utils::getCameraAttributeFromRenderProduct(
+        pxr::UsdAttribute rotAttr = isaacsim::core::utils::getCameraAttributeFromRenderProduct(
             "xformOp:orient", db.tokenToString(db.inputs.renderProductPath()));
         if (transAttr.IsValid() && rotAttr.IsValid())
         {
-            omni::isaac::utils::safeGetAttribute(transAttr, translate);
-            omni::isaac::utils::safeGetAttribute(rotAttr, rotate);
+            isaacsim::core::utils::safeGetAttribute(transAttr, translate);
+            isaacsim::core::utils::safeGetAttribute(rotAttr, rotate);
         }
         frameEnd.orientation.w = (float)rotate.GetReal();
         frameEnd.orientation.x = (float)rotate.GetImaginary()[0];
@@ -184,7 +184,7 @@ public:
     }
 
 private:
-    omni::isaac::utils::HostBufferBase<float3> hostPcBuffer;
+    isaacsim::core::utils::HostBufferBase<float3> hostPcBuffer;
 };
 
 REGISTER_OGN_NODE()

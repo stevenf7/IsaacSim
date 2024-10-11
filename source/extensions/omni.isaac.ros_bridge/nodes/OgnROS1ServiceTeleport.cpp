@@ -16,8 +16,8 @@
 #include <carb/Framework.h>
 #include <carb/Types.h>
 
+#include <isaacsim/core/utils/Conversions.h>
 #include <omni/fabric/FabricUSD.h>
-#include <omni/isaac/utils/Conversions.h>
 #include <omni/usd/UsdUtils.h>
 
 #include <DynamicControl.h>
@@ -136,7 +136,7 @@ public:
                 {
                     omni::usd::UsdUtils::setLocalTransformMatrix(
                         stage->GetPrimAtPath(pxr::SdfPath(prim_name)),
-                        omni::isaac::utils::conversions::asGfTransform(body_pose).GetMatrix());
+                        isaacsim::core::utils::conversions::asGfTransform(body_pose).GetMatrix());
                 }
             }
 

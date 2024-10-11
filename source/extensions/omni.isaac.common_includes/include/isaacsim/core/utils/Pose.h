@@ -24,11 +24,11 @@
 #    pragma GCC diagnostic pop
 #endif
 
-using namespace omni::isaac::utils::conversions;
-using namespace omni::isaac::utils;
-namespace omni
+using namespace isaacsim::core::utils::conversions;
+using namespace isaacsim::core::utils;
+namespace isaacsim
 {
-namespace isaac
+namespace core
 {
 
 namespace utils

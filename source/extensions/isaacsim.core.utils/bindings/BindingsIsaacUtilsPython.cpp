@@ -13,15 +13,15 @@
 
 #include <carb/BindingsPythonUtils.h>
 
-#include <omni/isaac/utils/Conversions.h>
-#include <omni/isaac/utils/Math.h>
-#include <omni/isaac/utils/Transforms.h>
+#include <isaacsim/core/utils/Conversions.h>
+#include <isaacsim/core/utils/Math.h>
+#include <isaacsim/core/utils/Transforms.h>
 
-CARB_BINDINGS("omni.isaac.utils.python")
+CARB_BINDINGS("isaacsim.core.utils.python")
 
-namespace omni
+namespace isaacsim
 {
-namespace isaac
+namespace core
 {
 namespace utils
 {
@@ -34,8 +34,8 @@ namespace
 PYBIND11_MODULE(_isaac_utils, m)
 {
     using namespace carb;
-    using namespace omni::isaac::utils::math;
-    using namespace omni::isaac::utils;
+    using namespace isaacsim::core::utils::math;
+    using namespace isaacsim::core::utils;
     using namespace omni::isaac::dynamic_control;
     // We use carb data types, must import bindings for them
     auto carb_module = py::module::import("carb");
@@ -117,7 +117,7 @@ PYBIND11_MODULE(_isaac_utils, m)
         )pbdoc");
 
     // Vector and transform operations
-    math.def("cross", &omni::isaac::utils::math::cross,
+    math.def("cross", &isaacsim::core::utils::math::cross,
              R"pbdoc(
              Performs Cross product between 3D vectors
              Args:
@@ -130,7 +130,7 @@ PYBIND11_MODULE(_isaac_utils, m)
                 :obj:`carb.Float3`: cross poduct ``arg0 x arg1``.
              )pbdoc");
 
-    math.def("dot", py::overload_cast<const carb::Float3&, const carb::Float3&>(&omni::isaac::utils::math::dot),
+    math.def("dot", py::overload_cast<const carb::Float3&, const carb::Float3&>(&isaacsim::core::utils::math::dot),
              R"pbdoc(Performs Dot product between 3D vectors
              Args:
                  arg0 (:obj:`carb.Float3`): 3D vector
@@ -142,7 +142,7 @@ PYBIND11_MODULE(_isaac_utils, m)
                  :obj:`carb.Float3`: dot poduct ``arg0 * arg1``.
              )pbdoc");
 
-    math.def("dot", py::overload_cast<const carb::Float4&, const carb::Float4&>(&omni::isaac::utils::math::dot),
+    math.def("dot", py::overload_cast<const carb::Float4&, const carb::Float4&>(&isaacsim::core::utils::math::dot),
              R"pbdoc(Performs Dot product between 4D vectors
              Args:
                  arg0 (:obj:`carb.Float4`): 4D vector
@@ -154,7 +154,7 @@ PYBIND11_MODULE(_isaac_utils, m)
                  :obj:`carb.Float4`: dot poduct ``arg0 * arg1``.
 
              )pbdoc");
-    math.def("inverse", py::overload_cast<const carb::Float4&>(&omni::isaac::utils::math::inverse),
+    math.def("inverse", py::overload_cast<const carb::Float4&>(&isaacsim::core::utils::math::inverse),
              R"pbdoc(Gets Inverse Quaternion
              Args:
 
@@ -165,7 +165,7 @@ PYBIND11_MODULE(_isaac_utils, m)
                  :obj:`carb.Float4`: The inverse quaternion
 
              )pbdoc");
-    math.def("inverse", py::overload_cast<const DcTransform&>(&omni::isaac::utils::math::inverse),
+    math.def("inverse", py::overload_cast<const DcTransform&>(&isaacsim::core::utils::math::inverse),
              R"pbdoc(Gets Inverse Transform
              Args:
 
@@ -176,7 +176,7 @@ PYBIND11_MODULE(_isaac_utils, m)
                  :obj:`omni.isaac.dynamic_control._dynamic_control.Transform`: The inverse Inverse Transform
 
              )pbdoc");
-    math.def("normalize", py::overload_cast<const carb::Float3&>(&omni::isaac::utils::math::normalize),
+    math.def("normalize", py::overload_cast<const carb::Float3&>(&isaacsim::core::utils::math::normalize),
              R"pbdoc(
                 Gets normalized 3D vector
 
@@ -189,7 +189,7 @@ PYBIND11_MODULE(_isaac_utils, m)
                     :obj:`carb.Float3`: Normalized 3D Vector
                     
                 )pbdoc");
-    math.def("normalize", py::overload_cast<const carb::Float4&>(&omni::isaac::utils::math::normalize),
+    math.def("normalize", py::overload_cast<const carb::Float4&>(&isaacsim::core::utils::math::normalize),
              R"pbdoc(
                 Gets normalized 4D vector
                 Args:
@@ -200,7 +200,7 @@ PYBIND11_MODULE(_isaac_utils, m)
 
                     :obj:`carb.Float4`: Normalized 4D Vector
                 )pbdoc");
-    math.def("rotate", omni::isaac::utils::math::rotate,
+    math.def("rotate", isaacsim::core::utils::math::rotate,
              R"pbdoc(
                 rotates the 3D vector arg1 by the quaternion `arg0`
 
@@ -215,7 +215,7 @@ PYBIND11_MODULE(_isaac_utils, m)
                     :obj:`carb.Float3`: Rotated 3D Vector
                 )pbdoc");
     math.def("transform_inv",
-             py::overload_cast<const DcTransform&, const DcTransform&>(&omni::isaac::utils::math::transformInv),
+             py::overload_cast<const DcTransform&, const DcTransform&>(&isaacsim::core::utils::math::transformInv),
              R"pbdoc(
                 Computes local Transform of arg1 with respect to arg0: `inv(arg0)*arg1`
 
@@ -229,9 +229,10 @@ PYBIND11_MODULE(_isaac_utils, m)
 
                     :obj:`omni.isaac.dynamic_control._dynamic_control.Transform`: resulting transform of ``inv(arg0)*arg1``
                 )pbdoc");
-    math.def("transform_inv",
-             py::overload_cast<const pxr::GfTransform&, const pxr::GfTransform&>(&omni::isaac::utils::math::transformInv),
-             R"pbdoc(
+    math.def(
+        "transform_inv",
+        py::overload_cast<const pxr::GfTransform&, const pxr::GfTransform&>(&isaacsim::core::utils::math::transformInv),
+        R"pbdoc(
                 Computes local Transform of arg1 with respect to arg0: `inv(arg0)*arg1`
 
                 Args:
@@ -247,7 +248,7 @@ PYBIND11_MODULE(_isaac_utils, m)
 
 
     // Utility functions
-    math.def("get_basis_vector_x", &omni::isaac::utils::math::getBasisVectorX,
+    math.def("get_basis_vector_x", &isaacsim::core::utils::math::getBasisVectorX,
              R"pbdoc(
                 Gets Basis vector X of quaternion
 
@@ -260,7 +261,7 @@ PYBIND11_MODULE(_isaac_utils, m)
                     :obj:`carb.Float3`: Basis Vector X
                     
                 )pbdoc");
-    math.def("get_basis_vector_y", &omni::isaac::utils::math::getBasisVectorY,
+    math.def("get_basis_vector_y", &isaacsim::core::utils::math::getBasisVectorY,
              R"pbdoc(
                 Gets Basis vector Y of quaternion
 
@@ -273,7 +274,7 @@ PYBIND11_MODULE(_isaac_utils, m)
                     :obj:`carb.Float3`: Basis Vector Y
                     
                 )pbdoc");
-    math.def("get_basis_vector_z", &omni::isaac::utils::math::getBasisVectorZ,
+    math.def("get_basis_vector_z", &isaacsim::core::utils::math::getBasisVectorZ,
              R"pbdoc(
                 Gets Basis vector Z of quaternion
 
@@ -288,7 +289,7 @@ PYBIND11_MODULE(_isaac_utils, m)
                 )pbdoc");
 
     math.def("lerp",
-             py::overload_cast<const carb::Float3&, const carb::Float3&, const float>(&omni::isaac::utils::math::lerp),
+             py::overload_cast<const carb::Float3&, const carb::Float3&, const float>(&isaacsim::core::utils::math::lerp),
              R"pbdoc(
                 Performs Linear interpolation between points arg0 and arg1
 
@@ -306,7 +307,7 @@ PYBIND11_MODULE(_isaac_utils, m)
                     
                 )pbdoc");
     math.def("lerp",
-             py::overload_cast<const carb::Float4&, const carb::Float4&, const float>(&omni::isaac::utils::math::lerp),
+             py::overload_cast<const carb::Float4&, const carb::Float4&, const float>(&isaacsim::core::utils::math::lerp),
              R"pbdoc(
                 Performs Linear interpolation between quaternions arg0 and arg1
 
@@ -324,7 +325,7 @@ PYBIND11_MODULE(_isaac_utils, m)
                     
                 )pbdoc");
     math.def("lerp",
-             py::overload_cast<const DcTransform&, const DcTransform&, const float>(&omni::isaac::utils::math::lerp),
+             py::overload_cast<const DcTransform&, const DcTransform&, const float>(&isaacsim::core::utils::math::lerp),
              R"pbdoc(
                 Performs Linear interpolation between points arg0 and arg1
 
@@ -341,9 +342,10 @@ PYBIND11_MODULE(_isaac_utils, m)
                     :obj:`omni.isaac.dynamic_control._dynamic_control.Transform`: Interpolated transform
                     
                 )pbdoc");
-    math.def("slerp",
-             py::overload_cast<const carb::Float4&, const carb::Float4&, const float>(&omni::isaac::utils::math::slerp),
-             R"pbdoc(
+    math.def(
+        "slerp",
+        py::overload_cast<const carb::Float4&, const carb::Float4&, const float>(&isaacsim::core::utils::math::slerp),
+        R"pbdoc(
                 Performs Spherical Linear interpolation between quaternions arg0 and arg1
 
                 Args:
@@ -360,7 +362,7 @@ PYBIND11_MODULE(_isaac_utils, m)
                     
                 )pbdoc");
     math.def("slerp",
-             py::overload_cast<const DcTransform&, const DcTransform&, const float>(&omni::isaac::utils::math::slerp),
+             py::overload_cast<const DcTransform&, const DcTransform&, const float>(&isaacsim::core::utils::math::slerp),
              R"pbdoc(
                 Performs Spherical Linear interpolation between points arg0 and arg1
 
@@ -392,9 +394,9 @@ PYBIND11_MODULE(_isaac_utils, m)
             if (prim)
             {
 
-                omni::isaac::utils::transforms::setTransform(prim,
-                                                             omni::isaac::utils::conversions::asGfVec3f(translation),
-                                                             omni::isaac::utils::conversions::asGfQuatf(rotation));
+                isaacsim::core::utils::transforms::setTransform(
+                    prim, isaacsim::core::utils::conversions::asGfVec3f(translation),
+                    isaacsim::core::utils::conversions::asGfQuatf(rotation));
             }
             else
             {
@@ -427,7 +429,7 @@ PYBIND11_MODULE(_isaac_utils, m)
             if (prim)
             {
 
-                omni::isaac::utils::transforms::setScale(prim, omni::isaac::utils::conversions::asGfVec3f(scale));
+                isaacsim::core::utils::transforms::setScale(prim, isaacsim::core::utils::conversions::asGfVec3f(scale));
             }
             else
             {
@@ -451,14 +453,14 @@ PYBIND11_MODULE(_isaac_utils, m)
                 )pbdoc");
 
     // {
-    //     using namespace omni::isaac::utils::conversions;
+    //     using namespace isaacsim::core::utils::conversions;
     //     math.def("look_at", [](const carb::Float3& a, carb::Float3& b, carb::Float3& c) {
-    //         return asCarbFloat4(omni::isaac::utils::math::lookAt(asGfVec3f(a), asGfVec3f(b), asGfVec3f(c)));
+    //         return asCarbFloat4(isaacsim::core::utils::math::lookAt(asGfVec3f(a), asGfVec3f(b), asGfVec3f(c)));
     //     });
     // }
     // Conversion functions
     // {
-    //     using namespace omni::isaac::utils::conversions;
+    //     using namespace isaacsim::core::utils::conversions;
     //     auto convert = m.def_submodule("convert");
     //     convert.def("as_gf_transform", py::overload_cast<const DcTransform&>(&asGfTransform));
     //     convert.def("as_gf_transform", py::overload_cast<const carb::Float3&, const carb::Float4&>(&asGfTransform));

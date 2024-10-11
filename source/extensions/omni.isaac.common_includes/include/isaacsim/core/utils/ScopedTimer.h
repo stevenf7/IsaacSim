@@ -13,9 +13,9 @@
 #include <iostream>
 #include <string>
 
-namespace omni
+namespace isaacsim
 {
-namespace isaac
+namespace core
 {
 namespace utils
 {

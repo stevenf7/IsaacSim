@@ -13,8 +13,8 @@
 #include "../lidar/LidarSensor.h"
 #include "../lightbeam_sensor/LightBeamSensor.h"
 #include "RangeSensorComponent.h"
+#include "isaacsim/core/utils/ScopedTimer.h"
 #include "omni/isaac/bridge/BridgeApplication.h"
-#include "omni/isaac/utils/ScopedTimer.h"
 
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
@@ -45,7 +45,7 @@ namespace sensors
 namespace physx
 {
 
-class RangeSensorManager : public omni::isaac::utils::BridgeApplicationBase<RangeSensorComponent>
+class RangeSensorManager : public isaacsim::core::utils::BridgeApplicationBase<RangeSensorComponent>
 {
 public:
     /**
@@ -216,7 +216,7 @@ public:
 
     virtual void onComponentChange(const pxr::UsdPrim& prim)
     {
-        omni::isaac::utils::BridgeApplicationBase<RangeSensorComponent>::onComponentChange(prim);
+        isaacsim::core::utils::BridgeApplicationBase<RangeSensorComponent>::onComponentChange(prim);
         // update properties of this prim (onComponentChange)
         if (mComponents.find(prim.GetPath().GetString()) != mComponents.end())
         {

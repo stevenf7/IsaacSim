@@ -18,7 +18,7 @@
 
 #include <carb/InterfaceUtils.h>
 
-#include <omni/isaac/utils/Pose.h>
+#include <isaacsim/core/utils/Pose.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
 #include <omni/usd/UsdUtils.h>
@@ -59,8 +59,8 @@ void GenericSensor::onComponentChange()
 
     const pxr::RangeSensorGeneric& typedPrim = (pxr::RangeSensorGeneric)mPrim;
 
-    omni::isaac::utils::safeGetAttribute(typedPrim.GetSamplingRateAttr(), mSamplingRate);
-    omni::isaac::utils::safeGetAttribute(typedPrim.GetStreamingAttr(), mStreaming);
+    isaacsim::core::utils::safeGetAttribute(typedPrim.GetSamplingRateAttr(), mSamplingRate);
+    isaacsim::core::utils::safeGetAttribute(typedPrim.GetStreamingAttr(), mStreaming);
 
     mMinRange = pxr::GfClamp(mMinRange, 0, 1e9f);
     mMaxRange = pxr::GfClamp(mMaxRange, mMinRange, 1e9f);
@@ -340,10 +340,10 @@ void GenericSensor::preTick()
 {
 
     auto worldMat =
-        omni::isaac::utils::pose::computeWorldXformNoCache(mStage, mUsdrtStage, mPrim.GetPath(), mParentPrimTimeCode);
+        isaacsim::core::utils::pose::computeWorldXformNoCache(mStage, mUsdrtStage, mPrim.GetPath(), mParentPrimTimeCode);
 
-    mFinalTranslation = omni::isaac::utils::conversions::asPxVec3(worldMat.ExtractTranslation());
-    mFinalRotation = omni::isaac::utils::conversions::asPxQuat(worldMat.ExtractRotation());
+    mFinalTranslation = isaacsim::core::utils::conversions::asPxVec3(worldMat.ExtractTranslation());
+    mFinalRotation = isaacsim::core::utils::conversions::asPxQuat(worldMat.ExtractRotation());
 }
 
 void GenericSensor::tick()

@@ -13,7 +13,7 @@
 #include "../core/RangeSensorComponent.h"
 
 #include <extensions/PxSceneQueryExt.h>
-#include <omni/isaac/utils/Conversions.h>
+#include <isaacsim/core/utils/Conversions.h>
 #include <pxr/base/gf/vec3f.h>
 #include <pxr/usd/usd/inherits.h>
 #include <rangeSensorSchema/generic.h>
@@ -149,7 +149,7 @@ private:
             ::physx::PxVec3 unitDir = rot.rotate(::physx::PxVec3(1.0f, 0.0f, 0.0f)).getNormalized();
             ::physx::PxRaycastHit raycastHit;
             // Project the start point out to prevent collisions from origin
-            ::physx::PxVec3 origin = sensor_origin + omni::isaac::utils::conversions::asPxVec3(origin_offset[i]);
+            ::physx::PxVec3 origin = sensor_origin + isaacsim::core::utils::conversions::asPxVec3(origin_offset[i]);
             bool hit = raycastClose(origin + unitDir * minDepth, unitDir, maxDepth, raycastHit, physxScenePtr);
 
             if (hit)
@@ -183,7 +183,7 @@ private:
                     // auto temp = raycastHit.position - diff.getNormalized();
                     // set ratio for color.  should be zero at minDepth and unity at maxDepth
                     auto ratio = (linearDepth[i] - minDepth * metersPerUnit) / ((maxDepth - minDepth) * metersPerUnit);
-                    data.color = omni::isaac::utils::color::distToRgba(ratio);
+                    data.color = isaacsim::core::utils::color::distToRgba(ratio);
                     data.width = 5.0f;
                     mPointDrawing->addVertex(data);
                 }
@@ -199,7 +199,7 @@ private:
                     auto ratio = (linearDepth[i] - minDepth * metersPerUnit) / ((maxDepth - minDepth) * metersPerUnit);
 
                     data.position = { temp.x, temp.y, temp.z };
-                    data.color = omni::isaac::utils::color::distToRgba(ratio);
+                    data.color = isaacsim::core::utils::color::distToRgba(ratio);
                     data.width = 1.0;
 
                     mLineDrawing->addVertex(data);

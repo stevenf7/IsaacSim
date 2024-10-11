@@ -23,7 +23,7 @@
 #include "ContactManager.h"
 #include "IsaacSensor.h"
 
-#include <omni/isaac/utils/Pose.h>
+#include <isaacsim/core/utils/Pose.h>
 
 namespace isaacsim
 {
@@ -112,7 +112,7 @@ void ContactSensor::processRawContacts(CsRawData* rawContact, const size_t& size
     if (size > static_cast<size_t>(0))
     {
         usdrt::GfMatrix4d usdTransform =
-            omni::isaac::utils::pose::computeWorldXformNoCache(mStage, mUsdrtStage, mPrim.GetPath());
+            isaacsim::core::utils::pose::computeWorldXformNoCache(mStage, mUsdrtStage, mPrim.GetPath());
         const double* sensor_pose = usdTransform.ExtractTranslation().GetArray();
         pxr::GfVec3d pose(sensor_pose[0], sensor_pose[1], sensor_pose[2]);
         pxr::GfVec3d totalImpulse(0.0, 0.0, 0.0);
@@ -260,10 +260,10 @@ void ContactSensor::onComponentChange()
     // contact sensor onComponentChange
     const pxr::IsaacSensorIsaacContactSensor& typedPrim = (pxr::IsaacSensorIsaacContactSensor)mPrim;
 
-    omni::isaac::utils::safeGetAttribute(typedPrim.GetThresholdAttr(), thresholdAttr);
-    omni::isaac::utils::safeGetAttribute(typedPrim.GetRadiusAttr(), radius);
-    omni::isaac::utils::safeGetAttribute(typedPrim.GetColorAttr(), mColor);
-    omni::isaac::utils::safeGetAttribute(typedPrim.GetSensorPeriodAttr(), sensorPeriod);
+    isaacsim::core::utils::safeGetAttribute(typedPrim.GetThresholdAttr(), thresholdAttr);
+    isaacsim::core::utils::safeGetAttribute(typedPrim.GetRadiusAttr(), radius);
+    isaacsim::core::utils::safeGetAttribute(typedPrim.GetColorAttr(), mColor);
+    isaacsim::core::utils::safeGetAttribute(typedPrim.GetSensorPeriodAttr(), sensorPeriod);
 
     setContactReportApi();
     const float* thresholds = thresholdAttr.GetArray();
@@ -329,8 +329,8 @@ void ContactSensor::printRawData(CsRawData* data)
 
     CARB_LOG_INFO("Raw Data \n");
     CARB_LOG_INFO("Time: %f\n", time);
-    CARB_LOG_INFO("Body 0: %s Body 1: %s \n", omni::isaac::utils::getSdfPathFromUint64(body0).GetString().c_str(),
-                  omni::isaac::utils::getSdfPathFromUint64(body1).GetString().c_str());
+    CARB_LOG_INFO("Body 0: %s Body 1: %s \n", isaacsim::core::utils::getSdfPathFromUint64(body0).GetString().c_str(),
+                  isaacsim::core::utils::getSdfPathFromUint64(body1).GetString().c_str());
     CARB_LOG_INFO("Position: %f, %f, %f \n", pos_x, pos_y, pos_z);
     CARB_LOG_INFO("Normal: %f, %f, %f \n", normal_x, normal_y, normal_z);
     CARB_LOG_INFO("Impulse: %f, %f, %f \n", impulse_x, impulse_y, impulse_z);

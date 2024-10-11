@@ -21,13 +21,13 @@
 
 #include "LightBeamSensor.h"
 
-#include "omni/isaac/utils/Pose.h"
-#include "omni/isaac/utils/UsdUtilities.h"
+#include "isaacsim/core/utils/Pose.h"
+#include "isaacsim/core/utils/UsdUtilities.h"
 
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
 
-#include <omni/isaac/utils/Conversions.h>
+#include <isaacsim/core/utils/Conversions.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
@@ -76,12 +76,12 @@ void LightBeamSensor::onComponentChange()
 
     const pxr::IsaacSensorIsaacLightBeamSensor& typedPrim = (pxr::IsaacSensorIsaacLightBeamSensor)mPrim;
 
-    omni::isaac::utils::safeGetAttribute(typedPrim.GetCurtainLengthAttr(), mCurtainLength);
-    omni::isaac::utils::safeGetAttribute(typedPrim.GetNumRaysAttr(), mNumRays);
-    omni::isaac::utils::safeGetAttribute(typedPrim.GetCurtainAxisAttr(), mCurtainAxis);
-    omni::isaac::utils::safeGetAttribute(typedPrim.GetForwardAxisAttr(), mForwardAxis);
-    omni::isaac::utils::safeGetAttribute(typedPrim.GetMinRangeAttr(), mMinRange);
-    omni::isaac::utils::safeGetAttribute(typedPrim.GetMaxRangeAttr(), mMaxRange);
+    isaacsim::core::utils::safeGetAttribute(typedPrim.GetCurtainLengthAttr(), mCurtainLength);
+    isaacsim::core::utils::safeGetAttribute(typedPrim.GetNumRaysAttr(), mNumRays);
+    isaacsim::core::utils::safeGetAttribute(typedPrim.GetCurtainAxisAttr(), mCurtainAxis);
+    isaacsim::core::utils::safeGetAttribute(typedPrim.GetForwardAxisAttr(), mForwardAxis);
+    isaacsim::core::utils::safeGetAttribute(typedPrim.GetMinRangeAttr(), mMinRange);
+    isaacsim::core::utils::safeGetAttribute(typedPrim.GetMaxRangeAttr(), mMaxRange);
 
     mMetersPerUnit = static_cast<float>(UsdGeomGetStageMetersPerUnit(this->mStage));
     mMinRange = pxr::GfClamp(mMinRange, 0, 1e9f);
@@ -103,9 +103,9 @@ void LightBeamSensor::scan(const ::physx::PxVec3& origin, const ::physx::PxQuat&
     }
 
     ::physx::PxVec3 unitDir =
-        worldRotation.rotate(omni::isaac::utils::conversions::asPxVec3(mForwardAxis)).getNormalized();
+        worldRotation.rotate(isaacsim::core::utils::conversions::asPxVec3(mForwardAxis)).getNormalized();
     ::physx::PxVec3 unitCurtain =
-        worldRotation.rotate(omni::isaac::utils::conversions::asPxVec3(mCurtainAxis)).getNormalized();
+        worldRotation.rotate(isaacsim::core::utils::conversions::asPxVec3(mCurtainAxis)).getNormalized();
 
     auto lightbeamLambda = [&]()
     {
@@ -162,10 +162,10 @@ void LightBeamSensor::onPhysicsStep()
         return;
     }
 
-    auto worldMat = omni::isaac::utils::pose::computeWorldXformNoCache(mStage, mUsdrtStage, mPrim.GetPath());
+    auto worldMat = isaacsim::core::utils::pose::computeWorldXformNoCache(mStage, mUsdrtStage, mPrim.GetPath());
 
-    mWorldTranslation = omni::isaac::utils::conversions::asPxVec3(worldMat.ExtractTranslation());
-    mWorldRotation = omni::isaac::utils::conversions::asPxQuat(worldMat.ExtractRotation());
+    mWorldTranslation = isaacsim::core::utils::conversions::asPxVec3(worldMat.ExtractTranslation());
+    mWorldRotation = isaacsim::core::utils::conversions::asPxQuat(worldMat.ExtractRotation());
 
     // run full scan
     scan(mWorldTranslation, mWorldRotation);

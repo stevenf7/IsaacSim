@@ -11,7 +11,7 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#include "omni/isaac/utils/ScopedTimer.h"
+#include "isaacsim/core/utils/ScopedTimer.h"
 
 #include <extensions/PxSceneQueryExt.h>
 #include <octomap/octomap.h>
@@ -102,7 +102,7 @@ void MapGenerator::setTransform(carb::Float3 inputOrigin, carb::Float3 inputMinP
 }
 void MapGenerator::generate2d()
 {
-    // omni::isaac::utils::ScopedTimer TimerApp("Generate");
+    // isaacsim::core::utils::ScopedTimer TimerApp("Generate");
 
     if (!mPhysxScenePtr)
     {
@@ -157,7 +157,7 @@ void MapGenerator::generate2d()
 }
 void MapGenerator::generate3d()
 {
-    // omni::isaac::utils::ScopedTimer TimerApp("Generate");
+    // isaacsim::core::utils::ScopedTimer TimerApp("Generate");
 
     if (!mPhysxScenePtr)
     {
@@ -298,7 +298,7 @@ bool isSafe(float* buffer, carb::Int2 num_cells, int x, int y, float target)
 // Flood fill using DFS
 void floodfill(float* buffer, carb::Int2 num_cells, int sx, int sy, float replacement)
 {
-    // omni::isaac::utils::ScopedTimer TimerApp("floodFill");
+    // isaacsim::core::utils::ScopedTimer TimerApp("floodFill");
     std::stack<std::pair<int, int>> q;
     q.push({ sx, sy });
 
@@ -328,7 +328,7 @@ void floodfill(float* buffer, carb::Int2 num_cells, int sx, int sy, float replac
 
 std::vector<float> MapGenerator::getBuffer()
 {
-    // omni::isaac::utils::ScopedTimer TimerApp("getBuffer");
+    // isaacsim::core::utils::ScopedTimer TimerApp("getBuffer");
 
     std::vector<float> buffer;
     if (mTree)

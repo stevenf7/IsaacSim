@@ -828,19 +828,19 @@ void Ros2JointStateMessageImpl::writeData(const double& timeStamp,
             if (dofProperties[j].type == omni::isaac::dynamic_control::DcDofType::eTranslation)
             {
                 jointStateMsg->position.data[j] =
-                    omni::isaac::utils::math::roundNearest(dofStates[j].pos * stageUnits * signCheck, 10000.0); // m
-                jointStateMsg->velocity.data[j] = omni::isaac::utils::math::roundNearest(
+                    isaacsim::core::utils::math::roundNearest(dofStates[j].pos * stageUnits * signCheck, 10000.0); // m
+                jointStateMsg->velocity.data[j] = isaacsim::core::utils::math::roundNearest(
                     calculatedJointVelocity[j] * stageUnits * signCheck, 10000.0); // m/s
-                jointStateMsg->effort.data[j] =
-                    omni::isaac::utils::math::roundNearest(dofStates[j].effort * stageUnits * signCheck, 10000.0); // N
+                jointStateMsg->effort.data[j] = isaacsim::core::utils::math::roundNearest(
+                    dofStates[j].effort * stageUnits * signCheck, 10000.0); // N
             }
             else
             {
                 jointStateMsg->position.data[j] =
-                    omni::isaac::utils::math::roundNearest(dofStates[j].pos * signCheck, 10000.0); // rad
+                    isaacsim::core::utils::math::roundNearest(dofStates[j].pos * signCheck, 10000.0); // rad
                 jointStateMsg->velocity.data[j] =
-                    omni::isaac::utils::math::roundNearest(calculatedJointVelocity[j] * signCheck, 10000.0); // rad/s
-                jointStateMsg->effort.data[j] = omni::isaac::utils::math::roundNearest(
+                    isaacsim::core::utils::math::roundNearest(calculatedJointVelocity[j] * signCheck, 10000.0); // rad/s
+                jointStateMsg->effort.data[j] = isaacsim::core::utils::math::roundNearest(
                     dofStates[j].effort * stageUnits * stageUnits * signCheck, 10000.0); // N*m
             }
         }

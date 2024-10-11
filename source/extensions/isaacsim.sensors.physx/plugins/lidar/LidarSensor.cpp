@@ -18,11 +18,11 @@
 
 #include <carb/InterfaceUtils.h>
 
+#include <isaacsim/core/utils/Conversions.h>
+#include <isaacsim/core/utils/Pose.h>
 #include <omni/fabric/FabricUSD.h>
 #include <omni/fabric/IToken.h>
 #include <omni/fabric/SimStageWithHistory.h>
-#include <omni/isaac/utils/Conversions.h>
-#include <omni/isaac/utils/Pose.h>
 #include <omni/kit/syntheticdata/SyntheticData.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
@@ -67,14 +67,14 @@ void LidarSensor::onComponentChange()
 
     const pxr::RangeSensorLidar& typedPrim = (pxr::RangeSensorLidar)mPrim;
 
-    omni::isaac::utils::safeGetAttribute(typedPrim.GetHorizontalFovAttr(), mHorizontalFov);
-    omni::isaac::utils::safeGetAttribute(typedPrim.GetVerticalFovAttr(), mVerticalFov);
-    omni::isaac::utils::safeGetAttribute(typedPrim.GetHorizontalResolutionAttr(), mHorizontalResolution);
-    omni::isaac::utils::safeGetAttribute(typedPrim.GetVerticalResolutionAttr(), mVerticalResolution);
-    omni::isaac::utils::safeGetAttribute(typedPrim.GetRotationRateAttr(), mRotationRate);
-    omni::isaac::utils::safeGetAttribute(typedPrim.GetHighLodAttr(), mHighLod);
-    omni::isaac::utils::safeGetAttribute(typedPrim.GetYawOffsetAttr(), mYawOffset);
-    omni::isaac::utils::safeGetAttribute(typedPrim.GetEnableSemanticsAttr(), mEnableSemantics);
+    isaacsim::core::utils::safeGetAttribute(typedPrim.GetHorizontalFovAttr(), mHorizontalFov);
+    isaacsim::core::utils::safeGetAttribute(typedPrim.GetVerticalFovAttr(), mVerticalFov);
+    isaacsim::core::utils::safeGetAttribute(typedPrim.GetHorizontalResolutionAttr(), mHorizontalResolution);
+    isaacsim::core::utils::safeGetAttribute(typedPrim.GetVerticalResolutionAttr(), mVerticalResolution);
+    isaacsim::core::utils::safeGetAttribute(typedPrim.GetRotationRateAttr(), mRotationRate);
+    isaacsim::core::utils::safeGetAttribute(typedPrim.GetHighLodAttr(), mHighLod);
+    isaacsim::core::utils::safeGetAttribute(typedPrim.GetYawOffsetAttr(), mYawOffset);
+    isaacsim::core::utils::safeGetAttribute(typedPrim.GetEnableSemanticsAttr(), mEnableSemantics);
 
     // we have to have atleast one beam so the FOV can never be smaller than resolution
     mHorizontalResolution = pxr::GfClamp(mHorizontalResolution, 0.005f, 1024);
@@ -200,10 +200,10 @@ void LidarSensor::dumpData(int start, int stop, double dt)
 void LidarSensor::preTick()
 {
     auto worldMat =
-        omni::isaac::utils::pose::computeWorldXformNoCache(mStage, mUsdrtStage, mPrim.GetPath(), mParentPrimTimeCode);
+        isaacsim::core::utils::pose::computeWorldXformNoCache(mStage, mUsdrtStage, mPrim.GetPath(), mParentPrimTimeCode);
 
-    mFinalTranslation = omni::isaac::utils::conversions::asPxVec3(worldMat.ExtractTranslation());
-    mFinalRotation = omni::isaac::utils::conversions::asPxQuat(worldMat.ExtractRotation());
+    mFinalTranslation = isaacsim::core::utils::conversions::asPxVec3(worldMat.ExtractTranslation());
+    mFinalRotation = isaacsim::core::utils::conversions::asPxQuat(worldMat.ExtractRotation());
 }
 
 void LidarSensor::tick()

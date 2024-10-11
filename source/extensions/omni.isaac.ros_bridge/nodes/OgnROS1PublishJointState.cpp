@@ -11,15 +11,15 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#include "omni/isaac/utils/UsdUtilities.h"
+#include "isaacsim/core/utils/UsdUtilities.h"
 #include "pxr/usd/usdPhysics/joint.h"
 #include "sensor_msgs/JointState.h"
 
 #include <carb/Framework.h>
 #include <carb/Types.h>
 
+#include <isaacsim/core/utils/Math.h>
 #include <omni/fabric/FabricUSD.h>
-#include <omni/isaac/utils/Math.h>
 
 #include <DynamicControl.h>
 #include <OgnROS1PublishJointStateDatabase.h>
@@ -174,19 +174,20 @@ public:
 
                 if (mDofProps[j].type == omni::isaac::dynamic_control::DcDofType::eTranslation)
                 {
-                    msg.position.push_back(
-                        omni::isaac::utils::math::roundNearest(mStates[j].pos * stageUnits * signCheck, 10000.0)); // m
-                    msg.velocity.push_back(omni::isaac::utils::math::roundNearest(
+                    msg.position.push_back(isaacsim::core::utils::math::roundNearest(
+                        mStates[j].pos * stageUnits * signCheck, 10000.0)); // m
+                    msg.velocity.push_back(isaacsim::core::utils::math::roundNearest(
                         mCalculatedJointVelocity[j] * stageUnits * signCheck, 10000.0)); // m/s
-                    msg.effort.push_back(omni::isaac::utils::math::roundNearest(
+                    msg.effort.push_back(isaacsim::core::utils::math::roundNearest(
                         mStates[j].effort * stageUnits * signCheck, 10000.0)); // N
                 }
                 else
                 {
-                    msg.position.push_back(omni::isaac::utils::math::roundNearest(mStates[j].pos * signCheck, 10000.0)); // rad
-                    msg.velocity.push_back(omni::isaac::utils::math::roundNearest(
+                    msg.position.push_back(
+                        isaacsim::core::utils::math::roundNearest(mStates[j].pos * signCheck, 10000.0)); // rad
+                    msg.velocity.push_back(isaacsim::core::utils::math::roundNearest(
                         mCalculatedJointVelocity[j] * signCheck, 10000.0)); // rad/s
-                    msg.effort.push_back(omni::isaac::utils::math::roundNearest(
+                    msg.effort.push_back(isaacsim::core::utils::math::roundNearest(
                         mStates[j].effort * stageUnits * stageUnits * signCheck, 10000.0)); // N*m
                 }
             }

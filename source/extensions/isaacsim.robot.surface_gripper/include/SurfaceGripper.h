@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "omni/isaac/utils/Math.h"
+#include "isaacsim/core/utils/Math.h"
 
 #include <omni/physics/tensors/BodyTypes.h>
 #include <omni/physx/IPhysxSceneQuery.h>
@@ -25,7 +25,7 @@ namespace surface_gripper
 
 
 using namespace omni::isaac::dynamic_control;
-using namespace omni::isaac::utils::math;
+using namespace isaacsim::core::utils::math;
 using omni::physics::tensors::Transform;
 
 inline const pxr::SdfPath& intToPath(const uint64_t& path)
@@ -212,7 +212,7 @@ public:
         while (attempts)
         {
             attempts--;
-            carb::Float3 p = _t_0.p + dir * additional_offset;
+            carb::Float3 p = isaacsim::core::utils::math::operator+(t_0.p, dir* additional_offset);
             hit = mPhysxQuery->raycastClosest(p, dir, mProps.gripThreshold, result, false);
 
             if (hit)

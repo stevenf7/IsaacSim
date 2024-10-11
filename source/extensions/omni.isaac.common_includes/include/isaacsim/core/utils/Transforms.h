@@ -17,12 +17,12 @@
 #include <omni/usd/UsdUtils.h>
 // clang-format on
 
-#include <omni/isaac/utils/Conversions.h>
+#include <isaacsim/core/utils/Conversions.h>
 
 
-namespace omni
+namespace isaacsim
 {
-namespace isaac
+namespace core
 {
 namespace utils
 {
@@ -46,7 +46,7 @@ inline void setTransform(pxr::UsdPrim& prim, pxr::GfVec3f pxBodyTranslation, pxr
     // auto newTranslation = pxBodyTranslation; // + parentToWorldMat.ExtractTranslation();
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr =
         carb::getCachedInterface<omni::isaac::dynamic_control::DynamicControl>();
-    DcTransform t = omni::isaac::utils::conversions::asDcTransform(pxBodyTranslation, pxBodyRotation);
+    DcTransform t = isaacsim::core::utils::conversions::asDcTransform(pxBodyTranslation, pxBodyRotation);
 
     if (mDynamicControlPtr->isSimulating())
     {

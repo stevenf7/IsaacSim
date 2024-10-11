@@ -36,4 +36,4 @@ name = "isaacsim.robot.surface_gripper"
 name = "isaacsim.robot.surface_gripper.tests"
 
 [[test]]
-dependencies = ["omni.isaac.utils"]
+dependencies = ["isaacsim.core.utils"]

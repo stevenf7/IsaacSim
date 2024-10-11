@@ -33,7 +33,7 @@ preview_image = "data/preview.png"
 "isaacsim.sensors.rtx" = {}
 "omni.kit.asset_converter" = {}
 "isaacsim.robot.wheeled_robots" = {}
-"omni.isaac.utils" = {}
+"isaacsim.core.utils" = {}
 "omni.isaac.nucleus" = {}
 "isaacsim.core.deprecation_manager" = {}
 
