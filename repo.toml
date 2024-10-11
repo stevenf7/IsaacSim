@@ -994,7 +994,7 @@ url = "https://gitlab-master.nvidia.com/omniverse/ov-create/-/raw/release/2024.1
 
 # please provide extensions in the format "extension.name-version" or {dep = "extension.name-version", tag = "tag"}
 deps_for_isaac = [
-  "omni.replicator.replicator_yaml-2.0.6",
+  "omni.replicator.replicator_yaml-2.0.8",
   "omni.replicator.core-1.11.24",
   "omni.net-0.2.0-isaac",
   "omni.sensors.nv.camera-0.16.0-isaac",
@@ -1005,6 +1005,7 @@ deps_for_isaac = [
   "omni.sensors.nv.radar-2.3.3-isaac",
   "omni.sensors.nv.ultrasonic-2.3.0-isaac",
   "omni.sensors.nv.wpm-2.3.0-isaac",
+  "omni.sensors.tiled-0.0.6",
   "semantics.schema.editor-0.3.8",
   "semantics.schema.property-1.0.4",
   "omni.importer.mjcf-1.1.1",
@@ -1019,8 +1020,8 @@ deps_for_isaac = [
   "omni.cuopt.service-1.0.0",
   "omni.cuopt.visualization-1.0.0",
   "omni.cuopt.examples-1.0.0",
-  "omni.usd.metrics.assembler.physics-106.0.2",
-  "omni.kit.gfn-106.0.4",
+  "omni.usd.metrics.assembler.physics-106.2.0",
+  "omni.kit.gfn-107.0.1",
   "omni.extended.materials-105.0.9",
   "omni.rtx.shadercache.vulkan",
   "omni.kit.test_helpers_gfx"
