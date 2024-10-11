@@ -21,7 +21,7 @@ from isaacsim.sensors.physics import _sensor
 from pxr import Gf
 
 # enable ROS bridge extension
-enable_extension("omni.isaac.ros_bridge")
+enable_extension("isaacsim.ros1.bridge")
 
 simulation_app.update()
 

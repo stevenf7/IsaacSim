@@ -40,7 +40,7 @@ from isaacsim.core.api.utils.extensions import enable_extension
 from omni.isaac.nucleus import get_assets_root_path
 
 # enable ROS bridge extension
-enable_extension("omni.isaac.ros_bridge")
+enable_extension("isaacsim.ros1.bridge")
 
 simulation_app.update()
 

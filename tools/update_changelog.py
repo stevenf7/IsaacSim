@@ -38,7 +38,7 @@ extensions = [
     "isaacsim.util.physics",
     "omni.isaac.range_sensor",
     "omni.isaac.robot_benchmark",
-    "omni.isaac.ros_bridge",
+    "isaacsim.ros1.bridge",
     "omni.isaac.sensor",
     "omni.isaac.synthetic_recorder",
     "isaacsim.core.utils",

@@ -44,6 +44,8 @@ exts."isaacsim.core.deprecation_manager".settings = [
     { deprecated = "/exts/omni.isaac.jupyter_notebook/notebook_token", new = "/exts/isaacsim.code_editor.jupyter/notebook_token", update = true },
     { deprecated = "/exts/omni.isaac.jupyter_notebook/notebook_dir", new = "/exts/isaacsim.code_editor.jupyter/notebook_dir", update = true },
     { deprecated = "/exts/omni.isaac.jupyter_notebook/command_line_options", new = "/exts/isaacsim.code_editor.jupyter/command_line_options", update = true },
+    # omni.isaac.ros_bridge -> isaacsim.ros1.bridge
+    { deprecated = "/exts/omni.isaac.ros_bridge/nodeName", new = "/exts/isaacsim.ros1.bridge/nodeName", update = true },
     # omni.isaac.ros2_bridge -> isaacsim.ros2.bridge
     { deprecated = "/exts/omni.isaac.ros2_bridge/ros_distro", new = "/exts/isaacsim.ros2.bridge/ros_distro", update = true },
     { deprecated = "/exts/omni.isaac.ros2_bridge/publish_without_verification", new = "/exts/isaacsim.ros2.bridge/publish_without_verification", update = true },
@@ -63,6 +65,7 @@ exts."isaacsim.core.deprecation_manager".omnigraph = [
     { deprecated = "omni.isaac.manipulators", new = "isaacsim.robot.manipulators" },
     { deprecated = "omni.isaac.range_sensor.IsaacReadLidarBeams", new = "isaacsim.sensors.physx.IsaacReadLidarBeams" },
     { deprecated = "omni.isaac.range_sensor.IsaacReadLidarPointCloud", new = "isaacsim.sensors.physx.IsaacReadLidarPointCloud" },
+    { deprecated = "omni.isaac.ros_bridge", new = "isaacsim.ros1.bridge" },
     { deprecated = "omni.isaac.ros2_bridge", new = "isaacsim.ros2.bridge" },
     { deprecated = "omni.isaac.sensor.IsaacComputeRTXLidarFlatScan", new = "isaacsim.sensors.rtx.IsaacComputeRTXLidarFlatScan" },
     { deprecated = "omni.isaac.sensor.IsaacComputeRTXLidarPointCloud", new = "isaacsim.sensors.rtx.IsaacComputeRTXLidarPointCloud" },
