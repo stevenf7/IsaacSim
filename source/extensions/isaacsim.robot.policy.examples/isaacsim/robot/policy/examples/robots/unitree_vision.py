@@ -110,10 +110,10 @@ class UnitreeVision(Unitree):
                 {
                     keys.CREATE_NODES: [
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                        ("createViewport", "omni.isaac.core_nodes.IsaacCreateViewport"),
-                        ("setViewportResolution", "omni.isaac.core_nodes.IsaacSetViewportResolution"),
-                        ("getRenderProduct", "omni.isaac.core_nodes.IsaacGetViewportRenderProduct"),
-                        ("setCamera", "omni.isaac.core_nodes.IsaacSetCameraOnRenderProduct"),
+                        ("createViewport", "isaacsim.core.nodes.IsaacCreateViewport"),
+                        ("setViewportResolution", "isaacsim.core.nodes.IsaacSetViewportResolution"),
+                        ("getRenderProduct", "isaacsim.core.nodes.IsaacGetViewportRenderProduct"),
+                        ("setCamera", "isaacsim.core.nodes.IsaacSetCameraOnRenderProduct"),
                         ("cameraHelperRgb", ros_bridge_version + ros_version + "CameraHelper"),
                         ("cameraHelperInfo", ros_bridge_version + ros_version + "CameraHelper"),
                     ],
@@ -177,7 +177,7 @@ class UnitreeVision(Unitree):
         """
         [Summary]
 
-        Sets the execution step in the omni.isaac.core_nodes.IsaacSimulationGate node located in the camera sensor pipeline
+        Sets the execution step in the isaacsim.core.nodes.IsaacSimulationGate node located in the camera sensor pipeline
 
         """
         for viewport in self.viewports[self.ros_vp_offset :]:

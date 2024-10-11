@@ -109,7 +109,7 @@ project_ext_plugin(ext, "omni.isaac.transform_listener.plugin")
         "%{root}/_build/target-deps/nlohmann-json/include",
         "%{root}/source/extensions/isaacsim.ros2.bridge",
         "%{root}/source/extensions/isaacsim.ros2.bridge/include",
-        "%{root}/source/extensions/omni.isaac.core_nodes/include",
+        "%{root}/source/extensions/isaacsim.core.nodes/include",
         "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
     }
     libdirs {

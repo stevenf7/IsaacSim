@@ -80,7 +80,7 @@ try:
         {
             keys.CREATE_NODES: [
                 ("OnImpulseEvent", "omni.graph.action.OnImpulseEvent"),
-                ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                 # Added nodes used for Lidar Publisher
                 ("ReadLidarBeams", "omni.isaac.range_sensor.IsaacReadLidarBeams"),
                 ("PublishLidar", "omni.isaac.ros_bridge.ROS1PublishLaserScan"),

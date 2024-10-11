@@ -21,11 +21,11 @@
 #include <OgnIsaacReadLidarBeamsDatabase.h>
 #include <RangeSensorInterface.h>
 
-namespace omni
+namespace isaacsim
 {
-namespace isaac
+namespace core
 {
-namespace core_nodes
+namespace nodes
 {
 
 class OgnIsaacReadLidarBeams : public BaseResetNode

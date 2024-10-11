@@ -18,10 +18,10 @@ import omni.kit.commands
 from isaacsim.core.api.articulations import Articulation
 from isaacsim.core.api.utils.prims import define_prim, get_prim_at_path
 from isaacsim.core.api.utils.stage import get_current_stage, get_stage_units
+from isaacsim.core.nodes.bindings import _isaacsim_core_nodes
 from isaacsim.robot.policy.examples.controllers import A1QPController
 from isaacsim.robot.policy.examples.utils.a1_classes import A1Command, A1Measurement, A1State
 from isaacsim.sensors.physics import _sensor
-from omni.isaac.core_nodes.bindings import _omni_isaac_core_nodes
 from omni.isaac.nucleus import get_assets_root_path
 
 
@@ -126,7 +126,7 @@ class Unitree(Articulation):
         self._dof_control_modes: List[int] = list()
 
         self.robot_initialized = False
-        self.core_nodes = _omni_isaac_core_nodes.acquire_interface()
+        self.core_nodes = _isaacsim_core_nodes.acquire_interface()
         self._cs = _sensor.acquire_contact_sensor_interface()
         return
 

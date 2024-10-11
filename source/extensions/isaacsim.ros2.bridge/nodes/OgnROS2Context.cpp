@@ -26,7 +26,7 @@ public:
     static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
         auto& state = OgnROS2ContextDatabase::sPerInstanceState<OgnROS2Context>(nodeObj, instanceId);
-        state.m_coreNodeFramework = carb::getCachedInterface<omni::isaac::core_nodes::CoreNodes>();
+        state.m_coreNodeFramework = carb::getCachedInterface<isaacsim::core::nodes::CoreNodes>();
         Ros2Bridge* ros2Bridge = carb::getCachedInterface<Ros2Bridge>();
         Ros2Factory* factory = ros2Bridge->getFactory();
         state.m_contextHandle = factory->createContextHandle();
@@ -129,7 +129,7 @@ private:
     bool m_cleanUp = false;
     size_t m_domainId = 0;
     uint64_t m_contextHandleAddr;
-    omni::isaac::core_nodes::CoreNodes* m_coreNodeFramework;
+    isaacsim::core::nodes::CoreNodes* m_coreNodeFramework;
 };
 
 REGISTER_OGN_NODE()

@@ -182,7 +182,7 @@ class TestROS1RTXSensor(omni.kit.test.AsyncTestCase):
                         ("PCLPublish", "omni.isaac.ros_bridge.ROS1RtxLidarHelper"),
                         ("LaserScanPublish", "omni.isaac.ros_bridge.ROS1RtxLidarHelper"),
                         ("PublishTF", "omni.isaac.ros_bridge.ROS1PublishTransformTree"),
-                        ("SimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                        ("SimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                     ],
                     og.Controller.Keys.SET_VALUES: [
                         ("SimTime.inputs:resetOnStop", True),

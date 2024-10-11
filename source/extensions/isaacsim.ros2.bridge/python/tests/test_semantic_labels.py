@@ -103,7 +103,7 @@ class TestRos2SemanticLabels(omni.kit.test.AsyncTestCase):
                     og.Controller.Keys.CREATE_NODES: [
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                         ("CameraHelper", "isaacsim.ros2.bridge.ROS2CameraHelper"),
-                        ("IsaacClock", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                        ("IsaacClock", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                         ("ClockPublisher", "isaacsim.ros2.bridge.ROS2PublishClock"),
                     ],
                     og.Controller.Keys.SET_VALUES: [

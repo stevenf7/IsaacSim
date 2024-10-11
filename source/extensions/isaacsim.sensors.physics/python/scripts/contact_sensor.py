@@ -15,8 +15,8 @@ import omni.kit.commands
 from isaacsim.core.api.prims.base_sensor import BaseSensor
 from isaacsim.core.api.utils.prims import get_prim_at_path, is_prim_path_valid
 from isaacsim.core.api.utils.stage import traverse_stage
+from isaacsim.core.nodes.bindings import _isaacsim_core_nodes
 from isaacsim.sensors.physics import _sensor
-from omni.isaac.core_nodes.bindings import _omni_isaac_core_nodes
 from pxr import Gf, PhysxSchema, UsdPhysics
 
 
@@ -90,7 +90,7 @@ class ContactSensor(BaseSensor):
         self._current_frame = dict()
         self._current_frame["time"] = 0
         self._current_frame["physics_step"] = 0
-        self._core_nodes = _omni_isaac_core_nodes.acquire_interface()
+        self._core_nodes = _isaacsim_core_nodes.acquire_interface()
         return
 
     def initialize(self, physics_sim_view=None) -> None:

@@ -28,7 +28,7 @@ project_ext_plugin(ext, "isaacsim.sensors.physics.plugin")
         "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/include",
         targetDepsDir.."/omni_client_library/include",
         targetDepsDir.."/python/include",
-        "%{root}/source/extensions/omni.isaac.core_nodes/include",
+        "%{root}/source/extensions/isaacsim.core.nodes/include",
         "%{kit_sdk_bin_dir}/dev/fabric/include/",
         "%{root}/source/extensions/isaacsim.sensors.physics/include",
         "%{root}/source/deprecated/omni.isaac.dynamic_control/include",

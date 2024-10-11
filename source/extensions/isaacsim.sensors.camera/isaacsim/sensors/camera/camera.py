@@ -27,7 +27,7 @@ from isaacsim.core.api.utils.prims import (
     is_prim_path_valid,
 )
 from isaacsim.core.api.utils.render_product import get_resolution, set_camera_prim_path, set_resolution
-from omni.isaac.core_nodes.bindings import _omni_isaac_core_nodes
+from isaacsim.core.nodes.bindings import _isaacsim_core_nodes
 from omni.isaac.IsaacSensorSchema import IsaacRtxLidarSensorAPI
 from pxr import Sdf, Usd, UsdGeom, Vt
 
@@ -277,7 +277,7 @@ class Camera(BaseSensor):
         self._current_frame = dict()
         self._current_frame["rendering_time"] = 0
         self._current_frame["rendering_frame"] = 0
-        self._core_nodes_interface = _omni_isaac_core_nodes.acquire_interface()
+        self._core_nodes_interface = _isaacsim_core_nodes.acquire_interface()
         self._sdg_interface = _syntheticdata.acquire_syntheticdata_interface()
 
         self._elapsed_time = 0

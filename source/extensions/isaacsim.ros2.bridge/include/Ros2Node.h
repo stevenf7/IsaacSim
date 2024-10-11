@@ -51,7 +51,7 @@ public:
      */
     Ros2Node()
     {
-        m_coreNodeFramework = carb::getCachedInterface<omni::isaac::core_nodes::CoreNodes>();
+        m_coreNodeFramework = carb::getCachedInterface<isaacsim::core::nodes::CoreNodes>();
         m_ros2Bridge = carb::getCachedInterface<isaacsim::ros2::bridge::Ros2Bridge>();
 
         m_settings = carb::getCachedInterface<carb::settings::ISettings>();
@@ -214,7 +214,7 @@ protected:
     carb::settings::ISettings* m_settings = nullptr; //!< Settings (carb) interface.
     bool m_publishWithoutVerification; //!< Whether to publish in a topic even if there are no subscription to it.
     std::shared_ptr<Ros2ContextHandle>* m_contextHandle; //!< Context handler.
-    omni::isaac::core_nodes::CoreNodes* m_coreNodeFramework; //!< CoreNodes (carb) interface.
+    isaacsim::core::nodes::CoreNodes* m_coreNodeFramework; //!< CoreNodes (carb) interface.
     Ros2Factory* m_factory = nullptr; //!< Factory instance for creating ROS 2 related objects according to the sourced
                                       //!< ROS 2 distribution.
     std::string m_namespaceName; //!< Namespace name.

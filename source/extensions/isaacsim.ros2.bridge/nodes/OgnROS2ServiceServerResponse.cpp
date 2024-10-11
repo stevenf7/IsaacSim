@@ -42,7 +42,7 @@ public:
         attrMessageSubfolderObj.iAttribute->registerValueChangedCallback(attrMessageSubfolderObj, onPackageChanged, true);
         attrMessageNameObj.iAttribute->registerValueChangedCallback(attrMessageNameObj, onPackageChanged, true);
         attrHandle.iAttribute->registerValueChangedCallback(attrHandle, onServiceChanged, true);
-        state.m_coreNodeFramework = carb::getCachedInterface<omni::isaac::core_nodes::CoreNodes>();
+        state.m_coreNodeFramework = carb::getCachedInterface<isaacsim::core::nodes::CoreNodes>();
     }
 
     static bool compute(OgnROS2ServiceServerResponseDatabase& db)
@@ -159,7 +159,7 @@ private:
     std::string m_messageSubfolder;
     std::string m_messageName;
 
-    omni::isaac::core_nodes::CoreNodes* m_coreNodeFramework;
+    isaacsim::core::nodes::CoreNodes* m_coreNodeFramework;
 
     template <bool removeAttributes>
     void updateNodeState(OgnROS2ServiceServerResponseDatabase& db,

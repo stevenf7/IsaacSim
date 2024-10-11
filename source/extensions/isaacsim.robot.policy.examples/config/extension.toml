@@ -16,7 +16,7 @@ preview_image = "data/preview.png"
 [dependencies]
 "isaacsim.core.api" = {}
 "isaacsim.sensors.physics" = {}
-"omni.isaac.core_nodes" = {}
+"isaacsim.core.nodes" = {}
 "omni.isaac.nucleus" = {}
 
 [[python.module]]

@@ -86,7 +86,7 @@ class ArticulationPositionGraph:
             {
                 keys.CREATE_NODES: [
                     (joint_command_array_name, "omni.graph.nodes.ConstructArray"),
-                    (art_controller_node_name, "omni.isaac.core_nodes.IsaacArticulationController"),
+                    (art_controller_node_name, "isaacsim.core.nodes.IsaacArticulationController"),
                     (joint_names_array_name, "omni.graph.nodes.ConstructArray"),
                 ],
                 keys.SET_VALUES: [
@@ -346,7 +346,7 @@ class ArticulationVelocityGraph:
             {
                 keys.CREATE_NODES: [
                     (joint_command_array_name, "omni.graph.nodes.ConstructArray"),
-                    (art_controller_node_name, "omni.isaac.core_nodes.IsaacArticulationController"),
+                    (art_controller_node_name, "isaacsim.core.nodes.IsaacArticulationController"),
                     (joint_names_array_name, "omni.graph.nodes.ConstructArray"),
                 ],
                 keys.SET_VALUES: [

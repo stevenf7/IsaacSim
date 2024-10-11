@@ -38,7 +38,7 @@ try:
         {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
         {
             og.Controller.Keys.CREATE_NODES: [
-                ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                 ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                 ("PublishClock", "isaacsim.ros2.bridge.ROS2PublishClock"),
                 ("OnImpulseEvent", "omni.graph.action.OnImpulseEvent"),

@@ -70,7 +70,7 @@ class TestRosBridge(omni.kit.test.AsyncTestCase):
                 {
                     og.Controller.Keys.CREATE_NODES: [
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                        ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                        ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                         ("PublishTF", "omni.isaac.ros_bridge.ROS1PublishTransformTree"),
                     ],
                     og.Controller.Keys.CONNECT: [
@@ -98,7 +98,7 @@ class TestRosBridge(omni.kit.test.AsyncTestCase):
                 {
                     og.Controller.Keys.CREATE_NODES: [
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                        ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                        ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                         ("PublishTF", "omni.isaac.ros_bridge.ROS1PublishTransformTree"),
                     ],
                     og.Controller.Keys.CONNECT: [

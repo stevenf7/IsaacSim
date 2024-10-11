@@ -370,9 +370,9 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
                 {
                     keys.CREATE_NODES: [
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                        ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                        ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                         # Added nodes used for Odometry publisher
-                        ("computeOdom", "omni.isaac.core_nodes.IsaacComputeOdometry"),
+                        ("computeOdom", "isaacsim.core.nodes.IsaacComputeOdometry"),
                         ("publishOdom", "omni.isaac.ros_bridge.ROS1PublishOdometry"),
                         ("publishRawTF", "omni.isaac.ros_bridge.ROS1PublishRawTransformTree"),
                         # Added nodes used for Twist subscriber, differential drive
@@ -380,7 +380,7 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
                         ("breakLinVel", "omni.graph.nodes.BreakVector3"),
                         ("breakAngVel", "omni.graph.nodes.BreakVector3"),
                         ("diffController", "isaacsim.robot.wheeled_robots.DifferentialController"),
-                        ("artController", "omni.isaac.core_nodes.IsaacArticulationController"),
+                        ("artController", "isaacsim.core.nodes.IsaacArticulationController"),
                     ],
                     keys.CONNECT: [
                         ("OnPlaybackTick.outputs:tick", "computeOdom.inputs:execIn"),

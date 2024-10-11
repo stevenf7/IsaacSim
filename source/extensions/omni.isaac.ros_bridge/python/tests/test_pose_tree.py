@@ -22,7 +22,7 @@ import omni.kit.test
 import omni.kit.usd
 import usdrt.Sdf
 from isaacsim.core.api.utils.physics import simulate_async
-from omni.isaac.core_nodes.scripts.utils import set_target_prims
+from isaacsim.core.nodes.scripts.utils import set_target_prims
 from omni.isaac.nucleus import get_assets_root_path_async
 from pxr import Sdf
 
@@ -101,7 +101,7 @@ class TestRosPoseTree(omni.kit.test.AsyncTestCase):
                 {
                     og.Controller.Keys.CREATE_NODES: [
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                        ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                        ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                         ("PublishTF", "omni.isaac.ros_bridge.ROS1PublishTransformTree"),
                     ],
                     og.Controller.Keys.SET_VALUES: [
@@ -195,7 +195,7 @@ class TestRosPoseTree(omni.kit.test.AsyncTestCase):
                 {
                     og.Controller.Keys.CREATE_NODES: [
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                        ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                        ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                         ("PublishTF", "omni.isaac.ros_bridge.ROS1PublishTransformTree"),
                     ],
                     og.Controller.Keys.SET_VALUES: [

@@ -68,11 +68,11 @@ try:
         {
             og.Controller.Keys.CREATE_NODES: [
                 ("OnImpulseEvent", "omni.graph.action.OnImpulseEvent"),
-                ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                 ("Context", "isaacsim.ros2.bridge.ROS2Context"),
                 ("PublishJointState", "isaacsim.ros2.bridge.ROS2PublishJointState"),
                 ("SubscribeJointState", "isaacsim.ros2.bridge.ROS2SubscribeJointState"),
-                ("ArticulationController", "omni.isaac.core_nodes.IsaacArticulationController"),
+                ("ArticulationController", "isaacsim.core.nodes.IsaacArticulationController"),
                 ("PublishClock", "isaacsim.ros2.bridge.ROS2PublishClock"),
             ],
             og.Controller.Keys.CONNECT: [

@@ -16,12 +16,12 @@ import omni.ext
 import omni.kit.commands
 import omni.replicator.core as rep
 from isaacsim.core.api.utils.stage import traverse_stage
-from isaacsim.sensors.rtx.bindings._isaacsim_sensors_rtx import acquire_interface as _acquire
-from isaacsim.sensors.rtx.bindings._isaacsim_sensors_rtx import release_interface as _release
-from omni.isaac.core_nodes.scripts.utils import (
+from isaacsim.core.nodes.scripts.utils import (
     register_annotator_from_node_with_telemetry,
     register_node_writer_with_telemetry,
 )
+from isaacsim.sensors.rtx.bindings._isaacsim_sensors_rtx import acquire_interface as _acquire
+from isaacsim.sensors.rtx.bindings._isaacsim_sensors_rtx import release_interface as _release
 from omni.replicator.core import AnnotatorRegistry
 from omni.syntheticdata import sensors
 
@@ -87,7 +87,7 @@ class Extension(omni.ext.IExt):
             template = sensors.get_synthetic_data().register_node_template(
                 omni.syntheticdata.SyntheticData.NodeTemplate(
                     omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                    "omni.isaac.core_nodes.IsaacSimulationGate",
+                    "isaacsim.core.nodes.IsaacSimulationGate",
                     [omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu" + "Ptr")],
                 ),
                 template_name=template_name,
@@ -99,7 +99,7 @@ class Extension(omni.ext.IExt):
             template = sensors.get_synthetic_data().register_node_template(
                 omni.syntheticdata.SyntheticData.NodeTemplate(
                     omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                    "omni.isaac.core_nodes.IsaacSimulationGate",
+                    "isaacsim.core.nodes.IsaacSimulationGate",
                     [omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorGpu" + "Ptr")],
                 ),
                 template_name=template_name,

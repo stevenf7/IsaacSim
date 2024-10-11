@@ -81,7 +81,7 @@ class A1_runner(object):
                 {
                     keys.CREATE_NODES: [
                         ("OnTick", "omni.graph.action.OnTick"),
-                        ("readSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                        ("readSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                         ("publishClock", "isaacsim.ros2.bridge.ROS2PublishClock"),
                     ],
                     keys.CONNECT: [

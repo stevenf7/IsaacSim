@@ -14,8 +14,8 @@ import omni
 import omni.replicator.core as rep
 import omni.syntheticdata
 import omni.syntheticdata._syntheticdata as sd
+from isaacsim.core.nodes import BaseWriterNode, WriterRequest
 from isaacsim.ros2.bridge import read_camera_info
-from omni.isaac.core_nodes import BaseWriterNode, WriterRequest
 from omni.kit.viewport.utility import get_viewport_from_window_name
 from pxr import Usd
 

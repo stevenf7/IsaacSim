@@ -98,7 +98,7 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
                 {
                     keys.CREATE_NODES: [
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                        ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                        ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                         # Added nodes used for Point Cloud Publisher
                         ("ReadLidarPCL", "isaacsim.sensors.physx.IsaacReadLidarPointCloud"),
                         ("PublishPCL", "omni.isaac.ros_bridge.ROS1PublishPointCloud"),
@@ -175,7 +175,7 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
                 {
                     keys.CREATE_NODES: [
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                        ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                        ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                         # Added nodes used for Point Cloud Publisher
                         ("ReadLidarPCL", "isaacsim.sensors.physx.IsaacReadLidarPointCloud"),
                         ("PublishPCL", "omni.isaac.ros_bridge.ROS1PublishPointCloud"),
@@ -283,7 +283,7 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
                 {
                     keys.CREATE_NODES: [
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                        ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                        ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                         # Added nodes used for Point Cloud Publisher
                         ("ReadLidarPCL", "isaacsim.sensors.physx.IsaacReadLidarPointCloud"),
                         ("PublishPCL", "omni.isaac.ros_bridge.ROS1PublishPointCloud"),

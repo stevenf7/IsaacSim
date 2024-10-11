@@ -34,7 +34,7 @@ public:
         auto& state =
             OgnROS2ServiceServerRequestDatabase::sPerInstanceState<OgnROS2ServiceServerRequest>(nodeObj, instanceId);
         state.m_nodeObj = nodeObj;
-        state.m_coreNodeFramework = carb::getCachedInterface<omni::isaac::core_nodes::CoreNodes>();
+        state.m_coreNodeFramework = carb::getCachedInterface<isaacsim::core::nodes::CoreNodes>();
         // Register change event for message type
         AttributeObj attrMessagePackageObj = nodeObj.iNode->getAttribute(nodeObj, "inputs:messagePackage");
         AttributeObj attrMessageSubfolderObj = nodeObj.iNode->getAttribute(nodeObj, "inputs:messageSubfolder");
@@ -191,7 +191,7 @@ private:
     std::string m_messageName;
     std::string m_serviceName;
     std::string m_qosProfile;
-    omni::isaac::core_nodes::CoreNodes* m_coreNodeFramework;
+    isaacsim::core::nodes::CoreNodes* m_coreNodeFramework;
 
     static void onPackageChanged(AttributeObj const& attrObj, void const* userData)
     {

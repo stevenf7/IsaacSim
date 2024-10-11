@@ -27,7 +27,7 @@ keys = og.Controller.Keys
     {
         keys.CREATE_NODES: [
             ("OnTick", "omni.graph.action.OnTick"),
-            ("IsaacTest", "omni.isaac.core_nodes.IsaacTestNode"),
+            ("IsaacTest", "isaacsim.core.nodes.IsaacTestNode"),
             ("TestStr", "omni.graph.nodes.ConstantString"),
         ],
         keys.SET_VALUES: [("TestStr.inputs:value", "Hello"), ("OnTick.inputs:onlyPlayback", False)],  # always tick

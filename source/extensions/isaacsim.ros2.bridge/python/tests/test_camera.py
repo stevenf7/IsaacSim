@@ -109,7 +109,7 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
                         ("Bbox2dLoosePublish", "isaacsim.ros2.bridge.ROS2CameraHelper"),
                         ("Bbox3dPublish", "isaacsim.ros2.bridge.ROS2CameraHelper"),
                         ("CameraInfoPublish", "isaacsim.ros2.bridge.ROS2CameraHelper"),
-                        ("CreateRenderProduct", "omni.isaac.core_nodes.IsaacCreateRenderProduct"),
+                        ("CreateRenderProduct", "isaacsim.core.nodes.IsaacCreateRenderProduct"),
                     ],
                     og.Controller.Keys.SET_VALUES: [
                         ("CreateRenderProduct.inputs:cameraPrim", [usdrt.Sdf.Path("/OmniverseKit_Persp")]),
