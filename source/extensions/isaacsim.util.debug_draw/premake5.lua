@@ -12,7 +12,7 @@ project_with_location("isaacsim.util.debug_draw.primitive_drawing")
     staticruntime "Off"
     add_files("impl", "library")
     includedirs {
-        "%{root}/source/extensions/omni.isaac.common_includes/include",
+        "%{root}/source/extensions/isaacsim.core.includes/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/omni_physics/%{config}/include",
@@ -55,7 +55,7 @@ project_ext_plugin(ext, "isaacsim.util.debug_draw.plugin")
     -- Add the standard dependencies all OGN projects have
     add_ogn_dependencies(ogn)
     includedirs {
-        "%{root}/source/extensions/omni.isaac.common_includes/include",
+        "%{root}/source/extensions/isaacsim.core.includes/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/omni_client_library/include",
@@ -110,7 +110,7 @@ project_ext_bindings ({
     --add_files("python/tests", "python/tests/*.py")
     include_physx()
     includedirs {
-        "%{root}/source/extensions/omni.isaac.common_includes/include",
+        "%{root}/source/extensions/isaacsim.core.includes/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/source/extensions/isaacsim.util.debug_draw/include",

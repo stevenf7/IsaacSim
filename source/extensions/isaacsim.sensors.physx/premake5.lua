@@ -12,7 +12,7 @@ project_ext_plugin(ext, "isaacsim.sensors.physx.plugin")
 
     include_physx()
     includedirs {
-        "%{root}/source/extensions/omni.isaac.common_includes/include",
+        "%{root}/source/extensions/isaacsim.core.includes/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/gsl/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
