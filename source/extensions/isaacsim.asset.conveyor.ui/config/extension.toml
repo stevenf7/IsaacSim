@@ -1,5 +1,5 @@
 [package]
-version = "2.0.0"
+version = "2.0.1"
 category = "Simulation"
 title = "Isaac Sim Conveyor belt utility UI"
 description="UI components for isaacsim.asset.conveyor"
@@ -18,7 +18,6 @@ keywords = ["kit", "example", "ui"]
 "omni.kit.test" = {}
 "omni.kit.uiapp" = {}
 "omni.kit.window.preferences" = {}
-"isaacsim.gui.components"={}
 "omni.usd" = {}
 "isaacsim.asset.conveyor" = {}
 

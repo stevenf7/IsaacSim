@@ -1,5 +1,9 @@
 # Changelog
 
+##  [2.0.1] - 2024-10-11
+### Changed
+- Removed isaacsim core dependencies
+
 ##  [2.0.0] - 2024-09-27
 ### Changed
 - Renamed extension to isaacsim.asset.conveyor.ui
