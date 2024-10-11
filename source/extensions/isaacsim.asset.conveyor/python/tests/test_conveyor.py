@@ -149,17 +149,15 @@ class TestConveyor(omni.kit.test.AsyncTestCase):
 
         cube_prim = add_cube(self._stage, "/cube2", 0.1, (0, 0, 0.55), physics=True)
         self._timeline.play()
-        await simulate_async(0.4)
+        await simulate_async(1)
         rigid_prim = UsdPhysics.RigidBodyAPI(cube_prim)
         rt_stage = Usd.Stage.Attach(omni.usd.get_context().get_stage_id())
         rt_prim = rt_stage.GetPrimAtPath(Sdf.Path(str(cube_prim.GetPath())))
         # usd_velocity = rigid_prim.GetVelocityAttr().Get()
         usd_velocity = rt_prim.GetAttribute(rigid_prim.GetVelocityAttr().GetName()).Get()
-        print(usd_velocity)
-        self.assertTrue(
-            np.allclose([a * 0.10 for a in d], usd_velocity, atol=5e-2),
-            "{} != {}".format([a * 0.10 for a in d], usd_velocity),
-        )
+        self.assertAlmostEqual(d[0] * 0.1, usd_velocity[0], delta=1e-2)
+        self.assertAlmostEqual(d[1] * 0.1, usd_velocity[1], delta=1e-2)
+        self.assertAlmostEqual(d[2] * 0.1, usd_velocity[2], delta=1e-2)
         pass
 
     async def test_conveyor_y(self):
