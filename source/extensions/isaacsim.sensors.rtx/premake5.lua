@@ -19,7 +19,7 @@ project_ext_plugin(ext, ogn.plugin_project)
     add_cuda_dependencies()
 
     includedirs {
-        "%{root}/source/extensions/omni.isaac.common_includes/include",
+        "%{root}/source/extensions/isaacsim.core.includes/include",
         targetDepsDir.."/nv_usd/%{cfg.buildcfg}/include",
         targetDepsDir.."/usd_ext_physics/%{cfg.buildcfg}/include",
         targetDepsDir.."/omni_physics/%{config}/include",

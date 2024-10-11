@@ -42,7 +42,7 @@ project_with_location("isaacsim.ros2.bridge.foxy")
     add_files("impl", "backend")
     add_files("iface", "include")
     includedirs {
-        "%{root}/source/extensions/omni.isaac.common_includes/include",
+        "%{root}/source/extensions/isaacsim.core.includes/include",
         "%{root}/_build/target-deps/cuda/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
@@ -102,7 +102,7 @@ project_with_location("isaacsim.ros2.bridge.humble")
     add_files("impl", "backend")
     add_files("iface", "include")
     includedirs {
-        "%{root}/source/extensions/omni.isaac.common_includes/include",
+        "%{root}/source/extensions/isaacsim.core.includes/include",
         "%{root}/_build/target-deps/cuda/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
@@ -183,7 +183,7 @@ project_ext_plugin(ext, "isaacsim.ros2.bridge.plugin")
 
     include_physx()
     includedirs {
-        "%{root}/source/extensions/omni.isaac.common_includes/include",
+        "%{root}/source/extensions/isaacsim.core.includes/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",

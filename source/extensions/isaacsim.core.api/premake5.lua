@@ -40,7 +40,7 @@ project_ext_plugin(ext, "isaacsim.core.api.plugin")
 
 
     includedirs {
-        "%{root}/source/extensions/omni.isaac.common_includes/include",
+        "%{root}/source/extensions/isaacsim.core.includes/include",
         "%{root}/_build/generated/include/",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/source/extensions/isaacsim.core.api/include",
@@ -85,7 +85,7 @@ project_ext_bindings ({
     -- Add the standard dependencies all OGN projects have, and link directories with Python nodes
     dependson {"isaacsim.core.api.plugin"}
     includedirs {
-        "%{root}/source/extensions/omni.isaac.common_includes/include",
+        "%{root}/source/extensions/isaacsim.core.includes/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/source/extensions/isaacsim.core.api/include",
     }

@@ -17,7 +17,7 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
 
     include_physx()
     includedirs {
-        "%{root}/source/extensions/omni.isaac.common_includes/include",
+        "%{root}/source/extensions/isaacsim.core.includes/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",

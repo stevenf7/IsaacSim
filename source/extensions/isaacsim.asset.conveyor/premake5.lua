@@ -14,7 +14,7 @@ project_ext_plugin(ext, "isaacsim.asset.conveyor.plugin")
 
     include_physx()
     includedirs {
-        "%{root}/source/extensions/omni.isaac.common_includes/include",
+        "%{root}/source/extensions/isaacsim.core.includes/include",
         target_deps.."/rtx_plugins/include",
         target_deps.."/nv_usd/%{cfg.buildcfg}/include",
         target_deps.."/nv_usd/%{cfg.buildcfg}/include/boost",
