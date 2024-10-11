@@ -11,11 +11,11 @@ import weakref
 
 import carb
 import omni.ext
+import omni.kit.actions
 import omni.kit.commands
 import omni.ui as ui
 from isaacsim.asset.conveyor.bindings._isaacsim_asset_conveyor import acquire_interface as _acquire
 from isaacsim.asset.conveyor.bindings._isaacsim_asset_conveyor import release_interface as _release
-from isaacsim.gui.components.menu import make_menu_item_description
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from omni.kit.window.preferences import register_page, unregister_page
 from pxr import Gf, Sdf, UsdGeom
@@ -25,6 +25,26 @@ from .preferences import ConveyorBuilderPreferences
 from .style import UI_STYLES
 
 EXTENSION_NAME = "Conveyor Utility"
+
+
+def make_menu_item_description(ext_id: str, name: str, onclick_fun, action_name: str = "") -> None:
+    """Easily replace the onclick_fn with onclick_action when creating a menu description
+
+    Args:
+        ext_id (str): The extension you are adding the menu item to.
+        name (str): Name of the menu item displayed in UI.
+        onclick_fun (Function): The function to run when clicking the menu item.
+        action_name (str): name for the action, in case ext_id+name don't make a unique string
+
+    Note:
+        ext_id + name + action_name must concatenate to a unique identifier.
+
+    """
+    action_unique = f'{ext_id.replace(" ", "_")}{name.replace(" ", "_")}{action_name.replace(" ", "_")}'
+    action_registry = omni.kit.actions.core.get_action_registry()
+    action_registry.deregister_action(ext_id, action_unique)
+    action_registry.register_action(ext_id, action_unique, onclick_fun)
+    return MenuItemDescription(name=name, onclick_action=(ext_id, action_unique))
 
 
 class Extension(omni.ext.IExt):
