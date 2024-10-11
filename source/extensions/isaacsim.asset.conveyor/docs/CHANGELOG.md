@@ -1,4 +1,9 @@
 # Changelog
+## [1.0.1] - 2024-10-10
+
+### Removed
+- removed unecessary dependencies
+
 ## [1.0.0] - 2024-09-27
 
 ### Changed
