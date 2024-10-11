@@ -285,7 +285,7 @@ sphinx_exclude_patterns = [
     "**/isaacsim.examples.interactive",     #TODO?
     "**/omni.isaac.repl",
     "**/omni.isaac.tests",
-    "**/omni.isaac.utils_manager",
+    "**/isaacsim.core.utils_manager",
     "**/isaacsim.gui.property",
     "**/isaacsim.test.collection",
     "**/omni.usd.schema.isaac",     #TODO?

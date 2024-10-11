@@ -12,7 +12,7 @@
 // clang-format on
 
 #include "SensorNodeUtils.h"
-#include "omni/isaac/utils/UsdUtilities.h"
+#include "isaacsim/core/utils/UsdUtilities.h"
 
 #include <carb/InterfaceUtils.h>
 

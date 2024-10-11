@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.0] - 2024-10-08
+### Changed
+- Extension  renamed to [new extension name].
+
 ## [1.0.1] - 2024-03-07
 ### Changed
 - Removed the usage of the deprecated dynamic_control extension 

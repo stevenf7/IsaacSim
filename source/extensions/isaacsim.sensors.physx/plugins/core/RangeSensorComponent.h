@@ -9,8 +9,8 @@
 
 #pragma once
 
+#include "isaacsim/core/utils/UsdUtilities.h"
 #include "omni/isaac/bridge/Component.h"
-#include "omni/isaac/utils/UsdUtilities.h"
 
 #include <carb/renderer/Renderer.h>
 
@@ -46,7 +46,7 @@ namespace physx
  * @brief Base class which simulates a range sensor
  */
 template <class PrimType>
-class RangeSensorComponentBase : public omni::isaac::utils::ComponentBase<PrimType>
+class RangeSensorComponentBase : public isaacsim::core::utils::ComponentBase<PrimType>
 {
 
 public:
@@ -87,7 +87,7 @@ public:
      */
     virtual void initialize(const PrimType& prim, pxr::UsdStageWeakPtr stage)
     {
-        omni::isaac::utils::ComponentBase<PrimType>::initialize(prim, stage);
+        isaacsim::core::utils::ComponentBase<PrimType>::initialize(prim, stage);
         this->mRangeSensorPrim = pxr::RangeSensorRangeSensor(this->mPrim);
     }
     /**
@@ -163,11 +163,11 @@ public:
      */
     virtual void onComponentChange()
     {
-        omni::isaac::utils::safeGetAttribute(this->mRangeSensorPrim.GetEnabledAttr(), this->mEnabled);
-        omni::isaac::utils::safeGetAttribute(this->mRangeSensorPrim.GetMinRangeAttr(), mMinRange);
-        omni::isaac::utils::safeGetAttribute(this->mRangeSensorPrim.GetMaxRangeAttr(), mMaxRange);
-        omni::isaac::utils::safeGetAttribute(this->mRangeSensorPrim.GetDrawPointsAttr(), mDrawPoints);
-        omni::isaac::utils::safeGetAttribute(this->mRangeSensorPrim.GetDrawLinesAttr(), mDrawLines);
+        isaacsim::core::utils::safeGetAttribute(this->mRangeSensorPrim.GetEnabledAttr(), this->mEnabled);
+        isaacsim::core::utils::safeGetAttribute(this->mRangeSensorPrim.GetMinRangeAttr(), mMinRange);
+        isaacsim::core::utils::safeGetAttribute(this->mRangeSensorPrim.GetMaxRangeAttr(), mMaxRange);
+        isaacsim::core::utils::safeGetAttribute(this->mRangeSensorPrim.GetDrawPointsAttr(), mDrawPoints);
+        isaacsim::core::utils::safeGetAttribute(this->mRangeSensorPrim.GetDrawLinesAttr(), mDrawLines);
 
 
         mParentPrim = this->mStage->GetPrimAtPath(this->mPrim.GetPath()).GetParent();
@@ -193,7 +193,7 @@ public:
      */
     void updateTimestamp(double timeSeconds, double dt, int64_t timeNano)
     {
-        omni::isaac::utils::ComponentBase<PrimType>::updateTimestamp(timeSeconds, dt, timeNano);
+        isaacsim::core::utils::ComponentBase<PrimType>::updateTimestamp(timeSeconds, dt, timeNano);
 
         mParentPrimTimeCode = pxr::UsdTimeCode::Default();
         if (mIsParentPrimTimeSampled)

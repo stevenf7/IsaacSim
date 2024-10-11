@@ -1,11 +1,11 @@
-Utilities [omni.isaac.utils]
+Utilities [isaacsim.core.utils]
 ##################################
 
 The surface gripper extension provides an interface to the utilities package to be used with :obj:`omni.isaac.dynamic_control`.
 
 
 
-.. automodule:: omni.isaac.utils._isaac_utils.math
+.. automodule:: isaacsim.core.utils._isaac_utils.math
     :platform: Windows-x86_64, Linux-x86_64
     :members:
     :undoc-members:
@@ -13,7 +13,7 @@ The surface gripper extension provides an interface to the utilities package to 
     :imported-members:
     :exclude-members: 
 
-.. automodule:: omni.isaac.utils._isaac_utils.transforms
+.. automodule:: isaacsim.core.utils._isaac_utils.transforms
     :platform: Windows-x86_64, Linux-x86_64
     :members:
     :undoc-members:
@@ -23,7 +23,7 @@ The surface gripper extension provides an interface to the utilities package to 
 
 Commands
 ========
-.. automodule:: omni.isaac.utils.scripts.commands
+.. automodule:: isaacsim.core.utils.scripts.commands
     :platform: Windows-x86_64, Linux-x86_64
     :members:
     :undoc-members:

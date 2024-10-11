@@ -12,8 +12,8 @@
 // clang-format on
 
 
+#include <isaacsim/core/utils/UsdUtilities.h>
 #include <omni/fabric/FabricUSD.h>
-#include <omni/isaac/utils/UsdUtilities.h>
 
 #include <CoreNodes.h>
 #include <OgnIsaacReadCameraInfoDatabase.h>
@@ -44,7 +44,7 @@ public:
             CARB_LOG_WARN("Render product path is empty, skipping read camera info");
             return false;
         }
-        pxr::UsdPrim camera = omni::isaac::utils::getCameraPrimFromRenderProduct(renderProductPath);
+        pxr::UsdPrim camera = isaacsim::core::utils::getCameraPrimFromRenderProduct(renderProductPath);
 
         if (!camera.IsValid())
         {

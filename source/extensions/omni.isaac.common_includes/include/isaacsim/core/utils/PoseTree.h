@@ -22,11 +22,11 @@
 
 
 using namespace omni::isaac::dynamic_control;
-using namespace omni::isaac::utils::conversions;
-using namespace omni::isaac::utils;
-namespace omni
+using namespace isaacsim::core::utils::conversions;
+using namespace isaacsim::core::utils;
+namespace isaacsim
 {
-namespace isaac
+namespace core
 {
 
 namespace utils
@@ -200,7 +200,7 @@ public:
      */
     ::physx::PxTransform getXformPose(const pxr::SdfPath& path)
     {
-        return asPxTransform(omni::isaac::utils::pose::computeWorldXformNoCache(mUsdStage, mUsdrtStage, path));
+        return asPxTransform(isaacsim::core::utils::pose::computeWorldXformNoCache(mUsdStage, mUsdrtStage, path));
     }
     /**
      * @brief Get the unique name to use for frame. if two frames have the same name the full usd path with underscores

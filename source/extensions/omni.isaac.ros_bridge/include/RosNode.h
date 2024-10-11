@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "omni/isaac/utils/BaseResetNode.h"
+#include "isaacsim/core/utils/BaseResetNode.h"
 #include "ros/callback_queue.h"
 #define BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include "ros/ros.h"

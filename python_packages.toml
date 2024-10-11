@@ -233,12 +233,13 @@ inventory.include = [
     "exts/omni.isaac.dynamic_control",
     "exts/omni.isaac.kit",
     "exts/omni.isaac.throttling",
-    "exts/omni.isaac.utils",
+    "exts/isaacsim.core.utils",
     "exts/isaacsim.core.version",
     "exts/omni.kit.loop-isaac",
     # deprecated extensions
     "extsDeprecated/omni.isaac.core",
     "extsDeprecated/omni.isaac.core_nodes",
+    "extsDeprecated/omni.isaac.utils",
     # others
     "VERSION",
 ]

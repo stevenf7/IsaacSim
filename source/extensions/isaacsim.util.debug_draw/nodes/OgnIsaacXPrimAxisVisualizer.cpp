@@ -12,9 +12,9 @@
 // clang-format off
 #include <pch/UsdPCH.h>
 // clang-format on
+#include <isaacsim/core/utils/BaseResetNode.h>
+#include <isaacsim/core/utils/Pose.h>
 #include <omni/fabric/FabricUSD.h>
-#include <omni/isaac/utils/BaseResetNode.h>
-#include <omni/isaac/utils/Pose.h>
 #include <omni/renderer/IDebugDraw.h>
 #include <omni/usd/UsdContext.h>
 #include <omni/usd/UsdContextIncludes.h>
@@ -90,7 +90,7 @@ public:
         state.mLineDrawing->clear();
 
         usdrt::GfMatrix4d usdTransform =
-            omni::isaac::utils::pose::computeWorldXformNoCache(state.mStage, state.mUsdrtStage, primPath);
+            isaacsim::core::utils::pose::computeWorldXformNoCache(state.mStage, state.mUsdrtStage, primPath);
 
         state.drawAxis(usdTransform, state.mLength, state.mThickness);
         return true;

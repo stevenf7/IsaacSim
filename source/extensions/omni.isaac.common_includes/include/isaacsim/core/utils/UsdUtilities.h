@@ -20,9 +20,9 @@
 #include <string>
 
 #include <omni/usd-abi/IRenderProductPrim.h>
-namespace omni
+namespace isaacsim
 {
-namespace isaac
+namespace core
 {
 namespace utils
 {
@@ -71,7 +71,7 @@ void safeGetAttribute(const pxr::UsdAttribute& attr, T& inputValue)
     // {
     //     CARB_LOG_ERROR_ONCE(
     //         "USD attribute is INVALID %s, you will only be warned once, so you probably want to fix whatever called "
-    //         "omni::isaac::utils::safeGetAttribute", attr.GetName().GetString().c_str());
+    //         "isaacsim::core::utils::safeGetAttribute", attr.GetName().GetString().c_str());
     // }
 }
 

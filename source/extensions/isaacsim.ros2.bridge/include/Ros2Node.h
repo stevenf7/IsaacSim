@@ -12,7 +12,7 @@
  */
 #pragma once
 
-#include "omni/isaac//utils/BaseResetNode.h"
+#include "isaacsim/core/utils/BaseResetNode.h"
 
 #include <carb/Defines.h>
 #include <carb/Types.h>

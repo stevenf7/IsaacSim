@@ -16,9 +16,9 @@
 
 #include <DynamicControl.h>
 #include <PxActor.h>
-namespace omni
+namespace isaacsim
 {
-namespace isaac
+namespace core
 {
 namespace utils
 {

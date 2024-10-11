@@ -4,10 +4,10 @@ project_ext (ext)
 -- Python Bindings for Carobnite Plugin
 project_ext_bindings ({
                         ext = ext,
-                        project_name = "omni.isaac.utils.python",
+                        project_name = "isaacsim.core.utils.python",
                         module = "_isaac_utils",
                         src = "bindings",
-                        target_subdir = "omni/isaac/utils"
+                        target_subdir = "isaacsim/core/utils"
                     })
     include_physx()
     includedirs {
@@ -43,12 +43,12 @@ project_ext_bindings ({
 
 
 repo_build.prebuild_link {
-    { "python/scripts", ext.target_dir.."/omni/isaac/utils/scripts" },
-    { "python/tests", ext.target_dir.."/omni/isaac/utils/tests" },
+    { "python/scripts", ext.target_dir.."/isaacsim/core/utils/scripts" },
+    { "python/tests", ext.target_dir.."/isaacsim/core/utils/tests" },
     { "docs", ext.target_dir.."/docs" },
     { "data", ext.target_dir.."/data" },
 }
 
 repo_build.prebuild_copy {
-    { "python/*.py", ext.target_dir.."/omni/isaac/utils" },
+    { "python/*.py", ext.target_dir.."/isaacsim/core/utils" },
 }

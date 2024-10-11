@@ -17,8 +17,8 @@
 
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
-#include <omni/isaac/utils/BaseResetNode.h>
-#include <omni/isaac/utils/Conversions.h>
+#include <isaacsim/core/utils/BaseResetNode.h>
+#include <isaacsim/core/utils/Conversions.h>
 
 #include <OgnDebugDrawRayCastDatabase.h>
 #include <PrimitiveDrawingHelper.h>
@@ -76,8 +76,8 @@ public:
 
         for (int i = 0; i < numRays; i++)
         {
-            auto beamOrigin = omni::isaac::utils::conversions::asCarbFloat3(beamOrigins[i]);
-            auto beamEndPoint = omni::isaac::utils::conversions::asCarbFloat3(beamEndPoints[i]);
+            auto beamOrigin = isaacsim::core::utils::conversions::asCarbFloat3(beamOrigins[i]);
+            auto beamEndPoint = isaacsim::core::utils::conversions::asCarbFloat3(beamEndPoints[i]);
             state.mStartPoints.push_back(beamOrigin);
             state.mEndPoints.push_back(beamEndPoint);
         }

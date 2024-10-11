@@ -14,9 +14,9 @@
 #pragma once
 
 #include <include/Ros2QoS.h>
+#include <isaacsim/core/utils/Math.h>
 #include <nlohmann/json.hpp>
 #include <omni/fabric/Type.h>
-#include <omni/isaac/utils/Math.h>
 
 #include <DynamicControl.h>
 #include <LibraryLoader.h>
@@ -441,11 +441,11 @@ public:
                          bool showLoadingError = false)
         : m_pkgName(pkgName), m_msgSubfolder(msgSubfolder), m_msgName(msgName), m_msgType(messageType)
     {
-        m_generatorLibrary = std::make_shared<omni::isaac::utils::LibraryLoader>(
+        m_generatorLibrary = std::make_shared<isaacsim::core::utils::LibraryLoader>(
             std::string(m_pkgName) + "__rosidl_generator_c", "", showLoadingError);
-        m_typesupportLibrary = std::make_shared<omni::isaac::utils::LibraryLoader>(
+        m_typesupportLibrary = std::make_shared<isaacsim::core::utils::LibraryLoader>(
             std::string(m_pkgName) + "__rosidl_typesupport_c", "", showLoadingError);
-        m_typesupportIntrospectionLibrary = std::make_shared<omni::isaac::utils::LibraryLoader>(
+        m_typesupportIntrospectionLibrary = std::make_shared<isaacsim::core::utils::LibraryLoader>(
             std::string(m_pkgName) + "__rosidl_typesupport_introspection_c", "", showLoadingError);
     }
 
@@ -530,10 +530,10 @@ protected:
     std::string m_msgSubfolder; //!< Message subfolder name.
     std::string m_msgName; //!< Message name.
     BackendMessageType m_msgType; //!< Message type.
-    std::shared_ptr<omni::isaac::utils::LibraryLoader> m_typesupportIntrospectionLibrary; //!< ROS IDL type support
-                                                                                          //!< introspection library.
-    std::shared_ptr<omni::isaac::utils::LibraryLoader> m_typesupportLibrary; //!< ROS IDL type support library.
-    std::shared_ptr<omni::isaac::utils::LibraryLoader> m_generatorLibrary; //!< ROS IDL generator library.
+    std::shared_ptr<isaacsim::core::utils::LibraryLoader> m_typesupportIntrospectionLibrary; //!< ROS IDL type support
+                                                                                             //!< introspection library.
+    std::shared_ptr<isaacsim::core::utils::LibraryLoader> m_typesupportLibrary; //!< ROS IDL type support library.
+    std::shared_ptr<isaacsim::core::utils::LibraryLoader> m_generatorLibrary; //!< ROS IDL generator library.
 
 private:
     std::string getTypeSupportSpec(const bool& introspection)

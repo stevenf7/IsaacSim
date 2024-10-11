@@ -11,9 +11,9 @@
 #include <carb/logging/Log.h>
 
 #include <vector>
-namespace omni
+namespace isaacsim
 {
-namespace isaac
+namespace core
 {
 namespace utils
 {

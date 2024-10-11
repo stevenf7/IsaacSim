@@ -67,8 +67,8 @@ namespace
 omni::kit::StageUpdatePtr g_stageUpdate = nullptr;
 omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
 std::shared_ptr<isaacsim::ros2::bridge::Ros2ContextHandle> g_defaultContextHandle;
-std::shared_ptr<omni::isaac::utils::LibraryLoader> g_factoryLoader;
-omni::isaac::utils::MultiLibraryLoader g_backupLibraryLoader;
+std::shared_ptr<isaacsim::core::utils::LibraryLoader> g_factoryLoader;
+isaacsim::core::utils::MultiLibraryLoader g_backupLibraryLoader;
 isaacsim::ros2::bridge::Ros2Factory* g_factory = nullptr;
 std::string g_extensionPath;
 
@@ -200,7 +200,7 @@ CARB_EXPORT void carbOnPluginStartup()
     else
     {
         // Load test library, print error if it fails
-        auto tempLoader = std::make_shared<omni::isaac::utils::LibraryLoader>("rosidl_runtime_c", "", false);
+        auto tempLoader = std::make_shared<isaacsim::core::utils::LibraryLoader>("rosidl_runtime_c", "", false);
         if (tempLoader->loadedLibrary == carb::extras::kInvalidLibraryHandle)
         {
 #ifdef _WIN32
@@ -218,7 +218,7 @@ CARB_EXPORT void carbOnPluginStartup()
             // Try and load internal lib, this will fail if ENV vars are not set correctly due to dependency tree.
             // Do not print lib specific errors
             auto tempLoader =
-                std::make_shared<omni::isaac::utils::LibraryLoader>("rosidl_runtime_c", g_extensionPath, true);
+                std::make_shared<isaacsim::core::utils::LibraryLoader>("rosidl_runtime_c", g_extensionPath, true);
             if (tempLoader->loadedLibrary == carb::extras::kInvalidLibraryHandle)
             {
                 CARB_LOG_WARN(
@@ -231,7 +231,7 @@ CARB_EXPORT void carbOnPluginStartup()
             }
         }
         g_factoryLoader =
-            std::make_shared<omni::isaac::utils::LibraryLoader>("isaacsim.ros2.bridge." + std::string(rosDistro));
+            std::make_shared<isaacsim::core::utils::LibraryLoader>("isaacsim.ros2.bridge." + std::string(rosDistro));
     }
 
     g_stageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>()->getStageUpdate();

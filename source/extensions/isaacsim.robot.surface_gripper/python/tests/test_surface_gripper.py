@@ -369,7 +369,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_bend_surface_gripper(self):
-        from omni.isaac.utils._isaac_utils import math as mu
+        from isaacsim.core.utils._isaac_utils import math as mu
 
         box1_props = [self.box1, 0.200, [0.1, 0.1, 0.1], [0.06, 0, 2.04], [0, 0, 0, 1], [255, 80, 80]]
 
@@ -413,7 +413,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_fixed_surface_gripper(self):
-        from omni.isaac.utils._isaac_utils import math as mu
+        from isaacsim.core.utils._isaac_utils import math as mu
 
         box1_props = [self.box1, 0.100, [0.1, 0.1, 0.1], [0.06, 0, 2.04], [0, 0, 0, 1], [255, 80, 80]]
 

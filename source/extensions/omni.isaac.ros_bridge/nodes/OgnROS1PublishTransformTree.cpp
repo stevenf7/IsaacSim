@@ -13,8 +13,8 @@
 
 #include "tf2_msgs/TFMessage.h"
 
+#include <isaacsim/core/utils/PoseTree.h>
 #include <omni/fabric/FabricUSD.h>
-#include <omni/isaac/utils/PoseTree.h>
 #include <omni/usd/UsdUtils.h>
 
 #include <DynamicControl.h>
@@ -100,7 +100,7 @@ public:
 
             // reset this object
             state.mPoseTree =
-                std::make_unique<omni::isaac::utils::posetree::PoseTree>(state.mStageId, state.mDynamicControlPtr);
+                std::make_unique<isaacsim::core::utils::posetree::PoseTree>(state.mStageId, state.mDynamicControlPtr);
             state.mPoseTree->setParentPrimPath(state.mParentPath, "world");
             state.mPoseTree->setTargetPrimPaths(state.mTargets);
 
@@ -185,7 +185,7 @@ private:
 
     long mStageId;
     pxr::UsdStageRefPtr mUsdStage;
-    std::unique_ptr<omni::isaac::utils::posetree::PoseTree> mPoseTree;
+    std::unique_ptr<isaacsim::core::utils::posetree::PoseTree> mPoseTree;
 };
 
 REGISTER_OGN_NODE()

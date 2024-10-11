@@ -9,19 +9,19 @@
 
 #pragma once
 
-#include "omni/isaac/utils/UsdUtilities.h"
+#include "isaacsim/core/utils/UsdUtilities.h"
 
 #include <carb/Framework.h>
 #include <carb/Types.h>
 #include <carb/tokens/TokensUtils.h>
 
 #include <include/Ros2Node.h>
+#include <isaacsim/core/utils/Math.h>
 #include <omni/fabric/FabricUSD.h>
 #include <omni/graph/core/OgnHelpers.h>
 #include <omni/graph/core/Type.h>
 #include <omni/graph/core/ogn/ArrayAttribute.h>
 #include <omni/graph/core/ogn/SimpleAttribute.h>
-#include <omni/isaac/utils/Math.h>
 
 using namespace isaacsim::ros2::bridge;
 using omni::graph::core::ogn::OmniGraphDatabase;

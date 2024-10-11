@@ -9,8 +9,8 @@
 
 #pragma once
 
+#include "isaacsim/core/utils/UsdUtilities.h"
 #include "omni/isaac/bridge/Component.h"
-#include "omni/isaac/utils/UsdUtilities.h"
 
 #include <isaacSensorSchema/isaacBaseSensor.h>
 
@@ -32,7 +32,7 @@ inline float lerp(const float& start, const float& end, const float t)
  * @brief Base class which simulates a non RTX isaac sensor
  */
 template <class PrimType>
-class IsaacSensorComponentBase : public omni::isaac::utils::ComponentBase<PrimType>
+class IsaacSensorComponentBase : public isaacsim::core::utils::ComponentBase<PrimType>
 {
 public:
     IsaacSensorComponentBase()
@@ -45,7 +45,7 @@ public:
 
     virtual void initialize(const PrimType& prim, const pxr::UsdStageWeakPtr stage)
     {
-        omni::isaac::utils::ComponentBase<PrimType>::initialize(prim, stage);
+        isaacsim::core::utils::ComponentBase<PrimType>::initialize(prim, stage);
     }
 
     virtual void onStart()
@@ -56,7 +56,7 @@ public:
     virtual void onComponentChange()
     {
         // base sensor on component change
-        omni::isaac::utils::safeGetAttribute(this->mPrim.GetEnabledAttr(), this->mEnabled);
+        isaacsim::core::utils::safeGetAttribute(this->mPrim.GetEnabledAttr(), this->mEnabled);
     }
 
     virtual void preTick()

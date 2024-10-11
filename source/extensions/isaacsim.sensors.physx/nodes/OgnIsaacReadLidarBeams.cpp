@@ -11,10 +11,10 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#include "omni/isaac/utils/UsdUtilities.h"
+#include "isaacsim/core/utils/UsdUtilities.h"
 
+#include <isaacsim/core/utils/BaseResetNode.h>
 #include <omni/fabric/FabricUSD.h>
-#include <omni/isaac/utils/BaseResetNode.h>
 #include <rangeSensorSchema/lidar.h>
 #include <rangeSensorSchema/rangeSensor.h>
 
@@ -140,13 +140,13 @@ public:
         auto& verticalFov = db.outputs.verticalFov();
         auto& verticalResolution = db.outputs.verticalResolution();
 
-        omni::isaac::utils::safeGetAttribute(mLidarPrim.GetHorizontalFovAttr(), horizontalFov);
-        omni::isaac::utils::safeGetAttribute(mLidarPrim.GetHorizontalResolutionAttr(), horizontalResolution);
-        omni::isaac::utils::safeGetAttribute(mRangeSensorPrim.GetMinRangeAttr(), depthRange[0]);
-        omni::isaac::utils::safeGetAttribute(mRangeSensorPrim.GetMaxRangeAttr(), depthRange[1]);
-        omni::isaac::utils::safeGetAttribute(mLidarPrim.GetRotationRateAttr(), rotationRate);
-        omni::isaac::utils::safeGetAttribute(mLidarPrim.GetVerticalFovAttr(), verticalFov);
-        omni::isaac::utils::safeGetAttribute(mLidarPrim.GetVerticalResolutionAttr(), verticalResolution);
+        isaacsim::core::utils::safeGetAttribute(mLidarPrim.GetHorizontalFovAttr(), horizontalFov);
+        isaacsim::core::utils::safeGetAttribute(mLidarPrim.GetHorizontalResolutionAttr(), horizontalResolution);
+        isaacsim::core::utils::safeGetAttribute(mRangeSensorPrim.GetMinRangeAttr(), depthRange[0]);
+        isaacsim::core::utils::safeGetAttribute(mRangeSensorPrim.GetMaxRangeAttr(), depthRange[1]);
+        isaacsim::core::utils::safeGetAttribute(mLidarPrim.GetRotationRateAttr(), rotationRate);
+        isaacsim::core::utils::safeGetAttribute(mLidarPrim.GetVerticalFovAttr(), verticalFov);
+        isaacsim::core::utils::safeGetAttribute(mLidarPrim.GetVerticalResolutionAttr(), verticalResolution);
 
         size_t numBeamsTotal = numRows * numCols;
 

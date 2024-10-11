@@ -16,7 +16,7 @@
 #include <carb/events/EventsUtils.h>
 #include <carb/logging/Logger.h>
 
-#include <omni/isaac/utils/BaseResetNode.h>
+#include <isaacsim/core/utils/BaseResetNode.h>
 #include <omni/usd/UsdContext.h>
 #include <omni/usd/UsdContextIncludes.h>
 

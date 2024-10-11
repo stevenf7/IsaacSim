@@ -47,7 +47,7 @@ namespace sensors
 namespace physics
 {
 
-class IsaacSensorManager : public omni::isaac::utils::BridgeApplicationBase<IsaacBaseSensorComponent>
+class IsaacSensorManager : public isaacsim::core::utils::BridgeApplicationBase<IsaacBaseSensorComponent>
 {
 public:
     IsaacSensorManager(omni::physx::IPhysx* physXInterface)
@@ -119,7 +119,7 @@ public:
 
     virtual void onComponentChange(const pxr::UsdPrim& prim)
     {
-        omni::isaac::utils::BridgeApplicationBase<IsaacBaseSensorComponent>::onComponentChange(prim);
+        isaacsim::core::utils::BridgeApplicationBase<IsaacBaseSensorComponent>::onComponentChange(prim);
         // update properties of this prim (onComponentChange)
         if (mComponents.find(prim.GetPath().GetString()) != mComponents.end())
         {

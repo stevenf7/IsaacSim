@@ -41,7 +41,7 @@ extensions = [
     "omni.isaac.ros_bridge",
     "omni.isaac.sensor",
     "omni.isaac.synthetic_recorder",
-    "omni.isaac.utils",
+    "isaacsim.core.utils",
 ]
 
 # compute and replace the version number

@@ -11,7 +11,7 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#include <omni/isaac/utils/BaseResetNode.h>
+#include <isaacsim/core/utils/BaseResetNode.h>
 
 #include <OgnDifferentialControllerDatabase.h>
 #include <cmath>

@@ -11,14 +11,14 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 #include "OgnROS2Utils.h"
-#include "omni/isaac/utils/UsdUtilities.h"
+#include "isaacsim/core/utils/UsdUtilities.h"
 
 #include <carb/Framework.h>
 #include <carb/Types.h>
 
 #include <include/Ros2Node.h>
+#include <isaacsim/core/utils/Math.h>
 #include <omni/fabric/FabricUSD.h>
-#include <omni/isaac/utils/Math.h>
 
 #include <OgnROS2ServiceClientDatabase.h>
 

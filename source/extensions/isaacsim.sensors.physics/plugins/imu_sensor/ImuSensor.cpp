@@ -22,15 +22,15 @@
 #include "ImuSensor.h"
 
 #include "IsaacSensor.h"
-#include "omni/isaac/utils/Pose.h"
-#include "omni/isaac/utils/UsdUtilities.h"
+#include "isaacsim/core/utils/Pose.h"
+#include "isaacsim/core/utils/UsdUtilities.h"
 
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
 #include <carb/events/EventsUtils.h>
 #include <carb/logging/Log.h>
 
-#include <omni/isaac/utils/Conversions.h>
+#include <isaacsim/core/utils/Conversions.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
@@ -193,7 +193,7 @@ void ImuSensor::onPhysicsStep()
 
     // Get transformation matrix from body to world
     usdrt::GfMatrix4d R_bw =
-        omni::isaac::utils::pose::computeWorldXformNoCache(mStage, mUsdrtStage, mPrim.GetPath()).GetOrthonormalized();
+        isaacsim::core::utils::pose::computeWorldXformNoCache(mStage, mUsdrtStage, mPrim.GetPath()).GetOrthonormalized();
 
     // Inverse to get transformation matrix from world to body
     usdrt::GfMatrix4d R_wb = R_bw.GetInverse();
@@ -358,11 +358,12 @@ void ImuSensor::onComponentChange()
 
     const pxr::IsaacSensorIsaacImuSensor& typedPrim = (pxr::IsaacSensorIsaacImuSensor)mPrim;
 
-    omni::isaac::utils::safeGetAttribute(typedPrim.GetSensorPeriodAttr(), this->mProps.sensorPeriod);
-    omni::isaac::utils::safeGetAttribute(
+    isaacsim::core::utils::safeGetAttribute(typedPrim.GetSensorPeriodAttr(), this->mProps.sensorPeriod);
+    isaacsim::core::utils::safeGetAttribute(
         typedPrim.GetLinearAccelerationFilterWidthAttr(), this->mLinearAccelerationFilterSize);
-    omni::isaac::utils::safeGetAttribute(typedPrim.GetAngularVelocityFilterWidthAttr(), this->mAngularVelocityFilterSize);
-    omni::isaac::utils::safeGetAttribute(typedPrim.GetOrientationFilterWidthAttr(), this->mOrientationFilterSize);
+    isaacsim::core::utils::safeGetAttribute(
+        typedPrim.GetAngularVelocityFilterWidthAttr(), this->mAngularVelocityFilterSize);
+    isaacsim::core::utils::safeGetAttribute(typedPrim.GetOrientationFilterWidthAttr(), this->mOrientationFilterSize);
 
     // reject 0 or negative rolling avg size
     mLinearAccelerationFilterSize = std::max(mLinearAccelerationFilterSize, 1);
@@ -423,9 +424,9 @@ void ImuSensor::onComponentChange()
             else
             {
                 // Fallback onto USD values
-                omni::isaac::utils::safeGetAttribute(scene.GetGravityMagnitudeAttr(), mag);
+                isaacsim::core::utils::safeGetAttribute(scene.GetGravityMagnitudeAttr(), mag);
                 pxr::GfVec3f dir_attr;
-                omni::isaac::utils::safeGetAttribute(scene.GetGravityDirectionAttr(), dir_attr); // (0, 0, -1.0f)
+                isaacsim::core::utils::safeGetAttribute(scene.GetGravityDirectionAttr(), dir_attr); // (0, 0, -1.0f)
 
                 dir.Set(static_cast<double>(dir_attr.GetArray()[0]), static_cast<double>(dir_attr.GetArray()[1]),
                         static_cast<double>(dir_attr.GetArray()[2]));
