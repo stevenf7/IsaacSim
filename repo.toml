@@ -258,7 +258,7 @@ sphinx_conf_py_extra = """
     autodoc_mock_imports = ["torch", "omni.ui", "usdrt",  "omni.kit.window", "omni.kit.helper", "omni.kit.ui", "omni.graph", "omni.replicator.core", "omni.activity", "omni.kit.app", "omni.stats"]
     import sys
     if sys.platform == "win32":
-        autodoc_mock_imports.extend(["omni.isaac.IsaacSensorSchema", "omni.isaac.RangeSensorSchema", "osqp", "omni.isaac.ros_bridge"])
+        autodoc_mock_imports.extend(["omni.isaac.IsaacSensorSchema", "omni.isaac.RangeSensorSchema", "osqp", "isaacsim.ros1.bridge"])
 
     rst_prolog = '''
     .. |br| raw:: html
@@ -896,7 +896,7 @@ etm_emails = ["hmazhar@nvidia.com"]
 [repo_format]
 
 cpp.files.exclude = [
-    "source/extensions/omni.isaac.ros_bridge/isaac_ros_messages/**",
+    "source/extensions/isaacsim.ros1.bridge/isaac_ros_messages/**",
     "source/extensions/isaacsim.ros2.bridge/isaac_ros2_messages/**",
     "tools/container/**",
 ]
@@ -936,7 +936,7 @@ ogn_exts_includes = [
     "isaacsim.core.nodes",
     "isaacsim.util.debug_draw",
     "isaacsim.examples.interactive_nodes",
-    "omni.isaac.ros_bridge",
+    "isaacsim.ros1.bridge",
     "isaacsim.robot.wheeled_robots",
 ]
 

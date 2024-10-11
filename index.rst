@@ -48,7 +48,7 @@ Isaac Sim: Extensions API
    :caption: Other Extensions
    :glob:
 
-   source/extensions/omni.isaac.ros_bridge/docs/index
+   source/extensions/isaacsim.ros1.bridge/docs/index
    source/extensions/isaacsim.ros2.bridge/docs/index
    source/extensions/isaacsim.util.debug_draw/docs/index
    source/extensions/isaacsim.robot_motion.motion_generation/docs/index

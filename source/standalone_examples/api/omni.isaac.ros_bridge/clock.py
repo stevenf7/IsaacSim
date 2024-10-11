@@ -26,14 +26,14 @@ from isaacsim.core.api import SimulationContext
 from isaacsim.core.api.utils.extensions import enable_extension
 
 if args.test:
-    from omni.isaac.ros_bridge.scripts.roscore import Roscore
-    from omni.isaac.ros_bridge.tests.common import wait_for_rosmaster
+    from isaacsim.ros1.bridge.scripts.roscore import Roscore
+    from isaacsim.ros1.bridge.tests.common import wait_for_rosmaster
 
     roscore = Roscore()
     wait_for_rosmaster()
 
 # enable ROS bridge extension
-enable_extension("omni.isaac.ros_bridge")
+enable_extension("isaacsim.ros1.bridge")
 
 simulation_app.update()
 
@@ -64,9 +64,9 @@ try:
             og.Controller.Keys.CREATE_NODES: [
                 ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                 ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                ("PublishClock", "omni.isaac.ros_bridge.ROS1PublishClock"),
+                ("PublishClock", "isaacsim.ros1.bridge.ROS1PublishClock"),
                 ("OnImpulseEvent", "omni.graph.action.OnImpulseEvent"),
-                ("PublishManualClock", "omni.isaac.ros_bridge.ROS1PublishClock"),
+                ("PublishManualClock", "isaacsim.ros1.bridge.ROS1PublishClock"),
             ],
             og.Controller.Keys.CONNECT: [
                 # Connecting execution of OnPlaybackTick node to PublishClock  to automatically publish each frame

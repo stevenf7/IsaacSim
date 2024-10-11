@@ -115,7 +115,7 @@ files = [
 ]
 files_exclude = [
     ["standalone_examples/cortex/**"], # Cortex not shipped on windows
-    ["standalone_examples/api/omni.isaac.ros_bridge**"], # ROS1 not shipped on windows
+    ["standalone_examples/api/isaacsim.ros1.bridge**"], # ROS1 not shipped on windows
     ["isaac-sim.xr.steamvr.bat"], # Remove XR support for Linux
     ["apps/omni.isaac.sim.xr.steamvr.kit"], # Remove XR support for Linux
 ]
@@ -210,7 +210,7 @@ files = [
 ]
 files_exclude = [
     ["standalone_examples/cortex/**"], # Cortex not shipped on windows
-    ["standalone_examples/api/omni.isaac.ros_bridge**"] # ROS1 not shipped on windows
+    ["standalone_examples/api/isaacsim.ros1.bridge**"] # ROS1 not shipped on windows
 ]
 
 ########################################################################################################################

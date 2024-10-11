@@ -30,7 +30,7 @@ from omni.kit.viewport.utility import get_active_viewport
 from pxr import Gf, Usd, UsdGeom
 
 # enable ROS bridge extension
-extensions.enable_extension("omni.isaac.ros_bridge")
+extensions.enable_extension("isaacsim.ros1.bridge")
 
 simulation_app.update()
 
@@ -83,9 +83,9 @@ keys = og.Controller.Keys
             ("createViewport", "isaacsim.core.nodes.IsaacCreateViewport"),
             ("getRenderProduct", "isaacsim.core.nodes.IsaacGetViewportRenderProduct"),
             ("setCamera", "isaacsim.core.nodes.IsaacSetCameraOnRenderProduct"),
-            ("cameraHelperRgb", "omni.isaac.ros_bridge.ROS1CameraHelper"),
-            ("cameraHelperInfo", "omni.isaac.ros_bridge.ROS1CameraHelper"),
-            ("cameraHelperDepth", "omni.isaac.ros_bridge.ROS1CameraHelper"),
+            ("cameraHelperRgb", "isaacsim.ros1.bridge.ROS1CameraHelper"),
+            ("cameraHelperInfo", "isaacsim.ros1.bridge.ROS1CameraHelper"),
+            ("cameraHelperDepth", "isaacsim.ros1.bridge.ROS1CameraHelper"),
         ],
         keys.CONNECT: [
             ("OnTick.outputs:tick", "createViewport.inputs:execIn"),

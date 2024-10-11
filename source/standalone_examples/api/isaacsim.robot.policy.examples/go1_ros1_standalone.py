@@ -27,7 +27,7 @@ from isaacsim.core.api.utils.extensions import enable_extension
 from isaacsim.robot.policy.examples.robots import Unitree
 
 # enable ROS bridge extension
-enable_extension("omni.isaac.ros_bridge")
+enable_extension("isaacsim.ros1.bridge")
 
 simulation_app.update()
 
@@ -111,7 +111,7 @@ class Go1_runner(object):
                     keys.CREATE_NODES: [
                         ("OnTick", "omni.graph.action.OnTick"),
                         ("readSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
-                        ("publishClock", "omni.isaac.ros_bridge.ROS1PublishClock"),
+                        ("publishClock", "isaacsim.ros1.bridge.ROS1PublishClock"),
                     ],
                     keys.CONNECT: [
                         ("OnTick.outputs:tick", "publishClock.inputs:execIn"),

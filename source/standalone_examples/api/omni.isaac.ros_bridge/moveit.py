@@ -31,7 +31,7 @@ from omni.isaac.nucleus import get_assets_root_path
 from pxr import Gf
 
 # enable ROS bridge extension
-extensions.enable_extension("omni.isaac.ros_bridge")
+extensions.enable_extension("isaacsim.ros1.bridge")
 
 simulation_app.update()
 
@@ -79,11 +79,11 @@ try:
             og.Controller.Keys.CREATE_NODES: [
                 ("OnImpulseEvent", "omni.graph.action.OnImpulseEvent"),
                 ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
-                ("PublishJointState", "omni.isaac.ros_bridge.ROS1PublishJointState"),
-                ("SubscribeJointState", "omni.isaac.ros_bridge.ROS1SubscribeJointState"),
+                ("PublishJointState", "isaacsim.ros1.bridge.ROS1PublishJointState"),
+                ("SubscribeJointState", "isaacsim.ros1.bridge.ROS1SubscribeJointState"),
                 ("ArticulationController", "isaacsim.core.nodes.IsaacArticulationController"),
-                ("PublishTF", "omni.isaac.ros_bridge.ROS1PublishTransformTree"),
-                ("PublishClock", "omni.isaac.ros_bridge.ROS1PublishClock"),
+                ("PublishTF", "isaacsim.ros1.bridge.ROS1PublishTransformTree"),
+                ("PublishClock", "isaacsim.ros1.bridge.ROS1PublishClock"),
             ],
             og.Controller.Keys.CONNECT: [
                 ("OnImpulseEvent.outputs:execOut", "PublishJointState.inputs:execIn"),

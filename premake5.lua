@@ -330,8 +330,9 @@ function include_extensions()
     if os.target() == "linux" then
         include ("source/deprecated/omni.isaac.ocs2")
         include ("source/deprecated/omni.isaac.repl")
+        include ("source/deprecated/omni.isaac.ros_bridge")
         include ("source/extensions/isaacsim.robot_motion.ocs2")
-        include ("source/extensions/omni.isaac.ros_bridge")
+        include ("source/extensions/isaacsim.ros1.bridge")
     end
 end
 
@@ -517,10 +518,10 @@ function create_tests()
         python_sample_test("tests-nativepython-omni.isaac.dynamic_control.franka_articulation", "standalone_examples/api/omni.isaac.dynamic_control/franka_articulation.py")
         -- omni.isaac.urdf
         python_sample_test("tests-nativepython-omni.isaac.urdf.urdf_import", "standalone_examples/api/omni.importer.urdf/urdf_import.py")
-        -- omni.isaac.ros_bridge
-        python_sample_test("tests-nativepython-omni.isaac.ros_bridge.clock", "standalone_examples/api/omni.isaac.ros_bridge/clock.py", "--test")
-        -- python_sample_test("tests-nativepython-omni.isaac.ros_bridge.contact", "standalone_examples/api/omni.isaac.ros_bridge/contact.py") # disabling as this requires isaac sim custom message to be sourced, which doesn't work on TC
-        python_sample_test("tests-nativepython-omni.isaac.ros_bridge.carter_stereo", "standalone_examples/api/omni.isaac.ros_bridge/carter_stereo.py", "--test")
+        -- isaacsim.ros1.bridge
+        python_sample_test("tests-nativepython-isaacsim.ros1.bridge.clock", "standalone_examples/api/isaacsim.ros1.bridge/clock.py", "--test")
+        -- python_sample_test("tests-nativepython-isaacsim.ros1.bridge.contact", "standalone_examples/api/isaacsim.ros1.bridge/contact.py") # disabling as this requires isaac sim custom message to be sourced, which doesn't work on TC
+        python_sample_test("tests-nativepython-isaacsim.ros1.bridge.carter_stereo", "standalone_examples/api/isaacsim.ros1.bridge/carter_stereo.py", "--test")
         -- Replicator data samples:
         python_sample_test("tests-nativepython-replicator.scene_based_sdg", "standalone_examples/replicator/scene_based_sdg/scene_based_sdg.py")
         python_sample_test("tests-nativepython-replicator.scene_based_sdg_basic_writer", "standalone_examples/replicator/scene_based_sdg/scene_based_sdg.py", "--config standalone_examples/replicator/scene_based_sdg/config/config_basic_writer.yaml")
@@ -563,7 +564,7 @@ function create_tests()
         python_sample_test("tests-nativepython-testing-omni.isaac.kit.test_unsaved_on_exit", "standalone_examples/testing/omni.isaac.kit/test_unsaved_on_exit.py")
         python_sample_test("tests-nativepython-testing-isaacsim.benchmark.services.test_no_rendering", "standalone_examples/testing/isaacsim.benchmark.services/test_no_rendering.py")
         python_sample_test("tests-nativepython-testing-omni.isaac.kit.test_external", "standalone_examples/testing/omni.isaac.kit/test_external.py", '--enable omni.kit.scripting')
-        python_sample_test("tests-nativepython-testing-omni.isaac.ros_bridge.test_carter_lidar", "standalone_examples/testing/omni.isaac.ros_bridge/test_carter_lidar.py", "--test")
+        python_sample_test("tests-nativepython-testing-isaacsim.ros1.bridge.test_carter_lidar", "standalone_examples/testing/isaacsim.ros1.bridge/test_carter_lidar.py", "--test")
         python_sample_test("tests-nativepython-testing-isaacsim.cortex.framework.bringup", "standalone_examples/testing/isaacsim.cortex.framework/cortex_bringup_test.py")
         python_sample_test("tests-nativepython-testing-isaacsim.core.api.tensor_api_handles", "standalone_examples/testing/isaacsim.core.api/tensor_api_handles.py")
         python_sample_test("tests-nativepython-testing-omni.replicator.isaac.custom_event_and_write", "/standalone_examples/api/omni.replicator.isaac/custom_event_and_write.py")

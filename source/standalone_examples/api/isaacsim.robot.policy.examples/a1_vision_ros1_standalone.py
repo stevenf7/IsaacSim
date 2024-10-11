@@ -30,7 +30,7 @@ from isaacsim.robot.policy.examples.robots import UnitreeVision
 from omni.isaac.nucleus import get_assets_root_path
 
 # enable ROS bridge extension
-enable_extension("omni.isaac.ros_bridge")
+enable_extension("isaacsim.ros1.bridge")
 
 simulation_app.update()
 
@@ -121,7 +121,7 @@ class A1_stereo_vision(object):
                     keys.CREATE_NODES: [
                         ("OnTick", "omni.graph.action.OnTick"),
                         ("readSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
-                        ("publishClock", "omni.isaac.ros_bridge.ROS1PublishClock"),
+                        ("publishClock", "isaacsim.ros1.bridge.ROS1PublishClock"),
                     ],
                     keys.CONNECT: [
                         ("OnTick.outputs:tick", "publishClock.inputs:execIn"),

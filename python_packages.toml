@@ -450,7 +450,10 @@ inventory.include = [
     # license
     "LICENSE.txt",
     # extensions
-    "exts/omni.isaac.ros_bridge",
+    "exts/isaacsim.ros1.bridge",
+    
+    # deprecated extensions
+    "extsDeprecated/omni.isaac.ros_bridge",
 ]
 
 [isaacsim-ros2]

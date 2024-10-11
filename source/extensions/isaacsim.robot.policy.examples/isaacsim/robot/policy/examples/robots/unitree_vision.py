@@ -91,7 +91,7 @@ class UnitreeVision(Unitree):
             self.is_ros2 = is_ros2
 
             ros_version = "ROS1"
-            ros_bridge_version = "omni.isaac.ros_bridge."
+            ros_bridge_version = "isaacsim.ros1.bridge."
             self.ros_vp_offset = 1
             if self.is_ros2:
                 ros_version = "ROS2"

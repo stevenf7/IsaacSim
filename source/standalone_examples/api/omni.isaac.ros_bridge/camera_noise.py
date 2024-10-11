@@ -34,7 +34,7 @@ from omni.kit.viewport.utility import get_active_viewport
 from pxr import Gf, Usd, UsdGeom
 
 # enable ROS bridge extension
-extensions.enable_extension("omni.isaac.ros_bridge")
+extensions.enable_extension("isaacsim.ros1.bridge")
 
 simulation_app.update()
 
@@ -111,7 +111,7 @@ rep.annotators.register(
 # Create a new writer with the augmented image
 rep.writers.register_node_writer(
     name=f"CustomROS1PublishImage",
-    node_type_id="omni.isaac.ros_bridge.ROS1PublishImage",
+    node_type_id="isaacsim.ros1.bridge.ROS1PublishImage",
     annotators=[
         "rgb_gaussian_noise",
         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
