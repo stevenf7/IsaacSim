@@ -56,7 +56,7 @@ Isaac Sim: Extensions API
    source/extensions/isaacsim.robot_motion.lula/docs/index
    source/extensions/isaacsim.robot.surface_gripper/docs/index
    source/extensions/isaacsim.asset.generator.occupancy_map/docs/index
-   source/extensions/omni.replicator.isaac/docs/index
+   source/extensions/isaacsim.replicator/docs/index
    source/extensions/isaacsim.asset.conveyor/docs/index
    source/extensions/isaacsim.core.version/docs/index
    source/extensions/omni.isaac.benchmark.services/docs/index
