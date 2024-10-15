@@ -198,10 +198,13 @@ public:
         }
         DcTransform t_0 = mDc->getRigidBodyPose(rb_0);
         DcTransform* offsetPtr = reinterpret_cast<DcTransform*>(&mProps.offset);
-        DcTransform _t_0 = (t_0 * (*offsetPtr));
-        carb::Float3 dir = getBasisVectorX(_t_0.r);
-        // CARB_LOG_WARN("gripper position: (%f, %f, %f)", p.x, p.y, p.z);
-        // CARB_LOG_WARN("gripper direction: (%f, %f, %f)", dir.x, dir.y, dir.z);
+        DcTransform _adjustedTransform = (t_0 * (*offsetPtr));
+        carb::Float3 dir = getBasisVectorX(_adjustedTransform.r);
+        // CARB_LOG_INFO("gripper offset: (%f, %f, %f)", mProps.offset.p.x, mProps.offset.p.y, mProps.offset.p.z);
+        // CARB_LOG_INFO(
+        //     "gripper position: (%f, %f, %f)", _adjustedTransform.p.x, _adjustedTransform.p.y,
+        //     _adjustedTransform.p.z);
+        // CARB_LOG_INFO("gripper direction: (%f, %f, %f)", dir.x, dir.y, dir.z);
         // DcTransform threshOffset;
         // threshOffset.p.x = mProps.gripThreshold;
         // _t_0 = _t_0 * threshOffset; //Disabling until we get soft meshes for grippers
@@ -212,7 +215,7 @@ public:
         while (attempts)
         {
             attempts--;
-            carb::Float3 p = isaacsim::core::utils::math::operator+(t_0.p, dir* additional_offset);
+            carb::Float3 p = isaacsim::core::utils::math::operator+(_adjustedTransform.p, dir* additional_offset);
             hit = mPhysxQuery->raycastClosest(p, dir, mProps.gripThreshold, result, false);
 
             if (hit)
@@ -227,7 +230,7 @@ public:
                 CARB_LOG_INFO("Gripping prim %s at distance %f with parent %s",
                               intToPath(result.rigidBody).GetString().c_str(), result.distance,
                               mProps.parentPath.c_str());
-                DcTransform t_1 = inverse(mDc->getRigidBodyPose(body)) * _t_0;
+                DcTransform t_1 = inverse(mDc->getRigidBodyPose(body)) * _adjustedTransform;
 
                 mJointProperties.body0 = rb_0;
                 mJointProperties.body1 = body;

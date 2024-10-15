@@ -296,7 +296,7 @@ class Extension(omni.ext.IExt):
             self.sgp.offset = physics.Transform()
             self.sgp.offset.p.x = 0
             self.sgp.offset.p.z = -0.1001
-            self.sgp.offset.r = [0.7071, 0, 0.7071, 0]  # Rotate to point gripper in Z direction
+            self.sgp.offset.r = [0, 0.7071, 0, 0.7071]  # Rotate to point gripper in Z direction
             self.sgp.gripThreshold = 0.02
             self.sgp.forceLimit = 1.0e2
             self.sgp.torqueLimit = 1.0e3
