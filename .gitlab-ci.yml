@@ -8,6 +8,7 @@ include:
   ref: v1_latest
 - project: 'omniverse/sectools/vault'
   file:
+    - 'templates/v3/common/token_job.gitlab-ci.yml'
     - 'templates/v2/omni-codesign-creds.yml'
     - 'templates/v3/linux/codesign.gitlab-ci.yml'
     - 'templates/v2/windows/repo-codesign-creds.yml'
@@ -775,8 +776,9 @@ test-windows-x86_64-nativepythontests-3:
   interruptible: false
   before_script:
   - set -eu
-  - !reference ['.osec:vault:v3:linux', 'codesign:perform_vault_requests']
-  - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
+  - !reference [.osec:vault:v3:linux, codesign:perform_vault_requests]
+  - !reference [.osec:vault:v3:linux, packman_s3:perform_vault_requests]
+  - !reference [.osec:vault:v3:linux, nucleus:kit-extensions.ov.nvidia.com:kit-extension-svc:perform_vault_requests]
   rules:
   - if: $RUN_DOCS_BUILD == "true" || RUN_NIGHTLY_TESTS=="true"
     when: never
@@ -1017,8 +1019,6 @@ publish-extensions:
   extends:
   - .deploy-common
   - .runner-build-linux-x86_64
-  before_script:
-  - !reference [.osec:vault:v3:linux, nucleus:kit-extensions.ov.nvidia.com:kit-extension-svc:perform_vault_requests]
   script:
   - ./repo.sh build --fetch-only -rd
   - ./repo.sh publish_exts -a --from-package -c release
