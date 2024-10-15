@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.1] - 2024-10-15
+### Changed
+- FIxes typo in Jetbot menu option
+
 ## [1.1.0] - 2024-10-04
 ### Removed
 - References to PhysX ultrasonic sensor
