@@ -18,11 +18,15 @@ import omni.ui as ui
 import rclpy
 import rclpy.node
 from ament_index_python.packages import get_package_share_directory
-from omni.importer.urdf import UrdfImporter, cb_builder, get_style, str_builder
+from omni.importer.urdf import UrdfImporter
+from omni.importer.urdf.scripts.ui import cb_builder, get_option_style, str_builder
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from rcl_interfaces.srv import GetParameters
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
 from std_msgs.msg import String
+
+EXTENSION_NAME = "Import from ROS2 URDF Node"
 
 
 def package_path_to_system_path(package_name, relative_path=""):
@@ -142,9 +146,8 @@ class RobotDescription:
         with self._main_frame:
             with ui.VStack(height=ui.Pixel(20)):
                 with ui.HStack(height=25):
-                    self.use_node_model = cb_builder("Use ROS2 node")
-                    self.use_node_model.add_value_changed_fn(lambda a: self._on_use_node_changed(a))
-                self.node_frame = ui.Frame(style=get_style())
+
+                    self.node_frame = ui.Frame(style=get_option_style())
                 # ui.Spacer(height=ui.Pixel(5))
         with self.node_frame:
             with ui.VStack():
@@ -168,13 +171,14 @@ class RobotDescription:
                     ui.Spacer(width=ui.Pixel(5))
                     self.refresh = ui.Button(
                         "Refresh",
-                        style=get_style(),
+                        style=get_option_style(),
                         clicked_fn=lambda: self._on_node_changed(self.node_model),
                         enabled=False,
                         width=ui.Pixel(30),
                         height=24,
                     )
-        self.node_frame.visible = False
+        self.node_frame.visible = True
+        self.urdf_importer.set_file_input_visible(False)
         # self.urdf_importer.build_ui()
 
     def _on_description_received(self, urdf_description):
@@ -193,10 +197,6 @@ class RobotDescription:
         lister.description_received_fn = partial(self._on_description_received)
         lister.start_get_robot_description(value)
 
-    def _on_use_node_changed(self, value):
-        self.node_frame.visible = value.get_value_as_bool()
-        self.urdf_importer.set_file_input_visible(not self.node_frame.visible)
-
     def shutdown(self):
         if self.urdf_importer:
             self._main_frame.visible = False
@@ -207,11 +207,40 @@ class RobotDescription:
 
 
 class Extension(omni.ext.IExt):
+    def menu_click(self, menu, value):
+        self.robot_description.urdf_importer._window.visible = True
+
     def on_startup(self, ext_id):
         # print("startup")
-
+        self.ext_id = ext_id
         self.robot_description = RobotDescription()
+        action_registry = omni.kit.actions.core.get_action_registry()
+        action_registry.register_action(
+            self.ext_id,
+            "import_from_ros2_urdf",
+            partial(self.menu_click, None, True),
+            display_name=EXTENSION_NAME,
+            description="Import documents from a ros2 urdf description node",
+            tag="Import from ROS2 Node",
+        )
+        self._menu_items = [
+            MenuItemDescription(
+                name=EXTENSION_NAME,
+                glyph="none.svg",
+                appear_after=["Import", "Reopen", "Open", "New From Stage Template"],
+                onclick_action=(self.ext_id, "import_from_ros2_urdf"),
+            )
+        ]
+        add_menu_items(self._menu_items, "File")
+
+    def deregister_actions(
+        self,
+    ):
+        action_registry = omni.kit.actions.core.get_action_registry()
+        action_registry.deregister_all_actions_for_extension(self.ext_id)
 
     def on_shutdown(self):
+        remove_menu_items(self._menu_items, "Isaac Utils")
+        self.deregister_actions()
         self.robot_description.shutdown()
         pass
