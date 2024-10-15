@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.1] - 2024-10-14
+### Deprecated
+- Restores previously-missing deprecated packages.
+
 ## [2.0.0] - 2024-09-20
 ### Deprecated
 - Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.benchmark.services.
