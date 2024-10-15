@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.1.1] - 2024-10-14
+### Fixed
+- Surface Gripper example tool orientation
+
 ## [4.1.0] - 2024-10-07
 ### Changed
 - Updated quadruped dependency to isaacsim.robot.policy.examples

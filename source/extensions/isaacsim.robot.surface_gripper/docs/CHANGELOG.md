@@ -1,7 +1,11 @@
 # Changelog
 
+## [2.0.1] - 2024-10-14
+### Fixed
+- Minor fix from refactor
+
 ## [2.0.0] - 2024-09-27
-### changed
+### Changed
 - Extension renamed to isaacsim.robot.surface_gripper
 
 ## [1.0.1] - 2024-04-01
