@@ -336,7 +336,7 @@ class Extension(omni.ext.IExt):
             ),
             make_menu_item_description(
                 ext_id,
-                "Jetbot (simpliifed)",
+                "Jetbot (simplified)",
                 lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Robots/Jetbot/aws_robomaker_jetbot.usd", "/Jetbot_simplified"
                 ),
