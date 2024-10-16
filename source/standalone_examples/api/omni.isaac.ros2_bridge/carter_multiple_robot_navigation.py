@@ -30,7 +30,7 @@ elif args.environment == "office":
 import carb
 from isaacsim import SimulationApp
 
-CONFIG = {"renderer": "RayTracedLighting", "headless": False}
+CONFIG = {"renderer": "RaytracedLighting", "headless": False}
 
 # Example ROS2 bridge sample demonstrating the manual loading of Multiple Robot Navigation scenario
 simulation_app = SimulationApp(CONFIG)

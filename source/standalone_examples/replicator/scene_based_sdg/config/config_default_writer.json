@@ -1,6 +1,6 @@
 {
     "launch_config": {
-        "renderer": "RayTracedLighting",
+        "renderer": "RaytracedLighting",
         "headless": false
     },
     "resolution": [512, 512],

@@ -9,7 +9,7 @@
 
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp(launch_config={"renderer": "RayTracedLighting", "headless": False})
+simulation_app = SimulationApp(launch_config={"renderer": "RaytracedLighting", "headless": False})
 
 import json
 import os

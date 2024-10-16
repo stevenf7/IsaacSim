@@ -18,7 +18,7 @@ args, unknown = parser.parse_known_args()
 
 
 # Example ROS bridge sample showing rospy and rosclock interaction
-simulation_app = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
+simulation_app = SimulationApp({"renderer": "RaytracedLighting", "headless": True})
 import carb
 import omni
 import omni.graph.core as og

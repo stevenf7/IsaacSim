@@ -101,8 +101,8 @@ def run_motion_blur_example(num_frames=3, custom_delta_time=None, use_path_traci
         # Number of sub samples to render if in PathTracing render mode and motion blur is enabled.
         carb.settings.get_settings().set("/omni/replicator/pathTracedMotionBlurSubSamples", pt_subsamples)
     else:
-        print(f"[MotionBlur] Setting RayTracedLighting render mode motion blur settings")
-        carb.settings.get_settings().set("/rtx/rendermode", "RayTracedLighting")
+        print(f"[MotionBlur] Setting RaytracedLighting render mode motion blur settings")
+        carb.settings.get_settings().set("/rtx/rendermode", "RaytracedLighting")
         # 0: Disabled, 1: TAA, 2: FXAA, 3: DLSS, 4:RTXAA
         carb.settings.get_settings().set("/rtx/post/aa/op", 2)
         # (float): The fraction of the largest screen dimension to use as the maximum motion blur diameter.
@@ -165,8 +165,8 @@ def run_motion_blur_example(num_frames=3, custom_delta_time=None, use_path_traci
 
     # Switch back to the raytracing render mode
     if use_path_tracing:
-        print(f"[MotionBlur] Restoring render mode to RayTracedLighting")
-        carb.settings.get_settings().set("/rtx/rendermode", "RayTracedLighting")
+        print(f"[MotionBlur] Restoring render mode to RaytracedLighting")
+        carb.settings.get_settings().set("/rtx/rendermode", "RaytracedLighting")
 
 
 def run_motion_blur_examples():
