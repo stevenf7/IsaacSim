@@ -273,8 +273,7 @@ sphinx_conf_py_extra = """
 
 sphinx_exclude_patterns = [
     "**/omni.isaac.app",
-    "**/omni.isaac.app.selector",
-    "**/omni.isaac.app.setup",
+    "**/isaacsim.app.selector",
     "**/omni.isaac.assets_check",
     "**/isaacsim.util.internal",
     "**/isaacsim.asset.browser",

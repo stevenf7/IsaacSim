@@ -1,0 +1,21 @@
+[package]
+version = "3.0.0"
+category = "Simulation"
+title = "Isaac Sim App Selector"
+description = "Mini Launch Pad app for Isaac Sim Sub Apps"
+authors = ["Isaac Sim Team"]
+readme = "docs/README.md"
+changelog = "docs/CHANGELOG.md"
+preview_image = "data/preview.png"
+icon = "data/omni.isaac.sim.png"
+toggleable = false
+
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 4.0.0. Replaced by isaacsim.app.selector"
+
+
+[dependencies]
+"isaacsim.app.selector" = {}
+
+[[python.module]]
+name = "omni.isaac.app.selector"

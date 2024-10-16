@@ -1,0 +1,23 @@
+[package]
+version = "1.0.0"
+category = "Setup"
+title = "Isaac Sim Setup"
+description = "This Extension does the setup of the Isaac Sim App"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.app.setup"
+keywords = ["isaac"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+icon = "data/omni.isaac.sim.png"
+preview_image = "data/preview.png"
+toggleable = false
+
+[dependencies]
+"isaacsim.core.deprecation_manager" = {}
+"isaacsim.app.setup" = {}
+
+[[python.module]]
+name = "omni.isaac.app.setup"
+
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.app.setup."
