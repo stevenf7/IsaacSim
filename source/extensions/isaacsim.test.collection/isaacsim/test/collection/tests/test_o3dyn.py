@@ -17,9 +17,9 @@ import omni.graph.core as og
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 from isaacsim.core.api import World
-from isaacsim.core.api.utils.extensions import get_extension_path_from_name
-from isaacsim.core.api.utils.prims import delete_prim
-from isaacsim.core.api.utils.stage import open_stage_async
+from isaacsim.core.utils.extensions import get_extension_path_from_name
+from isaacsim.core.utils.prims import delete_prim
+from isaacsim.core.utils.stage import open_stage_async
 from omni.isaac.nucleus import get_assets_root_path_async
 from omni.physx.scripts.physicsUtils import add_ground_plane
 from pxr import Gf

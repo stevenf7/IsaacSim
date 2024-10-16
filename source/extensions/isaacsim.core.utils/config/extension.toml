@@ -22,8 +22,6 @@ writeTarget.kit = true
 "omni.isaac.dynamic_control" = {}
 "omni.client" = {}
 "omni.kit.menu.utils" = {}
-"isaacsim.core.api" = {}
-"isaacsim.gui.components" = {}
 "omni.isaac.nucleus" = {}
 "isaacsim.core.deprecation_manager" = {}
 

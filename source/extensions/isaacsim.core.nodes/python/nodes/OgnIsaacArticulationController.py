@@ -10,9 +10,9 @@
 
 import numpy as np
 from isaacsim.core.api.articulations.articulation import Articulation
-from isaacsim.core.api.utils.types import ArticulationAction
 from isaacsim.core.nodes import BaseResetNode
 from isaacsim.core.nodes.ogn.OgnIsaacArticulationControllerDatabase import OgnIsaacArticulationControllerDatabase
+from isaacsim.core.utils.types import ArticulationAction
 
 
 class OgnIsaacArticulationControllerInternalState(BaseResetNode):

@@ -17,7 +17,7 @@ import numpy as np
 import omni.kit
 from isaacsim.core.api.articulations import Articulation
 from isaacsim.core.api.controllers.base_controller import BaseController
-from isaacsim.core.api.utils.types import ArticulationAction
+from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.robot_motion.motion_generation import ArticulationTrajectory
 from isaacsim.robot_motion.motion_generation.lula import RRT
 from isaacsim.robot_motion.motion_generation.lula.trajectory_generator import LulaCSpaceTrajectoryGenerator

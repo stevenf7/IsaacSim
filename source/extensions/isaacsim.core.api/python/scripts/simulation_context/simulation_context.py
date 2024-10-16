@@ -18,17 +18,17 @@ from typing import Callable, Optional
 import carb
 
 # isaac-core
-import isaacsim.core.api.utils.numpy as np_utils
-import isaacsim.core.api.utils.torch as torch_utils
-import isaacsim.core.api.utils.warp as warp_utils
+import isaacsim.core.utils.numpy as np_utils
+import isaacsim.core.utils.torch as torch_utils
+import isaacsim.core.utils.warp as warp_utils
 
 # omniverse
 import omni.kit.app
 import omni.physics.tensors
 from isaacsim.core.api.physics_context import PhysicsContext
-from isaacsim.core.api.utils.carb import get_carb_setting, set_carb_setting
-from isaacsim.core.api.utils.prims import get_prim_type_name, is_prim_ancestral, is_prim_no_delete
-from isaacsim.core.api.utils.stage import (
+from isaacsim.core.utils.carb import get_carb_setting, set_carb_setting
+from isaacsim.core.utils.prims import get_prim_type_name, is_prim_ancestral, is_prim_no_delete
+from isaacsim.core.utils.stage import (
     clear_stage,
     create_new_stage,
     create_new_stage_async,
@@ -330,11 +330,11 @@ class SimulationContext:
             * - Backend
               - Utils module
             * - ``"numpy"``
-              - ``isaacsim.core.api.utils.numpy``
+              - ``isaacsim.core.utils.numpy``
             * - ``"torch"``
-              - ``isaacsim.core.api.utils.torch``
+              - ``isaacsim.core.utils.torch``
             * - ``"warp"``
-              - ``isaacsim.core.api.utils.warp``
+              - ``isaacsim.core.utils.warp``
 
         Returns:
             str: current backend utils module
@@ -344,7 +344,7 @@ class SimulationContext:
         .. code-block:: python
 
             >>> simulation_context.backend_utils
-            <module 'isaacsim.core.api.utils.numpy'>
+            <module 'isaacsim.core.utils.numpy'>
         """
         return self._backend_utils
 

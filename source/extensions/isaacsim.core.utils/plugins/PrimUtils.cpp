@@ -18,9 +18,9 @@
 
 #include <PrimUtils.h>
 
-void isaacsim::core::api::findMatchingChildren(pxr::UsdPrim root,
-                                               const std::string& pattern,
-                                               std::vector<pxr::UsdPrim>& primsRet)
+void isaacsim::core::utils::findMatchingChildren(pxr::UsdPrim root,
+                                                 const std::string& pattern,
+                                                 std::vector<pxr::UsdPrim>& primsRet)
 {
     if (!root)
     {
@@ -39,9 +39,9 @@ void isaacsim::core::api::findMatchingChildren(pxr::UsdPrim root,
 }
 
 
-std::vector<std::string> isaacsim::core::api::findMatchingPrimPaths(const std::string& pattern,
-                                                                    long int stageId,
-                                                                    const std::string& api)
+std::vector<std::string> isaacsim::core::utils::findMatchingPrimPaths(const std::string& pattern,
+                                                                      long int stageId,
+                                                                      const std::string& api)
 {
     pxr::UsdStageRefPtr stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
     if (!stage)

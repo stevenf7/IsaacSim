@@ -29,7 +29,7 @@ ADDITIONAL_EXTENSIONS_PEOPLE = [
 
 import carb
 import omni
-from isaacsim.core.api.utils.extensions import enable_extension
+from isaacsim.core.utils.extensions import enable_extension
 
 for e in ADDITIONAL_EXTENSIONS_PEOPLE:
     enable_extension(e)

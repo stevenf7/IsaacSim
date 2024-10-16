@@ -13,16 +13,16 @@ import numpy as np
 import omni.kit.commands
 import omni.timeline
 from isaacsim.core.api.prims import XFormPrim
-from isaacsim.core.api.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
-from isaacsim.core.api.utils.prims import (
+from isaacsim.core.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
+from isaacsim.core.utils.prims import (
     delete_prim,
     get_articulation_root_api_prim_path,
     get_prim_at_path,
     get_prim_object_type,
     is_prim_path_valid,
 )
-from isaacsim.core.api.utils.stage import get_current_stage
-from isaacsim.core.api.utils.string import find_unique_string_name
+from isaacsim.core.utils.stage import get_current_stage
+from isaacsim.core.utils.string import find_unique_string_name
 from pxr import Gf, PhysxSchema, Sdf, Usd, UsdPhysics
 
 

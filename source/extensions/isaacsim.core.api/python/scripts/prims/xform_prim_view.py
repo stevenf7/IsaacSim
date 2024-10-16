@@ -10,8 +10,8 @@ import weakref
 from typing import List, Optional, Tuple, Union
 
 import carb
-import isaacsim.core.api.utils.fabric as fabric_utils
-import isaacsim.core.api.utils.interops as interops_utils
+import isaacsim.core.utils.fabric as fabric_utils
+import isaacsim.core.utils.interops as interops_utils
 import numpy as np
 import omni.kit.app
 import torch
@@ -22,16 +22,16 @@ from isaacsim.core.api.materials.omni_pbr import OmniPBR
 from isaacsim.core.api.materials.preview_surface import PreviewSurface
 from isaacsim.core.api.materials.visual_material import VisualMaterial
 from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
-from isaacsim.core.api.utils.prims import (
+from isaacsim.core.utils.prims import (
     find_matching_prim_paths,
     get_prim_at_path,
     get_prim_parent,
     is_prim_non_root_articulation_link,
     is_prim_path_valid,
 )
-from isaacsim.core.api.utils.stage import get_current_stage
-from isaacsim.core.api.utils.types import XFormPrimViewState
-from isaacsim.core.api.utils.xforms import get_local_pose, get_world_pose
+from isaacsim.core.utils.stage import get_current_stage
+from isaacsim.core.utils.types import XFormPrimViewState
+from isaacsim.core.utils.xforms import get_local_pose, get_world_pose
 from pxr import Gf, Usd, UsdGeom, UsdShade
 
 
@@ -88,7 +88,7 @@ class XFormPrimView(object):
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>> from isaacsim.core.cloner import GridCloner
         >>> from isaacsim.core.api.prims import XFormPrimView
         >>> from pxr import UsdGeom
@@ -151,7 +151,7 @@ class XFormPrimView(object):
             self._device = SimulationContext.instance().device
             self._backend_utils = SimulationContext.instance().backend_utils
         else:
-            import isaacsim.core.api.utils.numpy as np_utils
+            import isaacsim.core.utils.numpy as np_utils
 
             self._backend = "numpy"
             self._device = "cpu"
@@ -419,7 +419,7 @@ class XFormPrimView(object):
 
             >>> state = prims.get_default_state()
             >>> state
-            <isaacsim.core.api.utils.types.XFormPrimViewState object at 0x7f82f73e3070>
+            <isaacsim.core.utils.types.XFormPrimViewState object at 0x7f82f73e3070>
             >>> state.positions
             [[ 1.5  -0.75  0.  ]
              [ 1.5   0.75  0.  ]

@@ -12,8 +12,8 @@ from typing import Optional
 import carb
 import numpy as np
 from isaacsim.core.api.robots.robot import Robot
-from isaacsim.core.api.utils.prims import define_prim, get_prim_at_path
-from isaacsim.core.api.utils.types import ArticulationAction
+from isaacsim.core.utils.prims import define_prim, get_prim_at_path
+from isaacsim.core.utils.types import ArticulationAction
 
 
 class WheeledRobot(Robot):

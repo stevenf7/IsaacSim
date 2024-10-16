@@ -18,10 +18,10 @@ import omni.ui as ui
 import omni.usd
 from isaacsim.core.api.articulations import Articulation
 from isaacsim.core.api.prims import XFormPrim
-from isaacsim.core.api.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
-from isaacsim.core.api.utils.prims import get_prim_at_path, get_prim_object_type
-from isaacsim.core.api.utils.stage import update_stage_async
-from isaacsim.core.api.utils.types import ArticulationAction
+from isaacsim.core.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
+from isaacsim.core.utils.prims import get_prim_at_path, get_prim_object_type
+from isaacsim.core.utils.stage import update_stage_async
+from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.gui.components.element_wrappers import (
     Button,
     CheckBox,

@@ -10,16 +10,16 @@ import asyncio
 import sys
 
 import carb
-import isaacsim.core.api.utils.stage as stage_utils
+import isaacsim.core.utils.stage as stage_utils
 import numpy as np
 import omni.graph.core as og
 import omni.kit.commands
 import omni.kit.test
 import usdrt.Sdf
 from isaacsim.core.api import World
-from isaacsim.core.api.utils.physics import simulate_async
-from isaacsim.core.api.utils.prims import delete_prim, get_prim_at_path
-from isaacsim.core.api.utils.stage import add_reference_to_stage, create_new_stage_async
+from isaacsim.core.utils.physics import simulate_async
+from isaacsim.core.utils.prims import delete_prim, get_prim_at_path
+from isaacsim.core.utils.stage import add_reference_to_stage, create_new_stage_async
 from omni.isaac.nucleus import get_assets_root_path
 from pxr import Gf, UsdPhysics
 

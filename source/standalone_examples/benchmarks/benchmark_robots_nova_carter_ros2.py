@@ -52,9 +52,9 @@ import omni
 import omni.graph.core as og
 import omni.kit.test
 from isaacsim.core.api import PhysicsContext
-from isaacsim.core.api.utils.extensions import enable_extension
-from isaacsim.core.api.utils.stage import get_current_stage
-from isaacsim.core.api.utils.viewports import set_camera_view
+from isaacsim.core.utils.extensions import enable_extension
+from isaacsim.core.utils.stage import get_current_stage
+from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.robot.wheeled_robots.robots import WheeledRobot
 from pxr import Usd
 

@@ -16,7 +16,7 @@ import omni.graph.core as og
 import omni.kit.commands
 import omni.usd
 import usdrt.Sdf
-from isaacsim.core.api.utils.viewports import set_camera_view
+from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.robot.policy.examples.robots import Unitree
 from omni.kit.viewport.utility import get_active_viewport, get_viewport_from_window_name
 

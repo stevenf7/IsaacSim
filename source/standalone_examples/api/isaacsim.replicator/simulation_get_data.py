@@ -20,7 +20,7 @@ import omni
 import omni.replicator.core as rep
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import DynamicCuboid
-from isaacsim.core.api.utils.semantics import add_update_semantics
+from isaacsim.core.utils.semantics import add_update_semantics
 from PIL import Image
 
 

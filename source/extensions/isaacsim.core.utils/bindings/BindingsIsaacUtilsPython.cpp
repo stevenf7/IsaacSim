@@ -17,6 +17,8 @@
 #include <isaacsim/core/utils/Math.h>
 #include <isaacsim/core/utils/Transforms.h>
 
+#include <PrimUtils.h>
+
 CARB_BINDINGS("isaacsim.core.utils.python")
 
 namespace isaacsim
@@ -39,6 +41,8 @@ PYBIND11_MODULE(_isaac_utils, m)
     using namespace omni::isaac::dynamic_control;
     // We use carb data types, must import bindings for them
     auto carb_module = py::module::import("carb");
+
+    m.def("_find_matching_prim_paths", &findMatchingPrimPaths);
 
     auto math = m.def_submodule("math");
 

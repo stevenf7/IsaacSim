@@ -15,7 +15,7 @@ import omni.kit.test
 from isaacsim.core.api import World
 from isaacsim.core.api.articulations import Articulation
 from isaacsim.core.api.objects import DynamicCuboid
-from isaacsim.core.api.utils.stage import add_reference_to_stage, create_new_stage_async, update_stage_async
+from isaacsim.core.utils.stage import add_reference_to_stage, create_new_stage_async, update_stage_async
 from isaacsim.sensors.physics import IMUSensor
 from omni.isaac.nucleus import get_assets_root_path_async
 

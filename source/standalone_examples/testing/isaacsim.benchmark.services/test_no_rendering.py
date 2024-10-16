@@ -16,8 +16,8 @@ import sys
 import carb
 import omni.kit.test
 from isaacsim.core.api import PhysicsContext
-from isaacsim.core.api.utils.extensions import enable_extension
-from isaacsim.core.api.utils.stage import add_reference_to_stage
+from isaacsim.core.utils.extensions import enable_extension
+from isaacsim.core.utils.stage import add_reference_to_stage
 from omni.isaac.nucleus import get_assets_root_path
 from pxr import Gf, UsdGeom
 

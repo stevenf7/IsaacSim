@@ -12,7 +12,7 @@ from typing import List
 import carb
 import numpy as np
 from isaacsim.core.api.articulations import Articulation, ArticulationSubset
-from isaacsim.core.api.utils.types import ArticulationAction
+from isaacsim.core.utils.types import ArticulationAction
 
 from .path_planning_interface import PathPlanner
 

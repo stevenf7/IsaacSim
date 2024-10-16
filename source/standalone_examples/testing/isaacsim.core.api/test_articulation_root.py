@@ -15,7 +15,7 @@ simulation_app = SimulationApp({"headless": True})
 import numpy as np
 from isaacsim.core.api import World
 from isaacsim.core.api.articulations import Articulation
-from isaacsim.core.api.utils.stage import add_reference_to_stage
+from isaacsim.core.utils.stage import add_reference_to_stage
 
 asset_path = "data/orientation_bug.usd"
 

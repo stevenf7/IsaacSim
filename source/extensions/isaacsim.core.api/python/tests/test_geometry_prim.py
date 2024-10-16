@@ -16,7 +16,7 @@ from isaacsim.core.api.prims.geometry_prim import GeometryPrim
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add support for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
-from isaacsim.core.api.utils.prims import define_prim
+from isaacsim.core.utils.prims import define_prim
 from pxr import UsdPhysics
 
 

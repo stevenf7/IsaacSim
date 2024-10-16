@@ -28,8 +28,8 @@ import omni
 import omni.kit.viewport.utility
 import omni.replicator.core as rep
 from isaacsim.core.api import SimulationContext
-from isaacsim.core.api.utils import stage
-from isaacsim.core.api.utils.extensions import enable_extension
+from isaacsim.core.utils import stage
+from isaacsim.core.utils.extensions import enable_extension
 from omni.isaac.nucleus import get_assets_root_path
 from pxr import Gf, Sdf, UsdGeom, UsdPhysics
 
@@ -215,7 +215,7 @@ i = printinc(i)
 simulation_app.close()
 """
 # Snippet of similar code to use in script editor.
-from isaacsim.core.api.utils import stage
+from isaacsim.core.utils import stage
 from omni.isaac.nucleus import get_assets_root_path
 from pxr import UsdGeom, Gf
 
@@ -270,7 +270,7 @@ NUM_RP = 6
 
 async def create_new_stage_with_rp_async():
     omni.usd.get_context().new_stage()
-    from isaacsim.core.api.utils import stage
+    from isaacsim.core.utils import stage
     stage.add_reference_to_stage("omniverse://isaac-dev.ov.nvidia.com/Isaac/Environments/Simple_Warehouse/full_warehouse.usd", "/background")
     # None (`0`), TAA (`1`), FXAA (`2`), DLSS (`3`) and DLAA (`4`)
     # carb.settings.get_settings().set("/rtx/post/aa/op", 4)

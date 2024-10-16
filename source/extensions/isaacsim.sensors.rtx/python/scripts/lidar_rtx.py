@@ -19,10 +19,10 @@ import omni
 import omni.graph.core as og
 import omni.replicator.core as rep
 from isaacsim.core.api.prims.base_sensor import BaseSensor
-from isaacsim.core.api.utils.extensions import get_extension_path_from_name
-from isaacsim.core.api.utils.prims import get_prim_at_path, get_prim_type_name, is_prim_path_valid
-from isaacsim.core.api.utils.stage import get_stage_units
 from isaacsim.core.nodes.bindings import _isaacsim_core_nodes
+from isaacsim.core.utils.extensions import get_extension_path_from_name
+from isaacsim.core.utils.prims import get_prim_at_path, get_prim_type_name, is_prim_path_valid
+from isaacsim.core.utils.stage import get_stage_units
 from omni.isaac.IsaacSensorSchema import IsaacRtxLidarSensorAPI
 from omni.syntheticdata import sensors
 

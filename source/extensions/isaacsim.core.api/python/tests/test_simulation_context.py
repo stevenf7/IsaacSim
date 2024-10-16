@@ -9,7 +9,7 @@
 
 import omni.kit.test
 from isaacsim.core.api import SimulationContext, World
-from isaacsim.core.api.utils.stage import create_new_stage_async, get_stage_units, set_stage_units
+from isaacsim.core.utils.stage import create_new_stage_async, get_stage_units, set_stage_units
 
 
 class TestSimulationContext(omni.kit.test.AsyncTestCase):

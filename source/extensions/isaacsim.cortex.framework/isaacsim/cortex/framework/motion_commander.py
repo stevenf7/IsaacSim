@@ -29,7 +29,7 @@ import isaacsim.cortex.framework.math_util as math_util
 import numpy as np
 from isaacsim.core.api.prims.geometry_prim import GeometryPrim
 from isaacsim.core.api.prims.xform_prim import XFormPrim
-from isaacsim.core.api.utils.rotations import quat_to_rot_matrix
+from isaacsim.core.utils.rotations import quat_to_rot_matrix
 from isaacsim.cortex.framework.commander import Commander
 from isaacsim.cortex.framework.cortex_object import CortexObject
 from isaacsim.cortex.framework.smoothed_command import SmoothedCommand, TargetAdapter

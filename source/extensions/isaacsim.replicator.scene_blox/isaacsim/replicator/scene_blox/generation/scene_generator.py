@@ -25,9 +25,9 @@ import yaml
 from isaacsim.core.api import World
 from isaacsim.core.api.objects.ground_plane import GroundPlane
 from isaacsim.core.api.prims.xform_prim import XFormPrim
-from isaacsim.core.api.utils.rotations import euler_angles_to_quat
-from isaacsim.core.api.utils.semantics import add_update_semantics
-from isaacsim.core.api.utils.stage import add_reference_to_stage, save_stage
+from isaacsim.core.utils.rotations import euler_angles_to_quat
+from isaacsim.core.utils.semantics import add_update_semantics
+from isaacsim.core.utils.stage import add_reference_to_stage, save_stage
 from isaacsim.replicator.scene_blox.grid_utils.config import GlobalRNG
 from isaacsim.replicator.scene_blox.grid_utils.grid import Grid
 from omni.isaac.nucleus import get_assets_root_path

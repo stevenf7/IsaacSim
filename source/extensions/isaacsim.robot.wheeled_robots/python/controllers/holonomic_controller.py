@@ -25,9 +25,9 @@ import omni
 # Import packages.
 import osqp
 from isaacsim.core.api.controllers.base_controller import BaseController
-from isaacsim.core.api.utils.math import cross
-from isaacsim.core.api.utils.rotations import euler_angles_to_quat, quat_to_rot_matrix
-from isaacsim.core.api.utils.types import ArticulationAction
+from isaacsim.core.utils.math import cross
+from isaacsim.core.utils.rotations import euler_angles_to_quat, quat_to_rot_matrix
+from isaacsim.core.utils.types import ArticulationAction
 from numpy import linalg
 from pxr import Gf
 from scipy import sparse

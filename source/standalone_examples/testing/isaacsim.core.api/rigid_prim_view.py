@@ -22,8 +22,8 @@ from isaacsim.core.api.materials.physics_material import PhysicsMaterial
 from isaacsim.core.api.objects import DynamicCuboid
 from isaacsim.core.api.prims.geometry_prim_view import GeometryPrimView
 from isaacsim.core.api.prims.rigid_prim_view import RigidPrimView
-from isaacsim.core.api.utils.torch.rotations import euler_angles_to_quats
 from isaacsim.core.cloner import Cloner
+from isaacsim.core.utils.torch.rotations import euler_angles_to_quats
 from omni.isaac.nucleus import get_assets_root_path
 
 parser = argparse.ArgumentParser()

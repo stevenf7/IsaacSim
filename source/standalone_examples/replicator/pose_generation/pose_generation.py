@@ -89,8 +89,8 @@ import carb
 import omni.replicator.core as rep
 from isaacsim.core.api import World
 from isaacsim.core.api.prims.xform_prim import XFormPrim
-from isaacsim.core.api.utils.rotations import euler_angles_to_quat
-from isaacsim.core.api.utils.semantics import add_update_semantics
+from isaacsim.core.utils.rotations import euler_angles_to_quat
+from isaacsim.core.utils.semantics import add_update_semantics
 from isaacsim.replicator.scripts.writers import PoseWriter, YCBVideoWriter
 from omni.isaac.nucleus import get_assets_root_path
 
@@ -103,8 +103,8 @@ from flying_distractors.dynamic_object import DynamicObject
 from flying_distractors.dynamic_object_set import DynamicObjectSet
 from flying_distractors.dynamic_shape_set import DynamicShapeSet
 from flying_distractors.flying_distractors import FlyingDistractors
-from isaacsim.core.api.utils.random import get_random_world_pose_in_view
-from isaacsim.core.api.utils.transformations import get_world_pose_from_relative
+from isaacsim.core.utils.random import get_random_world_pose_in_view
+from isaacsim.core.utils.transformations import get_world_pose_from_relative
 from pose_tests.test_utils import clean_output_dir, run_pose_generation_test
 
 

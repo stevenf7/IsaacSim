@@ -13,7 +13,7 @@ import carb
 import lula
 import numpy as np
 from isaacsim.core.api import objects
-from isaacsim.core.api.utils.numpy.rotations import quats_to_rot_matrices
+from isaacsim.core.utils.numpy.rotations import quats_to_rot_matrices
 
 from ..path_planning_interface import PathPlanner
 from .interface_helper import LulaInterfaceHelper

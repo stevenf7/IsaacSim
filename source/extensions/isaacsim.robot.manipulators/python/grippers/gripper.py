@@ -10,7 +10,7 @@ from abc import abstractmethod
 
 import omni.kit.app
 from isaacsim.core.api.prims.rigid_prim import RigidPrim
-from isaacsim.core.api.utils.types import ArticulationAction
+from isaacsim.core.utils.types import ArticulationAction
 
 
 class Gripper(RigidPrim):

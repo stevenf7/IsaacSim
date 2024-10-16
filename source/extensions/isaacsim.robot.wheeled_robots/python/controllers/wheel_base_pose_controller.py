@@ -10,8 +10,8 @@ import math
 
 import numpy as np
 from isaacsim.core.api.controllers.base_controller import BaseController
-from isaacsim.core.api.utils.rotations import quat_to_euler_angles
-from isaacsim.core.api.utils.types import ArticulationAction
+from isaacsim.core.utils.rotations import quat_to_euler_angles
+from isaacsim.core.utils.types import ArticulationAction
 
 
 class WheelBasePoseController(BaseController):

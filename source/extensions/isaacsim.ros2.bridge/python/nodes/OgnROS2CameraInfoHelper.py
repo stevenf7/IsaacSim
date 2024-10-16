@@ -16,8 +16,8 @@ import numpy as np
 import omni
 import omni.replicator.core as rep
 import omni.syntheticdata
-from isaacsim.core.api.utils.render_product import get_camera_prim_path, get_resolution
 from isaacsim.core.nodes import BaseWriterNode
+from isaacsim.core.utils.render_product import get_camera_prim_path, get_resolution
 from isaacsim.ros2.bridge import compute_relative_pose, read_camera_info
 from pxr import Gf, Usd
 

@@ -38,9 +38,9 @@ TEST_NUM_APP_UPDATES = 60 * 10
 
 import carb
 import omni
-from isaacsim.core.api.utils.extensions import enable_extension
-from isaacsim.core.api.utils.rotations import euler_angles_to_quat
-from isaacsim.core.api.utils.stage import is_stage_loading
+from isaacsim.core.utils.extensions import enable_extension
+from isaacsim.core.utils.rotations import euler_angles_to_quat
+from isaacsim.core.utils.stage import is_stage_loading
 from isaacsim.sensors.camera import Camera
 from omni.kit.viewport.utility import get_active_viewport
 

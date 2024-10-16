@@ -14,8 +14,8 @@ from isaacsim.core.api.prims.rigid_prim import RigidPrim
 from isaacsim.core.api.prims.xform_prim import XFormPrim
 from isaacsim.core.api.scenes.scene import Scene
 from isaacsim.core.api.tasks import BaseTask
-from isaacsim.core.api.utils.rotations import euler_angles_to_quat
-from isaacsim.core.api.utils.stage import add_reference_to_stage, get_stage_units
+from isaacsim.core.utils.rotations import euler_angles_to_quat
+from isaacsim.core.utils.stage import add_reference_to_stage, get_stage_units
 from isaacsim.robot.manipulators.examples.universal_robots import UR10
 from omni.isaac.nucleus import get_assets_root_path
 

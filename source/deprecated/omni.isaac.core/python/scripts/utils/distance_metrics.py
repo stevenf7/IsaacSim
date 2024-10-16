@@ -9,8 +9,8 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.core.utils.distance_metrics has been deprecated in favor of isaacsim.core.api.utils.distance_metrics. Please update your code accordingly."
+    "omni.isaac.core.utils.distance_metrics has been deprecated in favor of isaacsim.core.utils.distance_metrics. Please update your code accordingly."
 )
 
 
-from isaacsim.core.api.utils.distance_metrics import *
+from isaacsim.core.utils.distance_metrics import *

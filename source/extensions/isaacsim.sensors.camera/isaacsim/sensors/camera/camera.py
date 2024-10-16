@@ -17,8 +17,9 @@ import omni.graph.core as og
 import omni.replicator.core as rep
 import omni.syntheticdata._syntheticdata as _syntheticdata
 from isaacsim.core.api.prims.base_sensor import BaseSensor
-from isaacsim.core.api.utils.carb import get_carb_setting
-from isaacsim.core.api.utils.prims import (
+from isaacsim.core.nodes.bindings import _isaacsim_core_nodes
+from isaacsim.core.utils.carb import get_carb_setting
+from isaacsim.core.utils.prims import (
     define_prim,
     get_all_matching_child_prims,
     get_prim_at_path,
@@ -26,8 +27,7 @@ from isaacsim.core.api.utils.prims import (
     get_prim_type_name,
     is_prim_path_valid,
 )
-from isaacsim.core.api.utils.render_product import get_resolution, set_camera_prim_path, set_resolution
-from isaacsim.core.nodes.bindings import _isaacsim_core_nodes
+from isaacsim.core.utils.render_product import get_resolution, set_camera_prim_path, set_resolution
 from omni.isaac.IsaacSensorSchema import IsaacRtxLidarSensorAPI
 from pxr import Sdf, Usd, UsdGeom, Vt
 

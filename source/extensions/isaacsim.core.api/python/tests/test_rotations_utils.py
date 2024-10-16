@@ -9,7 +9,7 @@
 
 import numpy as np
 import omni.kit.test
-from isaacsim.core.api.utils.rotations import (
+from isaacsim.core.utils.rotations import (
     euler_angles_to_quat,
     euler_to_rot_matrix,
     matrix_to_euler_angles,

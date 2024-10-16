@@ -11,7 +11,7 @@ from typing import Callable, Dict, List
 
 from isaacsim.core.api.scenes.scene import Scene
 from isaacsim.core.api.tasks.base_task import BaseTask
-from isaacsim.core.api.utils.types import DataFrame
+from isaacsim.core.utils.types import DataFrame
 
 
 class DataLogger:

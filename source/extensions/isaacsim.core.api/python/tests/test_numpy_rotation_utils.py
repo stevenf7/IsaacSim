@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import isaacsim.core.api.utils.numpy.rotations as rotation_conversions
+import isaacsim.core.utils.numpy.rotations as rotation_conversions
 import numpy as np
 import omni.kit.test
 

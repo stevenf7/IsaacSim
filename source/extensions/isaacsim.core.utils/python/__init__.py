@@ -7,5 +7,5 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+from . import commands  # populates commands list
 from . import _isaac_utils
-from .scripts.commands import *  # populates commands list

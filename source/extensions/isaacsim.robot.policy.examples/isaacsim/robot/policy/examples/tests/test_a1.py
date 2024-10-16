@@ -18,9 +18,9 @@ import omni.kit.commands
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 from isaacsim.core.api import World
-from isaacsim.core.api.utils.physics import simulate_async
-from isaacsim.core.api.utils.prims import get_prim_at_path
-from isaacsim.core.api.utils.stage import create_new_stage_async
+from isaacsim.core.utils.physics import simulate_async
+from isaacsim.core.utils.prims import get_prim_at_path
+from isaacsim.core.utils.stage import create_new_stage_async
 from isaacsim.robot.policy.examples.robots.unitree import Unitree
 from isaacsim.robot.policy.examples.utils.rot_utils import get_xyz_euler_from_quaternion
 from pxr import UsdPhysics

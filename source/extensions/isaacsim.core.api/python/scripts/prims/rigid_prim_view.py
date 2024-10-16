@@ -16,8 +16,8 @@ import torch
 import warp as wp
 from isaacsim.core.api.prims.rigid_contact_view import RigidContactView
 from isaacsim.core.api.prims.xform_prim_view import XFormPrimView
-from isaacsim.core.api.utils.prims import get_prim_parent
-from isaacsim.core.api.utils.types import DynamicsViewState, XFormPrimViewState
+from isaacsim.core.utils.prims import get_prim_parent
+from isaacsim.core.utils.types import DynamicsViewState, XFormPrimViewState
 from pxr import Gf, PhysxSchema, Usd, UsdGeom, UsdPhysics
 
 
@@ -94,7 +94,7 @@ class RigidPrimView(XFormPrimView):
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>> from isaacsim.core.cloner import GridCloner
         >>> from isaacsim.core.api.prims import RigidPrimView
         >>> from pxr import UsdGeom
@@ -1887,7 +1887,7 @@ class RigidPrimView(XFormPrimView):
         .. code-block:: python
 
             >>> state = prims.get_default_state()
-            <isaacsim.core.api.utils.types.DynamicsViewState object at 0x7f184e555480>
+            <isaacsim.core.utils.types.DynamicsViewState object at 0x7f184e555480>
             >>> state
             >>> state.positions
             [[ 1.4999989e+00 -7.4999851e-01 -1.5118626e-07]
@@ -1948,7 +1948,7 @@ class RigidPrimView(XFormPrimView):
 
             >>> # for the example the rigid bodies are in free fall
             >>> state = prims.get_default_state()
-            <isaacsim.core.api.utils.types.DynamicsViewState object at 0x7f182bd72590>
+            <isaacsim.core.utils.types.DynamicsViewState object at 0x7f182bd72590>
             >>> state
             >>> state.positions
             [[   1.5       -0.75    -207.76808]

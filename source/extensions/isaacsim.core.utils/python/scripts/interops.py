@@ -76,7 +76,7 @@ def warp2torch(array: "warp.array") -> "torch.Tensor":
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.interops as interops_utils
+        >>> import isaacsim.core.utils.interops as interops_utils
         >>> import warp as wp
         >>>
         >>> wp.init()  # doctest: +NO_CHECK
@@ -124,7 +124,7 @@ def warp2jax(array: "warp.array") -> "jax.Array":
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.interops as interops_utils
+        >>> import isaacsim.core.utils.interops as interops_utils
         >>> import warp as wp
         >>>
         >>> wp.init()  # doctest: +NO_CHECK
@@ -162,7 +162,7 @@ def warp2tensorflow(array: "warp.array") -> "tensorflow.Tensor":
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.interops as interops_utils
+        >>> import isaacsim.core.utils.interops as interops_utils
         >>> import warp as wp
         >>>
         >>> wp.init()  # doctest: +NO_CHECK
@@ -200,7 +200,7 @@ def warp2numpy(array: "warp.array") -> "numpy.ndarray":
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.interops as interops_utils
+        >>> import isaacsim.core.utils.interops as interops_utils
         >>> import warp as wp
         >>>
         >>> wp.init()  # doctest: +NO_CHECK
@@ -230,7 +230,7 @@ def torch2warp(tensor: "torch.Tensor") -> "warp.array":
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.interops as interops_utils
+        >>> import isaacsim.core.utils.interops as interops_utils
         >>> import torch
         >>>
         >>> torch_tensor = torch.zeros((100, 10), dtype=torch.float32, device=torch.device("cuda:0"))
@@ -278,7 +278,7 @@ def torch2jax(tensor: "torch.Tensor") -> "jax.Array":
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.interops as interops_utils
+        >>> import isaacsim.core.utils.interops as interops_utils
         >>> import torch
         >>>
         >>> torch_tensor = torch.zeros((100, 10), dtype=torch.float32, device=torch.device("cuda:0"))
@@ -315,7 +315,7 @@ def torch2tensorflow(tensor: "torch.Tensor") -> "tensorflow.Tensor":
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.interops as interops_utils
+        >>> import isaacsim.core.utils.interops as interops_utils
         >>> import torch
         >>>
         >>> torch_tensor = torch.zeros((100, 10), dtype=torch.float32, device=torch.device("cuda:0"))
@@ -352,7 +352,7 @@ def torch2numpy(tensor: "torch.Tensor") -> "numpy.ndarray":
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.interops as interops_utils
+        >>> import isaacsim.core.utils.interops as interops_utils
         >>> import torch
         >>>
         >>> torch_tensor = torch.zeros((100, 10), dtype=torch.float32, device=torch.device("cuda:0"))
@@ -381,7 +381,7 @@ def jax2warp(array: "jax.Array") -> "warp.array":
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.interops as interops_utils
+        >>> import isaacsim.core.utils.interops as interops_utils
         >>> import jax
         >>> import jax.numpy as jnp
         >>>
@@ -421,7 +421,7 @@ def jax2torch(array: "jax.Array") -> "torch.Tensor":
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.interops as interops_utils
+        >>> import isaacsim.core.utils.interops as interops_utils
         >>> import jax
         >>> import jax.numpy as jnp
         >>>
@@ -461,7 +461,7 @@ def jax2tensorflow(array: "jax.Array") -> "tensorflow.Tensor":
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.interops as interops_utils
+        >>> import isaacsim.core.utils.interops as interops_utils
         >>> import jax
         >>> import jax.numpy as jnp
         >>>
@@ -501,7 +501,7 @@ def jax2numpy(array: "jax.Array") -> "numpy.ndarray":
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.interops as interops_utils
+        >>> import isaacsim.core.utils.interops as interops_utils
         >>> import jax
         >>> import jax.numpy as jnp
         >>>
@@ -538,7 +538,7 @@ def tensorflow2warp(tensor: "tensorflow.Tensor") -> "warp.array":
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.interops as interops_utils
+        >>> import isaacsim.core.utils.interops as interops_utils
         >>> import tensorflow as tf  # doctest: +NO_CHECK
         >>>
         >>> with tf.device("/GPU:0"):
@@ -582,7 +582,7 @@ def tensorflow2torch(tensor: "tensorflow.Tensor") -> "torch.Tensor":
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.interops as interops_utils
+        >>> import isaacsim.core.utils.interops as interops_utils
         >>> import tensorflow as tf  # doctest: +NO_CHECK
         >>>
         >>> with tf.device("/GPU:0"):
@@ -626,7 +626,7 @@ def tensorflow2jax(tensor: "tensorflow.Tensor") -> "jax.Array":
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.interops as interops_utils
+        >>> import isaacsim.core.utils.interops as interops_utils
         >>> import tensorflow as tf  # doctest: +NO_CHECK
         >>>
         >>> with tf.device("/GPU:0"):
@@ -665,7 +665,7 @@ def tensorflow2numpy(tensor: "tensorflow.Tensor") -> "numpy.ndarray":
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.interops as interops_utils
+        >>> import isaacsim.core.utils.interops as interops_utils
         >>> import tensorflow as tf  # doctest: +NO_CHECK
         >>>
         >>> with tf.device("/GPU:0"):
@@ -713,7 +713,7 @@ def numpy2warp(array: "numpy.ndarray") -> "warp.array":
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.interops as interops_utils
+        >>> import isaacsim.core.utils.interops as interops_utils
         >>> import numpy as np
         >>>
         >>> numpy_array = np.zeros((100, 10), dtype=np.float32)
@@ -746,7 +746,7 @@ def numpy2torch(array: "numpy.ndarray") -> "torch.Tensor":
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.interops as interops_utils
+        >>> import isaacsim.core.utils.interops as interops_utils
         >>> import numpy as np
         >>>
         >>> numpy_array = np.zeros((100, 10), dtype=np.float32)
@@ -778,7 +778,7 @@ def numpy2jax(array: "numpy.ndarray") -> "jax.Array":
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.interops as interops_utils
+        >>> import isaacsim.core.utils.interops as interops_utils
         >>> import numpy as np
         >>>
         >>> numpy_array = np.zeros((100, 10), dtype=np.float32)
@@ -816,7 +816,7 @@ def numpy2tensorflow(array: "numpy.ndarray") -> "tensorflow.Tensor":
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.interops as interops_utils
+        >>> import isaacsim.core.utils.interops as interops_utils
         >>> import numpy as np
         >>>
         >>> numpy_array = np.zeros((100, 10), dtype=np.float32)

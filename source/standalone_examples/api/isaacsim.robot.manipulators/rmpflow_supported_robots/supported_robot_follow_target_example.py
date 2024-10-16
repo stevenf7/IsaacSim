@@ -18,8 +18,8 @@ import numpy as np
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import cuboid
 from isaacsim.core.api.robots import Robot
-from isaacsim.core.api.utils.prims import create_prim
-from isaacsim.core.api.utils.stage import add_reference_to_stage
+from isaacsim.core.utils.prims import create_prim
+from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.robot_motion.motion_generation.articulation_motion_policy import ArticulationMotionPolicy
 from isaacsim.robot_motion.motion_generation.interface_config_loader import (
     get_supported_robot_policy_pairs,

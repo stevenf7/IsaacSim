@@ -20,7 +20,7 @@ from typing import List, Optional
 import carb
 import numpy as np
 from isaacsim.core.api.articulations.articulation import Articulation
-from isaacsim.core.api.utils.types import ArticulationAction, JointsState
+from isaacsim.core.utils.types import ArticulationAction, JointsState
 
 
 def require_initialized(func):

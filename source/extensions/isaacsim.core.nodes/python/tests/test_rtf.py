@@ -13,10 +13,10 @@ import omni.graph.core as og
 import omni.graph.core.tests as ogts
 import omni.kit.test
 from isaacsim.core.api.robots import Robot
-from isaacsim.core.api.utils.physics import simulate_async
-from isaacsim.core.api.utils.stage import open_stage_async
-from isaacsim.core.api.utils.viewports import get_viewport_names
 from isaacsim.core.nodes.bindings import _isaacsim_core_nodes
+from isaacsim.core.utils.physics import simulate_async
+from isaacsim.core.utils.stage import open_stage_async
+from isaacsim.core.utils.viewports import get_viewport_names
 from omni.isaac.nucleus import get_assets_root_path
 
 

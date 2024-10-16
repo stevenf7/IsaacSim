@@ -8,7 +8,7 @@
 #
 
 import omni
-from isaacsim.core.api.utils.viewports import get_id_from_index, get_window_from_id
+from isaacsim.core.utils.viewports import get_id_from_index, get_window_from_id
 from omni.kit.viewport.utility import create_viewport_window, get_active_viewport_window
 
 

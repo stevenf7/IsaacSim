@@ -15,7 +15,7 @@ import carb
 import omni
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import VisualCuboid
-from isaacsim.core.api.utils.extensions import enable_extension
+from isaacsim.core.utils.extensions import enable_extension
 
 # enable ROS bridge extension
 enable_extension("isaacsim.ros1.bridge")

@@ -24,9 +24,9 @@ from isaacsim.core.api.articulations import Articulation
 from isaacsim.core.api.objects import DynamicCuboid
 from isaacsim.core.api.prims.rigid_prim import RigidPrim
 from isaacsim.core.api.prims.xform_prim import XFormPrim
-from isaacsim.core.api.utils.physics import simulate_async
-from isaacsim.core.api.utils.prims import get_prim_at_path
-from isaacsim.core.api.utils.rotations import quat_to_euler_angles
+from isaacsim.core.utils.physics import simulate_async
+from isaacsim.core.utils.prims import get_prim_at_path
+from isaacsim.core.utils.rotations import quat_to_euler_angles
 from isaacsim.sensors.physics import _sensor
 from omni.isaac.nucleus import get_assets_root_path_async
 from pxr import Gf, UsdGeom

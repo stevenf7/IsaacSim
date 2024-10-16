@@ -14,7 +14,7 @@ import argparse
 import sys
 
 import carb
-import isaacsim.core.api.utils.deformable_mesh_utils as deformableMeshUtils
+import isaacsim.core.utils.deformable_mesh_utils as deformableMeshUtils
 import numpy as np
 import torch
 from isaacsim.core.api import World

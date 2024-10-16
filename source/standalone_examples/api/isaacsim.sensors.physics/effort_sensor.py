@@ -19,8 +19,8 @@ import carb
 import numpy as np
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import DynamicCuboid
-from isaacsim.core.api.utils.prims import get_prim_at_path
-from isaacsim.core.api.utils.stage import add_reference_to_stage
+from isaacsim.core.utils.prims import get_prim_at_path
+from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.sensors.physics.scripts.effort_sensor import EffortSensor
 from omni.isaac.nucleus import get_assets_root_path
 from pxr import UsdPhysics

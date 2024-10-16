@@ -21,15 +21,15 @@ import omni.kit.test
 from isaacsim.core.api.objects.cuboid import VisualCuboid
 from isaacsim.core.api.prims import XFormPrim
 from isaacsim.core.api.robots.robot import Robot
-from isaacsim.core.api.utils.numpy.rotations import rot_matrices_to_quats, rotvecs_to_quats
-from isaacsim.core.api.utils.prims import delete_prim
-from isaacsim.core.api.utils.stage import (
+from isaacsim.core.api.world import World
+from isaacsim.core.utils.numpy.rotations import rot_matrices_to_quats, rotvecs_to_quats
+from isaacsim.core.utils.prims import delete_prim
+from isaacsim.core.utils.stage import (
     add_reference_to_stage,
     create_new_stage_async,
     get_current_stage,
     update_stage_async,
 )
-from isaacsim.core.api.world import World
 from isaacsim.robot_motion.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
 from isaacsim.robot_motion.motion_generation.articulation_trajectory import ArticulationTrajectory
 from isaacsim.robot_motion.motion_generation.lula.kinematics import LulaKinematicsSolver

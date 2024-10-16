@@ -13,9 +13,9 @@ import omni.ui as ui
 from isaacsim.core.api.articulations import Articulation
 from isaacsim.core.api.objects.cuboid import FixedCuboid
 from isaacsim.core.api.prims import XFormPrim
-from isaacsim.core.api.utils.prims import is_prim_path_valid
-from isaacsim.core.api.utils.stage import add_reference_to_stage, create_new_stage, get_current_stage
 from isaacsim.core.api.world import World
+from isaacsim.core.utils.prims import is_prim_path_valid
+from isaacsim.core.utils.stage import add_reference_to_stage, create_new_stage, get_current_stage
 from isaacsim.gui.components.element_wrappers import CollapsableFrame, StateButton
 from isaacsim.gui.components.element_wrappers.core_connectors import LoadButton, ResetButton
 from isaacsim.gui.components.ui_utils import get_style

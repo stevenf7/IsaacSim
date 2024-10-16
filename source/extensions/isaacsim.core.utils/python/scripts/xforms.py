@@ -9,7 +9,7 @@
 
 import numpy as np
 import usdrt
-from isaacsim.core.api.utils.prims import (
+from isaacsim.core.utils.prims import (
     get_prim_at_path,
     get_prim_attribute_names,
     get_prim_attribute_value,

@@ -9,7 +9,7 @@
 import os
 from typing import Optional
 
-from isaacsim.core.api.utils.extensions import get_extension_path_from_name
+from isaacsim.core.utils.extensions import get_extension_path_from_name
 from isaacsim.robot_motion.motion_generation.kinematics import InverseKinematicsSolver as BaseInverseKinematicsSolver
 
 

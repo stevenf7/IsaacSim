@@ -12,7 +12,7 @@ import carb
 import omni
 import omni.usd
 from isaacsim.core.api import World
-from isaacsim.core.api.utils.prims import get_prim_at_path
+from isaacsim.core.utils.prims import get_prim_at_path
 from omni.isaac.nucleus import get_assets_root_path
 from pxr import UsdGeom
 

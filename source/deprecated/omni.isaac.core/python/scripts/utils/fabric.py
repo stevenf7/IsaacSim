@@ -10,8 +10,8 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.core.utils.fabric has been deprecated in favor of isaacsim.core.api.utils.fabric. Please update your code accordingly."
+    "omni.isaac.core.utils.fabric has been deprecated in favor of isaacsim.core.utils.fabric. Please update your code accordingly."
 )
 
 
-from isaacsim.core.api.utils.fabric import *
+from isaacsim.core.utils.fabric import *

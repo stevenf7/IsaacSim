@@ -59,7 +59,7 @@ import numpy as np
 import omni.physics.tensors
 from isaacsim.core.api.articulations import Articulation, ArticulationSubset
 from isaacsim.core.api.objects import VisualCuboid
-from isaacsim.core.api.utils.stage import add_reference_to_stage
+from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.cortex.framework.commander import Commander
 from isaacsim.cortex.framework.cortex_utils import get_assets_root_path_or_die
 from isaacsim.cortex.framework.cortex_world import CommandableArticulation, CortexWorld

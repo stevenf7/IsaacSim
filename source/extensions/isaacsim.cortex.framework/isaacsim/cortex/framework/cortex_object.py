@@ -13,7 +13,7 @@ from typing import Optional, Sequence, Tuple
 import isaacsim.cortex.framework.math_util as math_util
 import numpy as np
 from isaacsim.core.api.prims.xform_prim import XFormPrim
-from isaacsim.core.api.utils.rotations import gf_quat_to_np_array
+from isaacsim.core.utils.rotations import gf_quat_to_np_array
 from pxr import Gf, Usd
 
 

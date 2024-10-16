@@ -9,8 +9,8 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.core.utils.semantics has been deprecated in favor of isaacsim.core.api.utils.semantics. Please update your code accordingly."
+    "omni.isaac.core.utils.semantics has been deprecated in favor of isaacsim.core.utils.semantics. Please update your code accordingly."
 )
 
 
-from isaacsim.core.api.utils.semantics import *
+from isaacsim.core.utils.semantics import *

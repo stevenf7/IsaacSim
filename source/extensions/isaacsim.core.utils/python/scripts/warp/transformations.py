@@ -11,8 +11,8 @@ from typing import Any
 import numpy as np
 import torch
 import warp as wp
-from isaacsim.core.api.utils.torch.rotations import gf_quat_to_tensor as torch_gf_quat_to_tensor
-from isaacsim.core.api.utils.torch.transformations import tf_matrices_from_poses as torch_tf_matrices_from_poses
+from isaacsim.core.utils.torch.rotations import gf_quat_to_tensor as torch_gf_quat_to_tensor
+from isaacsim.core.utils.torch.transformations import tf_matrices_from_poses as torch_tf_matrices_from_poses
 from pxr import Gf
 from scipy.spatial.transform import Rotation
 

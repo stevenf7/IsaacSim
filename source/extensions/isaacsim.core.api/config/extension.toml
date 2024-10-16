@@ -26,6 +26,7 @@ writeTarget.kit = true
 "omni.kit.usd.layers" = {}
 "omni.kit.material.library" = {optional = true} # OmniGlass
 "isaacsim.core.version" = {}
+"isaacsim.core.utils" = {}
 "omni.warp.core" = {}
 "omni.physx.stageupdate" = {}
 "omni.usd.schema.semantics" = {}

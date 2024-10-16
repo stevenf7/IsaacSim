@@ -12,7 +12,7 @@ import os
 from typing import Dict, List
 
 import numpy as np
-from isaacsim.core.api.utils.mesh import get_mesh_vertices_relative_to
+from isaacsim.core.utils.mesh import get_mesh_vertices_relative_to
 from omni.replicator.core import AnnotatorRegistry, BackendDispatch, Writer, WriterRegistry
 from omni.syntheticdata import SyntheticData
 from PIL import Image

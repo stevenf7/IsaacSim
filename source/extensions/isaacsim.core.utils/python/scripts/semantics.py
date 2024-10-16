@@ -8,7 +8,7 @@
 #
 from typing import Dict, List, Tuple
 
-import isaacsim.core.api.utils.prims as prim_utils
+import isaacsim.core.utils.prims as prim_utils
 import omni.usd
 import Semantics
 from pxr import Usd, UsdGeom

@@ -9,8 +9,8 @@
 import numpy as np
 import omni.graph.core as og
 from isaacsim.core.api.articulations.articulation import Articulation
-from isaacsim.core.api.utils.types import ArticulationAction
 from isaacsim.core.nodes import BaseResetNode
+from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGripper
 from isaacsim.robot.manipulators.ogn.OgnIsaacGripperControllerDatabase import OgnIsaacGripperControllerDatabase
 

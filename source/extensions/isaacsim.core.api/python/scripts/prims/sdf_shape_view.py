@@ -15,7 +15,7 @@ import torch
 import warp as wp
 from isaacsim.core.api.prims.geometry_prim_view import GeometryPrimView
 from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
-from isaacsim.core.api.utils.prims import find_matching_prim_paths, get_prim_at_path
+from isaacsim.core.utils.prims import find_matching_prim_paths, get_prim_at_path
 from pxr import PhysxSchema, Usd, UsdGeom, UsdPhysics
 
 

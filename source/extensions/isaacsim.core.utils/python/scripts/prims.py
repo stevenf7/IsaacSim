@@ -16,18 +16,17 @@ import numpy as np
 import omni.kit
 import omni.usd
 import usdrt
-from isaacsim.core.api.utils.semantics import add_update_semantics
+from isaacsim.core.utils._isaac_utils import _find_matching_prim_paths
+from isaacsim.core.utils.semantics import add_update_semantics
 
 # isaacsim
-from isaacsim.core.api.utils.stage import add_reference_to_stage, get_current_stage
-from isaacsim.core.api.utils.string import find_root_prim_path_from_regex
-from isaacsim.core.api.utils.types import SDF_type_to_Gf
+from isaacsim.core.utils.stage import add_reference_to_stage, get_current_stage
+from isaacsim.core.utils.string import find_root_prim_path_from_regex
+from isaacsim.core.utils.types import SDF_type_to_Gf
 from omni.usd.commands import DeletePrimsCommand, MovePrimCommand
 
 # omniverse
 from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics
-
-from .._core import _find_matching_prim_paths
 
 
 def get_prim_at_path(prim_path: str, fabric: bool = False) -> typing.Union[Usd.Prim, usdrt.Usd._Usd.Prim]:
@@ -44,7 +43,7 @@ def get_prim_at_path(prim_path: str, fabric: bool = False) -> typing.Union[Usd.P
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> prims_utils.get_prim_at_path("/World/Cube")
         Usd.Prim(</World/Cube>)
@@ -66,7 +65,7 @@ def is_prim_path_valid(prim_path: str, fabric: bool = False) -> bool:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> # given the stage: /World/Cube
         >>> prims_utils.is_prim_path_valid("/World/Cube")
@@ -96,7 +95,7 @@ def get_prim_attribute_names(prim_path: str, fabric: bool = False) -> typing.Lis
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> prims_utils.get_prim_attribute_names("/World/Cube")
         ['doubleSided', 'extent', 'orientation', 'primvars:displayColor', 'primvars:displayOpacity',
@@ -123,7 +122,7 @@ def get_prim_attribute_value(prim_path: str, attribute_name: str, fabric: bool =
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> prims_utils.get_prim_attribute_value("/World/Cube", attribute_name="size")
         1.0
@@ -152,7 +151,7 @@ def set_prim_attribute_value(prim_path: str, attribute_name: str, value: typing.
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> # given the stage: /World/Cube. Set the Cube size to 5.0
         >>> prims_utils.set_prim_attribute_value("/World/Cube", attribute_name="size", value=5.0)
@@ -197,7 +196,7 @@ def define_prim(prim_path: str, prim_type: str = "Xform", fabric: bool = False) 
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> prims_utils.define_prim("/World/Shapes", prim_type="Xform")
         Usd.Prim(</World/Shapes>)
@@ -224,7 +223,7 @@ def get_prim_type_name(prim_path: str, fabric: bool = False) -> str:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> prims_utils.get_prim_type_name("/World/Cube")
         Cube
@@ -249,7 +248,7 @@ def move_prim(path_from: str, path_to: str) -> None:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> # given the stage: /World/Cube. Move the prim Cube outside the prim World
         >>> prims_utils.move_prim("/World/Cube", "/Cube")
@@ -274,7 +273,7 @@ def get_first_matching_child_prim(
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> # given the stage: /World/Cube, /World/Cube_01, /World/Cube_02.
         >>> # Get the first child prim of type Cube
@@ -309,7 +308,7 @@ def get_first_matching_parent_prim(prim_path: str, predicate: typing.Callable[[s
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> # given the stage: /World/Cube. Get the first parent of Cube prim of type Xform
         >>> predicate = lambda path: prims_utils.get_prim_type_name(path) == "Xform"
@@ -342,7 +341,7 @@ def get_all_matching_child_prims(
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> # get all hidden prims
         >>> predicate = lambda path: prims_utils.is_prim_hidden_in_stage(path)  # True if the prim at path is hidden
@@ -381,7 +380,7 @@ def find_matching_prim_paths(prim_path_regex: str, prim_type: typing.Optional[st
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> # given the stage: /World/env/Cube, /World/env_01/Cube, /World/env_02/Cube
         >>> # get only the prim Cube paths from env_01 and env_02
@@ -407,7 +406,7 @@ def get_prim_children(prim: Usd.Prim) -> typing.List[Usd.Prim]:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> # given the stage: /World/Cube, /World/Cube_01, /World/Cube_02.
         >>> # Get all prims under the prim World
@@ -431,7 +430,7 @@ def get_prim_parent(prim: Usd.Prim) -> Usd.Prim:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> # given the stage: /World/Cube. Get the prim Cube's parent
         >>> prim = prims_utils.get_prim_at_path("/World/Cube")
@@ -455,7 +454,7 @@ def query_parent_path(prim_path: str, predicate: typing.Callable[[str], bool]) -
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> # given the stage: /World/Cube. Check is the prim Cube has an ancestor of type Xform
         >>> predicate = lambda path: prims_utils.get_prim_type_name(path) == "Xform"
@@ -483,7 +482,7 @@ def is_prim_ancestral(prim_path: str) -> bool:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> # /World/Cube is a prim created
         >>> prims_utils.is_prim_ancestral("/World/Cube")
@@ -510,7 +509,7 @@ def is_prim_root_path(prim_path: str) -> bool:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> # given the stage: /World/Cube
         >>> prims_utils.is_prim_root_path("/")
@@ -545,7 +544,7 @@ def is_prim_no_delete(prim_path: str) -> bool:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> # prim without the 'no_delete' metadata
         >>> prims_utils.is_prim_no_delete("/World/Cube")
@@ -575,7 +574,7 @@ def is_prim_hidden_in_stage(prim_path: str) -> bool:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> # prim without the 'hide_in_stage_window' metadata
         >>> prims_utils.is_prim_hidden_in_stage("/World/Cube")
@@ -600,7 +599,7 @@ def get_prim_path(prim: Usd.Prim) -> str:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> prim = prims_utils.get_prim_at_path("/World/Cube")  # Usd.Prim(</World/Cube>)
         >>> prims_utils.get_prim_path(prim)
@@ -627,7 +626,7 @@ def set_prim_visibility(prim: Usd.Prim, visible: bool) -> None:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> # given the stage: /World/Cube. Make the Cube not visible
         >>> prim = prims_utils.get_prim_at_path("/World/Cube")
@@ -679,7 +678,7 @@ def create_prim(
     .. code-block:: python
 
         >>> import numpy as np
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> # create a cube (/World/Cube) of size 2 centered at (1.0, 0.5, 0.0)
         >>> prims_utils.create_prim(
@@ -692,7 +691,7 @@ def create_prim(
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> # load an USD file (franka.usd) to the stage under the path /World/panda
         >>> prims_utils.create_prim(
@@ -735,7 +734,7 @@ def delete_prim(prim_path: str) -> None:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> prims_utils.delete_prim("/World/Cube")
     """
@@ -756,7 +755,7 @@ def get_prim_property(prim_path: str, property_name: str) -> typing.Any:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> prims_utils.get_prim_property("/World/Cube", property_name="size")
         1.0
@@ -777,7 +776,7 @@ def set_prim_property(prim_path: str, property_name: str, property_value: typing
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> # given the stage: /World/Cube. Set the Cube size to 5.0
         >>> prims_utils.set_prim_property("/World/Cube", property_name="size", property_value=5.0)
@@ -806,7 +805,7 @@ def get_prim_object_type(prim_path: str) -> typing.Union[str, None]:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> prims_utils.get_prim_object_type("/World/Cube")
         xform
@@ -842,7 +841,7 @@ def is_prim_non_root_articulation_link(prim_path: str) -> bool:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> # /World/panda contains the prim tree for the Franka panda robot.
         >>> # The prim on this path has the Physics Articulation Root property applied
@@ -893,7 +892,7 @@ def set_prim_hide_in_stage_window(prim: Usd.Prim, hide: bool):
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> prim = prims_utils.get_prim_at_path("/World/Cube")
         >>> prims_utils.set_prim_hide_in_stage_window(prim, True)
@@ -917,7 +916,7 @@ def set_prim_no_delete(prim: Usd.Prim, no_delete: bool):
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> prim = prims_utils.get_prim_at_path("/World/Cube")
         >>> prims_utils.set_prim_no_delete(prim, True)
@@ -937,7 +936,7 @@ def set_targets(prim: Usd.Prim, attribute: str, target_prim_paths: list):
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> # given the stage: /World/Cube, /World/Cube_01, /World/Cube_02.
         >>> # Set each prim Cube to the relationship targetPrim of the prim World
@@ -970,7 +969,7 @@ def get_articulation_root_api_prim_path(prim_path):
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.prims as prims_utils
+        >>> import isaacsim.core.utils.prims as prims_utils
         >>>
         >>> # given the stage: /World/env/Ant, /World/env_01/Ant, /World/env_02/Ant
         >>> # search specifying the prim with the Articulation Root API

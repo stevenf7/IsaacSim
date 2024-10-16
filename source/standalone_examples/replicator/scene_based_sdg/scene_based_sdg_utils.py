@@ -15,10 +15,10 @@ import omni.replicator.core as rep
 import omni.usd
 from isaacsim.core.api import World
 from isaacsim.core.api.prims.rigid_prim import RigidPrim
-from isaacsim.core.api.utils import prims
-from isaacsim.core.api.utils.bounds import compute_combined_aabb, compute_obb, create_bbox_cache, get_obb_corners
-from isaacsim.core.api.utils.rotations import euler_angles_to_quat, quat_to_euler_angles
-from isaacsim.core.api.utils.semantics import remove_all_semantics
+from isaacsim.core.utils import prims
+from isaacsim.core.utils.bounds import compute_combined_aabb, compute_obb, create_bbox_cache, get_obb_corners
+from isaacsim.core.utils.rotations import euler_angles_to_quat, quat_to_euler_angles
+from isaacsim.core.utils.semantics import remove_all_semantics
 from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics
 
 

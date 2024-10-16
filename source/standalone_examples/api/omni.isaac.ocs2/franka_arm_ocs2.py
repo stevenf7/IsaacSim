@@ -27,12 +27,12 @@ simulation_app = SimulationApp({"headless": False})
 
 import numpy as np
 from isaacsim.core.api.objects.sphere import VisualSphere
-from isaacsim.core.api.utils.extensions import enable_extension
-from isaacsim.core.api.utils.types import ArticulationAction
-from isaacsim.core.api.utils.viewports import set_camera_view
 
 # isaac-core
 from isaacsim.core.api.world import World
+from isaacsim.core.utils.extensions import enable_extension
+from isaacsim.core.utils.types import ArticulationAction
+from isaacsim.core.utils.viewports import set_camera_view
 
 # isaac-franka
 from isaacsim.robot.manipulators.examples.franka import Franka

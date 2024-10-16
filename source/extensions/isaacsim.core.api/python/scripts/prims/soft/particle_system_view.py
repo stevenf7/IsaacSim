@@ -17,7 +17,7 @@ import omni.kit.app
 import torch
 from isaacsim.core.api.materials.particle_material import ParticleMaterial
 from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
-from isaacsim.core.api.utils.prims import find_matching_prim_paths, get_prim_at_path, is_prim_path_valid
+from isaacsim.core.utils.prims import find_matching_prim_paths, get_prim_at_path, is_prim_path_valid
 
 # omniverse
 from pxr import PhysxSchema, Usd, UsdShade
@@ -100,7 +100,7 @@ class ParticleSystemView:
             self._backend = SimulationContext.instance().backend
             self._backend_utils = SimulationContext.instance().backend_utils
         else:
-            import isaacsim.core.api.utils.numpy as np_utils
+            import isaacsim.core.utils.numpy as np_utils
 
             self._backend = "numpy"
             self._backend_utils = np_utils

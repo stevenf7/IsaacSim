@@ -10,8 +10,8 @@
 import numpy as np
 
 # isaacsim
-from isaacsim.core.api.utils.stage import get_stage_units
-from isaacsim.core.api.utils.transformations import get_relative_transform
+from isaacsim.core.utils.stage import get_stage_units
+from isaacsim.core.utils.transformations import get_relative_transform
 
 # omniverse
 from pxr import Usd, UsdGeom
@@ -31,8 +31,8 @@ def get_mesh_vertices_relative_to(mesh_prim: UsdGeom.Mesh, coord_prim: Usd.Prim)
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.mesh as mesh_utils
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.mesh as mesh_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>>
         >>> # 1 stage unit length cube centered at (0.0, 0.0, 0.0)
         >>> mesh_prim = stage_utils.get_current_stage().GetPrimAtPath("/World/Cube")

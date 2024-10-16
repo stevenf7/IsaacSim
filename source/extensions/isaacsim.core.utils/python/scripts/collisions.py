@@ -14,7 +14,7 @@ import numpy as np
 import omni.physx
 
 # isaacsim
-from isaacsim.core.api.utils.stage import get_current_stage
+from isaacsim.core.utils.stage import get_current_stage
 
 # omniverse
 from pxr import Gf, UsdGeom

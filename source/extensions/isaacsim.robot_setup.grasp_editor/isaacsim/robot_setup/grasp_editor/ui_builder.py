@@ -17,10 +17,10 @@ import omni.timeline
 import omni.ui as ui
 from isaacsim.core.api.articulations import Articulation, ArticulationSubset
 from isaacsim.core.api.prims import RigidPrimView, XFormPrim
-from isaacsim.core.api.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
-from isaacsim.core.api.utils.stage import set_stage_units, update_stage_async
-from isaacsim.core.api.utils.types import ArticulationAction
-from isaacsim.core.api.utils.xforms import get_world_pose
+from isaacsim.core.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
+from isaacsim.core.utils.stage import set_stage_units, update_stage_async
+from isaacsim.core.utils.types import ArticulationAction
+from isaacsim.core.utils.xforms import get_world_pose
 from isaacsim.gui.components.element_wrappers import (
     Button,
     CheckBox,

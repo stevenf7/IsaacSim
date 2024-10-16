@@ -10,8 +10,8 @@
 import numpy as np
 import omni
 import omni.graph.core as og
-from isaacsim.core.api.utils.rotations import quat_to_euler_angles
 from isaacsim.core.nodes import BaseResetNode
+from isaacsim.core.utils.rotations import quat_to_euler_angles
 from isaacsim.robot.wheeled_robots.controllers.quintic_path_planner import quintic_polynomials_planner
 from isaacsim.robot.wheeled_robots.controllers.stanley_control import normalize_angle
 from isaacsim.robot.wheeled_robots.ogn.OgnQuinticPathPlannerDatabase import OgnQuinticPathPlannerDatabase

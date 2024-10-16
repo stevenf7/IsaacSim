@@ -20,7 +20,7 @@ import omni.kit.test
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import DynamicCuboid
 from isaacsim.core.api.objects.ground_plane import GroundPlane
-from isaacsim.core.api.utils.prims import get_prim_at_path
+from isaacsim.core.utils.prims import get_prim_at_path
 from isaacsim.sensors.physics.scripts.effort_sensor import EffortSensor, EsSensorReading
 from omni.isaac.nucleus import get_assets_root_path_async
 from pxr import UsdPhysics

@@ -12,9 +12,9 @@ import carb
 import lula
 import numpy as np
 from isaacsim.core.api import objects
-from isaacsim.core.api.utils.prims import delete_prim, is_prim_path_valid
-from isaacsim.core.api.utils.stage import get_stage_units
-from isaacsim.core.api.utils.string import find_unique_string_name
+from isaacsim.core.utils.prims import delete_prim, is_prim_path_valid
+from isaacsim.core.utils.stage import get_stage_units
+from isaacsim.core.utils.string import find_unique_string_name
 from isaacsim.robot_motion.motion_generation.world_interface import WorldInterface
 
 from .utils import get_pose3, get_prim_pose_in_meters_rel_robot_base

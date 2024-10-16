@@ -9,8 +9,8 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.core.utils.types has been deprecated in favor of isaacsim.core.api.utils.types. Please update your code accordingly."
+    "omni.isaac.core.utils.types has been deprecated in favor of isaacsim.core.utils.types. Please update your code accordingly."
 )
 
 
-from isaacsim.core.api.utils.types import *
+from isaacsim.core.utils.types import *

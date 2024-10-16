@@ -19,14 +19,14 @@ import torch
 import warp as wp
 from isaacsim.core.api import SimulationContext
 from isaacsim.core.api.prims.xform_prim_view import XFormPrimView
-from isaacsim.core.api.utils.prims import (
+from isaacsim.core.utils.prims import (
     get_articulation_root_api_prim_path,
     get_prim_at_path,
     get_prim_parent,
     get_prim_property,
     set_prim_property,
 )
-from isaacsim.core.api.utils.types import ArticulationActions, JointsState, XFormPrimViewState
+from isaacsim.core.utils.types import ArticulationActions, JointsState, XFormPrimViewState
 from pxr import PhysxSchema, Usd, UsdGeom, UsdPhysics
 
 
@@ -79,7 +79,7 @@ class ArticulationView(XFormPrimView):
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>> from isaacsim.core.cloner import GridCloner
         >>> from isaacsim.core.api.articulations import ArticulationView
         >>> from pxr import UsdGeom
@@ -1578,7 +1578,7 @@ class ArticulationView(XFormPrimView):
 
         .. code-block:: python
 
-            >>> from isaacsim.core.api.utils.types import ArticulationActions
+            >>> from isaacsim.core.utils.types import ArticulationActions
             >>>
             >>> # move all the articulation joints to the indicated position.
             >>> # Since there are 5 envs, the joint positions are repeated 5 times
@@ -1661,7 +1661,7 @@ class ArticulationView(XFormPrimView):
             >>> # Returned shape is (5, 9) for the example: 5 envs, 9 DOFs
             >>> actions = prims.get_applied_actions()
             >>> actions
-            <isaacsim.core.api.utils.types.ArticulationActions object at 0x7f28af31d870>
+            <isaacsim.core.utils.types.ArticulationActions object at 0x7f28af31d870>
             >>> actions.joint_positions
             [[ 0.   -1.    0.   -2.2   0.    2.4   0.8   0.04  0.04]
              [ 0.   -1.    0.   -2.2   0.    2.4   0.8   0.04  0.04]
@@ -2365,7 +2365,7 @@ class ArticulationView(XFormPrimView):
             >>> # returned shape is (5, 9) for the example: 5 envs, 9 DOFs
             >>> states = prims.get_joints_default_state()
             >>> states
-            <isaacsim.core.api.utils.types.JointsState object at 0x7fc2c174fd90>
+            <isaacsim.core.utils.types.JointsState object at 0x7fc2c174fd90>
             >>> states.positions
             [[ 0.   -1.    0.   -2.2   0.    2.4   0.8   0.04  0.04]
              [ 0.   -1.    0.   -2.2   0.    2.4   0.8   0.04  0.04]
@@ -2400,7 +2400,7 @@ class ArticulationView(XFormPrimView):
             >>> # returned shape is (5, 9) for the example: 5 envs, 9 DOFs
             >>> states = prims.get_joints_state()
             >>> states
-            <isaacsim.core.api.utils.types.JointsState object at 0x7fc1a23a82e0>
+            <isaacsim.core.utils.types.JointsState object at 0x7fc1a23a82e0>
             >>> states.positions
             [[ 1.1999921e-02 -5.6962633e-01  1.3219320e-08 -2.8105433e+00  6.8276213e-06
                3.0301569e+00  7.3234755e-01  3.9912373e-02  3.9999999e-02]
@@ -2905,7 +2905,7 @@ class ArticulationView(XFormPrimView):
                             else:
                                 drive.CreateStiffnessAttr(
                                     1.0
-                                    / isaacsim.core.api.utils.numpy.rad2deg(
+                                    / isaacsim.core.utils.numpy.rad2deg(
                                         float(1.0 / kps[articulation_read_idx][dof_read_idx])
                                     )
                                 )
@@ -2915,7 +2915,7 @@ class ArticulationView(XFormPrimView):
                             else:
                                 drive.GetStiffnessAttr().Set(
                                     1.0
-                                    / isaacsim.core.api.utils.numpy.rad2deg(
+                                    / isaacsim.core.utils.numpy.rad2deg(
                                         float(1.0 / kps[articulation_read_idx][dof_read_idx])
                                     )
                                 )
@@ -2926,7 +2926,7 @@ class ArticulationView(XFormPrimView):
                             else:
                                 drive.CreateDampingAttr(
                                     1.0
-                                    / isaacsim.core.api.utils.numpy.rad2deg(
+                                    / isaacsim.core.utils.numpy.rad2deg(
                                         float(1.0 / kds[articulation_read_idx][dof_read_idx])
                                     )
                                 )
@@ -2936,7 +2936,7 @@ class ArticulationView(XFormPrimView):
                             else:
                                 drive.GetDampingAttr().Set(
                                     1.0
-                                    / isaacsim.core.api.utils.numpy.rad2deg(
+                                    / isaacsim.core.utils.numpy.rad2deg(
                                         float(1.0 / kds[articulation_read_idx][dof_read_idx])
                                     )
                                 )
@@ -3042,13 +3042,13 @@ class ArticulationView(XFormPrimView):
                     if drive.GetStiffnessAttr().Get() == 0.0 or drive_type == "linear":
                         kps[articulation_write_idx][dof_write_idx] = drive.GetStiffnessAttr().Get()
                     else:
-                        kps[articulation_write_idx][dof_write_idx] = 1.0 / isaacsim.core.api.utils.numpy.deg2rad(
+                        kps[articulation_write_idx][dof_write_idx] = 1.0 / isaacsim.core.utils.numpy.deg2rad(
                             float(1.0 / drive.GetStiffnessAttr().Get())
                         )
                     if drive.GetDampingAttr().Get() == 0.0 or drive_type == "linear":
                         kds[articulation_write_idx][dof_write_idx] = drive.GetDampingAttr().Get()
                     else:
-                        kds[articulation_write_idx][dof_write_idx] = 1.0 / isaacsim.core.api.utils.numpy.deg2rad(
+                        kds[articulation_write_idx][dof_write_idx] = 1.0 / isaacsim.core.utils.numpy.deg2rad(
                             float(1.0 / drive.GetDampingAttr().Get())
                         )
                     dof_write_idx += 1

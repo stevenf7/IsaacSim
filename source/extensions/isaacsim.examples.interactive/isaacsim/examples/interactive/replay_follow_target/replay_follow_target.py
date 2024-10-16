@@ -8,7 +8,7 @@
 #
 
 import numpy as np
-from isaacsim.core.api.utils.types import ArticulationAction
+from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.examples.interactive.base_sample import BaseSample
 from isaacsim.robot.manipulators.examples.franka.tasks import FollowTarget as FollowTargetTask
 

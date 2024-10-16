@@ -15,7 +15,7 @@ import numpy as np
 import omni.kit.test
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from isaacsim.core.api.utils.stage import (
+from isaacsim.core.utils.stage import (
     add_reference_to_stage,
     create_new_stage_async,
     open_stage_async,

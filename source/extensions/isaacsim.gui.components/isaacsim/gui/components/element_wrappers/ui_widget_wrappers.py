@@ -15,7 +15,7 @@ import carb
 import numpy as np
 import omni.physx as _physx
 import omni.ui as ui
-from isaacsim.core.api.utils.prims import get_prim_object_type
+from isaacsim.core.utils.prims import get_prim_object_type
 from isaacsim.gui.components.ui_utils import (
     BUTTON_WIDTH,
     LABEL_HEIGHT,
@@ -1331,7 +1331,7 @@ class DropDown(UIWidgetWrapper):
 
         Args:
             object_type (str): A string name of the type of USD object matching the output of
-                isaacsim.core.api.utils.prims.get_prim_object_type(prim_path)
+                isaacsim.core.utils.prims.get_prim_object_type(prim_path)
             repopulate (bool, optional): Repopulate the DropDown immediately. Defaults to True.
         """
         self.set_populate_fn(lambda: self._find_all_usd_objects_of_type(object_type), repopulate=repopulate)

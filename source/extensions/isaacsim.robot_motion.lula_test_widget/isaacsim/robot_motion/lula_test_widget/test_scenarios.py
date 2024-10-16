@@ -13,11 +13,11 @@ from isaacsim.core.api.objects.cone import VisualCone
 from isaacsim.core.api.objects.cuboid import VisualCuboid
 from isaacsim.core.api.objects.cylinder import VisualCylinder
 from isaacsim.core.api.prims.xform_prim import XFormPrim
-from isaacsim.core.api.utils.numpy import rot_matrices_to_quats
-from isaacsim.core.api.utils.prims import delete_prim, is_prim_path_valid
-from isaacsim.core.api.utils.rotations import euler_angles_to_quat
-from isaacsim.core.api.utils.string import find_unique_string_name
-from isaacsim.core.api.utils.types import ArticulationAction
+from isaacsim.core.utils.numpy import rot_matrices_to_quats
+from isaacsim.core.utils.prims import delete_prim, is_prim_path_valid
+from isaacsim.core.utils.rotations import euler_angles_to_quat
+from isaacsim.core.utils.string import find_unique_string_name
+from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.robot_motion.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
 from isaacsim.robot_motion.motion_generation.articulation_motion_policy import ArticulationMotionPolicy
 from isaacsim.robot_motion.motion_generation.articulation_trajectory import ArticulationTrajectory

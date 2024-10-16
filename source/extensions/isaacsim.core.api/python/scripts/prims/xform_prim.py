@@ -12,7 +12,7 @@ import carb
 from isaacsim.core.api.prims._impl.single_prim_wrapper import _SinglePrimWrapper
 from isaacsim.core.api.prims.xform_prim_view import XFormPrimView
 from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
-from isaacsim.core.api.utils.prims import define_prim, get_prim_at_path, is_prim_path_valid
+from isaacsim.core.utils.prims import define_prim, get_prim_at_path, is_prim_path_valid
 
 
 class XFormPrim(_SinglePrimWrapper):
@@ -85,7 +85,7 @@ class XFormPrim(_SinglePrimWrapper):
             self._device = SimulationContext.instance().device
             self._backend_utils = SimulationContext.instance().backend_utils
         else:
-            import isaacsim.core.api.utils.numpy as np_utils
+            import isaacsim.core.utils.numpy as np_utils
 
             self._backend = "numpy"
             self._device = None

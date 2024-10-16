@@ -11,8 +11,8 @@ from typing import Optional
 import numpy as np
 from isaacsim.core.api.prims.geometry_prim import GeometryPrim
 from isaacsim.core.api.prims.rigid_prim import RigidPrim
-from isaacsim.core.api.utils.prims import get_prim_at_path, is_prim_path_valid
-from isaacsim.core.api.utils.stage import add_reference_to_stage
+from isaacsim.core.utils.prims import get_prim_at_path, is_prim_path_valid
+from isaacsim.core.utils.stage import add_reference_to_stage
 from pxr import UsdGeom
 
 

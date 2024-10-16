@@ -38,7 +38,7 @@ from isaacsim.core.api.prims.xform_prim_view import XFormPrimView
 from isaacsim.core.api.robots.robot import Robot
 from isaacsim.core.api.robots.robot_view import RobotView
 from isaacsim.core.api.scenes.scene_registry import SceneRegistry
-from isaacsim.core.api.utils.prims import (
+from isaacsim.core.utils.prims import (
     get_prim_children,
     get_prim_parent,
     get_prim_path,
@@ -46,8 +46,8 @@ from isaacsim.core.api.utils.prims import (
     is_prim_path_valid,
     is_prim_root_path,
 )
-from isaacsim.core.api.utils.stage import add_reference_to_stage, get_current_stage, update_stage
-from isaacsim.core.api.utils.string import find_unique_string_name
+from isaacsim.core.utils.stage import add_reference_to_stage, get_current_stage, update_stage
+from isaacsim.core.utils.string import find_unique_string_name
 from omni.isaac.nucleus import get_assets_root_path
 from pxr import Sdf, Usd, UsdGeom
 

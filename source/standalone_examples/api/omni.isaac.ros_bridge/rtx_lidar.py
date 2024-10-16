@@ -18,8 +18,8 @@ import omni
 import omni.kit.viewport.utility
 import omni.replicator.core as rep
 from isaacsim.core.api import SimulationContext
-from isaacsim.core.api.utils import stage
-from isaacsim.core.api.utils.extensions import enable_extension
+from isaacsim.core.utils import stage
+from isaacsim.core.utils.extensions import enable_extension
 from omni.isaac.nucleus import get_assets_root_path
 from pxr import Gf
 

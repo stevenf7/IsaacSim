@@ -26,8 +26,8 @@ import omni.usd
 import yaml
 from isaacsim.core.api.articulations import Articulation, ArticulationView
 from isaacsim.core.api.prims.xform_prim import XFormPrim
-from isaacsim.core.api.utils.numpy.rotations import quats_to_rot_matrices
-from isaacsim.core.api.utils.prims import get_prim_at_path, get_prim_object_type
+from isaacsim.core.utils.numpy.rotations import quats_to_rot_matrices
+from isaacsim.core.utils.prims import get_prim_at_path, get_prim_object_type
 
 # New way of making UI being integrated in through feature updates
 from isaacsim.gui.components.element_wrappers import (

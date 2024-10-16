@@ -28,7 +28,7 @@ simulation_app = SimulationApp({"headless": False})
 import numpy as np
 from behaviors.franka.franka_behaviors import ContextStateMonitor, behaviors
 from isaacsim.core.api.objects import DynamicCuboid
-from isaacsim.core.api.utils.extensions import enable_extension
+from isaacsim.core.utils.extensions import enable_extension
 from isaacsim.cortex.framework.cortex_object import CortexObject
 from isaacsim.cortex.framework.cortex_utils import load_behavior_module
 from isaacsim.cortex.framework.cortex_world import CortexWorld

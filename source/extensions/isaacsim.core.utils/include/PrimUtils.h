@@ -23,7 +23,7 @@ namespace isaacsim
 {
 namespace core
 {
-namespace api
+namespace utils
 {
 
 DllExport std::vector<std::string> findMatchingPrimPaths(const std::string& pattern,

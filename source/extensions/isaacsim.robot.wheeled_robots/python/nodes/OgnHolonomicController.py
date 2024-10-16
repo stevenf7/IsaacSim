@@ -9,8 +9,8 @@
 
 
 import numpy as np
-from isaacsim.core.api.utils.types import ArticulationAction
 from isaacsim.core.nodes import BaseResetNode
+from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.robot.wheeled_robots.controllers.holonomic_controller import HolonomicController
 from isaacsim.robot.wheeled_robots.ogn.OgnHolonomicControllerDatabase import OgnHolonomicControllerDatabase
 

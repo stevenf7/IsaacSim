@@ -9,7 +9,7 @@
 
 import omni.kit.commands
 import omni.kit.test
-from isaacsim.core.api.utils.bounds import (
+from isaacsim.core.utils.bounds import (
     compute_aabb,
     compute_combined_aabb,
     compute_obb,
@@ -17,7 +17,7 @@ from isaacsim.core.api.utils.bounds import (
     create_bbox_cache,
     recompute_extents,
 )
-from isaacsim.core.api.utils.stage import get_current_stage
+from isaacsim.core.utils.stage import get_current_stage
 from pxr import UsdGeom
 
 

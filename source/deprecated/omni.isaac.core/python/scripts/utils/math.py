@@ -9,8 +9,8 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.core.utils.math has been deprecated in favor of isaacsim.core.api.utils.math. Please update your code accordingly."
+    "omni.isaac.core.utils.math has been deprecated in favor of isaacsim.core.utils.math. Please update your code accordingly."
 )
 
 
-from isaacsim.core.api.utils.math import *
+from isaacsim.core.utils.math import *

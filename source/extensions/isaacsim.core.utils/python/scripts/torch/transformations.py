@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 import torch
-from isaacsim.core.api.utils.torch.rotations import (
+from isaacsim.core.utils.torch.rotations import (
     gf_quat_to_tensor,
     quat_apply,
     quat_conjugate,
@@ -15,7 +15,7 @@ from isaacsim.core.api.utils.torch.rotations import (
     wxyz2xyzw,
     xyzw2wxyz,
 )
-from isaacsim.core.api.utils.torch.tensor import create_zeros_tensor
+from isaacsim.core.utils.torch.tensor import create_zeros_tensor
 from pxr import Gf
 from scipy.spatial.transform import Rotation
 

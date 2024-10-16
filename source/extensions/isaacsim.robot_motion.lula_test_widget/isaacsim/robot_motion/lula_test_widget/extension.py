@@ -21,7 +21,7 @@ import omni.timeline
 import omni.ui as ui
 import omni.usd
 from isaacsim.core.api.articulations import Articulation
-from isaacsim.core.api.utils.prims import get_prim_object_type
+from isaacsim.core.utils.prims import get_prim_object_type
 from isaacsim.gui.components.menu import make_menu_item_description
 from isaacsim.gui.components.ui_utils import (
     add_line_rect_flourish,

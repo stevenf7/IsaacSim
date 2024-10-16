@@ -28,7 +28,7 @@ def main(args):
 
     # Late import because of runtime modules
     from isaacsim.core.api import World
-    from isaacsim.core.api.utils.stage import close_stage
+    from isaacsim.core.utils.stage import close_stage
     from isaacsim.replicator.scene_blox.generation.scene_generator import SceneGenerator
     from isaacsim.replicator.scene_blox.grid_utils import config
     from isaacsim.replicator.scene_blox.grid_utils.grid import Grid

@@ -15,7 +15,7 @@ import omni.isaac.IsaacSensorSchema as IsaacSensorSchema
 import omni.kit.viewport.utility
 import omni.ui as ui
 import OmniGraphSchema
-from isaacsim.core.api.utils.stage import get_next_free_path
+from isaacsim.core.utils.stage import get_next_free_path
 from isaacsim.gui.components.callbacks import on_docs_link_clicked, on_open_IDE_clicked
 from isaacsim.gui.components.style import get_style
 from isaacsim.gui.components.widgets import ParamWidget, SelectPrimWidget

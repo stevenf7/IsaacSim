@@ -36,7 +36,7 @@ CONFIG = {"renderer": "RaytracedLighting", "headless": False}
 simulation_app = SimulationApp(CONFIG)
 import omni
 from isaacsim.core.api import SimulationContext
-from isaacsim.core.api.utils.extensions import enable_extension
+from isaacsim.core.utils.extensions import enable_extension
 from omni.isaac.nucleus import get_assets_root_path
 
 # enable ROS2 bridge extension
@@ -59,7 +59,7 @@ simulation_app.update()
 simulation_app.update()
 
 print("Loading stage...")
-from isaacsim.core.api.utils.stage import is_stage_loading
+from isaacsim.core.utils.stage import is_stage_loading
 
 while is_stage_loading():
     simulation_app.update()

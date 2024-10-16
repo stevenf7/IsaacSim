@@ -14,9 +14,9 @@ import omni.isaac.IsaacSensorSchema as IsaacSensorSchema
 import omni.kit.commands
 import omni.kit.utils
 import omni.usd
-from isaacsim.core.api.utils.prims import delete_prim
-from isaacsim.core.api.utils.stage import get_next_free_path
-from isaacsim.core.api.utils.xforms import reset_and_set_xform_ops
+from isaacsim.core.utils.prims import delete_prim
+from isaacsim.core.utils.stage import get_next_free_path
+from isaacsim.core.utils.xforms import reset_and_set_xform_ops
 from pxr import Gf, PhysxSchema, Sdf, UsdGeom
 
 

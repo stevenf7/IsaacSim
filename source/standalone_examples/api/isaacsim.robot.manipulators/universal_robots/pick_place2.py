@@ -13,8 +13,8 @@ simulation_app = SimulationApp({"headless": False})
 
 import numpy as np
 from isaacsim.core.api import World
-from isaacsim.core.api.utils.collisions import ray_cast
-from isaacsim.core.api.utils.rotations import euler_angles_to_quat
+from isaacsim.core.utils.collisions import ray_cast
+from isaacsim.core.utils.rotations import euler_angles_to_quat
 from isaacsim.robot.manipulators.examples.universal_robots.controllers.pick_place_controller import PickPlaceController
 from isaacsim.robot.manipulators.examples.universal_robots.tasks import BinFilling
 

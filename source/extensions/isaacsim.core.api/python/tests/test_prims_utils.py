@@ -13,8 +13,8 @@ import omni.kit.test
 import torch
 from isaacsim.core.api.objects import DynamicCuboid, VisualCuboid
 from isaacsim.core.api.prims.xform_prim import XFormPrim
-from isaacsim.core.api.utils.prims import find_matching_prim_paths, get_all_matching_child_prims
-from isaacsim.core.api.utils.stage import add_reference_to_stage
+from isaacsim.core.utils.prims import find_matching_prim_paths, get_all_matching_child_prims
+from isaacsim.core.utils.stage import add_reference_to_stage
 from omni.isaac.nucleus import get_assets_root_path_async
 
 
@@ -30,8 +30,8 @@ class TestPrims(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_get_all_matching_child_prims(self):
-        from isaacsim.core.api.utils.prims import create_prim, get_prim_path
-        from isaacsim.core.api.utils.stage import clear_stage
+        from isaacsim.core.utils.prims import create_prim, get_prim_path
+        from isaacsim.core.utils.stage import clear_stage
 
         clear_stage()
         create_prim("/World/Floor")
@@ -43,8 +43,8 @@ class TestPrims(omni.kit.test.AsyncTestCase):
         self.assertListEqual(result, ["/World", "/World/Floor", "/World/Room", "/World/Floor/thefloor"])
 
     async def test_create_prim(self):
-        from isaacsim.core.api.utils.prims import create_prim, get_prim_path
-        from isaacsim.core.api.utils.stage import clear_stage
+        from isaacsim.core.utils.prims import create_prim, get_prim_path
+        from isaacsim.core.utils.stage import clear_stage
 
         clear_stage()
         create_prim("/World")
@@ -69,8 +69,8 @@ class TestPrims(omni.kit.test.AsyncTestCase):
 
     async def test_is_prim_non_root_articulation_link(self):
         from isaacsim.core.api.objects import DynamicCuboid
-        from isaacsim.core.api.utils.prims import is_prim_non_root_articulation_link
-        from isaacsim.core.api.utils.stage import clear_stage
+        from isaacsim.core.utils.prims import is_prim_non_root_articulation_link
+        from isaacsim.core.utils.stage import clear_stage
         from omni.isaac.nucleus import get_assets_root_path_async
 
         clear_stage()
@@ -94,9 +94,9 @@ class TestPrims(omni.kit.test.AsyncTestCase):
         ext_manager.get_enabled_extension_id("isaacsim.core.cloner")
         await omni.kit.app.get_app().next_update_async()
 
-        from isaacsim.core.api.utils.prims import get_articulation_root_api_prim_path
-        from isaacsim.core.api.utils.stage import clear_stage, get_current_stage
         from isaacsim.core.cloner import GridCloner
+        from isaacsim.core.utils.prims import get_articulation_root_api_prim_path
+        from isaacsim.core.utils.stage import clear_stage, get_current_stage
         from omni.isaac.nucleus import get_assets_root_path_async
         from pxr import UsdGeom
 

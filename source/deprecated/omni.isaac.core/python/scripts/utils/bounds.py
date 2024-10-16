@@ -10,8 +10,8 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.core.utils.bounds has been deprecated in favor of isaacsim.core.api.utils.bounds. Please update your code accordingly."
+    "omni.isaac.core.utils.bounds has been deprecated in favor of isaacsim.core.utils.bounds. Please update your code accordingly."
 )
 
 
-from isaacsim.core.api.utils.bounds import *
+from isaacsim.core.utils.bounds import *

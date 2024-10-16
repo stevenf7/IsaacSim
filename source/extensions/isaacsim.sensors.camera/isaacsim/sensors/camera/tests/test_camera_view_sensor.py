@@ -18,7 +18,7 @@ import torch
 import warp as wp
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import VisualCuboid
-from isaacsim.core.api.utils.stage import create_new_stage_async, update_stage_async
+from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
 from isaacsim.sensors.camera import CameraView
 from PIL import Image
 

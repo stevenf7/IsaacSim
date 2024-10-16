@@ -9,8 +9,8 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.core.utils.warp.tensor has been deprecated in favor of isaacsim.core.api.utils.warp.tensor. Please update your code accordingly."
+    "omni.isaac.core.utils.warp.tensor has been deprecated in favor of isaacsim.core.utils.warp.tensor. Please update your code accordingly."
 )
 
 
-from isaacsim.core.api.utils.warp.tensor import *
+from isaacsim.core.utils.warp.tensor import *

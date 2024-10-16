@@ -9,8 +9,8 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.core.utils.carb has been deprecated in favor of isaacsim.core.api.utils.carb. Please update your code accordingly."
+    "omni.isaac.core.utils.carb has been deprecated in favor of isaacsim.core.utils.carb. Please update your code accordingly."
 )
 
 
-from isaacsim.core.api.utils.carb import *
+from isaacsim.core.utils.carb import *

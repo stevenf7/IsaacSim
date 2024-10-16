@@ -8,7 +8,7 @@
 #
 
 import omni
-from isaacsim.core.api.utils.rotations import lookat_to_quatf
+from isaacsim.core.utils.rotations import lookat_to_quatf
 from pxr import Gf, Usd, UsdGeom
 
 

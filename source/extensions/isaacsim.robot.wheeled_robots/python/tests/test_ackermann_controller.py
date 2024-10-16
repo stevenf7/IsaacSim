@@ -17,9 +17,9 @@ import omni.kit.test
 import usdrt.Sdf
 from isaacsim.core.api import World
 from isaacsim.core.api.robots import Robot
-from isaacsim.core.api.utils.physics import simulate_async
-from isaacsim.core.api.utils.prims import delete_prim, get_prim_at_path
-from isaacsim.core.api.utils.stage import create_new_stage_async
+from isaacsim.core.utils.physics import simulate_async
+from isaacsim.core.utils.prims import delete_prim, get_prim_at_path
+from isaacsim.core.utils.stage import create_new_stage_async
 from isaacsim.robot.wheeled_robots.controllers.ackermann_controller import AckermannController
 from isaacsim.robot.wheeled_robots.robots import WheeledRobot
 from omni.isaac.nucleus import get_assets_root_path_async

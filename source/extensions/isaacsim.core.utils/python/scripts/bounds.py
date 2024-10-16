@@ -15,7 +15,7 @@ import carb
 import numpy as np
 
 # isaacsim
-from isaacsim.core.api.utils.prims import get_prim_at_path
+from isaacsim.core.utils.prims import get_prim_at_path
 from pxr import Gf, Usd, UsdGeom
 
 
@@ -36,8 +36,8 @@ def recompute_extents(
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.bounds as bounds_utils
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.bounds as bounds_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>>
         >>> prim = stage_utils.get_current_stage().GetPrimAtPath("/World/Cube")
         >>> bounds_utils.recompute_extents(prim)
@@ -84,7 +84,7 @@ def create_bbox_cache(time: Usd.TimeCode = Usd.TimeCode.Default(), use_extents_h
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.bounds as bounds_utils
+        >>> import isaacsim.core.utils.bounds as bounds_utils
         >>>
         >>> bounds_utils.create_bbox_cache()
         <pxr.UsdGeom.BBoxCache object at 0x7f6720b8bc90>
@@ -109,7 +109,7 @@ def compute_aabb(bbox_cache: UsdGeom.BBoxCache, prim_path: str, include_children
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.bounds as bounds_utils
+        >>> import isaacsim.core.utils.bounds as bounds_utils
         >>>
         >>> # 1 stage unit length cube centered at (0.0, 0.0, 0.0)
         >>> cache = bounds_utils.create_bbox_cache()
@@ -149,7 +149,7 @@ def compute_combined_aabb(bbox_cache: UsdGeom.BBoxCache, prim_paths: typing.List
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.bounds as bounds_utils
+        >>> import isaacsim.core.utils.bounds as bounds_utils
         >>>
         >>> # 1 stage unit length cube centered at (0.0, 0.0, 0.0)
         >>> # with a 1 stage unit diameter sphere centered at (-0.5, 0.5, 0.5)
@@ -189,7 +189,7 @@ def compute_obb(bbox_cache: UsdGeom.BBoxCache, prim_path: str) -> typing.Tuple[n
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.bounds as bounds_utils
+        >>> import isaacsim.core.utils.bounds as bounds_utils
         >>>
         >>> # 1 stage unit length cube centered at (0.0, 0.0, 0.0)
         >>> cache = bounds_utils.create_bbox_cache()
@@ -260,7 +260,7 @@ def get_obb_corners(centroid: np.ndarray, axes: np.ndarray, half_extent: np.ndar
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.bounds as bounds_utils
+        >>> import isaacsim.core.utils.bounds as bounds_utils
         >>>
         >>> cache = bounds_utils.create_bbox_cache()
         >>> centroid, axes, half_extent = bounds_utils.compute_obb(cache, prim_path="/World/Cube")
@@ -310,7 +310,7 @@ def compute_obb_corners(bbox_cache: UsdGeom.BBoxCache, prim_path: str) -> np.nda
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.bounds as bounds_utils
+        >>> import isaacsim.core.utils.bounds as bounds_utils
         >>>
         >>> cache = bounds_utils.create_bbox_cache()
         >>> bounds_utils.compute_obb_corners(cache, prim_path="/World/Cube")

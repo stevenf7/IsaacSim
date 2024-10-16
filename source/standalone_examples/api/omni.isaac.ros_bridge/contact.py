@@ -16,7 +16,7 @@ import omni
 import omni.kit.commands
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import DynamicCuboid
-from isaacsim.core.api.utils.extensions import enable_extension
+from isaacsim.core.utils.extensions import enable_extension
 from isaacsim.sensors.physics import _sensor
 from pxr import Gf
 

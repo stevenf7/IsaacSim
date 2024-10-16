@@ -18,7 +18,7 @@ import omni.kit.usd.layers
 import omni.ui as ui
 from isaacsim.asset.generator.occupancy_map.bindings import _occupancy_map
 from isaacsim.asset.generator.occupancy_map.utils import compute_coordinates, generate_image, update_location
-from isaacsim.core.api.utils.stage import get_stage_units
+from isaacsim.core.utils.stage import get_stage_units
 from isaacsim.gui.components.element_wrappers import ScrollingWindow
 from isaacsim.gui.components.menu import make_menu_item_description
 from isaacsim.gui.components.ui_utils import (

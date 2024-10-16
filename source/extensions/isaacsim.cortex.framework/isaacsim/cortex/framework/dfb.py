@@ -21,7 +21,7 @@ from typing import Optional
 
 import isaacsim.cortex.framework.math_util as math_util
 import numpy as np
-from isaacsim.core.api.utils.math import normalized
+from isaacsim.core.utils.math import normalized
 from isaacsim.cortex.framework.df import (
     DfAction,
     DfDecider,

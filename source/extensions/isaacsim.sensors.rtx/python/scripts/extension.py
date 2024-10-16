@@ -15,11 +15,11 @@ import numpy as np
 import omni.ext
 import omni.kit.commands
 import omni.replicator.core as rep
-from isaacsim.core.api.utils.stage import traverse_stage
 from isaacsim.core.nodes.scripts.utils import (
     register_annotator_from_node_with_telemetry,
     register_node_writer_with_telemetry,
 )
+from isaacsim.core.utils.stage import traverse_stage
 from isaacsim.sensors.rtx.bindings._isaacsim_sensors_rtx import acquire_interface as _acquire
 from isaacsim.sensors.rtx.bindings._isaacsim_sensors_rtx import release_interface as _release
 from omni.replicator.core import AnnotatorRegistry

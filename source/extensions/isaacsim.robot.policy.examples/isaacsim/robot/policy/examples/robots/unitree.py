@@ -16,9 +16,9 @@ import numpy as np
 import omni
 import omni.kit.commands
 from isaacsim.core.api.articulations import Articulation
-from isaacsim.core.api.utils.prims import define_prim, get_prim_at_path
-from isaacsim.core.api.utils.stage import get_current_stage, get_stage_units
 from isaacsim.core.nodes.bindings import _isaacsim_core_nodes
+from isaacsim.core.utils.prims import define_prim, get_prim_at_path
+from isaacsim.core.utils.stage import get_current_stage, get_stage_units
 from isaacsim.robot.policy.examples.controllers import A1QPController
 from isaacsim.robot.policy.examples.utils.a1_classes import A1Command, A1Measurement, A1State
 from isaacsim.sensors.physics import _sensor

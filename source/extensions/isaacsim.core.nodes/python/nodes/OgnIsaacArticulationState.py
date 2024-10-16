@@ -9,9 +9,9 @@
 
 import numpy as np
 from isaacsim.core.api.articulations.articulation import Articulation
-from isaacsim.core.api.utils.stage import get_current_stage
 from isaacsim.core.nodes import BaseResetNode
 from isaacsim.core.nodes.ogn.OgnIsaacArticulationStateDatabase import OgnIsaacArticulationStateDatabase
+from isaacsim.core.utils.stage import get_current_stage
 from pxr import UsdPhysics
 
 

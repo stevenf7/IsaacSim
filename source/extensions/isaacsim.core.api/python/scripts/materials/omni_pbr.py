@@ -12,8 +12,8 @@ from typing import Optional
 import carb
 import numpy as np
 from isaacsim.core.api.materials.visual_material import VisualMaterial
-from isaacsim.core.api.utils.prims import get_prim_at_path, is_prim_path_valid
-from isaacsim.core.api.utils.stage import get_current_stage
+from isaacsim.core.utils.prims import get_prim_at_path, is_prim_path_valid
+from isaacsim.core.utils.stage import get_current_stage
 from pxr import Gf, Sdf, UsdShade
 
 

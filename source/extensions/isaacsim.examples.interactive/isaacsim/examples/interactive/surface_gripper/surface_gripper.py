@@ -19,7 +19,7 @@ import omni.physics.tensors as physics
 import omni.physx as _physx
 import omni.ui as ui
 from isaacsim.core.api.prims.rigid_prim import RigidPrim
-from isaacsim.core.api.utils.viewports import set_camera_view
+from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.gui.components.menu import make_menu_item_description
 from isaacsim.gui.components.ui_utils import (
     add_separator,

@@ -14,10 +14,10 @@
 import omni.kit.test
 import Semantics
 import torch
-from isaacsim.core.api.utils.prims import get_prim_at_path
+from isaacsim.core.utils.prims import get_prim_at_path
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from isaacsim.core.api.utils.semantics import (
+from isaacsim.core.utils.semantics import (
     add_update_semantics,
     check_incorrect_semantics,
     check_missing_semantics,

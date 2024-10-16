@@ -16,10 +16,10 @@ import omni
 import omni.kit.commands
 import torch
 from isaacsim.core.api.articulations import Articulation
-from isaacsim.core.api.utils.prims import define_prim, get_prim_at_path
-from isaacsim.core.api.utils.rotations import quat_to_rot_matrix
-from isaacsim.core.api.utils.stage import get_current_stage
-from isaacsim.core.api.utils.types import ArticulationAction
+from isaacsim.core.utils.prims import define_prim, get_prim_at_path
+from isaacsim.core.utils.rotations import quat_to_rot_matrix
+from isaacsim.core.utils.stage import get_current_stage
+from isaacsim.core.utils.types import ArticulationAction
 from omni.isaac.nucleus import get_assets_root_path
 from pxr import Gf
 

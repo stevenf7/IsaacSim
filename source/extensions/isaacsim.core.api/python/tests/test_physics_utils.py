@@ -10,7 +10,7 @@
 import numpy as np
 import omni.kit.commands
 import omni.kit.test
-from isaacsim.core.api.utils.physics import get_rigid_body_enabled, set_rigid_body_enabled
+from isaacsim.core.utils.physics import get_rigid_body_enabled, set_rigid_body_enabled
 from pxr import UsdPhysics
 
 
@@ -26,8 +26,8 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_rigid_body_enabled(self):
-        from isaacsim.core.api.utils.prims import create_prim
-        from isaacsim.core.api.utils.stage import clear_stage
+        from isaacsim.core.utils.prims import create_prim
+        from isaacsim.core.utils.stage import clear_stage
 
         clear_stage()
         create_prim("/World/Floor")

@@ -9,8 +9,8 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.core.utils.numpy.tensor has been deprecated in favor of isaacsim.core.api.utils.numpy.tensor. Please update your code accordingly."
+    "omni.isaac.core.utils.numpy.tensor has been deprecated in favor of isaacsim.core.utils.numpy.tensor. Please update your code accordingly."
 )
 
 
-from isaacsim.core.api.utils.numpy.tensor import *
+from isaacsim.core.utils.numpy.tensor import *

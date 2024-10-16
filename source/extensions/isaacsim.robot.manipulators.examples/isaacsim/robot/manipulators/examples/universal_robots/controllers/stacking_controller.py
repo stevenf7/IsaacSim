@@ -11,7 +11,7 @@ from typing import List, Optional
 import isaacsim.robot.manipulators.controllers as manipulators_controllers
 import numpy as np
 from isaacsim.core.api.articulations import Articulation
-from isaacsim.core.api.utils.types import ArticulationAction
+from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.robot.manipulators.examples.universal_robots.controllers.pick_place_controller import PickPlaceController
 from isaacsim.robot.manipulators.grippers import SurfaceGripper
 

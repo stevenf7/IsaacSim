@@ -9,8 +9,8 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.core.utils.deformable_mesh_utils has been deprecated in favor of isaacsim.core.api.utils.deformable_mesh_utils. Please update your code accordingly."
+    "omni.isaac.core.utils.deformable_mesh_utils has been deprecated in favor of isaacsim.core.utils.deformable_mesh_utils. Please update your code accordingly."
 )
 
 
-from isaacsim.core.api.utils.deformable_mesh_utils import *
+from isaacsim.core.utils.deformable_mesh_utils import *

@@ -15,7 +15,7 @@ simulation_app = SimulationApp({"headless": False})
 from isaacsim.core.api import World
 from isaacsim.core.api.controllers.base_controller import BaseController
 from isaacsim.core.api.tasks import BaseTask
-from isaacsim.core.api.utils.types import ArticulationAction
+from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.robot.manipulators.examples.franka import Franka
 
 my_world = World(stage_units_in_meters=1.0)

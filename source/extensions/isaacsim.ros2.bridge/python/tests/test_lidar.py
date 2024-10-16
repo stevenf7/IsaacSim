@@ -22,8 +22,8 @@ import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd
 import usdrt.Sdf
-from isaacsim.core.api.utils.physics import simulate_async
-from isaacsim.core.api.utils.stage import open_stage_async
+from isaacsim.core.utils.physics import simulate_async
+from isaacsim.core.utils.stage import open_stage_async
 from omni.isaac.nucleus import get_assets_root_path_async
 from pxr import Gf, Sdf
 

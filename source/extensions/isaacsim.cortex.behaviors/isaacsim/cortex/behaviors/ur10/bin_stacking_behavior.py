@@ -13,7 +13,7 @@ import isaacsim.cortex.framework.math_util as math_util
 import numpy as np
 import omni
 from isaacsim.core.api.prims.xform_prim import XFormPrim
-from isaacsim.core.api.utils.math import normalized
+from isaacsim.core.utils.math import normalized
 from isaacsim.cortex.framework.cortex_world import CortexWorld
 from isaacsim.cortex.framework.df import (
     DfDecider,

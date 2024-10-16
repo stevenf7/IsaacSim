@@ -24,7 +24,7 @@ simulation_app = SimulationApp({"headless": True})
 
 import asyncio
 
-from isaacsim.core.api.utils.extensions import enable_extension
+from isaacsim.core.utils.extensions import enable_extension
 from omni.isaac.nucleus import get_assets_root_path, recursive_list_folder
 
 enable_extension("isaacsim.benchmark.services")

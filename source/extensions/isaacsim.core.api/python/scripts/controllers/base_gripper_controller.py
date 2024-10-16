@@ -11,7 +11,7 @@ from abc import abstractmethod
 
 import numpy as np
 from isaacsim.core.api.controllers.base_controller import BaseController
-from isaacsim.core.api.utils.types import ArticulationAction
+from isaacsim.core.utils.types import ArticulationAction
 
 
 class BaseGripperController(BaseController):

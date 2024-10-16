@@ -11,7 +11,7 @@ from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
-import isaacsim.core.api.utils.numpy.rotations as rot_utils
+import isaacsim.core.utils.numpy.rotations as rot_utils
 import matplotlib.pyplot as plt
 import numpy as np
 from isaacsim.core.api import World

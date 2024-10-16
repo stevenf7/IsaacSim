@@ -14,10 +14,10 @@ import carb
 import lula
 import numpy as np
 from isaacsim.core.api import objects
-from isaacsim.core.api.utils.math import normalized
-from isaacsim.core.api.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
-from isaacsim.core.api.utils.prims import delete_prim, is_prim_path_valid
-from isaacsim.core.api.utils.string import find_unique_string_name
+from isaacsim.core.utils.math import normalized
+from isaacsim.core.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
+from isaacsim.core.utils.prims import delete_prim, is_prim_path_valid
+from isaacsim.core.utils.string import find_unique_string_name
 from pxr import Sdf
 
 from ..motion_policy_interface import MotionPolicy

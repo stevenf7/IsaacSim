@@ -17,8 +17,8 @@ import omni.kit
 import omni.timeline
 import omni.usd
 import torch
-from isaacsim.core.api.utils.numpy.rotations import quats_to_euler_angles as quat_to_euler_numpy
-from isaacsim.core.api.utils.torch.rotations import get_euler_xyz as quat_to_euler_torch
+from isaacsim.core.utils.numpy.rotations import quats_to_euler_angles as quat_to_euler_numpy
+from isaacsim.core.utils.torch.rotations import get_euler_xyz as quat_to_euler_torch
 from isaacsim.replicator.scripts import context
 from omni.replicator.core import distribution
 from omni.replicator.core.utils import ReplicatorItem, ReplicatorWrapper, utils

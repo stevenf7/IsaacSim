@@ -21,9 +21,9 @@ import torch
 from isaacsim.core.api import World
 from isaacsim.core.api.articulations import ArticulationView
 from isaacsim.core.api.materials.omni_glass import OmniGlass
-from isaacsim.core.api.utils.numpy.rotations import euler_angles_to_quats
-from isaacsim.core.api.utils.stage import add_reference_to_stage
-from isaacsim.core.api.utils.types import ArticulationAction
+from isaacsim.core.utils.numpy.rotations import euler_angles_to_quats
+from isaacsim.core.utils.stage import add_reference_to_stage
+from isaacsim.core.utils.types import ArticulationAction
 from omni.isaac.nucleus import get_assets_root_path
 
 parser = argparse.ArgumentParser()

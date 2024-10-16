@@ -14,7 +14,7 @@ import weakref
 import carb
 import omni.ext
 import omni.kit.commands
-from isaacsim.core.api.utils.viewports import set_camera_view
+from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.gui.components.menu import make_menu_item_description
 from omni.isaac.nucleus import get_assets_root_path
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items

@@ -7,4 +7,4 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from isaacsim.core.utils.scripts.camera_utils import *
+from isaacsim.core.utils.camera_utils import *

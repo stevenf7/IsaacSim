@@ -10,14 +10,14 @@
 from typing import Optional, Sequence, Tuple
 
 import carb
-import isaacsim.core.api.utils.prims as prim_utils
+import isaacsim.core.utils.prims as prim_utils
 
 # isaac-core
-import isaacsim.core.api.utils.stage as stage_utils
+import isaacsim.core.utils.stage as stage_utils
 from isaacsim.core.api.materials.particle_material import ParticleMaterial
 from isaacsim.core.api.prims.soft.particle_system_view import ParticleSystemView
 from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
-from isaacsim.core.api.utils.prims import get_prim_at_path, is_prim_path_valid
+from isaacsim.core.utils.prims import get_prim_at_path, is_prim_path_valid
 
 # omniverse
 from pxr import PhysxSchema, Usd
@@ -102,7 +102,7 @@ class ParticleSystem:
             self._device = SimulationContext.instance().device
             self._backend_utils = SimulationContext.instance().backend_utils
         else:
-            import isaacsim.core.api.utils.numpy as np_utils
+            import isaacsim.core.utils.numpy as np_utils
 
             self._backend = "numpy"
             self._device = None

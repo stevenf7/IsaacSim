@@ -23,7 +23,7 @@ def get_extension_id(extension_name: str) -> str:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.extensions as extensions_utils
+        >>> import isaacsim.core.utils.extensions as extensions_utils
         >>>
         >>> extensions_utils.get_extension_id("omni.kit.window.stage")
         omni.kit.window.stage-2.4.3
@@ -45,7 +45,7 @@ def get_extension_path(ext_id: str) -> str:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.extensions as extensions_utils
+        >>> import isaacsim.core.utils.extensions as extensions_utils
         >>>
         >>> ext_id = extensions_utils.get_extension_id("omni.kit.window.stage")
         >>> extensions_utils.get_extension_path(ext_id)
@@ -68,7 +68,7 @@ def get_extension_path_from_name(extension_name: str) -> str:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.extensions as extensions_utils
+        >>> import isaacsim.core.utils.extensions as extensions_utils
         >>>
         >>> extensions_utils.get_extension_path_from_name("omni.kit.window.stage")
         /home/user/.local/share/ov/pkg/isaac_sim-<version>/kit/exts/omni.kit.window.stage
@@ -90,7 +90,7 @@ def enable_extension(extension_name: str) -> bool:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.extensions as extensions_utils
+        >>> import isaacsim.core.utils.extensions as extensions_utils
         >>>
         >>> extensions_utils.enable_extension("omni.kit.window.stage")
         True
@@ -112,7 +112,7 @@ def disable_extension(extension_name: str) -> bool:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.extensions as extensions_utils
+        >>> import isaacsim.core.utils.extensions as extensions_utils
         >>>
         >>> extensions_utils.disable_extension("omni.kit.window.stage")
         True
