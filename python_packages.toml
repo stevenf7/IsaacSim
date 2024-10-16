@@ -122,12 +122,14 @@ inventory.include = [
     # license
     "LICENSE.txt",
     # extensions
-    "exts/omni.isaac.app.selector",
-    "exts/omni.isaac.app.setup",
-    "exts/isaacsim.core.version",
     "exts/isaacsim.app.about",
+    "exts/isaacsim.app.selector",
+    "exts/isaacsim.app.setup",
+    "exts/isaacsim.core.version",
     # deprecated
     "extsDeprecated/omni.isaac.window.about",
+    "extsDeprecated/omni.isaac.app.setup",
+    "extsDeprecated/omni.isaac.app.selector",
     # others
     "VERSION",
 ]

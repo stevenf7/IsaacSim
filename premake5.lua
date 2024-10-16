@@ -185,6 +185,8 @@ function include_extensions()
 
     -- Windows and Linux
     include ("source/deprecated/omni.exporter.urdf")
+    include ("source/deprecated/omni.isaac.app.selector")
+    include ("source/deprecated/omni.isaac.app.setup")
     include ("source/deprecated/omni.isaac.articulation_inspector")
     include ("source/deprecated/omni.isaac.asset_browser")
     include ("source/deprecated/omni.isaac.assets_check")
@@ -251,6 +253,8 @@ function include_extensions()
     include ("source/deprecated/omni.kit.property.isaac")
     include ("source/deprecated/omni.replicator.isaac")
     include ("source/extensions/isaacsim.app.about")
+    include ("source/extensions/isaacsim.app.selector")
+    include ("source/extensions/isaacsim.app.setup")
     include ("source/extensions/isaacsim.asset.browser")
     include ("source/extensions/isaacsim.asset.conveyor.ui")
     include ("source/extensions/isaacsim.asset.conveyor")
@@ -317,8 +321,6 @@ function include_extensions()
     include ("source/extensions/isaacsim.util.merge_mesh")
     include ("source/extensions/isaacsim.util.physics")
     include ("source/extensions/isaacsim.xr.openxr")
-    include ("source/extensions/omni.isaac.app.selector")
-    include ("source/extensions/omni.isaac.app.setup")
     include ("source/extensions/omni.isaac.core_archive")
     include ("source/extensions/omni.isaac.ml_archive")
     include ("source/extensions/omni.isaac.nucleus")
@@ -458,22 +460,22 @@ function create_tests()
         define_startup_experience(
             "tests-selector.default",
             "omni.isaac.sim.selector",
-            "--/app/quitAfter=500 --/persistent/ext/omni.isaac.selector/auto_start=false --/persistent/ext/omni.isaac.selector/show_console=true --/persistent/ext/omni.isaac.selector/persistent_selector=false"
+            "--/app/quitAfter=500 --/persistent/ext/isaacsim.app.selector/auto_start=false --/persistent/ext/isaacsim.app.selector/show_console=true --/persistent/ext/isaacsim.app.selector/persistent_selector=false"
         )
         define_startup_experience(
             "tests-selector.autolaunch_and_persist",
             "omni.isaac.sim.selector",
-            "--/app/quitAfter=500 --/persistent/ext/omni.isaac.selector/auto_start=true --/persistent/ext/omni.isaac.selector/show_console=true --/persistent/ext/omni.isaac.selector/persistent_selector=true --/persistent/ext/omni.isaac.selector/extra_args='--/app/quitAfter=10'"
+            "--/app/quitAfter=500 --/persistent/ext/isaacsim.app.selector/auto_start=true --/persistent/ext/isaacsim.app.selector/show_console=true --/persistent/ext/isaacsim.app.selector/persistent_selector=true --/persistent/ext/isaacsim.app.selector/extra_args='--/app/quitAfter=10'"
         )
         define_startup_experience(
             "tests-selector.no_show_console",
             "omni.isaac.sim.selector",
-            "--/app/quitAfter=500 --/persistent/ext/omni.isaac.selector/auto_start=true --/persistent/ext/omni.isaac.selector/show_console=false --/persistent/ext/omni.isaac.selector/persistent_selector=true --/persistent/ext/omni.isaac.selector/extra_args='--/app/quitAfter=10'"
+            "--/app/quitAfter=500 --/persistent/ext/isaacsim.app.selector/auto_start=true --/persistent/ext/isaacsim.app.selector/show_console=false --/persistent/ext/isaacsim.app.selector/persistent_selector=true --/persistent/ext/isaacsim.app.selector/extra_args='--/app/quitAfter=10'"
         )
         define_startup_experience(
             "tests-selector.persist",
             "omni.isaac.sim.selector",
-            "--/app/quitAfter=500 --/persistent/ext/omni.isaac.selector/auto_start=false --/persistent/ext/omni.isaac.selector/show_console=true --/persistent/ext/omni.isaac.selector/persistent_selector=true --/persistent/ext/omni.isaac.selector/extra_args='--/app/quitAfter=10'"
+            "--/app/quitAfter=500 --/persistent/ext/isaacsim.app.selector/auto_start=false --/persistent/ext/isaacsim.app.selector/show_console=true --/persistent/ext/isaacsim.app.selector/persistent_selector=true --/persistent/ext/isaacsim.app.selector/extra_args='--/app/quitAfter=10'"
         )
 
     group "python_samples"
