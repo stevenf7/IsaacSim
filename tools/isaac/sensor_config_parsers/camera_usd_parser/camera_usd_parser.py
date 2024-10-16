@@ -13,7 +13,7 @@ import omni
 import omni.usd
 from isaacsim.core.api import World
 from isaacsim.core.utils.prims import get_prim_at_path
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 from pxr import UsdGeom
 
 # list of 29 pertinent categories to include in csv files

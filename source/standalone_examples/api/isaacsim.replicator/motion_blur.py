@@ -18,7 +18,7 @@ import omni.kit.app
 import omni.replicator.core as rep
 import omni.timeline
 import omni.usd
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 from pxr import PhysxSchema, Sdf, UsdGeom, UsdPhysics
 
 # Paths to the animated and physics-ready assets

@@ -33,7 +33,7 @@ from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.robot_motion.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
 from isaacsim.robot_motion.motion_generation.lula.kinematics import LulaKinematicsSolver
-from omni.isaac.nucleus import get_assets_root_path_async
+from isaacsim.storage.native import get_assets_root_path_async
 from pxr import Sdf, UsdLux
 
 

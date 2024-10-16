@@ -19,7 +19,7 @@ import omni.appwindow  # Contains handle to keyboard
 from isaacsim.core.api import World
 from isaacsim.core.utils.prims import define_prim, get_prim_at_path
 from isaacsim.robot.policy.examples.robots import H1FlatTerrainPolicy
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 
 parser = argparse.ArgumentParser(description="Define the number of robots.")
 parser.add_argument("--num-robots", type=int, default=1, help="Number of robots (default: 1)")

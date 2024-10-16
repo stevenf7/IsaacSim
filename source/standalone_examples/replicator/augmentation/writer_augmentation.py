@@ -23,7 +23,7 @@ import numpy as np
 import omni.replicator.core as rep
 import warp as wp
 from isaacsim.core.utils.stage import open_stage
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--num_frames", type=int, default=25, help="The number of frames to capture")

@@ -29,7 +29,7 @@ from isaacsim.core.api.prims.xform_prim import XFormPrim
 from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.prims import add_reference_to_stage, delete_prim
 from isaacsim.sensors.physics import _sensor
-from omni.isaac.nucleus import get_assets_root_path_async
+from isaacsim.storage.native import get_assets_root_path_async
 from pxr import Gf, PhysicsSchemaTools, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test

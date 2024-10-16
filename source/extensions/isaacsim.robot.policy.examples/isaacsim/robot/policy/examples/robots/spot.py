@@ -20,7 +20,7 @@ from isaacsim.core.utils.prims import define_prim, get_prim_at_path
 from isaacsim.core.utils.rotations import euler_to_rot_matrix, quat_to_euler_angles, quat_to_rot_matrix
 from isaacsim.core.utils.stage import get_current_stage
 from isaacsim.core.utils.types import ArticulationAction
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 from pxr import Gf
 
 

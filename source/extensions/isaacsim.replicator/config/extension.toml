@@ -41,5 +41,5 @@ dependencies = [
     "omni.hydra.rtx",                       # "omni.hydra.pxr", Can we run and pass with Storm ?
     "omni.kit.viewport.utility",
     "omni.kit.viewport.window",
-    "omni.isaac.nucleus" # test only
+    "isaacsim.storage.native" # test only
 ]

@@ -23,7 +23,7 @@ import omni.kit.usd
 import usdrt.Sdf
 from isaacsim.core.nodes.scripts.utils import set_target_prims
 from isaacsim.core.utils.physics import simulate_async
-from omni.isaac.nucleus import get_assets_root_path_async
+from isaacsim.storage.native import get_assets_root_path_async
 from pxr import Sdf
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)

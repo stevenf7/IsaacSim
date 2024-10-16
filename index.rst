@@ -52,14 +52,14 @@ Isaac Sim: Extensions API
    source/extensions/isaacsim.ros2.bridge/docs/index
    source/extensions/isaacsim.util.debug_draw/docs/index
    source/extensions/isaacsim.robot_motion.motion_generation/docs/index
-   source/extensions/omni.isaac.nucleus/docs/index
+   source/extensions/isaacsim.storage.native/docs/index
    source/extensions/isaacsim.robot_motion.lula/docs/index
    source/extensions/isaacsim.robot.surface_gripper/docs/index
    source/extensions/isaacsim.asset.generator.occupancy_map/docs/index
    source/extensions/isaacsim.replicator/docs/index
    source/extensions/isaacsim.asset.conveyor/docs/index
    source/extensions/isaacsim.core.version/docs/index
-   source/extensions/omni.isaac.benchmark.services/docs/index
+   source/extensions/isaacsim.benchmark.services/docs/index
 
 
 Indices and tables

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.0] - 2024-10-16
+### Changed
+- Extension renamed to isaacsim.storage.native
+
 ## [0.3.2] - 2024-09-23
 
 ### Changed

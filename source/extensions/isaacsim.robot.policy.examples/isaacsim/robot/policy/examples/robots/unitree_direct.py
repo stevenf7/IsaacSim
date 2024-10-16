@@ -18,7 +18,7 @@ from isaacsim.core.utils.prims import define_prim, get_prim_at_path
 from isaacsim.core.utils.stage import get_current_stage, get_stage_units
 from isaacsim.robot.policy.examples.utils.a1_classes import A1Command, A1Measurement, A1State
 from isaacsim.sensors.physics import IMUSensor, _sensor
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 
 
 class UnitreeDirect(Articulation):

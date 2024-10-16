@@ -21,7 +21,7 @@ import omni.graph.core as og
 from isaacsim.core.api import World
 from isaacsim.core.utils.prims import define_prim, get_prim_at_path
 from isaacsim.robot.policy.examples.robots import UnitreeVision
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 
 # enable ROS2 bridge extension
 ext_manager = omni.kit.app.get_app().get_extension_manager()

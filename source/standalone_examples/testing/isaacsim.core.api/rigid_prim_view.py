@@ -24,7 +24,7 @@ from isaacsim.core.api.prims.geometry_prim_view import GeometryPrimView
 from isaacsim.core.api.prims.rigid_prim_view import RigidPrimView
 from isaacsim.core.cloner import Cloner
 from isaacsim.core.utils.torch.rotations import euler_angles_to_quats
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")

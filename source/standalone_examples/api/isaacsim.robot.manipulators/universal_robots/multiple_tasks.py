@@ -26,7 +26,7 @@ from isaacsim.robot.wheeled_robots.controllers.differential_controller import Di
 from isaacsim.robot.wheeled_robots.controllers.holonomic_controller import HolonomicController
 from isaacsim.robot.wheeled_robots.robots import WheeledRobot
 from isaacsim.robot.wheeled_robots.robots.holonomic_robot_usd_setup import HolonomicRobotUsdSetup
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 
 my_world = World(stage_units_in_meters=1.0)
 tasks = []

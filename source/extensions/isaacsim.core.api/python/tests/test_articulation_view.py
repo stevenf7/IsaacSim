@@ -26,7 +26,7 @@ from isaacsim.core.api.articulations import ArticulationView
 from isaacsim.core.api.prims.rigid_prim_view import RigidPrimView
 from isaacsim.core.utils.stage import add_reference_to_stage, create_new_stage_async, update_stage_async
 from isaacsim.core.utils.torch.rotations import euler_angles_to_quats
-from omni.isaac.nucleus import get_assets_root_path_async
+from isaacsim.storage.native import get_assets_root_path_async
 
 INDEXED = [True, False]
 USD_PATH = [True, False]

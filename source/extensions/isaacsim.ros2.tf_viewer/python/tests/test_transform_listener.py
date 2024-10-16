@@ -15,7 +15,7 @@ import omni.kit.app
 import omni.kit.test
 from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.stage import add_reference_to_stage, create_new_stage_async
-from omni.isaac.nucleus import get_assets_root_path_async
+from isaacsim.storage.native import get_assets_root_path_async
 from pxr import Sdf
 
 

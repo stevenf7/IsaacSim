@@ -12,8 +12,8 @@ import asyncio
 import carb
 import omni.kit.test
 import omni.usd
+from isaacsim.storage.native import get_assets_root_path_async
 from omni.isaac.dynamic_control import _dynamic_control
-from omni.isaac.nucleus import get_assets_root_path_async
 from pxr import Sdf
 
 

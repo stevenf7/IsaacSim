@@ -23,7 +23,7 @@ writeTarget.kit = true
 "omni.graph" = {}
 "omni.kit.viewport.window" = {}
 "omni.kit.viewport.utility" = {}
-"omni.isaac.nucleus" = {}
+"isaacsim.storage.native" = {}
 "isaacsim.core.deprecation_manager" = {}
 
 [[python.module]]

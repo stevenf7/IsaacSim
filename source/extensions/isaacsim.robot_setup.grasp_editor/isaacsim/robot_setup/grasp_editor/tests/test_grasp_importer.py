@@ -22,7 +22,7 @@ from isaacsim.core.utils.stage import (
 )
 from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.robot_setup.grasp_editor import GraspSpec, import_grasps_from_file
-from omni.isaac.nucleus import get_assets_root_path_async
+from isaacsim.storage.native import get_assets_root_path_async
 from pxr import Sdf, UsdLux, UsdPhysics
 
 

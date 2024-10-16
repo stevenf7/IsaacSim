@@ -30,7 +30,7 @@ from isaacsim.core.utils.semantics import add_update_semantics
 from isaacsim.core.utils.stage import add_reference_to_stage, save_stage
 from isaacsim.replicator.scene_blox.grid_utils.config import GlobalRNG
 from isaacsim.replicator.scene_blox.grid_utils.grid import Grid
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 from pxr import Usd
 
 from .node_generator import NodeGenerator

@@ -43,7 +43,7 @@ recursive = false
 [[test]]
 
 dependencies = [
-    "omni.isaac.nucleus" # test only
+    "isaacsim.storage.native"
 ]
 
 [deprecation]

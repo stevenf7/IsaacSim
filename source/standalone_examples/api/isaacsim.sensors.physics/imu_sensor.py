@@ -21,7 +21,7 @@ from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.robot.wheeled_robots.controllers.differential_controller import DifferentialController
 from isaacsim.sensors.physics import IMUSensor
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 
 my_world = World(stage_units_in_meters=1.0)
 my_world.scene.add_default_ground_plane()

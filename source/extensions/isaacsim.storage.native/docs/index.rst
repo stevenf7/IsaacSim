@@ -1,12 +1,12 @@
-Nucleus [omni.isaac.nucleus]
+Native Storage Utilities [isaacsim.storage.native]
 ######################################################
 
 |
 
-Nucleus Utils
+Native Utils
 ==================
 
-.. automodule:: omni.isaac.nucleus
+.. automodule:: isaacsim.storage.native
     :members:
     :undoc-members:
     :exclude-members:

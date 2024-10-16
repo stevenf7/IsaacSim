@@ -14,7 +14,7 @@ from typing import Callable
 import carb
 import omni
 import omni.ui as ui
-from omni.isaac.nucleus import nucleus
+from isaacsim.storage.native import nucleus
 from omni.kit.window.preferences import PERSISTENT_SETTINGS_PREFIX, PreferenceBuilder, SettingType
 
 SETTINGS_PATH = "/persistent/exts/isaacsim.asset.conveyor.ui.settings"

@@ -41,7 +41,7 @@ name = "isaacsim.benchmark.examples"
 [[test]]
 # these are not cached
 dependencies = [
-    "omni.isaac.nucleus" # test only
+    "isaacsim.storage.native" # test only
 ]
 
 timeout=12000

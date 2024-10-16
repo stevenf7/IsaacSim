@@ -12,7 +12,7 @@ import unittest
 import numpy as np
 import omni.kit
 from isaacsim.core.cloner import Cloner, GridCloner
-from omni.isaac.nucleus import get_assets_root_path_async
+from isaacsim.storage.native import get_assets_root_path_async
 from pxr import Gf, Usd, UsdGeom, UsdPhysics, Vt
 
 

@@ -26,7 +26,7 @@ from isaacsim.core.utils.stage import (
     update_stage_async,
 )
 from isaacsim.core.utils.types import ArticulationAction
-from omni.isaac.nucleus import get_assets_root_path_async
+from isaacsim.storage.native import get_assets_root_path_async
 from pxr import PhysxSchema, UsdPhysics
 
 

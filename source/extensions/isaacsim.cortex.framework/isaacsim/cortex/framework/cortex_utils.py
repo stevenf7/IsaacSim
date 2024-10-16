@@ -14,7 +14,7 @@ from types import ModuleType
 from typing import Union
 
 import numpy as np
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 from pxr import Usd
 
 

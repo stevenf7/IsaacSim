@@ -30,7 +30,7 @@ import omni.replicator.core as rep
 from isaacsim.core.api import SimulationContext
 from isaacsim.core.utils import stage
 from isaacsim.core.utils.extensions import enable_extension
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 from pxr import Gf, Sdf, UsdGeom, UsdPhysics
 
 enable_extension("isaacsim.ros2.bridge")
@@ -216,7 +216,7 @@ simulation_app.close()
 """
 # Snippet of similar code to use in script editor.
 from isaacsim.core.utils import stage
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 from pxr import UsdGeom, Gf
 
 #omni.kit.commands.execute('ToolbarPlayButtonClicked')

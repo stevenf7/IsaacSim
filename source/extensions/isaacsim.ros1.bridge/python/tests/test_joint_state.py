@@ -26,8 +26,8 @@ import usdrt.Sdf
 from isaacsim.core.api.articulations import Articulation
 from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.stage import open_stage_async
+from isaacsim.storage.native import get_assets_root_path_async
 from numpy import pi as PI
-from omni.isaac.nucleus import get_assets_root_path_async
 from sensor_msgs.msg import JointState
 
 from .common import set_joint_drive_parameters, wait_for_rosmaster_async

@@ -13,7 +13,7 @@ import carb
 import numpy as np
 import omni
 from isaacsim.core.utils.stage import open_stage_async
-from omni.isaac.nucleus import get_assets_root_path_async
+from isaacsim.storage.native import get_assets_root_path_async
 from pxr import PhysxSchema, UsdGeom, UsdPhysics
 
 

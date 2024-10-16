@@ -22,7 +22,7 @@ icon = "data/icon.png"
 "isaacsim.core.api" = {}
 "isaacsim.robot_motion.motion_generation" = {}
 "isaacsim.robot.manipulators" = {}
-"omni.isaac.nucleus" = {}
+"isaacsim.storage.native" = {}
 
 
 # https://docs.omniverse.nvidia.com/kit/docs/kit-manual/latest/guide/extensions_advanced.html#python-section

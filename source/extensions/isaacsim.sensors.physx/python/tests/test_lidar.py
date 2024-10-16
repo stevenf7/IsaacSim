@@ -16,7 +16,7 @@ import Semantics
 from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.stage import open_stage_async
 from isaacsim.sensors.physx import _range_sensor
-from omni.isaac.nucleus import get_assets_root_path_async
+from isaacsim.storage.native import get_assets_root_path_async
 from omni.syntheticdata.tests.utils import add_semantics
 from pxr import Gf, PhysicsSchemaTools, Sdf, UsdGeom, UsdLux, UsdPhysics
 

@@ -15,7 +15,7 @@ from isaacsim.core.api.objects import DynamicCuboid, VisualCuboid
 from isaacsim.core.api.prims.xform_prim import XFormPrim
 from isaacsim.core.utils.prims import find_matching_prim_paths, get_all_matching_child_prims
 from isaacsim.core.utils.stage import add_reference_to_stage
-from omni.isaac.nucleus import get_assets_root_path_async
+from isaacsim.storage.native import get_assets_root_path_async
 
 
 class TestPrims(omni.kit.test.AsyncTestCase):
@@ -71,7 +71,7 @@ class TestPrims(omni.kit.test.AsyncTestCase):
         from isaacsim.core.api.objects import DynamicCuboid
         from isaacsim.core.utils.prims import is_prim_non_root_articulation_link
         from isaacsim.core.utils.stage import clear_stage
-        from omni.isaac.nucleus import get_assets_root_path_async
+        from isaacsim.storage.native import get_assets_root_path_async
 
         clear_stage()
         add_reference_to_stage(usd_path="", prim_path="/World/Franka")
@@ -97,7 +97,7 @@ class TestPrims(omni.kit.test.AsyncTestCase):
         from isaacsim.core.cloner import GridCloner
         from isaacsim.core.utils.prims import get_articulation_root_api_prim_path
         from isaacsim.core.utils.stage import clear_stage, get_current_stage
-        from omni.isaac.nucleus import get_assets_root_path_async
+        from isaacsim.storage.native import get_assets_root_path_async
         from pxr import UsdGeom
 
         env_zero_path = "/World/envs/env_0"

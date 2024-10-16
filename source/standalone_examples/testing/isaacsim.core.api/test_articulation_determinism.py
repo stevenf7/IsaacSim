@@ -20,7 +20,7 @@ from isaacsim.core.api import World
 from isaacsim.core.api.robots import Robot
 from isaacsim.core.utils.stage import open_stage, update_stage
 from isaacsim.core.utils.types import ArticulationAction
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 
 assets_root_path = get_assets_root_path()
 

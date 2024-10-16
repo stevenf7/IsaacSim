@@ -22,7 +22,7 @@ writeTarget.kit = true
 "omni.isaac.dynamic_control" = {}
 "omni.client" = {}
 "omni.kit.menu.utils" = {}
-"omni.isaac.nucleus" = {}
+"isaacsim.storage.native" = {}
 "isaacsim.core.deprecation_manager" = {}
 
 [[python.module]]

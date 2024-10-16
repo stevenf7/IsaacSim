@@ -18,7 +18,7 @@ toggleable = false
 
 # Isaac Sim Core Extensions
 "isaacsim.core.api" = {}
-"omni.isaac.nucleus" = {}
+"isaacsim.storage.native" = {}
 
 [deprecation]
 warning = "omni.isaac.asset_check is deprecated in Isaac Sim 4.2.0 and will be removed in the future"

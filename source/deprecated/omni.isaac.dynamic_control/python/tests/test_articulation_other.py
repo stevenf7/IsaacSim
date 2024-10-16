@@ -13,9 +13,9 @@ import carb  # carb data types are used as return values, need this
 import numpy as np
 import omni.kit.test
 import omni.physx as _physx
+from isaacsim.storage.native import get_assets_root_path_async
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.dynamic_control import utils as dc_utils
-from omni.isaac.nucleus import get_assets_root_path_async
 from pxr import Gf, UsdPhysics
 
 from .common import open_stage_async

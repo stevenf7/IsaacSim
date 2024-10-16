@@ -21,7 +21,7 @@ from isaacsim.core.api import World
 from isaacsim.core.api.materials.deformable_material import DeformableMaterial
 from isaacsim.core.api.prims.soft.deformable_prim import DeformablePrim
 from isaacsim.core.api.prims.soft.deformable_prim_view import DeformablePrimView
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 from omni.physx.scripts import deformableUtils, physicsUtils
 from pxr import Gf, UsdGeom, UsdLux
 

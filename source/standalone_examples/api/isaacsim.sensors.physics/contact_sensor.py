@@ -20,7 +20,7 @@ from isaacsim.core.api import World
 from isaacsim.core.api.articulations import Articulation
 from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.sensors.physics import ContactSensor
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")

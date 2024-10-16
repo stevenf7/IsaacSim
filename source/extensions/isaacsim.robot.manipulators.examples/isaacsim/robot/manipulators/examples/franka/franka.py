@@ -15,7 +15,7 @@ from isaacsim.core.api.robots.robot import Robot
 from isaacsim.core.utils.prims import get_prim_at_path
 from isaacsim.core.utils.stage import add_reference_to_stage, get_stage_units
 from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGripper
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 
 
 class Franka(Robot):

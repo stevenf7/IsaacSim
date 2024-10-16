@@ -15,7 +15,7 @@ import numpy as np
 from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.robot.manipulators import SingleManipulator
 from isaacsim.robot.manipulators.grippers import ParallelGripper
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 
 
 # Inheriting from the base class Follow Target

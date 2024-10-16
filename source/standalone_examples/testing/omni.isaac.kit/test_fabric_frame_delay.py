@@ -28,7 +28,7 @@ from isaacsim.core.api.objects import DynamicCuboid
 from isaacsim.core.api.prims import RigidPrim
 from isaacsim.core.utils.prims import add_update_semantics, get_prim_attribute_value
 from isaacsim.sensors.camera import Camera
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 
 assets_root_path = get_assets_root_path()
 if assets_root_path is None:
