@@ -10,7 +10,7 @@ import asyncio
 
 from isaacsim import SimulationApp
 
-CONFIG = {"renderer": "RayTracedLighting", "headless": True, "width": 1920, "height": 1080}
+CONFIG = {"renderer": "RaytracedLighting", "headless": True, "width": 1920, "height": 1080}
 
 if __name__ == "__main__":
     app = SimulationApp(launch_config=CONFIG)

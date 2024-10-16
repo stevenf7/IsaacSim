@@ -1,5 +1,5 @@
 launch_config:
-  renderer: RayTracedLighting
+  renderer: RaytracedLighting
   headless: false
 env_url: ''
 working_area_size:

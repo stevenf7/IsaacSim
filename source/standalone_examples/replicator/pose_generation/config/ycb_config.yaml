@@ -1,7 +1,7 @@
 ---
 # Default rendering parameters
 CONFIG:
-  renderer: RayTracedLighting
+  renderer: RaytracedLighting
   headless: false
   width: 1280
   height: 720

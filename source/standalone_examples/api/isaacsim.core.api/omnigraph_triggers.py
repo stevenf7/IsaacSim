@@ -12,7 +12,7 @@ import time
 
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
+simulation_app = SimulationApp({"renderer": "RaytracedLighting", "headless": True})
 
 import omni.graph.core as og
 from isaacsim.core.api import SimulationContext

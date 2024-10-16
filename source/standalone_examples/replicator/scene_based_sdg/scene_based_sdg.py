@@ -22,7 +22,7 @@ from isaacsim import SimulationApp
 # Default config (will be updated/extended by any other passed config arguments)
 config = {
     "launch_config": {
-        "renderer": "RayTracedLighting",
+        "renderer": "RaytracedLighting",
         "headless": False,
     },
     "resolution": [512, 512],

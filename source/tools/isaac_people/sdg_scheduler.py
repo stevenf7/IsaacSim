@@ -21,7 +21,7 @@ except:
     CUSTOM_APP_PATH = f"{os.environ['EXP_PATH']}/omni.agent_sdg.base.kit"
     from app_framework import SimulationApp
 
-CONFIG = {"renderer": "RayTracedLighting", "headless": True, "width": 1920, "height": 1080}
+CONFIG = {"renderer": "RaytracedLighting", "headless": True, "width": 1920, "height": 1080}
 
 """
 Standalone script to schedule people sdg jobs in a local env.

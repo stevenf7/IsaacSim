@@ -17,7 +17,7 @@ from isaacsim import SimulationApp
 # Default config dict, can be updated/replaced using json/yaml config files ('--config' cli argument)
 config = {
     "launch_config": {
-        "renderer": "RayTracedLighting",
+        "renderer": "RaytracedLighting",
         "headless": False,
     },
     "env_url": "",

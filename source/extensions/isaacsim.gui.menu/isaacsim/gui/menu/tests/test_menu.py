@@ -57,7 +57,7 @@ class TestMenuAssets(OmniUiTest):
         self.imu_sensor_interface = _sensor.acquire_imu_sensor_interface()
         self.lightbeam_sensor_interface = _range_sensor.acquire_lightbeam_sensor_interface()
         self.carb_settings = carb.settings.get_settings()
-        self.carb_settings.set("/rtx/rendermode", "RayTracedLighting")
+        self.carb_settings.set("/rtx/rendermode", "RaytracedLighting")
         self.carb_settings.set("/rtx-transient/resourcemanager/enableTextureStreaming", False)
         pass
 

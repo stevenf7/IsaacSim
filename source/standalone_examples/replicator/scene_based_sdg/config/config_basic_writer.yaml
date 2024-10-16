@@ -1,5 +1,5 @@
 launch_config:
-  renderer: RayTracedLighting
+  renderer: RaytracedLighting
   headless: false
 resolution: [512, 512]
 env_url: "/Isaac/Environments/Grid/default_environment.usd"

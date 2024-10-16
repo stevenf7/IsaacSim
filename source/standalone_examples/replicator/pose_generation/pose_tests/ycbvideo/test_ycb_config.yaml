@@ -1,7 +1,7 @@
 # DO NOT MODIFY OR TESTS WILL FAIL 
 ---
 CONFIG:
-  renderer: RayTracedLighting
+  renderer: RaytracedLighting
   headless: false
   width: 1280
   height: 720

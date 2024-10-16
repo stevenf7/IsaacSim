@@ -22,7 +22,7 @@ CARTER_USD_PATH = "/Isaac/Robots/Carter/carter_v1_physx_lidar.usd"
 BACKGROUND_STAGE_PATH = "/FlatGrid"
 BACKGROUND_USD_PATH = "/Isaac/Environments/Grid/default_environment.usd"
 
-CONFIG = {"renderer": "RayTracedLighting", "headless": False}
+CONFIG = {"renderer": "RaytracedLighting", "headless": False}
 
 simulation_app = SimulationApp(CONFIG)
 import carb

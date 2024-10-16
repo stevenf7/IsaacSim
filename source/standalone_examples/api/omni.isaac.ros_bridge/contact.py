@@ -9,7 +9,7 @@
 
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
+simulation_app = SimulationApp({"renderer": "RaytracedLighting", "headless": True})
 
 import carb
 import omni

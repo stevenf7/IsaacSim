@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.2] - 2024-10-15
+### Fixed
+- Rename RayTracedLighting to RaytracedLighting
+
 ## [2.0.1] - 2024-10-02
 ### Changes
 - Update dependency omni.isaac.version to isaacsim.core.version

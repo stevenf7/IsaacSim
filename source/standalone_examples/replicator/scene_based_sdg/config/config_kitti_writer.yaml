@@ -1,5 +1,5 @@
 launch_config:
-  renderer: RayTracedLighting
+  renderer: RaytracedLighting
   headless: true
 resolution: [512, 512]
 num_frames: 5
