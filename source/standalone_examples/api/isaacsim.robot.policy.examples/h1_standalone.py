@@ -11,6 +11,8 @@ from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
+import argparse
+
 import carb
 import numpy as np
 import omni.appwindow  # Contains handle to keyboard
@@ -19,22 +21,36 @@ from isaacsim.core.api.utils.prims import define_prim, get_prim_at_path
 from isaacsim.robot.policy.examples.robots import H1FlatTerrainPolicy
 from omni.isaac.nucleus import get_assets_root_path
 
+parser = argparse.ArgumentParser(description="Define the number of robots.")
+parser.add_argument("--num-robots", type=int, default=1, help="Number of robots (default: 1)")
+parser.add_argument(
+    "--env-url",
+    default="/Isaac/Environments/Grid/default_environment.usd",
+    required=False,
+    help="Path to the environment url",
+)
+args = parser.parse_args()
+print(f"Number of robots: {args.num_robots}")
+
 first_step = True
 reset_needed = False
+robots = []
 
 # initialize robot on first step, run robot advance
 def on_physics_step(step_size) -> None:
     global first_step
     global reset_needed
     if first_step:
-        h1.initialize()
+        for robot in robots:
+            robot.initialize()
         first_step = False
     elif reset_needed:
         my_world.reset(True)
         reset_needed = False
         first_step = True
     else:
-        h1.advance(step_size, base_command)
+        for robot in robots:
+            robot.advance(step_size, base_command)
 
 
 # spawn world
@@ -45,15 +61,18 @@ if assets_root_path is None:
 
 # spawn warehouse scene
 prim = define_prim("/World/Ground", "Xform")
-asset_path = assets_root_path + "/Isaac/Environments/Grid/default_environment.usd"
+asset_path = assets_root_path + args.env_url
 prim.GetReferences().AddReference(asset_path)
 
 # spawn robot
-h1 = H1FlatTerrainPolicy(
-    prim_path="/World/H1",
-    name="H1",
-    position=np.array([0, 0, 1.05]),
-)
+for i in range(0, args.num_robots):
+    h1 = H1FlatTerrainPolicy(
+        prim_path="/World/H1_" + str(i),
+        name="H1_" + str(i),
+        position=np.array([0, i, 1.05]),
+    )
+
+    robots.append(h1)
 my_world.add_physics_callback("physics_step", callback_fn=on_physics_step)
 my_world.reset()
 
