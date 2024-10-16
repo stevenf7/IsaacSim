@@ -14,8 +14,8 @@ import omni.graph.core as og
 import omni.isaac.IsaacSensorSchema as IsaacSensorSchema
 import omni.replicator.core as rep
 import omni.syntheticdata
-from isaacsim.core.api.utils.render_product import get_camera_prim_path
 from isaacsim.core.nodes import BaseWriterNode, WriterRequest
+from isaacsim.core.utils.render_product import get_camera_prim_path
 from pxr import Usd, UsdGeom
 
 

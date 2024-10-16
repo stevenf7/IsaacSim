@@ -11,8 +11,8 @@ import numpy as np
 import omni.timeline
 import omni.ui as ui
 from isaacsim.core.api.articulations import Articulation
-from isaacsim.core.api.utils.prims import get_prim_object_type
-from isaacsim.core.api.utils.types import ArticulationAction
+from isaacsim.core.utils.prims import get_prim_object_type
+from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.gui.components.element_wrappers import CollapsableFrame, DropDown, FloatField, TextBlock
 from isaacsim.gui.components.ui_utils import get_style
 

@@ -27,8 +27,8 @@ import omni.replicator.core as rep
 import omni.syntheticdata._syntheticdata as sd
 import warp as wp
 from isaacsim.core.api import SimulationContext
-from isaacsim.core.api.utils import extensions, stage
-from isaacsim.core.api.utils.render_product import set_camera_prim_path
+from isaacsim.core.utils import extensions, stage
+from isaacsim.core.utils.render_product import set_camera_prim_path
 from omni.isaac.nucleus import get_assets_root_path
 from omni.kit.viewport.utility import get_active_viewport
 from pxr import Gf, Usd, UsdGeom

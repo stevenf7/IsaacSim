@@ -17,9 +17,9 @@ from isaacsim.core.api.prims.rigid_prim import RigidPrim
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add support for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
-from isaacsim.core.api.utils.prims import define_prim
-from isaacsim.core.api.utils.rotations import euler_angles_to_quat
-from isaacsim.core.api.utils.stage import create_new_stage_async, update_stage_async
+from isaacsim.core.utils.prims import define_prim
+from isaacsim.core.utils.rotations import euler_angles_to_quat
+from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
 
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test

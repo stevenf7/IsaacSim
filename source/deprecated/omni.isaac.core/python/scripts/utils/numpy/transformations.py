@@ -9,8 +9,8 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.core.utils.numpy.transformations has been deprecated in favor of isaacsim.core.api.utils.numpy.transformations. Please update your code accordingly."
+    "omni.isaac.core.utils.numpy.transformations has been deprecated in favor of isaacsim.core.utils.numpy.transformations. Please update your code accordingly."
 )
 
 
-from isaacsim.core.api.utils.numpy.transformations import *
+from isaacsim.core.utils.numpy.transformations import *

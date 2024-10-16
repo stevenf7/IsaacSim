@@ -28,10 +28,10 @@ import yaml
 from isaacsim.core.api.prims.geometry_prim import GeometryPrim
 from isaacsim.core.api.prims.rigid_prim import RigidPrim
 from isaacsim.core.api.prims.xform_prim import XFormPrim
-from isaacsim.core.api.utils.rotations import euler_angles_to_quat
-from isaacsim.core.api.utils.semantics import add_update_semantics
-from isaacsim.core.api.utils.stage import add_reference_to_stage
 from isaacsim.core.api.world.world import World
+from isaacsim.core.utils.rotations import euler_angles_to_quat
+from isaacsim.core.utils.semantics import add_update_semantics
+from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.replicator.scene_blox.grid_utils.config import GlobalRNG
 from omni.isaac.nucleus import get_full_asset_path
 from pxr import PhysicsSchemaTools, Usd, UsdGeom

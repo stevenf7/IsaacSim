@@ -19,7 +19,7 @@ import omni.kit.usd
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from isaacsim.asset.generator.occupancy_map.bindings import _occupancy_map
 from isaacsim.asset.generator.occupancy_map.utils import compute_coordinates, generate_image, update_location
-from isaacsim.core.api.utils.stage import open_stage_async
+from isaacsim.core.utils.stage import open_stage_async
 from omni.isaac.nucleus import get_assets_root_path_async
 from pxr import PhysxSchema, Sdf, UsdGeom, UsdPhysics
 

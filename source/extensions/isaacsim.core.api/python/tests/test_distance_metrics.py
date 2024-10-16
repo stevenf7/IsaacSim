@@ -15,7 +15,7 @@ import numpy as np
 import omni.kit.test
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from isaacsim.core.api.utils.distance_metrics import *
+from isaacsim.core.utils.distance_metrics import *
 from pxr import Gf
 from scipy.spatial.transform import Rotation as R
 

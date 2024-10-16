@@ -23,7 +23,7 @@ import numpy as np
 import omni.appwindow  # Contains handle to keyboard
 import omni.graph.core as og
 from isaacsim.core.api import World
-from isaacsim.core.api.utils.extensions import enable_extension
+from isaacsim.core.utils.extensions import enable_extension
 from isaacsim.robot.policy.examples.robots import Unitree
 
 # enable ROS bridge extension

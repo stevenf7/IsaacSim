@@ -14,7 +14,7 @@ import omni.graph.core as og
 import omni.ui as ui
 import omni.usd
 import OmniGraphSchema
-from isaacsim.core.api.utils.stage import get_next_free_path
+from isaacsim.core.utils.stage import get_next_free_path
 from isaacsim.gui.components.callbacks import on_docs_link_clicked, on_open_IDE_clicked
 from isaacsim.gui.components.style import get_style
 from isaacsim.gui.components.ui_utils import dropdown_builder

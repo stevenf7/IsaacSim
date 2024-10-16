@@ -18,15 +18,15 @@ from isaacsim.core.api.objects import FixedCuboid, VisualCuboid
 from isaacsim.core.api.objects.ground_plane import GroundPlane
 from isaacsim.core.api.prims import XFormPrim
 from isaacsim.core.api.robots import Robot
-from isaacsim.core.api.utils.numpy.rotations import euler_angles_to_quats, rot_matrices_to_quats
-from isaacsim.core.api.utils.stage import (
+from isaacsim.core.api.world import World
+from isaacsim.core.utils.numpy.rotations import euler_angles_to_quats, rot_matrices_to_quats
+from isaacsim.core.utils.stage import (
     add_reference_to_stage,
     create_new_stage_async,
     get_current_stage,
     update_stage_async,
 )
-from isaacsim.core.api.utils.viewports import set_camera_view
-from isaacsim.core.api.world import World
+from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.robot_motion.motion_generation import ArticulationTrajectory
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)

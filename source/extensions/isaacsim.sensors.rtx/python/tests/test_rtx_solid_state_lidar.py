@@ -15,7 +15,7 @@ import asyncio
 
 import carb
 import carb.tokens
-import isaacsim.core.api.utils.numpy.rotations as rot_utils
+import isaacsim.core.utils.numpy.rotations as rot_utils
 import numpy as np
 import omni
 import omni.hydratexture
@@ -25,8 +25,8 @@ import omni.kit.test
 import omni.replicator.core as rep
 import omni.usd
 from isaacsim.core.api.objects import VisualCuboid
-from isaacsim.core.api.utils.prims import delete_prim
-from isaacsim.core.api.utils.stage import create_new_stage_async, update_stage_async
+from isaacsim.core.utils.prims import delete_prim
+from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
 from isaacsim.sensors.rtx import LidarRtx
 
 

@@ -14,7 +14,7 @@ simulation_app = SimulationApp({"renderer": "RaytracedLighting", "headless": Fal
 import omni
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import VisualCuboid
-from isaacsim.core.api.utils.extensions import enable_extension
+from isaacsim.core.utils.extensions import enable_extension
 
 # enable ROS2 bridge extension
 enable_extension("isaacsim.ros2.bridge")

@@ -15,15 +15,15 @@ from isaacsim.core.api.materials.preview_surface import PreviewSurface
 from isaacsim.core.api.materials.visual_material import VisualMaterial
 from isaacsim.core.api.prims.geometry_prim import GeometryPrim
 from isaacsim.core.api.prims.xform_prim import XFormPrim
-from isaacsim.core.api.utils.prims import (
+from isaacsim.core.utils.prims import (
     get_first_matching_child_prim,
     get_prim_path,
     get_prim_type_name,
     is_prim_path_valid,
 )
-from isaacsim.core.api.utils.stage import get_current_stage, get_stage_units
-from isaacsim.core.api.utils.string import find_unique_string_name
-from isaacsim.core.api.utils.types import XFormPrimState
+from isaacsim.core.utils.stage import get_current_stage, get_stage_units
+from isaacsim.core.utils.string import find_unique_string_name
+from isaacsim.core.utils.types import XFormPrimState
 from pxr import Gf, PhysicsSchemaTools, Usd
 
 
@@ -370,7 +370,7 @@ class GroundPlane(object):
 
             >>> state = plane.get_default_state()
             >>> state
-            <isaacsim.core.api.utils.types.XFormPrimState object at 0x7f6efff41cf0>
+            <isaacsim.core.utils.types.XFormPrimState object at 0x7f6efff41cf0>
             >>>
             >>> state.position
             [0. 0. 0.]

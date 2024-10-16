@@ -11,8 +11,8 @@ from typing import List, Optional, Tuple
 
 import lula
 import numpy as np
-from isaacsim.core.api.utils.numpy.rotations import quats_to_rot_matrices
-from isaacsim.core.api.utils.stage import get_stage_units
+from isaacsim.core.utils.numpy.rotations import quats_to_rot_matrices
+from isaacsim.core.utils.stage import get_stage_units
 
 from ...motion_generation.kinematics_interface import KinematicsSolver
 from . import utils as lula_utils

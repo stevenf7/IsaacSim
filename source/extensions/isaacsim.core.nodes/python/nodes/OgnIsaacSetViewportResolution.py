@@ -9,7 +9,7 @@
 
 import carb
 import omni
-from isaacsim.core.api.utils.carb import set_carb_setting
+from isaacsim.core.utils.carb import set_carb_setting
 from omni.kit.viewport.utility import get_active_viewport, get_viewport_from_window_name
 
 

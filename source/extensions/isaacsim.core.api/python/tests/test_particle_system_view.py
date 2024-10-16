@@ -17,7 +17,7 @@ import torch
 from isaacsim.core.api import World
 from isaacsim.core.api.prims.soft.particle_system import ParticleSystem
 from isaacsim.core.api.prims.soft.particle_system_view import ParticleSystemView
-from isaacsim.core.api.utils.stage import create_new_stage_async, update_stage_async
+from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
 
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test

@@ -10,8 +10,8 @@ from typing import Optional
 
 import isaacsim.core.api.tasks as tasks
 import numpy as np
-from isaacsim.core.api.utils.prims import is_prim_path_valid
-from isaacsim.core.api.utils.string import find_unique_string_name
+from isaacsim.core.utils.prims import is_prim_path_valid
+from isaacsim.core.utils.string import find_unique_string_name
 from isaacsim.robot.manipulators.examples.franka import Franka
 
 

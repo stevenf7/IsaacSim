@@ -10,10 +10,10 @@ from typing import List, Optional, Tuple
 
 import carb
 import omni
-from isaacsim.core.api.utils.carb import get_carb_setting, set_carb_setting
-from isaacsim.core.api.utils.constants import AXES_INDICES
-from isaacsim.core.api.utils.prims import get_prim_at_path, get_prim_path, is_prim_path_valid
-from isaacsim.core.api.utils.stage import get_current_stage, get_stage_units, traverse_stage
+from isaacsim.core.utils.carb import get_carb_setting, set_carb_setting
+from isaacsim.core.utils.constants import AXES_INDICES
+from isaacsim.core.utils.prims import get_prim_at_path, get_prim_path, is_prim_path_valid
+from isaacsim.core.utils.stage import get_current_stage, get_stage_units, traverse_stage
 from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics, UsdShade
 
 

@@ -14,9 +14,9 @@ from isaacsim.core.api.materials.preview_surface import PreviewSurface
 from isaacsim.core.api.materials.visual_material import VisualMaterial
 from isaacsim.core.api.prims.geometry_prim import GeometryPrim
 from isaacsim.core.api.prims.rigid_prim import RigidPrim
-from isaacsim.core.api.utils.prims import get_prim_at_path, is_prim_path_valid
-from isaacsim.core.api.utils.stage import get_current_stage
-from isaacsim.core.api.utils.string import find_unique_string_name
+from isaacsim.core.utils.prims import get_prim_at_path, is_prim_path_valid
+from isaacsim.core.utils.stage import get_current_stage
+from isaacsim.core.utils.string import find_unique_string_name
 from pxr import Gf, UsdGeom
 
 

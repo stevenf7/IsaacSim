@@ -21,7 +21,7 @@ import omni.kit.commands
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 import omni.kit.usd
-from isaacsim.core.api.utils.physics import simulate_async
+from isaacsim.core.utils.physics import simulate_async
 
 from .common import wait_for_rosmaster_async
 

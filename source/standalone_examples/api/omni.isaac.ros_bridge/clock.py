@@ -23,7 +23,7 @@ import carb
 import omni
 import omni.graph.core as og
 from isaacsim.core.api import SimulationContext
-from isaacsim.core.api.utils.extensions import enable_extension
+from isaacsim.core.utils.extensions import enable_extension
 
 if args.test:
     from isaacsim.ros1.bridge.scripts.roscore import Roscore

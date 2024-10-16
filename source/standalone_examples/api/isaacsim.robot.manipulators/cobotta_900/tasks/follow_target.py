@@ -12,7 +12,7 @@ from typing import Optional
 
 import isaacsim.core.api.tasks as tasks
 import numpy as np
-from isaacsim.core.api.utils.stage import add_reference_to_stage
+from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.robot.manipulators import SingleManipulator
 from isaacsim.robot.manipulators.grippers import ParallelGripper
 from omni.isaac.nucleus import get_assets_root_path

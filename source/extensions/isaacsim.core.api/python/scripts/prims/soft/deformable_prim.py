@@ -10,7 +10,7 @@
 from typing import List, Optional, Sequence, Union
 
 import carb
-import isaacsim.core.api.utils.deformable_mesh_utils as deformableMeshUtils
+import isaacsim.core.utils.deformable_mesh_utils as deformableMeshUtils
 import numpy as np
 
 # omniverse
@@ -25,8 +25,8 @@ from isaacsim.core.api.prims.xform_prim import XFormPrim
 
 # isaac-core
 from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
-from isaacsim.core.api.utils.stage import get_current_stage
-from isaacsim.core.api.utils.types import DynamicState
+from isaacsim.core.utils.stage import get_current_stage
+from isaacsim.core.utils.types import DynamicState
 from omni.physx.scripts import deformableUtils, physicsUtils
 from pxr import Gf, PhysxSchema, Sdf, UsdGeom, UsdPhysics, UsdShade
 
@@ -102,7 +102,7 @@ class DeformablePrim(_SinglePrimWrapper):
             self._device = SimulationContext.instance().device
             self._backend_utils = SimulationContext.instance().backend_utils
         else:
-            import isaacsim.core.api.utils.numpy as np_utils
+            import isaacsim.core.utils.numpy as np_utils
 
             self._backend = "numpy"
             self._device = None

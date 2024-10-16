@@ -16,7 +16,7 @@ import omni.kit.test
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from isaacsim.core.api.prims.xform_prim import XFormPrim
-from isaacsim.core.api.utils.rotations import euler_angles_to_quat
+from isaacsim.core.utils.rotations import euler_angles_to_quat
 
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test

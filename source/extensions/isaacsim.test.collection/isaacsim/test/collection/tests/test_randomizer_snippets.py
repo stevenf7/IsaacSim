@@ -37,7 +37,7 @@ class TestRandomizerSnippets(omni.kit.test.AsyncTestCase):
         import omni.kit.commands
         import omni.replicator.core as rep
         import omni.usd
-        from isaacsim.core.api.utils.semantics import add_update_semantics
+        from isaacsim.core.utils.semantics import add_update_semantics
         from pxr import Gf, Sdf, UsdGeom
 
         omni.usd.get_context().new_stage()
@@ -118,7 +118,7 @@ class TestRandomizerSnippets(omni.kit.test.AsyncTestCase):
         import numpy as np
         import omni.replicator.core as rep
         import omni.usd
-        from isaacsim.core.api.utils.semantics import add_update_semantics, get_semantics
+        from isaacsim.core.utils.semantics import add_update_semantics, get_semantics
         from omni.isaac.nucleus import get_assets_root_path_async
         from pxr import Gf, Sdf, UsdGeom, UsdShade
 
@@ -410,7 +410,7 @@ class TestRandomizerSnippets(omni.kit.test.AsyncTestCase):
         import carb
         import omni.kit.app
         import omni.usd
-        from isaacsim.core.api.utils.bounds import compute_aabb, compute_obb, create_bbox_cache
+        from isaacsim.core.utils.bounds import compute_aabb, compute_obb, create_bbox_cache
         from omni.isaac.nucleus import get_assets_root_path
         from omni.physx import get_physx_simulation_interface
         from pxr import Gf, PhysicsSchemaTools, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics, UsdShade, UsdUtils

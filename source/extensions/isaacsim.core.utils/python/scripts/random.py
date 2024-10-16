@@ -13,10 +13,10 @@ from typing import Tuple
 
 # python
 import numpy as np
-from isaacsim.core.api.utils.rotations import euler_angles_to_quat
+from isaacsim.core.utils.rotations import euler_angles_to_quat
 
 # isaacsim
-from isaacsim.core.api.utils.transformations import get_translation_from_target, get_world_pose_from_relative
+from isaacsim.core.utils.transformations import get_translation_from_target, get_world_pose_from_relative
 
 # omniverse
 from pxr import Usd

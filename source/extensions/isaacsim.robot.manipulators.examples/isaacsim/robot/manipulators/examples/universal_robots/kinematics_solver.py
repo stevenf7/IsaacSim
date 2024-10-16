@@ -10,7 +10,7 @@ import os
 from typing import Optional
 
 from isaacsim.core.api.articulations import Articulation
-from isaacsim.core.api.utils.extensions import get_extension_path_from_name
+from isaacsim.core.utils.extensions import get_extension_path_from_name
 from isaacsim.robot_motion.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
 from isaacsim.robot_motion.motion_generation.lula.kinematics import LulaKinematicsSolver
 

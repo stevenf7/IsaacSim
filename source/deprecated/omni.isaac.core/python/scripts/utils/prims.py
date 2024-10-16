@@ -9,8 +9,8 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.core.utils.prims has been deprecated in favor of isaacsim.core.api.utils.prims. Please update your code accordingly."
+    "omni.isaac.core.utils.prims has been deprecated in favor of isaacsim.core.utils.prims. Please update your code accordingly."
 )
 
 
-from isaacsim.core.api.utils.prims import *
+from isaacsim.core.utils.prims import *

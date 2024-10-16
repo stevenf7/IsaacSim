@@ -14,7 +14,7 @@ import carb
 import numpy as np
 import omni.timeline
 import omni.ui as ui
-from isaacsim.core.api.utils.types import ArticulationAction
+from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.gui.components.element_wrappers import (
     Button,
     CheckBox,

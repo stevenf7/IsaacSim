@@ -15,8 +15,8 @@ import omni.kit.test
 import omni.kit.ui_test as ui_test
 import omni.timeline
 import omni.ui as ui
-from isaacsim.core.api.utils.prims import delete_prim
-from isaacsim.core.api.utils.stage import add_reference_to_stage, create_new_stage, update_stage_async
+from isaacsim.core.utils.prims import delete_prim
+from isaacsim.core.utils.stage import add_reference_to_stage, create_new_stage, update_stage_async
 from isaacsim.gui.components.element_wrappers import (
     Button,
     CheckBox,

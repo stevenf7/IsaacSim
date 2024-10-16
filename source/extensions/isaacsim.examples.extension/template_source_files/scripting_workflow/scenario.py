@@ -11,11 +11,11 @@ import numpy as np
 from isaacsim.core.api.articulations import Articulation
 from isaacsim.core.api.objects import DynamicCuboid, FixedCuboid, GroundPlane
 from isaacsim.core.api.prims import XFormPrim
-from isaacsim.core.api.utils import distance_metrics
-from isaacsim.core.api.utils.numpy.rotations import euler_angles_to_quats, quats_to_rot_matrices
-from isaacsim.core.api.utils.stage import add_reference_to_stage
-from isaacsim.core.api.utils.types import ArticulationAction
-from isaacsim.core.api.utils.viewports import set_camera_view
+from isaacsim.core.utils import distance_metrics
+from isaacsim.core.utils.numpy.rotations import euler_angles_to_quats, quats_to_rot_matrices
+from isaacsim.core.utils.stage import add_reference_to_stage
+from isaacsim.core.utils.types import ArticulationAction
+from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.robot_motion.motion_generation import ArticulationMotionPolicy, RmpFlow
 from isaacsim.robot_motion.motion_generation.interface_config_loader import load_supported_motion_policy_config
 from omni.isaac.nucleus import get_assets_root_path

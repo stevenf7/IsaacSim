@@ -25,8 +25,8 @@ import numpy as np
 import omni.appwindow  # Contains handle to keyboard
 import omni.graph.core as og
 from isaacsim.core.api import World
-from isaacsim.core.api.utils.extensions import enable_extension
-from isaacsim.core.api.utils.prims import define_prim, get_prim_at_path
+from isaacsim.core.utils.extensions import enable_extension
+from isaacsim.core.utils.prims import define_prim, get_prim_at_path
 from isaacsim.robot.policy.examples.robots import UnitreeDirect
 from isaacsim.robot.policy.examples.utils.a1_classes import A1Measurement
 from omni.isaac.nucleus import get_assets_root_path

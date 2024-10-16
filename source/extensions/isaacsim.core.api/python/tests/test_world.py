@@ -18,14 +18,14 @@ from isaacsim.core.api.objects import VisualCuboid
 from isaacsim.core.api.prims.rigid_prim import RigidPrim
 from isaacsim.core.api.prims.rigid_prim_view import RigidPrimView
 from isaacsim.core.api.robots import Robot
-from isaacsim.core.api.utils.prims import get_prim_object_type, is_prim_path_valid
-from isaacsim.core.api.utils.stage import (
+from isaacsim.core.utils.prims import get_prim_object_type, is_prim_path_valid
+from isaacsim.core.utils.stage import (
     add_reference_to_stage,
     create_new_stage_async,
     get_stage_units,
     update_stage_async,
 )
-from isaacsim.core.api.utils.types import ArticulationAction
+from isaacsim.core.utils.types import ArticulationAction
 from omni.isaac.nucleus import get_assets_root_path_async
 
 

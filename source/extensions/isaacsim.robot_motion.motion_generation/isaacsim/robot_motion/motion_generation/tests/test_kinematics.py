@@ -19,18 +19,18 @@ import numpy as np
 import omni.kit.test
 from isaacsim.core.api.prims.xform_prim import XFormPrim
 from isaacsim.core.api.robots.robot import Robot
-from isaacsim.core.api.utils import distance_metrics
-from isaacsim.core.api.utils.numpy.rotations import quats_to_rot_matrices
-from isaacsim.core.api.utils.prims import is_prim_path_valid
-from isaacsim.core.api.utils.stage import (
+from isaacsim.core.api.world import World
+from isaacsim.core.utils import distance_metrics
+from isaacsim.core.utils.numpy.rotations import quats_to_rot_matrices
+from isaacsim.core.utils.prims import is_prim_path_valid
+from isaacsim.core.utils.stage import (
     add_reference_to_stage,
     create_new_stage_async,
     get_current_stage,
     update_stage_async,
 )
-from isaacsim.core.api.utils.types import ArticulationAction
-from isaacsim.core.api.utils.viewports import set_camera_view
-from isaacsim.core.api.world import World
+from isaacsim.core.utils.types import ArticulationAction
+from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.robot_motion.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
 from isaacsim.robot_motion.motion_generation.lula.kinematics import LulaKinematicsSolver
 from omni.isaac.nucleus import get_assets_root_path_async

@@ -19,7 +19,7 @@ import omni.usd
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import DynamicCuboid
 from isaacsim.core.api.prims.rigid_prim_view import RigidPrimView
-from isaacsim.core.api.utils.stage import create_new_stage_async
+from isaacsim.core.utils.stage import create_new_stage_async
 from isaacsim.replicator import physics_view as physics
 
 

@@ -30,7 +30,7 @@ if "SHAPENET_LOCAL_DIR" not in os.environ:
 
 kit = SimulationApp()
 
-from isaacsim.core.api.utils.extensions import enable_extension
+from isaacsim.core.utils.extensions import enable_extension
 
 enable_extension("omni.kit.asset_converter")
 

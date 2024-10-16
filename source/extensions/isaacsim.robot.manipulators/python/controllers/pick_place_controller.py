@@ -10,9 +10,9 @@ import typing
 
 import numpy as np
 from isaacsim.core.api.controllers.base_controller import BaseController
-from isaacsim.core.api.utils.rotations import euler_angles_to_quat
-from isaacsim.core.api.utils.stage import get_stage_units
-from isaacsim.core.api.utils.types import ArticulationAction
+from isaacsim.core.utils.rotations import euler_angles_to_quat
+from isaacsim.core.utils.stage import get_stage_units
+from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.robot.manipulators.grippers.gripper import Gripper
 
 

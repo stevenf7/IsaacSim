@@ -10,7 +10,7 @@ from typing import Optional
 
 import numpy as np
 from isaacsim.core.api.controllers import ArticulationController
-from isaacsim.core.api.utils.types import ArticulationAction
+from isaacsim.core.utils.types import ArticulationAction
 
 
 class ArticulationGripper(object):

@@ -44,15 +44,15 @@ import pprint
 
 import carb
 import cv2
-import isaacsim.core.api.utils.numpy.rotations as rot_utils
+import isaacsim.core.utils.numpy.rotations as rot_utils
 import numpy as np
 import omni.replicator.core as rep
 import omni.usd
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import DynamicCuboid
-from isaacsim.core.api.utils.extensions import enable_extension
-from isaacsim.core.api.utils.prims import add_update_semantics
-from isaacsim.core.api.utils.viewports import set_camera_view
+from isaacsim.core.utils.extensions import enable_extension
+from isaacsim.core.utils.prims import add_update_semantics
+from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.sensors.camera import Camera
 from omni.replicator.core import AnnotatorRegistry, Writer
 from pxr import UsdGeom

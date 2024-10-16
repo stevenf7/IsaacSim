@@ -19,7 +19,7 @@ import numpy as np
 from isaacsim.core.api.objects import VisualCapsule, VisualSphere
 from isaacsim.core.api.prims.xform_prim import XFormPrim
 from isaacsim.core.api.tasks import BaseTask
-from isaacsim.core.api.utils.stage import add_reference_to_stage
+from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.cortex.framework.cortex_rigid_prim import CortexRigidPrim
 from isaacsim.cortex.framework.cortex_utils import get_assets_root_path_or_die
 from isaacsim.cortex.framework.cortex_world import CortexWorld

@@ -44,7 +44,7 @@ class Robot(Articulation):
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>> from isaacsim.core.api.robots import Robot
         >>>
         >>> usd_path = "/home/<user>/Documents/Assets/Robots/Franka/franka_alt_fingers.usd"

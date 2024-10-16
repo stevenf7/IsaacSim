@@ -9,7 +9,7 @@
 
 import asyncio
 
-import isaacsim.core.api.utils.numpy.rotations as rot_utils
+import isaacsim.core.utils.numpy.rotations as rot_utils
 import numpy as np
 import omni.kit.test
 import omni.replicator.core as rep
@@ -17,7 +17,7 @@ from isaacsim.core.api import World
 from isaacsim.core.api.articulations import Articulation
 from isaacsim.core.api.objects import VisualCuboid
 from isaacsim.core.api.prims.xform_prim import XFormPrim
-from isaacsim.core.api.utils.stage import add_reference_to_stage, create_new_stage_async, update_stage_async
+from isaacsim.core.utils.stage import add_reference_to_stage, create_new_stage_async, update_stage_async
 from isaacsim.sensors.rtx import LidarRtx
 from omni.isaac.nucleus import get_assets_root_path_async
 

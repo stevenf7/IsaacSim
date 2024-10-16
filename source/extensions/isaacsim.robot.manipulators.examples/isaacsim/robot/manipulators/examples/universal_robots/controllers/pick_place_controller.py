@@ -11,8 +11,8 @@ from typing import List, Optional
 import isaacsim.robot.manipulators.controllers as manipulators_controllers
 import numpy as np
 from isaacsim.core.api.articulations import Articulation
-from isaacsim.core.api.utils.rotations import euler_angles_to_quat
-from isaacsim.core.api.utils.types import ArticulationAction
+from isaacsim.core.utils.rotations import euler_angles_to_quat
+from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.robot.manipulators.examples.universal_robots.controllers.rmpflow_controller import RMPFlowController
 from isaacsim.robot.manipulators.grippers.surface_gripper import SurfaceGripper
 

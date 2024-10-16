@@ -11,8 +11,8 @@ from typing import List
 
 import numpy as np
 from isaacsim.core.api.articulations import ArticulationSubset
-from isaacsim.core.api.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
-from isaacsim.core.api.utils.xforms import get_world_pose
+from isaacsim.core.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
+from isaacsim.core.utils.xforms import get_world_pose
 
 # Size of rolling window over joint positions to detect steady state position convergence.
 WINDOW_SIZE = 10

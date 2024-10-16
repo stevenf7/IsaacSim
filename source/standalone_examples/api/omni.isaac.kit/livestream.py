@@ -25,7 +25,7 @@ CONFIG = {
 # Start the omniverse application
 kit = SimulationApp(launch_config=CONFIG)
 
-from isaacsim.core.api.utils.extensions import enable_extension
+from isaacsim.core.utils.extensions import enable_extension
 
 # Default Livestream settings
 kit.set_setting("/app/window/drawMouse", True)

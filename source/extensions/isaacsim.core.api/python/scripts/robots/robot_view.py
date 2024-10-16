@@ -52,7 +52,7 @@ class RobotView(ArticulationView):
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>> from isaacsim.core.cloner import GridCloner
         >>> from isaacsim.core.api.robots import RobotView
         >>> from pxr import UsdGeom

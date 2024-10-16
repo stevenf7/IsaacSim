@@ -15,7 +15,7 @@ CONFIG = {"renderer": "RaytracedLighting", "headless": True, "width": 1920, "hei
 if __name__ == "__main__":
     app = SimulationApp(launch_config=CONFIG)
 
-    from isaacsim.core.api.utils.extensions import enable_extension
+    from isaacsim.core.utils.extensions import enable_extension
 
     app.update()
 

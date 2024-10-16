@@ -19,7 +19,7 @@ import torch
 from isaacsim.core.api import World
 from isaacsim.core.api.materials.particle_material import ParticleMaterial
 from isaacsim.core.api.materials.particle_material_view import ParticleMaterialView
-from isaacsim.core.api.utils.stage import create_new_stage_async, get_current_stage, update_stage_async
+from isaacsim.core.utils.stage import create_new_stage_async, get_current_stage, update_stage_async
 
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test

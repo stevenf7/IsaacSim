@@ -9,7 +9,7 @@
 
 import omni.kit.test
 import omni.replicator.core as rep
-from isaacsim.core.api.utils.render_product import *
+from isaacsim.core.utils.render_product import *
 
 
 class TestStage(omni.kit.test.AsyncTestCase):

@@ -10,7 +10,7 @@ from typing import Optional, Sequence, Tuple
 
 import numpy as np
 from isaacsim.core.api.materials.visual_material import VisualMaterial
-from isaacsim.core.api.utils.types import XFormPrimState
+from isaacsim.core.utils.types import XFormPrimState
 from pxr import Usd
 
 
@@ -143,7 +143,7 @@ class _SinglePrimWrapper(object):
 
             >>> state = prim.get_default_state()
             >>> state
-            <isaacsim.core.api.utils.types.XFormPrimState object at 0x7f33addda650>
+            <isaacsim.core.utils.types.XFormPrimState object at 0x7f33addda650>
             >>>
             >>> state.position
             [-4.5299529e-08 -1.8347054e-09 -2.8610229e-08]

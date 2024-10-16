@@ -13,10 +13,9 @@ import numpy as np
 
 # python
 import torch
-from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
 
 # isaacsim
-from isaacsim.core.api.utils.rotations import gf_quat_to_np_array
+from isaacsim.core.utils.rotations import gf_quat_to_np_array
 
 # omniverse
 from pxr import Gf, Usd, UsdGeom
@@ -71,6 +70,9 @@ def tf_matrices_from_poses(
     Returns:
         Union[np.ndarray, torch.Tensor]: transformation matrices with shape (N, 4, 4)
     """
+    # Note: Imported here to prevent cyclic dependency in the module.
+    from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
+
     # TODO: add a torch pathway
     backend = "numpy"
     if SimulationContext.instance() is not None:

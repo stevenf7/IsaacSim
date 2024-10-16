@@ -16,7 +16,7 @@ from isaacsim.core.api.controllers.articulation_controller import ArticulationCo
 from isaacsim.core.api.prims._impl.single_prim_wrapper import _SinglePrimWrapper
 from isaacsim.core.api.prims.rigid_prim_view import RigidPrimView
 from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
-from isaacsim.core.api.utils.types import ArticulationAction, JointsState
+from isaacsim.core.utils.types import ArticulationAction, JointsState
 
 
 class Articulation(_SinglePrimWrapper):
@@ -52,7 +52,7 @@ class Articulation(_SinglePrimWrapper):
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>> from isaacsim.core.api.articulations import Articulation
         >>>
         >>> usd_path = "/home/<user>/Documents/Assets/Robots/Franka/franka_alt_fingers.usd"
@@ -83,7 +83,7 @@ class Articulation(_SinglePrimWrapper):
             self._device = SimulationContext.instance().device
             self._backend_utils = SimulationContext.instance().backend_utils
         else:
-            import isaacsim.core.api.utils.numpy as np_utils
+            import isaacsim.core.utils.numpy as np_utils
 
             self._backend = "numpy"
             self._device = None
@@ -710,7 +710,7 @@ class Articulation(_SinglePrimWrapper):
 
             >>> state = prim.get_joints_default_state()
             >>> state
-            <isaacsim.core.api.utils.types.JointsState object at 0x7f04a0061240>
+            <isaacsim.core.utils.types.JointsState object at 0x7f04a0061240>
             >>>
             >>> state.positions
             [ 0.012  -0.57000005  0.  -2.81  0.  3.037  0.785398  0.04  0.04 ]
@@ -774,7 +774,7 @@ class Articulation(_SinglePrimWrapper):
 
             >>> state = prim.get_joints_state()
             >>> state
-            <isaacsim.core.api.utils.types.JointsState object at 0x7f02f6df57b0>
+            <isaacsim.core.utils.types.JointsState object at 0x7f02f6df57b0>
             >>>
             >>> state.positions
             [ 1.1999920e-02 -5.6962633e-01  1.3480479e-08 -2.8105433e+00 6.8284894e-06
@@ -920,7 +920,7 @@ class Articulation(_SinglePrimWrapper):
 
         .. code-block:: python
 
-            >>> from isaacsim.core.api.utils.types import ArticulationAction
+            >>> from isaacsim.core.utils.types import ArticulationAction
             >>>
             >>> # move all the robot joints to the indicated position
             >>> action = ArticulationAction(joint_positions=np.array([0.0, -1.0, 0.0, -2.2, 0.0, 2.4, 0.8, 0.04, 0.04]))

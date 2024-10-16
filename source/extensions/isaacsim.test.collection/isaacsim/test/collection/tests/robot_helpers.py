@@ -16,9 +16,9 @@ import omni.graph.core as og
 import omni.kit.test
 import usdrt.Sdf
 from isaacsim.core.api.articulations.articulation import Articulation
-from isaacsim.core.api.utils.extensions import get_extension_path_from_name
-from isaacsim.core.api.utils.rotations import quat_to_euler_angles
-from isaacsim.core.api.utils.stage import open_stage_async
+from isaacsim.core.utils.extensions import get_extension_path_from_name
+from isaacsim.core.utils.rotations import quat_to_euler_angles
+from isaacsim.core.utils.stage import open_stage_async
 from omni.isaac.nucleus import get_assets_root_path_async
 
 

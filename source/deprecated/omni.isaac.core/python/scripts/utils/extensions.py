@@ -9,8 +9,8 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.core.utils.extensions has been deprecated in favor of isaacsim.core.api.utils.extensions. Please update your code accordingly."
+    "omni.isaac.core.utils.extensions has been deprecated in favor of isaacsim.core.utils.extensions. Please update your code accordingly."
 )
 
 
-from isaacsim.core.api.utils.extensions import *
+from isaacsim.core.utils.extensions import *

@@ -18,7 +18,7 @@ import omni.kit.app
 import usdrt
 
 # isaacsim
-from isaacsim.core.api.utils.constants import AXES_TOKEN
+from isaacsim.core.utils.constants import AXES_TOKEN
 from omni.kit.usd import layers
 from omni.usd.commands import DeletePrimsCommand
 from pxr import Sdf, Usd, UsdGeom
@@ -37,7 +37,7 @@ def get_current_stage(fabric: bool = False) -> typing.Union[Usd.Stage, usdrt.Usd
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>>
         >>> stage_utils.get_current_stage()
         Usd.Stage.Open(rootLayer=Sdf.Find('anon:0x7fba6c04f840:World7.usd'),
@@ -59,7 +59,7 @@ def update_stage() -> None:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>>
         >>> stage_utils.update_stage()
     """
@@ -74,7 +74,7 @@ async def update_stage_async() -> None:
     .. code-block:: python
 
         >>> import asyncio
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>> from omni.kit.async_engine import run_coroutine
         >>>
         >>> async def task():
@@ -96,7 +96,7 @@ def set_stage_up_axis(axis: str = "z") -> None:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>>
         >>> # set stage up axis to Y-up
         >>> stage_utils.set_stage_up_axis("y")
@@ -120,7 +120,7 @@ def get_stage_up_axis() -> str:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>>
         >>> stage_utils.get_stage_up_axis()
         Z
@@ -141,7 +141,7 @@ def clear_stage(predicate: typing.Optional[typing.Callable[[str], bool]] = None)
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>>
         >>> # clear the whole stage
         >>> stage_utils.clear_stage()
@@ -152,7 +152,7 @@ def clear_stage(predicate: typing.Optional[typing.Callable[[str], bool]] = None)
         >>> stage_utils.clear_stage(predicate)  # after the execution the stage will be /World
     """
     # Note: Need to import this here to prevent circular dependencies.
-    from isaacsim.core.api.utils.prims import (
+    from isaacsim.core.utils.prims import (
         get_all_matching_child_prims,
         get_prim_path,
         is_prim_ancestral,
@@ -196,7 +196,7 @@ def print_stage_prim_paths(fabric: bool = False) -> None:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>>
         >>> # given the stage: /World/Cube, /World/Cube_01, /World/Cube_02.
         >>> stage_utils.print_stage_prim_paths()
@@ -211,7 +211,7 @@ def print_stage_prim_paths(fabric: bool = False) -> None:
         /OmniverseKit_Right
     """
     # Note: Need to import this here to prevent circular dependencies.
-    from isaacsim.core.api.utils.prims import get_prim_path
+    from isaacsim.core.utils.prims import get_prim_path
 
     for prim in traverse_stage(fabric=fabric):
         prim_path = get_prim_path(prim)
@@ -236,7 +236,7 @@ def add_reference_to_stage(usd_path: str, prim_path: str, prim_type: str = "Xfor
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>>
         >>> # load an USD file (franka.usd) to the stage under the path /World/panda
         >>> stage_utils.add_reference_to_stage(
@@ -266,7 +266,7 @@ def create_new_stage() -> Usd.Stage:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>>
         >>> stage_utils.create_new_stage()
         True
@@ -282,7 +282,7 @@ async def create_new_stage_async() -> None:
     .. code-block:: python
 
         >>> import asyncio
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>> from omni.kit.async_engine import run_coroutine
         >>>
         >>> async def task():
@@ -310,7 +310,7 @@ def open_stage(usd_path: str) -> bool:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>>
         >>> stage_utils.open_stage("/home/<user>/Documents/Assets/Robots/Franka/franka.usd")
         True
@@ -341,7 +341,7 @@ async def open_stage_async(usd_path: str) -> typing.Tuple[bool, int]:
     .. code-block:: python
 
         >>> import asyncio
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>> from omni.kit.async_engine import run_coroutine
         >>>
         >>> async def task():
@@ -376,7 +376,7 @@ def save_stage(usd_path: str, save_and_reload_in_place=True) -> bool:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>>
         >>> stage_utils.save_stage("/home/<user>/Documents/Save/stage.usd")
         True
@@ -410,14 +410,14 @@ def close_stage(callback_fn: typing.Callable = None) -> bool:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>>
         >>> stage_utils.close_stage()
         True
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>>
         >>> def callback(*args, **kwargs):
         ...     print("callback:", args, kwargs)
@@ -449,7 +449,7 @@ def set_livesync_stage(usd_path: str, enable: bool) -> bool:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>>
         >>> stage_utils.set_livesync_stage("omniverse://localhost/Users/Live/stage.usd", enable=True)
         server omniverse://localhost: ConnectionStatus.CONNECTING
@@ -483,7 +483,7 @@ def traverse_stage(fabric=False) -> typing.Iterable:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>>
         >>> # given the stage: /World/Cube, /World/Cube_01, /World/Cube_02.
         >>> # Traverse through prims in the stage
@@ -512,7 +512,7 @@ def is_stage_loading() -> bool:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>>
         >>> stage_utils.is_stage_loading()
         False
@@ -551,7 +551,7 @@ def set_stage_units(stage_units_in_meters: float) -> None:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>>
         >>> stage_utils.set_stage_units(1.0)
     """
@@ -587,7 +587,7 @@ def get_stage_units() -> float:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>>
         >>> stage_utils.get_stage_units()
         1.0
@@ -609,7 +609,7 @@ def get_next_free_path(path: str, parent: str = None) -> str:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>>
         >>> # given the stage: /World/Cube, /World/Cube_01.
         >>> # Get the next available path for /World/Cube

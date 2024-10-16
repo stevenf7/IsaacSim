@@ -9,7 +9,7 @@
 from typing import List, Optional, Tuple, Union
 
 import numpy as np
-from isaacsim.core.api.utils.types import ArticulationAction, ArticulationActions
+from isaacsim.core.utils.types import ArticulationAction, ArticulationActions
 
 
 class ArticulationController(object):

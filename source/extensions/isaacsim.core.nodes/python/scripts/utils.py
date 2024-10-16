@@ -10,7 +10,7 @@
 
 import omni
 import omni.replicator.core as rep
-from isaacsim.core.api.utils.prims import set_targets
+from isaacsim.core.utils.prims import set_targets
 
 
 def set_target_prims(primPath: str, targetPrimPaths: list, inputName: str = "inputs:targetPrim"):

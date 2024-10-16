@@ -13,7 +13,7 @@ simulation_app = SimulationApp({"headless": True})
 import omni.physx as _physx
 from isaacsim.core.api import World
 from isaacsim.core.api.robots import Robot
-from isaacsim.core.api.utils.stage import add_reference_to_stage
+from isaacsim.core.utils.stage import add_reference_to_stage
 from omni.isaac.nucleus import get_assets_root_path
 
 my_world = World(stage_units_in_meters=1.0)

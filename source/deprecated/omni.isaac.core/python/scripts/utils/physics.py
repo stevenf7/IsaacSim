@@ -9,8 +9,8 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.core.utils.physics has been deprecated in favor of isaacsim.core.api.utils.physics. Please update your code accordingly."
+    "omni.isaac.core.utils.physics has been deprecated in favor of isaacsim.core.utils.physics. Please update your code accordingly."
 )
 
 
-from isaacsim.core.api.utils.physics import *
+from isaacsim.core.utils.physics import *

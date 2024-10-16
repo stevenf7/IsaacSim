@@ -64,7 +64,7 @@ class GeometryPrim(_SinglePrimWrapper):
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>> from isaacsim.core.api.prims import GeometryPrim
         >>>
         >>> # create a Cube at the given path
@@ -97,7 +97,7 @@ class GeometryPrim(_SinglePrimWrapper):
             self._device = SimulationContext.instance().device
             self._backend_utils = SimulationContext.instance().backend_utils
         else:
-            import isaacsim.core.api.utils.numpy as np_utils
+            import isaacsim.core.utils.numpy as np_utils
 
             self._backend = "numpy"
             self._device = None

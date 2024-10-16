@@ -14,7 +14,7 @@ import omni.kit.app
 import torch
 import warp as wp
 from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
-from isaacsim.core.api.utils.prims import find_matching_prim_paths, get_prim_at_path
+from isaacsim.core.utils.prims import find_matching_prim_paths, get_prim_at_path
 from pxr import PhysxSchema, UsdPhysics
 
 
@@ -51,7 +51,7 @@ class RigidContactView(object):
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>> from isaacsim.core.cloner import GridCloner
         >>> from isaacsim.core.api.prims import RigidContactView
         >>> from pxr import UsdGeom
@@ -117,7 +117,7 @@ class RigidContactView(object):
             if disable_stablization:
                 SimulationContext.instance().get_physics_context().enable_stablization(False)
         else:
-            import isaacsim.core.api.utils.numpy as np_utils
+            import isaacsim.core.utils.numpy as np_utils
 
             self._backend = "numpy"
             self._device = None

@@ -9,8 +9,8 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.core.utils.warp.rotations has been deprecated in favor of isaacsim.core.api.utils.warp.rotations. Please update your code accordingly."
+    "omni.isaac.core.utils.warp.rotations has been deprecated in favor of isaacsim.core.utils.warp.rotations. Please update your code accordingly."
 )
 
 
-from isaacsim.core.api.utils.warp.rotations import *
+from isaacsim.core.utils.warp.rotations import *

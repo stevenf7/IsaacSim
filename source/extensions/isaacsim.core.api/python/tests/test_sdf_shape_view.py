@@ -17,9 +17,9 @@ import warp as wp
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import DynamicCuboid
 from isaacsim.core.api.prims.sdf_shape_view import SdfShapeView
-from isaacsim.core.api.utils.stage import create_new_stage_async, update_stage_async
-from isaacsim.core.api.utils.torch.rotations import euler_angles_to_quats as euler_angles_to_quats_torch
-from isaacsim.core.api.utils.warp.rotations import euler_angles_to_quats as euler_angles_to_quats_warp
+from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
+from isaacsim.core.utils.torch.rotations import euler_angles_to_quats as euler_angles_to_quats_torch
+from isaacsim.core.utils.warp.rotations import euler_angles_to_quats as euler_angles_to_quats_warp
 from omni.physx.scripts import physicsUtils
 
 default_sim_params = {

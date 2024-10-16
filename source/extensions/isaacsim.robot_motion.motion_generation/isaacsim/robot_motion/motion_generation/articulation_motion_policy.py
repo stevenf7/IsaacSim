@@ -10,7 +10,7 @@
 import carb
 import torch
 from isaacsim.core.api.articulations import Articulation, ArticulationSubset
-from isaacsim.core.api.utils.types import ArticulationAction
+from isaacsim.core.utils.types import ArticulationAction
 
 from .motion_policy_interface import MotionPolicy
 

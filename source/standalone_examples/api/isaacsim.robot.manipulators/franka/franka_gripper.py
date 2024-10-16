@@ -14,7 +14,7 @@ simulation_app = SimulationApp({"headless": False})
 import argparse
 
 from isaacsim.core.api import World
-from isaacsim.core.api.utils.types import ArticulationAction
+from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.robot.manipulators.examples.franka import Franka
 
 parser = argparse.ArgumentParser()

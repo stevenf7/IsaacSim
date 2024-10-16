@@ -11,8 +11,8 @@ from typing import Callable, List
 
 import carb
 import omni.ui as ui
-from isaacsim.core.api.utils.stage import update_stage_async
 from isaacsim.core.api.world import World
+from isaacsim.core.utils.stage import update_stage_async
 
 from ..ui_widget_wrappers import *
 

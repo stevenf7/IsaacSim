@@ -16,7 +16,7 @@ Example:
 
 .. code-block:: python
 
-    >>> import isaacsim.core.api.utils.constants as constants_utils
+    >>> import isaacsim.core.utils.constants as constants_utils
     >>>
     >>> # get the x-axis index
     >>> constants_utils.AXES_INDICES['x']
@@ -35,7 +35,7 @@ AXES_TOKEN = {
 }
 """Mapping from axis name to axis USD token
 
-    >>> import isaacsim.core.api.utils.constants as constants_utils
+    >>> import isaacsim.core.utils.constants as constants_utils
     >>>
     >>> # get the x-axis USD token
     >>> constants_utils.AXES_TOKEN['x']

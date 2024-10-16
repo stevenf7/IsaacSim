@@ -17,9 +17,9 @@ import omni.kit.commands
 import omni.timeline
 import omni.ui as ui
 import omni.usd
-from isaacsim.core.api.utils.prims import is_prim_path_valid
-from isaacsim.core.api.utils.stage import get_current_stage
-from isaacsim.core.api.utils.viewports import create_viewport_for_camera
+from isaacsim.core.utils.prims import is_prim_path_valid
+from isaacsim.core.utils.stage import get_current_stage
+from isaacsim.core.utils.viewports import create_viewport_for_camera
 from isaacsim.gui.components.element_wrappers import TextBlock
 from isaacsim.gui.components.menu import make_menu_item_description
 from isaacsim.gui.components.style import COLOR_W, COLOR_X, COLOR_Y, COLOR_Z

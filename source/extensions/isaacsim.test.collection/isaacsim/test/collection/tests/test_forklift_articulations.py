@@ -13,8 +13,8 @@ import omni.kit.test
 import usdrt.Sdf
 from isaacsim.core.api import World
 from isaacsim.core.api.prims import RigidPrim
-from isaacsim.core.api.utils.prims import delete_prim, get_prim_at_path
-from isaacsim.core.api.utils.stage import open_stage_async
+from isaacsim.core.utils.prims import delete_prim, get_prim_at_path
+from isaacsim.core.utils.stage import open_stage_async
 from omni.isaac.nucleus import get_assets_root_path_async
 
 

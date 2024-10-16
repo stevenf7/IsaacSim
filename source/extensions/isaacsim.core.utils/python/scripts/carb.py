@@ -30,7 +30,7 @@ def set_carb_setting(carb_settings: carb.settings.ISettings, setting: str, value
     .. code-block:: python
 
         >>> import carb
-        >>> import isaacsim.core.api.utils.carb as carb_utils
+        >>> import isaacsim.core.utils.carb as carb_utils
         >>>
         >>> settings = carb.settings.get_settings()
         >>> carb_utils.set_carb_setting(settings, "/physics/updateToUsd", True)
@@ -62,7 +62,7 @@ def get_carb_setting(carb_settings: carb.settings.ISettings, setting: str) -> An
     .. code-block:: python
 
         >>> import carb
-        >>> import isaacsim.core.api.utils.carb as carb_utils
+        >>> import isaacsim.core.utils.carb as carb_utils
         >>>
         >>> settings = carb.settings.get_settings()
         >>> carb_utils.get_carb_setting(settings, "/physics/updateToUsd")

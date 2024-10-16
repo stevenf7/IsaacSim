@@ -18,17 +18,17 @@ import numpy as np
 import omni.kit.test
 from isaacsim.core.api.prims.xform_prim import XFormPrim
 from isaacsim.core.api.robots.robot import Robot
-from isaacsim.core.api.utils import distance_metrics
-from isaacsim.core.api.utils.prims import delete_prim, is_prim_path_valid
-from isaacsim.core.api.utils.rotations import gf_quat_to_np_array, quat_to_rot_matrix
-from isaacsim.core.api.utils.stage import (
+from isaacsim.core.api.world import World
+from isaacsim.core.utils import distance_metrics
+from isaacsim.core.utils.prims import delete_prim, is_prim_path_valid
+from isaacsim.core.utils.rotations import gf_quat_to_np_array, quat_to_rot_matrix
+from isaacsim.core.utils.stage import (
     add_reference_to_stage,
     create_new_stage_async,
     get_current_stage,
     open_stage_async,
     update_stage_async,
 )
-from isaacsim.core.api.world import World
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from isaacsim.robot_motion.motion_generation.articulation_motion_policy import ArticulationMotionPolicy

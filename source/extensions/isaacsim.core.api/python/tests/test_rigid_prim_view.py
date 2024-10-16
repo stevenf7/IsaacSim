@@ -20,15 +20,15 @@ from isaacsim.core.api.prims.geometry_prim_view import GeometryPrimView
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from isaacsim.core.api.prims.rigid_prim_view import RigidPrimView
-from isaacsim.core.api.utils.numpy.rotations import euler_angles_to_quats as euler_angles_to_quats_numpy
-from isaacsim.core.api.utils.stage import create_new_stage_async, get_current_stage, update_stage_async
-from isaacsim.core.api.utils.torch.rotations import euler_angles_to_quats as euler_angles_to_quats_torch
+from isaacsim.core.utils.numpy.rotations import euler_angles_to_quats as euler_angles_to_quats_numpy
+from isaacsim.core.utils.stage import create_new_stage_async, get_current_stage, update_stage_async
+from isaacsim.core.utils.torch.rotations import euler_angles_to_quats as euler_angles_to_quats_torch
 
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add support for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
-from isaacsim.core.api.utils.types import DynamicsViewState
-from isaacsim.core.api.utils.warp.rotations import euler_angles_to_quats as euler_angles_to_quats_warp
+from isaacsim.core.utils.types import DynamicsViewState
+from isaacsim.core.utils.warp.rotations import euler_angles_to_quats as euler_angles_to_quats_warp
 from omni.physx.scripts import physicsUtils
 
 default_physics_material = {"static_friction": 1.0, "dynamic_friction": 1.0, "restitution": 0.0}

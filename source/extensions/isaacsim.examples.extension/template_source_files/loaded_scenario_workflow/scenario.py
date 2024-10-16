@@ -23,7 +23,7 @@ class ScenarioTemplate:
 
 
 import numpy as np
-from isaacsim.core.api.utils.types import ArticulationAction
+from isaacsim.core.utils.types import ArticulationAction
 
 """
 This scenario takes in a robot Articulation and makes it move through its joint DOFs.

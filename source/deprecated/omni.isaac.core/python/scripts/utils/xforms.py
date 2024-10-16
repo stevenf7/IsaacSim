@@ -9,8 +9,8 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.core.utils.xforms has been deprecated in favor of isaacsim.core.api.utils.xforms. Please update your code accordingly."
+    "omni.isaac.core.utils.xforms has been deprecated in favor of isaacsim.core.utils.xforms. Please update your code accordingly."
 )
 
 
-from isaacsim.core.api.utils.xforms import *
+from isaacsim.core.utils.xforms import *

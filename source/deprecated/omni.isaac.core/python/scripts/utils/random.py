@@ -9,8 +9,8 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.core.utils.random has been deprecated in favor of isaacsim.core.api.utils.random. Please update your code accordingly."
+    "omni.isaac.core.utils.random has been deprecated in favor of isaacsim.core.utils.random. Please update your code accordingly."
 )
 
 
-from isaacsim.core.api.utils.random import *
+from isaacsim.core.utils.random import *

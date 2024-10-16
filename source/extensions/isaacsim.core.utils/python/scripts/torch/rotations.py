@@ -11,7 +11,7 @@ import typing
 
 import numpy as np
 import torch
-from isaacsim.core.api.utils.torch.maths import *
+from isaacsim.core.utils.torch.maths import *
 from pxr import Gf
 from scipy.spatial.transform import Rotation
 

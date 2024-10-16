@@ -17,7 +17,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Sequence
 
 from isaacsim.core.api.articulations import ArticulationSubset
-from isaacsim.core.api.utils.types import ArticulationAction
+from isaacsim.core.utils.types import ArticulationAction
 
 
 class Commander(ABC):

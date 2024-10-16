@@ -27,7 +27,7 @@ from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": True})
 
-from isaacsim.core.api.utils.extensions import enable_extension
+from isaacsim.core.utils.extensions import enable_extension
 
 enable_extension("isaacsim.benchmark.services")
 
@@ -40,9 +40,9 @@ from isaacsim.core.api import World
 from isaacsim.core.api.articulations import Articulation, ArticulationView
 from isaacsim.core.api.objects import DynamicCuboid, VisualCuboid
 from isaacsim.core.api.prims import GeometryPrimView, RigidPrimView, XFormPrim
-from isaacsim.core.api.utils.stage import add_reference_to_stage, get_stage_units
-from isaacsim.core.api.utils.types import ArticulationAction
 from isaacsim.core.cloner import GridCloner
+from isaacsim.core.utils.stage import add_reference_to_stage, get_stage_units
+from isaacsim.core.utils.types import ArticulationAction
 from omni.isaac.nucleus import get_assets_root_path
 
 

@@ -90,7 +90,7 @@ class GeometryPrimView(XFormPrimView):
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>> from isaacsim.core.cloner import GridCloner
         >>> from isaacsim.core.api.prims import GeometryPrimView
         >>> from pxr import UsdGeom

@@ -10,7 +10,7 @@
 import carb
 import numpy as np
 import omni.kit.test
-from isaacsim.core.api.utils.viewports import (
+from isaacsim.core.utils.viewports import (
     destroy_all_viewports,
     get_id_from_index,
     get_intrinsics_matrix,

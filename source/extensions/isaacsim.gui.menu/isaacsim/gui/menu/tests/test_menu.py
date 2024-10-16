@@ -20,9 +20,9 @@ import omni.kit.commands
 import omni.kit.test
 import omni.usd
 from isaacsim.core.api.objects import DynamicCuboid
-from isaacsim.core.api.utils.prims import get_prim_path
-from isaacsim.core.api.utils.stage import clear_stage, create_new_stage, traverse_stage
-from isaacsim.core.api.utils.viewports import set_camera_view
+from isaacsim.core.utils.prims import get_prim_path
+from isaacsim.core.utils.stage import clear_stage, create_new_stage, traverse_stage
+from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.sensors.physics import _sensor
 from isaacsim.sensors.physx import _range_sensor
 from omni.kit.mainwindow import get_main_window

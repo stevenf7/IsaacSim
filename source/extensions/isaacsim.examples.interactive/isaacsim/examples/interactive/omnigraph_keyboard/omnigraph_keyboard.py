@@ -12,7 +12,7 @@ import numpy as np
 import omni.ext
 import omni.graph.core as og
 from isaacsim.core.api.objects import VisualCuboid
-from isaacsim.core.api.utils.viewports import set_camera_view
+from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.examples.interactive.base_sample import BaseSample
 
 

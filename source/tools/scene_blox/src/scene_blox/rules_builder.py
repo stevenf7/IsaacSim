@@ -45,8 +45,8 @@ def main(args):
     simulation_app = SimulationApp()
 
     from isaacsim.core.api import World
-    from isaacsim.core.api.utils.rotations import quat_to_euler_angles
-    from isaacsim.core.api.utils.stage import open_stage
+    from isaacsim.core.utils.rotations import quat_to_euler_angles
+    from isaacsim.core.utils.stage import open_stage
     from pxr import Gf, Usd, UsdGeom
 
     def get_identifier(prim: Usd.Prim) -> str:

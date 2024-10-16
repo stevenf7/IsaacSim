@@ -17,9 +17,9 @@ from isaacsim.core.api import World
 from isaacsim.core.api.articulations import ArticulationView
 from isaacsim.core.api.objects import DynamicSphere
 from isaacsim.core.api.prims.rigid_prim_view import RigidPrimView
-from isaacsim.core.api.utils.prims import define_prim, get_prim_at_path
-from isaacsim.core.api.utils.stage import add_reference_to_stage, get_current_stage
 from isaacsim.core.cloner import GridCloner
+from isaacsim.core.utils.prims import define_prim, get_prim_at_path
+from isaacsim.core.utils.stage import add_reference_to_stage, get_current_stage
 from omni.isaac.nucleus import get_assets_root_path
 
 # create the world

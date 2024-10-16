@@ -18,14 +18,14 @@ from isaacsim.core.api import World
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from isaacsim.core.api.articulations import Articulation
-from isaacsim.core.api.utils.prims import get_prim_at_path
-from isaacsim.core.api.utils.stage import (
+from isaacsim.core.utils.prims import get_prim_at_path
+from isaacsim.core.utils.stage import (
     add_reference_to_stage,
     create_new_stage_async,
     get_current_stage,
     update_stage_async,
 )
-from isaacsim.core.api.utils.types import ArticulationAction
+from isaacsim.core.utils.types import ArticulationAction
 from omni.isaac.nucleus import get_assets_root_path_async
 from pxr import PhysxSchema, UsdPhysics
 

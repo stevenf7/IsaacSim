@@ -12,8 +12,8 @@ import carb
 import numpy as np
 from isaacsim.core.api.prims.rigid_prim import RigidPrim
 from isaacsim.core.api.robots.robot import Robot
-from isaacsim.core.api.utils.prims import get_prim_at_path
-from isaacsim.core.api.utils.stage import add_reference_to_stage, get_stage_units
+from isaacsim.core.utils.prims import get_prim_at_path
+from isaacsim.core.utils.stage import add_reference_to_stage, get_stage_units
 from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGripper
 from omni.isaac.nucleus import get_assets_root_path
 

@@ -12,7 +12,7 @@ import numpy as np
 from isaacsim.core.api.prims._impl.single_prim_wrapper import _SinglePrimWrapper
 from isaacsim.core.api.prims.rigid_prim_view import RigidPrimView
 from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
-from isaacsim.core.api.utils.types import DynamicState
+from isaacsim.core.utils.types import DynamicState
 
 
 class RigidPrim(_SinglePrimWrapper):
@@ -53,7 +53,7 @@ class RigidPrim(_SinglePrimWrapper):
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.stage as stage_utils
+        >>> import isaacsim.core.utils.stage as stage_utils
         >>> from isaacsim.core.api.prims import RigidPrim
         >>>
         >>> # create a Cube at the given path
@@ -85,7 +85,7 @@ class RigidPrim(_SinglePrimWrapper):
             self._device = SimulationContext.instance().device
             self._backend_utils = SimulationContext.instance().backend_utils
         else:
-            import isaacsim.core.api.utils.numpy as np_utils
+            import isaacsim.core.utils.numpy as np_utils
 
             self._backend = "numpy"
             self._device = None
@@ -407,7 +407,7 @@ class RigidPrim(_SinglePrimWrapper):
 
             >>> state = prim.get_default_state()
             >>> state
-            <isaacsim.core.api.utils.types.DynamicState object at 0x7f7411fcbe20>
+            <isaacsim.core.utils.types.DynamicState object at 0x7f7411fcbe20>
             >>> state.position
             [-7.8622378e-07  1.4450421e-06  1.6135601e-07]
             >>> state.orientation
@@ -434,7 +434,7 @@ class RigidPrim(_SinglePrimWrapper):
             >>> # for the example the rigid body is in free fall
             >>> state = prim.get_current_dynamic_state()
             >>> state
-            <isaacsim.core.api.utils.types.DynamicState object at 0x7f740b36f670>
+            <isaacsim.core.utils.types.DynamicState object at 0x7f740b36f670>
             >>> state.position
             [  0.99999857   2.0000017  -74.2862    ]
             >>> state.orientation

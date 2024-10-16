@@ -8,7 +8,7 @@
 #
 
 import numpy as np
-from isaacsim.core.api.utils.rotations import euler_angles_to_quat
+from isaacsim.core.utils.rotations import euler_angles_to_quat
 from isaacsim.examples.interactive.base_sample import BaseSample
 from isaacsim.robot.manipulators.examples.universal_robots.controllers.pick_place_controller import PickPlaceController
 from isaacsim.robot.manipulators.examples.universal_robots.tasks import BinFilling as BinFillingTask

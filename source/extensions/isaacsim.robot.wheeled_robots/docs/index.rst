@@ -30,7 +30,7 @@ Commanding the robot should be done prior to the physics step using an **Articul
 .. code-block:: python
     :linenos:
 
-    from isaacsim.core.api.utils.types import ArticulationAction
+    from isaacsim.core.utils.types import ArticulationAction
     
     action = ArticulationAction(joint_velocities = np.array([1.14, 1.42]))
     jetbot.apply_wheel_actions(action)

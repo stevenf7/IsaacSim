@@ -11,8 +11,8 @@ from abc import abstractmethod
 
 from isaacsim.core.api import World
 from isaacsim.core.api.scenes.scene import Scene
-from isaacsim.core.api.utils.stage import create_new_stage_async, update_stage_async
-from isaacsim.core.api.utils.viewports import set_camera_view
+from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
+from isaacsim.core.utils.viewports import set_camera_view
 
 
 class BaseSample(object):

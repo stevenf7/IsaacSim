@@ -14,7 +14,7 @@ import omni.kit
 import omni.kit.commands
 
 # isaacsim
-from isaacsim.core.api.utils.stage import get_current_stage
+from isaacsim.core.utils.stage import get_current_stage
 
 # omniverse
 from pxr import Sdf
@@ -33,7 +33,7 @@ def get_rigid_body_enabled(prim_path: str) -> Union[bool, None]:
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.physics as physics_utils
+        >>> import isaacsim.core.utils.physics as physics_utils
         >>>
         >>> # prim without the Physics' Rigid Body property
         >>> physics_utils.get_rigid_body_enabled("/World/Cube")
@@ -61,7 +61,7 @@ def set_rigid_body_enabled(_value, prim_path):
 
     .. code-block:: python
 
-        >>> import isaacsim.core.api.utils.physics as physics_utils
+        >>> import isaacsim.core.utils.physics as physics_utils
         >>>
         >>> physics_utils.set_rigid_body_enabled(False, "/World/Cube")
     """
@@ -83,7 +83,7 @@ async def simulate_async(seconds: float, steps_per_sec: int = 60, callback: Call
     .. code-block:: python
 
         >>> import asyncio
-        >>> import isaacsim.core.api.utils.physics as physics_utils
+        >>> import isaacsim.core.utils.physics as physics_utils
         >>> from omni.kit.async_engine import run_coroutine
         >>>
         >>> async def task():
@@ -95,7 +95,7 @@ async def simulate_async(seconds: float, steps_per_sec: int = 60, callback: Call
     .. code-block:: python
 
         >>> import asyncio
-        >>> import isaacsim.core.api.utils.physics as physics_utils
+        >>> import isaacsim.core.utils.physics as physics_utils
         >>> from omni.kit.async_engine import run_coroutine
         >>>
         >>> def callback(*args, **kwargs):
