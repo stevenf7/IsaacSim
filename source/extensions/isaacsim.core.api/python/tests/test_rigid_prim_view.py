@@ -18,8 +18,9 @@ from isaacsim.core.api import World
 from isaacsim.core.api.objects import DynamicCuboid
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from isaacsim.core.prims import RigidPrim
+from isaacsim.core.prims import RigidPrim, XFormPrim
 from isaacsim.core.utils.numpy.rotations import euler_angles_to_quats as euler_angles_to_quats_numpy
+from isaacsim.core.utils.prims import define_prim
 from isaacsim.core.utils.stage import create_new_stage_async, get_current_stage, update_stage_async
 from isaacsim.core.utils.torch.rotations import euler_angles_to_quats as euler_angles_to_quats_torch
 
@@ -158,12 +159,13 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
 
         num_cubes = 3
         for i in range(num_cubes):
+            define_prim(prim_path=f"/World/Frame_{i+1}")
             DynamicCuboid(
-                prim_path=f"/World/Cube_{i+1}", name=f"cube_{i}", size=1.0, color=np.array([0.5, 0, 0]), mass=0.0
+                prim_path=f"/World/Frame_{i+1}/Cube", name=f"cube_{i}", size=1.0, color=np.array([0.5, 0, 0]), mass=0.0
             )
         await update_stage_async()
         self._cubes_view = RigidPrim(
-            prim_paths_expr="/World/Cube_[1-3]",
+            prim_paths_expr="/World/Frame_[1-3]/Cube",
             name="cubes_view",
             positions=self._array_container([[0.0, 0.0, 0.0], [0.0, 10.0, 0.0], [0.0, -10.0, 0.0]]),
         )
@@ -268,6 +270,8 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             await self.inertias_test()
             await self._setup_scene()
             await self.world_poses_test()
+            await self._setup_scene()
+            await self.local_poses_test()
             await self._setup_scene()
             await self.linear_velocities_test()
             await self._setup_scene()
@@ -850,6 +854,45 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             new_orientations = new_orientations.numpy()
         self.assertTrue(self.isclose(current_positions, new_positions, atol=1e-4).all())
         self.assertTrue(self.isclose(current_orientations, new_orientations, atol=1e-4).all())
+        frames_view = XFormPrim(prim_paths_expr="/World/Frame_[1-3]", name="frames_view")
+        translations = np.array([[0, 0, 0], [0, 10, 5], [0, 3, 5]])
+        translations = self._array_container(
+            translations.tolist() if indices is None else translations[indices].tolist()
+        )
+        new_orientations = euler_angles_to_quats_numpy(
+            euler_angles=np.array([[0, np.pi, 0], [np.pi, 0, 0], [0, 0, np.pi]])
+        )
+        new_orientations = self._array_container(
+            new_orientations.tolist() if indices is None else new_orientations[indices].tolist()
+        )
+        frames_view.set_local_poses(translations=translations, orientations=new_orientations, indices=indices)
+        translations = np.array([[0, 20, 10], [0, 30, 20], [0, 50, 10]])
+        translations = self._array_container(
+            translations.tolist() if indices is None else translations[indices].tolist()
+        )
+        new_orientations = euler_angles_to_quats_numpy(
+            euler_angles=np.array([[0, -np.pi, 0], [-np.pi, 0, 0], [0, 0, -np.pi]])
+        )
+        new_orientations = self._array_container(
+            new_orientations.tolist() if indices is None else new_orientations[indices].tolist()
+        )
+        self._cubes_view.set_local_poses(translations=translations, orientations=new_orientations, indices=indices)
+        current_positions, current_orientations = self._cubes_view.get_world_poses(indices=indices)
+        expected_positions = np.array([[0, 20, -10], [0, -20, -15], [0, -47, 15]])
+        expected_positions = self._array_container(
+            expected_positions.tolist() if indices is None else expected_positions[indices].tolist()
+        )
+        expected_orientations = euler_angles_to_quats_numpy(euler_angles=np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]]))
+        expected_orientations = self._array_container(
+            expected_orientations.tolist() if indices is None else expected_orientations[indices].tolist()
+        )
+        if self._test_cfg["backend"] == "warp":
+            current_positions = current_positions.numpy()
+            expected_positions = expected_positions.numpy()
+            current_orientations = current_orientations.numpy()
+            expected_orientations = expected_orientations.numpy()
+        self.assertTrue(self.isclose(current_positions, expected_positions, atol=1e-4).all())
+        self.assertTrue(self.isclose(current_orientations, expected_orientations, atol=1e-4).all())
 
     async def linear_velocities_test(self, usd=False):
         if self._device == "cpu":

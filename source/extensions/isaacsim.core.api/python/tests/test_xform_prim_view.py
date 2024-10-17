@@ -94,14 +94,23 @@ class TestXFormPrimView(omni.kit.test.AsyncTestCase):
         return
 
     async def test_local_pose(self):
-        # print(euler_angles_to_quats(np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])))
         self._frames_view.set_local_poses(
             translations=np.array([[0, 0, 0], [0, 10, 5], [0, 3, 5]]),
-            orientations=euler_angles_to_quats(np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])),
+            orientations=euler_angles_to_quats(
+                np.array([[0, 180, 0], [180, 0, 0], [0, 0, 180]]), extrinsic=True, degrees=True
+            ),
         )
-        self._targets_view.set_local_poses(translations=np.array([[0, 20, 10], [0, 30, 20], [0, 50, 10]]))
-        current_translations, current_orientations = self._targets_view.get_local_poses()
-        self.assertTrue(np.isclose(current_translations, np.array([[0, 20, 10], [0, 30, 20], [0, 50, 10]])).all())
+        self._targets_view.set_local_poses(
+            translations=np.array([[0, 20, 10], [0, 30, 20], [0, 50, 10]]),
+            orientations=euler_angles_to_quats(
+                np.array([[0, -180, 0], [-180, 0, 0], [0, 0, -180]]), extrinsic=True, degrees=True
+            ),
+        )
+        current_positions, current_orientations = self._targets_view.get_world_poses()
+        self.assertTrue(np.isclose(current_positions, np.array([[0, 20, -10], [0, -20, -15], [0, -47, 15]])).all())
+        self.assertTrue(
+            np.isclose(current_orientations, euler_angles_to_quats(np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]]))).all()
+        )
         return
 
     async def test_local_on_init(self):

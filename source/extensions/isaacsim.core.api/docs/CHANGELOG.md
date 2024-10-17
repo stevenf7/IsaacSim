@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.2.1] - 2024-11-08
+### Changed
+- Changed local_pose tests in xform_prim_view and rigid_prim_view
+
 ## [4.2.0] - 2024-11-06
 ### Added
 - Added residual reporting APIs

@@ -1,1 +1,1 @@
-from .test_extension import *
+scan_for_test_modules = True

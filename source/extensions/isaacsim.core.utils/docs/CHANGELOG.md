@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.1] - 2024-11-08
+### Fixed
+- Fixed backends.transformations.get_world_from_local functions
+
 ## [2.2.0] - 2024-11-05
 ### Added
 - Added joint_names argument to ArticulationActions type.

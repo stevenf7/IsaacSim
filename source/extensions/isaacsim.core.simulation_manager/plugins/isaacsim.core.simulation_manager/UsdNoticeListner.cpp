@@ -74,7 +74,10 @@ void UsdNoticeListener::handle(const pxr::UsdNotice::ObjectsChanged& objectsChan
                         {
                             this->m_physicsScenes.emplace(primPath, pxr::PhysxSchemaPhysxSceneAPI::Apply(prim));
                             for (auto const& [key, AdditionFunc] : this->m_physicsSceneAdditionCallbacks)
+                            {
+                                (void)key;
                                 AdditionFunc(primPath.GetString());
+                            }
                         }
                     }
                 }

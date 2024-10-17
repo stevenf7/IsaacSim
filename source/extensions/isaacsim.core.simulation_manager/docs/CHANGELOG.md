@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.1] - 2024-11-08
+### Changed
+- Changed testing init file
+
 ## [0.2.0] - 2024-11-07
 ### Added
 - Changed C++ plugin to follow the naming guidelines.
