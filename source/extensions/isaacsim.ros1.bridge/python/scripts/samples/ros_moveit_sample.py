@@ -21,7 +21,7 @@ from isaacsim.core.api import PhysicsContext
 from isaacsim.core.utils.prims import create_prim
 from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.gui.components.menu import make_menu_item_description
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from pxr import Gf
 

@@ -37,7 +37,7 @@ from isaacsim.robot_motion.motion_generation.lula.trajectory_generator import (
     LulaCSpaceTrajectoryGenerator,
     LulaTaskSpaceTrajectoryGenerator,
 )
-from omni.isaac.nucleus import get_assets_root_path_async
+from isaacsim.storage.native import get_assets_root_path_async
 from pxr import Sdf, UsdLux
 
 

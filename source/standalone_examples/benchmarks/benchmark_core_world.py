@@ -43,7 +43,7 @@ from isaacsim.core.api.prims import GeometryPrimView, RigidPrimView, XFormPrim
 from isaacsim.core.cloner import GridCloner
 from isaacsim.core.utils.stage import add_reference_to_stage, get_stage_units
 from isaacsim.core.utils.types import ArticulationAction
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 
 
 def define_environment():

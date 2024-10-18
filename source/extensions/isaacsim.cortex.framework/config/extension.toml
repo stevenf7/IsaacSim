@@ -21,7 +21,7 @@ writeTarget.kit = true
 "isaacsim.core.api" = {}
 "isaacsim.robot.manipulators.examples" = {}
 "isaacsim.robot_motion.motion_generation" = {}
-"omni.isaac.nucleus" = {}
+"isaacsim.storage.native" = {}
 
 [[python.module]]
 name = "isaacsim.cortex.framework"

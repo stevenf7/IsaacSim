@@ -18,7 +18,7 @@ from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.robot_motion.motion_generation import ArticulationMotionPolicy, RmpFlow
 from isaacsim.robot_motion.motion_generation.interface_config_loader import load_supported_motion_policy_config
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 
 
 class FrankaRmpFlowExampleScript:

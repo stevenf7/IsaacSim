@@ -31,6 +31,6 @@ name = "isaacsim.util.internal.tests"
 
 [[test]]
 dependencies = [
-    "omni.isaac.nucleus" # test only
+    "isaacsim.storage.native" # test only
 ]
 timeout = 3600

@@ -19,7 +19,7 @@ from isaacsim.core.utils.stage import add_reference_to_stage, create_new_stage, 
 from isaacsim.gui.components.element_wrappers import CollapsableFrame, StateButton
 from isaacsim.gui.components.element_wrappers.core_connectors import LoadButton, ResetButton
 from isaacsim.gui.components.ui_utils import get_style
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 from omni.usd import StageEventType
 from pxr import Sdf, UsdLux
 

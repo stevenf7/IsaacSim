@@ -28,5 +28,5 @@ name = "isaacsim.robot_motion.motion_generation.tests"
 [[test]]
 
 dependencies = [
-    "omni.isaac.nucleus" # test only
+    "isaacsim.storage.native" # test only
 ]

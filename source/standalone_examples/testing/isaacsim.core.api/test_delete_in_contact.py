@@ -19,7 +19,7 @@ from isaacsim.core.api import World as Simulator
 from isaacsim.core.api.prims.rigid_prim import RigidPrim
 from isaacsim.core.utils.prims import add_reference_to_stage, delete_prim
 from isaacsim.sensors.physics import _sensor
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 from pxr import PhysxSchema
 
 #################################################

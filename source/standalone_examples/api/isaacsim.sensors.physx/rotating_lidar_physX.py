@@ -21,7 +21,7 @@ from isaacsim.core.api.objects import DynamicCuboid
 from isaacsim.robot.wheeled_robots.controllers.differential_controller import DifferentialController
 from isaacsim.robot.wheeled_robots.robots import WheeledRobot
 from isaacsim.sensors.physx import RotatingLidarPhysX
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")

@@ -16,7 +16,7 @@ from isaacsim.core.utils.extensions import get_extension_path
 from isaacsim.core.utils.prims import create_prim, set_prim_visibility
 from isaacsim.core.utils.stage import get_next_free_path
 from isaacsim.gui.components.menu import make_menu_item_description
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from pxr import Gf, Tf
 

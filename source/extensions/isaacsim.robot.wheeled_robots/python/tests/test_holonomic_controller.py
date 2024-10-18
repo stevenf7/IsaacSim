@@ -18,7 +18,7 @@ from isaacsim.core.api.robots import Robot
 from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.stage import open_stage_async
 from isaacsim.robot.wheeled_robots.controllers.holonomic_controller import HolonomicController
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 
 
 class TestHolonomicController(omni.kit.test.AsyncTestCase):

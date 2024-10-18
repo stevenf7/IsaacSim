@@ -33,7 +33,7 @@ from isaacsim.gui.components.element_wrappers import (
     TextBlock,
     XYPlot,
 )
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 
 """
 To Anyone Looking at these test cases to see how to make UI events happen via omni.kit.ui_test:

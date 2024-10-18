@@ -13,7 +13,7 @@ simulation_app = SimulationApp({"headless": True})
 
 from isaacsim.core.api import SimulationContext
 from isaacsim.core.utils.stage import add_reference_to_stage
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 
 assets_root_path = get_assets_root_path()
 asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"

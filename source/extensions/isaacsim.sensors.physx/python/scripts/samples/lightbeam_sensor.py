@@ -20,7 +20,7 @@ from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.gui.components.menu import make_menu_item_description
 from isaacsim.gui.components.ui_utils import LABEL_WIDTH, get_style, setup_ui_headers
 from isaacsim.sensors.physx import _range_sensor
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from pxr import Gf, Sdf, UsdGeom, UsdLux, UsdPhysics
 

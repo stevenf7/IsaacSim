@@ -29,7 +29,7 @@ import warp as wp
 from isaacsim.core.api import SimulationContext
 from isaacsim.core.utils import extensions, stage
 from isaacsim.core.utils.render_product import set_camera_prim_path
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 from omni.kit.viewport.utility import get_active_viewport
 from pxr import Gf, Usd, UsdGeom
 

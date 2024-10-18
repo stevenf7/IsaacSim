@@ -27,7 +27,7 @@ import omni.graph.core as og
 import usdrt.Sdf
 from isaacsim.core.api import SimulationContext
 from isaacsim.core.utils import extensions, prims, rotations, stage, viewports
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 from pxr import Gf
 
 # enable ROS bridge extension

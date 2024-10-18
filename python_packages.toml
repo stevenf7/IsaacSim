@@ -521,8 +521,11 @@ inventory.include = [
     # license
     "LICENSE.txt",
     # extensions
-    "exts/omni.isaac.nucleus",
+    "exts/isaacsim.storage.native",
     "exts/isaacsim.core.version",
+    # deprecated extensions
+     "exts/omni.isaac.nucleus",
+     "exts/omni.isaac.version",
     # others
     "VERSION",
 ]

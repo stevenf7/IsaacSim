@@ -17,7 +17,7 @@ preview_image = "data/preview.png"
 "isaacsim.core.api" = {}
 "isaacsim.sensors.physics" = {}
 "isaacsim.core.nodes" = {}
-"omni.isaac.nucleus" = {}
+"isaacsim.storage.native" = {}
 
 [[python.module]]
 name = "isaacsim.robot.policy.examples"

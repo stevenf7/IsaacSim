@@ -35,7 +35,7 @@ from isaacsim.robot_motion.motion_generation.lula.kinematics import LulaKinemati
 from isaacsim.robot_motion.motion_generation.lula.path_planners import RRT
 from isaacsim.robot_motion.motion_generation.lula.trajectory_generator import LulaCSpaceTrajectoryGenerator
 from isaacsim.robot_motion.motion_generation.path_planner_visualizer import PathPlannerVisualizer
-from omni.isaac.nucleus import get_assets_root_path_async
+from isaacsim.storage.native import get_assets_root_path_async
 from pxr import Sdf, UsdLux
 
 

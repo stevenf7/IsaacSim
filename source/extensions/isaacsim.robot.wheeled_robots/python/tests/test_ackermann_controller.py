@@ -22,7 +22,7 @@ from isaacsim.core.utils.prims import delete_prim, get_prim_at_path
 from isaacsim.core.utils.stage import create_new_stage_async
 from isaacsim.robot.wheeled_robots.controllers.ackermann_controller import AckermannController
 from isaacsim.robot.wheeled_robots.robots import WheeledRobot
-from omni.isaac.nucleus import get_assets_root_path_async
+from isaacsim.storage.native import get_assets_root_path_async
 
 
 class TestAckermannController(omni.kit.test.AsyncTestCase):

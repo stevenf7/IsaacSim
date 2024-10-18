@@ -25,7 +25,7 @@ from isaacsim.core.utils.stage import (
     update_stage_async,
 )
 from isaacsim.gui.components.element_wrappers.core_connectors import LoadButton, ResetButton
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test

@@ -33,7 +33,7 @@ from isaacsim.core.utils.rotations import euler_angles_to_quat
 from isaacsim.core.utils.semantics import add_update_semantics
 from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.replicator.scene_blox.grid_utils.config import GlobalRNG
-from omni.isaac.nucleus import get_full_asset_path
+from isaacsim.storage.native import get_full_asset_path
 from pxr import PhysicsSchemaTools, Usd, UsdGeom
 
 

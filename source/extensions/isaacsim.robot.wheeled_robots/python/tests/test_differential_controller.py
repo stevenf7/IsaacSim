@@ -19,7 +19,7 @@ from isaacsim.core.api.robots import Robot
 from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.stage import open_stage_async
 from isaacsim.robot.wheeled_robots.controllers.differential_controller import DifferentialController
-from omni.isaac.nucleus import get_assets_root_path_async
+from isaacsim.storage.native import get_assets_root_path_async
 
 
 class TestDifferentialController(omni.kit.test.AsyncTestCase):

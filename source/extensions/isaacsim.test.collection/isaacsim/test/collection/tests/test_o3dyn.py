@@ -20,7 +20,7 @@ from isaacsim.core.api import World
 from isaacsim.core.utils.extensions import get_extension_path_from_name
 from isaacsim.core.utils.prims import delete_prim
 from isaacsim.core.utils.stage import open_stage_async
-from omni.isaac.nucleus import get_assets_root_path_async
+from isaacsim.storage.native import get_assets_root_path_async
 from omni.physx.scripts.physicsUtils import add_ground_plane
 from pxr import Gf
 

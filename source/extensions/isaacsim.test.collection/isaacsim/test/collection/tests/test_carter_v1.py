@@ -21,7 +21,7 @@ from isaacsim.core.api.articulations.articulation import Articulation
 from isaacsim.core.utils.extensions import get_extension_path_from_name
 from isaacsim.core.utils.prims import delete_prim
 from isaacsim.core.utils.stage import open_stage_async
-from omni.isaac.nucleus import get_assets_root_path_async
+from isaacsim.storage.native import get_assets_root_path_async
 
 from .robot_helpers import init_robot_sim, set_physics_frequency, setup_robot_og
 

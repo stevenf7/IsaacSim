@@ -33,7 +33,7 @@ from isaacsim.core.utils.semantics import add_update_semantics
 from isaacsim.core.utils.stage import add_reference_to_stage, get_current_stage, open_stage_async
 from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.sensors.camera import Camera
-from omni.isaac.nucleus import get_assets_root_path_async
+from isaacsim.storage.native import get_assets_root_path_async
 from pxr import Gf, Sdf, UsdLux
 
 from .common import add_carter_ros, add_cube, get_qos_profile

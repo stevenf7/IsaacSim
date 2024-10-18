@@ -21,7 +21,7 @@ from isaacsim.core.api.materials.particle_material import ParticleMaterial
 from isaacsim.core.api.prims.soft.cloth_prim import ClothPrim
 from isaacsim.core.api.prims.soft.cloth_prim_view import ClothPrimView
 from isaacsim.core.api.prims.soft.particle_system import ParticleSystem
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 from omni.physx.scripts import deformableUtils, physicsUtils
 from pxr import Gf, UsdGeom
 

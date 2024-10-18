@@ -30,7 +30,7 @@ from isaacsim.core.api.objects import DynamicCuboid
 from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.stage import open_stage_async
 from isaacsim.core.utils.xforms import get_world_pose
-from omni.isaac.nucleus import get_assets_root_path_async
+from isaacsim.storage.native import get_assets_root_path_async
 from pxr import Gf, Sdf, UsdGeom, UsdPhysics
 
 from .common import get_qos_profile

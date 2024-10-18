@@ -13,7 +13,7 @@ import omni.graph.core as og
 import omni.usd
 from isaacsim.core.api.objects.ground_plane import GroundPlane
 from isaacsim.examples.interactive.base_sample import BaseSample
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 from pxr import Sdf, UsdLux
 
 

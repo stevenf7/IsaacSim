@@ -25,7 +25,7 @@ import omni.kit.test
 import omni.kit.usd
 import usdrt.Sdf
 from isaacsim.core.utils.physics import simulate_async
-from omni.isaac.nucleus import get_assets_root_path_async
+from isaacsim.storage.native import get_assets_root_path_async
 from pxr import Gf, Sdf, UsdGeom
 
 from .common import add_carter, add_carter_ros, add_nova_carter_ros, get_qos_profile, set_rotate, set_translate

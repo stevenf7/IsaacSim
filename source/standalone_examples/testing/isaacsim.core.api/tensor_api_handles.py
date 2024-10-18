@@ -14,7 +14,7 @@ import omni.physx as _physx
 from isaacsim.core.api import World
 from isaacsim.core.api.robots import Robot
 from isaacsim.core.utils.stage import add_reference_to_stage
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 
 my_world = World(stage_units_in_meters=1.0)
 my_world.scene.add_default_ground_plane()

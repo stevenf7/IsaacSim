@@ -33,7 +33,7 @@ from isaacsim.core.utils.stage import (
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from isaacsim.robot_motion.motion_generation.articulation_motion_policy import ArticulationMotionPolicy
 from isaacsim.robot_motion.motion_generation.lula.motion_policies import RmpFlow
-from omni.isaac.nucleus import get_assets_root_path_async
+from isaacsim.storage.native import get_assets_root_path_async
 from pxr import Gf, Sdf, UsdLux
 
 

@@ -3,12 +3,12 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.3.2"
+version = "1.0.0"
 category = "Simulation"
-title = "Isaac Sim Nucleus"
+title = "Isaac Sim Native Storage"
 description = "Nucleus"
 authors = ["Isaac Sim Team"]
-repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.nucleus"
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.storage.native"
 keywords = ["isaac"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
@@ -21,7 +21,7 @@ writeTarget.kit = true
 "omni.client" = {}
 
 [[python.module]]
-name = "omni.isaac.nucleus"
+name = "isaacsim.storage.native"
 
 [settings]
 persistent.isaac.asset_root.default = "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"

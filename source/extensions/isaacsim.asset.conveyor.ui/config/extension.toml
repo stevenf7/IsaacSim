@@ -20,7 +20,7 @@ keywords = ["kit", "example", "ui"]
 "omni.kit.window.preferences" = {}
 "omni.usd" = {}
 "isaacsim.asset.conveyor" = {}
-"omni.isaac.nucleus" = {}
+"isaacsim.storage.native" = {}
 "omni.kit.widget.filebrowser" = {}
 
 # Main module for the Python interface

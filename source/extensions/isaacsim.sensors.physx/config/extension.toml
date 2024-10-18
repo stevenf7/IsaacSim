@@ -57,5 +57,5 @@ stdoutFailPatterns.exclude = [
 ]
 
 dependencies = [
-    "omni.isaac.nucleus" # test only
+    "isaacsim.storage.native" # test only
 ]

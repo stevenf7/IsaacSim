@@ -15,7 +15,7 @@ import omni.kit.test
 from isaacsim.core.api.robots import Robot
 from isaacsim.core.utils.stage import get_current_stage, open_stage_async
 from isaacsim.core.utils.viewports import get_viewport_names
-from omni.isaac.nucleus import get_assets_root_path_async
+from isaacsim.storage.native import get_assets_root_path_async
 from pxr import UsdRender
 
 
