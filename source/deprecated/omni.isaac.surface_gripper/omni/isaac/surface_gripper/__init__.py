@@ -18,4 +18,4 @@ carb.log_warn(
 )
 
 from isaacsim.robot.surface_gripper import _surface_gripper
-from isaacsim.robot.surface_gripper._impl import *
+from isaacsim.robot.surface_gripper.impl import *

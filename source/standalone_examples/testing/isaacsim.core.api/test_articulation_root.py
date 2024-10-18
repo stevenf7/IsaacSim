@@ -17,8 +17,7 @@ from isaacsim.core.api import World
 from isaacsim.core.api.articulations import Articulation
 from isaacsim.core.utils.stage import add_reference_to_stage
 
-asset_path = "data/orientation_bug.usd"
-
+asset_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data/orientation_bug.usd")
 my_world = World(stage_units_in_meters=1.0)
 add_reference_to_stage(usd_path=asset_path, prim_path="/World")
 articulated = Articulation(prim_path="/World/microwave")

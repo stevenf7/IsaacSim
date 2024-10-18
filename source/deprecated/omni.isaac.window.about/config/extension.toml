@@ -21,8 +21,7 @@ warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.app.
 [[python.module]]
 name = "omni.isaac.window.about"
 
-[test]
-dependencies = []
-
-stdoutFailPatterns.include = []
-stdoutFailPatterns.exclude = []
+[[test]]
+stdoutFailPatterns.exclude = [
+    "*[Error] [carb.glinterop.plugin] GLInteropContext::init: carb::windowing is not available*",
+]

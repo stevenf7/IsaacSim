@@ -26,3 +26,11 @@ name = "omni.isaac.conveyor.ui"
 
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.asset.conveyor.ui."
+
+[[test]]
+dependencies = [
+    "omni.kit.ui_test"
+]
+stdoutFailPatterns.exclude = [
+    "*[Error] [carb.glinterop.plugin] GLInteropContext::init: carb::windowing is not available*",
+]

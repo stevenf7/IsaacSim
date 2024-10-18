@@ -35,5 +35,6 @@ exclude = ["Ogn*Database.py"]
 timeout = 1200
 
 stdoutFailPatterns.exclude = [
-    "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_robots_manipulators_IsaacGripperController: [/TestGraph] OmniGraph Error: No robot prim found for the articulation controller*",
+    "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_robot_manipulators_IsaacGripperController: [/TestGraph] OmniGraph Error: No robot prim found for the articulation controller*",
+    "*[Error] [carb.glinterop.plugin] GLInteropContext::init: carb::windowing is not available*",
 ]
