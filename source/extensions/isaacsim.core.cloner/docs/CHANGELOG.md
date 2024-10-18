@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.0] - 2024-10-10
+### Changed
+- Physics replication will no longer be unregistered by default when replication is set to False. Instead, an argument is added to `clone` for unregistering replication.
+
 ## [1.0.0] - 2024-09-24
 ### Changed
 - Extension renamed to isaacsim.core.cloner

@@ -116,6 +116,7 @@ class Cloner:
         base_env_path: str = None,
         root_path: str = None,
         copy_from_source: bool = False,
+        unregister_physics_replication: bool = False,
     ):
 
         """Clones a source prim at user-specified destination paths.
@@ -133,6 +134,7 @@ class Cloner:
             root_path (str): Prefix path for each environment. Required if replicate_physics=True and generate_paths() not called.
             copy_from_source: (bool): Setting this to False will inherit all clones from the source prim; any changes made to the source prim will be reflected in the clones.
                          Setting this to True will make copies of the source prim when creating new clones; changes to the source prim will not be reflected in clones. Defaults to False. Note that setting this to True will take longer to execute.
+            unregister_physics_replication: Setting this to True will unregister the physics replicator on the current stage.
         Raises:
             Exception: Raises exception if source prim path is not valid.
 
@@ -288,7 +290,7 @@ class Cloner:
 
         if replicate_physics and has_clones:
             self.replicate_physics(source_prim_path, prim_paths, base_env_path, root_path)
-        else:
+        elif unregister_physics_replication:
             get_physx_replicator_interface().unregister_replicator(
                 UsdUtils.StageCache.Get().Insert(self._stage).ToLongInt()
             )
