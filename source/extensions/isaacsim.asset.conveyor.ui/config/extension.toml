@@ -20,6 +20,8 @@ keywords = ["kit", "example", "ui"]
 "omni.kit.window.preferences" = {}
 "omni.usd" = {}
 "isaacsim.asset.conveyor" = {}
+"omni.isaac.nucleus" = {}
+"omni.kit.widget.filebrowser" = {}
 
 # Main module for the Python interface
 [[python.module]]
@@ -27,3 +29,13 @@ name = "isaacsim.asset.conveyor.ui"
 
 [[python.module]]
 name = "isaacsim.asset.conveyor.ui.tests"
+
+[[test]]
+
+dependencies = [
+    "omni.kit.ui_test"
+]
+stdoutFailPatterns.exclude = [
+    "*[Error] [carb.glinterop.plugin] GLInteropContext::init: carb::windowing is not available*",
+]
+    

@@ -39,6 +39,8 @@ dependencies = [
 ]
 
 stdoutFailPatterns.exclude = [
-    "*[isaacsim.ros2.bridge.plugin]*", # Ada multi gpu doesn't support this yet
-    "*[isaacsim.ros2.bridge.scripts.extension]*", # Ada multi gpu doesn't support this yet
+    "*[isaacsim.ros2.bridge.plugin]*",
+    "*[isaacsim.ros2.bridge.scripts.extension]*",
+    "*[Error] [carb.glinterop.plugin] GLInteropContext::init: carb::windowing is not available*",
 ]
+    
