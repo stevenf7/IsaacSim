@@ -18,34 +18,27 @@ Carbonite SDK API:
 
 #include <carb/Defines.h>
 #include <carb/Interface.h>
+#include <carb/PluginUtils.h>
+#include <carb/settings/ISettings.h>
+
+#include <omni/core/IWeakObject.h>
+#include <omni/ext/IExt.h>
+#include <omni/kit/xr/system/openxr/IOpenXRComponent.h>
+#include <omni/kit/xr/system/openxr/IOpenXRExtension.h>
 
 #include <cstdint>
+#include <optional>
+#include <vector>
 
-namespace isaacsim
-{
-namespace xr
-{
-namespace openxr
+namespace isaacsim::xr::openxr
 {
 
-// ------------------
-// custom API declaration. E.g.:
-CARB_EXPORT void setDefaultStatus(const char* status);
-// ------------------
-
-/**
- * Carbonite interface
- */
 struct IOpenxr
 {
     CARB_PLUGIN_INTERFACE("isaacsim::xr::openxr::IOpenxr", 1, 0);
 
-    // ------------------
-    // custom API declaration. E.g.:
-    virtual bool registerObject(uint32_t id) = 0;
-    // ------------------
+    virtual std::optional<std::array<XrHandJointLocationEXT, XR_HAND_JOINT_COUNT_EXT>> locate_hand_joints(
+        XrHandEXT hand, std::optional<XrTime> time) noexcept(false) = 0;
 };
 
 } // namespace isaacsim
-} // namespace xr
-} // namespace openxr

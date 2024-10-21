@@ -169,6 +169,7 @@ links.exts.include = [
     "usdrt.scenegraph",
     "omni.graph.tools",
     "omni.kit.test",
+    "omni.kit.xr.core",
 ]
 
 

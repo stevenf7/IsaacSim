@@ -7,4 +7,5 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+from .. import _openxr as OpenXRSpec
 from .extension import *
