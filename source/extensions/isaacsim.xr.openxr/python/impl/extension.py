@@ -21,10 +21,7 @@ def acquire_openxr_interface():
     return _openxr_interface
 
 
-set_default_status = _openxr.set_default_status
-
-
-class Extension(omni.ext.IExt):
+class OpenXR(omni.ext.IExt):
     """The Extension class"""
 
     def on_startup(self, ext_id):
@@ -43,3 +40,6 @@ class Extension(omni.ext.IExt):
         global _openxr_interface
         _openxr.release_openxr_interface(_openxr_interface)
         _openxr_interface = None
+
+    def locate_hand_joints(self, hand, time=None):
+        return _openxr_interface.locate_hand_joints(hand, time)

@@ -11,6 +11,8 @@ project_ext_plugin(ext, "isaacsim.xr.openxr.plugin")
     includedirs {
         "include",
         "plugins/isaacsim.xr.openxr",
+        "%{root}/_build/%{platform}/%{config}/extsbuild/omni.kit.xr.core/include",
+        "%{target_deps}/openxr/include",
     }
 
     filter { "configurations:debug" }
@@ -30,8 +32,10 @@ project_ext_bindings {
 }
     dependson { "isaacsim.xr.openxr.plugin" }
     links { "isaacsim.xr.openxr.plugin" }
-    includedirs { 
+    includedirs {
         "include",
+        "%{root}/_build/%{platform}/%{config}/extsbuild/omni.kit.xr.core/include",
+        "%{target_deps}/openxr/include",
     }
 
 -- -------------------------------------
