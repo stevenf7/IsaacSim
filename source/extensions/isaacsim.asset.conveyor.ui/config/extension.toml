@@ -15,7 +15,6 @@ keywords = ["kit", "example", "ui"]
 
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
-"omni.kit.test" = {}
 "omni.kit.uiapp" = {}
 "omni.kit.window.preferences" = {}
 "omni.usd" = {}
@@ -33,7 +32,8 @@ name = "isaacsim.asset.conveyor.ui.tests"
 [[test]]
 
 dependencies = [
-    "omni.kit.ui_test"
+    "omni.kit.ui_test",
+    "omni.kit.test"
 ]
 stdoutFailPatterns.exclude = [
     "*[Error] [carb.glinterop.plugin] GLInteropContext::init: carb::windowing is not available*",

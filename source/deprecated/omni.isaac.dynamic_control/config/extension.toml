@@ -26,7 +26,7 @@ writeTarget.kit = true
 "omni.usd.libs" = {}
 "omni.kit.commands" = {}
 "omni.kit.pip_archive" = {} # pulls in numpy
-"omni.kit.test" = {}
+
 "omni.usd" = {}
 
 [[python.module]]
@@ -43,7 +43,8 @@ recursive = false
 [[test]]
 
 dependencies = [
-    "isaacsim.storage.native"
+    "isaacsim.storage.native",
+    "omni.kit.test"
 ]
 
 [deprecation]
