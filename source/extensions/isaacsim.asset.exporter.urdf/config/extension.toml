@@ -19,7 +19,6 @@ writeTarget.platform = true # pip prebundle makes this extension os specific
 
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
-"omni.kit.test" = {}
 "omni.kit.pip_archive" = {}
 "isaacsim.gui.components" = {}
 
@@ -31,3 +30,9 @@ name = "isaacsim.asset.exporter.urdf"
 
 [[python.module]]
 name = "isaacsim.asset.exporter.urdf.tests"
+
+[[test]]
+
+dependencies = [
+    "omni.kit.test"
+]

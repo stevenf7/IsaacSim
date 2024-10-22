@@ -17,8 +17,6 @@ preview_image = "data/preview.png"
 writeTarget.kit = true
 target.platform  = ["linux-*"]
 
-[dependencies]
-"omni.kit.test" = {}
 
 [[python.module]]
 path = "pip_prebundle"
@@ -35,3 +33,9 @@ exts."omni.isaac.repl".port = 8223
 
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.1.0"
+
+[[test]]
+
+dependencies = [
+    "omni.kit.test"
+]

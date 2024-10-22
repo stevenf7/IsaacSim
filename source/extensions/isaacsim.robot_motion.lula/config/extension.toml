@@ -18,7 +18,6 @@ writeTarget.kit = true
 writeTarget.platform = true # pip prebundle makes this extension os specific
 
 [dependencies]
-"omni.kit.test" = {}
 "omni.kit.pip_archive" = {}
 
 [[python.module]]
@@ -29,3 +28,7 @@ name = "isaacsim.robot_motion.lula"
 
 [[python.module]]
 name = "isaacsim.robot_motion.lula.tests"
+[[test]]
+dependencies = [
+    "omni.kit.test"
+]
