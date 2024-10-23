@@ -15,7 +15,7 @@ import numpy as np
 import omni.kit.test
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import DynamicCuboid
-from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.prims import SingleXFormPrim
 from isaacsim.core.utils.semantics import add_update_semantics
 from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
 from isaacsim.sensors.camera import Camera
@@ -53,7 +53,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
             )
         )
         self.xform = self.my_world.scene.add(
-            XFormPrim(
+            SingleXFormPrim(
                 prim_path="/World/rig",
                 name="rig",
                 position=np.array([5.0, 0.0, 5.0]),

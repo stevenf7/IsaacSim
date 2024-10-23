@@ -37,17 +37,17 @@ import carb
 import numpy as np
 from isaacsim.benchmark.services import BaseIsaacBenchmark
 from isaacsim.core.api import World
-from isaacsim.core.api.articulations import Articulation, ArticulationView
 from isaacsim.core.api.objects import DynamicCuboid, VisualCuboid
-from isaacsim.core.api.prims import GeometryPrimView, RigidPrimView, XFormPrim
 from isaacsim.core.cloner import GridCloner
-from isaacsim.core.utils.stage import add_reference_to_stage, get_stage_units
-from isaacsim.core.utils.types import ArticulationAction
+from isaacsim.core.prims import Articulation, GeometryPrim, RigidPrim, XFormPrim
+from isaacsim.core.utils.prims import define_prim
+from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.storage.native import get_assets_root_path
 
 
 def define_environment():
-    XFormPrim(prim_path="/World/env_0", position=np.array([0.0, 0.0, 0.0]))
+    define_prim(prim_path="/World/env_0", prim_type="Xform")
+    XFormPrim("/World/env_0", positions=np.array([[0.0, 0.0, 0.0]]))
     cube_1 = VisualCuboid(
         prim_path="/World/env_0/new_cube_1",
         name="visual_cube",
@@ -83,8 +83,8 @@ def define_environment():
     asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
     add_reference_to_stage(usd_path=asset_path, prim_path="/World/env_0/Franka_1")
     add_reference_to_stage(usd_path=asset_path, prim_path="/World/env_0/Franka_2")
-    XFormPrim(prim_path="/World/env_0/Franka_1", name="my_franka_1", position=np.array([0.0, 2.0, 0.0]))
-    XFormPrim(prim_path="/World/env_0/Franka_2", name="my_franka_2", position=np.array([0.0, -2.0, 0.0]))
+    XFormPrim("/World/env_0/Franka_1", name="my_franka_1", positions=np.array([[0.0, 2.0, 0.0]]))
+    XFormPrim("/World/env_0/Franka_2", name="my_franka_2", positions=np.array([[0.0, -2.0, 0.0]]))
 
 
 def clone_environments():
@@ -96,24 +96,24 @@ def clone_environments():
 
 def create_cube_views():
     my_world.scene.add(
-        GeometryPrimView(
+        GeometryPrim(
             prim_paths_expr="/World/env_*/new_cube_1",
             name="visual_cube_view",
         )
     )
-    my_world.scene.add(RigidPrimView(prim_paths_expr="/World/env_*/new_cube_2", name="rigid_cube_view_1"))
-    my_world.scene.add(RigidPrimView(prim_paths_expr="/World/env_*/new_cube_3", name="rigid_cube_view_2"))
+    my_world.scene.add(RigidPrim(prim_paths_expr="/World/env_*/new_cube_2", name="rigid_cube_view_1"))
+    my_world.scene.add(RigidPrim(prim_paths_expr="/World/env_*/new_cube_3", name="rigid_cube_view_2"))
 
 
 def create_articulation_views():
     my_world.scene.add(
-        ArticulationView(
+        Articulation(
             prim_paths_expr="/World/env_*/Franka_1",
             name="articulation_view_1",
         )
     )
     my_world.scene.add(
-        ArticulationView(
+        Articulation(
             prim_paths_expr="/World/env_*/Franka_2",
             name="articulation_view_2",
         )

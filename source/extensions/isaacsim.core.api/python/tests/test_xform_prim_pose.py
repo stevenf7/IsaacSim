@@ -15,7 +15,7 @@ import numpy as np
 import omni.kit.test
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.prims import SingleXFormPrim
 from isaacsim.core.utils.rotations import euler_angles_to_quat
 
 
@@ -35,7 +35,7 @@ class TestXformPrimPose(omni.kit.test.AsyncTestCase):
         position = [1.0, 2.0, 3.0]
         orientation = np.array(euler_angles_to_quat([45, -60, 180], degrees=True))
         scale = np.array([0.1, 0.1, 0.1])
-        xform_prim = XFormPrim("/test", "test", position=np.array(position), orientation=orientation, scale=scale)
+        xform_prim = SingleXFormPrim("/test", "test", position=np.array(position), orientation=orientation, scale=scale)
 
         real_position, real_orientation = xform_prim.get_local_pose()
         real_scale = xform_prim.get_world_scale()
@@ -44,14 +44,14 @@ class TestXformPrimPose(omni.kit.test.AsyncTestCase):
             self.assertAlmostEqual(real_orientation[i], orientation[i])
             self.assertAlmostEqual(scale[i], real_scale[i])
 
-        xform_prim = XFormPrim("/test_2", "test", scale=scale)
+        xform_prim = SingleXFormPrim("/test_2", "test", scale=scale)
         real_position, real_orientation = xform_prim.get_local_pose()
         real_scale = xform_prim.get_world_scale()
         for i in range(3):
             # print(scale[i])
             self.assertAlmostEqual(scale[i], real_scale[i])
 
-        xform_prim = XFormPrim("/test_3", "test")
+        xform_prim = SingleXFormPrim("/test_3", "test")
 
         xform_prim.set_local_scale(scale)
         real_position, real_orientation = xform_prim.get_local_pose()

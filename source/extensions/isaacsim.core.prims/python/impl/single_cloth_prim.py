@@ -11,34 +11,25 @@ from typing import List, Optional, Sequence, Union
 
 import carb
 import numpy as np
-
-# omniverse
-import omni
 import torch
-from isaacsim.core.api.materials.particle_material import ParticleMaterial
-from isaacsim.core.api.prims._impl.single_prim_wrapper import _SinglePrimWrapper
-from isaacsim.core.api.prims.soft.cloth_prim_view import ClothPrimView
-
-# isaac.core.soft
-from isaacsim.core.api.prims.soft.particle_system import ParticleSystem
-from isaacsim.core.api.prims.xform_prim import XFormPrim
-
-# isaac-core
-from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
 from isaacsim.core.utils.stage import get_current_stage
 from isaacsim.core.utils.types import DynamicState
 from omni.physx.scripts import particleUtils, physicsUtils
 from pxr import Gf, PhysxSchema, Sdf, UsdGeom, UsdPhysics, UsdShade
 
+from ._impl.single_prim_wrapper import _SinglePrimWrapper
+from .cloth_prim import ClothPrim
+from .single_particle_system import SingleParticleSystem
 
-class ClothPrim(_SinglePrimWrapper):
+
+class SingleClothPrim(_SinglePrimWrapper):
     """Cloth primitive object provide functionalities to create and control cloth parameters"""
 
     def __init__(
         self,
         prim_path: str,
-        particle_system: ParticleSystem,
-        particle_material: Optional[ParticleMaterial] = None,
+        particle_system: SingleParticleSystem,
+        particle_material: Optional["ParticleMaterial"] = None,
         name: Optional[str] = "cloth",
         position: Optional[Sequence[float]] = None,
         orientation: Optional[Sequence[float]] = None,
@@ -57,7 +48,7 @@ class ClothPrim(_SinglePrimWrapper):
         """Creates a cloth at prim_path given a particle_system and the cloth parameters.
         Args:
             prim_path (str): the absolute path that the prim is supposed to be registered in.
-            particle_system (ParticleSystem): the particle system that this cloth is using.
+            particle_system (SingleParticleSystem): the particle system that this cloth is using.
             particle_material (ParticleMaterial): the particle material that is cloth is using.
             name (str, optional): name given to the prim, this can be different than the prim path. Defaults to None.
             position (Sequence[float], optional): the position of the center of the cloth.
@@ -91,6 +82,9 @@ class ClothPrim(_SinglePrimWrapper):
         self._stage = get_current_stage()
         self._prim = self._stage.GetPrimAtPath(prim_path)
         self._mesh = UsdGeom.Mesh.Get(self._stage, prim_path)
+
+        from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
+
         if SimulationContext.instance() is not None:
             self._backend = SimulationContext.instance().backend
             self._device = SimulationContext.instance().device
@@ -171,7 +165,7 @@ class ClothPrim(_SinglePrimWrapper):
         if visible is not None:
             visible = self._backend_utils.create_tensor_from_list([visible], dtype="bool", device=self._device)
 
-        self._cloth_prim_view = ClothPrimView(
+        self._cloth_prim_view = ClothPrim(
             prim_paths_expr=prim_path,
             particle_systems=particle_system,
             name=name,

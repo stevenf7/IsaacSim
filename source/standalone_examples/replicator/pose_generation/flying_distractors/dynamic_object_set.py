@@ -145,7 +145,7 @@ class DynamicObjectSet(DynamicAssetSet):
                 color=color,
             )
             self.glass_mats.append(material)
-            dynamic_prim.apply_visual_material(material)
+            dynamic_prim.apply_visual_materials([material])
             self.glass_asset_paths.append(object_path)
             self.glass_assets.append(dynamic_prim)
             self.glass_object_mesh_paths.append(mesh_path)

@@ -53,7 +53,10 @@ class FlyingDistractors:
         for asset_set in itertools.chain(self.shape_sets, self.object_sets):
             for asset_name in asset_set.asset_names:
                 object_xform = self.world.scene.get_object(asset_name)
-                object_xform.set_visibility(visible=visible)
+                try:
+                    object_xform.set_visibilities([visible])
+                except:
+                    object_xform.set_visibility(visible)
 
     def reset_asset_positions(self):
         """Reset the positions of all assets contained in the managed asset sets to be within its corresponding

@@ -10,7 +10,7 @@ from typing import List, Optional
 
 import isaacsim.robot.manipulators.controllers as manipulators_controllers
 import numpy as np
-from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.rotations import euler_angles_to_quat
 from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.robot.manipulators.examples.universal_robots.controllers.rmpflow_controller import RMPFlowController
@@ -23,7 +23,7 @@ class PickPlaceController(manipulators_controllers.PickPlaceController):
     Args:
         name (str): [description]
         surface_gripper (SurfaceGripper): [description]
-        robot_articulation(Articulation): [description]
+        robot_articulation(SingleArticulation): [description]
         events_dt (Optional[List[float]], optional): [description]. Defaults to None.
     """
 
@@ -31,7 +31,7 @@ class PickPlaceController(manipulators_controllers.PickPlaceController):
         self,
         name: str,
         gripper: SurfaceGripper,
-        robot_articulation: Articulation,
+        robot_articulation: SingleArticulation,
         events_dt: Optional[List[float]] = None,
     ) -> None:
         if events_dt is None:

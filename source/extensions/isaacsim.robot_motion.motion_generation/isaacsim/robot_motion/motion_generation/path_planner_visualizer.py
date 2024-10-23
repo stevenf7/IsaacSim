@@ -11,7 +11,8 @@ from typing import List
 
 import carb
 import numpy as np
-from isaacsim.core.api.articulations import Articulation, ArticulationSubset
+from isaacsim.core.api.articulations import ArticulationSubset
+from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.types import ArticulationAction
 
 from .path_planning_interface import PathPlanner
@@ -23,12 +24,12 @@ class PathPlannerVisualizer:
     ArticulationActions that may be directly sent to the robot Articulation in order to visualize the planned path.
 
     Args:
-        robot_articulation (Articulation): An Articulation object describing a single simulated robot.
+        robot_articulation (SingleArticulation): An Articulation object describing a single simulated robot.
         path_planner (PathPlanner):  A PathPlanner object that has been configured to compute plans for the robot
             represented by the robot Articulation.
     """
 
-    def __init__(self, robot_articulation: Articulation, path_planner: PathPlanner) -> None:
+    def __init__(self, robot_articulation: SingleArticulation, path_planner: PathPlanner) -> None:
         self._robot_articulation = robot_articulation
 
         self._planner = path_planner
@@ -110,11 +111,11 @@ class PathPlannerVisualizer:
         """
         return self._watched_joints_view
 
-    def get_robot_articulation(self) -> Articulation:
+    def get_robot_articulation(self) -> SingleArticulation:
         """Get the robot Articulation
 
         Returns:
-            Articulation: Articulation object describing the robot.
+            SingleArticulation: Articulation object describing the robot.
         """
         return self._robot_articulation
 

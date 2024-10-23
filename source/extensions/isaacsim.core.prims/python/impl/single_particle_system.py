@@ -7,23 +7,18 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from typing import Optional, Sequence, Tuple
+from typing import Optional, Sequence
 
 import carb
 import isaacsim.core.utils.prims as prim_utils
-
-# isaac-core
 import isaacsim.core.utils.stage as stage_utils
-from isaacsim.core.api.materials.particle_material import ParticleMaterial
-from isaacsim.core.api.prims.soft.particle_system_view import ParticleSystemView
-from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
 from isaacsim.core.utils.prims import get_prim_at_path, is_prim_path_valid
-
-# omniverse
 from pxr import PhysxSchema, Usd
 
+from .particle_system import ParticleSystem
 
-class ParticleSystem:
+
+class SingleParticleSystem:
     """A wrapper around PhysX particle system.
 
     PhysX uses GPU-accelerated position-based-dynamics (PBD) particle simulation [1]. The particle system
@@ -97,6 +92,8 @@ class ParticleSystem:
                 are not needed.
         """
         # store constants
+        from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
+
         if SimulationContext.instance() is not None:
             self._backend = SimulationContext.instance().backend
             self._device = SimulationContext.instance().device
@@ -175,7 +172,7 @@ class ParticleSystem:
                 [non_particle_collision_enabled], dtype="bool", device=self._device
             )
 
-        self._particle_system_view = ParticleSystemView(
+        self._particle_system_view = ParticleSystem(
             prim_paths_expr=prim_path,
             particle_systems_enabled=particle_system_enabled,
             simulation_owners=simulation_owner,
@@ -244,10 +241,10 @@ class ParticleSystem:
         self._particle_system_view.post_reset()
         return
 
-    def apply_particle_material(self, particle_materials: ParticleMaterial) -> None:
+    def apply_particle_material(self, particle_materials: "ParticleMaterial") -> None:
         self._particle_system_view.apply_particle_materials(particle_materials)
 
-    def get_applied_particle_material(self) -> ParticleMaterial:
+    def get_applied_particle_material(self) -> "ParticleMaterial":
         return self._particle_system_view.get_applied_particle_materials()[0]
 
     """

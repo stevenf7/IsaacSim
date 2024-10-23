@@ -14,14 +14,14 @@ import numpy as np
 import omni.kit.app
 import torch
 import warp as wp
-from isaacsim.core.api.prims.rigid_contact_view import RigidContactView
-from isaacsim.core.api.prims.xform_prim_view import XFormPrimView
 from isaacsim.core.utils.prims import get_prim_parent
 from isaacsim.core.utils.types import DynamicsViewState, XFormPrimViewState
 from pxr import Gf, PhysxSchema, Usd, UsdGeom, UsdPhysics
 
+from .xform_prim import XFormPrim
 
-class RigidPrimView(XFormPrimView):
+
+class RigidPrim(XFormPrim):
     """Provides high level functions to deal with prims (one or many) that have Rigid Body API applied to them
     as well as their attributes/properties.
 
@@ -96,7 +96,7 @@ class RigidPrimView(XFormPrimView):
 
         >>> import isaacsim.core.utils.stage as stage_utils
         >>> from isaacsim.core.cloner import GridCloner
-        >>> from isaacsim.core.api.prims import RigidPrimView
+        >>> from isaacsim.core.prims import RigidPrim
         >>> from pxr import UsdGeom
         >>>
         >>> env_zero_path = "/World/envs/env_0"
@@ -115,9 +115,9 @@ class RigidPrimView(XFormPrimView):
         ... )
         >>>
         >>> # wrap the prims
-        >>> prims = RigidPrimView(prim_paths_expr="/World/envs/env.*/Xform", name="rigid_prim_view")
+        >>> prims = RigidPrim(prim_paths_expr="/World/envs/env.*/Xform", name="rigid_prim_view")
         >>> prims
-        <isaacsim.core.api.prims.rigid_prim_view.RigidPrimView object at 0x7f9a23b8bb80>
+        <isaacsim.core.prims.rigid_prim.RigidPrim object at 0x7f9a23b8bb80>
     """
 
     def __init__(
@@ -142,7 +142,7 @@ class RigidPrimView(XFormPrimView):
     ) -> None:
         self._physics_view = None
         self._num_shapes = None
-        XFormPrimView.__init__(
+        XFormPrim.__init__(
             self,
             prim_paths_expr=prim_paths_expr,
             name=name,
@@ -163,15 +163,17 @@ class RigidPrimView(XFormPrimView):
             if angular_velocities is not None:
                 self.set_angular_velocities(angular_velocities)
         if masses is not None:
-            RigidPrimView.set_masses(self, masses)
+            RigidPrim.set_masses(self, masses)
         if densities is not None:
-            RigidPrimView.set_densities(self, densities)
+            RigidPrim.set_densities(self, densities)
         self._dynamics_default_state = DynamicsViewState(
             positions=None, linear_velocities=None, orientations=None, angular_velocities=None
         )
         self._track_contact_forces = track_contact_forces or len(contact_filter_prim_paths_expr) != 0
         self._apply_rigid_body_apis(prepare_contact_sensors or self._track_contact_forces)
         if self._track_contact_forces:
+            from isaacsim.core.api.sensors.rigid_contact_view import RigidContactView
+
             self._contact_view = RigidContactView(
                 prim_paths_expr=prim_paths_expr,
                 filter_paths_expr=contact_filter_prim_paths_expr,
@@ -364,9 +366,7 @@ class RigidPrimView(XFormPrimView):
             self._physics_view.set_transforms(pose, indices)
             return
         else:
-            XFormPrimView.set_world_poses(
-                self, positions=positions, orientations=orientations, indices=indices, usd=usd
-            )
+            XFormPrim.set_world_poses(self, positions=positions, orientations=orientations, indices=indices, usd=usd)
         return
 
     def get_world_poses(
@@ -434,7 +434,7 @@ class RigidPrimView(XFormPrimView):
             rot = self._backend_utils.xyzw2wxyz(pose[indices, 3:7])
             return pos, rot
         else:
-            return XFormPrimView.get_world_poses(self, indices=indices, usd=usd)
+            return XFormPrim.get_world_poses(self, indices=indices, usd=usd)
 
     def get_local_poses(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
@@ -505,7 +505,7 @@ class RigidPrimView(XFormPrimView):
                 parent_transforms, world_positions, world_orientations, self._device
             )
         else:
-            return XFormPrimView.get_local_poses(self, indices=indices)
+            return XFormPrim.get_local_poses(self, indices=indices)
 
     def set_local_poses(
         self,
@@ -547,7 +547,7 @@ class RigidPrimView(XFormPrimView):
         """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             if translations is None or orientations is None:
-                current_translations, current_orientations = RigidPrimView.get_local_poses(self, indices=indices)
+                current_translations, current_orientations = RigidPrim.get_local_poses(self, indices=indices)
                 if translations is None:
                     translations = current_translations
                 if orientations is None:
@@ -568,11 +568,11 @@ class RigidPrimView(XFormPrimView):
             calculated_positions, calculated_orientations = self._backend_utils.get_world_from_local(
                 parent_transforms, translations, orientations, self._device
             )
-            RigidPrimView.set_world_poses(
+            RigidPrim.set_world_poses(
                 self, positions=calculated_positions, orientations=calculated_orientations, indices=indices
             )
         else:
-            XFormPrimView.set_local_poses(self, translations=translations, orientations=orientations, indices=indices)
+            XFormPrim.set_local_poses(self, translations=translations, orientations=orientations, indices=indices)
         return
 
     def set_linear_velocities(
@@ -1826,7 +1826,7 @@ class RigidPrimView(XFormPrimView):
             >>> # set default states during post-reset
             >>> prims.post_reset()
         """
-        XFormPrimView.set_default_state(self, positions=positions, orientations=orientations)
+        XFormPrim.set_default_state(self, positions=positions, orientations=orientations)
         if self._non_root_link:
             return
         if positions is not None:
@@ -1925,7 +1925,7 @@ class RigidPrimView(XFormPrimView):
 
             >>> prims.post_reset()
         """
-        XFormPrimView.post_reset(self)
+        XFormPrim.post_reset(self)
         if not self._non_root_link:
             self.set_velocities(
                 velocities=self._backend_utils.tensor_cat(
@@ -2030,7 +2030,7 @@ class RigidPrimView(XFormPrimView):
             return self._contact_view.get_net_contact_forces(indices, clone, dt)
         else:
             carb.log_warn(
-                "contact forces cannot be retrieved with this API unless the RigidPrimView is initialized with track_contact_forces= True."
+                "contact forces cannot be retrieved with this API unless the RigidPrim is initialized with track_contact_forces= True."
             )
             return None
 
@@ -2080,7 +2080,7 @@ class RigidPrimView(XFormPrimView):
             return self._contact_view.get_contact_force_matrix(indices, clone, dt)
         else:
             carb.log_warn(
-                "No filter is specified for get_contact_force_matrix. Initialize the RigidPrimView with the contact_filter_prim_paths_expr and specify a list of filters."
+                "No filter is specified for get_contact_force_matrix. Initialize the RigidPrim with the contact_filter_prim_paths_expr and specify a list of filters."
             )
             return None
 
@@ -2200,7 +2200,7 @@ class RigidPrimView(XFormPrimView):
             return self._contact_view.get_contact_force_data(indices, clone, dt)
         else:
             carb.log_warn(
-                "No filter is specified for get_contact_force_data. Initialize the RigidPrimView with the contact_filter_prim_paths_expr and specify a list of filters."
+                "No filter is specified for get_contact_force_data. Initialize the RigidPrim with the contact_filter_prim_paths_expr and specify a list of filters."
             )
             return None
 
@@ -2243,6 +2243,6 @@ class RigidPrimView(XFormPrimView):
             return self._contact_view.get_friction_data(indices, clone, dt)
         else:
             carb.log_warn(
-                "No filter is specified for get_friction_data. Initialize the RigidPrimView with the contact_filter_prim_paths_expr and specify a list of filters."
+                "No filter is specified for get_friction_data. Initialize the RigidPrim with the contact_filter_prim_paths_expr and specify a list of filters."
             )
             return None

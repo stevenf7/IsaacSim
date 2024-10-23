@@ -9,10 +9,10 @@ Reinforcement Learning Domain Randomization
 ============================================
 
 The following methods provide randomization functionalities of various parameters 
-pertaining to isaacsim.core.api.prims.RigidPrimView, isaacsim.core.api.articulations.ArticulationView,
+pertaining to isaacsim.core.prims.RigidPrim, isaacsim.core.prims.Articulation,
 and isaacsim.core.api.SimulationContext. These methods are designed to perform randomizations in 
 simulations where *update to USD* is disabled for faster simulation speed. These methods directly
-set randomized values to Physx as opposed to existing methods in omni.replicator.core, 
+set randomized values to PhysX as opposed to existing methods in omni.replicator.core, 
 such as omni.replicator.core.modify.pose or omni.replicator.core.physics.physics_material, which
 utilizes USD APIs to set values and hence cannot be used when *update to USD* is disabled. 
 Therefore, the following methods provided in isaacsim.replicator are particularly useful 
@@ -26,9 +26,9 @@ go to ``standalone_examples/api/isaacsim.replicator/randomization_demo.py``.
 
 The ``isaacsim.replicator`` extension for domain randomization functions by constructing
 an OmniGraph action graph, which consists of nodes that generate random values, regulate
-frequency intervals of various randomizaiton properties, and write the random values to Physx.
+frequency intervals of various randomization properties, and write the random values to PhysX.
 This action graph gets executed according to the way in which the triggers are set up. Note 
-that it is necessesary to register the views to be randomized before constructing this action graph.
+that it is necessary to register the views to be randomized before constructing this action graph.
 
 The first step is to create an entry point of the action graph using ``with dr.trigger.on_rl_frame(num_envs=num_envs):``.
 It is worth noting that all views to be used with this extension must have the same number of 
@@ -64,8 +64,7 @@ After setting up this action graph, it is necessesary to run ``omni.replicator.c
 
     import numpy as np
     from isaacsim.core.api import World
-    from isaacsim.core.api.prims.rigid_prim_view import RigidPrimView
-    from isaacsim.core.api.articulations import ArticulationView
+    from isaacsim.core.prims import Articulation, RigidPrim
     from isaacsim.core.utils.prims import get_prim_at_path, define_prim
     from isaacsim.core.utils.stage import get_current_stage, add_reference_to_stage
     from isaacsim.storage.native import get_assets_root_path
@@ -94,8 +93,8 @@ After setting up this action graph, it is necessesary to run ``omni.replicator.c
     env_pos = cloner.clone(source_prim_path="/World/envs/env_0", prim_paths=prim_paths)
 
     # creates the views and set up world
-    object_view = RigidPrimView(prim_paths_expr="/World/envs/*/object", name="object_view")
-    franka_view = ArticulationView(prim_paths_expr="/World/envs/*/franka", name="franka_view")
+    object_view = RigidPrim(prim_paths_expr="/World/envs/*/object", name="object_view")
+    franka_view = Articulation(prim_paths_expr="/World/envs/*/franka", name="franka_view")
     world.scene.add(object_view)
     world.scene.add(franka_view)
     world.reset()

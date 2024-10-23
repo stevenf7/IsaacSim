@@ -9,14 +9,13 @@
 from typing import Optional, Sequence
 
 import omni.kit.app
-from isaacsim.core.api.articulations.articulation import Articulation
-from isaacsim.core.api.prims.rigid_prim import RigidPrim
+from isaacsim.core.prims import SingleArticulation, SingleRigidPrim
 from isaacsim.robot.manipulators.grippers.gripper import Gripper
 from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGripper
 from isaacsim.robot.manipulators.grippers.surface_gripper import SurfaceGripper
 
 
-class SingleManipulator(Articulation):
+class SingleManipulator(SingleArticulation):
     """Provides high level functions to set/ get properties and actions of a manipulator with a single end effector
     and optionally a gripper.
 
@@ -67,7 +66,7 @@ class SingleManipulator(Articulation):
         self._end_effector_prim_path = end_effector_prim_path
         self._gripper = gripper
         self._end_effector = None
-        Articulation.__init__(
+        SingleArticulation.__init__(
             self,
             prim_path=prim_path,
             name=name,
@@ -81,10 +80,10 @@ class SingleManipulator(Articulation):
         return
 
     @property
-    def end_effector(self) -> RigidPrim:
+    def end_effector(self) -> SingleRigidPrim:
         """
         Returns:
-            RigidPrim: end effector of the manipulator (can be used to get its world pose, angular velocity..etc).
+            SingleRigidPrim: end effector of the manipulator (can be used to get its world pose, angular velocity..etc).
         """
         return self._end_effector
 
@@ -104,10 +103,10 @@ class SingleManipulator(Articulation):
         Args:
             physics_sim_view (omni.physics.tensors.SimulationView, optional): current physics simulation view. Defaults to None.
         """
-        Articulation.initialize(self, physics_sim_view=physics_sim_view)
+        SingleArticulation.initialize(self, physics_sim_view=physics_sim_view)
         if self._end_effector_prim_name:
             self._end_effector_prim_path = self.prim_path + "/" + self._end_effector_prim_name
-        self._end_effector = RigidPrim(prim_path=self._end_effector_prim_path, name=self.name + "_end_effector")
+        self._end_effector = SingleRigidPrim(prim_path=self._end_effector_prim_path, name=self.name + "_end_effector")
         self._end_effector.initialize(physics_sim_view)
         if isinstance(self._gripper, ParallelGripper):
             self._gripper.initialize(
@@ -123,7 +122,7 @@ class SingleManipulator(Articulation):
 
     def post_reset(self) -> None:
         """Resets the manipulator, the end effector and the gripper to its default state."""
-        Articulation.post_reset(self)
+        SingleArticulation.post_reset(self)
         self._end_effector.post_reset()
         self._gripper.post_reset()
         return

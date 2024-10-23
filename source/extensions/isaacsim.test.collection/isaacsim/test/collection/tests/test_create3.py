@@ -20,7 +20,7 @@ import omni.graph.core as og
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 from isaacsim.core.api import World
-from isaacsim.core.api.articulations.articulation import Articulation
+from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.nucleus import get_assets_root_path
 from isaacsim.core.utils.prims import delete_prim
 from isaacsim.core.utils.stage import open_stage_async
@@ -76,7 +76,7 @@ class TestCreate3(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         # get the create3
-        self.ar = Articulation("/create3")
+        self.ar = SingleArticulation("/create3")
         self.ar._articulation_view.initialize()
         self.starting_pos, _ = self.ar.get_world_pose()
 

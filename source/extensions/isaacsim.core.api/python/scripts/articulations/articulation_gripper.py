@@ -10,6 +10,7 @@ from typing import Optional
 
 import numpy as np
 from isaacsim.core.api.controllers import ArticulationController
+from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.types import ArticulationAction
 
 
@@ -73,7 +74,7 @@ class ArticulationGripper(object):
         Raises:
             Exception: [description]
         """
-        self._articulation = Articulation(root_prim_path)
+        self._articulation = SingleArticulation(root_prim_path)
         for index in len(self._articulation.dof_names):
             dof_name = self._articulation.dof_names[index]
             for j in range(len(self._grippers_dof_names)):

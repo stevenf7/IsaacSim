@@ -11,7 +11,8 @@ from typing import Optional
 import numpy as np
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import FixedCuboid
-from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.prims import XFormPrim
+from isaacsim.core.utils.prims import define_prim
 from pxr import Usd, UsdGeom
 
 
@@ -60,15 +61,16 @@ class CollisionBox(XFormPrim):
     ):
         self.world = World.instance()
 
+        define_prim(prim_path=prim_path, prim_type="Xform")
         XFormPrim.__init__(
             self,
-            prim_path=prim_path,
+            prim_paths_expr=prim_path,
             name=name,
-            position=position,
-            translation=translation,
-            orientation=orientation,
-            scale=scale,
-            visible=visible,
+            positions=None if position is None else np.array([position]),
+            translations=None if translation is None else np.array([translation]),
+            orientations=None if orientation is None else np.array([orientation]),
+            scales=None if scale is None else np.array([scale]),
+            visibilities=None if visible is None else np.array([visible]),
         )
 
         self.width = width
@@ -90,7 +92,7 @@ class CollisionBox(XFormPrim):
                                units. Shape is (3, ).
         """
         face_name = f"{self.name}_{suffix}"
-        face_path = f"{self.prim_path}/{face_name}"
+        face_path = f"{self.prim_paths[0]}/{face_name}"
         face_cuboid = FixedCuboid(
             prim_path=face_path,  # The prim path of the cube in the USD stage
             name=face_name,  # The unique name used to retrieve the object from the scene later on
@@ -162,7 +164,7 @@ class CollisionBox(XFormPrim):
             np.ndarray: random position within the Collision Box in the world frame. Shape is (3, ).
         """
 
-        box_prim = self.world.stage.GetPrimAtPath(self.prim_path)
+        box_prim = self.world.stage.GetPrimAtPath(self.prim_paths[0])
 
         box_transform_matrix = UsdGeom.Xformable(box_prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
 

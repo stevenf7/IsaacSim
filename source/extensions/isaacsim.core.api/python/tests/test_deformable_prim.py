@@ -12,8 +12,8 @@ import omni.kit.test
 import torch
 from isaacsim.core.api import World
 from isaacsim.core.api.materials.particle_material import ParticleMaterial
-from isaacsim.core.api.prims.soft.deformable_prim import DeformablePrim
 from isaacsim.core.api.tests.common import TestProperties
+from isaacsim.core.prims import SingleDeformablePrim
 
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add support for async/await tests
@@ -27,7 +27,7 @@ from pxr import Gf, Usd, UsdGeom
 
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestDeformablePrim(omni.kit.test.AsyncTestCase, TestProperties):
+class TestSingleDeformablePrim(omni.kit.test.AsyncTestCase, TestProperties):
     async def setUp(self):
         World.clear_instance()
         await create_new_stage_async()
@@ -54,7 +54,7 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase, TestProperties):
         physicsUtils.set_or_add_translate_op(self.plane_mesh, Gf.Vec3f(2, 0.0, 2.0))
         physicsUtils.set_or_add_orient_op(self.plane_mesh, Gf.Rotation(Gf.Vec3d([1, 0, 0]), 15).GetQuat())
         # self.particle_material = ParticleMaterial(prim_path=particle_material_path, drag=0.1, lift=0.3, friction=0.6)
-        self.deformable = DeformablePrim(prim_path=str(deformable_path))
+        self.deformable = SingleDeformablePrim(prim_path=str(deformable_path))
         self.my_world.scene.add(self.deformable)
         await self.my_world.reset_async(soft=False)
         await self.my_world.stop_async()

@@ -15,15 +15,13 @@ import numpy as np
 # isaac-core
 import omni.kit.app
 import torch
-from isaacsim.core.api.materials.particle_material import ParticleMaterial
-from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
 from isaacsim.core.utils.prims import find_matching_prim_paths, get_prim_at_path, is_prim_path_valid
 
 # omniverse
 from pxr import PhysxSchema, Usd, UsdShade
 
 
-class ParticleSystemView:
+class ParticleSystem:
     """Provides high level functions to deal with particle systems (1 or more particle systems) as well as its attributes/ properties.
     This object wraps all matching particle systems found at the regex provided at the prim_paths_expr.
     Note: not all the attributes of the PhysxSchema.PhysxParticleSystem is currently controlled with this view class
@@ -95,6 +93,8 @@ class ParticleSystemView:
 
         self._applied_particle_materials = [None] * self._count
         self._binding_apis = [None] * self._count
+
+        from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
 
         if SimulationContext.instance() is not None:
             self._backend = SimulationContext.instance().backend
@@ -226,7 +226,7 @@ class ParticleSystemView:
 
     def apply_particle_materials(
         self,
-        particle_materials: Union[ParticleMaterial, List[ParticleMaterial]],
+        particle_materials: Union["ParticleMaterial", List["ParticleMaterial"]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
     ) -> None:
         """Used to apply particle material to prims in the view.
@@ -261,7 +261,7 @@ class ParticleSystemView:
 
     def get_applied_particle_materials(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
-    ) -> List[ParticleMaterial]:
+    ) -> List["ParticleMaterial"]:
         """Gets the applied particle material to prims in the view.
 
         Args:
@@ -287,6 +287,8 @@ class ParticleSystemView:
                 if material_path == "":
                     result[write_idx] = None
                 else:
+                    from isaacsim.core.api.materials.particle_material import ParticleMaterial
+
                     self._applied_particle_materials[i.tolist()] = ParticleMaterial(prim_path=material_path)
                     result[write_idx] = self._applied_particle_materials[i.tolist()]
                 write_idx += 1

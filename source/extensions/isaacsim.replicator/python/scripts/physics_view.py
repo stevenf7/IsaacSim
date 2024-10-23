@@ -17,6 +17,7 @@ import omni.kit
 import omni.timeline
 import omni.usd
 import torch
+from isaacsim.core.prims import Articulation, RigidPrim
 from isaacsim.core.utils.numpy.rotations import quats_to_euler_angles as quat_to_euler_numpy
 from isaacsim.core.utils.torch.rotations import get_euler_xyz as quat_to_euler_torch
 from isaacsim.replicator.scripts import context
@@ -55,10 +56,10 @@ def register_simulation_context(
     _simulation_context_reset_values["gravity"] = copy.deepcopy(gravity_vector)
 
 
-def register_rigid_prim_view(rigid_prim_view: isaacsim.core.api.prims.RigidPrimView) -> None:
+def register_rigid_prim_view(rigid_prim_view: RigidPrim) -> None:
     """
     Args:
-        rigid_prim_view (isaacsim.core.api.prims.RigidPrimView): Registering the RigidPrimView to be randomized.
+        rigid_prim_view (isaacsim.core.prims.RigidPrim): Registering the RigidPrim to be randomized.
     """
     clone_tensor = rigid_prim_view._backend_utils.clone_tensor
     tensor_cat = rigid_prim_view._backend_utils.tensor_cat
@@ -97,10 +98,10 @@ def register_rigid_prim_view(rigid_prim_view: isaacsim.core.api.prims.RigidPrimV
     _rigid_prim_views_reset_values[name] = copy.deepcopy(initial_values)
 
 
-def register_articulation_view(articulation_view: isaacsim.core.api.articulations.ArticulationView) -> None:
+def register_articulation_view(articulation_view: Articulation) -> None:
     """
     Args:
-        articulation_view (isaacsim.core.api.articulations.ArticulationView): Registering the ArticulationView to be randomized.
+        articulation_view (Articulation): Registering the Articulation to be randomized.
     """
     clone_tensor = articulation_view._backend_utils.clone_tensor
     tensor_cat = articulation_view._backend_utils.tensor_cat
@@ -345,7 +346,7 @@ def randomize_articulation_view(
 ) -> None:
     """
     Args:
-        view_name (str): The name of a registered ArticulationView.
+        view_name (str): The name of a registered Articulation.
         operation (str): Can be "direct", "additive", or "scaling".
                          "direct" means random values are directly written into the view.
                          "additive" means random values are added to the default values.

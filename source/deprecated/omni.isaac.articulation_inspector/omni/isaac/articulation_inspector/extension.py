@@ -18,7 +18,7 @@ import omni.physx as _physx
 import omni.timeline
 import omni.ui as ui
 import omni.usd
-from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.prims import get_prim_object_type
 from isaacsim.core.utils.stage import get_stage_units
 from isaacsim.gui.components.element_wrappers import ScrollingWindow
@@ -150,7 +150,7 @@ class Extension(omni.ext.IExt):
         if self.articulation_list and prim_path != "None" and not self._timeline.is_stopped():
 
             # Create and Initialize the Articulation
-            self.articulation = Articulation(prim_path)
+            self.articulation = SingleArticulation(prim_path)
             if not self.articulation.handles_initialized:
                 self.articulation.initialize()
 
@@ -228,7 +228,7 @@ class Extension(omni.ext.IExt):
            Update the Properties UI.
 
         Args:
-            articulation (Articulation): Selected Articulation
+            articulation (SingleArticulation): Selected Articulation
         """
         # Update static dof properties on new selection
         if self.new_selection:
@@ -281,7 +281,7 @@ class Extension(omni.ext.IExt):
         """Updates the GUI with a new Articulation's properties.
 
         Args:
-            articulation (Articulation): [description]
+            articulation (SingleArticulation): [description]
         """
         # Get the latest articulation values and update the Properties UI
         self.get_articulation_values(articulation)

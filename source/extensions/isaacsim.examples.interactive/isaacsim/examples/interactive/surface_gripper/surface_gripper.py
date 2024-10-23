@@ -18,7 +18,7 @@ import omni.kit.usd
 import omni.physics.tensors as physics
 import omni.physx as _physx
 import omni.ui as ui
-from isaacsim.core.api.prims.rigid_prim import RigidPrim
+from isaacsim.core.prims import SingleRigidPrim
 from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.gui.components.menu import make_menu_item_description
 from isaacsim.gui.components.ui_utils import (
@@ -207,8 +207,8 @@ class Extension(omni.ext.IExt):
         if self._timeline.is_playing() and self._stage_id != -1:
             # Check if the handles for cone and box have been loaded
             if self.cone is None:
-                self.cone = RigidPrim("/GripperCone")
-                self.box = RigidPrim("/Box")
+                self.cone = SingleRigidPrim("/GripperCone")
+                self.box = SingleRigidPrim("/Box")
 
             # If the surface Gripper has been created, update wheter it has been broken or not
             if self.surface_gripper is not None:

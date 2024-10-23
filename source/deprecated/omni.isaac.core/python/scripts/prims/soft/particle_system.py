@@ -10,8 +10,8 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.core.prims.soft.particle_system has been deprecated in favor of isaacsim.core.api.prims.soft.particle_system. Please update your code accordingly."
+    "omni.isaac.core.prims.soft.particle_system.ParticleSystem has been deprecated in favor of isaacsim.core.prims.SingleParticleSystem. Please update your code accordingly."
 )
 
 
-from isaacsim.core.api.prims.soft.particle_system import ParticleSystem
+from isaacsim.core.prims import SingleParticleSystem as ParticleSystem

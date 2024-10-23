@@ -16,7 +16,7 @@ import omni
 import omni.graph.core as og
 import omni.replicator.core as rep
 import omni.syntheticdata._syntheticdata as _syntheticdata
-from isaacsim.core.api.prims.base_sensor import BaseSensor
+from isaacsim.core.api.sensors.base_sensor import BaseSensor
 from isaacsim.core.nodes.bindings import _isaacsim_core_nodes
 from isaacsim.core.utils.carb import get_carb_setting
 from isaacsim.core.utils.prims import (

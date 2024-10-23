@@ -9,8 +9,8 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.core.articulations.articulation has been deprecated in favor of isaacsim.core.api.articulations.articulation. Please update your code accordingly."
+    "omni.isaac.core.articulations.articulation.Articulation has been deprecated in favor of isaacsim.core.prims.SingleArticulation Please update your code accordingly."
 )
 
 
-from isaacsim.core.api.articulations.articulation import Articulation
+from isaacsim.core.prims import SingleArticulation as Articulation

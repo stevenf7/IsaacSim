@@ -9,8 +9,8 @@
 
 import omni.kit.test
 from isaacsim.core.api import World
-from isaacsim.core.api.prims.soft.particle_system import ParticleSystem
 from isaacsim.core.api.tests.common import TestProperties
+from isaacsim.core.prims import SingleParticleSystem
 
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add support for async/await tests
@@ -23,7 +23,7 @@ from pxr import Gf, Usd, UsdGeom
 
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestParticleSystem(omni.kit.test.AsyncTestCase, TestProperties):
+class TestSingleParticleSystem(omni.kit.test.AsyncTestCase, TestProperties):
     async def setUp(self):
         World.clear_instance()
         await create_new_stage_async()
@@ -43,7 +43,7 @@ class TestParticleSystem(omni.kit.test.AsyncTestCase, TestProperties):
         radius = 0.5 * (0.6 / 5.0)
         restOffset = radius
         contactOffset = restOffset * 1.5
-        self.particle_system = ParticleSystem(
+        self.particle_system = SingleParticleSystem(
             prim_path="/particleSystem",
             simulation_owner=self.my_world.get_physics_context().prim_path,
             rest_offset=restOffset,

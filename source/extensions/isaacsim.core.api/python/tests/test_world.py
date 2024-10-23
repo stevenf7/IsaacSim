@@ -13,11 +13,9 @@ import carb
 import numpy as np
 import omni.kit.test
 from isaacsim.core.api import World
-from isaacsim.core.api.articulations import ArticulationView
 from isaacsim.core.api.objects import VisualCuboid
-from isaacsim.core.api.prims.rigid_prim import RigidPrim
-from isaacsim.core.api.prims.rigid_prim_view import RigidPrimView
 from isaacsim.core.api.robots import Robot
+from isaacsim.core.prims import Articulation, RigidPrim, SingleRigidPrim
 from isaacsim.core.utils.prims import get_prim_object_type, is_prim_path_valid
 from isaacsim.core.utils.stage import (
     add_reference_to_stage,
@@ -159,7 +157,7 @@ class TestScene(omni.kit.test.AsyncTestCase):
         asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
         self.assertTrue(is_prim_path_valid("/World/Franka"))
-        articulated_system_1 = my_world.scene.add(RigidPrim(prim_path="/World/Franka/panda_link1", name="link_1"))
+        articulated_system_1 = my_world.scene.add(SingleRigidPrim(prim_path="/World/Franka/panda_link1", name="link_1"))
         await update_stage_async()
         await my_world.reset_async()
         await update_stage_async()
@@ -182,8 +180,8 @@ class TestScene(omni.kit.test.AsyncTestCase):
         asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
         self.assertTrue(is_prim_path_valid("/World/Franka"))
-        articulated_system_1 = my_world.scene.add(ArticulationView(prim_paths_expr="/World/Franka", name="my_franka_1"))
-        link_1 = my_world.scene.add(RigidPrimView(prim_paths_expr="/World/Franka/panda_link1", name="link_1"))
+        articulated_system_1 = my_world.scene.add(Articulation(prim_paths_expr="/World/Franka", name="my_franka_1"))
+        link_1 = my_world.scene.add(RigidPrim(prim_paths_expr="/World/Franka/panda_link1", name="link_1"))
         await update_stage_async()
         await my_world.reset_async()
         await update_stage_async()

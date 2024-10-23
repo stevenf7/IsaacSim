@@ -9,14 +9,13 @@
 from typing import Optional
 
 import numpy as np
-from isaacsim.core.api.prims.geometry_prim import GeometryPrim
-from isaacsim.core.api.prims.rigid_prim import RigidPrim
+from isaacsim.core.prims import GeometryPrim, RigidPrim
 from isaacsim.core.utils.prims import get_prim_at_path, is_prim_path_valid
 from isaacsim.core.utils.stage import add_reference_to_stage
 from pxr import UsdGeom
 
 
-class DynamicObject(RigidPrim, GeometryPrim):
+class DynamicObject(RigidPrim):
     """Creates and adds a prim to stage from USD reference path, and wraps the prim with RigidPrim and GeometryPrim to
        provide access to APIs for rigid body attributes, physics materials and collisions. Please note that this class
        assumes the object has only a single mesh prim defining its geometry.
@@ -69,28 +68,25 @@ class DynamicObject(RigidPrim, GeometryPrim):
 
         add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
 
-        GeometryPrim.__init__(
-            self,
-            prim_path=mesh_path,
+        GeometryPrim(
+            mesh_path,
             name=name,
-            translation=translation,
-            orientation=orientation,
-            visible=visible,
-            collision=True,
-        )
-
-        self.set_collision_approximation("convexHull")
+            translations=None if translation is None else np.array([translation]),
+            orientations=None if orientation is None else np.array([orientation]),
+            visibilities=None if visible is None else np.array([visible]),
+            collisions=[True],
+        ).set_collision_approximations(["convexHull"])
 
         RigidPrim.__init__(
             self,
-            prim_path=prim_path,
+            prim_paths_expr=prim_path,
             name=name,
-            position=position,
-            translation=translation,
-            orientation=orientation,
-            scale=scale,
-            visible=visible,
-            mass=mass,
-            linear_velocity=linear_velocity,
-            angular_velocity=angular_velocity,
+            positions=None if position is None else np.array([position]),
+            translations=None if translation is None else np.array([translation]),
+            orientations=None if orientation is None else np.array([orientation]),
+            scales=None if scale is None else np.array([scale]),
+            visibilities=None if visible is None else np.array([visible]),
+            masses=None if mass is None else np.array([mass]),
+            linear_velocities=None if linear_velocity is None else np.array([linear_velocity]),
+            angular_velocities=None if angular_velocity is None else np.array([angular_velocity]),
         )

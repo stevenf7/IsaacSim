@@ -8,15 +8,15 @@
 #
 from typing import Optional, Sequence
 
-from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.prims import SingleXFormPrim
 
 
-class BaseSensor(XFormPrim):
+class BaseSensor(SingleXFormPrim):
     """Provides a common properties and methods to deal with prims as a sensor
 
     .. note::
 
-        This class, which inherits from ``XFormPrim``, does not currently add any new property/method to it.
+        This class, which inherits from ``SingleXFormPrim``, does not currently add any new property/method to it.
         Its definition is oriented to future implementations.
 
     Args:
@@ -51,7 +51,7 @@ class BaseSensor(XFormPrim):
         scale: Optional[Sequence[float]] = None,
         visible: Optional[bool] = None,
     ) -> None:
-        XFormPrim.__init__(
+        SingleXFormPrim.__init__(
             self,
             prim_path=prim_path,
             name=name,
@@ -80,9 +80,9 @@ class BaseSensor(XFormPrim):
 
             >>> prim.initialize()
         """
-        XFormPrim.initialize(self, physics_sim_view=physics_sim_view)
+        SingleXFormPrim.initialize(self, physics_sim_view=physics_sim_view)
         return
 
     def post_reset(self) -> None:
-        # XFormPrim.post_reset(self)
+        # SingleXFormPrim.post_reset(self)
         return

@@ -17,7 +17,7 @@ import omni.graph.core as og
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 from isaacsim.core.api import World
-from isaacsim.core.api.articulations.articulation import Articulation
+from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.extensions import get_extension_path_from_name
 from isaacsim.core.utils.prims import delete_prim
 from isaacsim.core.utils.stage import open_stage_async
@@ -90,7 +90,7 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         # get the jetbot
-        self.ar = Articulation("/nova_carter")
+        self.ar = SingleArticulation("/nova_carter")
         self.ar._articulation_view.initialize()
         self.starting_pos, _ = self.ar.get_world_pose()
         left_wheel_joint_idx = self.ar._articulation_view.get_dof_index("joint_wheel_left")

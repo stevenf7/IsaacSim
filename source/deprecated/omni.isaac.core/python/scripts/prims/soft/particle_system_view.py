@@ -9,8 +9,8 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.core.prims.soft.particle_system_view has been deprecated in favor of isaacsim.core.api.prims.soft.particle_system_view. Please update your code accordingly."
+    "omni.isaac.core.prims.soft.particle_system_view.ParticleSystemView has been deprecated in favor of isaacsim.core.prims.ParticleSystem. Please update your code accordingly."
 )
 
 
-from isaacsim.core.api.prims.soft.particle_system_view import ParticleSystemView
+from isaacsim.core.prims import ParticleSystem as ParticleSystemView

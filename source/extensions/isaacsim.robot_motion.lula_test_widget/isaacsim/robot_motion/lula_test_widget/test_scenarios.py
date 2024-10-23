@@ -12,7 +12,7 @@ import numpy as np
 from isaacsim.core.api.objects.cone import VisualCone
 from isaacsim.core.api.objects.cuboid import VisualCuboid
 from isaacsim.core.api.objects.cylinder import VisualCylinder
-from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.prims import SingleXFormPrim
 from isaacsim.core.utils.numpy import rot_matrices_to_quats
 from isaacsim.core.utils.prims import delete_prim, is_prim_path_valid
 from isaacsim.core.utils.rotations import euler_angles_to_quat
@@ -112,7 +112,7 @@ class LulaTestScenarios:
 
         self.traj_gen = LulaTaskSpaceTrajectoryGenerator(robot_description_path, urdf_path)
 
-        self._trajectory_base_frame = XFormPrim("/Trajectory", position=np.array([0, 0, 0]))
+        self._trajectory_base_frame = SingleXFormPrim("/Trajectory", position=np.array([0, 0, 0]))
         for i in range(4):
             frame_prim = self._create_frame_prim(rect_path[i], orientation, f"/Trajectory/Target_{i+1}")
             self._trajectory_targets.append(frame_prim)
@@ -192,7 +192,7 @@ class LulaTestScenarios:
         )
 
     def _create_frame_prim(self, position, orientation, parent_prim_path):
-        frame_xform = XFormPrim(parent_prim_path, position=position, orientation=orientation)
+        frame_xform = SingleXFormPrim(parent_prim_path, position=position, orientation=orientation)
 
         line_len = 0.04
         line_width = 0.004

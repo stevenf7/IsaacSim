@@ -61,7 +61,7 @@ class BaseTask(object):
         return self._name
 
     def set_up_scene(self, scene: Scene) -> None:
-        """Adding assets to the stage as well as adding the encapsulated objects such as XFormPrim..etc
+        """Adding assets to the stage as well as adding the encapsulated objects such as SingleXFormPrim..etc
            to the task_objects happens here.
 
         Args:
@@ -75,7 +75,7 @@ class BaseTask(object):
         # if self._task_path:
         # TODO: assumption all task objects are under the same parent
         # Specifying a task path has many limitations atm
-        # XFormPrim(prim_path=self._task_path, position=self._offset)
+        # SingleXFormPrim(prim_path=self._task_path, position=self._offset)
         # for object_name, task_object in self._task_objects.items():
         #     new_prim_path = self._task_path + "/" + task_object.prim_path.split("/")[-1]
         #     task_object.change_prim_path(new_prim_path)

@@ -20,8 +20,8 @@ import numpy as np
 import torch
 from isaacsim.core.api import World
 from isaacsim.core.api.materials.omni_glass import OmniGlass
-from isaacsim.core.api.prims.xform_prim_view import XFormPrimView
 from isaacsim.core.cloner import Cloner
+from isaacsim.core.prims import XFormPrim
 from isaacsim.core.utils.numpy.rotations import euler_angles_to_quats
 from isaacsim.core.utils.prims import define_prim
 from isaacsim.core.utils.stage import add_reference_to_stage
@@ -52,9 +52,9 @@ define_prim(root_group_path + "/Frame")
 define_prim(root_group_path + "/Frame/Target")
 my_cloner.clone(root_group_path, group_paths)
 
-frankas_view = XFormPrimView(prim_paths_expr=f"/World/Group_[0-{num_objects-1}]/Franka", name="frankas_view")
-targets_view = XFormPrimView(prim_paths_expr=f"/World/Group_[0-{num_objects-1}]/Frame/Target", name="targets_view")
-frames_view = XFormPrimView(prim_paths_expr=f"/World/Group_[0-{num_objects-1}]/Frame", name="frames_view")
+frankas_view = XFormPrim(prim_paths_expr=f"/World/Group_[0-{num_objects-1}]/Franka", name="frankas_view")
+targets_view = XFormPrim(prim_paths_expr=f"/World/Group_[0-{num_objects-1}]/Frame/Target", name="targets_view")
+frames_view = XFormPrim(prim_paths_expr=f"/World/Group_[0-{num_objects-1}]/Frame", name="frames_view")
 
 glass_1 = OmniGlass(
     prim_path=f"/World/franka_glass_material_1",

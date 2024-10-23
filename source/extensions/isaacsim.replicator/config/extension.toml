@@ -24,6 +24,7 @@ writeTarget.platform = true
 "omni.graph.core" = {}
 "omni.replicator.core" = {}
 "isaacsim.core.api" = {}
+"isaacsim.core.prims" = {}
 "omni.physics.tensors" = {}
 "omni.isaac.ml_archive" = {} # torch
 "omni.graph.bundle.action" = {}

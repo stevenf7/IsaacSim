@@ -8,9 +8,9 @@
 #
 
 import numpy as np
-from isaacsim.core.api.articulations.articulation import Articulation
 from isaacsim.core.nodes import BaseResetNode
 from isaacsim.core.nodes.ogn.OgnIsaacArticulationStateDatabase import OgnIsaacArticulationStateDatabase
+from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.stage import get_current_stage
 from pxr import UsdPhysics
 
@@ -32,7 +32,7 @@ class OgnIsaacArticulationStateInternalState(BaseResetNode):
         super().__init__(initialize=False)
 
     def initialize_articulation(self):
-        self._articulation = Articulation(self.robot_prim)
+        self._articulation = SingleArticulation(self.robot_prim)
         self._articulation.initialize()
         self.initialized = True
 

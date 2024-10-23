@@ -22,8 +22,7 @@ import warp as wp
 from isaacsim.core.api import World
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from isaacsim.core.api.articulations import ArticulationView
-from isaacsim.core.api.prims.rigid_prim_view import RigidPrimView
+from isaacsim.core.prims import Articulation, RigidPrim
 from isaacsim.core.utils.stage import add_reference_to_stage, create_new_stage_async, update_stage_async
 from isaacsim.core.utils.torch.rotations import euler_angles_to_quats
 from isaacsim.storage.native import get_assets_root_path_async
@@ -71,7 +70,7 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
             positions = torch.tensor(positions)
         elif backend == "warp":
             positions = wp.array(positions, device="cpu", dtype=wp.float32)
-        self._frankas_view = ArticulationView(
+        self._frankas_view = Articulation(
             prim_paths_expr="/World/Franka_[1-2]",
             name="frankas_view",
             positions=positions,
@@ -91,10 +90,10 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
             positions = torch.tensor(positions)
         elif backend == "warp":
             positions = wp.array(positions, device="cpu", dtype=wp.float32)
-        humanoids_view = ArticulationView(
+        humanoids_view = Articulation(
             prim_paths_expr="/World/Humanoid_[1-2]", name="humanoids_view", positions=positions
         )
-        self._humanoids_view = ArticulationView(prim_paths_expr="/World/Humanoid_[1-2]/torso", name="humanoids_view")
+        self._humanoids_view = Articulation(prim_paths_expr="/World/Humanoid_[1-2]/torso", name="humanoids_view")
         self._my_world.scene.add(self._humanoids_view)
         await self._my_world.reset_async()
 
@@ -110,7 +109,7 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
             positions = torch.tensor(positions)
         elif backend == "warp":
             positions = wp.array(positions, device="cpu", dtype=wp.float32)
-        self._cartpoles_view = ArticulationView(
+        self._cartpoles_view = Articulation(
             prim_paths_expr="/World/Cartpole_[1-2]", name="cartpole_view", positions=positions
         )
         self._my_world.scene.add(self._cartpoles_view)
@@ -128,7 +127,7 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
             positions = torch.tensor(positions, device=device)
         elif backend == "warp":
             positions = wp.array(positions, device=device, dtype=wp.float32)
-        self._hands_view = ArticulationView(
+        self._hands_view = Articulation(
             prim_paths_expr="/World/ShadowHand_[1-2]", name="hands_view", positions=positions
         )
         self._my_world.scene.add(self._hands_view)
@@ -963,13 +962,13 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
             for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
                 await self.setUpWorld(backend=backend, device=device)
                 await self.add_frankas(backend=backend)
-                robots = ArticulationView(prim_paths_expr="/World/Franka_[1-2]")
+                robots = Articulation(prim_paths_expr="/World/Franka_[1-2]")
                 robots.initialize()
                 # right-finger
-                self.left_fingers = RigidPrimView(prim_paths_expr="/World/Franka_[1-2]/panda_leftfinger")
+                self.left_fingers = RigidPrim(prim_paths_expr="/World/Franka_[1-2]/panda_leftfinger")
                 self.left_fingers.initialize()
                 # # left-finger
-                self.right_fingers = RigidPrimView(prim_paths_expr="/World/Franka_[1-2]/panda_rightfinger")
+                self.right_fingers = RigidPrim(prim_paths_expr="/World/Franka_[1-2]/panda_rightfinger")
                 self.right_fingers.initialize()
 
     async def test_physics_handles_none(self):
@@ -977,7 +976,7 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
             for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
                 await self.setUpWorld(backend=backend, device=device)
                 await self.add_frankas(backend=backend)
-                robots = ArticulationView(prim_paths_expr="/World/Franka_[1-2]")
+                robots = Articulation(prim_paths_expr="/World/Franka_[1-2]")
                 robots.initialize()
                 # right-finger
                 self.assertTrue(robots.get_joint_positions() is not None)

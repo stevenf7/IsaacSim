@@ -16,7 +16,7 @@ import torch
 import warp as wp
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import DynamicCuboid
-from isaacsim.core.api.prims.sdf_shape_view import SdfShapeView
+from isaacsim.core.prims import SdfShapePrim
 from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
 from isaacsim.core.utils.torch.rotations import euler_angles_to_quats as euler_angles_to_quats_torch
 from isaacsim.core.utils.warp.rotations import euler_angles_to_quats as euler_angles_to_quats_warp
@@ -119,7 +119,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             physicsUtils.create_mesh_cube(self.stage, f"/World/Cube_{i+1}", self.length)
 
         await update_stage_async()
-        self._cubes_view = SdfShapeView(
+        self._cubes_view = SdfShapePrim(
             prim_paths_expr="/World/Cube_[1-3]",
             name="cubes_view",
             positions=self._array_container([[0.0, 0.0, 0.0], [0.0, 10.0, 0.0], [0.0, -10.0, 0.0]]),

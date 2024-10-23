@@ -11,9 +11,8 @@ import omni.kit.test
 import torch
 from isaacsim.core.api import World
 from isaacsim.core.api.materials.particle_material import ParticleMaterial
-from isaacsim.core.api.prims.soft.cloth_prim import ClothPrim
-from isaacsim.core.api.prims.soft.particle_system import ParticleSystem
 from isaacsim.core.api.tests.common import TestProperties
+from isaacsim.core.prims import SingleClothPrim, SingleParticleSystem
 
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add support for async/await tests
@@ -27,7 +26,7 @@ from pxr import Gf, Usd, UsdGeom
 
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestClothPrim(omni.kit.test.AsyncTestCase, TestProperties):
+class TestSingleClothPrim(omni.kit.test.AsyncTestCase, TestProperties):
     async def setUp(self):
         World.clear_instance()
         await create_new_stage_async()
@@ -60,7 +59,7 @@ class TestClothPrim(omni.kit.test.AsyncTestCase, TestProperties):
         radius = 0.5 * (0.6 / 5.0)
         restOffset = radius
         contactOffset = restOffset * 1.5
-        self.particle_system = ParticleSystem(
+        self.particle_system = SingleParticleSystem(
             prim_path=particle_system_path,
             simulation_owner=self.my_world.get_physics_context().prim_path,
             rest_offset=restOffset,
@@ -71,7 +70,7 @@ class TestClothPrim(omni.kit.test.AsyncTestCase, TestProperties):
         )
         self.particle_system.set_simulation_owner(self.my_world.get_physics_context().prim_path)
 
-        self.cloth = ClothPrim(
+        self.cloth = SingleClothPrim(
             prim_path=str(cloth_path), particle_system=self.particle_system, particle_material=self.particle_material
         )
         self.my_world.scene.add(self.cloth)

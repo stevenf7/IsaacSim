@@ -25,13 +25,14 @@ writeTarget.kit = true
 "omni.physx.tensors" = {}
 "omni.kit.usd.layers" = {}
 "omni.kit.material.library" = {optional = true} # OmniGlass
-"isaacsim.core.version" = {}
-"isaacsim.core.utils" = {}
 "omni.warp.core" = {}
 "omni.physx.stageupdate" = {}
 "omni.usd.schema.semantics" = {}
 "omni.kit.stage_templates" = {}
 "isaacsim.core.deprecation_manager" = {}
+"isaacsim.core.prims" = {}
+"isaacsim.core.utils" = {}
+"isaacsim.core.version" = {}
 
 [[python.module]]
 name = "isaacsim.core.api"

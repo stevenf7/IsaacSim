@@ -57,8 +57,9 @@ from typing import Dict, Optional, Sequence
 import isaacsim.robot_motion.motion_generation.interface_config_loader as icl
 import numpy as np
 import omni.physics.tensors
-from isaacsim.core.api.articulations import Articulation, ArticulationSubset
+from isaacsim.core.api.articulations import ArticulationSubset
 from isaacsim.core.api.objects import VisualCuboid
+from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.cortex.framework.commander import Commander
 from isaacsim.cortex.framework.cortex_utils import get_assets_root_path_or_die
@@ -274,7 +275,7 @@ class FrankaGripper(CortexGripper):
             by this parallel graipper.
     """
 
-    def __init__(self, articulation: Articulation):
+    def __init__(self, articulation: SingleArticulation):
         super().__init__(
             articulation_subset=ArticulationSubset(articulation, ["panda_finger_joint1", "panda_finger_joint2"]),
             opened_width=0.08,

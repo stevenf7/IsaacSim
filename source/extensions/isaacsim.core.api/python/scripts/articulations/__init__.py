@@ -6,7 +6,5 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from isaacsim.core.api.articulations.articulation import Articulation
 from isaacsim.core.api.articulations.articulation_gripper import ArticulationGripper
 from isaacsim.core.api.articulations.articulation_subset import ArticulationSubset
-from isaacsim.core.api.articulations.articulation_view import ArticulationView

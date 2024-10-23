@@ -16,10 +16,9 @@ import torch
 import warp as wp
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import DynamicCuboid
-from isaacsim.core.api.prims.geometry_prim_view import GeometryPrimView
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from isaacsim.core.api.prims.rigid_prim_view import RigidPrimView
+from isaacsim.core.prims import RigidPrim
 from isaacsim.core.utils.numpy.rotations import euler_angles_to_quats as euler_angles_to_quats_numpy
 from isaacsim.core.utils.stage import create_new_stage_async, get_current_stage, update_stage_async
 from isaacsim.core.utils.torch.rotations import euler_angles_to_quats as euler_angles_to_quats_torch
@@ -163,7 +162,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
                 prim_path=f"/World/Cube_{i+1}", name=f"cube_{i}", size=1.0, color=np.array([0.5, 0, 0]), mass=0.0
             )
         await update_stage_async()
-        self._cubes_view = RigidPrimView(
+        self._cubes_view = RigidPrim(
             prim_paths_expr="/World/Cube_[1-3]",
             name="cubes_view",
             positions=self._array_container([[0.0, 0.0, 0.0], [0.0, 10.0, 0.0], [0.0, -10.0, 0.0]]),
@@ -189,7 +188,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
                 prim_path=f"/World/TopBox_{i+1}", name=f"top_box_{i}", size=1.0, color=np.array([0.5, 0, 0]), mass=1.0
             )
         # a view to receive contacts between the bottom boxes and top boxes
-        self._box_view = RigidPrimView(
+        self._box_view = RigidPrim(
             prim_paths_expr="/World/Box_*",
             name="box_view",
             positions=self._array_container(
@@ -199,7 +198,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             max_contact_count=3 * 10,  # 3 box each with maximum of 20 potential contacts
         )
         # a view just to manipulate the top boxes
-        self._top_box_view = RigidPrimView(
+        self._top_box_view = RigidPrim(
             prim_paths_expr="/World/TopBox_*",
             name="top_box_view",
             positions=self._array_container(
@@ -245,7 +244,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             )
 
         # a view to receive contacts between the bottom boxes and top boxes
-        self._box_view = RigidPrimView(
+        self._box_view = RigidPrim(
             prim_paths_expr="/World/Box_*",
             name="box_view",
             positions=self._array_container(

@@ -14,7 +14,7 @@ simulation_app = SimulationApp({"headless": False})
 import torch
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import DynamicCuboid
-from isaacsim.core.api.prims import XFormPrim
+from isaacsim.core.prims import XFormPrim
 
 my_world = World(stage_units_in_meters=1.0, device="cuda:0", backend="torch")
 cube_2 = my_world.scene.add(
@@ -27,13 +27,13 @@ cube_2 = my_world.scene.add(
         color=torch.tensor([255, 0, 0]),
     )
 )
-xfrom_cube = XFormPrim(prim_path="/new_cube_2")
+xfrom_cube = XFormPrim("/new_cube_2")
 my_world.scene.add_default_ground_plane()
 my_world.reset()
 for i in range(500):
     my_world.step(render=False)
 my_world.render()
-if not (xfrom_cube.get_world_pose()[0][-1] < 10e-02):
+if not (xfrom_cube.get_world_poses()[0][:, -1].item() < 10e-02):
     raise (ValueError(f"PhysX status is not updated in the rendering call"))
 
 simulation_app.close()

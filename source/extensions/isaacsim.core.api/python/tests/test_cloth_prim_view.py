@@ -14,9 +14,7 @@ import omni.kit.test
 import torch
 from isaacsim.core.api import World
 from isaacsim.core.api.materials.particle_material import ParticleMaterial
-from isaacsim.core.api.prims.soft.cloth_prim import ClothPrim
-from isaacsim.core.api.prims.soft.cloth_prim_view import ClothPrimView
-from isaacsim.core.api.prims.soft.particle_system import ParticleSystem
+from isaacsim.core.prims import ClothPrim, SingleClothPrim, SingleParticleSystem
 from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
 
 # NOTE:
@@ -28,7 +26,7 @@ from pxr import Gf, Usd, UsdGeom
 
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestClothPrimView(omni.kit.test.AsyncTestCase):
+class TestClothPrim(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         World.clear_instance()
         await create_new_stage_async()
@@ -75,7 +73,7 @@ class TestClothPrimView(omni.kit.test.AsyncTestCase):
             radius = 0.5 * (0.6 / 5.0)
             restOffset = radius
             contactOffset = restOffset * 1.5
-            particle_system = ParticleSystem(
+            particle_system = SingleParticleSystem(
                 prim_path=particle_system_path,
                 simulation_owner=self.my_world.get_physics_context().prim_path,
                 rest_offset=restOffset,
@@ -84,12 +82,12 @@ class TestClothPrimView(omni.kit.test.AsyncTestCase):
                 fluid_rest_offset=restOffset,
                 particle_contact_offset=contactOffset,
             )
-            cloth = ClothPrim(
+            cloth = SingleClothPrim(
                 prim_path=cloth_path, particle_system=particle_system, particle_material=particle_material
             )
 
         # create a view to deal with all the cloths
-        self.cloth_view = ClothPrimView(prim_paths_expr="/World/Env*/cloth", name="clothView1")
+        self.cloth_view = ClothPrim(prim_paths_expr="/World/Env*/cloth", name="clothView1")
         self.my_world.scene.add(self.cloth_view)
         await update_stage_async()
 

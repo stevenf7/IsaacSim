@@ -9,7 +9,6 @@
 from typing import Optional, Sequence, Tuple
 
 import numpy as np
-from isaacsim.core.api.materials.visual_material import VisualMaterial
 from isaacsim.core.utils.types import XFormPrimState
 from pxr import Usd
 
@@ -185,7 +184,7 @@ class _SinglePrimWrapper(object):
         self._prim_view.set_default_state(positions=position, orientations=orientation)
         return
 
-    def apply_visual_material(self, visual_material: VisualMaterial, weaker_than_descendants: bool = False) -> None:
+    def apply_visual_material(self, visual_material: "VisualMaterial", weaker_than_descendants: bool = False) -> None:
         """Apply visual material to the held prim and optionally its descendants.
 
         Args:
@@ -215,7 +214,7 @@ class _SinglePrimWrapper(object):
         )
         return
 
-    def get_applied_visual_material(self) -> VisualMaterial:
+    def get_applied_visual_material(self) -> "VisualMaterial":
         """Return the current applied visual material in case it was applied using apply_visual_material
         or it's one of the following materials that was already applied before: PreviewSurface, OmniPBR and OmniGlass.
 

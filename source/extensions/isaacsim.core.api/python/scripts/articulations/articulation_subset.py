@@ -19,7 +19,7 @@ from typing import List, Optional
 
 import carb
 import numpy as np
-from isaacsim.core.api.articulations.articulation import Articulation
+from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.types import ArticulationAction, JointsState
 
 
@@ -58,13 +58,13 @@ class ArticulationSubset:
         ArticulationSubset.map_to_articulation_order([1,0]) -> [0,1,None]
 
     Args:
-        articulation (Articulation):
-            An initialized Articulation object representing the simulated robot
+        articulation (SingleArticulation):
+            An initialized SingleArticulation object representing the simulated robot
         joint_names (List[str]):
             A list of joint names whose order determines the order of the joints returned by
             functions like get_joint_positions()"""
 
-    def __init__(self, articulation: Articulation, joint_names: List[str]) -> None:
+    def __init__(self, articulation: SingleArticulation, joint_names: List[str]) -> None:
         self.articulation = articulation
         self.joint_names = joint_names
         self._joint_indices = None

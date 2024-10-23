@@ -10,10 +10,9 @@
 import numpy as np
 import omni.timeline
 import omni.ui as ui
-from isaacsim.core.api.articulations import Articulation
 from isaacsim.core.api.objects.cuboid import FixedCuboid
-from isaacsim.core.api.prims import XFormPrim
 from isaacsim.core.api.world import World
+from isaacsim.core.prims import SingleArticulation, XFormPrim
 from isaacsim.core.utils.prims import is_prim_path_valid
 from isaacsim.core.utils.stage import add_reference_to_stage, create_new_stage, get_current_stage
 from isaacsim.gui.components.element_wrappers import CollapsableFrame, StateButton
@@ -143,7 +142,7 @@ class UIBuilder:
         sphereLight = UsdLux.SphereLight.Define(get_current_stage(), Sdf.Path("/World/SphereLight"))
         sphereLight.CreateRadiusAttr(2)
         sphereLight.CreateIntensityAttr(100000)
-        XFormPrim(str(sphereLight.GetPath())).set_world_pose([6.5, 0, 12])
+        XFormPrim(str(sphereLight.GetPath())).set_world_poses(np.array([[6.5, 0, 12]]))
 
     def _setup_scene(self):
         """
@@ -177,7 +176,7 @@ class UIBuilder:
             "/Scenario/cuboid", position=np.array([0.3, 0.3, 0.5]), size=0.05, color=np.array([255, 0, 0])
         )
 
-        self._articulation = Articulation(robot_prim_path)
+        self._articulation = SingleArticulation(robot_prim_path)
 
         # Add user-loaded objects to the World
         world = World.instance()

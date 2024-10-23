@@ -19,13 +19,12 @@ import numpy as np
 import torch
 from isaacsim.core.api import World
 from isaacsim.core.api.materials.deformable_material import DeformableMaterial
-from isaacsim.core.api.prims.soft.deformable_prim import DeformablePrim
-from isaacsim.core.api.prims.soft.deformable_prim_view import DeformablePrimView
+from isaacsim.core.prims import DeformablePrim, SingleDeformablePrim
 from isaacsim.storage.native import get_assets_root_path
 from omni.physx.scripts import deformableUtils, physicsUtils
 from pxr import Gf, UsdGeom, UsdLux
 
-# The example shows how to create and manipulate environments with deformable deformable through the DeformablePrimView
+# The example shows how to create and manipulate environments with deformable prim through the DeformablePrim
 parser = argparse.ArgumentParser()
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
 args, unknown = parser.parse_known_args()
@@ -66,7 +65,7 @@ class DeformableExample:
             physicsUtils.setup_transform_as_scale_orient_translate(skin_mesh)
             physicsUtils.set_or_add_translate_op(skin_mesh, (0.0, 0.0, 2.0))
             physicsUtils.set_or_add_orient_op(skin_mesh, Gf.Rotation(Gf.Vec3d([1, 0, 0]), 15 * i).GetQuat())
-            deformable_material_path = env.GetPrim().GetPath().AppendChild("deformableMaterial")
+            deformable_material_path = env.GetPrim().GetPath().AppendChild("deformableMaterial").pathString
             self.deformable_material = DeformableMaterial(
                 prim_path=deformable_material_path,
                 dynamic_friction=0.5,
@@ -76,7 +75,7 @@ class DeformableExample:
                 elasticity_damping=0.1,
             )
 
-            self.deformable = DeformablePrim(
+            self.deformable = SingleDeformablePrim(
                 name="deformablePrim" + str(i),
                 prim_path=str(mesh_path),
                 deformable_material=self.deformable_material,
@@ -94,7 +93,7 @@ class DeformableExample:
             self.my_world.scene.add(self.deformable)
 
         # create a view to deal with all the deformables
-        self.deformableView = DeformablePrimView(prim_paths_expr="/World/Envs/Env*/deformable", name="deformableView1")
+        self.deformableView = DeformablePrim(prim_paths_expr="/World/Envs/Env*/deformable", name="deformableView1")
         self.my_world.scene.add(self.deformableView)
         self.my_world.reset(soft=False)
         # mesh data is available only after cooking

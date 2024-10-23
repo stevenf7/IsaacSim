@@ -12,7 +12,7 @@ from isaacsim import SimulationApp
 # URDF import, configuration and simulation sample
 kit = SimulationApp({"renderer": "RaytracedLighting", "headless": True})
 import omni.kit.commands
-from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.prims import Articulation
 from isaacsim.core.utils.extensions import get_extension_path_from_name
 from pxr import Gf, PhysxSchema, Sdf, UsdLux, UsdPhysics
 
@@ -26,8 +26,8 @@ import_config.distance_scale = 100
 
 # Get path to extension data:
 extension_path = get_extension_path_from_name("omni.importer.urdf")
-# Import URDF, stage_path contains the path the path to the usd prim in the stage.
-status, stage_path = omni.kit.commands.execute(
+# Import URDF, prim_path contains the path the path to the usd prim in the stage.
+status, prim_path = omni.kit.commands.execute(
     "URDFParseAndImportFile",
     urdf_path=extension_path + "/data/urdf/robots/carter/urdf/carter.urdf",
     import_config=import_config,
@@ -86,13 +86,13 @@ right_wheel_drive.GetStiffnessAttr().Set(0)
 omni.timeline.get_timeline_interface().play()
 # perform one simulation step so physics is loaded and dynamic control works.
 kit.update()
-art = Articulation(prim_path=stage_path)
+art = Articulation(prim_path)
 art.initialize()
 
-if not art.handles_initialized:
-    print(f"{stage_path} is not an articulation")
+if not art.is_physics_handle_valid():
+    print(f"{prim_path} is not an articulation")
 else:
-    print(f"Got articulation {stage_path}")
+    print(f"Got articulation ({prim_path})")
 
 # perform simulation
 for frame in range(100):

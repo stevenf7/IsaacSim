@@ -88,7 +88,7 @@ import math
 import carb
 import omni.replicator.core as rep
 from isaacsim.core.api import World
-from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.prims import XFormPrim
 from isaacsim.core.utils.rotations import euler_angles_to_quat
 from isaacsim.core.utils.semantics import add_update_semantics
 from isaacsim.replicator.scripts.writers import PoseWriter, YCBVideoWriter
@@ -268,7 +268,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
                 )
             )
 
-        self.rig = XFormPrim(prim_path=camera_rig_path)
+        self.rig = XFormPrim(camera_rig_path)
 
     def _setup_collision_box(self):
         # Create a collision box in view of the camera, allowing distractors placed in the box to be within
@@ -418,7 +418,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
                     mass=1.0,
                 )
 
-                train_part.prim.GetAttribute("physics:rigidBodyEnabled").Set(True)
+                train_part.prims[0].GetAttribute("physics:rigidBodyEnabled").Set(True)
 
                 self.train_parts.append(train_part)
 
@@ -496,7 +496,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
         """
         if not self.test:
             camera_prim = world.stage.GetPrimAtPath(self.camera_path)
-            rig_prim = world.stage.GetPrimAtPath(self.rig.prim_path)
+            rig_prim = world.stage.GetPrimAtPath(self.rig.prim_paths[0])
             translation, orientation = get_random_world_pose_in_view(
                 camera_prim,
                 config_data["MIN_DISTANCE"],
@@ -511,7 +511,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
         else:
             translation, orientation = np.array([0.0, 0.0, 1.0]), np.array([0.0, 0.0, 0.0, 1.0])
 
-        prim.set_world_pose(translation, orientation)
+        prim.set_world_poses(np.array([translation]), np.array([orientation]))
 
     def __iter__(self):
         return self

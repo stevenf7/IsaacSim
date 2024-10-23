@@ -9,8 +9,8 @@
 
 import omni.timeline
 import omni.ui as ui
-from isaacsim.core.api.prims import XFormPrim
 from isaacsim.core.api.world import World
+from isaacsim.core.prims import SingleXFormPrim
 from isaacsim.core.utils.stage import create_new_stage, get_current_stage
 from isaacsim.gui.components.element_wrappers import CollapsableFrame, StateButton
 from isaacsim.gui.components.element_wrappers.core_connectors import LoadButton, ResetButton
@@ -138,7 +138,7 @@ class UIBuilder:
         sphereLight = UsdLux.SphereLight.Define(get_current_stage(), Sdf.Path("/World/SphereLight"))
         sphereLight.CreateRadiusAttr(2)
         sphereLight.CreateIntensityAttr(100000)
-        XFormPrim(str(sphereLight.GetPath())).set_world_pose([6.5, 0, 12])
+        SingleXFormPrim(str(sphereLight.GetPath())).set_world_pose([6.5, 0, 12])
 
     def _setup_scene(self):
         """

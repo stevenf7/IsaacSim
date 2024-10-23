@@ -18,9 +18,9 @@ from abc import abstractmethod
 
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import DynamicCuboid, DynamicSphere
-from isaacsim.core.api.prims.rigid_prim_view import RigidPrimView
 from isaacsim.core.api.tasks import BaseTask
 from isaacsim.core.cloner import GridCloner
+from isaacsim.core.prims import RigidPrim
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
@@ -55,7 +55,7 @@ class HelloWorld(BaseTask):
             prim_paths=prim_paths,
             position_offsets=np.array([[0, 0, 1.0]] * self._num_envs),
         )
-        self._object = RigidPrimView(prim_paths_expr=f"/World/object_[0-{self._num_envs-1}]", name="object_view")
+        self._object = RigidPrim(prim_paths_expr=f"/World/object_[0-{self._num_envs-1}]", name="object_view")
         scene.add(self._object)
 
         return

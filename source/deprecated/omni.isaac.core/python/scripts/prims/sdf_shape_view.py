@@ -9,8 +9,8 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.core.prims.sdf_shape_view has been deprecated in favor of isaacsim.core.api.prims.sdf_shape_view. Please update your code accordingly."
+    "omni.isaac.core.prims.sdf_shape_view.SdfShapeView has been deprecated in favor of isaacsim.core.prims.SdfShapePrim. Please update your code accordingly."
 )
 
 
-from isaacsim.core.api.prims.sdf_shape_view import SdfShapeView
+from isaacsim.core.prims import SdfShapePrim as SdfShapeView

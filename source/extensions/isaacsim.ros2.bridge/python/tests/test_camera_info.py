@@ -27,7 +27,7 @@ import omni.kit.test
 import omni.kit.usd
 import omni.kit.viewport.utility
 from isaacsim.core.api.objects import VisualCuboid
-from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.prims import SingleXFormPrim
 from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.semantics import add_update_semantics
 from isaacsim.core.utils.stage import add_reference_to_stage, get_current_stage, open_stage_async
@@ -265,13 +265,13 @@ class TestRos2CameraInfo(omni.kit.test.AsyncTestCase):
             + "/Projects/isaac_amr_envoy/scenes/calibration/checkerboard/checkere_board_isaac_sim.usd"
         )
         add_reference_to_stage(usd_path=checkerboard_path, prim_path="/calibration_target")
-        XFormPrim("/calibration_target", name="calibration_target", position=[1.0, -0.075, -0.6])
+        SingleXFormPrim("/calibration_target", name="calibration_target", position=[1.0, -0.075, -0.6])
 
         def add_light(name: str, z: float):
             sphereLight = UsdLux.SphereLight.Define(get_current_stage(), Sdf.Path(f"/World/SphereLight_{name}"))
             sphereLight.CreateRadiusAttr(6)
             sphereLight.CreateIntensityAttr(10000)
-            XFormPrim(str(sphereLight.GetPath())).set_world_pose([0.5, -0.075, z])
+            SingleXFormPrim(str(sphereLight.GetPath())).set_world_pose([0.5, -0.075, z])
 
         add_light("top", 12)
         add_light("bottom", -12)

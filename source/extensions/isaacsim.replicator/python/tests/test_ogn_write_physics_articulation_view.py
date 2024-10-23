@@ -17,7 +17,7 @@ import omni.physx
 import omni.timeline
 import omni.usd
 from isaacsim.core.api import World
-from isaacsim.core.api.articulations import ArticulationView
+from isaacsim.core.prims import Articulation
 from isaacsim.core.utils.stage import add_reference_to_stage, create_new_stage_async
 from isaacsim.replicator import physics_view as physics
 from isaacsim.storage.native import get_assets_root_path_async
@@ -58,7 +58,7 @@ class TestOgnWritePhysicsArticulationView(omni.kit.test.AsyncTestCase):
         self._num_dofs = 7 + 2
 
         await omni.kit.app.get_app().next_update_async()
-        self._articulation_view = ArticulationView(prim_paths_expr="/World/Franka", name="franka")
+        self._articulation_view = Articulation(prim_paths_expr="/World/Franka", name="franka")
         self._my_world.scene.add(self._articulation_view)
 
         await self._my_world.reset_async()

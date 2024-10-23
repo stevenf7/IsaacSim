@@ -15,8 +15,8 @@ import isaacsim.core.api.objects
 import isaacsim.robot_motion.motion_generation.interface_config_loader as interface_config_loader
 import numpy as np
 import omni.kit
-from isaacsim.core.api.articulations import Articulation
 from isaacsim.core.api.controllers.base_controller import BaseController
+from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.robot_motion.motion_generation import ArticulationTrajectory
 from isaacsim.robot_motion.motion_generation.lula import RRT
@@ -126,7 +126,7 @@ class FrankaRrtController(PathPlannerController):
     def __init__(
         self,
         name,
-        robot_articulation: Articulation,
+        robot_articulation: SingleArticulation,
     ):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("isaacsim.examples.interactive")

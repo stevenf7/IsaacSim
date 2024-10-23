@@ -15,9 +15,9 @@ import omni.kit.test
 import omni.kit.ui_test as ui_test
 import omni.timeline
 import omni.ui as ui
-from isaacsim.core.api.articulations import Articulation
 from isaacsim.core.api.objects.cuboid import FixedCuboid, VisualCuboid
 from isaacsim.core.api.world import World
+from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.stage import (
     add_reference_to_stage,
     create_new_stage,
@@ -75,7 +75,7 @@ class TestUICoreConnectors(omni.kit.test.AsyncTestCase):
             create_new_stage()
             add_reference_to_stage(path_to_robot_usd, robot_prim_path)
 
-            art = Articulation(robot_prim_path)
+            art = SingleArticulation(robot_prim_path)
             cuboid = FixedCuboid(
                 "/Scenario/cuboid", position=np.array([0.3, 0.3, 0.5]), size=0.05, color=np.array([255, 0, 0])
             )

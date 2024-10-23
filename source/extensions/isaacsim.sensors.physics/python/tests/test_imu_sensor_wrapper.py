@@ -13,8 +13,8 @@ import math
 import numpy as np
 import omni.kit.test
 from isaacsim.core.api import World
-from isaacsim.core.api.articulations import Articulation
 from isaacsim.core.api.objects import DynamicCuboid
+from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.stage import add_reference_to_stage, create_new_stage_async, update_stage_async
 from isaacsim.sensors.physics import IMUSensor
 from isaacsim.storage.native import get_assets_root_path_async
@@ -32,7 +32,7 @@ class TestIMU(omni.kit.test.AsyncTestCase):
         asset_path = assets_root_path + "/Isaac/Robots/Carter/nova_carter_sensors.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Carter")
         my_carter = self.my_world.scene.add(
-            Articulation(prim_path="/World/Carter", name="my_carter", position=np.array([0, 0.0, 0.5]))
+            SingleArticulation(prim_path="/World/Carter", name="my_carter", position=np.array([0, 0.0, 0.5]))
         )
 
         self._imu = self.my_world.scene.add(IMUSensor(prim_path="/World/Carter/chassis_link/Imu_Sensor", name="imu"))

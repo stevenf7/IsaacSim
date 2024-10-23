@@ -15,7 +15,7 @@ import omni.graph.core as og
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 import usdrt.Sdf
-from isaacsim.core.api.articulations.articulation import Articulation
+from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.extensions import get_extension_path_from_name
 from isaacsim.core.utils.rotations import quat_to_euler_angles
 from isaacsim.core.utils.stage import open_stage_async
@@ -23,7 +23,7 @@ from isaacsim.storage.native import get_assets_root_path_async
 
 
 async def init_robot_sim(art_path, graph_path="/ActionGraph"):
-    art = Articulation(art_path)
+    art = SingleArticulation(art_path)
     art._articulation_view.initialize()
     # reset
     art.set_world_pose(position=[0, 0, 0.1], orientation=[0, 0, 0, 1])

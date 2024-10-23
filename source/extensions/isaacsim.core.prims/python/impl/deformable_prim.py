@@ -7,22 +7,18 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from typing import List, Optional, Sequence, Tuple, Union
+from typing import List, Optional, Union
 
-# omniverse
 import carb
 import numpy as np
 import omni.kit.app
 import torch
-from isaacsim.core.api.materials.deformable_material import DeformableMaterial
-from isaacsim.core.api.prims.xform_prim_view import XFormPrimView
+from pxr import PhysxSchema, UsdShade
 
-# isaac-core
-from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
-from pxr import PhysxSchema, Usd, UsdPhysics, UsdShade, Vt
+from .xform_prim import XFormPrim
 
 
-class DeformablePrimView(XFormPrimView):
+class DeformablePrim(XFormPrim):
     """The view class for deformable prims."""
 
     def __init__(
@@ -72,7 +68,7 @@ class DeformablePrimView(XFormPrimView):
         self._physics_view = None
         self._device = None
         self._name = name
-        XFormPrimView.__init__(
+        XFormPrim.__init__(
             self,
             prim_paths_expr=prim_paths_expr,
             name=name,
@@ -216,7 +212,7 @@ class DeformablePrimView(XFormPrimView):
 
     def apply_deformable_materials(
         self,
-        deformable_materials: Union[DeformableMaterial, List[DeformableMaterial]],
+        deformable_materials: Union["DeformableMaterial", List["DeformableMaterial"]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
     ) -> None:
         """Used to apply deformable material to prims in the view.
@@ -253,7 +249,7 @@ class DeformablePrimView(XFormPrimView):
 
     def get_applied_deformable_materials(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
-    ) -> List[DeformableMaterial]:
+    ) -> List["DeformableMaterial"]:
         """Gets the applied deformable material to prims in the view.
 
         Args:
@@ -279,6 +275,8 @@ class DeformablePrimView(XFormPrimView):
                 if material_path == "":
                     result[write_idx] = None
                 else:
+                    from isaacsim.core.api.materials.deformable_material import DeformableMaterial
+
                     self._applied_deformable_materials[i.tolist()] = DeformableMaterial(prim_path=material_path)
                     result[write_idx] = self._applied_deformable_materials[i.tolist()]
                 write_idx += 1

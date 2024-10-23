@@ -16,8 +16,7 @@ import omni.kit.commands
 import omni.timeline
 import omni.ui as ui
 import omni.usd
-from isaacsim.core.api.articulations import Articulation
-from isaacsim.core.api.prims import XFormPrim
+from isaacsim.core.prims import SingleArticulation, SingleXFormPrim
 from isaacsim.core.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
 from isaacsim.core.utils.prims import get_prim_at_path, get_prim_object_type
 from isaacsim.core.utils.stage import update_stage_async
@@ -462,7 +461,7 @@ class UIBuilder:
 
         self.assembly_code_summary.set_text(
             "from isaacsim.robot_setup.assembler import RobotAssembler,AssembledRobot \n"
-            + "from isaacsim.core.api.articulations import Articulation\n"
+            + "from isaacsim.core.prims import SingleArticulation\n"
             + "import numpy as np\n\n"
             + f'base_robot_path = "{art_1_path}"\n'
             + f'attach_robot_path = "{art_2_path}"\n'
@@ -481,11 +480,11 @@ class UIBuilder:
             + "# Controlling the resulting assembled robot is different depending on the single_robot flag\n"
             + "if single_robot:\n"
             + "\t# The robots will be considered to be part of a single Articulation at the base robot path\n"
-            + "\tcontrollable_single_robot = Articulation(base_robot_path)\n"
+            + "\tcontrollable_single_robot = SingleArticulation(base_robot_path)\n"
             + "else:\n"
             + "\t# The robots are controlled independently from each other\n"
-            + "\tbase_robot = Articulation(base_robot_path)\n"
-            + "\tattach_robot = Articulation(attach_robot_path)\n"
+            + "\tbase_robot = SingleArticulation(base_robot_path)\n"
+            + "\tattach_robot = SingleArticulation(attach_robot_path)\n"
         )
 
     def setup_assembler_summary_frame_rigid_bodies(self, art_1_path, art_2_path, sel_1, sel_2, rel_trans, rel_orient):
@@ -502,7 +501,7 @@ class UIBuilder:
 
         text = (
             "from isaacsim.robot_setup.assembler import RobotAssembler,AssembledBodies \n"
-            + "from isaacsim.core.api.articulations import Articulation\n"
+            + "from isaacsim.core.prims import SingleArticulation\n"
             + "import numpy as np\n\n"
             + "robot_assembler = RobotAssembler()\n"
             + f'base_robot_path = "{art_1_path}"\n'
@@ -568,7 +567,7 @@ class UIBuilder:
 
         self._articulation_options_pre_nest = self._articulation_options
 
-        self._attached_art_default_pose = XFormPrim(self._art_2_path).get_world_pose()
+        self._attached_art_default_pose = SingleXFormPrim(self._art_2_path).get_world_pose()
 
         base_path = self._art_1_path + sel_1
         art_name = self._art_2_path[self._art_2_path.rfind("/") :]
@@ -578,7 +577,7 @@ class UIBuilder:
 
         omni.kit.commands.execute("MovePrimCommand", path_from=self._art_2_path, path_to=base_path + art_name)
 
-        nested_art_xform = XFormPrim(self._nested_articulation_path_to)
+        nested_art_xform = SingleXFormPrim(self._nested_articulation_path_to)
         nested_art_xform.set_local_pose(np.zeros(3), np.array([1, 0, 0, 0]))
 
         self._timeline.stop()
@@ -601,10 +600,10 @@ class UIBuilder:
 
         art_1_path = self._art_1_path
 
-        base_attach_point_xform = XFormPrim(art_1_path + sel_1)
+        base_attach_point_xform = SingleXFormPrim(art_1_path + sel_1)
 
         attach_frame = sel_2
-        nested_attach_frame_xform = XFormPrim(self._nested_articulation_path_to + attach_frame)
+        nested_attach_frame_xform = SingleXFormPrim(self._nested_articulation_path_to + attach_frame)
 
         nested_art_trans, nested_art_rot = nested_attach_frame_xform.get_world_pose()
         base_trans, base_rot = base_attach_point_xform.get_world_pose()
@@ -640,7 +639,7 @@ class UIBuilder:
         self._on_prim_selection(1, self._art_2_path)
 
         attach_art = self._articulations[1]
-        XFormPrim(attach_art.prim_path).set_world_pose(*self._attached_art_default_pose)
+        SingleXFormPrim(attach_art.prim_path).set_world_pose(*self._attached_art_default_pose)
 
     def _assemble_rigid_bodies(self, rel_trans, rel_orient):
         sel_1 = self._base_attach_frame
@@ -740,7 +739,7 @@ class UIBuilder:
 
         else:
             try:
-                articulation = Articulation(selection)
+                articulation = SingleArticulation(selection)
                 articulation.initialize()
 
                 self._articulations[art_ind] = articulation

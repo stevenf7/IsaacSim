@@ -20,9 +20,8 @@ import torch
 from isaacsim.core.api import World
 from isaacsim.core.api.materials.physics_material import PhysicsMaterial
 from isaacsim.core.api.objects import DynamicCuboid
-from isaacsim.core.api.prims.geometry_prim_view import GeometryPrimView
-from isaacsim.core.api.prims.rigid_prim_view import RigidPrimView
 from isaacsim.core.cloner import Cloner
+from isaacsim.core.prims import GeometryPrim, RigidPrim
 from isaacsim.core.utils.torch.rotations import euler_angles_to_quats
 from isaacsim.storage.native import get_assets_root_path
 
@@ -46,7 +45,7 @@ cube = DynamicCuboid(prim_path="/World/cube_0")
 prim_paths = my_cloner.generate_paths("/World/cube", 3)
 my_cloner.clone(cube.prim_path, prim_paths)
 
-rigid_prim_view = RigidPrimView(prim_paths_expr="/World/cube_[0-2]")
+rigid_prim_view = RigidPrim(prim_paths_expr="/World/cube_[0-2]")
 
 physics_material_1 = PhysicsMaterial(
     prim_path="/Physics_material_1", dynamic_friction=0.2, static_friction=0.2, restitution=0.0
@@ -57,7 +56,7 @@ physics_material_2 = PhysicsMaterial(
 physics_material_3 = PhysicsMaterial(
     prim_path="/Physics_material_3", dynamic_friction=0.2, static_friction=0.2, restitution=0.0
 )
-geometry_prim_view = GeometryPrimView(
+geometry_prim_view = GeometryPrim(
     prim_paths_expr="/World/cube_[0-2]", collisions=torch.tensor([True, True, True], dtype=torch.bool)
 )
 geometry_prim_view.apply_physics_materials(physics_materials=[physics_material_1, physics_material_3], indices=[2, 0])

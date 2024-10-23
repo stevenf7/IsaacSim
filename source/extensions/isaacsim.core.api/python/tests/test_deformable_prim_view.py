@@ -15,9 +15,7 @@ import omni.kit.test
 import torch
 from isaacsim.core.api import World
 from isaacsim.core.api.materials.deformable_material import DeformableMaterial
-from isaacsim.core.api.prims.soft.deformable_prim import DeformablePrim
-from isaacsim.core.api.prims.soft.deformable_prim_view import DeformablePrimView
-from isaacsim.core.api.prims.soft.particle_system import ParticleSystem
+from isaacsim.core.prims import DeformablePrim, SingleDeformablePrim
 from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
 
 # NOTE:
@@ -29,7 +27,7 @@ from pxr import Gf, Usd, UsdGeom
 
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestDeformablePrimView(omni.kit.test.AsyncTestCase):
+class TestDeformablePrim(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         World.clear_instance()
         await create_new_stage_async()
@@ -80,7 +78,7 @@ class TestDeformablePrimView(omni.kit.test.AsyncTestCase):
                 damping_scale=0.1,
                 elasticity_damping=0.1,
             )
-            deformable = DeformablePrim(
+            deformable = SingleDeformablePrim(
                 prim_path=deformable_path,
                 deformable_material=self.deformable_material,
                 simulation_hexahedral_resolution=1,
@@ -88,7 +86,7 @@ class TestDeformablePrimView(omni.kit.test.AsyncTestCase):
             self.mesh_prim = self.stage.GetPrimAtPath(deformable_path)
 
         # create a view to deal with all the deformables
-        self.deformable_view = DeformablePrimView(prim_paths_expr="/World/Env*/deformable", name="deformableView1")
+        self.deformable_view = DeformablePrim(prim_paths_expr="/World/Env*/deformable", name="deformableView1")
         self.my_world.scene.add(self.deformable_view)
 
     async def _step(self):

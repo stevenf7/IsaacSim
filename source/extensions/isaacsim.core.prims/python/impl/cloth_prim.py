@@ -7,20 +7,18 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from typing import Optional, Tuple, Union
+from typing import Optional, Union
 
-# omniverse
 import carb
 import numpy as np
 import omni.kit.app
 import torch
-
-# isaac-core
-from isaacsim.core.api.prims.xform_prim_view import XFormPrimView
 from pxr import PhysxSchema, UsdPhysics, Vt
 
+from .xform_prim import XFormPrim
 
-class ClothPrimView(XFormPrimView):
+
+class ClothPrim(XFormPrim):
     """The view class for cloth prims."""
 
     def __init__(
@@ -95,7 +93,7 @@ class ClothPrimView(XFormPrimView):
         self._physics_view = None
         self._device = None
         self._name = name
-        XFormPrimView.__init__(
+        XFormPrim.__init__(
             self,
             prim_paths_expr=prim_paths_expr,
             name=name,

@@ -12,9 +12,9 @@ from typing import List, Optional, Tuple
 
 import numpy as np
 from isaacsim.core.api.objects import FixedCuboid, VisualCuboid
-from isaacsim.core.api.prims.xform_prim import XFormPrim
 from isaacsim.core.api.scenes.scene import Scene
 from isaacsim.core.api.tasks import BaseTask
+from isaacsim.core.prims import SingleXFormPrim
 from isaacsim.core.utils.prims import is_prim_path_valid
 from isaacsim.core.utils.rotations import euler_angles_to_quat
 from isaacsim.core.utils.stage import get_stage_units
@@ -96,7 +96,7 @@ class PathPlanningTask(BaseTask):
                 del self._task_objects[self._target.name]
             if is_prim_path_valid(target_prim_path):
                 self._target = self.scene.add(
-                    XFormPrim(
+                    SingleXFormPrim(
                         prim_path=target_prim_path,
                         position=target_position,
                         orientation=target_orientation,

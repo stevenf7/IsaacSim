@@ -43,7 +43,7 @@ import isaacsim.core.utils.stage as stage_utils
 import omni.physx as _physx
 import omni.timeline
 from isaacsim.core.api import PhysicsContext, World
-from isaacsim.core.api.articulations import ArticulationView
+from isaacsim.core.prims import Articulation
 from isaacsim.core.utils.extensions import enable_extension
 from isaacsim.core.utils.stage import open_stage_async, update_stage_async
 from isaacsim.core.utils.types import ArticulationAction
@@ -155,7 +155,7 @@ for i in range(n_robot):
 omni.kit.app.get_app().update()
 my_world.scene.add_default_ground_plane(z_position=-1)
 
-robot_view = ArticulationView("/Robots/Robot_*", positions=positions)
+robot_view = Articulation("/Robots/Robot_*", positions=positions)
 
 timeline = omni.timeline.get_timeline_interface()
 timeline.play()

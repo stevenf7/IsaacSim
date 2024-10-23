@@ -22,10 +22,10 @@ import isaacsim.core.utils.prims as prim_utils
 import isaacsim.core.utils.stage as stage_utils
 import matplotlib.pyplot as plt
 import numpy as np
+import torch
 from isaacsim.core.api import SimulationContext
-from isaacsim.core.api.articulations import Articulation
 from isaacsim.core.api.objects import DynamicCuboid
-from isaacsim.core.api.prims import RigidPrim
+from isaacsim.core.prims import Articulation, RigidPrim
 from isaacsim.core.utils.prims import add_update_semantics, get_prim_attribute_value
 from isaacsim.sensors.camera import Camera
 from isaacsim.storage.native import get_assets_root_path
@@ -40,10 +40,10 @@ asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
 
 
 def main():
-    for run_config in [["cuda:0", "torch"], ["cpu", "numpy"]]:
+    for device, backend in [["cuda:0", "torch"], ["cpu", "numpy"]]:
         SimulationContext.clear_instance()
         stage_utils.create_new_stage()
-        sim = SimulationContext(stage_units_in_meters=1.0, physics_dt=0.01, device=run_config[0], backend=run_config[1])
+        sim = SimulationContext(stage_units_in_meters=1.0, physics_dt=0.01, device=device, backend=backend)
         prim_utils.create_prim("/World/Origin1", "Xform", translation=[0.0, 0.0, 0.0])
         cube = DynamicCuboid(
             prim_path="/World/Origin1/cube",
@@ -54,13 +54,15 @@ def main():
             color=np.array([255, 0, 0]),
         )
         stage_utils.add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
-        articulated_system = Articulation(prim_path="/World/Franka")
-        rigid_link = RigidPrim(prim_path="/World/Franka/panda_link1")
+        articulated_system = Articulation("/World/Franka")
+        rigid_link = RigidPrim("/World/Franka/panda_link1")
         sim.reset()
         cube.initialize()
         rigid_link.initialize()
         articulated_system.initialize()
-        articulated_system.set_world_pose(position=[-10, -10, 0])
+        articulated_system.set_world_poses(
+            positions=torch.tensor([[-10, -10, 0]], device=device) if backend == "torch" else [[-10, -10, 0]]
+        )
         position = cube.get_world_pose()[0]
         position[0] += 3
         cube.set_world_pose(position=position)

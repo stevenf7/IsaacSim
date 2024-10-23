@@ -17,7 +17,7 @@ import sys
 import carb
 import numpy as np
 from isaacsim.core.api import World
-from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.prims import Articulation
 from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.sensors.physics import ContactSensor
 from isaacsim.storage.native import get_assets_root_path
@@ -38,7 +38,7 @@ my_world.scene.add_default_ground_plane()
 asset_path = assets_root_path + "/Isaac/Robots/Ant/ant.usd"
 add_reference_to_stage(usd_path=asset_path, prim_path="/World/Ant")
 
-ant = my_world.scene.add(Articulation(prim_path="/World/Ant/torso", name="ant", translation=np.array([0, 0, 1.5])))
+ant = my_world.scene.add(Articulation("/World/Ant/torso", name="ant", translations=np.array([[0, 0, 1.5]])))
 
 ant_foot_prim_names = ["right_back_foot", "left_back_foot", "front_right_foot", "front_left_foot"]
 

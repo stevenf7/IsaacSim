@@ -6,6 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+
 import weakref
 from typing import List, Optional, Tuple, Union
 
@@ -17,11 +18,6 @@ import omni.kit.app
 import torch
 import usdrt
 import warp as wp
-from isaacsim.core.api.materials.omni_glass import OmniGlass
-from isaacsim.core.api.materials.omni_pbr import OmniPBR
-from isaacsim.core.api.materials.preview_surface import PreviewSurface
-from isaacsim.core.api.materials.visual_material import VisualMaterial
-from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
 from isaacsim.core.utils.prims import (
     find_matching_prim_paths,
     get_prim_at_path,
@@ -35,7 +31,7 @@ from isaacsim.core.utils.xforms import get_local_pose, get_world_pose
 from pxr import Gf, Usd, UsdGeom, UsdShade
 
 
-class XFormPrimView(object):
+class XFormPrim(object):
     """Provides high level functions to deal with a Xform prim view (one or many) and its descendants
     as well as its attributes/properties.
 
@@ -90,7 +86,7 @@ class XFormPrimView(object):
 
         >>> import isaacsim.core.utils.stage as stage_utils
         >>> from isaacsim.core.cloner import GridCloner
-        >>> from isaacsim.core.api.prims import XFormPrimView
+        >>> from isaacsim.core.prims import XFormPrim
         >>> from pxr import UsdGeom
         >>>
         >>> env_zero_path = "/World/envs/env_0"
@@ -110,9 +106,9 @@ class XFormPrimView(object):
         ... )
         >>>
         >>> # wrap all Xforms
-        >>> prims = XFormPrimView(prim_paths_expr="/World/envs/env.*", name="xform_view")
+        >>> prims = XFormPrim(prim_paths_expr="/World/envs/env.*", name="xform_view")
         >>> prims
-        <isaacsim.core.api.prims.xform_prim_view.XFormPrimView object at 0x7f8ffd22ebc0>
+        <isaacsim.core.prims.xform_prim.XFormPrim object at 0x7f8ffd22ebc0>
     """
 
     def __init__(
@@ -145,6 +141,8 @@ class XFormPrimView(object):
         self._regex_prim_paths = prim_paths_expr
         for prim_path in self._prim_paths:
             self._prims.append(get_prim_at_path(prim_path))
+
+        from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
 
         if SimulationContext.instance() is not None:
             self._backend = SimulationContext.instance().backend
@@ -182,9 +180,9 @@ class XFormPrimView(object):
                 else:
                     self.set_world_poses(positions, orientations)
             if scales is not None:
-                XFormPrimView.set_local_scales(self, scales)
+                XFormPrim.set_local_scales(self, scales)
         if visibilities is not None:
-            XFormPrimView.set_visibilities(self, visibilities=visibilities)
+            XFormPrim.set_visibilities(self, visibilities=visibilities)
         if not self._non_root_link:
             default_positions, default_orientations = self.get_world_poses(usd=usd)
             if self._backend == "warp":
@@ -502,7 +500,7 @@ class XFormPrimView(object):
 
     def apply_visual_materials(
         self,
-        visual_materials: Union[VisualMaterial, List[VisualMaterial]],
+        visual_materials: Union["VisualMaterial", List["VisualMaterial"]],
         weaker_than_descendants: Optional[Union[bool, List[bool]]] = None,
         indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
     ) -> None:
@@ -594,7 +592,7 @@ class XFormPrimView(object):
 
     def get_applied_visual_materials(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
-    ) -> List[VisualMaterial]:
+    ) -> List["VisualMaterial"]:
         """Get the current applied visual materials
 
         Args:
@@ -665,14 +663,20 @@ class XFormPrimView(object):
                     asset_sub_identifier = shader.GetPrim().GetAttribute("info:mdl:sourceAsset:subIdentifier").Get()
                     shader_id = shader.GetShaderId()
                     if implementation_source == "id" and shader_id == "UsdPreviewSurface":
+                        from isaacsim.core.api.materials.preview_surface import PreviewSurface
+
                         self._applied_visual_materials[i] = PreviewSurface(prim_path=material_path, shader=shader)
                         result[write_idx] = self._applied_visual_materials[i]
                         write_idx += 1
                     elif asset_sub_identifier == "OmniGlass":
+                        from isaacsim.core.api.materials.omni_glass import OmniGlass
+
                         self._applied_visual_materials[i] = OmniGlass(prim_path=material_path, shader=shader)
                         result[write_idx] = self._applied_visual_materials[i]
                         write_idx += 1
                     elif asset_sub_identifier == "OmniPBR":
+                        from isaacsim.core.api.materials.omni_pbr import OmniPBR
+
                         self._applied_visual_materials[i] = OmniPBR(prim_path=material_path, shader=shader)
                         result[write_idx] = self._applied_visual_materials[i]
                         write_idx += 1
@@ -939,7 +943,7 @@ class XFormPrimView(object):
             calculated_translations, calculated_orientations = self._backend_utils.get_local_from_world(
                 parent_transforms, positions, orientations, self._device
             )
-            XFormPrimView.set_local_poses(
+            XFormPrim.set_local_poses(
                 self, translations=calculated_translations, orientations=calculated_orientations, indices=indices
             )
         return

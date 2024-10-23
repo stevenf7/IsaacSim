@@ -19,8 +19,8 @@ import carb
 import numpy as np
 import torch
 from isaacsim.core.api import World
-from isaacsim.core.api.articulations import ArticulationView
 from isaacsim.core.api.materials.omni_glass import OmniGlass
+from isaacsim.core.prims import Articulation
 from isaacsim.core.utils.numpy.rotations import euler_angles_to_quats
 from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.core.utils.types import ArticulationAction
@@ -48,9 +48,11 @@ add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_2")
 # define_prim(prim_path="/World/Frame_1/Target")
 # define_prim(prim_path="/World/Frame_2/Target")
 # define_prim(prim_path="/World/Frame_3/Target")
-new_positions = torch.tensor([[10.0, 10.0, 0], [100.0, 100.0, 0]]) / 100.0
-new_orientations = euler_angles_to_quats(torch.tensor([[0, 0, np.pi / 2.0], [0, 0, -np.pi / 2.0]]))
-frankas_view = ArticulationView(prim_paths_expr="/World/Franka_[1-2]", name="frankas_view")
+new_positions = torch.tensor([[10.0, 10.0, 0], [100.0, 100.0, 0]], dtype=torch.float32) / 100.0
+new_orientations = torch.tensor(
+    euler_angles_to_quats(np.array([[0, 0, np.pi / 2.0], [0, 0, -np.pi / 2.0]])), dtype=torch.float32
+)
+frankas_view = Articulation(prim_paths_expr="/World/Franka_[1-2]", name="frankas_view")
 my_world.scene.add(frankas_view)
 glass_1 = OmniGlass(
     prim_path=f"/World/franka_glass_material_1",

@@ -10,11 +10,11 @@ from typing import Optional, Union
 
 import numpy as np
 import torch
-from isaacsim.core.api.articulations.articulation_view import ArticulationView
+from isaacsim.core.prims import Articulation
 
 
-class RobotView(ArticulationView):
-    """Implementation (on ``ArticulationView`` class) to deal with articulation prims as robots
+class RobotView(Articulation):
+    """Implementation (on ``Articulation`` class) to deal with articulation prims as robots
 
     This class wraps all matching articulations found at the regex provided at the ``prim_paths_expr`` argument
 
@@ -86,7 +86,7 @@ class RobotView(ArticulationView):
         scales: Optional[Union[np.ndarray, torch.Tensor]] = None,
         visibilities: Optional[Union[np.ndarray, torch.Tensor]] = None,
     ) -> None:
-        ArticulationView.__init__(
+        Articulation.__init__(
             self,
             prim_paths_expr=prim_paths_expr,
             name=name,
@@ -115,5 +115,5 @@ class RobotView(ArticulationView):
 
             >>> prims.post_reset()
         """
-        ArticulationView.post_reset(self)
+        Articulation.post_reset(self)
         return

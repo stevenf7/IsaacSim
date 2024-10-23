@@ -9,13 +9,13 @@
 from typing import Optional, Sequence
 
 import numpy as np
-from isaacsim.core.api.prims._impl.single_prim_wrapper import _SinglePrimWrapper
-from isaacsim.core.api.prims.rigid_prim_view import RigidPrimView
-from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
 from isaacsim.core.utils.types import DynamicState
 
+from ._impl.single_prim_wrapper import _SinglePrimWrapper
+from .rigid_prim import RigidPrim
 
-class RigidPrim(_SinglePrimWrapper):
+
+class SingleRigidPrim(_SinglePrimWrapper):
     """High level wrapper to deal with a rigid body prim (only one rigid body prim) and its attributes/properties.
 
     .. warning::
@@ -54,16 +54,16 @@ class RigidPrim(_SinglePrimWrapper):
     .. code-block:: python
 
         >>> import isaacsim.core.utils.stage as stage_utils
-        >>> from isaacsim.core.api.prims import RigidPrim
+        >>> from isaacsim.core.prims import SingleRigidPrim
         >>>
         >>> # create a Cube at the given path
         >>> stage_utils.get_current_stage().DefinePrim("/World/Xform", "Xform")
         >>> stage_utils.get_current_stage().DefinePrim("/World/Xform/Cube", "Cube")
         >>>
         >>> # wrap the prim as rigid prim
-        >>> prim = RigidPrim("/World/Xform")
+        >>> prim = SingleRigidPrim("/World/Xform")
         >>> prim
-        <isaacsim.core.api.prims.rigid_prim.RigidPrim object at 0x7fc4a7f56e90>
+        <isaacsim.core.prims.single_rigid_prim.SingleRigidPrim object at 0x7fc4a7f56e90>
     """
 
     def __init__(
@@ -80,6 +80,8 @@ class RigidPrim(_SinglePrimWrapper):
         linear_velocity: Optional[np.ndarray] = None,
         angular_velocity: Optional[np.ndarray] = None,
     ) -> None:
+        from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
+
         if SimulationContext.instance() is not None:
             self._backend = SimulationContext.instance().backend
             self._device = SimulationContext.instance().device
@@ -112,7 +114,7 @@ class RigidPrim(_SinglePrimWrapper):
             linear_velocity = self._backend_utils.expand_dims(linear_velocity, 0)
         if angular_velocity is not None:
             angular_velocity = self._backend_utils.expand_dims(angular_velocity, 0)
-        self._rigid_prim_view = RigidPrimView(
+        self._rigid_prim_view = RigidPrim(
             prim_paths_expr=prim_path,
             name=name,
             positions=position,
