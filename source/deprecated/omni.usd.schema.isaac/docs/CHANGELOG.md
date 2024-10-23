@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.0.0] - 2024-10-20
+### Deprecated
+- Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.robot.schema
+
 ## [2.1.0] - 2024-06-28
 ### Added
 - Added lightbeam sensor to Isaac Sensor Schema, bumping version

@@ -28,7 +28,7 @@ writeTarget.kit = true
 "omni.physx" = {}
 "omni.replicator.core" = {}
 "omni.timeline" = {} # Needed for simulation to occur
-"omni.usd.schema.isaac" = {}
+"isaacsim.robot.schema" = {}
 "omni.usd" = {} # needed for call to add aov
 "usdrt.scenegraph" = {}
 

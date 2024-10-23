@@ -4,7 +4,7 @@ reloadable = false
 order = -100
 
 [package]
-version = "2.1.0"
+version = "3.0.0"
 category = "Simulation"
 authors = ["Isaac Sim team"]
 repository="https://gitlab-master.nvidia.com/Isaac/omni-isaacsim-schema/-/tree/isaacsim"
@@ -20,19 +20,5 @@ writeTarget.kit = true
 [dependencies]
 "omni.usd.libs" = {}
 
-[[python.module]]
-name = "omni.isaac.RangeSensorSchema"
-path = "plugins/RangeSensorSchema/"
-
-[[python.module]]
-name = "omni.isaac.IsaacSensorSchema"
-path = "plugins/IsaacSensorSchema/"
-
-[[python.module]]
-name = "usd.schema.isaac"
-
-[[native.library]]
-path = "plugins/RangeSensorSchema/lib/${lib_prefix}rangeSensorSchema${lib_ext}"
-
-[[native.library]]
-path = "plugins/IsaacSensorSchema/lib/${lib_prefix}isaacSensorSchema${lib_ext}"
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.robot.schema."
