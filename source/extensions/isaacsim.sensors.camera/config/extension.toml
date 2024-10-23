@@ -26,7 +26,7 @@ writeTarget.kit = true
 "omni.replicator.core" = {}
 "omni.syntheticdata" = {}
 "omni.timeline" = {} # Needed for simulation to occur
-"omni.usd.schema.isaac" = {}
+"isaacsim.robot.schema" = {}
 "omni.usd" = {} # needed for call to add aov
 
 [[python.module]]

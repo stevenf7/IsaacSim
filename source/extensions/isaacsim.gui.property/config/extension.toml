@@ -21,7 +21,7 @@ writeTarget.kit = true
 "omni.kit.property.usd" = {}
 "omni.kit.uiapp" = {}
 "omni.kit.window.property" = {}
-"omni.usd.schema.isaac" = {}
+"isaacsim.robot.schema" = {}
 "omni.usd" = {}
 
 [[python.module]]
