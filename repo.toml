@@ -995,9 +995,23 @@ url = "https://gitlab-master.nvidia.com/omniverse/ov-create/-/raw/release/2024.1
 
 # please provide extensions in the format "extension.name-version" or {dep = "extension.name-version", tag = "tag"}
 deps_for_isaac = [
-  "omni.replicator.replicator_yaml-2.0.8",
-  "omni.replicator.core-1.11.27",
+  "omni.anim.people-0.5.0",
+  "omni.cuopt.examples-1.0.0",
+  "omni.cuopt.service-1.0.0",
+  "omni.cuopt.visualization-1.0.0",
+  "omni.extended.materials-105.0.9",
+  "omni.importer.mjcf-1.1.1",
+  "omni.importer.onshape-0.7.3",
+  "omni.importer.urdf-2.1.1",
+  "omni.kit.test_helpers_gfx",
   "omni.net-0.2.0-isaac",
+  "omni.replicator.agent.camera_calibration-0.4.0",
+  "omni.replicator.agent.core-0.4.1",
+  "omni.replicator.agent.ui-0.4.0",
+  "omni.replicator.core-1.11.27",
+  "omni.replicator.object-0.3.8",
+  "omni.replicator.replicator_yaml-2.0.8",
+  "omni.rtx.shadercache.vulkan",
   "omni.sensors.nv.camera-0.16.0-isaac",
   "omni.sensors.nv.common-2.3.0-isaac",
   "omni.sensors.nv.ids-1.3.0-isaac",
@@ -1007,25 +1021,11 @@ deps_for_isaac = [
   "omni.sensors.nv.ultrasonic-2.3.0-isaac",
   "omni.sensors.nv.wpm-2.3.0-isaac",
   "omni.sensors.tiled-0.0.6",
+  "omni.usd.metrics.assembler.physics-106.2.0",
   "semantics.schema.editor-0.3.8",
   "semantics.schema.property-1.0.4",
-  "omni.importer.mjcf-1.1.1",
-  "omni.importer.urdf-2.1.1",
-  "omni.importer.onshape-0.7.3",
-  "omni.anim.people-0.5.0",
-  "omni.replicator.object-0.3.8",
-  "omni.replicator.agent.core-0.4.1",
-  "omni.replicator.agent.ui-0.4.0",
-  "omni.replicator.agent.camera_calibration-0.4.0",
-  "omni.kit.profiler.tracy-1.1.5",
-  "omni.cuopt.service-1.0.0",
-  "omni.cuopt.visualization-1.0.0",
-  "omni.cuopt.examples-1.0.0",
-  "omni.usd.metrics.assembler.physics-106.2.0",
-  "omni.kit.gfn-107.0.1",
-  "omni.extended.materials-105.0.9",
-  "omni.rtx.shadercache.vulkan",
-  "omni.kit.test_helpers_gfx"
+  "omni.warp.core-1.3.1",
+  "omni.warp-1.3.1"
 ]
 
 windows_only = [
@@ -1036,10 +1036,6 @@ windows_only = [
 linux_only = []
 
 exclude = [
-  "omni.app.workflow.composer_startup",
-  "omni.create.app.resources",
-  "omni.create.app.setup",
-  "omni.create.tests",
 ]
 
 override = [

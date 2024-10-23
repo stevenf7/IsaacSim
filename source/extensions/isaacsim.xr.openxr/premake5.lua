@@ -12,6 +12,7 @@ project_ext_plugin(ext, "isaacsim.xr.openxr.plugin")
         "include",
         "plugins/isaacsim.xr.openxr",
         "%{root}/_build/%{platform}/%{config}/extsbuild/omni.kit.xr.core/include",
+        "%{root}/_build/%{platform}/%{config}/kit/dev/fabric/include",
         "%{target_deps}/openxr/include",
     }
 
@@ -35,6 +36,7 @@ project_ext_bindings {
     includedirs {
         "include",
         "%{root}/_build/%{platform}/%{config}/extsbuild/omni.kit.xr.core/include",
+        "%{root}/_build/%{platform}/%{config}/kit/dev/fabric/include",
         "%{target_deps}/openxr/include",
     }
 
